@@ -13,6 +13,8 @@ export const WORKSTATION_API_ENDPOINTS = {
   portfolioMultiAssetCoverage: UI_API_ROUTES.WorkstationPortfolioMultiAssetCoverage,
   assetOperations: "/api/workstation/assets",
   data: UI_API_ROUTES.WorkstationData,
+  dataUploadTemplates: UI_API_ROUTES.WorkstationDataUploadTemplates,
+  dataUploadPreview: UI_API_ROUTES.WorkstationDataUploadPreview,
   accounting: UI_API_ROUTES.WorkstationAccounting,
   accountingConfiguration: UI_API_ROUTES.LedgerAccountingConfiguration,
   accountingConfigurationChart: UI_API_ROUTES.LedgerAccountingConfigurationChart,

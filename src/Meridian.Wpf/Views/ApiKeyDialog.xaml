@@ -42,13 +42,14 @@
                        Margin="0,8,0,12"
                        AutomationProperties.AutomationId="ApiKeyDialogEnvironmentHint" />
 
-            <TextBox x:Name="ApiKeyBox"
-                     Grid.Row="2"
-                     Style="{StaticResource FormTextBoxStyle}"
-                     FontFamily="Consolas"
-                     Margin="0,0,0,16"
-                     AutomationProperties.AutomationId="ApiKeyDialogInput"
-                     AutomationProperties.Name="API key" />
+            <views:SecretInputControl x:Name="ApiKeyBox"
+                                      Grid.Row="2"
+                                      Margin="0,0,0,16"
+                                      InputAutomationId="ApiKeyDialogInput"
+                                      RevealAutomationId="ApiKeyDialogRevealButton"
+                                      InputAutomationName="API key"
+                                      RevealAutomationName="Show or hide API key"
+                                      RevealToolTip="Show or hide API key" />
 
             <StackPanel Grid.Row="4"
                         Orientation="Horizontal"

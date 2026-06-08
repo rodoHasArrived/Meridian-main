@@ -20,6 +20,11 @@ public sealed class FundStructureSetupWorkflowServiceTests
 
         Assert.Equal("ORG", result.Organization.Code);
         Assert.Equal("FUND", result.Fund?.Code);
+        Assert.Equal(LegalEntityFormDto.LimitedLiabilityCompany, result.LegalEntity.LegalForm);
+        Assert.Equal(LegalEntityLifecycleStatusDto.Active, result.LegalEntity.LifecycleStatus);
+        Assert.Equal("DE-LLC-001", result.LegalEntity.RegistrationNumber);
+        Assert.Contains(result.LegalEntity.BeneficialOwners ?? [], owner => owner.OwnerName == "Flagship GP" && owner.OwnershipPercent == 100m);
+        Assert.Contains(result.LegalEntity.LifecycleEvents ?? [], lifecycleEvent => lifecycleEvent.EventKind == LegalEntityLifecycleEventKindDto.Formation);
         Assert.Equal("PORT", result.InvestmentPortfolio.Code);
         Assert.Equal(FundStructureSetupWorkflowService.AccountHandoffAssignmentType, result.AccountHandoffAssignment.AssignmentType);
         Assert.Equal(result.InvestmentPortfolio.InvestmentPortfolioId, result.AccountHandoffAssignment.NodeId);
@@ -73,7 +78,19 @@ public sealed class FundStructureSetupWorkflowServiceTests
             new FundStructureSetupOrganizationDraftDto(null, "ORG", "Organization", "USD"),
             new FundStructureSetupBusinessDraftDto(null, BusinessKindDto.FundManager, "INV", "Investment Management", "USD"),
             new FundStructureSetupClientOrFundDraftDto(null, null, CreateClient: false, "FUND", "Flagship Fund", "USD"),
-            new FundStructureSetupLegalEntityDraftDto(null, LegalEntityTypeDto.Fund, "LE", "Flagship LP", "US-DE", "USD"),
+            new FundStructureSetupLegalEntityDraftDto(
+                null,
+                LegalEntityTypeDto.Fund,
+                "LE",
+                "Flagship LP",
+                "US-DE",
+                "USD",
+                LegalForm: LegalEntityFormDto.LimitedLiabilityCompany,
+                LifecycleStatus: LegalEntityLifecycleStatusDto.Active,
+                RegistrationNumber: "DE-LLC-001",
+                BeneficialOwners: [new BeneficialOwnerSummaryDto("Flagship GP", 100m, IsControlPerson: true)],
+                InitialLifecycleEventKind: LegalEntityLifecycleEventKindDto.Formation,
+                InitialLifecycleEventSummary: "Initial formation and operating setup."),
             new FundStructureSetupVehicleDraftDto(null, "VEH", "Flagship Vehicle", "USD"),
             new FundStructureSetupInvestmentPortfolioDraftDto(null, "PORT", "Core Portfolio", "USD"),
             new FundStructureSetupAccountHandoffDraftDto("ACCT", "Primary brokerage handoff", AccountTypeDto.Brokerage, "USD", "Broker", "4000"),
@@ -135,6 +152,9 @@ public sealed class FundStructureSetupWorkflowServiceTests
             _createdByValues.Add(request.CreatedBy);
             return inner.CreateLegalEntityAsync(request, ct);
         }
+
+        public Task<LegalEntitySummaryDto> UpdateLegalEntityProfileAsync(UpdateLegalEntityProfileRequest request, CancellationToken ct = default)
+            => inner.UpdateLegalEntityProfileAsync(request, ct);
 
         public Task<InvestmentPortfolioSummaryDto> CreateInvestmentPortfolioAsync(CreateInvestmentPortfolioRequest request, CancellationToken ct = default)
         {

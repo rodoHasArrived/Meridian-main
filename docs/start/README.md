@@ -68,9 +68,18 @@ If `make` is unavailable, use the underlying `dotnet`, `npm`, or `python` comman
 | Local host and browser-served workstation | `dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080` | Serves the host and, after assets are built, `http://localhost:8080/workstation/`. |
 | Desktop-local host mode | `dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080` | Use when intentionally running the desktop-local host and streaming collector together. |
 | Browser workstation development | `npm --prefix src/Meridian.Ui/dashboard run dev` | Use for active React/TypeScript workstation work. |
-| WPF desktop shell | `pwsh ./scripts/dev/run-desktop.ps1` | Recommended Windows desktop launcher. |
-| WPF deterministic fixture shell | `pwsh ./scripts/dev/run-desktop.ps1 -Fixture` | Use for offline UI inspection with fixture data. |
+| WPF desktop development shell | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development` | Builds Debug artifacts and explicitly opts into the local Development/in-memory governance profile. |
+| WPF deterministic fixture shell | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development -Fixture` | Use for offline UI inspection with fixture data. |
+| WPF production build | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly` | Builds Release host and desktop artifacts without starting the host. |
+| WPF production shell | `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production` | Requires persistence-backed governance connection strings before host startup. |
 | Headless collector | `dotnet run --project src/Meridian/Meridian.csproj -- --mode headless` | Use for non-UI collection scenarios. |
+
+The WPF desktop startup screen prompts for the environment-backed Meridian operator profile. Configure
+`MDC_USERS` for multi-user login, or use the legacy `MDC_USERNAME` / `MDC_PASSWORD` pair for a
+single local admin. Development launches can continue without configured credentials when auth mode
+is optional; production launches fail closed until a user profile is configured. After sign-in, the
+desktop shell header shows the active operator and its `Log out` command returns to the same startup
+credential prompt without persisting the password in WPF config files.
 
 ## First Validation Paths
 

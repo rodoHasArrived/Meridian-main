@@ -11,6 +11,8 @@ Use this guide for the current WPF desktop validation loop.
 ```bash
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/desktop-dev.ps1
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/run-desktop.ps1 -LaunchMode Development -BuildOnly
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly
 make desktop-test-dev
 ```
 
@@ -29,6 +31,18 @@ dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore --no-d
 ```
 
 Use `make desktop-test-dev` for the default wrapper. Pass `-Restore` when packages or generated assets changed, and pass `-AllowConcurrentDotnet` only when overlapping repo-owned dotnet work is intentional.
+
+For manual shell runs, keep development and production lanes explicit:
+
+```bash
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/run-desktop.ps1 -LaunchMode Development
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/run-desktop.ps1 -LaunchMode Development -Fixture
+pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly
+```
+
+Production launch without `-BuildOnly` requires `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and
+`MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING`; development launch sets the local Development
+environment and in-memory governance opt-in only for the launched processes.
 
 Common variants:
 

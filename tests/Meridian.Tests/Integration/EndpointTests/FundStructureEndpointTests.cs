@@ -129,6 +129,83 @@ public sealed class FundStructureEndpointTests
     }
 
     [Fact]
+    public async Task LegalEntityProfileEndpoint_WithManagePermission_UpdatesLifecycleAndBeneficialOwners()
+    {
+        await using var app = await CreateFundStructureAuthorizationAppAsync(UserPermission.ManageFundStructure);
+        var client = app.GetTestClient();
+        var structureService = app.Services.GetRequiredService<IFundStructureService>();
+        var entityId = Guid.NewGuid();
+        var now = new DateTimeOffset(2026, 04, 12, 0, 0, 0, TimeSpan.Zero);
+
+        await structureService.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            entityId,
+            LegalEntityTypeDto.Vehicle,
+            "SPV-ENDPOINT",
+            "Endpoint SPV LLC",
+            "US-DE",
+            "USD",
+            now,
+            "endpoint-test",
+            LegalForm: LegalEntityFormDto.LimitedLiabilityCompany,
+            RegistrationNumber: "DE-SPV-ENDPOINT"));
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/fund-structure/entities/{entityId}",
+            new UpdateLegalEntityProfileRequest(
+                Guid.Empty,
+                "fund-ops",
+                LifecycleStatus: LegalEntityLifecycleStatusDto.Restructuring,
+                BeneficialOwners:
+                [
+                    new BeneficialOwnerSummaryDto("Sponsor GP", 80m, IsControlPerson: true),
+                    new BeneficialOwnerSummaryDto("Co-investor LLC", 20m)
+                ],
+                LifecycleEvent: new LegalEntityLifecycleEventDto(
+                    Guid.NewGuid(),
+                    LegalEntityLifecycleEventKindDto.SpvRollup,
+                    now.AddDays(1),
+                    "fund-ops",
+                    "Rolled feeder SPV into master structure.")));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<LegalEntitySummaryDto>();
+        payload.Should().NotBeNull();
+        payload!.LegalForm.Should().Be(LegalEntityFormDto.LimitedLiabilityCompany);
+        payload.LifecycleStatus.Should().Be(LegalEntityLifecycleStatusDto.Restructuring);
+        payload.BeneficialOwners.Should().Contain(owner => owner.OwnerName == "Co-investor LLC" && owner.OwnershipPercent == 20m);
+        payload.LifecycleEvents.Should().Contain(lifecycleEvent => lifecycleEvent.EventKind == LegalEntityLifecycleEventKindDto.SpvRollup);
+    }
+
+    [Fact]
+    public async Task LegalEntityProfileEndpoint_ReadOnlyAuthenticatedOperator_ReturnsForbidden()
+    {
+        await using var app = await CreateFundStructureAuthorizationAppAsync(UserPermission.ViewAnalytics);
+        var client = app.GetTestClient();
+        var structureService = app.Services.GetRequiredService<IFundStructureService>();
+        var entityId = Guid.NewGuid();
+        var now = new DateTimeOffset(2026, 04, 12, 0, 0, 0, TimeSpan.Zero);
+
+        await structureService.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            entityId,
+            LegalEntityTypeDto.Vehicle,
+            "SPV-READONLY",
+            "Readonly SPV LLC",
+            "US-DE",
+            "USD",
+            now,
+            "endpoint-test"));
+
+        var response = await client.PutAsJsonAsync(
+            $"/api/fund-structure/entities/{entityId}",
+            new UpdateLegalEntityProfileRequest(
+                Guid.Empty,
+                "read-only",
+                LifecycleStatus: LegalEntityLifecycleStatusDto.Restructuring));
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task OwnershipLifecycleEndpoints_UpdateExpireAndValidateGraph()
     {
         await using var app = await CreateFundStructureAuthorizationAppAsync(UserPermission.ManageFundStructure);

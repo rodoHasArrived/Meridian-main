@@ -17,45 +17,58 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1400">
-            <!-- Header -->
-            <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,24">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+            <!-- Freshness Strip -->
+            <Border Background="{StaticResource PremiumPanelBrush}"
+                    BorderBrush="{StaticResource ConsoleBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Margin="0,0,0,12"
+                    Padding="14,10"
+                    AutomationProperties.AutomationId="DataQualityFreshnessStrip"
+                    AutomationProperties.Name="Data Quality Freshness Strip">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <Border Width="44" Height="44" CornerRadius="14"
+                    <Border Grid.Column="0"
+                            Width="30"
+                            Height="30"
+                            CornerRadius="8"
+                            Margin="0,0,10,0"
+                            VerticalAlignment="Center"
                             Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                            BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
-                        <TextBlock Text="&#xE9D5;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                   FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            BorderBrush="{StaticResource InfoColorBrush}"
+                            BorderThickness="1">
+                        <TextBlock Text="&#xE9D5;"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="16"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" />
                     </Border>
-                    <StackPanel Margin="12,0,0,0">
-                        <TextBlock Text="Data Quality Monitor" Style="{StaticResource PageTitleStyle}" />
-                        <TextBlock Text="Monitor scores, alerts, and trend posture across collected datasets and validation runs."
-                                   Style="{StaticResource CardDescriptionStyle}" />
-                    </StackPanel>
-                </StackPanel>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock x:Name="LastUpdateText" Text="{Binding LastUpdateText}"
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Data Quality"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                        <TextBlock Text="Scores, alerts, and trend posture"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+
+                    <TextBlock x:Name="LastUpdateText"
+                               Grid.Column="2"
+                               Text="{Binding LastUpdateText}"
                                Foreground="{StaticResource ConsoleTextMutedBrush}"
-                               VerticalAlignment="Center" Margin="0,0,16,0" FontSize="12"/>
-                    <Button Content="Refresh" Click="Refresh_Click"
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            Margin="0,0,8,0"/>
-                    <Button Click="RunQualityCheck_Click"
-                            Style="{StaticResource PrimaryButtonStyle}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="&#xE9D5;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                       FontSize="14" VerticalAlignment="Center" />
-                            <TextBlock Text="Run Quality Check" Margin="8,0,0,0" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
-            </Grid>
+                               VerticalAlignment="Center"
+                               FontSize="12"
+                               Margin="20,0,0,0" />
+                </Grid>
             </Border>
 
             <views:WorkspaceCommandBarControl x:Name="CommandBar"

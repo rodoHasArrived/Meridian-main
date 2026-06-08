@@ -62,6 +62,11 @@ The root workstation bootstrap endpoints return canonical `WorkstationDataPayloa
 `WorkstationAccountingPayload` contract types for Data and Accounting. Retained
 `/api/workstation/data-operations` and `/api/workstation/governance` routes remain compatibility
 aliases only and must not drive new contract type names.
+Data upload intake endpoints are registered under `/api/workstation/data/uploads/*`. The template
+route serves the contract-owned catalog, and the preview route accepts bounded CSV uploads,
+retains the source file under the resolved workstation upload root, and returns schema issues plus
+preview rows without mutating trades, transactions, Security Master assets, entity structure, or
+ledger/accounting records.
 Plaid endpoints are registered as their own shared endpoint group from `UiApiRoutes`, with read
 and mutation access resolved from the workstation session. The shared Plaid workstation service
 keeps link-token creation, public-token exchange, item sync, webhook retention, and sandbox

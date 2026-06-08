@@ -1,6 +1,7 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Application.SecurityMaster;
+using Meridian.Identity;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Ui.Services.Services.Accounting;
@@ -45,6 +46,11 @@ public sealed class AppServiceRegistrationTests
             serviceProvider.GetRequiredService<LoggingService>().Should().BeSameAs(LoggingService.Instance);
             serviceProvider.GetRequiredService<StatusService>().Should().BeSameAs(StatusService.Instance);
             serviceProvider.GetRequiredService<StrategyRunWorkspaceService>().Should().NotBeNull();
+            serviceProvider.GetRequiredService<UserProfileRegistry>().Should().NotBeNull();
+            serviceProvider.GetRequiredService<LoginSessionService>().Should().NotBeNull();
+            serviceProvider.GetRequiredService<DesktopAuthenticationSession>().Should().NotBeNull();
+            serviceProvider.GetRequiredService<StartupWindowViewModel>().Should().NotBeNull();
+            ResolveRequired<StartupWindow>(serviceProvider).Should().NotBeNull();
             ResolveRequired<SymbolsPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<BackfillPage>(serviceProvider).Should().NotBeNull();
             ResolveRequired<RunMatPage>(serviceProvider).Should().NotBeNull();

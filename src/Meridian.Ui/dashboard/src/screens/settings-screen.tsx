@@ -20,7 +20,6 @@ import {
   type SettingsRecentEventDetail,
   type SettingsRecentEventTableRow
 } from "@/screens/settings-screen.view-model";
-import { PROVIDER_KIND_CATALOG } from "@/screens/data-screen.view-model";
 import type {
   BrokerageConnectionStatus,
   DataWorkspaceResponse,
@@ -29,6 +28,8 @@ import type {
   ReportingWorkspaceResponse,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
+  ProviderCredentialFieldMetadata,
+  ProviderEnvironmentOption,
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
@@ -78,15 +79,7 @@ interface SettingsScreenProps {
   workspaceErrors?: Partial<Record<WorkspaceKey, string>>;
 }
 
-type ProviderInlineField =
-  | "apiKey"
-  | "apiSecret"
-  | "endpoint"
-  | "ClientId"
-  | "ClientSecret"
-  | "RefreshToken"
-  | "RealmId"
-  | "CompanyName";
+type ProviderInlineField = string;
 type ProviderInlineBusyAction = "test" | "save" | "verify" | "clear" | null;
 
 interface LedgerMappingAssignmentState {
@@ -183,7 +176,7 @@ interface ProviderInlineFieldDefinition {
 interface ProviderInlineState {
   editing: boolean;
   values: Record<ProviderInlineField, string>;
-  environment: "paper" | "live" | "sandbox" | "custom";
+  environment: string;
   liveAcknowledged: boolean;
   dirty: boolean;
   busyAction: ProviderInlineBusyAction;
@@ -229,16 +222,7 @@ const formReadinessTextClass = {
   danger: "text-danger"
 } as const;
 
-const emptyProviderInlineValues: Record<ProviderInlineField, string> = {
-  apiKey: "",
-  apiSecret: "",
-  endpoint: "",
-  ClientId: "",
-  ClientSecret: "",
-  RefreshToken: "",
-  RealmId: "",
-  CompanyName: ""
-};
+const emptyProviderInlineValues: Record<ProviderInlineField, string> = {};
 
 const requirementToneClass = {
   success: "border-success/30 bg-success/10 text-success",
@@ -879,7 +863,7 @@ export function SettingsScreen({
     }
     const definitions = providerFieldDefinitions[row.providerId] ?? buildProviderFieldDefinitions(row);
     const missingField = definitions.find((definition) => (
-      definition.required && !state.values[definition.field].trim()
+      definition.required && !(state.values[definition.field] ?? "").trim()
     ));
     if (missingField) {
       updateProviderInlineState(row.providerId, (current) => ({
@@ -911,7 +895,7 @@ export function SettingsScreen({
     try {
       const result = await putProviderCredentials(row.providerId, {
         credentials: definitions.reduce<Record<string, string | null>>((acc, definition) => {
-          const value = state.values[definition.field].trim();
+          const value = (state.values[definition.field] ?? "").trim();
           acc[definition.field] = value.length > 0 ? value : null;
           return acc;
         }, {}),
@@ -3903,12 +3887,19 @@ function ProviderInlineActionPanel({
   onVerify,
   onClear
 }: {
-  row: { providerId: string; displayName: string; affectedWorkflowsLabel: string; productionStateLabel: string; fallbackLabel: string };
+  row: {
+    providerId: string;
+    displayName: string;
+    affectedWorkflowsLabel: string;
+    productionStateLabel: string;
+    fallbackLabel: string;
+    environmentOptions: ProviderEnvironmentOption[];
+  };
   state: ProviderInlineState;
   fieldDefinitions: ProviderInlineFieldDefinition[];
   onToggleEdit: () => void;
   onFieldChange: (field: ProviderInlineField, value: string) => void;
-  onEnvironmentChange: (value: ProviderInlineState["environment"]) => void;
+  onEnvironmentChange: (value: string) => void;
   onLiveAcknowledgementChange: (value: boolean) => void;
   onTest: () => void;
   onSave: () => void;
@@ -3916,6 +3907,7 @@ function ProviderInlineActionPanel({
   onClear: () => void;
 }) {
   const busy = state.busyAction !== null;
+  const environmentOptions = buildProviderEnvironmentOptions(row.environmentOptions, state.environment);
   return (
     <section className="mb-3 grid gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-3" aria-label={`${row.displayName} inline provider actions`}>
       <div className="flex flex-wrap items-center gap-2">
@@ -3981,34 +3973,41 @@ function ProviderInlineActionPanel({
       </div>
       {state.editing ? (
         <div className="grid gap-3 md:grid-cols-2">
-          {fieldDefinitions.map((field) => (
-            <label key={`${row.providerId}-${field.field}`} className="grid gap-1 text-xs font-medium text-muted-foreground">
-              {field.label}
-              <Input
-                type={field.type}
-                value={state.values[field.field]}
-                onChange={(event) => onFieldChange(field.field, event.target.value)}
-                placeholder={field.placeholder}
-                autoComplete={field.type === "password" ? "new-password" : "off"}
-                disabled={busy}
-                aria-label={`${row.displayName} ${field.label}`}
-              />
-              <span className="text-[11px] leading-4 text-muted-foreground">{field.helpText}</span>
-            </label>
-          ))}
+          {fieldDefinitions.length > 0 ? (
+            fieldDefinitions.map((field) => (
+              <label key={`${row.providerId}-${field.field}`} className="grid gap-1 text-xs font-medium text-muted-foreground">
+                {field.label}
+                <Input
+                  type={field.type}
+                  value={state.values[field.field] ?? ""}
+                  onChange={(event) => onFieldChange(field.field, event.target.value)}
+                  placeholder={field.placeholder}
+                  autoComplete={field.type === "password" ? "new-password" : "off"}
+                  disabled={busy}
+                  aria-label={`${row.displayName} ${field.label}`}
+                />
+                <span className="text-[11px] leading-4 text-muted-foreground">{field.helpText}</span>
+              </label>
+            ))
+          ) : (
+            <div className="rounded-md border border-border/60 bg-background/40 px-3 py-2 text-xs leading-5 text-muted-foreground">
+              No credential fields are required for this provider.
+            </div>
+          )}
           <label className="grid gap-1 text-xs font-medium text-muted-foreground">
             Environment
             <select
               value={state.environment}
-              onChange={(event) => onEnvironmentChange(event.target.value as ProviderInlineState["environment"])}
+              onChange={(event) => onEnvironmentChange(event.target.value)}
               className="h-9 rounded-md border border-border/70 bg-background px-2 text-sm text-foreground"
               disabled={busy}
               aria-label={`${row.displayName} environment`}
             >
-              <option value="paper">Paper</option>
-              <option value="live">Live</option>
-              <option value="sandbox">Sandbox</option>
-              <option value="custom">Custom</option>
+              {environmentOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
             </select>
           </label>
           {state.environment === "live" ? (
@@ -4055,7 +4054,7 @@ function ProviderReadinessChecklist({
   const credentialsReady = state.dirty
     ? fieldDefinitions
       .filter((definition) => definition.required)
-      .every((definition) => state.values[definition.field].trim().length > 0)
+      .every((definition) => (state.values[definition.field] ?? "").trim().length > 0)
     : row.credentialStatus !== "missing";
   const verified = !state.verificationFailed && row.verificationStatus === "verified";
   const fallbackSet = row.fallbackStatus !== "missing";
@@ -4082,11 +4081,14 @@ function createProviderInlineState(row: {
   environmentLabel: string;
   credentialStatus: "present" | "missing" | "not-required";
   verificationStatus: "verified" | "pending" | "failed";
+  credentialFields: ProviderCredentialFieldMetadata[];
+  environmentOptions: ProviderEnvironmentOption[];
 }): ProviderInlineState {
+  const fieldDefinitions = buildProviderFieldDefinitions(row);
   return {
     editing: false,
-    values: { ...emptyProviderInlineValues },
-    environment: normalizeInlineEnvironment(row.environmentLabel),
+    values: buildEmptyProviderInlineValues(fieldDefinitions),
+    environment: normalizeInlineEnvironment(row.environmentLabel, row.environmentOptions),
     liveAcknowledged: false,
     dirty: false,
     busyAction: null,
@@ -4098,124 +4100,103 @@ function createProviderInlineState(row: {
   };
 }
 
-function normalizeInlineEnvironment(label: string): ProviderInlineState["environment"] {
+function normalizeInlineEnvironment(label: string, options: ProviderEnvironmentOption[] = []): string {
   const value = label.trim().toLowerCase();
-  if (value === "live") return "live";
-  if (value === "sandbox") return "sandbox";
-  if (value === "custom") return "custom";
+  const fromOption = options.find((option) => (
+    option.value.trim().toLowerCase() === value ||
+    option.label.trim().toLowerCase() === value
+  ));
+  if (fromOption) {
+    return fromOption.value;
+  }
+
+  const defaultOption = options.find((option) => option.isDefault) ?? options[0];
+  if (defaultOption) {
+    return defaultOption.value;
+  }
+
+  if (value === "live" || value === "sandbox" || value === "production" || value === "development" || value === "custom") {
+    return value;
+  }
+
   return "paper";
 }
 
-function buildProviderFieldDefinitions(row: { providerId: string; displayName: string }): ProviderInlineFieldDefinition[] {
-  const normalizedId = row.providerId.toLowerCase();
-  const idTokens = normalizedId.split(/[^a-z0-9]+/).filter(Boolean);
-  const displayTokens = row.displayName.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
-  const fromCatalog = PROVIDER_KIND_CATALOG.find((provider) => (
-    idTokens.includes(provider.kind) || displayTokens.includes(provider.kind)
-  ));
-  const fields: ProviderInlineFieldDefinition[] = [];
-
-  if (normalizedId === "quickbooks-fixture") {
-    return [
-      {
-        field: "apiKey",
-        label: "Fixture mode",
-        type: "password",
-        placeholder: "No credentials required",
-        helpText: "The fixture provider imports deterministic read-only GL evidence.",
-        required: false
-      }
-    ];
+function buildProviderFieldDefinitions(row: {
+  credentialStatus?: "present" | "missing" | "not-required";
+  credentialFields?: ProviderCredentialFieldMetadata[] | null;
+}): ProviderInlineFieldDefinition[] {
+  const metadata = row.credentialFields ?? [];
+  if (metadata.length > 0) {
+    return metadata.map((field) => ({
+      field: field.name,
+      label: field.label,
+      type: providerInputType(field.inputKind),
+      placeholder: field.placeholder ?? "Stored server-side and masked after save",
+      helpText: field.helpText ?? "Stored in Meridian's encrypted local provider store and masked after save.",
+      required: field.required
+    }));
   }
 
-  if (normalizedId === "quickbooks") {
-    return [
-      {
-        field: "ClientId",
-        label: "Client ID",
-        type: "password",
-        placeholder: "QUICKBOOKS_CLIENT_ID",
-        helpText: "Stored in Meridian's encrypted local provider vault.",
-        required: true
-      },
-      {
-        field: "ClientSecret",
-        label: "Client secret",
-        type: "password",
-        placeholder: "QUICKBOOKS_CLIENT_SECRET",
-        helpText: "Used only server-side for OAuth token refresh.",
-        required: true
-      },
-      {
-        field: "RefreshToken",
-        label: "Refresh token",
-        type: "password",
-        placeholder: "QUICKBOOKS_REFRESH_TOKEN",
-        helpText: "Token exchange refreshes read-only API access and stores rotated tokens locally.",
-        required: true
-      },
-      {
-        field: "RealmId",
-        label: "Company realm ID",
-        type: "text",
-        placeholder: "QUICKBOOKS_REALM_ID",
-        helpText: "Selects the QuickBooks Online company to read.",
-        required: true
-      },
-      {
-        field: "CompanyName",
-        label: "Company name",
-        type: "text",
-        placeholder: "Meridian-Dev",
-        helpText: "Optional display label for the selected QuickBooks company.",
-        required: false
-      }
-    ];
+  if (row.credentialStatus === "not-required") {
+    return [];
   }
 
-  if (fromCatalog?.needsApiKey !== false) {
-    fields.push({
-      field: "apiKey",
-      label: "API key",
-      type: "password",
-      placeholder: "Stored server-side and masked after save",
-      helpText: "Required for provider credential verification.",
-      required: true
-    });
-  }
-  if (fromCatalog?.needsApiSecret) {
-    fields.push({
-      field: "apiSecret",
-      label: "API secret",
-      type: "password",
-      placeholder: "Paste secure secret for this provider",
-      helpText: "Secret is cleared from browser state after save.",
-      required: true
-    });
-  }
-  if (fromCatalog?.needsEndpoint) {
-    fields.push({
-      field: "endpoint",
-      label: "Endpoint URL",
-      type: "url",
-      placeholder: "https://api.provider.com",
-      helpText: "Used when provider requires a custom endpoint.",
-      required: true
-    });
-  }
-
-  if (fields.length === 0) {
-    fields.push({
-      field: "apiKey",
+  return [
+    {
+      field: "CredentialReference",
       label: "Credential reference",
       type: "password",
-      placeholder: "Optional credential or token",
-      helpText: "Provider metadata marks credentials as optional.",
-      required: false
-    });
+      placeholder: "Stored server-side and masked after save",
+      helpText: "Fallback credential field used only when provider metadata is unavailable.",
+      required: row.credentialStatus === "missing"
+    }
+  ];
+}
+
+function providerInputType(kind: ProviderCredentialFieldMetadata["inputKind"]): ProviderInlineFieldDefinition["type"] {
+  if (kind === "Url") {
+    return "url";
   }
 
-  return fields;
+  if (kind === "Text") {
+    return "text";
+  }
+
+  return "password";
+}
+
+function buildEmptyProviderInlineValues(definitions: ProviderInlineFieldDefinition[]): Record<ProviderInlineField, string> {
+  if (definitions.length === 0) {
+    return { ...emptyProviderInlineValues };
+  }
+
+  return Object.fromEntries(definitions.map((definition) => [definition.field, ""]));
+}
+
+function buildProviderEnvironmentOptions(options: ProviderEnvironmentOption[], currentEnvironment: string): ProviderEnvironmentOption[] {
+  const base = options.length > 0
+    ? options
+    : [
+        { value: "paper", label: "Paper", isDefault: true },
+        { value: "live", label: "Live", isDefault: false },
+        { value: "sandbox", label: "Sandbox", isDefault: false },
+        { value: "custom", label: "Custom", isDefault: false }
+      ];
+  const current = currentEnvironment.trim();
+  if (!current || base.some((option) => option.value === current)) {
+    return base;
+  }
+
+  return [
+    {
+      value: current,
+      label: current.toUpperCase(),
+      isDefault: false,
+      helpText: "Current provider environment from the server."
+    },
+    ...base
+  ];
 }
 
 function filterProviderRow(

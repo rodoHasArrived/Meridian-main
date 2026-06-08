@@ -270,6 +270,10 @@ retained as compatibility payloads while WPF and new consumers move to the Strat
 The workstation bootstrap contract in `Workstation/WorkstationBootstrapDtos.cs` now exposes
 `WorkstationStrategyPayload` as the canonical payload for `/api/workstation/strategy`;
 `/api/workstation/research` remains a compatibility alias for existing clients.
+Data upload template and preview contracts live under `Workstation/DataUploadDtos.cs`. The Data
+bootstrap payload includes the upload-template catalog so browser and WPF clients can render the
+same trade, transaction, asset-information, and entity-configuration intake templates while upload
+preview results remain retained source evidence, validation issues, and bounded sample rows only.
 The same workstation contract file owns the multi-asset operational coverage DTOs returned by
 `/api/workstation/portfolio/multi-asset-coverage`: `MultiAssetCoverageSummaryDto`,
 `MultiAssetClassCoverageDto`, `MultiAssetEvidenceRequirementDto`, and

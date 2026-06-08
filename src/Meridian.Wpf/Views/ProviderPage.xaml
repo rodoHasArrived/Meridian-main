@@ -77,120 +77,31 @@
                 </Grid>
             </Border>
 
-            <Grid Margin="0,0,0,24">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="16" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <Border Grid.Column="0" Style="{StaticResource CardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="Operator Workflow" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
-                        <TextBlock Text="Use this page to confirm provider readiness, tune backfill priority, run a dry plan, and keep an audit trail of configuration changes."
-                                   Style="{StaticResource CardDescriptionStyle}" />
-                        <WrapPanel Margin="0,16,0,0">
-                            <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,10,10">
-                                <TextBlock Text="1. Validate configuration"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                            </Border>
-                            <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,10,10">
-                                <TextBlock Text="2. Review fallback chain"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                            </Border>
-                            <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,10,10">
-                                <TextBlock Text="3. Preview dry-run selection"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                            </Border>
-                            <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,10,10">
-                                <TextBlock Text="4. Commit changes with audit visibility"
-                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                            </Border>
-                        </WrapPanel>
-                    </StackPanel>
-                </Border>
-
-                <Border Grid.Column="2" Style="{StaticResource CardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="Streaming Providers" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
-                        <TextBlock Text="The most common operator-configured streaming sources are surfaced here for quick review before deeper tuning below."
-                                   Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,16" />
-
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="12" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-
-                            <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource CompactCardStyle}" Margin="0,0,0,12">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <TextBlock Text="Interactive Brokers" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                        <TextBlock Text="Depth and tick-by-tick streaming via TWS or Gateway."
-                                                   Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
-                                    </StackPanel>
-                                    <Button Grid.Column="1" Content="Configure" Style="{StaticResource SecondaryButtonStyle}" Click="ConfigureProvider_Click" Margin="12,0,0,0" VerticalAlignment="Center" />
-                                </Grid>
-                            </Border>
-
-                            <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource CompactCardStyle}" Margin="0,0,0,12">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <TextBlock Text="Alpaca" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                        <TextBlock Text="WebSocket trades and quotes with an accessible free tier."
-                                                   Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
-                                    </StackPanel>
-                                    <Button Grid.Column="1" Content="Configure" Style="{StaticResource SecondaryButtonStyle}" Click="ConfigureProvider_Click" Margin="12,0,0,0" VerticalAlignment="Center" />
-                                </Grid>
-                            </Border>
-
-                            <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource CompactCardStyle}" Margin="0,0,0,12">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <TextBlock Text="Polygon" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                        <TextBlock Text="Resilient streaming with retry and circuit-breaker patterns."
-                                                   Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
-                                    </StackPanel>
-                                    <Button Grid.Column="1" Content="Configure" Style="{StaticResource SecondaryButtonStyle}" Click="ConfigureProvider_Click" Margin="12,0,0,0" VerticalAlignment="Center" />
-                                </Grid>
-                            </Border>
-
-                            <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Style="{StaticResource CompactCardStyle}">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <TextBlock Text="NYSE" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                        <TextBlock Text="Hybrid streaming and historical coverage for exchange-driven workflows."
-                                                   Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
-                                    </StackPanel>
-                                    <Button Grid.Column="1" Content="Configure" Style="{StaticResource SecondaryButtonStyle}" Click="ConfigureProvider_Click" Margin="12,0,0,0" VerticalAlignment="Center" />
-                                </Grid>
-                            </Border>
-                        </Grid>
-                    </StackPanel>
-                </Border>
-            </Grid>
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                <StackPanel>
+                    <TextBlock Text="Backfill Operator Workflow" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
+                    <TextBlock Text="Use this page to tune historical provider priority, rate limits, fallback selection, dry-run plans, and backfill audit visibility. Provider status, credentials, routing, diagnostics, and recovery actions are managed from Provider Health and Settings."
+                               Style="{StaticResource CardDescriptionStyle}" />
+                    <WrapPanel Margin="0,16,0,0">
+                        <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,10,10">
+                            <TextBlock Text="1. Validate configuration"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                        </Border>
+                        <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,10,10">
+                            <TextBlock Text="2. Tune priority and rate limits"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                        </Border>
+                        <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,10,10">
+                            <TextBlock Text="3. Preview fallback and dry-run plan"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                        </Border>
+                        <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,10,10">
+                            <TextBlock Text="4. Commit changes with audit visibility"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                        </Border>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
 
             <!-- ================================================ -->
             <!-- Backfill Provider Settings Card (Phase 1)        -->

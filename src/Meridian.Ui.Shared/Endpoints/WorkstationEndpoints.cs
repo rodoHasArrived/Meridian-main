@@ -91,6 +91,7 @@ public static partial class WorkstationEndpoints
         MapStrategyEngineEndpoints(group, jsonOptions);
         MapFeatureCapabilityEndpoints(group, jsonOptions);
         MapFamilyOfficeEndpoints(group);
+        MapDataUploadEndpoints(group, jsonOptions);
 
         group.MapGet("/workflow-summary", async (
             bool? hasOperatingContext,
@@ -2689,8 +2690,9 @@ public static partial class WorkstationEndpoints
             return BuildStrategyFallbackPayload();
         }
 
-        var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false))
-            .Take(6)
+        var runs = (await readService
+                .GetRunsAsync(new StrategyRunHistoryQuery(Limit: 6), context.RequestAborted)
+                .ConfigureAwait(false))
             .ToArray();
         var runDetails = await Task.WhenAll(
                 runs.Select(run => readService.GetRunDetailAsync(run.RunId, context.RequestAborted)))
@@ -2751,8 +2753,9 @@ public static partial class WorkstationEndpoints
             return BuildStrategyBriefingFallback();
         }
 
-        var runs = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false))
-            .Take(10)
+        var runs = (await readService
+                .GetRunsAsync(new StrategyRunHistoryQuery(Limit: 10), context.RequestAborted)
+                .ConfigureAwait(false))
             .ToArray();
         var details = await Task.WhenAll(
                 runs.Select(run => readService.GetRunDetailAsync(run.RunId, context.RequestAborted)))
@@ -3842,6 +3845,7 @@ public static partial class WorkstationEndpoints
             Providers: providers,
             Backfills: backfills,
             Exports: [],
+            UploadTemplates: BuildDataUploadTemplateCatalog(),
             KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
     }
 
@@ -3904,6 +3908,7 @@ public static partial class WorkstationEndpoints
                 new WorkstationDataExportRecord("EX-2196", "python-pandas", "strategy pack", "Ready", "118k", "7m ago"),
                 new WorkstationDataExportRecord("EX-2198", "postgresql", "ops warehouse", "Attention", "42k", "9m ago")
             ],
+            UploadTemplates: BuildDataUploadTemplateCatalog(),
             KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
     }
 
@@ -4485,8 +4490,9 @@ public static partial class WorkstationEndpoints
         StrategyRunDetail?[] runDetailsForCashFlow = [];
         if (readService is not null)
         {
-            allRuns = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false))
-                .Take(12)
+            allRuns = (await readService
+                    .GetRunsAsync(new StrategyRunHistoryQuery(Limit: 12), context.RequestAborted)
+                    .ConfigureAwait(false))
                 .ToArray();
 
             // Fetch details for the most recent runs to power the cash-flow summary.

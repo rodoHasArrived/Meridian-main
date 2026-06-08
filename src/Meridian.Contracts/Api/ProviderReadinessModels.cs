@@ -57,7 +57,9 @@ public sealed record ProviderReadinessRowDto(
     string RecommendedAction,
     string ActionHref,
     IReadOnlyList<ProviderReadinessEvidenceDto> Evidence,
-    IReadOnlyList<ProviderRecoveryActionDto> RecoveryActions);
+    IReadOnlyList<ProviderRecoveryActionDto> RecoveryActions,
+    IReadOnlyList<ProviderCredentialFieldMetadataDto>? CredentialFields = null,
+    IReadOnlyList<ProviderEnvironmentOptionDto>? EnvironmentOptions = null);
 
 public sealed record ProviderReadinessEvidenceDto(
     ProviderReadinessEvidenceKindDto Kind,

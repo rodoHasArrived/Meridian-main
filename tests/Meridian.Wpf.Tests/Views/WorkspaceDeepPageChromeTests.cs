@@ -112,17 +112,13 @@ public sealed class WorkspaceDeepPageChromeTests
     }
 
     [Theory]
-    [InlineData(@"src\Meridian.Wpf\Views\AnalysisExportPage.xaml", "EmbeddedShellHeaderStackPanelStyle")]
     [InlineData(@"src\Meridian.Wpf\Views\SymbolMappingPage.xaml", "EmbeddedShellHeaderGridStyle")]
     [InlineData(@"src\Meridian.Wpf\Views\RetentionAssurancePage.xaml", "EmbeddedShellHeaderStackPanelStyle")]
-    [InlineData(@"src\Meridian.Wpf\Views\DataExportPage.xaml", "EmbeddedShellHeroCardStyle")]
     [InlineData(@"src\Meridian.Wpf\Views\SettingsPage.xaml", "EmbeddedShellHeroCardStyle")]
     [InlineData(@"src\Meridian.Wpf\Views\WelcomePage.xaml", "EmbeddedShellHeroCardStyle")]
     [InlineData(@"src\Meridian.Wpf\Views\MessagingHubPage.xaml", "EmbeddedShellCompactHeaderCardStyle")]
     [InlineData(@"src\Meridian.Wpf\Views\NotificationCenterPage.xaml", "EmbeddedShellCompactHeaderCardStyle")]
     [InlineData(@"src\Meridian.Wpf\Views\SecurityMasterPage.xaml", "EmbeddedShellCompactHeaderCardStyle")]
-    [InlineData(@"src\Meridian.Wpf\Views\ServiceManagerPage.xaml", "EmbeddedShellHeroCardStyle")]
-    [InlineData(@"src\Meridian.Wpf\Views\ProviderHealthPage.xaml", "EmbeddedShellHeroCardStyle")]
     [InlineData(@"src\Meridian.Wpf\Views\DiagnosticsPage.xaml", "EmbeddedShellHeroCardStyle")]
     [InlineData(@"src\Meridian.Wpf\Views\DataQualityPage.xaml", "WorkspaceCommandBarControl")]
     [InlineData(@"src\Meridian.Wpf\Views\DataQualityPage.xaml", "WorkspaceInteractionPanel")]
@@ -131,6 +127,343 @@ public sealed class WorkspaceDeepPageChromeTests
     {
         var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(relativePath);
         File.ReadAllText(absolutePath).Should().Contain(expectedMarker);
+    }
+
+    [Fact]
+    public void ProviderHealthPage_ShouldUseCompactFreshnessChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\ProviderHealthPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().Contain("ProviderHealthInlineRefreshButton");
+        xaml.Should().Contain("ProviderManagementCenter");
+        xaml.Should().Contain("DenseDataGridControl");
+        xaml.Should().Contain("InspectorPanelControl");
+    }
+
+    [Fact]
+    public void ServiceManagerPage_ShouldUseCompactWorkbenchChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\ServiceManagerPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().Contain("ServiceManagerPostureStrip");
+        xaml.Should().Contain("ServiceManagerControlWorkbench");
+        xaml.Should().Contain("ServiceManagerRuntimeInspector");
+        xaml.Should().Contain("ServiceManagerActionInspector");
+    }
+
+    [Fact]
+    public void SystemHealthPage_ShouldUseCompactDenseTablesAndInspectorChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\SystemHealthPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().NotContain("<ListView");
+        xaml.Should().Contain("SystemHealthActionStrip");
+        xaml.Should().Contain("SystemHealthWorkbench");
+        xaml.Should().Contain("SystemHealthProviderHealthGrid");
+        xaml.Should().Contain("SystemHealthEventsGrid");
+        xaml.Should().Contain("SystemHealthTriageBriefingCard");
+        xaml.Should().Contain("SystemHealthProviderInspector");
+        xaml.Should().Contain("SystemHealthEventInspector");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+    }
+
+    [Fact]
+    public void DirectLendingPage_ShouldUseCompactDenseTablesAndInspectorChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\DirectLendingPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("<DataGrid");
+        xaml.Should().NotContain("SectionCardStyle");
+        xaml.Should().Contain("DirectLendingActionStrip");
+        xaml.Should().Contain("DirectLendingWorkbench");
+        xaml.Should().Contain("DirectLendingLoansGrid");
+        xaml.Should().Contain("DirectLendingAccrualsGrid");
+        xaml.Should().Contain("DirectLendingCashTransactionsGrid");
+        xaml.Should().Contain("DirectLendingLoanInspector");
+        xaml.Should().Contain("DirectLendingLoanActionInspector");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+    }
+
+    [Fact]
+    public void AnalysisExportPage_ShouldUseCompactDenseTableAndInspectorChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\AnalysisExportPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeaderStackPanelStyle");
+        xaml.Should().NotContain("<DataGrid");
+        xaml.Should().Contain("AnalysisExportActionStrip");
+        xaml.Should().Contain("AnalysisExportWorkbench");
+        xaml.Should().Contain("AnalysisExportRecentExportsGrid");
+        xaml.Should().Contain("AnalysisExportReadinessCard");
+        xaml.Should().Contain("AnalysisExportRecentExportInspector");
+        xaml.Should().Contain("AnalysisExportActionInspector");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+    }
+
+    [Fact]
+    public void ClusterStatusPage_ShouldUseCompactDenseTableAndInspectorChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\ClusterStatusPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("<DataGrid");
+        xaml.Should().Contain("ClusterStatusActionStrip");
+        xaml.Should().Contain("ClusterStatusPostureCard");
+        xaml.Should().Contain("ClusterStatusWorkbench");
+        xaml.Should().Contain("ClusterStatusNodesGrid");
+        xaml.Should().Contain("ClusterStatusSummaryInspector");
+        xaml.Should().Contain("ClusterStatusSelectionInspector");
+        xaml.Should().Contain("ClusterStatusActionInspector");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+    }
+
+    [Fact]
+    public void DataExportPage_ShouldUseCompactReadinessChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\DataExportPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().Contain("DataExportReadinessCard");
+        xaml.Should().Contain("DataExportRunButton");
+        xaml.Should().Contain("DataExportScheduleReadinessCard");
+        xaml.Should().Contain("ToolTip=\"{Binding ExportReadinessDetail}\"");
+        xaml.Should().Contain("ToolTip=\"{Binding ScheduleReadinessDetail}\"");
+    }
+
+    [Fact]
+    public void DataSourcesPage_ShouldUseCompactSourceSetupChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\DataSourcesPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().Contain("DataSourcesEditReadinessCard");
+        xaml.Should().Contain("DataSourcesSaveSourceButton");
+        xaml.Should().Contain("ToolTip=\"{Binding SourceSetupReadinessDetail}\"");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+    }
+
+    [Fact]
+    public void ActivityLogPage_ShouldUseCompactActionChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\ActivityLogPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().Contain("ActivityLogActionStrip");
+        xaml.Should().Contain("ActivityLogExportButton");
+        xaml.Should().Contain("ActivityLogClearButton");
+        xaml.Should().Contain("ToolTip=\"{Binding ExportVisibleLogsTooltip}\"");
+        xaml.Should().Contain("ToolTip=\"{Binding ClearLogTooltip}\"");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+    }
+
+    [Fact]
+    public void OrderBookPage_ShouldUseCompactLadderChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\OrderBookPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().Contain("OrderBookActionStrip");
+        xaml.Should().Contain("OrderBookSymbolSelector");
+        xaml.Should().Contain("OrderBookDepthSelector");
+        xaml.Should().Contain("OrderBookPostureCard");
+        xaml.Should().Contain("OrderBookEmptyStatePanel");
+    }
+
+    [Fact]
+    public void WatchlistPage_ShouldUseDenseTableAndInspectorChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\WatchlistPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().NotContain("WatchlistCardStyle");
+        xaml.Should().Contain("WatchlistActionStrip");
+        xaml.Should().Contain("WatchlistWorkbench");
+        xaml.Should().Contain("WorkstationTableInspectorControl");
+        xaml.Should().Contain("WatchlistLibraryGrid");
+        xaml.Should().Contain("WatchlistSelectionInspector");
+        xaml.Should().Contain("WatchlistActionInspector");
+    }
+
+    [Fact]
+    public void BackfillPage_ShouldUseCompactActionChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\BackfillPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().Contain("BackfillActionStrip");
+        xaml.Should().Contain("BackfillWizardButton");
+        xaml.Should().Contain("BackfillValidateDataButton");
+        xaml.Should().Contain("BackfillStartReadinessCard");
+        xaml.Should().Contain("ToolTip=\"{Binding StartReadinessDetail}\"");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+    }
+
+    [Fact]
+    public void DataQualityPage_ShouldUseCompactFreshnessAndCommandChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\DataQualityPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().Contain("DataQualityFreshnessStrip");
+        xaml.Should().Contain("WorkspaceCommandBarControl");
+        xaml.Should().Contain("WorkspaceInteractionPanel");
+        xaml.Should().Contain("DataQualitySymbolQualityGrid");
+    }
+
+    [Fact]
+    public void AccountingConfigurePage_ShouldUseCompactActionChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\AccountingConfigurePage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().Contain("AccountingConfigureActionStrip");
+        xaml.Should().Contain("AccountingConfigureRefreshButton");
+        xaml.Should().Contain("AccountingConfigureSeedBaselineButton");
+        xaml.Should().Contain("AccountingConfigureActivateButton");
+        xaml.Should().Contain("AccountingConfigureTabs");
+    }
+
+    [Fact]
+    public void StrategyRunsPage_ShouldUseCompactRunWorkbenchChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\StrategyRunsPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().Contain("StrategyRunsActionStrip");
+        xaml.Should().Contain("StrategyRunsGrid");
+        xaml.Should().Contain("StrategyRunsSelectionInspector");
+        xaml.Should().Contain("StrategyRunsInspectorTabs");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+    }
+
+    [Fact]
+    public void RunPortfolioPage_ShouldUseCompactDenseTableAndInspectorChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\RunPortfolioPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().Contain("RunPortfolioActionStrip");
+        xaml.Should().Contain("RunPortfolioWorkbench");
+        xaml.Should().Contain("RunPortfolioPositionsGrid");
+        xaml.Should().Contain("RunPortfolioSelectionInspector");
+        xaml.Should().Contain("RunPortfolioActionInspector");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+    }
+
+    [Fact]
+    public void AccountPortfolioPage_ShouldUseCompactDenseTableAndInspectorChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\AccountPortfolioPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().NotContain("<DataGrid");
+        xaml.Should().Contain("AccountPortfolioActionStrip");
+        xaml.Should().Contain("AccountPortfolioWorkbench");
+        xaml.Should().Contain("AccountPortfolioPositionsGrid");
+        xaml.Should().Contain("AccountPortfolioSelectionInspector");
+        xaml.Should().Contain("AccountPortfolioActionInspector");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+    }
+
+    [Fact]
+    public void AggregatePortfolioPage_ShouldUseCompactDenseTableAndInspectorChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\AggregatePortfolioPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().NotContain("<DataGrid");
+        xaml.Should().Contain("AggregatePortfolioActionStrip");
+        xaml.Should().Contain("AggregatePortfolioWorkbench");
+        xaml.Should().Contain("AggregatePortfolioPositionsGrid");
+        xaml.Should().Contain("AggregatePortfolioSelectionInspector");
+        xaml.Should().Contain("AggregatePortfolioActionInspector");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+    }
+
+    [Fact]
+    public void RunLedgerPage_ShouldUseCompactDenseTablesAndInspectorChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\RunLedgerPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().Contain("RunLedgerActionStrip");
+        xaml.Should().Contain("RunLedgerWorkbench");
+        xaml.Should().Contain("RunLedgerTrialBalanceGrid");
+        xaml.Should().Contain("RunLedgerJournalGrid");
+        xaml.Should().Contain("RunLedgerSelectionInspector");
+        xaml.Should().Contain("RunLedgerActionInspector");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+    }
+
+    [Fact]
+    public void RunRiskPage_ShouldUseCompactAttributionWorkbenchChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\RunRiskPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().Contain("RunRiskActionStrip");
+        xaml.Should().Contain("RunRiskAttributionWorkbench");
+        xaml.Should().Contain("RunRiskAttributionGrid");
+        xaml.Should().Contain("RunRiskAttributionInspector");
+        xaml.Should().Contain("RunRiskAttributionActionInspector");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+    }
+
+    [Fact]
+    public void RunDetailPage_ShouldUseCompactParameterWorkbenchChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\RunDetailPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().Contain("RunDetailActionStrip");
+        xaml.Should().Contain("RunDetailWorkbench");
+        xaml.Should().Contain("RunDetailParametersGrid");
+        xaml.Should().Contain("RunDetailSummaryInspector");
+        xaml.Should().Contain("RunDetailSelectedParameterInspector");
+        xaml.Should().Contain("RunDetailActionInspector");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+    }
+
+    [Fact]
+    public void RunCashFlowPage_ShouldUseCompactDenseTablesAndInspectorChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\RunCashFlowPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().NotContain("<DataGrid");
+        xaml.Should().Contain("RunCashFlowActionStrip");
+        xaml.Should().Contain("RunCashFlowWorkbench");
+        xaml.Should().Contain("RunCashFlowLadderGrid");
+        xaml.Should().Contain("RunCashFlowEntriesGrid");
+        xaml.Should().Contain("RunCashFlowEntryInspector");
+        xaml.Should().Contain("RunCashFlowLadderInspector");
+        xaml.Should().Contain("RunCashFlowContinuityPosture");
+        xaml.Should().Contain("RunCashFlowActionInspector");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
     }
 
     [Theory]

@@ -19,64 +19,90 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
-        <Border Grid.Row="0" Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="24,24,24,16">
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+        <!-- Action strip -->
+        <Border Grid.Row="0"
+                Style="{StaticResource WorkspaceContextStripStyle}"
+                Margin="24,16,24,12"
+                Padding="14,10"
+                AutomationProperties.AutomationId="OrderBookActionStrip"
+                AutomationProperties.Name="Order Book Action Strip">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" Orientation="Horizontal">
-                <Border Width="44" Height="44" CornerRadius="14"
+                <Border Grid.Column="0"
+                        Width="30"
+                        Height="30"
+                        CornerRadius="8"
+                        Margin="0,0,10,0"
+                        VerticalAlignment="Center"
                         Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                        BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
-                    <TextBlock Text="&#xE8A1;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                               FontSize="24" Foreground="{StaticResource InfoColorBrush}"
-                               VerticalAlignment="Center" HorizontalAlignment="Center" />
+                        BorderBrush="{StaticResource InfoColorBrush}"
+                        BorderThickness="1">
+                    <TextBlock Text="&#xE8A1;"
+                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                               FontSize="16"
+                               Foreground="{StaticResource InfoColorBrush}"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center" />
                 </Border>
-                <StackPanel Margin="12,0,0,0">
-                    <TextBlock Text="Order Book" Style="{StaticResource PageTitleStyle}" />
-                    <TextBlock Text="Depth ladder, spread posture, and live market microstructure monitoring."
-                               Style="{StaticResource CardDescriptionStyle}" />
-                </StackPanel>
-            </StackPanel>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <!-- Symbol Selector -->
-                <TextBlock Text="Symbol:" Foreground="{StaticResource ConsoleTextMutedBrush}"
-                           VerticalAlignment="Center" Margin="0,0,8,0"/>
-                <ComboBox Width="120"
-                          ItemsSource="{Binding AvailableSymbols}"
-                          SelectedItem="{Binding SelectedSymbol, Mode=TwoWay}"
-                          Background="{DynamicResource ConsoleBackgroundMediumBrush}"
-                          Foreground="{DynamicResource ConsoleTextBrush}"
-                          BorderThickness="1" Padding="8,4"
-                          AutomationProperties.AutomationId="OrderBookSymbolSelector"/>
-
-                <!-- Depth Levels -->
-                <TextBlock Text="Levels:" Foreground="{StaticResource ConsoleTextMutedBrush}"
-                           VerticalAlignment="Center" Margin="16,0,8,0"/>
-                <ComboBox Width="80"
-                          ItemsSource="{Binding DepthLevelOptions}"
-                          SelectedItem="{Binding SelectedDepthLevels, Mode=TwoWay}"
-                          Background="{DynamicResource ConsoleBackgroundMediumBrush}"
-                          Foreground="{DynamicResource ConsoleTextBrush}"
-                          BorderThickness="1" Padding="8,4"
-                          AutomationProperties.AutomationId="OrderBookDepthSelector"/>
-
-                <!-- Connection Status -->
-                <Border CornerRadius="999" Padding="8,4" Margin="16,0,0,0"
-                        Background="{StaticResource ChartSurfaceBrush}" BorderBrush="{StaticResource ChartBorderBrush}" BorderThickness="1">
+                <StackPanel Grid.Column="1" Margin="0,0,20,0" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
-                        <Ellipse Width="8" Height="8"
-                                 Fill="{Binding ConnectionIndicatorFill}" VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding ConnectionStatusText}" Margin="8,0,0,0"
-                                   Foreground="{StaticResource ChartAxisLabelBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Text="Order Book"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   Margin="0,0,10,0" />
+                        <TextBlock Text="{Binding OrderFlowPostureScopeText}"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   FontSize="12"
+                                   VerticalAlignment="Center" />
                     </StackPanel>
-                </Border>
-            </StackPanel>
-        </Grid>
+                    <TextBlock Text="{Binding OrderFlowPostureActionText}"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               FontSize="11"
+                               TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <!-- Symbol Selector -->
+                    <TextBlock Text="Symbol:" Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <ComboBox Width="120"
+                              ItemsSource="{Binding AvailableSymbols}"
+                              SelectedItem="{Binding SelectedSymbol, Mode=TwoWay}"
+                              Background="{DynamicResource ConsoleBackgroundMediumBrush}"
+                              Foreground="{DynamicResource ConsoleTextBrush}"
+                              BorderThickness="1" Padding="8,4"
+                              AutomationProperties.AutomationId="OrderBookSymbolSelector"/>
+
+                    <!-- Depth Levels -->
+                    <TextBlock Text="Levels:" Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               VerticalAlignment="Center" Margin="16,0,8,0"/>
+                    <ComboBox Width="80"
+                              ItemsSource="{Binding DepthLevelOptions}"
+                              SelectedItem="{Binding SelectedDepthLevels, Mode=TwoWay}"
+                              Background="{DynamicResource ConsoleBackgroundMediumBrush}"
+                              Foreground="{DynamicResource ConsoleTextBrush}"
+                              BorderThickness="1" Padding="8,4"
+                              AutomationProperties.AutomationId="OrderBookDepthSelector"/>
+
+                    <!-- Connection Status -->
+                    <Border CornerRadius="999" Padding="8,4" Margin="16,0,0,0"
+                            Background="{StaticResource ChartSurfaceBrush}" BorderBrush="{StaticResource ChartBorderBrush}" BorderThickness="1">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8"
+                                     Fill="{Binding ConnectionIndicatorFill}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding ConnectionStatusText}" Margin="8,0,0,0"
+                                       Foreground="{StaticResource ChartAxisLabelBrush}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
         </Border>
 
         <!-- Order-flow posture -->
@@ -337,11 +363,30 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <TextBlock Grid.RowSpan="4"
-                               Text="No order book data available. Select a symbol and ensure connection is active."
-                               Foreground="{StaticResource ChartAxisLabelBrush}"
-                               HorizontalAlignment="Center" VerticalAlignment="Center"
-                               Visibility="{Binding NoDataVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    <StackPanel Grid.RowSpan="4"
+                                MaxWidth="460"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Visibility="{Binding NoDataVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                AutomationProperties.AutomationId="OrderBookEmptyStatePanel"
+                                AutomationProperties.Name="{Binding OrderFlowPostureTitle}">
+                        <TextBlock Text="{Binding OrderFlowPostureTitle}"
+                                   FontSize="15"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,0,0,6"/>
+                        <TextBlock Text="{Binding OrderFlowPostureDetail}"
+                                   Foreground="{StaticResource ChartAxisLabelBrush}"
+                                   TextWrapping="Wrap"
+                                   TextAlignment="Center"/>
+                        <TextBlock Text="{Binding OrderFlowPostureActionText}"
+                                   Foreground="{StaticResource ChartPrimaryLineBrush}"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,10,0,0"/>
+                    </StackPanel>
                 </Grid>
             </Border>
 

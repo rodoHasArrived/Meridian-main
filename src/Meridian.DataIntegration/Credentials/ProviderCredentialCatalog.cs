@@ -202,6 +202,159 @@ public static class ProviderCredentialCatalog
         var trimmed = (providerId ?? string.Empty).Trim();
         return Aliases.TryGetValue(trimmed, out var canonical) ? canonical : trimmed.ToLowerInvariant();
     }
+
+    public static IReadOnlyList<ProviderCredentialFieldMetadataDto> BuildCredentialFields(ProviderCredentialCatalogEntry entry)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+
+        return entry.RequiredFields
+            .Select(field => new ProviderCredentialFieldMetadataDto(
+                field.Name,
+                LabelCredentialField(field.Name),
+                field.Required,
+                ResolveCredentialInputKind(field.Name),
+                ResolveCredentialPlaceholder(field),
+                ResolveCredentialHelpText(entry.ProviderId, field)))
+            .ToArray();
+    }
+
+    public static IReadOnlyList<ProviderEnvironmentOptionDto> BuildEnvironmentOptions(ProviderCredentialCatalogEntry entry)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+
+        var environments = ResolveAllowedEnvironments(entry);
+        if (environments.Count == 0)
+        {
+            return [];
+        }
+
+        var defaultEnvironment = entry.NormalizeEnvironment(entry.DefaultEnvironment);
+        return environments
+            .Select(environment =>
+            {
+                var normalized = entry.NormalizeEnvironment(environment);
+                return new ProviderEnvironmentOptionDto(
+                    normalized,
+                    LabelEnvironment(normalized),
+                    string.Equals(normalized, defaultEnvironment, StringComparison.OrdinalIgnoreCase),
+                    ResolveEnvironmentHelpText(entry.ProviderId, normalized));
+            })
+            .GroupBy(option => option.Value, StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
+            .ToArray();
+    }
+
+    private static IReadOnlyList<string> ResolveAllowedEnvironments(ProviderCredentialCatalogEntry entry)
+        => entry.ProviderId.ToLowerInvariant() switch
+        {
+            "alpaca" => [AlpacaCredentialEnvironment.PaperEnvironment, AlpacaCredentialEnvironment.LiveEnvironment],
+            "plaid" => ["sandbox", "development", "production"],
+            "quickbooks" => ["sandbox", "production"],
+            _ when !string.IsNullOrWhiteSpace(entry.DefaultEnvironment) => [entry.DefaultEnvironment],
+            _ => []
+        };
+
+    private static ProviderCredentialInputKindDto ResolveCredentialInputKind(string fieldName)
+    {
+        if (fieldName.Contains("Url", StringComparison.OrdinalIgnoreCase) ||
+            fieldName.Contains("Endpoint", StringComparison.OrdinalIgnoreCase))
+        {
+            return ProviderCredentialInputKindDto.Url;
+        }
+
+        if (fieldName.Equals("RealmId", StringComparison.OrdinalIgnoreCase) ||
+            fieldName.Equals("CompanyName", StringComparison.OrdinalIgnoreCase))
+        {
+            return ProviderCredentialInputKindDto.Text;
+        }
+
+        return ProviderCredentialInputKindDto.Password;
+    }
+
+    private static string LabelCredentialField(string fieldName)
+        => fieldName switch
+        {
+            "ApiKey" => "API key",
+            "KeyId" => "Key ID",
+            "SecretKey" => "Secret key",
+            "ClientId" => "Client ID",
+            "ClientSecret" => "Client secret",
+            "RefreshToken" => "Refresh token",
+            "RealmId" => "Company realm ID",
+            "CompanyName" => "Company name",
+            "Secret" => "Secret",
+            _ => SplitPascalCase(fieldName)
+        };
+
+    private static string? ResolveCredentialPlaceholder(ProviderCredentialFieldDefinition field)
+        => field.EnvironmentNames.FirstOrDefault()
+           ?? (field.Required ? "Stored server-side and masked after save" : "Optional");
+
+    private static string ResolveCredentialHelpText(string providerId, ProviderCredentialFieldDefinition field)
+        => ProviderCredentialCatalog.NormalizeProviderId(providerId) switch
+        {
+            "alpaca" => "Stored in Meridian's encrypted local provider store for Alpaca account verification.",
+            "plaid" => "Used server-side to create Plaid link tokens and retain bank evidence.",
+            "quickbooks" => field.Name switch
+            {
+                "ClientId" => "Stored in Meridian's encrypted local provider store for OAuth token refresh.",
+                "ClientSecret" => "Used only server-side for OAuth token refresh.",
+                "RefreshToken" => "Token exchange refreshes read-only API access and stores rotated tokens locally.",
+                "RealmId" => "Selects the QuickBooks Online company to read.",
+                "CompanyName" => "Optional display label for the selected QuickBooks company.",
+                _ => "Stored in Meridian's encrypted local provider store and masked after save."
+            },
+            _ when field.Required => "Stored in Meridian's encrypted local provider store and masked after save.",
+            _ => "Optional provider metadata; no secret value is displayed after save."
+        };
+
+    private static string LabelEnvironment(string value)
+        => value switch
+        {
+            "paper" => "Paper",
+            "live" => "Live",
+            "sandbox" => "Sandbox",
+            "development" => "Development",
+            "production" => "Production",
+            _ => SplitPascalCase(value)
+        };
+
+    private static string ResolveEnvironmentHelpText(string providerId, string environment)
+        => ProviderCredentialCatalog.NormalizeProviderId(providerId) switch
+        {
+            "alpaca" when environment.Equals(AlpacaCredentialEnvironment.LiveEnvironment, StringComparison.OrdinalIgnoreCase)
+                => "Live Alpaca credentials remain gated by live-routing acknowledgement and execution controls.",
+            "alpaca" => "Paper is the default Alpaca environment for setup and verification.",
+            "plaid" when environment.Equals("production", StringComparison.OrdinalIgnoreCase)
+                => "Production Plaid credentials are used only for server-owned link and evidence sync flows.",
+            "plaid" => "Plaid sandbox and development environments support institution linking and evidence tests.",
+            "quickbooks" when environment.Equals("production", StringComparison.OrdinalIgnoreCase)
+                => "Production QuickBooks Online access remains read-only GL evidence import.",
+            "quickbooks" => "QuickBooks sandbox is the default for read-only GL evidence setup.",
+            _ => "Provider environment selected for server-side credential verification."
+        };
+
+    private static string SplitPascalCase(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return "Credential";
+        }
+
+        var chars = new List<char>(value.Length + 8);
+        for (var index = 0; index < value.Length; index++)
+        {
+            var current = value[index];
+            if (index > 0 && char.IsUpper(current) && !char.IsWhiteSpace(value[index - 1]))
+            {
+                chars.Add(' ');
+            }
+
+            chars.Add(current);
+        }
+
+        return new string(chars.ToArray());
+    }
 }
 
 public sealed record ProviderCredentialCatalogEntry(

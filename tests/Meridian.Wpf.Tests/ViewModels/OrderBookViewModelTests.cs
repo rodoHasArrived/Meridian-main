@@ -157,11 +157,13 @@ public sealed class OrderBookViewModelTests
         var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\OrderBookViewModel.cs"));
 
         xaml.Should().Contain("OrderBookPostureCard");
+        xaml.Should().Contain("OrderBookActionStrip");
         xaml.Should().Contain("OrderBookPostureTitleText");
         xaml.Should().Contain("OrderBookPostureDetailText");
         xaml.Should().Contain("OrderBookPostureScopeChip");
         xaml.Should().Contain("OrderBookPostureHandoffPanel");
         xaml.Should().Contain("OrderBookPostureActionText");
+        xaml.Should().Contain("OrderBookEmptyStatePanel");
         xaml.Should().Contain("{Binding OrderFlowPostureTitle}");
         xaml.Should().Contain("{Binding OrderFlowPostureDetail}");
         xaml.Should().Contain("{Binding OrderFlowPostureScopeText}");
@@ -172,6 +174,8 @@ public sealed class OrderBookViewModelTests
         xaml.Should().Contain("SelectedItem=\"{Binding SelectedSymbol, Mode=TwoWay}\"");
         xaml.Should().Contain("ItemsSource=\"{Binding DepthLevelOptions}\"");
         xaml.Should().Contain("SelectedItem=\"{Binding SelectedDepthLevels, Mode=TwoWay}\"");
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().NotContain("No order book data available. Select a symbol and ensure connection is active.");
         xaml.Should().NotContain("SelectionChanged=\"Symbol_SelectionChanged\"");
         xaml.Should().NotContain("SelectionChanged=\"Levels_SelectionChanged\"");
         codeBehind.Should().NotContain("FirstSymbolAutoSelected");

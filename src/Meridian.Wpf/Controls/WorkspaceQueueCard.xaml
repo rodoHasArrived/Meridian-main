@@ -1,0 +1,131 @@
+<UserControl x:Class="Meridian.Wpf.Controls.WorkspaceQueueCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             x:Name="Root"
+             mc:Ignorable="d"
+             MinWidth="240"
+             MinHeight="118"
+             d:DesignHeight="150" d:DesignWidth="320"
+             AutomationProperties.AutomationId="{Binding ElementName=Root, Path=CardAutomationId}"
+             AutomationProperties.Name="{Binding ElementName=Root, Path=Title}">
+    <Border x:Name="CardBorder"
+            DataContext="{Binding ElementName=Root}"
+            AutomationProperties.AutomationId="{Binding CardAutomationId}"
+            AutomationProperties.Name="{Binding Title}">
+        <Border.Style>
+            <Style TargetType="Border" BasedOn="{StaticResource WorkspaceQueueCardStyle}">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Tone}" Value="Success">
+                        <Setter Property="BorderThickness" Value="4,1,1,1" />
+                        <Setter Property="BorderBrush" Value="{StaticResource SuccessColorBrush}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Tone}" Value="Danger">
+                        <Setter Property="BorderThickness" Value="4,1,1,1" />
+                        <Setter Property="BorderBrush" Value="{StaticResource ErrorColorBrush}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Tone}" Value="Warning">
+                        <Setter Property="BorderThickness" Value="4,1,1,1" />
+                        <Setter Property="BorderBrush" Value="{StaticResource WarningColorBrush}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Tone}" Value="Info">
+                        <Setter Property="BorderThickness" Value="4,1,1,1" />
+                        <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Border x:Name="IconContainer"
+                    VerticalAlignment="Top"
+                    Margin="0,0,12,0"
+                    AutomationProperties.AutomationId="{Binding IconContainerAutomationId}">
+                <Border.Style>
+                    <Style TargetType="Border" BasedOn="{StaticResource WorkspaceQueueStateIconContainerStyle}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IconGlyph}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IconGlyph}" Value="">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Tone}" Value="Success">
+                                <Setter Property="Background" Value="{StaticResource ConsoleAccentGreenAlpha10Brush}" />
+                                <Setter Property="BorderBrush" Value="{StaticResource SuccessColorBrush}" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Tone}" Value="Danger">
+                                <Setter Property="Background" Value="{StaticResource ConsoleAccentRedAlpha10Brush}" />
+                                <Setter Property="BorderBrush" Value="{StaticResource ErrorColorBrush}" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Tone}" Value="Warning">
+                                <Setter Property="Background" Value="{StaticResource ConsoleAccentOrangeAlpha10Brush}" />
+                                <Setter Property="BorderBrush" Value="{StaticResource WarningColorBrush}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <TextBlock x:Name="IconText"
+                           Text="{Binding IconGlyph}"
+                           AutomationProperties.AutomationId="{Binding IconAutomationId}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource WorkspaceQueueStateIconTextStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IconGlyph}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IconGlyph}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Tone}" Value="Success">
+                                    <Setter Property="Foreground" Value="{StaticResource SuccessColorBrush}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Tone}" Value="Danger">
+                                    <Setter Property="Foreground" Value="{StaticResource ErrorColorBrush}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Tone}" Value="Warning">
+                                    <Setter Property="Foreground" Value="{StaticResource WarningColorBrush}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Border>
+            <StackPanel Grid.Column="1">
+                <TextBlock x:Name="TitleText"
+                           Text="{Binding Title}"
+                           Style="{StaticResource WorkspaceQueueStateTitleTextStyle}"
+                           Margin="0,0,0,4"
+                           AutomationProperties.AutomationId="{Binding TitleAutomationId}" />
+                <TextBlock x:Name="DescriptionText"
+                           Text="{Binding Description}"
+                           Style="{StaticResource WorkspaceQueueStateDescriptionTextStyle}"
+                           AutomationProperties.AutomationId="{Binding DescriptionAutomationId}" />
+                <Button x:Name="ActionButton"
+                        Content="{Binding ActionText}"
+                        Command="{Binding ActionCommand}"
+                        Margin="0,12,0,0"
+                        HorizontalAlignment="Left"
+                        AutomationProperties.AutomationId="{Binding ActionButtonAutomationId}"
+                        AutomationProperties.Name="{Binding ActionText}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ActionCommand}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding ActionText}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

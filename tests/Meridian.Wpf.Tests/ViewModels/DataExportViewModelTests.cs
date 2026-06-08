@@ -212,6 +212,7 @@ public sealed class DataExportViewModelTests
         var codeBehind = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\DataExportPage.xaml.cs"));
 
         xaml.Should().Contain("DataExportReadinessCard");
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
         xaml.Should().Contain("{Binding ExportReadinessTitle}");
         xaml.Should().Contain("{Binding ExportReadinessDetail}");
         xaml.Should().Contain("{Binding ExportScopeText}");
@@ -222,6 +223,8 @@ public sealed class DataExportViewModelTests
         xaml.Should().Contain("SelectedValue=\"{Binding SelectedCompression");
         xaml.Should().Contain("AutomationProperties.AutomationId=\"DataExportRunButton\"");
         xaml.Should().Contain("Command=\"{Binding ExportDataCommand}\"");
+        xaml.Should().Contain("ToolTip=\"{Binding ExportReadinessDetail}\"");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
         xaml.Should().Contain("Value=\"{Binding ExportProgressValue, Mode=OneWay}\"");
         xaml.Should().NotContain("Click=\"ExportData_Click\"");
         xaml.Should().NotContain("ExportFormatCombo_SelectionChanged");
@@ -247,6 +250,7 @@ public sealed class DataExportViewModelTests
         xaml.Should().Contain("SelectedValue=\"{Binding SelectedScheduleFrequency");
         xaml.Should().Contain("AutomationProperties.AutomationId=\"DataExportConfigureScheduleButton\"");
         xaml.Should().Contain("Command=\"{Binding ConfigureScheduledExportCommand}\"");
+        xaml.Should().Contain("ToolTip=\"{Binding ScheduleReadinessDetail}\"");
         xaml.Should().NotContain("EnableScheduledExportsToggle_Changed");
         xaml.Should().NotContain("ScheduleFrequency_SelectionChanged");
 

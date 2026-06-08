@@ -8,7 +8,7 @@ namespace Meridian.Wpf.Views;
 /// Page for exporting collected market data and configuring integrations.
 /// Code-behind is limited to:
 ///  – constructor DI and DataContext wiring
-///  – PasswordBox read (WPF security restriction prevents binding Password)
+///  – secret input read for the database password
 /// All business logic lives in <see cref="DataExportViewModel"/>.
 /// </summary>
 public partial class DataExportPage : Page
@@ -22,23 +22,23 @@ public partial class DataExportPage : Page
         DataContext = _viewModel;
     }
 
-    // ── Database PasswordBox (non-bindable) ───────────────────────────────
+    // ── Database secret input ─────────────────────────────────────────────
 
     private void SetDatabaseCredentials_Click(object sender, RoutedEventArgs e)
     {
-        _viewModel.DatabasePassword = DatabasePasswordBox.Password;
+        _viewModel.DatabasePassword = DatabasePasswordInput.Secret;
         _viewModel.SetDatabaseCredentialsCommand.Execute(null);
     }
 
     private void TestDatabaseConnection_Click(object sender, RoutedEventArgs e)
     {
-        _viewModel.DatabasePassword = DatabasePasswordBox.Password;
+        _viewModel.DatabasePassword = DatabasePasswordInput.Secret;
         _viewModel.TestDatabaseConnectionCommand.Execute(null);
     }
 
     private void ConfigureDatabaseSync_Click(object sender, RoutedEventArgs e)
     {
-        _viewModel.DatabasePassword = DatabasePasswordBox.Password;
+        _viewModel.DatabasePassword = DatabasePasswordInput.Secret;
         _viewModel.ConfigureDatabaseSyncCommand.Execute(null);
     }
 }

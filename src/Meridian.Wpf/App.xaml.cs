@@ -16,6 +16,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Identity;
 using Meridian.Reporting;
 using Meridian.QuantScript;
 using Meridian.QuantScript.Api;
@@ -40,6 +41,7 @@ using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
 using Meridian.Workflow.EnvironmentDesign;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -169,9 +171,18 @@ public partial class App : System.Windows.Application
         AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
         TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
 
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
+        if (!ShowStartupWindow())
+        {
+            WpfServices.LoggingService.Instance.LogWarning("WPF startup cancelled before authentication completed");
+            Shutdown();
+            return;
+        }
+
         // Create and show MainWindow from DI (replaces StartupUri)
         var mainWindow = Services.GetRequiredService<MainWindow>();
         Current.MainWindow = mainWindow;
+        ShutdownMode = ShutdownMode.OnMainWindowClose;
         mainWindow.Show();
         WpfServices.LoggingService.Instance.LogInfo("WPF main window shown");
         mainWindow.ForceStartupWindowRecovery();
@@ -206,6 +217,14 @@ public partial class App : System.Windows.Application
             || string.Equals(envValue, "true", StringComparison.OrdinalIgnoreCase);
     }
 
+    private static bool ShowStartupWindow()
+    {
+        var startupWindow = Services.GetRequiredService<StartupWindow>();
+        Current.MainWindow = startupWindow;
+        WpfServices.LoggingService.Instance.LogInfo("WPF startup window shown");
+        return startupWindow.ShowDialog() == true;
+    }
+
     /// <summary>
     /// Configures services for dependency injection.
     /// C1: DI-first registration — services registered by interface where possible.
@@ -213,6 +232,8 @@ public partial class App : System.Windows.Application
     /// </summary>
     private static void ConfigureServices(IServiceCollection services, Microsoft.Extensions.Configuration.IConfiguration configuration)
     {
+        AddHostEnvironmentFallback(services);
+
         // Register shared desktop HttpClient configurations
         services.AddDesktopHttpClients();
 
@@ -245,6 +266,11 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IStatusService>(sp => sp.GetRequiredService<WpfServices.ApiStatusService>());
         services.AddSingleton<WpfServices.StatusService>(_ => WpfServices.StatusService.Instance);
         services.AddSingleton<WpfServices.FirstRunService>(_ => WpfServices.FirstRunService.Instance);
+        services.AddSingleton<UserProfileRegistry>();
+        services.AddSingleton<LoginSessionService>();
+        services.AddSingleton<WpfServices.DesktopAuthenticationSession>();
+        services.AddTransient<StartupWindowViewModel>();
+        services.AddTransient<StartupWindow>();
         services.AddSingleton<Meridian.Ui.Services.SetupWizardService>();
         services.AddSingleton<WpfServices.ISetupWizardStateService, WpfServices.SetupWizardStateService>();
         services.AddSingleton<WpfServices.ISetupWizardNotificationSink, WpfServices.SetupWizardNotificationSink>();
@@ -463,6 +489,30 @@ public partial class App : System.Windows.Application
         services.AddSingleton<Meridian.Infrastructure.DataSources.DataSourceRegistry>();
         services.AddSingleton<Meridian.ProviderSdk.IPluginLoaderService,
                               Meridian.ProviderSdk.PluginLoaderService>();
+    }
+
+    private static void AddHostEnvironmentFallback(IServiceCollection services)
+    {
+        if (services.Any(static descriptor => descriptor.ServiceType == typeof(IHostEnvironment)))
+        {
+            return;
+        }
+
+        services.AddSingleton<IHostEnvironment>(_ => new DesktopFallbackHostEnvironment());
+    }
+
+    private sealed class DesktopFallbackHostEnvironment : IHostEnvironment
+    {
+        public string EnvironmentName { get; set; } =
+            Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ??
+            Environments.Production;
+
+        public string ApplicationName { get; set; } = "Meridian.Desktop";
+
+        public string ContentRootPath { get; set; } = AppContext.BaseDirectory;
+
+        public IFileProvider ContentRootFileProvider { get; set; } =
+            new PhysicalFileProvider(AppContext.BaseDirectory);
     }
 
     private static void RegisterStrategyWorkspaceServices(IServiceCollection services)

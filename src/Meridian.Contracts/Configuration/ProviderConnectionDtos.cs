@@ -52,6 +52,28 @@ public enum ProviderContinuityHealthDto
     Blocked
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum ProviderCredentialInputKindDto
+{
+    Text,
+    Password,
+    Url
+}
+
+public sealed record ProviderCredentialFieldMetadataDto(
+    string Name,
+    string Label,
+    bool Required,
+    ProviderCredentialInputKindDto InputKind,
+    string? Placeholder = null,
+    string? HelpText = null);
+
+public sealed record ProviderEnvironmentOptionDto(
+    string Value,
+    string Label,
+    bool IsDefault = false,
+    string? HelpText = null);
+
 public sealed record ProviderConnectionRowDto(
     string ProviderId,
     string DisplayName,
@@ -70,7 +92,9 @@ public sealed record ProviderConnectionRowDto(
     string? ExternalAccountId,
     IReadOnlyList<string> AffectedWorkflows,
     string RecommendedAction,
-    string ActionHref);
+    string ActionHref,
+    IReadOnlyList<ProviderCredentialFieldMetadataDto>? CredentialFields = null,
+    IReadOnlyList<ProviderEnvironmentOptionDto>? EnvironmentOptions = null);
 
 public sealed record ProviderCredentialUpsertRequestDto(
     IReadOnlyDictionary<string, string?>? Credentials,

@@ -4,7 +4,7 @@ param(
     [ValidateSet('Debug', 'Release')]
     [string]$Configuration = 'Debug',
     [string]$Framework = 'net10.0-windows10.0.19041.0',
-    [string]$Profile = 'debug-startup',
+    [string]$Profile = 'desktop-development',
     [string]$ProfileRoot = 'scripts/dev/workflow-profiles',
     [switch]$SkipRestore,
     [switch]$SkipBuild,
@@ -211,6 +211,25 @@ foreach ($project in @($uiServicesProject, $wpfProject, $wpfTestsProject)) {
     }
 }
 
+if ($validationErrors.Count -eq 0) {
+    Write-Step 'Check for concurrent desktop builds'
+    $activeRepoBuildProcesses = @(Get-MeridianRepoOwnedBuildProcesses -RepoRoot $repoRoot)
+    if ($activeRepoBuildProcesses.Count -gt 0) {
+        Add-ValidationError 'Active repo-owned build/test/restore/MSBuild or compiler processes were detected. Stop them before desktop bootstrap to avoid WPF temporary-project contention.'
+        foreach ($process in $activeRepoBuildProcesses) {
+            Write-Warn ("PID {0} {1}: {2}" -f $process.ProcessId, $process.Name, $process.CommandLine)
+        }
+    }
+    else {
+        Write-Ok 'No concurrent repo-owned build processes detected'
+    }
+}
+
+if ($validationErrors.Count -eq 0) {
+    Write-Step 'Clean stale WPF temp projects'
+    Invoke-MeridianWpfTempProjectCleanup -RepoRoot $repoRoot -WpfProjectPath $wpfProject | Out-Null
+}
+
 if ($validationErrors.Count -eq 0 -and -not $SkipRestore) {
     Write-Step 'Restore desktop projects'
     $sharedRestoreArgs = Get-MeridianBuildArguments -IsolationKey $buildIsolationKey
@@ -284,6 +303,7 @@ if ($validationErrors.Count -eq 0 -and -not $SkipLaunchSmoke) {
                 '-NoProfile',
                 '-ExecutionPolicy', 'Bypass',
                 '-File', (Join-Path $PSScriptRoot 'run-desktop.ps1'),
+                '-LaunchMode', 'Development',
                 '-Profile', $Profile,
                 '-ProfileRoot', $ProfileRoot,
                 '-Fixture',
@@ -321,13 +341,14 @@ if ($summary.result -eq 'passed') {
     Write-Ok 'Desktop environment validation complete.'
     Write-Host ''
     Write-Host 'Next steps for desktop development:' -ForegroundColor Cyan
-    Write-Host '  1. Launch full fixture desktop: pwsh ./scripts/dev/run-desktop.ps1 -Fixture' -ForegroundColor Gray
-    Write-Host '  2. Build desktop app:          make desktop-build' -ForegroundColor Gray
-    Write-Host '  3. Run desktop tests:          make desktop-test' -ForegroundColor Gray
-    Write-Host '  4. Focused route validation:   make desktop-test-position-blotter-route' -ForegroundColor Gray
-    Write-Host '  5. Workflow automation:        pwsh ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup' -ForegroundColor Gray
-    Write-Host '  6. Blueprint checklist:        python ./scripts/dev/desktop_screen_blueprint_checklist.py --summary' -ForegroundColor Gray
-    Write-Host '  7. Open in Visual Studio:      Start-Process src/Meridian.Wpf/Meridian.Wpf.csproj' -ForegroundColor Gray
+    Write-Host '  1. Launch development desktop: pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development' -ForegroundColor Gray
+    Write-Host '  2. Launch fixture desktop:     pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development -Fixture' -ForegroundColor Gray
+    Write-Host '  3. Build production desktop:   pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly' -ForegroundColor Gray
+    Write-Host '  4. Run desktop tests:          make desktop-test' -ForegroundColor Gray
+    Write-Host '  5. Focused route validation:   make desktop-test-position-blotter-route' -ForegroundColor Gray
+    Write-Host '  6. Workflow automation:        pwsh ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup' -ForegroundColor Gray
+    Write-Host '  7. Blueprint checklist:        python ./scripts/dev/desktop_screen_blueprint_checklist.py --summary' -ForegroundColor Gray
+    Write-Host '  8. Open in Visual Studio:      Start-Process src/Meridian.Wpf/Meridian.Wpf.csproj' -ForegroundColor Gray
 }
 else {
     Write-Fail "Desktop environment validation failed with $($validationErrors.Count) error(s)."

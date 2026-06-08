@@ -10,5 +10,8 @@ describe("EntitySetupWizard", () => {
     expect(screen.getByRole("button", { name: /review and create/i })).toBeInTheDocument();
     expect(screen.getByText(/draft validation summary/i)).toBeInTheDocument();
     expect(screen.getByText(/resulting graph \/ ownership preview/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/legal form/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/lifecycle status/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/beneficial owner/i)).toHaveValue("Flagship GP");
   });
 });

@@ -10,6 +10,7 @@ using System.Windows.Media;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Views;
+using Meridian.Wpf.Workstation.Models;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -53,6 +54,8 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
     private string _visibleScopeText = "0 visible";
     private string _emptyStateTitle = "No watchlists yet";
     private string _emptyStateDescription = "Create or import a watchlist to stage symbols for monitoring and workspace loading.";
+    private WatchlistDisplayModel? _selectedWatchlist;
+    private InspectorPanelModel _selectedWatchlistInspector = BuildEmptyWatchlistInspector();
 
     public WatchlistViewModel(
         WpfServices.WatchlistService watchlistService,
@@ -66,6 +69,18 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
         _navigationService = navigationService;
 
         FilteredWatchlists = new ObservableCollection<WatchlistDisplayModel>();
+        WatchlistTable = new WorkstationTableModel<WatchlistDisplayModel>(
+            FilteredWatchlists,
+            [
+                new("Name", nameof(WatchlistDisplayModel.Name), 180),
+                new("State", nameof(WatchlistDisplayModel.PinnedText), 90),
+                new("Symbols", nameof(WatchlistDisplayModel.SymbolCount), 90),
+                new("Preview", nameof(WatchlistDisplayModel.PreviewSymbolsText), 260),
+                new("Modified", nameof(WatchlistDisplayModel.ModifiedText), 110)
+            ],
+            "Watchlist library",
+            "No watchlists visible",
+            "Create, import, or clear search to make watchlists available.");
 
         CreateWatchlistCommand = new AsyncRelayCommand(CreateWatchlistAsync);
         ImportWatchlistCommand = new AsyncRelayCommand(ImportWatchlistAsync);
@@ -73,6 +88,12 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
         LoadWatchlistCommand = new AsyncRelayCommand<string>(LoadWatchlistAsync);
         EditWatchlistCommand = new AsyncRelayCommand<string>(EditWatchlistAsync);
         PinWatchlistCommand = new AsyncRelayCommand<string>(PinWatchlistAsync);
+        LoadSelectedWatchlistCommand = new AsyncRelayCommand(() => LoadWatchlistAsync(SelectedWatchlist?.Id), CanUseSelectedWatchlist);
+        EditSelectedWatchlistCommand = new AsyncRelayCommand(() => EditWatchlistAsync(SelectedWatchlist?.Id), CanUseSelectedWatchlist);
+        PinSelectedWatchlistCommand = new AsyncRelayCommand(() => PinWatchlistAsync(SelectedWatchlist?.Id), CanUseSelectedWatchlist);
+        ExportSelectedWatchlistCommand = new AsyncRelayCommand(() => ExportWatchlistAsync(SelectedWatchlist?.Id ?? string.Empty), CanUseSelectedWatchlist);
+        DuplicateSelectedWatchlistCommand = new AsyncRelayCommand(() => DuplicateWatchlistAsync(SelectedWatchlist?.Id ?? string.Empty), CanUseSelectedWatchlist);
+        DeleteSelectedWatchlistCommand = new AsyncRelayCommand(() => DeleteWatchlistAsync(SelectedWatchlist?.Id ?? string.Empty), CanUseSelectedWatchlist);
         ExportWatchlistCommand = new AsyncRelayCommand<string>(id => ExportWatchlistAsync(id ?? string.Empty));
         DuplicateWatchlistCommand = new AsyncRelayCommand<string>(id => DuplicateWatchlistAsync(id ?? string.Empty));
         DeleteWatchlistCommand = new AsyncRelayCommand<string>(id => DeleteWatchlistAsync(id ?? string.Empty));
@@ -81,6 +102,8 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
     // ── Collections ───────────────────────────────────────────────────────────
 
     public ObservableCollection<WatchlistDisplayModel> FilteredWatchlists { get; }
+
+    public WorkstationTableModel<WatchlistDisplayModel> WatchlistTable { get; }
 
     // ── Bindable Properties ───────────────────────────────────────────────────
 
@@ -171,6 +194,55 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _emptyStateDescription, value);
     }
 
+    public WatchlistDisplayModel? SelectedWatchlist
+    {
+        get => _selectedWatchlist;
+        set
+        {
+            if (SetProperty(ref _selectedWatchlist, value))
+            {
+                SelectedWatchlistInspector = value is null
+                    ? BuildEmptyWatchlistInspector()
+                    : BuildWatchlistInspector(value);
+                RaiseSelectedWatchlistStateChanged();
+            }
+        }
+    }
+
+    public InspectorPanelModel SelectedWatchlistInspector
+    {
+        get => _selectedWatchlistInspector;
+        private set => SetProperty(ref _selectedWatchlistInspector, value);
+    }
+
+    public bool HasSelectedWatchlist => SelectedWatchlist is not null;
+
+    public string SelectedPinActionLabel => SelectedWatchlist?.IsPinned == true ? "Unpin" : "Pin";
+
+    public string LoadSelectedWatchlistTooltip => HasSelectedWatchlist
+        ? $"Load '{SelectedWatchlist!.Name}' into the Symbols workspace."
+        : "Select a watchlist before loading symbols.";
+
+    public string EditSelectedWatchlistTooltip => HasSelectedWatchlist
+        ? $"Edit '{SelectedWatchlist!.Name}'."
+        : "Select a watchlist before editing.";
+
+    public string PinSelectedWatchlistTooltip => HasSelectedWatchlist
+        ? $"{(SelectedWatchlist!.IsPinned ? "Unpin" : "Pin")} '{SelectedWatchlist.Name}' for quick desk loading."
+        : "Select a watchlist before changing pinned state.";
+
+    public string ExportSelectedWatchlistTooltip => HasSelectedWatchlist
+        ? $"Export '{SelectedWatchlist!.Name}' to JSON."
+        : "Select a watchlist before exporting.";
+
+    public string DuplicateSelectedWatchlistTooltip => HasSelectedWatchlist
+        ? $"Duplicate '{SelectedWatchlist!.Name}'."
+        : "Select a watchlist before duplicating.";
+
+    public string DeleteSelectedWatchlistTooltip => HasSelectedWatchlist
+        ? $"Delete '{SelectedWatchlist!.Name}' after confirmation."
+        : "Select a watchlist before deleting.";
+
     // ── Commands ──────────────────────────────────────────────────────────────
 
     public IAsyncRelayCommand CreateWatchlistCommand { get; }
@@ -179,6 +251,12 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
     public IAsyncRelayCommand<string> LoadWatchlistCommand { get; }
     public IAsyncRelayCommand<string> EditWatchlistCommand { get; }
     public IAsyncRelayCommand<string> PinWatchlistCommand { get; }
+    public IAsyncRelayCommand LoadSelectedWatchlistCommand { get; }
+    public IAsyncRelayCommand EditSelectedWatchlistCommand { get; }
+    public IAsyncRelayCommand PinSelectedWatchlistCommand { get; }
+    public IAsyncRelayCommand ExportSelectedWatchlistCommand { get; }
+    public IAsyncRelayCommand DuplicateSelectedWatchlistCommand { get; }
+    public IAsyncRelayCommand DeleteSelectedWatchlistCommand { get; }
     public IAsyncRelayCommand<string> ExportWatchlistCommand { get; }
     public IAsyncRelayCommand<string> DuplicateWatchlistCommand { get; }
     public IAsyncRelayCommand<string> DeleteWatchlistCommand { get; }
@@ -258,6 +336,7 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
 
     private void ApplyFilter()
     {
+        var selectedId = SelectedWatchlist?.Id;
         var search = _searchText.ToLowerInvariant();
         FilteredWatchlists.Clear();
 
@@ -269,6 +348,11 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
             {
                 FilteredWatchlists.Add(wl);
             }
+        }
+
+        if (!string.IsNullOrWhiteSpace(selectedId))
+        {
+            SelectedWatchlist = FilteredWatchlists.FirstOrDefault(watchlist => watchlist.Id == selectedId);
         }
 
         UpdateVisibility();
@@ -396,6 +480,56 @@ public sealed class WatchlistViewModel : BindableBase, IDisposable
     }
 
     private bool CanClearSearch() => HasActiveSearch;
+
+    private bool CanUseSelectedWatchlist() => SelectedWatchlist is not null;
+
+    private void RaiseSelectedWatchlistStateChanged()
+    {
+        OnPropertyChanged(nameof(HasSelectedWatchlist));
+        OnPropertyChanged(nameof(SelectedPinActionLabel));
+        OnPropertyChanged(nameof(LoadSelectedWatchlistTooltip));
+        OnPropertyChanged(nameof(EditSelectedWatchlistTooltip));
+        OnPropertyChanged(nameof(PinSelectedWatchlistTooltip));
+        OnPropertyChanged(nameof(ExportSelectedWatchlistTooltip));
+        OnPropertyChanged(nameof(DuplicateSelectedWatchlistTooltip));
+        OnPropertyChanged(nameof(DeleteSelectedWatchlistTooltip));
+        LoadSelectedWatchlistCommand.NotifyCanExecuteChanged();
+        EditSelectedWatchlistCommand.NotifyCanExecuteChanged();
+        PinSelectedWatchlistCommand.NotifyCanExecuteChanged();
+        ExportSelectedWatchlistCommand.NotifyCanExecuteChanged();
+        DuplicateSelectedWatchlistCommand.NotifyCanExecuteChanged();
+        DeleteSelectedWatchlistCommand.NotifyCanExecuteChanged();
+    }
+
+    internal static InspectorPanelModel BuildWatchlistInspector(WatchlistDisplayModel selected)
+        => new()
+        {
+            Title = selected.Name,
+            Subtitle = selected.IsPinned ? "Pinned watchlist" : "Watchlist",
+            Detail = selected.SymbolTotal == 0
+                ? "No symbols are retained in this watchlist. Edit it before loading into the workspace."
+                : "Use the selected watchlist to load symbols, edit the retained set, or change quick-loading priority.",
+            Badge = new WorkstationBadgeModel(
+                "State",
+                selected.PinnedText,
+                "\uE735",
+                selected.IsPinned ? WorkspaceTone.Success : WorkspaceTone.Neutral),
+            Facts =
+            [
+                new("Symbols", selected.SymbolCount, selected.PreviewSymbolsText),
+                new("Pinned state", selected.PinnedText, selected.IsPinned ? "Available for quick desk loading." : "Not pinned for quick loading."),
+                new("Last modified", selected.ModifiedText),
+                new("Color", string.IsNullOrWhiteSpace(selected.Color) ? "Default" : selected.Color)
+            ]
+        };
+
+    private static InspectorPanelModel BuildEmptyWatchlistInspector()
+        => new()
+        {
+            Title = "No watchlist selected",
+            Subtitle = "Watchlist inspector",
+            Detail = "Select a watchlist row to load symbols, edit the retained set, or update quick-loading priority."
+        };
 
     private void ClearSearch()
     {

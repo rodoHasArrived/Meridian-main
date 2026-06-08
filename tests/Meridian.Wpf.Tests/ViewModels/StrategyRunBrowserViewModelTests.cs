@@ -502,7 +502,11 @@ public sealed class StrategyRunBrowserViewModelTests
         xaml.Should().Contain("StrategyRunsComparisonPickerPanel");
         xaml.Should().Contain("StrategyRunsComparisonPicker");
         xaml.Should().Contain("StrategyRunsComparisonGuidanceText");
+        xaml.Should().Contain("StrategyRunsActionStrip");
+        xaml.Should().Contain("StrategyRunsRefreshButton");
+        xaml.Should().Contain("StrategyRunsOpenDetailButton");
         xaml.Should().Contain("StrategyRunsSelectionPanel");
+        xaml.Should().Contain("StrategyRunsSelectionInspector");
         xaml.Should().Contain("StrategyRunsSelectionContextText");
         xaml.Should().Contain("StrategyRunsSelectionPerformanceText");
         xaml.Should().Contain("StrategyRunsSelectionEvidenceText");
@@ -522,7 +526,8 @@ public sealed class StrategyRunBrowserViewModelTests
         xaml.Should().Contain("{Binding ComparisonHeaderBText}");
         xaml.Should().Contain("{Binding CanChooseComparisonRun}");
         xaml.Should().Contain("{Binding ComparisonGuidanceText}");
-        xaml.Should().Contain("{DynamicResource EmbeddedShellHeroCardStyle}");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
         xaml.Should().Contain("{DynamicResource CardStyle}");
         xaml.Should().Contain("{DynamicResource SecondaryButtonStyle}");
     }

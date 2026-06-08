@@ -44,6 +44,14 @@ public sealed class FundStructureSetupWorkflowService
         Require(draft.LegalEntity.Name, "legalEntity.name", "Legal entity name is required.", issues);
         Require(draft.LegalEntity.Jurisdiction, "legalEntity.jurisdiction", "Legal entity jurisdiction is required.", issues);
         RequireCurrency(draft.LegalEntity.BaseCurrency, "legalEntity.baseCurrency", issues);
+        foreach (var (owner, index) in (draft.LegalEntity.BeneficialOwners ?? Array.Empty<BeneficialOwnerSummaryDto>()).Select((owner, index) => (owner, index)))
+        {
+            Require(owner.OwnerName, $"legalEntity.beneficialOwners[{index}].ownerName", "Beneficial owner name is required.", issues);
+            if (owner.OwnershipPercent is < 0 or > 100)
+            {
+                issues.Add(Blocker("beneficialOwner.percentRange", "Beneficial owner percent must be between 0 and 100.", $"legalEntity.beneficialOwners[{index}].ownershipPercent"));
+            }
+        }
 
         Require(draft.Vehicle.Code, "vehicle.code", "Vehicle code is required.", issues);
         Require(draft.Vehicle.Name, "vehicle.name", "Vehicle name is required.", issues);
@@ -141,7 +149,21 @@ public sealed class FundStructureSetupWorkflowService
         }
 
         var legalEntity = await _fundStructureService.CreateLegalEntityAsync(
-            new CreateLegalEntityRequest(ids.EntityId, draft.LegalEntity.EntityType, Clean(draft.LegalEntity.Code), Clean(draft.LegalEntity.Name), Clean(draft.LegalEntity.Jurisdiction), CleanCurrency(draft.LegalEntity.BaseCurrency), effectiveFrom, auditActor, CleanOptional(draft.LegalEntity.Description)),
+            new CreateLegalEntityRequest(
+                ids.EntityId,
+                draft.LegalEntity.EntityType,
+                Clean(draft.LegalEntity.Code),
+                Clean(draft.LegalEntity.Name),
+                Clean(draft.LegalEntity.Jurisdiction),
+                CleanCurrency(draft.LegalEntity.BaseCurrency),
+                effectiveFrom,
+                auditActor,
+                CleanOptional(draft.LegalEntity.Description),
+                draft.LegalEntity.LegalForm,
+                draft.LegalEntity.LifecycleStatus,
+                CleanOptional(draft.LegalEntity.RegistrationNumber),
+                CleanBeneficialOwners(draft.LegalEntity.BeneficialOwners),
+                BuildInitialLifecycleEvents(draft.LegalEntity, effectiveFrom, auditActor)),
             ct).ConfigureAwait(false);
 
         var vehicleFundId = fund?.FundId ?? ids.ClientOrFundId;
@@ -261,6 +283,41 @@ public sealed class FundStructureSetupWorkflowService
     private static string CleanCurrency(string value) => value.Trim().ToUpperInvariant();
 
     private static string? CleanOptional(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static IReadOnlyList<BeneficialOwnerSummaryDto> CleanBeneficialOwners(
+        IReadOnlyList<BeneficialOwnerSummaryDto>? beneficialOwners) =>
+        beneficialOwners is null
+            ? []
+            : beneficialOwners
+                .Select(static owner => owner with
+                {
+                    OwnerName = Clean(owner.OwnerName),
+                    OwnerIdentifier = CleanOptional(owner.OwnerIdentifier),
+                    Notes = CleanOptional(owner.Notes)
+                })
+                .Where(static owner => !string.IsNullOrWhiteSpace(owner.OwnerName))
+                .ToList();
+
+    private static IReadOnlyList<LegalEntityLifecycleEventDto> BuildInitialLifecycleEvents(
+        FundStructureSetupLegalEntityDraftDto legalEntity,
+        DateTimeOffset effectiveFrom,
+        string auditActor)
+    {
+        var summary = CleanOptional(legalEntity.InitialLifecycleEventSummary)
+            ?? $"{Clean(legalEntity.Name)} initial legal entity setup.";
+        return
+        [
+            new LegalEntityLifecycleEventDto(
+                Guid.NewGuid(),
+                legalEntity.InitialLifecycleEventKind,
+                DateTimeOffset.UtcNow,
+                auditActor,
+                summary,
+                CleanOptional(legalEntity.InitialLifecycleEvidenceReference),
+                effectiveFrom,
+                EffectiveTo: null)
+        ];
+    }
 
     private sealed record ResolvedIds(Guid OrganizationId, Guid BusinessId, Guid ClientOrFundId, Guid EntityId, Guid VehicleId, Guid InvestmentPortfolioId);
 }

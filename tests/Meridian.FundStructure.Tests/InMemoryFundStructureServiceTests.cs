@@ -95,6 +95,57 @@ public sealed class InMemoryFundStructureServiceTests
     }
 
     [Fact]
+    public async Task UpdateLegalEntityProfileAsync_AppendsLifecycleEventAndUpdatesBeneficialOwners()
+    {
+        var service = CreateStructureService();
+        var now = new DateTimeOffset(2026, 01, 01, 0, 0, 0, TimeSpan.Zero);
+        var entity = await service.CreateLegalEntityAsync(new CreateLegalEntityRequest(
+            Guid.NewGuid(),
+            LegalEntityTypeDto.Vehicle,
+            "SPV-1",
+            "Credit SPV LLC",
+            "US-DE",
+            "USD",
+            now,
+            "test",
+            LegalForm: LegalEntityFormDto.LimitedLiabilityCompany,
+            RegistrationNumber: "DE-SPV-001",
+            BeneficialOwners: [new BeneficialOwnerSummaryDto("Sponsor GP", 100m, IsControlPerson: true)],
+            LifecycleEvents:
+            [
+                new LegalEntityLifecycleEventDto(
+                    Guid.NewGuid(),
+                    LegalEntityLifecycleEventKindDto.Formation,
+                    now,
+                    "test",
+                    "Initial formation.")
+            ]));
+
+        var amendmentEvent = new LegalEntityLifecycleEventDto(
+            Guid.NewGuid(),
+            LegalEntityLifecycleEventKindDto.Amendment,
+            now.AddDays(30),
+            "fund-ops",
+            "Operating agreement amended for SPV rollup.");
+        var updated = await service.UpdateLegalEntityProfileAsync(new UpdateLegalEntityProfileRequest(
+            entity.EntityId,
+            "fund-ops",
+            LifecycleStatus: LegalEntityLifecycleStatusDto.AmendmentPending,
+            BeneficialOwners:
+            [
+                new BeneficialOwnerSummaryDto("Sponsor GP", 80m, IsControlPerson: true),
+                new BeneficialOwnerSummaryDto("Co-investor LLC", 20m)
+            ],
+            LifecycleEvent: amendmentEvent));
+
+        Assert.Equal(LegalEntityFormDto.LimitedLiabilityCompany, updated.LegalForm);
+        Assert.Equal(LegalEntityLifecycleStatusDto.AmendmentPending, updated.LifecycleStatus);
+        Assert.Equal("DE-SPV-001", updated.RegistrationNumber);
+        Assert.Contains(updated.BeneficialOwners ?? [], owner => owner.OwnerName == "Co-investor LLC" && owner.OwnershipPercent == 20m);
+        Assert.Contains(updated.LifecycleEvents ?? [], lifecycleEvent => lifecycleEvent.EventKind == LegalEntityLifecycleEventKindDto.Amendment);
+    }
+
+    [Fact]
     public async Task LinkNodesAsync_WhenParentAndChildAreSameNode_ThrowsInvalidOperation()
     {
         var service = CreateStructureService();

@@ -55,6 +55,33 @@ public sealed record AccountingSystemConnectionMetadataDto(
     string StatusDetail,
     IReadOnlyList<string> MissingFields);
 
+public sealed record AccountingSystemOAuthStartRequestDto(
+    string? ClientId = null,
+    string? ClientSecret = null,
+    string? RedirectUri = null,
+    string? Environment = null,
+    string? CompanyName = null,
+    string? RequestedBy = null);
+
+public sealed record AccountingSystemOAuthStartResultDto(
+    string ProviderId,
+    bool Success,
+    string? AuthorizationUrl,
+    string? State,
+    string Environment,
+    string RedirectUri,
+    string? LastError,
+    IReadOnlyList<string> Warnings);
+
+public sealed record AccountingSystemOAuthCallbackResultDto(
+    string ProviderId,
+    bool Success,
+    string? CompanyId,
+    string? CompanyName,
+    DateTimeOffset CompletedAtUtc,
+    string? LastError,
+    IReadOnlyList<string> Warnings);
+
 public sealed record AccountingSystemImportRequestDto(
     string? ProviderId = null,
     string? FundProfileId = null,

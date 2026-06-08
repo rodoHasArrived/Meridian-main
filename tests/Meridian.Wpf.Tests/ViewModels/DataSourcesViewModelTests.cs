@@ -66,6 +66,7 @@ public sealed class DataSourcesViewModelTests
         var codeBehind = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\DataSourcesPage.xaml.cs"));
 
         xaml.Should().Contain("DataSourcesEditReadinessCard");
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
         xaml.Should().Contain("{Binding SourceSetupReadinessTitle}");
         xaml.Should().Contain("{Binding SourceSetupReadinessDetail}");
         xaml.Should().Contain("{Binding SourceSetupScopeText}");
@@ -82,6 +83,8 @@ public sealed class DataSourcesViewModelTests
         xaml.Should().Contain("Command=\"{Binding DataContext.DeleteSourceCommand, RelativeSource={RelativeSource AncestorType=Page}}\"");
         xaml.Should().Contain("Command=\"{Binding DataContext.ToggleSourceEnabledCommand, RelativeSource={RelativeSource AncestorType=Page}}\"");
         xaml.Should().Contain("IsEnabled=\"{Binding CanSaveSource}\"");
+        xaml.Should().Contain("ToolTip=\"{Binding SourceSetupReadinessDetail}\"");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
         xaml.Should().NotContain("SelectionChanged=\"ProviderCombo_SelectionChanged\"");
         xaml.Should().NotContain("Click=\"EditDataSource_Click\"");
         xaml.Should().NotContain("Click=\"DeleteDataSource_Click\"");
@@ -91,6 +94,6 @@ public sealed class DataSourcesViewModelTests
         codeBehind.Should().NotContain("EditDataSource_Click");
         codeBehind.Should().NotContain("DeleteDataSource_Click");
         codeBehind.Should().NotContain("SourceEnabled_Changed");
-        codeBehind.Should().Contain("PasswordBox.Password cannot be data-bound");
+        codeBehind.Should().Contain("_viewModel.PolygonApiKey = PolygonApiKeyInput.Secret");
     }
 }

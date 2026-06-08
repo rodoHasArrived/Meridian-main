@@ -71,7 +71,30 @@ public sealed record CreateLegalEntityRequest(
     string BaseCurrency,
     DateTimeOffset EffectiveFrom,
     string CreatedBy,
-    string? Description = null);
+    string? Description = null,
+    LegalEntityFormDto LegalForm = LegalEntityFormDto.Unspecified,
+    LegalEntityLifecycleStatusDto LifecycleStatus = LegalEntityLifecycleStatusDto.Active,
+    string? RegistrationNumber = null,
+    IReadOnlyList<BeneficialOwnerSummaryDto>? BeneficialOwners = null,
+    IReadOnlyList<LegalEntityLifecycleEventDto>? LifecycleEvents = null);
+
+public sealed record UpdateLegalEntityProfileRequest(
+    Guid EntityId,
+    string UpdatedBy,
+    LegalEntityTypeDto? EntityType = null,
+    LegalEntityFormDto? LegalForm = null,
+    string? Code = null,
+    string? Name = null,
+    string? Jurisdiction = null,
+    string? BaseCurrency = null,
+    DateTimeOffset? EffectiveFrom = null,
+    DateTimeOffset? EffectiveTo = null,
+    bool? IsActive = null,
+    string? Description = null,
+    string? RegistrationNumber = null,
+    LegalEntityLifecycleStatusDto? LifecycleStatus = null,
+    IReadOnlyList<BeneficialOwnerSummaryDto>? BeneficialOwners = null,
+    LegalEntityLifecycleEventDto? LifecycleEvent = null);
 
 public sealed record CreateInvestmentPortfolioRequest(
     Guid InvestmentPortfolioId,

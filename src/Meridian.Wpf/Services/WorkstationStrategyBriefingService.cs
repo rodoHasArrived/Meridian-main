@@ -1,6 +1,7 @@
 using System.Globalization;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
+using Meridian.Strategies.Models;
 using Meridian.Ui.Services;
 
 namespace Meridian.Wpf.Services;
@@ -64,8 +65,9 @@ public sealed class StrategyBriefingWorkspaceService : IStrategyBriefingWorkspac
         IReadOnlyList<WorkstationWatchlist> localWatchlists,
         CancellationToken ct)
     {
-        var runs = (await _runService.GetRunsAsync(ct: ct).ConfigureAwait(false))
-            .Take(10)
+        var runs = (await _runService
+                .GetRunsAsync(new StrategyRunHistoryQuery(Limit: 10), ct)
+                .ConfigureAwait(false))
             .ToArray();
         var details = await Task.WhenAll(
                 runs.Select(run => _runService.GetRunDetailAsync(run.RunId, ct)))

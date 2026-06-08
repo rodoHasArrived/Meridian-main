@@ -47,6 +47,7 @@ public partial class MainWindow : Window
 
     private Rect? _restoredWindowBounds;
     private int _startupRecoveryAttempts;
+    private bool _globalHotkeysAttached;
 
     private const double DefaultWindowWidth = 1400;
     private const double DefaultWindowHeight = 900;
@@ -81,6 +82,7 @@ public partial class MainWindow : Window
         _fileDropRouter = fileDropRouter ?? throw new ArgumentNullException(nameof(fileDropRouter));
         _windowStateStore = windowStateStore ?? throw new ArgumentNullException(nameof(windowStateStore));
         DataContext = _viewModel;
+        _viewModel.LogoutRequested += OnLogoutRequested;
 
         // Subscribe to keyboard shortcuts
         _keyboardShortcutService.ShortcutInvoked += OnShortcutInvoked;
@@ -147,8 +149,7 @@ public partial class MainWindow : Window
         // Register global (system-wide) hotkeys via WndProc hook.
         var hwndSource = HwndSource.FromHwnd(hwnd);
         hwndSource?.AddHook(WndProc);
-        GlobalHotkeyService.Instance.GlobalHotkeyFired += OnGlobalHotkeyFired;
-        GlobalHotkeyService.Instance.Initialize(hwnd);
+        AttachGlobalHotkeys(hwnd);
 
         var launchArgs = App.GetLaunchArgs();
         var launchRequest = _launchRouter.Parse(launchArgs);
@@ -203,6 +204,7 @@ public partial class MainWindow : Window
         _operatingContextService.ActiveContextChanging -= OnActiveContextChanging;
         _operatingContextService.ActiveContextChanged -= OnActiveContextChanged;
         _operatingContextService.ContextSwitchRequested -= OnContextSwitchRequested;
+        _viewModel.LogoutRequested -= OnLogoutRequested;
         WpfServices.SingleInstanceService.Instance.LaunchArgsReceived -= OnLaunchArgsReceived;
         _startupRecoveryTimer.Stop();
         _startupRecoveryTimer.Tick -= OnStartupRecoveryTick;
@@ -212,8 +214,7 @@ public partial class MainWindow : Window
         ClipboardWatcherService.Instance.Dispose();
 
         // Shutdown global hotkeys to free Win32 registrations immediately.
-        GlobalHotkeyService.Instance.GlobalHotkeyFired -= OnGlobalHotkeyFired;
-        GlobalHotkeyService.Instance.Shutdown();
+        DetachGlobalHotkeys();
 
         _viewModel.Dispose();
     }
@@ -268,6 +269,28 @@ public partial class MainWindow : Window
         }
     }
 
+    private void AttachGlobalHotkeys(IntPtr hwnd)
+    {
+        if (!_globalHotkeysAttached)
+        {
+            GlobalHotkeyService.Instance.GlobalHotkeyFired += OnGlobalHotkeyFired;
+            _globalHotkeysAttached = true;
+        }
+
+        GlobalHotkeyService.Instance.Initialize(hwnd);
+    }
+
+    private void DetachGlobalHotkeys()
+    {
+        if (_globalHotkeysAttached)
+        {
+            GlobalHotkeyService.Instance.GlobalHotkeyFired -= OnGlobalHotkeyFired;
+            _globalHotkeysAttached = false;
+        }
+
+        GlobalHotkeyService.Instance.Shutdown();
+    }
+
     private void OnWindowKeyDown(object sender, KeyEventArgs e)
     {
         // Route key events to keyboard shortcut service
@@ -283,6 +306,66 @@ public partial class MainWindow : Window
         }
 
         _viewModel.HandleShortcut(e.ActionId);
+    }
+
+    private void OnLogoutRequested(object? sender, EventArgs e)
+    {
+        if (!Dispatcher.CheckAccess())
+        {
+            _ = Dispatcher.InvokeAsync(() => OnLogoutRequested(sender, e));
+            return;
+        }
+
+        ShowStartupWindowAfterLogout();
+    }
+
+    private void ShowStartupWindowAfterLogout()
+    {
+        SaveWorkspaceSession();
+        DetachGlobalHotkeys();
+
+        try
+        {
+            Hide();
+            System.Windows.Application.Current.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
+            var startupWindow = App.Services.GetRequiredService<StartupWindow>();
+            startupWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            System.Windows.Application.Current.MainWindow = startupWindow;
+            WpfServices.LoggingService.Instance.LogInfo("WPF startup window shown after logout");
+
+            if (startupWindow.ShowDialog() != true)
+            {
+                WpfServices.LoggingService.Instance.LogWarning("WPF startup cancelled after logout");
+                System.Windows.Application.Current.Shutdown();
+                return;
+            }
+
+            System.Windows.Application.Current.MainWindow = this;
+            System.Windows.Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
+            _viewModel.RefreshAuthenticationState();
+            RootFrame.Navigate(App.Services.GetRequiredService<FundProfileSelectionPage>());
+
+            Show();
+            if (WindowState == WindowState.Minimized)
+            {
+                WindowState = WindowState.Normal;
+            }
+
+            AttachGlobalHotkeys(new WindowInteropHelper(this).Handle);
+            EnsureShellVisibleOnStartup();
+            Activate();
+        }
+        catch (Exception ex)
+        {
+            WpfServices.LoggingService.Instance.LogError("[MainWindow] Failed to show startup window after logout", ex);
+            MessageBox.Show(
+                "Meridian could not reopen the startup login screen after logout. The desktop application will close.",
+                "Meridian logout",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            System.Windows.Application.Current.Shutdown();
+        }
     }
 
     /// <summary>

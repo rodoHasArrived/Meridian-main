@@ -355,6 +355,27 @@ public sealed class ProviderHealthViewModelTests
     }
 
     [Fact]
+    public void BuildProviderManagementCommandGroup_RequiresSelectionForDiagnostics()
+    {
+        var noSelection = ProviderHealthViewModel.BuildProviderManagementCommandGroup();
+
+        var disabledDiagnostics = noSelection.PrimaryCommands.Single(command => command.Id == "RunDiagnostics");
+        disabledDiagnostics.IsEnabled.Should().BeFalse();
+        disabledDiagnostics.DisabledReason.Should().Be("Select a provider before running diagnostics.");
+        disabledDiagnostics.TargetText.Should().Be("No provider selected");
+
+        var selected = ProviderHealthViewModel.BuildProviderManagementCommandGroup(new ProviderManagementRowModel
+        {
+            DisplayName = "Polygon.io"
+        });
+
+        var enabledDiagnostics = selected.PrimaryCommands.Single(command => command.Id == "RunDiagnostics");
+        enabledDiagnostics.IsEnabled.Should().BeTrue();
+        enabledDiagnostics.DisabledReason.Should().BeEmpty();
+        enabledDiagnostics.TargetText.Should().Be("Polygon.io");
+    }
+
+    [Fact]
     public void BuildProviderDiagnosticsChecklist_ShouldMapProviderDiagnosticsToSharedChecklist()
     {
         var row = new ProviderManagementRowModel

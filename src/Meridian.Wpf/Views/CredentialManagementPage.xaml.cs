@@ -41,22 +41,4 @@ public partial class CredentialManagementPage : Page
         _navigationService.NavigateTo("Settings");
     }
 
-    /// <summary>
-    /// Routes PasswordBox changes back to the matching CredentialFieldViewModel
-    /// so the ViewModel stays authoritative for all field values.
-    /// PasswordBox does not support two-way data binding natively.
-    /// </summary>
-    private void CredentialField_PasswordChanged(object sender, RoutedEventArgs e)
-    {
-        if (sender is not PasswordBox box)
-            return;
-
-        var envVarName = box.Tag as string;
-        if (string.IsNullOrEmpty(envVarName))
-            return;
-
-        var field = _viewModel.EditFields.FirstOrDefault(f => f.EnvVarName == envVarName);
-        if (field is not null)
-            field.Value = box.Password;
-    }
 }

@@ -68,9 +68,5 @@ public partial class ProviderPage : Page
         await _viewModel.OnResetProviderAsync(providerId);
     }
 
-    private void ConfigureProvider_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.OnConfigureProvider();
-    }
 }
 

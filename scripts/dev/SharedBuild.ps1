@@ -484,6 +484,99 @@ function Get-MeridianBuildArguments {
     return $args
 }
 
+function Get-MeridianRepoOwnedBuildProcesses {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$RepoRoot
+    )
+
+    if (-not ($IsWindows -or $env:OS -eq 'Windows_NT')) {
+        return @()
+    }
+
+    $resolvedRepoRoot = [System.IO.Path]::GetFullPath($RepoRoot)
+    $processes = @(Get-CimInstance Win32_Process -Filter "Name = 'dotnet.exe' OR Name = 'MSBuild.exe' OR Name = 'testhost.exe' OR Name = 'csc.exe' OR Name = 'VBCSCompiler.exe'" -ErrorAction SilentlyContinue)
+    if ($processes.Count -eq 0) {
+        return @()
+    }
+
+    $repoBuildProcessIds = @(
+        $processes | Where-Object {
+            $_.ProcessId -ne $PID -and
+            $_.CommandLine -and
+            (
+                $_.CommandLine.IndexOf($resolvedRepoRoot, [System.StringComparison]::OrdinalIgnoreCase) -ge 0 -or
+                $_.CommandLine.IndexOf("Meridian.Wpf", [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+            ) -and
+            (
+                $_.Name -eq "MSBuild.exe" -or
+                $_.Name -eq "testhost.exe" -or
+                $_.CommandLine -match '(?i)\bdotnet(\.exe)?"?\s+(build|test|restore|msbuild|clean)\b' -or
+                $_.CommandLine.IndexOf("MSBuild.dll", [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+            )
+        } | Select-Object -ExpandProperty ProcessId
+    )
+
+    return @(
+        $processes | Where-Object {
+            $_.ProcessId -ne $PID -and
+            (
+                $repoBuildProcessIds -contains $_.ProcessId -or
+                (($_.Name -eq "csc.exe" -or $_.Name -eq "VBCSCompiler.exe") -and $repoBuildProcessIds -contains $_.ParentProcessId)
+            )
+        }
+    )
+}
+
+function Invoke-MeridianWpfTempProjectCleanup {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)][string]$RepoRoot,
+        [string]$WpfProjectPath = 'src/Meridian.Wpf/Meridian.Wpf.csproj'
+    )
+
+    $resolvedRepoRoot = [System.IO.Path]::GetFullPath($RepoRoot)
+    $resolvedRepoRootWithSeparator = $resolvedRepoRoot
+    if (-not $resolvedRepoRootWithSeparator.EndsWith([System.IO.Path]::DirectorySeparatorChar)) {
+        $resolvedRepoRootWithSeparator += [System.IO.Path]::DirectorySeparatorChar
+    }
+
+    $resolvedProjectPath = if ([System.IO.Path]::IsPathRooted($WpfProjectPath)) {
+        [System.IO.Path]::GetFullPath($WpfProjectPath)
+    }
+    else {
+        [System.IO.Path]::GetFullPath((Join-Path $resolvedRepoRoot $WpfProjectPath))
+    }
+
+    $projectDirectory = [System.IO.Path]::GetDirectoryName($resolvedProjectPath)
+    if ([string]::IsNullOrWhiteSpace($projectDirectory) -or -not (Test-Path -LiteralPath $projectDirectory -PathType Container)) {
+        return 0
+    }
+
+    $resolvedProjectDirectory = [System.IO.Path]::GetFullPath($projectDirectory)
+    if (-not [string]::Equals($resolvedProjectDirectory, $resolvedRepoRoot, [System.StringComparison]::OrdinalIgnoreCase) -and
+        -not $resolvedProjectDirectory.StartsWith($resolvedRepoRootWithSeparator, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "Refusing to clean WPF temp projects outside the repository: $resolvedProjectDirectory"
+    }
+
+    $tempProjects = @(Get-ChildItem -LiteralPath $resolvedProjectDirectory -Filter '*_wpftmp.csproj' -File -Force -ErrorAction SilentlyContinue)
+    if ($tempProjects.Count -eq 0) {
+        return 0
+    }
+
+    $deletedCount = 0
+    foreach ($tempProject in $tempProjects) {
+        Remove-Item -LiteralPath $tempProject.FullName -Force -ErrorAction Stop
+        $deletedCount++
+    }
+
+    Write-Host ("[INFO] Removed {0} stale WPF temp project file{1} from {2}." -f `
+            $deletedCount, `
+            $(if ($deletedCount -eq 1) { '' } else { 's' }), `
+            $resolvedProjectDirectory)
+    return $deletedCount
+}
+
 function Format-MeridianCommandText {
     [CmdletBinding()]
     param(

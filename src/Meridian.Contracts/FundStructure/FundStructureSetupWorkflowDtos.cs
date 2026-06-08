@@ -47,7 +47,14 @@ public sealed record FundStructureSetupLegalEntityDraftDto(
     string Name,
     string Jurisdiction,
     string BaseCurrency,
-    string? Description = null);
+    string? Description = null,
+    LegalEntityFormDto LegalForm = LegalEntityFormDto.Unspecified,
+    LegalEntityLifecycleStatusDto LifecycleStatus = LegalEntityLifecycleStatusDto.Active,
+    string? RegistrationNumber = null,
+    IReadOnlyList<BeneficialOwnerSummaryDto>? BeneficialOwners = null,
+    LegalEntityLifecycleEventKindDto InitialLifecycleEventKind = LegalEntityLifecycleEventKindDto.Formation,
+    string? InitialLifecycleEventSummary = null,
+    string? InitialLifecycleEvidenceReference = null);
 
 public sealed record FundStructureSetupVehicleDraftDto(
     Guid? VehicleId,

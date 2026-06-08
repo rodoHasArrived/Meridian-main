@@ -26,9 +26,16 @@ public sealed class RunRiskViewModelTests
         viewModel.CanOpenRunDrillIns.Should().BeFalse();
         viewModel.RunActionStateTitle.Should().Be("Select a retained run");
         viewModel.RunActionStateDetail.Should().Contain("unlock after selecting");
+        viewModel.AttributionTable.Title.Should().Be("Symbol attribution");
+        viewModel.SelectedAttribution.Should().BeNull();
+        viewModel.SelectedAttributionInspector.Title.Should().Be("No attribution symbol selected");
+        viewModel.HasSelectedAttribution.Should().BeFalse();
+        viewModel.CanOpenSelectedSymbol.Should().BeFalse();
+        viewModel.SelectedSymbolTooltip.Should().Contain("Select an attribution row");
         viewModel.OpenRunDetailCommand.CanExecute(null).Should().BeFalse();
         viewModel.OpenPortfolioCommand.CanExecute(null).Should().BeFalse();
         viewModel.OpenCashFlowCommand.CanExecute(null).Should().BeFalse();
+        viewModel.OpenSelectedSymbolCommand.CanExecute(null).Should().BeFalse();
     }
 
     [Fact]
@@ -52,6 +59,7 @@ public sealed class RunRiskViewModelTests
         viewModel.OpenRunDetailCommand.CanExecute(null).Should().BeFalse();
         viewModel.OpenPortfolioCommand.CanExecute(null).Should().BeFalse();
         viewModel.OpenCashFlowCommand.CanExecute(null).Should().BeFalse();
+        viewModel.OpenSelectedSymbolCommand.CanExecute(null).Should().BeFalse();
     }
 
     [Fact]
@@ -77,20 +85,55 @@ public sealed class RunRiskViewModelTests
         viewModel.HasAttributionRows.Should().BeFalse();
         viewModel.IsAttributionEmptyStateVisible.Should().BeTrue();
         viewModel.AttributionEmptyStateTitle.Should().Be("No symbol attribution retained");
+        viewModel.OpenSelectedSymbolCommand.CanExecute(null).Should().BeFalse();
     }
 
     [Fact]
-    public void RunRiskPageSource_BindsRiskAndAttributionEmptyStates()
+    public async Task LoadRunAsync_WhenRunHasRetainedAttribution_SelectsTopSymbolAndEnablesLookup()
+    {
+        var (viewModel, store) = CreateViewModelWithStore();
+        await store.RecordRunAsync(StrategyRunWorkspaceTestData.BuildRunWithAttribution("run-risk-attribution"));
+
+        await viewModel.LoadRunAsync("run-risk-attribution");
+
+        viewModel.HasAttributionRows.Should().BeTrue();
+        viewModel.Attribution.Should().HaveCount(2);
+        viewModel.SelectedAttribution.Should().NotBeNull();
+        viewModel.SelectedAttribution!.Symbol.Should().Be("AAPL");
+        viewModel.SelectedAttribution.TotalPnlText.Should().Be("$15.00");
+        viewModel.SelectedAttributionInspector.Title.Should().Be("AAPL");
+        viewModel.SelectedAttributionInspector.Facts.Should().Contain(fact => fact.Label == "Total PnL" && fact.Value == "$15.00");
+        viewModel.HasSelectedAttribution.Should().BeTrue();
+        viewModel.CanOpenSelectedSymbol.Should().BeTrue();
+        viewModel.SelectedSymbolTooltip.Should().Contain("AAPL");
+        viewModel.OpenSelectedSymbolCommand.CanExecute(null).Should().BeTrue();
+    }
+
+    [Fact]
+    public void RunRiskPageSource_UsesCompactAttributionWorkbenchChrome()
     {
         var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\RunRiskPage.xaml"));
         var viewModel = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\ViewModels\RunRiskViewModel.cs"));
 
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().Contain("WorkspaceContextStripStyle");
+        xaml.Should().Contain("RunRiskActionStrip");
         xaml.Should().Contain("RunRiskVolatilityChart");
         xaml.Should().Contain("RunRiskVolatilityEmptyState");
+        xaml.Should().Contain("RunRiskAttributionWorkbench");
+        xaml.Should().Contain("workstation:DenseDataGridControl");
+        xaml.Should().Contain("workstation:InspectorPanelControl");
         xaml.Should().Contain("RunRiskAttributionGrid");
+        xaml.Should().Contain("RunRiskAttributionInspector");
+        xaml.Should().Contain("RunRiskAttributionActionInspector");
         xaml.Should().Contain("RunRiskAttributionEmptyState");
         xaml.Should().Contain("RunRiskActionStatePanel");
         xaml.Should().Contain("RunRiskLoadProgress");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+        xaml.Should().Contain("Command=\"{Binding OpenSelectedSymbolCommand}\"");
+        xaml.Should().Contain("ToolTip=\"{Binding SelectedSymbolTooltip}\"");
+        xaml.Should().Contain("Table=\"{Binding AttributionTable}\"");
+        xaml.Should().Contain("SelectedItem=\"{Binding SelectedAttribution, Mode=TwoWay}\"");
         xaml.Should().Contain("{Binding RunActionStateTitle}");
         xaml.Should().Contain("{Binding RunActionStateDetail}");
         xaml.Should().Contain("{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}");
@@ -102,6 +145,9 @@ public sealed class RunRiskViewModelTests
         xaml.Should().Contain("{Binding AttributionEmptyStateDetail}");
         viewModel.Should().Contain("public bool HasRiskChart");
         viewModel.Should().Contain("public bool CanOpenRunDrillIns");
+        viewModel.Should().Contain("public WorkstationTableModel<RiskAttributionRow> AttributionTable");
+        viewModel.Should().Contain("public InspectorPanelModel SelectedAttributionInspector");
+        viewModel.Should().Contain("public IRelayCommand OpenSelectedSymbolCommand");
         viewModel.Should().Contain("private void ResetAnalysisState()");
     }
 

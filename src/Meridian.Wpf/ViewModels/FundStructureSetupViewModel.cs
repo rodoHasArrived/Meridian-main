@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.FundStructure;
 using Meridian.Ui.Shared.Services;
@@ -15,9 +16,17 @@ public sealed class FundStructureSetupViewModel : BindableBase
     private string _clientOrFundCode = "FUND";
     private string _clientOrFundName = "Flagship Fund";
     private bool _createClient;
+    private LegalEntityTypeDto _legalEntityType = LegalEntityTypeDto.Fund;
+    private LegalEntityFormDto _legalEntityForm = LegalEntityFormDto.LimitedPartnership;
+    private LegalEntityLifecycleStatusDto _legalEntityLifecycleStatus = LegalEntityLifecycleStatusDto.Active;
     private string _legalEntityCode = "LE";
     private string _legalEntityName = "Flagship LP";
     private string _jurisdiction = "US-DE";
+    private string _registrationNumber = "DE-FUND-001";
+    private string _beneficialOwnerName = "Flagship GP";
+    private string _beneficialOwnerPercent = "100";
+    private LegalEntityLifecycleEventKindDto _initialLifecycleEventKind = LegalEntityLifecycleEventKindDto.Formation;
+    private string _initialLifecycleEventSummary = "Initial formation and operating setup.";
     private string _vehicleCode = "VEH";
     private string _vehicleName = "Flagship Vehicle";
     private string _portfolioCode = "PORT";
@@ -48,6 +57,10 @@ public sealed class FundStructureSetupViewModel : BindableBase
     public ObservableCollection<FundStructureSetupPreviewLinkDto> PreviewLinks { get; }
     public IRelayCommand ValidateDraftCommand { get; }
     public IAsyncRelayCommand CreateStructureCommand { get; }
+    public IReadOnlyList<LegalEntityTypeDto> LegalEntityTypeOptions { get; } = Enum.GetValues<LegalEntityTypeDto>();
+    public IReadOnlyList<LegalEntityFormDto> LegalEntityFormOptions { get; } = Enum.GetValues<LegalEntityFormDto>();
+    public IReadOnlyList<LegalEntityLifecycleStatusDto> LegalEntityLifecycleStatusOptions { get; } = Enum.GetValues<LegalEntityLifecycleStatusDto>();
+    public IReadOnlyList<LegalEntityLifecycleEventKindDto> InitialLifecycleEventKindOptions { get; } = Enum.GetValues<LegalEntityLifecycleEventKindDto>();
 
     public string OrganizationCode { get => _organizationCode; set => SetDraftProperty(ref _organizationCode, value); }
     public string OrganizationName { get => _organizationName; set => SetDraftProperty(ref _organizationName, value); }
@@ -56,9 +69,17 @@ public sealed class FundStructureSetupViewModel : BindableBase
     public string ClientOrFundCode { get => _clientOrFundCode; set => SetDraftProperty(ref _clientOrFundCode, value); }
     public string ClientOrFundName { get => _clientOrFundName; set => SetDraftProperty(ref _clientOrFundName, value); }
     public bool CreateClient { get => _createClient; set => SetDraftProperty(ref _createClient, value); }
+    public LegalEntityTypeDto LegalEntityType { get => _legalEntityType; set => SetDraftProperty(ref _legalEntityType, value); }
+    public LegalEntityFormDto LegalEntityForm { get => _legalEntityForm; set => SetDraftProperty(ref _legalEntityForm, value); }
+    public LegalEntityLifecycleStatusDto LegalEntityLifecycleStatus { get => _legalEntityLifecycleStatus; set => SetDraftProperty(ref _legalEntityLifecycleStatus, value); }
     public string LegalEntityCode { get => _legalEntityCode; set => SetDraftProperty(ref _legalEntityCode, value); }
     public string LegalEntityName { get => _legalEntityName; set => SetDraftProperty(ref _legalEntityName, value); }
     public string Jurisdiction { get => _jurisdiction; set => SetDraftProperty(ref _jurisdiction, value); }
+    public string RegistrationNumber { get => _registrationNumber; set => SetDraftProperty(ref _registrationNumber, value); }
+    public string BeneficialOwnerName { get => _beneficialOwnerName; set => SetDraftProperty(ref _beneficialOwnerName, value); }
+    public string BeneficialOwnerPercent { get => _beneficialOwnerPercent; set => SetDraftProperty(ref _beneficialOwnerPercent, value); }
+    public LegalEntityLifecycleEventKindDto InitialLifecycleEventKind { get => _initialLifecycleEventKind; set => SetDraftProperty(ref _initialLifecycleEventKind, value); }
+    public string InitialLifecycleEventSummary { get => _initialLifecycleEventSummary; set => SetDraftProperty(ref _initialLifecycleEventSummary, value); }
     public string VehicleCode { get => _vehicleCode; set => SetDraftProperty(ref _vehicleCode, value); }
     public string VehicleName { get => _vehicleName; set => SetDraftProperty(ref _vehicleName, value); }
     public string PortfolioCode { get => _portfolioCode; set => SetDraftProperty(ref _portfolioCode, value); }
@@ -92,13 +113,26 @@ public sealed class FundStructureSetupViewModel : BindableBase
     public bool HasBlockingIssues => ValidationIssues.Any(static issue => issue.IsBlocking);
     public bool HasResult => _lastResult is not null;
     public string ResultSummary => _lastResult is null ? "No setup created yet." : $"Created {_lastResult.BusinessLane.Name} / {_lastResult.InvestmentPortfolio.Name} with {_lastResult.Graph.Nodes.Count} graph nodes.";
+    public string LegalEntityProfileSummary => $"{LegalEntityForm} / {LegalEntityLifecycleStatus} / {BeneficialOwnerCount} beneficial owner(s)";
 
     public FundStructureSetupDraftDto BuildDraft()
         => new(
             new FundStructureSetupOrganizationDraftDto(null, OrganizationCode, OrganizationName, BaseCurrency),
             new FundStructureSetupBusinessDraftDto(null, BusinessKindDto.FundManager, BusinessCode, BusinessName, BaseCurrency),
             new FundStructureSetupClientOrFundDraftDto(null, null, CreateClient, ClientOrFundCode, ClientOrFundName, BaseCurrency),
-            new FundStructureSetupLegalEntityDraftDto(null, LegalEntityTypeDto.Fund, LegalEntityCode, LegalEntityName, Jurisdiction, BaseCurrency),
+            new FundStructureSetupLegalEntityDraftDto(
+                null,
+                LegalEntityType,
+                LegalEntityCode,
+                LegalEntityName,
+                Jurisdiction,
+                BaseCurrency,
+                LegalForm: LegalEntityForm,
+                LifecycleStatus: LegalEntityLifecycleStatus,
+                RegistrationNumber: RegistrationNumber,
+                BeneficialOwners: BuildBeneficialOwners(),
+                InitialLifecycleEventKind: InitialLifecycleEventKind,
+                InitialLifecycleEventSummary: InitialLifecycleEventSummary),
             new FundStructureSetupVehicleDraftDto(null, VehicleCode, VehicleName, BaseCurrency),
             new FundStructureSetupInvestmentPortfolioDraftDto(null, PortfolioCode, PortfolioName, BaseCurrency),
             new FundStructureSetupAccountHandoffDraftDto(AccountCode, AccountDisplayName, AccountTypeDto.Brokerage, BaseCurrency, Institution, LedgerReference),
@@ -116,6 +150,7 @@ public sealed class FundStructureSetupViewModel : BindableBase
             ? "Draft is valid. Review the graph preview, then create the structure."
             : $"Resolve {preview.ValidationSummary.Issues.Count(static issue => issue.IsBlocking)} blocking setup issue(s).";
         RaisePropertyChanged(nameof(HasBlockingIssues));
+        RaisePropertyChanged(nameof(LegalEntityProfileSummary));
         CreateStructureCommand.NotifyCanExecuteChanged();
     }
 
@@ -158,5 +193,29 @@ public sealed class FundStructureSetupViewModel : BindableBase
         {
             target.Add(value);
         }
+    }
+
+    private int BeneficialOwnerCount => BuildBeneficialOwners().Count;
+
+    private IReadOnlyList<BeneficialOwnerSummaryDto> BuildBeneficialOwners()
+    {
+        if (string.IsNullOrWhiteSpace(BeneficialOwnerName))
+        {
+            return [];
+        }
+
+        decimal? ownershipPercent = null;
+        if (decimal.TryParse(BeneficialOwnerPercent, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsed))
+        {
+            ownershipPercent = parsed;
+        }
+
+        return
+        [
+            new BeneficialOwnerSummaryDto(
+                BeneficialOwnerName.Trim(),
+                ownershipPercent,
+                IsControlPerson: true)
+        ];
     }
 }

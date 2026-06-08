@@ -37,6 +37,10 @@ public interface IFundStructureService
         CreateLegalEntityRequest request,
         CancellationToken ct = default);
 
+    Task<LegalEntitySummaryDto> UpdateLegalEntityProfileAsync(
+        UpdateLegalEntityProfileRequest request,
+        CancellationToken ct = default);
+
     Task<InvestmentPortfolioSummaryDto> CreateInvestmentPortfolioAsync(
         CreateInvestmentPortfolioRequest request,
         CancellationToken ct = default);

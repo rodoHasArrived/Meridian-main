@@ -12,7 +12,7 @@ namespace Meridian.Wpf.ViewModels;
 /// ViewModel for the Data Export page.
 /// Owns all form state, date-range properties, validation messages, and export
 /// commands so that the code-behind is thinned to ComboBox-tag helpers and
-/// PasswordBox reads only.
+/// shared secret-input reads only.
 /// </summary>
 public sealed class DataExportViewModel : BindableBase
 {

@@ -26,10 +26,15 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
     private readonly ThemeService _themeService;
     private readonly WpfServices.WatchlistService _watchlistService;
     private readonly FixtureModeDetector _fixtureModeDetector;
+    private readonly DesktopAuthenticationSession _authenticationSession;
     private readonly DispatcherTimer _clipboardBannerTimer;
     private readonly DispatcherTimer _startupBannerTimer;
 
     private IReadOnlyList<string> _pendingClipboardSymbols = [];
+    private Visibility _authenticatedSessionVisibility = Visibility.Collapsed;
+    private string _authenticatedOperatorText = "Not signed in";
+    private string _authenticatedRoleText = "No active session";
+    private string _authenticatedSessionDetail = "Sign in from the Meridian startup screen.";
     private Visibility _fixtureModeBannerVisibility = Visibility.Collapsed;
     private string _fixtureModeText = string.Empty;
     private Brush _fixtureModeBannerBackground = FixtureBrush;
@@ -49,6 +54,7 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         ThemeService themeService,
         WpfServices.WatchlistService watchlistService,
         FixtureModeDetector fixtureModeDetector,
+        DesktopAuthenticationSession authenticationSession,
         IStatusService statusService)
     {
         _connectionService = connectionService ?? throw new ArgumentNullException(nameof(connectionService));
@@ -58,6 +64,7 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
         _watchlistService = watchlistService ?? throw new ArgumentNullException(nameof(watchlistService));
         _fixtureModeDetector = fixtureModeDetector ?? throw new ArgumentNullException(nameof(fixtureModeDetector));
+        _authenticationSession = authenticationSession ?? throw new ArgumentNullException(nameof(authenticationSession));
 
         StatusBar = new StatusBarViewModel(statusService, notificationService);
 
@@ -65,6 +72,7 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         StartCollectorCommand = new AsyncRelayCommand(StartCollectorAsync);
         StopCollectorCommand = new AsyncRelayCommand(StopCollectorAsync);
         RefreshCommand = new RelayCommand(() => _messagingService.Send("RefreshStatus"));
+        LogoutCommand = new RelayCommand(Logout, CanLogout);
         AddClipboardSymbolsCommand = new AsyncRelayCommand(AddPendingSymbolsToWatchlistAsync, () => _pendingClipboardSymbols.Count > 0);
         DismissStartupBannerCommand = new RelayCommand(HideStartupBanner);
         DismissClipboardBannerCommand = new RelayCommand(HideClipboardBanner);
@@ -75,8 +83,11 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         _clipboardBannerTimer.Tick += OnClipboardBannerTimerTick;
 
         _fixtureModeDetector.ModeChanged += OnFixtureModeChanged;
+        RefreshAuthenticationState();
         UpdateFixtureModeBanner();
     }
+
+    public event EventHandler? LogoutRequested;
 
     public StatusBarViewModel StatusBar { get; }
 
@@ -88,11 +99,37 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
 
     public IRelayCommand RefreshCommand { get; }
 
+    public IRelayCommand LogoutCommand { get; }
+
     public IAsyncRelayCommand AddClipboardSymbolsCommand { get; }
 
     public IRelayCommand DismissStartupBannerCommand { get; }
 
     public IRelayCommand DismissClipboardBannerCommand { get; }
+
+    public Visibility AuthenticatedSessionVisibility
+    {
+        get => _authenticatedSessionVisibility;
+        private set => SetProperty(ref _authenticatedSessionVisibility, value);
+    }
+
+    public string AuthenticatedOperatorText
+    {
+        get => _authenticatedOperatorText;
+        private set => SetProperty(ref _authenticatedOperatorText, value);
+    }
+
+    public string AuthenticatedRoleText
+    {
+        get => _authenticatedRoleText;
+        private set => SetProperty(ref _authenticatedRoleText, value);
+    }
+
+    public string AuthenticatedSessionDetail
+    {
+        get => _authenticatedSessionDetail;
+        private set => SetProperty(ref _authenticatedSessionDetail, value);
+    }
 
     public Visibility FixtureModeBannerVisibility
     {
@@ -151,6 +188,22 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
     public async Task StartAsync(CancellationToken ct = default)
     {
         await StatusBar.StartAsync(ct);
+    }
+
+    public void RefreshAuthenticationState()
+    {
+        var actor = _authenticationSession.CurrentActor;
+        var hasActor = !string.IsNullOrWhiteSpace(actor);
+
+        AuthenticatedSessionVisibility = hasActor
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        AuthenticatedOperatorText = hasActor
+            ? actor
+            : "Not signed in";
+        AuthenticatedRoleText = ResolveAuthenticatedRoleText();
+        AuthenticatedSessionDetail = ResolveAuthenticatedSessionDetail();
+        LogoutCommand.NotifyCanExecuteChanged();
     }
 
     public void ShowStartupExperience()
@@ -380,6 +433,45 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         _clipboardBannerTimer.Tick -= OnClipboardBannerTimerTick;
         _fixtureModeDetector.ModeChanged -= OnFixtureModeChanged;
         StatusBar.Dispose();
+    }
+
+    private bool CanLogout()
+        => !string.IsNullOrWhiteSpace(_authenticationSession.CurrentActor);
+
+    private void Logout()
+    {
+        if (!CanLogout())
+        {
+            return;
+        }
+
+        _authenticationSession.SignOut();
+        RefreshAuthenticationState();
+        LogoutRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    private string ResolveAuthenticatedRoleText()
+    {
+        if (_authenticationSession.IsAnonymousDevelopmentSession)
+        {
+            return "Development session";
+        }
+
+        return _authenticationSession.CurrentRole is { } role
+            ? $"{role} access"
+            : "No active session";
+    }
+
+    private string ResolveAuthenticatedSessionDetail()
+    {
+        if (_authenticationSession.IsAnonymousDevelopmentSession)
+        {
+            return "Local development session. No credentials are stored in the desktop app.";
+        }
+
+        return _authenticationSession.IsAuthenticated
+            ? "In-memory desktop session. Credentials remain environment-backed."
+            : "Sign in from the Meridian startup screen.";
     }
 
     private static Brush CreateBrush(byte r, byte g, byte b)

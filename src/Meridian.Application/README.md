@@ -260,6 +260,11 @@ and UI presentation concerns in their owning layers.
   status response generation. ASP.NET endpoint adapter extensions for packaging, archive
   maintenance, and data-quality monitoring live in `Meridian.Ui.Shared.Endpoints`.
 - `Composition/` - application feature registration and service wiring.
+  `StorageFeatureRegistration` keeps production-safe governance composition explicit: production
+  startup requires `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and
+  `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING` so fund account and fund structure workflows use
+  persistence-backed services. Local/dev launcher flows may set
+  `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` only with a non-production environment.
 
 ## Important workflows
 

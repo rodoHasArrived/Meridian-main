@@ -51,10 +51,6 @@ public partial class DataQualityPage : Page
         }
     }
 
-    private async void Refresh_Click(object sender, RoutedEventArgs e) => await _viewModel.RefreshAsync();
-
-    private void RunQualityCheck_Click(object sender, RoutedEventArgs e) => ShowQualityCheckPanel();
-
     private void RepairGap_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button button && button.Tag is string gapId)

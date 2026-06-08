@@ -231,12 +231,35 @@ function Add-NodeModuleDirectories {
     }
 }
 
+function Add-WpfTempProjectFiles {
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
+        [System.Collections.Generic.List[object]]$Candidates,
+
+        [Parameter(Mandatory)]
+        [string]$RepoRoot
+    )
+
+    $wpfDirectory = Join-Path $RepoRoot 'src/Meridian.Wpf'
+    if (-not (Test-Path -LiteralPath $wpfDirectory -PathType Container)) {
+        return
+    }
+
+    Get-ChildItem -LiteralPath $wpfDirectory -Filter '*_wpftmp.csproj' -File -Force -ErrorAction SilentlyContinue |
+        ForEach-Object {
+            $Candidates.Add((New-Candidate -Path $_.FullName -Reason "Stale WPF temporary project file"))
+        }
+}
+
 $repoRoot = Get-RepoRoot
 Set-Location -LiteralPath $repoRoot
 
 $candidateDirectories = New-Object System.Collections.Generic.List[object]
+$candidateFiles = New-Object System.Collections.Generic.List[object]
 
 Add-GeneratedBuildOutputDirectories -Candidates $candidateDirectories -RepoRoot $repoRoot
+Add-WpfTempProjectFiles -Candidates $candidateFiles -RepoRoot $repoRoot
 
 Add-GeneratedArtifactChildren `
     -Candidates $candidateDirectories `
@@ -287,6 +310,7 @@ if ($IncludeNodeModules) {
 
 $seen = @{}
 $removable = New-Object System.Collections.Generic.List[object]
+$removableFiles = New-Object System.Collections.Generic.List[object]
 $skipped = New-Object System.Collections.Generic.List[object]
 
 foreach ($candidate in $candidateDirectories | Sort-Object Path -Unique) {
@@ -324,11 +348,42 @@ foreach ($candidate in $candidateDirectories | Sort-Object Path -Unique) {
             Reason    = $candidate.Reason
             SizeBytes = $sizeBytes
             Size      = Format-Bytes -Bytes $sizeBytes
+    })
+}
+
+foreach ($candidate in $candidateFiles | Sort-Object Path -Unique) {
+    if ($seen.ContainsKey($candidate.Path)) {
+        continue
+    }
+
+    $seen[$candidate.Path] = $true
+
+    if (-not (Test-Path -LiteralPath $candidate.Path -PathType Leaf)) {
+        continue
+    }
+
+    if (Test-TrackedContent -RepoRoot $repoRoot -FullPath $candidate.Path) {
+        $skipped.Add([PSCustomObject]@{
+                Path   = $candidate.Path
+                Reason = "File is tracked content"
+            })
+        continue
+    }
+
+    $file = Get-Item -LiteralPath $candidate.Path -Force
+    $removableFiles.Add([PSCustomObject]@{
+            Path      = $candidate.Path
+            Reason    = $candidate.Reason
+            SizeBytes = [int64]$file.Length
+            Size      = Format-Bytes -Bytes ([int64]$file.Length)
         })
 }
 
 $totalBytes = 0L
 foreach ($entry in $removable) {
+    $totalBytes += [int64]$entry.SizeBytes
+}
+foreach ($entry in $removableFiles) {
     $totalBytes += [int64]$entry.SizeBytes
 }
 
@@ -337,14 +392,25 @@ Write-Host "Cleanup mode: $([string]::Join('', @($(if ($Execute) { 'EXECUTE' } e
 Write-Host "Repository: $repoRoot"
 Write-Host ""
 
-if ($removable.Count -eq 0) {
-    Write-Host "No removable generated directories were found."
+if ($removable.Count -eq 0 -and $removableFiles.Count -eq 0) {
+    Write-Host "No removable generated directories or files were found."
 }
 else {
-    $removable |
-        Sort-Object SizeBytes -Descending |
-        Select-Object Size, Reason, Path |
-        Format-Table -Wrap -AutoSize
+    if ($removable.Count -gt 0) {
+        Write-Host "Generated directories:"
+        $removable |
+            Sort-Object SizeBytes -Descending |
+            Select-Object Size, Reason, Path |
+            Format-Table -Wrap -AutoSize
+    }
+
+    if ($removableFiles.Count -gt 0) {
+        Write-Host "Generated files:"
+        $removableFiles |
+            Sort-Object SizeBytes -Descending |
+            Select-Object Size, Reason, Path |
+            Format-Table -Wrap -AutoSize
+    }
 
     Write-Host ""
     Write-Host ("Estimated space to recover: {0}" -f (Format-Bytes -Bytes $totalBytes))
@@ -363,14 +429,14 @@ if (-not $Execute) {
     exit 0
 }
 
-if ($removable.Count -eq 0) {
+if ($removable.Count -eq 0 -and $removableFiles.Count -eq 0) {
     Write-Host ""
     Write-Host "Nothing to delete."
     exit 0
 }
 
 Write-Host ""
-Write-Host "Deleting generated directories..."
+Write-Host "Deleting generated artifacts..."
 
 foreach ($entry in $removable) {
     if (-not (Test-Path -LiteralPath $entry.Path -PathType Container)) {
@@ -379,6 +445,16 @@ foreach ($entry in $removable) {
     }
 
     Remove-Item -LiteralPath $entry.Path -Recurse -Force
+    Write-Host ("Deleted {0}" -f $entry.Path)
+}
+
+foreach ($entry in $removableFiles) {
+    if (-not (Test-Path -LiteralPath $entry.Path -PathType Leaf)) {
+        Write-Host ("Skipped missing {0}" -f $entry.Path)
+        continue
+    }
+
+    Remove-Item -LiteralPath $entry.Path -Force
     Write-Host ("Deleted {0}" -f $entry.Path)
 }
 

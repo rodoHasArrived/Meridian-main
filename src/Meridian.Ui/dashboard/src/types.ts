@@ -1434,6 +1434,23 @@ export type ProviderVerificationState = "NotRequired" | "NotVerified" | "Verifie
 export type ProviderContinuityHealth = "Unknown" | "Healthy" | "Warning" | "Degraded" | "Blocked";
 export type ProviderReadinessStatus = "Ready" | "Review" | "Degraded" | "Blocked" | "Unknown";
 export type ProviderReadinessEvidenceKind = "Credential" | "Connection" | "Validation" | "Degradation" | "Plaid" | "Routing";
+export type ProviderCredentialInputKind = "Text" | "Password" | "Url";
+
+export interface ProviderCredentialFieldMetadata {
+  name: string;
+  label: string;
+  required: boolean;
+  inputKind: ProviderCredentialInputKind;
+  placeholder?: string | null;
+  helpText?: string | null;
+}
+
+export interface ProviderEnvironmentOption {
+  value: string;
+  label: string;
+  isDefault: boolean;
+  helpText?: string | null;
+}
 
 export interface ProviderConnectionRow {
   providerId: string;
@@ -1454,6 +1471,8 @@ export interface ProviderConnectionRow {
   affectedWorkflows: string[];
   recommendedAction: string;
   actionHref: string;
+  credentialFields?: ProviderCredentialFieldMetadata[] | null;
+  environmentOptions?: ProviderEnvironmentOption[] | null;
 }
 
 export interface ProviderCredentialUpsertRequest {
@@ -1522,6 +1541,8 @@ export interface ProviderReadinessRow {
   actionHref: string;
   evidence: ProviderReadinessEvidence[];
   recoveryActions: ProviderRecoveryAction[];
+  credentialFields?: ProviderCredentialFieldMetadata[] | null;
+  environmentOptions?: ProviderEnvironmentOption[] | null;
 }
 
 export interface ProviderReadinessEvidence {
@@ -2015,11 +2036,67 @@ export interface DataExportRecord {
   updatedAt: string;
 }
 
+export interface DataUploadTemplateField {
+  name: string;
+  label: string;
+  required: boolean;
+  example: string;
+  description: string;
+}
+
+export interface DataUploadTemplate {
+  templateId: string;
+  label: string;
+  description: string;
+  dataDomain: string;
+  targetWorkflow: string;
+  fileName: string;
+  contentType: string;
+  headerLine: string;
+  fields: DataUploadTemplateField[];
+  sampleRows: string[];
+  validationNotes: string[];
+}
+
+export interface DataUploadTemplateCatalog {
+  templates: DataUploadTemplate[];
+  acceptedFileExtensions: string[];
+  maxPreviewRows: number;
+  maxFileBytes: number;
+}
+
+export interface DataUploadValidationIssue {
+  severity: "Error" | "Warning" | string;
+  field: string;
+  message: string;
+  rowNumber: number | null;
+}
+
+export interface DataUploadPreviewResult {
+  uploadId: string;
+  templateId: string;
+  templateLabel: string;
+  fileName: string;
+  fileSizeBytes: number;
+  contentType: string;
+  uploadedBy: string;
+  uploadedAtUtc: string;
+  retainedPath: string;
+  parsedRowCount: number;
+  previewRowCount: number;
+  headers: string[];
+  previewRows: Record<string, string>[];
+  issues: DataUploadValidationIssue[];
+  status: "ReadyForReview" | "NeedsSchemaRepair" | string;
+  nextAction: string;
+}
+
 export interface DataWorkspaceResponse {
   metrics: MetricSnapshot[];
   providers: DataProviderRecord[];
   backfills: DataBackfillRecord[];
   exports: DataExportRecord[];
+  uploadTemplates?: DataUploadTemplateCatalog | null;
 }
 
 export type DataOperationsProviderRecord = DataProviderRecord;

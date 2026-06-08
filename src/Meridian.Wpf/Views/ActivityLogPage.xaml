@@ -19,30 +19,56 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
-        <Border Grid.Row="0" Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="24,24,24,16">
+        <!-- Action strip -->
+        <Border Grid.Row="0"
+                Style="{StaticResource WorkspaceContextStripStyle}"
+                Margin="24,16,24,12"
+                Padding="14,10"
+                AutomationProperties.AutomationId="ActivityLogActionStrip"
+                AutomationProperties.Name="Activity Log Action Strip">
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <Border Width="44" Height="44" CornerRadius="14"
-                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                            BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
-                        <TextBlock Text="&#xE7BC;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                   FontSize="24" Foreground="{StaticResource InfoColorBrush}"
-                                   VerticalAlignment="Center" HorizontalAlignment="Center" />
-                    </Border>
-                    <StackPanel Margin="12,0,0,0">
-                        <TextBlock Text="Activity Log" Style="{StaticResource PageTitleStyle}" />
-                        <TextBlock Text="Operational events, exportable traces, and filtered runtime messages for support workflows."
-                                   Style="{StaticResource CardDescriptionStyle}" />
+                <Border Grid.Column="0"
+                        Width="30"
+                        Height="30"
+                        CornerRadius="8"
+                        Margin="0,0,10,0"
+                        VerticalAlignment="Center"
+                        Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                        BorderBrush="{StaticResource InfoColorBrush}"
+                        BorderThickness="1">
+                    <TextBlock Text="&#xE7BC;"
+                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                               FontSize="16"
+                               Foreground="{StaticResource InfoColorBrush}"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center" />
+                </Border>
+
+                <StackPanel Grid.Column="1" Margin="0,0,20,0" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Activity Log"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   Margin="0,0,10,0" />
+                        <TextBlock Text="{Binding LogCount}"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   FontSize="12"
+                                   VerticalAlignment="Center" />
                     </StackPanel>
+                    <TextBlock Text="{Binding LatestLogSummary}"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               FontSize="11"
+                               TextTrimming="CharacterEllipsis" />
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <CheckBox x:Name="AutoScrollCheck" Content="Auto-scroll"
                               IsChecked="{Binding IsAutoScrollEnabled, Mode=TwoWay}"
                               Foreground="{StaticResource ConsoleTextMutedBrush}"
@@ -52,12 +78,16 @@
                             Margin="0,0,8,0"
                             Style="{StaticResource SecondaryButtonStyle}"
                             IsEnabled="{Binding CanExportVisibleLogs}"
+                            ToolTip="{Binding ExportVisibleLogsTooltip}"
+                            ToolTipService.ShowOnDisabled="True"
                             AutomationProperties.AutomationId="ActivityLogExportButton"
                             AutomationProperties.Name="Export visible activity log entries"/>
                     <Button Content="Clear"
                             Command="{Binding RequestClearCommand}"
                             Style="{StaticResource GhostButtonStyle}"
                             IsEnabled="{Binding CanClearLog}"
+                            ToolTip="{Binding ClearLogTooltip}"
+                            ToolTipService.ShowOnDisabled="True"
                             AutomationProperties.AutomationId="ActivityLogClearButton"
                             AutomationProperties.Name="Request activity log clear confirmation"/>
                 </StackPanel>

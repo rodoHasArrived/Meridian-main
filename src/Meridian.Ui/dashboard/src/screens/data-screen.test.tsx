@@ -211,9 +211,13 @@ describe("DataScreen", () => {
     renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data"] });
 
     expect(screen.getByText("Data command deck")).toBeInTheDocument();
+    expect(screen.getByText("Upload data template")).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Data upload template" })).toHaveValue("trade-data");
+    expect(screen.getByRole("link", { name: "Download Trade data CSV template" }))
+      .toHaveAttribute("download", "meridian-trade-data-template.csv");
     expect(screen.getByText("Provider posture")).toBeInTheDocument();
     expect(screen.getByText("Backfill repair")).toBeInTheDocument();
-    expect(screen.getByText("Export readiness")).toBeInTheDocument();
+    expect(screen.getByText("Upload intake")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Data workspace route focus" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open Security Master in Accounting" }))
       .toHaveAttribute("href", "/accounting/security-master");
@@ -254,6 +258,45 @@ describe("DataScreen", () => {
     expect(within(exportDetail).queryByText("research pack")).not.toBeInTheDocument();
     expect(within(exportDetail).getByText("Next action")).toBeInTheDocument();
     expect(within(exportDetail).getByText("Attach export to the report pack or hand off the package.")).toBeInTheDocument();
+  });
+
+  it("previews a data upload file through the shared upload endpoint", async () => {
+    const user = userEvent.setup();
+    const previewDataUpload = vi.spyOn(api, "previewDataUpload").mockResolvedValueOnce({
+      uploadId: "UP-1",
+      templateId: "trade-data",
+      templateLabel: "Trade data",
+      fileName: "trades.csv",
+      fileSizeBytes: 96,
+      contentType: "text/csv",
+      uploadedBy: "ops-user",
+      uploadedAtUtc: "2026-06-08T12:00:00Z",
+      retainedPath: "workstation/data-uploads/UP-1/trades.csv",
+      parsedRowCount: 1,
+      previewRowCount: 1,
+      headers: ["trade_id", "trade_date", "account_code", "symbol"],
+      previewRows: [{ trade_id: "TRD-1", trade_date: "2026-06-01", account_code: "FUND-A", symbol: "AAPL" }],
+      issues: [],
+      status: "ReadyForReview",
+      nextAction: "Review the preview rows, then route this retained source file into validation and reconciliation."
+    });
+    const file = new File([
+      "trade_id,trade_date,account_code,symbol\nTRD-1,2026-06-01,FUND-A,AAPL\n"
+    ], "trades.csv", { type: "text/csv" });
+
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data"] });
+
+    await user.upload(screen.getByLabelText("Upload Trade data CSV file for preview"), file);
+
+    await waitFor(() => expect(previewDataUpload).toHaveBeenCalledWith(
+      { templateId: "trade-data", file },
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    ));
+    expect(await screen.findByText(/1 rows parsed from trades\.csv/i)).toBeInTheDocument();
+    expect(screen.getByText("workstation/data-uploads/UP-1/trades.csv")).toBeInTheDocument();
+    expect(screen.getAllByText("AAPL").length).toBeGreaterThanOrEqual(1);
+
+    previewDataUpload.mockRestore();
   });
 
   it("renders shared provider readiness and the next action for each provider", async () => {
@@ -349,7 +392,7 @@ describe("DataScreen", () => {
       { initialEntries: ["/data"] }
     );
 
-    expect(screen.getByRole("combobox")).toHaveValue("provider-row-polygon");
+    expect(screen.getByRole("combobox", { name: "Configured Provider" })).toHaveValue("provider-row-polygon");
 
     await user.click(screen.getByRole("tab", { name: "Diagnostics" }));
     await user.click(screen.getByRole("button", { name: /run provider credential verification/i }));

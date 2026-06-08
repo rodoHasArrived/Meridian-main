@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -8,6 +9,8 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Models;
+using Meridian.Wpf.Workstation.Models;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -24,6 +27,11 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
     private readonly DispatcherTimer _refreshTimer;
     private readonly DateTime _startTime = DateTime.UtcNow;
     private int _refreshInFlight;
+    private ProviderHealthItem? _selectedProvider;
+    private SystemEventItem? _selectedEvent;
+    private InspectorPanelModel _systemTriageInspector = BuildEmptyTriageInspector();
+    private InspectorPanelModel _selectedProviderInspector = BuildEmptyProviderInspector();
+    private InspectorPanelModel _selectedEventInspector = BuildEmptyEventInspector();
 
     // ── Cached theme brushes — initialised lazily from Application resources ──────────
     private Brush? _errorBrush;
@@ -41,6 +49,9 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
     // ── Public collections ────────────────────────────────────────────────────────────
     public ObservableCollection<ProviderHealthItem> Providers { get; } = new();
     public ObservableCollection<SystemEventItem> Events { get; } = new();
+
+    public WorkstationTableModel<ProviderHealthItem> ProvidersTable { get; }
+    public WorkstationTableModel<SystemEventItem> EventsTable { get; }
 
     private int _providerCount;
     private int _unhealthyProviderCount;
@@ -128,6 +139,29 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
     private bool _hasNoProviders = true;
     public bool HasNoProviders { get => _hasNoProviders; private set => SetProperty(ref _hasNoProviders, value); }
 
+    public ProviderHealthItem? SelectedProvider
+    {
+        get => _selectedProvider;
+        set
+        {
+            if (SetProperty(ref _selectedProvider, value))
+            {
+                SelectedProviderInspector = value is null
+                    ? BuildEmptyProviderInspector()
+                    : BuildProviderInspector(value);
+                OnPropertyChanged(nameof(HasSelectedProvider));
+            }
+        }
+    }
+
+    public bool HasSelectedProvider => SelectedProvider is not null;
+
+    public InspectorPanelModel SelectedProviderInspector
+    {
+        get => _selectedProviderInspector;
+        private set => SetProperty(ref _selectedProviderInspector, value);
+    }
+
     // ── Storage health ────────────────────────────────────────────────────────────────
     private string _storageTotalText = "--";
     public string StorageTotalText { get => _storageTotalText; private set => SetProperty(ref _storageTotalText, value); }
@@ -151,6 +185,35 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
     private bool _hasNoEvents = true;
     public bool HasNoEvents { get => _hasNoEvents; private set => SetProperty(ref _hasNoEvents, value); }
 
+    public SystemEventItem? SelectedEvent
+    {
+        get => _selectedEvent;
+        set
+        {
+            if (SetProperty(ref _selectedEvent, value))
+            {
+                SelectedEventInspector = value is null
+                    ? BuildEmptyEventInspector()
+                    : BuildEventInspector(value);
+                OnPropertyChanged(nameof(HasSelectedEvent));
+            }
+        }
+    }
+
+    public bool HasSelectedEvent => SelectedEvent is not null;
+
+    public InspectorPanelModel SelectedEventInspector
+    {
+        get => _selectedEventInspector;
+        private set => SetProperty(ref _selectedEventInspector, value);
+    }
+
+    public InspectorPanelModel SystemTriageInspector
+    {
+        get => _systemTriageInspector;
+        private set => SetProperty(ref _systemTriageInspector, value);
+    }
+
     // ── Button state ──────────────────────────────────────────────────────────────────
     private bool _isRefreshEnabled = true;
     public bool IsRefreshEnabled
@@ -161,6 +224,9 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
             if (SetProperty(ref _isRefreshEnabled, value))
             {
                 RefreshCommand.NotifyCanExecuteChanged();
+                OnPropertyChanged(nameof(RefreshTooltip));
+                OnPropertyChanged(nameof(HealthActionStateTitle));
+                OnPropertyChanged(nameof(HealthActionStateDetail));
             }
         }
     }
@@ -174,9 +240,28 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
             if (SetProperty(ref _isDiagnosticsEnabled, value))
             {
                 GenerateDiagnosticsCommand.NotifyCanExecuteChanged();
+                OnPropertyChanged(nameof(DiagnosticsTooltip));
+                OnPropertyChanged(nameof(HealthActionStateTitle));
+                OnPropertyChanged(nameof(HealthActionStateDetail));
             }
         }
     }
+
+    public string RefreshTooltip => IsRefreshEnabled
+        ? "Refresh system metrics, provider posture, storage health, and recent events."
+        : "Health refresh is already running.";
+
+    public string DiagnosticsTooltip => IsDiagnosticsEnabled
+        ? "Generate a diagnostic bundle for the current support posture."
+        : "Diagnostic bundle generation is already running.";
+
+    public string HealthActionStateTitle
+        => IsRefreshEnabled && IsDiagnosticsEnabled ? SystemTriageActionText : "Health action running";
+
+    public string HealthActionStateDetail
+        => IsRefreshEnabled && IsDiagnosticsEnabled
+            ? $"{SystemTriageTargetText}: {SystemTriageDetail}"
+            : "Wait for the current health action to finish before starting another support task.";
 
     // ── Commands ──────────────────────────────────────────────────────────────────────
     public IAsyncRelayCommand RefreshCommand { get; }
@@ -188,6 +273,30 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
     {
         _healthService = healthService;
         _loggingService = loggingService;
+
+        ProvidersTable = new WorkstationTableModel<ProviderHealthItem>(
+            Providers,
+            [
+                new("Provider", nameof(ProviderHealthItem.Name), 180),
+                new("Status", nameof(ProviderHealthItem.Status), 110),
+                new("Latency", nameof(ProviderHealthItem.LatencyText), 90),
+                new("Events", nameof(ProviderHealthItem.EventsText), 90)
+            ],
+            "Provider health",
+            "No providers reported",
+            "Refresh health data to populate provider posture.");
+
+        EventsTable = new WorkstationTableModel<SystemEventItem>(
+            Events,
+            [
+                new("Source", nameof(SystemEventItem.Source), 130),
+                new("Severity", nameof(SystemEventItem.Severity), 90),
+                new("Message", nameof(SystemEventItem.Message), 320),
+                new("Time", nameof(SystemEventItem.TimeText), 110)
+            ],
+            "Recent events",
+            "No recent events",
+            "Refresh health data to confirm whether desktop workstation events are available.");
 
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
         _refreshTimer.Tick += OnRefreshTimerTick;
@@ -311,6 +420,7 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 Providers.Clear();
+                SelectedProvider = null;
                 _providerCount = providers?.Count ?? 0;
                 _unhealthyProviderCount = 0;
                 _hasProviderSnapshot = true;
@@ -337,6 +447,7 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
                         });
                     }
 
+                    SelectedProvider = Providers.FirstOrDefault();
                     UpdateOverallStatus(hasUnhealthy);
                     HasProviders = true;
                     HasNoProviders = false;
@@ -407,6 +518,7 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 Events.Clear();
+                SelectedEvent = null;
                 _eventCount = events?.Count ?? 0;
                 _errorEventCount = 0;
                 _warningEventCount = 0;
@@ -424,10 +536,12 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
                         {
                             Source = evt.Source,
                             Message = evt.Message,
+                            Severity = evt.Severity,
                             SeverityColor = GetSeverityBrush(evt.Severity),
                             TimeText = FormatTimestamp(evt.Timestamp)
                         });
                     }
+                    SelectedEvent = Events.FirstOrDefault();
                     HasEvents = true;
                     HasNoEvents = false;
                 }
@@ -492,6 +606,9 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
             SystemHealthTriageTone.Ready => SuccessBrush,
             _ => InfoBrush
         };
+        SystemTriageInspector = BuildTriageInspector(state);
+        OnPropertyChanged(nameof(HealthActionStateTitle));
+        OnPropertyChanged(nameof(HealthActionStateDetail));
 
         UpdateEmptyStateCopy();
     }
@@ -698,6 +815,111 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
 
     public void Dispose() => _refreshTimer.Stop();
 
+    internal static InspectorPanelModel BuildTriageInspector(SystemHealthTriageState state)
+        => new()
+        {
+            Title = state.Title,
+            Subtitle = "System health triage",
+            Detail = state.Detail,
+            Badge = new WorkstationBadgeModel("Posture", state.Tone.ToString(), "\uE946", ToneForTriage(state.Tone)),
+            Facts =
+            [
+                new("Action", state.ActionText),
+                new("Target", state.TargetText),
+                new("Providers", state.ProviderSummaryText),
+                new("Storage", state.StorageSummaryText),
+                new("Events", state.EventSummaryText),
+                new("Evidence", state.EvidenceText)
+            ]
+        };
+
+    private static InspectorPanelModel BuildEmptyTriageInspector()
+        => new()
+        {
+            Title = "Waiting for health scan",
+            Subtitle = "System health triage",
+            Detail = "Refresh health data to summarize provider, storage, and event posture.",
+            Badge = new WorkstationBadgeModel("Posture", "Waiting", "\uE946", WorkspaceTone.Neutral)
+        };
+
+    internal static InspectorPanelModel BuildProviderInspector(ProviderHealthItem selected)
+        => new()
+        {
+            Title = selected.Name,
+            Subtitle = "Provider health",
+            Detail = "Review provider connection state, latency, and event throughput before relying on live diagnostics.",
+            Badge = new WorkstationBadgeModel("Status", selected.Status, "\uE774", ToneForProviderStatus(selected.Status)),
+            Facts =
+            [
+                new("Status", selected.Status),
+                new("Latency", selected.LatencyText),
+                new("Events", selected.EventsText),
+                new("Source", "System health provider scan")
+            ]
+        };
+
+    private static InspectorPanelModel BuildEmptyProviderInspector()
+        => new()
+        {
+            Title = "No provider selected",
+            Subtitle = "Provider health inspector",
+            Detail = "Select a provider health row to inspect connection status, latency, and event throughput."
+        };
+
+    internal static InspectorPanelModel BuildEventInspector(SystemEventItem selected)
+        => new()
+        {
+            Title = selected.Source,
+            Subtitle = "Recent desktop event",
+            Detail = selected.Message,
+            Badge = new WorkstationBadgeModel("Severity", selected.Severity, "\uE7BA", ToneForSeverity(selected.Severity)),
+            Facts =
+            [
+                new("Source", selected.Source),
+                new("Severity", selected.Severity),
+                new("Time", selected.TimeText),
+                new("Message", selected.Message)
+            ]
+        };
+
+    private static InspectorPanelModel BuildEmptyEventInspector()
+        => new()
+        {
+            Title = "No recent event selected",
+            Subtitle = "Recent event inspector",
+            Detail = "Select a retained desktop event row to inspect source, severity, message, and timing."
+        };
+
+    private static string ToneForTriage(SystemHealthTriageTone tone)
+        => tone switch
+        {
+            SystemHealthTriageTone.Critical => WorkspaceTone.Danger,
+            SystemHealthTriageTone.Warning => WorkspaceTone.Warning,
+            SystemHealthTriageTone.Ready => WorkspaceTone.Success,
+            _ => WorkspaceTone.Neutral
+        };
+
+    private static string ToneForProviderStatus(string status)
+        => string.Equals(status, "Connected", StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(status, "Healthy", StringComparison.OrdinalIgnoreCase)
+            ? WorkspaceTone.Success
+            : WorkspaceTone.Danger;
+
+    private static string ToneForSeverity(string severity)
+    {
+        if (IsErrorSeverity(severity))
+        {
+            return WorkspaceTone.Danger;
+        }
+
+        if (IsWarningSeverity(severity))
+        {
+            return WorkspaceTone.Warning;
+        }
+
+        return WorkspaceTone.Info;
+    }
+
     // ── Nested display models ─────────────────────────────────────────────────────────
 
     public sealed class ProviderHealthItem
@@ -712,6 +934,7 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
     public sealed class SystemEventItem
     {
         public string Source { get; set; } = string.Empty;
+        public string Severity { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
         public Brush SeverityColor { get; set; } = Brushes.Gray;
         public string TimeText { get; set; } = string.Empty;

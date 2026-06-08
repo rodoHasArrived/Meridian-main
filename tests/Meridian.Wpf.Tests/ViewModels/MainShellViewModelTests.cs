@@ -9,6 +9,7 @@ using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Tests.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
@@ -17,6 +18,7 @@ using Xunit.Sdk;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
+[Collection("DesktopAuthenticationEnvironment")]
 public sealed class MainShellViewModelTests
 {
     private static MainPageViewModel CreateMainPageViewModel(
@@ -46,7 +48,7 @@ public sealed class MainShellViewModelTests
             settingsConfigurationService: settingsConfigurationService);
     }
 
-    private static MainWindowViewModel CreateMainWindowViewModel()
+    private static MainWindowViewModel CreateMainWindowViewModel(DesktopAuthenticationSession? authenticationSession = null)
     {
         var navigationService = NavigationService.Instance;
         navigationService.ResetForTests();
@@ -66,6 +68,7 @@ public sealed class MainShellViewModelTests
             ThemeService.Instance,
             WatchlistService.Instance,
             fixtureModeDetector,
+            authenticationSession ?? DesktopAuthenticationSessionTests.CreateSession("Development"),
             Substitute.For<IStatusService>());
     }
 
@@ -565,6 +568,76 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void AuthenticatedSession_WhenSignedIn_ShouldExposeOperatorBannerState()
+    {
+        using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
+            .Set("MDC_USERS", """[{"username":"desktop-admin","password":"pw","role":"Admin"}]""")
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD", null)
+            .Set("MDC_AUTH_MODE", null);
+
+        var session = DesktopAuthenticationSessionTests.CreateSession("Production");
+        session.SignIn("desktop-admin", "pw").Succeeded.Should().BeTrue();
+
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainWindowViewModel(session);
+
+            vm.AuthenticatedSessionVisibility.Should().Be(Visibility.Visible);
+            vm.AuthenticatedOperatorText.Should().Be("desktop-admin");
+            vm.AuthenticatedRoleText.Should().Be("Admin access");
+            vm.AuthenticatedSessionDetail.Should().Contain("In-memory");
+            vm.LogoutCommand.CanExecute(null).Should().BeTrue();
+        });
+    }
+
+    [Fact]
+    public void LogoutCommand_WhenSignedIn_ShouldClearSessionAndRaiseLogoutRequest()
+    {
+        using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
+            .Set("MDC_USERS", """[{"username":"desktop-admin","password":"pw","role":"Admin"}]""")
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD", null)
+            .Set("MDC_AUTH_MODE", null);
+
+        var session = DesktopAuthenticationSessionTests.CreateSession("Production");
+        session.SignIn("desktop-admin", "pw").Succeeded.Should().BeTrue();
+
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainWindowViewModel(session);
+            var logoutRequested = false;
+            vm.LogoutRequested += (_, _) => logoutRequested = true;
+
+            vm.LogoutCommand.Execute(null);
+
+            logoutRequested.Should().BeTrue();
+            session.IsAuthenticated.Should().BeFalse();
+            session.CurrentActor.Should().BeEmpty();
+            vm.AuthenticatedSessionVisibility.Should().Be(Visibility.Collapsed);
+            vm.AuthenticatedOperatorText.Should().Be("Not signed in");
+            vm.LogoutCommand.CanExecute(null).Should().BeFalse();
+        });
+    }
+
+    [Fact]
+    public void LogoutCommand_WhenNoSession_ShouldStayDisabled()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainWindowViewModel();
+            var logoutRequested = false;
+            vm.LogoutRequested += (_, _) => logoutRequested = true;
+
+            vm.LogoutCommand.CanExecute(null).Should().BeFalse();
+            vm.LogoutCommand.Execute(null);
+
+            logoutRequested.Should().BeFalse();
+            vm.AuthenticatedSessionVisibility.Should().Be(Visibility.Collapsed);
+        });
+    }
+
+    [Fact]
     public void ShowClipboardSymbols_WhenManySymbolsDetected_UsesCompactPreview()
     {
         WpfTestThread.Run(() =>
@@ -620,6 +693,10 @@ public sealed class MainShellViewModelTests
         xaml.Should().Contain("StartupBannerDetail");
         xaml.Should().Contain("DismissStartupBannerCommand");
         xaml.Should().Contain("CommandParameter=\"Welcome\"");
+        xaml.Should().Contain("DesktopAuthenticationSessionBanner");
+        xaml.Should().Contain("DesktopLogoutButton");
+        xaml.Should().Contain("LogoutCommand");
+        xaml.Should().Contain("AuthenticatedOperatorText");
     }
 
     [Fact]

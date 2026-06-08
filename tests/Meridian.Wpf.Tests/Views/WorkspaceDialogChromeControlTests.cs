@@ -55,8 +55,10 @@ public sealed class WorkspaceDialogChromeControlTests
             @"src\Meridian.Wpf\Views\ApiKeyDialog.xaml.cs"));
 
         xaml.Should().Contain("WorkspaceDialogChromeControl");
+        xaml.Should().Contain("SecretInputControl");
         xaml.Should().Contain("DialogAutomationId=\"ApiKeyDialogChrome\"");
-        xaml.Should().Contain("AutomationProperties.AutomationId=\"ApiKeyDialogInput\"");
+        xaml.Should().Contain("InputAutomationId=\"ApiKeyDialogInput\"");
+        xaml.Should().Contain("RevealAutomationId=\"ApiKeyDialogRevealButton\"");
         xaml.Should().Contain("AutomationProperties.AutomationId=\"ApiKeyDialogCancelButton\"");
         xaml.Should().Contain("AutomationProperties.AutomationId=\"ApiKeyDialogSaveButton\"");
         xaml.Should().NotContain("Background=\"#FF1E1E2E\"");

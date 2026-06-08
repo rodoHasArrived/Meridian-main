@@ -49,7 +49,7 @@
                   BorderThickness="1"
                   BorderBrush="{StaticResource ConsoleBorderBrush}"
                   Background="{StaticResource ConsoleBackgroundLightBrush}"
-                  SelectionMode="Single"
+                  SelectionMode="{Binding ElementName=Root, Path=SelectionMode}"
                   ScrollViewer.CanContentScroll="True"
                   VirtualizingPanel.IsVirtualizing="True"
                   VirtualizingPanel.VirtualizationMode="Recycling"
@@ -58,7 +58,8 @@
                   KeyboardNavigation.DirectionalNavigation="Contained"
                   ItemContainerStyle="{StaticResource DenseGridRowItemStyle}"
                   AutomationProperties.AutomationId="{Binding ElementName=Root, Path=GridAutomationId}"
-                  AutomationProperties.Name="{Binding ElementName=Root, Path=Table.Title}" />
+                  AutomationProperties.Name="{Binding ElementName=Root, Path=Table.Title}"
+                  SelectionChanged="RowsList_SelectionChanged" />
         <Border x:Name="EmptyPanel"
                 Visibility="Collapsed"
                 Background="{StaticResource PremiumPanelBrush}"

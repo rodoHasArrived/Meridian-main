@@ -6,6 +6,7 @@ using Meridian.FinancialOperations.Ledger;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels.Accounting;
 using Meridian.Wpf.Views;
 
@@ -146,6 +147,23 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         descriptor.WorkspaceId.Should().Be("accounting");
         descriptor.Subtitle.ToLowerInvariant().Should().Contain("manual journals");
         ShellNavigationCatalog.GetRegisteredPageTypes().Should().Contain(typeof(AccountingConfigurePage));
+    }
+
+    [Fact]
+    public void AccountingConfigurePageSource_ShouldUseCompactActionChrome()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\AccountingConfigurePage.xaml"));
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().Contain("AccountingConfigureActionStrip");
+        xaml.Should().Contain("AccountingConfigureRefreshButton");
+        xaml.Should().Contain("AccountingConfigureSeedBaselineButton");
+        xaml.Should().Contain("AccountingConfigureActivateButton");
+        xaml.Should().Contain("ToolTip=\"{Binding StatusText}\"");
+        xaml.Should().Contain("ToolTip=\"{Binding ConfigurationDetailText}\"");
+        xaml.Should().Contain("ToolTip=\"{Binding CloseDetailText}\"");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+        xaml.Should().Contain("AccountingConfigureTabs");
     }
 
     public void Dispose()

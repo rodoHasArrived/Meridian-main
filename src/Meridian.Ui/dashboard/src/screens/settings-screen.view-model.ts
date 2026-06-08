@@ -32,6 +32,8 @@ import type {
   ReportingWorkspaceResponse,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
+  ProviderCredentialFieldMetadata,
+  ProviderEnvironmentOption,
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
@@ -820,6 +822,8 @@ export interface SettingsProviderConnectionRow {
   actionHref: string;
   actionLabel: string;
   actionAriaLabel: string;
+  credentialFields: ProviderCredentialFieldMetadata[];
+  environmentOptions: ProviderEnvironmentOption[];
 }
 
 export interface SettingsProviderConnectionGroup {
@@ -1945,7 +1949,9 @@ function buildProviderConnectionRow(
     recommendedAction: row.recommendedAction,
     actionHref: row.actionHref || settingsProviderConnectionRoute(row.providerId),
     actionLabel: row.providerId === "alpaca" ? "Manage Alpaca" : "Open provider row",
-    actionAriaLabel: `Open ${row.displayName} provider connection row`
+    actionAriaLabel: `Open ${row.displayName} provider connection row`,
+    credentialFields: row.credentialFields ?? [],
+    environmentOptions: row.environmentOptions ?? []
   };
 }
 
@@ -1994,7 +2000,9 @@ function buildProviderRoutingConnectionRow(
     recommendedAction: providerRoutingRecommendedAction(connection, routingContext),
     actionHref: settingsProviderConnectionRoute(connection.connectionId),
     actionLabel: "Open provider row",
-    actionAriaLabel: `Open ${connection.displayName} provider connection row`
+    actionAriaLabel: `Open ${connection.displayName} provider connection row`,
+    credentialFields: [],
+    environmentOptions: []
   };
 }
 

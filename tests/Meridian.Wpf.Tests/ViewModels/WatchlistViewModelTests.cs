@@ -86,11 +86,15 @@ public sealed class WatchlistViewModelTests
     [Fact]
     public void WatchlistDisplayModel_ExposesPinnedBadgeVisibility()
     {
-        new WatchlistDisplayModel { IsPinned = true }
-            .PinnedBadgeVisibility.Should().Be(Visibility.Visible);
+        var pinned = new WatchlistDisplayModel { IsPinned = true, SymbolsPreview = ["SPY", "QQQ"] };
+        pinned.PinnedBadgeVisibility.Should().Be(Visibility.Visible);
+        pinned.PinnedText.Should().Be("Pinned");
+        pinned.PreviewSymbolsText.Should().Be("SPY, QQQ");
 
-        new WatchlistDisplayModel { IsPinned = false }
-            .PinnedBadgeVisibility.Should().Be(Visibility.Collapsed);
+        var unpinned = new WatchlistDisplayModel { IsPinned = false };
+        unpinned.PinnedBadgeVisibility.Should().Be(Visibility.Collapsed);
+        unpinned.PinnedText.Should().Be("Unpinned");
+        unpinned.PreviewSymbolsText.Should().Be("No preview symbols");
     }
 
     [Fact]
@@ -119,21 +123,85 @@ public sealed class WatchlistViewModelTests
     }
 
     [Fact]
+    public void SelectedWatchlist_UpdatesInspectorAndSelectedCommandReadiness()
+    {
+        using var viewModel = new WatchlistViewModel(
+            WpfServices.WatchlistService.Instance,
+            WpfServices.LoggingService.Instance,
+            WpfServices.NotificationService.Instance,
+            WpfServices.NavigationService.Instance);
+
+        viewModel.WatchlistTable.Rows.Should().BeSameAs(viewModel.FilteredWatchlists);
+        viewModel.LoadSelectedWatchlistCommand.CanExecute(null).Should().BeFalse();
+        viewModel.EditSelectedWatchlistCommand.CanExecute(null).Should().BeFalse();
+        viewModel.PinSelectedWatchlistCommand.CanExecute(null).Should().BeFalse();
+        viewModel.ExportSelectedWatchlistCommand.CanExecute(null).Should().BeFalse();
+        viewModel.DuplicateSelectedWatchlistCommand.CanExecute(null).Should().BeFalse();
+        viewModel.DeleteSelectedWatchlistCommand.CanExecute(null).Should().BeFalse();
+        viewModel.SelectedWatchlistInspector.Title.Should().Be("No watchlist selected");
+        viewModel.LoadSelectedWatchlistTooltip.Should().Be("Select a watchlist before loading symbols.");
+
+        var selected = BuildWatchlist("Core ETFs", symbolTotal: 4, isPinned: true);
+        selected.SymbolsPreview = ["SPY", "QQQ", "DIA", "IWM"];
+        selected.ModifiedText = "2h ago";
+        viewModel.SelectedWatchlist = selected;
+
+        viewModel.HasSelectedWatchlist.Should().BeTrue();
+        viewModel.SelectedPinActionLabel.Should().Be("Unpin");
+        viewModel.LoadSelectedWatchlistCommand.CanExecute(null).Should().BeTrue();
+        viewModel.EditSelectedWatchlistCommand.CanExecute(null).Should().BeTrue();
+        viewModel.PinSelectedWatchlistCommand.CanExecute(null).Should().BeTrue();
+        viewModel.ExportSelectedWatchlistCommand.CanExecute(null).Should().BeTrue();
+        viewModel.DuplicateSelectedWatchlistCommand.CanExecute(null).Should().BeTrue();
+        viewModel.DeleteSelectedWatchlistCommand.CanExecute(null).Should().BeTrue();
+        viewModel.SelectedWatchlistInspector.Title.Should().Be("Core ETFs");
+        viewModel.SelectedWatchlistInspector.Subtitle.Should().Be("Pinned watchlist");
+        viewModel.SelectedWatchlistInspector.Facts.Should().Contain(fact => fact.Label == "Symbols" && fact.Detail.Contains("SPY"));
+        viewModel.LoadSelectedWatchlistTooltip.Should().Contain("Core ETFs");
+        viewModel.PinSelectedWatchlistTooltip.Should().Contain("Unpin");
+        viewModel.DeleteSelectedWatchlistTooltip.Should().Contain("Core ETFs");
+    }
+
+    [Fact]
     public void WatchlistPageSource_BindsPostureAndDynamicEmptyState()
     {
         var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\WatchlistPage.xaml"));
+        var codeBehind = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\WatchlistPage.xaml.cs"));
 
+        xaml.Should().Contain("WatchlistActionStrip");
         xaml.Should().Contain("WatchlistPostureCard");
+        xaml.Should().Contain("WatchlistWorkbench");
         xaml.Should().Contain("{Binding PostureTitle}");
         xaml.Should().Contain("{Binding PostureDetail}");
         xaml.Should().Contain("{Binding TotalWatchlistsText}");
         xaml.Should().Contain("{Binding VisibleScopeText}");
         xaml.Should().Contain("{Binding EmptyStateTitle}");
         xaml.Should().Contain("{Binding EmptyStateDescription}");
+        xaml.Should().Contain("WorkstationTableInspectorControl");
+        xaml.Should().Contain("WatchlistLibraryGrid");
+        xaml.Should().Contain("WatchlistSelectionInspector");
+        xaml.Should().Contain("WatchlistActionInspector");
+        xaml.Should().Contain("SelectedItem=\"{Binding SelectedWatchlist, Mode=TwoWay}\"");
+        xaml.Should().Contain("Table=\"{Binding WatchlistTable}\"");
+        xaml.Should().Contain("Inspector=\"{Binding SelectedWatchlistInspector}\"");
+        xaml.Should().Contain("{Binding LoadSelectedWatchlistCommand}");
+        xaml.Should().Contain("{Binding EditSelectedWatchlistCommand}");
+        xaml.Should().Contain("{Binding PinSelectedWatchlistCommand}");
+        xaml.Should().Contain("{Binding ExportSelectedWatchlistCommand}");
+        xaml.Should().Contain("{Binding DuplicateSelectedWatchlistCommand}");
+        xaml.Should().Contain("{Binding DeleteSelectedWatchlistCommand}");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
         xaml.Should().Contain("WatchlistClearSearchButton");
         xaml.Should().Contain("{Binding ClearSearchCommand}");
-        xaml.Should().Contain("WatchlistPinnedBadge");
-        xaml.Should().Contain("{Binding PinnedBadgeVisibility}");
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().NotContain("WatchlistCardStyle");
+        xaml.Should().NotContain("WatchlistsContainer");
+        xaml.Should().NotContain("LoadWatchlist_Click");
+        xaml.Should().NotContain("EditWatchlist_Click");
+        xaml.Should().NotContain("PinWatchlist_Click");
+        xaml.Should().NotContain("WatchlistMenu_Click");
+        codeBehind.Should().NotContain("ContextMenu");
+        codeBehind.Should().NotContain("LoadWatchlist_Click");
     }
 
     private static WatchlistDisplayModel BuildWatchlist(string name, int symbolTotal, bool isPinned) =>

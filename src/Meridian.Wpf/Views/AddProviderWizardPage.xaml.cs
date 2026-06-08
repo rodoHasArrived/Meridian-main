@@ -94,6 +94,7 @@ public partial class AddProviderWizardPage : Page
         {
             var envVar = field.EnvironmentVariable ?? string.Empty;
             var currentValue = GetConfiguredEnvironmentValue(field) ?? "";
+            var isSecret = IsSecretCredentialField(field);
 
             var label = new TextBlock
             {
@@ -102,12 +103,23 @@ public partial class AddProviderWizardPage : Page
                 Margin = new Thickness(0, 0, 0, 4),
             };
 
-            var textBox = new TextBox
-            {
-                Style = (Style)FindResource("FormTextBoxStyle"),
-                Text = currentValue,
-                Tag = envVar,
-            };
+            FrameworkElement input = isSecret
+                ? new SecretInputControl
+                {
+                    Secret = currentValue,
+                    Tag = envVar,
+                    InputAutomationId = $"AddProviderCredentialInput_{envVar}",
+                    RevealAutomationId = $"AddProviderCredentialReveal_{envVar}",
+                    InputAutomationName = field.DisplayName,
+                    RevealAutomationName = "Show or hide provider credential",
+                    RevealToolTip = "Show or hide provider credential",
+                }
+                : new TextBox
+                {
+                    Style = (Style)FindResource("FormTextBoxStyle"),
+                    Text = currentValue,
+                    Tag = envVar,
+                };
 
             var envHint = new TextBlock
             {
@@ -118,7 +130,7 @@ public partial class AddProviderWizardPage : Page
             };
 
             CredentialFieldsPanel.Children.Add(label);
-            CredentialFieldsPanel.Children.Add(textBox);
+            CredentialFieldsPanel.Children.Add(input);
             CredentialFieldsPanel.Children.Add(envHint);
         }
     }
@@ -192,7 +204,23 @@ public partial class AddProviderWizardPage : Page
                 if (!string.IsNullOrWhiteSpace(value))
                     Environment.SetEnvironmentVariable(envVar, value, EnvironmentVariableTarget.User);
             }
+            else if (child is SecretInputControl secretInput && secretInput.Tag is string secretEnvVar)
+            {
+                var value = secretInput.Secret.Trim();
+                if (!string.IsNullOrWhiteSpace(value))
+                    Environment.SetEnvironmentVariable(secretEnvVar, value, EnvironmentVariableTarget.User);
+            }
         }
+    }
+
+    private static bool IsSecretCredentialField(CredentialFieldInfo field)
+    {
+        return field.DisplayName.Contains("secret", StringComparison.OrdinalIgnoreCase)
+            || field.DisplayName.Contains("token", StringComparison.OrdinalIgnoreCase)
+            || field.DisplayName.Contains("key", StringComparison.OrdinalIgnoreCase)
+            || field.Name.Contains("secret", StringComparison.OrdinalIgnoreCase)
+            || field.Name.Contains("token", StringComparison.OrdinalIgnoreCase)
+            || field.Name.Contains("key", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool HasConfiguredEnvironmentValue(CredentialFieldInfo field)

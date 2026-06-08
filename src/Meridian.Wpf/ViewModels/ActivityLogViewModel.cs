@@ -137,6 +137,16 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
 
     public bool CanExportVisibleLogs => FilteredLogs.Count > 0;
 
+    public string ExportVisibleLogsTooltip => CanExportVisibleLogs
+        ? $"Export {FormatEntryCount(FilteredLogs.Count)} from the current activity log view."
+        : HasLogHistory
+            ? "No visible activity log entries to export. Reset filters or adjust the current filter."
+            : "No activity log entries to export. Connect the backend or trigger a desktop workflow first.";
+
+    public string ClearLogTooltip => CanClearLog
+        ? $"Review clear confirmation for {FormatEntryCount(_allLogs.Count)} retained in the local activity window."
+        : "No retained activity log entries to clear.";
+
     private bool _isClearConfirmationVisible;
     public bool IsClearConfirmationVisible
     {
@@ -581,6 +591,8 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
         OnPropertyChanged(nameof(HasFilterRecoveryAction));
         OnPropertyChanged(nameof(CanClearLog));
         OnPropertyChanged(nameof(CanExportVisibleLogs));
+        OnPropertyChanged(nameof(ExportVisibleLogsTooltip));
+        OnPropertyChanged(nameof(ClearLogTooltip));
         OnPropertyChanged(nameof(ClearConfirmationDetail));
         OnPropertyChanged(nameof(EmptyStateTitle));
         OnPropertyChanged(nameof(EmptyStateDetail));

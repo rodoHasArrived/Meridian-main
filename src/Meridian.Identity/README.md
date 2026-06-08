@@ -79,7 +79,10 @@ Application-only identity adapters. `FundAccountTraversalQueryService` also live
 abstractions so endpoints can reuse the authoritative Fund -> Owns -> Account traversal without
 keeping the implementation in Application. Cross-module endpoint, F#, browser, and WPF consumers
 should reference Identity rather than reintroducing auth DTOs or identity state under
-`Meridian.Contracts` or `Meridian.Ui.Shared`.
+`Meridian.Contracts` or `Meridian.Ui.Shared`. The WPF desktop startup flow now consumes
+`UserProfileRegistry` and `LoginSessionService` through `DesktopAuthenticationSession`, so desktop
+operator login uses the same `MDC_USERS` and legacy `MDC_USERNAME` / `MDC_PASSWORD` profile source as
+the browser workstation without moving credential storage into WPF.
 
 ### Migration and archive notes
 
@@ -91,8 +94,8 @@ request/result DTOs moved from `src/Meridian.Contracts/Auth` into this module. `
 `UserProfileRegistry`, `AuthenticationModeResolver`, `IRolePermissionProfileStore`, and
 `FileRolePermissionProfileStore` moved from `src/Meridian.Ui.Shared` into this module.
 `FundAccountTraversalQueryService` moved from `src/Meridian.Application/FundStructure` into this
-module. Remaining Identity migration work is endpoint/middleware adapters and browser/WPF identity
-presentation.
+module. Remaining Identity migration work is endpoint/middleware adapters and browser identity
+presentation refinements.
 
 ## Change rules
 

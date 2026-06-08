@@ -88,8 +88,11 @@ public sealed class StrategyRunWorkspaceService
     public Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(string? strategyId = null, CancellationToken ct = default) =>
         _readService.GetRunsAsync(strategyId, ct: ct);
 
+    public Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(StrategyRunHistoryQuery query, CancellationToken ct = default) =>
+        _readService.GetRunsAsync(query, ct);
+
     public Task<IReadOnlyList<StrategyRunSummary>> GetRecordedRunsAsync(CancellationToken ct = default) =>
-        GetRunsAsync(null, ct);
+        GetRunsAsync((string?)null, ct);
 
     public Task<IReadOnlyList<StrategyRunSummary>> GetRecordedRunsForStrategyAsync(string? strategyId, CancellationToken ct = default) =>
         GetRunsAsync(strategyId, ct);

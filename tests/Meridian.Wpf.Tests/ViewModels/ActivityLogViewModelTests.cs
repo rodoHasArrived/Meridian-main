@@ -23,6 +23,8 @@ public sealed class ActivityLogViewModelTests
             viewModel.VisibleLogCountText.Should().Be("3 visible");
             viewModel.CanClearLog.Should().BeTrue();
             viewModel.CanExportVisibleLogs.Should().BeTrue();
+            viewModel.ClearLogTooltip.Should().Contain("3 entries");
+            viewModel.ExportVisibleLogsTooltip.Should().Contain("3 entries");
             viewModel.ClearCommand.CanExecute(null).Should().BeTrue();
             viewModel.ErrorLogCountText.Should().Be("1 error");
             viewModel.WarningLogCountText.Should().Be("1 warning");
@@ -85,6 +87,8 @@ public sealed class ActivityLogViewModelTests
             viewModel.HasFilterRecoveryAction.Should().BeTrue();
             viewModel.CanClearLog.Should().BeTrue();
             viewModel.CanExportVisibleLogs.Should().BeFalse();
+            viewModel.ClearLogTooltip.Should().Contain("2 entries");
+            viewModel.ExportVisibleLogsTooltip.Should().Be("No visible activity log entries to export. Reset filters or adjust the current filter.");
             viewModel.ClearCommand.CanExecute(null).Should().BeTrue();
             viewModel.EmptyStateTitle.Should().Be("No log entries match the current filters");
             viewModel.ClearFiltersCommand.CanExecute(null).Should().BeTrue();
@@ -117,6 +121,8 @@ public sealed class ActivityLogViewModelTests
             viewModel.HasFilterRecoveryAction.Should().BeFalse();
             viewModel.CanClearLog.Should().BeFalse();
             viewModel.CanExportVisibleLogs.Should().BeFalse();
+            viewModel.ClearLogTooltip.Should().Be("No retained activity log entries to clear.");
+            viewModel.ExportVisibleLogsTooltip.Should().Be("No activity log entries to export. Connect the backend or trigger a desktop workflow first.");
             viewModel.ClearCommand.CanExecute(null).Should().BeFalse();
             viewModel.EmptyStateTitle.Should().Be("No log entries to display");
             viewModel.EmptyStateDetail.Should().Contain("Connect the backend");
@@ -147,6 +153,8 @@ public sealed class ActivityLogViewModelTests
             viewModel.ActivityPostureTitle.Should().Be("Waiting for activity");
             viewModel.CanClearLog.Should().BeFalse();
             viewModel.CanExportVisibleLogs.Should().BeFalse();
+            viewModel.ClearLogTooltip.Should().Be("No retained activity log entries to clear.");
+            viewModel.ExportVisibleLogsTooltip.Should().Be("No activity log entries to export. Connect the backend or trigger a desktop workflow first.");
             viewModel.ClearCommand.CanExecute(null).Should().BeFalse();
 
             notifications.ClearHistory();
@@ -206,12 +214,16 @@ public sealed class ActivityLogViewModelTests
         xaml.Should().Contain("ActivityLogSearchBox");
         xaml.Should().Contain("ActivityLogExportButton");
         xaml.Should().Contain("ActivityLogClearButton");
+        xaml.Should().Contain("ActivityLogActionStrip");
         xaml.Should().Contain("ActivityLogClearConfirmationPanel");
         xaml.Should().Contain("ActivityLogConfirmClearButton");
         xaml.Should().Contain("ActivityLogCancelClearButton");
         xaml.Should().Contain("ActivityLogResetFiltersButton");
         xaml.Should().Contain("{Binding CanExportVisibleLogs}");
         xaml.Should().Contain("{Binding CanClearLog}");
+        xaml.Should().Contain("ToolTip=\"{Binding ExportVisibleLogsTooltip}\"");
+        xaml.Should().Contain("ToolTip=\"{Binding ClearLogTooltip}\"");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
         xaml.Should().Contain("{Binding RequestClearCommand}");
         xaml.Should().Contain("{Binding ConfirmClearCommand}");
         xaml.Should().Contain("{Binding CancelClearCommand}");
@@ -225,6 +237,7 @@ public sealed class ActivityLogViewModelTests
         xaml.Should().Contain("{Binding HasFilterRecoveryAction");
         xaml.Should().Contain("{Binding EmptyStateTitle}");
         xaml.Should().Contain("{Binding EmptyStateDetail}");
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
         xaml.Should().NotContain("SelectionChanged=\"Filter_Changed\"");
         xaml.Should().NotContain("TextChanged=\"Search_Changed\"");
         xaml.Should().NotContain("Click=\"Clear_Click\"");

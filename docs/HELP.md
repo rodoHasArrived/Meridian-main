@@ -98,11 +98,28 @@ By default, production startup paths must use persistence-backed domain services
 In-memory governance/domain services are for local fixture/dev scenarios only and now require explicit opt-in:
 
 ```bash
+DOTNET_ENVIRONMENT=Development
+ASPNETCORE_ENVIRONMENT=Development
 MERIDIAN_USE_INMEMORY_GOVERNANCE=true
 ```
 
 When `DOTNET_ENVIRONMENT=Production` (or `ASPNETCORE_ENVIRONMENT=Production`), Meridian fails fast
 if an in-memory governance profile is requested.
+
+For the WPF desktop launcher, use the explicit launch modes:
+
+```powershell
+pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development
+pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly
+pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production
+```
+
+`-LaunchMode Production` builds Release host and desktop artifacts and requires
+`MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` plus `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING` before
+the desktop-local host starts. `-BuildOnly` verifies the Release build without starting the host.
+The WPF startup screen uses the same environment-backed operator credentials as the browser
+workstation: prefer `MDC_USERS`, or use `MDC_USERNAME` / `MDC_PASSWORD` for a single local admin.
+Production auth fails closed when no user profile is configured.
 
 ## Troubleshooting
 

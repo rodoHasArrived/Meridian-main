@@ -277,6 +277,7 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain("Name = 'dotnet.exe' OR Name = 'MSBuild.exe' OR Name = 'testhost.exe' OR Name = 'csc.exe' OR Name = 'VBCSCompiler.exe'");
         script.Should().Contain("(build|test|restore|msbuild)");
         script.Should().Contain("active-dotnet-processes.log");
+        script.Should().Contain("Invoke-MeridianWpfTempProjectCleanup -RepoRoot $repoRoot -WpfProjectPath $wpfProject");
         script.Should().Contain("/m:1");
         script.Should().Contain("/nr:false");
         script.Should().Contain("/p:BuildInParallel=false");
@@ -297,6 +298,9 @@ public sealed class DesktopWorkflowScriptTests
         sharedBuildScript.Should().Contain("[System.IO.Path]::GetDirectoryName([System.IO.Path]::GetFullPath($LogPath))");
         sharedBuildScript.Should().Contain("Stop-MeridianRepoOwnedTestHostProcesses");
         sharedBuildScript.Should().Contain("function Invoke-MeridianStepWithTestHostRetry");
+        sharedBuildScript.Should().Contain("function Get-MeridianRepoOwnedBuildProcesses");
+        sharedBuildScript.Should().Contain("function Invoke-MeridianWpfTempProjectCleanup");
+        sharedBuildScript.Should().Contain("-Filter '*_wpftmp.csproj'");
 
         workflow.Should().Contain("$devArgs = @{");
         workflow.Should().Contain("Restore = $true");
@@ -316,46 +320,89 @@ public sealed class DesktopWorkflowScriptTests
         var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\desktop-dev.ps1"));
         var launcher = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\run-desktop.ps1"));
 
-        script.Should().Contain("[string]$Profile = 'debug-startup'");
+        script.Should().Contain("[string]$Profile = 'desktop-development'");
         script.Should().Contain("[switch]$SkipLaunchSmoke");
         script.Should().Contain(". (Join-Path $PSScriptRoot 'SharedBuild.ps1')");
         script.Should().Contain(". (Join-Path $PSScriptRoot 'SharedWorkflowProfiles.ps1')");
         script.Should().Contain("$buildIsolationKey = if ($NoIsolation) { '' } else { New-MeridianBuildIsolationKey -Prefix 'desktop-dev' }");
         script.Should().Contain("Get-MeridianWorkflowProfile -RepoRoot $repoRoot -ProfileName $Profile -ProfileRoot $ProfileRoot");
         script.Should().Contain("Test-MeridianWorkflowProfile -ProfileData $profileEnvelope.data");
+        script.Should().Contain("Get-MeridianRepoOwnedBuildProcesses -RepoRoot $repoRoot");
+        script.Should().Contain("Invoke-MeridianWpfTempProjectCleanup -RepoRoot $repoRoot -WpfProjectPath $wpfProject");
         script.Should().Contain("Get-MeridianBuildArguments -IsolationKey $buildIsolationKey -EnableFullWpfBuild");
         script.Should().Contain("dotnet', 'build', $wpfProject, '-c', $Configuration, '--no-restore'");
         script.Should().Contain("dotnet', 'build', $wpfTestsProject, '-c', $Configuration, '--no-restore'");
         script.Should().Contain("Launch fixture desktop startup smoke");
         script.Should().Contain("run-desktop.ps1");
+        script.Should().Contain("'-LaunchMode', 'Development'");
         script.Should().Contain("'-StartupSmoke'");
         script.Should().Contain("make desktop-test-position-blotter-route");
         script.Should().Contain("pwsh ./scripts/dev/run-desktop-workflow.ps1 -Workflow debug-startup");
         script.Should().Contain("python ./scripts/dev/desktop_screen_blueprint_checklist.py --summary");
-        script.Should().Contain("Launch full fixture desktop: pwsh ./scripts/dev/run-desktop.ps1 -Fixture");
+        script.Should().Contain("Launch development desktop: pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development");
+        script.Should().Contain("Launch fixture desktop:     pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development -Fixture");
+        script.Should().Contain("Build production desktop:   pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly");
 
+        launcher.Should().Contain("[ValidateSet('Development', 'Production')]");
+        launcher.Should().Contain("[string]$LaunchMode = 'Development'");
+        launcher.Should().Contain("[switch]$BuildOnly");
+        launcher.Should().Contain("if ($LaunchMode -eq 'Production') { 'desktop-production' } else { 'desktop-development' }");
+        launcher.Should().Contain("$hostConfiguration = [string](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key 'configuration' -Fallback $desktopConfiguration)");
         launcher.Should().Contain("[switch]$StartupSmoke");
         launcher.Should().Contain("[int]$StartupSmokeTimeoutSec = 45");
         launcher.Should().Contain("$buildIsolationKey = if ($NoBuild) { '' } else { New-MeridianBuildIsolationKey -Prefix 'desktop-run' }");
+        launcher.Should().Contain("Get-MeridianRepoOwnedBuildProcesses -RepoRoot $repoRoot");
+        launcher.Should().Contain("Invoke-MeridianWpfTempProjectCleanup -RepoRoot $repoRoot -WpfProjectPath $desktopProject");
+        launcher.Should().Contain("function Apply-DesktopLaunchMode");
+        launcher.Should().Contain("MERIDIAN_USE_INMEMORY_GOVERNANCE' -Value 'true'");
+        launcher.Should().Contain("function Assert-ProductionGovernanceConfiguration");
+        launcher.Should().Contain("'MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING'");
+        launcher.Should().Contain("'MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING'");
+        launcher.Should().Contain("Production launch mode cannot run with -Fixture");
+        launcher.Should().Contain("Assert-ProductionGovernanceConfiguration");
         launcher.Should().Contain("function Wait-ForDesktopWindow");
         launcher.Should().Contain("function Stop-DesktopProcessAfterSmoke");
         launcher.Should().Contain("function Stop-OwnedDesktopProcessSafely");
         launcher.Should().Contain("$hostShutdownToken = [System.Convert]::ToHexString([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))");
         launcher.Should().Contain("MDC_SHUTDOWN_TOKEN = $env:MDC_SHUTDOWN_TOKEN");
+        launcher.Should().Contain("DOTNET_ENVIRONMENT = $env:DOTNET_ENVIRONMENT");
+        launcher.Should().Contain("ASPNETCORE_ENVIRONMENT = $env:ASPNETCORE_ENVIRONMENT");
+        launcher.Should().Contain("MERIDIAN_USE_INMEMORY_GOVERNANCE = $env:MERIDIAN_USE_INMEMORY_GOVERNANCE");
         launcher.Should().Contain("$env:MDC_SHUTDOWN_TOKEN = $hostShutdownToken");
         launcher.Should().Contain("http://localhost:$hostPort/api/system/shutdown");
         launcher.Should().Contain("\"X-Meridian-Shutdown-Token\" = $hostShutdownToken");
         launcher.Should().Contain("Local Meridian host stopped gracefully");
+        launcher.Should().Contain("-WindowStyle Hidden");
+        launcher.Should().Contain("Desktop build completed; skipping host and shell launch because -BuildOnly was supplied.");
         launcher.Should().Contain("Stop-OwnedDesktopProcessSafely");
         launcher.Should().Contain("Write-Step 'Startup smoke'");
         launcher.Should().Contain("Wait-ForDesktopWindow -Process $desktopProcess -TimeoutSec $StartupSmokeTimeoutSec");
         launcher.Should().Contain("Stop-DesktopProcessAfterSmoke -Process $desktopProcess");
         launcher.Should().Contain("Meridian desktop startup smoke completed successfully");
 
+        var developmentProfile = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\workflow-profiles\desktop-development.json"));
+        var productionProfile = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\workflow-profiles\desktop-production.json"));
+        developmentProfile.Should().Contain("\"configuration\": \"Debug\"");
+        developmentProfile.Should().Contain("\"required\": false");
+        productionProfile.Should().Contain("\"configuration\": \"Release\"");
+        productionProfile.Should().Contain("\"required\": false");
+
         script.Should().NotContain("src/Meridian.Uwp/Meridian.Uwp.csproj");
         script.Should().NotContain("make build-wpf");
         script.Should().NotContain("make test-desktop-services");
         script.Should().NotContain("make uwp-xaml-diagnose");
+    }
+
+    [Fact]
+    public void CleanupGeneratedScript_ShouldIncludeStaleWpfTempProjects()
+    {
+        var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\cleanup-generated.ps1"));
+
+        script.Should().Contain("function Add-WpfTempProjectFiles");
+        script.Should().Contain("-Filter '*_wpftmp.csproj'");
+        script.Should().Contain("Stale WPF temporary project file");
+        script.Should().Contain("Generated files:");
+        script.Should().Contain("Deleting generated artifacts...");
     }
 
     private static string GetRepositoryFilePath(string relativePath)

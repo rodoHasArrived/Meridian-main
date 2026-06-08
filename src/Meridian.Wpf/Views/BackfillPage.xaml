@@ -30,148 +30,137 @@
 
             <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Padding="28,20,16,32">
             <StackPanel MaxWidth="900">
-                <!-- Header -->
-                <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,24">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Orientation="Horizontal">
-                        <Border Width="44" Height="44" CornerRadius="14"
-                                Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                                BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
-                            <TextBlock Text="{StaticResource IconDownload}"
-                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                       FontSize="24"
-                                       Foreground="{StaticResource InfoColorBrush}"
-                                       VerticalAlignment="Center"
-                                       HorizontalAlignment="Center" />
-                        </Border>
-                        <StackPanel Margin="12,0,0,0">
-                            <TextBlock Text="Historical Data Backfill"
-                                       Style="{StaticResource PageTitleStyle}" />
-                            <TextBlock Text="Provider fallback, gap repair, and archive catch-up workflows for historical datasets."
-                                       Style="{StaticResource CardDescriptionStyle}" />
-                        </StackPanel>
-                    </StackPanel>
-
-                    <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <Button Style="{StaticResource SecondaryButtonStyle}"
-                                Click="ValidateData_Click"
-                                Margin="0,0,8,0">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{StaticResource IconCheckmark}"
-                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                           FontSize="14"
-                                           VerticalAlignment="Center" />
-                                <TextBlock Text="Validate Data" Margin="8,0,0,0" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
-                        <Button Style="{StaticResource SecondaryButtonStyle}"
-                                Click="RepairGaps_Click">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{StaticResource IconWrench}"
-                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                           FontSize="14"
-                                           VerticalAlignment="Center" />
-                                <TextBlock Text="Repair Gaps" Margin="8,0,0,0" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Button>
-                    </StackPanel>
-                </Grid>
-                </Border>
-
-                <!-- Quick Actions Panel -->
-                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                <!-- Compact Actions -->
+                <Border Background="{StaticResource PremiumPanelBrush}"
+                        BorderBrush="{StaticResource ConsoleBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Margin="0,0,0,16"
+                        Padding="14,10"
+                        AutomationProperties.AutomationId="BackfillActionStrip"
+                        AutomationProperties.Name="Backfill Action Strip">
                     <Grid>
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                                <TextBlock Text="{StaticResource IconPlay}"
-                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                           FontSize="18"
-                                           Foreground="{StaticResource InfoColorBrush}"
-                                           VerticalAlignment="Center" />
-                                <TextBlock Text="Quick Actions"
-                                           Style="{StaticResource CardHeaderStyle}"
-                                           Margin="8,0,0,0" />
-                            </StackPanel>
+                        <Border Grid.Column="0"
+                                Width="30"
+                                Height="30"
+                                CornerRadius="8"
+                                Margin="0,0,10,0"
+                                VerticalAlignment="Center"
+                                Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                BorderBrush="{StaticResource InfoColorBrush}"
+                                BorderThickness="1">
+                            <TextBlock Text="{StaticResource IconDownload}"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="16"
+                                       Foreground="{StaticResource InfoColorBrush}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center" />
+                        </Border>
 
-                            <WrapPanel>
-                                <Button Style="{StaticResource PrimaryButtonStyle}"
-                                        Click="OpenWizard_Click"
-                                        Margin="0,0,8,8">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{StaticResource IconWizard}"
-                                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                                   FontSize="14"
-                                                   VerticalAlignment="Center" />
-                                        <TextBlock Text="Backfill Wizard" Margin="8,0,0,0" VerticalAlignment="Center" />
-                                    </StackPanel>
-                                </Button>
-                                <Button Style="{StaticResource SecondaryButtonStyle}"
-                                        Click="FillAllGaps_Click"
-                                        Margin="0,0,8,8">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{StaticResource IconWrench}"
-                                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                                   FontSize="14"
-                                                   VerticalAlignment="Center" />
-                                        <TextBlock Text="Fill All Gaps" Margin="8,0,0,0" VerticalAlignment="Center" />
-                                    </StackPanel>
-                                </Button>
-                                <Button Style="{StaticResource SecondaryButtonStyle}"
-                                        Click="UpdateLatest_Click"
-                                        Margin="0,0,8,8">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{StaticResource IconRefresh}"
-                                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                                   FontSize="14"
-                                                   VerticalAlignment="Center" />
-                                        <TextBlock Text="Update to Latest" Margin="8,0,0,0" VerticalAlignment="Center" />
-                                    </StackPanel>
-                                </Button>
-                                <Button Style="{StaticResource GhostButtonStyle}"
-                                        Click="BrowseData_Click"
-                                        Margin="0,0,8,8">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{StaticResource IconFolder}"
-                                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                                   FontSize="14"
-                                                   VerticalAlignment="Center" />
-                                        <TextBlock Text="Browse Data" Margin="8,0,0,0" VerticalAlignment="Center" />
-                                    </StackPanel>
-                                </Button>
-                            </WrapPanel>
+                        <StackPanel Grid.Column="1" Margin="0,0,20,0" VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Backfill"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                           Margin="0,0,10,0" />
+                                <TextBlock Text="{Binding StartReadinessTitle}"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           FontSize="12"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding StartReadinessScopeText}"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       FontSize="11"
+                                       TextTrimming="CharacterEllipsis" />
                         </StackPanel>
 
-                        <!-- Recommendation Badge -->
-                        <Border x:Name="RecommendationBadge"
-                                Grid.Column="1"
-                                Background="{StaticResource WarningColorBrush}"
-                                Opacity="0.15"
-                                CornerRadius="999"
-                                Padding="12,8"
-                                Margin="16,0,0,0"
-                                VerticalAlignment="Center"
-                                Visibility="Collapsed">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{StaticResource IconWarning}"
-                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                           FontSize="14"
-                                           Foreground="{StaticResource WarningColorBrush}"
-                                           VerticalAlignment="Center" />
-                                <TextBlock x:Name="RecommendationText" Text="3 gaps detected"
-                                           Foreground="{StaticResource WarningColorBrush}"
-                                           Margin="8,0,0,0" />
-                            </StackPanel>
-                        </Border>
+                        <WrapPanel Grid.Column="2" MaxWidth="500" HorizontalAlignment="Right" VerticalAlignment="Center">
+                            <Button AutomationProperties.AutomationId="BackfillWizardButton"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Click="OpenWizard_Click"
+                                    ToolTip="Open guided backfill setup"
+                                    Margin="0,0,8,8">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{StaticResource IconWizard}"
+                                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                               FontSize="14"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="Wizard" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button AutomationProperties.AutomationId="BackfillValidateDataButton"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Click="ValidateData_Click"
+                                    ToolTip="Validate configured historical data"
+                                    Margin="0,0,8,8">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{StaticResource IconCheckmark}"
+                                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                               FontSize="14"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="Validate" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button AutomationProperties.AutomationId="BackfillRepairGapsButton"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Click="RepairGaps_Click"
+                                    ToolTip="Analyze and repair selected data gaps"
+                                    Margin="0,0,8,8">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{StaticResource IconWrench}"
+                                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                               FontSize="14"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="Repair" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button AutomationProperties.AutomationId="BackfillFillAllGapsButton"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Click="FillAllGaps_Click"
+                                    ToolTip="Queue all detected gaps for the next run"
+                                    Margin="0,0,8,8">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{StaticResource IconWrench}"
+                                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                               FontSize="14"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="Fill Gaps" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button AutomationProperties.AutomationId="BackfillUpdateLatestButton"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Click="UpdateLatest_Click"
+                                    ToolTip="Update configured symbols to the latest bars"
+                                    Margin="0,0,8,8">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{StaticResource IconRefresh}"
+                                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                               FontSize="14"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="Latest" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button AutomationProperties.AutomationId="BackfillBrowseDataButton"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Click="BrowseData_Click"
+                                    ToolTip="Open retained historical data files"
+                                    Margin="0,0,8,8">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{StaticResource IconFolder}"
+                                               FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                               FontSize="14"
+                                               VerticalAlignment="Center" />
+                                    <TextBlock Text="Browse Data" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </WrapPanel>
                     </Grid>
                 </Border>
 
@@ -532,6 +521,8 @@
                                     Content="Start Backfill"
                                     Style="{StaticResource PrimaryButtonStyle}"
                                     IsEnabled="{Binding CanStartBackfill}"
+                                    ToolTip="{Binding StartReadinessDetail}"
+                                    ToolTipService.ShowOnDisabled="True"
                                     Visibility="{Binding IsBackfillActive, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}"
                                     Click="StartBackfill_Click"
                                     Margin="0,0,12,0" />

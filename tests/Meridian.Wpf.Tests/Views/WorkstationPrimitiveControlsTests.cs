@@ -138,6 +138,115 @@ public sealed class WorkstationPrimitiveControlsTests
     }
 
     [Fact]
+    public void WorkstationTableInspectorControl_ShouldRenderTableInspectorContractAndSingleSelection()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var tableRows = new ObservableCollection<RowFixture>
+            {
+                new("Polygon.io", "Healthy"),
+                new("Alpaca", "Degraded")
+            };
+            var selectedRows = new ObservableCollection<object>();
+            var control = new WorkstationTableInspectorControl
+            {
+                Table = new WorkstationTableModel<RowFixture>(
+                    tableRows,
+                    [new("Provider", nameof(RowFixture.Name), 120), new("Status", nameof(RowFixture.Status), 100)],
+                    "Provider readiness table"),
+                Inspector = new InspectorPanelModel
+                {
+                    Title = "Provider details",
+                    Facts = [new KeyValueFactModel("Credential", "Configured")]
+                },
+                SelectedItems = selectedRows,
+                HeaderText = "Provider Management",
+                DetailText = "Select a provider row to inspect readiness.",
+                ScopeText = "2 providers",
+                GridAutomationId = "TableInspectorGrid",
+                EmptyAutomationId = "TableInspectorEmpty",
+                InspectorAutomationId = "TableInspectorRail",
+                ControlAutomationId = "TableInspectorHost"
+            };
+
+            var window = Show(control);
+            try
+            {
+                AutomationProperties.GetAutomationId(control).Should().Be("TableInspectorHost");
+                AutomationProperties.GetName(control).Should().Be("Provider Management");
+
+                var denseGrid = control.FindName("TableGrid").Should().BeOfType<DenseDataGridControl>().Subject;
+                var rowsList = denseGrid.FindName("RowsList").Should().BeOfType<ListView>().Subject;
+                rowsList.SelectionMode.Should().Be(SelectionMode.Single);
+                VirtualizingPanel.GetIsVirtualizing(rowsList).Should().BeTrue();
+                VirtualizingPanel.GetVirtualizationMode(rowsList).Should().Be(VirtualizationMode.Recycling);
+                ScrollViewer.GetCanContentScroll(rowsList).Should().BeTrue();
+                AutomationProperties.GetAutomationId(rowsList).Should().Be("TableInspectorGrid");
+
+                var emptyPanel = denseGrid.FindName("EmptyPanel").Should().BeOfType<Border>().Subject;
+                AutomationProperties.GetAutomationId(emptyPanel).Should().Be("TableInspectorEmpty");
+
+                var inspector = control.FindName("DefaultInspector").Should().BeOfType<InspectorPanelControl>().Subject;
+                AutomationProperties.GetAutomationId(inspector).Should().Be("TableInspectorRail");
+
+                rowsList.SelectedItem = tableRows[1];
+
+                control.SelectedItem.Should().BeSameAs(tableRows[1]);
+                selectedRows.Should().ContainSingle().Which.Should().BeSameAs(tableRows[1]);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DenseDataGridControl_ShouldMirrorExtendedSelectionIntoSelectedItems()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var tableRows = new ObservableCollection<RowFixture>
+            {
+                new("Polygon.io", "Healthy"),
+                new("Alpaca", "Degraded"),
+                new("IEX", "Healthy")
+            };
+            var selectedRows = new ObservableCollection<object>();
+            var denseGrid = new DenseDataGridControl
+            {
+                Table = new WorkstationTableModel<RowFixture>(
+                    tableRows,
+                    [new("Provider", nameof(RowFixture.Name), 120), new("Status", nameof(RowFixture.Status), 100)],
+                    "Provider readiness table"),
+                SelectionMode = SelectionMode.Extended,
+                SelectedItems = selectedRows
+            };
+
+            var window = Show(denseGrid);
+            try
+            {
+                var rowsList = denseGrid.FindName("RowsList").Should().BeOfType<ListView>().Subject;
+                rowsList.SelectionMode.Should().Be(SelectionMode.Extended);
+
+                rowsList.SelectedItems.Add(tableRows[0]);
+                rowsList.SelectedItems.Add(tableRows[2]);
+
+                selectedRows.Should().ContainInOrder(tableRows[0], tableRows[2]);
+                denseGrid.SelectedItem.Should().BeSameAs(tableRows[0]);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
     public void DenseDataGridSource_ShouldUseCompactInstitutionalTableChrome()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
@@ -147,8 +256,23 @@ public sealed class WorkstationPrimitiveControlsTests
         xaml.Should().Contain("<Setter Property=\"FontSize\" Value=\"10\" />");
         xaml.Should().Contain("<Setter Property=\"MinHeight\" Value=\"26\" />");
         xaml.Should().Contain("FontSize=\"11\"");
+        xaml.Should().Contain("SelectionMode=\"{Binding ElementName=Root, Path=SelectionMode}\"");
         xaml.Should().Contain("VirtualizingPanel.VirtualizationMode=\"Recycling\"");
         xaml.Should().Contain("VirtualizingPanel.ScrollUnit=\"Item\"");
+    }
+
+    [Fact]
+    public void WorkstationTableInspectorSource_ShouldComposeSharedTableAndInspectorChrome()
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
+            @"src\Meridian.Wpf\Workstation\Controls\WorkstationTableInspectorControl.xaml"));
+
+        xaml.Should().Contain("WorkstationTablePanelStyle");
+        xaml.Should().Contain("WorkstationPanelHeaderStyle");
+        xaml.Should().Contain("WorkstationInspectorRailStyle");
+        xaml.Should().Contain("DenseDataGridControl");
+        xaml.Should().Contain("InspectorPanelControl");
+        xaml.Should().Contain("SelectedItems=\"{Binding ElementName=Root, Path=SelectedItems}\"");
     }
 
     [Fact]
@@ -164,6 +288,21 @@ public sealed class WorkstationPrimitiveControlsTests
         xaml.Should().Contain("WorkstationDockStripStyle");
         xaml.Should().Contain("<Setter Property=\"CornerRadius\" Value=\"4\" />");
         xaml.Should().Contain("<Setter Property=\"BorderThickness\" Value=\"0,1,0,0\" />");
+    }
+
+    private static Window Show(FrameworkElement element)
+    {
+        var window = new Window
+        {
+            Width = 1000,
+            Height = 760,
+            Content = element
+        };
+
+        window.Show();
+        window.UpdateLayout();
+        element.UpdateLayout();
+        return window;
     }
 
     private sealed record RowFixture(string Name, string Status);

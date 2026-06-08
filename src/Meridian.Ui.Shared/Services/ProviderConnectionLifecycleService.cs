@@ -267,7 +267,9 @@ public sealed class ProviderConnectionLifecycleService
             ExternalAccountId: status.ExternalAccountId,
             AffectedWorkflows: descriptor.AffectedWorkflows ?? [],
             RecommendedAction: ResolveRecommendedAction(descriptor, status, health),
-            ActionHref: descriptor.ResolvedActionHref);
+            ActionHref: descriptor.ResolvedActionHref,
+            CredentialFields: ProviderCredentialCatalog.BuildCredentialFields(descriptor),
+            EnvironmentOptions: ProviderCredentialCatalog.BuildEnvironmentOptions(descriptor));
     }
 
     private static ProviderContinuityHealthDto ResolveHealth(

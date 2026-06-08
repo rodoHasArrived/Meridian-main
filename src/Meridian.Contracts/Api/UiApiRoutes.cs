@@ -112,6 +112,8 @@ public static class UiApiRoutes
     public const string AccountingSystemImportPreview = "/api/accounting-system/import/preview";
     public const string AccountingSystemImportLatest = "/api/accounting-system/import/latest";
     public const string AccountingSystemReconciliationLatest = "/api/accounting-system/reconciliation/latest";
+    public const string AccountingSystemQuickBooksOAuthStart = "/api/accounting-system/quickbooks/oauth/start";
+    public const string AccountingSystemQuickBooksOAuthCallback = "/api/accounting-system/quickbooks/oauth/callback";
 
     /// <summary>
     /// Unified traffic-light health dashboard across all providers.
@@ -559,6 +561,8 @@ public static class UiApiRoutes
     public const string WorkstationTrading = "/api/workstation/trading";
     public const string WorkstationDataOperations = "/api/workstation/data-operations";
     public const string WorkstationData = "/api/workstation/data";
+    public const string WorkstationDataUploadTemplates = "/api/workstation/data/uploads/templates";
+    public const string WorkstationDataUploadPreview = "/api/workstation/data/uploads/preview";
     public const string WorkstationGovernance = "/api/workstation/governance";
     public const string WorkstationAccounting = "/api/workstation/accounting";
     public const string WorkstationReporting = "/api/workstation/reporting";
@@ -701,6 +705,7 @@ public static class UiApiRoutes
     public const string ReportingScheduleRunNow = "/api/fund-structure/reporting/schedules/{scheduleId}/run";
     public const string FundStructureSetupDraftValidate = "/api/fund-structure/setup-drafts/validate";
     public const string FundStructureSetupDraftCreate = "/api/fund-structure/setup-drafts/create";
+    public const string FundStructureLegalEntityProfile = "/api/fund-structure/entities/{entityId}";
     public const string FundStructureLedgerMappingAssignments = "/api/fund-structure/ledger-mapping-assignments";
 
     // Fund account brokerage read-side sync endpoints

@@ -1,7 +1,9 @@
 import {
   CheckCircle2,
   DatabaseZap,
-  FileOutput,
+  Download,
+  FileSpreadsheet,
+  FileUp,
   KeyRound,
   MonitorCheck,
   Plus,
@@ -44,6 +46,7 @@ import type {
   DataOperationsEmptyState,
   DataOperationsExportDetailState,
   DataOperationsExportRow,
+  DataUploadPanelState,
   DataOperationsLoadingState,
   DataOperationsProviderDiagnosticRow,
   DataOperationsProviderDetailState,
@@ -264,6 +267,7 @@ export function DataScreen({
         label="Data workspace filters"
         searchValue={`Provider: ${vm.providerSection.selectedDetail?.title ?? "All providers"}`}
         options={[
+          { id: "uploads", label: "Uploads", count: String(vm.uploadPanelState.templateOptions.length) },
           { id: "providers", label: "Providers", count: String(vm.providerSection.rows.length), active: true },
           { id: "backfills", label: "Backfills", count: String(vm.backfillSection.rows.length) },
           { id: "exports", label: "Exports", count: String(vm.exportSection.rows.length) }
@@ -290,6 +294,12 @@ export function DataScreen({
             <Plus className="h-4 w-4" aria-hidden="true" />
             <span className="ml-1.5">Import source</span>
           </Button>
+          <Button asChild variant="outline" size="sm">
+            <a href="#data-upload-intake-title" aria-label="Open data upload templates">
+              <FileUp className="h-4 w-4" aria-hidden="true" />
+              <span className="ml-1.5">Upload file</span>
+            </a>
+          </Button>
           </>
         )}
       />
@@ -301,6 +311,7 @@ export function DataScreen({
       <section className="data-management-frame">
         <nav className="workspace-directory-rail" aria-label="Data folders">
           <div className="operator-rail-section">Data folders</div>
+          <a href="#data-upload-intake-title">Upload templates</a>
           <a href="#data-provider-health-title" aria-current="page">Provider catalog</a>
           <a href="#data-backfill-queue-title">Backfill queue</a>
           <a href="#data-recent-exports-title">Export packages</a>
@@ -323,6 +334,11 @@ export function DataScreen({
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3">
             <DataHighlight
+              icon={FileSpreadsheet}
+              title="Upload intake"
+              description="Start trade, transaction, asset, and entity source files from governed templates before validation."
+            />
+            <DataHighlight
               icon={RadioTower}
               title="Provider posture"
               description="Track source health, trust evidence, and recovery actions before downstream workflows depend on the feed."
@@ -332,16 +348,17 @@ export function DataScreen({
               title="Backfill repair"
               description="Preview and run historical repair jobs with operator-visible status, ranges, and result evidence."
             />
-            <DataHighlight
-              icon={FileOutput}
-              title="Export readiness"
-              description="Keep generated packages and report handoff cues tied to the provider and backfill state that produced them."
-            />
           </CardContent>
         </section>
 
         <RouteFocusCard
           state={vm.routeFocusCard}
+        />
+
+        <DataUploadIntakePanel
+          state={vm.uploadPanelState}
+          onTemplateSelect={vm.selectUploadTemplate}
+          onFileSelect={vm.previewDataUpload}
         />
 
         <section aria-labelledby="data-provider-health-title" className="workspace-region data-provider-region">
@@ -615,6 +632,176 @@ function DataOperationsLoadingPanel({ state }: { state: DataOperationsLoadingSta
         ))}
         <RefreshCcw className="mt-2 h-4 w-4 animate-spin text-primary" aria-hidden="true" />
       </div>
+    </section>
+  );
+}
+
+function DataUploadIntakePanel({
+  state,
+  onTemplateSelect,
+  onFileSelect
+}: {
+  state: DataUploadPanelState;
+  onTemplateSelect: (templateId: string) => void;
+  onFileSelect: (file: File | null) => void;
+}) {
+  const statusId = "data-upload-status";
+  const disabledReasonId = `${state.fileInput.id}-disabled-reason`;
+
+  return (
+    <section aria-labelledby="data-upload-intake-title" className="workspace-region">
+      <CardHeader>
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0">
+            <div className="eyebrow-label">Source intake</div>
+            <CardTitle id="data-upload-intake-title" className="mt-2 flex items-center gap-2">
+              <FileUp className="h-5 w-5 text-primary" aria-hidden="true" />
+              {state.title}
+            </CardTitle>
+            <CardDescription className="mt-2">{state.description}</CardDescription>
+          </div>
+          <Badge variant={state.statusTone} dot={state.statusTone !== "paper"}>
+            {state.statusLabel}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(20rem,0.55fr)]">
+        <div className="grid gap-4">
+          <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+            <label htmlFor="data-upload-template-select" className="grid gap-1 text-sm">
+              {state.templateSelectLabel}
+              <select
+                id="data-upload-template-select"
+                value={state.selectedTemplateId}
+                onChange={(event) => onTemplateSelect(event.currentTarget.value)}
+                aria-label="Data upload template"
+                className="min-h-10 rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              >
+                {state.templateOptions.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </label>
+            {state.templateDownload ? (
+              <Button asChild variant="outline" size="sm">
+                <a
+                  href={state.templateDownload.href}
+                  download={state.templateDownload.fileName}
+                  aria-label={state.templateDownload.ariaLabel}
+                >
+                  <Download className="h-4 w-4" aria-hidden="true" />
+                  {state.templateDownload.label}
+                </a>
+              </Button>
+            ) : null}
+          </div>
+
+          {state.selectedTemplate ? (
+            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="outline">{state.selectedTemplate.dataDomain}</Badge>
+                <span className="font-mono text-xs text-muted-foreground">{state.selectedTemplate.targetWorkflow}</span>
+              </div>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{state.selectedTemplate.description}</p>
+              <dl className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                {state.selectedTemplateFields.map((field) => (
+                  <div key={field.id} className="rounded-md border border-border/60 bg-background/45 px-2.5 py-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="eyebrow-label">{field.label}</div>
+                      <Badge variant={field.required ? "warning" : "outline"}>{field.requiredLabel}</Badge>
+                    </div>
+                    <div className="mt-1 truncate font-mono text-xs text-foreground" title={field.name}>{field.name}</div>
+                    <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">{field.description}</p>
+                    <p className="mt-1 truncate font-mono text-[11px] text-muted-foreground" title={field.example}>{field.example}</p>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          ) : null}
+        </div>
+
+        <aside className="row-detail-panel h-fit min-w-0" aria-labelledby="data-upload-preview-title">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="eyebrow-label">Preview</div>
+              <h3 id="data-upload-preview-title" className="mt-2 text-sm font-semibold text-foreground">Retained source file</h3>
+              <p id={statusId} role="status" aria-live="polite" className="mt-2 text-sm leading-6 text-muted-foreground">
+                {state.resultSummary}
+              </p>
+            </div>
+            <Badge variant={state.statusTone}>{state.statusLabel}</Badge>
+          </div>
+
+          <label htmlFor={state.fileInput.id} className="mt-3 grid gap-1 text-sm">
+            {state.fileInput.label}
+            <input
+              id={state.fileInput.id}
+              type="file"
+              accept={state.acceptedFileTypes}
+              disabled={state.fileInput.disabled}
+              aria-label={state.fileInput.ariaLabel}
+              aria-describedby={joinDescribedByIds(statusId, `${state.fileInput.id}-help`, disabledReasonId)}
+              className="min-h-10 rounded-md border border-border bg-background px-3 py-2 text-sm file:mr-3 file:rounded-sm file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              onChange={(event) => {
+                const file = event.currentTarget.files?.[0] ?? null;
+                void onFileSelect(file);
+                event.currentTarget.value = "";
+              }}
+            />
+            <FieldSupportText
+              helpText={`Accepted ${state.acceptedFileTypes || ".csv"} up to ${state.maxFileSizeLabel}.`}
+              helpId={`${state.fileInput.id}-help`}
+              disabledReason={state.fileInput.disabledReason}
+              disabledReasonId={disabledReasonId}
+            />
+          </label>
+
+          {state.retainedPath ? (
+            <dl className="mt-3 grid gap-2">
+              <FieldTile field={{ id: "retained-path", label: "Retained path", value: state.retainedPath }} />
+            </dl>
+          ) : null}
+
+          {state.issueRows.length > 0 ? (
+            <div className="mt-3 grid gap-2" role="alert" aria-label="Upload validation issues">
+              {state.issueRows.map((issue) => (
+                <div key={issue.id} className={cn(
+                  "rounded-md border px-3 py-2 text-xs leading-5",
+                  issue.tone === "danger"
+                    ? "border-danger/35 bg-danger/10 text-danger"
+                    : "border-warning/35 bg-warning/10 text-warning"
+                )}>
+                  <div className="font-semibold">{issue.severity} · {issue.field} · {issue.rowLabel}</div>
+                  <div className="mt-1">{issue.message}</div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {state.previewRows.length > 0 ? (
+            <div className="mt-3 overflow-x-auto rounded-md border border-border/70" aria-label="Upload preview rows">
+              <table className="dense-data-table min-w-full">
+                <thead>
+                  <tr>
+                    {state.previewHeaders.map((header) => (
+                      <th key={header} scope="col">{header}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {state.previewRows.map((row) => (
+                    <tr key={row.id}>
+                      {row.values.map((value) => (
+                        <td key={value.id}>{value.value || "-"}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+        </aside>
+      </CardContent>
     </section>
   );
 }

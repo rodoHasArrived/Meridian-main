@@ -1,6 +1,7 @@
 <Page x:Class="Meridian.Wpf.Views.RunCashFlowPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:workstation="clr-namespace:Meridian.Wpf.Workstation.Controls"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       AutomationProperties.Name="Run Cash Flow">
 
@@ -8,86 +9,136 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="28,20,28,32" MaxWidth="1200">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16,24,32">
+        <Grid MaxWidth="1260">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-            <!-- Header -->
-            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,20">
+            <Border Grid.Row="0"
+                    Style="{StaticResource WorkspaceContextStripStyle}"
+                    Padding="14,10"
+                    Margin="0,0,0,14"
+                    AutomationProperties.AutomationId="RunCashFlowActionStrip"
+                    AutomationProperties.Name="Run Cash Flow Action Strip">
                 <Grid>
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0">
-                        <StackPanel Orientation="Horizontal">
-                            <Border Width="44" Height="44" CornerRadius="14"
-                                    Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                                    BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1" Margin="0,0,12,0">
-                                <TextBlock Text="&#xE8F1;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                           FontSize="24" Foreground="{StaticResource InfoColorBrush}"
-                                           VerticalAlignment="Center" HorizontalAlignment="Center" />
-                            </Border>
-                            <StackPanel>
-                                <TextBlock Text="{Binding Title}" Style="{StaticResource PageTitleStyle}" />
-                                <TextBlock Text="{Binding StatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
-                            </StackPanel>
-                        </StackPanel>
+
+                    <Border Grid.Column="0"
+                            Width="30"
+                            Height="30"
+                            CornerRadius="8"
+                            Margin="0,0,10,0"
+                            VerticalAlignment="Center"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}"
+                            BorderThickness="1">
+                        <TextBlock Text="&#xE8F1;"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="16"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" />
+                    </Border>
+
+                    <StackPanel Grid.Column="1" Margin="0,0,20,0" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Title}"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding StatusText}"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   FontSize="11"
+                                   TextTrimming="CharacterEllipsis" />
                     </StackPanel>
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button Content="Run Browser" Command="{Binding OpenBrowserCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,0" />
-                        <Button Content="Run Detail" Command="{Binding OpenRunDetailCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
-                        <Button Content="Portfolio" Command="{Binding OpenPortfolioCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
-                        <Button Content="Security Master" Command="{Binding OpenSelectedSecurityCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
-                        <Button Content="Ledger" Command="{Binding OpenLedgerCommand}" Style="{StaticResource PrimaryButtonStyle}" />
+
+                    <StackPanel Grid.Column="2"
+                                VerticalAlignment="Center"
+                                MaxWidth="620"
+                                AutomationProperties.AutomationId="RunCashFlowActionStatePanel"
+                                AutomationProperties.Name="{Binding RunActionStateTitle}">
+                        <WrapPanel HorizontalAlignment="Right">
+                            <Button Content="Run Browser"
+                                    Command="{Binding OpenBrowserCommand}"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    AutomationProperties.AutomationId="RunCashFlowOpenBrowserButton"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Run Detail"
+                                    Command="{Binding OpenRunDetailCommand}"
+                                    ToolTip="{Binding RunDrillInTooltip}"
+                                    ToolTipService.ShowOnDisabled="True"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    AutomationProperties.AutomationId="RunCashFlowOpenDetailButton"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Portfolio"
+                                    Command="{Binding OpenPortfolioCommand}"
+                                    ToolTip="{Binding RunDrillInTooltip}"
+                                    ToolTipService.ShowOnDisabled="True"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    AutomationProperties.AutomationId="RunCashFlowOpenPortfolioButton"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Ledger"
+                                    Command="{Binding OpenLedgerCommand}"
+                                    ToolTip="{Binding RunDrillInTooltip}"
+                                    ToolTipService.ShowOnDisabled="True"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    AutomationProperties.AutomationId="RunCashFlowOpenLedgerButton"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Security Master"
+                                    Command="{Binding OpenSelectedSecurityCommand}"
+                                    ToolTip="{Binding SelectedSecurityTooltip}"
+                                    ToolTipService.ShowOnDisabled="True"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    AutomationProperties.AutomationId="RunCashFlowOpenSelectedSecurityButton"
+                                    Margin="0,0,0,8" />
+                        </WrapPanel>
+                        <TextBlock Text="{Binding RunActionStateTitle}"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   TextAlignment="Right"
+                                   TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="RunCashFlowActionStateTitle" />
+                        <TextBlock Text="{Binding RunActionStateDetail}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextAlignment="Right"
+                                   TextWrapping="Wrap"
+                                   Margin="0,3,0,0"
+                                   AutomationProperties.AutomationId="RunCashFlowActionStateDetail" />
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <!-- Shared continuity posture -->
-            <Border Style="{StaticResource CardStyle}"
-                    Margin="0,0,0,20"
-                    AutomationProperties.AutomationId="RunCashFlowContinuityPosture">
-                <StackPanel>
-                    <TextBlock Text="{Binding ContinuityPostureText}"
-                               Style="{StaticResource CardHeaderStyle}"
-                               TextWrapping="Wrap"
-                               AutomationProperties.AutomationId="RunCashFlowContinuityPostureTitle" />
-                    <TextBlock Text="{Binding ContinuityDetailText}"
-                               Style="{StaticResource CardDescriptionStyle}"
-                               Margin="0,6,0,0"
-                               TextWrapping="Wrap"
-                               AutomationProperties.AutomationId="RunCashFlowContinuityPostureDetail" />
-                    <TextBlock Text="{Binding ContinuityWarningText}"
-                               Style="{StaticResource CardDescriptionStyle}"
-                               Margin="0,6,0,0"
-                               TextWrapping="Wrap"
-                               AutomationProperties.AutomationId="RunCashFlowContinuityPostureWarning" />
-                </StackPanel>
-            </Border>
-
-            <!-- Summary metric cards -->
-            <UniformGrid Columns="5" Margin="0,0,0,20">
-                <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+            <UniformGrid Grid.Row="1" Columns="5" Margin="0,0,0,16">
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,10,0">
                     <StackPanel>
                         <TextBlock Text="As Of" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                         <TextBlock Text="{Binding AsOfText}" Style="{StaticResource CardHeaderStyle}" />
                     </StackPanel>
                 </Border>
-                <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,10,0">
                     <StackPanel>
                         <TextBlock Text="Events" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                         <TextBlock Text="{Binding TotalEntriesText}" Style="{StaticResource CardHeaderStyle}" />
                     </StackPanel>
                 </Border>
-                <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,10,0">
                     <StackPanel>
-                        <TextBlock Text="Total Inflows" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="Inflows" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                         <TextBlock Text="{Binding TotalInflowsText}" Style="{StaticResource CardHeaderStyle}" />
                     </StackPanel>
                 </Border>
-                <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,10,0">
                     <StackPanel>
-                        <TextBlock Text="Total Outflows" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="Outflows" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                         <TextBlock Text="{Binding TotalOutflowsText}" Style="{StaticResource CardHeaderStyle}" />
                     </StackPanel>
                 </Border>
@@ -99,116 +150,199 @@
                 </Border>
             </UniformGrid>
 
-            <!-- Cash Ladder -->
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,20">
-                <StackPanel>
-                    <Grid Margin="0,0,0,12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Cash Ladder" Style="{StaticResource CardHeaderStyle}" />
-                        <TextBlock Grid.Column="1" Text="{Binding BucketSummaryText}"
-                                   FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                   VerticalAlignment="Center" />
-                    </Grid>
-                    <DataGrid ItemsSource="{Binding LadderBuckets}"
-                              AutoGenerateColumns="False"
-                              IsReadOnly="True"
-                              HeadersVisibility="Column"
-                              BorderThickness="0"
-                              Background="{StaticResource ConsoleBackgroundLightBrush}"
-                              Visibility="{Binding HasLadderBuckets, Converter={StaticResource BoolToVisibilityConverter}}"
-                              AutomationProperties.AutomationId="RunCashFlowLadderGrid">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Bucket Start" Binding="{Binding BucketStart, StringFormat={}{0:yyyy-MM-dd}}" Width="120" />
-                            <DataGridTextColumn Header="Bucket End" Binding="{Binding BucketEnd, StringFormat={}{0:yyyy-MM-dd}}" Width="120" />
-                            <DataGridTextColumn Header="Projected Inflows" Binding="{Binding ProjectedInflows, StringFormat={}{0:C2}}" Width="140" />
-                            <DataGridTextColumn Header="Projected Outflows" Binding="{Binding ProjectedOutflows, StringFormat={}{0:C2}}" Width="140" />
-                            <DataGridTextColumn Header="Net Flow" Binding="{Binding NetFlow, StringFormat={}{0:C2}}" Width="120" />
-                            <DataGridTextColumn Header="Currency" Binding="{Binding Currency}" Width="80" />
-                            <DataGridTextColumn Header="Events" Binding="{Binding EventCount}" Width="70" />
-                        </DataGrid.Columns>
-                    </DataGrid>
-                    <Border MinHeight="180"
-                            Background="{StaticResource ConsoleBackgroundLightBrush}"
-                            BorderBrush="{StaticResource ConsoleBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="8"
-                            Padding="24"
-                            Visibility="{Binding IsLadderEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                            AutomationProperties.AutomationId="RunCashFlowLadderEmptyState">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="540">
-                            <TextBlock Text="{Binding LadderEmptyStateTitle}"
-                                       FontSize="16"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       TextAlignment="Center"
+            <Grid Grid.Row="2"
+                  AutomationProperties.AutomationId="RunCashFlowWorkbench"
+                  AutomationProperties.Name="Run Cash Flow Workbench">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.35*" />
+                    <ColumnDefinition Width="18" />
+                    <ColumnDefinition Width="0.95*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0">
+                    <Border Style="{StaticResource CardStyle}"
+                            AutomationProperties.Name="Cash Ladder">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0" Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Cash Ladder"
+                                               Style="{StaticResource CardHeaderStyle}"
+                                               Margin="0,0,0,4" />
+                                    <TextBlock Text="Projected buckets built from retained cash-flow events."
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding BucketSummaryText}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                           VerticalAlignment="Center"
+                                           Margin="16,0,0,0" />
+                            </Grid>
+
+                            <workstation:DenseDataGridControl Grid.Row="1"
+                                                              Table="{Binding LadderTable}"
+                                                              SelectedItem="{Binding SelectedLadderBucket, Mode=TwoWay}"
+                                                              Height="240"
+                                                              GridAutomationId="RunCashFlowLadderGrid"
+                                                              EmptyAutomationId="RunCashFlowLadderTableEmptyState"
+                                                              Visibility="{Binding HasLadderBuckets, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                              AutomationProperties.Name="Run cash-flow ladder table" />
+
+                            <Border Grid.Row="1"
+                                    MinHeight="220"
+                                    Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                    BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="24"
+                                    Visibility="{Binding IsLadderEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    AutomationProperties.AutomationId="RunCashFlowLadderEmptyState">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="540">
+                                    <TextBlock Text="{Binding LadderEmptyStateTitle}"
+                                               FontSize="16"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                               TextAlignment="Center"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="RunCashFlowLadderEmptyStateTitle" />
+                                    <TextBlock Text="{Binding LadderEmptyStateDetail}"
+                                               FontSize="12"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               TextAlignment="Center"
+                                               TextWrapping="Wrap"
+                                               Margin="0,6,0,0"
+                                               AutomationProperties.AutomationId="RunCashFlowLadderEmptyStateDetail" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,12,0,0"
+                            AutomationProperties.Name="Cash Flow Events">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                                <TextBlock Text="Cash Flow Events"
+                                           Style="{StaticResource CardHeaderStyle}"
+                                           Margin="0,0,0,4" />
+                                <TextBlock Text="Select an event to inspect retained cash movement and Security Master readiness."
+                                           Style="{StaticResource CardDescriptionStyle}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <workstation:DenseDataGridControl Grid.Row="1"
+                                                              Table="{Binding EntriesTable}"
+                                                              SelectedItem="{Binding SelectedEntry, Mode=TwoWay}"
+                                                              Height="320"
+                                                              GridAutomationId="RunCashFlowEntriesGrid"
+                                                              EmptyAutomationId="RunCashFlowEntriesTableEmptyState"
+                                                              Visibility="{Binding HasEntries, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                              AutomationProperties.Name="Run cash-flow events table" />
+
+                            <Border Grid.Row="1"
+                                    MinHeight="240"
+                                    Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                    BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="24"
+                                    Visibility="{Binding IsEntriesEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    AutomationProperties.AutomationId="RunCashFlowEntriesEmptyState">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="560">
+                                    <TextBlock Text="{Binding EntriesEmptyStateTitle}"
+                                               FontSize="16"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                               TextAlignment="Center"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="RunCashFlowEntriesEmptyStateTitle" />
+                                    <TextBlock Text="{Binding EntriesEmptyStateDetail}"
+                                               FontSize="12"
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               TextAlignment="Center"
+                                               TextWrapping="Wrap"
+                                               Margin="0,6,0,0"
+                                               AutomationProperties.AutomationId="RunCashFlowEntriesEmptyStateDetail" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <workstation:InspectorPanelControl Panel="{Binding SelectedEntryInspector}"
+                                                       AutomationProperties.AutomationId="RunCashFlowEntryInspector" />
+
+                    <workstation:InspectorPanelControl Panel="{Binding SelectedLadderBucketInspector}"
+                                                       Margin="0,12,0,0"
+                                                       AutomationProperties.AutomationId="RunCashFlowLadderInspector" />
+
+                    <workstation:InspectorPanelControl Panel="{Binding ContinuityInspector}"
+                                                       Margin="0,12,0,0"
+                                                       AutomationProperties.AutomationId="RunCashFlowContinuityPosture" />
+
+                    <Border Style="{StaticResource CardStyle}"
+                            Padding="16"
+                            Margin="0,12,0,0"
+                            AutomationProperties.AutomationId="RunCashFlowActionInspector"
+                            AutomationProperties.Name="Run Cash Flow Actions">
+                        <StackPanel>
+                            <TextBlock Text="Selected Actions"
+                                       Style="{StaticResource CardHeaderStyle}"
+                                       Margin="0,0,0,4" />
+                            <TextBlock Text="{Binding RunActionStateDetail}"
+                                       Style="{StaticResource CardDescriptionStyle}"
                                        TextWrapping="Wrap"
-                                       AutomationProperties.AutomationId="RunCashFlowLadderEmptyStateTitle" />
-                            <TextBlock Text="{Binding LadderEmptyStateDetail}"
-                                       FontSize="12"
-                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                       TextAlignment="Center"
-                                       TextWrapping="Wrap"
-                                       Margin="0,6,0,0"
-                                       AutomationProperties.AutomationId="RunCashFlowLadderEmptyStateDetail" />
+                                       Margin="0,0,0,12" />
+                            <WrapPanel>
+                                <Button Content="Security Master"
+                                        Command="{Binding OpenSelectedSecurityCommand}"
+                                        ToolTip="{Binding SelectedSecurityTooltip}"
+                                        ToolTipService.ShowOnDisabled="True"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        AutomationProperties.AutomationId="RunCashFlowInspectorOpenSecurityButton"
+                                        Margin="0,0,8,8" />
+                                <Button Content="Run Detail"
+                                        Command="{Binding OpenRunDetailCommand}"
+                                        ToolTip="{Binding RunDrillInTooltip}"
+                                        ToolTipService.ShowOnDisabled="True"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        AutomationProperties.AutomationId="RunCashFlowInspectorOpenDetailButton"
+                                        Margin="0,0,8,8" />
+                                <Button Content="Portfolio"
+                                        Command="{Binding OpenPortfolioCommand}"
+                                        ToolTip="{Binding RunDrillInTooltip}"
+                                        ToolTipService.ShowOnDisabled="True"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        AutomationProperties.AutomationId="RunCashFlowInspectorOpenPortfolioButton"
+                                        Margin="0,0,8,8" />
+                                <Button Content="Ledger"
+                                        Command="{Binding OpenLedgerCommand}"
+                                        ToolTip="{Binding RunDrillInTooltip}"
+                                        ToolTipService.ShowOnDisabled="True"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        AutomationProperties.AutomationId="RunCashFlowInspectorOpenLedgerButton"
+                                        Margin="0,0,8,8" />
+                            </WrapPanel>
                         </StackPanel>
                     </Border>
                 </StackPanel>
-            </Border>
-
-            <!-- Cash Flow Entries -->
-            <Border Style="{StaticResource CardStyle}">
-                <StackPanel>
-                    <TextBlock Text="Cash Flow Events" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
-                    <DataGrid ItemsSource="{Binding Entries}"
-                              SelectedItem="{Binding SelectedEntry, Mode=TwoWay}"
-                              AutoGenerateColumns="False"
-                              IsReadOnly="True"
-                              HeadersVisibility="Column"
-                              BorderThickness="0"
-                              Background="{StaticResource ConsoleBackgroundLightBrush}"
-                              Visibility="{Binding HasEntries, Converter={StaticResource BoolToVisibilityConverter}}"
-                              AutomationProperties.AutomationId="RunCashFlowEntriesGrid">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Timestamp" Binding="{Binding Timestamp, StringFormat={}{0:g}}" Width="150" />
-                            <DataGridTextColumn Header="Type" Binding="{Binding EventKind}" Width="120" />
-                            <DataGridTextColumn Header="Symbol" Binding="{Binding Symbol}" Width="100" />
-                            <DataGridTextColumn Header="Amount" Binding="{Binding Amount, StringFormat={}{0:C2}}" Width="120" />
-                            <DataGridTextColumn Header="Currency" Binding="{Binding Currency}" Width="80" />
-                            <DataGridTextColumn Header="Account" Binding="{Binding AccountId}" Width="120" />
-                            <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*" />
-                        </DataGrid.Columns>
-                    </DataGrid>
-                    <Border MinHeight="220"
-                            Background="{StaticResource ConsoleBackgroundLightBrush}"
-                            BorderBrush="{StaticResource ConsoleBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="8"
-                            Padding="24"
-                            Visibility="{Binding IsEntriesEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                            AutomationProperties.AutomationId="RunCashFlowEntriesEmptyState">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="560">
-                            <TextBlock Text="{Binding EntriesEmptyStateTitle}"
-                                       FontSize="16"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       TextAlignment="Center"
-                                       TextWrapping="Wrap"
-                                       AutomationProperties.AutomationId="RunCashFlowEntriesEmptyStateTitle" />
-                            <TextBlock Text="{Binding EntriesEmptyStateDetail}"
-                                       FontSize="12"
-                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                       TextAlignment="Center"
-                                       TextWrapping="Wrap"
-                                       Margin="0,6,0,0"
-                                       AutomationProperties.AutomationId="RunCashFlowEntriesEmptyStateDetail" />
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </Border>
-
-        </StackPanel>
+            </Grid>
+        </Grid>
     </ScrollViewer>
 </Page>

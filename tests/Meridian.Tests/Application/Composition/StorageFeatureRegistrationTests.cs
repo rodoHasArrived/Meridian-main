@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.Composition.Features;
 using Meridian.Application.DirectLending;
+using Meridian.Application.FundStructure;
 using Meridian.Platform.FundOperationsPersistence;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.Reconciliation;
@@ -10,11 +11,15 @@ using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Services;
 using Meridian.Contracts.Store;
 using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Reconciliation;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Storage.DirectLending;
+using Meridian.Storage.FundAccounts;
+using Meridian.Storage.FundStructure;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.SecurityMaster;
@@ -181,6 +186,52 @@ public sealed class StorageFeatureRegistrationTests : IDisposable
             sd.ImplementationType == typeof(DirectLendingOutboxDispatcher));
         services.Should().ContainSingle(sd => sd.ServiceType == typeof(IHostedService) &&
             sd.ImplementationType == typeof(DailyAccrualWorker));
+    }
+
+    [Fact]
+    public void Register_Throws_WhenProductionGovernancePersistenceIsMissing()
+    {
+        ClearPostgresBackedStorageEnvironment();
+        Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", null);
+        Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", Environments.Production);
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", Environments.Production);
+
+        var services = new ServiceCollection();
+
+        var act = () => new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING*")
+            .WithMessage("*MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING*")
+            .WithMessage("*MERIDIAN_USE_INMEMORY_GOVERNANCE=true*");
+    }
+
+    [Fact]
+    public void Register_AddsPostgresGovernanceServices_WhenProductionPersistenceIsConfigured()
+    {
+        ClearPostgresBackedStorageEnvironment();
+        Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", null);
+        Environment.SetEnvironmentVariable("DOTNET_ENVIRONMENT", Environments.Production);
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", Environments.Production);
+        Environment.SetEnvironmentVariable(FundAccountsStartup.ConnectionStringVariable, "Host=fa-db;Port=5432;Database=fund_accounts;Username=postgres;Password=secret");
+        Environment.SetEnvironmentVariable(FundAccountsStartup.SchemaVariable, null);
+        Environment.SetEnvironmentVariable(FundStructureStartup.ConnectionStringVariable, "Host=fs-db;Port=5432;Database=fund_structure;Username=postgres;Password=secret");
+        Environment.SetEnvironmentVariable(FundStructureStartup.SchemaVariable, null);
+
+        var services = new ServiceCollection();
+
+        new StorageFeatureRegistration().Register(services, CompositionOptions.WebDashboard);
+
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(FundAccountStoreOptions));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(IFundAccountStore) &&
+            sd.ImplementationType == typeof(PostgresFundAccountStore));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(PostgresFundAccountService));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(IFundAccountService));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(FundStructureStoreOptions));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(IFundStructureStore) &&
+            sd.ImplementationType == typeof(PostgresFundStructureStore));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(PostgresFundStructureService));
+        services.Should().ContainSingle(sd => sd.ServiceType == typeof(IFundStructureService));
     }
 
     [Fact]

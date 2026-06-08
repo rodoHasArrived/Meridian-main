@@ -219,6 +219,45 @@ public static class FundStructureEndpoints
         .Produces<LegalEntitySummaryDto>(StatusCodes.Status201Created)
         .Produces(StatusCodes.Status400BadRequest);
 
+        group.MapPut("/entities/{entityId:guid}", async (Guid entityId, JsonElement body, HttpContext context) =>
+        {
+            var service = ResolveService(context);
+            if (service is null)
+                return ServiceUnavailable();
+
+            UpdateLegalEntityProfileRequest? request;
+            try
+            {
+                request = JsonSerializer.Deserialize<UpdateLegalEntityProfileRequest>(body.GetRawText(), jsonOptions);
+            }
+            catch (JsonException ex)
+            {
+                return Results.Problem($"Legal entity profile request is invalid JSON. {ex.Message}", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            if (request is null)
+            {
+                return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            request = request with { EntityId = entityId };
+            try
+            {
+                var result = await service.UpdateLegalEntityProfileAsync(request, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("UpdateLegalEntityProfile")
+        .AddEndpointFilter(EndpointAuthorization.Require(UserPermission.ManageFundStructure))
+        .Produces<LegalEntitySummaryDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
+
         group.MapPost("/investment-portfolios", async (JsonElement body, HttpContext context) =>
         {
             var service = ResolveService(context);

@@ -91,7 +91,9 @@ public sealed class ProviderReadinessService
                 RecommendedAction: ResolveRecommendedAction(status, connection, descriptor, degradationScore),
                 ActionHref: connection?.ActionHref ?? descriptor?.ResolvedActionHref ?? "/settings#providers",
                 Evidence: BuildEvidence(providerId, connection, providerMetrics, degradationScore, plaidItems, plaidAccounts),
-                RecoveryActions: BuildRecoveryActions(providerId, status, connection, descriptor)));
+                RecoveryActions: BuildRecoveryActions(providerId, status, connection, descriptor),
+                CredentialFields: descriptor is null ? [] : ProviderCredentialCatalog.BuildCredentialFields(descriptor),
+                EnvironmentOptions: descriptor is null ? [] : ProviderCredentialCatalog.BuildEnvironmentOptions(descriptor)));
         }
 
         var ordered = rows

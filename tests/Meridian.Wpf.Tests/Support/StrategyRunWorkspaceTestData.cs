@@ -109,6 +109,27 @@ internal static class StrategyRunWorkspaceTestData
         };
     }
 
+    public static StrategyRunEntry BuildRunWithAttribution(string runId)
+    {
+        var run = BuildRun(runId);
+        var metrics = run.Metrics!.Metrics with
+        {
+            SymbolAttribution = new Dictionary<string, SymbolAttribution>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["AAPL"] = new("AAPL", 12m, 3m, 4, 1.25m, 0m),
+                ["TSLA"] = new("TSLA", -5m, -2m, 2, 0.75m, 0m)
+            }
+        };
+
+        return run with
+        {
+            Metrics = run.Metrics with
+            {
+                Metrics = metrics
+            }
+        };
+    }
+
     public static StubSecurityReferenceLookup CreateLookupWithApple()
     {
         var lookup = new StubSecurityReferenceLookup();

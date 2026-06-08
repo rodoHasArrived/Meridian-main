@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Workstation;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -12,6 +14,7 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
     private string? _runId;
     private object? _parameter;
     private LedgerTrialBalanceLine? _selectedTrialBalanceLine;
+    private InspectorPanelModel _selectedTrialBalanceInspector = BuildEmptyTrialBalanceInspector();
 
     public object? Parameter
     {
@@ -27,6 +30,8 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
 
     public ObservableCollection<LedgerTrialBalanceLine> TrialBalance { get; } = [];
     public ObservableCollection<LedgerJournalLine> Journal { get; } = [];
+    public WorkstationTableModel<LedgerTrialBalanceLine> TrialBalanceTable { get; }
+    public WorkstationTableModel<LedgerJournalLine> JournalTable { get; }
 
     public LedgerTrialBalanceLine? SelectedTrialBalanceLine
     {
@@ -35,10 +40,36 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
         {
             if (SetProperty(ref _selectedTrialBalanceLine, value))
             {
-                OpenSelectedSecurityCommand.NotifyCanExecuteChanged();
+                SelectedTrialBalanceInspector = value is null
+                    ? BuildEmptyTrialBalanceInspector()
+                    : BuildTrialBalanceInspector(value);
+                RaiseSelectedTrialBalanceStateChanged();
             }
         }
     }
+
+    public InspectorPanelModel SelectedTrialBalanceInspector
+    {
+        get => _selectedTrialBalanceInspector;
+        private set => SetProperty(ref _selectedTrialBalanceInspector, value);
+    }
+
+    public bool HasSelectedTrialBalanceLine => SelectedTrialBalanceLine is not null;
+
+    public bool CanOpenSelectedSecurity => SelectedTrialBalanceLine?.Security is not null ||
+        !string.IsNullOrWhiteSpace(SelectedTrialBalanceLine?.Symbol);
+
+    public string RunDrillInTooltip => string.IsNullOrWhiteSpace(_runId)
+        ? "Select a retained strategy run before opening related run drill-ins."
+        : $"Open retained run drill-ins for {_runId}.";
+
+    public string SelectedSecurityTooltip => SelectedTrialBalanceLine switch
+    {
+        null => "Select a trial-balance line before opening Security Master.",
+        { Security: { } security } => $"Open Security Master for {security.DisplayName}.",
+        { Symbol: { Length: > 0 } symbol } => $"Open Security Master lookup for {symbol}.",
+        _ => "Select a security-linked trial-balance line before opening Security Master."
+    };
 
     private string _title = "Ledger Drill-In";
     public string Title
@@ -129,11 +160,40 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
     {
         _runService = runService;
         _navigationService = navigationService;
+        TrialBalanceTable = new WorkstationTableModel<LedgerTrialBalanceLine>(
+            TrialBalance,
+            [
+                new("Account", nameof(LedgerTrialBalanceLine.AccountName), 170),
+                new("Type", nameof(LedgerTrialBalanceLine.AccountType), 100),
+                new("Symbol", nameof(LedgerTrialBalanceLine.Symbol), 90),
+                new("Security", "Security.DisplayName", 170),
+                new("Asset Class", "Security.AssetClass", 105),
+                new("Identifier", "Security.PrimaryIdentifier", 120),
+                new("Financial Account", nameof(LedgerTrialBalanceLine.FinancialAccountId), 150),
+                new("Balance", nameof(LedgerTrialBalanceLine.Balance), 115, "{0:C2}"),
+                new("Entries", nameof(LedgerTrialBalanceLine.EntryCount), 75, "{0:N0}")
+            ],
+            "Run trial balance",
+            "No trial-balance lines retained",
+            "Select a retained strategy run with ledger output before reviewing account balances.");
+        JournalTable = new WorkstationTableModel<LedgerJournalLine>(
+            Journal,
+            [
+                new("Timestamp", nameof(LedgerJournalLine.Timestamp), 150, "{0:g}"),
+                new("Description", nameof(LedgerJournalLine.Description), 320),
+                new("Debits", nameof(LedgerJournalLine.TotalDebits), 115, "{0:C2}"),
+                new("Credits", nameof(LedgerJournalLine.TotalCredits), 115, "{0:C2}"),
+                new("Lines", nameof(LedgerJournalLine.LineCount), 70, "{0:N0}")
+            ],
+            "Run journal",
+            "No journal entries retained",
+            "Select a retained strategy run with ledger output before reviewing posted journal entries.");
+
         OpenBrowserCommand = new RelayCommand(() => _navigationService.NavigateTo("StrategyRuns"));
         OpenRunDetailCommand = new RelayCommand(OpenRunDetail, () => !string.IsNullOrWhiteSpace(_runId));
         OpenPortfolioCommand = new RelayCommand(OpenPortfolio, () => !string.IsNullOrWhiteSpace(_runId));
         OpenCashFlowCommand = new RelayCommand(OpenCashFlow, () => !string.IsNullOrWhiteSpace(_runId));
-        OpenSelectedSecurityCommand = new RelayCommand(OpenSelectedSecurity, () => SelectedTrialBalanceLine is not null);
+        OpenSelectedSecurityCommand = new RelayCommand(OpenSelectedSecurity, () => CanOpenSelectedSecurity);
     }
 
     private async Task LoadFromParameterAsync(object? parameter, CancellationToken ct = default)
@@ -141,7 +201,7 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
         var runId = parameter as string;
         if (string.IsNullOrWhiteSpace(runId))
         {
-            StatusText = "Select a strategy run to inspect ledger state.";
+            ApplyNoRunSelectedState();
             return;
         }
 
@@ -149,7 +209,7 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
         var ledger = await _runService.GetLedgerAsync(runId, ct);
         if (ledger is null)
         {
-            StatusText = $"No ledger is available for run '{runId}'.";
+            ApplyLedgerUnavailableState(runId);
             return;
         }
 
@@ -185,6 +245,120 @@ public sealed class StrategyRunLedgerViewModel : BindableBase
         OpenPortfolioCommand.NotifyCanExecuteChanged();
         OpenCashFlowCommand.NotifyCanExecuteChanged();
         OpenSelectedSecurityCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(RunDrillInTooltip));
+    }
+
+    private void ApplyNoRunSelectedState()
+    {
+        _runId = null;
+        ResetLedgerState();
+        StatusText = "Select a strategy run to inspect ledger state.";
+        NotifyRunCommandsChanged();
+    }
+
+    private void ApplyLedgerUnavailableState(string runId)
+    {
+        _runId = null;
+        ResetLedgerState();
+        StatusText = $"No ledger is available for run '{runId}'.";
+        NotifyRunCommandsChanged();
+    }
+
+    private void ResetLedgerState()
+    {
+        Title = "Ledger Drill-In";
+        AsOfText = "-";
+        JournalEntriesText = "-";
+        LedgerEntriesText = "-";
+        AssetBalanceText = "-";
+        EquityBalanceText = "-";
+        RevenueBalanceText = "-";
+        ExpenseBalanceText = "-";
+        SecurityResolvedText = "-";
+        SecurityMissingText = "-";
+        TrialBalance.Clear();
+        Journal.Clear();
+        SelectedTrialBalanceLine = null;
+    }
+
+    private void NotifyRunCommandsChanged()
+    {
+        OpenRunDetailCommand.NotifyCanExecuteChanged();
+        OpenPortfolioCommand.NotifyCanExecuteChanged();
+        OpenCashFlowCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(RunDrillInTooltip));
+    }
+
+    private void RaiseSelectedTrialBalanceStateChanged()
+    {
+        OnPropertyChanged(nameof(HasSelectedTrialBalanceLine));
+        OnPropertyChanged(nameof(CanOpenSelectedSecurity));
+        OnPropertyChanged(nameof(SelectedSecurityTooltip));
+        OpenSelectedSecurityCommand.NotifyCanExecuteChanged();
+    }
+
+    internal static InspectorPanelModel BuildTrialBalanceInspector(LedgerTrialBalanceLine selected)
+    {
+        var security = selected.Security;
+        var securityTitle = security?.DisplayName
+            ?? (string.IsNullOrWhiteSpace(selected.Symbol) ? "No security symbol" : "Security mapping unavailable");
+        var securityDetail = security is null
+            ? string.IsNullOrWhiteSpace(selected.Symbol)
+                ? "This account balance is not linked to a Security Master symbol."
+                : "No Security Master record is attached to this trial-balance line. Open Security Master lookup before relying on downstream asset coverage."
+            : $"Security Master resolves this account balance to {security.DisplayName}.";
+        var coverageValue = security is null
+            ? string.IsNullOrWhiteSpace(selected.Symbol) ? "Not security-linked" : "Mapping needed"
+            : security.CoverageStatus.ToString();
+        var coverageTone = security is null
+            ? WorkspaceTone.Warning
+            : security.CoverageStatus == WorkstationSecurityCoverageStatus.Resolved
+                ? WorkspaceTone.Success
+                : WorkspaceTone.Warning;
+
+        return new InspectorPanelModel
+        {
+            Title = selected.AccountName,
+            Subtitle = securityTitle,
+            Detail = securityDetail,
+            Badge = new WorkstationBadgeModel("Coverage", coverageValue, "\uE8D4", coverageTone),
+            Facts =
+            [
+                new("Account type", selected.AccountType),
+                new("Balance", selected.Balance.ToString("C2")),
+                new("Entries", selected.EntryCount.ToString("N0")),
+                new("Symbol", string.IsNullOrWhiteSpace(selected.Symbol) ? "-" : selected.Symbol),
+                new("Financial account", string.IsNullOrWhiteSpace(selected.FinancialAccountId) ? "-" : selected.FinancialAccountId),
+                new("Asset class", security?.AssetClass ?? "-", security?.SubType ?? string.Empty),
+                new("Identifier", security?.PrimaryIdentifier ?? "-", security?.MatchedIdentifierKind ?? string.Empty),
+                new("Scope", BuildScopeText(selected))
+            ]
+        };
+    }
+
+    private static InspectorPanelModel BuildEmptyTrialBalanceInspector()
+        => new()
+        {
+            Title = "No trial-balance line selected",
+            Subtitle = "Run ledger inspector",
+            Detail = "Select a retained trial-balance line to review account balance, Security Master coverage, scope, and entry count."
+        };
+
+    private static string BuildScopeText(LedgerTrialBalanceLine selected)
+    {
+        var scopes = new[]
+            {
+                selected.AccountScopeDisplayName,
+                selected.EntityScopeDisplayName,
+                selected.SleeveScopeDisplayName,
+                selected.VehicleScopeDisplayName
+            }
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .ToArray();
+
+        return scopes.Length == 0
+            ? "Run ledger scope"
+            : string.Join(" / ", scopes);
     }
 
     private void OpenRunDetail()

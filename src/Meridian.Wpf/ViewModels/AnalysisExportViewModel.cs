@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Wpf.Models;
+using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -22,6 +24,21 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
     private string _exportReadinessTitle = string.Empty;
     private string _exportReadinessDetail = string.Empty;
     private string _recentExportsStateText = string.Empty;
+    private ExportSummary? _selectedRecentExport;
+    private InspectorPanelModel _exportReadinessInspector = BuildExportReadinessInspector(
+        "Export setup incomplete",
+        "Complete export setup before running an analysis export.",
+        canRunExport: false,
+        selectedMetricCount: 0,
+        selectedSymbolCount: 0,
+        format: "CSV");
+    private InspectorPanelModel _selectedExportInspector = BuildEmptyRecentExportInspector();
+    private InspectorPanelModel _exportActionInspector = BuildExportActionInspector(
+        canRunExport: false,
+        canSavePreset: false,
+        runTooltip: "Complete export setup before running an analysis export.",
+        savePresetTooltip: "Name the export before saving it as a preset.",
+        statusMessage: string.Empty);
 
     public AnalysisExportViewModel()
     {
@@ -38,6 +55,17 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
         };
         RecentExports = new ObservableCollection<ExportSummary>();
         RecentExports.CollectionChanged += (_, _) => UpdateRecentExportsState();
+        RecentExportsTable = new WorkstationTableModel<ExportSummary>(
+            RecentExports,
+            [
+                new("Name", nameof(ExportSummary.Name), 240),
+                new("Format", nameof(ExportSummary.Format), 95),
+                new("Status", nameof(ExportSummary.Status), 100),
+                new("Created", nameof(ExportSummary.CreatedAt), 160)
+            ],
+            "Recent analysis exports",
+            "No recent exports",
+            "Run a validated analysis export to retain a session history row.");
 
         foreach (var metric in Metrics)
         {
@@ -45,7 +73,7 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
         }
 
         RunExportCommand = new RelayCommand(RunExport, CanRunExport);
-        SavePresetCommand = new RelayCommand(SavePreset);
+        SavePresetCommand = new RelayCommand(SavePreset, CanSavePreset);
 
         UpdateExportReadiness();
         UpdateRecentExportsState();
@@ -58,6 +86,8 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
     public ObservableCollection<MetricOption> Metrics { get; }
 
     public ObservableCollection<ExportSummary> RecentExports { get; }
+
+    public WorkstationTableModel<ExportSummary> RecentExportsTable { get; }
 
     public IRelayCommand RunExportCommand { get; }
 
@@ -139,13 +169,25 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
     public bool IncludeCharts
     {
         get => _includeCharts;
-        set => SetProperty(ref _includeCharts, value);
+        set
+        {
+            if (SetProperty(ref _includeCharts, value))
+            {
+                UpdateExportPresentation();
+            }
+        }
     }
 
     public bool IncludeSummary
     {
         get => _includeSummary;
-        set => SetProperty(ref _includeSummary, value);
+        set
+        {
+            if (SetProperty(ref _includeSummary, value))
+            {
+                UpdateExportPresentation();
+            }
+        }
     }
 
     public string ValidationSummary
@@ -157,7 +199,13 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
     public string StatusMessage
     {
         get => _statusMessage;
-        private set => SetProperty(ref _statusMessage, value);
+        private set
+        {
+            if (SetProperty(ref _statusMessage, value))
+            {
+                UpdateExportPresentation();
+            }
+        }
     }
 
     public string ExportReadinessTitle
@@ -177,6 +225,57 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
         get => _recentExportsStateText;
         private set => SetProperty(ref _recentExportsStateText, value);
     }
+
+    public ExportSummary? SelectedRecentExport
+    {
+        get => _selectedRecentExport;
+        set
+        {
+            if (SetProperty(ref _selectedRecentExport, value))
+            {
+                SelectedExportInspector = value is null
+                    ? BuildEmptyRecentExportInspector()
+                    : BuildRecentExportInspector(value);
+                OnPropertyChanged(nameof(HasSelectedRecentExport));
+            }
+        }
+    }
+
+    public bool HasSelectedRecentExport => SelectedRecentExport is not null;
+
+    public InspectorPanelModel ExportReadinessInspector
+    {
+        get => _exportReadinessInspector;
+        private set => SetProperty(ref _exportReadinessInspector, value);
+    }
+
+    public InspectorPanelModel SelectedExportInspector
+    {
+        get => _selectedExportInspector;
+        private set => SetProperty(ref _selectedExportInspector, value);
+    }
+
+    public InspectorPanelModel ExportActionInspector
+    {
+        get => _exportActionInspector;
+        private set => SetProperty(ref _exportActionInspector, value);
+    }
+
+    public bool CanSavePreset() => CanSavePresetForState(ExportName, Destination);
+
+    public string RunExportTooltip => CanRunExport()
+        ? ExportReadinessDetail
+        : $"Export blocked: {ExportReadinessDetail}";
+
+    public string SavePresetTooltip => CanSavePreset()
+        ? $"Save {ExportName.Trim()} as a reusable analysis export preset."
+        : "Name the export and choose a destination before saving a preset.";
+
+    public string ExportActionStateTitle => CanRunExport() ? "Export ready" : "Export blocked";
+
+    public string ExportActionStateDetail => CanRunExport()
+        ? ExportReadinessDetail
+        : RunExportTooltip;
 
     public string Error => string.Empty;
 
@@ -213,6 +312,8 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
                 CreatedAt = DateTime.Today.AddDays(-2).ToString("MMM dd, yyyy")
             });
         }
+
+        SelectedRecentExport ??= RecentExports.FirstOrDefault();
     }
 
     public void RunExport()
@@ -234,13 +335,15 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
         }
 
         var exportName = string.IsNullOrWhiteSpace(ExportName) ? "Untitled Export" : ExportName.Trim();
-        RecentExports.Insert(0, new ExportSummary
+        var export = new ExportSummary
         {
             Name = exportName,
             Format = SelectedFormat,
             Status = "Queued",
             CreatedAt = DateTime.Now.ToString("MMM dd, yyyy HH:mm")
-        });
+        };
+        RecentExports.Insert(0, export);
+        SelectedRecentExport = export;
 
         StatusMessage = $"Export \"{exportName}\" queued successfully.";
         RefreshExportReadiness();
@@ -248,6 +351,12 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
 
     public void SavePreset()
     {
+        if (!CanSavePreset())
+        {
+            StatusMessage = SavePresetTooltip;
+            return;
+        }
+
         StatusMessage = "Export preset saved for quick reuse.";
     }
 
@@ -255,6 +364,9 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
     {
         return !GetFieldValidationErrors().Any() && Metrics.Any(metric => metric.IsSelected);
     }
+
+    public static bool CanSavePresetForState(string? exportName, string? destination) =>
+        !string.IsNullOrWhiteSpace(exportName) && !string.IsNullOrWhiteSpace(destination);
 
     private void UpdateSelectedSymbols()
     {
@@ -285,6 +397,11 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
         UpdateValidationSummary();
         UpdateExportReadiness();
         RunExportCommand.NotifyCanExecuteChanged();
+        SavePresetCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(RunExportTooltip));
+        OnPropertyChanged(nameof(SavePresetTooltip));
+        OnPropertyChanged(nameof(ExportActionStateTitle));
+        OnPropertyChanged(nameof(ExportActionStateDetail));
     }
 
     private void UpdateExportReadiness()
@@ -305,6 +422,7 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
             }
 
             ExportReadinessDetail = string.Join(" ", missing.Select(error => $"{error}."));
+            UpdateExportPresentation();
             return;
         }
 
@@ -318,6 +436,7 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
         ExportReadinessTitle = "Export ready";
         ExportReadinessDetail =
             $"{SelectedFormat} export will include {selectedMetricCount} metric{(selectedMetricCount == 1 ? string.Empty : "s")} for {symbolScope} across {dateScope}.";
+        UpdateExportPresentation();
     }
 
     private void UpdateRecentExportsState()
@@ -325,6 +444,11 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
         RecentExportsStateText = RecentExports.Count == 0
             ? "No exports have been queued in this session yet."
             : $"{RecentExports.Count} export{(RecentExports.Count == 1 ? string.Empty : "s")} retained for this session.";
+        OnPropertyChanged(nameof(HasSelectedRecentExport));
+        if (SelectedRecentExport is null)
+        {
+            SelectedRecentExport = RecentExports.FirstOrDefault();
+        }
     }
 
     private void UpdateValidationSummary()
@@ -341,6 +465,124 @@ public sealed class AnalysisExportViewModel : BindableBase, IDataErrorInfo
                 this[nameof(ToDate)]
             }
             .Where(error => !string.IsNullOrWhiteSpace(error));
+    }
+
+    private void UpdateExportPresentation()
+    {
+        var canRun = CanRunExport();
+        var canSave = CanSavePreset();
+        ExportReadinessInspector = BuildExportReadinessInspector(
+            ExportReadinessTitle,
+            ExportReadinessDetail,
+            canRun,
+            Metrics.Count(metric => metric.IsSelected),
+            SelectedSymbols.Count,
+            SelectedFormat);
+        ExportActionInspector = BuildExportActionInspector(
+            canRun,
+            canSave,
+            RunExportTooltip,
+            SavePresetTooltip,
+            StatusMessage);
+        OnPropertyChanged(nameof(RunExportTooltip));
+        OnPropertyChanged(nameof(SavePresetTooltip));
+        OnPropertyChanged(nameof(ExportActionStateTitle));
+        OnPropertyChanged(nameof(ExportActionStateDetail));
+    }
+
+    internal static InspectorPanelModel BuildExportReadinessInspector(
+        string title,
+        string detail,
+        bool canRunExport,
+        int selectedMetricCount,
+        int selectedSymbolCount,
+        string format)
+        => new()
+        {
+            Title = title,
+            Subtitle = "Analysis export readiness",
+            Detail = detail,
+            Badge = new WorkstationBadgeModel(
+                "Run",
+                canRunExport ? "Ready" : "Blocked",
+                "\uE8FD",
+                canRunExport ? WorkspaceTone.Success : WorkspaceTone.Warning),
+            Facts =
+            [
+                new("Format", string.IsNullOrWhiteSpace(format) ? "Not selected" : format),
+                new("Metrics", selectedMetricCount.ToString("N0")),
+                new("Symbols", selectedSymbolCount == 0 ? "All eligible" : selectedSymbolCount.ToString("N0")),
+                new("Action", canRunExport ? "Run export" : "Complete setup")
+            ]
+        };
+
+    internal static InspectorPanelModel BuildRecentExportInspector(ExportSummary selected)
+        => new()
+        {
+            Title = selected.Name,
+            Subtitle = "Recent analysis export",
+            Detail = "Review retained export history for this session before rerunning or saving a preset.",
+            Badge = new WorkstationBadgeModel("Status", selected.Status, "\uE8A5", ToneForExportStatus(selected.Status)),
+            Facts =
+            [
+                new("Format", selected.Format),
+                new("Created", selected.CreatedAt),
+                new("Status", selected.Status)
+            ]
+        };
+
+    private static InspectorPanelModel BuildEmptyRecentExportInspector()
+        => new()
+        {
+            Title = "No recent export selected",
+            Subtitle = "Analysis export history",
+            Detail = "Run a validated analysis export or select a retained export row to inspect session history."
+        };
+
+    internal static InspectorPanelModel BuildExportActionInspector(
+        bool canRunExport,
+        bool canSavePreset,
+        string runTooltip,
+        string savePresetTooltip,
+        string statusMessage)
+        => new()
+        {
+            Title = "Export actions",
+            Subtitle = "Run and preset readiness",
+            Detail = canRunExport ? runTooltip : "Export actions stay blocked until required setup is complete.",
+            Badge = new WorkstationBadgeModel(
+                "Run export",
+                canRunExport ? "Ready" : "Blocked",
+                "\uE8FD",
+                canRunExport ? WorkspaceTone.Success : WorkspaceTone.Warning),
+            Facts =
+            [
+                new("Run export", canRunExport ? "Ready" : runTooltip),
+                new("Save preset", canSavePreset ? "Ready" : savePresetTooltip),
+                new("Last result", string.IsNullOrWhiteSpace(statusMessage) ? "No export action this session" : statusMessage)
+            ]
+        };
+
+    private static string ToneForExportStatus(string status)
+    {
+        if (status.Contains("Complete", StringComparison.OrdinalIgnoreCase))
+        {
+            return WorkspaceTone.Success;
+        }
+
+        if (status.Contains("Fail", StringComparison.OrdinalIgnoreCase) ||
+            status.Contains("Error", StringComparison.OrdinalIgnoreCase))
+        {
+            return WorkspaceTone.Danger;
+        }
+
+        if (status.Contains("Queue", StringComparison.OrdinalIgnoreCase) ||
+            status.Contains("Run", StringComparison.OrdinalIgnoreCase))
+        {
+            return WorkspaceTone.Warning;
+        }
+
+        return WorkspaceTone.Neutral;
     }
 }
 

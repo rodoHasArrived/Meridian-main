@@ -148,6 +148,103 @@
                     </StackPanel>
                 </Grid>
             </Border>
+
+            <Border x:Name="DesktopAuthenticationBanner"
+                    Visibility="{Binding AuthenticatedSessionVisibility}"
+                    Padding="14,8"
+                    Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                    BorderBrush="{StaticResource ConsoleBorderBrush}"
+                    BorderThickness="0,0,0,1"
+                    AutomationProperties.Name="Desktop authentication session"
+                    AutomationProperties.AutomationId="DesktopAuthenticationSessionBanner">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Width="32"
+                            Height="32"
+                            CornerRadius="16"
+                            Background="{StaticResource ConsoleBackgroundLightBrush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            Margin="0,0,10,0">
+                        <TextBlock Text="{StaticResource IconLock}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="15"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" />
+                    </Border>
+
+                    <Grid Grid.Column="1"
+                          VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"
+                                   Text="Signed in as"
+                                   FontSize="12"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,6,0" />
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding AuthenticatedOperatorText}"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   TextTrimming="CharacterEllipsis"
+                                   MaxWidth="220"
+                                   VerticalAlignment="Center" />
+                        <Border Grid.Column="2"
+                                Padding="8,3"
+                                Margin="10,0"
+                                CornerRadius="999"
+                                Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                BorderThickness="1"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="{Binding AuthenticatedRoleText}"
+                                       FontSize="10"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource InfoColorBrush}"
+                                       TextTrimming="CharacterEllipsis"
+                                       MaxWidth="160" />
+                        </Border>
+                        <TextBlock Grid.Column="3"
+                                   Text="{Binding AuthenticatedSessionDetail}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextTrimming="CharacterEllipsis"
+                                   VerticalAlignment="Center" />
+                    </Grid>
+
+                    <Button Grid.Column="2"
+                            Command="{Binding LogoutCommand}"
+                            Style="{StaticResource GhostButtonStyle}"
+                            Padding="10,6"
+                            AutomationProperties.Name="Log out"
+                            AutomationProperties.AutomationId="DesktopLogoutButton"
+                            ToolTip="Log out and return to the Meridian startup screen">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{StaticResource IconBack}"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="12"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,6,0" />
+                            <TextBlock Text="Log out"
+                                       FontSize="12"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
         </StackPanel>
 
         <Frame x:Name="RootFrame"

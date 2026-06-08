@@ -38,22 +38,49 @@
                     <TextBox Text="{Binding ClientOrFundName, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Margin="0,0,12,12">
+                    <TextBlock Text="Entity type" />
+                    <ComboBox ItemsSource="{Binding LegalEntityTypeOptions}"
+                              SelectedItem="{Binding LegalEntityType}"
+                              Margin="0,0,0,8" />
+                    <TextBlock Text="Legal form" />
+                    <ComboBox ItemsSource="{Binding LegalEntityFormOptions}"
+                              SelectedItem="{Binding LegalEntityForm}"
+                              Margin="0,0,0,8" />
                     <TextBlock Text="Legal entity code" />
                     <TextBox Text="{Binding LegalEntityCode, UpdateSourceTrigger=PropertyChanged}" />
                     <TextBlock Text="Legal entity name" Margin="0,8,0,0" />
                     <TextBox Text="{Binding LegalEntityName, UpdateSourceTrigger=PropertyChanged}" />
                     <TextBlock Text="Jurisdiction" Margin="0,8,0,0" />
                     <TextBox Text="{Binding Jurisdiction, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="Registration number" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding RegistrationNumber, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
                 <StackPanel Margin="0,0,0,12">
+                    <TextBlock Text="Lifecycle status" />
+                    <ComboBox ItemsSource="{Binding LegalEntityLifecycleStatusOptions}"
+                              SelectedItem="{Binding LegalEntityLifecycleStatus}"
+                              Margin="0,0,0,8" />
+                    <TextBlock Text="Lifecycle event" />
+                    <ComboBox ItemsSource="{Binding InitialLifecycleEventKindOptions}"
+                              SelectedItem="{Binding InitialLifecycleEventKind}"
+                              Margin="0,0,0,8" />
+                    <TextBlock Text="Lifecycle summary" />
+                    <TextBox Text="{Binding InitialLifecycleEventSummary, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="Beneficial owner" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding BeneficialOwnerName, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="Owner percent" Margin="0,8,0,0" />
+                    <TextBox Text="{Binding BeneficialOwnerPercent, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="{Binding LegalEntityProfileSummary}" FontWeight="SemiBold" Margin="0,8,0,0" />
+                </StackPanel>
+            </UniformGrid>
+
+            <UniformGrid Columns="3" Margin="0,0,0,16">
+                <StackPanel Margin="0,0,12,12">
                     <TextBlock Text="Vehicle code" />
                     <TextBox Text="{Binding VehicleCode, UpdateSourceTrigger=PropertyChanged}" />
                     <TextBlock Text="Vehicle name" Margin="0,8,0,0" />
                     <TextBox Text="{Binding VehicleName, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
-            </UniformGrid>
-
-            <UniformGrid Columns="2" Margin="0,0,0,16">
                 <StackPanel Margin="0,0,12,12">
                     <TextBlock Text="Portfolio code" />
                     <TextBox Text="{Binding PortfolioCode, UpdateSourceTrigger=PropertyChanged}" />

@@ -1,7 +1,9 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Workstation;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -12,6 +14,7 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
     private string? _runId;
     private object? _parameter;
     private PortfolioPositionSummary? _selectedPosition;
+    private InspectorPanelModel _selectedPositionInspector = BuildEmptyPositionInspector();
 
     public object? Parameter
     {
@@ -27,6 +30,8 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
 
     public ObservableCollection<PortfolioPositionSummary> Positions { get; } = [];
 
+    public WorkstationTableModel<PortfolioPositionSummary> PositionsTable { get; }
+
     public PortfolioPositionSummary? SelectedPosition
     {
         get => _selectedPosition;
@@ -34,10 +39,33 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
         {
             if (SetProperty(ref _selectedPosition, value))
             {
-                OpenSelectedSecurityCommand.NotifyCanExecuteChanged();
+                SelectedPositionInspector = value is null
+                    ? BuildEmptyPositionInspector()
+                    : BuildPositionInspector(value);
+                RaiseSelectedPositionStateChanged();
             }
         }
     }
+
+    public InspectorPanelModel SelectedPositionInspector
+    {
+        get => _selectedPositionInspector;
+        private set => SetProperty(ref _selectedPositionInspector, value);
+    }
+
+    public bool HasSelectedPosition => SelectedPosition is not null;
+
+    public string RunDrillInTooltip => string.IsNullOrWhiteSpace(_runId)
+        ? "Select a retained strategy run before opening related run drill-ins."
+        : $"Open retained run drill-ins for {_runId}.";
+
+    public string SelectedSecurityTooltip => SelectedPosition switch
+    {
+        null => "Select a position before opening Security Master.",
+        { Security: { } security } => $"Open Security Master for {security.DisplayName}.",
+        { Symbol: { Length: > 0 } symbol } => $"Open Security Master lookup for {symbol}.",
+        _ => "Select a mapped position before opening Security Master."
+    };
 
     private string _title = "Portfolio Drill-In";
     public string Title
@@ -135,6 +163,23 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
     {
         _runService = runService;
         _navigationService = navigationService;
+        PositionsTable = new WorkstationTableModel<PortfolioPositionSummary>(
+            Positions,
+            [
+                new("Symbol", nameof(PortfolioPositionSummary.Symbol), 90),
+                new("Security", "Security.DisplayName", 180),
+                new("Asset Class", "Security.AssetClass", 105),
+                new("Identifier", "Security.PrimaryIdentifier", 125),
+                new("Qty", nameof(PortfolioPositionSummary.Quantity), 90, "{0:N0}"),
+                new("Avg Cost", nameof(PortfolioPositionSummary.AverageCostBasis), 105, "{0:C2}"),
+                new("Realized PnL", nameof(PortfolioPositionSummary.RealizedPnl), 115, "{0:C2}"),
+                new("Unrealized PnL", nameof(PortfolioPositionSummary.UnrealizedPnl), 125, "{0:C2}"),
+                new("Short", nameof(PortfolioPositionSummary.IsShort), 70)
+            ],
+            "Run portfolio positions",
+            "No positions retained",
+            "Select a retained strategy run with a portfolio snapshot before reviewing positions.");
+
         OpenBrowserCommand = new RelayCommand(() => _navigationService.NavigateTo("StrategyRuns"));
         OpenRunDetailCommand = new RelayCommand(OpenRunDetail, () => !string.IsNullOrWhiteSpace(_runId));
         OpenLedgerCommand = new RelayCommand(OpenLedger, () => !string.IsNullOrWhiteSpace(_runId));
@@ -147,7 +192,7 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
         var runId = parameter as string;
         if (string.IsNullOrWhiteSpace(runId))
         {
-            StatusText = "Select a strategy run to inspect portfolio state.";
+            ApplyNoRunSelectedState();
             return;
         }
 
@@ -155,7 +200,7 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
         var portfolio = await _runService.GetPortfolioAsync(runId, ct);
         if (portfolio is null)
         {
-            StatusText = $"No portfolio snapshot is available for run '{runId}'.";
+            ApplyPortfolioUnavailableState(runId);
             return;
         }
 
@@ -186,6 +231,110 @@ public sealed class StrategyRunPortfolioViewModel : BindableBase
         OpenLedgerCommand.NotifyCanExecuteChanged();
         OpenCashFlowCommand.NotifyCanExecuteChanged();
         OpenSelectedSecurityCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(RunDrillInTooltip));
+    }
+
+    private void ApplyNoRunSelectedState()
+    {
+        _runId = null;
+        ResetPortfolioState();
+        StatusText = "Select a strategy run to inspect portfolio state.";
+        OpenRunDetailCommand.NotifyCanExecuteChanged();
+        OpenLedgerCommand.NotifyCanExecuteChanged();
+        OpenCashFlowCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(RunDrillInTooltip));
+    }
+
+    private void ApplyPortfolioUnavailableState(string runId)
+    {
+        _runId = null;
+        ResetPortfolioState();
+        StatusText = $"No portfolio snapshot is available for run '{runId}'.";
+        OpenRunDetailCommand.NotifyCanExecuteChanged();
+        OpenLedgerCommand.NotifyCanExecuteChanged();
+        OpenCashFlowCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(RunDrillInTooltip));
+    }
+
+    private void ResetPortfolioState()
+    {
+        Title = "Portfolio Drill-In";
+        EquityText = "-";
+        CashText = "-";
+        GrossExposureText = "-";
+        NetExposureText = "-";
+        RealizedPnlText = "-";
+        UnrealizedPnlText = "-";
+        CommissionsText = "-";
+        AsOfText = "-";
+        SecurityResolvedText = "-";
+        SecurityMissingText = "-";
+        Positions.Clear();
+        SelectedPosition = null;
+    }
+
+    private void RaiseSelectedPositionStateChanged()
+    {
+        OnPropertyChanged(nameof(HasSelectedPosition));
+        OnPropertyChanged(nameof(SelectedSecurityTooltip));
+        OpenSelectedSecurityCommand.NotifyCanExecuteChanged();
+    }
+
+    internal static InspectorPanelModel BuildPositionInspector(PortfolioPositionSummary selected)
+    {
+        var security = selected.Security;
+        var securityTitle = security?.DisplayName ?? "Security mapping unavailable";
+        var securityDetail = security is null
+            ? "No Security Master record is attached to this retained position. Open Security Master lookup before relying on downstream asset coverage."
+            : $"Security Master resolves this position to {security.DisplayName}.";
+        var coverageValue = security is null ? "Mapping needed" : security.CoverageStatus.ToString();
+        var coverageTone = security is null || security.CoverageStatus != WorkstationSecurityCoverageStatus.Resolved
+            ? WorkspaceTone.Warning
+            : WorkspaceTone.Success;
+
+        return new InspectorPanelModel
+        {
+            Title = selected.Symbol,
+            Subtitle = securityTitle,
+            Detail = securityDetail,
+            Badge = new WorkstationBadgeModel("Coverage", coverageValue, "\uE8A5", coverageTone),
+            Facts =
+            [
+                new("Quantity", selected.Quantity.ToString("N0"), selected.IsShort ? "Short exposure" : "Long exposure"),
+                new("Average cost", selected.AverageCostBasis.ToString("C2")),
+                new("Realized PnL", selected.RealizedPnl.ToString("C2")),
+                new("Unrealized PnL", selected.UnrealizedPnl.ToString("C2")),
+                new("Asset class", security?.AssetClass ?? "-", security?.SubType ?? string.Empty),
+                new("Identifier", security?.PrimaryIdentifier ?? "-", security?.MatchedIdentifierKind ?? string.Empty),
+                new("Currency", security?.Currency ?? "-"),
+                new("Scope", BuildScopeText(selected))
+            ]
+        };
+    }
+
+    private static InspectorPanelModel BuildEmptyPositionInspector()
+        => new()
+        {
+            Title = "No position selected",
+            Subtitle = "Run portfolio inspector",
+            Detail = "Select a retained position row to review Security Master coverage, scope, exposure, and PnL before opening downstream drill-ins."
+        };
+
+    private static string BuildScopeText(PortfolioPositionSummary selected)
+    {
+        var scopes = new[]
+            {
+                selected.AccountScopeDisplayName,
+                selected.EntityScopeDisplayName,
+                selected.SleeveScopeDisplayName,
+                selected.VehicleScopeDisplayName
+            }
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .ToArray();
+
+        return scopes.Length == 0
+            ? "Run portfolio scope"
+            : string.Join(" / ", scopes);
     }
 
     private void OpenRunDetail()

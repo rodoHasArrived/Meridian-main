@@ -27,6 +27,9 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
     private static List<Guid> DeserializeGuids(string json) =>
         JsonSerializer.Deserialize<List<Guid>>(json, JsonOpts) ?? [];
 
+    private static List<T> DeserializeList<T>(string json) =>
+        JsonSerializer.Deserialize<List<T>>(json, JsonOpts) ?? [];
+
     // ── Organizations ─────────────────────────────────────────────────────────
 
     public async Task UpsertOrganizationAsync(OrganizationSummaryDto dto, CancellationToken ct = default)
@@ -426,13 +429,20 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         await using var cmd = conn.CreateCommand();
         cmd.CommandText = $@"INSERT INTO {Q("legal_entity")}
                 (entity_id, entity_type, code, name, jurisdiction, base_currency, is_active,
-                 effective_from, effective_to, description, updated_at)
-            VALUES (@id, @type, @code, @name, @jurisdiction, @currency, @active, @eff_from, @eff_to, @desc, now())
+                 effective_from, effective_to, description, legal_form, lifecycle_status,
+                 registration_number, beneficial_owners, lifecycle_events, updated_at)
+            VALUES (@id, @type, @code, @name, @jurisdiction, @currency, @active, @eff_from, @eff_to,
+                    @desc, @legal_form, @lifecycle_status, @registration_number,
+                    @beneficial_owners::jsonb, @lifecycle_events::jsonb, now())
             ON CONFLICT (entity_id) DO UPDATE SET
                 entity_type = EXCLUDED.entity_type, code = EXCLUDED.code, name = EXCLUDED.name,
                 jurisdiction = EXCLUDED.jurisdiction, base_currency = EXCLUDED.base_currency,
                 is_active = EXCLUDED.is_active, effective_from = EXCLUDED.effective_from,
-                effective_to = EXCLUDED.effective_to, description = EXCLUDED.description, updated_at = now()";
+                effective_to = EXCLUDED.effective_to, description = EXCLUDED.description,
+                legal_form = EXCLUDED.legal_form, lifecycle_status = EXCLUDED.lifecycle_status,
+                registration_number = EXCLUDED.registration_number,
+                beneficial_owners = EXCLUDED.beneficial_owners,
+                lifecycle_events = EXCLUDED.lifecycle_events, updated_at = now()";
         cmd.Parameters.AddWithValue("id", dto.EntityId);
         cmd.Parameters.AddWithValue("type", dto.EntityType.ToString());
         cmd.Parameters.AddWithValue("code", dto.Code);
@@ -443,6 +453,11 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
         cmd.Parameters.AddWithValue("eff_from", dto.EffectiveFrom);
         cmd.Parameters.AddWithValue("eff_to", dto.EffectiveTo.HasValue ? (object)dto.EffectiveTo.Value : DBNull.Value);
         cmd.Parameters.AddWithValue("desc", (object?)dto.Description ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("legal_form", dto.LegalForm.ToString());
+        cmd.Parameters.AddWithValue("lifecycle_status", dto.LifecycleStatus.ToString());
+        cmd.Parameters.AddWithValue("registration_number", (object?)dto.RegistrationNumber ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("beneficial_owners", JsonSerializer.Serialize(dto.BeneficialOwners ?? [], JsonOpts));
+        cmd.Parameters.AddWithValue("lifecycle_events", JsonSerializer.Serialize(dto.LifecycleEvents ?? [], JsonOpts));
         await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
@@ -476,7 +491,12 @@ public sealed class PostgresFundStructureStore : IFundStructureStore
             r.GetBoolean(r.GetOrdinal("is_active")),
             r.GetFieldValue<DateTimeOffset>(r.GetOrdinal("effective_from")),
             r.IsDBNull(r.GetOrdinal("effective_to")) ? null : r.GetFieldValue<DateTimeOffset>(r.GetOrdinal("effective_to")),
-            r.IsDBNull(r.GetOrdinal("description")) ? null : r.GetString(r.GetOrdinal("description")));
+            r.IsDBNull(r.GetOrdinal("description")) ? null : r.GetString(r.GetOrdinal("description")),
+            Enum.Parse<LegalEntityFormDto>(r.GetString(r.GetOrdinal("legal_form"))),
+            Enum.Parse<LegalEntityLifecycleStatusDto>(r.GetString(r.GetOrdinal("lifecycle_status"))),
+            r.IsDBNull(r.GetOrdinal("registration_number")) ? null : r.GetString(r.GetOrdinal("registration_number")),
+            DeserializeList<BeneficialOwnerSummaryDto>(r.GetString(r.GetOrdinal("beneficial_owners"))),
+            DeserializeList<LegalEntityLifecycleEventDto>(r.GetString(r.GetOrdinal("lifecycle_events"))));
 
     // ── Investment Portfolios ─────────────────────────────────────────────────
 

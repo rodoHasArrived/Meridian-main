@@ -15,6 +15,8 @@ import {
   buildBackfillRequest,
   buildBackfillResultCardState,
   buildBackfillTriggerState,
+  buildDataUploadPanelState,
+  buildDataUploadTemplateCsv,
   buildDataLoadingState,
   buildDataPresentationState,
   buildExportSection,
@@ -29,7 +31,9 @@ import {
   buildSelectedProviderDetail,
   clearProviderSetupCredentials,
   buildSelectedBackfillDetail,
+  defaultDataUploadTemplateCatalog,
   resolveDataWorkstream,
+  resolveSelectedDataUploadTemplate,
   resolveSelectedProvider,
   resolveSelectedBackfill,
   resolveSelectedExport,
@@ -309,9 +313,59 @@ describe("data-screen view model", () => {
     expect(typesSource).toContain("providers: DataProviderRecord[];");
     expect(typesSource).toContain("backfills: DataBackfillRecord[];");
     expect(typesSource).toContain("exports: DataExportRecord[];");
+    expect(typesSource).toContain("uploadTemplates?: DataUploadTemplateCatalog | null;");
     expect(typesSource).toContain("export type DataOperationsWorkspaceResponse = DataWorkspaceResponse;");
     expect(typesSource).not.toContain("export interface DataOperationsWorkspaceResponse");
     expect(typesSource).not.toContain("export type DataWorkspaceResponse = DataOperationsWorkspaceResponse");
+  });
+
+  it("derives upload template panel state and CSV template content", () => {
+    const state = buildDataUploadPanelState(
+      defaultDataUploadTemplateCatalog,
+      "trade-data",
+      {
+        uploadId: "UP-1",
+        templateId: "trade-data",
+        templateLabel: "Trade data",
+        fileName: "trades.csv",
+        fileSizeBytes: 128,
+        contentType: "text/csv",
+        uploadedBy: "ops-user",
+        uploadedAtUtc: "2026-06-08T12:00:00Z",
+        retainedPath: "workstation/data-uploads/UP-1/trades.csv",
+        parsedRowCount: 1,
+        previewRowCount: 1,
+        headers: ["trade_id", "trade_date", "account_code", "symbol"],
+        previewRows: [{ trade_id: "TRD-1", trade_date: "2026-06-01", account_code: "FUND-A", symbol: "AAPL" }],
+        issues: [
+          { severity: "Warning", field: "row", message: "Row has fewer values than headers.", rowNumber: 2 }
+        ],
+        status: "NeedsSchemaRepair",
+        nextAction: "Repair the template headers or required fields, then upload the corrected source file again."
+      },
+      null,
+      false,
+      "trades.csv"
+    );
+
+    expect(state.templateOptions.map((option) => option.value)).toEqual([
+      "trade-data",
+      "transaction-data",
+      "asset-information",
+      "entity-configuration"
+    ]);
+    expect(state.statusLabel).toBe("Needs schema repair");
+    expect(state.retainedPath).toBe("workstation/data-uploads/UP-1/trades.csv");
+    expect(state.issueRows[0]).toMatchObject({
+      severity: "Warning",
+      field: "row",
+      rowLabel: "Row 2"
+    });
+    expect(state.previewRows[0].values).toContainEqual({ id: "symbol", label: "symbol", value: "AAPL" });
+
+    const template = resolveSelectedDataUploadTemplate(defaultDataUploadTemplateCatalog, "trade-data");
+    expect(template?.label).toBe("Trade data");
+    expect(buildDataUploadTemplateCsv(template!)).toContain("trade_id,trade_date,account_code,symbol,side,quantity,price");
   });
 
   it("derives route-aware loading state with operator recovery actions", () => {

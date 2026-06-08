@@ -89,19 +89,36 @@ public sealed class AccountPortfolioViewModelTests
     }
 
     [Fact]
-    public void AccountPortfolioPageSource_BindsPositionEmptyState()
+    public void AccountPortfolioPageSource_UsesDenseTableInspectorAndSelectionAwareActions()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\AccountPortfolioPage.xaml"));
+        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\AccountPortfolioViewModel.cs"));
 
+        xaml.Should().NotContain("<DataGrid");
+        xaml.Should().Contain("AccountPortfolioActionStrip");
+        xaml.Should().Contain("AccountPortfolioWorkbench");
+        xaml.Should().Contain("DenseDataGridControl");
+        xaml.Should().Contain("InspectorPanelControl");
+        xaml.Should().Contain("AccountPortfolioPositionsGrid");
+        xaml.Should().Contain("AccountPortfolioSelectionInspector");
+        xaml.Should().Contain("AccountPortfolioActionInspector");
         xaml.Should().Contain("AccountPositionsEmptyStatePanel");
         xaml.Should().Contain("AccountPositionsEmptyStateTitle");
         xaml.Should().Contain("AccountPositionsEmptyStateDetail");
         xaml.Should().Contain("AccountPositionsEmptyStateRefreshButton");
+        xaml.Should().Contain("Table=\"{Binding PositionsTable}\"");
+        xaml.Should().Contain("SelectedItem=\"{Binding SelectedPosition, Mode=TwoWay}\"");
         xaml.Should().Contain("{Binding IsPositionsGridVisible");
         xaml.Should().Contain("{Binding IsPositionsEmptyStateVisible");
         xaml.Should().Contain("{Binding PositionsEmptyStateTitle}");
         xaml.Should().Contain("{Binding PositionsEmptyStateDetail}");
         xaml.Should().Contain("{Binding RefreshCommand}");
         xaml.Should().Contain("{Binding CanRefreshAccount}");
+        xaml.Should().Contain("ToolTip=\"{Binding RefreshTooltip}\"");
+        xaml.Should().Contain("ToolTip=\"{Binding SelectedSecurityTooltip}\"");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+        viewModel.Should().Contain("public WorkstationTableModel<AccountPositionRow> PositionsTable { get; }");
+        viewModel.Should().Contain("public InspectorPanelModel SelectedPositionInspector");
+        viewModel.Should().Contain("public bool CanOpenSelectedSecurity");
     }
 }

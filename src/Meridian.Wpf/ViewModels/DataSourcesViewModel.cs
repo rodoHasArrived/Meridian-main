@@ -14,7 +14,7 @@ namespace Meridian.Wpf.ViewModels;
 /// <summary>
 /// ViewModel for the Data Sources configuration page.
 /// Owns all state and commands so that the code-behind is thinned to
-/// lifecycle wiring and PasswordBox/ComboBox-tag helpers only.
+/// lifecycle wiring and secret-input/ComboBox-tag helpers only.
 /// </summary>
 public sealed class DataSourcesViewModel : BindableBase
 {
@@ -89,7 +89,7 @@ public sealed class DataSourcesViewModel : BindableBase
     private string _alpacaFeed = "iex";
     private string _polygonFeed = "stocks";
 
-    /// <summary>Polygon API key read from the PasswordBox by code-behind before Save.</summary>
+    /// <summary>Polygon API key read from the shared secret input by code-behind before Save.</summary>
     internal string PolygonApiKey { get; set; } = string.Empty;
 
     public DataSourcesViewModel(WpfServices.ConfigService configService)

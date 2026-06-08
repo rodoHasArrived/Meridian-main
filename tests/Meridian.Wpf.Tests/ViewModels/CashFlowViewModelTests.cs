@@ -190,10 +190,21 @@ public sealed class CashFlowViewModelTests
         vm.LadderBuckets.Should().BeEmpty();
         vm.HasEntries.Should().BeFalse();
         vm.HasLadderBuckets.Should().BeFalse();
+        vm.HasSelectedEntry.Should().BeFalse();
+        vm.HasSelectedLadderBucket.Should().BeFalse();
+        vm.CanOpenRunDrillIns.Should().BeFalse();
+        vm.CanOpenSelectedSecurity.Should().BeFalse();
         vm.IsEntriesEmptyStateVisible.Should().BeTrue();
         vm.IsLadderEmptyStateVisible.Should().BeTrue();
         vm.EntriesEmptyStateTitle.Should().Be("Select a run to inspect cash flows");
         vm.LadderEmptyStateDetail.Should().Contain("Select a strategy run");
+        vm.EntriesTable.Title.Should().Be("Cash-flow events");
+        vm.LadderTable.Title.Should().Be("Cash ladder");
+        vm.SelectedEntryInspector.Title.Should().Be("No cash-flow event selected");
+        vm.SelectedLadderBucketInspector.Title.Should().Be("No cash ladder bucket selected");
+        vm.ContinuityInspector.Title.Should().Be("No continuity payload");
+        vm.RunActionStateTitle.Should().Be("Select a retained run");
+        vm.SelectedSecurityTooltip.Should().Contain("Select a cash-flow event");
         vm.TotalEntriesText.Should().Be("-");
         vm.TotalInflowsText.Should().Be("-");
         vm.TotalOutflowsText.Should().Be("-");
@@ -208,6 +219,7 @@ public sealed class CashFlowViewModelTests
         vm.OpenRunDetailCommand.CanExecute(null).Should().BeFalse();
         vm.OpenPortfolioCommand.CanExecute(null).Should().BeFalse();
         vm.OpenLedgerCommand.CanExecute(null).Should().BeFalse();
+        vm.OpenSelectedSecurityCommand.CanExecute(null).Should().BeFalse();
     }
 
     // ── Parameter handling ────────────────────────────────────────────────
@@ -217,8 +229,7 @@ public sealed class CashFlowViewModelTests
     {
         var (vm, _) = CreateEmpty();
 
-        vm.Parameter = null;
-        await Task.Delay(50); // allow async load to settle
+        await vm.LoadRunAsync(null);
 
         vm.StatusText.Should().Contain("Select a strategy run");
     }
@@ -228,8 +239,7 @@ public sealed class CashFlowViewModelTests
     {
         var (vm, _) = CreateEmpty();
 
-        vm.Parameter = "unknown-run-id";
-        await Task.Delay(50);
+        await vm.LoadRunAsync("unknown-run-id");
 
         vm.StatusText.Should().Contain("unknown-run-id");
         vm.Entries.Should().BeEmpty();
@@ -237,6 +247,8 @@ public sealed class CashFlowViewModelTests
         vm.OpenRunDetailCommand.CanExecute(null).Should().BeFalse();
         vm.OpenPortfolioCommand.CanExecute(null).Should().BeFalse();
         vm.OpenLedgerCommand.CanExecute(null).Should().BeFalse();
+        vm.CanOpenRunDrillIns.Should().BeFalse();
+        vm.RunActionStateTitle.Should().Be("Cash-flow evidence unavailable");
         vm.EntriesEmptyStateTitle.Should().Be("Cash-flow data unavailable");
         vm.EntriesEmptyStateDetail.Should().Contain("unknown-run-id");
         vm.LadderEmptyStateDetail.Should().Contain("retained run");
@@ -249,11 +261,15 @@ public sealed class CashFlowViewModelTests
     {
         var (vm, runId) = CreateWithTradeRun();
 
-        vm.Parameter = runId;
-        await Task.Delay(100);
+        await vm.LoadRunAsync(runId);
 
         vm.Entries.Should().HaveCount(3, "three cash flow events were recorded");
         vm.HasEntries.Should().BeTrue();
+        vm.SelectedEntry.Should().NotBeNull();
+        vm.HasSelectedEntry.Should().BeTrue();
+        vm.SelectedEntryInspector.Title.Should().NotBe("No cash-flow event selected");
+        vm.CanOpenSelectedSecurity.Should().BeTrue();
+        vm.SelectedSecurityTooltip.Should().Contain("AAPL");
         vm.IsEntriesEmptyStateVisible.Should().BeFalse();
         vm.TotalEntriesText.Should().Be("3");
     }
@@ -263,8 +279,7 @@ public sealed class CashFlowViewModelTests
     {
         var (vm, runId) = CreateWithTradeRun();
 
-        vm.Parameter = runId;
-        await Task.Delay(100);
+        await vm.LoadRunAsync(runId);
 
         // Inflows: trade 500 + dividend 20 = 520; Outflows: commission 1
         vm.TotalInflowsText.Should().NotBe("-");
@@ -277,11 +292,13 @@ public sealed class CashFlowViewModelTests
     {
         var (vm, runId) = CreateWithTradeRun();
 
-        vm.Parameter = runId;
-        await Task.Delay(100);
+        await vm.LoadRunAsync(runId);
 
         vm.BucketSummaryText.Should().NotBe("-");
         vm.HasLadderBuckets.Should().BeFalse();
+        vm.SelectedLadderBucket.Should().BeNull();
+        vm.HasSelectedLadderBucket.Should().BeFalse();
+        vm.SelectedLadderBucketInspector.Title.Should().Be("No cash ladder bucket selected");
         vm.IsLadderEmptyStateVisible.Should().BeTrue();
         vm.LadderEmptyStateDetail.Should().Contain("events are loaded");
     }
@@ -304,8 +321,7 @@ public sealed class CashFlowViewModelTests
         var runId = await runService.RecordBacktestRunAsync(request, "No Cash Flow Strategy", BuildResult(started, []));
         var vm = new CashFlowViewModel(runService, NavigationService.Instance);
 
-        vm.Parameter = runId;
-        await Task.Delay(100);
+        await vm.LoadRunAsync(runId);
 
         vm.HasEntries.Should().BeFalse();
         vm.HasLadderBuckets.Should().BeFalse();
@@ -316,6 +332,9 @@ public sealed class CashFlowViewModelTests
         vm.LadderEmptyStateTitle.Should().Be("No cash ladder buckets");
         vm.LadderEmptyStateDetail.Should().Contain("no retained cash-flow events");
         vm.OpenRunDetailCommand.CanExecute(null).Should().BeTrue();
+        vm.OpenSelectedSecurityCommand.CanExecute(null).Should().BeFalse();
+        vm.CanOpenRunDrillIns.Should().BeTrue();
+        vm.CanOpenSelectedSecurity.Should().BeFalse();
     }
 
     [Fact]
@@ -323,8 +342,7 @@ public sealed class CashFlowViewModelTests
     {
         var (vm, runId) = CreateWithTradeRun();
 
-        vm.Parameter = runId;
-        await Task.Delay(100);
+        await vm.LoadRunAsync(runId);
 
         vm.Title.Should().Contain(runId[..8]);
     }
@@ -334,12 +352,14 @@ public sealed class CashFlowViewModelTests
     {
         var (vm, runId) = CreateWithTradeRun();
 
-        vm.Parameter = runId;
-        await Task.Delay(100);
+        await vm.LoadRunAsync(runId);
 
         vm.OpenRunDetailCommand.CanExecute(null).Should().BeTrue();
         vm.OpenPortfolioCommand.CanExecute(null).Should().BeTrue();
         vm.OpenLedgerCommand.CanExecute(null).Should().BeTrue();
+        vm.OpenSelectedSecurityCommand.CanExecute(null).Should().BeTrue();
+        vm.RunActionStateTitle.Should().Be("Run drill-ins ready");
+        vm.RunDrillInTooltip.Should().Contain(runId);
     }
 
     [Fact]
@@ -347,8 +367,7 @@ public sealed class CashFlowViewModelTests
     {
         var (vm, runId) = CreateWithTradeRunAndContinuity();
 
-        vm.Parameter = runId;
-        await Task.Delay(100);
+        await vm.LoadRunAsync(runId);
 
         vm.ContinuityPostureText.Should().Be("Continuity needs review");
         vm.ContinuityDetailText.Should().Contain("portfolio Missing");
@@ -356,6 +375,7 @@ public sealed class CashFlowViewModelTests
         vm.ContinuityDetailText.Should().Contain("cash flow Healthy");
         vm.ContinuityDetailText.Should().Contain("reconciliation Missing");
         vm.ContinuityWarningText.Should().Contain("missing-");
+        vm.ContinuityInspector.Title.Should().Be("Continuity needs review");
     }
 
     [Fact]
@@ -363,8 +383,7 @@ public sealed class CashFlowViewModelTests
     {
         var (vm, runId) = await CreateWithTradeRunAndBlockedContinuityAsync();
 
-        vm.Parameter = runId;
-        await Task.Delay(100);
+        await vm.LoadRunAsync(runId);
 
         vm.StatusText.Should().Contain("cash-flow event(s) loaded");
         vm.HasEntries.Should().BeTrue();
@@ -372,6 +391,7 @@ public sealed class CashFlowViewModelTests
         vm.ContinuityDetailText.Should().Contain("cash flow Healthy");
         vm.ContinuityDetailText.Should().Contain("reconciliation Healthy");
         vm.ContinuityWarningText.Should().Contain("open-reconciliation-breaks");
+        vm.ContinuityInspector.Title.Should().Be("Continuity blocked");
     }
 
     // ── Entry ordering ────────────────────────────────────────────────────
@@ -381,8 +401,7 @@ public sealed class CashFlowViewModelTests
     {
         var (vm, runId) = CreateWithTradeRun();
 
-        vm.Parameter = runId;
-        await Task.Delay(100);
+        await vm.LoadRunAsync(runId);
 
         var timestamps = vm.Entries.Select(e => e.Timestamp).ToList();
         timestamps.Should().BeInAscendingOrder();
@@ -395,8 +414,7 @@ public sealed class CashFlowViewModelTests
     {
         var (vm, runId) = CreateWithTradeRun();
 
-        vm.Parameter = runId;
-        await Task.Delay(100);
+        await vm.LoadRunAsync(runId);
 
         vm.BucketSummaryText.Should().NotBe("-");
         vm.BucketSummaryText.Should().Contain("d"); // bucket day width label
@@ -412,8 +430,7 @@ public sealed class CashFlowViewModelTests
             navigation.Initialize(new Frame());
 
             var (vm, runId) = CreateWithTradeRun();
-            vm.Parameter = runId;
-            await Task.Delay(100);
+            await vm.LoadRunAsync(runId);
 
             vm.SelectedEntry.Should().NotBeNull();
             vm.OpenSelectedSecurityCommand.Execute(null);
@@ -424,27 +441,43 @@ public sealed class CashFlowViewModelTests
     }
 
     [Fact]
-    public void RunCashFlowPageSource_BindsCashFlowEmptyStates()
+    public void RunCashFlowPageSource_UsesDenseTablesInspectorsAndSelectionAwareActions()
     {
         var xaml = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\Views\RunCashFlowPage.xaml"));
         var viewModel = File.ReadAllText(GetRepositoryFilePath(@"src\Meridian.Wpf\ViewModels\CashFlowViewModel.cs"));
 
+        xaml.Should().NotContain("<DataGrid");
+        xaml.Should().Contain("RunCashFlowActionStrip");
+        xaml.Should().Contain("RunCashFlowWorkbench");
+        xaml.Should().Contain("DenseDataGridControl");
+        xaml.Should().Contain("InspectorPanelControl");
         xaml.Should().Contain("RunCashFlowLadderGrid");
         xaml.Should().Contain("RunCashFlowLadderEmptyState");
         xaml.Should().Contain("RunCashFlowEntriesGrid");
         xaml.Should().Contain("RunCashFlowEntriesEmptyState");
         xaml.Should().Contain("RunCashFlowContinuityPosture");
-        xaml.Should().Contain("{Binding ContinuityPostureText}");
-        xaml.Should().Contain("{Binding ContinuityDetailText}");
-        xaml.Should().Contain("{Binding ContinuityWarningText}");
+        xaml.Should().Contain("RunCashFlowEntryInspector");
+        xaml.Should().Contain("RunCashFlowLadderInspector");
+        xaml.Should().Contain("RunCashFlowActionInspector");
+        xaml.Should().Contain("Table=\"{Binding LadderTable}\"");
+        xaml.Should().Contain("SelectedItem=\"{Binding SelectedLadderBucket, Mode=TwoWay}\"");
+        xaml.Should().Contain("Table=\"{Binding EntriesTable}\"");
+        xaml.Should().Contain("SelectedItem=\"{Binding SelectedEntry, Mode=TwoWay}\"");
         xaml.Should().Contain("{Binding HasLadderBuckets, Converter={StaticResource BoolToVisibilityConverter}}");
         xaml.Should().Contain("{Binding IsLadderEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}");
         xaml.Should().Contain("{Binding HasEntries, Converter={StaticResource BoolToVisibilityConverter}}");
         xaml.Should().Contain("{Binding IsEntriesEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}");
         xaml.Should().Contain("{Binding LadderEmptyStateTitle}");
         xaml.Should().Contain("{Binding EntriesEmptyStateDetail}");
+        xaml.Should().Contain("ToolTip=\"{Binding RunDrillInTooltip}\"");
+        xaml.Should().Contain("ToolTip=\"{Binding SelectedSecurityTooltip}\"");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
         viewModel.Should().Contain("public bool HasEntries => Entries.Count > 0;");
-        viewModel.Should().Contain("private void RaiseCashFlowStateChanged()");
+        viewModel.Should().Contain("public WorkstationTableModel<CashFlowEntryDto> EntriesTable { get; }");
+        viewModel.Should().Contain("public WorkstationTableModel<CashLadderBucketDto> LadderTable { get; }");
+        viewModel.Should().Contain("public InspectorPanelModel SelectedEntryInspector");
+        viewModel.Should().Contain("public InspectorPanelModel ContinuityInspector");
+        viewModel.Should().Contain("public bool CanOpenSelectedSecurity");
     }
 
     private static string GetRepositoryFilePath(string relativePath)

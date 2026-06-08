@@ -107,6 +107,8 @@ CREATE TABLE IF NOT EXISTS __SCHEMA__.vehicle (
 CREATE TABLE IF NOT EXISTS __SCHEMA__.legal_entity (
     entity_id               uuid            NOT NULL PRIMARY KEY,
     entity_type             text            NOT NULL,
+    legal_form              text            NOT NULL DEFAULT 'Unspecified',
+    lifecycle_status        text            NOT NULL DEFAULT 'Active',
     code                    text            NOT NULL,
     name                    text            NOT NULL,
     jurisdiction            text            NOT NULL,
@@ -114,9 +116,19 @@ CREATE TABLE IF NOT EXISTS __SCHEMA__.legal_entity (
     is_active               boolean         NOT NULL DEFAULT true,
     effective_from          timestamptz     NOT NULL,
     effective_to            timestamptz     NULL,
+    registration_number     text            NULL,
+    beneficial_owners       jsonb           NOT NULL DEFAULT '[]'::jsonb,
+    lifecycle_events        jsonb           NOT NULL DEFAULT '[]'::jsonb,
     description             text            NULL,
     updated_at              timestamptz     NOT NULL DEFAULT now()
 );
+
+ALTER TABLE __SCHEMA__.legal_entity
+    ADD COLUMN IF NOT EXISTS legal_form text NOT NULL DEFAULT 'Unspecified',
+    ADD COLUMN IF NOT EXISTS lifecycle_status text NOT NULL DEFAULT 'Active',
+    ADD COLUMN IF NOT EXISTS registration_number text NULL,
+    ADD COLUMN IF NOT EXISTS beneficial_owners jsonb NOT NULL DEFAULT '[]'::jsonb,
+    ADD COLUMN IF NOT EXISTS lifecycle_events jsonb NOT NULL DEFAULT '[]'::jsonb;
 
 -- Investment Portfolios
 CREATE TABLE IF NOT EXISTS __SCHEMA__.investment_portfolio (

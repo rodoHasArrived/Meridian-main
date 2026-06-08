@@ -4,6 +4,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:conv="clr-namespace:Meridian.Wpf.Converters"
+      xmlns:views="clr-namespace:Meridian.Wpf.Views"
       mc:Ignorable="d"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
@@ -11,24 +12,8 @@
     <Page.Resources>
         <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,16,28,32">
         <StackPanel MaxWidth="1200">
-            <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,24">
-                <StackPanel Orientation="Horizontal">
-                    <Border Width="44" Height="44" CornerRadius="14"
-                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                            BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
-                        <TextBlock Text="&#xE943;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                   FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                    </Border>
-                    <StackPanel Margin="12,0,0,0">
-                        <TextBlock Text="Data Sources Configuration" Style="{StaticResource PageTitleStyle}" />
-                        <TextBlock Text="Prioritize, fail over, and govern real-time and historical feeds with a unified source policy."
-                                   Style="{StaticResource CardDescriptionStyle}" />
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
@@ -444,7 +429,12 @@
 
                                 <StackPanel Grid.Row="0" Grid.Column="0">
                                     <TextBlock Text="API Key" Style="{StaticResource FormLabelStyle}" />
-                                    <PasswordBox x:Name="PolygonApiKeyBox" />
+                                    <views:SecretInputControl x:Name="PolygonApiKeyInput"
+                                                              InputAutomationId="DataSourcesPolygonApiKeyInput"
+                                                              RevealAutomationId="DataSourcesPolygonApiKeyRevealButton"
+                                                              InputAutomationName="Polygon API key"
+                                                              RevealAutomationName="Show or hide Polygon API key"
+                                                              RevealToolTip="Show or hide Polygon API key" />
                                 </StackPanel>
 
                                 <StackPanel Grid.Row="0" Grid.Column="1">
@@ -501,6 +491,8 @@
                                 Style="{StaticResource AccentButtonStyle}"
                                 AutomationProperties.AutomationId="DataSourcesSaveSourceButton"
                                 IsEnabled="{Binding CanSaveSource}"
+                                ToolTip="{Binding SourceSetupReadinessDetail}"
+                                ToolTipService.ShowOnDisabled="True"
                                 Click="SaveDataSource_Click"
  />
                         <Button Content="Cancel"

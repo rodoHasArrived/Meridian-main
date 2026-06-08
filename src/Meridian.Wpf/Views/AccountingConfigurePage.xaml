@@ -29,46 +29,107 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="28,20,28,32" MaxWidth="1320">
-            <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,18">
+            <Border Background="{StaticResource PremiumPanelBrush}"
+                    BorderBrush="{StaticResource ConsoleBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Margin="0,0,0,14"
+                    Padding="14,10"
+                    AutomationProperties.AutomationId="AccountingConfigureActionStrip"
+                    AutomationProperties.Name="Accounting Configure Action Strip">
                 <Grid>
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="380" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Margin="0,0,24,0">
-                        <TextBlock Text="Accounting Configure" Style="{StaticResource PageTitleStyle}" />
+
+                    <Border Grid.Column="0"
+                            Width="30"
+                            Height="30"
+                            CornerRadius="8"
+                            Margin="0,0,10,0"
+                            VerticalAlignment="Center"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}"
+                            BorderThickness="1">
+                        <TextBlock Text="{StaticResource IconAccounting}"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="16"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" />
+                    </Border>
+
+                    <StackPanel Grid.Column="1" Margin="0,0,20,0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Accounting Configure"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       Margin="0,0,10,0" />
+                            <TextBlock Text="{Binding ActiveFundText}"
+                                       FontSize="12"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
                         <TextBlock Text="{Binding StatusText}"
-                                   Style="{StaticResource CardDescriptionStyle}"
-                                   Margin="0,8,0,0"
-                                   TextWrapping="Wrap"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextTrimming="CharacterEllipsis"
                                    AutomationProperties.AutomationId="AccountingConfigureStatusText" />
                         <TextBlock Text="{Binding StoragePostureText}"
-                                   Style="{StaticResource CardDescriptionStyle}"
-                                   Margin="0,12,0,0"
-                                   TextWrapping="Wrap"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextTrimming="CharacterEllipsis"
                                    AutomationProperties.AutomationId="AccountingConfigureStoragePostureText" />
                     </StackPanel>
-                    <StackPanel Grid.Column="1">
-                        <TextBlock Text="Active Accounting Context" Style="{StaticResource CardHeaderStyle}" />
-                        <TextBlock Text="{Binding ActiveFundText}"
-                                   Style="{StaticResource CardDescriptionStyle}"
-                                   Margin="0,6,0,0"
-                                   TextWrapping="Wrap" />
-                        <WrapPanel Margin="0,14,0,0">
-                            <Button Content="Refresh"
-                                    Command="{Binding RefreshCommand}"
-                                    Style="{StaticResource PrimaryButtonStyle}"
-                                    Margin="0,0,8,8" />
-                            <Button Content="Seed Baseline"
-                                    Command="{Binding SeedBaselineConfigurationCommand}"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Margin="0,0,8,8" />
-                            <Button Content="Activate"
-                                    Command="{Binding ActivateConfigurationCommand}"
-                                    Style="{StaticResource GhostButtonStyle}"
-                                    Margin="0,0,8,8" />
-                        </WrapPanel>
-                    </StackPanel>
+
+                    <WrapPanel Grid.Column="2" MaxWidth="380" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Button AutomationProperties.AutomationId="AccountingConfigureRefreshButton"
+                                Command="{Binding RefreshCommand}"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                ToolTip="{Binding StatusText}"
+                                ToolTipService.ShowOnDisabled="True"
+                                Margin="0,0,8,8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{StaticResource IconRefresh}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="14"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="Refresh" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button AutomationProperties.AutomationId="AccountingConfigureSeedBaselineButton"
+                                Command="{Binding SeedBaselineConfigurationCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                ToolTip="{Binding ConfigurationDetailText}"
+                                ToolTipService.ShowOnDisabled="True"
+                                Margin="0,0,8,8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{StaticResource IconSave}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="14"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="Seed" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button AutomationProperties.AutomationId="AccountingConfigureActivateButton"
+                                Command="{Binding ActivateConfigurationCommand}"
+                                Style="{StaticResource GhostButtonStyle}"
+                                ToolTip="{Binding CloseDetailText}"
+                                ToolTipService.ShowOnDisabled="True"
+                                Margin="0,0,8,8">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{StaticResource IconCheckmark}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="14"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="Activate" Margin="8,0,0,0" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </WrapPanel>
                 </Grid>
             </Border>
 

@@ -3,8 +3,14 @@ import { CheckCircle2, GitBranch, LoaderCircle, Network, ShieldAlert } from "luc
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { createFundStructureSetupDraft, validateFundStructureSetupDraft, type FundStructureSetupDraft, type FundStructureSetupPreview, type FundStructureSetupResult } from "@/lib/api";
+
+const legalEntityTypes = ["Fund", "ManagementCompany", "GeneralPartner", "LimitedPartner", "Vehicle", "Custodian", "Broker", "Counterparty", "Other"] as const;
+const legalForms = ["LimitedPartnership", "LimitedLiabilityCompany", "SeriesLimitedLiabilityCompany", "SegregatedPortfolioCompany", "StatutoryTrust", "Corporation", "Trust", "Foundation", "Other"] as const;
+const lifecycleStatuses = ["Forming", "Active", "AmendmentPending", "Restructuring", "WindingDown", "Dissolved", "Merged"] as const;
+const lifecycleEventKinds = ["Formation", "Amendment", "Restructure", "SpvRollup", "BeneficialOwnershipChange", "LegalFormChange", "JurisdictionChange", "Other"] as const;
 
 interface DraftFields {
   organizationCode: string;
@@ -13,9 +19,17 @@ interface DraftFields {
   businessName: string;
   clientOrFundCode: string;
   clientOrFundName: string;
+  legalEntityType: string;
+  legalForm: string;
+  lifecycleStatus: string;
   legalEntityCode: string;
   legalEntityName: string;
   jurisdiction: string;
+  registrationNumber: string;
+  beneficialOwnerName: string;
+  beneficialOwnerPercent: string;
+  lifecycleEventKind: string;
+  lifecycleEventSummary: string;
   vehicleCode: string;
   vehicleName: string;
   portfolioCode: string;
@@ -33,9 +47,17 @@ const initialFields: DraftFields = {
   businessName: "Investment Management",
   clientOrFundCode: "FUND",
   clientOrFundName: "Flagship Fund",
+  legalEntityType: "Fund",
+  legalForm: "LimitedPartnership",
+  lifecycleStatus: "Active",
   legalEntityCode: "LE",
   legalEntityName: "Flagship LP",
   jurisdiction: "US-DE",
+  registrationNumber: "DE-FUND-001",
+  beneficialOwnerName: "Flagship GP",
+  beneficialOwnerPercent: "100",
+  lifecycleEventKind: "Formation",
+  lifecycleEventSummary: "Initial formation and operating setup.",
   vehicleCode: "VEH",
   vehicleName: "Flagship Vehicle",
   portfolioCode: "PORT",
@@ -56,6 +78,10 @@ export function EntitySetupWizard() {
   const blockingCount = preview?.validationSummary.issues.filter((issue) => issue.isBlocking).length ?? 0;
 
   const update = (key: keyof DraftFields) => (event: ChangeEvent<HTMLInputElement>) => {
+    setFields((current) => ({ ...current, [key]: event.target.value }));
+    setResult(null);
+  };
+  const updateSelect = (key: keyof DraftFields) => (event: ChangeEvent<HTMLSelectElement>) => {
     setFields((current) => ({ ...current, [key]: event.target.value }));
     setResult(null);
   };
@@ -108,8 +134,16 @@ export function EntitySetupWizard() {
             <Field label="Fund code" value={fields.clientOrFundCode} onChange={update("clientOrFundCode")} />
             <Field label="Fund name" value={fields.clientOrFundName} onChange={update("clientOrFundName")} />
             <Field label="Jurisdiction" value={fields.jurisdiction} onChange={update("jurisdiction")} />
+            <SelectField label="Entity type" value={fields.legalEntityType} values={legalEntityTypes} onChange={updateSelect("legalEntityType")} />
+            <SelectField label="Legal form" value={fields.legalForm} values={legalForms} onChange={updateSelect("legalForm")} />
+            <SelectField label="Lifecycle status" value={fields.lifecycleStatus} values={lifecycleStatuses} onChange={updateSelect("lifecycleStatus")} />
             <Field label="Legal entity code" value={fields.legalEntityCode} onChange={update("legalEntityCode")} />
             <Field label="Legal entity name" value={fields.legalEntityName} onChange={update("legalEntityName")} />
+            <Field label="Registration number" value={fields.registrationNumber} onChange={update("registrationNumber")} />
+            <Field label="Beneficial owner" value={fields.beneficialOwnerName} onChange={update("beneficialOwnerName")} />
+            <Field label="Owner percent" value={fields.beneficialOwnerPercent} onChange={update("beneficialOwnerPercent")} />
+            <SelectField label="Lifecycle event" value={fields.lifecycleEventKind} values={lifecycleEventKinds} onChange={updateSelect("lifecycleEventKind")} />
+            <Field label="Lifecycle summary" value={fields.lifecycleEventSummary} onChange={update("lifecycleEventSummary")} />
             <Field label="Vehicle code" value={fields.vehicleCode} onChange={update("vehicleCode")} />
             <Field label="Vehicle name" value={fields.vehicleName} onChange={update("vehicleName")} />
             <Field label="Portfolio code" value={fields.portfolioCode} onChange={update("portfolioCode")} />
@@ -170,16 +204,52 @@ function Field({ label, value, onChange }: { label: string; value: string; onCha
   return <label className="space-y-1 text-xs font-medium text-muted-foreground"><span>{label}</span><Input value={value} onChange={onChange} /></label>;
 }
 
+function SelectField<T extends readonly string[]>({ label, value, values, onChange }: { label: string; value: string; values: T; onChange: ChangeEventHandler<HTMLSelectElement> }) {
+  return (
+    <label className="space-y-1 text-xs font-medium text-muted-foreground">
+      <span>{label}</span>
+      <Select value={value} onChange={onChange}>
+        {values.map((item) => <option key={item} value={item}>{formatEnumLabel(item)}</option>)}
+      </Select>
+    </label>
+  );
+}
+
 function buildDraft(fields: DraftFields): FundStructureSetupDraft {
+  const beneficialOwnerPercent = Number.parseFloat(fields.beneficialOwnerPercent);
+  const beneficialOwners = fields.beneficialOwnerName.trim()
+    ? [{
+        ownerName: fields.beneficialOwnerName.trim(),
+        ownershipPercent: Number.isFinite(beneficialOwnerPercent) ? beneficialOwnerPercent : null,
+        isControlPerson: true
+      }]
+    : [];
+
   return {
     organization: { code: fields.organizationCode, name: fields.organizationName, baseCurrency: fields.baseCurrency },
     businessLane: { businessKind: "FundManager", code: fields.businessCode, name: fields.businessName, baseCurrency: fields.baseCurrency },
     clientOrFund: { createClient: false, code: fields.clientOrFundCode, name: fields.clientOrFundName, baseCurrency: fields.baseCurrency, clientSegmentKind: "Unspecified" },
-    legalEntity: { entityType: "Fund", code: fields.legalEntityCode, name: fields.legalEntityName, jurisdiction: fields.jurisdiction, baseCurrency: fields.baseCurrency },
+    legalEntity: {
+      entityType: fields.legalEntityType,
+      legalForm: fields.legalForm,
+      lifecycleStatus: fields.lifecycleStatus,
+      code: fields.legalEntityCode,
+      name: fields.legalEntityName,
+      jurisdiction: fields.jurisdiction,
+      baseCurrency: fields.baseCurrency,
+      registrationNumber: fields.registrationNumber || null,
+      beneficialOwners,
+      initialLifecycleEventKind: fields.lifecycleEventKind,
+      initialLifecycleEventSummary: fields.lifecycleEventSummary || null
+    },
     vehicle: { code: fields.vehicleCode, name: fields.vehicleName, baseCurrency: fields.baseCurrency },
     investmentPortfolio: { code: fields.portfolioCode, name: fields.portfolioName, baseCurrency: fields.baseCurrency },
     accountHandoff: { accountCode: fields.accountCode, displayName: fields.accountDisplayName, accountType: "Brokerage", baseCurrency: fields.baseCurrency },
     initialOwnershipLinks: [],
     requestedBy: fields.requestedBy
   };
+}
+
+function formatEnumLabel(value: string) {
+  return value.replace(/([a-z0-9])([A-Z])/g, "$1 $2");
 }

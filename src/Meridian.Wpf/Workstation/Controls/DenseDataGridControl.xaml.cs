@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Specialized;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -23,6 +24,20 @@ public partial class DenseDataGridControl : UserControl
             typeof(object),
             typeof(DenseDataGridControl),
             new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+    public static readonly DependencyProperty SelectedItemsProperty =
+        DependencyProperty.Register(
+            nameof(SelectedItems),
+            typeof(ObservableCollection<object>),
+            typeof(DenseDataGridControl),
+            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+
+    public static readonly DependencyProperty SelectionModeProperty =
+        DependencyProperty.Register(
+            nameof(SelectionMode),
+            typeof(System.Windows.Controls.SelectionMode),
+            typeof(DenseDataGridControl),
+            new PropertyMetadata(System.Windows.Controls.SelectionMode.Single));
 
     public static readonly DependencyProperty GridAutomationIdProperty =
         DependencyProperty.Register(
@@ -57,6 +72,18 @@ public partial class DenseDataGridControl : UserControl
     {
         get => GetValue(SelectedItemProperty);
         set => SetValue(SelectedItemProperty, value);
+    }
+
+    public ObservableCollection<object>? SelectedItems
+    {
+        get => (ObservableCollection<object>?)GetValue(SelectedItemsProperty);
+        set => SetValue(SelectedItemsProperty, value);
+    }
+
+    public System.Windows.Controls.SelectionMode SelectionMode
+    {
+        get => (System.Windows.Controls.SelectionMode)GetValue(SelectionModeProperty);
+        set => SetValue(SelectionModeProperty, value);
     }
 
     public string GridAutomationId
@@ -118,7 +145,10 @@ public partial class DenseDataGridControl : UserControl
     }
 
     private void OnRowsChanged(object? sender, NotifyCollectionChangedEventArgs e)
-        => UpdateEmptyState();
+    {
+        UpdateEmptyState();
+        MirrorSelectedRows();
+    }
 
     private void DetachRowsCollection()
     {
@@ -140,5 +170,23 @@ public partial class DenseDataGridControl : UserControl
 
         var hasRows = Table?.Rows is IEnumerable rows && rows.Cast<object>().Any();
         EmptyPanel.Visibility = hasRows ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    private void RowsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        => MirrorSelectedRows();
+
+    private void MirrorSelectedRows()
+    {
+        var selectedItems = SelectedItems;
+        if (RowsList is null || selectedItems is null)
+        {
+            return;
+        }
+
+        selectedItems.Clear();
+        foreach (var selectedItem in RowsList.SelectedItems.Cast<object>())
+        {
+            selectedItems.Add(selectedItem);
+        }
     }
 }

@@ -4,6 +4,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:conv="clr-namespace:Meridian.Wpf.Converters"
+      xmlns:views="clr-namespace:Meridian.Wpf.Views"
       mc:Ignorable="d"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       AutomationProperties.Name="Data Export">
@@ -11,24 +12,8 @@
         <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         <conv:InvertBoolConverter x:Key="InvertBoolConverter" />
     </Page.Resources>
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,16,28,32">
         <StackPanel MaxWidth="1100">
-            <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,24">
-                <StackPanel Orientation="Horizontal">
-                    <Border Width="44" Height="44" CornerRadius="14"
-                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                            BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
-                        <TextBlock Text="&#xEDE1;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                   FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                    </Border>
-                    <StackPanel Margin="12,0,0,0">
-                        <TextBlock Text="Data Export &amp; Integration" Style="{StaticResource PageTitleStyle}" />
-                        <TextBlock Text="Export collected data into analysis-ready formats and downstream database pipelines."
-                                   Style="{StaticResource CardDescriptionStyle}" />
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
@@ -166,7 +151,9 @@
                                     AutomationProperties.AutomationId="DataExportRunButton"
                                     Content="Export Data"
                                     Style="{StaticResource AccentButtonStyle}"
-                                    Command="{Binding ExportDataCommand}" />
+                                    Command="{Binding ExportDataCommand}"
+                                    ToolTip="{Binding ExportReadinessDetail}"
+                                    ToolTipService.ShowOnDisabled="True" />
                             <ProgressBar x:Name="ExportProgress"
                                          Width="120"
                                          Height="8"
@@ -257,7 +244,14 @@
 
                         <StackPanel Grid.Row="2" Grid.Column="1">
                             <TextBlock Text="Password" Style="{StaticResource FormLabelStyle}" />
-                             <PasswordBox x:Name="DatabasePasswordBox" Width="160" Margin="0,0,0,8" />
+                            <views:SecretInputControl x:Name="DatabasePasswordInput"
+                                                      Width="220"
+                                                      Margin="0,0,0,8"
+                                                      InputAutomationId="DataExportDatabasePasswordInput"
+                                                      RevealAutomationId="DataExportDatabasePasswordRevealButton"
+                                                      InputAutomationName="Database password"
+                                                      RevealAutomationName="Show or hide database password"
+                                                      RevealToolTip="Show or hide database password" />
                             <StackPanel Orientation="Horizontal">
                                 <Button Content="Set Credentials"
                                         Style="{StaticResource SecondaryButtonStyle}"
@@ -387,6 +381,8 @@
                             Content="Save Schedule"
                             Style="{StaticResource AccentButtonStyle}"
                             Command="{Binding ConfigureScheduledExportCommand}"
+                            ToolTip="{Binding ScheduleReadinessDetail}"
+                            ToolTipService.ShowOnDisabled="True"
                             HorizontalAlignment="Left"
                             Margin="0,12,0,0" />
                 </StackPanel>

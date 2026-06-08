@@ -209,4 +209,36 @@ public sealed class FundStructureContractsJsonContextTests
         var matchJson = JsonSerializer.Serialize(match, FundStructureContractsJsonContext.Default.TransferMatchDto);
         matchJson.Should().Contain("\"status\":\"Matched\"");
     }
+
+    [Fact]
+    public void LegalEntityAdministrationDtos_ShouldRoundTripViaGeneratedContext()
+    {
+        var request = new UpdateLegalEntityProfileRequest(
+            EntityId: Guid.NewGuid(),
+            UpdatedBy: "fund-ops",
+            LegalForm: LegalEntityFormDto.LimitedLiabilityCompany,
+            RegistrationNumber: "DE-SPV-001",
+            LifecycleStatus: LegalEntityLifecycleStatusDto.Restructuring,
+            BeneficialOwners:
+            [
+                new BeneficialOwnerSummaryDto("Sponsor GP", 80m, IsControlPerson: true),
+                new BeneficialOwnerSummaryDto("Co-investor LLC", 20m)
+            ],
+            LifecycleEvent: new LegalEntityLifecycleEventDto(
+                Guid.NewGuid(),
+                LegalEntityLifecycleEventKindDto.SpvRollup,
+                DateTimeOffset.UtcNow,
+                "fund-ops",
+                "Rolled feeder SPV into master vehicle."));
+
+        var json = JsonSerializer.Serialize(request, FundStructureContractsJsonContext.Default.UpdateLegalEntityProfileRequest);
+        json.Should().Contain("\"legalForm\":\"LimitedLiabilityCompany\"");
+        json.Should().Contain("\"eventKind\":\"SpvRollup\"");
+
+        var roundTrip = JsonSerializer.Deserialize(json, FundStructureContractsJsonContext.Default.UpdateLegalEntityProfileRequest);
+        roundTrip.Should().NotBeNull();
+        roundTrip!.LegalForm.Should().Be(LegalEntityFormDto.LimitedLiabilityCompany);
+        roundTrip.BeneficialOwners.Should().ContainSingle(owner => owner.OwnerName == "Co-investor LLC");
+        roundTrip.LifecycleEvent!.EventKind.Should().Be(LegalEntityLifecycleEventKindDto.SpvRollup);
+    }
 }

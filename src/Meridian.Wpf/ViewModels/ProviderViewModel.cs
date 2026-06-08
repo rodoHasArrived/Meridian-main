@@ -18,7 +18,6 @@ namespace Meridian.Wpf.ViewModels;
 /// </summary>
 public sealed class ProviderViewModel : BindableBase
 {
-    private readonly WpfServices.NavigationService _navigationService;
     private readonly WpfServices.NotificationService _notificationService;
     private readonly WpfServices.ConfigService _configService;
     private readonly BackfillProviderConfigService _providerConfigService;
@@ -125,12 +124,10 @@ public sealed class ProviderViewModel : BindableBase
     public ICommand DryRunCommand { get; }
 
     public ProviderViewModel(
-        WpfServices.NavigationService navigationService,
         WpfServices.NotificationService notificationService,
         WpfServices.ConfigService configService,
         BackfillProviderConfigService providerConfigService)
     {
-        _navigationService = navigationService;
         _notificationService = notificationService;
         _configService = configService;
         _providerConfigService = providerConfigService;
@@ -449,11 +446,6 @@ public sealed class ProviderViewModel : BindableBase
         {
             _ = _notificationService.NotifyErrorAsync("Reset Error", ex.Message);
         }
-    }
-
-    public void OnConfigureProvider()
-    {
-        _navigationService.NavigateTo("DataSources");
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────

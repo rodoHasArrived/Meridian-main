@@ -128,6 +128,10 @@ if ($blockedByConcurrentDotnet) {
         }) | Out-Null
 }
 
+if (-not $blockedByConcurrentDotnet) {
+    Invoke-MeridianWpfTempProjectCleanup -RepoRoot $repoRoot -WpfProjectPath $wpfProject | Out-Null
+}
+
 if (-not $blockedByConcurrentDotnet -and $Restore) {
     $restoreWpfCommand = @("dotnet", "restore", $wpfProject, "--verbosity", "minimal") + $serializedRestoreArgs
     Invoke-MeridianStepWithTestHostRetry `

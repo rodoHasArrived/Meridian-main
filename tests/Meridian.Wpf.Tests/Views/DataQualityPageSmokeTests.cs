@@ -15,6 +15,12 @@ public sealed class DataQualityPageSmokeTests
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\DataQualityPage.xaml"));
         var code = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\DataQualityPage.xaml.cs"));
 
+        xaml.Should().Contain("DataQualityFreshnessStrip");
+        xaml.Should().Contain("Text=\"{Binding LastUpdateText}\"");
+        xaml.Should().Contain("WorkspaceCommandBarControl");
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().NotContain("Click=\"Refresh_Click\"");
+        xaml.Should().NotContain("Click=\"RunQualityCheck_Click\"");
         xaml.Should().Contain("Text=\"{Binding SymbolFilterScopeText}\"");
         xaml.Should().Contain("workstation:DenseDataGridControl");
         xaml.Should().Contain("Table=\"{Binding SymbolQualityTable}\"");
@@ -25,6 +31,8 @@ public sealed class DataQualityPageSmokeTests
         xaml.Should().Contain("Text=\"{Binding SymbolEmptyStateTitle}\"");
         xaml.Should().Contain("Text=\"{Binding SymbolEmptyStateDetail}\"");
         xaml.Should().Contain("AutomationProperties.AutomationId=\"DataQualityClearSymbolFilterButton\"");
+        code.Should().NotContain("Refresh_Click");
+        code.Should().NotContain("RunQualityCheck_Click");
         code.Should().Contain("ClearSymbolFilter_Click");
         code.Should().Contain("_viewModel.ClearSymbolFilter()");
         code.Should().Contain("CompareSelectedProvider_Click");

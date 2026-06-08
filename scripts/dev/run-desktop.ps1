@@ -1,9 +1,12 @@
 #!/usr/bin/env pwsh
 [CmdletBinding()]
 param(
-    [string]$Profile = 'screenshot-catalog',
+    [ValidateSet('Development', 'Production')]
+    [string]$LaunchMode = 'Development',
+    [string]$Profile = '',
     [string]$ProfileRoot = 'scripts/dev/workflow-profiles',
     [switch]$NoBuild,
+    [switch]$BuildOnly,
     [switch]$Fixture,
     [switch]$StartupSmoke,
     [int]$StartupSmokeTimeoutSec = 45,
@@ -18,6 +21,13 @@ $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '../..')
 Set-Location $repoRoot
 . (Join-Path $PSScriptRoot 'SharedBuild.ps1')
 . (Join-Path $PSScriptRoot 'SharedWorkflowProfiles.ps1')
+
+$Profile = if ([string]::IsNullOrWhiteSpace($Profile)) {
+    if ($LaunchMode -eq 'Production') { 'desktop-production' } else { 'desktop-development' }
+}
+else {
+    $Profile
+}
 
 $profileEnvelope = Get-MeridianWorkflowProfile -RepoRoot $repoRoot -ProfileName $Profile -ProfileRoot $ProfileRoot
 $profileValidation = Test-MeridianWorkflowProfile -ProfileData $profileEnvelope.data
@@ -34,6 +44,7 @@ $desktopProject = [string](Get-MeridianWorkflowProfileValue -Table $buildProfile
 $desktopConfiguration = [string](Get-MeridianWorkflowProfileValue -Table $buildProfile -Key 'configuration' -Fallback 'Debug')
 $desktopFramework = [string](Get-MeridianWorkflowProfileValue -Table $buildProfile -Key 'framework' -Fallback 'net10.0-windows10.0.19041.0')
 $desktopExeName = [string](Get-MeridianWorkflowProfileValue -Table $buildProfile -Key 'exeName' -Fallback 'Meridian.Desktop.exe')
+$hostConfiguration = [string](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key 'configuration' -Fallback $desktopConfiguration)
 $hostBaseUrl = [string](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key 'baseUrl' -Fallback 'http://localhost:8080')
 $hostHealthPath = [string](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key 'healthPath' -Fallback '/healthz')
 $hostStartupTimeoutSec = [int](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key 'startupTimeoutSec' -Fallback 30)
@@ -41,7 +52,7 @@ $hostMode = [string](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key '
 $hostPort = [int](Get-MeridianWorkflowProfileValue -Table $hostProfile -Key 'port' -Fallback 8080)
 $fixtureRequired = [bool](Get-MeridianWorkflowProfileValue -Table $fixtureProfile -Key 'required' -Fallback $false)
 $buildIsolationKey = if ($NoBuild) { '' } else { New-MeridianBuildIsolationKey -Prefix 'desktop-run' }
-$hostExe = Get-MeridianProjectBinaryPath -RepoRoot $repoRoot -ProjectPath $hostProject -Configuration 'Debug' -Framework 'net10.0' -BinaryName 'Meridian.exe' -IsolationKey $buildIsolationKey
+$hostExe = Get-MeridianProjectBinaryPath -RepoRoot $repoRoot -ProjectPath $hostProject -Configuration $hostConfiguration -Framework 'net10.0' -BinaryName 'Meridian.exe' -IsolationKey $buildIsolationKey
 $desktopExe = Get-MeridianProjectBinaryPath -RepoRoot $repoRoot -ProjectPath $desktopProject -Configuration $desktopConfiguration -Framework $desktopFramework -BinaryName $desktopExeName -IsolationKey $buildIsolationKey
 $artifactsDir = Join-Path $repoRoot 'artifacts'
 $hostStdout = Join-Path $artifactsDir 'desktop-launcher-host.stdout.log'
@@ -53,11 +64,14 @@ $hostOwned = $false
 $desktopProcess = $null
 $desktopAlreadyRunning = $false
 $hostShutdownToken = [System.Convert]::ToHexString([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
-$originalFixtureEnv = @{
+$originalLaunchEnv = @{
     MDC_DATASOURCE = $env:MDC_DATASOURCE
     MDC_SYNTHETIC_MODE = $env:MDC_SYNTHETIC_MODE
     MDC_FIXTURE_MODE = $env:MDC_FIXTURE_MODE
     MDC_SHUTDOWN_TOKEN = $env:MDC_SHUTDOWN_TOKEN
+    MERIDIAN_USE_INMEMORY_GOVERNANCE = $env:MERIDIAN_USE_INMEMORY_GOVERNANCE
+    DOTNET_ENVIRONMENT = $env:DOTNET_ENVIRONMENT
+    ASPNETCORE_ENVIRONMENT = $env:ASPNETCORE_ENVIRONMENT
 }
 
 function Write-Info([string]$Message) { Write-Host "[INFO] $Message" -ForegroundColor Gray }
@@ -65,6 +79,54 @@ function Write-Ok([string]$Message) { Write-Host "[OK]   $Message" -ForegroundCo
 function Write-Warn([string]$Message) { Write-Host "[WARN] $Message" -ForegroundColor Yellow }
 function Write-Step([string]$Message) { Write-Host "`n[STEP] === $Message ===" -ForegroundColor Cyan }
 function Write-Fail([string]$Message) { Write-Host "[FAIL] $Message" -ForegroundColor Red }
+
+function Set-LauncherEnvironmentVariable {
+    param(
+        [Parameter(Mandatory = $true)][string]$Name,
+        [AllowNull()]
+        [string]$Value
+    )
+
+    if ($null -eq $Value) {
+        Remove-Item "Env:$Name" -ErrorAction SilentlyContinue
+    }
+    else {
+        Set-Item "Env:$Name" -Value $Value
+    }
+}
+
+function Apply-DesktopLaunchMode {
+    if ($LaunchMode -eq 'Development') {
+        Write-Info 'Development launch mode enabled; using Development environment and local in-memory governance services.'
+        Set-LauncherEnvironmentVariable -Name 'DOTNET_ENVIRONMENT' -Value 'Development'
+        Set-LauncherEnvironmentVariable -Name 'ASPNETCORE_ENVIRONMENT' -Value 'Development'
+        Set-LauncherEnvironmentVariable -Name 'MERIDIAN_USE_INMEMORY_GOVERNANCE' -Value 'true'
+        return
+    }
+
+    Write-Info 'Production launch mode enabled; requiring persistence-backed governance services.'
+    Set-LauncherEnvironmentVariable -Name 'DOTNET_ENVIRONMENT' -Value 'Production'
+    Set-LauncherEnvironmentVariable -Name 'ASPNETCORE_ENVIRONMENT' -Value 'Production'
+    Set-LauncherEnvironmentVariable -Name 'MERIDIAN_USE_INMEMORY_GOVERNANCE' -Value $null
+}
+
+function Assert-ProductionGovernanceConfiguration {
+    $requiredVariables = @(
+        'MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING',
+        'MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING'
+    )
+
+    $missing = @($requiredVariables | Where-Object {
+            [string]::IsNullOrWhiteSpace([System.Environment]::GetEnvironmentVariable($_))
+        })
+
+    if ($missing.Count -gt 0) {
+        $joined = $missing -join ', '
+        throw "Production desktop launch requires persistence-backed governance services. Configure $joined, or rerun with -LaunchMode Development for the explicit local/dev in-memory profile."
+    }
+
+    Write-Ok 'Production governance persistence configuration is present.'
+}
 
 function Wait-ForDesktopWindow {
     param(
@@ -315,6 +377,12 @@ try {
         Write-Info "Profile '$Profile' requires fixture mode; enabling -Fixture."
     }
 
+    if ($LaunchMode -eq 'Production' -and $Fixture) {
+        throw 'Production launch mode cannot run with -Fixture. Use -LaunchMode Development for deterministic fixture runs.'
+    }
+
+    Apply-DesktopLaunchMode
+
     if ($Fixture) {
         Write-Info 'Fixture mode enabled; forcing synthetic backend overrides for deterministic local startup.'
         $env:MDC_DATASOURCE = 'Synthetic'
@@ -323,11 +391,14 @@ try {
     }
 
     Write-Step 'Meridian desktop launcher'
+    Write-Info "Launch mode   : $LaunchMode"
     Write-Info "Profile       : $Profile"
     Write-Info "Fixture mode  : $Fixture"
     Write-Info "Build         : $(-not $NoBuild)"
+    Write-Info "Build only    : $BuildOnly"
     Write-Info "Startup smoke : $StartupSmoke"
     Write-Info "Host URL      : $hostBaseUrl"
+    Write-Info "Host          : Meridian.exe ($hostConfiguration / net10.0)"
     Write-Info "Desktop       : $desktopExeName ($desktopConfiguration / $desktopFramework)"
     Write-Info "Artifacts     : $artifactsDir"
 
@@ -342,6 +413,16 @@ try {
         }
 
         Write-Step 'Build'
+        $activeRepoBuildProcesses = @(Get-MeridianRepoOwnedBuildProcesses -RepoRoot $repoRoot)
+        if ($activeRepoBuildProcesses.Count -gt 0) {
+            foreach ($process in $activeRepoBuildProcesses) {
+                Write-Warn ("PID {0} {1}: {2}" -f $process.ProcessId, $process.Name, $process.CommandLine)
+            }
+
+            throw 'Active repo-owned build/test/restore/MSBuild or compiler processes were detected. Stop them before launching a desktop build to avoid WPF temporary-project contention.'
+        }
+
+        Invoke-MeridianWpfTempProjectCleanup -RepoRoot $repoRoot -WpfProjectPath $desktopProject | Out-Null
         Test-SufficientDiskSpaceForBuild
 
         Write-Info 'Restoring Meridian host packages...'
@@ -359,7 +440,7 @@ try {
 
         Write-Info 'Building Meridian host...'
         $sw = [System.Diagnostics.Stopwatch]::StartNew()
-        & dotnet build $hostProject -c Debug -v minimal -nologo --no-restore @(
+        & dotnet build $hostProject -c $hostConfiguration -v minimal -nologo --no-restore @(
             Get-MeridianBuildArguments -IsolationKey $buildIsolationKey
         )
         $sw.Stop()
@@ -406,7 +487,16 @@ try {
         throw "Desktop executable not found at '$desktopExe'."
     }
 
+    if ($BuildOnly) {
+        Write-Ok 'Desktop build completed; skipping host and shell launch because -BuildOnly was supplied.'
+        return
+    }
+
     Write-Step 'Start host'
+    if ($LaunchMode -eq 'Production') {
+        Assert-ProductionGovernanceConfiguration
+    }
+
     if (Test-HealthyHost) {
         Write-Ok "Reusing existing local Meridian host on $hostBaseUrl"
     }
@@ -418,6 +508,7 @@ try {
             -WorkingDirectory $repoRoot `
             -RedirectStandardOutput $hostStdout `
             -RedirectStandardError $hostStderr `
+            -WindowStyle Hidden `
             -PassThru
         $hostOwned = $true
 
@@ -525,7 +616,7 @@ finally {
     Stop-OwnedDesktopProcessSafely
     Stop-OwnedHost
 
-    foreach ($entry in $originalFixtureEnv.GetEnumerator()) {
+    foreach ($entry in $originalLaunchEnv.GetEnumerator()) {
         if ($null -eq $entry.Value) {
             Remove-Item "Env:$($entry.Key)" -ErrorAction SilentlyContinue
         }

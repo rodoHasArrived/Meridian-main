@@ -24,6 +24,8 @@ import type {
   CorporateAction,
   DataFetchRequest,
   DataFetchResult,
+  DataUploadPreviewResult,
+  DataUploadTemplateCatalog,
   DataWorkspaceResponse,
   EquityCurveSummary,
   EvidenceCompleteness,
@@ -381,6 +383,21 @@ async function postJson<T>(path: string, body?: unknown, options: ApiRequestOpti
   return readJsonResponse<T>(path, response);
 }
 
+async function postFormData<T>(path: string, formData: FormData, options: ApiRequestOptions = {}): Promise<T> {
+  const response = await fetch(path, {
+    method: "POST",
+    signal: options.signal,
+    headers: buildMultipartMutationHeaders(),
+    body: formData
+  });
+
+  if (!response.ok) {
+    throw await buildApiError(path, response);
+  }
+
+  return readJsonResponse<T>(path, response);
+}
+
 export function apiGetJson<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   return getJson<T>(path, options);
 }
@@ -438,6 +455,19 @@ function buildMutationHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
     Accept: "application/json",
     "Content-Type": "application/json"
+  };
+
+  const csrfToken = readCookie(csrfCookieName);
+  if (csrfToken) {
+    headers[csrfHeaderName] = csrfToken;
+  }
+
+  return headers;
+}
+
+function buildMultipartMutationHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    Accept: "application/json"
   };
 
   const csrfToken = readCookie(csrfCookieName);
@@ -803,6 +833,20 @@ export function deleteWorkflowPreset(presetId: string) {
 
 export function getDataWorkspace(options: ApiRequestOptions = {}) {
   return getJson<DataWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.data, options);
+}
+
+export function getDataUploadTemplates(options: ApiRequestOptions = {}) {
+  return getJson<DataUploadTemplateCatalog>(WORKSTATION_API_ENDPOINTS.dataUploadTemplates, options);
+}
+
+export function previewDataUpload(
+  request: { templateId: string; file: File },
+  options: ApiRequestOptions = {}
+) {
+  const formData = new FormData();
+  formData.append("templateId", request.templateId);
+  formData.append("file", request.file);
+  return postFormData<DataUploadPreviewResult>(WORKSTATION_API_ENDPOINTS.dataUploadPreview, formData, options);
 }
 
 export function getDataOperationsWorkspace(options: ApiRequestOptions = {}) {
@@ -1971,7 +2015,30 @@ export interface FundStructureSetupDraft {
   organization: { organizationId?: string | null; code: string; name: string; baseCurrency: string; description?: string | null };
   businessLane: { businessId?: string | null; businessKind: string; code: string; name: string; baseCurrency: string; description?: string | null };
   clientOrFund: { clientId?: string | null; fundId?: string | null; createClient: boolean; code: string; name: string; baseCurrency: string; description?: string | null; clientSegmentKind?: string };
-  legalEntity: { entityId?: string | null; entityType: string; code: string; name: string; jurisdiction: string; baseCurrency: string; description?: string | null };
+  legalEntity: {
+    entityId?: string | null;
+    entityType: string;
+    code: string;
+    name: string;
+    jurisdiction: string;
+    baseCurrency: string;
+    description?: string | null;
+    legalForm?: string;
+    lifecycleStatus?: string;
+    registrationNumber?: string | null;
+    beneficialOwners?: Array<{
+      ownerName: string;
+      ownershipPercent?: number | null;
+      ownerIdentifier?: string | null;
+      isControlPerson?: boolean;
+      effectiveFrom?: string | null;
+      effectiveTo?: string | null;
+      notes?: string | null;
+    }>;
+    initialLifecycleEventKind?: string;
+    initialLifecycleEventSummary?: string | null;
+    initialLifecycleEvidenceReference?: string | null;
+  };
   vehicle: { vehicleId?: string | null; code: string; name: string; baseCurrency: string; description?: string | null };
   investmentPortfolio: { investmentPortfolioId?: string | null; code: string; name: string; baseCurrency: string; description?: string | null };
   accountHandoff: { accountCode: string; displayName: string; accountType: string; baseCurrency: string; institution?: string | null; ledgerReference?: string | null; notes?: string | null };
@@ -2014,7 +2081,7 @@ export interface FundStructureSetupResult {
   businessLane: { businessId: string; code: string; name: string };
   client?: { clientId: string; code: string; name: string } | null;
   fund?: { fundId: string; code: string; name: string } | null;
-  legalEntity: { entityId: string; code: string; name: string };
+  legalEntity: { entityId: string; code: string; name: string; legalForm?: string; lifecycleStatus?: string; registrationNumber?: string | null };
   vehicle: { vehicleId: string; code: string; name: string };
   investmentPortfolio: { investmentPortfolioId: string; code: string; name: string };
   ownershipLinks: unknown[];

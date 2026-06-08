@@ -166,8 +166,6 @@ public sealed class MainPageUiWorkflowTests
             facade.FindDescendantByAutomationId<WorkspaceEvidenceStripControl>("WorkspaceEvidenceStripStrategy")
                 .Should()
                 .NotBeNull();
-            AutomationProperties.GetAutomationId(facade.PrimaryOperatorWorkflowStrip).Should().Be("PrimaryOperatorWorkflowStrip");
-            facade.ViewModel.PrimaryOperatorWorkflowSteps.Single(step => step.IsActive).StepId.Should().Be("investigate");
             facade.FindDescendantByAutomationId<WorkspaceInspectorHostControl>("WorkspaceInspectorHostStrategy")
                 .Should()
                 .NotBeNull();

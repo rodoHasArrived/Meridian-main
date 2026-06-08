@@ -3,7 +3,9 @@ using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Workstation;
 using Meridian.QuantScript.Plotting;
 using Meridian.Strategies.Services;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Workstation.Models;
 using CurvePt = Meridian.Contracts.Workstation.EquityCurvePoint;
 
 namespace Meridian.Wpf.ViewModels;
@@ -28,6 +30,8 @@ public sealed class RunRiskViewModel : BindableBase
     private string _attributionEmptyStateDetail = "Open the run browser and choose a completed run with retained symbol attribution.";
     private string _runActionStateTitle = "Select a retained run";
     private string _runActionStateDetail = "Run Detail, Portfolio, and Cash Flow unlock after selecting a retained strategy run.";
+    private RiskAttributionRow? _selectedAttribution;
+    private InspectorPanelModel _selectedAttributionInspector = BuildEmptyAttributionInspector();
 
     // ── Navigation parameter ──────────────────────────────────────────────────
 
@@ -167,6 +171,44 @@ public sealed class RunRiskViewModel : BindableBase
 
     public ObservableCollection<RiskAttributionRow> Attribution { get; } = [];
 
+    public WorkstationTableModel<RiskAttributionRow> AttributionTable { get; }
+
+    public RiskAttributionRow? SelectedAttribution
+    {
+        get => _selectedAttribution;
+        set
+        {
+            if (SetProperty(ref _selectedAttribution, value))
+            {
+                SelectedAttributionInspector = value is null
+                    ? BuildEmptyAttributionInspector()
+                    : BuildAttributionInspector(value);
+                RaiseSelectedAttributionStateChanged();
+            }
+        }
+    }
+
+    public InspectorPanelModel SelectedAttributionInspector
+    {
+        get => _selectedAttributionInspector;
+        private set => SetProperty(ref _selectedAttributionInspector, value);
+    }
+
+    public bool HasSelectedAttribution => SelectedAttribution is not null;
+
+    public bool CanOpenSelectedSymbol => !string.IsNullOrWhiteSpace(SelectedAttribution?.Symbol);
+
+    public string RunDrillInTooltip => string.IsNullOrWhiteSpace(_runId)
+        ? "Select a retained strategy run before opening related run drill-ins."
+        : $"Open retained run drill-ins for {_runId}.";
+
+    public string SelectedSymbolTooltip => SelectedAttribution switch
+    {
+        null => "Select an attribution row before opening Security Master.",
+        { Symbol: { Length: > 0 } symbol } => $"Open Security Master lookup for {symbol}.",
+        _ => "Select a retained symbol attribution row before opening Security Master."
+    };
+
     public bool HasRiskChart => RollingVolatilityPlot?.Series is { Count: > 0 };
 
     public bool IsRiskEmptyStateVisible => !HasRiskChart;
@@ -219,6 +261,7 @@ public sealed class RunRiskViewModel : BindableBase
     public IRelayCommand OpenRunDetailCommand { get; }
     public IRelayCommand OpenPortfolioCommand { get; }
     public IRelayCommand OpenCashFlowCommand { get; }
+    public IRelayCommand OpenSelectedSymbolCommand { get; }
 
     // ── Constructor ───────────────────────────────────────────────────────────
 
@@ -231,10 +274,25 @@ public sealed class RunRiskViewModel : BindableBase
         _readService = readService;
         _navigationService = navigationService;
 
+        AttributionTable = new WorkstationTableModel<RiskAttributionRow>(
+            Attribution,
+            [
+                new("Symbol", nameof(RiskAttributionRow.Symbol), 90),
+                new("Total PnL", nameof(RiskAttributionRow.TotalPnlText), 115),
+                new("Realized", nameof(RiskAttributionRow.RealizedPnlText), 115),
+                new("Unrealized", nameof(RiskAttributionRow.UnrealizedPnlText), 125),
+                new("Trades", nameof(RiskAttributionRow.TradeCountText), 75),
+                new("Commissions", nameof(RiskAttributionRow.CommissionsText), 115)
+            ],
+            "Symbol attribution",
+            "No symbol attribution retained",
+            "Select a retained strategy run with per-symbol attribution before reviewing contributors.");
+
         OpenBrowserCommand = new RelayCommand(() => _navigationService.NavigateTo("StrategyRuns"));
         OpenRunDetailCommand = new RelayCommand(OpenRunDetail, () => CanOpenRunDrillIns);
         OpenPortfolioCommand = new RelayCommand(OpenPortfolio, () => CanOpenRunDrillIns);
         OpenCashFlowCommand = new RelayCommand(OpenCashFlow, () => CanOpenRunDrillIns);
+        OpenSelectedSymbolCommand = new RelayCommand(OpenSelectedSymbol, () => CanOpenSelectedSymbol);
     }
 
     // ── Data loading ──────────────────────────────────────────────────────────
@@ -372,12 +430,14 @@ public sealed class RunRiskViewModel : BindableBase
             }
 
             AttributionPlot = BuildAttributionPlot(attribution, detail);
+            SelectedAttribution = Attribution.FirstOrDefault();
         }
         else
         {
             AttributionPlot = null;
             AttributionEmptyStateTitle = "No symbol attribution retained";
             AttributionEmptyStateDetail = $"Run {detail.Summary.RunId} loaded, but no per-symbol attribution is available for review.";
+            SelectedAttribution = null;
         }
 
         RaiseAnalysisStateChanged();
@@ -450,6 +510,7 @@ public sealed class RunRiskViewModel : BindableBase
         RollingVolatilityPlot = null;
         AttributionPlot = null;
         Attribution.Clear();
+        SelectedAttribution = null;
         RaiseAnalysisStateChanged();
     }
 
@@ -562,7 +623,9 @@ public sealed class RunRiskViewModel : BindableBase
         OpenRunDetailCommand.NotifyCanExecuteChanged();
         OpenPortfolioCommand.NotifyCanExecuteChanged();
         OpenCashFlowCommand.NotifyCanExecuteChanged();
+        OpenSelectedSymbolCommand.NotifyCanExecuteChanged();
         OnPropertyChanged(nameof(CanOpenRunDrillIns));
+        OnPropertyChanged(nameof(RunDrillInTooltip));
     }
 
     private void RaiseAnalysisStateChanged()
@@ -580,6 +643,40 @@ public sealed class RunRiskViewModel : BindableBase
         OnPropertyChanged(nameof(RunActionStateDetail));
     }
 
+    private void RaiseSelectedAttributionStateChanged()
+    {
+        OnPropertyChanged(nameof(HasSelectedAttribution));
+        OnPropertyChanged(nameof(CanOpenSelectedSymbol));
+        OnPropertyChanged(nameof(SelectedSymbolTooltip));
+        OpenSelectedSymbolCommand.NotifyCanExecuteChanged();
+    }
+
+    internal static InspectorPanelModel BuildAttributionInspector(RiskAttributionRow selected)
+        => new()
+        {
+            Title = selected.Symbol,
+            Subtitle = "Symbol attribution",
+            Detail = "Review retained PnL attribution before opening Security Master lookup for this symbol.",
+            Badge = new WorkstationBadgeModel("Symbol", selected.Symbol, "\uE8A5", WorkspaceTone.Info),
+            Facts =
+            [
+                new("Total PnL", selected.TotalPnlText),
+                new("Realized PnL", selected.RealizedPnlText),
+                new("Unrealized PnL", selected.UnrealizedPnlText),
+                new("Trades", selected.TradeCountText),
+                new("Commissions", selected.CommissionsText),
+                new("Source", "Retained run attribution")
+            ]
+        };
+
+    private static InspectorPanelModel BuildEmptyAttributionInspector()
+        => new()
+        {
+            Title = "No attribution symbol selected",
+            Subtitle = "Run risk inspector",
+            Detail = "Select a retained symbol attribution row to review PnL contribution and open Security Master lookup."
+        };
+
     private void OpenRunDetail()
     {
         if (!string.IsNullOrWhiteSpace(_runId))
@@ -596,6 +693,14 @@ public sealed class RunRiskViewModel : BindableBase
     {
         if (!string.IsNullOrWhiteSpace(_runId))
             _navigationService.NavigateTo("RunCashFlow", _runId);
+    }
+
+    private void OpenSelectedSymbol()
+    {
+        if (!string.IsNullOrWhiteSpace(SelectedAttribution?.Symbol))
+        {
+            _navigationService.NavigateTo("SecurityMaster", SelectedAttribution.Symbol);
+        }
     }
 
     private static string FormatCurrency(decimal? value) =>

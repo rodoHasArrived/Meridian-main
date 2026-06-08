@@ -5,32 +5,11 @@
       Loaded="OnPageLoaded"
       AutomationProperties.Name="Service Manager"
       AutomationProperties.AutomationId="ServiceManagerPage">
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,16,28,32">
         <StackPanel MaxWidth="1260">
-            <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,20">
-                <StackPanel Orientation="Horizontal">
-                    <Border Width="44"
-                            Height="44"
-                            CornerRadius="14"
-                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                            BorderBrush="{StaticResource InfoColorBrush}"
-                            BorderThickness="1">
-                        <TextBlock Text="&#xE912;"
-                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                   FontSize="24"
-                                   Foreground="{StaticResource InfoColorBrush}"
-                                   VerticalAlignment="Center"
-                                   HorizontalAlignment="Center" />
-                    </Border>
-                    <StackPanel Margin="12,0,0,0">
-                        <TextBlock Text="Service Manager" Style="{StaticResource PageTitleStyle}" />
-                        <TextBlock Text="Backend lifecycle controls, runtime posture, and workstation service registration from one operator workbench."
-                                   Style="{StaticResource CardDescriptionStyle}" />
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-
-            <Border Style="{StaticResource WorkspaceContextStripStyle}" Margin="0,0,0,20">
+            <Border Style="{StaticResource WorkspaceContextStripStyle}" Margin="0,0,0,16"
+                    AutomationProperties.AutomationId="ServiceManagerPostureStrip"
+                    AutomationProperties.Name="Service Manager Posture">
                 <UniformGrid Columns="3">
                     <Border Style="{StaticResource WorkspaceContextBadgeStyle}" Margin="0,0,12,0">
                         <StackPanel>

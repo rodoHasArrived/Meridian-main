@@ -314,13 +314,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         }
 
         var useInMemoryGovernanceServices = IsInMemoryGovernanceProfileEnabled();
-
-        if (!useInMemoryGovernanceServices)
-        {
-            throw new InvalidOperationException(
-                "Production-safe startup requires persistence-backed governance domain services. " +
-                "Set MERIDIAN_USE_INMEMORY_GOVERNANCE=true only for local/dev fixture scenarios.");
-        }
+        EnsureGovernancePersistenceProfile(useInMemoryGovernanceServices);
 
         // Fund accounts and governance structure.
         if (FundAccountsStartup.IsConfigured())
@@ -470,6 +464,25 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             _ => new NoOpDomainProjectionReconciliationJob(FundOperationsDomain.MoneyMarket));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, ProjectionReconciliationHostedService>());
         return services;
+    }
+
+    private static void EnsureGovernancePersistenceProfile(bool useInMemoryGovernanceServices)
+    {
+        if (useInMemoryGovernanceServices)
+            return;
+
+        var missing = new List<string>();
+        if (!FundAccountsStartup.IsConfigured())
+            missing.Add(FundAccountsStartup.ConnectionStringVariable);
+        if (!FundStructureStartup.IsConfigured())
+            missing.Add(FundStructureStartup.ConnectionStringVariable);
+
+        if (missing.Count == 0)
+            return;
+
+        throw new InvalidOperationException(
+            "Production-safe startup requires persistence-backed governance domain services. " +
+            $"Configure {string.Join(", ", missing)} or set MERIDIAN_USE_INMEMORY_GOVERNANCE=true only for local/dev fixture scenarios.");
     }
 
     private static bool IsInMemoryGovernanceProfileEnabled()

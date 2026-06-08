@@ -76,18 +76,35 @@ public sealed class AggregatePortfolioViewModelTests
     }
 
     [Fact]
-    public void AggregatePortfolioPageSource_BindsPositionEmptyState()
+    public void AggregatePortfolioPageSource_UsesDenseTableInspectorAndSelectionAwareActions()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\AggregatePortfolioPage.xaml"));
+        var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\AggregatePortfolioViewModel.cs"));
 
+        xaml.Should().NotContain("<DataGrid");
+        xaml.Should().Contain("AggregatePortfolioActionStrip");
+        xaml.Should().Contain("AggregatePortfolioWorkbench");
+        xaml.Should().Contain("DenseDataGridControl");
+        xaml.Should().Contain("InspectorPanelControl");
+        xaml.Should().Contain("AggregatePortfolioPositionsGrid");
+        xaml.Should().Contain("AggregatePortfolioSelectionInspector");
+        xaml.Should().Contain("AggregatePortfolioActionInspector");
         xaml.Should().Contain("AggregatePositionsEmptyStatePanel");
         xaml.Should().Contain("AggregatePositionsEmptyStateTitle");
         xaml.Should().Contain("AggregatePositionsEmptyStateDetail");
         xaml.Should().Contain("AggregatePositionsEmptyStateRefreshButton");
+        xaml.Should().Contain("Table=\"{Binding PositionsTable}\"");
+        xaml.Should().Contain("SelectedItem=\"{Binding SelectedPosition, Mode=TwoWay}\"");
         xaml.Should().Contain("{Binding IsPositionsGridVisible");
         xaml.Should().Contain("{Binding IsPositionsEmptyStateVisible");
         xaml.Should().Contain("{Binding PositionsEmptyStateTitle}");
         xaml.Should().Contain("{Binding PositionsEmptyStateDetail}");
         xaml.Should().Contain("Command=\"{Binding RefreshCommand}\"");
+        xaml.Should().Contain("ToolTip=\"{Binding RefreshTooltip}\"");
+        xaml.Should().Contain("ToolTip=\"{Binding SelectedSecurityTooltip}\"");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+        viewModel.Should().Contain("public WorkstationTableModel<AggregatedPositionRow> PositionsTable { get; }");
+        viewModel.Should().Contain("public InspectorPanelModel SelectedPositionInspector");
+        viewModel.Should().Contain("public bool CanOpenSelectedSecurity");
     }
 }

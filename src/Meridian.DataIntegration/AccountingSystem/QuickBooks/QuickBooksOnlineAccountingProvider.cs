@@ -228,6 +228,10 @@ public sealed record QuickBooksOnlineConnection(
 
 public interface IQuickBooksOnlineClient
 {
+    Task<QuickBooksOnlineTokenExchangeResult> ExchangeAuthorizationCodeAsync(
+        QuickBooksOnlineAuthorizationCodeRequest request,
+        CancellationToken ct = default);
+
     Task<QuickBooksOnlineTokenExchangeResult> RefreshAccessTokenAsync(
         QuickBooksOnlineConnection connection,
         CancellationToken ct = default);
@@ -238,6 +242,12 @@ public interface IQuickBooksOnlineClient
         AccountingSystemImportRequestDto request,
         CancellationToken ct = default);
 }
+
+public sealed record QuickBooksOnlineAuthorizationCodeRequest(
+    string ClientId,
+    string ClientSecret,
+    string Code,
+    string RedirectUri);
 
 public sealed record QuickBooksOnlineTokenExchangeResult(
     string AccessToken,
@@ -277,20 +287,55 @@ public sealed class QuickBooksOnlineHttpClient : IQuickBooksOnlineClient
         ArgumentNullException.ThrowIfNull(connection);
         ct.ThrowIfCancellationRequested();
 
+        return await SendTokenRequestAsync(
+            connection.ClientId,
+            connection.ClientSecret,
+            [
+                new KeyValuePair<string, string>("grant_type", "refresh_token"),
+                new KeyValuePair<string, string>("refresh_token", connection.RefreshToken)
+            ],
+            ct).ConfigureAwait(false);
+    }
+
+    public async Task<QuickBooksOnlineTokenExchangeResult> ExchangeAuthorizationCodeAsync(
+        QuickBooksOnlineAuthorizationCodeRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.ClientId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.ClientSecret);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.Code);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.RedirectUri);
+        ct.ThrowIfCancellationRequested();
+
+        return await SendTokenRequestAsync(
+            request.ClientId,
+            request.ClientSecret,
+            [
+                new KeyValuePair<string, string>("grant_type", "authorization_code"),
+                new KeyValuePair<string, string>("code", request.Code),
+                new KeyValuePair<string, string>("redirect_uri", request.RedirectUri)
+            ],
+            ct).ConfigureAwait(false);
+    }
+
+    private async Task<QuickBooksOnlineTokenExchangeResult> SendTokenRequestAsync(
+        string clientId,
+        string clientSecret,
+        IReadOnlyList<KeyValuePair<string, string>> fields,
+        CancellationToken ct)
+    {
         using var request = new HttpRequestMessage(HttpMethod.Post, TokenEndpoint);
-        var credentialBytes = Encoding.UTF8.GetBytes($"{connection.ClientId}:{connection.ClientSecret}");
+        var credentialBytes = Encoding.UTF8.GetBytes($"{clientId}:{clientSecret}");
         request.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(credentialBytes));
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        request.Content = new FormUrlEncodedContent(
-        [
-            new KeyValuePair<string, string>("grant_type", "refresh_token"),
-            new KeyValuePair<string, string>("refresh_token", connection.RefreshToken)
-        ]);
+        request.Headers.TryAddWithoutValidation("x-include-refresh-token-hard-expires-in", "true");
+        request.Content = new FormUrlEncodedContent(fields);
 
         using var response = await _httpClient.SendAsync(request, ct).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException($"OAuth token refresh returned status {(int)response.StatusCode}.");
+            throw new InvalidOperationException($"OAuth token exchange returned status {(int)response.StatusCode}.");
         }
 
         await using var stream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
@@ -298,7 +343,7 @@ public sealed class QuickBooksOnlineHttpClient : IQuickBooksOnlineClient
         var accessToken = ReadString(document.RootElement, "access_token");
         if (string.IsNullOrWhiteSpace(accessToken))
         {
-            throw new InvalidOperationException("OAuth token refresh response did not include an access token.");
+            throw new InvalidOperationException("OAuth token exchange response did not include an access token.");
         }
 
         var expiresIn = ReadInt(document.RootElement, "expires_in") ?? 3600;

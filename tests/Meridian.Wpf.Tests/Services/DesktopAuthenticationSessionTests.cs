@@ -1,0 +1,134 @@
+using FluentAssertions;
+using Meridian.Identity;
+using Meridian.Identity.Auth;
+using Meridian.Wpf.Services;
+using Meridian.Wpf.Tests.Support;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
+
+namespace Meridian.Wpf.Tests.Services;
+
+[Collection("DesktopAuthenticationEnvironment")]
+public sealed class DesktopAuthenticationSessionTests
+{
+    [Fact]
+    public void SignIn_WithConfiguredUser_ShouldSetCurrentDesktopUser()
+    {
+        using var env = new EnvironmentVariableScope()
+            .Set("MDC_USERS", """[{"username":"desktop-admin","password":"pw","role":"Admin"}]""")
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD", null)
+            .Set("MDC_AUTH_MODE", null);
+
+        var session = CreateSession("Production");
+
+        var result = session.SignIn("desktop-admin", "pw");
+
+        result.Succeeded.Should().BeTrue();
+        result.Profile.Should().NotBeNull();
+        session.IsAuthenticated.Should().BeTrue();
+        session.CurrentActor.Should().Be("desktop-admin");
+        session.CurrentRole.Should().Be(UserRole.Admin);
+        session.CurrentPermissions.Should().Be(RolePermissions.For(UserRole.Admin));
+        session.IsAnonymousDevelopmentSession.Should().BeFalse();
+    }
+
+    [Fact]
+    public void SignIn_WithWrongPassword_ShouldLeaveSessionUnauthenticated()
+    {
+        using var env = new EnvironmentVariableScope()
+            .Set("MDC_USERS", """[{"username":"desktop-admin","password":"pw","role":"Admin"}]""")
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD", null)
+            .Set("MDC_AUTH_MODE", null);
+
+        var session = CreateSession("Production");
+
+        var result = session.SignIn("desktop-admin", "wrong");
+
+        result.Succeeded.Should().BeFalse();
+        result.Message.Should().Contain("does not match");
+        session.IsAuthenticated.Should().BeFalse();
+        session.CurrentUser.Should().BeNull();
+        session.CurrentActor.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ContinueWithoutCredentials_WhenDevelopmentAndUnconfigured_ShouldCreateAnonymousDevelopmentSession()
+    {
+        using var env = new EnvironmentVariableScope()
+            .Set("MDC_USERS", null)
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD", null)
+            .Set("MDC_AUTH_MODE", "optional");
+
+        var session = CreateSession("Development");
+
+        var result = session.ContinueWithoutCredentials();
+
+        result.Succeeded.Should().BeTrue();
+        result.IsAnonymousDevelopmentSession.Should().BeTrue();
+        session.IsAnonymousDevelopmentSession.Should().BeTrue();
+        session.CurrentActor.Should().Be("local-development");
+        session.IsAuthenticated.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ContinueWithoutCredentials_WhenProductionAndUnconfigured_ShouldFailClosed()
+    {
+        using var env = new EnvironmentVariableScope()
+            .Set("MDC_USERS", null)
+            .Set("MDC_USERNAME", null)
+            .Set("MDC_PASSWORD", null)
+            .Set("MDC_AUTH_MODE", "required");
+
+        var session = CreateSession("Production");
+
+        var result = session.ContinueWithoutCredentials();
+
+        result.Succeeded.Should().BeFalse();
+        result.Message.Should().Contain("requires");
+        session.IsAnonymousDevelopmentSession.Should().BeFalse();
+        session.CurrentActor.Should().BeEmpty();
+    }
+
+    internal static DesktopAuthenticationSession CreateSession(string environmentName)
+        => new(new LoginSessionService(
+            new FakeHostEnvironment(environmentName),
+            new UserProfileRegistry()));
+
+    internal sealed class EnvironmentVariableScope : IDisposable
+    {
+        private readonly Dictionary<string, string?> _originalValues = new(StringComparer.Ordinal);
+
+        public EnvironmentVariableScope Set(string name, string? value)
+        {
+            if (!_originalValues.ContainsKey(name))
+            {
+                _originalValues[name] = Environment.GetEnvironmentVariable(name);
+            }
+
+            Environment.SetEnvironmentVariable(name, value);
+            return this;
+        }
+
+        public void Dispose()
+        {
+            foreach (var entry in _originalValues)
+            {
+                Environment.SetEnvironmentVariable(entry.Key, entry.Value);
+            }
+        }
+    }
+
+    internal sealed class FakeHostEnvironment(string environmentName) : IHostEnvironment
+    {
+        public string EnvironmentName { get; set; } = environmentName;
+
+        public string ApplicationName { get; set; } = "Meridian.Wpf.Tests";
+
+        public string ContentRootPath { get; set; } = RunMatUiAutomationFacade.ResolveRepoRoot();
+
+        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
+    }
+}

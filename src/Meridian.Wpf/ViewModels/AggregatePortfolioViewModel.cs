@@ -2,6 +2,9 @@ using System.Collections.ObjectModel;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Models;
+using Meridian.Wpf.Services;
+using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -15,6 +18,8 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
     private readonly DispatcherTimer _refreshTimer;
     private readonly CancellationTokenSource _cts = new();
     private bool _isDisposed;
+    private AggregatedPositionRow? _selectedPosition;
+    private InspectorPanelModel _selectedPositionInspector = BuildEmptyPositionInspector();
 
     // ── Exposure summary ──────────────────────────────────────────────────────
 
@@ -54,6 +59,9 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
         {
             if (SetProperty(ref _isRefreshing, value))
             {
+                OnPropertyChanged(nameof(CanRefreshPortfolio));
+                OnPropertyChanged(nameof(RefreshTooltip));
+                RefreshCommand.NotifyCanExecuteChanged();
                 UpdatePositionsPresentation();
             }
         }
@@ -84,6 +92,29 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
 
     public ObservableCollection<AggregatedPositionRow> Positions { get; } = [];
 
+    public WorkstationTableModel<AggregatedPositionRow> PositionsTable { get; }
+
+    public AggregatedPositionRow? SelectedPosition
+    {
+        get => _selectedPosition;
+        set
+        {
+            if (SetProperty(ref _selectedPosition, value))
+            {
+                SelectedPositionInspector = value is null
+                    ? BuildEmptyPositionInspector()
+                    : BuildPositionInspector(value);
+                RaiseSelectedPositionStateChanged();
+            }
+        }
+    }
+
+    public InspectorPanelModel SelectedPositionInspector
+    {
+        get => _selectedPositionInspector;
+        private set => SetProperty(ref _selectedPositionInspector, value);
+    }
+
     private bool _hasLoadedPortfolioSnapshot;
     private bool _hasLoadError;
 
@@ -93,16 +124,57 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
 
     public bool IsPositionsEmptyStateVisible => !HasPositions;
 
+    public bool HasSelectedPosition => SelectedPosition is not null;
+
+    public bool CanRefreshPortfolio => !IsRefreshing;
+
+    public string RefreshTooltip => IsRefreshing
+        ? "Aggregate portfolio refresh is already running."
+        : "Refresh cross-strategy exposure and netted positions.";
+
+    public bool CanOpenSelectedSecurity => !string.IsNullOrWhiteSpace(SelectedPosition?.Symbol);
+
+    public string SelectedSecurityTooltip => SelectedPosition switch
+    {
+        null => "Select a netted position before opening Security Master.",
+        { Symbol: { Length: > 0 } symbol } => $"Open Security Master lookup for {symbol}.",
+        _ => "Select a symbol-linked netted position before opening Security Master."
+    };
+
+    public string PortfolioActionStateTitle => HasPositions ? "Aggregate positions loaded" : PositionsEmptyStateTitle;
+
+    public string PortfolioActionStateDetail => HasPositions
+        ? StatusText
+        : PositionsEmptyStateDetail;
+
     // ── Commands ──────────────────────────────────────────────────────────────
 
     public IAsyncRelayCommand RefreshCommand { get; }
+    public IRelayCommand OpenSelectedSecurityCommand { get; }
 
     // ── Constructor ───────────────────────────────────────────────────────────
 
     public AggregatePortfolioViewModel(ApiClientService apiClient)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
-        RefreshCommand = new AsyncRelayCommand(RefreshAsync);
+
+        PositionsTable = new WorkstationTableModel<AggregatedPositionRow>(
+            Positions,
+            [
+                new("Symbol", nameof(AggregatedPositionRow.Symbol), 90),
+                new("Net Qty", nameof(AggregatedPositionRow.TotalQuantity), 90, "{0:N2}"),
+                new("Long", nameof(AggregatedPositionRow.LongQuantity), 85, "{0:N2}"),
+                new("Short", nameof(AggregatedPositionRow.ShortQuantity), 85, "{0:N2}"),
+                new("WAC", nameof(AggregatedPositionRow.WeightedAverageCost), 95, "{0:C4}"),
+                new("Unreal. P&L", nameof(AggregatedPositionRow.TotalUnrealisedPnl), 115, "{0:C2}"),
+                new("Runs", nameof(AggregatedPositionRow.ContributingRuns), 70)
+            ],
+            "Netted positions",
+            "No netted positions",
+            "Refresh aggregate portfolio data before reviewing cross-strategy exposure.");
+
+        RefreshCommand = new AsyncRelayCommand(RefreshAsync, () => CanRefreshPortfolio);
+        OpenSelectedSecurityCommand = new RelayCommand(OpenSelectedSecurity, () => CanOpenSelectedSecurity);
 
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
         _refreshTimer.Tick += (_, _) =>
@@ -182,11 +254,14 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
             {
                 _hasLoadedPortfolioSnapshot = false;
                 _hasLoadError = true;
+                Positions.Clear();
+                SelectedPosition = null;
                 StatusText = "Aggregate portfolio data unavailable.";
                 return;
             }
 
             Positions.Clear();
+            SelectedPosition = null;
             foreach (var p in positions)
             {
                 Positions.Add(new AggregatedPositionRow(
@@ -198,6 +273,8 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
                     TotalUnrealisedPnl: p.TotalUnrealisedPnl,
                     ContributingRuns: p.Contributions?.Count ?? 0));
             }
+
+            SelectedPosition = Positions.FirstOrDefault();
 
             if (exposure is not null)
             {
@@ -274,6 +351,56 @@ public sealed class AggregatePortfolioViewModel : BindableBase, IDisposable
         OnPropertyChanged(nameof(HasPositions));
         OnPropertyChanged(nameof(IsPositionsGridVisible));
         OnPropertyChanged(nameof(IsPositionsEmptyStateVisible));
+        OnPropertyChanged(nameof(PortfolioActionStateTitle));
+        OnPropertyChanged(nameof(PortfolioActionStateDetail));
+        OnPropertyChanged(nameof(RefreshTooltip));
+    }
+
+    private void RaiseSelectedPositionStateChanged()
+    {
+        OnPropertyChanged(nameof(HasSelectedPosition));
+        OnPropertyChanged(nameof(CanOpenSelectedSecurity));
+        OnPropertyChanged(nameof(SelectedSecurityTooltip));
+        OpenSelectedSecurityCommand.NotifyCanExecuteChanged();
+    }
+
+    internal static InspectorPanelModel BuildPositionInspector(AggregatedPositionRow selected)
+        => new()
+        {
+            Title = selected.Symbol,
+            Subtitle = "Cross-strategy netted position",
+            Detail = "Review net quantity, long and short contribution, weighted average cost, and run coverage before opening Security Master lookup.",
+            Badge = new WorkstationBadgeModel(
+                "Runs",
+                selected.ContributingRuns.ToString("N0"),
+                "\uE8A5",
+                selected.ContributingRuns > 0 ? WorkspaceTone.Info : WorkspaceTone.Warning),
+            Facts =
+            [
+                new("Net quantity", selected.TotalQuantity.ToString("N2")),
+                new("Long quantity", selected.LongQuantity.ToString("N2")),
+                new("Short quantity", selected.ShortQuantity.ToString("N2")),
+                new("Weighted average cost", selected.WeightedAverageCost.ToString("C4")),
+                new("Unrealized P&L", selected.TotalUnrealisedPnl.ToString("C2")),
+                new("Contributing runs", selected.ContributingRuns.ToString("N0")),
+                new("Source", "Aggregate portfolio")
+            ]
+        };
+
+    private static InspectorPanelModel BuildEmptyPositionInspector()
+        => new()
+        {
+            Title = "No netted position selected",
+            Subtitle = "Aggregate portfolio inspector",
+            Detail = "Select a netted position row to inspect cross-strategy exposure and unlock Security Master lookup."
+        };
+
+    private void OpenSelectedSecurity()
+    {
+        if (!string.IsNullOrWhiteSpace(SelectedPosition?.Symbol))
+        {
+            NavigationService.Instance.NavigateTo("SecurityMaster", SelectedPosition.Symbol);
+        }
     }
 
     // ── Inner DTOs (local API projection) ─────────────────────────────────────

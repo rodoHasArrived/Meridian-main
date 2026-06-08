@@ -72,6 +72,7 @@ public sealed class BackfillViewModelTests
         var codeBehind = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\BackfillPage.xaml.cs"));
         var viewModel = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\BackfillViewModel.cs"));
 
+        xaml.Should().Contain("BackfillActionStrip");
         xaml.Should().Contain("BackfillStartReadinessCard");
         xaml.Should().Contain("{Binding StartReadinessTitle}");
         xaml.Should().Contain("{Binding StartReadinessDetail}");
@@ -81,6 +82,9 @@ public sealed class BackfillViewModelTests
         xaml.Should().Contain("{Binding ToDateValidationErrorText}");
         xaml.Should().Contain("AutomationProperties.AutomationId=\"BackfillStartButton\"");
         xaml.Should().Contain("IsEnabled=\"{Binding CanStartBackfill}\"");
+        xaml.Should().Contain("ToolTip=\"{Binding StartReadinessDetail}\"");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
 
         codeBehind.Should().Contain("RefreshStartSetupState();");
         codeBehind.Should().NotContain("SymbolsValidationError.Text =");

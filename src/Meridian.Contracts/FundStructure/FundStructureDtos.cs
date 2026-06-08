@@ -46,6 +46,52 @@ public enum LegalEntityTypeDto
     Other
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<LegalEntityFormDto>))]
+public enum LegalEntityFormDto
+{
+    Unspecified,
+    LimitedLiabilityCompany,
+    SeriesLimitedLiabilityCompany,
+    LimitedPartnership,
+    GeneralPartnership,
+    Corporation,
+    StatutoryTrust,
+    Trust,
+    Foundation,
+    SegregatedPortfolioCompany,
+    ExemptedCompany,
+    Other
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<LegalEntityLifecycleStatusDto>))]
+public enum LegalEntityLifecycleStatusDto
+{
+    Draft,
+    Forming,
+    Active,
+    AmendmentPending,
+    Restructuring,
+    WindingDown,
+    Dissolved,
+    Merged
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<LegalEntityLifecycleEventKindDto>))]
+public enum LegalEntityLifecycleEventKindDto
+{
+    Formation,
+    LegalFormChange,
+    NameChange,
+    JurisdictionChange,
+    Amendment,
+    Restructure,
+    SpvRollup,
+    BeneficialOwnershipChange,
+    Dissolution,
+    Reactivation,
+    Other
+}
+
 [JsonConverter(typeof(JsonStringEnumConverter<AccountTypeDto>))]
 public enum AccountTypeDto
 {
@@ -179,7 +225,31 @@ public sealed record LegalEntitySummaryDto(
     bool IsActive,
     DateTimeOffset EffectiveFrom,
     DateTimeOffset? EffectiveTo,
-    string? Description = null);
+    string? Description = null,
+    LegalEntityFormDto LegalForm = LegalEntityFormDto.Unspecified,
+    LegalEntityLifecycleStatusDto LifecycleStatus = LegalEntityLifecycleStatusDto.Active,
+    string? RegistrationNumber = null,
+    IReadOnlyList<BeneficialOwnerSummaryDto>? BeneficialOwners = null,
+    IReadOnlyList<LegalEntityLifecycleEventDto>? LifecycleEvents = null);
+
+public sealed record BeneficialOwnerSummaryDto(
+    string OwnerName,
+    decimal? OwnershipPercent = null,
+    string? OwnerIdentifier = null,
+    bool IsControlPerson = false,
+    DateTimeOffset? EffectiveFrom = null,
+    DateTimeOffset? EffectiveTo = null,
+    string? Notes = null);
+
+public sealed record LegalEntityLifecycleEventDto(
+    Guid EventId,
+    LegalEntityLifecycleEventKindDto EventKind,
+    DateTimeOffset OccurredAt,
+    string RecordedBy,
+    string Summary,
+    string? EvidenceReference = null,
+    DateTimeOffset? EffectiveFrom = null,
+    DateTimeOffset? EffectiveTo = null);
 
 public sealed record InvestmentPortfolioSummaryDto(
     Guid InvestmentPortfolioId,

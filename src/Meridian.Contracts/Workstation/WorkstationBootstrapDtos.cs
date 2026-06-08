@@ -542,4 +542,5 @@ public sealed record WorkstationDataPayload(
     IReadOnlyList<WorkstationDataProviderRecord> Providers,
     IReadOnlyList<WorkstationDataBackfillRecord> Backfills,
     IReadOnlyList<WorkstationDataExportRecord> Exports,
+    DataUploadTemplateCatalogDto UploadTemplates,
     object KernelObservability);

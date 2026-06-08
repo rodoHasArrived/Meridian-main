@@ -9,8 +9,7 @@ namespace Meridian.Wpf.Views;
 /// Page for managing multiple data source configurations.
 /// Code-behind is limited to:
 ///  – constructor DI and DataContext wiring
-///  – PasswordBox read (WPF security restriction prevents binding Password)
-///  – PasswordBox restore when editing an existing Polygon source
+///  – secret input read/restore for the Polygon API key
 /// All business logic lives in <see cref="DataSourcesViewModel"/>.
 /// </summary>
 public partial class DataSourcesPage : Page
@@ -29,17 +28,16 @@ public partial class DataSourcesPage : Page
         await _viewModel.LoadAsync();
     }
 
-    // ── Save – reads PasswordBox before delegating ────────────────────────
+    // ── Save – reads secret input before delegating ───────────────────────
 
     private async void SaveDataSource_Click(object sender, RoutedEventArgs e)
     {
-        // PasswordBox.Password cannot be data-bound; read it here before Save.
-        _viewModel.PolygonApiKey = PolygonApiKeyBox.Password;
+        _viewModel.PolygonApiKey = PolygonApiKeyInput.Secret;
         await _viewModel.SaveSourceCommand.ExecuteAsync(null);
 
-        // Sync back PasswordBox after a successful save / edit-start
+        // Sync back the secret input after a successful save / edit-start.
         if (!_viewModel.IsEditPanelVisible)
-            PolygonApiKeyBox.Password = string.Empty;
+            PolygonApiKeyInput.ClearSecret();
     }
 
     // ── Edit form initialization – syncs combo selections ─────────────────
@@ -50,8 +48,8 @@ public partial class DataSourcesPage : Page
         if (e.NewValue is not true)
             return;
 
-        // Restore PasswordBox when editing an existing Polygon source
-        PolygonApiKeyBox.Password = _viewModel.SelectedProvider == "Polygon"
+        // Restore the secret input when editing an existing Polygon source.
+        PolygonApiKeyInput.Secret = _viewModel.SelectedProvider == "Polygon"
             ? _viewModel.PolygonApiKey
             : string.Empty;
     }

@@ -16,7 +16,9 @@ public sealed class WatchlistDisplayModel
     public string? Color { get; set; }
     public Color ColorValue { get; set; }
     public bool IsPinned { get; set; }
+    public string PinnedText => IsPinned ? "Pinned" : "Unpinned";
     public Visibility PinnedBadgeVisibility => IsPinned ? Visibility.Visible : Visibility.Collapsed;
     public List<string> SymbolsPreview { get; set; } = new();
+    public string PreviewSymbolsText => SymbolsPreview.Count == 0 ? "No preview symbols" : string.Join(", ", SymbolsPreview);
     public string ModifiedText { get; set; } = string.Empty;
 }

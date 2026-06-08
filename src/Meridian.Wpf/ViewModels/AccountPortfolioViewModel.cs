@@ -2,6 +2,9 @@ using System.Collections.ObjectModel;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Models;
+using Meridian.Wpf.Services;
+using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -15,6 +18,8 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
     private readonly DispatcherTimer _refreshTimer;
     private readonly CancellationTokenSource _cts = new();
     private bool _isDisposed;
+    private AccountPositionRow? _selectedPosition;
+    private InspectorPanelModel _selectedPositionInspector = BuildEmptyPositionInspector();
 
     // ── Header ────────────────────────────────────────────────────────────────
 
@@ -28,7 +33,9 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
             {
                 _hasLoadedAccountSnapshot = false;
                 Positions.Clear();
+                SelectedPosition = null;
                 OnPropertyChanged(nameof(CanRefreshAccount));
+                OnPropertyChanged(nameof(RefreshTooltip));
                 RefreshCommand.NotifyCanExecuteChanged();
                 UpdatePositionsPresentation();
             }
@@ -116,6 +123,7 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
             if (SetProperty(ref _isRefreshing, value))
             {
                 OnPropertyChanged(nameof(CanRefreshAccount));
+                OnPropertyChanged(nameof(RefreshTooltip));
                 RefreshCommand.NotifyCanExecuteChanged();
                 UpdatePositionsPresentation();
             }
@@ -147,6 +155,29 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
 
     public ObservableCollection<AccountPositionRow> Positions { get; } = [];
 
+    public WorkstationTableModel<AccountPositionRow> PositionsTable { get; }
+
+    public AccountPositionRow? SelectedPosition
+    {
+        get => _selectedPosition;
+        set
+        {
+            if (SetProperty(ref _selectedPosition, value))
+            {
+                SelectedPositionInspector = value is null
+                    ? BuildEmptyPositionInspector()
+                    : BuildPositionInspector(value);
+                RaiseSelectedPositionStateChanged();
+            }
+        }
+    }
+
+    public InspectorPanelModel SelectedPositionInspector
+    {
+        get => _selectedPositionInspector;
+        private set => SetProperty(ref _selectedPositionInspector, value);
+    }
+
     private bool _hasLoadedAccountSnapshot;
 
     public bool HasPositions => Positions.Count > 0;
@@ -155,7 +186,39 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
 
     public bool IsPositionsEmptyStateVisible => !HasPositions;
 
+    public bool HasSelectedPosition => SelectedPosition is not null;
+
     public bool CanRefreshAccount => CanRefreshAccountForState(AccountId, IsRefreshing);
+
+    public string RefreshTooltip
+    {
+        get
+        {
+            if (IsRefreshing)
+            {
+                return "Account refresh is already running.";
+            }
+
+            return CanRefreshAccount
+                ? $"Refresh retained account snapshot for {AccountId}."
+                : "Select an account before refreshing account positions.";
+        }
+    }
+
+    public bool CanOpenSelectedSecurity => !string.IsNullOrWhiteSpace(SelectedPosition?.Symbol);
+
+    public string SelectedSecurityTooltip => SelectedPosition switch
+    {
+        null => "Select an account position before opening Security Master.",
+        { Symbol: { Length: > 0 } symbol } => $"Open Security Master lookup for {symbol}.",
+        _ => "Select a symbol-linked account position before opening Security Master."
+    };
+
+    public string PositionActionStateTitle => HasPositions ? "Account positions loaded" : PositionsEmptyStateTitle;
+
+    public string PositionActionStateDetail => HasPositions
+        ? StatusText
+        : PositionsEmptyStateDetail;
 
     // ── Navigation parameter ──────────────────────────────────────────────────
 
@@ -177,13 +240,30 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
     // ── Commands ──────────────────────────────────────────────────────────────
 
     public IAsyncRelayCommand RefreshCommand { get; }
+    public IRelayCommand OpenSelectedSecurityCommand { get; }
 
     // ── Constructor ───────────────────────────────────────────────────────────
 
     public AccountPortfolioViewModel(ApiClientService apiClient)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
+
+        PositionsTable = new WorkstationTableModel<AccountPositionRow>(
+            Positions,
+            [
+                new("Symbol", nameof(AccountPositionRow.Symbol), 90),
+                new("Side", nameof(AccountPositionRow.Side), 65),
+                new("Quantity", nameof(AccountPositionRow.Quantity), 90, "{0:N0}"),
+                new("Avg Cost", nameof(AccountPositionRow.AvgCost), 95, "{0:C4}"),
+                new("Unreal. P&L", nameof(AccountPositionRow.UnrealisedPnl), 115, "{0:C2}"),
+                new("Real. P&L", nameof(AccountPositionRow.RealisedPnl), 115, "{0:C2}")
+            ],
+            "Account positions",
+            "No account positions",
+            "Select an account with retained brokerage positions before reviewing exposure.");
+
         RefreshCommand = new AsyncRelayCommand(RefreshAsync, () => CanRefreshAccount);
+        OpenSelectedSecurityCommand = new RelayCommand(OpenSelectedSecurity, () => CanOpenSelectedSecurity);
 
         _refreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
         _refreshTimer.Tick += (_, _) =>
@@ -257,6 +337,8 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
             if (snapshot is null)
             {
                 _hasLoadedAccountSnapshot = false;
+                Positions.Clear();
+                SelectedPosition = null;
                 StatusText = "Account data unavailable.";
                 return;
             }
@@ -274,6 +356,7 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
             AsOf = snapshot.AsOf;
 
             Positions.Clear();
+            SelectedPosition = null;
             if (snapshot.Positions is { Count: > 0 })
             {
                 foreach (var pos in snapshot.Positions)
@@ -288,6 +371,7 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
                 }
             }
 
+            SelectedPosition = Positions.FirstOrDefault();
             StatusText = $"Loaded {Positions.Count} position(s).";
         }
         finally
@@ -357,6 +441,54 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
         OnPropertyChanged(nameof(HasPositions));
         OnPropertyChanged(nameof(IsPositionsGridVisible));
         OnPropertyChanged(nameof(IsPositionsEmptyStateVisible));
+        OnPropertyChanged(nameof(PositionActionStateTitle));
+        OnPropertyChanged(nameof(PositionActionStateDetail));
+        OnPropertyChanged(nameof(RefreshTooltip));
+    }
+
+    private void RaiseSelectedPositionStateChanged()
+    {
+        OnPropertyChanged(nameof(HasSelectedPosition));
+        OnPropertyChanged(nameof(CanOpenSelectedSecurity));
+        OnPropertyChanged(nameof(SelectedSecurityTooltip));
+        OpenSelectedSecurityCommand.NotifyCanExecuteChanged();
+    }
+
+    internal static InspectorPanelModel BuildPositionInspector(AccountPositionRow selected)
+        => new()
+        {
+            Title = selected.Symbol,
+            Subtitle = $"{selected.Side} account position",
+            Detail = "Review retained account quantity, cost basis, and P&L before opening Security Master lookup for this symbol.",
+            Badge = new WorkstationBadgeModel(
+                "Side",
+                selected.Side,
+                "\uE8A5",
+                string.Equals(selected.Side, "Short", StringComparison.OrdinalIgnoreCase) ? WorkspaceTone.Warning : WorkspaceTone.Success),
+            Facts =
+            [
+                new("Quantity", selected.Quantity.ToString("N0")),
+                new("Average cost", selected.AvgCost.ToString("C4")),
+                new("Unrealized P&L", selected.UnrealisedPnl.ToString("C2")),
+                new("Realized P&L", selected.RealisedPnl.ToString("C2")),
+                new("Source", "Account snapshot")
+            ]
+        };
+
+    private static InspectorPanelModel BuildEmptyPositionInspector()
+        => new()
+        {
+            Title = "No account position selected",
+            Subtitle = "Account portfolio inspector",
+            Detail = "Select a retained account position row to inspect exposure and unlock Security Master lookup."
+        };
+
+    private void OpenSelectedSecurity()
+    {
+        if (!string.IsNullOrWhiteSpace(SelectedPosition?.Symbol))
+        {
+            NavigationService.Instance.NavigateTo("SecurityMaster", SelectedPosition.Symbol);
+        }
     }
 
     // ── Inner DTOs (local API projection) ─────────────────────────────────────

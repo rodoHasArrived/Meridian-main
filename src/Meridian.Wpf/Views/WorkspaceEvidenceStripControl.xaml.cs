@@ -11,9 +11,6 @@ public partial class WorkspaceEvidenceStripControl : UserControl
     public static readonly DependencyProperty WorkflowSummaryStripAutomationIdProperty =
         DependencyProperty.Register(nameof(WorkflowSummaryStripAutomationId), typeof(string), typeof(WorkspaceEvidenceStripControl), new PropertyMetadata("WorkflowSummaryStrip"));
 
-    public static readonly DependencyProperty PrimaryOperatorWorkflowStripAutomationIdProperty =
-        DependencyProperty.Register(nameof(PrimaryOperatorWorkflowStripAutomationId), typeof(string), typeof(WorkspaceEvidenceStripControl), new PropertyMetadata("PrimaryOperatorWorkflowStrip"));
-
     public static readonly DependencyProperty PrimaryActionButtonAutomationIdProperty =
         DependencyProperty.Register(nameof(PrimaryActionButtonAutomationId), typeof(string), typeof(WorkspaceEvidenceStripControl), new PropertyMetadata("PrimaryWorkflowActionButton"));
 
@@ -35,12 +32,6 @@ public partial class WorkspaceEvidenceStripControl : UserControl
     {
         get => (string)GetValue(WorkflowSummaryStripAutomationIdProperty);
         set => SetValue(WorkflowSummaryStripAutomationIdProperty, value);
-    }
-
-    public string PrimaryOperatorWorkflowStripAutomationId
-    {
-        get => (string)GetValue(PrimaryOperatorWorkflowStripAutomationIdProperty);
-        set => SetValue(PrimaryOperatorWorkflowStripAutomationIdProperty, value);
     }
 
     public string PrimaryActionButtonAutomationId

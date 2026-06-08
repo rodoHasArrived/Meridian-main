@@ -34,15 +34,29 @@ matching module before it expands through the older flat page folders.
 
 ## Important workflows
 
+Application startup now shows `StartupWindow` before the main shell. The startup view model validates
+credentials through the Identity-owned `UserProfileRegistry` and `LoginSessionService`, keeps the
+desktop session in `DesktopAuthenticationSession`, and opens `MainWindow` only after a configured
+operator signs in or an unconfigured optional-development session is explicitly accepted. WPF reads
+`MDC_USERS` first and then the legacy `MDC_USERNAME` / `MDC_PASSWORD` fallback through Identity; it
+does not persist login credentials in desktop config files. The main shell shows the active operator
+session in its header and the `Log out` command signs out the in-memory session, hides the shell, and
+returns to the startup login screen with a fresh startup view model.
+Manual desktop secret entry uses `SecretInputControl`, which keeps values hidden by default, exposes
+an explicit reveal toggle with non-secret automation names, and clears masked and revealed values
+together when a flow resets the input.
+
 The Accounting workspace includes a dedicated `FundStructureSetupPage` and `FundStructureSetupViewModel` for operator entity setup. It uses the shared `FundStructureSetupWorkflowService` so desktop setup validation, graph preview, review-and-create, and account handoff behavior match `/api/fund-structure`.
 `FundAccountingConfigure` now routes to `AccountingConfigurePage` and `AccountingConfigureViewModel`
-instead of a generic ledger page. The workbench reads and mutates shared accounting configuration
-DTOs, surfaces chart accounts, templates, posting rules, validation, and audit rows, saves manual
-journal entry drafts through the shared workbench service, offers type-specific draft presets for
-accrued balances, accrued expenses, prepaid expenses, expenses, amortization, deferrals,
-reclassifications, and reversals, shows read-only external GL evidence, projects
-close/evidence/reconciliation posture from shared operations continuity when available, and creates
-fund-scoped accounting-basis policy records through the Financial Operations policy service.
+instead of a generic ledger page. The page opens on compact action chrome instead of a duplicate
+hero, preserving status, storage posture, active-fund context, and command readiness beside the
+primary configure actions. The workbench reads and mutates shared accounting configuration DTOs,
+surfaces chart accounts, templates, posting rules, validation, and audit rows, saves manual journal
+entry drafts through the shared workbench service, offers type-specific draft presets for accrued
+balances, accrued expenses, prepaid expenses, expenses, amortization, deferrals, reclassifications,
+and reversals, shows read-only external GL evidence, projects close/evidence/reconciliation posture
+from shared operations continuity when available, and creates fund-scoped accounting-basis policy
+records through the Financial Operations policy service.
 Registration stays feature-owned in `Features/Accounting/AccountingFeatureModule.cs`; the
 desktop fallback stores configuration/audit state in `workstation/accounting/accounting-configuration.json`
 and manual journal drafts in `workstation/accounting/manual-journal-drafts.json` under the
@@ -66,6 +80,9 @@ permissions, and custom-asset validation remain owned by the shared Security Mas
 Run Cash Flow consumes `StrategyRunContinuityService` when the desktop shell provides it, so the
 cash-flow drill-in presents the same run, portfolio, ledger, cash-flow, reconciliation, and warning
 posture used by shared workstation continuity endpoints.
+The drill-in uses compact action-strip chrome, shared dense cash-ladder and cash-flow event tables,
+and right-side inspectors for the selected event, ladder bucket, continuity posture, and run actions;
+Security Master remains disabled until a symbol-linked cash-flow event is selected.
 Desktop backtest services register the Backtesting-owned `IBacktestPreflightService` implementation
 and attach it to the singleton `BacktestService`, so WPF strategy runs use the same date-range,
 replay-coverage, execution-model, and optional Security Master preflight checks as shared
@@ -104,6 +121,10 @@ shared catalog.
 The desktop diagnostics surface reads colocation profile state through
 `Meridian.Platform.Performance.ICoLocationProfileActivator`, keeping runtime-performance ownership
 in Platform while WPF remains a presentation surface.
+Cluster Status now uses the shared workstation dense-table and inspector primitives for
+coordination ownership review. Mesh-disabled or missing lease-manager sessions fail closed with a
+blocked refresh posture, while enabled sessions expose read-only node rows, selected-node lease
+freshness, and manual refresh readiness without mutating coordination leases from WPF.
 When shared workflow actions carry parameterized evidence targets such as
 `EvidenceWorkbench:accounting-record/{recordId}`, the workflow library keeps the raw target tag for
 navigation and filtering but presents the operator action target as `EvidenceWorkbench` so route
@@ -198,17 +219,33 @@ parts consistently.
 Standalone command-palette chrome should use the same shell tokens and stable automation IDs instead
 of page-local colors or shadow effects.
 High-value workbench pages should migrate through the shared workstation controls before broad
-page sweeps; Strategy Runs now uses `DenseDataGridControl` plus tabbed inspector panes for run,
-evidence, comparison, and artifact context while preserving existing page tags and navigation
-commands.
+page sweeps; Strategy Runs now opens on compact action chrome instead of a duplicate hero, uses
+`DenseDataGridControl` plus tabbed inspector panes for run, evidence, comparison, and artifact
+context, and surfaces selected-run or comparison guidance as disabled-action tooltips while
+preserving existing page tags and navigation commands. Account Portfolio and Aggregate Portfolio
+now use compact action strips, shared dense position tables, selected-position inspectors, and
+disabled-action tooltips for refresh/Security Master readiness while preserving their existing
+account and aggregate API read paths. Run Portfolio follows the same drill-in
+pattern: the duplicate hero is replaced by compact run actions, retained positions render through
+`DenseDataGridControl`, the selected position drives an inspector rail, and Security Master/run
+drill-in commands expose their disabled reasons through view-model-owned tooltips. Run Detail now
+uses the same focused drill-in contract: compact run actions stay fail-closed until retained detail
+loads, run evidence is projected through the shared inspector, and retained parameters render
+through the shared dense table with selected-parameter inspection. Run Ledger now
+uses the same compact drill-in treatment for Accounting review: retained trial-balance and journal
+rows render through dense shared tables, the selected trial-balance line owns the inspector rail, and
+Security Master actions fail closed unless the selected line carries a security or symbol. Run Risk
+now follows that focused attribution pattern: the oversized hero is replaced by compact run actions,
+retained symbol attribution uses the shared dense table, and the selected symbol owns the inspector
+rail plus Security Master lookup readiness.
 The desktop shell visual system now targets a light institutional workstation frame with a
 near-black global app bar, paper page bands, compact filter bars, and dense table chrome. New
 workspace overhauls should prefer `WorkstationPageBandStyle`, `WorkstationFilterBarStyle`,
 `WorkstationFilterChipStyle`, `WorkstationTablePanelStyle`, `WorkstationInspectorRailStyle`,
-`WorkstationDockStripStyle`, `DenseDataGridControl`, and inspector host primitives before adding
-page-local cards or dark terminal styling. The Data shell is the reference implementation for this
-professional table-plus-inspector composition, including bounded dock height for stable repeated
-operator use.
+`WorkstationDockStripStyle`, `DenseDataGridControl`, `WorkstationTableInspectorControl`, and
+inspector host primitives before adding page-local cards or dark terminal styling. The Data shell is
+the reference implementation for this professional table-plus-inspector composition, including
+bounded dock height for stable repeated operator use.
 Settings/Admin cockpit work uses `WorkstationStatePanelControl` for schedule and cleanup readiness
 state so maintenance blockers, confirmation posture, and evidence summaries reuse the same
 `WorkspaceTone` semantics as other operational pages.
@@ -225,13 +262,50 @@ Data shell state providers and XAML page bases use canonical `DataWorkspace*` na
 into WPF inspector state so desktop operators see the same provider-to-publish progression as the
 browser workstation without XAML-owned workflow copy. Retained `DataOperations` route and smoke-test
 names are compatibility shims only, not the canonical presentation-model taxonomy.
-`MainPageViewModel` projects the design-document primary operator workflow
-(`Import`, `Validate`, `Reconcile`, `Investigate`, `Approve`, `Report`) into the shared
-`WorkspaceEvidenceStripControl`, keeping browser and WPF shell chrome aligned while route targets
-remain WPF page tags.
-Provider health affected-workflow labels use canonical workspace names such as `Strategy` and
-`Data`; retained provider DTO and page-tag compatibility names must not leak `Research` or
-`Data Operations` into operator-facing recovery tables.
+`MainPageViewModel` retains the design-document primary operator workflow route map
+(`Import`, `Validate`, `Reconcile`, `Investigate`, `Approve`, `Report`), while the shared
+`WorkspaceEvidenceStripControl` keeps visible shell chrome to compact next-action and evidence
+summaries so primary workspace content stays exposed.
+Provider Health now follows the same focused workstation composition: the page-level hero is reduced
+to compact freshness controls, provider management centers the shared dense table plus inspector,
+and provider-specific diagnostics are disabled until a row is selected. Affected-workflow labels use
+canonical workspace names such as `Strategy` and `Data`; retained provider DTO and page-tag
+compatibility names must not leak `Research` or `Data Operations` into operator-facing recovery
+tables.
+System Health now uses the same compact support-console treatment: the duplicate hero is replaced by
+a health action strip, provider and recent-event lists render through shared dense tables, the triage
+briefing is projected through the shared inspector model, and refresh/diagnostic commands expose
+their disabled reasons through view-model-owned tooltips.
+Service Manager uses the same compact workstation treatment: the duplicate page-level hero is
+removed, the first visible band is the service posture strip, and lifecycle controls remain paired
+with runtime/action inspectors for service-dependent workflow recovery.
+Data Export now opens on export readiness instead of a duplicate hero. Quick export and scheduled
+export actions surface their existing view-model readiness details as disabled-action tooltips, so
+operators see the missing symbol, date, time, or destination requirement at the command surface.
+Data Sources now opens on configuration controls instead of a duplicate hero. The source edit
+readiness card remains view-model-owned, and the disabled save action exposes the same readiness
+detail as its tooltip so missing source names or invalid priorities are visible at the command.
+Data Quality now uses a compact freshness strip plus the shared workspace command bar instead of a
+duplicate hero. Refresh and quality-check actions stay in `WorkspaceCommandBarControl`, while the
+symbol-quality table remains on the shared dense-grid surface with selection-owned drilldown state.
+Activity Log now uses compact action chrome instead of a duplicate hero. Export and clear remain
+guarded by view-model state, and disabled-action tooltips explain when retained or visible log
+entries are missing before support traces can be exported or cleared.
+Order Book now keeps the depth ladder as the first-order screen element: symbol, depth, and
+connection controls live in compact action chrome, and the empty ladder state reuses the
+view-model-owned order-flow posture instead of static XAML instructions.
+Watchlists now use the shared dense table plus inspector pattern instead of repeated cards. The
+filtered library stays virtualized through `WorkstationTableInspectorControl` composing
+`DenseDataGridControl`, selected-row actions are disabled until a watchlist is selected, and
+disabled-action tooltips explain the missing selection at the command surface.
+Direct Lending now follows the same focused portfolio workbench pattern: the header card is replaced
+by a compact action strip, loan/accrual/cash evidence renders through shared dense tables, the
+selected loan owns the inspector rail, and accrual posting fails closed until a retained loan row is
+selected and detail loading is idle.
+Analysis Export now opens on compact run/preset readiness instead of an embedded header. Recent
+export history renders through `DenseDataGridControl`, selected history rows drive an inspector, and
+run/save commands expose missing export name, destination, metric, or date-range requirements through
+disabled-action tooltips and inspector facts.
 RunMat Lab is a Strategy workspace tool; its visible page descriptions and code comments use
 `Strategy` wording while retaining the existing `RunMat` page tag and automation IDs.
 QuantScript run-history handoffs use `CompareInStrategyCommand` for Strategy Runs comparison
@@ -245,9 +319,11 @@ copy, and promotion notes also use canonical `Strategy` wording while retaining 
 DTO/interface names for API compatibility. The desktop briefing client requests the canonical
 `/api/workstation/strategy/briefing` route while the shared host still serves the retained research
 briefing route as a compatibility alias.
-Backfill terminal work uses `DenseDataGridControl` for gap-analysis and per-symbol-progress tables,
-with table descriptors owned by `BackfillWorkbenchSectionViewModel` so long-running provider
-catch-up workflows reuse the shared dense-table/empty-state surface.
+Backfill terminal work opens on compact action chrome instead of a duplicate hero, and the disabled
+start command surfaces the view-model readiness detail as its tooltip. Gap-analysis and
+per-symbol-progress tables use `DenseDataGridControl`, with table descriptors owned by
+`BackfillWorkbenchSectionViewModel` so long-running provider catch-up workflows reuse the shared
+dense-table/empty-state surface.
 Trading terminal work uses `DenseDataGridControl` for active positions and view-model-owned
 selected-position inspector state so paper/live desk review keeps row selection, P&L, mode, and
 next-action context in the shared dense table surface. `WorkspaceInspectorHostControl` owns

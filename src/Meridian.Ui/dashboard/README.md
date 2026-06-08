@@ -195,6 +195,10 @@ The browser `DataScreen` owns the canonical Data workspace module under `src/scr
 Retained `DataOperations*` DTO, endpoint, and fixture names are compatibility seams only. Data
 workspace navigation and command-palette discovery surface `/data/providers` as the canonical
 provider catalog and onboarding lane, alongside watchlist, quotes, alerts, and backfill queues.
+The same screen renders the shared data-upload intake panel from the `WorkstationDataPayload`
+template catalog. React builds CSV downloads and submits selected files to the shared preview
+endpoint only; validation, retained source evidence, and any downstream reconciliation or approval
+handoff remain server/shared-service owned.
 The provider setup dialog includes Plaid with client-id/secret labels and bank account, identity,
 and investment evidence capabilities. Treat Plaid as a server-owned account-evidence connector from
 the browser: React submits credentials through the shared provider setup API and links operators

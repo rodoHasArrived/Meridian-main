@@ -11,7 +11,7 @@ namespace Meridian.Wpf.Views;
 public partial class ApiKeyDialog : Window
 {
     /// <summary>Gets the API key entered by the user.</summary>
-    public string ApiKey => ApiKeyBox.Text;
+    public string ApiKey => ApiKeyBox.Secret;
 
     public ApiKeyDialog(string providerName, string envVarName, bool isOptional = false)
     {
@@ -27,7 +27,7 @@ public partial class ApiKeyDialog : Window
 
         var existingValue = Environment.GetEnvironmentVariable(envVarName, EnvironmentVariableTarget.User);
         if (!string.IsNullOrEmpty(existingValue))
-            ApiKeyBox.Text = existingValue;
+            ApiKeyBox.Secret = existingValue;
     }
 
     private void Save_Click(object sender, RoutedEventArgs e)

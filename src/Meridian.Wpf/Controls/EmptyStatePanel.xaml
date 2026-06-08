@@ -1,0 +1,68 @@
+<UserControl x:Class="Meridian.Wpf.Controls.EmptyStatePanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             x:Name="Root"
+             mc:Ignorable="d"
+             MinHeight="150"
+             d:DesignHeight="220" d:DesignWidth="360"
+             AutomationProperties.AutomationId="{Binding ElementName=Root, Path=PanelAutomationId}"
+             AutomationProperties.Name="{Binding ElementName=Root, Path=Title}">
+    <Border Style="{StaticResource WorkspaceEmptyStateCardStyle}"
+            DataContext="{Binding ElementName=Root}">
+        <StackPanel Style="{StaticResource EmptyStateContainerStyle}" Margin="0">
+        <TextBlock x:Name="IconText"
+                   Text="{Binding IconGlyph}"
+                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                   FontSize="32"
+                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,12"
+                   AutomationProperties.AutomationId="{Binding IconAutomationId}">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IconGlyph}" Value="{x:Null}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IconGlyph}" Value="">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+        <TextBlock x:Name="TitleText"
+                   Text="{Binding Title}"
+                   Style="{StaticResource EmptyStateTitleStyle}"
+                   AutomationProperties.AutomationId="{Binding TitleAutomationId}" />
+        <TextBlock x:Name="DescriptionText"
+                   Text="{Binding Description}"
+                   Style="{StaticResource EmptyStateDescriptionStyle}"
+                   Margin="0,8,0,0"
+                   AutomationProperties.AutomationId="{Binding DescriptionAutomationId}" />
+
+        <Button x:Name="ActionButton"
+                Content="{Binding ActionText}"
+                Command="{Binding ActionCommand}"
+                Margin="0,16,0,0"
+                HorizontalAlignment="Center"
+                AutomationProperties.AutomationId="{Binding ActionButtonAutomationId}"
+                AutomationProperties.Name="{Binding ActionText}">
+            <Button.Style>
+                <Style TargetType="Button" BasedOn="{StaticResource PrimaryButtonStyle}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ActionCommand}" Value="{x:Null}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding ActionText}" Value="">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
+    </StackPanel>
+    </Border>
+</UserControl>

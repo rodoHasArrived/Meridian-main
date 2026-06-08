@@ -15,36 +15,88 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Style="{DynamicResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,20">
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <StackPanel Grid.Column="0">
-                <StackPanel Orientation="Horizontal">
-                    <Border Width="44" Height="44" CornerRadius="14"
-                            Background="{DynamicResource ConsoleAccentBlueAlpha20Brush}"
-                            BorderBrush="{DynamicResource InfoColorBrush}" BorderThickness="1" Margin="0,0,12,0">
-                        <TextBlock Text="&#xE8B0;" FontFamily="{DynamicResource SymbolThemeFontFamily}"
-                                   FontSize="24" Foreground="{DynamicResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                    </Border>
-                    <StackPanel>
-                        <TextBlock Text="Strategy Run Workstation" Style="{DynamicResource PageTitleStyle}" />
-                        <TextBlock Text="{Binding StatusText}" Style="{DynamicResource CardDescriptionStyle}" Margin="0,6,0,0" />
+        <Border Grid.Row="0"
+                Background="{DynamicResource PremiumPanelBrush}"
+                BorderBrush="{DynamicResource ConsoleBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Margin="0,0,0,12"
+                Padding="14,10"
+                AutomationProperties.AutomationId="StrategyRunsActionStrip"
+                AutomationProperties.Name="Strategy Runs Action Strip">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0"
+                        Width="30"
+                        Height="30"
+                        CornerRadius="8"
+                        Margin="0,0,10,0"
+                        VerticalAlignment="Center"
+                        Background="{DynamicResource ConsoleAccentBlueAlpha20Brush}"
+                        BorderBrush="{DynamicResource InfoColorBrush}"
+                        BorderThickness="1">
+                    <TextBlock Text="&#xE8B0;"
+                               FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                               FontSize="16"
+                               Foreground="{DynamicResource InfoColorBrush}"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center" />
+                </Border>
+
+                <StackPanel Grid.Column="1" Margin="0,0,20,0" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Strategy Runs"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource ConsoleTextPrimaryBrush}"
+                                   Margin="0,0,10,0" />
+                        <TextBlock Text="{Binding RunScopeText}"
+                                   Foreground="{DynamicResource ConsoleTextMutedBrush}"
+                                   FontSize="12"
+                                   VerticalAlignment="Center" />
                     </StackPanel>
+                    <TextBlock Text="{Binding StatusText}"
+                               Foreground="{DynamicResource ConsoleTextMutedBrush}"
+                               FontSize="11"
+                               TextTrimming="CharacterEllipsis" />
                 </StackPanel>
-            </StackPanel>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button Content="Refresh"
-                        Command="{Binding RefreshCommand}"
-                        Style="{DynamicResource SecondaryButtonStyle}"
-                        Margin="0,0,8,0" />
-                <Button Content="Open Detail"
-                        Command="{Binding OpenDetailCommand}"
-                        Style="{DynamicResource PrimaryButtonStyle}" />
-            </StackPanel>
-        </Grid>
+
+                <WrapPanel Grid.Column="2" MaxWidth="320" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button AutomationProperties.AutomationId="StrategyRunsRefreshButton"
+                            Command="{Binding RefreshCommand}"
+                            Style="{DynamicResource SecondaryButtonStyle}"
+                            ToolTip="{Binding StatusText}"
+                            ToolTipService.ShowOnDisabled="True"
+                            Margin="0,0,8,8">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{StaticResource IconRefresh}"
+                                       FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                       FontSize="14"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="Refresh" Margin="8,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <Button AutomationProperties.AutomationId="StrategyRunsOpenDetailButton"
+                            Command="{Binding OpenDetailCommand}"
+                            Style="{DynamicResource PrimaryButtonStyle}"
+                            ToolTip="{Binding SelectionDetail}"
+                            ToolTipService.ShowOnDisabled="True"
+                            Margin="0,0,8,8">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{StaticResource IconDocument}"
+                                       FontFamily="{DynamicResource SymbolThemeFontFamily}"
+                                       FontSize="14"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="Open Detail" Margin="8,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </WrapPanel>
+            </Grid>
         </Border>
 
         <Border Grid.Row="1" Style="{DynamicResource CardStyle}" Margin="0,0,0,20">
@@ -81,10 +133,14 @@
                     <Button Content="Portfolio"
                             Command="{Binding OpenPortfolioCommand}"
                             Style="{DynamicResource GhostButtonStyle}"
+                            ToolTip="{Binding SelectionDetail}"
+                            ToolTipService.ShowOnDisabled="True"
                             Margin="0,0,8,0" />
                     <Button Content="Ledger"
                             Command="{Binding OpenLedgerCommand}"
                             Style="{DynamicResource GhostButtonStyle}"
+                            ToolTip="{Binding SelectionDetail}"
+                            ToolTipService.ShowOnDisabled="True"
                             Margin="0,0,8,0" />
                     <Button Content="Reset Filters"
                             Command="{Binding ClearRunFiltersCommand}"
@@ -95,7 +151,8 @@
                     <Button Content="Compare"
                             Command="{Binding CompareRunsCommand}"
                             Style="{DynamicResource SecondaryButtonStyle}"
-                            ToolTip="Select a Comparison Run then click Compare to diff the two runs"
+                            ToolTip="{Binding ComparisonGuidanceText}"
+                            ToolTipService.ShowOnDisabled="True"
                             Margin="0,0,8,0" />
                     <Button Content="Clear"
                             Command="{Binding ClearComparisonCommand}"
@@ -145,14 +202,20 @@
                             <Button Content="Open Detail"
                                     Command="{Binding OpenDetailCommand}"
                                     Style="{DynamicResource SecondaryButtonStyle}"
+                                    ToolTip="{Binding SelectionDetail}"
+                                    ToolTipService.ShowOnDisabled="True"
                                     Margin="0,0,8,8" />
                             <Button Content="Compare 2 runs"
                                     Command="{Binding CompareRunsCommand}"
                                     Style="{DynamicResource GhostButtonStyle}"
+                                    ToolTip="{Binding ComparisonGuidanceText}"
+                                    ToolTipService.ShowOnDisabled="True"
                                     Margin="0,0,8,8" />
                             <Button Content="Open Portfolio"
                                     Command="{Binding OpenPortfolioCommand}"
                                     Style="{DynamicResource GhostButtonStyle}"
+                                    ToolTip="{Binding SelectionDetail}"
+                                    ToolTipService.ShowOnDisabled="True"
                                     Margin="0,0,8,8" />
                         </WrapPanel>
                     </Grid>
@@ -264,7 +327,9 @@
             <Border Grid.Column="1"
                     Width="400"
                     Margin="16,0,0,0"
-                    Style="{DynamicResource CardStyle}">
+                    Style="{DynamicResource CardStyle}"
+                    AutomationProperties.AutomationId="StrategyRunsSelectionInspector"
+                    AutomationProperties.Name="Strategy Runs Selection Inspector">
                 <TabControl AutomationProperties.AutomationId="StrategyRunsInspectorTabs">
                     <TabItem Header="Overview"
                              AutomationProperties.AutomationId="StrategyRunsOverviewTab">
@@ -318,16 +383,22 @@
                                     <Button Content="Open Detail"
                                             Command="{Binding OpenDetailCommand}"
                                             Style="{DynamicResource SecondaryButtonStyle}"
+                                            ToolTip="{Binding SelectionDetail}"
+                                            ToolTipService.ShowOnDisabled="True"
                                             AutomationProperties.AutomationId="StrategyRunsEvidenceOpenDetailButton"
                                             Margin="0,0,0,8" />
                                     <Button Content="Open Portfolio"
                                             Command="{Binding OpenPortfolioCommand}"
                                             Style="{DynamicResource GhostButtonStyle}"
+                                            ToolTip="{Binding SelectionDetail}"
+                                            ToolTipService.ShowOnDisabled="True"
                                             AutomationProperties.AutomationId="StrategyRunsEvidenceOpenPortfolioButton"
                                             Margin="0,0,0,8" />
                                     <Button Content="Open Ledger"
                                             Command="{Binding OpenLedgerCommand}"
                                             Style="{DynamicResource GhostButtonStyle}"
+                                            ToolTip="{Binding SelectionDetail}"
+                                            ToolTipService.ShowOnDisabled="True"
                                             AutomationProperties.AutomationId="StrategyRunsEvidenceOpenLedgerButton"
                                             Margin="0,0,0,8" />
                                 </UniformGrid>

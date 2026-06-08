@@ -1,54 +1,131 @@
 <Page x:Class="Meridian.Wpf.Views.RunDetailPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:workstation="clr-namespace:Meridian.Wpf.Workstation.Controls"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       AutomationProperties.Name="Strategy Run Detail">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="28,20,28,32" MaxWidth="1200">
-            <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,20">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                    <StackPanel Orientation="Horizontal">
-                        <Border Width="44" Height="44" CornerRadius="14"
-                                Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                                BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1" Margin="0,0,12,0">
-                            <TextBlock Text="&#xE81C;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                       FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                        </Border>
-                        <StackPanel>
-                            <TextBlock Text="{Binding Title}" Style="{StaticResource PageTitleStyle}" />
-                            <TextBlock Text="{Binding StatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
-                        </StackPanel>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16,24,32">
+        <Grid MaxWidth="1260">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Style="{StaticResource WorkspaceContextStripStyle}"
+                    Padding="14,10"
+                    Margin="0,0,0,14"
+                    AutomationProperties.AutomationId="RunDetailActionStrip"
+                    AutomationProperties.Name="Run Detail Action Strip">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0"
+                            Width="30"
+                            Height="30"
+                            CornerRadius="8"
+                            Margin="0,0,10,0"
+                            VerticalAlignment="Center"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}"
+                            BorderThickness="1">
+                        <TextBlock Text="&#xE81C;"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="16"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" />
+                    </Border>
+
+                    <StackPanel Grid.Column="1" Margin="0,0,20,0" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Title}"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding StatusText}"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   FontSize="11"
+                                   TextTrimming="CharacterEllipsis" />
                     </StackPanel>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="Run Browser" Command="{Binding OpenBrowserCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,0" />
-                    <Button Content="Portfolio" Command="{Binding OpenPortfolioCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
-                    <Button Content="Ledger" Command="{Binding OpenLedgerCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
-                    <Button Content="Risk" Command="{Binding OpenRiskCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
-                    <Button Content="Cash Flow" Command="{Binding OpenCashFlowCommand}" Style="{StaticResource PrimaryButtonStyle}" />
-                </StackPanel>
-            </Grid>
+
+                    <StackPanel Grid.Column="2"
+                                VerticalAlignment="Center"
+                                MaxWidth="560"
+                                AutomationProperties.AutomationId="RunDetailActionStatePanel"
+                                AutomationProperties.Name="{Binding RunActionStateTitle}">
+                        <WrapPanel HorizontalAlignment="Right">
+                            <Button Content="Run Browser"
+                                    Command="{Binding OpenBrowserCommand}"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    AutomationProperties.AutomationId="RunDetailOpenBrowserButton"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Portfolio"
+                                    Command="{Binding OpenPortfolioCommand}"
+                                    ToolTip="{Binding RunDrillInTooltip}"
+                                    ToolTipService.ShowOnDisabled="True"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    AutomationProperties.AutomationId="RunDetailOpenPortfolioButton"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Ledger"
+                                    Command="{Binding OpenLedgerCommand}"
+                                    ToolTip="{Binding RunDrillInTooltip}"
+                                    ToolTipService.ShowOnDisabled="True"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    AutomationProperties.AutomationId="RunDetailOpenLedgerButton"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Risk"
+                                    Command="{Binding OpenRiskCommand}"
+                                    ToolTip="{Binding RunDrillInTooltip}"
+                                    ToolTipService.ShowOnDisabled="True"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    AutomationProperties.AutomationId="RunDetailOpenRiskButton"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Cash Flow"
+                                    Command="{Binding OpenCashFlowCommand}"
+                                    ToolTip="{Binding RunDrillInTooltip}"
+                                    ToolTipService.ShowOnDisabled="True"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    AutomationProperties.AutomationId="RunDetailOpenCashFlowButton"
+                                    Margin="0,0,0,8" />
+                        </WrapPanel>
+                        <TextBlock Text="{Binding RunActionStateTitle}"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   TextAlignment="Right"
+                                   TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="RunDetailActionStateTitle" />
+                        <TextBlock Text="{Binding RunActionStateDetail}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextAlignment="Right"
+                                   TextWrapping="Wrap"
+                                   Margin="0,3,0,0"
+                                   AutomationProperties.AutomationId="RunDetailActionStateDetail" />
+                    </StackPanel>
+                </Grid>
             </Border>
 
-            <UniformGrid Columns="4" Margin="0,0,0,20">
-                <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+            <UniformGrid Grid.Row="1" Columns="4" Margin="0,0,0,16">
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,10,0">
                     <StackPanel>
                         <TextBlock Text="Mode" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                         <TextBlock Text="{Binding ModeText}" Style="{StaticResource CardHeaderStyle}" />
                     </StackPanel>
                 </Border>
-                <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,10,0">
                     <StackPanel>
                         <TextBlock Text="Engine" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                         <TextBlock Text="{Binding EngineText}" Style="{StaticResource CardHeaderStyle}" />
                     </StackPanel>
                 </Border>
-                <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,10,0">
                     <StackPanel>
                         <TextBlock Text="Final Equity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
                         <TextBlock Text="{Binding EquityText}" Style="{StaticResource CardHeaderStyle}" />
@@ -62,66 +139,98 @@
                 </Border>
             </UniformGrid>
 
-            <Grid>
+            <Grid Grid.Row="2"
+                  AutomationProperties.AutomationId="RunDetailWorkbench"
+                  AutomationProperties.Name="Run Detail Workbench">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.5*" />
-                    <ColumnDefinition Width="20" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="0.95*" />
+                    <ColumnDefinition Width="18" />
+                    <ColumnDefinition Width="1.25*" />
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Style="{StaticResource CardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="Run Summary" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,14" />
+                <StackPanel Grid.Column="0">
+                    <workstation:InspectorPanelControl Panel="{Binding RunSummaryInspector}"
+                                                       AutomationProperties.AutomationId="RunDetailSummaryInspector" />
+
+                    <Border Style="{StaticResource CardStyle}"
+                            Padding="16"
+                            Margin="0,12,0,0"
+                            AutomationProperties.AutomationId="RunDetailActionInspector"
+                            AutomationProperties.Name="Run Detail Actions">
+                        <StackPanel>
+                            <TextBlock Text="Run Drill-Ins"
+                                       Style="{StaticResource CardHeaderStyle}"
+                                       Margin="0,0,0,4" />
+                            <TextBlock Text="{Binding RunActionStateDetail}"
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,12" />
+                            <WrapPanel>
+                                <Button Content="Portfolio"
+                                        Command="{Binding OpenPortfolioCommand}"
+                                        ToolTip="{Binding RunDrillInTooltip}"
+                                        ToolTipService.ShowOnDisabled="True"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        AutomationProperties.AutomationId="RunDetailInspectorOpenPortfolioButton"
+                                        Margin="0,0,8,8" />
+                                <Button Content="Ledger"
+                                        Command="{Binding OpenLedgerCommand}"
+                                        ToolTip="{Binding RunDrillInTooltip}"
+                                        ToolTipService.ShowOnDisabled="True"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        AutomationProperties.AutomationId="RunDetailInspectorOpenLedgerButton"
+                                        Margin="0,0,8,8" />
+                                <Button Content="Risk"
+                                        Command="{Binding OpenRiskCommand}"
+                                        ToolTip="{Binding RunDrillInTooltip}"
+                                        ToolTipService.ShowOnDisabled="True"
+                                        Style="{StaticResource SecondaryButtonStyle}"
+                                        AutomationProperties.AutomationId="RunDetailInspectorOpenRiskButton"
+                                        Margin="0,0,8,8" />
+                                <Button Content="Cash Flow"
+                                        Command="{Binding OpenCashFlowCommand}"
+                                        ToolTip="{Binding RunDrillInTooltip}"
+                                        ToolTipService.ShowOnDisabled="True"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        AutomationProperties.AutomationId="RunDetailInspectorOpenCashFlowButton"
+                                        Margin="0,0,8,8" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <Border Style="{StaticResource CardStyle}">
                         <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="180" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
                             </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Started" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding StartedAtText}" />
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Completed" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,8,0,0" />
-                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CompletedAtText}" Margin="0,8,0,0" />
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Return" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,8,0,0" />
-                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding ReturnText}" Margin="0,8,0,0" />
-                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Fills" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,8,0,0" />
-                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding FillCountText}" Margin="0,8,0,0" />
-                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Portfolio" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,8,0,0" />
-                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding PortfolioReferenceText}" Margin="0,8,0,0" TextWrapping="Wrap" />
-                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Ledger" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,8,0,0" />
-                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding LedgerReferenceText}" Margin="0,8,0,0" TextWrapping="Wrap" />
-                        </Grid>
-                    </StackPanel>
-                </Border>
+                            <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                                <TextBlock Text="Parameters"
+                                           Style="{StaticResource CardHeaderStyle}"
+                                           Margin="0,0,0,4" />
+                                <TextBlock Text="Retained configuration values for the selected strategy run."
+                                           Style="{StaticResource CardDescriptionStyle}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
 
-                <Border Grid.Column="2" Style="{StaticResource CardStyle}">
-                    <StackPanel>
-                        <TextBlock Text="Parameters" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,14" />
-                        <ItemsControl ItemsSource="{Binding Parameters}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="0,0,0,8">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="180" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" Text="{Binding Name}" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                        <TextBlock Grid.Column="1" Text="{Binding Value}" TextWrapping="Wrap" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </Border>
+                            <workstation:DenseDataGridControl Grid.Row="1"
+                                                              Table="{Binding ParametersTable}"
+                                                              SelectedItem="{Binding SelectedParameter, Mode=TwoWay}"
+                                                              Height="300"
+                                                              GridAutomationId="RunDetailParametersGrid"
+                                                              EmptyAutomationId="RunDetailParametersEmptyState"
+                                                              AutomationProperties.Name="Run detail parameters table" />
+                        </Grid>
+                    </Border>
+
+                    <workstation:InspectorPanelControl Panel="{Binding SelectedParameterInspector}"
+                                                       Margin="0,12,0,0"
+                                                       AutomationProperties.AutomationId="RunDetailSelectedParameterInspector" />
+                </StackPanel>
             </Grid>
-        </StackPanel>
+        </Grid>
     </ScrollViewer>
 </Page>

@@ -273,7 +273,7 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
         _staleCheckTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _staleCheckTimer.Tick += (_, _) => UpdateStaleIndicator();
 
-        ProviderManagementCommandGroup = BuildProviderManagementCommandGroup();
+        ProviderManagementCommandGroup = BuildProviderManagementCommandGroup(SelectedProviderManagementRow);
         CommandGroup = ProviderManagementCommandGroup;
         ProviderManagementTable = BuildProviderManagementTable(ProviderManagementRows);
         UpdateProviderMetricTiles();
@@ -911,6 +911,8 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
     private void UpdateProviderManagementSummary()
     {
         var selected = SelectedProviderManagementRow;
+        ProviderManagementCommandGroup = BuildProviderManagementCommandGroup(selected);
+        CommandGroup = ProviderManagementCommandGroup;
         ProviderManagementSummaryCards.Clear();
 
         if (selected is null)
@@ -922,7 +924,8 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
                 Detail = "Configure a provider before routing Data workspace workflows.",
                 AccentBrush = CreateModelBrush(139, 148, 158)
             });
-            ProviderManagementStatusText = "No configured provider is available for management.";
+            ProviderManagementStatusText =
+                "No provider selected. Add or select a provider before diagnostics and routing actions are enabled.";
             SelectedProviderInspector = BuildEmptyInspector();
             SelectedProviderDiagnostics = BuildEmptyDiagnostics();
             SelectedProviderRoutingMatrix = BuildEmptyRoutingMatrix();
@@ -973,8 +976,7 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
         });
 
         ProviderManagementStatusText =
-            $"{ProviderManagementRows.Count} provider(s) loaded; selected {selected.DisplayName}. " +
-            "Routing and advanced diagnostics are read-only placeholders in the desktop provider workflow.";
+            $"{ProviderManagementRows.Count} provider(s) loaded; {selected.DisplayName} drives the active diagnostics, credential evidence, and routing posture.";
         SelectedProviderInspector = BuildProviderInspector(selected);
         SelectedProviderDiagnostics = BuildProviderDiagnosticsChecklist(selected);
         SelectedProviderRoutingMatrix = BuildProviderRoutingMatrix(selected);
@@ -998,20 +1000,32 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
             "No providers discovered",
             "Configure a provider before routing Data workspace workflows.");
 
-    internal static WorkstationCommandGroupModel BuildProviderManagementCommandGroup()
-        => new()
+    internal static WorkstationCommandGroupModel BuildProviderManagementCommandGroup(ProviderManagementRowModel? selectedProvider = null)
+    {
+        var hasSelectedProvider = selectedProvider is not null;
+        var selectedProviderName = selectedProvider?.DisplayName ?? "No provider selected";
+
+        return new()
         {
             PrimaryCommands =
             [
                 new("AddProvider", "Add Provider", "Add a provider configuration.", "\uE710", WorkspaceTone.Primary),
                 new("RefreshStatus", "Refresh Status", "Refresh provider health and routing posture.", "\uE72C"),
-                new("RunDiagnostics", "Run Diagnostics", "Run selected provider diagnostics.", "\uE9D9")
+                new(
+                    "RunDiagnostics",
+                    "Run Diagnostics",
+                    "Run selected provider diagnostics.",
+                    "\uE9D9",
+                    IsEnabled: hasSelectedProvider,
+                    DisabledReason: hasSelectedProvider ? string.Empty : "Select a provider before running diagnostics.",
+                    TargetText: selectedProviderName)
             ],
             SecondaryCommands =
             [
                 new("OpenSettings", "Open Settings", "Open provider settings.", "\uE713")
             ]
         };
+    }
 
     internal static InspectorPanelModel BuildProviderInspector(ProviderManagementRowModel selected)
         => new()
@@ -1068,21 +1082,21 @@ public sealed class ProviderHealthViewModel : CommandHostViewModel, IPageActivat
         {
             Title = "No provider selected",
             Subtitle = "Provider management",
-            Detail = "Select a provider to inspect credentials, routing, and diagnostics."
+            Detail = "Select or add a provider to inspect credentials, routing posture, and diagnostics."
         };
 
     private static DiagnosticsChecklistModel BuildEmptyDiagnostics()
         => new()
         {
             Title = "Diagnostics",
-            Detail = "Select a provider to review credential and route diagnostics."
+            Detail = "Diagnostics are disabled until a provider row is selected."
         };
 
     private static RoutingMatrixModel BuildEmptyRoutingMatrix()
         => new()
         {
             Title = "Routing Matrix",
-            Detail = "Select a provider to review affected workstation workflows."
+            Detail = "Routing evidence is unavailable until a provider row is selected."
         };
 
     internal static IReadOnlyList<ProviderManagementRowModel> BuildProviderManagementRows(

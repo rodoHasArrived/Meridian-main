@@ -56,6 +56,8 @@ dotnet build Meridian.WebWorkstation.slnf -c Debug --no-restore /p:EnableWindows
 
 ```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -Restore
+pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development
+pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly
 make desktop-test-dev
 dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
 dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None
@@ -75,8 +77,16 @@ dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore --no-d
 ```powershell
 dotnet run --project src/Meridian/Meridian.csproj -- --mode workstation --http-port 8080
 npm --prefix src/Meridian.Ui/dashboard run dev
-pwsh ./scripts/dev/run-desktop.ps1
+pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development
 ```
+
+Use `pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly` for a Release
+host/desktop build that does not require database connectivity. Use `-LaunchMode Production`
+without `-BuildOnly` only when the production governance persistence variables are configured:
+`MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` and `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING`.
+Development launch mode sets `DOTNET_ENVIRONMENT=Development`,
+`ASPNETCORE_ENVIRONMENT=Development`, and `MERIDIAN_USE_INMEMORY_GOVERNANCE=true` for the
+launched processes, then restores the caller's environment.
 
 ## Workstation Architecture Rules
 

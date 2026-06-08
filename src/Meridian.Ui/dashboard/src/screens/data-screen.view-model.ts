@@ -12,6 +12,10 @@ import type {
   DataBackfillRecord,
   DataExportRecord,
   DataProviderRecord,
+  DataUploadPreviewResult,
+  DataUploadTemplate,
+  DataUploadTemplateCatalog,
+  DataUploadValidationIssue,
   DataWorkspaceResponse,
   ProviderConnectionRow,
   ProviderCredentialVerificationResult,
@@ -397,6 +401,70 @@ export interface DataOperationsPresentationState {
   selectedBackfillDetail: DataOperationsBackfillDetailState | null;
   backfillDetailEmptyState: DataOperationsEmptyState | null;
   routeFocusCard: DataOperationsRouteFocusCardState;
+}
+
+export interface DataUploadTemplateOptionState {
+  value: string;
+  label: string;
+  description: string;
+}
+
+export interface DataUploadFieldRowState {
+  id: string;
+  name: string;
+  label: string;
+  required: boolean;
+  requiredLabel: string;
+  example: string;
+  description: string;
+}
+
+export interface DataUploadIssueRowState {
+  id: string;
+  severity: string;
+  tone: "warning" | "danger";
+  field: string;
+  message: string;
+  rowLabel: string;
+}
+
+export interface DataUploadPreviewRowState {
+  id: string;
+  values: DataOperationsDetailField[];
+}
+
+export interface DataUploadPanelState {
+  title: string;
+  description: string;
+  templateSelectLabel: string;
+  selectedTemplateId: string;
+  templateOptions: DataUploadTemplateOptionState[];
+  selectedTemplate: DataUploadTemplate | null;
+  selectedTemplateFields: DataUploadFieldRowState[];
+  validationNotes: string[];
+  acceptedFileTypes: string;
+  maxFileSizeLabel: string;
+  templateDownload: {
+    fileName: string;
+    href: string;
+    label: string;
+    ariaLabel: string;
+  } | null;
+  fileInput: {
+    id: string;
+    label: string;
+    ariaLabel: string;
+    disabled: boolean;
+    disabledReason: string | null;
+  };
+  statusLabel: string;
+  statusTone: "paper" | "success" | "warning" | "danger";
+  resultSummary: string;
+  retainedPath: string | null;
+  issueRows: DataUploadIssueRowState[];
+  previewHeaders: string[];
+  previewRows: DataUploadPreviewRowState[];
+  requestStatus: RequestLifecycleStatus;
 }
 
 export interface DataOperationsLoadingChipState {
@@ -797,6 +865,130 @@ const defaultBackfillForm: BackfillFormState = {
   to: ""
 };
 
+export const defaultDataUploadTemplateCatalog: DataUploadTemplateCatalog = {
+  acceptedFileExtensions: [".csv"],
+  maxPreviewRows: 10,
+  maxFileBytes: 5 * 1024 * 1024,
+  templates: [
+    {
+      templateId: "trade-data",
+      label: "Trade data",
+      description: "Executions or fills that should enter validation before paper or accounting workflows consume them.",
+      dataDomain: "Trading",
+      targetWorkflow: "Import -> Validate -> Reconcile -> Approve -> Report",
+      fileName: "meridian-trade-data-template.csv",
+      contentType: "text/csv",
+      headerLine: "trade_id,trade_date,account_code,symbol,side,quantity,price,currency,strategy_id,source_system,source_document_id",
+      fields: [
+        dataUploadField("trade_id", "Trade ID", true, "TRD-10001", "Stable trade or fill identifier from the source system."),
+        dataUploadField("trade_date", "Trade date", true, "2026-06-01", "Trade date in YYYY-MM-DD format."),
+        dataUploadField("account_code", "Account code", true, "FUND-A-IBKR", "Meridian or broker account code used for reconciliation."),
+        dataUploadField("symbol", "Symbol", true, "AAPL", "Ticker, instrument symbol, or source security code."),
+        dataUploadField("side", "Side", true, "Buy", "Buy, Sell, SellShort, Cover, or source-equivalent side."),
+        dataUploadField("quantity", "Quantity", true, "100", "Signed or side-adjusted trade quantity."),
+        dataUploadField("price", "Price", true, "187.25", "Execution price in trade currency."),
+        dataUploadField("currency", "Currency", false, "USD", "ISO currency for the trade price."),
+        dataUploadField("strategy_id", "Strategy ID", false, "income-core", "Strategy or sleeve that produced the trade."),
+        dataUploadField("source_system", "Source system", false, "Interactive Brokers", "Originating broker, OMS, or import source."),
+        dataUploadField("source_document_id", "Source document ID", false, "confirm-20260601-001", "Retained statement, confirmation, or file identifier.")
+      ],
+      sampleRows: [
+        "TRD-10001,2026-06-01,FUND-A-IBKR,AAPL,Buy,100,187.25,USD,income-core,Interactive Brokers,confirm-20260601-001"
+      ],
+      validationNotes: [
+        "Rows remain preview-only until validation and reconciliation approve downstream use.",
+        "Include source_system and source_document_id whenever a retained broker file or confirmation exists."
+      ]
+    },
+    {
+      templateId: "transaction-data",
+      label: "Transaction data",
+      description: "Cash, dividend, fee, interest, transfer, or adjustment activity used as retained source evidence.",
+      dataDomain: "Transactions",
+      targetWorkflow: "Import -> Validate -> Reconcile -> Approve -> Report",
+      fileName: "meridian-transaction-data-template.csv",
+      contentType: "text/csv",
+      headerLine: "transaction_id,effective_date,account_code,transaction_type,amount,currency,security_id,counterparty,source_system,source_document_id",
+      fields: [
+        dataUploadField("transaction_id", "Transaction ID", true, "TXN-20001", "Stable source transaction identifier."),
+        dataUploadField("effective_date", "Effective date", true, "2026-06-01", "Accounting or settlement effective date in YYYY-MM-DD format."),
+        dataUploadField("account_code", "Account code", true, "FUND-A-CASH", "Cash or investment account code."),
+        dataUploadField("transaction_type", "Transaction type", true, "Dividend", "Dividend, Fee, Interest, Transfer, Deposit, Withdrawal, or Adjustment."),
+        dataUploadField("amount", "Amount", true, "1250.50", "Signed transaction amount in transaction currency."),
+        dataUploadField("currency", "Currency", false, "USD", "ISO currency for the transaction amount."),
+        dataUploadField("security_id", "Security ID", false, "AAPL", "Security identifier when activity is instrument-specific."),
+        dataUploadField("counterparty", "Counterparty", false, "Broker", "Broker, custodian, bank, borrower, or transfer counterparty."),
+        dataUploadField("source_system", "Source system", false, "Custodian Portal", "Originating bank, broker, custodian, or GL evidence source."),
+        dataUploadField("source_document_id", "Source document ID", false, "stmt-202606", "Retained statement, notice, or file identifier.")
+      ],
+      sampleRows: [
+        "TXN-20001,2026-06-01,FUND-A-CASH,Dividend,1250.50,USD,AAPL,Broker,Custodian Portal,stmt-202606"
+      ],
+      validationNotes: [
+        "Transaction uploads become evidence for reconciliation; Meridian-owned ledgers remain authoritative.",
+        "Use signed amounts consistently so validation can compare source activity against ledger candidates."
+      ]
+    },
+    {
+      templateId: "asset-information",
+      label: "Asset information",
+      description: "Security Master candidate facts and instrument metadata for operator review.",
+      dataDomain: "Security Master",
+      targetWorkflow: "Import -> Validate -> Reconcile -> Approve -> Report",
+      fileName: "meridian-asset-information-template.csv",
+      contentType: "text/csv",
+      headerLine: "asset_id,symbol,asset_name,asset_class,issuer,currency,country,maturity_date,coupon_rate,source_system",
+      fields: [
+        dataUploadField("asset_id", "Asset ID", true, "AST-30001", "Stable internal or source security identifier."),
+        dataUploadField("symbol", "Symbol", true, "91282CHT1", "Ticker, CUSIP, ISIN, FIGI, or source symbol."),
+        dataUploadField("asset_name", "Asset name", true, "US Treasury 4.25 2034", "Human-readable instrument name."),
+        dataUploadField("asset_class", "Asset class", true, "Bond", "Equity, Bond, Fund, Future, Option, FX, Crypto, Loan, or custom class."),
+        dataUploadField("issuer", "Issuer", false, "US Treasury", "Issuer, borrower, fund sponsor, or reference entity."),
+        dataUploadField("currency", "Currency", false, "USD", "Primary denomination currency."),
+        dataUploadField("country", "Country", false, "US", "ISO country or jurisdiction code."),
+        dataUploadField("maturity_date", "Maturity date", false, "2034-05-15", "Maturity date for dated instruments."),
+        dataUploadField("coupon_rate", "Coupon rate", false, "4.25", "Coupon or stated rate when applicable."),
+        dataUploadField("source_system", "Source system", false, "Custodian Security Master", "Reference-data provider or retained source.")
+      ],
+      sampleRows: [
+        "AST-30001,91282CHT1,US Treasury 4.25 2034,Bond,US Treasury,USD,US,2034-05-15,4.25,Custodian Security Master"
+      ],
+      validationNotes: [
+        "Asset information uploads are candidate facts and should not override governed Security Master approvals.",
+        "Include durable source identifiers so conflicting facts can be traced during review."
+      ]
+    },
+    {
+      templateId: "entity-configuration",
+      label: "Entity configuration",
+      description: "Fund, vehicle, sleeve, legal entity, or account structure candidates for governance review.",
+      dataDomain: "Entity setup",
+      targetWorkflow: "Import -> Validate -> Reconcile -> Approve -> Report",
+      fileName: "meridian-entity-configuration-template.csv",
+      contentType: "text/csv",
+      headerLine: "entity_id,entity_name,entity_type,parent_entity_id,base_currency,jurisdiction,ownership_percent,effective_from,source_system",
+      fields: [
+        dataUploadField("entity_id", "Entity ID", true, "ENT-40001", "Stable entity, fund, vehicle, sleeve, or account identifier."),
+        dataUploadField("entity_name", "Entity name", true, "Northwind Income Fund LP", "Display name used by operators and reports."),
+        dataUploadField("entity_type", "Entity type", true, "Fund", "Fund, Vehicle, Sleeve, LegalEntity, Account, or Portfolio."),
+        dataUploadField("parent_entity_id", "Parent entity ID", false, "ENT-40000", "Parent structure identifier when a hierarchy is known."),
+        dataUploadField("base_currency", "Base currency", false, "USD", "Functional or reporting currency."),
+        dataUploadField("jurisdiction", "Jurisdiction", false, "DE", "Jurisdiction, domicile, or registration location."),
+        dataUploadField("ownership_percent", "Ownership percent", false, "100", "Ownership percentage when this row defines a relationship."),
+        dataUploadField("effective_from", "Effective from", false, "2026-01-01", "Start date for the entity configuration."),
+        dataUploadField("source_system", "Source system", false, "Fund administrator", "Administrator, legal system, or retained setup packet.")
+      ],
+      sampleRows: [
+        "ENT-40001,Northwind Income Fund LP,Fund,,USD,DE,100,2026-01-01,Fund administrator"
+      ],
+      validationNotes: [
+        "Entity configuration uploads enter governance review before creating or changing operating structure.",
+        "Parent and ownership values are treated as candidate relationships until approved."
+      ]
+    }
+  ]
+};
+
 const NO_CONFIGURED_BACKFILL_PROVIDER_MESSAGE =
   "Configure a provider before previewing a backfill.";
 
@@ -810,6 +1002,19 @@ const idleBackfillRequestStatus: RequestLifecycleStatus = {
   inFlight: false,
   version: 0,
   message: "Ready to submit historical backfill command.",
+  error: null,
+  startedAt: null,
+  settledAt: null,
+  staleDiscardCount: 0,
+  backoff: { attempt: 0, retryCount: 0, nextRetryDelayMs: null, maxRetries: 0 }
+};
+
+const idleDataUploadRequestStatus: RequestLifecycleStatus = {
+  operation: "data upload preview",
+  phase: "idle",
+  inFlight: false,
+  version: 0,
+  message: "Ready to preview source data upload.",
   error: null,
   startedAt: null,
   settledAt: null,
@@ -851,6 +1056,11 @@ export function useDataViewModel(
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<BackfillPhase>("idle");
+  const [selectedUploadTemplateId, setSelectedUploadTemplateId] = useState<string | null>(null);
+  const [uploadFileName, setUploadFileName] = useState<string | null>(null);
+  const [uploadPreviewResult, setUploadPreviewResult] = useState<DataUploadPreviewResult | null>(null);
+  const [uploadError, setUploadError] = useState<ApiErrorDisplay | null>(null);
+  const [uploadBusy, setUploadBusy] = useState(false);
   const backfillLifecycle = useRequestLifecycle({
     operation: "historical backfill command",
     runningMessage: "Submitting historical backfill command.",
@@ -858,6 +1068,15 @@ export function useDataViewModel(
     failureMessage: "Historical backfill command failed.",
     staleMessage: "Older historical backfill response discarded.",
     maxRetries: 1
+  });
+  const uploadLifecycle = useRequestLifecycle({
+    operation: "data upload preview",
+    idleMessage: "Ready to preview source data upload.",
+    runningMessage: "Previewing source data upload.",
+    successMessage: "Source data upload preview completed.",
+    failureMessage: "Source data upload preview failed.",
+    staleMessage: "Older source data upload preview discarded.",
+    maxRetries: 0
   });
 
   // Provider setup state
@@ -901,11 +1120,12 @@ export function useDataViewModel(
 
   useEffect(() => () => {
     backfillLifecycle.invalidate();
+    uploadLifecycle.invalidate();
     providerSetupCommandRevisionRef.current += 1;
     plaidInstitutionSearchRevisionRef.current += 1;
     plaidLinkTokenRevisionRef.current += 1;
     providerVerifyCommandRevisionRef.current += 1;
-  }, [backfillLifecycle.invalidate]);
+  }, [backfillLifecycle.invalidate, uploadLifecycle.invalidate]);
 
   const workstream = useMemo(() => resolveDataWorkstream(pathname), [pathname]);
   const selectedProvider = useMemo(
@@ -920,6 +1140,14 @@ export function useDataViewModel(
   const selectedExport = useMemo(
     () => resolveSelectedExport(data?.exports ?? [], selectedExportId),
     [data, selectedExportId]
+  );
+  const uploadCatalog = useMemo(
+    () => resolveDataUploadCatalog(data?.uploadTemplates),
+    [data?.uploadTemplates]
+  );
+  const selectedUploadTemplate = useMemo(
+    () => resolveSelectedDataUploadTemplate(uploadCatalog, selectedUploadTemplateId),
+    [selectedUploadTemplateId, uploadCatalog]
   );
   const presentation = useMemo(
     () => buildDataPresentationState(
@@ -977,6 +1205,26 @@ export function useDataViewModel(
     () => result ? buildBackfillResultCardState(result, "result") : null,
     [result]
   );
+  const uploadPanelState = useMemo(
+    () => buildDataUploadPanelState(
+      uploadCatalog,
+      selectedUploadTemplate?.templateId ?? null,
+      uploadPreviewResult,
+      uploadError,
+      uploadBusy,
+      uploadFileName,
+      uploadLifecycle.status
+    ),
+    [
+      selectedUploadTemplate?.templateId,
+      uploadBusy,
+      uploadCatalog,
+      uploadError,
+      uploadFileName,
+      uploadLifecycle.status,
+      uploadPreviewResult
+    ]
+  );
 
   const openBackfillDialog = useCallback(() => {
     backfillLifecycle.invalidate();
@@ -1019,6 +1267,68 @@ export function useDataViewModel(
     setResult(null);
     setError(null);
   }, []);
+
+  const selectUploadTemplate = useCallback((templateId: string) => {
+    setSelectedUploadTemplateId(templateId);
+    setUploadFileName(null);
+    setUploadPreviewResult(null);
+    setUploadError(null);
+    uploadLifecycle.invalidate();
+  }, [uploadLifecycle.invalidate]);
+
+  const previewDataUpload = useCallback(async (file: File | null) => {
+    const templateId = selectedUploadTemplate?.templateId ?? null;
+    const validationError = validateDataUploadSelection(uploadCatalog, templateId, file);
+    if (validationError) {
+      setUploadFileName(file?.name ?? null);
+      setUploadError(buildDataErrorState(validationError));
+      setUploadPreviewResult(null);
+      return;
+    }
+
+    const token = uploadLifecycle.start({ runningMessage: `Previewing ${file!.name}.` });
+    if (!token) return;
+    token.safeSetState(setUploadBusy, true);
+    token.safeSetState(setUploadFileName, file!.name);
+    token.safeSetState(setUploadError, null);
+    token.safeSetState(setUploadPreviewResult, null);
+
+    try {
+      const response = await workstationApi.previewDataUpload(
+        { templateId: templateId!, file: file! },
+        { signal: token.signal }
+      );
+      if (!token.isCurrent()) {
+        uploadLifecycle.markStale(token.version);
+        return;
+      }
+
+      token.safeSetState(setUploadPreviewResult, response);
+      uploadLifecycle.succeed(token, { message: "Source data upload preview completed." });
+    } catch (err) {
+      if (!token.isCurrent()) {
+        uploadLifecycle.markStale(token.version);
+        return;
+      }
+
+      token.safeSetState(setUploadError, buildDataErrorState(err, "Source data upload preview failed."));
+      uploadLifecycle.fail(token, err, { fallback: "Source data upload preview failed." });
+    } finally {
+      if (token.isCurrent()) {
+        token.safeSetState(setUploadBusy, false);
+      }
+      uploadLifecycle.finish(token);
+    }
+  }, [
+    selectedUploadTemplate?.templateId,
+    uploadCatalog,
+    uploadLifecycle.fail,
+    uploadLifecycle.finish,
+    uploadLifecycle.invalidate,
+    uploadLifecycle.markStale,
+    uploadLifecycle.start,
+    uploadLifecycle.succeed
+  ]);
 
   const previewBackfill = useCallback(async () => {
     const validationError = validateBackfillForm(form, configuredBackfillProviders);
@@ -1474,6 +1784,15 @@ export function useDataViewModel(
     selectedExportRowId: selectedExport ? buildExportRowId(selectedExport.exportId) : null,
     selectExport: setSelectedExportId,
     ...presentation,
+    uploadPanelState,
+    selectedUploadTemplate,
+    selectedUploadTemplateId: uploadPanelState.selectedTemplateId,
+    selectUploadTemplate,
+    previewDataUpload,
+    uploadPreviewResult,
+    uploadError,
+    uploadBusy,
+    uploadRequestStatus: uploadLifecycle.status,
     dialogOpen,
     openBackfillDialog,
     closeBackfillDialog,
@@ -1596,6 +1915,128 @@ export function buildDataPresentationState(
       backfillDetailEmptyState
     })
   };
+}
+
+export function buildDataUploadPanelState(
+  catalog: DataUploadTemplateCatalog | null | undefined,
+  selectedTemplateId: string | null,
+  preview: DataUploadPreviewResult | null,
+  error: ApiErrorDisplay | null,
+  busy: boolean,
+  fileName: string | null,
+  requestStatus: RequestLifecycleStatus = idleDataUploadRequestStatus
+): DataUploadPanelState {
+  const resolvedCatalog = resolveDataUploadCatalog(catalog);
+  const selectedTemplate = resolveSelectedDataUploadTemplate(resolvedCatalog, selectedTemplateId);
+  const effectiveTemplateId = selectedTemplate?.templateId ?? "";
+  const acceptedFileTypes = resolvedCatalog.acceptedFileExtensions.join(",");
+  const templateDownload = selectedTemplate
+    ? {
+        fileName: selectedTemplate.fileName,
+        href: `data:${selectedTemplate.contentType};charset=utf-8,${encodeURIComponent(buildDataUploadTemplateCsv(selectedTemplate))}`,
+        label: "Download CSV template",
+        ariaLabel: `Download ${selectedTemplate.label} CSV template`
+      }
+    : null;
+  const issueRows = (preview?.issues ?? []).map(buildDataUploadIssueRow);
+  const previewHeaders = preview?.headers.slice(0, 6) ?? [];
+  const previewRows = (preview?.previewRows ?? []).slice(0, 3).map((row, index) => ({
+    id: `${preview?.uploadId ?? "upload-preview"}-${index}`,
+    values: previewHeaders.map((header) => ({
+      id: header,
+      label: header,
+      value: row[header] ?? ""
+    }))
+  }));
+  const resultStatus = preview ? formatDataUploadStatus(preview.status) : null;
+
+  return {
+    title: "Upload data template",
+    description: "Preview retained CSV source files before they enter validation, reconciliation, approval, or reporting workflows.",
+    templateSelectLabel: "Data upload template",
+    selectedTemplateId: effectiveTemplateId,
+    templateOptions: resolvedCatalog.templates.map((template) => ({
+      value: template.templateId,
+      label: `${template.label} - ${template.dataDomain}`,
+      description: template.description
+    })),
+    selectedTemplate,
+    selectedTemplateFields: (selectedTemplate?.fields ?? []).map((field) => ({
+      id: field.name,
+      name: field.name,
+      label: field.label,
+      required: field.required,
+      requiredLabel: field.required ? "Required" : "Optional",
+      example: field.example,
+      description: field.description
+    })),
+    validationNotes: selectedTemplate?.validationNotes ?? [],
+    acceptedFileTypes,
+    maxFileSizeLabel: formatDataUploadFileSize(resolvedCatalog.maxFileBytes),
+    templateDownload,
+    fileInput: {
+      id: "data-upload-source-file",
+      label: busy ? "Previewing file" : "Upload CSV file",
+      ariaLabel: selectedTemplate
+        ? `Upload ${selectedTemplate.label} CSV file for preview`
+        : "Upload CSV file for preview",
+      disabled: busy || !selectedTemplate,
+      disabledReason: busy
+        ? "Upload preview is already running."
+        : selectedTemplate
+          ? null
+          : "Choose a data upload template before selecting a file."
+    },
+    statusLabel: busy
+      ? "Previewing"
+      : error
+        ? "Preview failed"
+        : resultStatus?.label ?? (fileName ? "File selected" : "No file previewed"),
+    statusTone: busy
+      ? "paper"
+      : error
+        ? "danger"
+        : resultStatus?.tone ?? "paper",
+    resultSummary: busy
+      ? `Previewing ${fileName ?? "selected file"}.`
+      : error
+        ? error.summary
+        : preview
+          ? `${preview.parsedRowCount.toLocaleString()} rows parsed from ${preview.fileName}. ${preview.nextAction}`
+          : selectedTemplate
+            ? `${selectedTemplate.label} accepts ${resolvedCatalog.acceptedFileExtensions.join(", ")} files up to ${formatDataUploadFileSize(resolvedCatalog.maxFileBytes)}.`
+            : "No upload templates are available.",
+    retainedPath: preview?.retainedPath ?? null,
+    issueRows,
+    previewHeaders,
+    previewRows,
+    requestStatus
+  };
+}
+
+export function buildDataUploadTemplateCsv(template: DataUploadTemplate): string {
+  const header = template.headerLine || template.fields.map((field) => field.name).join(",");
+  const rows = template.sampleRows.length > 0 ? template.sampleRows : [];
+  return `${[header, ...rows].join("\n")}\n`;
+}
+
+export function resolveDataUploadCatalog(catalog: DataUploadTemplateCatalog | null | undefined): DataUploadTemplateCatalog {
+  if (!catalog || catalog.templates.length === 0) {
+    return defaultDataUploadTemplateCatalog;
+  }
+
+  return catalog;
+}
+
+export function resolveSelectedDataUploadTemplate(
+  catalog: DataUploadTemplateCatalog,
+  selectedTemplateId: string | null
+): DataUploadTemplate | null {
+  if (catalog.templates.length === 0) {
+    return null;
+  }
+
+  return catalog.templates.find((template) => template.templateId === selectedTemplateId) ?? catalog.templates[0];
 }
 
 export function buildRouteFocusCardState({
@@ -2224,7 +2665,9 @@ function providerConnectionFromReadiness(readiness: ProviderReadinessRow): Provi
     externalAccountId: readiness.externalAccountId,
     affectedWorkflows: readiness.affectedWorkflows,
     recommendedAction: readiness.recommendedAction,
-    actionHref: readiness.actionHref
+    actionHref: readiness.actionHref,
+    credentialFields: readiness.credentialFields ?? [],
+    environmentOptions: readiness.environmentOptions ?? []
   };
 }
 
@@ -2409,7 +2852,7 @@ function buildProviderCredentialFieldsForDetail(
   row: DataOperationsProviderRow
 ): DataOperationsDetailField[] {
   const connection = resolveProviderConnection(record);
-  return [
+  const fields: DataOperationsDetailField[] = [
     { id: "credential-source", label: "Credential source", value: connection ? providerCredentialSourceLabel(connection.credentialSource) : "Routing API only" },
     { id: "credential-state", label: "Credential state", value: row.credentialText },
     { id: "verification-state", label: "Verification state", value: row.verificationText },
@@ -2418,6 +2861,34 @@ function buildProviderCredentialFieldsForDetail(
     { id: "external-account", label: "External account ID", value: connection?.externalAccountId ?? record.routingConnection?.externalAccountId ?? "Not linked" },
     { id: "safe-action", label: "Safe action", value: connection ? "Verify credentials through the shared provider route." : "Open Settings to configure credentials first." }
   ];
+
+  const metadata = connection?.credentialFields ?? record.readiness?.credentialFields ?? [];
+  if (metadata.length === 0) {
+    fields.push({
+      id: "credential-fields",
+      label: "Credential fields",
+      value: connection?.credentialState === "NotRequired" ? "No credential fields required" : "No credential metadata published"
+    });
+  } else {
+    for (const field of metadata) {
+      fields.push({
+        id: `credential-field-${field.name}`,
+        label: field.label,
+        value: field.required ? "Required field" : "Optional field"
+      });
+    }
+  }
+
+  const environments = connection?.environmentOptions ?? record.readiness?.environmentOptions ?? [];
+  if (environments.length > 0) {
+    fields.push({
+      id: "allowed-environments",
+      label: "Allowed environments",
+      value: environments.map((option) => option.label).join(", ")
+    });
+  }
+
+  return fields;
 }
 
 function buildProviderDiagnostics(record: DataOperationsProviderCenterRecord): DataOperationsProviderDiagnosticRow[] {
@@ -3597,6 +4068,79 @@ function formatUtcMinute(date: Date): string {
   const minute = String(date.getUTCMinutes()).padStart(2, "0");
 
   return `${month} ${day}, ${year} ${hour}:${minute} UTC`;
+}
+
+function dataUploadField(
+  name: string,
+  label: string,
+  required: boolean,
+  example: string,
+  description: string
+): DataUploadTemplate["fields"][number] {
+  return { name, label, required, example, description };
+}
+
+function validateDataUploadSelection(
+  catalog: DataUploadTemplateCatalog,
+  templateId: string | null,
+  file: File | null
+): string | null {
+  const template = resolveSelectedDataUploadTemplate(catalog, templateId);
+  if (!template) {
+    return "Choose a data upload template before previewing a source file.";
+  }
+
+  if (!file) {
+    return "Choose a CSV file before previewing a source upload.";
+  }
+
+  const acceptedExtensions = catalog.acceptedFileExtensions.map((extension) => extension.toLowerCase());
+  const fileName = file.name.toLowerCase();
+  if (!acceptedExtensions.some((extension) => fileName.endsWith(extension))) {
+    return `Upload preview accepts ${catalog.acceptedFileExtensions.join(", ")} files.`;
+  }
+
+  if (Number.isFinite(file.size) && file.size > catalog.maxFileBytes) {
+    return `Upload preview accepts files up to ${formatDataUploadFileSize(catalog.maxFileBytes)}.`;
+  }
+
+  return null;
+}
+
+function buildDataUploadIssueRow(issue: DataUploadValidationIssue, index: number): DataUploadIssueRowState {
+  return {
+    id: `${issue.field}-${issue.rowNumber ?? "file"}-${index}`,
+    severity: issue.severity,
+    tone: issue.severity.toLowerCase() === "error" ? "danger" : "warning",
+    field: issue.field,
+    message: issue.message,
+    rowLabel: issue.rowNumber ? `Row ${issue.rowNumber}` : "File"
+  };
+}
+
+function formatDataUploadStatus(status: string): { label: string; tone: "success" | "warning" | "danger" } {
+  if (status === "ReadyForReview") {
+    return { label: "Ready for review", tone: "success" };
+  }
+
+  if (status === "NeedsSchemaRepair") {
+    return { label: "Needs schema repair", tone: "warning" };
+  }
+
+  return { label: status, tone: "warning" };
+}
+
+function formatDataUploadFileSize(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes <= 0) {
+    return "0 KB";
+  }
+
+  if (bytes >= 1024 * 1024) {
+    const megabytes = bytes / (1024 * 1024);
+    return `${Number.isInteger(megabytes) ? megabytes.toFixed(0) : megabytes.toFixed(1)} MB`;
+  }
+
+  return `${Math.ceil(bytes / 1024)} KB`;
 }
 
 function buildBackfillRowId(jobId: string): string {

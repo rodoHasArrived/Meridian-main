@@ -296,10 +296,57 @@ public sealed class PostgresFundStructureService : IFundStructureService
                 IsActive: true,
                 request.EffectiveFrom,
                 EffectiveTo: null,
-                request.Description);
+                request.Description,
+                request.LegalForm,
+                request.LifecycleStatus,
+                request.RegistrationNumber,
+                NormalizeBeneficialOwners(request.BeneficialOwners),
+                NormalizeLifecycleEvents(request.LifecycleEvents));
 
             await _store.UpsertLegalEntityAsync(summary, ct).ConfigureAwait(false);
             return summary;
+        }
+        finally { _writeLock.Release(); }
+    }
+
+    public async Task<LegalEntitySummaryDto> UpdateLegalEntityProfileAsync(
+        UpdateLegalEntityProfileRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+
+        await _writeLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var existing = await _store.GetLegalEntityAsync(request.EntityId, ct).ConfigureAwait(false);
+            if (existing is null)
+            {
+                throw new InvalidOperationException($"LegalEntity {request.EntityId} was not found.");
+            }
+
+            var updated = NormalizeLegalEntity(existing with
+            {
+                EntityType = request.EntityType ?? existing.EntityType,
+                LegalForm = request.LegalForm ?? existing.LegalForm,
+                Code = CleanRequired(request.Code, existing.Code),
+                Name = CleanRequired(request.Name, existing.Name),
+                Jurisdiction = CleanRequired(request.Jurisdiction, existing.Jurisdiction),
+                BaseCurrency = CleanRequired(request.BaseCurrency, existing.BaseCurrency).ToUpperInvariant(),
+                IsActive = request.IsActive ?? existing.IsActive,
+                EffectiveFrom = request.EffectiveFrom ?? existing.EffectiveFrom,
+                EffectiveTo = request.EffectiveTo ?? existing.EffectiveTo,
+                Description = CleanOptional(request.Description) ?? existing.Description,
+                RegistrationNumber = CleanOptional(request.RegistrationNumber) ?? existing.RegistrationNumber,
+                LifecycleStatus = request.LifecycleStatus ?? existing.LifecycleStatus,
+                BeneficialOwners = request.BeneficialOwners is null
+                    ? existing.BeneficialOwners
+                    : NormalizeBeneficialOwners(request.BeneficialOwners),
+                LifecycleEvents = AppendLifecycleEvent(existing.LifecycleEvents, request.LifecycleEvent)
+            });
+
+            await _store.UpsertLegalEntityAsync(updated, ct).ConfigureAwait(false);
+            return updated;
         }
         finally { _writeLock.Release(); }
     }
@@ -1372,6 +1419,76 @@ public sealed class PostgresFundStructureService : IFundStructureService
         list.Add(value);
         return list;
     }
+
+    private static LegalEntitySummaryDto NormalizeLegalEntity(LegalEntitySummaryDto entity) =>
+        entity with
+        {
+            Code = CleanRequired(entity.Code, entity.Code),
+            Name = CleanRequired(entity.Name, entity.Name),
+            Jurisdiction = CleanRequired(entity.Jurisdiction, entity.Jurisdiction),
+            BaseCurrency = CleanRequired(entity.BaseCurrency, entity.BaseCurrency).ToUpperInvariant(),
+            RegistrationNumber = CleanOptional(entity.RegistrationNumber),
+            Description = CleanOptional(entity.Description),
+            BeneficialOwners = NormalizeBeneficialOwners(entity.BeneficialOwners),
+            LifecycleEvents = NormalizeLifecycleEvents(entity.LifecycleEvents)
+        };
+
+    private static IReadOnlyList<BeneficialOwnerSummaryDto> NormalizeBeneficialOwners(
+        IReadOnlyList<BeneficialOwnerSummaryDto>? owners) =>
+        owners is null
+            ? []
+            : owners
+                .Where(static owner => !string.IsNullOrWhiteSpace(owner.OwnerName))
+                .Select(static owner => owner with
+                {
+                    OwnerName = owner.OwnerName.Trim(),
+                    OwnerIdentifier = CleanOptional(owner.OwnerIdentifier),
+                    Notes = CleanOptional(owner.Notes)
+                })
+                .ToList();
+
+    private static IReadOnlyList<LegalEntityLifecycleEventDto> NormalizeLifecycleEvents(
+        IReadOnlyList<LegalEntityLifecycleEventDto>? events) =>
+        events is null
+            ? []
+            : events
+                .Where(static lifecycleEvent => !string.IsNullOrWhiteSpace(lifecycleEvent.RecordedBy)
+                    && !string.IsNullOrWhiteSpace(lifecycleEvent.Summary))
+                .Select(static lifecycleEvent => lifecycleEvent with
+                {
+                    RecordedBy = lifecycleEvent.RecordedBy.Trim(),
+                    Summary = lifecycleEvent.Summary.Trim(),
+                    EvidenceReference = CleanOptional(lifecycleEvent.EvidenceReference)
+                })
+                .OrderBy(static lifecycleEvent => lifecycleEvent.OccurredAt)
+                .ThenBy(static lifecycleEvent => lifecycleEvent.EventId)
+                .ToList();
+
+    private static IReadOnlyList<LegalEntityLifecycleEventDto> AppendLifecycleEvent(
+        IReadOnlyList<LegalEntityLifecycleEventDto>? current,
+        LegalEntityLifecycleEventDto? lifecycleEvent)
+    {
+        var events = NormalizeLifecycleEvents(current).ToList();
+        if (lifecycleEvent is not null)
+        {
+            events.AddRange(NormalizeLifecycleEvents([lifecycleEvent]));
+        }
+
+        return events
+            .GroupBy(static item => item.EventId)
+            .Select(static group => group.Last())
+            .OrderBy(static item => item.OccurredAt)
+            .ThenBy(static item => item.EventId)
+            .ToList();
+    }
+
+    private static string CleanRequired(string? candidate, string fallback)
+    {
+        var value = string.IsNullOrWhiteSpace(candidate) ? fallback : candidate;
+        return value.Trim();
+    }
+
+    private static string? CleanOptional(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static InvestmentPortfolioSummaryDto ApplyOperatingParent(
         InvestmentPortfolioSummaryDto p, Guid? clientId = null, Guid? fundId = null, Guid? sleeveId = null, Guid? vehicleId = null)
