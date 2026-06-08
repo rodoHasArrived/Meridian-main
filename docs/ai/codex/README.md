@@ -16,7 +16,7 @@ For documentation work, start from the rebuilt canonical docs model:
 
 | Surface | Purpose |
 | --- | --- |
-| [`.codex/config.toml`](../../../.codex/config.toml) | Repository-local Codex sandbox and approval defaults |
+| [`.codex/config.toml`](../../../.codex/config.toml) | Repository-local Codex sandbox, approval, and bounded subagent defaults |
 | [`quickstart.md`](quickstart.md) | First-10-minutes Codex task routing, proof matrix, and dirty-worktree protocol |
 | [`advanced-configuration.md`](advanced-configuration.md) | Advanced Codex local-client configuration patterns for profiles, providers, sandboxes, hooks, telemetry, notifications, and TUI options |
 | [`prompt-execution-trace.md`](prompt-execution-trace.md) | One-page prompt-to-execution diagram and execution-path refinements |
@@ -25,7 +25,7 @@ For documentation work, start from the rebuilt canonical docs model:
 | [`../agent-handoff-checklist.md`](../agent-handoff-checklist.md) | Shared handoff format for multi-agent/lane transitions and context minimization |
 | [`../work-modes.md`](../work-modes.md) | Mode selection contract for context budget and escalation control |
 | [`../parallel-task-manifest-template.md`](../parallel-task-manifest-template.md) | Shared parallel-lane ownership manifest to prevent overlap and duplicate discovery |
-| [`.codex/agents/`](../../../.codex/agents) | Codex specialist agent-profile TOML files that route recurring documentation, cleanup, roadmap, navigation, and user-panel work |
+| [`.codex/agents/`](../../../.codex/agents) | Codex specialist agent-profile TOML files that route recurring skill-backed work |
 | [`.codex/skills/README.md`](../../../.codex/skills/README.md) | Codex skill catalog and maintenance rules |
 | [`.codex/skills/_shared/project-context.md`](../../../.codex/skills/_shared/project-context.md) | Meridian project grounding used by Codex skills |
 | [`.codex/skills/_shared/codex-execution-contract.md`](../../../.codex/skills/_shared/codex-execution-contract.md) | Codex-only execution gates for concurrency, validation, docs sync, and response shape |
@@ -34,6 +34,41 @@ For documentation work, start from the rebuilt canonical docs model:
 | [`.codex/prompts/`](../../../.codex/prompts) | Reusable desktop implementation, refactor, provider, diagnostics, resource, and test prompts |
 | [`.codex/checklists/`](../../../.codex/checklists) | Modularity, MVVM, resource, definition-of-done, and safe-refactor checklists |
 | [`tools/codex/`](../../../tools/codex) | Codex-focused PowerShell quality scans, desktop workspace generators, resource reviews, and refactor-plan helpers |
+
+## Current Codex Agent Profiles
+
+`.codex/agents/` now has skill-backed Codex subagent profiles for each current Codex
+specialist lane, plus the existing `meridian-navigation` routing profile and legacy
+`meridian-user-panel` compatibility alias. Use these profiles when a task benefits from a compact
+specialist entrypoint, then keep the matching skill as the canonical workflow definition.
+
+| Profile | Purpose |
+| ------ | --------- |
+| `dense-data-grid-inspector-panel.toml` | Build scalable dense grids, stable selection, and inspector panels |
+| `desktop-test-generation.toml` | Generate focused WPF desktop workflow tests |
+| `diagnostics-audit-timeline.toml` | Build diagnostics panels, audit timelines, evidence trails, and recovery surfaces |
+| `meridian-archive-organizer.toml` | Archive stale files and preserve repository structure evidence |
+| `meridian-blueprint.toml` | Create implementation-ready technical designs |
+| `meridian-brainstorm.toml` | Generate Meridian-native product and architecture ideas |
+| `meridian-browser-workstation.toml` | Route and implement browser workstation TypeScript/React tasks |
+| `meridian-cleanup.toml` | Clean up code and docs without behavior changes |
+| `meridian-code-review.toml` | Review changes for bugs, regressions, and architecture drift |
+| `meridian-docs.toml` | Maintain documentation and AI guidance |
+| `meridian-implementation-assurance.toml` | Verify implementation completeness, evidence, docs sync, and guardrails |
+| `meridian-navigation.toml` | Route tasks through Meridian repo-navigation context |
+| `meridian-provider-builder.toml` | Build or extend ProviderSdk-compliant data providers |
+| `meridian-repo-navigation.toml` | Orient large-repo tasks before deeper work |
+| `meridian-roadmap-strategist.toml` | Reconcile roadmap, delivery-plan, and target-state docs |
+| `meridian-simulated-user-panel.toml` | Run structured simulated-user feedback workflows |
+| `meridian-test-writer.toml` | Write scenario-first Meridian tests |
+| `meridian-user-panel.toml` | Legacy simulated-user panel alias for compatibility |
+| `modular-desktop-mvvm.toml` | Implement modular WPF MVVM workstation changes |
+| `performance-resource-review.toml` | Review memory, CPU, I/O, rendering, concurrency, and lifecycle risks |
+| `provider-management-workflow.toml` | Build secure provider setup, health, validation, and recovery workflows |
+| `research-data-acquisition.toml` | Build research acquisition, preview, validation, lineage, and cleanup workflows |
+| `safe-refactoring.toml` | Refactor desktop and shared code incrementally without behavior drift |
+| `shared-component-extraction.toml` | Extract repeated desktop patterns into reusable components |
+| `workstation-screen-composition.toml` | Compose desktop screens from shared workstation primitives |
 
 ## Current Codex Skills
 

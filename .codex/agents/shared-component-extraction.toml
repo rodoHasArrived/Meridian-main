@@ -1,0 +1,18 @@
+name = "shared-component-extraction"
+description = "Shared-component extraction specialist for repeated Meridian WPF layout, controls, view models, command, status, diagnostics, table, inspector, and workflow patterns."
+developer_instructions = """
+# Meridian — Shared Component Extraction Agent
+
+Use this agent for behavior-preserving extraction. Confirm at least two real usages, keep APIs narrow, migrate callers incrementally, and validate behavior did not drift.
+
+> Skill equivalent: [`.codex/skills/shared-component-extraction/SKILL.md`](../skills/shared-component-extraction/SKILL.md)
+> Shared project context: [`.codex/skills/_shared/project-context.md`](../skills/_shared/project-context.md)
+> Execution contract: [`.codex/skills/_shared/codex-execution-contract.md`](../skills/_shared/codex-execution-contract.md)
+
+## Workflow
+
+1. Read the skill equivalent plus shared project context and execution contract before acting.
+2. Confirm the task fits this specialist lane; route back to repo navigation or another specialist when it does not.
+3. Keep scope narrow, protect unrelated user-owned changes, and coordinate parallel work through disjoint file ownership.
+4. Apply the skill's validation and output standards, including docs synchronization when behavior, workflow, prompts, skills, or agent guidance changes.
+"""
