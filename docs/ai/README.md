@@ -47,7 +47,7 @@ Classify AI/doc changes in this rebuild model:
 | GitHub or Claude agents | [`agents/README.md`](agents/README.md) | [`.github/agents/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/agents), [`.claude/agents/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/agents) |
 | Portable skills | [`skills/README.md`](skills/README.md) | [`.agents/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills), [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills) |
 | Codex repo-local skills and profiles | [`codex/README.md`](codex/README.md) | [`.codex/agents/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.codex/agents), [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md), [`.codex/skills/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.codex/skills) |
-| Fast Codex task startup | [`codex/quickstart.md`](codex/quickstart.md) | [`codex/route-cards.md`](codex/route-cards.md) |
+| Fast Codex task startup | [`codex/quickstart.md`](codex/quickstart.md) | [`codex/advanced-configuration.md`](codex/advanced-configuration.md), [`codex/route-cards.md`](codex/route-cards.md) |
 | Copilot setup | [`copilot/instructions.md`](copilot/instructions.md) | [`.github/copilot-instructions.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/copilot-instructions.md) |
 
 ---
@@ -151,6 +151,7 @@ Located mainly in `docs/ai/claude/`.
 | [`skills/README.md`](skills/README.md) | Portable Agent Skills overview for `.agents/skills/` and `.claude/skills/` |
 | [`codex/README.md`](codex/README.md) | Codex repo-local skill workflow, execution gates, and validation tooling |
 | [`codex/quickstart.md`](codex/quickstart.md) | Compact Codex startup checklist, proof matrix, read budget, and dirty-worktree protocol |
+| [`codex/advanced-configuration.md`](codex/advanced-configuration.md) | Advanced Codex local-client configuration patterns for profiles, providers, project config, hooks, telemetry, notifications, history, and TUI behavior |
 | [`codex/route-cards.md`](codex/route-cards.md) | Subsystem cards for Codex routing after generated navigation identifies ownership |
 | [`prompts/README.md`](prompts/README.md) | Prompt catalog and usage guide |
 | [`../prompts/README.md`](../prompts/README.md) | Provider-agnostic prompt and automation guidance inventory |
