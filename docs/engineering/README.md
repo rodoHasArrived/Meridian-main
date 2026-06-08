@@ -15,6 +15,7 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **Source ownership:** [Source registry](../source/README.md)
 - **Roadmap truth:** [Roadmap registry](../roadmap/README.md)
 - **Generated output rules:** [Documentation ownership](../documentation-ownership.md)
+- **C#/WPF market study companion:** [Practical C# and WPF for Financial Markets](practical-csharp-wpf-financial-markets.md)
 
 ## Architecture and Module Boundaries
 
