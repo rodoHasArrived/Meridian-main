@@ -190,7 +190,7 @@ public sealed class MainPageUiWorkflowTests
     }
 
     [Fact]
-    public void MainPage_DataWorkspaceHome_ShouldCollapseRedundantShellChrome()
+    public void MainPage_DataWorkspaceAndDeepPages_ShouldCollapseRedundantShellSummaryChrome()
     {
         WpfTestThread.Run(() =>
         {
@@ -200,6 +200,9 @@ public sealed class MainPageUiWorkflowTests
 
             facade.ViewModel.CurrentPageTag.Should().Be("DataShell");
             facade.ViewModel.DataWorkspaceHomeChromeVisibility.Should().Be(Visibility.Collapsed);
+            facade.ViewModel.WorkspaceHomeSummaryChromeVisibility.Should().Be(Visibility.Collapsed);
+            facade.FindDescendantByAutomationId<WorkspaceEvidenceStripControl>("WorkspaceEvidenceStripData")
+                .Visibility.Should().Be(Visibility.Collapsed);
             facade.TopBarContextChrome.Visibility.Should().Be(Visibility.Collapsed);
             facade.WorkspacePageHeader.Visibility.Should().Be(Visibility.Collapsed);
             facade.SplitPaneLayoutChrome.Visibility.Should().Be(Visibility.Collapsed);
@@ -208,9 +211,12 @@ public sealed class MainPageUiWorkflowTests
 
             facade.ViewModel.CurrentPageTag.Should().Be("SecurityMaster");
             facade.ViewModel.DataWorkspaceHomeChromeVisibility.Should().Be(Visibility.Visible);
+            facade.ViewModel.WorkspaceHomeSummaryChromeVisibility.Should().Be(Visibility.Collapsed);
+            facade.FindDescendantByAutomationId<WorkspaceEvidenceStripControl>("WorkspaceEvidenceStripData")
+                .Visibility.Should().Be(Visibility.Collapsed);
             facade.TopBarContextChrome.Visibility.Should().Be(Visibility.Visible);
             facade.WorkspacePageHeader.Visibility.Should().Be(Visibility.Visible);
-            facade.SplitPaneLayoutChrome.Visibility.Should().Be(Visibility.Visible);
+            facade.SplitPaneLayoutChrome.Visibility.Should().Be(Visibility.Collapsed);
         });
     }
 
@@ -406,6 +412,9 @@ public sealed class MainPageUiWorkflowTests
             facade.Click(facade.TradingWorkspaceButton);
             await WaitForConditionAsync(() => facade.ViewModel.PrimaryWorkflowSummary?.WorkspaceId == "trading").ConfigureAwait(true);
 
+            facade.ViewModel.WorkspaceHomeSummaryChromeVisibility.Should().Be(Visibility.Visible);
+            facade.FindDescendantByAutomationId<WorkspaceEvidenceStripControl>("WorkspaceEvidenceStripTrading")
+                .Visibility.Should().Be(Visibility.Visible);
             facade.WorkflowSummaryStrip.Visibility.Should().Be(Visibility.Visible);
             facade.ViewModel.WorkflowSummaries.Should().HaveCount(7);
             facade.ViewModel.PrimaryWorkflowSummary.Should().NotBeNull();

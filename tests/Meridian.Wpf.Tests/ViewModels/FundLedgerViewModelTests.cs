@@ -741,6 +741,17 @@ public sealed class FundLedgerViewModelTests
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\FundLedgerPage.xaml"));
 
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().Contain("FundLedgerActionStrip");
+        xaml.Should().Contain("FundLedgerActionStripState");
+        xaml.Should().Contain("FundLedgerAccountWorkbench");
+        xaml.Should().Contain("Table=\"{Binding AccountQueueTable}\"");
+        xaml.Should().Contain("Inspector=\"{Binding SelectedAccountInspector}\"");
+        xaml.Should().Contain("FundLedgerAccountQueueGrid");
+        xaml.Should().Contain("FundLedgerAccountSelectionInspector");
+        xaml.Should().Contain("FundLedgerAccountActionInspector");
+        xaml.Should().Contain("ToolTip=\"{Binding SelectedAccountPortfolioTooltip}\"");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
         xaml.Should().Contain("ReconciliationResetFiltersButton");
         xaml.Should().Contain("Command=\"{Binding ResetReconciliationFiltersCommand}\"");
         xaml.Should().Contain("ReconciliationRefreshQueueButton");
@@ -752,6 +763,47 @@ public sealed class FundLedgerViewModelTests
         xaml.Should().NotContain("ReconciliationSection.GovernanceSignifierState");
         xaml.Should().Contain("FundReportPackReadinessSignifier");
         xaml.Should().Contain("ReportPackReadinessState");
+    }
+
+    [Fact]
+    public void FundLedgerAccountInspectorProjection_ShouldFailClosedWithoutSelectionAndSurfaceAccountFacts()
+    {
+        var empty = FundLedgerViewModel.BuildSelectedAccountInspector(null);
+
+        empty.Title.Should().Be("No account selected");
+        empty.Subtitle.Should().Contain("blocked");
+        empty.Detail.Should().Contain("Select an account row");
+
+        var account = new FundAccountSummary(
+            AccountId: Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+            AccountType: AccountTypeDto.Brokerage,
+            AccountCode: "BRK-100",
+            DisplayName: "Prime Brokerage Alpha",
+            BaseCurrency: "USD",
+            Institution: "Broker A",
+            IsActive: true,
+            CashBalance: 12_500m,
+            SecuritiesMarketValue: 42_000m,
+            NetAssetValue: 54_500m,
+            LastSnapshotDate: new DateOnly(2026, 4, 25),
+            ReconciliationRuns: 3,
+            OpenBreaks: 2,
+            PortfolioId: "portfolio-alpha",
+            LedgerReference: "ledger-alpha",
+            BankName: "Bank A",
+            AccountNumberMasked: "****100",
+            StructureLabel: "Entity alpha",
+            WorkflowLabel: "Run alpha");
+
+        var selected = FundLedgerViewModel.BuildSelectedAccountInspector(account);
+
+        selected.Title.Should().Be("Prime Brokerage Alpha");
+        selected.Badge.Should().NotBeNull();
+        selected.Badge!.Value.Should().Be("Active");
+        selected.Facts.Select(fact => fact.Label)
+            .Should()
+            .Contain(["Code", "Currency", "Structure", "Workflow", "Cash", "NAV", "Open breaks", "Last snapshot"]);
+        selected.Facts.Single(fact => fact.Label == "Open breaks").Value.Should().Be("2");
     }
 
     [Fact]

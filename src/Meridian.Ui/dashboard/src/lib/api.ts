@@ -154,6 +154,14 @@ import type {
   RolePermissionCatalog,
   RolePermissionProfileUpsertRequest,
   RolePermissionProfileUpsertResult,
+  UserAccount,
+  UserAccountAuditEvent,
+  UserAccountDisableRequest,
+  UserAccountMutationResult,
+  UserAccountUpsertRequest,
+  UserPasswordResetRequest,
+  UserSessionRevokeRequest,
+  UserSessionRevokeResult,
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
   ReportPackDeliveryAttempt,
@@ -620,6 +628,42 @@ export function createRolePermissionProfile(
   options: ApiRequestOptions = {}
 ) {
   return postJson<RolePermissionProfileUpsertResult>(AUTH_API_ENDPOINTS.roleProfiles, request, options);
+}
+
+export function getUserAccounts(options: ApiRequestOptions = {}) {
+  return getJson<UserAccount[]>(AUTH_API_ENDPOINTS.accounts, options);
+}
+
+export function upsertUserAccount(request: UserAccountUpsertRequest, options: ApiRequestOptions = {}) {
+  return putJson<UserAccountMutationResult>(authAccountEndpoint(request.username), request, options);
+}
+
+export function resetUserPassword(request: UserPasswordResetRequest, options: ApiRequestOptions = {}) {
+  return postJson<UserAccountMutationResult>(authAccountPasswordResetEndpoint(request.username), request, options);
+}
+
+export function setUserAccountDisabled(request: UserAccountDisableRequest, options: ApiRequestOptions = {}) {
+  return postJson<UserAccountMutationResult>(authAccountDisableEndpoint(request.username), request, options);
+}
+
+export function revokeUserSessions(request: UserSessionRevokeRequest, options: ApiRequestOptions = {}) {
+  return postJson<UserSessionRevokeResult>(AUTH_API_ENDPOINTS.sessionsRevoke, request, options);
+}
+
+export function getUserAccountAudit(options: ApiRequestOptions = {}) {
+  return getJson<UserAccountAuditEvent[]>(AUTH_API_ENDPOINTS.audit, options);
+}
+
+function authAccountEndpoint(username: string) {
+  return AUTH_API_ENDPOINTS.accountByUsername.replace("{username}", encodeURIComponent(username));
+}
+
+function authAccountPasswordResetEndpoint(username: string) {
+  return AUTH_API_ENDPOINTS.accountPasswordReset.replace("{username}", encodeURIComponent(username));
+}
+
+function authAccountDisableEndpoint(username: string) {
+  return AUTH_API_ENDPOINTS.accountDisable.replace("{username}", encodeURIComponent(username));
 }
 
 export function getSecurityAssetProfiles(options: ApiRequestOptions = {}) {

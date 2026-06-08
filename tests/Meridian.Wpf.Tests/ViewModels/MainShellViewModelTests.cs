@@ -571,9 +571,9 @@ public sealed class MainShellViewModelTests
     public void AuthenticatedSession_WhenSignedIn_ShouldExposeOperatorBannerState()
     {
         using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
-            .Set("MDC_USERS", """[{"username":"desktop-admin","password":"pw","role":"Admin"}]""")
+            .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopAdminUsersJson())
             .Set("MDC_USERNAME", null)
-            .Set("MDC_PASSWORD", null)
+            .Set("MDC_PASSWORD_HASH", null)
             .Set("MDC_AUTH_MODE", null);
 
         var session = DesktopAuthenticationSessionTests.CreateSession("Production");
@@ -595,9 +595,9 @@ public sealed class MainShellViewModelTests
     public void LogoutCommand_WhenSignedIn_ShouldClearSessionAndRaiseLogoutRequest()
     {
         using var env = new DesktopAuthenticationSessionTests.EnvironmentVariableScope()
-            .Set("MDC_USERS", """[{"username":"desktop-admin","password":"pw","role":"Admin"}]""")
+            .Set("MDC_USERS", DesktopAuthenticationSessionTests.HashedDesktopAdminUsersJson())
             .Set("MDC_USERNAME", null)
-            .Set("MDC_PASSWORD", null)
+            .Set("MDC_PASSWORD_HASH", null)
             .Set("MDC_AUTH_MODE", null);
 
         var session = DesktopAuthenticationSessionTests.CreateSession("Production");

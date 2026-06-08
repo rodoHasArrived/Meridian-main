@@ -103,6 +103,23 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         _runWorkspaceService = runWorkspaceService ?? throw new ArgumentNullException(nameof(runWorkspaceService));
         _statementReconciliationWorkbenchService = statementReconciliationWorkbenchService ?? new NullStatementReconciliationWorkbenchService();
 
+        AccountQueueTable = new WorkstationTableModel<FundAccountSummary>(
+            Accounts,
+            [
+                new("Account", nameof(FundAccountSummary.DisplayName), 220),
+                new("Code", nameof(FundAccountSummary.AccountCode), 120),
+                new("Type", nameof(FundAccountSummary.AccountType), 110),
+                new("Institution", nameof(FundAccountSummary.Institution), 160),
+                new("Structure", nameof(FundAccountSummary.StructureLabel), 190),
+                new("Workflow", nameof(FundAccountSummary.WorkflowLabel), 210),
+                new("Cash", nameof(FundAccountSummary.CashBalance), 110, "{0:C2}"),
+                new("NAV", nameof(FundAccountSummary.NetAssetValue), 110, "{0:C2}"),
+                new("Open Breaks", nameof(FundAccountSummary.OpenBreaks), 90)
+            ],
+            "Fund ledger accounts",
+            "No fund accounts loaded",
+            "Select a fund profile or load retained fund account records before opening account-level portfolio review.");
+
         RefreshCommand = new AsyncRelayCommand(LoadAsync);
         OpenAccountingCommand = new RelayCommand(() => _navigationService.NavigateTo("AccountingShell"));
         OpenRunLedgerCommand = new RelayCommand(OpenLatestRunLedger);
@@ -146,6 +163,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     public ObservableCollection<FundAccountSummary> Accounts => _collectionsSection.Accounts;
 
+    public WorkstationTableModel<FundAccountSummary> AccountQueueTable { get; }
+
     public ObservableCollection<BankAccountSnapshot> BankSnapshots => _collectionsSection.BankSnapshots;
 
     public ObservableCollection<FundPortfolioPosition> PortfolioPositions => _collectionsSection.PortfolioPositions;
@@ -173,6 +192,22 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     internal FundLedgerCollectionsSectionViewModel CollectionsSection => _collectionsSection;
 
     internal FundLedgerWorkbenchSectionViewModel WorkbenchSection => _workbenchSection;
+
+    private InspectorPanelModel _selectedAccountInspector = BuildSelectedAccountInspector(null);
+
+    public InspectorPanelModel SelectedAccountInspector
+    {
+        get => _selectedAccountInspector;
+        private set => SetProperty(ref _selectedAccountInspector, value);
+    }
+
+    public string AccountQueueStatusText
+        => $"{TotalAccountsText} account(s): {BankAccountsText} bank, {BrokerageAccountsText} brokerage, {CustodyAccountsText} custody.";
+
+    public string SelectedAccountPortfolioTooltip
+        => SelectedAccount is null
+            ? "Select an account row before opening account portfolio detail."
+            : $"Open account portfolio detail for {SelectedAccount.DisplayName}.";
 
     private bool SetFundLedgerSectionProperty<T>(
         T current,
@@ -620,6 +655,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         {
             if (SetProperty(ref _selectedAccount, value))
             {
+                SelectedAccountInspector = BuildSelectedAccountInspector(value);
+                RaisePropertyChanged(nameof(SelectedAccountPortfolioTooltip));
                 OpenSelectedAccountPortfolioCommand.NotifyCanExecuteChanged();
             }
         }
@@ -839,6 +876,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         BankAccountsText = "0";
         BrokerageAccountsText = "0";
         CustodyAccountsText = "0";
+        RaisePropertyChanged(nameof(AccountQueueStatusText));
         TotalCashText = "-";
         GrossExposureText = "-";
         NetExposureText = "-";
@@ -966,6 +1004,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         SelectedAccount = context?.AccountId is Guid accountId
             ? Accounts.FirstOrDefault(account => account.AccountId == accountId)
             : Accounts.FirstOrDefault();
+        RaisePropertyChanged(nameof(AccountQueueStatusText));
     }
 
     private void ApplyBankSnapshots(IReadOnlyList<BankAccountSnapshot> snapshots)
@@ -1296,9 +1335,48 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         BankAccountsText = summary.BankAccountCount.ToString("N0");
         BrokerageAccountsText = summary.BrokerageAccountCount.ToString("N0");
         CustodyAccountsText = summary.CustodyAccountCount.ToString("N0");
+        RaisePropertyChanged(nameof(AccountQueueStatusText));
         OverviewStatusText = summary.TotalAccounts == 0 && summary.JournalEntryCount == 0
             ? "The Accounting shell is ready. Link accounts, import positions, or record a run to populate fund operations."
             : BuildOverviewStatus(summary);
+    }
+
+    internal static InspectorPanelModel BuildSelectedAccountInspector(FundAccountSummary? account)
+    {
+        if (account is null)
+        {
+            return new InspectorPanelModel
+            {
+                Title = "No account selected",
+                Subtitle = "Account portfolio action blocked",
+                Detail = "Select an account row to inspect balances, workflow links, and open-break pressure before opening account-level portfolio review."
+            };
+        }
+
+        return new InspectorPanelModel
+        {
+            Title = account.DisplayName,
+            Subtitle = $"{account.AccountType} account",
+            Detail = "Use this selected account context for account-level portfolio, banking, and reconciliation drill-throughs.",
+            Badge = new WorkstationBadgeModel(
+                "State",
+                account.IsActive ? "Active" : "Inactive",
+                "\uE8D4",
+                account.IsActive ? WorkspaceTone.Success : WorkspaceTone.Warning),
+            Facts =
+            [
+                new("Code", account.AccountCode),
+                new("Currency", account.BaseCurrency),
+                new("Institution", account.Institution ?? "Not set"),
+                new("Structure", account.StructureLabel),
+                new("Workflow", account.WorkflowLabel),
+                new("Cash", account.CashBalance.ToString("C2")),
+                new("Securities", account.SecuritiesMarketValue.ToString("C2")),
+                new("NAV", account.NetAssetValue.ToString("C2")),
+                new("Open breaks", account.OpenBreaks.ToString("N0")),
+                new("Last snapshot", account.LastSnapshotDate?.ToString("MMM dd yyyy") ?? "No retained snapshot")
+            ]
+        };
     }
 
     private static string BuildOverviewStatus(FundWorkspaceSummary summary)

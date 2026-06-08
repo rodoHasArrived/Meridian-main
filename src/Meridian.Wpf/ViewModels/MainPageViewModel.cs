@@ -381,6 +381,9 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public Visibility DataWorkspaceHomeChromeVisibility
         => IsDataWorkspaceHomePageActive ? Visibility.Collapsed : Visibility.Visible;
 
+    public Visibility WorkspaceHomeSummaryChromeVisibility
+        => IsWorkspaceHomePageActive && !IsDataWorkspaceHomePageActive ? Visibility.Visible : Visibility.Collapsed;
+
     public WorkspaceShellLayoutDescriptor CurrentShellLayoutDescriptor
         => ShellNavigationCatalog.GetWorkspaceLayoutDescriptor(CurrentWorkspace);
 
@@ -443,6 +446,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
             RaisePropertyChanged(nameof(IsDataWorkspaceHomePageActive));
             RaisePropertyChanged(nameof(DataWorkspaceHomeChromeVisibility));
+            RaisePropertyChanged(nameof(WorkspaceHomeSummaryChromeVisibility));
             RaisePropertyChanged(nameof(IsWorkflowPageActive));
             RaisePropertyChanged(nameof(ShellContextVisibility));
             if (InferWorkspaceFromPage(normalized) is { } inferredWorkspace)
@@ -805,6 +809,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
             RaisePropertyChanged(nameof(IsDataWorkspaceHomePageActive));
             RaisePropertyChanged(nameof(DataWorkspaceHomeChromeVisibility));
+            RaisePropertyChanged(nameof(WorkspaceHomeSummaryChromeVisibility));
             RaiseShellLayoutPropertiesChanged();
             RaisePropertyChanged(nameof(IsWorkflowPageActive));
             RaisePropertyChanged(nameof(ShellContextVisibility));
@@ -970,6 +975,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
             RefreshCommandPalettePages();
             RefreshPrimaryOperatorWorkflowSteps();
             RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
+            RaisePropertyChanged(nameof(IsDataWorkspaceHomePageActive));
+            RaisePropertyChanged(nameof(WorkspaceHomeSummaryChromeVisibility));
             RaisePropertyChanged(nameof(IsWorkflowPageActive));
             RaisePropertyChanged(nameof(ShellContextVisibility));
             return;
@@ -998,6 +1005,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         _currentPageTag = normalized;
         UpdateCurrentPageContent(normalized);
         RaisePropertyChanged(nameof(IsWorkspaceHomePageActive));
+        RaisePropertyChanged(nameof(IsDataWorkspaceHomePageActive));
+        RaisePropertyChanged(nameof(WorkspaceHomeSummaryChromeVisibility));
         RaisePropertyChanged(nameof(IsWorkflowPageActive));
         RaisePropertyChanged(nameof(ShellContextVisibility));
 

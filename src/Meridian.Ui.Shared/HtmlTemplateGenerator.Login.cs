@@ -319,7 +319,7 @@ public static partial class HtmlTemplateGenerator
       </form>
 
       <div class=""login-footnote"">
-        Use the configured <code>MDC_USERNAME</code> and <code>MDC_PASSWORD</code> for required local authentication.
+        Use configured <code>MDC_USERS</code> password hashes or <code>MDC_USERNAME</code> with <code>MDC_PASSWORD_HASH</code> for required local authentication.
       </div>
     </div>
   </div>

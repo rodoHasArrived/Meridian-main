@@ -7,6 +7,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.ProviderSdk;
 using Meridian.Ui.Services;
 using Meridian.Ui.Shared.Services;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Workstation.Models;
 using Microsoft.Extensions.Logging;

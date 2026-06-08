@@ -38,7 +38,7 @@ public sealed class StartupWindowViewModel : BindableBase
         AuthenticationModeText = ResolveAuthenticationModeText(authenticationSession);
         AuthenticationDetailText = ResolveAuthenticationDetailText(authenticationSession);
         CredentialSourceText = authenticationSession.IsConfigured
-            ? "Credential source: MDC_USERS or legacy MDC_USERNAME/MDC_PASSWORD"
+            ? "Credential source: MDC_USERS passwordHash or MDC_USERNAME/MDC_PASSWORD_HASH"
             : "Credential source: no desktop user accounts configured";
         ContinueWithoutCredentialsVisibility = authenticationSession.CanContinueWithoutCredentials
             ? Visibility.Visible

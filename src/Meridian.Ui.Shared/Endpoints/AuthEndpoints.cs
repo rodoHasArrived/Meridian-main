@@ -58,13 +58,13 @@ public static class AuthEndpoints
                     return Results.Json(
                         new
                         {
-                            error = "Authentication is required but not configured. Set MDC_USERNAME and MDC_PASSWORD or configure MDC_AUTH_MODE=optional for local development."
+                            error = "Authentication is required but not configured. Set MDC_USERS with passwordHash values or configure MDC_AUTH_MODE=optional for local development."
                         },
                         statusCode: StatusCodes.Status503ServiceUnavailable);
                 }
 
                 return Results.Text(
-                    "Authentication is required but not configured. Set MDC_USERNAME and MDC_PASSWORD or configure MDC_AUTH_MODE=optional for local development.",
+                    "Authentication is required but not configured. Set MDC_USERS with passwordHash values or configure MDC_AUTH_MODE=optional for local development.",
                     statusCode: StatusCodes.Status503ServiceUnavailable);
             }
 
@@ -113,6 +113,7 @@ public static class AuthEndpoints
                     username = profile?.Username,
                     role = profile?.Role.ToString(),
                     roleProfileName = profile?.RoleProfileName,
+                    passwordResetRequired = profile?.PasswordResetRequired ?? false,
                     permissions = profile?.Permissions.ToString(),
                     permissionNames = profile is null
                         ? Array.Empty<string>()
@@ -156,6 +157,7 @@ public static class AuthEndpoints
                 username = profile.Username,
                 role = profile.Role.ToString(),
                 roleProfileName = profile.RoleProfileName,
+                passwordResetRequired = profile.PasswordResetRequired,
                 permissions = profile.Permissions.ToString(),
                 permissionNames = RolePermissions.GetPermissionNames(profile.Permissions).ToArray()
             });
@@ -169,6 +171,242 @@ public static class AuthEndpoints
             .WithName("GetRolePermissionCatalog")
             .WithSummary("Returns built-in and custom roles, permissions, and permission metadata for role configuration surfaces.")
             .Produces<RolePermissionCatalogDto>(StatusCodes.Status200OK);
+
+        app.MapGet(
+                UiApiRoutes.AuthApiAccounts,
+                async (
+                    HttpContext context,
+                    LoginSessionService sessionService,
+                    IUserAccountStore accountStore,
+                    CancellationToken ct) =>
+                {
+                    var auth = ResolveManageUsersActor(context, sessionService, requestedBy: "account-admin");
+                    if (auth.StatusCode is not null)
+                    {
+                        return ToAuthorizationFailure(auth.StatusCode.Value);
+                    }
+
+                    var result = await accountStore.GetAccountsAsync(ct).ConfigureAwait(false);
+                    return Results.Ok(result);
+                })
+            .WithName("ListUserAccounts")
+            .WithSummary("Lists governed user accounts without password hashes.")
+            .Produces<IReadOnlyList<UserAccountDto>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
+
+        app.MapPut(
+                UiApiRoutes.AuthApiAccountByUsername,
+                async (
+                    string username,
+                    HttpContext context,
+                    LoginSessionService sessionService,
+                    IUserAccountStore accountStore,
+                    UserAccountUpsertRequestDto request,
+                    CancellationToken ct) =>
+                {
+                    if (!username.Equals(request.Username, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return Results.BadRequest(new { error = "Route username must match the request body." });
+                    }
+
+                    var auth = ResolveManageUsersActor(context, sessionService, request.RequestedBy);
+                    if (auth.StatusCode is not null)
+                    {
+                        return ToAuthorizationFailure(auth.StatusCode.Value);
+                    }
+
+                    try
+                    {
+                        var result = await accountStore.UpsertAsync(request, auth.Actor, ct).ConfigureAwait(false);
+                        return Results.Ok(result);
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        return Results.BadRequest(new { error = ex.Message });
+                    }
+                })
+            .WithName("UpsertUserAccount")
+            .WithSummary("Creates or updates a governed user account with a stored password hash.")
+            .Produces<UserAccountMutationResultDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
+
+        app.MapPost(
+                UiApiRoutes.AuthApiAccountPasswordReset,
+                async (
+                    string username,
+                    HttpContext context,
+                    LoginSessionService sessionService,
+                    IUserAccountStore accountStore,
+                    UserPasswordResetRequestDto request,
+                    CancellationToken ct) =>
+                {
+                    if (!username.Equals(request.Username, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return Results.BadRequest(new { error = "Route username must match the request body." });
+                    }
+
+                    var auth = ResolveManageUsersActor(context, sessionService, request.RequestedBy);
+                    if (auth.StatusCode is not null)
+                    {
+                        return ToAuthorizationFailure(auth.StatusCode.Value);
+                    }
+
+                    try
+                    {
+                        var result = await accountStore.ResetPasswordAsync(request, auth.Actor, ct: ct).ConfigureAwait(false);
+                        var revoked = request.RevokeSessions
+                            ? sessionService.RevokeSessionsForUser(username)
+                            : 0;
+                        if (revoked > 0)
+                        {
+                            await accountStore.RecordSessionRevocationAsync(
+                                new UserSessionRevokeRequestDto(
+                                    username,
+                                    RevokeAll: false,
+                                    request.RequestedBy,
+                                    request.Rationale,
+                                    request.CorrelationId),
+                                auth.Actor,
+                                revoked,
+                                ct).ConfigureAwait(false);
+                        }
+
+                        return Results.Ok(result with { RevokedSessionCount = revoked });
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        return Results.NotFound(new { error = ex.Message });
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        return Results.BadRequest(new { error = ex.Message });
+                    }
+                })
+            .WithName("ResetUserAccountPassword")
+            .WithSummary("Resets a user account password and can revoke active sessions.")
+            .Produces<UserAccountMutationResultDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden)
+            .Produces(StatusCodes.Status404NotFound);
+
+        app.MapPost(
+                UiApiRoutes.AuthApiAccountDisable,
+                async (
+                    string username,
+                    HttpContext context,
+                    LoginSessionService sessionService,
+                    IUserAccountStore accountStore,
+                    UserAccountDisableRequestDto request,
+                    CancellationToken ct) =>
+                {
+                    if (!username.Equals(request.Username, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return Results.BadRequest(new { error = "Route username must match the request body." });
+                    }
+
+                    var auth = ResolveManageUsersActor(context, sessionService, request.RequestedBy);
+                    if (auth.StatusCode is not null)
+                    {
+                        return ToAuthorizationFailure(auth.StatusCode.Value);
+                    }
+
+                    try
+                    {
+                        var result = await accountStore.SetDisabledAsync(request, auth.Actor, ct: ct).ConfigureAwait(false);
+                        var revoked = request.IsDisabled && request.RevokeSessions
+                            ? sessionService.RevokeSessionsForUser(username)
+                            : 0;
+                        if (revoked > 0)
+                        {
+                            await accountStore.RecordSessionRevocationAsync(
+                                new UserSessionRevokeRequestDto(
+                                    username,
+                                    RevokeAll: false,
+                                    request.RequestedBy,
+                                    request.Rationale,
+                                    request.CorrelationId),
+                                auth.Actor,
+                                revoked,
+                                ct).ConfigureAwait(false);
+                        }
+
+                        return Results.Ok(result with { RevokedSessionCount = revoked });
+                    }
+                    catch (KeyNotFoundException ex)
+                    {
+                        return Results.NotFound(new { error = ex.Message });
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        return Results.BadRequest(new { error = ex.Message });
+                    }
+                })
+            .WithName("SetUserAccountDisabled")
+            .WithSummary("Disables or re-enables a governed user account and can revoke active sessions.")
+            .Produces<UserAccountMutationResultDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden)
+            .Produces(StatusCodes.Status404NotFound);
+
+        app.MapPost(
+                UiApiRoutes.AuthApiSessionsRevoke,
+                async (
+                    HttpContext context,
+                    LoginSessionService sessionService,
+                    IUserAccountStore accountStore,
+                    UserSessionRevokeRequestDto request,
+                    CancellationToken ct) =>
+                {
+                    var auth = ResolveManageUsersActor(context, sessionService, request.RequestedBy);
+                    if (auth.StatusCode is not null)
+                    {
+                        return ToAuthorizationFailure(auth.StatusCode.Value);
+                    }
+
+                    var revoked = request.RevokeAll
+                        ? sessionService.RevokeAllSessions()
+                        : sessionService.RevokeSessionsForUser(request.Username ?? string.Empty);
+                    var result = await accountStore.RecordSessionRevocationAsync(
+                        request,
+                        auth.Actor,
+                        revoked,
+                        ct).ConfigureAwait(false);
+                    return Results.Ok(result);
+                })
+            .WithName("RevokeUserSessions")
+            .WithSummary("Revokes active login sessions by account or for all accounts.")
+            .Produces<UserSessionRevokeResultDto>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
+
+        app.MapGet(
+                UiApiRoutes.AuthApiAudit,
+                async (
+                    HttpContext context,
+                    LoginSessionService sessionService,
+                    IUserAccountStore accountStore,
+                    int? limit,
+                    CancellationToken ct) =>
+                {
+                    var auth = ResolveManageUsersActor(context, sessionService, requestedBy: "account-admin");
+                    if (auth.StatusCode is not null)
+                    {
+                        return ToAuthorizationFailure(auth.StatusCode.Value);
+                    }
+
+                    var result = await accountStore.GetAuditEventsAsync(limit, ct).ConfigureAwait(false);
+                    return Results.Ok(result);
+                })
+            .WithName("ListUserAccountAuditEvents")
+            .WithSummary("Lists user-account, password-reset, disable, and session-revocation audit events.")
+            .Produces<IReadOnlyList<UserAccountAuditEventDto>>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status401Unauthorized)
+            .Produces(StatusCodes.Status403Forbidden);
 
         app.MapPost(
                 UiApiRoutes.AuthApiRoleProfiles,
@@ -418,6 +656,11 @@ public static class AuthEndpoints
 
         return new ManageUsersActor(actor ?? requestedBy, null);
     }
+
+    private static IResult ToAuthorizationFailure(int statusCode)
+        => statusCode == StatusCodes.Status401Unauthorized
+            ? Results.Unauthorized()
+            : EndpointHelpers.Forbidden();
 
     private sealed record ManageUsersActor(string Actor, int? StatusCode);
 }

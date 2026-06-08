@@ -504,6 +504,12 @@ public static class UiApiRoutes
     public const string AuthApiMe = "/api/auth/me";
     public const string AuthApiRoles = "/api/auth/roles";
     public const string AuthApiRoleProfiles = "/api/auth/role-profiles";
+    public const string AuthApiAccounts = "/api/auth/accounts";
+    public const string AuthApiAccountByUsername = "/api/auth/accounts/{username}";
+    public const string AuthApiAccountPasswordReset = "/api/auth/accounts/{username}/password-reset";
+    public const string AuthApiAccountDisable = "/api/auth/accounts/{username}/disable";
+    public const string AuthApiSessionsRevoke = "/api/auth/sessions/revoke";
+    public const string AuthApiAudit = "/api/auth/audit";
     public const string AuthApiAccessAssignments = "/api/auth/access-assignments";
     public const string AuthApiAccessAssignmentRevoke = "/api/auth/access-assignments/{assignmentId}/revoke";
 

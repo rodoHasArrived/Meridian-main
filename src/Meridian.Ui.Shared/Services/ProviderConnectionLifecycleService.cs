@@ -349,7 +349,8 @@ public sealed class ProviderConnectionLifecycleService
     {
         var warnings = new List<string>
         {
-            "Credentials were saved to the encrypted local Meridian store; user environment variables were not changed."
+            "Credentials were saved to the encrypted local Meridian store; user environment variables were not changed.",
+            "Rotation metadata was recorded; verify the provider before routing dependent workflows."
         };
         if (status.Environment?.Equals(AlpacaCredentialEnvironment.LiveEnvironment, StringComparison.OrdinalIgnoreCase) == true)
         {

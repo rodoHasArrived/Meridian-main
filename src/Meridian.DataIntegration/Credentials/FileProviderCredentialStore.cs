@@ -13,6 +13,10 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
     private const string VaultFileName = "provider-credentials.vault";
     private const string KeyFileName = "provider-credentials.key";
     private const string AuditFileName = "provider-credentials.audit.jsonl";
+    private const string EnvironmentFallbackOverride = "MDC_PROVIDER_ALLOW_ENV_FALLBACK";
+    private const string PackagedBuildEnvVar = "MDC_PACKAGED_BUILD";
+    private const string CustomerBuildEnvVar = "MERIDIAN_CUSTOMER_BUILD";
+    private const int DefaultRotationWindowDays = 90;
     private static readonly byte[] Entropy = "Meridian.ProviderCredentialStore.v1"u8.ToArray();
 
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -110,6 +114,10 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
                     }
                 }
             }
+            metadata["lastRotatedAt"] = now.ToString("O");
+            metadata["rotationDueAt"] = now.AddDays(DefaultRotationWindowDays).ToString("O");
+            metadata["verificationRequired"] = "true";
+            metadata["credentialStore"] = "local-encrypted-vault";
 
             var updated = new ProviderCredentialVaultRecord
             {
@@ -187,10 +195,13 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
             if (update.Success)
             {
                 record.LastSuccessfulAt = verifiedAt;
+                record.Metadata["verificationRequired"] = "false";
+                record.Metadata["lastVerifiedBy"] = string.IsNullOrWhiteSpace(update.Actor) ? "local-operator" : update.Actor.Trim();
             }
             else
             {
                 record.LastFailureAt = verifiedAt;
+                record.Metadata["verificationRequired"] = "true";
             }
 
             vault.Providers[descriptor.ProviderId] = record;
@@ -351,7 +362,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
     private static ProviderCredentialVaultRecord? ReadEnvironmentFallback(ProviderCredentialCatalogEntry descriptor)
     {
-        if (!descriptor.RequiresCredentials)
+        if (!descriptor.RequiresCredentials || !ShouldAllowEnvironmentFallback())
         {
             return null;
         }
@@ -384,10 +395,40 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
             UpdatedAt = DateTimeOffset.UtcNow,
             Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                ["legacyFallback"] = "environment"
+                ["legacyFallback"] = "environment",
+                ["environmentFallbackAllowed"] = "true",
+                ["migrationRequired"] = "store-provider-secrets-in-vault"
             }
         };
     }
+
+    private static bool ShouldAllowEnvironmentFallback()
+    {
+        if (IsTruthy(Environment.GetEnvironmentVariable(EnvironmentFallbackOverride)))
+        {
+            return true;
+        }
+
+        if (IsTruthy(Environment.GetEnvironmentVariable(PackagedBuildEnvVar)) ||
+            IsTruthy(Environment.GetEnvironmentVariable(CustomerBuildEnvVar)))
+        {
+            return false;
+        }
+
+        return IsDevelopmentLike(Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")) ||
+               IsDevelopmentLike(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"));
+    }
+
+    private static bool IsDevelopmentLike(string? environment)
+        => environment is not null &&
+           (environment.Equals("Development", StringComparison.OrdinalIgnoreCase) ||
+            environment.Equals("Test", StringComparison.OrdinalIgnoreCase));
+
+    private static bool IsTruthy(string? value)
+        => value is not null &&
+           (value.Equals("true", StringComparison.OrdinalIgnoreCase) ||
+            value.Equals("1", StringComparison.OrdinalIgnoreCase) ||
+            value.Equals("yes", StringComparison.OrdinalIgnoreCase));
 
     private static string? ReadFirstEnvironmentValue(IReadOnlyList<string> names)
     {

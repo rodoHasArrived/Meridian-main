@@ -35,7 +35,8 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 `FundStructureSetupWorkflowService` backs `/api/fund-structure/setup-drafts/validate` and `/api/fund-structure/setup-drafts/create`, composing `IFundStructureService` commands once for browser and WPF entity setup instead of duplicating setup sequencing in clients.
 Ownership lifecycle mutation routes under `/api/fund-structure/links/{id}` require the session-derived `ManageFundStructure` permission before updating, expiring, or replacing governance-impacting ownership links, and the underlying ownership/cash-flow policy is owned by `Meridian.Entities.FundStructure`.
 
-Auth endpoints expose role-profile administration and scoped access assignment administration from
+Auth endpoints expose governed user-account administration, password reset, account disable, session
+revocation, account audit, role-profile administration, and scoped access assignment administration from
 the shared workstation host while delegating identity state to `Meridian.Identity`. `EndpointAuthorization`
 keeps the existing global role checks for compatibility and adds scoped authorization helpers so
 governance-core routes can require a permission on a specific organization, fund, portfolio, legal
@@ -71,6 +72,9 @@ ledger/accounting records. Bank-statement CSV import uses
 require a bank fund account, and apply the parsed lines through
 `IFundAccountService.IngestBankStatementAsync`; the imported bank data remains reconciliation
 evidence and does not post Meridian-owned ledger entries.
+`BankFeedTransportService` reuses that same import boundary for scheduled local-file and SFTP
+CSV pulls through `IEtlSourceReader`, and delegates Plaid API schedules to `IPlaidIngestionService`
+so API feeds stay server-owned and ledger posting remains gated by Meridian approvals.
 Plaid endpoints are registered as their own shared endpoint group from `UiApiRoutes`, with read
 and mutation access resolved from the workstation session. The shared Plaid workstation service
 keeps link-token creation, public-token exchange, item sync, webhook retention, and sandbox

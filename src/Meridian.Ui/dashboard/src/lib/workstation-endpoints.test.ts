@@ -228,6 +228,11 @@ describe("workstation API endpoint catalog", () => {
     );
     expect(AUTH_API_ENDPOINTS.roles).toBe("/api/auth/roles");
     expect(AUTH_API_ENDPOINTS.roleProfiles).toBe("/api/auth/role-profiles");
+    expect(AUTH_API_ENDPOINTS.accounts).toBe("/api/auth/accounts");
+    expect(AUTH_API_ENDPOINTS.accountPasswordReset).toBe("/api/auth/accounts/{username}/password-reset");
+    expect(AUTH_API_ENDPOINTS.accountDisable).toBe("/api/auth/accounts/{username}/disable");
+    expect(AUTH_API_ENDPOINTS.sessionsRevoke).toBe("/api/auth/sessions/revoke");
+    expect(AUTH_API_ENDPOINTS.audit).toBe("/api/auth/audit");
     expect(FUND_STRUCTURE_API_ENDPOINTS.setupDraftValidate).toBe("/api/fund-structure/setup-drafts/validate");
     expect(FUND_STRUCTURE_API_ENDPOINTS.setupDraftCreate).toBe("/api/fund-structure/setup-drafts/create");
     expect(FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingWorkbench).toBe("/api/fund-structure/ledger-mapping-view");

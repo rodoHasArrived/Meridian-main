@@ -75,11 +75,12 @@ If `make` is unavailable, use the underlying `dotnet`, `npm`, or `python` comman
 | Headless collector | `dotnet run --project src/Meridian/Meridian.csproj -- --mode headless` | Use for non-UI collection scenarios. |
 
 The WPF desktop startup screen prompts for the environment-backed Meridian operator profile. Configure
-`MDC_USERS` for multi-user login, or use the legacy `MDC_USERNAME` / `MDC_PASSWORD` pair for a
-single local admin. Development launches can continue without configured credentials when auth mode
-is optional; production launches fail closed until a user profile is configured. After sign-in, the
-desktop shell header shows the active operator and its `Log out` command returns to the same startup
-credential prompt without persisting the password in WPF config files.
+`MDC_USERS` with `passwordHash` values for multi-user login, or use the legacy `MDC_USERNAME` /
+`MDC_PASSWORD_HASH` bootstrap pair for a single local admin. Development launches can continue
+without configured credentials when auth mode is optional; production, packaged, and customer builds
+fail closed until a user profile is configured. After sign-in, the desktop shell header shows the
+active operator and its `Log out` command returns to the same startup credential prompt without
+persisting the password in WPF config files.
 
 ## First Validation Paths
 

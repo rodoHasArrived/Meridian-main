@@ -39,7 +39,7 @@ The primary network surface remains the local API host (`src/Meridian/UiServer.c
 - `UserPermission` + `RolePermissions` are now operational (not purely descriptive), and many write/admin endpoints use permission gates.
 - Residual concerns:
   - Session cookies still do not set `Secure` (open remediation item; treat TLS + secure-cookie enablement as required for non-local deployments).
-  - Credentials remain plaintext environment secrets.
+  - Operator credentials now require password hashes in `MDC_USERS` / `MDC_PASSWORD_HASH`, and governed user-account administration writes hashes plus audit evidence under the storage root; legacy plaintext password env bootstrap is no longer accepted.
   - Sessions are in-memory and reset on process restart.
   - Some endpoint groups still lack explicit permission checks (for example configuration and direct-lending routes), so authenticated overreach remains plausible where gates are absent.
 
@@ -54,6 +54,7 @@ The primary network surface remains the local API host (`src/Meridian/UiServer.c
 ### Secrets and configuration exposure
 - Sensitive masking is now applied in config payloads (`ConfigEndpoints` uses `SensitiveValueMasker` for Alpaca key/secret fields).
 - Credential endpoints require `ManageCredentials` permission, improving separation for credential mutation/read paths.
+- Provider secrets are stored through the local encrypted provider credential vault with rotation and verification metadata. Environment fallback is limited to Development/Test or an explicit migration override and is disabled for packaged/customer builds.
 - Risk remains where broad config read/write endpoints are accessible without fine-grained authorization checks.
 
 ### Filesystem, packaging, and storage

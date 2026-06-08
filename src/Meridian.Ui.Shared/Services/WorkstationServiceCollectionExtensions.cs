@@ -11,6 +11,7 @@ using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Etl;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Plaid;
@@ -22,6 +23,7 @@ using Meridian.Infrastructure.Adapters.Plaid;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Identity;
 using Meridian.Instruments.AssetOperations;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Storage;
 using Meridian.Storage.AssetOperations;
@@ -70,6 +72,7 @@ public static class WorkstationServiceCollectionExtensions
         services.AddHttpClient();
         services.AddMemoryCache();
         services.TryAddSingleton<IRolePermissionProfileStore, FileRolePermissionProfileStore>();
+        services.TryAddSingleton<IUserAccountStore, FileUserAccountStore>();
         if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")))
         {
             services.TryAddSingleton(new ScopedAccessStoreOptions
@@ -155,6 +158,10 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<PlaidWorkstationService>();
         services.TryAddSingleton<IPlaidIngestionService>(sp => sp.GetRequiredService<PlaidWorkstationService>());
         services.TryAddSingleton<IPlaidTransferService>(sp => sp.GetRequiredService<PlaidWorkstationService>());
+        services.TryAddSingleton(sp => new BankFeedTransportService(
+            sp.GetRequiredService<IFundAccountService>(),
+            sp.GetServices<IEtlSourceReader>(),
+            sp.GetService<IPlaidIngestionService>()));
         services.TryAddSingleton(BrokeragePortfolioSyncOptions.Default);
         services.TryAddSingleton<BrokeragePortfolioSyncService>();
         services.TryAddSingleton<ProviderLedgerReconciliationService>();

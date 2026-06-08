@@ -1024,6 +1024,9 @@ param(
 if ([string]::IsNullOrWhiteSpace(`$env:MDC_AUTH_MODE)) {
     `$env:MDC_AUTH_MODE = "required"
 }
+if ([string]::IsNullOrWhiteSpace(`$env:MDC_PACKAGED_BUILD)) {
+    `$env:MDC_PACKAGED_BUILD = "true"
+}
 
 function Test-MeridianEndpoint {
     param(

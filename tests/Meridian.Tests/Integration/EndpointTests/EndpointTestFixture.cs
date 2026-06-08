@@ -35,7 +35,7 @@ public sealed class EndpointTestFixture : IAsyncLifetime
     private string? _originalAuthMode;
     private string? _originalApiKey;
     private string? _originalUsername;
-    private string? _originalPassword;
+    private string? _originalPasswordHash;
     private string? _originalUsers;
     private string? _originalDisableRateLimit;
     private string? _originalUseInMemoryGovernance;
@@ -81,7 +81,7 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         _originalAuthMode = Environment.GetEnvironmentVariable("MDC_AUTH_MODE");
         _originalApiKey = Environment.GetEnvironmentVariable("MDC_API_KEY");
         _originalUsername = Environment.GetEnvironmentVariable("MDC_USERNAME");
-        _originalPassword = Environment.GetEnvironmentVariable("MDC_PASSWORD");
+        _originalPasswordHash = Environment.GetEnvironmentVariable("MDC_PASSWORD_HASH");
         _originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
         _originalDisableRateLimit = Environment.GetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT");
         _originalUseInMemoryGovernance = Environment.GetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE");
@@ -90,7 +90,7 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         Environment.SetEnvironmentVariable("MDC_AUTH_MODE", "optional");
         Environment.SetEnvironmentVariable("MDC_API_KEY", null);
         Environment.SetEnvironmentVariable("MDC_USERNAME", null);
-        Environment.SetEnvironmentVariable("MDC_PASSWORD", null);
+        Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", null);
         Environment.SetEnvironmentVariable("MDC_USERS", null);
         Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", "true");
         // All TestServer requests share a null RemoteIpAddress which maps to the "unknown"
@@ -189,7 +189,7 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         Environment.SetEnvironmentVariable("MDC_AUTH_MODE", _originalAuthMode);
         Environment.SetEnvironmentVariable("MDC_API_KEY", _originalApiKey);
         Environment.SetEnvironmentVariable("MDC_USERNAME", _originalUsername);
-        Environment.SetEnvironmentVariable("MDC_PASSWORD", _originalPassword);
+        Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", _originalPasswordHash);
         Environment.SetEnvironmentVariable("MDC_USERS", _originalUsers);
         Environment.SetEnvironmentVariable("MDC_DISABLE_RATE_LIMIT", _originalDisableRateLimit);
         Environment.SetEnvironmentVariable("MERIDIAN_USE_INMEMORY_GOVERNANCE", _originalUseInMemoryGovernance);

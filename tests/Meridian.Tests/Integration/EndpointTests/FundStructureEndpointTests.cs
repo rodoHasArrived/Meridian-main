@@ -28,6 +28,8 @@ namespace Meridian.Tests.Integration.EndpointTests;
 [Collection("Endpoint")]
 public sealed class FundStructureEndpointTests
 {
+    private const string TestPassHash = "pbkdf2-sha256$210000$DdocJLRlUqhBZlBR8YAatA==$MpNJJHhFb6+it6jMKuIzwHtg9Lq/WehIjKrC1m6TRQU=";
+
     private readonly EndpointTestFixture _fixture;
     private readonly HttpClient _client;
 
@@ -61,7 +63,7 @@ public sealed class FundStructureEndpointTests
         var originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
         Environment.SetEnvironmentVariable(
             "MDC_USERS",
-            """[{"username":"fund-ops","password":"test-pass","role":"Accounting"}]""");
+            $$"""[{"username":"fund-ops","passwordHash":"{{TestPassHash}}","role":"Accounting"}]""");
 
         try
         {
@@ -96,7 +98,7 @@ public sealed class FundStructureEndpointTests
         var originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
         Environment.SetEnvironmentVariable(
             "MDC_USERS",
-            """[{"username":"read-only","password":"test-pass","role":"ReadOnly"}]""");
+            $$"""[{"username":"read-only","passwordHash":"{{TestPassHash}}","role":"ReadOnly"}]""");
 
         try
         {
@@ -709,7 +711,7 @@ public sealed class FundStructureEndpointTests
         var originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
         Environment.SetEnvironmentVariable(
             "MDC_USERS",
-            """[{"username":"read-only","password":"test-pass","role":"ReadOnly"}]""");
+            $$"""[{"username":"read-only","passwordHash":"{{TestPassHash}}","role":"ReadOnly"}]""");
 
         try
         {
@@ -780,7 +782,7 @@ public sealed class FundStructureEndpointTests
         var originalUsers = Environment.GetEnvironmentVariable("MDC_USERS");
         Environment.SetEnvironmentVariable(
             "MDC_USERS",
-            """[{"username":"fund-ops","password":"test-pass","role":"Accounting"}]""");
+            $$"""[{"username":"fund-ops","passwordHash":"{{TestPassHash}}","role":"Accounting"}]""");
 
         try
         {

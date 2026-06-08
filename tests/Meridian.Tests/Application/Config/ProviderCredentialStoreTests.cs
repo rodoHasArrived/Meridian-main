@@ -50,6 +50,36 @@ public sealed class ProviderCredentialStoreTests : IDisposable
         status.CredentialState.Should().Be(ProviderCredentialStateDto.Configured);
         status.CredentialSource.Should().Be(ProviderCredentialSourceDto.LocalEncryptedStore);
         status.MaskedKeyPreview.Should().NotContain("paper-key-id");
+        status.AuditMetadata.Should().ContainKey("lastRotatedAt");
+        status.AuditMetadata.Should().ContainKey("rotationDueAt");
+        status.AuditMetadata.Should().Contain("verificationRequired", "true");
+    }
+
+    [Fact]
+    public async Task RecordVerificationAsync_SuccessClearsVerificationRequiredMetadata()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(new ProviderCredentialSaveRequest(
+            "alpaca",
+            new Dictionary<string, string?>
+            {
+                ["KeyId"] = "paper-key-id",
+                ["SecretKey"] = "paper-secret"
+            },
+            Environment: "paper",
+            Actor: "test-operator"));
+
+        await store.RecordVerificationAsync(new ProviderCredentialVerificationUpdate(
+            ProviderId: "alpaca",
+            Success: true,
+            ErrorMessage: null,
+            ExternalAccountId: "paper-account-1",
+            Actor: "test-operator"));
+
+        var status = await store.GetStatusAsync("alpaca");
+        status.CredentialState.Should().Be(ProviderCredentialStateDto.Verified);
+        status.AuditMetadata.Should().Contain("verificationRequired", "false");
+        status.AuditMetadata.Should().Contain("lastVerifiedBy", "test-operator");
     }
 
     [Theory]
@@ -174,6 +204,11 @@ public sealed class ProviderCredentialStoreTests : IDisposable
     public async Task ReadForProviderAsync_UsesEnvironmentAsReadOnlyLegacyFallback()
     {
         using var env = new EnvironmentScope("POLYGON_API_KEY", "legacy-polygon-key");
+        using var dotnet = new EnvironmentScope("DOTNET_ENVIRONMENT", "Test");
+        using var aspNetCore = new EnvironmentScope("ASPNETCORE_ENVIRONMENT", "Test");
+        using var packaged = new EnvironmentScope("MDC_PACKAGED_BUILD", null);
+        using var customer = new EnvironmentScope("MERIDIAN_CUSTOMER_BUILD", null);
+        using var overrideFallback = new EnvironmentScope("MDC_PROVIDER_ALLOW_ENV_FALLBACK", null);
         var store = new FileProviderCredentialStore(_root);
 
         var read = await store.ReadForProviderAsync("polygon");
@@ -185,6 +220,43 @@ public sealed class ProviderCredentialStoreTests : IDisposable
         read.Get("ApiKey").Should().Be("legacy-polygon-key");
         status.CredentialSource.Should().Be(ProviderCredentialSourceDto.Environment);
         Environment.GetEnvironmentVariable("POLYGON_API_KEY").Should().Be("legacy-polygon-key");
+    }
+
+    [Fact]
+    public async Task ReadForProviderAsync_DoesNotUseEnvironmentFallbackInProductionOrPackagedBuilds()
+    {
+        using var env = new EnvironmentScope("POLYGON_API_KEY", "legacy-polygon-key");
+        using var dotnet = new EnvironmentScope("DOTNET_ENVIRONMENT", "Production");
+        using var aspNetCore = new EnvironmentScope("ASPNETCORE_ENVIRONMENT", "Production");
+        using var packaged = new EnvironmentScope("MDC_PACKAGED_BUILD", "true");
+        using var customer = new EnvironmentScope("MERIDIAN_CUSTOMER_BUILD", null);
+        using var overrideFallback = new EnvironmentScope("MDC_PROVIDER_ALLOW_ENV_FALLBACK", null);
+        var store = new FileProviderCredentialStore(_root);
+
+        var read = await store.ReadForProviderAsync("polygon");
+        var status = await store.GetStatusAsync("polygon");
+
+        read.Should().BeNull();
+        status.CredentialState.Should().Be(ProviderCredentialStateDto.Missing);
+        status.CredentialSource.Should().Be(ProviderCredentialSourceDto.None);
+    }
+
+    [Fact]
+    public async Task ReadForProviderAsync_AllowsExplicitEnvironmentFallbackOverrideForMigration()
+    {
+        using var env = new EnvironmentScope("POLYGON_API_KEY", "legacy-polygon-key");
+        using var dotnet = new EnvironmentScope("DOTNET_ENVIRONMENT", "Production");
+        using var aspNetCore = new EnvironmentScope("ASPNETCORE_ENVIRONMENT", "Production");
+        using var packaged = new EnvironmentScope("MDC_PACKAGED_BUILD", "true");
+        using var overrideFallback = new EnvironmentScope("MDC_PROVIDER_ALLOW_ENV_FALLBACK", "true");
+        var store = new FileProviderCredentialStore(_root);
+
+        var read = await store.ReadForProviderAsync("polygon");
+        var status = await store.GetStatusAsync("polygon");
+
+        read.Should().NotBeNull();
+        read!.Source.Should().Be(ProviderCredentialSourceDto.Environment);
+        status.AuditMetadata.Should().Contain("migrationRequired", "store-provider-secrets-in-vault");
     }
 
     [Fact]
@@ -213,7 +285,7 @@ public sealed class ProviderCredentialStoreTests : IDisposable
         private readonly string _name;
         private readonly string? _previous;
 
-        public EnvironmentScope(string name, string value)
+        public EnvironmentScope(string name, string? value)
         {
             _name = name;
             _previous = Environment.GetEnvironmentVariable(name);

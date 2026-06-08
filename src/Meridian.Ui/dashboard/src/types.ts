@@ -188,6 +188,99 @@ export interface RolePermissionProfileUpsertResult {
   auditEvent: RolePermissionProfileAuditEvent;
 }
 
+export interface UserAccount {
+  username: string;
+  role: string;
+  roleProfileName?: string | null;
+  permissionNames: string[];
+  permissionMask: number;
+  isDisabled: boolean;
+  passwordResetRequired: boolean;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+  createdBy: string;
+  updatedBy: string;
+  lastPasswordResetAtUtc?: string | null;
+  disabledAtUtc?: string | null;
+  disabledBy?: string | null;
+  lastAuditId?: string | null;
+}
+
+export interface UserAccountUpsertRequest {
+  username: string;
+  role: string;
+  roleProfileName?: string | null;
+  permissionNames?: string[] | null;
+  newPassword?: string | null;
+  passwordHash?: string | null;
+  isDisabled?: boolean | null;
+  passwordResetRequired: boolean;
+  requestedBy: string;
+  rationale: string;
+  correlationId?: string | null;
+}
+
+export interface UserPasswordResetRequest {
+  username: string;
+  newPassword?: string | null;
+  passwordHash?: string | null;
+  passwordResetRequired: boolean;
+  revokeSessions: boolean;
+  requestedBy: string;
+  rationale: string;
+  correlationId?: string | null;
+}
+
+export interface UserAccountDisableRequest {
+  username: string;
+  isDisabled: boolean;
+  revokeSessions: boolean;
+  requestedBy: string;
+  rationale: string;
+  correlationId?: string | null;
+}
+
+export interface UserAccountAuditEvent {
+  auditId: string;
+  eventType: string;
+  occurredAtUtc: string;
+  actor: string;
+  username: string;
+  rationale: string;
+  correlationId: string;
+  role: string;
+  permissionNames: string[];
+  permissionMask: number;
+  isDisabled: boolean;
+  passwordResetRequired: boolean;
+  revokedSessionCount: number;
+}
+
+export interface UserAccountMutationResult {
+  account: UserAccount;
+  auditEvent: UserAccountAuditEvent;
+  revokedSessionCount: number;
+}
+
+export interface UserSessionRevokeRequest {
+  username?: string | null;
+  revokeAll: boolean;
+  requestedBy: string;
+  rationale: string;
+  correlationId?: string | null;
+}
+
+export interface UserSessionRevokeResult {
+  auditId: string;
+  occurredAtUtc: string;
+  actor: string;
+  username?: string | null;
+  revokedAll: boolean;
+  revokedSessionCount: number;
+  rationale: string;
+  correlationId: string;
+}
+
 export interface WorkspaceSummary {
   key: WorkspaceKey;
   label: string;

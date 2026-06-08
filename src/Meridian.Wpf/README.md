@@ -38,8 +38,8 @@ Application startup now shows `StartupWindow` before the main shell. The startup
 credentials through the Identity-owned `UserProfileRegistry` and `LoginSessionService`, keeps the
 desktop session in `DesktopAuthenticationSession`, and opens `MainWindow` only after a configured
 operator signs in or an unconfigured optional-development session is explicitly accepted. WPF reads
-`MDC_USERS` first and then the legacy `MDC_USERNAME` / `MDC_PASSWORD` fallback through Identity; it
-does not persist login credentials in desktop config files. The main shell shows the active operator
+`MDC_USERS` password hashes first and then the legacy `MDC_USERNAME` / `MDC_PASSWORD_HASH` bootstrap
+fallback through Identity; it does not persist login credentials in desktop config files. The main shell shows the active operator
 session in its header and the `Log out` command signs out the in-memory session, hides the shell, and
 returns to the startup login screen with a fresh startup view model.
 Manual desktop secret entry uses `SecretInputControl`, which keeps values hidden by default, exposes
@@ -207,7 +207,11 @@ multi-step strip, so operator workflow state is derived from shared fund, reconc
 and audit posture without crowding the queue workbench.
 Fund Ledger and Fund Accounts drill-in surfaces use Accounting wording for route banners,
 report-pack preview, account queues, and reconciliation guidance while preserving compatibility
-type names where needed.
+type names where needed. Fund Ledger now reduces its duplicate hero to a compact action strip and
+uses a shared dense account table plus selected-account inspector for the Accounts tab, with account
+portfolio drill-through blocked until a row is selected. Fund Accounts now opens on a compact action
+strip and combined dense account table plus selected-account inspector, with provider binding and
+route-preview evidence kept as supporting workbench panels below the primary account queue.
 Fund Ledger report-pack handoff preview copy also names the Accounting workspace so downstream
 board, investor, compliance, and fund-ops packets do not surface the legacy Governance root label.
 `WorkspaceCommandSurfaceControl` and `WorkspaceEvidenceStripControl` take explicit automation ID
@@ -269,8 +273,9 @@ crowding the queue workbench. Retained `DataOperations` route and smoke-test nam
 compatibility shims only, not the canonical presentation-model taxonomy.
 `MainPageViewModel` retains the design-document primary operator workflow route map
 (`Import`, `Validate`, `Reconcile`, `Investigate`, `Approve`, `Report`), while the shared
-`WorkspaceEvidenceStripControl` keeps visible shell chrome to compact next-action and evidence
-summaries so primary workspace content stays exposed.
+`WorkspaceEvidenceStripControl` keeps compact next-action and evidence summaries on workspace home
+pages only. Data terminal and deep workflow pages collapse that shared summary chrome and the
+split-pane layout bar so the page-owned workbench remains the primary surface.
 Provider Health now follows the same focused workstation composition: the page-level hero is reduced
 to compact freshness controls, provider management centers the shared dense table plus inspector,
 and provider-specific diagnostics are disabled until a row is selected. Affected-workflow labels use

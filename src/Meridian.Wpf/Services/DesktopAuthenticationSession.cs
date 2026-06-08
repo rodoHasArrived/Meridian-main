@@ -5,7 +5,7 @@ namespace Meridian.Wpf.Services;
 
 /// <summary>
 /// Holds the authenticated desktop operator for the current WPF process.
-/// Credentials stay environment-backed through <see cref="UserProfileRegistry"/>.
+/// Credentials stay hash-backed through <see cref="UserProfileRegistry"/>.
 /// </summary>
 public sealed class DesktopAuthenticationSession(LoginSessionService loginSessionService)
 {
@@ -43,7 +43,7 @@ public sealed class DesktopAuthenticationSession(LoginSessionService loginSessio
         if (!IsConfigured)
         {
             return DesktopSignInResult.Failed(IsAuthenticationRequired
-                ? "No Meridian desktop users are configured. Set MDC_USERS or MDC_USERNAME/MDC_PASSWORD before launching this environment."
+                ? "No Meridian desktop users are configured. Set MDC_USERS with passwordHash values before launching this environment."
                 : "No Meridian desktop users are configured for this local session.");
         }
 

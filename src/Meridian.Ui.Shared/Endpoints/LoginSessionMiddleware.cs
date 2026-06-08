@@ -137,13 +137,13 @@ public sealed class LoginSessionMiddleware
         {
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsync(
-                """{"error":"Authentication is required but not configured. Set MDC_USERNAME and MDC_PASSWORD or configure MDC_AUTH_MODE=optional for local development."}""");
+                """{"error":"Authentication is required but not configured. Set MDC_USERS with passwordHash values or configure MDC_AUTH_MODE=optional for local development."}""");
             return;
         }
 
         context.Response.ContentType = "text/plain; charset=utf-8";
         await context.Response.WriteAsync(
-            "Authentication is required but not configured. Set MDC_USERNAME and MDC_PASSWORD or configure MDC_AUTH_MODE=optional for local development.");
+            "Authentication is required but not configured. Set MDC_USERS with passwordHash values or configure MDC_AUTH_MODE=optional for local development.");
     }
 
     private static bool IsLifecycleTokenRequest(HttpContext context, string trimmedPath)

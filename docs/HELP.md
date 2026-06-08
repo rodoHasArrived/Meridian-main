@@ -118,8 +118,9 @@ pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production
 `MERIDIAN_FUND_ACCOUNTS_CONNECTION_STRING` plus `MERIDIAN_FUND_STRUCTURE_CONNECTION_STRING` before
 the desktop-local host starts. `-BuildOnly` verifies the Release build without starting the host.
 The WPF startup screen uses the same environment-backed operator credentials as the browser
-workstation: prefer `MDC_USERS`, or use `MDC_USERNAME` / `MDC_PASSWORD` for a single local admin.
-Production auth fails closed when no user profile is configured.
+workstation: prefer `MDC_USERS` with `passwordHash` values, or use `MDC_USERNAME` /
+`MDC_PASSWORD_HASH` for a single local admin bootstrap. Production, packaged, and customer-build auth
+fails closed when no user profile is configured.
 
 ## Troubleshooting
 

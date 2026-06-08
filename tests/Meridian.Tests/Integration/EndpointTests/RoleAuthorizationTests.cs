@@ -24,6 +24,15 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     private static readonly JsonSerializerOptions JsonOpts =
         new() { PropertyNameCaseInsensitive = true };
 
+    private const string PwHash = "pbkdf2-sha256$210000$sojUSudyG6r1NOVSUOiReg==$ktvN4ENX7BYpcwa4bgEIV037Ak8ktnT7fmjabd68qMo=";
+    private const string Pass1Hash = "pbkdf2-sha256$210000$gxadGi1uP6lnWXkOOWivJw==$7eLeyYf5oRzAO7sPjPTcqRzQytrGuU2NRxi6aiEb3Hw=";
+    private const string Pass2Hash = "pbkdf2-sha256$210000$uW+Zrqf+fiaFdwl8kzxHlA==$BAogTzsYmLJAhD1ZXy4534Ll7nsJdcodl54yUDNAIw0=";
+    private const string CorrectHash = "pbkdf2-sha256$210000$OWWO5woPFXjNDMS2xH/Zhg==$BhBDOCqpOzn0Ev9a0T1hQrI1jSsS2gzCPw0y8LwGZ4o=";
+    private const string PassHash = "pbkdf2-sha256$210000$ECKlpXI2tTxIV7I7sOEYEg==$j9rXTDIWWDm9x63UxGLfWKOblUvRHWJDZr/Ygrn3sPY=";
+    private const string T1Hash = "pbkdf2-sha256$210000$gsKsf7ov8zGR8qO3EmT5aw==$jcyrrsMzlYHDR2PAQVBomw2MyvjbIrBQZMM3o6Pgtu4=";
+    private const string A1Hash = "pbkdf2-sha256$210000$xzVxfH5/KLIwNGxmKoK94g==$6jvefF6BbU/DOTFHoqhk/b9/Dzaq+LbuKyMZkVEKySw=";
+    private const string AdminPassHash = "pbkdf2-sha256$210000$RwygFvkip6YbLobhSB8FwQ==$JVXOoM8ZMW5NsQznykddTiHghz7NlLwZEP5hVHJrxDA=";
+
     public RoleAuthorizationTests(EndpointTestFixture fixture) : base(fixture) { }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
@@ -174,8 +183,8 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     [Fact]
     public void UserProfileRegistry_MultiUser_CustomPermissionsOverrideBuiltInRolePermissions()
     {
-        const string usersJson = """
-            [{"username":"ledger-admin","password":"pw","role":"Accounting","roleProfileName":"Ledger Admin","permissions":["ViewTrades","ViewAnalytics","ViewConfig","ModifyConfig"]}]
+        var usersJson = $$"""
+            [{"username":"ledger-admin","passwordHash":"{{PwHash}}","role":"Accounting","roleProfileName":"Ledger Admin","permissions":["ViewTrades","ViewAnalytics","ViewConfig","ModifyConfig"]}]
             """;
         Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
 
@@ -238,8 +247,8 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
                 Rationale: "Bind stored role profile to configured user."),
             actor: "ops-admin").GetAwaiter().GetResult();
 
-        const string usersJson = """
-            [{"username":"ledger-reviewer","password":"pw","role":"Accounting","roleProfileName":"Ledger Reviewer"}]
+        var usersJson = $$"""
+            [{"username":"ledger-reviewer","passwordHash":"{{PwHash}}","role":"Accounting","roleProfileName":"Ledger Reviewer"}]
             """;
         Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
 
@@ -265,7 +274,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     public async Task AuthRoleProfiles_WithManageUsers_CreatesCustomProfileAndPreservesSessionPermissions()
     {
         var profileName = $"Close Reviewer {Guid.NewGuid():N}";
-        Environment.SetEnvironmentVariable("MDC_USERS", """[{"username":"admin","password":"pw","role":"Admin"}]""");
+        Environment.SetEnvironmentVariable("MDC_USERS", $$"""[{"username":"admin","passwordHash":"{{PwHash}}","role":"Admin"}]""");
         try
         {
             using var cookieClient = Fixture.CreateNoRedirectClient();
@@ -302,7 +311,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
             Environment.SetEnvironmentVariable("MDC_USERS", null);
         }
 
-        Environment.SetEnvironmentVariable("MDC_USERS", $$"""[{"username":"reviewer","password":"pw","role":"Accounting","roleProfileName":"{{profileName}}"}]""");
+        Environment.SetEnvironmentVariable("MDC_USERS", $$"""[{"username":"reviewer","passwordHash":"{{PwHash}}","role":"Accounting","roleProfileName":"{{profileName}}"}]""");
         try
         {
             using var reviewerClient = Fixture.CreateNoRedirectClient();
@@ -337,7 +346,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     [Fact]
     public async Task AuthRoleProfiles_InvalidPermission_ReturnsBadRequest()
     {
-        Environment.SetEnvironmentVariable("MDC_USERS", """[{"username":"admin","password":"pw","role":"Admin"}]""");
+        Environment.SetEnvironmentVariable("MDC_USERS", $$"""[{"username":"admin","passwordHash":"{{PwHash}}","role":"Admin"}]""");
         try
         {
             using var cookieClient = Fixture.CreateNoRedirectClient();
@@ -372,10 +381,107 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     // ── UserProfileRegistry tests ────────────────────────────────────────────
 
     [Fact]
-    public void UserProfileRegistry_Legacy_AdminRoleAssignedForSingleUserEnvVar()
+    public void PasswordHashing_HashPassword_VerifiesAndRejectsWrongPassword()
+    {
+        var hash = Meridian.Identity.PasswordHashing.HashPassword("operator-secret");
+
+        hash.Should().StartWith("pbkdf2-sha256$");
+        hash.Should().NotContain("operator-secret");
+        Meridian.Identity.PasswordHashing.VerifyPassword("operator-secret", hash).Should().BeTrue();
+        Meridian.Identity.PasswordHashing.VerifyPassword("wrong-secret", hash).Should().BeFalse();
+    }
+
+    [Fact]
+    public void UserProfileRegistry_MultiUser_PlaintextPasswordFieldDoesNotConfigureAccount()
+    {
+        Environment.SetEnvironmentVariable("MDC_USERS", """[{"username":"plain","password":"pw","role":"Admin"}]""");
+        Environment.SetEnvironmentVariable("MDC_USERNAME", null);
+        Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", null);
+        try
+        {
+            var registry = new Meridian.Identity.UserProfileRegistry();
+
+            registry.IsConfigured.Should().BeFalse();
+            registry.Authenticate("plain", "pw").Should().BeNull();
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MDC_USERS", null);
+        }
+    }
+
+    [Fact]
+    public async Task FileUserAccountStore_ResetDisableAndAudit_DoesNotPersistPlaintextPassword()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(FileUserAccountStore_ResetDisableAndAudit_DoesNotPersistPlaintextPassword));
+        var store = new Meridian.Identity.FileUserAccountStore(new StorageOptions { RootPath = artifacts.RootPath });
+
+        var created = await store.UpsertAsync(
+            new UserAccountUpsertRequestDto(
+                Username: "ops-admin",
+                Role: nameof(UserRole.Admin),
+                RoleProfileName: null,
+                PermissionNames: [nameof(UserPermission.ManageUsers)],
+                NewPassword: "create-secret",
+                PasswordHash: null,
+                IsDisabled: false,
+                PasswordResetRequired: false,
+                RequestedBy: "security-admin",
+                Rationale: "Create governed account.",
+                CorrelationId: "account-create-test"),
+            actor: "security-admin");
+
+        created.Account.Username.Should().Be("ops-admin");
+        var accountPath = Path.Combine(artifacts.RootPath, "governance", "user-accounts.json");
+        var accountJson = await File.ReadAllTextAsync(accountPath);
+        accountJson.Should().Contain("pbkdf2-sha256");
+        accountJson.Should().NotContain("create-secret");
+
+        var reset = await store.ResetPasswordAsync(
+            new UserPasswordResetRequestDto(
+                Username: "ops-admin",
+                NewPassword: "reset-secret",
+                PasswordHash: null,
+                PasswordResetRequired: true,
+                RevokeSessions: true,
+                RequestedBy: "security-admin",
+                Rationale: "Rotate account password.",
+                CorrelationId: "password-reset-test"),
+            actor: "security-admin",
+            revokedSessionCount: 2);
+        reset.Account.PasswordResetRequired.Should().BeTrue();
+        reset.RevokedSessionCount.Should().Be(2);
+
+        var disabled = await store.SetDisabledAsync(
+            new UserAccountDisableRequestDto(
+                Username: "ops-admin",
+                IsDisabled: true,
+                RevokeSessions: true,
+                RequestedBy: "security-admin",
+                Rationale: "Disable departed operator.",
+                CorrelationId: "account-disable-test"),
+            actor: "security-admin",
+            revokedSessionCount: 1);
+        disabled.Account.IsDisabled.Should().BeTrue();
+        disabled.RevokedSessionCount.Should().Be(1);
+
+        accountJson = await File.ReadAllTextAsync(accountPath);
+        accountJson.Should().NotContain("reset-secret");
+
+        var audit = await store.GetAuditEventsAsync(limit: 10);
+        audit.Select(item => item.EventType).Should().Contain([
+            "user-account-created",
+            "user-password-reset",
+            "user-account-disabled"
+        ]);
+        audit.Should().Contain(item => item.RevokedSessionCount == 2);
+    }
+
+    [Fact]
+    public void UserProfileRegistry_Legacy_AdminRoleAssignedForSingleUserPasswordHashEnvVar()
     {
         Environment.SetEnvironmentVariable("MDC_USERNAME", "admin");
-        Environment.SetEnvironmentVariable("MDC_PASSWORD", "pass1");
+        Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", Pass1Hash);
         Environment.SetEnvironmentVariable("MDC_USERS", null);
         try
         {
@@ -390,22 +496,22 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         finally
         {
             Environment.SetEnvironmentVariable("MDC_USERNAME", null);
-            Environment.SetEnvironmentVariable("MDC_PASSWORD", null);
+            Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", null);
         }
     }
 
     [Fact]
     public void UserProfileRegistry_MultiUser_CorrectRolesLoaded()
     {
-        const string usersJson = """
+        var usersJson = $$"""
             [
-              {"username":"alice","password":"pass1","role":"TradeDesk"},
-              {"username":"bob","password":"pass2","role":"Accounting"}
+              {"username":"alice","passwordHash":"{{Pass1Hash}}","role":"TradeDesk"},
+              {"username":"bob","passwordHash":"{{Pass2Hash}}","role":"Accounting"}
             ]
             """;
         Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
         Environment.SetEnvironmentVariable("MDC_USERNAME", null);
-        Environment.SetEnvironmentVariable("MDC_PASSWORD", null);
+        Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", null);
         try
         {
             var registry = new Meridian.Identity.UserProfileRegistry();
@@ -428,7 +534,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     [Fact]
     public void UserProfileRegistry_MultiUser_WrongPasswordReturnsNull()
     {
-        const string usersJson = """[{"username":"alice","password":"correct","role":"Developer"}]""";
+        var usersJson = $$"""[{"username":"alice","passwordHash":"{{CorrectHash}}","role":"Developer"}]""";
         Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
         try
         {
@@ -445,10 +551,10 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     [Fact]
     public void UserProfileRegistry_MultiUser_TakesPrecedenceOverLegacyEnvVars()
     {
-        const string usersJson = """[{"username":"power","password":"pw","role":"Developer"}]""";
+        var usersJson = $$"""[{"username":"power","passwordHash":"{{PwHash}}","role":"Developer"}]""";
         Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
         Environment.SetEnvironmentVariable("MDC_USERNAME", "legacy");
-        Environment.SetEnvironmentVariable("MDC_PASSWORD", "pass");
+        Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", PassHash);
         try
         {
             var registry = new Meridian.Identity.UserProfileRegistry();
@@ -461,7 +567,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         {
             Environment.SetEnvironmentVariable("MDC_USERS", null);
             Environment.SetEnvironmentVariable("MDC_USERNAME", null);
-            Environment.SetEnvironmentVariable("MDC_PASSWORD", null);
+            Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", null);
         }
     }
 
@@ -470,7 +576,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     [Fact]
     public async Task LoginJson_WithValidMultiUserCredentials_ReturnsRoleInResponse()
     {
-        const string usersJson = """[{"username":"trader","password":"t1","role":"TradeDesk"}]""";
+        var usersJson = $$"""[{"username":"trader","passwordHash":"{{T1Hash}}","role":"TradeDesk"}]""";
         Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
         try
         {
@@ -490,10 +596,10 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     }
 
     [Fact]
-    public async Task LoginJson_WithLegacyAdminCredentials_ReturnsAdminRole()
+    public async Task LoginJson_WithLegacyAdminPasswordHashCredentials_ReturnsAdminRole()
     {
         Environment.SetEnvironmentVariable("MDC_USERNAME", "sysadmin");
-        Environment.SetEnvironmentVariable("MDC_PASSWORD", "adminpass");
+        Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", AdminPassHash);
         Environment.SetEnvironmentVariable("MDC_USERS", null);
         try
         {
@@ -506,7 +612,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         finally
         {
             Environment.SetEnvironmentVariable("MDC_USERNAME", null);
-            Environment.SetEnvironmentVariable("MDC_PASSWORD", null);
+            Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", null);
         }
     }
 
@@ -523,7 +629,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     [Fact]
     public async Task AuthMe_AfterLogin_ReturnsCurrentUserProfile()
     {
-        const string usersJson = """[{"username":"analyst","password":"a1","role":"Analysis"}]""";
+        var usersJson = $$"""[{"username":"analyst","passwordHash":"{{A1Hash}}","role":"Analysis"}]""";
         Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
         try
         {
@@ -565,7 +671,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     [Fact]
     public async Task AuthMe_WithCustomAdminPermissionOverride_DoesNotRegainBuiltInAdminPermissions()
     {
-        const string usersJson = """[{"username":"limited-admin","password":"pw","role":"Admin","roleProfileName":"Limited Admin","permissions":["ViewMarketData"]}]""";
+        var usersJson = $$"""[{"username":"limited-admin","passwordHash":"{{PwHash}}","role":"Admin","roleProfileName":"Limited Admin","permissions":["ViewMarketData"]}]""";
         Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
         try
         {
@@ -616,6 +722,100 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
         body.Should().NotBeNull();
         body!.Value.TryGetProperty("permissionNames", out var permissionNames).Should().BeTrue();
         return permissionNames.EnumerateArray().Select(permission => permission.GetString()!).ToArray();
+    }
+
+    [Fact]
+    public async Task AuthAccounts_WithManageUsers_AdministersAccountLifecycleAndRevokesSessions()
+    {
+        var username = $"ops-{Guid.NewGuid():N}";
+        using var adminClient = Fixture.CreatePermittedClient(UserPermission.ManageUsers);
+
+        var createResponse = await adminClient.PutAsJsonAsync(
+            $"/api/auth/accounts/{username}",
+            new UserAccountUpsertRequestDto(
+                Username: username,
+                Role: nameof(UserRole.Accounting),
+                RoleProfileName: null,
+                PermissionNames: [nameof(UserPermission.ViewTrades)],
+                NewPassword: "initial-pass",
+                PasswordHash: null,
+                IsDisabled: false,
+                PasswordResetRequired: false,
+                RequestedBy: "account-admin",
+                Rationale: "Create account through product administration.",
+                CorrelationId: "auth-account-create"));
+        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var listResponse = await adminClient.GetAsync("/api/auth/accounts");
+        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var listJson = await listResponse.Content.ReadAsStringAsync();
+        listJson.Should().Contain(username);
+        listJson.Should().NotContain("passwordHash");
+        listJson.Should().NotContain("initial-pass");
+
+        using var sessionClient = Fixture.CreateNoRedirectClient();
+        var loginResponse = await sessionClient.PostAsJsonAsync("/api/auth/login", new { Username = username, Password = "initial-pass" });
+        loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var sessionCookie = loginResponse.Headers
+            .Where(header => header.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
+            .SelectMany(header => header.Value)
+            .First(value => value.Contains("mdc-session", StringComparison.OrdinalIgnoreCase));
+
+        var resetResponse = await adminClient.PostAsJsonAsync(
+            $"/api/auth/accounts/{username}/password-reset",
+            new UserPasswordResetRequestDto(
+                Username: username,
+                NewPassword: "rotated-pass",
+                PasswordHash: null,
+                PasswordResetRequired: true,
+                RevokeSessions: true,
+                RequestedBy: "account-admin",
+                Rationale: "Rotate password and revoke active sessions.",
+                CorrelationId: "auth-account-reset"));
+        resetResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var resetBody = await resetResponse.Content.ReadFromJsonAsync<UserAccountMutationResultDto>(JsonOptions);
+        resetBody.Should().NotBeNull();
+        resetBody!.RevokedSessionCount.Should().BeGreaterThan(0);
+        resetBody.Account.PasswordResetRequired.Should().BeTrue();
+
+        using var staleMeRequest = new HttpRequestMessage(HttpMethod.Get, "/api/auth/me");
+        staleMeRequest.Headers.Add("Cookie", sessionCookie);
+        var staleMeResponse = await sessionClient.SendAsync(staleMeRequest);
+        staleMeResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+        var rotatedLoginResponse = await sessionClient.PostAsJsonAsync("/api/auth/login", new { Username = username, Password = "rotated-pass" });
+        rotatedLoginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var rotatedLoginBody = await rotatedLoginResponse.Content.ReadFromJsonAsync<JsonElement>(JsonOpts);
+        rotatedLoginBody.GetProperty("passwordResetRequired").GetBoolean().Should().BeTrue();
+
+        var disableResponse = await adminClient.PostAsJsonAsync(
+            $"/api/auth/accounts/{username}/disable",
+            new UserAccountDisableRequestDto(
+                Username: username,
+                IsDisabled: true,
+                RevokeSessions: true,
+                RequestedBy: "account-admin",
+                Rationale: "Disable account through product administration.",
+                CorrelationId: "auth-account-disable"));
+        disableResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var disableBody = await disableResponse.Content.ReadFromJsonAsync<UserAccountMutationResultDto>(JsonOptions);
+        disableBody.Should().NotBeNull();
+        disableBody!.Account.IsDisabled.Should().BeTrue();
+        disableBody.RevokedSessionCount.Should().BeGreaterThan(0);
+
+        var disabledLoginResponse = await sessionClient.PostAsJsonAsync("/api/auth/login", new { Username = username, Password = "rotated-pass" });
+        disabledLoginResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+
+        var auditResponse = await adminClient.GetAsync("/api/auth/audit?limit=20");
+        auditResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var audit = await auditResponse.Content.ReadFromJsonAsync<IReadOnlyList<UserAccountAuditEventDto>>(JsonOptions);
+        audit.Should().NotBeNull();
+        audit!.Select(item => item.EventType).Should().Contain([
+            "user-account-created",
+            "user-password-reset",
+            "user-account-disabled",
+            "user-sessions-revoked"
+        ]);
     }
 
     private static AuthCookies ExtractAuthCookies(HttpResponseMessage response)

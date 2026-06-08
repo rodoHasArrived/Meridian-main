@@ -24,6 +24,13 @@ These variables control auth, mutation safety, runtime mode, and diagnostics beh
 |----------|-------------|-------------|-----------------------|
 | `MDC_API_KEY` | Runtime auth middleware | Enables API-key enforcement for `/api/*` routes. | Leaving unset in shared/non-local environments can expose mutation endpoints. |
 | `MDC_AUTH_MODE` | Runtime auth middleware | Auth mode selector for UI/API auth pipeline. | Incorrect mode can disable expected permission checks. |
+| `MDC_USERS` | Runtime auth bootstrap | JSON array of operator accounts using `passwordHash` values. | Missing hashes leave required auth unconfigured; plaintext `password` values are ignored. |
+| `MDC_DEMO_USERS` | Runtime auth bootstrap | Development/Test-only JSON array of demo accounts using `passwordHash` values. | Must not be used as a production credential source. |
+| `MDC_USERNAME` | Runtime auth bootstrap | Legacy single-user bootstrap username used with `MDC_PASSWORD_HASH`. | Intended only for bootstrap/local use; prefer governed accounts. |
+| `MDC_PASSWORD_HASH` | Runtime auth bootstrap | Legacy single-user bootstrap password hash. | Unsupported or missing hashes fail closed when auth is required. |
+| `MDC_PACKAGED_BUILD` | Runtime auth/credential policy | Marks packaged installs; auth is required by default and provider env fallback is disabled. | Leaving unset in customer packaging can permit development defaults. |
+| `MERIDIAN_CUSTOMER_BUILD` | Runtime auth/credential policy | Marks customer builds; auth is required by default and provider env fallback is disabled. | Leaving unset in customer packaging can permit development defaults. |
+| `MDC_PROVIDER_ALLOW_ENV_FALLBACK` | Provider credential migration | Explicitly allows provider secrets to be read from environment variables. | Should be temporary; can bypass the encrypted provider credential vault. |
 | `MDC_DISABLE_RATE_LIMIT` | Runtime rate-limiter toggle | Disables mutation/global API throttles. | Can allow unsafe burst traffic against execution and lending mutations. |
 | `MDC_FIXTURE_MODE` | Host/runtime mode | Enables fixture/test behavior in workstation flows. | Running fixture mode in production-like environments can bypass normal gates. |
 | `MDC_SYNTHETIC_MODE` | `DataSource` convenience toggle | Forces synthetic/offline provider posture. | Can hide live-provider failures if accidentally left enabled. |
@@ -172,9 +179,11 @@ Configuration values are resolved in this order (last wins):
 
 ## Security Best Practices
 
-- **Never** commit API keys to `appsettings.json` — use environment variables
-- Use a `.env` file for local development (add to `.gitignore`)
-- In production, use your platform's secret management (Docker secrets, Kubernetes secrets, etc.)
+- **Never** commit API keys to `appsettings.json`; use Meridian's provider credential vault for saved provider secrets.
+- Use environment provider credentials only for Development/Test or explicit migration with `MDC_PROVIDER_ALLOW_ENV_FALLBACK=true`.
+- Store operator passwords only as supported password hashes in `MDC_USERS`, `MDC_PASSWORD_HASH`, or the governed account store.
+- Use a `.env` file only for local development (add to `.gitignore`).
+- In production, use your platform's secret management (Docker secrets, Kubernetes secrets, etc.) to supply bootstrap hashes and vault/root settings.
 - The system warns at startup if credentials are detected in the config file
 
 ## Viewing Effective Configuration

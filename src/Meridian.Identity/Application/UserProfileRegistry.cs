@@ -8,40 +8,37 @@ namespace Meridian.Identity;
 
 /// <summary>
 /// Manages the set of user accounts available for authentication.
-///
-/// <para>User accounts are sourced from environment variables using one of two approaches:</para>
-/// <list type="bullet">
-///   <item>
-///     <b>Multi-user (recommended):</b> Set <c>MDC_USERS</c> to a JSON array of
-///     <see cref="UserAccountConfig"/> objects, e.g.:
-///     <code>
-///     MDC_USERS=[{"username":"alice","password":"s3cr3t","role":"TradeDesk"},
-///                {"username":"bob","password":"p@ss","role":"Accounting"}]
-///     </code>
-///     A user can optionally include <c>permissions</c> to define a profile-specific permission
-///     set while retaining the closest built-in role label for compatibility.
-///   </item>
-///   <item>
-///     <b>Single-user legacy (backward-compatible):</b> Set <c>MDC_USERNAME</c> and
-///     <c>MDC_PASSWORD</c>. These are mapped to a single <see cref="UserRole.Admin"/> account.
-///   </item>
-/// </list>
-///
-/// <para>When both are set, <c>MDC_USERS</c> takes precedence.</para>
 /// </summary>
-public sealed class UserProfileRegistry(IRolePermissionProfileStore? roleProfileStore = null)
+public sealed class UserProfileRegistry
 {
     internal const string MultiUserEnvVar = "MDC_USERS";
+    internal const string DemoUserEnvVar = "MDC_DEMO_USERS";
     internal const string LegacyUsernameEnvVar = "MDC_USERNAME";
-    internal const string LegacyPasswordEnvVar = "MDC_PASSWORD";
+    internal const string LegacyPasswordHashEnvVar = "MDC_PASSWORD_HASH";
+
+    private readonly IRolePermissionProfileStore? _roleProfileStore;
+    private readonly IUserAccountStore? _accountStore;
+
+    public UserProfileRegistry()
+        : this(null, null)
+    {
+    }
+
+    public UserProfileRegistry(IRolePermissionProfileStore? roleProfileStore)
+        : this(roleProfileStore, null)
+    {
+    }
+
+    public UserProfileRegistry(IRolePermissionProfileStore? roleProfileStore, IUserAccountStore? accountStore)
+    {
+        _roleProfileStore = roleProfileStore;
+        _accountStore = accountStore;
+    }
 
     /// <summary>
     /// Returns <see langword="true"/> when at least one user account is configured.
     /// </summary>
-    public bool IsConfigured =>
-        !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(MultiUserEnvVar)) ||
-        (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(LegacyUsernameEnvVar)) &&
-         !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(LegacyPasswordEnvVar)));
+    public bool IsConfigured => LoadAccounts().Length > 0;
 
     /// <summary>
     /// Validates <paramref name="username"/> and <paramref name="password"/> against the
@@ -53,60 +50,42 @@ public sealed class UserProfileRegistry(IRolePermissionProfileStore? roleProfile
     /// </returns>
     public UserProfile? Authenticate(string username, string password)
     {
-        var accounts = LoadAccounts();
-        if (accounts.Length == 0)
-            return null;
-
-        foreach (var account in accounts)
+        var account = LoadAccounts()
+            .FirstOrDefault(candidate => CryptographicEquals(username, candidate.Username));
+        if (account is null ||
+            account.IsDisabled ||
+            !PasswordHashing.VerifyPassword(password, account.PasswordHash))
         {
-            if (CryptographicEquals(username, account.Username) &&
-                CryptographicEquals(password, account.Password))
-            {
-                if (account.Permissions is { Count: > 0 })
-                {
-                    if (!RolePermissions.TryParsePermissionNames(
-                            account.Permissions,
-                            out var permissions,
-                            out var invalidPermissionNames))
-                    {
-                        return null;
-                    }
-
-                    return new UserProfile(
-                        account.Username,
-                        account.Role,
-                        PermissionOverride: permissions,
-                        RoleProfileName: account.RoleProfileName,
-                        InvalidPermissionNames: invalidPermissionNames);
-                }
-
-                if (!string.IsNullOrWhiteSpace(account.RoleProfileName) &&
-                    roleProfileStore is not null &&
-                    roleProfileStore.TryGetProfile(account.RoleProfileName, out var profile) &&
-                    RolePermissions.TryParsePermissionNames(
-                        profile.Permissions,
-                        out var roleProfilePermissions,
-                        out var roleProfileInvalidPermissions))
-                {
-                    return new UserProfile(
-                        account.Username,
-                        account.Role,
-                        PermissionOverride: roleProfilePermissions,
-                        RoleProfileName: profile.Role,
-                        InvalidPermissionNames: roleProfileInvalidPermissions);
-                }
-
-                return new UserProfile(account.Username, account.Role, RoleProfileName: account.RoleProfileName);
-            }
+            return null;
         }
 
-        return null;
+        return CreateProfile(account);
+    }
+
+    public UserProfile? GetProfile(string username)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            return null;
+        }
+
+        var account = LoadAccounts()
+            .FirstOrDefault(candidate => CryptographicEquals(username, candidate.Username));
+        return account is null || account.IsDisabled ? null : CreateProfile(account);
     }
 
     // ── Private helpers ──────────────────────────────────────────────────────
 
-    private static UserAccountConfig[] LoadAccounts()
+    private UserAccountConfig[] LoadAccounts()
     {
+        var storedAccounts = _accountStore?.LoadAccounts() ?? Array.Empty<UserAccountConfig>();
+        if (storedAccounts.Count > 0)
+        {
+            return storedAccounts
+                .Where(IsUsableAccountConfig)
+                .ToArray();
+        }
+
         var multiUserJson = Environment.GetEnvironmentVariable(MultiUserEnvVar);
         if (!string.IsNullOrWhiteSpace(multiUserJson))
         {
@@ -115,7 +94,9 @@ public sealed class UserProfileRegistry(IRolePermissionProfileStore? roleProfile
                 var parsed = JsonSerializer.Deserialize(
                     multiUserJson,
                     UserAccountConfigArrayJsonContext.Default.UserAccountConfigArray);
-                return parsed ?? [];
+                return (parsed ?? [])
+                    .Where(IsUsableAccountConfig)
+                    .ToArray();
             }
             catch (JsonException)
             {
@@ -123,14 +104,96 @@ public sealed class UserProfileRegistry(IRolePermissionProfileStore? roleProfile
             }
         }
 
-        var legacyUsername = Environment.GetEnvironmentVariable(LegacyUsernameEnvVar);
-        var legacyPassword = Environment.GetEnvironmentVariable(LegacyPasswordEnvVar);
+        if (IsDevelopmentLikeEnvironment())
+        {
+            var demoUserJson = Environment.GetEnvironmentVariable(DemoUserEnvVar);
+            if (!string.IsNullOrWhiteSpace(demoUserJson))
+            {
+                try
+                {
+                    var parsed = JsonSerializer.Deserialize(
+                        demoUserJson,
+                        UserAccountConfigArrayJsonContext.Default.UserAccountConfigArray);
+                    return (parsed ?? [])
+                        .Where(IsUsableAccountConfig)
+                        .ToArray();
+                }
+                catch (JsonException)
+                {
+                    // Fall through to legacy fallback
+                }
+            }
+        }
 
-        if (!string.IsNullOrWhiteSpace(legacyUsername) && !string.IsNullOrWhiteSpace(legacyPassword))
-            return [new UserAccountConfig(legacyUsername, legacyPassword, UserRole.Admin)];
+        var legacyUsername = Environment.GetEnvironmentVariable(LegacyUsernameEnvVar);
+        var legacyPasswordHash = Environment.GetEnvironmentVariable(LegacyPasswordHashEnvVar);
+
+        if (!string.IsNullOrWhiteSpace(legacyUsername) && PasswordHashing.IsSupportedHash(legacyPasswordHash))
+            return [new UserAccountConfig(legacyUsername, legacyPasswordHash!, UserRole.Admin)];
 
         return [];
     }
+
+    private UserProfile? CreateProfile(UserAccountConfig account)
+    {
+        if (account.Permissions is { Count: > 0 })
+        {
+            if (!RolePermissions.TryParsePermissionNames(
+                    account.Permissions,
+                    out var permissions,
+                    out var invalidPermissionNames))
+            {
+                return null;
+            }
+
+            return new UserProfile(
+                account.Username,
+                account.Role,
+                PermissionOverride: permissions,
+                RoleProfileName: account.RoleProfileName,
+                InvalidPermissionNames: invalidPermissionNames,
+                PasswordResetRequired: account.PasswordResetRequired);
+        }
+
+        if (!string.IsNullOrWhiteSpace(account.RoleProfileName) &&
+            _roleProfileStore is not null &&
+            _roleProfileStore.TryGetProfile(account.RoleProfileName, out var profile) &&
+            RolePermissions.TryParsePermissionNames(
+                profile.Permissions,
+                out var roleProfilePermissions,
+                out var roleProfileInvalidPermissions))
+        {
+            return new UserProfile(
+                account.Username,
+                account.Role,
+                PermissionOverride: roleProfilePermissions,
+                RoleProfileName: profile.Role,
+                InvalidPermissionNames: roleProfileInvalidPermissions,
+                PasswordResetRequired: account.PasswordResetRequired);
+        }
+
+        return new UserProfile(
+            account.Username,
+            account.Role,
+            RoleProfileName: account.RoleProfileName,
+            PasswordResetRequired: account.PasswordResetRequired);
+    }
+
+    private static bool IsUsableAccountConfig(UserAccountConfig account)
+        => !string.IsNullOrWhiteSpace(account.Username) &&
+           PasswordHashing.IsSupportedHash(account.PasswordHash);
+
+    private static bool IsDevelopmentLikeEnvironment()
+    {
+        var dotnet = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
+        var aspNetCore = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        return IsDevelopmentLike(dotnet) || IsDevelopmentLike(aspNetCore);
+    }
+
+    private static bool IsDevelopmentLike(string? environment)
+        => environment is not null &&
+           (environment.Equals("Development", StringComparison.OrdinalIgnoreCase) ||
+            environment.Equals("Test", StringComparison.OrdinalIgnoreCase));
 
     /// <summary>Constant-time string comparison to prevent timing attacks.</summary>
     private static bool CryptographicEquals(string a, string b) =>
@@ -147,7 +210,8 @@ public sealed record UserProfile(
     UserRole Role,
     UserPermission? PermissionOverride = null,
     string? RoleProfileName = null,
-    IReadOnlyList<string>? InvalidPermissionNames = null)
+    IReadOnlyList<string>? InvalidPermissionNames = null,
+    bool PasswordResetRequired = false)
 {
     /// <summary>The permissions granted to this user based on their <see cref="Role"/>.</summary>
     public UserPermission Permissions => PermissionOverride ?? RolePermissions.For(Role);
@@ -158,10 +222,12 @@ public sealed record UserProfile(
 /// </summary>
 public sealed record UserAccountConfig(
     [property: JsonPropertyName("username")] string Username,
-    [property: JsonPropertyName("password")] string Password,
+    [property: JsonPropertyName("passwordHash")] string PasswordHash,
     [property: JsonPropertyName("role")] UserRole Role,
     [property: JsonPropertyName("roleProfileName")] string? RoleProfileName = null,
-    [property: JsonPropertyName("permissions")] IReadOnlyList<string>? Permissions = null);
+    [property: JsonPropertyName("permissions")] IReadOnlyList<string>? Permissions = null,
+    [property: JsonPropertyName("disabled")] bool IsDisabled = false,
+    [property: JsonPropertyName("passwordResetRequired")] bool PasswordResetRequired = false);
 
 /// <summary>AOT-safe JSON context for deserializing <see cref="UserAccountConfig"/> arrays.</summary>
 [JsonSerializable(typeof(UserAccountConfig[]))]

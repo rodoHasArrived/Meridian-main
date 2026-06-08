@@ -48,7 +48,13 @@ export const WORKSTATION_API_ENDPOINTS = {
 
 export const AUTH_API_ENDPOINTS = {
   roles: UI_API_ROUTES.AuthApiRoles,
-  roleProfiles: UI_API_ROUTES.AuthApiRoleProfiles
+  roleProfiles: UI_API_ROUTES.AuthApiRoleProfiles,
+  accounts: UI_API_ROUTES.AuthApiAccounts,
+  accountByUsername: UI_API_ROUTES.AuthApiAccountByUsername,
+  accountPasswordReset: UI_API_ROUTES.AuthApiAccountPasswordReset,
+  accountDisable: UI_API_ROUTES.AuthApiAccountDisable,
+  sessionsRevoke: UI_API_ROUTES.AuthApiSessionsRevoke,
+  audit: UI_API_ROUTES.AuthApiAudit
 } as const;
 
 export const FUND_STRUCTURE_API_ENDPOINTS = {

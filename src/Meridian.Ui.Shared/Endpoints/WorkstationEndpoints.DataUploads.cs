@@ -549,158 +549,6 @@ public static partial class WorkstationEndpoints
         return new DataUploadParsedCsv(headers, previewRows, parsedRowCount, issues);
     }
 
-    private static BankStatementImportParseResult ParseBankStatementImportCsv(
-        byte[] fileBytes,
-        Guid accountId,
-        Guid batchId)
-    {
-        using var stream = new MemoryStream(fileBytes);
-        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
-        var issues = new List<DataUploadValidationIssueDto>();
-        var lines = new List<BankStatementLineDto>();
-        var headerLine = reader.ReadLine();
-        if (string.IsNullOrWhiteSpace(headerLine))
-        {
-            issues.Add(new DataUploadValidationIssueDto("Error", "header", "The CSV file must include a header row.", RowNumber: 1));
-            return new BankStatementImportParseResult(lines, StatementDate: null, issues);
-        }
-
-        var headers = SplitDataUploadCsvLine(headerLine)
-            .Select(static header => header.Trim())
-            .ToArray();
-        var headerIndex = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-        for (var index = 0; index < headers.Length; index++)
-        {
-            if (!string.IsNullOrWhiteSpace(headers[index]))
-            {
-                headerIndex[headers[index]] = index;
-            }
-        }
-
-        foreach (var field in BankStatementRequiredFields)
-        {
-            if (!headerIndex.ContainsKey(field))
-            {
-                issues.Add(new DataUploadValidationIssueDto(
-                    "Error",
-                    field,
-                    $"Required field '{field}' is missing from the bank statement header.",
-                    RowNumber: 1));
-            }
-        }
-
-        var lineNumber = 1;
-        string? line;
-        while ((line = reader.ReadLine()) is not null)
-        {
-            lineNumber++;
-            if (string.IsNullOrWhiteSpace(line))
-            {
-                continue;
-            }
-
-            var values = SplitDataUploadCsvLine(line);
-            if (values.Count != headers.Length)
-            {
-                issues.Add(new DataUploadValidationIssueDto(
-                    "Error",
-                    "row",
-                    $"Row has {values.Count.ToString(CultureInfo.InvariantCulture)} values for {headers.Length.ToString(CultureInfo.InvariantCulture)} headers.",
-                    RowNumber: lineNumber));
-                continue;
-            }
-
-            if (!TryReadRequiredBankStatementValue(headerIndex, values, "transaction_date", lineNumber, issues, out var transactionDateValue) ||
-                !TryReadRequiredBankStatementValue(headerIndex, values, "amount", lineNumber, issues, out var amountValue) ||
-                !TryReadRequiredBankStatementValue(headerIndex, values, "currency", lineNumber, issues, out var currencyValue) ||
-                !TryReadRequiredBankStatementValue(headerIndex, values, "transaction_type", lineNumber, issues, out var transactionType) ||
-                !TryReadRequiredBankStatementValue(headerIndex, values, "description", lineNumber, issues, out var description))
-            {
-                continue;
-            }
-
-            if (!TryParseDataUploadDate(transactionDateValue, out var transactionDate))
-            {
-                issues.Add(new DataUploadValidationIssueDto(
-                    "Error",
-                    "transaction_date",
-                    "Transaction date must use YYYY-MM-DD format.",
-                    RowNumber: lineNumber));
-                continue;
-            }
-
-            var valueDateValue = ReadBankStatementValue(headerIndex, values, "value_date");
-            var valueDate = transactionDate;
-            if (!string.IsNullOrWhiteSpace(valueDateValue) &&
-                !TryParseDataUploadDate(valueDateValue, out valueDate))
-            {
-                issues.Add(new DataUploadValidationIssueDto(
-                    "Error",
-                    "value_date",
-                    "Value date must use YYYY-MM-DD format.",
-                    RowNumber: lineNumber));
-                continue;
-            }
-
-            if (!TryParseDataUploadDecimal(amountValue, out var amount))
-            {
-                issues.Add(new DataUploadValidationIssueDto(
-                    "Error",
-                    "amount",
-                    "Amount must be a signed decimal value.",
-                    RowNumber: lineNumber));
-                continue;
-            }
-
-            decimal? closingBalance = null;
-            var closingBalanceValue = ReadBankStatementValue(headerIndex, values, "closing_balance");
-            if (!string.IsNullOrWhiteSpace(closingBalanceValue))
-            {
-                if (!TryParseDataUploadDecimal(closingBalanceValue, out var parsedClosingBalance))
-                {
-                    issues.Add(new DataUploadValidationIssueDto(
-                        "Error",
-                        "closing_balance",
-                        "Closing balance must be a decimal value.",
-                        RowNumber: lineNumber));
-                    continue;
-                }
-
-                closingBalance = parsedClosingBalance;
-            }
-
-            var reference = ReadBankStatementValue(headerIndex, values, "reference");
-            var currency = currencyValue.Trim().ToUpperInvariant();
-            lines.Add(new BankStatementLineDto(
-                LineId: BuildDataUploadGuid(
-                    $"bank-statement-line|{batchId:N}|{lineNumber.ToString(CultureInfo.InvariantCulture)}|{transactionDate:yyyyMMdd}|{valueDate:yyyyMMdd}|{amount.ToString(CultureInfo.InvariantCulture)}|{currency}|{transactionType}|{reference}|{description}"),
-                BatchId: batchId,
-                AccountId: accountId,
-                TransactionDate: transactionDate,
-                ValueDate: valueDate,
-                Amount: amount,
-                Currency: currency,
-                TransactionType: transactionType.Trim(),
-                Description: description.Trim(),
-                Reference: string.IsNullOrWhiteSpace(reference) ? null : reference.Trim(),
-                ClosingBalance: closingBalance));
-        }
-
-        if (lines.Count == 0 && issues.Count == 0)
-        {
-            issues.Add(new DataUploadValidationIssueDto(
-                "Error",
-                "rows",
-                "The bank statement CSV must contain at least one transaction row.",
-                RowNumber: null));
-        }
-
-        return new BankStatementImportParseResult(
-            lines,
-            lines.Count == 0 ? null : lines.Max(static line => line.ValueDate),
-            issues);
-    }
-
     private static IReadOnlyList<string> SplitDataUploadCsvLine(string line)
     {
         var values = new List<string>();
@@ -748,20 +596,6 @@ public static partial class WorkstationEndpoints
     {
         var hash = Convert.ToHexString(SHA256.HashData(fileBytes))[..12].ToLowerInvariant();
         return "UP-" + DateTimeOffset.UtcNow.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture) + "-" + hash;
-    }
-
-    private static Guid BuildBankStatementBatchId(byte[] fileBytes, Guid accountId, string bankName)
-    {
-        var fileHash = Convert.ToHexString(SHA256.HashData(fileBytes));
-        return BuildDataUploadGuid($"bank-statement-batch|{accountId:N}|{bankName}|{fileHash}");
-    }
-
-    private static Guid BuildDataUploadGuid(string value)
-    {
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(value));
-        var bytes = new byte[16];
-        Array.Copy(hash, bytes, bytes.Length);
-        return new Guid(bytes);
     }
 
     private static string SanitizeDataUploadFileName(string fileName)
@@ -819,36 +653,6 @@ public static partial class WorkstationEndpoints
                     .ToArray(),
                 StringComparer.OrdinalIgnoreCase));
 
-    private static bool TryReadRequiredBankStatementValue(
-        IReadOnlyDictionary<string, int> headerIndex,
-        IReadOnlyList<string> values,
-        string field,
-        int rowNumber,
-        List<DataUploadValidationIssueDto> issues,
-        out string value)
-    {
-        value = ReadBankStatementValue(headerIndex, values, field);
-        if (!string.IsNullOrWhiteSpace(value))
-        {
-            return true;
-        }
-
-        issues.Add(new DataUploadValidationIssueDto(
-            "Error",
-            field,
-            $"Required field '{field}' is blank.",
-            RowNumber: rowNumber));
-        return false;
-    }
-
-    private static string ReadBankStatementValue(
-        IReadOnlyDictionary<string, int> headerIndex,
-        IReadOnlyList<string> values,
-        string field)
-        => headerIndex.TryGetValue(field, out var index) && index >= 0 && index < values.Count
-            ? values[index].Trim()
-            : string.Empty;
-
     private static bool TryParseDataUploadDate(string value, out DateOnly date)
         => DateOnly.TryParseExact(
                 value.Trim(),
@@ -862,13 +666,6 @@ public static partial class WorkstationEndpoints
                 DateTimeStyles.None,
                 out date);
 
-    private static bool TryParseDataUploadDecimal(string value, out decimal amount)
-        => decimal.TryParse(
-            value.Trim(),
-            NumberStyles.Number | NumberStyles.AllowCurrencySymbol | NumberStyles.AllowParentheses,
-            CultureInfo.InvariantCulture,
-            out amount);
-
     private static string? BuildBankStatementImportNotes(string? notes, string retainedPath)
     {
         var retainedNote = $"Retained source: {retainedPath}";
@@ -877,23 +674,9 @@ public static partial class WorkstationEndpoints
             : $"{notes.Trim()} | {retainedNote}";
     }
 
-    private static readonly string[] BankStatementRequiredFields =
-    [
-        "transaction_date",
-        "amount",
-        "currency",
-        "transaction_type",
-        "description"
-    ];
-
     private sealed record DataUploadParsedCsv(
         IReadOnlyList<string> Headers,
         IReadOnlyList<IReadOnlyDictionary<string, string>> PreviewRows,
         int ParsedRowCount,
-        IReadOnlyList<DataUploadValidationIssueDto> Issues);
-
-    private sealed record BankStatementImportParseResult(
-        IReadOnlyList<BankStatementLineDto> Lines,
-        DateOnly? StatementDate,
         IReadOnlyList<DataUploadValidationIssueDto> Issues);
 }

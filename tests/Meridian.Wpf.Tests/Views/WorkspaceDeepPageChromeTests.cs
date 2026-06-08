@@ -425,6 +425,44 @@ public sealed class WorkspaceDeepPageChromeTests
     }
 
     [Fact]
+    public void FundAccountsPage_ShouldUseCompactDenseTableAndInspectorChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\FundAccountsPage.xaml");
+        var codePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\FundAccountsPage.xaml.cs");
+        var xaml = File.ReadAllText(absolutePath);
+        var code = File.ReadAllText(codePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().NotContain("<ListBox");
+        xaml.Should().Contain("FundAccountsActionStrip");
+        xaml.Should().Contain("FundAccountsWorkbench");
+        xaml.Should().Contain("WorkstationTableInspectorControl");
+        xaml.Should().Contain("FundAccountsQueueGrid");
+        xaml.Should().Contain("FundAccountsSelectionInspector");
+        xaml.Should().Contain("FundAccountsRoutingReadinessCard");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+        code.Should().NotContain("AccountSelectionChanged");
+    }
+
+    [Fact]
+    public void FundLedgerPage_ShouldUseCompactActionAndAccountWorkbenchChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\FundLedgerPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().Contain("FundLedgerActionStrip");
+        xaml.Should().Contain("FundLedgerActionStripState");
+        xaml.Should().Contain("FundLedgerAccountWorkbench");
+        xaml.Should().Contain("WorkstationTableInspectorControl");
+        xaml.Should().Contain("FundLedgerAccountQueueGrid");
+        xaml.Should().Contain("FundLedgerAccountSelectionInspector");
+        xaml.Should().Contain("FundLedgerAccountActionInspector");
+        xaml.Should().Contain("FundLedgerOpenAccountPortfolioButton");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+    }
+
+    [Fact]
     public void RunLedgerPage_ShouldUseCompactDenseTablesAndInspectorChrome()
     {
         var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\RunLedgerPage.xaml");

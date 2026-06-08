@@ -21,6 +21,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
 {
     private static readonly JsonSerializerOptions JsonOpts =
         new() { PropertyNameCaseInsensitive = true };
+    private const string TestPasswordHash = "pbkdf2-sha256$210000$oOQU8zfLm/Pzwrl8VZlatQ==$ePPcBmch9qAIfhbablmoBT/tKPGb/TKmFBHlFWKV1uU=";
 
     public AuthEndpointTests(EndpointTestFixture fixture) : base(fixture) { }
 
@@ -59,7 +60,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         html.Should().Contain("Web workstation");
         html.Should().Contain("Session required");
         html.Should().Contain("MDC_USERNAME");
-        html.Should().Contain("MDC_PASSWORD");
+        html.Should().Contain("MDC_PASSWORD_HASH");
     }
 
     [Fact]
@@ -118,7 +119,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
     [Fact]
     public async Task LoginJson_WithWrongCredentials_ReturnsUnauthorized()
     {
-        // MDC_USERNAME / MDC_PASSWORD are not set → CreateSession always returns null
+        // MDC_USERNAME / MDC_PASSWORD_HASH are not set, so CreateSession always returns null.
         var payload = new { Username = "admin", Password = "wrongpassword" };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
         var response = await Client.PostAsync("/api/auth/login", content);
@@ -142,9 +143,9 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
     public async Task LoginJson_WithValidCredentials_IssuesSessionAndCsrfCookies_WithDevCookiePolicy()
     {
         var originalUsername = Environment.GetEnvironmentVariable("MDC_USERNAME");
-        var originalPassword = Environment.GetEnvironmentVariable("MDC_PASSWORD");
+        var originalPasswordHash = Environment.GetEnvironmentVariable("MDC_PASSWORD_HASH");
         Environment.SetEnvironmentVariable("MDC_USERNAME", "test-admin");
-        Environment.SetEnvironmentVariable("MDC_PASSWORD", "test-password");
+        Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", TestPasswordHash);
 
         try
         {
@@ -166,7 +167,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         finally
         {
             Environment.SetEnvironmentVariable("MDC_USERNAME", originalUsername);
-            Environment.SetEnvironmentVariable("MDC_PASSWORD", originalPassword);
+            Environment.SetEnvironmentVariable("MDC_PASSWORD_HASH", originalPasswordHash);
         }
     }
 
@@ -205,7 +206,7 @@ public sealed class AuthEndpointTests : EndpointIntegrationTestBase
         });
         var response = await noRedirectClient.PostAsync("/api/auth/login", form);
 
-        // No MDC_USERNAME/MDC_PASSWORD set → credentials rejected → redirect to login with error
+        // No MDC_USERNAME/MDC_PASSWORD_HASH set, so credentials are rejected and redirect to login with error.
         response.StatusCode.Should().Be(HttpStatusCode.Redirect);
         response.Headers.Location?.ToString().Should().Contain("error");
     }
