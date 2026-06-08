@@ -138,7 +138,7 @@ jobs:
           path: artifacts/release
 
       - name: Publish GitHub release assets
-        uses: softprops/action-gh-release@a74c6b72af54cfa997e81df42d94703d6313a2d0 # v2
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v2
         with:
           files: |
             artifacts/release/**/*.msix
