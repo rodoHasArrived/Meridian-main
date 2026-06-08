@@ -28,6 +28,7 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
@@ -78,17 +79,24 @@
                     </Grid>
                 </Border>
 
-                <Border Grid.Row="1" Style="{StaticResource WorkstationPanelBodyStyle}">
+                <ContentPresenter x:Name="TableHeaderContentPresenter"
+                                  Grid.Row="1"
+                                  Content="{Binding ElementName=Root, Path=TableHeaderContent}"
+                                  Margin="14,0,14,12"
+                                  Style="{StaticResource OptionalContentPresenterStyle}" />
+
+                <Border Grid.Row="2" Style="{StaticResource WorkstationPanelBodyStyle}">
                     <controls:DenseDataGridControl x:Name="TableGrid"
                                                    Table="{Binding ElementName=Root, Path=Table}"
                                                    SelectedItem="{Binding ElementName=Root, Path=SelectedItem, Mode=TwoWay}"
                                                    SelectedItems="{Binding ElementName=Root, Path=SelectedItems}"
                                                    SelectionMode="{Binding ElementName=Root, Path=SelectionMode}"
+                                                   EmptyContent="{Binding ElementName=Root, Path=EmptyContent}"
                                                    GridAutomationId="{Binding ElementName=Root, Path=GridAutomationId}"
                                                    EmptyAutomationId="{Binding ElementName=Root, Path=EmptyAutomationId}" />
                 </Border>
 
-                <Border Grid.Row="2">
+                <Border Grid.Row="3">
                     <Border.Style>
                         <Style TargetType="{x:Type Border}" BasedOn="{StaticResource WorkstationDockStripStyle}">
                             <Style.Triggers>
@@ -112,6 +120,10 @@
                           HorizontalScrollBarVisibility="Disabled"
                           Padding="10">
                 <StackPanel>
+                    <ContentPresenter x:Name="InspectorHeaderContentPresenter"
+                                      Content="{Binding ElementName=Root, Path=InspectorHeaderContent}"
+                                      Margin="0,0,0,12"
+                                      Style="{StaticResource OptionalContentPresenterStyle}" />
                     <controls:InspectorPanelControl x:Name="DefaultInspector"
                                                     Panel="{Binding ElementName=Root, Path=Inspector}"
                                                     AutomationProperties.AutomationId="{Binding ElementName=Root, Path=InspectorAutomationId}" />

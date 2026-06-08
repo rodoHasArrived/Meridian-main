@@ -124,7 +124,29 @@ const providerConnections: ProviderConnectionRow[] = [
     externalAccountId: "PA123",
     affectedWorkflows: ["Trading readiness", "Portfolio brokerage sync"],
     recommendedAction: "No credential repair action required.",
-    actionHref: "/settings#alpaca-provider-setup"
+    actionHref: "/settings#alpaca-provider-setup",
+    credentialFields: [
+      {
+        name: "KeyId",
+        label: "Key ID",
+        required: true,
+        inputKind: "Password",
+        placeholder: "ALPACA_API_KEY_ID",
+        helpText: "Stored in Meridian's encrypted local provider store for Alpaca account verification."
+      },
+      {
+        name: "SecretKey",
+        label: "Secret key",
+        required: true,
+        inputKind: "Password",
+        placeholder: "ALPACA_API_SECRET_KEY",
+        helpText: "Stored in Meridian's encrypted local provider store for Alpaca account verification."
+      }
+    ],
+    environmentOptions: [
+      { value: "paper", label: "Paper", isDefault: true },
+      { value: "live", label: "Live", isDefault: false }
+    ]
   },
   {
     providerId: "polygon",
@@ -144,7 +166,18 @@ const providerConnections: ProviderConnectionRow[] = [
     externalAccountId: null,
     affectedWorkflows: ["Historical backfill"],
     recommendedAction: "Add the Polygon API key before routing data repair through Polygon.",
-    actionHref: "/settings#provider-polygon-connection"
+    actionHref: "/settings#provider-polygon-connection",
+    credentialFields: [
+      {
+        name: "ApiKey",
+        label: "API key",
+        required: true,
+        inputKind: "Password",
+        placeholder: "POLYGON_API_KEY",
+        helpText: "Stored in Meridian's encrypted local provider store and masked after save."
+      }
+    ],
+    environmentOptions: []
   }
 ];
 
@@ -886,8 +919,8 @@ describe("SettingsScreen", () => {
     );
 
     await user.click(screen.getByRole("button", { name: "Edit Alpaca credentials" }));
-    await user.type(screen.getByLabelText("Alpaca API key"), "alpaca-key");
-    await user.type(screen.getByLabelText("Alpaca API secret"), "alpaca-secret");
+    await user.type(screen.getByLabelText("Alpaca Key ID"), "alpaca-key");
+    await user.type(screen.getByLabelText("Alpaca Secret key"), "alpaca-secret");
     await user.click(screen.getByRole("button", { name: "Test Alpaca connection" }));
     await user.click(screen.getByRole("button", { name: "Save Alpaca credentials" }));
     await user.click(screen.getByRole("button", { name: "Re-verify Alpaca connection" }));
@@ -898,8 +931,8 @@ describe("SettingsScreen", () => {
       "alpaca",
       expect.objectContaining({
         credentials: expect.objectContaining({
-          apiKey: "alpaca-key",
-          apiSecret: "alpaca-secret"
+          KeyId: "alpaca-key",
+          SecretKey: "alpaca-secret"
         })
       })
     );
@@ -934,7 +967,53 @@ describe("SettingsScreen", () => {
         externalAccountId: null,
         affectedWorkflows: ["External GL reconciliation"],
         recommendedAction: "Add QuickBooks Online OAuth client ID, client secret, refresh token, and company realm ID before importing read-only GL evidence.",
-        actionHref: "/settings#provider-quickbooks-connection"
+        actionHref: "/settings#provider-quickbooks-connection",
+        credentialFields: [
+          {
+            name: "ClientId",
+            label: "Client ID",
+            required: true,
+            inputKind: "Password",
+            placeholder: "QUICKBOOKS_CLIENT_ID",
+            helpText: "Stored in Meridian's encrypted local provider store for OAuth token refresh."
+          },
+          {
+            name: "ClientSecret",
+            label: "Client secret",
+            required: true,
+            inputKind: "Password",
+            placeholder: "QUICKBOOKS_CLIENT_SECRET",
+            helpText: "Used only server-side for OAuth token refresh."
+          },
+          {
+            name: "RefreshToken",
+            label: "Refresh token",
+            required: true,
+            inputKind: "Password",
+            placeholder: "QUICKBOOKS_REFRESH_TOKEN",
+            helpText: "Token exchange refreshes read-only API access and stores rotated tokens locally."
+          },
+          {
+            name: "RealmId",
+            label: "Company realm ID",
+            required: true,
+            inputKind: "Text",
+            placeholder: "QUICKBOOKS_REALM_ID",
+            helpText: "Selects the QuickBooks Online company to read."
+          },
+          {
+            name: "CompanyName",
+            label: "Company name",
+            required: false,
+            inputKind: "Text",
+            placeholder: "QUICKBOOKS_COMPANY_NAME",
+            helpText: "Optional display label for the selected QuickBooks company."
+          }
+        ],
+        environmentOptions: [
+          { value: "sandbox", label: "Sandbox", isDefault: true },
+          { value: "production", label: "Production", isDefault: false }
+        ]
       }
     ];
 
@@ -967,6 +1046,48 @@ describe("SettingsScreen", () => {
         environment: "sandbox"
       })
     );
+  });
+
+  it("renders QuickBooks Fixture inline setup without fake credential fields", async () => {
+    const user = userEvent.setup();
+    const fixtureConnections: ProviderConnectionRow[] = [
+      ...providerConnections,
+      {
+        providerId: "quickbooks-fixture",
+        displayName: "QuickBooks Fixture",
+        capability: "AccountingSystem",
+        credentialState: "NotRequired",
+        credentialSource: "NotRequired",
+        verificationState: "NotRequired",
+        health: "Healthy",
+        fallbackActive: false,
+        lastVerifiedAt: null,
+        lastSuccessfulAt: null,
+        lastFailureAt: null,
+        lastError: null,
+        maskedKeyPreview: null,
+        environment: null,
+        externalAccountId: null,
+        affectedWorkflows: ["External GL reconciliation"],
+        recommendedAction: "No credential action required; use the fixture to preview external GL reconciliation.",
+        actionHref: "/settings#provider-quickbooks-fixture-connection",
+        credentialFields: [],
+        environmentOptions: []
+      }
+    ];
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        providerConnections={fixtureConnections}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Edit QuickBooks Fixture credentials" }));
+
+    expect(screen.getByText("No credential fields are required for this provider.")).toBeInTheDocument();
+    expect(screen.queryByLabelText("QuickBooks Fixture Fixture mode")).not.toBeInTheDocument();
   });
 
   it("filters provider rows by search and risk filters", async () => {

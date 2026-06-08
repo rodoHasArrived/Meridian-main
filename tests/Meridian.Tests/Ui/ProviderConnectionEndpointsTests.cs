@@ -166,10 +166,38 @@ public sealed class ProviderConnectionEndpointsTests
 
         var rows = await ReadAsync<ProviderConnectionRowDto[]>(
             await app.GetTestClient().GetAsync("/api/providers/connections"));
-        rows.Single(row => row.ProviderId == "quickbooks").Should().Match<ProviderConnectionRowDto>(row =>
+        var quickBooks = rows.Single(row => row.ProviderId == "quickbooks");
+        quickBooks.Should().Match<ProviderConnectionRowDto>(row =>
             row.CredentialState == ProviderCredentialStateDto.Verified &&
             row.ExternalAccountId == "9130359087654321" &&
             row.Capability == ProviderConnectionCapabilityDto.AccountingSystem);
+        quickBooks.CredentialFields.Should().Contain(field =>
+            field.Name == "ClientId" &&
+            field.Required &&
+            field.InputKind == ProviderCredentialInputKindDto.Password);
+        quickBooks.CredentialFields.Should().Contain(field =>
+            field.Name == "ClientSecret" &&
+            field.Required &&
+            field.InputKind == ProviderCredentialInputKindDto.Password);
+        quickBooks.CredentialFields.Should().Contain(field =>
+            field.Name == "RefreshToken" &&
+            field.Required &&
+            field.InputKind == ProviderCredentialInputKindDto.Password);
+        quickBooks.CredentialFields.Should().Contain(field =>
+            field.Name == "RealmId" &&
+            field.Required &&
+            field.InputKind == ProviderCredentialInputKindDto.Text);
+        quickBooks.CredentialFields.Should().Contain(field =>
+            field.Name == "CompanyName" &&
+            !field.Required &&
+            field.InputKind == ProviderCredentialInputKindDto.Text);
+        quickBooks.EnvironmentOptions.Should().Contain(option => option.Value == "sandbox" && option.IsDefault);
+        quickBooks.EnvironmentOptions.Should().Contain(option => option.Value == "production");
+
+        var rawConnections = await app.GetTestClient().GetStringAsync("/api/providers/connections");
+        rawConnections.Should().NotContain("qbo-client-id");
+        rawConnections.Should().NotContain("qbo-client-secret");
+        rawConnections.Should().NotContain("qbo-refresh-token");
     }
 
     private static async Task<WebApplication> CreateAppAsync(

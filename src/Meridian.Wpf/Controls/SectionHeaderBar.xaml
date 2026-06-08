@@ -1,0 +1,115 @@
+<UserControl x:Class="Meridian.Wpf.Controls.SectionHeaderBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:Meridian.Wpf.Controls"
+             x:Name="Root"
+             mc:Ignorable="d"
+             MinHeight="52"
+             d:DesignHeight="76" d:DesignWidth="640"
+             AutomationProperties.AutomationId="{Binding ElementName=Root, Path=HeaderAutomationId}"
+             AutomationProperties.Name="{Binding ElementName=Root, Path=Title}">
+    <Border x:Name="HeaderBorder"
+            DataContext="{Binding ElementName=Root}"
+            Style="{StaticResource WorkstationPanelHeaderStyle}"
+            AutomationProperties.AutomationId="{Binding HeaderAutomationId}"
+            AutomationProperties.Name="{Binding Title}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <WrapPanel>
+                    <TextBlock x:Name="TitleText"
+                               Text="{Binding Title}"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                               TextWrapping="Wrap"
+                               AutomationProperties.AutomationId="{Binding TitleAutomationId}" />
+                    <controls:ToneBadge x:Name="Badge"
+                                        Text="{Binding BadgeText}"
+                                        Tone="{Binding BadgeTone}"
+                                        Margin="10,0,0,0"
+                                        BadgeAutomationId="{Binding BadgeAutomationId}"
+                                        TextAutomationId="{Binding BadgeTextAutomationId}">
+                        <controls:ToneBadge.Style>
+                            <Style TargetType="{x:Type controls:ToneBadge}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding BadgeText}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding BadgeText}" Value="">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </controls:ToneBadge.Style>
+                    </controls:ToneBadge>
+                </WrapPanel>
+                <TextBlock x:Name="SubtitleText"
+                           Text="{Binding Subtitle}"
+                           Margin="0,4,0,0"
+                           FontSize="12"
+                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                           TextWrapping="Wrap"
+                           AutomationProperties.AutomationId="{Binding SubtitleAutomationId}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Subtitle}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Subtitle}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center"
+                        Margin="16,0,0,0">
+                <ContentPresenter x:Name="RightContentPresenter"
+                                  Content="{Binding RightContent}"
+                                  VerticalAlignment="Center"
+                                  AutomationProperties.AutomationId="{Binding RightContentAutomationId}">
+                    <ContentPresenter.Style>
+                        <Style TargetType="ContentPresenter">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding RightContent}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ContentPresenter.Style>
+                </ContentPresenter>
+                <Button x:Name="ActionButton"
+                        Content="{Binding ActionText}"
+                        Command="{Binding ActionCommand}"
+                        Margin="10,0,0,0"
+                        AutomationProperties.AutomationId="{Binding ActionButtonAutomationId}"
+                        AutomationProperties.Name="{Binding ActionText}">
+                    <Button.Style>
+                        <Style TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ActionCommand}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding ActionText}" Value="">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>

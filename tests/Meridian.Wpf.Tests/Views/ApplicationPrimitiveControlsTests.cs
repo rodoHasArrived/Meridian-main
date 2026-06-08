@@ -149,6 +149,156 @@ public sealed class ApplicationPrimitiveControlsTests
     }
 
     [Fact]
+    public void AlertAndEvidencePrimitives_ShouldRenderWithAutomationContracts()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var alertAction = new TestCommand();
+            var evidenceAction = new TestCommand();
+            var alert = new InlineAlertPanel
+            {
+                Title = "Provider credentials stale",
+                Message = "Polygon.io credentials need review before data can be trusted.",
+                Tone = WorkspaceTone.Warning,
+                IconGlyph = "\uE783",
+                ActionText = "Resolve",
+                ActionCommand = alertAction,
+                PanelAutomationId = "InlineAlertTest",
+                TitleAutomationId = "InlineAlertTitleTest",
+                MessageAutomationId = "InlineAlertMessageTest",
+                ActionButtonAutomationId = "InlineAlertActionTest"
+            };
+            var evidence = new EvidenceLinkChip
+            {
+                Label = "Ledger evidence retained",
+                Source = "Accounting",
+                TimestampText = "Today 10:24",
+                Target = "EvidenceWorkbench:accounting-record/123",
+                Detail = "Trial balance and approval history retained.",
+                NavigateCommand = evidenceAction,
+                CommandParameter = "accounting-record/123",
+                ChipAutomationId = "EvidenceChipTest",
+                LabelAutomationId = "EvidenceChipLabelTest",
+                SourceAutomationId = "EvidenceChipSourceTest",
+                TimestampAutomationId = "EvidenceChipTimestampTest",
+                TargetAutomationId = "EvidenceChipTargetTest",
+                DetailAutomationId = "EvidenceChipDetailTest",
+                ActionButtonAutomationId = "EvidenceChipActionTest"
+            };
+            var host = new StackPanel { Children = { alert, evidence } };
+
+            var window = Show(host);
+            try
+            {
+                AutomationProperties.GetAutomationId(alert).Should().Be("InlineAlertTest");
+                AutomationProperties.GetName(alert).Should().Be("Provider credentials stale");
+                GetByAutomationId<Border>(alert, "InlineAlertTest").BorderThickness.Left.Should().Be(4);
+                GetByAutomationId<TextBlock>(alert, "InlineAlertTitleTest").Text.Should().Be("Provider credentials stale");
+                GetByAutomationId<TextBlock>(alert, "InlineAlertMessageTest").Text.Should().Be("Polygon.io credentials need review before data can be trusted.");
+                GetByAutomationId<Button>(alert, "InlineAlertActionTest").Command.Should().BeSameAs(alertAction);
+
+                AutomationProperties.GetAutomationId(evidence).Should().Be("EvidenceChipTest");
+                AutomationProperties.GetName(evidence).Should().Be("Ledger evidence retained");
+                GetByAutomationId<TextBlock>(evidence, "EvidenceChipLabelTest").Text.Should().Be("Ledger evidence retained");
+                GetByAutomationId<TextBlock>(evidence, "EvidenceChipSourceTest").Text.Should().Be("Accounting");
+                GetByAutomationId<TextBlock>(evidence, "EvidenceChipTimestampTest").Text.Should().Be("Today 10:24");
+                GetByAutomationId<TextBlock>(evidence, "EvidenceChipTargetTest").Text.Should().Be("EvidenceWorkbench:accounting-record/123");
+                GetByAutomationId<TextBlock>(evidence, "EvidenceChipDetailTest").Text.Should().Be("Trial balance and approval history retained.");
+                GetByAutomationId<Button>(evidence, "EvidenceChipActionTest").Command.Should().BeSameAs(evidenceAction);
+                GetByAutomationId<Button>(evidence, "EvidenceChipActionTest").CommandParameter.Should().Be("accounting-record/123");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void HeaderFilterAndFreshnessPrimitives_ShouldRenderWithAutomationContracts()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var sectionAction = new TestCommand();
+            var clearFilters = new TestCommand();
+            var removeFilter = new TestCommand();
+            var header = new SectionHeaderBar
+            {
+                Title = "Provider readiness",
+                Subtitle = "Health, freshness, and evidence posture for active feeds.",
+                BadgeText = "3 blocked",
+                BadgeTone = WorkspaceTone.Danger,
+                ActionText = "Refresh",
+                ActionCommand = sectionAction,
+                RightContent = new FreshnessIndicator { Label = "As of", Value = "10:24", Tone = WorkspaceTone.Success },
+                HeaderAutomationId = "SectionHeaderTest",
+                TitleAutomationId = "SectionHeaderTitleTest",
+                SubtitleAutomationId = "SectionHeaderSubtitleTest",
+                BadgeAutomationId = "SectionHeaderBadgeTest",
+                ActionButtonAutomationId = "SectionHeaderActionTest",
+                RightContentAutomationId = "SectionHeaderRightContentTest"
+            };
+            var filters = new FilterChipBar
+            {
+                ItemsSource = new[] { "Fund: Demo", "Status: Blocked" },
+                ResultSummary = "23 records",
+                ClearAllCommand = clearFilters,
+                RemoveFilterCommand = removeFilter,
+                BarAutomationId = "FilterChipBarTest",
+                ResultSummaryAutomationId = "FilterChipSummaryTest",
+                ItemsAutomationId = "FilterChipItemsTest",
+                ClearAllButtonAutomationId = "FilterChipClearAllTest"
+            };
+            var freshness = new FreshnessIndicator
+            {
+                Label = "As of",
+                Value = "10:24",
+                Detail = "Provider health source",
+                Tone = WorkspaceTone.Success,
+                IndicatorAutomationId = "FreshnessIndicatorTest",
+                IconAutomationId = "FreshnessIconTest",
+                LabelAutomationId = "FreshnessLabelTest",
+                ValueAutomationId = "FreshnessValueTest",
+                DetailAutomationId = "FreshnessDetailTest"
+            };
+            var host = new StackPanel { Children = { header, filters, freshness } };
+
+            var window = Show(host);
+            try
+            {
+                AutomationProperties.GetAutomationId(header).Should().Be("SectionHeaderTest");
+                AutomationProperties.GetName(header).Should().Be("Provider readiness");
+                GetByAutomationId<TextBlock>(header, "SectionHeaderTitleTest").Text.Should().Be("Provider readiness");
+                GetByAutomationId<TextBlock>(header, "SectionHeaderSubtitleTest").Text.Should().Be("Health, freshness, and evidence posture for active feeds.");
+                GetByAutomationId<ToneBadge>(header, "SectionHeaderBadgeTest").Text.Should().Be("3 blocked");
+                GetByAutomationId<ContentPresenter>(header, "SectionHeaderRightContentTest").Content.Should().BeAssignableTo<FreshnessIndicator>();
+                GetByAutomationId<Button>(header, "SectionHeaderActionTest").Command.Should().BeSameAs(sectionAction);
+
+                AutomationProperties.GetAutomationId(filters).Should().Be("FilterChipBarTest");
+                AutomationProperties.GetName(filters).Should().Be("23 records");
+                GetByAutomationId<TextBlock>(filters, "FilterChipSummaryTest").Text.Should().Be("23 records");
+                GetByAutomationId<ItemsControl>(filters, "FilterChipItemsTest").Items.Count.Should().Be(2);
+                GetByAutomationId<Button>(filters, "FilterChipClearAllTest").Command.Should().BeSameAs(clearFilters);
+
+                AutomationProperties.GetAutomationId(freshness).Should().Be("FreshnessIndicatorTest");
+                AutomationProperties.GetName(freshness).Should().Be("As of: 10:24");
+                GetByAutomationId<TextBlock>(freshness, "FreshnessIconTest").Text.Should().Be("\uE823");
+                GetByAutomationId<TextBlock>(freshness, "FreshnessLabelTest").Text.Should().Be("As of");
+                GetByAutomationId<TextBlock>(freshness, "FreshnessValueTest").Text.Should().Be("10:24");
+                GetByAutomationId<TextBlock>(freshness, "FreshnessDetailTest").Text.Should().Be("Provider health source");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
     public void OptionalPrimitiveActions_ShouldCollapseWhenCommandOrTextIsMissing()
     {
         WpfTestThread.Run(() =>
@@ -199,6 +349,100 @@ public sealed class ApplicationPrimitiveControlsTests
                 Get<Button>(queueWithoutText, "ActionButton").Visibility.Should().Be(Visibility.Collapsed);
                 Get<Border>(queueWithoutCommand, "IconContainer").Visibility.Should().Be(Visibility.Collapsed);
                 Get<Border>(queueWithoutText, "IconContainer").Visibility.Should().Be(Visibility.Collapsed);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void OptionalAlertAndEvidenceElements_ShouldCollapseWhenMissing()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var alert = new InlineAlertPanel
+            {
+                Title = "No warning",
+                Message = "Nothing to resolve.",
+                ActionText = "Resolve",
+                IconGlyph = string.Empty
+            };
+            var evidence = new EvidenceLinkChip
+            {
+                Label = "Evidence retained",
+                Source = "Accounting",
+                Target = "EvidenceWorkbench"
+            };
+            var host = new StackPanel
+            {
+                Children =
+                {
+                    alert,
+                    evidence
+                }
+            };
+
+            var window = Show(host);
+            try
+            {
+                Get<Border>(alert, "IconContainer").Visibility.Should().Be(Visibility.Collapsed);
+                Get<Button>(alert, "ActionButton").Visibility.Should().Be(Visibility.Collapsed);
+                Get<TextBlock>(evidence, "DetailText").Visibility.Should().Be(Visibility.Collapsed);
+                Get<Button>(evidence, "OpenButton").Visibility.Should().Be(Visibility.Collapsed);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void OptionalHeaderFilterAndFreshnessElements_ShouldCollapseWhenMissing()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var header = new SectionHeaderBar
+            {
+                Title = "Provider readiness",
+                ActionText = "Refresh"
+            };
+            var filters = new FilterChipBar
+            {
+                ItemsSource = new[] { "Fund: Demo" },
+                ResultSummary = "1 record"
+            };
+            var freshness = new FreshnessIndicator
+            {
+                Label = "As of",
+                Value = "Unavailable",
+                IconGlyph = string.Empty
+            };
+            var host = new StackPanel
+            {
+                Children =
+                {
+                    header,
+                    filters,
+                    freshness
+                }
+            };
+
+            var window = Show(host);
+            try
+            {
+                Get<ToneBadge>(header, "Badge").Visibility.Should().Be(Visibility.Collapsed);
+                Get<ContentPresenter>(header, "RightContentPresenter").Visibility.Should().Be(Visibility.Collapsed);
+                Get<Button>(header, "ActionButton").Visibility.Should().Be(Visibility.Collapsed);
+                Get<Button>(filters, "ClearAllButton").Visibility.Should().Be(Visibility.Collapsed);
+                Get<TextBlock>(freshness, "IconText").Visibility.Should().Be(Visibility.Collapsed);
+                Get<TextBlock>(freshness, "DetailText").Visibility.Should().Be(Visibility.Collapsed);
             }
             finally
             {

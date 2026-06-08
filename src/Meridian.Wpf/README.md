@@ -227,11 +227,11 @@ now use compact action strips, shared dense position tables, selected-position i
 disabled-action tooltips for refresh/Security Master readiness while preserving their existing
 account and aggregate API read paths. Run Portfolio follows the same drill-in
 pattern: the duplicate hero is replaced by compact run actions, retained positions render through
-`DenseDataGridControl`, the selected position drives an inspector rail, and Security Master/run
-drill-in commands expose their disabled reasons through view-model-owned tooltips. Run Detail now
-uses the same focused drill-in contract: compact run actions stay fail-closed until retained detail
-loads, run evidence is projected through the shared inspector, and retained parameters render
-through the shared dense table with selected-parameter inspection. Run Ledger now
+`WorkstationTableInspectorControl`, the selected position drives an inspector rail, and Security
+Master/run drill-in commands expose their disabled reasons through view-model-owned tooltips. Run
+Detail now uses the same focused drill-in contract: compact run actions stay fail-closed until
+retained detail loads, run evidence is projected through the shared inspector, and retained
+parameters render through the shared dense table with selected-parameter inspection. Run Ledger now
 uses the same compact drill-in treatment for Accounting review: retained trial-balance and journal
 rows render through dense shared tables, the selected trial-balance line owns the inspector rail, and
 Security Master actions fail closed unless the selected line carries a security or symbol. Run Risk
@@ -272,6 +272,13 @@ and provider-specific diagnostics are disabled until a row is selected. Affected
 canonical workspace names such as `Strategy` and `Data`; retained provider DTO and page-tag
 compatibility names must not leak `Research` or `Data Operations` into operator-facing recovery
 tables.
+The legacy Provider page is limited to backfill-specific tuning: provider enablement, priority,
+rate limits, fallback preview, dry-run planning, and audit history. It now uses compact action
+chrome plus shared dense table/inspector workbench tabs for provider settings, fallback chain,
+dry-run plan, and audit trail. Save/reset mutations are selected-provider commands with disabled
+tooltips; provider status, credentials, routing, diagnostics, and recovery actions belong in
+Provider Health and Settings via shared provider metadata instead of hand-authored desktop provider
+cards.
 System Health now uses the same compact support-console treatment: the duplicate hero is replaced by
 a health action strip, provider and recent-event lists render through shared dense tables, the triage
 briefing is projected through the shared inspector model, and refresh/diagnostic commands expose

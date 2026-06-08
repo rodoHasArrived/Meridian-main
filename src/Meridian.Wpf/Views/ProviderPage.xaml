@@ -1,535 +1,307 @@
 <Page x:Class="Meridian.Wpf.Views.ProviderPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      mc:Ignorable="d"
-      d:DesignHeight="900" d:DesignWidth="1400"
-      Background="{DynamicResource ConsoleBackgroundDarkBrush}"
+      xmlns:workstation="clr-namespace:Meridian.Wpf.Workstation.Controls"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded"
       AutomationProperties.Name="Provider">
 
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Page.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
-        <StackPanel MaxWidth="1200">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16,24,32">
+        <Grid MaxWidth="1260">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-            <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,24">
+            <Border Grid.Row="0"
+                    Style="{StaticResource WorkspaceContextStripStyle}"
+                    Padding="14,10"
+                    Margin="0,0,0,14"
+                    AutomationProperties.AutomationId="ProviderBackfillActionStrip"
+                    AutomationProperties.Name="Backfill Provider Action Strip">
                 <Grid>
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="0">
-                        <StackPanel Orientation="Horizontal">
-                            <Border Width="44"
-                                    Height="44"
-                                    CornerRadius="14"
-                                    Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                                    BorderBrush="{StaticResource InfoColorBrush}"
-                                    BorderThickness="1">
-                                <TextBlock Text="&#xE8B9;"
-                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                           FontSize="24"
-                                           Foreground="{StaticResource InfoColorBrush}"
-                                           VerticalAlignment="Center"
-                                           HorizontalAlignment="Center" />
-                            </Border>
-                            <StackPanel Margin="12,0,0,0">
-                                <TextBlock Text="Data Providers" Style="{StaticResource PageTitleStyle}" />
-                                <TextBlock Text="Control upstream market data sources, fallback behavior, and validation from a cleaner operator console."
-                                           Style="{StaticResource CardDescriptionStyle}" />
-                            </StackPanel>
-                        </StackPanel>
+                    <Border Grid.Column="0"
+                            Width="30"
+                            Height="30"
+                            CornerRadius="8"
+                            Margin="0,0,10,0"
+                            VerticalAlignment="Center"
+                            Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                            BorderBrush="{StaticResource InfoColorBrush}"
+                            BorderThickness="1">
+                        <TextBlock Text="&#xE8B9;"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="16"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" />
+                    </Border>
 
-                        <WrapPanel Margin="0,16,0,0">
-                            <Border Style="{StaticResource NeutralBadgeStyle}" Margin="0,0,10,10">
-                                <TextBlock Text="Streaming, historical, dry-run, and audit workflows"
-                                           FontSize="12"
-                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
-                            </Border>
-                            <Border Style="{StaticResource NeutralBadgeStyle}" Margin="0,0,10,10">
-                                <TextBlock Text="Desktop provider workstation"
-                                           FontSize="12"
-                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
-                            </Border>
-                        </WrapPanel>
+                    <StackPanel Grid.Column="1" Margin="0,0,20,0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Backfill Operator Workflow"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       Margin="0,0,10,0" />
+                            <TextBlock Text="{Binding ProviderScopeText}"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       FontSize="12"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding BackfillActionStateDetail}"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   FontSize="11"
+                                   TextTrimming="CharacterEllipsis"
+                                   AutomationProperties.AutomationId="ProviderBackfillActionStateDetail" />
                     </StackPanel>
 
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button x:Name="ValidateConfigButtonHeader"
-                                Content="Validate"
-                                Style="{StaticResource GhostButtonStyle}"
-                                Command="{Binding ValidateConfigCommand}"
-                                Margin="0,0,8,0" />
-                        <Button x:Name="RefreshProvidersButtonHeader"
-                                Content="Refresh"
-                                Style="{StaticResource GhostButtonStyle}"
-                                Command="{Binding RefreshProvidersCommand}"
-                                Margin="0,0,8,0" />
-                        <Button Content="Test Connections"
-                                Style="{StaticResource PrimaryButtonStyle}"
-                                Command="{Binding TestAllConnectionsCommand}" />
+                    <StackPanel Grid.Column="2"
+                                MaxWidth="520"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                AutomationProperties.AutomationId="ProviderBackfillActionStatePanel"
+                                AutomationProperties.Name="{Binding BackfillActionStateTitle}">
+                        <WrapPanel HorizontalAlignment="Right">
+                            <Button Content="Validate"
+                                    Command="{Binding ValidateConfigCommand}"
+                                    ToolTip="{Binding ValidateConfigTooltip}"
+                                    ToolTipService.ShowOnDisabled="True"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    AutomationProperties.AutomationId="ProviderValidateConfigButton"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Refresh"
+                                    Command="{Binding RefreshProvidersCommand}"
+                                    ToolTip="{Binding RefreshProvidersTooltip}"
+                                    ToolTipService.ShowOnDisabled="True"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    AutomationProperties.AutomationId="ProviderRefreshProvidersButton"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Test Connections"
+                                    Command="{Binding TestAllConnectionsCommand}"
+                                    ToolTip="{Binding TestConnectionsTooltip}"
+                                    ToolTipService.ShowOnDisabled="True"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    AutomationProperties.AutomationId="ProviderTestConnectionsButton"
+                                    Margin="0,0,0,8" />
+                        </WrapPanel>
+                        <TextBlock Text="{Binding BackfillActionStateTitle}"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   TextAlignment="Right"
+                                   TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="ProviderBackfillActionStateTitle" />
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
-                <StackPanel>
-                    <TextBlock Text="Backfill Operator Workflow" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
-                    <TextBlock Text="Use this page to tune historical provider priority, rate limits, fallback selection, dry-run plans, and backfill audit visibility. Provider status, credentials, routing, diagnostics, and recovery actions are managed from Provider Health and Settings."
-                               Style="{StaticResource CardDescriptionStyle}" />
-                    <WrapPanel Margin="0,16,0,0">
-                        <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,10,10">
-                            <TextBlock Text="1. Validate configuration"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                        </Border>
-                        <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,10,10">
-                            <TextBlock Text="2. Tune priority and rate limits"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                        </Border>
-                        <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,10,10">
-                            <TextBlock Text="3. Preview fallback and dry-run plan"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                        </Border>
-                        <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,10,10">
-                            <TextBlock Text="4. Commit changes with audit visibility"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                        </Border>
-                    </WrapPanel>
-                </StackPanel>
-            </Border>
+            <workstation:WorkstationStatePanelControl Grid.Row="1"
+                                                       State="{Binding BackfillPostureState}"
+                                                       Margin="0,0,0,14"
+                                                       AutomationProperties.AutomationId="ProviderBackfillPostureCard"
+                                                       TitleAutomationId="ProviderBackfillPostureTitle"
+                                                       DetailAutomationId="ProviderBackfillPostureDetail"
+                                                       EvidenceAutomationId="ProviderBackfillPostureEvidence" />
 
-            <!-- ================================================ -->
-            <!-- Backfill Provider Settings Card (Phase 1)        -->
-            <!-- ================================================ -->
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
-                <StackPanel>
-                    <Grid Margin="0,0,0,16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Backfill Provider Settings"
-                                   Style="{StaticResource CardHeaderStyle}" />
-                        <StackPanel Grid.Column="1" Orientation="Horizontal">
-                            <Button x:Name="ValidateConfigButton" Content="Validate"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Command="{Binding ValidateConfigCommand}" Margin="0,0,8,0" />
-                            <Button x:Name="RefreshProvidersButton" Content="Refresh"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Command="{Binding RefreshProvidersCommand}" />
-                        </StackPanel>
-                    </Grid>
+            <TabControl Grid.Row="2"
+                        AutomationProperties.AutomationId="ProviderBackfillWorkbench"
+                        AutomationProperties.Name="Provider Backfill Workbench">
+                <TabItem Header="Backfill Provider Settings"
+                         AutomationProperties.AutomationId="ProviderSettingsTab">
+                    <workstation:WorkstationTableInspectorControl Margin="0,14,0,0"
+                                                                  MinHeight="520"
+                                                                  Table="{Binding ProviderSettingsTable}"
+                                                                  SelectedItem="{Binding SelectedProviderSetting, Mode=TwoWay}"
+                                                                  Inspector="{Binding SelectedProviderInspector}"
+                                                                  HeaderText="Backfill Provider Settings"
+                                                                  DetailText="Select a retained provider to edit enabled state, priority, and rate limits."
+                                                                  ScopeText="{Binding ProviderScopeText}"
+                                                                  GridAutomationId="ProviderBackfillSettingsGrid"
+                                                                  EmptyAutomationId="ProviderBackfillSettingsEmptyState"
+                                                                  InspectorAutomationId="ProviderBackfillSettingsInspector"
+                                                                  ControlAutomationId="ProviderBackfillSettingsWorkbench">
+                        <workstation:WorkstationTableInspectorControl.InspectorContent>
+                            <StackPanel>
+                                <workstation:InspectorPanelControl Panel="{Binding ProviderActionInspector}"
+                                                                   AutomationProperties.AutomationId="ProviderBackfillActionInspector" />
 
-                    <!-- Validation Status Panel -->
-                    <Border x:Name="ValidationPanel" CornerRadius="6" Padding="12" Margin="0,0,0,16"
-                            Visibility="{Binding IsValidationPanelVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <Border.Style>
-                            <Style TargetType="Border">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding ValidationIsSuccess}" Value="True">
-                                        <Setter Property="Background" Value="#1E00B400" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding ValidationIsWarning}" Value="True">
-                                        <Setter Property="Background" Value="#1EB4B400" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding ValidationIsError}" Value="True">
-                                        <Setter Property="Background" Value="#1EFF0000" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Border.Style>
-                        <TextBlock x:Name="ValidationText" Text="{Binding ValidationText}"
-                                   TextWrapping="Wrap" FontSize="12">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ValidationIsSuccess}" Value="True">
-                                            <Setter Property="Foreground" Value="{StaticResource SuccessColorBrush}" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding ValidationIsWarning}" Value="True">
-                                            <Setter Property="Foreground" Value="{StaticResource WarningColorBrush}" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding ValidationIsError}" Value="True">
-                                            <Setter Property="Foreground" Value="{StaticResource ErrorColorBrush}" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </Border>
-
-                    <!-- Column Headers -->
-                    <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                            CornerRadius="4" Padding="12,8" Margin="0,0,0,4">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="50" />
-                                <ColumnDefinition Width="140" />
-                                <ColumnDefinition Width="70" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="100" />
-                                <ColumnDefinition Width="100" />
-                                <ColumnDefinition Width="80" />
-                                <ColumnDefinition Width="100" />
-                            </Grid.ColumnDefinitions>
-
-                            <TextBlock Grid.Column="0" Text="On" FontWeight="SemiBold"
-                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12" />
-                            <TextBlock Grid.Column="1" Text="Provider" FontWeight="SemiBold"
-                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12" />
-                            <TextBlock Grid.Column="2" Text="Priority" FontWeight="SemiBold"
-                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12" />
-                            <TextBlock Grid.Column="3" Text="Data Types" FontWeight="SemiBold"
-                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12" />
-                            <TextBlock Grid.Column="4" Text="Rate/min" FontWeight="SemiBold"
-                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12" />
-                            <TextBlock Grid.Column="5" Text="Rate/hr" FontWeight="SemiBold"
-                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12" />
-                            <TextBlock Grid.Column="6" Text="Source" FontWeight="SemiBold"
-                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12" />
-                            <TextBlock Grid.Column="7" Text="Actions" FontWeight="SemiBold"
-                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12" />
-                        </Grid>
-                    </Border>
-
-                    <!-- Dynamic Provider Rows -->
-                    <ItemsControl x:Name="ProviderSettingsList">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Padding="12,10" BorderThickness="0,0,0,1"
-                                        BorderBrush="{StaticResource ConsoleBorderBrush}">
+                                <Border Style="{StaticResource CardStyle}"
+                                        Padding="14"
+                                        Margin="0,12,0,0"
+                                        AutomationProperties.AutomationId="ProviderSelectedEditPanel"
+                                        AutomationProperties.Name="Selected backfill provider editor">
                                     <StackPanel>
+                                        <TextBlock Text="Selected Provider Edit"
+                                                   Style="{StaticResource CardHeaderStyle}"
+                                                   Margin="0,0,0,4" />
+                                        <TextBlock Text="{Binding SaveSelectedProviderTooltip}"
+                                                   Style="{StaticResource CardDescriptionStyle}"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,0,0,12" />
+
+                                        <CheckBox Content="Enabled for backfill"
+                                                  IsChecked="{Binding SelectedProviderSetting.IsEnabled, Mode=TwoWay}"
+                                                  Margin="0,0,0,10"
+                                                  AutomationProperties.AutomationId="ProviderSelectedEnabledToggle" />
+
                                         <Grid>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="50" />
-                                                <ColumnDefinition Width="140" />
-                                                <ColumnDefinition Width="70" />
                                                 <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="100" />
-                                                <ColumnDefinition Width="100" />
-                                                <ColumnDefinition Width="80" />
-                                                <ColumnDefinition Width="100" />
+                                                <ColumnDefinition Width="10" />
+                                                <ColumnDefinition Width="*" />
                                             </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="10" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
 
-                                            <!-- Enabled Toggle -->
-                                            <CheckBox Grid.Column="0"
-                                                      IsChecked="{Binding IsEnabled, Mode=TwoWay}"
-                                                      VerticalAlignment="Center"
-                                                      Checked="ProviderToggle_Changed"
-                                                      Unchecked="ProviderToggle_Changed" />
-
-                                            <!-- Provider Name -->
-                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"
-                                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" FontSize="13" />
-                                                <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="{Binding ProviderId}"
-                                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                                               FontSize="10" />
-                                                    <TextBlock Text=" (free)" FontSize="10"
-                                                               Foreground="{StaticResource SuccessColorBrush}"
-                                                               Visibility="{Binding FreeTier, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                                                </StackPanel>
+                                            <StackPanel Grid.Row="0" Grid.Column="0">
+                                                <TextBlock Text="Priority" Style="{StaticResource FormLabelStyle}" />
+                                                <TextBox Text="{Binding SelectedProviderSetting.Priority, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                         Style="{StaticResource FormTextBoxStyle}"
+                                                         AutomationProperties.AutomationId="ProviderSelectedPriorityBox" />
                                             </StackPanel>
 
-                                            <!-- Priority -->
-                                            <TextBox Grid.Column="2"
-                                                     Text="{Binding Priority, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                                     VerticalAlignment="Center" HorizontalAlignment="Left"
-                                                     Width="50" FontSize="12"
-                                                     LostFocus="PriorityField_LostFocus" />
+                                            <StackPanel Grid.Row="0" Grid.Column="2">
+                                                <TextBlock Text="Rate/min" Style="{StaticResource FormLabelStyle}" />
+                                                <TextBox Text="{Binding SelectedProviderSetting.RateLimitPerMinute, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                         Style="{StaticResource FormTextBoxStyle}"
+                                                         AutomationProperties.AutomationId="ProviderSelectedRateMinuteBox" />
+                                            </StackPanel>
 
-                                            <!-- Data Types -->
-                                            <TextBlock Grid.Column="3"
-                                                       Text="{Binding DataTypes}"
-                                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                                       VerticalAlignment="Center" FontSize="12"
-                                                       TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                                            <StackPanel Grid.Row="2" Grid.Column="0">
+                                                <TextBlock Text="Rate/hr" Style="{StaticResource FormLabelStyle}" />
+                                                <TextBox Text="{Binding SelectedProviderSetting.RateLimitPerHour, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                         Style="{StaticResource FormTextBoxStyle}"
+                                                         AutomationProperties.AutomationId="ProviderSelectedRateHourBox" />
+                                            </StackPanel>
 
-                                            <!-- Rate Limit Per Minute -->
-                                            <TextBox Grid.Column="4"
-                                                     Text="{Binding RateLimitPerMinute, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                                     VerticalAlignment="Center" HorizontalAlignment="Left"
-                                                     Width="70" FontSize="12"
-                                                     LostFocus="RateLimitField_LostFocus" />
-
-                                            <!-- Rate Limit Per Hour -->
-                                            <TextBox Grid.Column="5"
-                                                     Text="{Binding RateLimitPerHour, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                                     VerticalAlignment="Center" HorizontalAlignment="Left"
-                                                     Width="70" FontSize="12"
-                                                     LostFocus="RateLimitField_LostFocus" />
-
-                                            <!-- Config Source Badge -->
-                                            <Border Grid.Column="6"
-                                                    Background="{Binding ConfigSourceBrush}"
-                                                    CornerRadius="4" Padding="6,2"
-                                                    HorizontalAlignment="Left" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding ConfigSource}"
-                                                           FontSize="10" FontWeight="SemiBold"
-                                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                            </Border>
-
-                                            <!-- Reset Button -->
-                                            <Button Grid.Column="7" Content="Reset"
-                                                    Style="{StaticResource SecondaryButtonStyle}"
-                                                    Tag="{Binding ProviderId}"
-                                                    Click="ResetProvider_Click"
-                                                    VerticalAlignment="Center"
-                                                    FontSize="11" Padding="8,3" />
+                                            <StackPanel Grid.Row="2" Grid.Column="2">
+                                                <TextBlock Text="Source" Style="{StaticResource FormLabelStyle}" />
+                                                <TextBlock Text="{Binding SelectedProviderSetting.ConfigSource, TargetNullValue=-}"
+                                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                           FontSize="12"
+                                                           TextWrapping="Wrap" />
+                                            </StackPanel>
                                         </Grid>
 
-                                        <!-- Inline validation warning (shown below the row) -->
-                                        <TextBlock Text="{Binding InlineWarning}"
+                                        <TextBlock Text="{Binding SelectedProviderSetting.InlineWarning}"
                                                    Foreground="{StaticResource WarningColorBrush}"
-                                                   FontSize="11" Margin="50,2,0,0"
+                                                   FontSize="11"
                                                    TextWrapping="Wrap"
-                                                   Visibility="{Binding HasInlineWarning, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                                                   Margin="0,10,0,0"
+                                                   Visibility="{Binding HasSelectedProviderInlineWarning, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                   AutomationProperties.AutomationId="ProviderSelectedInlineWarning" />
+
+                                        <WrapPanel Margin="0,14,0,0">
+                                            <Button Content="Save Selected"
+                                                    Command="{Binding SaveSelectedProviderCommand}"
+                                                    ToolTip="{Binding SaveSelectedProviderTooltip}"
+                                                    ToolTipService.ShowOnDisabled="True"
+                                                    Style="{StaticResource PrimaryButtonStyle}"
+                                                    AutomationProperties.AutomationId="ProviderSaveSelectedButton"
+                                                    Margin="0,0,8,8" />
+                                            <Button Content="Reset Selected"
+                                                    Command="{Binding ResetSelectedProviderCommand}"
+                                                    ToolTip="{Binding ResetSelectedProviderTooltip}"
+                                                    ToolTipService.ShowOnDisabled="True"
+                                                    Style="{StaticResource SecondaryButtonStyle}"
+                                                    AutomationProperties.AutomationId="ProviderResetSelectedButton"
+                                                    Margin="0,0,0,8" />
+                                        </WrapPanel>
                                     </StackPanel>
                                 </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Border>
+                            </StackPanel>
+                        </workstation:WorkstationTableInspectorControl.InspectorContent>
+                    </workstation:WorkstationTableInspectorControl>
+                </TabItem>
 
-            <!-- ================================================ -->
-            <!-- Fallback Chain Preview (Phase 2)                 -->
-            <!-- ================================================ -->
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
-                <StackPanel>
-                    <TextBlock Text="Fallback Chain Preview" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,8" />
-                    <TextBlock Text="Shows the effective provider order used during backfill operations. Only enabled providers are included."
-                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12"
-                               TextWrapping="Wrap" Margin="0,0,0,16" />
+                <TabItem Header="Fallback Chain Preview"
+                         AutomationProperties.AutomationId="ProviderFallbackTab">
+                    <workstation:WorkstationTableInspectorControl Margin="0,14,0,0"
+                                                                  MinHeight="480"
+                                                                  Table="{Binding FallbackChainTable}"
+                                                                  SelectedItem="{Binding SelectedFallbackProvider, Mode=TwoWay}"
+                                                                  Inspector="{Binding SelectedFallbackInspector}"
+                                                                  HeaderText="Fallback Chain Preview"
+                                                                  DetailText="Effective provider order used during backfill operations."
+                                                                  ScopeText="{Binding ProviderScopeText}"
+                                                                  GridAutomationId="ProviderFallbackChainGrid"
+                                                                  EmptyAutomationId="ProviderFallbackChainEmptyState"
+                                                                  InspectorAutomationId="ProviderFallbackChainInspector"
+                                                                  ControlAutomationId="ProviderFallbackChainWorkbench" />
+                </TabItem>
 
-                    <ItemsControl x:Name="FallbackChainList">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                                        CornerRadius="6" Padding="12,8" Margin="0,0,0,6">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="40" />
-                                            <ColumnDefinition Width="130" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
-
-                                        <!-- Priority badge -->
-                                        <Border Grid.Column="0" Background="{StaticResource ConsoleAccentBlueAlpha10Brush}"
-                                                CornerRadius="4" Padding="8,2" HorizontalAlignment="Left">
-                                            <TextBlock Text="{Binding Priority}" FontWeight="Bold"
-                                                       Foreground="{StaticResource InfoColorBrush}"
-                                                       HorizontalAlignment="Center" FontSize="12" />
-                                        </Border>
-
-                                        <!-- Provider name -->
-                                        <TextBlock Grid.Column="1" Text="{Binding DisplayName}" FontWeight="SemiBold"
-                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                                   VerticalAlignment="Center" FontSize="13" />
-
-                                        <!-- Data types -->
-                                        <TextBlock Grid.Column="2" Text="{Binding DataTypes}"
-                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                                   VerticalAlignment="Center" FontSize="12" />
-
-                                        <!-- Rate limit usage -->
-                                        <TextBlock Grid.Column="3" Text="{Binding RateLimitUsage}"
-                                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                                   VerticalAlignment="Center" FontSize="11"
-                                                   Margin="8,0" />
-
-                                        <!-- Config source badge -->
-                                        <Border Grid.Column="4"
-                                                Background="{Binding ConfigSourceBrush}"
-                                                CornerRadius="4" Padding="4,1"
-                                                HorizontalAlignment="Left" VerticalAlignment="Center"
-                                                Margin="4,0">
-                                            <TextBlock Text="{Binding ConfigSource}"
-                                                       FontSize="9" FontWeight="SemiBold"
-                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                        </Border>
-
-                                        <!-- Health indicator -->
-                                        <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center"
-                                                    Margin="8,0,0,0">
-                                            <Ellipse Width="8" Height="8"
-                                                     Fill="{Binding HealthBrush}"
-                                                     VerticalAlignment="Center" Margin="0,0,6,0" />
-                                            <TextBlock Text="{Binding HealthStatus}"
-                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                                       FontSize="11" VerticalAlignment="Center" />
-                                        </StackPanel>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-
-                    <TextBlock x:Name="EmptyFallbackChainText"
-                               Text="No enabled providers. Enable at least one provider above."
-                               Foreground="{StaticResource WarningColorBrush}"
-                               FontSize="12" Margin="0,8,0,0"
-                               Visibility="{Binding IsEmptyFallbackChain, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                </StackPanel>
-            </Border>
-
-            <!-- ================================================ -->
-            <!-- Dry-Run Backfill Plan (Phase 4)                  -->
-            <!-- ================================================ -->
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
-                <StackPanel>
-                    <TextBlock Text="Dry-Run Backfill Plan" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,8" />
-                    <TextBlock Text="Preview which providers will be selected per symbol without executing a backfill."
-                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12"
-                               TextWrapping="Wrap" Margin="0,0,0,12" />
-
-                    <Grid Margin="0,0,0,12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <TextBox x:Name="DryRunSymbolsInput"
-                                 Grid.Column="0"
-                                 Text="{Binding DryRunSymbolsInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 VerticalAlignment="Center" FontSize="12" Margin="0,0,8,0" />
-                        <Button x:Name="DryRunButton" Grid.Column="1"
-                                Content="Preview Plan"
-                                Style="{StaticResource PrimaryButtonStyle}"
-                                Command="{Binding DryRunCommand}" />
-                    </Grid>
-
-                    <!-- Dry-run results -->
-                    <Border x:Name="DryRunResultsPanel"
-                            Visibility="{Binding IsDryRunPanelVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
-                            Background="{StaticResource ConsoleBackgroundMediumBrush}"
-                            CornerRadius="6" Padding="12" Margin="0,4,0,0">
-                        <StackPanel>
-                            <ItemsControl x:Name="DryRunResultsList">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                                            <TextBlock Text="{Binding Symbol}" FontWeight="SemiBold"
-                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                                       Width="80" FontSize="12" />
-                                            <TextBlock Text="&#x2192;" Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                                       Margin="4,0" FontSize="12" />
-                                            <TextBlock Text="{Binding SelectedProvider}" FontWeight="SemiBold"
-                                                       Foreground="{StaticResource InfoColorBrush}" FontSize="12" />
-                                            <TextBlock Text="{Binding FallbackSequence}"
-                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                                       Margin="8,0,0,0" FontSize="11" />
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-
-                            <TextBlock x:Name="DryRunWarningsText"
-                                       Text="{Binding DryRunWarningsText}"
-                                       Visibility="{Binding IsDryRunWarningsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                <TabItem Header="Dry-Run Backfill Plan"
+                         AutomationProperties.AutomationId="ProviderDryRunTab">
+                    <workstation:WorkstationTableInspectorControl Margin="0,14,0,0"
+                                                                  MinHeight="480"
+                                                                  Table="{Binding DryRunPlanTable}"
+                                                                  SelectedItem="{Binding SelectedDryRunResult, Mode=TwoWay}"
+                                                                  Inspector="{Binding SelectedDryRunInspector}"
+                                                                  HeaderText="Dry-Run Backfill Plan"
+                                                                  DetailText="Preview provider selection per symbol without executing a backfill."
+                                                                  ScopeText="{Binding ProviderScopeText}"
+                                                                  GridAutomationId="ProviderDryRunPlanGrid"
+                                                                  EmptyAutomationId="ProviderDryRunPlanEmptyState"
+                                                                  InspectorAutomationId="ProviderDryRunPlanInspector"
+                                                                  ControlAutomationId="ProviderDryRunPlanWorkbench">
+                        <workstation:WorkstationTableInspectorControl.ToolbarContent>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBox Width="220"
+                                         Text="{Binding DryRunSymbolsInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource FormTextBoxStyle}"
+                                         AutomationProperties.AutomationId="ProviderDryRunSymbolsBox"
+                                         Margin="0,0,8,0" />
+                                <Button Content="Preview Plan"
+                                        Command="{Binding DryRunCommand}"
+                                        ToolTip="{Binding DryRunTooltip}"
+                                        ToolTipService.ShowOnDisabled="True"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        AutomationProperties.AutomationId="ProviderPreviewPlanButton" />
+                            </StackPanel>
+                        </workstation:WorkstationTableInspectorControl.ToolbarContent>
+                        <workstation:WorkstationTableInspectorControl.FooterContent>
+                            <TextBlock Text="{Binding DryRunWarningsText}"
                                        Foreground="{StaticResource WarningColorBrush}"
-                                       FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0" />
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </Border>
+                                       FontSize="11"
+                                       TextWrapping="Wrap"
+                                       Visibility="{Binding IsDryRunWarningsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                       AutomationProperties.AutomationId="ProviderDryRunWarningsText" />
+                        </workstation:WorkstationTableInspectorControl.FooterContent>
+                    </workstation:WorkstationTableInspectorControl>
+                </TabItem>
 
-            <!-- ================================================ -->
-            <!-- Provider Configuration Card                      -->
-            <!-- ================================================ -->
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
-                <StackPanel>
-                    <TextBlock Text="Provider Configuration" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
-
-                    <Grid Margin="0,0,0,16">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <!-- Active Streaming Provider -->
-                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
-                            <TextBlock Text="Active Streaming Provider"
-                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                       FontSize="12" Margin="0,0,0,8" />
-                            <ComboBox x:Name="ActiveProviderCombo" SelectedIndex="0">
-                                <ComboBoxItem Content="Interactive Brokers" Tag="IB" />
-                                <ComboBoxItem Content="Alpaca" Tag="Alpaca" />
-                                <ComboBoxItem Content="Polygon" Tag="Polygon" />
-                                <ComboBoxItem Content="NYSE" Tag="NYSE" />
-                            </ComboBox>
-                        </StackPanel>
-
-                        <!-- Failover Enabled -->
-                        <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Bottom">
-                            <CheckBox Content="Failover Enabled"
-                                      Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                        </StackPanel>
-                    </Grid>
-
-                    <Button Content="Test All Connections"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Command="{Binding TestAllConnectionsCommand}"
-                            HorizontalAlignment="Left" />
-                </StackPanel>
-            </Border>
-
-            <!-- ================================================ -->
-            <!-- Audit Trail (Phase 4)                            -->
-            <!-- ================================================ -->
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
-                <StackPanel>
-                    <TextBlock Text="Configuration Change Log" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,8" />
-                    <TextBlock Text="Recent provider configuration changes made from the desktop application."
-                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" FontSize="12"
-                               TextWrapping="Wrap" Margin="0,0,0,12" />
-
-                    <ItemsControl x:Name="AuditLogList">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Padding="8,6" BorderThickness="0,0,0,1"
-                                        BorderBrush="{StaticResource ConsoleBorderBrush}">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="160" />
-                                            <ColumnDefinition Width="120" />
-                                            <ColumnDefinition Width="80" />
-                                            <ColumnDefinition Width="*" />
-                                        </Grid.ColumnDefinitions>
-
-                                        <TextBlock Grid.Column="0" Text="{Binding Timestamp}"
-                                                   Foreground="{StaticResource ConsoleTextMutedBrush}" FontSize="11" />
-                                        <TextBlock Grid.Column="1" Text="{Binding ProviderId}"
-                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                                   FontWeight="SemiBold" FontSize="11" />
-                                        <TextBlock Grid.Column="2" Text="{Binding Action}"
-                                                   Foreground="{StaticResource InfoColorBrush}" FontSize="11" />
-                                        <TextBlock Grid.Column="3" Text="{Binding Summary}"
-                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                                   FontSize="11" TextTrimming="CharacterEllipsis" />
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-
-                    <TextBlock x:Name="EmptyAuditText"
-                               Text="No configuration changes recorded yet."
-                               Foreground="{StaticResource ConsoleTextMutedBrush}"
-                               FontSize="12" Margin="0,8,0,0"
-                               Visibility="{Binding IsEmptyAuditLog, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                </StackPanel>
-            </Border>
-
-        </StackPanel>
+                <TabItem Header="Audit Trail"
+                         AutomationProperties.AutomationId="ProviderAuditTab">
+                    <workstation:WorkstationTableInspectorControl Margin="0,14,0,0"
+                                                                  MinHeight="480"
+                                                                  Table="{Binding AuditLogTable}"
+                                                                  SelectedItem="{Binding SelectedAuditLog, Mode=TwoWay}"
+                                                                  Inspector="{Binding SelectedAuditInspector}"
+                                                                  HeaderText="Audit Trail"
+                                                                  DetailText="Retained provider configuration changes made from the desktop application."
+                                                                  ScopeText="{Binding ProviderScopeText}"
+                                                                  GridAutomationId="ProviderAuditTrailGrid"
+                                                                  EmptyAutomationId="ProviderAuditTrailEmptyState"
+                                                                  InspectorAutomationId="ProviderAuditTrailInspector"
+                                                                  ControlAutomationId="ProviderAuditTrailWorkbench" />
+                </TabItem>
+            </TabControl>
+        </Grid>
     </ScrollViewer>
 </Page>

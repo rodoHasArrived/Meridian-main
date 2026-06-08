@@ -109,57 +109,26 @@
                                                        DetailAutomationId="ClusterStatusPostureDetail"
                                                        EvidenceAutomationId="ClusterStatusPostureEvidence" />
 
-            <Grid Grid.Row="2"
-                  AutomationProperties.AutomationId="ClusterStatusWorkbench"
-                  AutomationProperties.Name="Cluster Status Workbench">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.35*" />
-                    <ColumnDefinition Width="18" />
-                    <ColumnDefinition Width="0.9*" />
-                </Grid.ColumnDefinitions>
-
-                <Border Grid.Column="0"
-                        Style="{StaticResource CardStyle}"
-                        AutomationProperties.AutomationId="ClusterStatusNodesPanel"
-                        AutomationProperties.Name="Cluster Ownership Nodes">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-
-                        <StackPanel Grid.Row="0" Margin="0,0,0,12">
-                            <TextBlock Text="Ownership Nodes"
-                                       Style="{StaticResource CardHeaderStyle}"
-                                       Margin="0,0,0,4" />
-                            <TextBlock Text="Select a collector node to inspect lease freshness and symbol ownership."
-                                       Style="{StaticResource CardDescriptionStyle}"
-                                       TextWrapping="Wrap" />
-                        </StackPanel>
-
-                        <workstation:DenseDataGridControl Grid.Row="1"
+            <workstation:WorkstationTableInspectorControl Grid.Row="2"
                                                           Table="{Binding NodesTable}"
                                                           SelectedItem="{Binding SelectedNode, Mode=TwoWay}"
-                                                          Height="420"
+                                                          Inspector="{Binding SelectedNodeInspector}"
+                                                          HeaderText="Ownership Nodes"
+                                                          DetailText="Select a collector node to inspect lease freshness and symbol ownership."
                                                           GridAutomationId="ClusterStatusNodesGrid"
                                                           EmptyAutomationId="ClusterStatusNodesEmptyState"
-                                                          AutomationProperties.Name="Cluster ownership nodes table" />
-                    </Grid>
-                </Border>
-
-                <StackPanel Grid.Column="2">
+                                                          InspectorAutomationId="ClusterStatusSelectionInspector"
+                                                          ControlAutomationId="ClusterStatusWorkbench">
+                <workstation:WorkstationTableInspectorControl.InspectorHeaderContent>
                     <workstation:InspectorPanelControl Panel="{Binding ClusterSummaryInspector}"
                                                        AutomationProperties.AutomationId="ClusterStatusSummaryInspector" />
+                </workstation:WorkstationTableInspectorControl.InspectorHeaderContent>
 
-                    <workstation:InspectorPanelControl Panel="{Binding SelectedNodeInspector}"
-                                                       Margin="0,12,0,0"
-                                                       AutomationProperties.AutomationId="ClusterStatusSelectionInspector" />
-
+                <workstation:WorkstationTableInspectorControl.InspectorContent>
                     <workstation:InspectorPanelControl Panel="{Binding ClusterActionInspector}"
-                                                       Margin="0,12,0,0"
                                                        AutomationProperties.AutomationId="ClusterStatusActionInspector" />
-                </StackPanel>
-            </Grid>
+                </workstation:WorkstationTableInspectorControl.InspectorContent>
+            </workstation:WorkstationTableInspectorControl>
         </Grid>
     </ScrollViewer>
 </UserControl>

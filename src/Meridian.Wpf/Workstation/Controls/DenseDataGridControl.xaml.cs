@@ -39,6 +39,13 @@ public partial class DenseDataGridControl : UserControl
             typeof(DenseDataGridControl),
             new PropertyMetadata(System.Windows.Controls.SelectionMode.Single));
 
+    public static readonly DependencyProperty EmptyContentProperty =
+        DependencyProperty.Register(
+            nameof(EmptyContent),
+            typeof(object),
+            typeof(DenseDataGridControl),
+            new PropertyMetadata(null));
+
     public static readonly DependencyProperty GridAutomationIdProperty =
         DependencyProperty.Register(
             nameof(GridAutomationId),
@@ -84,6 +91,12 @@ public partial class DenseDataGridControl : UserControl
     {
         get => (System.Windows.Controls.SelectionMode)GetValue(SelectionModeProperty);
         set => SetValue(SelectionModeProperty, value);
+    }
+
+    public object? EmptyContent
+    {
+        get => GetValue(EmptyContentProperty);
+        set => SetValue(EmptyContentProperty, value);
     }
 
     public string GridAutomationId

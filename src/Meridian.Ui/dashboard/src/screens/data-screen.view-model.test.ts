@@ -166,7 +166,18 @@ const polygonConnection: ProviderConnectionRow = {
   externalAccountId: "acct-provider-01",
   affectedWorkflows: ["Strategy", "Backfill"],
   recommendedAction: "Verify credentials before routing dependent workflows.",
-  actionHref: "/settings#provider-polygon"
+  actionHref: "/settings#provider-polygon",
+  credentialFields: [
+    {
+      name: "ApiKey",
+      label: "API key",
+      required: true,
+      inputKind: "Password",
+      placeholder: "POLYGON_API_KEY",
+      helpText: "Stored in Meridian's encrypted local provider store and masked after save."
+    }
+  ],
+  environmentOptions: []
 };
 
 const polygonRoutingConnection: ProviderRoutingConnection = {
@@ -258,6 +269,29 @@ const providerReadiness: ProviderReadinessSummary = {
           target: "/data/providers",
           requiresMutation: false
         }
+      ],
+      credentialFields: [
+        {
+          name: "ClientId",
+          label: "Client ID",
+          required: true,
+          inputKind: "Password",
+          placeholder: "PLAID_CLIENT_ID",
+          helpText: "Used server-side to create Plaid link tokens and retain bank evidence."
+        },
+        {
+          name: "Secret",
+          label: "Secret",
+          required: true,
+          inputKind: "Password",
+          placeholder: "PLAID_SECRET",
+          helpText: "Used server-side to create Plaid link tokens and retain bank evidence."
+        }
+      ],
+      environmentOptions: [
+        { value: "sandbox", label: "Sandbox", isDefault: true },
+        { value: "development", label: "Development", isDefault: false },
+        { value: "production", label: "Production", isDefault: false }
       ]
     },
     {
@@ -299,7 +333,18 @@ const providerReadiness: ProviderReadinessSummary = {
           target: "/api/providers/polygon/verify",
           requiresMutation: true
         }
-      ]
+      ],
+      credentialFields: [
+        {
+          name: "ApiKey",
+          label: "API key",
+          required: true,
+          inputKind: "Password",
+          placeholder: "POLYGON_API_KEY",
+          helpText: "Stored in Meridian's encrypted local provider store and masked after save."
+        }
+      ],
+      environmentOptions: []
     }
   ]
 };
@@ -855,6 +900,11 @@ describe("data-screen view model", () => {
       label: "Masked key preview",
       value: "pk_live_****7F3A"
     });
+    expect(providerSection.selectedDetail?.credentialFields).toContainEqual({
+      id: "credential-field-ApiKey",
+      label: "API key",
+      value: "Required field"
+    });
     expect(providerSection.selectedDetail?.credentialFields).not.toContainEqual(expect.objectContaining({
       value: expect.stringContaining("local:polygon")
     }));
@@ -892,6 +942,31 @@ describe("data-screen view model", () => {
       status: "fail",
       detail: "Required Plaid client fields are missing."
     }));
+
+    const credentialProviderSection = buildProviderSection(
+      providers,
+      "provider-row-plaid",
+      {
+        providerReadiness,
+        providerConnections: [polygonConnection]
+      },
+      "credentials"
+    );
+    expect(credentialProviderSection.selectedDetail?.credentialFields).toContainEqual({
+      id: "credential-field-ClientId",
+      label: "Client ID",
+      value: "Required field"
+    });
+    expect(credentialProviderSection.selectedDetail?.credentialFields).toContainEqual({
+      id: "credential-field-Secret",
+      label: "Secret",
+      value: "Required field"
+    });
+    expect(credentialProviderSection.selectedDetail?.credentialFields).toContainEqual({
+      id: "allowed-environments",
+      label: "Allowed environments",
+      value: "Sandbox, Development, Production"
+    });
   });
 
   it("surfaces verification command state without mutating provider rows", () => {

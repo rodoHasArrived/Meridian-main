@@ -4,8 +4,11 @@ using System.Net.Http.Json;
 using System.Text;
 using FluentAssertions;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
+using Meridian.PortfolioRecords.FundAccounts;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Tests.Ui;
 
@@ -118,6 +121,95 @@ public sealed partial class WorkstationEndpointsTests
         }
     }
 
+    [Fact]
+    public async Task MapWorkstationEndpoints_BankStatementImport_ShouldRetainCsvAndIngestBankLines()
+    {
+        var originalRoot = Environment.GetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT");
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "bank-statement-import", Guid.NewGuid().ToString("N"));
+        Environment.SetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT", root);
+        var accountService = new InMemoryFundAccountService();
+        var account = await accountService.CreateAccountAsync(CreateBankImportAccountRequest());
+
+        try
+        {
+            await using var app = await CreateAppAsync(services =>
+            {
+                services.AddSingleton<IFundAccountService>(accountService);
+            });
+            var client = app.GetTestClient();
+            using var content = BuildBankStatementImportContent(
+                account.AccountId,
+                "JPMorgan",
+                """
+                transaction_date,value_date,amount,currency,transaction_type,description,reference,closing_balance
+                2026-06-01,2026-06-03,-50000.00,USD,Wire,Payment to broker,WIRE-20260601-001,950000.00
+                2026-06-02,,1250.25,usd,Interest,Deposit interest,INT-20260602,951250.25
+                """,
+                statementDate: "2026-06-30");
+
+            var response = await client.PostAsync(UiApiRoutes.WorkstationBankStatementImport, content);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var result = await response.Content.ReadFromJsonAsync<BankStatementImportResultDto>(ServerJsonOptions);
+            result.Should().NotBeNull();
+            result!.Status.Should().Be("Imported");
+            result.ImportedBy.Should().Be("ops-user");
+            result.AccountId.Should().Be(account.AccountId);
+            result.AccountCode.Should().Be(account.AccountCode);
+            result.StatementDate.Should().Be(new DateOnly(2026, 6, 30));
+            result.LineCount.Should().Be(2);
+            result.RetainedPath.Should().Be($"workstation/data-uploads/{result.UploadId}/bank-statement.csv");
+            File.Exists(Path.Combine(root, result.UploadId, result.FileName)).Should().BeTrue();
+            result.NextAction.Should().Contain("Meridian-owned ledger posting still requires approval");
+
+            var stored = await accountService.GetBankStatementLinesAsync(account.AccountId);
+            stored.Should().HaveCount(2);
+            stored.Should().Contain(line =>
+                line.Amount == -50000m &&
+                line.Currency == "USD" &&
+                line.TransactionType == "Wire" &&
+                line.Reference == "WIRE-20260601-001" &&
+                line.ClosingBalance == 950000m);
+            stored.Should().Contain(line =>
+                line.Amount == 1250.25m &&
+                line.ValueDate == line.TransactionDate &&
+                line.Description == "Deposit interest");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("MERIDIAN_DATA_UPLOAD_ROOT", originalRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_BankStatementImport_ShouldRejectInvalidRowsWithoutApplyingEvidence()
+    {
+        var accountService = new InMemoryFundAccountService();
+        var account = await accountService.CreateAccountAsync(CreateBankImportAccountRequest());
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IFundAccountService>(accountService);
+        });
+        var client = app.GetTestClient();
+        using var content = BuildBankStatementImportContent(
+            account.AccountId,
+            "JPMorgan",
+            """
+            transaction_date,value_date,amount,currency,transaction_type,description,reference,closing_balance
+            not-a-date,2026-06-03,500.00,USD,Deposit,Bad source row,REF-1,1000.00
+            """);
+
+        var response = await client.PostAsync(UiApiRoutes.WorkstationBankStatementImport, content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetailsDto>(ServerJsonOptions);
+        problem.Should().NotBeNull();
+        problem!.Errors.Should().ContainKey("transaction_date");
+
+        var stored = await accountService.GetBankStatementLinesAsync(account.AccountId);
+        stored.Should().BeEmpty();
+    }
+
     private static MultipartFormDataContent BuildUploadContent(string templateId, string csv)
     {
         var content = new MultipartFormDataContent();
@@ -127,4 +219,52 @@ public sealed partial class WorkstationEndpointsTests
         content.Add(file, "file", "upload.csv");
         return content;
     }
+
+    private static MultipartFormDataContent BuildBankStatementImportContent(
+        Guid accountId,
+        string bankName,
+        string csv,
+        string? statementDate = null)
+    {
+        var content = new MultipartFormDataContent();
+        content.Add(new StringContent(accountId.ToString("D"), Encoding.UTF8), "accountId");
+        content.Add(new StringContent(bankName, Encoding.UTF8), "bankName");
+        if (!string.IsNullOrWhiteSpace(statementDate))
+        {
+            content.Add(new StringContent(statementDate, Encoding.UTF8), "statementDate");
+        }
+
+        var file = new ByteArrayContent(Encoding.UTF8.GetBytes(csv.Replace("\r\n", "\n")));
+        file.Headers.ContentType = MediaTypeHeaderValue.Parse("text/csv");
+        content.Add(file, "file", "bank-statement.csv");
+        return content;
+    }
+
+    private static CreateAccountRequest CreateBankImportAccountRequest()
+        => new(
+            AccountId: Guid.NewGuid(),
+            AccountType: AccountTypeDto.Bank,
+            AccountCode: $"BANK-{Guid.NewGuid():N}",
+            DisplayName: "Operating Cash",
+            BaseCurrency: "USD",
+            EffectiveFrom: DateTimeOffset.UtcNow,
+            CreatedBy: "test",
+            BankDetails: new BankAccountDetailsDto(
+                AccountNumber: "123456789",
+                BankName: "JPMorgan",
+                BranchName: null,
+                Iban: null,
+                BicSwift: "CHASUS33",
+                RoutingNumber: "021000021",
+                SortCode: null,
+                IntermediaryBankBic: null,
+                IntermediaryBankName: null,
+                BeneficiaryName: "Meridian Fund",
+                BeneficiaryAddress: null));
+
+    private sealed record ValidationProblemDetailsDto(
+        string Type,
+        string Title,
+        int Status,
+        IReadOnlyDictionary<string, string[]> Errors);
 }

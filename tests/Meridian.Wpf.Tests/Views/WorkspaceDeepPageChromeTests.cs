@@ -143,6 +143,26 @@ public sealed class WorkspaceDeepPageChromeTests
     }
 
     [Fact]
+    public void ProviderPage_ShouldUseBackfillDenseTableInspectorChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\ProviderPage.xaml");
+        var xaml = File.ReadAllText(absolutePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().NotContain("Active Streaming Provider");
+        xaml.Should().Contain("ProviderBackfillActionStrip");
+        xaml.Should().Contain("ProviderBackfillPostureCard");
+        xaml.Should().Contain("ProviderBackfillWorkbench");
+        xaml.Should().Contain("ProviderBackfillSettingsGrid");
+        xaml.Should().Contain("ProviderBackfillSettingsInspector");
+        xaml.Should().Contain("ProviderBackfillActionInspector");
+        xaml.Should().Contain("ProviderFallbackChainGrid");
+        xaml.Should().Contain("ProviderDryRunPlanGrid");
+        xaml.Should().Contain("ProviderAuditTrailGrid");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+    }
+
+    [Fact]
     public void ServiceManagerPage_ShouldUseCompactWorkbenchChrome()
     {
         var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\ServiceManagerPage.xaml");
@@ -362,6 +382,7 @@ public sealed class WorkspaceDeepPageChromeTests
         xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
         xaml.Should().Contain("RunPortfolioActionStrip");
         xaml.Should().Contain("RunPortfolioWorkbench");
+        xaml.Should().Contain("WorkstationTableInspectorControl");
         xaml.Should().Contain("RunPortfolioPositionsGrid");
         xaml.Should().Contain("RunPortfolioSelectionInspector");
         xaml.Should().Contain("RunPortfolioActionInspector");

@@ -70,6 +70,27 @@ public partial class WorkstationTableInspectorControl : UserControl
             typeof(WorkstationTableInspectorControl),
             new PropertyMetadata(null));
 
+    public static readonly DependencyProperty TableHeaderContentProperty =
+        DependencyProperty.Register(
+            nameof(TableHeaderContent),
+            typeof(object),
+            typeof(WorkstationTableInspectorControl),
+            new PropertyMetadata(null));
+
+    public static readonly DependencyProperty EmptyContentProperty =
+        DependencyProperty.Register(
+            nameof(EmptyContent),
+            typeof(object),
+            typeof(WorkstationTableInspectorControl),
+            new PropertyMetadata(null));
+
+    public static readonly DependencyProperty InspectorHeaderContentProperty =
+        DependencyProperty.Register(
+            nameof(InspectorHeaderContent),
+            typeof(object),
+            typeof(WorkstationTableInspectorControl),
+            new PropertyMetadata(null));
+
     public static readonly DependencyProperty InspectorContentProperty =
         DependencyProperty.Register(
             nameof(InspectorContent),
@@ -169,6 +190,24 @@ public partial class WorkstationTableInspectorControl : UserControl
     {
         get => GetValue(ToolbarContentProperty);
         set => SetValue(ToolbarContentProperty, value);
+    }
+
+    public object? TableHeaderContent
+    {
+        get => GetValue(TableHeaderContentProperty);
+        set => SetValue(TableHeaderContentProperty, value);
+    }
+
+    public object? EmptyContent
+    {
+        get => GetValue(EmptyContentProperty);
+        set => SetValue(EmptyContentProperty, value);
+    }
+
+    public object? InspectorHeaderContent
+    {
+        get => GetValue(InspectorHeaderContentProperty);
+        set => SetValue(InspectorHeaderContentProperty, value);
     }
 
     public object? InspectorContent

@@ -72,7 +72,8 @@ public sealed class AccountingPolicyService : IAccountingPolicyService
             FundProfileId: NormalizeOptional(request.FundProfileId),
             FundStructureNodeId: request.FundStructureNodeId,
             InstrumentId: NormalizeOptional(request.InstrumentId),
-            SourceEventId: request.SourceEventId);
+            SourceEventId: request.SourceEventId,
+            RulePack: NormalizeRulePack(request.RulePack, request.PolicyId, request.Version));
 
         _policies[Key(policy.AccountingBasis, policy.PolicyId, policy.Version)] = policy;
         return Task.FromResult(policy);
@@ -124,15 +125,30 @@ public sealed class AccountingPolicyService : IAccountingPolicyService
         var start = new DateOnly(1900, 1, 1);
         return
         [
-            Default(AccountingBasisKindDto.Primary, "legacy-v1", "legacy-v1", "Legacy primary ledger policy"),
-            Default(AccountingBasisKindDto.Gaap, "gaap-default-v1", "v1", "Default GAAP basis policy"),
-            Default(AccountingBasisKindDto.Cash, "cash-default-v1", "v1", "Default cash basis policy"),
-            Default(AccountingBasisKindDto.Tax, "tax-default-v1", "v1", "Default tax basis policy"),
-            Default(AccountingBasisKindDto.Statutory, "stat-default-v1", "v1", "Default statutory basis policy")
+            Default(AccountingBasisKindDto.Primary, "legacy-v1", "legacy-v1", "Legacy primary ledger policy", AccountingTreatmentKindDto.General),
+            Default(AccountingBasisKindDto.Gaap, "gaap-default-v1", "v1", "Default GAAP basis policy", AccountingTreatmentKindDto.Accrual),
+            Default(AccountingBasisKindDto.Cash, "cash-default-v1", "v1", "Default cash basis policy", AccountingTreatmentKindDto.General),
+            Default(AccountingBasisKindDto.Tax, "tax-default-v1", "v1", "Default tax basis policy", AccountingTreatmentKindDto.TaxLotRelief),
+            Default(AccountingBasisKindDto.Statutory, "stat-default-v1", "v1", "Default statutory basis policy", AccountingTreatmentKindDto.General)
         ];
 
-        AccountingPolicyDto Default(AccountingBasisKindDto basis, string policyId, string version, string displayName) =>
-            new(policyId, basis, version, displayName, start, EffectiveTo: null, IsDefault: true, RulesJson: "{}", CreatedAt: createdAt);
+        AccountingPolicyDto Default(
+            AccountingBasisKindDto basis,
+            string policyId,
+            string version,
+            string displayName,
+            AccountingTreatmentKindDto treatmentKind) =>
+            new(
+                policyId,
+                basis,
+                version,
+                displayName,
+                start,
+                EffectiveTo: null,
+                IsDefault: true,
+                RulesJson: "{}",
+                CreatedAt: createdAt,
+                RulePack: BuildDefaultRulePack(policyId, version, treatmentKind));
     }
 
     private static string Key(AccountingBasisKindDto basis, string policyId, string version)
@@ -164,6 +180,76 @@ public sealed class AccountingPolicyService : IAccountingPolicyService
 
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    internal static AccountingPolicyRulePackDto NormalizeRulePack(
+        AccountingPolicyRulePackDto? rulePack,
+        string policyId,
+        string version)
+    {
+        var normalizedPolicyId = RequireText(policyId, nameof(policyId));
+        var normalizedVersion = RequireText(version, nameof(version));
+        if (rulePack is null)
+        {
+            return BuildDefaultRulePack(normalizedPolicyId, normalizedVersion, AccountingTreatmentKindDto.General);
+        }
+
+        var rulePackId = RequireText(rulePack.RulePackId, nameof(rulePack.RulePackId));
+        var rulePackVersion = RequireText(rulePack.RulePackVersion, nameof(rulePack.RulePackVersion));
+        var seenRuleIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var rules = new List<AccountingPolicyRuleDto>();
+        foreach (var rule in rulePack.Rules ?? [])
+        {
+            ArgumentNullException.ThrowIfNull(rule);
+            var ruleId = RequireText(rule.RuleId, nameof(rule.RuleId));
+            if (!seenRuleIds.Add(ruleId))
+            {
+                throw new ArgumentException($"Accounting policy rule '{ruleId}' is duplicated.", nameof(rulePack));
+            }
+
+            rules.Add(rule with
+            {
+                RuleId = ruleId,
+                RuleVersion = string.IsNullOrWhiteSpace(rule.RuleVersion) ? rulePackVersion : rule.RuleVersion.Trim(),
+                SourceEventType = NormalizeOptional(rule.SourceEventType),
+                JournalTemplateId = NormalizeOptional(rule.JournalTemplateId),
+                Description = NormalizeOptional(rule.Description),
+                Tags = rule.Tags?.Where(static tag => !string.IsNullOrWhiteSpace(tag)).Select(static tag => tag.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToArray()
+            });
+        }
+
+        if (rules.Count == 0)
+        {
+            throw new ArgumentException("Accounting policy rule pack must contain at least one rule.", nameof(rulePack));
+        }
+
+        return new AccountingPolicyRulePackDto(
+            rulePackId,
+            rulePackVersion,
+            rules,
+            NormalizeOptional(rulePack.Description));
+    }
+
+    private static AccountingPolicyRulePackDto BuildDefaultRulePack(
+        string policyId,
+        string version,
+        AccountingTreatmentKindDto treatmentKind)
+    {
+        var ruleId = $"{policyId}.default";
+        return new AccountingPolicyRulePackDto(
+            $"{policyId}.rules",
+            version,
+            [
+                new AccountingPolicyRuleDto(
+                    ruleId,
+                    treatmentKind,
+                    RuleVersion: version,
+                    SourceEventType: "ManualJournalEntry",
+                    RequiresEvidence: true,
+                    RequiresApproval: true,
+                    AllowsAutoPosting: false,
+                    Description: "Default governed journal treatment. Legacy JSON rules remain available for compatibility.")
+            ]);
+    }
 }
 
 public sealed class AccountingBasisProjectionService(IAccountingPolicyService accountingPolicyService) : IAccountingBasisProjectionService

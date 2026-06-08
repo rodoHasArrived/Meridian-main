@@ -70,7 +70,20 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Stretch"
                 AutomationProperties.AutomationId="{Binding ElementName=Root, Path=EmptyAutomationId}">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Grid>
+                <StackPanel x:Name="DefaultEmptyContent"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                    <StackPanel.Style>
+                        <Style TargetType="{x:Type StackPanel}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ElementName=Root, Path=EmptyContent}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
                 <TextBlock Text="{Binding ElementName=Root, Path=Table.EmptyTitle}"
                            FontWeight="SemiBold"
                            Foreground="{StaticResource ConsoleTextPrimaryBrush}"
@@ -80,7 +93,21 @@
                            Foreground="{StaticResource ConsoleTextMutedBrush}"
                            TextWrapping="Wrap"
                            HorizontalAlignment="Center" />
-            </StackPanel>
+                </StackPanel>
+                <ContentPresenter x:Name="EmptyContentPresenter"
+                                  Content="{Binding ElementName=Root, Path=EmptyContent}">
+                    <ContentPresenter.Style>
+                        <Style TargetType="{x:Type ContentPresenter}">
+                            <Setter Property="Visibility" Value="Visible" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ElementName=Root, Path=EmptyContent}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ContentPresenter.Style>
+                </ContentPresenter>
+            </Grid>
         </Border>
     </Grid>
 </UserControl>

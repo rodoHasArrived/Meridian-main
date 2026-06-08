@@ -72,6 +72,10 @@ and mutation access resolved from the workstation session. The shared Plaid work
 keeps link-token creation, public-token exchange, item sync, webhook retention, and sandbox
 transfer gating server-owned so browser and WPF clients do not handle Plaid access tokens or
 duplicate bank evidence ingestion rules.
+Provider connection and readiness services project provider setup metadata from the Data
+Integration credential catalog into shared rows. Browser and WPF provider surfaces should render
+credential fields, allowed environments, diagnostics, evidence, and recovery actions from those
+rows instead of maintaining provider-specific local forms.
 Accounting-system endpoints are also registered as a shared endpoint group from `UiApiRoutes`.
 `Meridian.FinancialOperations.AccountingSystem.AccountingSystemIntegrationService` lists GL
 providers, uses QuickBooks Online when local OAuth client id, client secret, refresh token, and

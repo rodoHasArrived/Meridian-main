@@ -155,6 +155,29 @@ const providerReadiness: ProviderReadinessSummary = {
           target: "/data/providers",
           requiresMutation: false
         }
+      ],
+      credentialFields: [
+        {
+          name: "ClientId",
+          label: "Client ID",
+          required: true,
+          inputKind: "Password",
+          placeholder: "PLAID_CLIENT_ID",
+          helpText: "Used server-side to create Plaid link tokens and retain bank evidence."
+        },
+        {
+          name: "Secret",
+          label: "Secret",
+          required: true,
+          inputKind: "Password",
+          placeholder: "PLAID_SECRET",
+          helpText: "Used server-side to create Plaid link tokens and retain bank evidence."
+        }
+      ],
+      environmentOptions: [
+        { value: "sandbox", label: "Sandbox", isDefault: true },
+        { value: "development", label: "Development", isDefault: false },
+        { value: "production", label: "Production", isDefault: false }
       ]
     },
     {
@@ -188,7 +211,18 @@ const providerReadiness: ProviderReadinessSummary = {
           target: "/api/providers/polygon/verify",
           requiresMutation: true
         }
-      ]
+      ],
+      credentialFields: [
+        {
+          name: "ApiKey",
+          label: "API key",
+          required: true,
+          inputKind: "Password",
+          placeholder: "POLYGON_API_KEY",
+          helpText: "Stored in Meridian's encrypted local provider store and masked after save."
+        }
+      ],
+      environmentOptions: []
     }
   ]
 };
@@ -314,6 +348,12 @@ describe("DataScreen", () => {
     expect(plaidRow).toHaveClass("bg-danger/5");
     expect(within(plaidRow).getByText("Blocked")).toBeInTheDocument();
     expect(within(plaidRow).getByText("Open setup")).toBeInTheDocument();
+    await user.click(screen.getByRole("tab", { name: "Credentials" }));
+    const plaidDetail = screen.getByRole("region", { name: /provider detail for Plaid/i });
+    expect(plaidDetail).toHaveTextContent("Client ID");
+    expect(plaidDetail).toHaveTextContent("Required field");
+    expect(plaidDetail).toHaveTextContent("Secret");
+    expect(plaidDetail).toHaveTextContent("Sandbox, Development, Production");
     await user.click(screen.getByRole("tab", { name: "Diagnostics" }));
     expect(screen.getByRole("region", { name: /provider detail for Plaid/i }))
       .toHaveTextContent("Required Plaid client fields are missing.");

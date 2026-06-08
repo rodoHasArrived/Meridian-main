@@ -54,6 +54,25 @@ public enum LedgerAdjustmentApprovalStatusDto
     Superseded = 3
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<AccountingTreatmentKindDto>))]
+public enum AccountingTreatmentKindDto
+{
+    General = 0,
+    Accrual = 1,
+    Expense = 2,
+    PrepaidExpense = 3,
+    Amortization = 4,
+    Deferral = 5,
+    Reclassification = 6,
+    Reversal = 7,
+    FxTranslation = 8,
+    TaxLotRelief = 9,
+    DirectLendingAccrual = 10,
+    EquityMethodInvestment = 11,
+    Intercompany = 12,
+    ConsolidationElimination = 13
+}
+
 public sealed record LedgerAdjustmentApprovalMetadataDto(
     string ApprovalId,
     LedgerAdjustmentApprovalStatusDto Status,
@@ -63,6 +82,24 @@ public sealed record LedgerAdjustmentApprovalMetadataDto(
     string? GovernanceCaseId = null,
     string? EvidenceLink = null,
     string? Notes = null);
+
+public sealed record AccountingPolicyRuleDto(
+    string RuleId,
+    AccountingTreatmentKindDto TreatmentKind,
+    string RuleVersion = "v1",
+    string? SourceEventType = null,
+    string? JournalTemplateId = null,
+    bool RequiresEvidence = true,
+    bool RequiresApproval = true,
+    bool AllowsAutoPosting = false,
+    string? Description = null,
+    IReadOnlyList<string>? Tags = null);
+
+public sealed record AccountingPolicyRulePackDto(
+    string RulePackId,
+    string RulePackVersion,
+    IReadOnlyList<AccountingPolicyRuleDto> Rules,
+    string? Description = null);
 
 public sealed record CreateAccountingPolicyRequest(
     AccountingBasisKindDto AccountingBasis,
@@ -76,7 +113,8 @@ public sealed record CreateAccountingPolicyRequest(
     string? FundProfileId = null,
     Guid? FundStructureNodeId = null,
     string? InstrumentId = null,
-    Guid? SourceEventId = null);
+    Guid? SourceEventId = null,
+    AccountingPolicyRulePackDto? RulePack = null);
 
 public sealed record AccountingPolicyDto(
     string PolicyId,
@@ -91,7 +129,8 @@ public sealed record AccountingPolicyDto(
     string? FundProfileId = null,
     Guid? FundStructureNodeId = null,
     string? InstrumentId = null,
-    Guid? SourceEventId = null);
+    Guid? SourceEventId = null,
+    AccountingPolicyRulePackDto? RulePack = null);
 
 public sealed record AccountingPolicyQuery(
     AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary,

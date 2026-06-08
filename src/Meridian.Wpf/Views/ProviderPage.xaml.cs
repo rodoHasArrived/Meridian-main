@@ -5,7 +5,7 @@ using Meridian.Wpf.ViewModels;
 namespace Meridian.Wpf.Views;
 
 /// <summary>
-/// Page for viewing and managing market data providers for real-time streaming and historical data.
+/// Page for viewing and managing backfill provider settings.
 /// Code-behind is thin lifecycle wiring only; all state and orchestration live in ProviderViewModel.
 /// </summary>
 public partial class ProviderPage : Page
@@ -17,12 +17,6 @@ public partial class ProviderPage : Page
         InitializeComponent();
 
         _viewModel = viewModel;
-
-        ProviderSettingsList.ItemsSource = _viewModel.ProviderSettings;
-        FallbackChainList.ItemsSource = _viewModel.FallbackChain;
-        AuditLogList.ItemsSource = _viewModel.AuditLog;
-        DryRunResultsList.ItemsSource = _viewModel.DryRunResults;
-
         DataContext = _viewModel;
     }
 
@@ -35,38 +29,5 @@ public partial class ProviderPage : Page
     {
         _viewModel.Stop();
     }
-
-    // ── Row-level event handlers ─────────────────────────────────────────────
-    // These stay in code-behind because they need access to row DataContext
-    // which is a ProviderSettingsViewModel instance, not the page DataContext.
-
-    private async void ProviderToggle_Changed(object sender, RoutedEventArgs e)
-    {
-        if (sender is not CheckBox { DataContext: ProviderSettingsViewModel vm })
-            return;
-        await _viewModel.OnProviderToggleChangedAsync(vm);
-    }
-
-    private async void PriorityField_LostFocus(object sender, RoutedEventArgs e)
-    {
-        if (sender is not TextBox { DataContext: ProviderSettingsViewModel vm } textBox)
-            return;
-        await _viewModel.OnPriorityLostFocusAsync(vm, textBox.Text);
-    }
-
-    private async void RateLimitField_LostFocus(object sender, RoutedEventArgs e)
-    {
-        if (sender is not TextBox { DataContext: ProviderSettingsViewModel vm })
-            return;
-        await _viewModel.OnRateLimitLostFocusAsync(vm);
-    }
-
-    private async void ResetProvider_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is not Button { Tag: string providerId } || string.IsNullOrEmpty(providerId))
-            return;
-        await _viewModel.OnResetProviderAsync(providerId);
-    }
-
 }
 

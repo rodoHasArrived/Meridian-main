@@ -30,7 +30,7 @@ public sealed class ProviderSettingsViewModel : INotifyPropertyChanged
     public bool IsEnabled
     {
         get => _isEnabled;
-        set { _isEnabled = value; OnPropertyChanged(); }
+        set { _isEnabled = value; OnPropertyChanged(); OnPropertyChanged(nameof(EnabledText)); }
     }
 
     public int Priority
@@ -58,6 +58,12 @@ public sealed class ProviderSettingsViewModel : INotifyPropertyChanged
     }
 
     public bool HasInlineWarning => !string.IsNullOrEmpty(_inlineWarning);
+
+    public string EnabledText => IsEnabled ? "Enabled" : "Disabled";
+
+    public string CredentialText => RequiresApiKey ? "API key required" : "No API key";
+
+    public string FreeTierText => FreeTier ? "Free tier" : "Standard";
 
     public Brush ConfigSourceBrush => ConfigSource switch
     {

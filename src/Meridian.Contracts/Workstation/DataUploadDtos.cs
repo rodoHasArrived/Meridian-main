@@ -57,6 +57,26 @@ public sealed record DataUploadPreviewResultDto(
     string NextAction);
 
 /// <summary>
+/// Result returned after a retained bank-statement source file is applied as account evidence.
+/// </summary>
+public sealed record BankStatementImportResultDto(
+    string UploadId,
+    Guid BatchId,
+    Guid AccountId,
+    string AccountCode,
+    string BankName,
+    DateOnly StatementDate,
+    string FileName,
+    long FileSizeBytes,
+    string ImportedBy,
+    DateTimeOffset ImportedAtUtc,
+    string RetainedPath,
+    int LineCount,
+    IReadOnlyList<DataUploadValidationIssueDto> Issues,
+    string Status,
+    string NextAction);
+
+/// <summary>
 /// Validation issue returned from a source upload preview.
 /// </summary>
 public sealed record DataUploadValidationIssueDto(

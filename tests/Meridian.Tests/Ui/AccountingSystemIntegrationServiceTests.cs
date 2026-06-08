@@ -449,6 +449,18 @@ public sealed class AccountingSystemIntegrationServiceTests
     {
         public int ImportCalls { get; private set; }
 
+        public Task<QuickBooksOnlineTokenExchangeResult> ExchangeAuthorizationCodeAsync(
+            QuickBooksOnlineAuthorizationCodeRequest request,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(new QuickBooksOnlineTokenExchangeResult(
+                "qbo-access-token",
+                "rotated-refresh-token",
+                DateTimeOffset.UtcNow.AddHours(1),
+                Warnings: []));
+        }
+
         public Task<QuickBooksOnlineTokenExchangeResult> RefreshAccessTokenAsync(
             QuickBooksOnlineConnection connection,
             CancellationToken ct = default)

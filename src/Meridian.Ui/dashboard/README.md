@@ -206,7 +206,9 @@ back to `/data/providers` rather than creating browser-local bank-link or market
 The Settings Provider Connection Center also captures QuickBooks Online client id, client secret,
 refresh token, company realm id, and optional company name through the same shared provider setup
 API. React never handles access-token exchange directly; the shared provider service uses that
-local config to mark the selected QuickBooks company ready for read-only GL evidence import.
+local config to mark the selected QuickBooks company ready for read-only GL evidence import. Its
+inline credential editor renders provider fields and environment choices from shared
+provider-connection metadata rather than hard-coded browser provider forms.
 Provider setup also projects the design-document Data & Integration flow from its view model:
 `Connect Source`, `Acquire Data`, `Validate Data`, `Normalize Data`, `Store Data`, and `Publish Data`.
 React renders that flow as status copy only; credential validation, routing, storage, and publication
@@ -214,8 +216,8 @@ state remain server/shared-service responsibilities.
 The Data provider cockpit consumes the shared `/api/providers/readiness` model as its primary
 command-center source, then enriches rows with existing provider connection, routing, trust, and
 workspace evidence. React renders provider health, broken credential state, degradation/fallback
-evidence, and the next recovery action from that shared model instead of recalculating provider
-readiness locally.
+evidence, credential field metadata, allowed environments, and the next recovery action from that
+shared model instead of recalculating provider readiness locally.
 The app shell workflow-continuity dock now also projects the design-document primary operator
 workflow as a browser-wide strip: `Import`, `Validate`, `Reconcile`, `Investigate`, `Approve`, and
 `Report`. Route-specific trails such as Market Data To Paper, Research To Paper, or Accounting Closeout remain intact,

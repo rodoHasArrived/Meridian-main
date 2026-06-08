@@ -563,6 +563,7 @@ public static class UiApiRoutes
     public const string WorkstationData = "/api/workstation/data";
     public const string WorkstationDataUploadTemplates = "/api/workstation/data/uploads/templates";
     public const string WorkstationDataUploadPreview = "/api/workstation/data/uploads/preview";
+    public const string WorkstationBankStatementImport = "/api/workstation/data/uploads/bank-statements/import";
     public const string WorkstationGovernance = "/api/workstation/governance";
     public const string WorkstationAccounting = "/api/workstation/accounting";
     public const string WorkstationReporting = "/api/workstation/reporting";

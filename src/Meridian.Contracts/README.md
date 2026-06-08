@@ -121,6 +121,9 @@ journal-entry, trial-balance, import-summary, and reconciliation-preview evidenc
 provider-neutral so QuickBooks-like adapters, shared endpoints, browser Accounting, Settings, and
 future WPF surfaces consume the same read-only import and reconciliation vocabulary before any
 posting/export workflow is enabled.
+Provider connection and readiness DTOs also carry optional non-sensitive credential field and
+environment metadata so browser and WPF provider setup surfaces can render from shared catalog
+truth without receiving stored secrets or environment variable contents.
 
 Report-pack workflow contracts carry the W4 governed lifecycle states `Draft`, `InReview`,
 `Approved`, and `Published` plus governed publication metadata: sign-off actor, evidence hash,

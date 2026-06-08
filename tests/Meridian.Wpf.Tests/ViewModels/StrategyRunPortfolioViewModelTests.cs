@@ -107,7 +107,10 @@ public sealed class StrategyRunPortfolioViewModelTests
 
         xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
         xaml.Should().Contain("RunPortfolioActionStrip");
-        xaml.Should().Contain("workstation:DenseDataGridControl");
+        xaml.Should().Contain("WorkstationTableInspectorControl");
+        xaml.Should().Contain("Table=\"{Binding PositionsTable}\"");
+        xaml.Should().Contain("SelectedItem=\"{Binding SelectedPosition, Mode=TwoWay}\"");
+        xaml.Should().Contain("Inspector=\"{Binding SelectedPositionInspector}\"");
         xaml.Should().Contain("RunPortfolioPositionsGrid");
         xaml.Should().Contain("RunPortfolioSelectionInspector");
         xaml.Should().Contain("RunPortfolioActionInspector");

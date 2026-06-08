@@ -52,9 +52,66 @@ public sealed class ProviderReadinessEndpointTests
         var plaid = readiness!.Providers.Should().ContainSingle(row => row.ProviderId == "plaid").Subject;
         plaid.Status.Should().Be(ProviderReadinessStatusDto.Ready);
         plaid.CredentialState.Should().Be(ProviderCredentialStateDto.Verified);
+        plaid.CredentialFields.Should().Contain(field =>
+            field.Name == "ClientId" &&
+            field.Label == "Client ID" &&
+            field.Required &&
+            field.InputKind == ProviderCredentialInputKindDto.Password);
+        plaid.CredentialFields.Should().Contain(field =>
+            field.Name == "Secret" &&
+            field.Required &&
+            field.InputKind == ProviderCredentialInputKindDto.Password);
+        plaid.EnvironmentOptions.Should().Contain(option =>
+            option.Value == "sandbox" &&
+            option.Label == "Sandbox" &&
+            option.IsDefault);
+        plaid.EnvironmentOptions.Should().Contain(option => option.Value == "development");
+        plaid.EnvironmentOptions.Should().Contain(option => option.Value == "production");
         plaid.Evidence.Should().Contain(evidence =>
             evidence.Kind == ProviderReadinessEvidenceKindDto.Plaid &&
             evidence.Detail.Contains("1 linked item", StringComparison.OrdinalIgnoreCase));
+
+        var alpaca = readiness.Providers.Should().ContainSingle(row => row.ProviderId == "alpaca").Subject;
+        alpaca.CredentialFields.Should().Contain(field =>
+            field.Name == "KeyId" &&
+            field.Label == "Key ID" &&
+            field.Required &&
+            field.InputKind == ProviderCredentialInputKindDto.Password);
+        alpaca.CredentialFields.Should().Contain(field =>
+            field.Name == "SecretKey" &&
+            field.Required &&
+            field.InputKind == ProviderCredentialInputKindDto.Password);
+        alpaca.EnvironmentOptions.Should().Contain(option => option.Value == "paper" && option.IsDefault);
+        alpaca.EnvironmentOptions.Should().Contain(option => option.Value == "live");
+
+        var quickBooks = readiness.Providers.Should().ContainSingle(row => row.ProviderId == "quickbooks").Subject;
+        quickBooks.CredentialFields.Should().Contain(field =>
+            field.Name == "ClientId" &&
+            field.Label == "Client ID" &&
+            field.Required &&
+            field.InputKind == ProviderCredentialInputKindDto.Password);
+        quickBooks.CredentialFields.Should().Contain(field =>
+            field.Name == "ClientSecret" &&
+            field.Required &&
+            field.InputKind == ProviderCredentialInputKindDto.Password);
+        quickBooks.CredentialFields.Should().Contain(field =>
+            field.Name == "RefreshToken" &&
+            field.Required &&
+            field.InputKind == ProviderCredentialInputKindDto.Password);
+        quickBooks.CredentialFields.Should().Contain(field =>
+            field.Name == "RealmId" &&
+            field.Required &&
+            field.InputKind == ProviderCredentialInputKindDto.Text);
+        quickBooks.CredentialFields.Should().Contain(field =>
+            field.Name == "CompanyName" &&
+            !field.Required &&
+            field.InputKind == ProviderCredentialInputKindDto.Text);
+        quickBooks.EnvironmentOptions.Should().Contain(option => option.Value == "sandbox" && option.IsDefault);
+        quickBooks.EnvironmentOptions.Should().Contain(option => option.Value == "production");
+
+        var quickBooksFixture = readiness.Providers.Should().ContainSingle(row => row.ProviderId == "quickbooks-fixture").Subject;
+        quickBooksFixture.CredentialFields.Should().BeEmpty();
+        quickBooksFixture.EnvironmentOptions.Should().BeEmpty();
 
         var raw = await response.Content.ReadAsStringAsync();
         raw.Should().NotContain("plaid-client-id");
