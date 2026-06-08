@@ -806,21 +806,26 @@ Console.WriteLine($"Buy volume: {breakdown.BuyVolume}, Sell volume: {breakdown.S
 
 ## Running F# Tests
 
-The F# test project contains 4 test files:
-- `CalculationTests.fs` - Spread, imbalance, aggregation tests
-- `ValidationTests.fs` - Railway-oriented validation tests
-- `DomainTests.fs` - Domain model tests
-- `PipelineTests.fs` - Transform pipeline tests
+The F# test project is split with the `FSharpTestSlice` MSBuild property so focused
+validation does not compile every F# test file for every change.
 
 ```bash
-# Run all F# tests
-dotnet test tests/Meridian.FSharp.Tests
+# Market data calculations and stream transforms
+dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj /p:FSharpTestSlice=MarketData --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 
-# Run specific test category
-dotnet test --filter "FullyQualifiedName~ValidationTests"
+# Domain, validation, canonicalization, risk, and promotion policy
+dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj /p:FSharpTestSlice=Domain --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 
-# Run with verbose output
-dotnet test -v detailed
+# Operations/readiness rules
+dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj /p:FSharpTestSlice=Operations --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+
+# Ledger, trading, and direct-lending slices
+dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj /p:FSharpTestSlice=Ledger --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj /p:FSharpTestSlice=Trading --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj /p:FSharpTestSlice=DirectLending --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+
+# Full suite only when a change crosses slices
+dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj /p:FSharpTestSlice=All --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
 
 ---

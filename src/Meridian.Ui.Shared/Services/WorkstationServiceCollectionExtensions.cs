@@ -188,6 +188,12 @@ public static class WorkstationServiceCollectionExtensions
             new FileReportPackWorkflowRecordStore(
                 sp.GetRequiredService<ReportPackWorkflowRecordStoreOptions>(),
                 sp.GetRequiredService<ILogger<FileReportPackWorkflowRecordStore>>()));
+        services.TryAddSingleton<ReportPackDeliveryStoreOptions>(sp =>
+            new ReportPackDeliveryStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "report-pack-deliveries.json")));
+        services.TryAddSingleton<IReportPackDeliveryRecordStore>(sp =>
+            new FileReportPackDeliveryRecordStore(
+                sp.GetRequiredService<ReportPackDeliveryStoreOptions>(),
+                sp.GetRequiredService<ILogger<FileReportPackDeliveryRecordStore>>()));
         services.TryAddSingleton<ReportTemplateGovernanceStoreOptions>(sp =>
             new ReportTemplateGovernanceStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "report-templates.json")));
         services.TryAddSingleton<IReportTemplateGovernanceStore>(sp =>
@@ -196,12 +202,21 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ILogger<FileReportTemplateGovernanceStore>>()));
         services.TryAddSingleton<ReportTemplateRegistryService>();
         services.TryAddSingleton<ReportPackWorkflowService>();
+        services.TryAddSingleton<ReportPackDeliveryService>();
         services.TryAddSingleton<IReportingOrchestrationService>(sp =>
             new ReportingOrchestrationService(
                 sp.GetRequiredService<IReportingTemplateCatalog>(),
                 new DeterministicReportingSectionRenderer(),
                 () => DateTimeOffset.UtcNow,
                 sp.GetRequiredService<IReportingRunStore>()));
+        services.TryAddSingleton<ReportingScheduleStoreOptions>(sp =>
+            new ReportingScheduleStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "reporting-schedules.json")));
+        services.TryAddSingleton<IReportingScheduleStore>(sp =>
+            new FileReportingScheduleStore(
+                sp.GetRequiredService<ReportingScheduleStoreOptions>(),
+                sp.GetRequiredService<ILogger<FileReportingScheduleStore>>()));
+        services.TryAddSingleton<ReportingRunCommandService>();
+        services.TryAddSingleton<ReportingScheduleService>();
         services.TryAddSingleton<ReportPackRunReadService>();
         services.TryAddSingleton<W4AcceptanceFilter>();
         services.TryAddSingleton<IGovernanceReportPackRepository>(sp =>
@@ -249,8 +264,14 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ISecurityMasterAccountingEventService, SecurityMasterAccountingEventService>();
         services.TryAddSingleton<ISecurityMasterAccountingEventSourceAdapter>(sp =>
             new SecurityMasterAccountingEventSourceAdapter(sp.GetService<ContractSecurityMasterQueryService>()));
-        services.TryAddSingleton<IAccountingConfigurationStore, InMemoryAccountingConfigurationStore>();
-        services.TryAddSingleton<IAccountingActionAuditStore, InMemoryAccountingActionAuditStore>();
+        services.TryAddSingleton<FileAccountingConfigurationStore>(sp =>
+            new FileAccountingConfigurationStore(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "accounting-configuration.json")));
+        services.TryAddSingleton<IAccountingConfigurationStore>(sp => sp.GetRequiredService<FileAccountingConfigurationStore>());
+        services.TryAddSingleton<IAccountingActionAuditStore>(sp =>
+            sp.GetRequiredService<IAccountingConfigurationStore>() is IAccountingActionAuditStore auditStore
+                ? auditStore
+                : sp.GetRequiredService<FileAccountingConfigurationStore>());
         services.TryAddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(

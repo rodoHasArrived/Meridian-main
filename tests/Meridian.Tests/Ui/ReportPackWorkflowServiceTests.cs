@@ -633,6 +633,141 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public void ReportPackDeliveryService_PersistsAttemptsAndUpdatesDistributionState()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var workflow = new ReportPackWorkflowService();
+        var approved = CreateApprovedPack(
+            workflow,
+            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")]);
+        var published = workflow.Publish(
+            approved.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:abc123",
+            "manifest-1",
+            "vault/report-packs/manifest-1.json",
+            CompleteLineProvenanceEvidenceLinks("ledger-evidence-1"));
+        var store = new FileReportPackDeliveryRecordStore(
+            new ReportPackDeliveryStoreOptions(Path.Combine(root, "report-pack-deliveries.json")),
+            NullLogger<FileReportPackDeliveryRecordStore>.Instance);
+
+        var service = new ReportPackDeliveryService(workflow, store);
+        var attempt = service.Deliver(
+            published.ReportId,
+            new ReportPackDeliveryRequestDto(
+                "board-reporting-committee",
+                Actor: "fund-controller",
+                DeliveryReference: "board-portal:packet-1",
+                Note: "Delivered after publication.",
+                EvidenceLinks: [new ReportPackEvidenceLinkDto("delivery-evidence-1", "Board portal receipt", "/evidence/board-portal-receipt", "delivery")]),
+            fallbackActor: "fallback");
+
+        attempt.State.Should().Be(ReportPackDeliveryStateDto.Delivered);
+        attempt.AttemptNumber.Should().Be(1);
+        attempt.Recipient.Should().Be("Board reporting committee");
+        attempt.DeliveryReference.Should().Be("board-portal:packet-1");
+
+        var reloaded = new ReportPackDeliveryService(workflow, store);
+        reloaded.GetHistory(published.ReportId).Should().ContainSingle(item =>
+            item.DistributionId == "board-reporting-committee" &&
+            item.DeliveryReference == "board-portal:packet-1");
+
+        var payload = new ReportPackRunReadService(
+            new DefaultReportingTemplateCatalog(),
+            workflowService: workflow,
+            deliveryService: reloaded).BuildPayload();
+        payload.DeliveryAttempts.Should().ContainSingle(item => item.AttemptId == attempt.AttemptId);
+        payload.ReportPackDistributions.Should().Contain(distribution =>
+            distribution.DistributionId == "board-reporting-committee" &&
+            distribution.State == "Delivered" &&
+            distribution.PendingItems == 0 &&
+            distribution.LastSentAtUtc != null);
+    }
+
+    [Fact]
+    public async Task ReportingScheduleService_PersistsSchedulesAndRunsDueSchedules()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var runStore = new FileReportingRunStore(
+            new ReportingRunStoreOptions(Path.Combine(root, "reporting-runs")),
+            NullLogger<FileReportingRunStore>.Instance);
+        var orchestration = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(),
+            new DeterministicReportingSectionRenderer(),
+            () => new DateTimeOffset(2026, 5, 1, 8, 0, 0, TimeSpan.Zero),
+            runStore);
+        var scheduleStore = new FileReportingScheduleStore(
+            new ReportingScheduleStoreOptions(Path.Combine(root, "reporting-schedules.json")),
+            NullLogger<FileReportingScheduleStore>.Instance);
+        var schedules = new ReportingScheduleService(orchestration, scheduleStore);
+
+        var created = schedules.Upsert(new ReportingScheduleUpsertRequestDto(
+            "sched-investor",
+            "investor-monthly-statement",
+            "0 8 1 * *",
+            new DateOnly(2026, 5, 1),
+            new DateTimeOffset(2026, 5, 1, 8, 0, 0, TimeSpan.Zero),
+            2,
+            "fund-controller",
+            "Monthly investor statement close packet."));
+
+        created.State.Should().Be(ReportingScheduleStateDto.Active);
+        var due = await schedules.RunDueAsync(new DateTimeOffset(2026, 5, 1, 8, 5, 0, TimeSpan.Zero));
+
+        due.Runs.Should().ContainSingle();
+        var result = due.Runs.Single();
+        result.Run.RunId.Should().Be("sched-investor-20260501");
+        result.Run.TemplateId.Should().Be("investor-monthly-statement");
+        result.Schedule.RunCount.Should().Be(1);
+        result.Schedule.LastRunId.Should().Be(result.Run.RunId);
+        result.Schedule.DueAtUtc.Should().Be(new DateTimeOffset(2026, 6, 1, 8, 0, 0, TimeSpan.Zero));
+        result.Schedule.NextAsOfDate.Should().Be(new DateOnly(2026, 6, 1));
+
+        var reloaded = new ReportingScheduleService(orchestration, scheduleStore);
+        reloaded.ListSchedules().Should().ContainSingle(schedule =>
+            schedule.ScheduleId == "sched-investor" &&
+            schedule.LastRunId == result.Run.RunId &&
+            schedule.RunCount == 1);
+    }
+
+    [Fact]
+    public async Task ReportingRunCommandService_RunsAdHocReportsOnDemand()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var runStore = new FileReportingRunStore(
+            new ReportingRunStoreOptions(Path.Combine(root, "reporting-runs")),
+            NullLogger<FileReportingRunStore>.Instance);
+        var catalog = new DefaultReportingTemplateCatalog();
+        var orchestration = new ReportingOrchestrationService(
+            catalog,
+            new DeterministicReportingSectionRenderer(),
+            () => new DateTimeOffset(2026, 5, 4, 9, 0, 0, TimeSpan.Zero),
+            runStore);
+        var service = new ReportingRunCommandService(orchestration, catalog);
+
+        var result = await service.RunAsync(
+            new ReportingRunRequestDto(
+                "investor-monthly-statement",
+                new DateOnly(2026, 5, 4),
+                JobId: "adhoc-investor"),
+            "fund-controller",
+            CancellationToken.None);
+
+        result.Run.RunId.Should().Be("adhoc-investor-20260504");
+        result.Run.TemplateId.Should().Be("investor-monthly-statement");
+        result.Run.Trigger.Should().Be(ReportingRunTrigger.AdHoc.ToString());
+        result.Run.Status.Should().Be(ReportingRunStatus.Draft.ToString());
+        result.Run.NextActions.Should().ContainSingle(action =>
+            action.Kind == "approval-submit" &&
+            action.Method == "POST" &&
+            action.IsEnabled);
+        runStore.GetManifest(result.Run.RunId)!.Trigger.Should().Be(ReportingRunTrigger.AdHoc);
+        runStore.GetAudit(result.Run.RunId).Select(static audit => audit.Action).Should().Contain("RunGenerated");
+    }
+
+    [Fact]
     public void ReportPackRunReadService_ListsRegistryTemplateDraftsAndApprovals()
     {
         var registry = new ReportTemplateRegistryService();

@@ -127,7 +127,11 @@ Report-pack workflow contracts carry the W4 governed lifecycle states `Draft`, `
 retained manifest path, retained evidence links, report-line provenance, create requests, publish
 requests, explicit `Rejected` state support, explicit review-state rejection requests with reason,
 actor/role, and optional evidence-link metadata, and restatement requests with approver,
-prior-version, changed-line, and evidence-link metadata.
+prior-version, changed-line, and evidence-link metadata. The same shared contracts also carry
+report-pack delivery attempts, delivery failure attempts, delivery history, operator-managed
+reporting schedules, due-schedule run results, ad-hoc report-run requests/results, and HTML/PDF
+rendered-statement artifact formats so browser, WPF, endpoints, and host bootstrap payloads
+consume the same reporting command and history shape.
 Workstation Reporting run rows carry typed drilldown links and next-action references so browser
 and WPF clients can distinguish open evidence routes from reference-only approval, publication, and
 restatement actions without parsing artifact strings.

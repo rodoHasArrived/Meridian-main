@@ -58,6 +58,139 @@ public sealed class InMemoryAccountingActionAuditStore : IAccountingActionAuditS
     }
 }
 
+public sealed class FileAccountingConfigurationStore : IAccountingConfigurationStore, IAccountingActionAuditStore
+{
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        WriteIndented = true
+    };
+
+    private readonly string _snapshotPath;
+    private readonly SemaphoreSlim _gate = new(1, 1);
+
+    public FileAccountingConfigurationStore(string snapshotPath)
+    {
+        _snapshotPath = string.IsNullOrWhiteSpace(snapshotPath)
+            ? throw new ArgumentException("Accounting configuration snapshot path is required.", nameof(snapshotPath))
+            : snapshotPath;
+    }
+
+    public async Task<AccountingConfigurationWorkspaceDto?> GetAsync(string fundProfileId, CancellationToken ct = default)
+    {
+        var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
+        var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
+        return snapshot.Workspaces.FirstOrDefault(item =>
+            string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase)) is { } workspace
+            ? workspace with { FundProfileId = normalizedFundProfileId, AuditTrail = [] }
+            : null;
+    }
+
+    public async Task SaveAsync(AccountingConfigurationWorkspaceDto workspace, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(workspace);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var normalizedFundProfileId = NormalizeFundProfileId(workspace.FundProfileId);
+            var snapshot = await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
+            var workspaces = snapshot.Workspaces
+                .Where(item => !string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase))
+                .Append(workspace with { FundProfileId = normalizedFundProfileId, AuditTrail = [] })
+                .OrderBy(item => item.FundProfileId, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            await WriteSnapshotAsync(snapshot with { Workspaces = workspaces }, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task AppendAsync(AccountingActionAuditEventDto auditEvent, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(auditEvent);
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var snapshot = await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
+            var events = snapshot.AuditEvents
+                .Append(auditEvent with { FundProfileId = NormalizeOptional(auditEvent.FundProfileId) })
+                .OrderByDescending(item => item.RecordedAtUtc)
+                .ThenBy(item => item.AuditEventId)
+                .ToArray();
+
+            await WriteSnapshotAsync(snapshot with { AuditEvents = events }, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAsync(
+        string? fundProfileId = null,
+        Guid? ledgerBookId = null,
+        CancellationToken ct = default)
+    {
+        var normalizedFundProfileId = NormalizeOptional(fundProfileId);
+        var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
+        return snapshot.AuditEvents
+            .Where(item => string.IsNullOrWhiteSpace(normalizedFundProfileId) ||
+                           string.Equals(item.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase))
+            .Where(item => !ledgerBookId.HasValue || item.LedgerBookId == ledgerBookId)
+            .OrderByDescending(item => item.RecordedAtUtc)
+            .ThenBy(item => item.AuditEventId)
+            .ToArray();
+    }
+
+    private async Task<AccountingConfigurationSnapshot> ReadSnapshotAsync(CancellationToken ct)
+    {
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            return await ReadSnapshotWithoutLockAsync(ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    private async Task<AccountingConfigurationSnapshot> ReadSnapshotWithoutLockAsync(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (!File.Exists(_snapshotPath))
+        {
+            return AccountingConfigurationSnapshot.Empty;
+        }
+
+        await using var stream = File.OpenRead(_snapshotPath);
+        return await JsonSerializer
+            .DeserializeAsync<AccountingConfigurationSnapshot>(stream, JsonOptions, ct)
+            .ConfigureAwait(false) ?? AccountingConfigurationSnapshot.Empty;
+    }
+
+    private Task WriteSnapshotAsync(AccountingConfigurationSnapshot snapshot, CancellationToken ct)
+    {
+        var json = JsonSerializer.Serialize(snapshot, JsonOptions);
+        return AtomicFileWriter.WriteAsync(_snapshotPath, json, ct);
+    }
+
+    private static string NormalizeFundProfileId(string? value)
+        => string.IsNullOrWhiteSpace(value) ? "default-fund" : value.Trim();
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private sealed record AccountingConfigurationSnapshot(
+        IReadOnlyList<AccountingConfigurationWorkspaceDto> Workspaces,
+        IReadOnlyList<AccountingActionAuditEventDto> AuditEvents)
+    {
+        public static AccountingConfigurationSnapshot Empty { get; } = new([], []);
+    }
+}
+
 public sealed class AccountingConfigurationService : IAccountingConfigurationService
 {
     private const string DefaultFundProfileId = "default-fund";
@@ -718,6 +851,14 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var lines = new List<ManualJournalEntryLineDto>(draft.Lines.Count);
         var attachments = NormalizeAttachments(draft.EvidenceAttachments, draft.PreparedBy);
         var evidenceLinks = MergeEvidenceLinks(draft.EvidenceLinks, attachments.Select(item => item.Uri).ToArray());
+        var entryType = Enum.IsDefined(draft.EntryType)
+            ? draft.EntryType
+            : ManualJournalEntryTypeDto.General;
+
+        if (!Enum.IsDefined(draft.EntryType))
+        {
+            issues.Add(Issue("manual-je.entry-type-invalid", AccountingConfigurationValidationSeverityDto.Critical, "Manual journal entry type is not supported.", "entryType", "Select a supported entry type before submitting approval."));
+        }
 
         if (!draft.LedgerBookId.HasValue)
         {
@@ -806,6 +947,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             TotalDebits = totalDebits,
             TotalCredits = totalCredits,
             Imbalance = imbalance,
+            EntryType = entryType,
             ValidationIssues = issues.OrderByDescending(issue => issue.Severity).ThenBy(issue => issue.Code, StringComparer.OrdinalIgnoreCase).ToArray()
         };
     }

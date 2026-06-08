@@ -57,6 +57,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 ## Validation
 
 ```bash
+dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj /p:FSharpTestSlice=DirectLending --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 dotnet test tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj --logger "console;verbosity=normal"
 ```
 

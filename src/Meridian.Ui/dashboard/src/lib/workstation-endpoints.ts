@@ -54,7 +54,16 @@ export const FUND_STRUCTURE_API_ENDPOINTS = {
   setupDraftCreate: UI_API_ROUTES.FundStructureSetupDraftCreate,
   ledgerMappingWorkbench: "/api/fund-structure/ledger-mapping-view",
   ledgerMappingAssignments: UI_API_ROUTES.FundStructureLedgerMappingAssignments,
-  transactionLabPreview: "/api/fund-structure/accounting/transaction-lab/preview"
+  transactionLabPreview: "/api/fund-structure/accounting/transaction-lab/preview",
+  reportPackWorkflows: UI_API_ROUTES.ReportingPackWorkflows,
+  reportPackWorkflowDeliveries: UI_API_ROUTES.ReportingPackWorkflowDeliveries,
+  reportPackWorkflowDeliveryFailures: UI_API_ROUTES.ReportingPackWorkflowDeliveryFailures,
+  reportingRuns: UI_API_ROUTES.ReportingRuns,
+  reportingSchedules: UI_API_ROUTES.ReportingSchedules,
+  reportingScheduleRunDue: UI_API_ROUTES.ReportingScheduleRunDue,
+  reportingSchedulePause: UI_API_ROUTES.ReportingSchedulePause,
+  reportingScheduleResume: UI_API_ROUTES.ReportingScheduleResume,
+  reportingScheduleRunNow: UI_API_ROUTES.ReportingScheduleRunNow
 } as const;
 
 export const WORKSTATION_API_ENDPOINT_TEMPLATES = {
@@ -508,6 +517,26 @@ export function reportPackEvidenceBundleEndpoint(reportId?: string): string {
   return reportId
     ? routeWithParam(UI_API_ROUTES.FundReportPackEvidenceBundle, "reportId", reportId)
     : EXPORT_API_ENDPOINTS.reportPackEvidenceBundle;
+}
+
+export function reportingPackDeliveriesEndpoint(reportId: string): string {
+  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportPackWorkflowDeliveries, "reportId", reportId);
+}
+
+export function reportingPackDeliveryFailuresEndpoint(reportId: string): string {
+  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportPackWorkflowDeliveryFailures, "reportId", reportId);
+}
+
+export function reportingSchedulePauseEndpoint(scheduleId: string): string {
+  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingSchedulePause, "scheduleId", scheduleId);
+}
+
+export function reportingScheduleResumeEndpoint(scheduleId: string): string {
+  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingScheduleResume, "scheduleId", scheduleId);
+}
+
+export function reportingScheduleRunNowEndpoint(scheduleId: string): string {
+  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingScheduleRunNow, "scheduleId", scheduleId);
 }
 
 export function strategyEndpoint(strategyId: string): string {

@@ -532,6 +532,8 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             snapshot.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "asset-class-sections" && artifact.Format == GovernanceReportArtifactFormatDto.Csv);
             snapshot.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "workbook" && artifact.Format == GovernanceReportArtifactFormatDto.Xlsx);
             snapshot.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "provenance" && artifact.Format == GovernanceReportArtifactFormatDto.Json);
+            snapshot.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "rendered-statement" && artifact.Format == GovernanceReportArtifactFormatDto.Html);
+            snapshot.Artifacts.Should().Contain(artifact => artifact.ArtifactKind == "rendered-statement" && artifact.Format == GovernanceReportArtifactFormatDto.Pdf);
             snapshot.AuditPackReadiness.Should().NotBeNull();
             snapshot.AuditPackReadiness!.SlaTargetSeconds.Should().Be(60);
             snapshot.AuditPackReadiness.GeneratedInSeconds.Should().BeGreaterThanOrEqualTo(0);
@@ -548,7 +550,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             snapshot.AuditPackReadiness.EvidenceCategorySummaries.Should().Contain(category =>
                 category.Key == FundAuditEvidenceCategoryKeyDto.Exports &&
                 category.IsComplete &&
-                category.EvidenceCount == 5);
+                category.EvidenceCount == 7);
 
             foreach (var artifact in snapshot.Artifacts)
             {

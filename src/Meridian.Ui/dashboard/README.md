@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-05
+last_reviewed: 2026-06-07
 ---
 
 # src/Meridian.Ui/dashboard
@@ -144,8 +144,17 @@ The app-shell trading continuity title uses `Trading Controls` so cross-workspac
 does not reintroduce `Governance` as a visible workspace label.
 Reporting workspace status rows consume shared template metadata and recent run projections for investor statements, SEC filing packets, and shadow NAV packs; React renders approval status, retry attempts, audit actions, and lineage completeness rather than reimplementing report orchestration rules.
 Those rows render typed drilldown links and next-action references from the shared payload, opening
-browser-safe evidence routes while showing approval, publication, restatement, and archive actions
-as explicit method-bearing references.
+browser-safe evidence routes while executing shared POST actions for approval submission/review,
+publication, archive, and report-pack delivery. Restatements remain guarded by changed-line
+evidence requirements instead of being submitted as a one-click browser action.
+The Reporting workspace also renders operator-managed schedule rows from the shared schedule
+payload and wires run-now, pause, and resume controls through the shared schedule endpoints. Retained
+delivery attempts render from the shared delivery-history payload, so browser Reporting shows actual
+recipient delivery state and retry history instead of static status chips.
+Approved built-in report template rows also expose an on-demand `Run report` command that posts to
+the shared `/api/fund-structure/reporting/runs` endpoint and reports the generated ad-hoc run id
+back to the operator. Custom/unapproved templates stay disabled for this command until the shared
+backend catalog can render them.
 The Reporting workspace also exposes `/reporting/operations-record` as the polished W1-W5 release
 path. It stays under the canonical Reporting root and projects the loaded Data provider posture,
 Operations Continuity accounting-record evidence, close-package state, and report-pack publication

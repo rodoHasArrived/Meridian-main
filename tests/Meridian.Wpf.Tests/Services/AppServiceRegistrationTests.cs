@@ -66,6 +66,8 @@ public sealed class AppServiceRegistrationTests
             serviceProvider.GetRequiredService<FundAccountReadService>().Should().NotBeNull();
             serviceProvider.GetRequiredService<CashFinancingReadService>().Should().NotBeNull();
             serviceProvider.GetRequiredService<ReconciliationReadService>().Should().NotBeNull();
+            serviceProvider.GetRequiredService<ISecurityAssetProfileWorkflowClient>()
+                .Should().BeOfType<SecurityAssetProfileWorkflowClient>();
             serviceProvider.GetRequiredService<FundOperationsWorkspaceReadService>().Should().NotBeNull();
             serviceProvider.GetRequiredService<IAccountingProjectionQueryService>().Should().BeOfType<AccountingProjectionQueryService>();
             serviceProvider.GetRequiredService<AccountingCloseViewModel>().Should().NotBeNull();

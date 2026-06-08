@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-06
+last_reviewed: 2026-06-08
 ---
 
 # src/Meridian.Wpf
@@ -35,6 +35,18 @@ matching module before it expands through the older flat page folders.
 ## Important workflows
 
 The Accounting workspace includes a dedicated `FundStructureSetupPage` and `FundStructureSetupViewModel` for operator entity setup. It uses the shared `FundStructureSetupWorkflowService` so desktop setup validation, graph preview, review-and-create, and account handoff behavior match `/api/fund-structure`.
+`FundAccountingConfigure` now routes to `AccountingConfigurePage` and `AccountingConfigureViewModel`
+instead of a generic ledger page. The workbench reads and mutates shared accounting configuration
+DTOs, surfaces chart accounts, templates, posting rules, validation, and audit rows, saves manual
+journal entry drafts through the shared workbench service, offers type-specific draft presets for
+accrued balances, accrued expenses, prepaid expenses, expenses, amortization, deferrals,
+reclassifications, and reversals, shows read-only external GL evidence, projects
+close/evidence/reconciliation posture from shared operations continuity when available, and creates
+fund-scoped accounting-basis policy records through the Financial Operations policy service.
+Registration stays feature-owned in `Features/Accounting/AccountingFeatureModule.cs`; the
+desktop fallback stores configuration/audit state in `workstation/accounting/accounting-configuration.json`
+and manual journal drafts in `workstation/accounting/manual-journal-drafts.json` under the
+configured workstation data root.
 
 
 Keep desktop support aligned with shared contracts and governance posture.
@@ -45,6 +57,12 @@ Runtime desktop capability toggles are declared by feature modules and surfaced 
 the feature capability gate. The Security Master page projects the workstation trust
 snapshot's `scheduleBook` and `openLotReadModel` payloads into operator-visible schedule, factor,
 provenance, and open-lot review sections.
+The Settings page also surfaces governed Security Master asset profiles for WPF operators. It lists
+approved profile definitions from the shared `/api/security-master/asset-profiles` route, drafts and
+approves profile variants through the shared governance endpoints, loads lineage, supports rollback,
+and creates profile-backed `CustomAsset` records with `customProfileId`, `profileVersion`, typed
+`profileFields`, and approval metadata. WPF stays thin here: profile governance, mutation
+permissions, and custom-asset validation remain owned by the shared Security Master API.
 Run Cash Flow consumes `StrategyRunContinuityService` when the desktop shell provides it, so the
 cash-flow drill-in presents the same run, portfolio, ledger, cash-flow, reconciliation, and warning
 posture used by shared workstation continuity endpoints.

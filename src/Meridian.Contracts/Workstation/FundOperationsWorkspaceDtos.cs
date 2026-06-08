@@ -8,7 +8,15 @@ public enum GovernanceReportKindDto
     TrialBalance = 0,
     NavSummary = 1,
     AssetAllocation = 2,
-    ReconciliationPack = 3
+    ReconciliationPack = 3,
+    PerformanceReport = 4,
+    HoldingsReport = 5,
+    CapitalAccountStatement = 6,
+    InvestorStatement = 7,
+    BoardPacket = 8,
+    AuditPackage = 9,
+    CertifiedDataset = 10,
+    CustomReport = 11
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<GovernanceReportArtifactFormatDto>))]
@@ -16,7 +24,9 @@ public enum GovernanceReportArtifactFormatDto
 {
     Json = 0,
     Csv = 1,
-    Xlsx = 2
+    Xlsx = 2,
+    Html = 3,
+    Pdf = 4
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<GovernanceReportPackStatusDto>))]
@@ -129,7 +139,9 @@ public sealed record FundReportingSummaryDto(
     IReadOnlyList<WorkstationReportPackDistributionPayload> ReportPackDistributions,
     IReadOnlyList<FundReportingProfileDto> Profiles,
     string Summary,
-    IReadOnlyList<ReportPackWorkflowRecordDto>? WorkflowRecords = null);
+    IReadOnlyList<ReportPackWorkflowRecordDto>? WorkflowRecords = null,
+    IReadOnlyList<ReportingScheduleRecordDto>? Schedules = null,
+    IReadOnlyList<ReportPackDeliveryAttemptDto>? DeliveryAttempts = null);
 
 /// <summary>
 /// Shared Accounting workspace payload combining ledger, banking, cash, reconciliation,
@@ -494,6 +506,104 @@ public sealed record FundReportPackEvidenceBundleDto(
     FundReportPackArtifactDto? BundleArtifact = null,
     string ContractName = GovernanceReportPackContract.ContractName,
     int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion);
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportPackDeliveryStateDto>))]
+public enum ReportPackDeliveryStateDto
+{
+    Queued = 0,
+    Delivered = 1,
+    Failed = 2,
+    Retried = 3,
+    Blocked = 4
+}
+
+public sealed record ReportPackDeliveryAttemptDto(
+    Guid AttemptId,
+    Guid ReportId,
+    string DistributionId,
+    string Recipient,
+    string RecipientRole,
+    string Channel,
+    ReportPackDeliveryStateDto State,
+    DateTimeOffset AttemptedAtUtc,
+    string Actor,
+    int AttemptNumber,
+    string DeliveryReference,
+    string? Note = null,
+    string? FailureReason = null,
+    IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+
+public sealed record ReportPackDeliveryRequestDto(
+    string DistributionId,
+    string? Actor = null,
+    string? DeliveryReference = null,
+    string? Note = null,
+    IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+
+public sealed record ReportPackDeliveryFailureRequestDto(
+    string DistributionId,
+    string FailureReason,
+    string? Actor = null,
+    string? DeliveryReference = null,
+    string? Note = null,
+    IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+
+public sealed record ReportPackDeliveryHistoryDto(
+    Guid ReportId,
+    IReadOnlyList<ReportPackDeliveryAttemptDto> Attempts);
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportingScheduleStateDto>))]
+public enum ReportingScheduleStateDto
+{
+    Active = 0,
+    Paused = 1,
+    Disabled = 2
+}
+
+public sealed record ReportingScheduleRecordDto(
+    string ScheduleId,
+    string TemplateId,
+    string CronExpression,
+    DateOnly NextAsOfDate,
+    DateTimeOffset DueAtUtc,
+    int MaxRetries,
+    string RequestedBy,
+    ReportingScheduleStateDto State,
+    DateTimeOffset CreatedAtUtc,
+    DateTimeOffset UpdatedAtUtc,
+    DateTimeOffset? LastRunAtUtc = null,
+    string? LastRunId = null,
+    int RunCount = 0,
+    string? Description = null);
+
+public sealed record ReportingScheduleUpsertRequestDto(
+    string ScheduleId,
+    string TemplateId,
+    string CronExpression,
+    DateOnly NextAsOfDate,
+    DateTimeOffset DueAtUtc,
+    int MaxRetries,
+    string RequestedBy,
+    string? Description = null,
+    ReportingScheduleStateDto State = ReportingScheduleStateDto.Active);
+
+public sealed record ReportingScheduleRunResultDto(
+    ReportingScheduleRecordDto Schedule,
+    WorkstationReportingRunPayload Run);
+
+public sealed record ReportingDueScheduleRunResultDto(
+    DateTimeOffset EvaluatedAtUtc,
+    IReadOnlyList<ReportingScheduleRunResultDto> Runs);
+
+public sealed record ReportingRunRequestDto(
+    string TemplateId,
+    DateOnly? AsOfDate = null,
+    int MaxRetries = 0,
+    string? JobId = null,
+    string? RequestedBy = null);
+
+public sealed record ReportingRunResultDto(
+    WorkstationReportingRunPayload Run);
 
 /// <summary>
 /// Shared governed report-pack workflow states. The W4 happy-path lifecycle is

@@ -1,5 +1,11 @@
+using System;
+using System.IO;
 using Meridian.FinancialOperations.AccountingClose;
+using Meridian.DataIntegration.AccountingSystem.QuickBooks;
 using Meridian.Contracts.Ledger;
+using Meridian.FinancialOperations.AccountingSystem;
+using Meridian.FinancialOperations.Ledger;
+using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
@@ -27,15 +33,52 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<TrialBalanceProjectionService>();
         services.TryAddSingleton<MonthEndCloseStateMachine>();
         services.TryAddSingleton<IAccountingProjectionQueryService, AccountingProjectionQueryService>();
-        services.TryAddSingleton<IAccountingConfigurationStore, InMemoryAccountingConfigurationStore>();
-        services.TryAddSingleton<IAccountingActionAuditStore, InMemoryAccountingActionAuditStore>();
+        services.TryAddSingleton<FileAccountingConfigurationStore>(sp =>
+            new FileAccountingConfigurationStore(
+                Path.Combine(ResolveAccountingDataDirectory(sp), "accounting-configuration.json")));
+        services.TryAddSingleton<IAccountingConfigurationStore>(sp => sp.GetRequiredService<FileAccountingConfigurationStore>());
+        services.TryAddSingleton<IAccountingActionAuditStore>(sp =>
+            sp.GetRequiredService<IAccountingConfigurationStore>() is IAccountingActionAuditStore auditStore
+                ? auditStore
+                : sp.GetRequiredService<FileAccountingConfigurationStore>());
         services.TryAddSingleton<IAccountingConfigurationService, AccountingConfigurationService>();
-        services.TryAddSingleton<IManualJournalEntryDraftStore, InMemoryManualJournalEntryDraftStore>();
+        services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
+            new FileManualJournalEntryDraftStore(
+                Path.Combine(ResolveAccountingDataDirectory(sp), "manual-journal-drafts.json")));
         services.TryAddSingleton<IManualJournalEntryWorkbenchService, ManualJournalEntryWorkbenchService>();
+        services.TryAddSingleton<IAccountingPolicyService, AccountingPolicyService>();
+        services.TryAddSingleton<IAccountingBasisProjectionService, AccountingBasisProjectionService>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, QuickBooksFixtureAccountingProvider>());
+        services.TryAddSingleton<AccountingSystemIntegrationService>();
+        services.AddTransient<AccountingConfigureViewModel>();
+        services.AddTransient<AccountingConfigurePage>();
         services.AddTransient<AccountingCloseViewModel>();
     }
 
     public IReadOnlyList<ShellPageDescriptor> DescribePages() => Capability.Pages;
 
     public WorkspaceCapabilityDescriptor DescribeWorkspace() => Capability;
+
+    private static string ResolveAccountingDataDirectory(IServiceProvider services)
+    {
+        var configService = services.GetService<Meridian.Wpf.Services.ConfigService>();
+        if (configService is not null)
+        {
+            try
+            {
+                var config = configService.LoadConfigAsync().GetAwaiter().GetResult();
+                return Path.Combine(configService.ResolveDataRoot(config), "workstation", "accounting");
+            }
+            catch
+            {
+                // Fall through to the user-local path so accounting drafts remain durable even before config initialization.
+            }
+        }
+
+        return Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Meridian",
+            "workstation",
+            "accounting");
+    }
 }

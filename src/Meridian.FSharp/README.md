@@ -36,6 +36,7 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
 
 - C# callers should enter through C#-friendly interop wrappers and should not depend on internal F# domain types.
 - Operations kernels should remain pure and deterministic: inputs in, decisions/issues/statuses out.
+- Stream-oriented helpers should receive ordered, bounded inputs. Page large storage/backfill batches before crossing into F#, and keep `mergeStreams` / `bufferByTime` on timestamp-ordered streams so they can avoid whole-batch sorting and grouping.
 - Sensitive-action policy evaluates explicit guardrails such as MFA, dual approval, privileged roles, and segregation-of-duties before C# services write audit or workflow state.
 
 ## Diagrams
@@ -60,8 +61,12 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 ## Validation
 
 ```bash
-dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --logger "console;verbosity=normal"
+dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj /p:FSharpTestSlice=MarketData --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj /p:FSharpTestSlice=Domain --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj /p:FSharpTestSlice=Operations --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
+
+Use `/p:FSharpTestSlice=All` only when validating cross-slice F# changes.
 
 ## Change rules
 

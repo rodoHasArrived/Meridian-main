@@ -152,7 +152,15 @@ public enum ReportKind
     TrialBalance,
     NavSummary,
     AssetAllocation,
-    ReconciliationPack
+    ReconciliationPack,
+    PerformanceReport,
+    HoldingsReport,
+    CapitalAccountStatement,
+    InvestorStatement,
+    BoardPacket,
+    AuditPackage,
+    CertifiedDataset,
+    CustomReport
 }
 
 /// <summary>Request payload for <see cref="ReportGenerationService.GenerateAsync"/>.</summary>

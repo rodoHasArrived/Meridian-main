@@ -60,7 +60,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 ## Validation
 
 ```bash
-dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --logger "console;verbosity=normal"
+dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj /p:FSharpTestSlice=Ledger --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
 ```
 
 ## Change rules

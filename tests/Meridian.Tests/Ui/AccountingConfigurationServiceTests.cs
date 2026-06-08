@@ -91,6 +91,60 @@ public sealed class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_ManualJournalEntry_TypedDraftsPreserveAccrualPrepaidAndAmortizationTypes()
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var service = CreateManualJournalEntryWorkbenchService(configuration);
+        var accrued = BalancedManualJournalEntry() with
+        {
+            EntryType = ManualJournalEntryTypeDto.AccruedBalance,
+            Memo = "Accrued balance close entry",
+            Lines =
+            [
+                new ManualJournalEntryLineDto("debit-expense", AccountingTemplateLineSideDto.Debit, 100m, "USD", "Expenses:Operating Expenses"),
+                new ManualJournalEntryLineDto("credit-accrual", AccountingTemplateLineSideDto.Credit, 100m, "USD", "Liabilities:Accrued Expenses")
+            ]
+        };
+        var prepaid = BalancedManualJournalEntry() with
+        {
+            EntryType = ManualJournalEntryTypeDto.PrepaidExpense,
+            Memo = "Prepaid insurance entry",
+            Lines =
+            [
+                new ManualJournalEntryLineDto("debit-prepaid", AccountingTemplateLineSideDto.Debit, 250m, "USD", "Assets:Prepaid Expenses"),
+                new ManualJournalEntryLineDto("credit-cash", AccountingTemplateLineSideDto.Credit, 250m, "USD", "Assets:Cash")
+            ]
+        };
+        var amortization = BalancedManualJournalEntry() with
+        {
+            EntryType = ManualJournalEntryTypeDto.Amortization,
+            Memo = "Monthly amortization entry",
+            Lines =
+            [
+                new ManualJournalEntryLineDto("debit-amortization-expense", AccountingTemplateLineSideDto.Debit, 75m, "USD", "Expenses:Amortization Expense"),
+                new ManualJournalEntryLineDto("credit-accumulated-amortization", AccountingTemplateLineSideDto.Credit, 75m, "USD", "Assets:Accumulated Amortization")
+            ]
+        };
+
+        var savedAccrued = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(accrued, "ops-user"));
+        var savedPrepaid = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(prepaid, "ops-user"));
+        var savedAmortization = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(amortization, "ops-user"));
+        var workbench = await service.GetWorkbenchAsync("fund-alpha");
+
+        savedAccrued.EntryType.Should().Be(ManualJournalEntryTypeDto.AccruedBalance);
+        savedPrepaid.EntryType.Should().Be(ManualJournalEntryTypeDto.PrepaidExpense);
+        savedAmortization.EntryType.Should().Be(ManualJournalEntryTypeDto.Amortization);
+        workbench.Drafts.Select(draft => draft.EntryType).Should().Contain(new[]
+        {
+            ManualJournalEntryTypeDto.AccruedBalance,
+            ManualJournalEntryTypeDto.PrepaidExpense,
+            ManualJournalEntryTypeDto.Amortization
+        });
+        workbench.Drafts.Should().OnlyContain(draft => draft.ValidationIssues.All(issue => issue.Severity != AccountingConfigurationValidationSeverityDto.Critical));
+    }
+
+    [Fact]
     public async Task Scenario_ManualJournalEntry_UnbalancedDraftCannotSubmitApproval()
     {
         var configuration = CreateService();
@@ -216,6 +270,26 @@ public sealed class AccountingConfigurationServiceTests
         await service.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
             FundProfileId: "fund-alpha",
             Node: new ChartOfAccountsNodeDto("interest-income", "Income:Interest", "Interest Income", "Revenue"),
+            Actor: "ops-user"));
+        await service.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            FundProfileId: "fund-alpha",
+            Node: new ChartOfAccountsNodeDto("accrued-expenses", "Liabilities:Accrued Expenses", "Accrued Expenses", "Liability"),
+            Actor: "ops-user"));
+        await service.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            FundProfileId: "fund-alpha",
+            Node: new ChartOfAccountsNodeDto("prepaid-expenses", "Assets:Prepaid Expenses", "Prepaid Expenses", "Asset"),
+            Actor: "ops-user"));
+        await service.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            FundProfileId: "fund-alpha",
+            Node: new ChartOfAccountsNodeDto("operating-expenses", "Expenses:Operating Expenses", "Operating Expenses", "Expense"),
+            Actor: "ops-user"));
+        await service.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            FundProfileId: "fund-alpha",
+            Node: new ChartOfAccountsNodeDto("amortization-expense", "Expenses:Amortization Expense", "Amortization Expense", "Expense"),
+            Actor: "ops-user"));
+        await service.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            FundProfileId: "fund-alpha",
+            Node: new ChartOfAccountsNodeDto("accumulated-amortization", "Assets:Accumulated Amortization", "Accumulated Amortization", "ContraAsset"),
             Actor: "ops-user"));
     }
 

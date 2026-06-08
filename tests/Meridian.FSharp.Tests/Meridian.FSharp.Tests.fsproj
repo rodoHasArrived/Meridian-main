@@ -6,28 +6,29 @@
     <GenerateProgramFile>false</GenerateProgramFile>
     <AssemblyName>Meridian.FSharp.Tests</AssemblyName>
     <RootNamespace>Meridian.FSharp.Tests</RootNamespace>
+    <FSharpTestSlice Condition="'$(FSharpTestSlice)' == ''">All</FSharpTestSlice>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="DomainTests.fs" />
-    <Compile Include="ValidationTests.fs" />
-    <Compile Include="CalculationTests.fs" />
-    <Compile Include="CanonicalizationTests.fs" />
-    <Compile Include="PipelineTests.fs" />
-    <Compile Include="RiskPolicyTests.fs" />
-    <Compile Include="PromotionPolicyTests.fs" />
-    <Compile Include="OperationsContinuityRulesTests.fs" />
-    <Compile Include="ReportPackValidationRulesTests.fs" />
-    <Compile Include="SensitiveActionPolicyTests.fs" />
-    <Compile Include="TradingReadinessRulesTests.fs" />
-    <Compile Include="TradingTransitionTests.fs" />
-    <Compile Include="LedgerKernelTests.fs" />
-    <Compile Include="ReconciliationCaseWorkflowTests.fs" />
-    <Compile Include="PeriodManagementTests.fs" />
-    <Compile Include="DeterministicInvariantTests.fs" />
-    <Compile Include="DirectLendingInteropTests.fs" />
-    <Compile Include="CashFlowProjectorTests.fs" />
-    <Compile Include="SettlementInstructionCommandsTests.fs" />
+    <Compile Include="DomainTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Domain'" />
+    <Compile Include="ValidationTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Domain'" />
+    <Compile Include="CalculationTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'MarketData'" />
+    <Compile Include="CanonicalizationTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Domain'" />
+    <Compile Include="PipelineTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'MarketData'" />
+    <Compile Include="RiskPolicyTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Domain'" />
+    <Compile Include="PromotionPolicyTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Domain'" />
+    <Compile Include="OperationsContinuityRulesTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Operations'" />
+    <Compile Include="ReportPackValidationRulesTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Operations'" />
+    <Compile Include="SensitiveActionPolicyTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Operations'" />
+    <Compile Include="TradingReadinessRulesTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Operations' Or '$(FSharpTestSlice)' == 'Trading'" />
+    <Compile Include="TradingTransitionTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Operations' Or '$(FSharpTestSlice)' == 'Trading'" />
+    <Compile Include="LedgerKernelTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Ledger'" />
+    <Compile Include="ReconciliationCaseWorkflowTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Ledger'" />
+    <Compile Include="PeriodManagementTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Ledger'" />
+    <Compile Include="DeterministicInvariantTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'Ledger' Or '$(FSharpTestSlice)' == 'Operations'" />
+    <Compile Include="DirectLendingInteropTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
+    <Compile Include="CashFlowProjectorTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
+    <Compile Include="SettlementInstructionCommandsTests.fs" Condition="'$(FSharpTestSlice)' == 'All' Or '$(FSharpTestSlice)' == 'DirectLending'" />
   </ItemGroup>
 
   <ItemGroup>

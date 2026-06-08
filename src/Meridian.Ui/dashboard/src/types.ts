@@ -2439,6 +2439,91 @@ export interface ReportPackDistributionRecord {
   route: string;
 }
 
+export interface ReportPackDeliveryAttempt {
+  attemptId: string;
+  reportId: string;
+  distributionId: string;
+  recipient: string;
+  recipientRole: string;
+  channel: string;
+  state: string;
+  attemptedAtUtc: string;
+  actor: string;
+  attemptNumber: number;
+  deliveryReference: string;
+  note: string | null;
+  failureReason: string | null;
+  evidenceLinks: ReportingWorkflowEvidenceLink[] | null;
+}
+
+export interface ReportPackDeliveryRequest {
+  distributionId: string;
+  actor?: string | null;
+  deliveryReference?: string | null;
+  note?: string | null;
+  evidenceLinks?: ReportingWorkflowEvidenceLink[] | null;
+}
+
+export interface ReportPackDeliveryFailureRequest extends ReportPackDeliveryRequest {
+  failureReason: string;
+}
+
+export interface ReportPackDeliveryHistory {
+  reportId: string;
+  attempts: ReportPackDeliveryAttempt[];
+}
+
+export interface ReportingScheduleRecord {
+  scheduleId: string;
+  templateId: string;
+  cronExpression: string;
+  nextAsOfDate: string;
+  dueAtUtc: string;
+  maxRetries: number;
+  requestedBy: string;
+  state: string;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+  lastRunAtUtc: string | null;
+  lastRunId: string | null;
+  runCount: number;
+  description: string | null;
+}
+
+export interface ReportingScheduleUpsertRequest {
+  scheduleId: string;
+  templateId: string;
+  cronExpression: string;
+  nextAsOfDate: string;
+  dueAtUtc: string;
+  maxRetries: number;
+  requestedBy: string;
+  description?: string | null;
+  state?: string;
+}
+
+export interface ReportingScheduleRunResult {
+  schedule: ReportingScheduleRecord;
+  run: ReportingRunStatusProjection;
+}
+
+export interface ReportingDueScheduleRunResult {
+  evaluatedAtUtc: string;
+  runs: ReportingScheduleRunResult[];
+}
+
+export interface ReportingRunRequest {
+  templateId: string;
+  asOfDate?: string | null;
+  maxRetries?: number;
+  jobId?: string | null;
+  requestedBy?: string | null;
+}
+
+export interface ReportingRunResult {
+  run: ReportingRunStatusProjection;
+}
+
 export interface ReportingWorkflowEvidenceLink {
   evidenceId: string;
   label: string;
@@ -2520,6 +2605,8 @@ export interface AccountingReportingSummary {
   templates?: ReportingTemplateMetadata[];
   recentRuns?: ReportingRunStatusProjection[];
   workflowRecords?: ReportingWorkflowRecord[];
+  schedules?: ReportingScheduleRecord[];
+  deliveryAttempts?: ReportPackDeliveryAttempt[];
 }
 
 export type GovernanceCashFlowSummary = AccountingCashFlowSummary;

@@ -107,6 +107,365 @@
                             </StackPanel>
                         </Border>
                     </TabItem>
+                    <TabItem Header="Asset Profiles"
+                             AutomationProperties.AutomationId="SettingsAssetProfilesTab">
+                        <StackPanel Margin="0,12,0,0">
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                            <TextBlock Text="{StaticResource IconDatabase}"
+                                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                       FontSize="20"
+                                                       Foreground="{StaticResource InfoColorBrush}"
+                                                       VerticalAlignment="Center" />
+                                            <StackPanel Margin="8,0,0,0">
+                                                <TextBlock Text="Asset Profiles"
+                                                           Style="{StaticResource CardHeaderStyle}" />
+                                                <TextBlock Text="{Binding SelectedAssetProfileSummaryText}"
+                                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                           TextWrapping="Wrap"
+                                                           MaxWidth="560" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <Button Grid.Column="1"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                Command="{Binding RefreshAssetProfilesCommand}"
+                                                AutomationProperties.AutomationId="SettingsAssetProfileRefreshButton">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="Refresh" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{Binding AssetProfileStatusText}"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                   TextWrapping="Wrap" />
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">
+                                            <TextBlock Text="{Binding ApprovedAssetProfileCount, StringFormat={}{0} approved}"
+                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                       FontSize="12"
+                                                       Margin="0,0,12,0" />
+                                            <TextBlock Text="{Binding AssetProfileProjectedFieldCount, StringFormat={}{0} projected}"
+                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                       FontSize="12" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <ListView ItemsSource="{Binding AssetProfileRows}"
+                                              SelectedItem="{Binding SelectedAssetProfileRow, Mode=TwoWay}"
+                                              Background="Transparent"
+                                              BorderThickness="0"
+                                              MaxHeight="260"
+                                              AutomationProperties.AutomationId="SettingsAssetProfileRows">
+                                        <ListView.ItemContainerStyle>
+                                            <Style TargetType="ListViewItem">
+                                                <Setter Property="Background" Value="Transparent" />
+                                                <Setter Property="Padding" Value="0" />
+                                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                            </Style>
+                                        </ListView.ItemContainerStyle>
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                                        CornerRadius="8"
+                                                        Padding="12"
+                                                        Margin="0,0,0,8">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="2*" />
+                                                            <ColumnDefinition Width="1.2*" />
+                                                            <ColumnDefinition Width="1.1*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <TextBlock Text="{Binding Name}"
+                                                                           FontWeight="SemiBold"
+                                                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                                <TextBlock Text="{Binding VersionLabel}"
+                                                                           Foreground="{StaticResource InfoColorBrush}"
+                                                                           FontSize="12"
+                                                                           Margin="8,1,0,0" />
+                                                            </StackPanel>
+                                                            <TextBlock Text="{Binding ProfileId}"
+                                                                       FontFamily="Cascadia Code, Consolas, monospace"
+                                                                       FontSize="11"
+                                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                                       TextWrapping="Wrap" />
+                                                            <TextBlock Text="{Binding EffectiveLabel}"
+                                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                                       FontSize="11"
+                                                                       Margin="0,4,0,0" />
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                                            <TextBlock Text="{Binding CategoryLabel}"
+                                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                                       TextWrapping="Wrap" />
+                                                            <TextBlock Text="{Binding FieldCountLabel}"
+                                                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                                       FontSize="12"
+                                                                       Margin="0,3,0,0" />
+                                                            <TextBlock Text="{Binding ProjectedFieldCountLabel}"
+                                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                                       FontSize="11" />
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="2">
+                                                            <TextBlock Text="{Binding StatusLabel}"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="{StaticResource InfoColorBrush}" />
+                                                            <TextBlock Text="{Binding RequiredIdentifierKindsLabel}"
+                                                                       Foreground="{StaticResource WarningColorBrush}"
+                                                                       TextWrapping="Wrap"
+                                                                       FontSize="12"
+                                                                       Margin="0,3,0,0" />
+                                                            <TextBlock Text="{Binding AccountingHintsLabel}"
+                                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                                       TextWrapping="Wrap"
+                                                                       FontSize="11"
+                                                                       Margin="0,3,0,0" />
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="Draft and approve profile variants"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                            <TextBlock Text="The draft copies the selected approved profile's fields, identifiers, lifecycle states, and accounting hints."
+                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,3,0,0" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding AssetProfileLineageSummaryText}"
+                                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                   TextAlignment="Right"
+                                                   TextWrapping="Wrap"
+                                                   MaxWidth="240" />
+                                    </Grid>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+
+                                        <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,8">
+                                            <TextBlock Text="Profile id" Style="{StaticResource FormLabelStyle}" />
+                                            <TextBox Text="{Binding AssetProfileDraftProfileId, UpdateSourceTrigger=PropertyChanged}"
+                                                     Style="{StaticResource FormTextBoxStyle}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="0" Grid.Column="1" Margin="8,0,0,8">
+                                            <TextBlock Text="Name" Style="{StaticResource FormLabelStyle}" />
+                                            <TextBox Text="{Binding AssetProfileDraftName, UpdateSourceTrigger=PropertyChanged}"
+                                                     Style="{StaticResource FormTextBoxStyle}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,8">
+                                            <TextBlock Text="Category" Style="{StaticResource FormLabelStyle}" />
+                                            <TextBox Text="{Binding AssetProfileDraftCategory, UpdateSourceTrigger=PropertyChanged}"
+                                                     Style="{StaticResource FormTextBoxStyle}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="1" Grid.Column="1" Margin="8,0,0,8">
+                                            <TextBlock Text="Subtype" Style="{StaticResource FormLabelStyle}" />
+                                            <TextBox Text="{Binding AssetProfileDraftSubType, UpdateSourceTrigger=PropertyChanged}"
+                                                     Style="{StaticResource FormTextBoxStyle}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Margin="0,0,0,10">
+                                            <TextBlock Text="Rationale" Style="{StaticResource FormLabelStyle}" />
+                                            <TextBox Text="{Binding AssetProfileDraftRationale, UpdateSourceTrigger=PropertyChanged}"
+                                                     Style="{StaticResource FormTextBoxStyle}" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <Grid Margin="0,2,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="140" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                            <TextBlock Text="Rollback version" Style="{StaticResource FormLabelStyle}" />
+                                            <TextBox Text="{Binding AssetProfileRollbackVersion, UpdateSourceTrigger=PropertyChanged}"
+                                                     Style="{StaticResource FormTextBoxStyle}" />
+                                        </StackPanel>
+                                        <Button Grid.Column="1"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                Command="{Binding DraftAssetProfileCommand}"
+                                                Margin="0,18,8,0"
+                                                AutomationProperties.AutomationId="SettingsAssetProfileDraftButton"
+                                                Content="Save draft" />
+                                        <Button Grid.Column="2"
+                                                Style="{StaticResource GhostButtonStyle}"
+                                                Command="{Binding ApproveAssetProfileCommand}"
+                                                Margin="0,18,8,0"
+                                                AutomationProperties.AutomationId="SettingsAssetProfileApproveButton"
+                                                Content="Approve" />
+                                        <Button Grid.Column="3"
+                                                Style="{StaticResource GhostButtonStyle}"
+                                                Command="{Binding LoadAssetProfileLineageCommand}"
+                                                Margin="0,18,8,0"
+                                                AutomationProperties.AutomationId="SettingsAssetProfileLineageButton"
+                                                Content="Lineage" />
+                                        <Button Grid.Column="4"
+                                                Style="{StaticResource GhostButtonStyle}"
+                                                Command="{Binding RollbackAssetProfileCommand}"
+                                                Margin="0,18,0,0"
+                                                AutomationProperties.AutomationId="SettingsAssetProfileRollbackButton"
+                                                Content="Rollback" />
+                                    </Grid>
+
+                                    <ItemsControl ItemsSource="{Binding AssetProfileLineageEvents}"
+                                                  Visibility="{Binding HasAssetProfileLineageEvents, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                  Margin="0,12,0,0">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding}"
+                                                           FontFamily="Cascadia Code, Consolas, monospace"
+                                                           FontSize="11"
+                                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,2,0,0" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Create profile-backed custom asset"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Creates a Security Master CustomAsset pinned to the selected approved profile version."
+                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                               TextWrapping="Wrap"
+                                               Margin="0,3,0,12" />
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="120" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,8,10">
+                                            <TextBlock Text="Display name" Style="{StaticResource FormLabelStyle}" />
+                                            <TextBox Text="{Binding ProfileBackedSecurityDisplayName, UpdateSourceTrigger=PropertyChanged}"
+                                                     Style="{StaticResource FormTextBoxStyle}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Margin="8,0,8,10">
+                                            <TextBlock Text="Internal code" Style="{StaticResource FormLabelStyle}" />
+                                            <TextBox Text="{Binding ProfileBackedSecurityInternalCode, UpdateSourceTrigger=PropertyChanged}"
+                                                     Style="{StaticResource FormTextBoxStyle}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" Margin="8,0,0,10">
+                                            <TextBlock Text="Currency" Style="{StaticResource FormLabelStyle}" />
+                                            <TextBox Text="{Binding ProfileBackedSecurityCurrency, UpdateSourceTrigger=PropertyChanged}"
+                                                     Style="{StaticResource FormTextBoxStyle}" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <ItemsControl ItemsSource="{Binding AssetProfileFieldInputs}" Margin="0,0,0,10">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Width="238"
+                                                        Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                                                        CornerRadius="8"
+                                                        Padding="10"
+                                                        Margin="0,0,8,8">
+                                                    <StackPanel>
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Grid.Column="0"
+                                                                       Text="{Binding Label}"
+                                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                                       FontWeight="SemiBold"
+                                                                       TextTrimming="CharacterEllipsis" />
+                                                            <TextBlock Grid.Column="1"
+                                                                       Text="{Binding InputHint}"
+                                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                                       FontSize="11"
+                                                                       Margin="8,0,0,0" />
+                                                        </Grid>
+                                                        <TextBox Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                                                 Style="{StaticResource FormTextBoxStyle}"
+                                                                 Margin="0,7,0,0" />
+                                                        <TextBlock Text="{Binding AllowedValuesLabel}"
+                                                                   Visibility="{Binding AllowedValuesLabel, Converter={StaticResource StringToVisibilityConverter}}"
+                                                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                                   FontSize="11"
+                                                                   TextWrapping="Wrap"
+                                                                   Margin="0,4,0,0" />
+                                                        <TextBlock Text="{Binding Description}"
+                                                                   Visibility="{Binding Description, Converter={StaticResource StringToVisibilityConverter}}"
+                                                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                                   FontSize="11"
+                                                                   TextWrapping="Wrap"
+                                                                   Margin="0,4,0,0" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                            <TextBlock Text="Rationale" Style="{StaticResource FormLabelStyle}" />
+                                            <TextBox Text="{Binding ProfileBackedSecurityRationale, UpdateSourceTrigger=PropertyChanged}"
+                                                     Style="{StaticResource FormTextBoxStyle}" />
+                                        </StackPanel>
+                                        <Button Grid.Column="1"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                Command="{Binding CreateProfileBackedSecurityCommand}"
+                                                VerticalAlignment="Bottom"
+                                                AutomationProperties.AutomationId="SettingsProfileBackedSecurityCreateButton"
+                                                Content="Create security" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </TabItem>
                 </TabControl>
 
                 <!-- Quick Actions -->

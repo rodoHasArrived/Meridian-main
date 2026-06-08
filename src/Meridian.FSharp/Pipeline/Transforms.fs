@@ -3,6 +3,7 @@
 module Meridian.FSharp.Pipeline.Transforms
 
 open System
+open System.Collections.Generic
 open Meridian.FSharp.Domain.MarketEvents
 open Meridian.FSharp.Domain.Sides
 open Meridian.FSharp.Domain.Integrity
@@ -154,13 +155,21 @@ let partitionByType (events: MarketEvent seq) : PartitionedEvents =
 /// Group events by symbol.
 [<CompiledName("GroupBySymbol")>]
 let groupBySymbol (events: MarketEvent seq) : Map<string, MarketEvent list> =
-    events
-    |> Seq.choose (fun event ->
+    let grouped = Dictionary<string, ResizeArray<MarketEvent>>(StringComparer.Ordinal)
+
+    for event in events do
         match MarketEvent.getSymbol event with
-        | Some s -> Some (s, event)
-        | None -> None)
-    |> Seq.groupBy fst
-    |> Seq.map (fun (symbol, events) -> symbol, events |> Seq.map snd |> Seq.toList)
+        | Some symbol ->
+            match grouped.TryGetValue(symbol) with
+            | true, bucket -> bucket.Add(event)
+            | false, _ ->
+                let bucket = ResizeArray<MarketEvent>()
+                bucket.Add(event)
+                grouped.Add(symbol, bucket)
+        | None -> ()
+
+    grouped
+    |> Seq.map (fun pair -> pair.Key, pair.Value |> Seq.toList)
     |> Map.ofSeq
 
 /// Sample events at regular intervals.
@@ -193,25 +202,68 @@ let deduplicate (events: MarketEvent seq) : MarketEvent seq =
 /// Merge multiple event streams in timestamp order.
 [<CompiledName("MergeStreams")>]
 let mergeStreams (streams: MarketEvent seq list) : MarketEvent seq =
-    streams
-    |> Seq.concat
-    |> Seq.sortBy MarketEvent.getTimestamp
+    seq {
+        let enumerators = streams |> List.map (fun stream -> stream.GetEnumerator()) |> List.toArray
+
+        try
+            let current = Array.zeroCreate<MarketEvent> enumerators.Length
+            let queue = PriorityQueue<int, DateTimeOffset>()
+
+            for index = 0 to enumerators.Length - 1 do
+                if enumerators.[index].MoveNext() then
+                    current.[index] <- enumerators.[index].Current
+                    queue.Enqueue(index, MarketEvent.getTimestamp current.[index])
+
+            while queue.Count > 0 do
+                let index = queue.Dequeue()
+                let event = current.[index]
+                yield event
+
+                if enumerators.[index].MoveNext() then
+                    current.[index] <- enumerators.[index].Current
+                    queue.Enqueue(index, MarketEvent.getTimestamp current.[index])
+        finally
+            for enumerator in enumerators do
+                enumerator.Dispose()
+    }
 
 /// Buffer events by count.
 [<CompiledName("BufferByCount")>]
 let bufferByCount (count: int) (events: MarketEvent seq) : MarketEvent list seq =
+    if count <= 0 then
+        invalidArg (nameof count) "Buffer count must be greater than zero."
+
     events
     |> Seq.chunkBySize count
     |> Seq.map Array.toList
 
-/// Buffer events by time window.
+/// Buffer ordered events by time window.
 [<CompiledName("BufferByTime")>]
 let bufferByTime (windowMs: int) (events: MarketEvent seq) : MarketEvent list seq =
-    events
-    |> Seq.groupBy (fun event ->
-        let ts = MarketEvent.getTimestamp event
-        ts.ToUnixTimeMilliseconds() / int64 windowMs)
-    |> Seq.map (fun (_, group) -> Seq.toList group)
+    if windowMs <= 0 then
+        invalidArg (nameof windowMs) "Window milliseconds must be greater than zero."
+
+    seq {
+        let bucket = ResizeArray<MarketEvent>()
+        let mutable currentWindow: int64 option = None
+
+        for event in events do
+            let ts = MarketEvent.getTimestamp event
+            let window = ts.ToUnixTimeMilliseconds() / int64 windowMs
+
+            match currentWindow with
+            | None -> currentWindow <- Some window
+            | Some existing when existing <> window ->
+                yield bucket |> Seq.toList
+                bucket.Clear()
+                currentWindow <- Some window
+            | Some _ -> ()
+
+            bucket.Add(event)
+
+        if bucket.Count > 0 then
+            yield bucket |> Seq.toList
+    }
 
 // ==================== Advanced Transforms ====================
 
@@ -226,6 +278,9 @@ type MovingAveragePoint = {
 /// Compute Simple Moving Average (SMA) over trade prices.
 [<CompiledName("SimpleMovingAverage")>]
 let simpleMovingAverage (windowSize: int) (trades: TradeEvent seq) : MovingAveragePoint seq =
+    if windowSize <= 0 then
+        invalidArg (nameof windowSize) "Window size must be greater than zero."
+
     trades
     |> Seq.windowed windowSize
     |> Seq.map (fun window ->
@@ -239,28 +294,33 @@ let simpleMovingAverage (windowSize: int) (trades: TradeEvent seq) : MovingAvera
 /// Compute Exponential Moving Average (EMA) over trade prices.
 [<CompiledName("ExponentialMovingAverage")>]
 let exponentialMovingAverage (period: int) (trades: TradeEvent seq) : MovingAveragePoint seq =
+    if period <= 0 then
+        invalidArg (nameof period) "Period must be greater than zero."
+
     let multiplier = 2.0m / (decimal period + 1.0m)
-    let tradeList = trades |> Seq.toArray
 
-    if tradeList.Length < period then Seq.empty
-    else
-        let seedAvg =
-            tradeList.[0..period-1]
-            |> Array.averageBy (fun t -> float t.Price)
-            |> decimal
+    seq {
+        let seed = Queue<TradeEvent>()
+        let mutable seedSum = 0m
+        let mutable seeded = false
+        let mutable ema = 0m
 
-        tradeList.[period..]
-        |> Array.scan (fun ema trade ->
-            (trade.Price - ema) * multiplier + ema
-        ) seedAvg
-        |> Array.skip 1
-        |> Array.mapi (fun i ema ->
-            let trade = tradeList.[period + i]
-            { Timestamp = trade.Timestamp
-              Symbol = trade.Symbol
-              Price = trade.Price
-              Sma = ema })
-        |> Array.toSeq
+        for trade in trades do
+            if not seeded then
+                seed.Enqueue(trade)
+                seedSum <- seedSum + trade.Price
+
+                if seed.Count = period then
+                    ema <- seedSum / decimal period
+                    seed.Clear()
+                    seeded <- true
+            else
+                ema <- (trade.Price - ema) * multiplier + ema
+                yield { Timestamp = trade.Timestamp
+                        Symbol = trade.Symbol
+                        Price = trade.Price
+                        Sma = ema }
+    }
 
 /// Rate of change result.
 type RateOfChangePoint = {
@@ -273,23 +333,26 @@ type RateOfChangePoint = {
 /// Compute Rate of Change (ROC) as percentage change over N periods.
 [<CompiledName("RateOfChange")>]
 let rateOfChange (periods: int) (trades: TradeEvent seq) : RateOfChangePoint seq =
-    let tradeArr = trades |> Seq.toArray
+    if periods <= 0 then
+        invalidArg (nameof periods) "Periods must be greater than zero."
 
-    if tradeArr.Length <= periods then Seq.empty
-    else
-        tradeArr
-        |> Array.mapi (fun i trade ->
-            if i < periods then None
+    seq {
+        let previous = Queue<TradeEvent>()
+
+        for trade in trades do
+            if previous.Count < periods then
+                previous.Enqueue(trade)
             else
-                let prevPrice = tradeArr.[i - periods].Price
-                if prevPrice = 0m then None
-                else
-                    Some { Timestamp = trade.Timestamp
-                           Symbol = trade.Symbol
-                           Price = trade.Price
-                           RateOfChange = (trade.Price - prevPrice) / prevPrice * 100m })
-        |> Array.choose id
-        |> Array.toSeq
+                let comparison = previous.Dequeue()
+
+                if comparison.Price <> 0m then
+                    yield { Timestamp = trade.Timestamp
+                            Symbol = trade.Symbol
+                            Price = trade.Price
+                            RateOfChange = (trade.Price - comparison.Price) / comparison.Price * 100m }
+
+                previous.Enqueue(trade)
+    }
 
 /// Gap detection result.
 type TimeGap = {

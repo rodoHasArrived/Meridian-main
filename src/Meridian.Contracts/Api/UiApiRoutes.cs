@@ -691,6 +691,14 @@ public static class UiApiRoutes
     public const string ReportingPackWorkflowPublish = "/api/fund-structure/reporting/packs/{reportId}/publish";
     public const string ReportingPackWorkflowRestate = "/api/fund-structure/reporting/packs/{reportId}/restatements";
     public const string ReportingPackWorkflowArchive = "/api/fund-structure/reporting/packs/{reportId}/archive";
+    public const string ReportingPackWorkflowDeliveries = "/api/fund-structure/reporting/packs/{reportId}/deliveries";
+    public const string ReportingPackWorkflowDeliveryFailures = "/api/fund-structure/reporting/packs/{reportId}/deliveries/failures";
+    public const string ReportingRuns = "/api/fund-structure/reporting/runs";
+    public const string ReportingSchedules = "/api/fund-structure/reporting/schedules";
+    public const string ReportingScheduleRunDue = "/api/fund-structure/reporting/schedules/run-due";
+    public const string ReportingSchedulePause = "/api/fund-structure/reporting/schedules/{scheduleId}/pause";
+    public const string ReportingScheduleResume = "/api/fund-structure/reporting/schedules/{scheduleId}/resume";
+    public const string ReportingScheduleRunNow = "/api/fund-structure/reporting/schedules/{scheduleId}/run";
     public const string FundStructureSetupDraftValidate = "/api/fund-structure/setup-drafts/validate";
     public const string FundStructureSetupDraftCreate = "/api/fund-structure/setup-drafts/create";
     public const string FundStructureLedgerMappingAssignments = "/api/fund-structure/ledger-mapping-assignments";

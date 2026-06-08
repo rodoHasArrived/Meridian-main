@@ -34,6 +34,28 @@ let createTestQuote symbol bidPrice askPrice seqNum : MarketEvent =
         StreamId = None
     }
 
+let createTestTradeEvent symbol price seqNum timestamp : TradeEvent = {
+    Symbol = symbol
+    Price = price
+    Quantity = 100L
+    Side = AggressorSide.Buyer
+    SequenceNumber = seqNum
+    Timestamp = timestamp
+    ExchangeTimestamp = None
+    StreamId = None
+    Venue = None
+}
+
+let singleUseSeq items =
+    let used = ref false
+    seq {
+        if used.Value then
+            failwith "Sequence was enumerated more than once."
+
+        used.Value <- true
+        yield! items
+    }
+
 [<Fact>]
 let ``filterBySymbol filters to matching symbol`` () =
     let events = [
@@ -186,6 +208,26 @@ let ``bufferByCount creates correct size buffers`` () =
     buffers.[2].Length |> should equal 1
 
 [<Fact>]
+let ``bufferByCount rejects non-positive count`` () =
+    (fun () -> bufferByCount 0 Seq.empty |> Seq.toList |> ignore)
+    |> should throw typeof<ArgumentException>
+
+[<Fact>]
+let ``bufferByTime streams ordered windows`` () =
+    let now = DateTimeOffset.FromUnixTimeMilliseconds(1_200_000L)
+    let events = [
+        MarketEvent.Trade (createTestTradeEvent "AAPL" 150.00m 1L now)
+        MarketEvent.Trade (createTestTradeEvent "AAPL" 151.00m 2L (now.AddMilliseconds(100.0)))
+        MarketEvent.Trade (createTestTradeEvent "AAPL" 152.00m 3L (now.AddMilliseconds(1_100.0)))
+    ]
+
+    let buffers = bufferByTime 1000 events |> Seq.toList
+
+    buffers.Length |> should equal 2
+    buffers.[0].Length |> should equal 2
+    buffers.[1].Length |> should equal 1
+
+[<Fact>]
 let ``enrichQuotes adds calculated fields`` () =
     let quote: QuoteEvent = {
         Symbol = "AAPL"
@@ -275,3 +317,68 @@ let ``mergeStreams combines and sorts`` () =
     match MarketEvent.getSymbol merged.[0] with
     | Some s -> s |> should equal "MSFT"
     | None -> failwith "Expected symbol"
+
+[<Fact>]
+let ``mergeStreams merges ordered streams without requiring concatenated materialization`` () =
+    let now = DateTimeOffset.UtcNow
+    let stream1 =
+        [
+            MarketEvent.Trade (createTestTradeEvent "AAPL" 150.00m 1L now)
+            MarketEvent.Trade (createTestTradeEvent "AAPL" 151.00m 3L (now.AddSeconds(2.0)))
+        ]
+        |> singleUseSeq
+
+    let stream2 =
+        [
+            MarketEvent.Trade (createTestTradeEvent "MSFT" 350.00m 2L (now.AddSeconds(1.0)))
+            MarketEvent.Trade (createTestTradeEvent "MSFT" 351.00m 4L (now.AddSeconds(3.0)))
+        ]
+        |> singleUseSeq
+
+    let merged = mergeStreams [stream1; stream2] |> Seq.toList
+
+    merged
+    |> List.map MarketEvent.getSequenceNumber
+    |> should equal [ Some 1L; Some 2L; Some 3L; Some 4L ]
+
+[<Fact>]
+let ``exponentialMovingAverage enumerates trades once`` () =
+    let now = DateTimeOffset.UtcNow
+    let trades =
+        [
+            createTestTradeEvent "AAPL" 100.00m 1L now
+            createTestTradeEvent "AAPL" 102.00m 2L (now.AddSeconds(1.0))
+            createTestTradeEvent "AAPL" 106.00m 3L (now.AddSeconds(2.0))
+        ]
+        |> singleUseSeq
+
+    let result = exponentialMovingAverage 2 trades |> Seq.toList
+
+    result.Length |> should equal 1
+    result.[0].Price |> should equal 106.00m
+
+[<Fact>]
+let ``exponentialMovingAverage rejects non-positive period`` () =
+    (fun () -> exponentialMovingAverage 0 Seq.empty |> Seq.toList |> ignore)
+    |> should throw typeof<ArgumentException>
+
+[<Fact>]
+let ``rateOfChange enumerates trades once`` () =
+    let now = DateTimeOffset.UtcNow
+    let trades =
+        [
+            createTestTradeEvent "AAPL" 100.00m 1L now
+            createTestTradeEvent "AAPL" 105.00m 2L (now.AddSeconds(1.0))
+            createTestTradeEvent "AAPL" 110.00m 3L (now.AddSeconds(2.0))
+        ]
+        |> singleUseSeq
+
+    let result = rateOfChange 2 trades |> Seq.toList
+
+    result.Length |> should equal 1
+    result.[0].RateOfChange |> should equal 10.00m
+
+[<Fact>]
+let ``rateOfChange rejects non-positive periods`` () =
+    (fun () -> rateOfChange 0 Seq.empty |> Seq.toList |> ignore)
+    |> should throw typeof<ArgumentException>

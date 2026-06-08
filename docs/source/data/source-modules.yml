@@ -388,7 +388,9 @@ modules:
       - ResearchContinuity
       - BacktestingEvidence
     validation:
-      - dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --logger "console;verbosity=normal"
+      - dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj /p:FSharpTestSlice=MarketData --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj /p:FSharpTestSlice=Domain --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
+      - dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj /p:FSharpTestSlice=Operations --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
@@ -409,6 +411,7 @@ modules:
       - PortfolioLedgerReview
       - GovernedReportPack
     validation:
+      - dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj /p:FSharpTestSlice=DirectLending --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj --logger "console;verbosity=normal"
     diagrams:
       - DIA-ASSURANCE-LOOP
@@ -430,7 +433,7 @@ modules:
       - PortfolioLedgerReview
       - GovernedReportPack
     validation:
-      - dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --logger "console;verbosity=normal"
+      - dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj /p:FSharpTestSlice=Ledger --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
@@ -451,7 +454,7 @@ modules:
       - PaperSession
       - ResearchContinuity
     validation:
-      - dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --logger "console;verbosity=normal"
+      - dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj /p:FSharpTestSlice=Trading --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
       - DIA-PAPER-SESSION-REPLAY
     todos: []
@@ -545,7 +548,7 @@ modules:
     validation:
       - dotnet build src/Meridian.Identity/Meridian.Identity.csproj /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ScopedAccessServiceTests|FullyQualifiedName~FundAccountTraversalQueryServiceTests" --logger "console;verbosity=normal" /nr:false /p:EnableWindowsTargeting=true /p:UseSharedCompilation=false
-      - dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj --filter FullyQualifiedName~SensitiveActionPolicyTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj /p:FSharpTestSlice=Operations --filter FullyQualifiedName~SensitiveActionPolicyTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []

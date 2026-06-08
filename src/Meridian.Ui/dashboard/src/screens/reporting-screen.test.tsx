@@ -165,9 +165,54 @@ describe("ReportingScreen", () => {
       "href",
       "/api/fund-structure/reporting/templates/investor-monthly-statement/versions/1"
     );
+    expect(screen.getByRole("button", { name: "Run Investor Monthly Statement report on demand" })).toBeEnabled();
   });
 
-  it("renders typed report run drilldown links and next action references", () => {
+  it("runs an approved report template on demand", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify({
+        run: {
+          runId: "adhoc-investor-monthly-statement-20260607",
+          templateId: "investor-monthly-statement",
+          family: "InvestorStatement",
+          status: "Draft",
+          trigger: "AdHoc",
+          attemptCount: 1,
+          sectionCount: 2,
+          lineageLinkedSections: 2,
+          artifacts: ["adhoc-investor-monthly-statement-20260607.manifest.json"],
+          auditActions: ["RunGenerated"],
+          failureReason: null,
+          drilldownLinks: [],
+          nextActions: []
+        }
+      })
+    });
+
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
+    await user.click(screen.getByRole("button", { name: "Run Investor Monthly Statement report on demand" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/runs",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.any(String)
+      })
+    ));
+    const request = JSON.parse((fetchMock.mock.calls[0]?.[1] as RequestInit).body as string);
+    expect(request).toEqual(expect.objectContaining({
+      templateId: "investor-monthly-statement",
+      maxRetries: 0
+    }));
+    expect(screen.getByRole("status", { name: "Run report status" })).toHaveTextContent(
+      "Investor Monthly Statement run created."
+    );
+    expect(screen.getByText("Run ID: adhoc-investor-monthly-statement-20260607")).toBeInTheDocument();
+  });
+
+  it("renders typed report run drilldown links and executable next action buttons", () => {
     const accountingWithRunLinks: AccountingWorkspaceResponse = {
       ...accounting,
       reporting: {
@@ -230,9 +275,67 @@ describe("ReportingScreen", () => {
     expect(screen.getByRole("group", {
       name: "Reference-only GET reporting-run://investor-monthly-statement-20260501/audit for Approval audit trail"
     })).toHaveTextContent("Approval audit trail");
-    expect(screen.getByRole("group", {
+    expect(screen.getByRole("button", {
       name: "POST reporting-run://investor-monthly-statement-20260501/approval/approve for Approve reporting run"
     })).toHaveTextContent("Approve reporting run");
+  });
+
+  it("renders schedule controls and retained delivery history", () => {
+    const scheduledAccounting: AccountingWorkspaceResponse = {
+      ...accounting,
+      reporting: {
+        ...accounting.reporting,
+        schedules: [
+          {
+            scheduleId: "sched-investor",
+            templateId: "investor-monthly-statement",
+            cronExpression: "0 8 1 * *",
+            nextAsOfDate: "2026-06-01",
+            dueAtUtc: "2026-06-01T08:00:00Z",
+            maxRetries: 2,
+            requestedBy: "fund-controller",
+            state: "Active",
+            createdAtUtc: "2026-05-01T08:00:00Z",
+            updatedAtUtc: "2026-05-03T08:00:00Z",
+            lastRunAtUtc: "2026-05-01T08:05:00Z",
+            lastRunId: "investor-monthly-statement-20260501",
+            runCount: 3,
+            description: "Monthly investor statement close packet."
+          }
+        ],
+        deliveryAttempts: [
+          {
+            attemptId: "attempt-1",
+            reportId: "11111111-1111-1111-1111-111111111111",
+            distributionId: "board-reporting-committee",
+            recipient: "Board reporting committee",
+            recipientRole: "Board",
+            channel: "Board portal",
+            state: "Delivered",
+            attemptedAtUtc: "2026-05-03T20:15:00Z",
+            actor: "fund-controller",
+            attemptNumber: 1,
+            deliveryReference: "board-portal:packet-1",
+            note: "Delivered after approval.",
+            failureReason: null,
+            evidenceLinks: []
+          }
+        ]
+      }
+    };
+
+    renderWithRouter(<ReportingScreen data={scheduledAccounting} />, { initialEntries: ["/reporting"] });
+
+    expect(screen.getByRole("list", { name: "Reporting schedules" })).toBeInTheDocument();
+    expect(screen.getByLabelText("sched-investor investor-monthly-statement reporting schedule is Active")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Run now" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Pause" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Resume" })).toBeDisabled();
+
+    expect(screen.getByRole("list", { name: "Report-pack delivery attempts" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Board reporting committee delivery attempt Delivered")).toHaveTextContent(
+      "board-portal:packet-1"
+    );
   });
 
   it("renders the VM-owned no-target state with warning token classes", () => {

@@ -35,6 +35,20 @@ public enum ManualJournalEntryStatusDto
     Rejected = 4
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<ManualJournalEntryTypeDto>))]
+public enum ManualJournalEntryTypeDto
+{
+    General = 0,
+    AccruedBalance = 1,
+    AccruedExpense = 2,
+    PrepaidExpense = 3,
+    Expense = 4,
+    Amortization = 5,
+    Deferral = 6,
+    Reclassification = 7,
+    Reversal = 8
+}
+
 public sealed record ChartOfAccountsNodeDto(
     string NodeId,
     string Path,
@@ -198,7 +212,8 @@ public sealed record ManualJournalEntryDraftDto(
     decimal Imbalance = 0m,
     string? ApprovalId = null,
     DateTimeOffset? SubmittedAtUtc = null,
-    string? SubmittedBy = null);
+    string? SubmittedBy = null,
+    ManualJournalEntryTypeDto EntryType = ManualJournalEntryTypeDto.General);
 
 public sealed record ManualJournalEntryWorkbenchDto(
     string FundProfileId,

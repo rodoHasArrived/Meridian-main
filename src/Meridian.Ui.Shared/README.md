@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-07
+last_reviewed: 2026-06-08
 ---
 
 # src/Meridian.Ui.Shared
@@ -82,6 +82,17 @@ Meridian remains the source of all ledger truth; external GL imports are evidenc
 reconciliation inputs, not override authority. Posting/export remains disabled in the shared
 service until an adapter capability explicitly supports publishing Meridian-owned ledger entries,
 so browser and WPF clients inherit the same read-only reconciliation posture.
+Shared accounting configuration and manual journal entry services also provide durable file-backed
+fallback stores under the resolved workstation data root. `FileAccountingConfigurationStore`
+persists chart accounts, templates, posting rules, and accounting action audit events at
+`workstation/accounting/accounting-configuration.json`, while `FileManualJournalEntryDraftStore`
+persists draft and submitted manual journal records at
+`workstation/accounting/manual-journal-drafts.json`. Manual journal drafts carry a shared
+`ManualJournalEntryTypeDto` so accrual, prepaid expense, expense, amortization, deferral,
+reclassification, reversal, and general adjustment workflows persist as typed accounting records
+instead of client-local labels. Stronger host registrations can still replace those stores, but
+browser and WPF clients should consume the shared services instead of keeping process-local
+accounting configuration or draft state.
 The shared workflow library owns close-lane command routing as well: `AccountingReviewOperationsContinuity`
 targets `OperationsContinuity` and `AccountingReviewCloseReadiness` targets `OperationsClose`, with
 route metadata tied to the operations-continuity API. Browser and WPF clients should consume those
@@ -164,6 +175,19 @@ drilldown status instead of reintroducing fixture rows in workstation bootstrap 
 Those recent-run rows also include typed drilldown links and next-action references for evidence,
 approval submission/review, publication, release review, restatement, and archival work so clients
 can render clickable routes while preserving reference-only POST/action metadata.
+`ReportPackDeliveryService` persists delivery and delivery-failure attempts under the resolved
+workstation data root at `workstation/reporting/report-pack-deliveries.json`; published and
+restated workflow records can therefore show real delivery history, retry attempts, recipient
+state, and last-sent timestamps instead of static distribution placeholders. `ReportingScheduleService`
+persists operator-managed schedule records at `workstation/reporting/reporting-schedules.json`,
+runs due schedules through `IReportingOrchestrationService`, advances next due/as-of dates, and
+projects schedule run results back through the shared Reporting payload. `ReportingRunCommandService`
+also runs approved built-in templates on demand through the same orchestration and run-store seam,
+returning `WorkstationReportingRunPayload` rows with ad-hoc trigger metadata and review next
+actions. The fund-structure
+endpoint group exposes those delivery and schedule commands, while `FundOperationsWorkspaceReadService`
+also writes rendered HTML and PDF statement artifacts alongside JSON, CSV, XLSX, and provenance
+outputs so frozen report packs include inspectable document-format evidence.
 The same read model emits `reportPackDistributions` recipient records instead of static
 report-pack target strings. Browser and WPF clients should show recipient, role, channel, owner,
 state, due date, and pending summary from those records so operators can see who receives each

@@ -308,6 +308,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.CashFinancingReadService>();
         services.AddSingleton<WpfServices.IWorkstationReconciliationApiClient, WpfServices.WorkstationReconciliationApiClient>();
         services.AddSingleton<WpfServices.IWorkstationSecurityMasterApiClient, WpfServices.WorkstationSecurityMasterApiClient>();
+        services.AddSingleton<WpfServices.ISecurityAssetProfileWorkflowClient, WpfServices.SecurityAssetProfileWorkflowClient>();
         services.AddSingleton<WpfServices.IWorkstationStrategyBriefingApiClient, WpfServices.WorkstationStrategyBriefingApiClient>();
         services.AddSingleton<WpfServices.IWorkstationOperatorInboxApiClient, WpfServices.WorkstationOperatorInboxApiClient>();
         services.AddSingleton<WpfServices.IStrategyBriefingWorkspaceService, WpfServices.StrategyBriefingWorkspaceService>();

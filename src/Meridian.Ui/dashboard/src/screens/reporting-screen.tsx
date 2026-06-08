@@ -1,4 +1,4 @@
-import { type KeyboardEvent, useEffect, useRef } from "react";
+import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { FileText, Landmark, Network, PencilLine } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -6,16 +6,37 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import {
+  apiPostJson,
+  deliverReportPack,
+  pauseReportingSchedule,
+  resumeReportingSchedule,
+  runReportingNow,
+  runReportingScheduleNow
+} from "@/lib/api";
+import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 import {
   resolveReportPackProfileKeyCommand,
   useReportingScreenViewModel,
-  type ReportingProfileRow
+  type ReportingProfileRow,
+  type ReportingRunActionRow,
+  type ReportingRunStatusRow,
+  type ReportingScheduleRow,
+  type ReportingTemplateRow
 } from "@/screens/reporting-screen.view-model";
-import type { AccountingWorkspaceResponse } from "@/types";
+import type { AccountingWorkspaceResponse, ReportingWorkflowEvidenceLink } from "@/types";
 
 interface ReportingScreenProps {
   data: AccountingWorkspaceResponse | null;
+}
+
+interface ReportingCommandStatus {
+  id: string;
+  label: string;
+  state: "running" | "success" | "error";
+  message: string;
+  details: string[];
 }
 
 const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
@@ -66,6 +87,12 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
   const vm = useReportingScreenViewModel(data?.reporting ?? null, undefined, pathname);
   const reportPackProfileButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const shouldFocusReportPackProfile = useRef(false);
+  const [runActionStatus, setRunActionStatus] = useState<ReportingCommandStatus | null>(null);
+  const [templateRunStatus, setTemplateRunStatus] = useState<ReportingCommandStatus | null>(null);
+  const [scheduleActionStatus, setScheduleActionStatus] = useState<ReportingCommandStatus | null>(null);
+  const runningRunActionId = runActionStatus?.state === "running" ? runActionStatus.id : null;
+  const runningTemplateRunId = templateRunStatus?.state === "running" ? templateRunStatus.id : null;
+  const runningScheduleActionId = scheduleActionStatus?.state === "running" ? scheduleActionStatus.id : null;
 
   useEffect(() => {
     if (!shouldFocusReportPackProfile.current) {
@@ -88,6 +115,136 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
     event.preventDefault();
     shouldFocusReportPackProfile.current = true;
     vm.selectAdjacentReportPackProfile(command);
+  }
+
+  async function handleRunAction(run: ReportingRunStatusRow, action: ReportingRunActionRow) {
+    if (!action.isEnabled || action.method !== "POST" || runningRunActionId) {
+      return;
+    }
+
+    if (action.kind === "restatement") {
+      setRunActionStatus({
+        id: action.id,
+        label: action.label,
+        state: "error",
+        message: "Restatement requires changed-line evidence before it can be submitted.",
+        details: ["Open the report-pack workflow and attach changed report lines with retained evidence."]
+      });
+      return;
+    }
+
+    setRunActionStatus({
+      id: action.id,
+      label: action.label,
+      state: "running",
+      message: `${action.label} is running.`,
+      details: []
+    });
+
+    try {
+      await executeRunAction(run, action);
+      setRunActionStatus({
+        id: action.id,
+        label: action.label,
+        state: "success",
+        message: `${action.label} completed.`,
+        details: []
+      });
+    } catch (error) {
+      const display = describeApiError(error, `${action.label} failed.`);
+      setRunActionStatus({
+        id: action.id,
+        label: action.label,
+        state: "error",
+        message: display.summary,
+        details: display.details
+      });
+    }
+  }
+
+  async function handleTemplateRun(template: ReportingTemplateRow) {
+    if (!template.canRunOnDemand || runningTemplateRunId) {
+      return;
+    }
+
+    setTemplateRunStatus({
+      id: template.id,
+      label: template.runActionLabel,
+      state: "running",
+      message: `${template.name} is running.`,
+      details: []
+    });
+
+    try {
+      const result = await runReportingNow({
+        templateId: template.id,
+        asOfDate: new Date().toISOString().slice(0, 10),
+        maxRetries: 0
+      });
+      setTemplateRunStatus({
+        id: template.id,
+        label: template.runActionLabel,
+        state: "success",
+        message: `${template.name} run created.`,
+        details: [`Run ID: ${result.run.runId}`, `Status: ${result.run.status}`]
+      });
+    } catch (error) {
+      const display = describeApiError(error, `${template.name} run failed.`);
+      setTemplateRunStatus({
+        id: template.id,
+        label: template.runActionLabel,
+        state: "error",
+        message: display.summary,
+        details: display.details
+      });
+    }
+  }
+
+  async function handleScheduleAction(schedule: ReportingScheduleRow, action: "pause" | "resume" | "run") {
+    const statusId = `${schedule.id}:${action}`;
+    if (runningScheduleActionId) {
+      return;
+    }
+
+    const label = action === "run"
+      ? `Run ${schedule.id}`
+      : action === "pause"
+        ? `Pause ${schedule.id}`
+        : `Resume ${schedule.id}`;
+    setScheduleActionStatus({
+      id: statusId,
+      label,
+      state: "running",
+      message: `${label} is running.`,
+      details: []
+    });
+
+    try {
+      if (action === "pause") {
+        await pauseReportingSchedule(schedule.id);
+      } else if (action === "resume") {
+        await resumeReportingSchedule(schedule.id);
+      } else {
+        await runReportingScheduleNow(schedule.id);
+      }
+
+      setScheduleActionStatus({
+        id: statusId,
+        label,
+        state: "success",
+        message: `${label} completed.`,
+        details: []
+      });
+    } catch (error) {
+      const display = describeApiError(error, `${label} failed.`);
+      setScheduleActionStatus({
+        id: statusId,
+        label,
+        state: "error",
+        message: display.summary,
+        details: display.details
+      });
+    }
   }
 
   if (!data) {
@@ -181,15 +338,33 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                   <p className="min-w-0 flex-1 text-xs leading-5 text-muted-foreground">
                     {template.approvalSummary}
                   </p>
-                  <Button asChild variant="outline" size="sm">
-                    <a href={template.authoringHref} target="_blank" rel="noreferrer" aria-label={template.actionAriaLabel}>
-                      <PencilLine className="h-4 w-4" aria-hidden="true" />
-                      {template.actionLabel}
-                    </a>
-                  </Button>
+                  <span className="flex flex-wrap items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      aria-label={template.runActionAriaLabel}
+                      disabled={!template.canRunOnDemand || Boolean(runningTemplateRunId)}
+                      disabledReason={template.runDisabledReason}
+                      busy={runningTemplateRunId === template.id}
+                      busyLabel="Running"
+                      onClick={() => void handleTemplateRun(template)}
+                    >
+                      <FileText className="h-4 w-4" aria-hidden="true" />
+                      {template.runActionLabel}
+                    </Button>
+                    <Button asChild variant="outline" size="sm">
+                      <a href={template.authoringHref} target="_blank" rel="noreferrer" aria-label={template.actionAriaLabel}>
+                        <PencilLine className="h-4 w-4" aria-hidden="true" />
+                        {template.actionLabel}
+                      </a>
+                    </Button>
+                  </span>
                 </div>
               </div>
             ))}
+            {templateRunStatus ? (
+              <ReportingCommandStatusView status={templateRunStatus} />
+            ) : null}
           </CardContent>
         </Card>
 
@@ -240,21 +415,26 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                 {run.hasNextActions ? (
                   <div className="mt-2 flex flex-wrap gap-1.5" aria-label={`${run.id} next actions`}>
                     {run.nextActions.map((action) => (
-                      <span
+                      <Button
                         key={action.id}
-                        role="group"
                         aria-label={action.ariaLabel}
-                        title={action.disabledReason ?? `${action.method} ${action.href}`}
+                        disabled={!action.isEnabled || action.method !== "POST" || action.kind === "restatement" || Boolean(runningRunActionId)}
+                        busy={runningRunActionId === action.id}
+                        busyLabel="Running"
+                        disabledReason={action.disabledReason ?? (action.kind === "restatement" ? "Restatement requires changed-line evidence." : null)}
+                        onClick={() => void handleRunAction(run, action)}
+                        size="sm"
+                        variant={action.isEnabled ? "outline" : "ghost"}
                         className={cn(
-                          "inline-flex min-w-0 items-center gap-1.5 rounded-sm border px-2 py-1 text-[11px]",
+                          "min-w-0 justify-start px-2 py-1 text-[11px]",
                           action.isEnabled
-                            ? "border-primary/35 bg-primary/10 text-primary"
+                            ? "border-primary/35 bg-primary/10 text-primary hover:bg-primary/15"
                             : "border-border/60 bg-secondary/20 text-muted-foreground"
                         )}
                       >
                         <Badge variant="outline">{action.method}</Badge>
                         <span className="truncate">{action.label}</span>
-                      </span>
+                      </Button>
                     ))}
                   </div>
                 ) : null}
@@ -262,6 +442,131 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
             )) : (
               <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
                 No report runs have been generated yet.
+              </p>
+            )}
+            {runActionStatus ? (
+              <ReportingCommandStatusView status={runActionStatus} />
+            ) : null}
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+        <Card className="panel-surface">
+          <CardHeader>
+            <div className="eyebrow-label">Scheduling</div>
+            <CardTitle>Reporting schedules</CardTitle>
+            <CardDescription>{vm.scheduleSummary}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {vm.hasScheduleRows ? (
+              <div role="list" aria-label={vm.scheduleListLabel} className="space-y-2">
+                {vm.scheduleRows.map((schedule) => (
+                  <div
+                    key={schedule.id}
+                    role="listitem"
+                    aria-label={schedule.ariaLabel}
+                    className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <span className="min-w-0">
+                        <span className="block font-semibold text-foreground">{schedule.templateId}</span>
+                        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">
+                          {schedule.id}
+                        </span>
+                      </span>
+                      <Badge variant={schedule.stateVariant}>{schedule.state}</Badge>
+                    </div>
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">{schedule.description}</p>
+                    <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+                      <ReportingScheduleField label="Cron" value={schedule.cronLabel} />
+                      <ReportingScheduleField label="Due" value={schedule.dueLabel} />
+                      <ReportingScheduleField label="As of" value={schedule.nextAsOfLabel} />
+                      <ReportingScheduleField label="Last run" value={schedule.lastRunLabel} />
+                    </dl>
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <Badge variant="outline">{schedule.runCountLabel}</Badge>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        busy={runningScheduleActionId === `${schedule.id}:run`}
+                        busyLabel="Running"
+                        disabled={Boolean(runningScheduleActionId)}
+                        onClick={() => void handleScheduleAction(schedule, "run")}
+                      >
+                        Run now
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        busy={runningScheduleActionId === `${schedule.id}:pause`}
+                        busyLabel="Pausing"
+                        disabled={!schedule.canPause || Boolean(runningScheduleActionId)}
+                        disabledReason={schedule.canPause ? null : "Only active schedules can be paused."}
+                        onClick={() => void handleScheduleAction(schedule, "pause")}
+                      >
+                        Pause
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        busy={runningScheduleActionId === `${schedule.id}:resume`}
+                        busyLabel="Resuming"
+                        disabled={!schedule.canResume || Boolean(runningScheduleActionId)}
+                        disabledReason={schedule.canResume ? null : "Only paused schedules can be resumed."}
+                        onClick={() => void handleScheduleAction(schedule, "resume")}
+                      >
+                        Resume
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+                {vm.scheduleEmptyText}
+              </p>
+            )}
+            {scheduleActionStatus ? (
+              <ReportingCommandStatusView status={scheduleActionStatus} />
+            ) : null}
+          </CardContent>
+        </Card>
+
+        <Card className="panel-surface">
+          <CardHeader>
+            <div className="eyebrow-label">Delivery history</div>
+            <CardTitle>Distribution attempts</CardTitle>
+            <CardDescription>Published report-pack delivery attempts are retained by recipient and channel.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {(data.reporting.deliveryAttempts ?? []).length > 0 ? (
+              <div role="list" aria-label="Report-pack delivery attempts" className="space-y-2">
+                {(data.reporting.deliveryAttempts ?? []).slice(0, 6).map((attempt) => (
+                  <div
+                    key={attempt.attemptId}
+                    role="listitem"
+                    aria-label={`${attempt.recipient} delivery attempt ${attempt.state}`}
+                    className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <span className="min-w-0">
+                        <span className="block font-semibold text-foreground">{attempt.recipient}</span>
+                        <span className="mt-1 block text-xs text-muted-foreground">{attempt.recipientRole} · {attempt.channel}</span>
+                      </span>
+                      <Badge variant={attempt.state === "Failed" ? "warning" : "success"}>{attempt.state}</Badge>
+                    </div>
+                    <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{attempt.deliveryReference}</p>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                      Attempt {attempt.attemptNumber} by {attempt.actor} at {attempt.attemptedAtUtc}
+                    </p>
+                    {attempt.failureReason ? <p className="mt-1 text-xs text-warning">{attempt.failureReason}</p> : null}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+                No report-pack delivery attempts have been retained yet.
               </p>
             )}
           </CardContent>
@@ -886,6 +1191,122 @@ function ReportingChip({ label, value }: { label: string; value: string }) {
       <span className="font-mono text-foreground">{value}</span>
     </div>
   );
+}
+
+function ReportingScheduleField({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-sm border border-border/60 bg-background/30 px-2.5 py-2">
+      <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</dt>
+      <dd className="mt-1 break-words font-mono text-xs text-foreground">{value}</dd>
+    </div>
+  );
+}
+
+function ReportingCommandStatusView({ status }: { status: ReportingCommandStatus }) {
+  return (
+    <div
+      role="status"
+      aria-label={`${status.label} status`}
+      className={cn(
+        "rounded-md border px-3 py-2 text-sm leading-6",
+        status.state === "success"
+          ? "border-success/30 bg-success/10 text-success"
+          : status.state === "error"
+            ? "border-warning/35 bg-warning/10 text-warning"
+            : "border-primary/30 bg-primary/10 text-primary"
+      )}
+    >
+      <p>{status.message}</p>
+      {status.details.length > 0 ? (
+        <ul className="mt-2 space-y-1 text-xs">
+          {status.details.map((detail) => (
+            <li key={detail}>{detail}</li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
+async function executeRunAction(run: ReportingRunStatusRow, action: ReportingRunActionRow): Promise<void> {
+  if (action.kind.startsWith("delivery:")) {
+    const reportId = extractReportPackId(run, action);
+    const distributionId = action.kind.slice("delivery:".length);
+    await deliverReportPack(reportId, {
+      distributionId,
+      actor: "browser-workstation",
+      note: "Delivered from browser Reporting workspace.",
+      evidenceLinks: buildEvidenceLinksFromRun(run)
+    });
+    return;
+  }
+
+  if (action.kind === "approval-reject") {
+    await apiPostJson<unknown>(action.href, {
+      reason: "Returned from browser Reporting workspace.",
+      actor: "browser-workstation",
+      actorRole: "Reviewer",
+      evidenceLinks: buildEvidenceLinksFromRun(run)
+    });
+    return;
+  }
+
+  if (action.kind === "publication") {
+    const reportId = extractReportPackId(run, action);
+    await apiPostJson<unknown>(action.href, {
+      signedOffBy: "browser-workstation",
+      evidenceHash: `sha256:${normalizeEvidenceToken(run.id)}`,
+      manifestId: `browser-${normalizeEvidenceToken(reportId)}`,
+      retainedManifestPath: `workstation/reporting/${normalizeEvidenceToken(reportId)}/manifest.json`,
+      evidenceLinks: buildEvidenceLinksFromRun(run),
+      note: "Published from browser Reporting workspace."
+    });
+    return;
+  }
+
+  await apiPostJson<unknown>(action.href);
+}
+
+function extractReportPackId(run: ReportingRunStatusRow, action: ReportingRunActionRow): string {
+  const hrefMatch = action.href.match(/\/reporting\/packs\/([0-9a-fA-F-]{36})(?:\/|$)/);
+  if (hrefMatch?.[1]) {
+    return hrefMatch[1];
+  }
+
+  if (run.id.startsWith("report-pack:")) {
+    return run.id.slice("report-pack:".length);
+  }
+
+  return run.id;
+}
+
+function buildEvidenceLinksFromRun(run: ReportingRunStatusRow): ReportingWorkflowEvidenceLink[] {
+  const links = run.drilldownLinks
+    .filter((link) => link.kind.includes("evidence") || link.href.includes("/evidence"))
+    .map((link) => ({
+      evidenceId: normalizeEvidenceToken(link.id),
+      label: link.label,
+      route: link.href,
+      source: link.source || "reporting",
+      capturedAtUtc: null
+    }));
+
+  if (links.length > 0) {
+    return links;
+  }
+
+  return [{
+    evidenceId: normalizeEvidenceToken(run.id),
+    label: `${run.templateId} report run`,
+    route: null,
+    source: "reporting",
+    capturedAtUtc: null
+  }];
+}
+
+function normalizeEvidenceToken(value: string): string {
+  const normalized = value.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
+  return normalized || "reporting-evidence";
 }
 
 function ReportingBackendReference({

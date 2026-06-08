@@ -26,7 +26,49 @@ public sealed class DefaultReportingTemplateCatalog : IReportingTemplateCatalog
             "Shadow NAV Daily Pack",
             "1.0.0",
             ["cover", "valuation", "breaks", "signoff"],
-            ImmutableDictionary<string, string>.Empty.Add("audience", "ops"))
+            ImmutableDictionary<string, string>.Empty.Add("audience", "ops")),
+        ["performance-quarterly-report"] = new(
+            "performance-quarterly-report",
+            ReportingTemplateFamily.PerformanceReport,
+            "Performance Quarterly Report",
+            "1.0.0",
+            ["cover", "performance", "benchmark", "attribution"],
+            ImmutableDictionary<string, string>.Empty.Add("audience", "investment-committee")),
+        ["holdings-board-report"] = new(
+            "holdings-board-report",
+            ReportingTemplateFamily.HoldingsReport,
+            "Holdings Board Report",
+            "1.0.0",
+            ["cover", "holdings", "asset-class", "exceptions"],
+            ImmutableDictionary<string, string>.Empty.Add("audience", "board")),
+        ["capital-account-statement"] = new(
+            "capital-account-statement",
+            ReportingTemplateFamily.CapitalAccountStatement,
+            "Capital Account Statement",
+            "1.0.0",
+            ["cover", "capital-balance", "flows", "allocation"],
+            ImmutableDictionary<string, string>.Empty.Add("audience", "investor")),
+        ["board-governance-packet"] = new(
+            "board-governance-packet",
+            ReportingTemplateFamily.BoardPacket,
+            "Board Governance Packet",
+            "1.0.0",
+            ["cover", "operations-record", "approvals", "risk-exceptions"],
+            ImmutableDictionary<string, string>.Empty.Add("audience", "board")),
+        ["audit-evidence-package"] = new(
+            "audit-evidence-package",
+            ReportingTemplateFamily.AuditPackage,
+            "Audit Evidence Package",
+            "1.0.0",
+            ["cover", "source-evidence", "reconciliation", "lineage"],
+            ImmutableDictionary<string, string>.Empty.Add("audience", "auditor")),
+        ["certified-dataset-export"] = new(
+            "certified-dataset-export",
+            ReportingTemplateFamily.CertifiedDataset,
+            "Certified Dataset Export",
+            "1.0.0",
+            ["cover", "dataset-snapshot", "hashes", "lineage"],
+            ImmutableDictionary<string, string>.Empty.Add("audience", "data-governance"))
     };
 
     public ReportingTemplateMetadata Get(string templateId)

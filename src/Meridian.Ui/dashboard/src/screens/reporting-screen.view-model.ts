@@ -5,7 +5,7 @@ import { describeApiError } from "@/lib/api-errors";
 import { EXPORT_API_ENDPOINTS, exportPreviewEndpoint, reportPackEvidenceBundleEndpoint } from "@/lib/workstation-endpoints";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { getReportPackDistributions } from "@/lib/reporting-distributions";
-import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportingRunStatusProjection, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowRecord } from "@/types";
+import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowRecord } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
 export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
@@ -146,6 +146,10 @@ export interface ReportingTemplateRow {
   authoringHref: string;
   actionLabel: string;
   actionAriaLabel: string;
+  canRunOnDemand: boolean;
+  runActionLabel: string;
+  runActionAriaLabel: string;
+  runDisabledReason: string | null;
 }
 
 export interface ReportingRunStatusRow {
@@ -185,6 +189,22 @@ export interface ReportingRunActionRow {
   disabledReason: string | null;
   isBrowserNavigable: boolean;
   interactionLabel: "Open" | "Reference";
+  ariaLabel: string;
+}
+
+export interface ReportingScheduleRow {
+  id: string;
+  templateId: string;
+  state: string;
+  stateVariant: Exclude<ReportingBadgeVariant, "default">;
+  cronLabel: string;
+  dueLabel: string;
+  nextAsOfLabel: string;
+  lastRunLabel: string;
+  runCountLabel: string;
+  description: string;
+  canPause: boolean;
+  canResume: boolean;
   ariaLabel: string;
 }
 
@@ -322,6 +342,11 @@ export interface ReportingScreenViewModel {
   templateRows: ReportingTemplateRow[];
   runStatusRows: ReportingRunStatusRow[];
   hasRunStatusRows: boolean;
+  scheduleRows: ReportingScheduleRow[];
+  hasScheduleRows: boolean;
+  scheduleSummary: string;
+  scheduleListLabel: string;
+  scheduleEmptyText: string;
   detailId: string;
   statusTitle: string;
   statusDetail: string;
@@ -451,6 +476,11 @@ export function useReportingScreenViewModel(
       templateRows: [],
       runStatusRows: [],
       hasRunStatusRows: false,
+      scheduleRows: [],
+      hasScheduleRows: false,
+      scheduleSummary: "No reporting schedules configured.",
+      scheduleListLabel: "Reporting schedules",
+      scheduleEmptyText: "No reporting schedules are configured.",
       detailId,
       statusTitle: "No profile selected",
       statusDetail: "Reporting data is unavailable. Check the Reporting workspace API connection.",
@@ -564,6 +594,7 @@ export function useReportingScreenViewModel(
   });
   const templateRows = buildTemplateRows(reporting.templates ?? []);
   const runStatusRows = buildRunStatusRows(reporting.recentRuns ?? []);
+  const scheduleRows = buildScheduleRows(reporting.schedules ?? []);
 
   return {
     title: "Report packs",
@@ -584,6 +615,11 @@ export function useReportingScreenViewModel(
     templateRows,
     runStatusRows,
     hasRunStatusRows: runStatusRows.length > 0,
+    scheduleRows,
+    hasScheduleRows: scheduleRows.length > 0,
+    scheduleSummary: buildScheduleSummary(scheduleRows),
+    scheduleListLabel: "Reporting schedules",
+    scheduleEmptyText: "No reporting schedules are configured.",
     detailId,
     statusTitle,
     statusDetail: selectedProfileData
@@ -728,7 +764,15 @@ function buildTemplateRows(templates: ReportingTemplateMetadata[]): ReportingTem
     actionLabel: template.isBuiltIn === false ? "Review version" : "Draft revision",
     actionAriaLabel: template.isBuiltIn === false
       ? `Review ${template.name} template version`
-      : `Draft a revision of ${template.name}`
+      : `Draft a revision of ${template.name}`,
+    canRunOnDemand: (template.isBuiltIn !== false) && (template.lifecycleStatus ?? "Approved") === "Approved",
+    runActionLabel: "Run report",
+    runActionAriaLabel: `Run ${template.name} report on demand`,
+    runDisabledReason: template.isBuiltIn === false
+      ? "Custom template rendering is not available for on-demand runs yet."
+      : (template.lifecycleStatus ?? "Approved") === "Approved"
+        ? null
+        : "Only approved templates can be run on demand."
   }));
 }
 
@@ -814,6 +858,47 @@ function buildRunActionRows(run: ReportingRunStatusProjection): ReportingRunActi
       ? `${action.method} ${action.href} for ${action.label}`
       : `${action.label} unavailable${action.disabledReason ? `: ${action.disabledReason}` : ""}`
   }));
+}
+
+function buildScheduleRows(schedules: ReportingScheduleRecord[]): ReportingScheduleRow[] {
+  return schedules.map((schedule) => ({
+    id: schedule.scheduleId,
+    templateId: schedule.templateId,
+    state: schedule.state,
+    stateVariant: schedule.state === "Active" ? "success" : schedule.state === "Paused" ? "warning" : "outline",
+    cronLabel: schedule.cronExpression,
+    dueLabel: formatTimestamp(schedule.dueAtUtc),
+    nextAsOfLabel: schedule.nextAsOfDate,
+    lastRunLabel: schedule.lastRunAtUtc ? formatTimestamp(schedule.lastRunAtUtc) : "Not run",
+    runCountLabel: `${schedule.runCount} run${schedule.runCount === 1 ? "" : "s"}`,
+    description: schedule.description?.trim() || "No schedule note",
+    canPause: schedule.state === "Active",
+    canResume: schedule.state === "Paused",
+    ariaLabel: `${schedule.scheduleId} ${schedule.templateId} reporting schedule is ${schedule.state}`
+  }));
+}
+
+function buildScheduleSummary(schedules: ReportingScheduleRow[]): string {
+  if (schedules.length === 0) {
+    return "No reporting schedules configured.";
+  }
+
+  const activeCount = schedules.filter((schedule) => schedule.state === "Active").length;
+  return `${schedules.length} schedule${schedules.length === 1 ? "" : "s"} configured; ${activeCount} active.`;
+}
+
+function formatTimestamp(value: string): string {
+  const timestamp = new Date(value);
+  if (Number.isNaN(timestamp.getTime())) {
+    return value;
+  }
+
+  return timestamp.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  });
 }
 
 function artifactLabel(artifact: string): string {

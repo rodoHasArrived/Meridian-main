@@ -37,6 +37,16 @@ let createTestTrade price quantity side seqNum : TradeEvent = {
     Venue = None
 }
 
+let singleUseSeq items =
+    let used = ref false
+    seq {
+        if used.Value then
+            failwith "Sequence was enumerated more than once."
+
+        used.Value <- true
+        yield! items
+    }
+
 // Spread Tests
 
 [<Fact>]
@@ -368,6 +378,17 @@ let ``priceRange calculates high minus low`` () =
     range |> should equal (Some 5.00m)
 
 [<Fact>]
+let ``priceRange enumerates trades once`` () =
+    let trades =
+        [
+            createTestTrade 100.00m 100L AggressorSide.Buyer 1L
+            createTestTrade 105.00m 100L AggressorSide.Buyer 2L
+        ]
+        |> singleUseSeq
+
+    priceRange trades |> should equal (Some 5.00m)
+
+[<Fact>]
 let ``priceReturn calculates percentage change`` () =
     let now = DateTimeOffset.UtcNow
     let trades = [
@@ -377,6 +398,18 @@ let ``priceReturn calculates percentage change`` () =
     let pctReturn = priceReturn trades
     // (105 - 100) / 100 * 100 = 5%
     pctReturn |> should equal (Some 5.00m)
+
+[<Fact>]
+let ``priceReturn uses timestamp order without sorting materialization`` () =
+    let now = DateTimeOffset.UtcNow
+    let trades =
+        [
+            { createTestTrade 105.00m 100L AggressorSide.Buyer 2L with Timestamp = now.AddSeconds(1.0) }
+            { createTestTrade 100.00m 100L AggressorSide.Buyer 1L with Timestamp = now }
+        ]
+        |> singleUseSeq
+
+    priceReturn trades |> should equal (Some 5.00m)
 
 [<Fact>]
 let ``tradeStatistics calculates correct stats`` () =
@@ -392,6 +425,25 @@ let ``tradeStatistics calculates correct stats`` () =
         s.TotalVolume |> should equal 350L
         s.MinSize |> should equal 50L
         s.MaxSize |> should equal 200L
+    | None -> failwith "Expected Some stats"
+
+[<Fact>]
+let ``tradeStatistics enumerates trades once`` () =
+    let trades =
+        [
+            createTestTrade 100.00m 100L AggressorSide.Buyer 1L
+            createTestTrade 101.00m 200L AggressorSide.Buyer 2L
+            createTestTrade 102.00m 50L AggressorSide.Seller 3L
+        ]
+        |> singleUseSeq
+
+    let stats = tradeStatistics trades
+
+    match stats with
+    | Some s ->
+        s.TradeCount |> should equal 3
+        s.TotalVolume |> should equal 350L
+        s.Vwap.IsSome |> should equal true
     | None -> failwith "Expected Some stats"
 
 [<Fact>]
@@ -413,3 +465,45 @@ let ``createOhlcvBar creates correct bar`` () =
         b.Volume |> should equal 400L
         b.TradeCount |> should equal 4
     | None -> failwith "Expected Some bar"
+
+[<Fact>]
+let ``createOhlcvBar enumerates trades once and preserves timestamp open close`` () =
+    let now = DateTimeOffset.UtcNow
+    let trades =
+        [
+            { createTestTrade 102.00m 100L AggressorSide.Buyer 3L with Timestamp = now.AddSeconds(2.0) }
+            { createTestTrade 100.00m 100L AggressorSide.Buyer 1L with Timestamp = now }
+            { createTestTrade 105.00m 100L AggressorSide.Buyer 2L with Timestamp = now.AddSeconds(1.0) }
+        ]
+        |> singleUseSeq
+
+    let bar = createOhlcvBar trades
+
+    match bar with
+    | Some b ->
+        b.Open |> should equal 100.00m
+        b.Close |> should equal 102.00m
+        b.High |> should equal 105.00m
+        b.Low |> should equal 100.00m
+    | None -> failwith "Expected Some bar"
+
+[<Fact>]
+let ``createOhlcvBars rejects non-positive interval`` () =
+    (fun () -> createOhlcvBars 0 Seq.empty |> ignore)
+    |> should throw typeof<ArgumentException>
+
+[<Fact>]
+let ``createOhlcvBars folds trades into sorted interval bars`` () =
+    let now = DateTimeOffset.FromUnixTimeSeconds(1_200L)
+    let trades = [
+        { createTestTrade 102.00m 100L AggressorSide.Buyer 3L with Timestamp = now.AddSeconds(65.0) }
+        { createTestTrade 100.00m 100L AggressorSide.Buyer 1L with Timestamp = now }
+        { createTestTrade 105.00m 100L AggressorSide.Buyer 2L with Timestamp = now.AddSeconds(30.0) }
+    ]
+
+    let bars = createOhlcvBars 60 trades
+
+    bars.Length |> should equal 2
+    bars.[0].Open |> should equal 100.00m
+    bars.[0].Close |> should equal 105.00m
+    bars.[1].Open |> should equal 102.00m

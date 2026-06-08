@@ -3,6 +3,7 @@
 module Meridian.FSharp.Calculations.Aggregations
 
 open System
+open System.Collections.Generic
 open Meridian.FSharp.Domain.MarketEvents
 open Meridian.FSharp.Domain.Sides
 
@@ -125,14 +126,23 @@ type TradeStatistics = {
 /// Calculate trade statistics.
 [<CompiledName("TradeStatistics")>]
 let tradeStatistics (trades: TradeEvent seq) : TradeStatistics option =
-    let tradeList = trades |> Seq.toList
+    let sizes = ResizeArray<int64>()
+    let mutable total = 0L
+    let mutable totalValue = 0m
+    let mutable totalVwapVolume = 0m
 
-    match tradeList with
-    | [] -> None
-    | _ ->
-        let sizes = tradeList |> List.map (fun t -> t.Quantity) |> List.sort
-        let count = List.length sizes
-        let total = List.sum sizes
+    for trade in trades do
+        sizes.Add(trade.Quantity)
+        total <- total + trade.Quantity
+        totalValue <- totalValue + trade.Price * decimal trade.Quantity
+        totalVwapVolume <- totalVwapVolume + decimal trade.Quantity
+
+    let count = sizes.Count
+
+    if count = 0 then
+        None
+    else
+        sizes.Sort()
 
         let median =
             if count % 2 = 0 then
@@ -145,37 +155,57 @@ let tradeStatistics (trades: TradeEvent seq) : TradeStatistics option =
             TotalVolume = total
             AverageSize = decimal total / decimal count
             MedianSize = median
-            MaxSize = List.max sizes
-            MinSize = List.min sizes
-            Vwap = vwap trades
+            MaxSize = sizes.[count - 1]
+            MinSize = sizes.[0]
+            Vwap =
+                if totalVwapVolume > 0m then
+                    Some (totalValue / totalVwapVolume)
+                else
+                    None
         }
 
 /// Calculate price range (high - low).
 [<CompiledName("PriceRange")>]
 let priceRange (trades: TradeEvent seq) : decimal option =
-    let prices = trades |> Seq.map (fun t -> t.Price) |> Seq.toList
+    let mutable hasTrade = false
+    let mutable low = 0m
+    let mutable high = 0m
 
-    match prices with
-    | [] -> None
-    | _ -> Some (List.max prices - List.min prices)
+    for trade in trades do
+        if not hasTrade then
+            low <- trade.Price
+            high <- trade.Price
+            hasTrade <- true
+        else
+            if trade.Price < low then low <- trade.Price
+            if trade.Price > high then high <- trade.Price
+
+    if hasTrade then Some (high - low) else None
 
 /// Calculate price return from first to last trade.
 [<CompiledName("PriceReturn")>]
 let priceReturn (trades: TradeEvent seq) : decimal option =
-    let tradeList = trades |> Seq.toList
+    let mutable count = 0
+    let mutable firstTimestamp = DateTimeOffset.MinValue
+    let mutable firstPrice = 0m
+    let mutable lastTimestamp = DateTimeOffset.MinValue
+    let mutable lastPrice = 0m
 
-    match tradeList with
-    | [] -> None
-    | [single] -> Some 0m
-    | _ ->
-        let sorted = tradeList |> List.sortBy (fun t -> t.Timestamp)
-        let firstPrice = (List.head sorted).Price
-        let lastPrice = (List.last sorted).Price
+    for trade in trades do
+        if count = 0 || trade.Timestamp < firstTimestamp then
+            firstTimestamp <- trade.Timestamp
+            firstPrice <- trade.Price
 
-        if firstPrice > 0m then
-            Some ((lastPrice - firstPrice) / firstPrice * 100m)
-        else
-            None
+        if count = 0 || trade.Timestamp >= lastTimestamp then
+            lastTimestamp <- trade.Timestamp
+            lastPrice <- trade.Price
+
+        count <- count + 1
+
+    if count = 0 then None
+    elif count = 1 then Some 0m
+    elif firstPrice > 0m then Some ((lastPrice - firstPrice) / firstPrice * 100m)
+    else None
 
 /// Calculate rolling VWAP.
 [<CompiledName("RollingVwap")>]
@@ -193,18 +223,26 @@ let rollingVwap (windowSize: int) (trades: TradeEvent list) : (DateTimeOffset * 
 /// Calculate trade arrival rate (trades per second).
 [<CompiledName("TradeArrivalRate")>]
 let tradeArrivalRate (trades: TradeEvent seq) : decimal option =
-    let tradeList = trades |> Seq.toList
+    let mutable count = 0
+    let mutable startTime = DateTimeOffset.MinValue
+    let mutable endTime = DateTimeOffset.MinValue
 
-    match tradeList with
-    | [] | [_] -> None
-    | _ ->
-        let sorted = tradeList |> List.sortBy (fun t -> t.Timestamp)
-        let startTime = (List.head sorted).Timestamp
-        let endTime = (List.last sorted).Timestamp
+    for trade in trades do
+        if count = 0 || trade.Timestamp < startTime then
+            startTime <- trade.Timestamp
+
+        if count = 0 || trade.Timestamp > endTime then
+            endTime <- trade.Timestamp
+
+        count <- count + 1
+
+    if count <= 1 then
+        None
+    else
         let duration = (endTime - startTime).TotalSeconds
 
         if duration > 0.0 then
-            Some (decimal (List.length sorted) / decimal duration)
+            Some (decimal count / decimal duration)
         else
             None
 
@@ -221,36 +259,91 @@ type OhlcvBar = {
     EndTime: DateTimeOffset
 }
 
+type private OhlcvAccumulator = {
+    mutable Open: decimal
+    mutable High: decimal
+    mutable Low: decimal
+    mutable Close: decimal
+    mutable Volume: int64
+    mutable TradeCount: int
+    mutable VwapValue: decimal
+    mutable VwapVolume: decimal
+    mutable StartTime: DateTimeOffset
+    mutable EndTime: DateTimeOffset
+}
+
+let private createOhlcvAccumulator (trade: TradeEvent) =
+    { Open = trade.Price
+      High = trade.Price
+      Low = trade.Price
+      Close = trade.Price
+      Volume = trade.Quantity
+      TradeCount = 1
+      VwapValue = trade.Price * decimal trade.Quantity
+      VwapVolume = decimal trade.Quantity
+      StartTime = trade.Timestamp
+      EndTime = trade.Timestamp }
+
+let private addTradeToOhlcvAccumulator (acc: OhlcvAccumulator) (trade: TradeEvent) =
+    if trade.Timestamp < acc.StartTime then
+        acc.StartTime <- trade.Timestamp
+        acc.Open <- trade.Price
+
+    if trade.Timestamp >= acc.EndTime then
+        acc.EndTime <- trade.Timestamp
+        acc.Close <- trade.Price
+
+    if trade.Price > acc.High then acc.High <- trade.Price
+    if trade.Price < acc.Low then acc.Low <- trade.Price
+
+    acc.Volume <- acc.Volume + trade.Quantity
+    acc.TradeCount <- acc.TradeCount + 1
+    acc.VwapValue <- acc.VwapValue + trade.Price * decimal trade.Quantity
+    acc.VwapVolume <- acc.VwapVolume + decimal trade.Quantity
+
+let private toOhlcvBar (acc: OhlcvAccumulator) =
+    { Open = acc.Open
+      High = acc.High
+      Low = acc.Low
+      Close = acc.Close
+      Volume = acc.Volume
+      TradeCount = acc.TradeCount
+      Vwap =
+        if acc.VwapVolume > 0m then
+            Some (acc.VwapValue / acc.VwapVolume)
+        else
+            None
+      StartTime = acc.StartTime
+      EndTime = acc.EndTime }
+
 /// Create OHLCV bar from trades.
 [<CompiledName("CreateOhlcvBar")>]
 let createOhlcvBar (trades: TradeEvent seq) : OhlcvBar option =
-    let tradeList = trades |> Seq.toList
+    let mutable acc: OhlcvAccumulator option = None
 
-    match tradeList with
-    | [] -> None
-    | _ ->
-        let sorted = tradeList |> List.sortBy (fun t -> t.Timestamp)
-        let prices = sorted |> List.map (fun t -> t.Price)
+    for trade in trades do
+        match acc with
+        | None -> acc <- Some (createOhlcvAccumulator trade)
+        | Some existing -> addTradeToOhlcvAccumulator existing trade
 
-        Some {
-            Open = (List.head sorted).Price
-            High = List.max prices
-            Low = List.min prices
-            Close = (List.last sorted).Price
-            Volume = totalVolume trades
-            TradeCount = List.length sorted
-            Vwap = vwap trades
-            StartTime = (List.head sorted).Timestamp
-            EndTime = (List.last sorted).Timestamp
-        }
+    acc |> Option.map toOhlcvBar
 
 /// Group trades by time interval and create OHLCV bars.
 [<CompiledName("CreateOhlcvBars")>]
 let createOhlcvBars (intervalSeconds: int) (trades: TradeEvent seq) : OhlcvBar list =
-    trades
-    |> Seq.groupBy (fun t ->
-        let epoch = t.Timestamp.ToUnixTimeSeconds()
-        epoch - (epoch % int64 intervalSeconds))
-    |> Seq.sortBy fst
-    |> Seq.choose (fun (_, groupTrades) -> createOhlcvBar groupTrades)
+    if intervalSeconds <= 0 then
+        invalidArg (nameof intervalSeconds) "Interval seconds must be greater than zero."
+
+    let buckets = SortedDictionary<int64, OhlcvAccumulator>()
+
+    for trade in trades do
+        let epoch = trade.Timestamp.ToUnixTimeSeconds()
+        let bucket = epoch - (epoch % int64 intervalSeconds)
+
+        match buckets.TryGetValue(bucket) with
+        | true, acc -> addTradeToOhlcvAccumulator acc trade
+        | false, _ -> buckets.Add(bucket, createOhlcvAccumulator trade)
+
+    buckets.Values
+    |> Seq.map toOhlcvBar
     |> Seq.toList

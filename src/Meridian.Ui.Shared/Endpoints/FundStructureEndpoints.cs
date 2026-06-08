@@ -1156,6 +1156,90 @@ public static class FundStructureEndpoints
 
         group.MapPost("/reporting/packs/{reportId:guid}/archive", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Archived));
 
+        group.MapGet("/reporting/packs/{reportId:guid}/deliveries", (Guid reportId, HttpContext context) =>
+        {
+            if (!HasReportingReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var svc = context.RequestServices.GetService<ReportPackDeliveryService>();
+            return svc is null
+                ? WorkspaceServiceUnavailable()
+                : Results.Json(new ReportPackDeliveryHistoryDto(reportId, svc.GetHistory(reportId)), jsonOptions);
+        })
+        .WithName("GetReportingPackDeliveryHistory")
+        .Produces<ReportPackDeliveryHistoryDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden);
+
+        group.MapPost("/reporting/packs/{reportId:guid}/deliveries", (Guid reportId, ReportPackDeliveryRequestDto request, HttpContext context) =>
+        {
+            if (!HasReportingWorkflowPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            var svc = context.RequestServices.GetService<ReportPackDeliveryService>();
+            if (svc is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            try
+            {
+                return Results.Json(svc.Deliver(reportId, request, actor), jsonOptions, statusCode: StatusCodes.Status201Created);
+            }
+            catch (Exception ex) when (ex is ArgumentException or UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("CreateReportingPackDeliveryAttempt")
+        .Accepts<ReportPackDeliveryRequestDto>("application/json")
+        .Produces<ReportPackDeliveryAttemptDto>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
+
+        group.MapPost("/reporting/packs/{reportId:guid}/deliveries/failures", (Guid reportId, ReportPackDeliveryFailureRequestDto request, HttpContext context) =>
+        {
+            if (!HasReportingWorkflowPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            var svc = context.RequestServices.GetService<ReportPackDeliveryService>();
+            if (svc is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            try
+            {
+                return Results.Json(svc.RecordFailure(reportId, request, actor), jsonOptions, statusCode: StatusCodes.Status201Created);
+            }
+            catch (Exception ex) when (ex is ArgumentException or UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("CreateReportingPackDeliveryFailure")
+        .Accepts<ReportPackDeliveryFailureRequestDto>("application/json")
+        .Produces<ReportPackDeliveryAttemptDto>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
+
         group.MapPost("/reporting/packs/{reportId:guid}/restate", (Guid reportId, string reasonCode, Guid priorVersionReportId, ReportPackChangedLineDto[] changedLines, HttpContext context) =>
         {
             if (!HasReportingWorkflowPermission(context))
@@ -1183,6 +1267,149 @@ public static class FundStructureEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
         });
+
+        group.MapPost("/reporting/runs", async (ReportingRunRequestDto request, HttpContext context) =>
+        {
+            if (!HasReportingWorkflowPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            var svc = context.RequestServices.GetService<ReportingRunCommandService>();
+            if (svc is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            try
+            {
+                return Results.Json(
+                    await svc.RunAsync(request with { RequestedBy = actor }, actor, context.RequestAborted).ConfigureAwait(false),
+                    jsonOptions,
+                    statusCode: StatusCodes.Status201Created);
+            }
+            catch (Exception ex) when (ex is ArgumentException or ArgumentOutOfRangeException or InvalidOperationException or KeyNotFoundException)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("RunReportingNow")
+        .Accepts<ReportingRunRequestDto>("application/json")
+        .Produces<ReportingRunResultDto>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
+
+        group.MapGet("/reporting/schedules", (HttpContext context) =>
+        {
+            if (!HasReportingReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var svc = context.RequestServices.GetService<ReportingScheduleService>();
+            return svc is null ? WorkspaceServiceUnavailable() : Results.Json(svc.ListSchedules(), jsonOptions);
+        })
+        .WithName("ListReportingSchedules")
+        .Produces<IReadOnlyList<ReportingScheduleRecordDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden);
+
+        group.MapPost("/reporting/schedules", (ReportingScheduleUpsertRequestDto request, HttpContext context) =>
+        {
+            if (!HasReportingWorkflowPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            var svc = context.RequestServices.GetService<ReportingScheduleService>();
+            if (svc is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            try
+            {
+                return Results.Json(svc.Upsert(request with { RequestedBy = actor }), jsonOptions, statusCode: StatusCodes.Status201Created);
+            }
+            catch (Exception ex) when (ex is ArgumentException or ArgumentOutOfRangeException)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("UpsertReportingSchedule")
+        .Accepts<ReportingScheduleUpsertRequestDto>("application/json")
+        .Produces<ReportingScheduleRecordDto>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
+
+        group.MapPost("/reporting/schedules/{scheduleId}/pause", (string scheduleId, HttpContext context) => SetScheduleState(context, scheduleId, ReportingScheduleStateDto.Paused))
+            .WithName("PauseReportingSchedule")
+            .Produces<ReportingScheduleRecordDto>(StatusCodes.Status200OK);
+        group.MapPost("/reporting/schedules/{scheduleId}/resume", (string scheduleId, HttpContext context) => SetScheduleState(context, scheduleId, ReportingScheduleStateDto.Active))
+            .WithName("ResumeReportingSchedule")
+            .Produces<ReportingScheduleRecordDto>(StatusCodes.Status200OK);
+        group.MapPost("/reporting/schedules/{scheduleId}/run", async (string scheduleId, HttpContext context) =>
+        {
+            if (!HasReportingWorkflowPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            var svc = context.RequestServices.GetService<ReportingScheduleService>();
+            if (svc is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            try
+            {
+                return Results.Json(await svc.RunNowAsync(scheduleId, actor, context.RequestAborted).ConfigureAwait(false), jsonOptions);
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or KeyNotFoundException)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("RunReportingScheduleNow")
+        .Produces<ReportingScheduleRunResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden);
+
+        group.MapPost("/reporting/schedules/run-due", async (HttpContext context) =>
+        {
+            if (!HasReportingWorkflowPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var svc = context.RequestServices.GetService<ReportingScheduleService>();
+            if (svc is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            return Results.Json(await svc.RunDueAsync(DateTimeOffset.UtcNow, context.RequestAborted).ConfigureAwait(false), jsonOptions);
+        })
+        .WithName("RunDueReportingSchedules")
+        .Produces<ReportingDueScheduleRunResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden);
 
         group.MapGet("/reporting/packs/history", (string period, string fundAccountId, HttpContext context) =>
         {
@@ -1322,6 +1549,29 @@ public static class FundStructureEndpoints
             return Results.Json(svc.Transition(reportId, target, actor, role), statusCode: StatusCodes.Status200OK);
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
+        {
+            return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+        }
+    }
+
+    private static IResult SetScheduleState(HttpContext context, string scheduleId, ReportingScheduleStateDto state)
+    {
+        if (!HasReportingWorkflowPermission(context))
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        var svc = context.RequestServices.GetService<ReportingScheduleService>();
+        if (svc is null)
+        {
+            return WorkspaceServiceUnavailable();
+        }
+
+        try
+        {
+            return Results.Json(svc.SetState(scheduleId, state), statusCode: StatusCodes.Status200OK);
+        }
+        catch (Exception ex) when (ex is ArgumentException or KeyNotFoundException)
         {
             return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
         }

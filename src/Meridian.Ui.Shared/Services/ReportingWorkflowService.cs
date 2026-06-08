@@ -707,6 +707,9 @@ public sealed class ReportPackWorkflowService
     public IReadOnlyList<ReportPackWorkflowRecordDto> GetHistory(string period, string fundAccountId) =>
         _records.Values.Where(x => x.Period == period && x.FundAccountId == fundAccountId).OrderByDescending(x => x.Version).ToArray();
 
+    public ReportPackWorkflowRecordDto? GetRecord(Guid reportId) =>
+        _records.TryGetValue(reportId, out var record) ? record : null;
+
     public IReadOnlyList<ReportPackWorkflowRecordDto> ListRecords(int limit = 25) =>
         _records.Values
             .OrderByDescending(static x => x.UpdatedAt)

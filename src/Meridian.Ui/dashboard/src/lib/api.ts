@@ -154,6 +154,16 @@ import type {
   RolePermissionProfileUpsertResult,
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
+  ReportPackDeliveryAttempt,
+  ReportPackDeliveryFailureRequest,
+  ReportPackDeliveryHistory,
+  ReportPackDeliveryRequest,
+  ReportingDueScheduleRunResult,
+  ReportingRunRequest,
+  ReportingRunResult,
+  ReportingScheduleRecord,
+  ReportingScheduleRunResult,
+  ReportingScheduleUpsertRequest,
   SaveManualJournalEntryDraftRequest,
   SubmitManualJournalEntryApprovalRequest,
   ValidateManualJournalEntryDraftRequest
@@ -227,6 +237,11 @@ import {
   reconciliationStatementRunsEndpoint,
   replayFilesEndpoint,
   replaySessionActionEndpoint,
+  reportingPackDeliveriesEndpoint,
+  reportingPackDeliveryFailuresEndpoint,
+  reportingSchedulePauseEndpoint,
+  reportingScheduleResumeEndpoint,
+  reportingScheduleRunNowEndpoint,
   securityMasterAssetProfileApproveEndpoint,
   securityMasterAssetProfileDraftsEndpoint,
   securityMasterAssetProfileLineageEndpoint,
@@ -887,6 +902,54 @@ export function getGovernanceWorkspace(options: ApiRequestOptions = {}) {
 
 export function getReportingWorkspace(options: ApiRequestOptions = {}) {
   return getJson<ReportingWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.reporting, options);
+}
+
+export function runReportingNow(request: ReportingRunRequest, options: ApiRequestOptions = {}) {
+  return postJson<ReportingRunResult>(FUND_STRUCTURE_API_ENDPOINTS.reportingRuns, request, options);
+}
+
+export function deliverReportPack(
+  reportId: string,
+  request: ReportPackDeliveryRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ReportPackDeliveryAttempt>(reportingPackDeliveriesEndpoint(reportId), request, options);
+}
+
+export function recordReportPackDeliveryFailure(
+  reportId: string,
+  request: ReportPackDeliveryFailureRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ReportPackDeliveryAttempt>(reportingPackDeliveryFailuresEndpoint(reportId), request, options);
+}
+
+export function getReportPackDeliveryHistory(reportId: string, options: ApiRequestOptions = {}) {
+  return getJson<ReportPackDeliveryHistory>(reportingPackDeliveriesEndpoint(reportId), options);
+}
+
+export function listReportingSchedules(options: ApiRequestOptions = {}) {
+  return getJson<ReportingScheduleRecord[]>(FUND_STRUCTURE_API_ENDPOINTS.reportingSchedules, options);
+}
+
+export function saveReportingSchedule(request: ReportingScheduleUpsertRequest, options: ApiRequestOptions = {}) {
+  return postJson<ReportingScheduleRecord>(FUND_STRUCTURE_API_ENDPOINTS.reportingSchedules, request, options);
+}
+
+export function pauseReportingSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
+  return postJson<ReportingScheduleRecord>(reportingSchedulePauseEndpoint(scheduleId), undefined, options);
+}
+
+export function resumeReportingSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
+  return postJson<ReportingScheduleRecord>(reportingScheduleResumeEndpoint(scheduleId), undefined, options);
+}
+
+export function runReportingScheduleNow(scheduleId: string, options: ApiRequestOptions = {}) {
+  return postJson<ReportingScheduleRunResult>(reportingScheduleRunNowEndpoint(scheduleId), undefined, options);
+}
+
+export function runDueReportingSchedules(options: ApiRequestOptions = {}) {
+  return postJson<ReportingDueScheduleRunResult>(FUND_STRUCTURE_API_ENDPOINTS.reportingScheduleRunDue, undefined, options);
 }
 
 export function runAnalysisExport(profileId: string, options: ApiRequestOptions = {}) {

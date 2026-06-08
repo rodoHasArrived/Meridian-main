@@ -70,6 +70,8 @@ public sealed class FundOperationsWorkspaceReadService
     private readonly ISecurityValidationGateService? _securityValidationGate;
     private readonly IOperationsContinuityWorkflowService? _operationsContinuityWorkflowService;
     private readonly ReportPackWorkflowService? _reportPackWorkflowService;
+    private readonly ReportPackDeliveryService? _reportPackDeliveryService;
+    private readonly ReportingScheduleService? _reportingScheduleService;
 
     public FundOperationsWorkspaceReadService(
         IFundAccountService fundAccountService,
@@ -84,7 +86,9 @@ public sealed class FundOperationsWorkspaceReadService
         ReportPackValidationService? reportPackValidationService = null,
         ISecurityValidationGateService? securityValidationGate = null,
         IOperationsContinuityWorkflowService? operationsContinuityWorkflowService = null,
-        ReportPackWorkflowService? reportPackWorkflowService = null)
+        ReportPackWorkflowService? reportPackWorkflowService = null,
+        ReportPackDeliveryService? reportPackDeliveryService = null,
+        ReportingScheduleService? reportingScheduleService = null)
     {
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
         _strategyRepository = strategyRepository ?? throw new ArgumentNullException(nameof(strategyRepository));
@@ -99,6 +103,8 @@ public sealed class FundOperationsWorkspaceReadService
         _securityValidationGate = securityValidationGate;
         _operationsContinuityWorkflowService = operationsContinuityWorkflowService;
         _reportPackWorkflowService = reportPackWorkflowService;
+        _reportPackDeliveryService = reportPackDeliveryService;
+        _reportingScheduleService = reportingScheduleService;
     }
 
     public async Task<FundOperationsWorkspaceDto> GetWorkspaceAsync(
@@ -1164,7 +1170,9 @@ public sealed class FundOperationsWorkspaceReadService
             [
                 GovernanceReportArtifactFormatDto.Json,
                 GovernanceReportArtifactFormatDto.Csv,
-                GovernanceReportArtifactFormatDto.Xlsx
+                GovernanceReportArtifactFormatDto.Xlsx,
+                GovernanceReportArtifactFormatDto.Html,
+                GovernanceReportArtifactFormatDto.Pdf
             ];
         }
 
@@ -1229,8 +1237,128 @@ public sealed class FundOperationsWorkspaceReadService
             artifacts.Add(new GovernanceReportPackArtifactContent("workbook", GovernanceReportArtifactFormatDto.Xlsx, "report-pack.xlsx", XlsxWorkbookWriter.CreateWorkbook(BuildWorkbookSheets(report), ct)));
         }
 
+        if (formats.Contains(GovernanceReportArtifactFormatDto.Html))
+        {
+            ct.ThrowIfCancellationRequested();
+            artifacts.Add(new GovernanceReportPackArtifactContent("rendered-statement", GovernanceReportArtifactFormatDto.Html, "report-pack.html", BuildRenderedStatementHtml(report)));
+        }
+
+        if (formats.Contains(GovernanceReportArtifactFormatDto.Pdf))
+        {
+            ct.ThrowIfCancellationRequested();
+            artifacts.Add(new GovernanceReportPackArtifactContent("rendered-statement", GovernanceReportArtifactFormatDto.Pdf, "report-pack.pdf", BuildRenderedStatementPdf(report)));
+        }
+
         return artifacts.OrderBy(static artifact => artifact.FileName, StringComparer.Ordinal).ToArray();
     }
+
+    private static byte[] BuildRenderedStatementHtml(ReportPack report)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("<!doctype html>");
+        builder.AppendLine("<html lang=\"en\">");
+        builder.AppendLine("<head><meta charset=\"utf-8\"><title>Meridian Report Pack</title></head>");
+        builder.AppendLine("<body>");
+        builder.AppendLine($"<h1>{EscapeHtml(report.ReportKind.ToString())}</h1>");
+        builder.AppendLine($"<p><strong>Fund:</strong> {EscapeHtml(report.FundId)}</p>");
+        builder.AppendLine($"<p><strong>As of:</strong> {report.AsOf:O}</p>");
+        builder.AppendLine($"<p><strong>Total net assets:</strong> {report.TotalNetAssets.ToString(CultureInfo.InvariantCulture)}</p>");
+        builder.AppendLine("<h2>Asset class sections</h2>");
+        builder.AppendLine("<table><thead><tr><th>Asset class</th><th>Total</th><th>Rows</th></tr></thead><tbody>");
+        foreach (var section in OrderAssetClassSections(report.AssetClassSections))
+        {
+            builder.AppendLine($"<tr><td>{EscapeHtml(section.AssetClass)}</td><td>{section.Total.ToString(CultureInfo.InvariantCulture)}</td><td>{section.Rows.Count}</td></tr>");
+        }
+
+        builder.AppendLine("</tbody></table>");
+        builder.AppendLine("<h2>Trial balance</h2>");
+        builder.AppendLine("<table><thead><tr><th>Account</th><th>Type</th><th>Symbol</th><th>Lookup</th><th>Net balance</th></tr></thead><tbody>");
+        foreach (var row in OrderTrialBalanceRows(report.TrialBalance))
+        {
+            builder.AppendLine($"<tr><td>{EscapeHtml(row.AccountName)}</td><td>{EscapeHtml(row.AccountType)}</td><td>{EscapeHtml(row.Symbol)}</td><td>{EscapeHtml(row.LookupQuality)}</td><td>{row.NetBalance.ToString(CultureInfo.InvariantCulture)}</td></tr>");
+        }
+
+        builder.AppendLine("</tbody></table>");
+        builder.AppendLine("</body></html>");
+        return Encoding.UTF8.GetBytes(builder.ToString());
+    }
+
+    private static byte[] BuildRenderedStatementPdf(ReportPack report)
+    {
+        var lines = new[]
+        {
+            $"Meridian {report.ReportKind} Report Pack",
+            $"Fund: {report.FundId}",
+            $"As of: {report.AsOf:yyyy-MM-dd}",
+            $"Generated: {report.GeneratedAt:yyyy-MM-dd HH:mm:ss} UTC",
+            $"Total net assets: {report.TotalNetAssets.ToString(CultureInfo.InvariantCulture)}",
+            $"Trial balance lines: {report.TrialBalance.Count}",
+            $"Asset class sections: {report.AssetClassSections.Count}"
+        };
+        var content = new StringBuilder();
+        content.AppendLine("BT");
+        content.AppendLine("/F1 11 Tf");
+        content.AppendLine("50 740 Td");
+        foreach (var line in lines)
+        {
+            content.Append('(').Append(EscapePdfText(line)).AppendLine(") Tj");
+            content.AppendLine("0 -18 Td");
+        }
+
+        content.AppendLine("ET");
+        return BuildSinglePagePdf(content.ToString());
+    }
+
+    private static byte[] BuildSinglePagePdf(string contentStream)
+    {
+        var objects = new[]
+        {
+            "<< /Type /Catalog /Pages 2 0 R >>",
+            "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>",
+            $"<< /Length {Encoding.ASCII.GetByteCount(contentStream)} >>\nstream\n{contentStream}endstream",
+            "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"
+        };
+        var builder = new StringBuilder();
+        builder.AppendLine("%PDF-1.4");
+        var offsets = new List<int> { 0 };
+        foreach (var (value, index) in objects.Select((value, index) => (value, index)))
+        {
+            offsets.Add(Encoding.ASCII.GetByteCount(builder.ToString()));
+            builder.Append(index + 1).AppendLine(" 0 obj");
+            builder.AppendLine(value);
+            builder.AppendLine("endobj");
+        }
+
+        var xrefOffset = Encoding.ASCII.GetByteCount(builder.ToString());
+        builder.AppendLine("xref");
+        builder.AppendLine($"0 {objects.Length + 1}");
+        builder.AppendLine("0000000000 65535 f ");
+        foreach (var offset in offsets.Skip(1))
+        {
+            builder.Append(offset.ToString("D10", CultureInfo.InvariantCulture)).AppendLine(" 00000 n ");
+        }
+
+        builder.AppendLine("trailer");
+        builder.AppendLine($"<< /Size {objects.Length + 1} /Root 1 0 R >>");
+        builder.AppendLine("startxref");
+        builder.AppendLine(xrefOffset.ToString(CultureInfo.InvariantCulture));
+        builder.AppendLine("%%EOF");
+        return Encoding.ASCII.GetBytes(builder.ToString());
+    }
+
+    private static string EscapeHtml(string? value) =>
+        (value ?? string.Empty)
+            .Replace("&", "&amp;", StringComparison.Ordinal)
+            .Replace("<", "&lt;", StringComparison.Ordinal)
+            .Replace(">", "&gt;", StringComparison.Ordinal)
+            .Replace("\"", "&quot;", StringComparison.Ordinal);
+
+    private static string EscapePdfText(string value) =>
+        value
+            .Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("(", "\\(", StringComparison.Ordinal)
+            .Replace(")", "\\)", StringComparison.Ordinal);
 
     private static byte[] SerializeJsonArtifact<T>(T value) =>
         JsonSerializer.SerializeToUtf8Bytes(value, ReportArtifactJsonOptions);
@@ -2050,14 +2178,18 @@ public sealed class FundOperationsWorkspaceReadService
             .Select(static profile => profile.Id)
             .ToArray();
         var workflowRecords = BuildReportPackWorkflowRecords(accounts, asOf);
+        var deliveryAttempts = _reportPackDeliveryService?.ListAttempts(500) ?? [];
+        var schedules = _reportingScheduleService?.ListSchedules(100) ?? [];
 
         return new FundReportingSummaryDto(
             ProfileCount: profiles.Length,
             RecommendedProfiles: recommended,
-            ReportPackDistributions: ReportPackRunReadService.BuildDistributionRecords(workflowRecords),
+            ReportPackDistributions: ReportPackRunReadService.BuildDistributionRecords(workflowRecords, deliveryAttempts),
             Profiles: profiles,
             Summary: $"{profiles.Length} export/reporting profiles are available for Accounting and Reporting workflows.",
-            WorkflowRecords: workflowRecords);
+            WorkflowRecords: workflowRecords,
+            Schedules: schedules,
+            DeliveryAttempts: deliveryAttempts);
     }
 
     private IReadOnlyList<ReportPackWorkflowRecordDto> BuildReportPackWorkflowRecords(
@@ -2193,6 +2325,14 @@ public sealed class FundOperationsWorkspaceReadService
             GovernanceReportKindDto.NavSummary => ReportKind.NavSummary,
             GovernanceReportKindDto.AssetAllocation => ReportKind.AssetAllocation,
             GovernanceReportKindDto.ReconciliationPack => ReportKind.ReconciliationPack,
+            GovernanceReportKindDto.PerformanceReport => ReportKind.PerformanceReport,
+            GovernanceReportKindDto.HoldingsReport => ReportKind.HoldingsReport,
+            GovernanceReportKindDto.CapitalAccountStatement => ReportKind.CapitalAccountStatement,
+            GovernanceReportKindDto.InvestorStatement => ReportKind.InvestorStatement,
+            GovernanceReportKindDto.BoardPacket => ReportKind.BoardPacket,
+            GovernanceReportKindDto.AuditPackage => ReportKind.AuditPackage,
+            GovernanceReportKindDto.CertifiedDataset => ReportKind.CertifiedDataset,
+            GovernanceReportKindDto.CustomReport => ReportKind.CustomReport,
             _ => ReportKind.TrialBalance
         };
 

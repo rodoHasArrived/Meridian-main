@@ -1,0 +1,348 @@
+<Page x:Class="Meridian.Wpf.Views.AccountingConfigurePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded"
+      AutomationProperties.Name="Accounting Configure"
+      AutomationProperties.AutomationId="AccountingConfigurePage">
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <Style x:Key="ConfigureMetricCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+            <Setter Property="Padding" Value="14" />
+            <Setter Property="Margin" Value="0,0,12,0" />
+        </Style>
+        <Style x:Key="ConfigureGridStyle" TargetType="DataGrid">
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="CanUserAddRows" Value="False" />
+            <Setter Property="CanUserDeleteRows" Value="False" />
+            <Setter Property="CanUserResizeRows" Value="False" />
+            <Setter Property="HeadersVisibility" Value="Column" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="RowHeaderWidth" Value="0" />
+            <Setter Property="MinHeight" Value="160" />
+            <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
+            <Setter Property="AlternatingRowBackground" Value="{StaticResource ConsoleBackgroundMediumBrush}" />
+            <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource BorderSubtleBrush}" />
+        </Style>
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="28,20,28,32" MaxWidth="1320">
+            <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,18">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="380" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,24,0">
+                        <TextBlock Text="Accounting Configure" Style="{StaticResource PageTitleStyle}" />
+                        <TextBlock Text="{Binding StatusText}"
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   Margin="0,8,0,0"
+                                   TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="AccountingConfigureStatusText" />
+                        <TextBlock Text="{Binding StoragePostureText}"
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   Margin="0,12,0,0"
+                                   TextWrapping="Wrap"
+                                   AutomationProperties.AutomationId="AccountingConfigureStoragePostureText" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Active Accounting Context" Style="{StaticResource CardHeaderStyle}" />
+                        <TextBlock Text="{Binding ActiveFundText}"
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   Margin="0,6,0,0"
+                                   TextWrapping="Wrap" />
+                        <WrapPanel Margin="0,14,0,0">
+                            <Button Content="Refresh"
+                                    Command="{Binding RefreshCommand}"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Seed Baseline"
+                                    Command="{Binding SeedBaselineConfigurationCommand}"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,8,8" />
+                            <Button Content="Activate"
+                                    Command="{Binding ActivateConfigurationCommand}"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    Margin="0,0,8,8" />
+                        </WrapPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <UniformGrid Columns="4" Margin="0,0,0,18">
+                <Border Style="{StaticResource ConfigureMetricCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Configuration" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBlock Text="{Binding ConfigurationStatusText}" Style="{StaticResource CardHeaderStyle}" Margin="0,6,0,0" />
+                        <TextBlock Text="{Binding ConfigurationDetailText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource ConfigureMetricCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Manual Journals" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBlock Text="{Binding ManualJournalStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource ConfigureMetricCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="External GL" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBlock Text="{Binding ExternalGlStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource ConfigureMetricCardStyle}" Margin="0">
+                    <StackPanel>
+                        <TextBlock Text="Close" Style="{StaticResource MetricLabelStyle}" />
+                        <TextBlock Text="{Binding CloseReadinessText}" Style="{StaticResource CardHeaderStyle}" Margin="0,6,0,0" />
+                        <TextBlock Text="{Binding CloseDetailText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <TabControl AutomationProperties.AutomationId="AccountingConfigureTabs">
+                <TabItem Header="Configuration">
+                    <Grid Margin="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.2*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="1*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Validation" Style="{StaticResource CardHeaderStyle}" />
+                                    <DataGrid ItemsSource="{Binding ValidationRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingConfigurationValidationGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Code" Binding="{Binding Name}" Width="180" />
+                                            <DataGridTextColumn Header="Severity" Binding="{Binding Status}" Width="100" />
+                                            <DataGridTextColumn Header="Message" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Action" Binding="{Binding Evidence}" Width="220" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource SectionCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Chart of Accounts" Style="{StaticResource CardHeaderStyle}" />
+                                    <DataGrid ItemsSource="{Binding ChartRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingChartGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Path" Binding="{Binding Name}" Width="220" />
+                                            <DataGridTextColumn Header="Type" Binding="{Binding Status}" Width="110" />
+                                            <DataGridTextColumn Header="Name" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="State" Binding="{Binding Evidence}" Width="100" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Templates" Style="{StaticResource CardHeaderStyle}" />
+                                    <DataGrid ItemsSource="{Binding TemplateRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingTemplateGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Template" Binding="{Binding Name}" Width="180" />
+                                            <DataGridTextColumn Header="Version" Binding="{Binding Status}" Width="90" />
+                                            <DataGridTextColumn Header="Name" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Lines" Binding="{Binding Evidence}" Width="80" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource SectionCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Posting Rules and Audit" Style="{StaticResource CardHeaderStyle}" />
+                                    <DataGrid ItemsSource="{Binding PostingRuleRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,12" AutomationProperties.AutomationId="AccountingPostingRuleGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Rule" Binding="{Binding Name}" Width="170" />
+                                            <DataGridTextColumn Header="Event" Binding="{Binding Status}" Width="150" />
+                                            <DataGridTextColumn Header="Name" Binding="{Binding Detail}" Width="*" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <DataGrid ItemsSource="{Binding AuditRows}" Style="{StaticResource ConfigureGridStyle}" AutomationProperties.AutomationId="AccountingConfigurationAuditGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Action" Binding="{Binding Name}" Width="180" />
+                                            <DataGridTextColumn Header="Actor" Binding="{Binding Status}" Width="110" />
+                                            <DataGridTextColumn Header="Time" Binding="{Binding Detail}" Width="160" />
+                                            <DataGridTextColumn Header="Correlation" Binding="{Binding Evidence}" Width="*" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Manual Journals">
+                    <Grid Margin="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="390" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Style="{StaticResource SectionCardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="Journal Draft" Style="{StaticResource CardHeaderStyle}" />
+                                <TextBlock Text="Entry Type" Style="{StaticResource MetricLabelStyle}" Margin="0,14,0,4" />
+                                <ComboBox ItemsSource="{Binding ManualJournalEntryTypeOptions}" SelectedItem="{Binding SelectedEntryType, Mode=TwoWay}" />
+                                <TextBlock Text="Memo" Style="{StaticResource MetricLabelStyle}" Margin="0,14,0,4" />
+                                <TextBox Text="{Binding DraftMemo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="Amount" Style="{StaticResource MetricLabelStyle}" Margin="0,12,0,4" />
+                                <TextBox Text="{Binding DraftAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="Currency" Style="{StaticResource MetricLabelStyle}" Margin="0,12,0,4" />
+                                <TextBox Text="{Binding DraftCurrency, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="Debit Account" Style="{StaticResource MetricLabelStyle}" Margin="0,12,0,4" />
+                                <TextBox Text="{Binding DraftDebitAccountPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="Credit Account" Style="{StaticResource MetricLabelStyle}" Margin="0,12,0,4" />
+                                <TextBox Text="{Binding DraftCreditAccountPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="Accounting Basis" Style="{StaticResource MetricLabelStyle}" Margin="0,12,0,4" />
+                                <ComboBox ItemsSource="{Binding AccountingBasisOptions}" SelectedItem="{Binding SelectedAccountingBasis, Mode=TwoWay}" />
+                                <TextBlock Text="Evidence Link" Style="{StaticResource MetricLabelStyle}" Margin="0,12,0,4" />
+                                <TextBox Text="{Binding DraftEvidenceLink, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <WrapPanel Margin="0,16,0,0">
+                                    <Button Content="Save Draft" Command="{Binding SaveManualJournalDraftCommand}" Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,8,8" />
+                                    <Button Content="Validate" Command="{Binding ValidateManualJournalDraftCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,8" />
+                                    <Button Content="Submit" Command="{Binding SubmitManualJournalDraftCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,8" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="2" Style="{StaticResource SectionCardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="Entry Type Presets" Style="{StaticResource CardHeaderStyle}" />
+                                <DataGrid ItemsSource="{Binding ManualJournalEntryTypeRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,16" AutomationProperties.AutomationId="ManualJournalEntryTypeGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Type" Binding="{Binding Name}" Width="150" />
+                                        <DataGridTextColumn Header="Entry" Binding="{Binding Status}" Width="140" />
+                                        <DataGridTextColumn Header="Accounts" Binding="{Binding Detail}" Width="*" />
+                                        <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="220" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <TextBlock Text="Drafts" Style="{StaticResource CardHeaderStyle}" />
+                                <DataGrid ItemsSource="{Binding ManualJournalDraftRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="ManualJournalDraftGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Type and Memo" Binding="{Binding Name}" Width="260" />
+                                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120" />
+                                        <DataGridTextColumn Header="Totals" Binding="{Binding Detail}" Width="160" />
+                                        <DataGridTextColumn Header="Validation" Binding="{Binding Evidence}" Width="*" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="External GL Evidence">
+                    <Grid Margin="0,16,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Provider and Posting Posture" Style="{StaticResource CardHeaderStyle}" />
+                                <TextBlock Text="{Binding PostingPostureText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,0" TextWrapping="Wrap" />
+                                <Button Content="Refresh External GL Evidence" Command="{Binding RefreshExternalGlCommand}" Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left" Margin="0,12,0,0" />
+                                <DataGrid ItemsSource="{Binding ProviderRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingSystemProviderGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Provider" Binding="{Binding Name}" Width="170" />
+                                        <DataGridTextColumn Header="State" Binding="{Binding Status}" Width="100" />
+                                        <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Row="1" Style="{StaticResource SectionCardStyle}">
+                            <StackPanel>
+                                <TextBlock Text="External GL Reconciliation" Style="{StaticResource CardHeaderStyle}" />
+                                <DataGrid ItemsSource="{Binding ExternalGlRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="ExternalGlEvidenceGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Account" Binding="{Binding AccountCode}" Width="130" />
+                                        <DataGridTextColumn Header="Name" Binding="{Binding AccountName}" Width="180" />
+                                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120" />
+                                        <DataGridTextColumn Header="External Dr" Binding="{Binding ExternalDebit}" Width="100" />
+                                        <DataGridTextColumn Header="External Cr" Binding="{Binding ExternalCredit}" Width="100" />
+                                        <DataGridTextColumn Header="Meridian Dr" Binding="{Binding MeridianDebit}" Width="105" />
+                                        <DataGridTextColumn Header="Meridian Cr" Binding="{Binding MeridianCredit}" Width="105" />
+                                        <DataGridTextColumn Header="Variance" Binding="{Binding Variance}" Width="95" />
+                                        <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Close, Evidence, Reconciliation">
+                    <Grid Margin="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="1*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="Accounting Record Evidence" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="{Binding EvidencePostureText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,0" TextWrapping="Wrap" />
+                                    <DataGrid ItemsSource="{Binding EvidenceRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingRecordEvidenceGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Category" Binding="{Binding Name}" Width="190" />
+                                            <DataGridTextColumn Header="State" Binding="{Binding Status}" Width="100" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Detail}" Width="*" />
+                                            <DataGridTextColumn Header="Route" Binding="{Binding Evidence}" Width="190" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                        <StackPanel Grid.Column="2">
+                            <Border Style="{StaticResource SectionCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Reconciliation Triage" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="{Binding ReconciliationPostureText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,0" TextWrapping="Wrap" />
+                                    <StackPanel Orientation="Horizontal" Margin="0,12,0,8">
+                                        <TextBlock Text="View" Style="{StaticResource MetricLabelStyle}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                        <ComboBox Width="190" ItemsSource="{Binding ReconciliationViewOptions}" SelectedItem="{Binding SelectedReconciliationView, Mode=TwoWay}" />
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding BatchReconciliationActionText}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" />
+                                    <DataGrid ItemsSource="{Binding ReconciliationRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingReconciliationTriageGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Break" Binding="{Binding Name}" Width="150" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="150" />
+                                            <DataGridTextColumn Header="Owner" Binding="{Binding Detail}" Width="120" />
+                                            <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="*" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Policies">
+                    <Border Style="{StaticResource SectionCardStyle}" Margin="0,16,0,0">
+                        <StackPanel>
+                            <TextBlock Text="Fund and Book Accounting Policies" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding PolicyPostureText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,0" TextWrapping="Wrap" />
+                            <StackPanel Orientation="Horizontal" Margin="0,14,0,12">
+                                <ComboBox Width="180" ItemsSource="{Binding AccountingBasisOptions}" SelectedItem="{Binding SelectedAccountingBasis, Mode=TwoWay}" Margin="0,0,8,0" />
+                                <Button Content="Create Fund Policy" Command="{Binding CreateFundScopedPolicyCommand}" Style="{StaticResource SecondaryButtonStyle}" />
+                            </StackPanel>
+                            <DataGrid ItemsSource="{Binding PolicyRows}" Style="{StaticResource ConfigureGridStyle}" AutomationProperties.AutomationId="AccountingPolicyGrid">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Policy" Binding="{Binding Name}" Width="260" />
+                                    <DataGridTextColumn Header="Basis" Binding="{Binding Status}" Width="110" />
+                                    <DataGridTextColumn Header="Default" Binding="{Binding Detail}" Width="110" />
+                                    <DataGridTextColumn Header="Scope" Binding="{Binding Evidence}" Width="160" />
+                                    <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="*" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </Border>
+                </TabItem>
+            </TabControl>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

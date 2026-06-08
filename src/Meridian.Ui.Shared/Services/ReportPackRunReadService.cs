@@ -12,17 +12,23 @@ public sealed class ReportPackRunReadService
     private readonly IReportingRunStore? _runStore;
     private readonly ReportPackWorkflowService? _workflowService;
     private readonly ReportTemplateRegistryService? _templateRegistry;
+    private readonly ReportPackDeliveryService? _deliveryService;
+    private readonly ReportingScheduleService? _scheduleService;
 
     public ReportPackRunReadService(
         IReportingTemplateCatalog templateCatalog,
         IReportingRunStore? runStore = null,
         ReportPackWorkflowService? workflowService = null,
-        ReportTemplateRegistryService? templateRegistry = null)
+        ReportTemplateRegistryService? templateRegistry = null,
+        ReportPackDeliveryService? deliveryService = null,
+        ReportingScheduleService? scheduleService = null)
     {
         _templateCatalog = templateCatalog ?? throw new ArgumentNullException(nameof(templateCatalog));
         _runStore = runStore;
         _workflowService = workflowService;
         _templateRegistry = templateRegistry;
+        _deliveryService = deliveryService;
+        _scheduleService = scheduleService;
     }
 
     public WorkstationReportingPayload BuildPayload(int recentRunLimit = DefaultRecentRunLimit)
@@ -38,7 +44,9 @@ public sealed class ReportPackRunReadService
             .ToDictionary(static group => group.Key, static group => group.First().Family, StringComparer.OrdinalIgnoreCase);
         var workflowRecords = _workflowService?.ListRecords(200) ?? [];
         var runs = BuildRecentRuns(Math.Clamp(recentRunLimit, 1, 200), familyByTemplate, workflowRecords);
-        var distributions = BuildDistributionRecords(workflowRecords);
+        var deliveryAttempts = _deliveryService?.ListAttempts(500) ?? [];
+        var schedules = _scheduleService?.ListSchedules(100) ?? [];
+        var distributions = BuildDistributionRecords(workflowRecords, deliveryAttempts);
         var pendingDistributionCount = distributions.Count(static distribution => distribution.PendingItems > 0);
 
         return new WorkstationReportingPayload(
@@ -48,11 +56,21 @@ public sealed class ReportPackRunReadService
             ReportPackDistributions: distributions,
             Summary: $"{profiles.Length} export/reporting profiles are available for Accounting and Reporting workflows; {distributions.Length} distribution recipients are visible; {pendingDistributionCount} have pending work.",
             Templates: templates,
-            RecentRuns: runs.Select(static run => run.Payload).ToArray());
+            RecentRuns: runs.Select(static run => run.Payload).ToArray(),
+            Schedules: schedules,
+            DeliveryAttempts: deliveryAttempts);
     }
 
     public static WorkstationReportingPayload BuildFallbackPayload() =>
         new ReportPackRunReadService(new DefaultReportingTemplateCatalog()).BuildPayload();
+
+    public static ReportPackDistributionPolicy ResolveDistributionPolicy(string distributionId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(distributionId);
+        return DistributionPolicies.FirstOrDefault(policy =>
+                   string.Equals(policy.DistributionId, distributionId.Trim(), StringComparison.OrdinalIgnoreCase))
+               ?? throw new KeyNotFoundException($"Unknown report-pack distribution '{distributionId}'.");
+    }
 
     private static WorkstationReportingProfilePayload[] BuildProfiles() =>
         ExportProfile.GetBuiltInProfiles()
@@ -149,7 +167,8 @@ public sealed class ReportPackRunReadService
     }
 
     public static WorkstationReportPackDistributionPayload[] BuildDistributionRecords(
-        IReadOnlyList<ReportPackWorkflowRecordDto> workflowRecords)
+        IReadOnlyList<ReportPackWorkflowRecordDto> workflowRecords,
+        IReadOnlyList<ReportPackDeliveryAttemptDto>? deliveryAttempts = null)
     {
         var records = workflowRecords
             .OrderByDescending(static record => record.UpdatedAt)
@@ -180,7 +199,8 @@ public sealed class ReportPackRunReadService
                 pendingPublicationCount,
                 pendingDeliveryCount,
                 latestActionAt,
-                latestPublishedAt))
+                latestPublishedAt,
+                deliveryAttempts ?? []))
             .ToArray();
     }
 
@@ -191,8 +211,15 @@ public sealed class ReportPackRunReadService
         int pendingPublicationCount,
         int pendingDeliveryCount,
         DateTimeOffset? latestActionAt,
-        DateTimeOffset? latestPublishedAt)
+        DateTimeOffset? latestPublishedAt,
+        IReadOnlyList<ReportPackDeliveryAttemptDto> deliveryAttempts)
     {
+        var latestDelivery = deliveryAttempts
+            .Where(attempt =>
+                string.Equals(attempt.DistributionId, policy.DistributionId, StringComparison.OrdinalIgnoreCase)
+                && attempt.State == ReportPackDeliveryStateDto.Delivered)
+            .OrderByDescending(static attempt => attempt.AttemptedAtUtc)
+            .FirstOrDefault();
         var (state, pendingItems, pendingSummary, dueAtUtc) = ResolveDistributionState(
             policy,
             blockedCount,
@@ -200,7 +227,8 @@ public sealed class ReportPackRunReadService
             pendingPublicationCount,
             pendingDeliveryCount,
             latestActionAt,
-            latestPublishedAt);
+            latestPublishedAt,
+            latestDelivery?.AttemptedAtUtc);
 
         return new WorkstationReportPackDistributionPayload(
             policy.DistributionId,
@@ -212,7 +240,7 @@ public sealed class ReportPackRunReadService
             pendingSummary,
             policy.Owner,
             dueAtUtc,
-            LastSentAtUtc: null,
+            latestDelivery?.AttemptedAtUtc,
             policy.Route);
     }
 
@@ -223,7 +251,8 @@ public sealed class ReportPackRunReadService
         int pendingPublicationCount,
         int pendingDeliveryCount,
         DateTimeOffset? latestActionAt,
-        DateTimeOffset? latestPublishedAt)
+        DateTimeOffset? latestPublishedAt,
+        DateTimeOffset? latestDeliveryAt)
     {
         if (blockedCount > 0)
         {
@@ -254,6 +283,15 @@ public sealed class ReportPackRunReadService
 
         if (pendingDeliveryCount > 0)
         {
+            if (latestPublishedAt is not null && latestDeliveryAt is not null && latestDeliveryAt >= latestPublishedAt)
+            {
+                return (
+                    "Delivered",
+                    0,
+                    $"{policy.Recipient} received the latest governed report pack by {policy.Channel}.",
+                    null);
+            }
+
             return (
                 "Pending delivery",
                 pendingDeliveryCount,
@@ -680,6 +718,11 @@ public sealed class ReportPackRunReadService
 
         if (record.State == ReportPackWorkflowStateDto.Published)
         {
+            foreach (var action in BuildDeliveryActions(record))
+            {
+                yield return action;
+            }
+
             yield return BuildRunAction(
                 id: $"{record.ReportId:D}:restate",
                 kind: "restatement",
@@ -702,11 +745,33 @@ public sealed class ReportPackRunReadService
 
         if (record.State == ReportPackWorkflowStateDto.Restated)
         {
+            foreach (var action in BuildDeliveryActions(record))
+            {
+                yield return action;
+            }
+
             yield return BuildRunAction(
                 id: $"{record.ReportId:D}:archive",
                 kind: "archive",
                 label: "Archive restated pack",
                 href: $"/api/fund-structure/reporting/packs/{reportId}/archive",
+                method: "POST",
+                isEnabled: true,
+                disabledReason: null,
+                isBrowserNavigable: false);
+        }
+    }
+
+    private static IEnumerable<WorkstationReportingRunNextActionPayload> BuildDeliveryActions(ReportPackWorkflowRecordDto record)
+    {
+        var reportId = EscapeReportId(record.ReportId);
+        foreach (var policy in DistributionPolicies)
+        {
+            yield return BuildRunAction(
+                id: $"{record.ReportId:D}:delivery:{policy.DistributionId}",
+                kind: $"delivery:{policy.DistributionId}",
+                label: $"Deliver to {policy.Recipient}",
+                href: $"/api/fund-structure/reporting/packs/{reportId}/deliveries",
                 method: "POST",
                 isEnabled: true,
                 disabledReason: null,
@@ -807,7 +872,7 @@ public sealed class ReportPackRunReadService
             TimeSpan.FromHours(2))
     ];
 
-    private sealed record ReportPackDistributionPolicy(
+    public sealed record ReportPackDistributionPolicy(
         string DistributionId,
         string Recipient,
         string RecipientRole,

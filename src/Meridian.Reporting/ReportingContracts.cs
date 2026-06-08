@@ -21,7 +21,14 @@ public enum ReportingTemplateFamily
 {
     InvestorStatement,
     SecFilingPacket,
-    ShadowNavPack
+    ShadowNavPack,
+    PerformanceReport,
+    HoldingsReport,
+    CapitalAccountStatement,
+    BoardPacket,
+    AuditPackage,
+    CertifiedDataset,
+    CustomReport
 }
 
 public enum ReportingApprovalAction

@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-REPORTING
 path: src/Meridian.Reporting
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-06
+last_reviewed: 2026-06-07
 ---
 
 # src/Meridian.Reporting
@@ -24,7 +24,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 ## Key folders and files
 
 - `src/Meridian.Reporting` - registered source module root.
-- `DefaultReportingTemplateCatalog.cs` - canonical investor statement, SEC filing, and shadow NAV
+- `DefaultReportingTemplateCatalog.cs` - canonical investor statement, SEC filing, shadow NAV,
+  performance, holdings, capital account, board packet, audit package, and certified-dataset
   template metadata.
 - `ReportingContracts.cs` - reporting run, schedule, lineage, template, approval, manifest, and
   audit contracts.
@@ -70,7 +71,10 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 `IReportingOrchestrationService`, `IReportingTemplateCatalog`, `IReportingSectionRenderer`,
 `IReportingRunStore`, `ReportGenerationService`, and `NavAttributionService` publish the Reporting
 module seams consumed by UI Shared report-pack workflows, UI Services reporting status projections,
-and WPF fund-operation views.
+and WPF fund-operation views. Reporting template families now cover investor, SEC, shadow NAV,
+performance, holdings, capital-account, board, audit, certified-dataset, and custom report packs;
+shared UI services layer schedule persistence, delivery history, and rendered HTML/PDF artifacts on
+top of those module contracts without moving orchestration ownership out of Reporting.
 
 ### Migration and archive notes
 

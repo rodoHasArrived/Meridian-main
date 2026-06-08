@@ -297,7 +297,11 @@ describe("useReportingScreenViewModel", () => {
         approvalSummary: "Built-in approved template for InvestorStatement.",
         authoringHref: "/api/fund-structure/reporting/templates/investor-monthly-statement/versions/1",
         actionLabel: "Draft revision",
-        actionAriaLabel: "Draft a revision of Investor Monthly Statement"
+        actionAriaLabel: "Draft a revision of Investor Monthly Statement",
+        canRunOnDemand: true,
+        runActionLabel: "Run report",
+        runActionAriaLabel: "Run Investor Monthly Statement report on demand",
+        runDisabledReason: null
       }
     ]);
     expect(result.current.runStatusRows[0]).toMatchObject({

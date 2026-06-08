@@ -24,12 +24,13 @@ namespace Meridian.Wpf.ViewModels;
 /// Holds all state, collections, and commands so the code-behind can be
 /// thinned to lifecycle wiring only.
 /// </summary>
-public sealed class SettingsViewModel : BindableBase
+public sealed partial class SettingsViewModel : BindableBase
 {
     private readonly WpfServices.ConfigService _configService;
     private readonly WpfServices.NotificationService _notificationService;
     private readonly WpfServices.StatusService _statusService;
     private readonly SettingsConfigurationService _settingsConfigService;
+    private readonly WpfServices.ISecurityAssetProfileWorkflowClient? _assetProfileClient;
 
     private string _configPath = string.Empty;
     private string _configStatusText = "Valid";
@@ -69,14 +70,19 @@ public sealed class SettingsViewModel : BindableBase
         WpfServices.NotificationService notificationService,
         WpfServices.StatusService statusService,
         IFeatureCapabilityGate? capabilityGate = null,
-        IEnumerable<FeatureCapabilityDescriptor>? capabilityDescriptors = null)
+        IEnumerable<FeatureCapabilityDescriptor>? capabilityDescriptors = null,
+        WpfServices.ISecurityAssetProfileWorkflowClient? assetProfileClient = null)
     {
         _configService = configService;
         _notificationService = notificationService;
         _statusService = statusService;
         _settingsConfigService = SettingsConfigurationService.Instance;
+        _assetProfileClient = assetProfileClient;
         StoredCredentials = new ObservableCollection<CredentialDisplayInfo>();
         RecentActivity = new ObservableCollection<SettingsActivityItem>();
+        AssetProfileRows = new ObservableCollection<SettingsAssetProfileRow>();
+        AssetProfileFieldInputs = new ObservableCollection<SettingsAssetProfileFieldInput>();
+        AssetProfileLineageEvents = new ObservableCollection<string>();
         CapabilityToggles = new ObservableCollection<FeatureCapabilityToggleViewModel>(
             BuildCapabilityToggles(capabilityGate, capabilityDescriptors));
         ShellDensityModes =
@@ -119,12 +125,23 @@ public sealed class SettingsViewModel : BindableBase
 
         // Profile command
         SelectProfileCommand = new RelayCommand<string>(SelectProfile);
+
+        // Security Master asset-profile governance commands
+        RefreshAssetProfilesCommand = new AsyncRelayCommand(RefreshAssetProfilesAsync, CanUseAssetProfileWorkflow);
+        DraftAssetProfileCommand = new AsyncRelayCommand(DraftAssetProfileAsync, CanDraftAssetProfile);
+        ApproveAssetProfileCommand = new AsyncRelayCommand(ApproveAssetProfileAsync, CanApproveAssetProfile);
+        LoadAssetProfileLineageCommand = new AsyncRelayCommand(LoadAssetProfileLineageAsync, CanLoadAssetProfileLineage);
+        RollbackAssetProfileCommand = new AsyncRelayCommand(RollbackAssetProfileAsync, CanRollbackAssetProfile);
+        CreateProfileBackedSecurityCommand = new AsyncRelayCommand(CreateProfileBackedSecurityAsync, CanCreateProfileBackedSecurity);
     }
 
     // ── Collections ───────────────────────────────────────────────────────────
 
     public ObservableCollection<CredentialDisplayInfo> StoredCredentials { get; }
     public ObservableCollection<SettingsActivityItem> RecentActivity { get; }
+    public ObservableCollection<SettingsAssetProfileRow> AssetProfileRows { get; }
+    public ObservableCollection<SettingsAssetProfileFieldInput> AssetProfileFieldInputs { get; }
+    public ObservableCollection<string> AssetProfileLineageEvents { get; }
     public ObservableCollection<FeatureCapabilityToggleViewModel> CapabilityToggles { get; }
     public IReadOnlyList<ShellDensityMode> ShellDensityModes { get; }
 
@@ -341,6 +358,12 @@ public sealed class SettingsViewModel : BindableBase
     public IRelayCommand OpenDocumentationCommand { get; }
     public IRelayCommand OpenIssuesCommand { get; }
     public IRelayCommand<string> SelectProfileCommand { get; }
+    public IAsyncRelayCommand RefreshAssetProfilesCommand { get; }
+    public IAsyncRelayCommand DraftAssetProfileCommand { get; }
+    public IAsyncRelayCommand ApproveAssetProfileCommand { get; }
+    public IAsyncRelayCommand LoadAssetProfileLineageCommand { get; }
+    public IAsyncRelayCommand RollbackAssetProfileCommand { get; }
+    public IAsyncRelayCommand CreateProfileBackedSecurityCommand { get; }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -354,6 +377,7 @@ public sealed class SettingsViewModel : BindableBase
         RefreshCredentialVault();
         RefreshStoragePreview("BySymbol", "gzip");
         RefreshProfiles();
+        _ = RefreshAssetProfilesAsync();
         LoadRecentActivity();
         UpdateSystemStatus();
     }
