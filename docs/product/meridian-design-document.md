@@ -686,8 +686,19 @@ Evaluate Opportunity
 * Mezzanine debt
 * Margin facilities
 * Mortgage analysis
+* Synthetic financing analysis
+* Total return swaps and contract-for-difference financing
+* Repo and reverse repo financing
+* Securities lending and stock borrow financing
+* Derivatives-based leverage and financing overlays
+* Preferred equity, convertible instruments, and payment-in-kind structures
+* Subscription lines, NAV facilities, and capital-call facilities
+* Asset-backed lending, receivables financing, and factoring
+* Sale-leaseback and lease financing
+* Securitization and collateralized financing structures
+* Intercompany loans and sponsor support arrangements
 * Capital stack modeling
-* Senior / junior / mezzanine / equity layers
+* Senior / junior / mezzanine / preferred equity / common equity layers
 * Refinancing analysis
 * Debt service coverage
 * Interest coverage
@@ -695,6 +706,9 @@ Evaluate Opportunity
 * DSCR analysis
 * Covenant tracking
 * Borrowing base analysis
+* Collateral, haircut, margin, and eligibility analysis
+* Financing cost attribution and effective leverage monitoring
+* Counterparty exposure and rehypothecation tracking
 
 ---
 
@@ -1002,7 +1016,7 @@ Functional domains describe business capabilities. Bounded contexts define owner
 | Financial Operations              | Reconciliations, breaks, exceptions, operational reviews, adjustments, close checklists, evidence packages             |
 | Treasury & Payments               | Bank accounts, cash balances, payment requests, ACH, wires, capital calls, distributions, payment approvals            |
 | Alternative Assets                | Real estate, private credit, private equity, structured assets, valuation inputs, asset-level cash flows               |
-| Financing & Capital Structure     | Debt facilities, loan agreements, capital stacks, covenants, debt schedules, leverage analysis                         |
+| Financing & Capital Structure     | Debt facilities, synthetic financing, loan agreements, capital stacks, covenants, collateral terms, debt schedules, leverage analysis |
 | Planning & Forecasting            | Forecast models, scenarios, assumptions, stress tests, planning cases, decision records                                |
 | Research & Analytics              | Research notes, watchlists, investment theses, backtests, strategy runs, analytical workspaces                         |
 | Risk Management                   | Risk rules, metrics, limits, exposure calculations, concentration checks, breaches                                     |
