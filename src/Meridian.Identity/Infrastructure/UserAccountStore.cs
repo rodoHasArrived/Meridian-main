@@ -47,6 +47,11 @@ public sealed class FileUserAccountStore : IUserAccountStore
         WriteIndented = true,
         Converters = { new JsonStringEnumConverter() }
     };
+    private static readonly JsonSerializerOptions AuditJsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        WriteIndented = false,
+        Converters = { new JsonStringEnumConverter() }
+    };
 
     private readonly object _readGate = new();
     private readonly SemaphoreSlim _writeGate = new(1, 1);
@@ -107,7 +112,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
 
             try
             {
-                var auditEvent = JsonSerializer.Deserialize<UserAccountAuditEventDto>(line, JsonOptions);
+                    var auditEvent = JsonSerializer.Deserialize<UserAccountAuditEventDto>(line, AuditJsonOptions);
                 if (auditEvent is not null)
                 {
                     events.Add(auditEvent);
@@ -409,7 +414,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
 
     private async Task AppendAuditAsync(UserAccountAuditEventDto auditEvent, CancellationToken ct)
     {
-        var json = JsonSerializer.Serialize(auditEvent, JsonOptions);
+        var json = JsonSerializer.Serialize(auditEvent, AuditJsonOptions);
         await AtomicFileWriter.AppendLinesAsync(_auditPath, [json], ct).ConfigureAwait(false);
     }
 
