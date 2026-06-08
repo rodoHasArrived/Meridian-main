@@ -111,6 +111,44 @@ public sealed class AccountingWorkspaceShellPageTests
     }
 
     [Fact]
+    public void ResolveCurrentFinancialOperationsWorkflowStep_ShouldPreferCurrentThenPendingThenLatestComplete()
+    {
+        var complete = new AccountingWorkspacePresentationService.FinancialOperationsWorkflowStep(
+            "receive-activity",
+            "Receive Activity",
+            "Activity loaded.",
+            WorkflowStepStatus.Complete,
+            "Loaded",
+            WorkspaceTone.Success,
+            "FundLedger");
+        var current = new AccountingWorkspacePresentationService.FinancialOperationsWorkflowStep(
+            "match-records",
+            "Match Records",
+            "Match current records.",
+            WorkflowStepStatus.Current,
+            "Review matches",
+            WorkspaceTone.Warning,
+            "FundReconciliation");
+        var pending = new AccountingWorkspacePresentationService.FinancialOperationsWorkflowStep(
+            "approve-results",
+            "Approve Results",
+            "Approval waits.",
+            WorkflowStepStatus.Pending,
+            "Pending",
+            WorkspaceTone.Neutral,
+            "AccountingApprovals");
+
+        AccountingWorkspacePresentationService.ResolveCurrentFinancialOperationsWorkflowStep([complete, current, pending])
+            .Should().BeSameAs(current);
+        AccountingWorkspacePresentationService.ResolveCurrentFinancialOperationsWorkflowStep([complete, pending])
+            .Should().BeSameAs(pending);
+        AccountingWorkspacePresentationService.ResolveCurrentFinancialOperationsWorkflowStep([complete])
+            .Should().BeSameAs(complete);
+        AccountingWorkspacePresentationService.ResolveCurrentFinancialOperationsWorkflowStep([])
+            .TargetPageTag.Should().Be("SwitchContext");
+    }
+
+    [Fact]
     public void BuildLaneHeroState_ReconciliationLane_WithOpenBreaks_PrioritizesBreakReview()
     {
         var asOf = new DateTimeOffset(2026, 4, 25, 15, 30, 0, TimeSpan.Zero);

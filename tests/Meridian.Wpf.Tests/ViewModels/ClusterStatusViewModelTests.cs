@@ -110,8 +110,9 @@ public sealed class ClusterStatusViewModelTests
         xaml.Should().Contain("ClusterStatusActionStrip");
         xaml.Should().Contain("ClusterStatusPostureCard");
         xaml.Should().Contain("ClusterStatusWorkbench");
-        xaml.Should().Contain("DenseDataGridControl");
+        xaml.Should().Contain("WorkstationTableInspectorControl");
         xaml.Should().Contain("InspectorPanelControl");
+        xaml.Should().Contain("InspectorHeaderContent");
         xaml.Should().Contain("ClusterStatusNodesGrid");
         xaml.Should().Contain("ClusterStatusSummaryInspector");
         xaml.Should().Contain("ClusterStatusSelectionInspector");
@@ -121,6 +122,7 @@ public sealed class ClusterStatusViewModelTests
         xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
         xaml.Should().Contain("Table=\"{Binding NodesTable}\"");
         xaml.Should().Contain("SelectedItem=\"{Binding SelectedNode, Mode=TwoWay}\"");
+        xaml.Should().Contain("Inspector=\"{Binding SelectedNodeInspector}\"");
         viewModel.Should().Contain("public WorkstationTableModel<ClusterNodeItem> NodesTable { get; }");
         viewModel.Should().Contain("public InspectorPanelModel ClusterSummaryInspector");
         viewModel.Should().Contain("public InspectorPanelModel SelectedNodeInspector");

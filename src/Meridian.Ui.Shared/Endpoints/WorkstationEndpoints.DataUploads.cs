@@ -6,6 +6,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 using Meridian.PortfolioRecords.FundAccounts;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -223,8 +224,8 @@ public static partial class WorkstationEndpoints
                 fileBytes = buffer.ToArray();
             }
 
-            var batchId = BuildBankStatementBatchId(fileBytes, accountId, bankName);
-            var parsed = ParseBankStatementImportCsv(fileBytes, accountId, batchId);
+            var batchId = BankStatementCsvImportMapper.BuildBatchId(fileBytes, accountId, bankName);
+            var parsed = BankStatementCsvImportMapper.Parse(fileBytes, accountId, batchId);
             if (parsed.Issues.Any(static issue => string.Equals(issue.Severity, "Error", StringComparison.OrdinalIgnoreCase)))
             {
                 return DataUploadValidationProblem(parsed.Issues);

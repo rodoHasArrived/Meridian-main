@@ -119,7 +119,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
                 QueueScopeBadgeText.Text = operatingContext?.DisplayName ?? "Awaiting fund-linked scope";
                 QueueSummaryText.Text = "Accounting queues unlock after a fund-linked operating context is selected.";
                 var workflow = await workflowSummaryTask.ConfigureAwait(true);
-                FinancialOperationsWorkflowStepsList.ItemsSource = AccountingWorkspacePresentationService.BuildFinancialOperationsWorkflowSteps(
+                ApplyFinancialOperationsWorkflowCheckpoint(
                     profile: null,
                     workspace: null,
                     workflow,
@@ -186,7 +186,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
                 BuildReconciliationQueue(reconciliation, ledger),
                 BuildReportingQueue(profile, workspace),
                 BuildAuditQueue(reconciliation, notifications, unreadAlerts));
-            FinancialOperationsWorkflowStepsList.ItemsSource = AccountingWorkspacePresentationService.BuildFinancialOperationsWorkflowSteps(
+            ApplyFinancialOperationsWorkflowCheckpoint(
                 profile,
                 workspace,
                 accountingWorkflow,
@@ -349,6 +349,23 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
         IReadOnlyList<NotificationHistoryItem> notifications,
         int unreadAlerts)
         => AccountingWorkspacePresentationService.BuildAuditQueue(reconciliation, notifications, unreadAlerts);
+
+    private void ApplyFinancialOperationsWorkflowCheckpoint(
+        FundProfileDetail? profile,
+        FundOperationsWorkspaceDto? workspace,
+        WorkspaceWorkflowSummary? workflow,
+        IReadOnlyList<NotificationHistoryItem> notifications,
+        int unreadAlerts)
+    {
+        var steps = AccountingWorkspacePresentationService.BuildFinancialOperationsWorkflowSteps(
+            profile,
+            workspace,
+            workflow,
+            notifications,
+            unreadAlerts);
+        FinancialOperationsWorkflowCheckpoint.DataContext =
+            AccountingWorkspacePresentationService.ResolveCurrentFinancialOperationsWorkflowStep(steps);
+    }
 
     private void ApplyAccountingLaneSummaries(
         FundProfileDetail? profile,

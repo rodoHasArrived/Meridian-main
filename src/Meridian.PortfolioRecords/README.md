@@ -29,6 +29,10 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   statement intake, account readiness, provider-link sync history, reconciliation runs, and margin
   snapshots.
 
+Bank-statement file imports should enter through `IFundAccountService.IngestBankStatementAsync`
+after transport and CSV mapping validation; scheduled SFTP or API feed adapters should reuse that
+same service boundary rather than posting ledger entries directly.
+
 ## Important workflows
 
 Use this README to understand the module before editing source files. Update the registry when validation, roadmap links, diagrams, or ownership changes.

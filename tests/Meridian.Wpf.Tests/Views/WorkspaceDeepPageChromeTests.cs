@@ -238,6 +238,7 @@ public sealed class WorkspaceDeepPageChromeTests
         xaml.Should().Contain("ClusterStatusActionStrip");
         xaml.Should().Contain("ClusterStatusPostureCard");
         xaml.Should().Contain("ClusterStatusWorkbench");
+        xaml.Should().Contain("WorkstationTableInspectorControl");
         xaml.Should().Contain("ClusterStatusNodesGrid");
         xaml.Should().Contain("ClusterStatusSummaryInspector");
         xaml.Should().Contain("ClusterStatusSelectionInspector");
@@ -399,6 +400,7 @@ public sealed class WorkspaceDeepPageChromeTests
         xaml.Should().NotContain("<DataGrid");
         xaml.Should().Contain("AccountPortfolioActionStrip");
         xaml.Should().Contain("AccountPortfolioWorkbench");
+        xaml.Should().Contain("WorkstationTableInspectorControl");
         xaml.Should().Contain("AccountPortfolioPositionsGrid");
         xaml.Should().Contain("AccountPortfolioSelectionInspector");
         xaml.Should().Contain("AccountPortfolioActionInspector");
@@ -415,6 +417,7 @@ public sealed class WorkspaceDeepPageChromeTests
         xaml.Should().NotContain("<DataGrid");
         xaml.Should().Contain("AggregatePortfolioActionStrip");
         xaml.Should().Contain("AggregatePortfolioWorkbench");
+        xaml.Should().Contain("WorkstationTableInspectorControl");
         xaml.Should().Contain("AggregatePortfolioPositionsGrid");
         xaml.Should().Contain("AggregatePortfolioSelectionInspector");
         xaml.Should().Contain("AggregatePortfolioActionInspector");

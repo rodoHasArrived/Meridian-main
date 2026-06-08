@@ -51,39 +51,6 @@
             </Border>
         </DataTemplate>
 
-        <DataTemplate x:Key="FinancialOperationsWorkflowStepTemplate">
-            <Button Tag="{Binding TargetPageTag}"
-                    Click="OnFinancialOperationsWorkflowStepClick"
-                    ToolTip="{Binding Description}"
-                    AutomationProperties.Name="{Binding AutomationName}"
-                    Margin="0,0,8,8">
-                <Button.Style>
-                    <Style TargetType="Button" BasedOn="{StaticResource GhostButtonStyle}">
-                        <Setter Property="Padding" Value="9,5" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Status}" Value="Current">
-                                <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
-                                <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding Status}" Value="Complete">
-                                <Setter Property="Background" Value="{StaticResource ConsoleAccentGreenAlpha10Brush}" />
-                                <Setter Property="BorderBrush" Value="{StaticResource SuccessColorBrush}" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-                <StackPanel>
-                    <TextBlock Text="{Binding Label}"
-                               FontSize="12"
-                               FontWeight="SemiBold"
-                               Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                    <TextBlock Text="{Binding StatusLabel}"
-                               Margin="0,3,0,0"
-                               FontSize="10"
-                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
-                </StackPanel>
-            </Button>
-        </DataTemplate>
     </Page.Resources>
 
     <Grid Margin="20"
@@ -335,37 +302,56 @@
                     </Border>
                 </UniformGrid>
 
-                <Border Margin="0,14,0,0"
+                <Border x:Name="FinancialOperationsWorkflowCheckpoint"
+                        Margin="0,14,0,0"
                         Padding="12,10"
-                        CornerRadius="10"
+                        CornerRadius="8"
                         Background="{StaticResource ConsoleBackgroundDarkBrush}"
                         BorderBrush="{StaticResource ConsoleBorderBrush}"
-                        BorderThickness="1">
-                    <StackPanel>
-                        <DockPanel LastChildFill="True">
-                            <TextBlock Text="Receive Activity -> Match Records -> Resolve Exceptions -> Approve Results -> Produce Evidence"
-                                       DockPanel.Dock="Right"
-                                       Margin="16,0,0,0"
-                                       FontSize="10"
-                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                       VerticalAlignment="Center" />
-                            <TextBlock Text="Financial Operations Workflow"
-                                       Style="{StaticResource ShellSectionLabelStyle}"
-                                       VerticalAlignment="Center" />
-                        </DockPanel>
-
-                        <ItemsControl x:Name="FinancialOperationsWorkflowStepsList"
-                                      Margin="0,10,0,0"
-                                      ItemTemplate="{StaticResource FinancialOperationsWorkflowStepTemplate}"
-                                      AutomationProperties.AutomationId="FinancialOperationsWorkflowStepsList"
-                                      AutomationProperties.Name="Financial Operations Workflow Steps">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                        </ItemsControl>
-                    </StackPanel>
+                        BorderThickness="1"
+                        AutomationProperties.AutomationId="FinancialOperationsWorkflowCheckpoint">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Financial Operations Checkpoint"
+                                       Style="{StaticResource ShellSectionLabelStyle}" />
+                            <TextBlock x:Name="FinancialOperationsWorkflowStatusText"
+                                       Margin="0,5,0,0"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       Text="{Binding Label}" />
+                            <TextBlock x:Name="FinancialOperationsWorkflowDetailText"
+                                       Margin="0,4,0,0"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Text="{Binding Description}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Top"
+                                    Margin="16,0,0,0">
+                            <Border Style="{StaticResource WorkspaceToneBadgeStyle}"
+                                    Margin="0,0,8,0">
+                                <TextBlock x:Name="FinancialOperationsWorkflowBadgeText"
+                                           Text="{Binding StatusLabel}"
+                                           FontSize="10"
+                                           Style="{StaticResource WorkspaceToneBadgeTextStyle}" />
+                            </Border>
+                            <Button x:Name="FinancialOperationsWorkflowActionButton"
+                                    Content="Open Checkpoint"
+                                    Tag="{Binding TargetPageTag}"
+                                    Click="OnFinancialOperationsWorkflowStepClick"
+                                    ToolTip="{Binding Description}"
+                                    Style="{StaticResource GhostButtonStyle}"
+                                    AutomationProperties.AutomationId="FinancialOperationsWorkflowActionButton"
+                                    AutomationProperties.Name="{Binding AutomationName}" />
+                        </StackPanel>
+                    </Grid>
                 </Border>
             </StackPanel>
         </Border>

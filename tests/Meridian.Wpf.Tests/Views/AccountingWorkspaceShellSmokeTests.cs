@@ -46,9 +46,14 @@ public sealed class AccountingWorkspaceShellSmokeTests
         xaml.Should().Contain("AccountingHeroPrimaryActionButton");
         xaml.Should().Contain("Text=\"Accounting\"");
         xaml.Should().Contain("Accounting work queues for operations, accounting, reconciliation, reporting, and audit review.");
-        xaml.Should().Contain("FinancialOperationsWorkflowStepsList");
-        xaml.Should().Contain("Financial Operations Workflow");
-        xaml.Should().Contain("Receive Activity -> Match Records -> Resolve Exceptions -> Approve Results -> Produce Evidence");
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"FinancialOperationsWorkflowCheckpoint\"");
+        xaml.Should().Contain("FinancialOperationsWorkflowStatusText");
+        xaml.Should().Contain("FinancialOperationsWorkflowDetailText");
+        xaml.Should().Contain("FinancialOperationsWorkflowActionButton");
+        xaml.Should().Contain("Financial Operations Checkpoint");
+        xaml.Should().NotContain("FinancialOperationsWorkflowStepsList");
+        xaml.Should().NotContain("FinancialOperationsWorkflowStepTemplate");
+        xaml.Should().NotContain("Receive Activity -> Match Records -> Resolve Exceptions -> Approve Results -> Produce Evidence");
         xaml.Should().Contain("Accounting is locked until a fund-linked context is selected.");
         xaml.Should().Contain("Text=\"Active Accounting Context\"");
         xaml.Should().Contain("Text=\"Recent Accounting Work\"");
@@ -90,6 +95,8 @@ public sealed class AccountingWorkspaceShellSmokeTests
         code.Should().Contain("UpdateAccountingHero();");
         code.Should().Contain("BuildLaneHeroState(");
         code.Should().Contain("BuildFinancialOperationsWorkflowSteps(");
+        code.Should().Contain("ApplyFinancialOperationsWorkflowCheckpoint(");
+        code.Should().Contain("ResolveCurrentFinancialOperationsWorkflowStep(steps)");
         code.Should().Contain("SetLaneSummary(AccountingLaneSummaryText");
         code.Should().Contain("Switch context to unlock accounting queues");
         code.Should().Contain("Accounting Scope");

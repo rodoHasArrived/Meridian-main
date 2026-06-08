@@ -121,10 +121,11 @@ shared catalog.
 The desktop diagnostics surface reads colocation profile state through
 `Meridian.Platform.Performance.ICoLocationProfileActivator`, keeping runtime-performance ownership
 in Platform while WPF remains a presentation surface.
-Cluster Status now uses the shared workstation dense-table and inspector primitives for
-coordination ownership review. Mesh-disabled or missing lease-manager sessions fail closed with a
-blocked refresh posture, while enabled sessions expose read-only node rows, selected-node lease
-freshness, and manual refresh readiness without mutating coordination leases from WPF.
+Cluster Status now uses `WorkstationTableInspectorControl` for coordination ownership review,
+keeping the cluster summary above the selected-node inspector and the action inspector below it.
+Mesh-disabled or missing lease-manager sessions fail closed with a blocked refresh posture, while
+enabled sessions expose read-only node rows, selected-node lease freshness, and manual refresh
+readiness without mutating coordination leases from WPF.
 When shared workflow actions carry parameterized evidence targets such as
 `EvidenceWorkbench:accounting-record/{recordId}`, the workflow library keeps the raw target tag for
 navigation and filtering but presents the operator action target as `EvidenceWorkbench` so route
@@ -201,8 +202,9 @@ automation IDs use canonical `AccountingWorkspace*` names. Remaining `Governance
 `GovernanceWorkspace` names are route aliases only.
 The Accounting shell also projects the design-document Financial Operations workflow
 (`Receive Activity`, `Match Records`, `Resolve Exceptions`, `Approve Results`, `Produce Evidence`)
-from `AccountingWorkspacePresentationService`, so operator workflow state is derived from shared
-fund, reconciliation, approval, and audit posture instead of XAML-local copy.
+from `AccountingWorkspacePresentationService` into a compact current-checkpoint row instead of a
+multi-step strip, so operator workflow state is derived from shared fund, reconciliation, approval,
+and audit posture without crowding the queue workbench.
 Fund Ledger and Fund Accounts drill-in surfaces use Accounting wording for route banners,
 report-pack preview, account queues, and reconciliation guidance while preserving compatibility
 type names where needed.
@@ -223,9 +225,11 @@ page sweeps; Strategy Runs now opens on compact action chrome instead of a dupli
 `DenseDataGridControl` plus tabbed inspector panes for run, evidence, comparison, and artifact
 context, and surfaces selected-run or comparison guidance as disabled-action tooltips while
 preserving existing page tags and navigation commands. Account Portfolio and Aggregate Portfolio
-now use compact action strips, shared dense position tables, selected-position inspectors, and
-disabled-action tooltips for refresh/Security Master readiness while preserving their existing
-account and aggregate API read paths. Run Portfolio follows the same drill-in
+now use `WorkstationTableInspectorControl` with custom empty-state content for recovery guidance;
+Aggregate Portfolio also uses the table-header slot for its concentration strip. Both keep compact
+action strips, shared dense position tables, selected-position inspectors, and disabled-action
+tooltips for refresh/Security Master readiness while preserving their existing account and
+aggregate API read paths. Run Portfolio follows the same drill-in
 pattern: the duplicate hero is replaced by compact run actions, retained positions render through
 `WorkstationTableInspectorControl`, the selected position drives an inspector rail, and Security
 Master/run drill-in commands expose their disabled reasons through view-model-owned tooltips. Run
@@ -259,9 +263,10 @@ Data shell state providers and XAML page bases use canonical `DataWorkspace*` na
 `DataOperationsShell` and `DataOperationsWorkspace` tags are inbound route aliases only.
 `DataWorkspacePresentationBuilder` projects the design-document Data Integration workflow
 (`Connect Source`, `Acquire Data`, `Validate Data`, `Normalize Data`, `Store Data`, `Publish Data`)
-into WPF inspector state so desktop operators see the same provider-to-publish progression as the
-browser workstation without XAML-owned workflow copy. Retained `DataOperations` route and smoke-test
-names are compatibility shims only, not the canonical presentation-model taxonomy.
+into a compact current-checkpoint status in the filter bar and operations summary instead of a
+dedicated workflow card, so desktop operators keep provider-to-publish progression visible without
+crowding the queue workbench. Retained `DataOperations` route and smoke-test names are
+compatibility shims only, not the canonical presentation-model taxonomy.
 `MainPageViewModel` retains the design-document primary operator workflow route map
 (`Import`, `Validate`, `Reconcile`, `Investigate`, `Approve`, `Report`), while the shared
 `WorkspaceEvidenceStripControl` keeps visible shell chrome to compact next-action and evidence

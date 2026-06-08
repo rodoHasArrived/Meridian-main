@@ -40,6 +40,7 @@ public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
     private DataHeroState _heroState = DataHeroState.Loading();
     private IReadOnlyList<DataHeroMetric> _heroMetrics = DataHeroMetric.LoadingMetrics();
     private IReadOnlyList<DataIntegrationWorkflowStep> _integrationWorkflowSteps = DataIntegrationWorkflowStep.LoadingSteps();
+    private DataIntegrationWorkflowStep _currentIntegrationWorkflowStep = ResolveCurrentIntegrationWorkflowStep(DataIntegrationWorkflowStep.LoadingSteps());
     private string _heroScopeText = "Provider and storage health";
     private string _heroSummaryText = "Provider health, backfill priority, storage follow-up, and export delivery stay in one fixed shell.";
     private string _queueScopeBadgeText = "Provider posture";
@@ -110,8 +111,35 @@ public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
     public IReadOnlyList<DataIntegrationWorkflowStep> IntegrationWorkflowSteps
     {
         get => _integrationWorkflowSteps;
-        private set => SetProperty(ref _integrationWorkflowSteps, value);
+        private set
+        {
+            var steps = value ?? DataIntegrationWorkflowStep.LoadingSteps();
+            if (SetProperty(ref _integrationWorkflowSteps, steps))
+            {
+                CurrentIntegrationWorkflowStep = ResolveCurrentIntegrationWorkflowStep(steps);
+            }
+        }
     }
+
+    public DataIntegrationWorkflowStep CurrentIntegrationWorkflowStep
+    {
+        get => _currentIntegrationWorkflowStep;
+        private set
+        {
+            if (SetProperty(ref _currentIntegrationWorkflowStep, value))
+            {
+                RaisePropertyChanged(nameof(IntegrationWorkflowStateText));
+                RaisePropertyChanged(nameof(IntegrationWorkflowStateDetail));
+                RaisePropertyChanged(nameof(IntegrationWorkflowBadgeTone));
+            }
+        }
+    }
+
+    public string IntegrationWorkflowStateText => $"{CurrentIntegrationWorkflowStep.Label}: {CurrentIntegrationWorkflowStep.StatusLabel}";
+
+    public string IntegrationWorkflowStateDetail => CurrentIntegrationWorkflowStep.Description;
+
+    public string IntegrationWorkflowBadgeTone => CurrentIntegrationWorkflowStep.Tone;
 
     public string HeroScopeText
     {
@@ -435,6 +463,19 @@ public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
 
     private static bool HasHeroAction(string label, string actionId)
         => !string.IsNullOrWhiteSpace(label) && !string.IsNullOrWhiteSpace(actionId);
+
+    internal static DataIntegrationWorkflowStep ResolveCurrentIntegrationWorkflowStep(IReadOnlyList<DataIntegrationWorkflowStep> steps)
+    {
+        if (steps.Count == 0)
+        {
+            return DataIntegrationWorkflowStep.LoadingSteps()[0];
+        }
+
+        return steps.FirstOrDefault(step => string.Equals(step.Status, WorkflowStepStatus.Current, StringComparison.Ordinal))
+            ?? steps.FirstOrDefault(step => string.Equals(step.Status, WorkflowStepStatus.Pending, StringComparison.Ordinal))
+            ?? steps.LastOrDefault()
+            ?? DataIntegrationWorkflowStep.LoadingSteps()[0];
+    }
 
     private static PaneDropAction ResolveDockAction(string actionId) => actionId switch
     {

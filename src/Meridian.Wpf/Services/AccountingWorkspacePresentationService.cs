@@ -200,6 +200,34 @@ internal static class AccountingWorkspacePresentationService
         ];
     }
 
+    internal static FinancialOperationsWorkflowStep ResolveCurrentFinancialOperationsWorkflowStep(
+        IReadOnlyList<FinancialOperationsWorkflowStep> steps)
+    {
+        if (steps.Count == 0)
+        {
+            return CreateFinancialOperationsWorkflowStep(
+                "receive-activity",
+                "Receive Activity",
+                "Choose a fund-linked operating context before accounting activity can be loaded.",
+                WorkflowStepStatus.Current,
+                "Context required",
+                WorkspaceTone.Warning,
+                "SwitchContext");
+        }
+
+        return steps.FirstOrDefault(step => string.Equals(step.Status, WorkflowStepStatus.Current, StringComparison.Ordinal))
+            ?? steps.FirstOrDefault(step => string.Equals(step.Status, WorkflowStepStatus.Pending, StringComparison.Ordinal))
+            ?? steps.LastOrDefault()
+            ?? CreateFinancialOperationsWorkflowStep(
+                "receive-activity",
+                "Receive Activity",
+                "Choose a fund-linked operating context before accounting activity can be loaded.",
+                WorkflowStepStatus.Current,
+                "Context required",
+                WorkspaceTone.Warning,
+                "SwitchContext");
+    }
+
     internal static AccountingLaneSummaries BuildLaneSummaries(
         FundProfileDetail? profile,
         FundOperationsWorkspaceDto? workspace,
