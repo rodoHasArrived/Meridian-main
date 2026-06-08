@@ -1,6 +1,22 @@
 # Repository-local Codex defaults must fail closed. Individual operators can
 # override these settings in their user profile when a task genuinely needs
-# broader filesystem access or unattended execution.
+# broader filesystem access, unattended execution, or personal model choices.
+
+# Keep filesystem and approval posture conservative for shared project config.
+# Documented Codex values include: read-only, workspace-write, danger-full-access.
 sandbox_mode = "workspace-write"
 
+# Keep command escalation interactive by default. Operators who need automation
+# should override this in their own Codex home, not in repository-local config.
 approval_policy = "on-request"
+
+# Allow the root AGENTS.md plus the narrower .codex/AGENTS.md guidance to fit
+# comfortably while still limiting accidental instruction bloat.
+project_doc_max_bytes = 65536
+
+# Allow legacy agent shims to remain discoverable when a directory lacks
+# AGENTS.md / AGENTS.override.md. Prefer AGENTS.md for new directory-scoped rules.
+project_doc_fallback_filenames = ["CLAUDE.md"]
+
+# Project-local config should stay free of secrets and machine-specific values.
+# Do not add API keys, tokens, user-only paths, or personal model preferences here.
