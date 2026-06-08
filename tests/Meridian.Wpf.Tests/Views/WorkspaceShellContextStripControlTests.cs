@@ -190,6 +190,66 @@ public sealed class WorkspaceShellContextStripControlTests
     }
 
     [Fact]
+    public void Control_ShouldUseCompactStatusBarPresentationWhenRequested()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var control = new WorkspaceShellContextStripControl
+            {
+                Width = 960,
+                IsCompact = true,
+                ShellContext = new WorkspaceShellContext
+                {
+                    WorkspaceTitle = "Accounting",
+                    WorkspaceSubtitle = "Shell",
+                    Badges =
+                    [
+                        new WorkspaceShellBadge
+                        {
+                            Label = "Accounting Scope",
+                            Value = "Andrew",
+                            Glyph = "\uE77B",
+                            Tone = WorkspaceTone.Info
+                        },
+                        new WorkspaceShellBadge
+                        {
+                            Label = "Critical",
+                            Value = "1 unread alert(s)",
+                            Glyph = "\uE7BA",
+                            Tone = WorkspaceTone.Warning
+                        }
+                    ]
+                }
+            };
+
+            var window = CreateHostWindow(control);
+            try
+            {
+                window.Height = 90;
+                window.Show();
+                window.UpdateLayout();
+                control.UpdateLayout();
+
+                var header = control.FindName("WorkspaceContextHeaderPanel").Should().BeOfType<Grid>().Subject;
+                var fullBadges = control.FindName("ContextBadgeItemsControl").Should().BeOfType<ItemsControl>().Subject;
+                var compactBadges = control.FindName("CompactContextBadgeScroller").Should().BeOfType<ScrollViewer>().Subject;
+                var banner = control.FindName("AttentionBanner").Should().BeOfType<Border>().Subject;
+
+                header.Visibility.Should().Be(Visibility.Collapsed);
+                fullBadges.Visibility.Should().Be(Visibility.Collapsed);
+                compactBadges.Visibility.Should().Be(Visibility.Visible);
+                banner.Visibility.Should().Be(Visibility.Collapsed);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
     public void Control_ShouldNotTreatDemoEnvironmentAsAttention()
     {
         WpfTestThread.Run(() =>

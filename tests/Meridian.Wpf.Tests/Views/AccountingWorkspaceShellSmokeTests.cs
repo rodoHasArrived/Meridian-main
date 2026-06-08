@@ -44,6 +44,7 @@ public sealed class AccountingWorkspaceShellSmokeTests
         xaml.Should().NotContain("AutomationProperties.AutomationId=\"GovernanceWorkspaceShellPage\"");
         xaml.Should().Contain("AccountingHeroActionTitleText");
         xaml.Should().Contain("AccountingHeroPrimaryActionButton");
+        xaml.Should().Contain("IsCompact=\"True\"");
         xaml.Should().Contain("Text=\"Accounting\"");
         xaml.Should().Contain("Accounting work queues for operations, accounting, reconciliation, reporting, and audit review.");
         xaml.Should().Contain("AutomationProperties.AutomationId=\"FinancialOperationsWorkflowCheckpoint\"");
@@ -85,6 +86,9 @@ public sealed class AccountingWorkspaceShellSmokeTests
         xaml.Should().Contain("QueueAutomationId=\"AccountingAuditDecisionQueue\"");
         xaml.Should().Contain("DecisionInvoked=\"OnAccountingDecisionInvoked\"");
         xaml.Should().NotContain("QueueItemTemplate");
+        xaml.IndexOf("x:Name=\"ContextStrip\"", StringComparison.Ordinal)
+            .Should()
+            .BeGreaterThan(xaml.IndexOf("AutomationProperties.Name=\"Accounting Dock Manager\"", StringComparison.Ordinal));
 
         code.Should().Contain("GetAccountingWorkflowSummaryAsync");
         code.Should().Contain("AccountingWorkspaceShellStateProvider");
