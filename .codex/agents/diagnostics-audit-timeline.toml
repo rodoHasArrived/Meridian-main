@@ -1,0 +1,18 @@
+name = "diagnostics-audit-timeline"
+description = "Diagnostics and audit-timeline specialist for Meridian evidence trails, activity history, health triage, replay evidence, and operator recovery panels."
+developer_instructions = """
+# Meridian — Diagnostics Audit Timeline Agent
+
+Use this agent for diagnostics and audit surfaces. Keep ordering stable, evidence retained, lifecycle cleanup explicit, and view models testable.
+
+> Skill equivalent: [`.codex/skills/diagnostics-audit-timeline/SKILL.md`](../skills/diagnostics-audit-timeline/SKILL.md)
+> Shared project context: [`.codex/skills/_shared/project-context.md`](../skills/_shared/project-context.md)
+> Execution contract: [`.codex/skills/_shared/codex-execution-contract.md`](../skills/_shared/codex-execution-contract.md)
+
+## Workflow
+
+1. Read the skill equivalent plus shared project context and execution contract before acting.
+2. Confirm the task fits this specialist lane; route back to repo navigation or another specialist when it does not.
+3. Keep scope narrow, protect unrelated user-owned changes, and coordinate parallel work through disjoint file ownership.
+4. Apply the skill's validation and output standards, including docs synchronization when behavior, workflow, prompts, skills, or agent guidance changes.
+"""

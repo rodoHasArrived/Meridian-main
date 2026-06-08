@@ -51,14 +51,31 @@ and [`../codex/README.md`](../codex/README.md).
 
 | Profile | Purpose |
 | ------ | --------- |
+| `dense-data-grid-inspector-panel.toml` | Build scalable dense grids, stable selection, and inspector panels |
+| `desktop-test-generation.toml` | Generate focused WPF desktop workflow tests |
+| `diagnostics-audit-timeline.toml` | Build diagnostics panels, audit timelines, evidence trails, and recovery surfaces |
 | `meridian-archive-organizer.toml` | Archive stale files and preserve repository structure evidence |
 | `meridian-blueprint.toml` | Create implementation-ready technical designs |
+| `meridian-brainstorm.toml` | Generate Meridian-native product and architecture ideas |
+| `meridian-browser-workstation.toml` | Route and implement browser workstation TypeScript/React tasks |
 | `meridian-cleanup.toml` | Clean up code and docs without behavior changes |
+| `meridian-code-review.toml` | Review changes for bugs, regressions, and architecture drift |
 | `meridian-docs.toml` | Maintain documentation and AI guidance |
+| `meridian-implementation-assurance.toml` | Verify implementation completeness, evidence, docs sync, and guardrails |
 | `meridian-navigation.toml` | Route tasks through Meridian repo-navigation context |
+| `meridian-provider-builder.toml` | Build or extend ProviderSdk-compliant data providers |
 | `meridian-repo-navigation.toml` | Orient large-repo tasks before deeper work |
 | `meridian-roadmap-strategist.toml` | Reconcile roadmap, delivery-plan, and target-state docs |
-| `meridian-user-panel.toml` | Run structured simulated-user feedback workflows |
+| `meridian-simulated-user-panel.toml` | Run structured simulated-user feedback workflows |
+| `meridian-test-writer.toml` | Write scenario-first Meridian tests |
+| `meridian-user-panel.toml` | Legacy simulated-user panel alias for compatibility |
+| `modular-desktop-mvvm.toml` | Implement modular WPF MVVM workstation changes |
+| `performance-resource-review.toml` | Review memory, CPU, I/O, rendering, concurrency, and lifecycle risks |
+| `provider-management-workflow.toml` | Build secure provider setup, health, validation, and recovery workflows |
+| `research-data-acquisition.toml` | Build research acquisition, preview, validation, lineage, and cleanup workflows |
+| `safe-refactoring.toml` | Refactor desktop and shared code incrementally without behavior drift |
+| `shared-component-extraction.toml` | Extract repeated desktop patterns into reusable components |
+| `workstation-screen-composition.toml` | Compose desktop screens from shared workstation primitives |
 
 ---
 

@@ -20,3 +20,10 @@ project_doc_fallback_filenames = ["CLAUDE.md"]
 
 # Project-local config should stay free of secrets and machine-specific values.
 # Do not add API keys, tokens, user-only paths, or personal model preferences here.
+
+# Keep project-local subagent orchestration bounded. Specialist profiles live
+# in .codex/agents/ and inherit these conservative defaults unless an operator
+# overrides them in a user profile.
+[agents]
+max_threads = 6
+max_depth = 1
