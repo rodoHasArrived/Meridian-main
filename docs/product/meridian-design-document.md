@@ -687,7 +687,7 @@ Evaluate Opportunity
 * Margin facilities
 * Mortgage analysis
 * Synthetic financing analysis
-* Total return swaps and contract-for-difference financing
+* Total return swap and contract-for-difference financing
 * Repo and reverse repo financing
 * Securities lending and stock borrow financing
 * Derivatives-based leverage and financing overlays
