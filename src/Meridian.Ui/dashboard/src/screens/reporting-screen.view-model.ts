@@ -143,6 +143,9 @@ export interface ReportingTemplateRow {
   statusVariant: Exclude<ReportingBadgeVariant, "default">;
   sourceLabel: string;
   approvalSummary: string;
+  accessMode: string;
+  accessSummary: string;
+  isAccessible: boolean;
   authoringHref: string;
   actionLabel: string;
   actionAriaLabel: string;
@@ -746,34 +749,63 @@ function countRestatementEvidence(selected: ReportingWorkflowRecord | null, chan
 }
 
 function buildTemplateRows(templates: ReportingTemplateMetadata[]): ReportingTemplateRow[] {
-  return templates.map((template) => ({
-    id: template.templateId,
-    name: template.name,
-    family: template.family,
-    version: template.version,
-    sectionSummary: `${template.sections.length} section${template.sections.length === 1 ? "" : "s"}`,
-    statusLabel: template.lifecycleStatus ?? "Approved",
-    statusVariant: templateStatusVariant(template.lifecycleStatus),
-    sourceLabel: template.isBuiltIn === false ? "Custom" : "Built-in",
-    approvalSummary: template.approvalSummary ?? (
-      template.isBuiltIn === false
-        ? "Custom template approval metadata is pending."
-        : "Built-in approved template."
-    ),
-    authoringHref: template.authoringRoute ?? `/api/fund-structure/reporting/templates/${template.templateId}/versions/${template.version}`,
-    actionLabel: template.isBuiltIn === false ? "Review version" : "Draft revision",
-    actionAriaLabel: template.isBuiltIn === false
-      ? `Review ${template.name} template version`
-      : `Draft a revision of ${template.name}`,
-    canRunOnDemand: (template.isBuiltIn !== false) && (template.lifecycleStatus ?? "Approved") === "Approved",
-    runActionLabel: "Run report",
-    runActionAriaLabel: `Run ${template.name} report on demand`,
-    runDisabledReason: template.isBuiltIn === false
-      ? "Custom template rendering is not available for on-demand runs yet."
-      : (template.lifecycleStatus ?? "Approved") === "Approved"
-        ? null
-        : "Only approved templates can be run on demand."
-  }));
+  return templates.map((template) => {
+    const gridCount = template.reportWriterGrids?.length ?? 0;
+    const gridMetricCount = template.reportWriterGrids?.reduce((total, grid) => total + grid.metricCount + grid.formulaCount, 0) ?? 0;
+    const sectionLabel = `${template.sections.length} section${template.sections.length === 1 ? "" : "s"}`;
+    const gridLabel = gridCount > 0
+      ? `; ${gridCount} report-writer grid${gridCount === 1 ? "" : "s"} with ${gridMetricCount} metric${gridMetricCount === 1 ? "" : "s"}`
+      : "";
+    const isAccessible = template.isAccessible ?? true;
+    const lifecycleStatus = template.lifecycleStatus ?? "Approved";
+    const runDisabledReason = resolveTemplateRunDisabledReason(template, isAccessible, lifecycleStatus);
+
+    return {
+      id: template.templateId,
+      name: template.name,
+      family: template.family,
+      version: template.version,
+      sectionSummary: `${sectionLabel}${gridLabel}`,
+      statusLabel: lifecycleStatus,
+      statusVariant: templateStatusVariant(template.lifecycleStatus),
+      sourceLabel: template.isBuiltIn === false ? "Custom" : "Built-in",
+      approvalSummary: template.approvalSummary ?? (
+        template.isBuiltIn === false
+          ? "Custom template approval metadata is pending."
+          : "Built-in approved template."
+      ),
+      accessMode: template.accessMode ?? "CompanyWide",
+      accessSummary: template.accessSummary ?? "Company-wide access",
+      isAccessible,
+      authoringHref: template.authoringRoute ?? `/api/fund-structure/reporting/templates/${template.templateId}/versions/${template.version}`,
+      actionLabel: template.isBuiltIn === false ? "Review version" : "Draft revision",
+      actionAriaLabel: template.isBuiltIn === false
+        ? `Review ${template.name} template version`
+        : `Draft a revision of ${template.name}`,
+      canRunOnDemand: isAccessible && (template.isBuiltIn !== false) && lifecycleStatus === "Approved",
+      runActionLabel: "Run report",
+      runActionAriaLabel: `Run ${template.name} report on demand`,
+      runDisabledReason
+    };
+  });
+}
+
+function resolveTemplateRunDisabledReason(
+  template: ReportingTemplateMetadata,
+  isAccessible: boolean,
+  lifecycleStatus: string
+): string | null {
+  if (!isAccessible) {
+    return "Current user does not have access to this report template.";
+  }
+
+  if (template.isBuiltIn === false) {
+    return "Custom template rendering uses the template render endpoint; on-demand runs still use approved built-in orchestration templates.";
+  }
+
+  return lifecycleStatus === "Approved"
+    ? null
+    : "Only approved templates can be run on demand.";
 }
 
 function templateStatusVariant(status?: string): Exclude<ReportingBadgeVariant, "default"> {

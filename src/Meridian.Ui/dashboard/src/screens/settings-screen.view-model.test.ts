@@ -1111,6 +1111,11 @@ describe("buildSettingsScreenViewModel", () => {
           href: "/api/workstation/security-master/securities",
           method: "GET",
           isBrowserNavigable: true
+        }),
+        expect.objectContaining({
+          href: "/api/ledger/private-capital/activity",
+          method: "GET",
+          isBrowserNavigable: true
         })
       ])
     );

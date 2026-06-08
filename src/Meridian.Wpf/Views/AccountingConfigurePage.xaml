@@ -289,6 +289,42 @@
                                         <DataGridTextColumn Header="Validation" Binding="{Binding Evidence}" Width="*" />
                                     </DataGrid.Columns>
                                 </DataGrid>
+                                <TextBlock Text="Capital Account Activity" Style="{StaticResource CardHeaderStyle}" Margin="0,16,0,0" />
+                                <DataGrid ItemsSource="{Binding ManualJournalCapitalAccountRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="ManualJournalCapitalAccountGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Capital Account" Binding="{Binding Name}" Width="260" />
+                                        <DataGridTextColumn Header="Net" Binding="{Binding Status}" Width="110" />
+                                        <DataGridTextColumn Header="Events" Binding="{Binding Detail}" Width="190" />
+                                        <DataGridTextColumn Header="Activity" Binding="{Binding Evidence}" Width="*" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <TextBlock Text="Fund Events" Style="{StaticResource CardHeaderStyle}" Margin="0,16,0,0" />
+                                <DataGrid ItemsSource="{Binding ManualJournalFundEventRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="ManualJournalFundEventGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Event" Binding="{Binding Name}" Width="260" />
+                                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110" />
+                                        <DataGridTextColumn Header="Amount" Binding="{Binding Detail}" Width="180" />
+                                        <DataGridTextColumn Header="Capital Account" Binding="{Binding Evidence}" Width="*" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <TextBlock Text="Ledger Impacts" Style="{StaticResource CardHeaderStyle}" Margin="0,16,0,0" />
+                                <DataGrid ItemsSource="{Binding ManualJournalLedgerImpactRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="ManualJournalLedgerImpactGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Event" Binding="{Binding Name}" Width="220" />
+                                        <DataGridTextColumn Header="Readiness" Binding="{Binding Status}" Width="130" />
+                                        <DataGridTextColumn Header="Debits / Credits" Binding="{Binding Detail}" Width="220" />
+                                        <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="*" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <TextBlock Text="Report Outputs" Style="{StaticResource CardHeaderStyle}" Margin="0,16,0,0" />
+                                <DataGrid ItemsSource="{Binding ManualJournalReportOutputRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="ManualJournalReportOutputGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Output" Binding="{Binding Name}" Width="260" />
+                                        <DataGridTextColumn Header="Readiness" Binding="{Binding Status}" Width="110" />
+                                        <DataGridTextColumn Header="Amount" Binding="{Binding Detail}" Width="180" />
+                                        <DataGridTextColumn Header="Evidence / Route" Binding="{Binding Evidence}" Width="*" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
                             </StackPanel>
                         </Border>
                     </Grid>

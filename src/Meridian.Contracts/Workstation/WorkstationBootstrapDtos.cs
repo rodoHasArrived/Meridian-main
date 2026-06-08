@@ -252,6 +252,14 @@ public sealed record WorkstationReportingProfilePayload(
 /// <summary>
 /// Template metadata exposed to browser and desktop Reporting operator surfaces.
 /// </summary>
+public sealed record WorkstationReportWriterGridPayload(
+    string GridId,
+    string Title,
+    string Kind,
+    int DimensionCount,
+    int MetricCount,
+    int FormulaCount);
+
 public sealed record WorkstationReportingTemplatePayload(
     string TemplateId,
     string Family,
@@ -262,7 +270,11 @@ public sealed record WorkstationReportingTemplatePayload(
     bool IsBuiltIn = true,
     bool IsLatestApproved = true,
     string ApprovalSummary = "Built-in approved template",
-    string AuthoringRoute = "/api/fund-structure/reporting/templates");
+    string AuthoringRoute = "/api/fund-structure/reporting/templates",
+    IReadOnlyList<WorkstationReportWriterGridPayload>? ReportWriterGrids = null,
+    string AccessMode = "CompanyWide",
+    string AccessSummary = "Company-wide access",
+    bool IsAccessible = true);
 
 /// <summary>
 /// Lightweight reporting run status with lineage and approval posture for operator surfaces.

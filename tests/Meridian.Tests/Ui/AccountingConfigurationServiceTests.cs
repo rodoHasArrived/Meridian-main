@@ -1,5 +1,9 @@
 using FluentAssertions;
+using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Workstation;
+using Meridian.Ledger;
+using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
 
 namespace Meridian.Tests.Ui;
@@ -145,6 +149,300 @@ public sealed class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_ManualJournalEntry_PrivateCapitalTreasuryContextSavesAndSubmitsApproval()
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var service = CreateManualJournalEntryWorkbenchService(configuration);
+        var draft = BalancedManualJournalEntry() with
+        {
+            EntryType = ManualJournalEntryTypeDto.CapitalCall,
+            Memo = "Capital call for Fund Alpha LP",
+            Lines =
+            [
+                new ManualJournalEntryLineDto("debit-cash", AccountingTemplateLineSideDto.Debit, 100m, "USD", "Assets:Cash"),
+                new ManualJournalEntryLineDto("credit-capital", AccountingTemplateLineSideDto.Credit, 100m, "USD", "Equity:Capital Contributions")
+            ],
+            TreasuryContext = new TreasuryLedgerContextDto(
+                EffectiveDate: new DateOnly(2026, 6, 30),
+                IdempotencyKey: "manual-je:fund-alpha:capital-call:20260630",
+                FundEventId: "fund-event:fund-alpha:capital-call:20260630",
+                FundEventType: "CapitalCall",
+                CapitalAccountId: "capital-account:fund-alpha:lp-1",
+                InvestorId: "investor:lp-1",
+                PaymentIntentId: "payment:fund-alpha:capital-call:20260630",
+                SettlementReference: "settlement:fund-alpha:capital-call:20260630")
+        };
+
+        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(draft, "ops-user"));
+        var submitted = await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
+            saved.JournalEntryId,
+            saved.FundProfileId,
+            "controller",
+            saved.Version));
+
+        saved.EntryType.Should().Be(ManualJournalEntryTypeDto.CapitalCall);
+        saved.TreasuryContext.Should().NotBeNull();
+        saved.TreasuryContext!.IdempotencyKey.Should().Be("manual-je:fund-alpha:capital-call:20260630");
+        saved.TreasuryContext.CapitalAccountId.Should().Be("capital-account:fund-alpha:lp-1");
+        submitted.Status.Should().Be(ManualJournalEntryStatusDto.Submitted);
+        submitted.ValidationIssues.Should().NotContain(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        var workbench = await service.GetWorkbenchAsync("fund-alpha");
+        workbench.PrivateCapitalActivity.Should().NotBeNull();
+        workbench.PrivateCapitalActivity!.FundEvents.Should().ContainSingle(item =>
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.EntryType == ManualJournalEntryTypeDto.CapitalCall &&
+            item.JournalStatus == ManualJournalEntryStatusDto.Submitted &&
+            item.NetCapitalActivity == 100m);
+        workbench.PrivateCapitalActivity.CapitalAccounts.Should().ContainSingle(item =>
+            item.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
+            item.Contributions == 100m &&
+            item.NetActivity == 100m);
+        workbench.PrivateCapitalActivity.CapitalAccountSubledgerEntries.Should().ContainSingle(item =>
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
+            item.ApprovalState == ManualJournalEntryStatusDto.Submitted &&
+            item.NetCapitalActivity == 100m &&
+            item.RunningNetActivity == 100m);
+        workbench.PrivateCapitalActivity.LedgerImpacts.Should().ContainSingle(item =>
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
+            item.ApprovalState == ManualJournalEntryStatusDto.Submitted &&
+            item.TotalDebits == 100m &&
+            item.TotalCredits == 100m &&
+            item.IsBalanced &&
+            item.IsPostingReady &&
+            item.Lines.Count == 2);
+        workbench.PrivateCapitalActivity.ReportOutputs.Should().ContainSingle(item =>
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.ReportOutputType == "CapitalCallNotice" &&
+            item.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
+            item.ApprovalState == ManualJournalEntryStatusDto.Submitted &&
+            item.EvidenceLinkCount == 1 &&
+            item.IsReportReady);
+        workbench.PrivateCapitalActivity.SubmittedFundEventCount.Should().Be(1);
+        workbench.PrivateCapitalActivity.ApprovalQueueCount.Should().Be(1);
+        var directActivity = await service.GetPrivateCapitalActivityAsync("fund-alpha");
+        directActivity.FundEvents.Should().ContainSingle(item =>
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.JournalStatus == ManualJournalEntryStatusDto.Submitted);
+        directActivity.CapitalAccounts.Should().ContainSingle(item =>
+            item.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
+            item.NetActivity == 100m);
+        directActivity.CapitalAccountSubledgerEntries.Should().ContainSingle(item =>
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.NetCapitalActivity == 100m &&
+            item.RunningNetActivity == 100m);
+        directActivity.LedgerImpacts.Should().ContainSingle(item =>
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.TotalDebits == 100m &&
+            item.TotalCredits == 100m &&
+            item.IsPostingReady);
+        directActivity.ReportOutputs.Should().ContainSingle(item =>
+            item.ReportOutputType == "CapitalCallNotice" &&
+            item.IsReportReady);
+    }
+
+    [Fact]
+    public async Task Scenario_PrivateCapitalActivityProjection_IncludesPostedFundEventLedgerCapitalAccountAndPublishedReportOutput()
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var timestamp = new DateTimeOffset(2026, 6, 30, 17, 0, 0, TimeSpan.Zero);
+        var journalEntryId = Guid.NewGuid();
+        var cashLedgerEntryId = Guid.NewGuid();
+        var capitalLedgerEntryId = Guid.NewGuid();
+        var reportPackId = Guid.NewGuid();
+        const string fundEventId = "fund-event:fund-alpha:capital-call:posted";
+        var journal = new JournalEntry(
+            journalEntryId,
+            timestamp,
+            "Posted Fund Alpha capital call",
+            [
+                new LedgerEntry(
+                    cashLedgerEntryId,
+                    journalEntryId,
+                    timestamp,
+                    new LedgerAccount("Cash", LedgerAccountType.Asset, FinancialAccountId: "entity-master"),
+                    250000m,
+                    0m,
+                    "Posted Fund Alpha capital call"),
+                new LedgerEntry(
+                    capitalLedgerEntryId,
+                    journalEntryId,
+                    timestamp,
+                    new LedgerAccount("Capital Contributions", LedgerAccountType.Equity, FinancialAccountId: "capital-account:fund-alpha:lp-1"),
+                    0m,
+                    250000m,
+                    "Posted Fund Alpha capital call")
+            ],
+            new JournalEntryMetadata(
+                ActivityType: "CapitalCall",
+                EffectiveDate: new DateOnly(2026, 6, 30),
+                IdempotencyKey: "posted:fund-alpha:capital-call:20260630",
+                FundEventId: fundEventId,
+                FundEventType: "CapitalCall",
+                CapitalAccountId: "capital-account:fund-alpha:lp-1",
+                InvestorId: "investor:lp-1",
+                PaymentIntentId: "payment:fund-alpha:posted-capital-call",
+                SettlementReference: "settlement:fund-alpha:posted-capital-call",
+                Tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["evidenceLinks"] = "/api/workstation/evidence/subjects/private-capital/capital-call-source",
+                    ["automatedJournalStatus"] = "Posted",
+                    ["automatedJournalApprovalId"] = "approval:capital-call-controller",
+                    ["approvedBy"] = "controller"
+                }));
+        var journalStore = new PostedPrivateCapitalLedgerJournalStore(
+            new LedgerBookRecord(
+                ledgerBookId,
+                "fund-alpha",
+                Guid.NewGuid(),
+                FundStructureNodeKindDto.Fund,
+                "Fund Alpha GAAP book",
+                "USD",
+                timestamp,
+                timestamp),
+            new LedgerAccountingPeriod(
+                periodId,
+                ledgerBookId,
+                2026,
+                6,
+                "2026-06",
+                new DateOnly(2026, 6, 1),
+                new DateOnly(2026, 6, 30),
+                "Closed",
+                timestamp,
+                timestamp,
+                1),
+            new LedgerJournalEntryRecord(
+                journal,
+                Guid.NewGuid(),
+                periodId,
+                CommandId: null,
+                CorrelationId: null,
+                GlobalSequence: 1,
+                CreatedAt: timestamp));
+        var workflowService = new ReportPackWorkflowService(new StaticReportPackWorkflowRecordStore(
+            new ReportPackWorkflowRecordDto(
+                reportPackId,
+                "fund-alpha",
+                "capital-account:fund-alpha:lp-1",
+                "2026-06",
+                new VersionedReportTemplateIdDto("CapitalAccountStatement", 1),
+                ReportPackWorkflowStateDto.Published,
+                3,
+                timestamp,
+                "controller",
+                timestamp,
+                [new ReportPackAuditEventDto(timestamp, "controller", "publish", ReportPackWorkflowStateDto.Approved, ReportPackWorkflowStateDto.Published)],
+                null,
+                LineProvenance:
+                [
+                    new ReportPackLineProvenanceDto(
+                        "capital-account.contribution",
+                        "ledger",
+                        fundEventId,
+                        "ledger-evidence-1",
+                        LedgerEntryId: capitalLedgerEntryId.ToString("D"),
+                        ReportValue: "250000",
+                        ApprovalId: "approval:capital-call-controller")
+                ],
+                Publication: new ReportPackPublicationManifestDto(
+                    "manifest-capital-call-1",
+                    "/retained/report-packs/capital-call-1.json",
+                    "sha256:capital-call",
+                    "controller",
+                    timestamp,
+                    [new ReportPackEvidenceLinkDto("publication-evidence-1", "Publication manifest", "/api/workstation/evidence/report-packs/capital-call-1", "EvidenceVault", timestamp)]))));
+        var service = CreateManualJournalEntryWorkbenchService(configuration, journalStore, workflowService);
+
+        var activity = await service.GetPrivateCapitalActivityAsync("fund-alpha", ledgerBookId);
+
+        activity.FundEventCount.Should().Be(1);
+        activity.PostedFundEventCount.Should().Be(1);
+        activity.PublishedReportOutputCount.Should().Be(1);
+        activity.NetCapitalActivity.Should().Be(250000m);
+        activity.FundEvents.Should().ContainSingle(item =>
+            item.FundEventId == fundEventId &&
+            item.JournalStatus == ManualJournalEntryStatusDto.Approved &&
+            item.IsPosted &&
+            item.NetCapitalActivity == 250000m &&
+            item.EvidenceLinks.Contains("/api/workstation/evidence/subjects/private-capital/capital-call-source"));
+        activity.CapitalAccounts.Should().ContainSingle(item =>
+            item.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
+            item.Contributions == 250000m &&
+            item.NetActivity == 250000m);
+        activity.CapitalAccountSubledgerEntries.Should().ContainSingle(item =>
+            item.FundEventId == fundEventId &&
+            item.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
+            item.ApprovalState == ManualJournalEntryStatusDto.Approved &&
+            item.IsPosted &&
+            item.NetCapitalActivity == 250000m &&
+            item.RunningNetActivity == 250000m &&
+            item.EvidenceLinks.Contains("/api/workstation/evidence/subjects/private-capital/capital-call-source"));
+        activity.LedgerImpacts.Should().ContainSingle(item =>
+            item.FundEventId == fundEventId &&
+            item.ApprovalState == ManualJournalEntryStatusDto.Approved &&
+            item.IsPostingReady &&
+            item.LineCount == 2);
+        activity.ReportOutputs.Should().ContainSingle(item =>
+            item.FundEventId == fundEventId &&
+            item.ReportOutputType == "GovernedReportPack" &&
+            item.DisplayName == "CapitalAccountStatement v1" &&
+            item.IsReportReady &&
+            item.IsPublished &&
+            item.ReportPackId == reportPackId.ToString("D") &&
+            item.ReportWorkflowState == ReportPackWorkflowStateDto.Published.ToString() &&
+            item.PublicationManifestId == "manifest-capital-call-1" &&
+            item.RetainedManifestPath == "/retained/report-packs/capital-call-1.json" &&
+            item.PublicationEvidenceHash == "sha256:capital-call" &&
+            item.PublishedAtUtc == timestamp &&
+            item.PublishedBy == "controller" &&
+            item.ReportLineProvenanceCount == 1 &&
+            item.EvidenceLinks.Contains("/api/workstation/evidence/report-packs/capital-call-1"));
+        activity.ValidationIssues.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Scenario_ManualJournalEntry_PrivateCapitalDraftRequiresTreasuryContextBeforeApproval()
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var service = CreateManualJournalEntryWorkbenchService(configuration);
+        var draft = BalancedManualJournalEntry() with
+        {
+            EntryType = ManualJournalEntryTypeDto.Distribution,
+            Lines =
+            [
+                new ManualJournalEntryLineDto("debit-distribution", AccountingTemplateLineSideDto.Debit, 100m, "USD", "Equity:Distributions"),
+                new ManualJournalEntryLineDto("credit-cash", AccountingTemplateLineSideDto.Credit, 100m, "USD", "Assets:Cash")
+            ],
+            TreasuryContext = null
+        };
+
+        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(draft, "ops-user"));
+        var act = async () => await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
+            saved.JournalEntryId,
+            saved.FundProfileId,
+            "controller",
+            saved.Version));
+
+        saved.Status.Should().Be(ManualJournalEntryStatusDto.Draft);
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*critical validation issues*");
+        var validated = await service.ValidateDraftAsync(new ValidateManualJournalEntryDraftRequest(saved, "controller"));
+        validated.ValidationIssues.Should().Contain(issue => issue.Code == "manual-je.treasury-context-missing");
+        var workbench = await service.GetWorkbenchAsync("fund-alpha");
+        workbench.PrivateCapitalActivity.Should().NotBeNull();
+        workbench.PrivateCapitalActivity!.FundEvents.Should().BeEmpty();
+        workbench.PrivateCapitalActivity.LedgerImpacts.Should().BeEmpty();
+        workbench.PrivateCapitalActivity.ValidationIssues.Should().Contain(issue => issue.Code == "manual-je.private-capital-context-pending");
+    }
+
+    [Fact]
     public async Task Scenario_ManualJournalEntry_UnbalancedDraftCannotSubmitApproval()
     {
         var configuration = CreateService();
@@ -253,12 +551,100 @@ public sealed class AccountingConfigurationServiceTests
     }
 
     private static ManualJournalEntryWorkbenchService CreateManualJournalEntryWorkbenchService(
-        IAccountingConfigurationService configurationService)
+        IAccountingConfigurationService configurationService,
+        ILedgerJournalStore? journalStore = null,
+        ReportPackWorkflowService? reportPackWorkflowService = null)
     {
         return new ManualJournalEntryWorkbenchService(
             new InMemoryManualJournalEntryDraftStore(),
             configurationService,
-            new InMemoryAccountingActionAuditStore());
+            new InMemoryAccountingActionAuditStore(),
+            journalStore: journalStore,
+            reportPackWorkflowService: reportPackWorkflowService);
+    }
+
+    private sealed class PostedPrivateCapitalLedgerJournalStore(
+        LedgerBookRecord book,
+        LedgerAccountingPeriod period,
+        LedgerJournalEntryRecord record) : ILedgerJournalStore
+    {
+        public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default) =>
+            throw new NotSupportedException("Test store is read-only.");
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(
+                periodId == period.PeriodId ? [record] : []);
+        }
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(
+                record.AggregateId == aggregateId ? [record] : []);
+        }
+
+        public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<LedgerAccountingPeriod?>(periodId == period.PeriodId ? period : null);
+        }
+
+        public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
+            Guid? ledgerBookId = null,
+            string? status = null,
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var matches =
+                (!ledgerBookId.HasValue || period.LedgerBookId == ledgerBookId.Value) &&
+                (string.IsNullOrWhiteSpace(status) || string.Equals(period.Status, status, StringComparison.Ordinal)) &&
+                (string.IsNullOrWhiteSpace(fundProfileId) || string.Equals(book.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase)) &&
+                (!fundStructureNodeId.HasValue || book.FundStructureNodeId == fundStructureNodeId.Value);
+            return Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>(matches ? [period] : []);
+        }
+
+        public Task<LedgerAccountingPeriod> SavePeriodAsync(
+            LedgerAccountingPeriod period,
+            long expectedVersion,
+            PeriodCloseEventRecord? closeEvent = null,
+            CancellationToken ct = default) =>
+            throw new NotSupportedException("Test store is read-only.");
+
+        public Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<LedgerBookRecord?>(ledgerBookId == book.LedgerBookId ? book : null);
+        }
+
+        public Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            FundStructureNodeKindDto? fundStructureNodeKind = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var matches =
+                (string.IsNullOrWhiteSpace(fundProfileId) || string.Equals(book.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase)) &&
+                (!fundStructureNodeId.HasValue || book.FundStructureNodeId == fundStructureNodeId.Value) &&
+                (!fundStructureNodeKind.HasValue || book.FundStructureNodeKind == fundStructureNodeKind.Value);
+            return Task.FromResult<IReadOnlyList<LedgerBookRecord>>(matches ? [book] : []);
+        }
+
+        public Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default) =>
+            throw new NotSupportedException("Test store is read-only.");
+    }
+
+    private sealed class StaticReportPackWorkflowRecordStore(params ReportPackWorkflowRecordDto[] records) : IReportPackWorkflowRecordStore
+    {
+        private IReadOnlyList<ReportPackWorkflowRecordDto> _records = records;
+
+        public IReadOnlyList<ReportPackWorkflowRecordDto> Load() => _records;
+
+        public void Save(IReadOnlyList<ReportPackWorkflowRecordDto> records) => _records = records.ToArray();
     }
 
     private static async Task SeedBalancedConfigurationAsync(AccountingConfigurationService service)
@@ -290,6 +676,14 @@ public sealed class AccountingConfigurationServiceTests
         await service.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
             FundProfileId: "fund-alpha",
             Node: new ChartOfAccountsNodeDto("accumulated-amortization", "Assets:Accumulated Amortization", "Accumulated Amortization", "ContraAsset"),
+            Actor: "ops-user"));
+        await service.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            FundProfileId: "fund-alpha",
+            Node: new ChartOfAccountsNodeDto("capital-contributions", "Equity:Capital Contributions", "Capital Contributions", "Equity"),
+            Actor: "ops-user"));
+        await service.UpsertChartNodeAsync(new UpsertChartOfAccountsNodeRequest(
+            FundProfileId: "fund-alpha",
+            Node: new ChartOfAccountsNodeDto("distributions", "Equity:Distributions", "Distributions", "Equity"),
             Actor: "ops-user"));
     }
 

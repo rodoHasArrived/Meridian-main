@@ -71,6 +71,100 @@ const accounting: AccountingWorkspaceResponse = {
       }
     ],
     summary: "2 export profiles available.",
+    portfolioCuts: [
+      {
+        cutId: "fund:consolidated",
+        label: "Consolidated fund",
+        kind: "Fund",
+        currency: "USD",
+        grossExposure: 400,
+        netExposure: 400,
+        longMarketValue: 400,
+        shortMarketValue: 0,
+        totalCash: 3250,
+        pendingSettlement: 150,
+        realizedPnl: 20,
+        unrealizedPnl: 30,
+        totalPnl: 50,
+        shadowNav: 3650,
+        shadowNavVariance: 2500,
+        sourceCount: 3,
+        tags: ["fund", "consolidated"],
+        asOf: "2026-04-11T16:00:00Z",
+        evidenceRoute: "/api/fund-structure/report-packs",
+        shadowNavNote: "Shadow NAV is sourced from the shared NAV attribution service.",
+        versionStamp: "portfolio-cut:20260411160000:runs-1:accounts-2"
+      },
+      {
+        cutId: "strategy:carry-1",
+        label: "Carry Strategy",
+        kind: "Strategy",
+        currency: "USD",
+        grossExposure: 400,
+        netExposure: 400,
+        longMarketValue: 400,
+        shortMarketValue: 0,
+        totalCash: 750,
+        pendingSettlement: 0,
+        realizedPnl: 20,
+        unrealizedPnl: 30,
+        totalPnl: 50,
+        shadowNav: 1150,
+        shadowNavVariance: 0,
+        sourceCount: 1,
+        tags: ["run-governance-001"],
+        asOf: "2026-04-11T16:00:00Z",
+        evidenceRoute: "/api/fund-structure/report-packs",
+        shadowNavNote: "Strategy shadow NAV uses the latest contributing run equity.",
+        versionStamp: "portfolio-cut:20260411160000:runs-1:accounts-0"
+      }
+    ],
+    structuredExports: [
+      {
+        exportId: "regulatory-trial-balance",
+        label: "Regulatory trial balance",
+        purpose: "Regulatory",
+        format: "Csv",
+        dataset: "fund-trial-balance",
+        consumer: "Regulatory and compliance reporting",
+        schemaVersion: 1,
+        rowCount: 12,
+        fieldCount: 10,
+        sourceCount: 18,
+        currency: "USD",
+        asOf: "2026-04-11T16:00:00Z",
+        isReady: true,
+        retainedPath: "exports/reporting/fund-alpha/20260411160000/regulatory-trial-balance.csv",
+        route: "/api/fund-structure/reporting/structured-exports/regulatory-trial-balance?fundProfileId=fund-alpha",
+        dataDictionaryRoute: "/api/workstation/reporting",
+        validationSummary: "12 row(s), 10 field(s), and 18 source record(s) are ready.",
+        evidenceRoute: "/api/fund-structure/report-packs",
+        versionStamp: "structured-export:20260411160000:rows-12:sources-18:schema-1",
+        tags: ["regulatory", "trial-balance", "ledger"]
+      },
+      {
+        exportId: "investment-portfolio-cuts",
+        label: "Investment portfolio cuts",
+        purpose: "InvestmentDecision",
+        format: "Xlsx",
+        dataset: "portfolio-reporting-cuts",
+        consumer: "Investment and risk decision workflows",
+        schemaVersion: 1,
+        rowCount: 2,
+        fieldCount: 13,
+        sourceCount: 4,
+        currency: "USD",
+        asOf: "2026-04-11T16:00:00Z",
+        isReady: true,
+        retainedPath: "exports/reporting/fund-alpha/20260411160000/investment-portfolio-cuts.xlsx",
+        route: "/api/fund-structure/reporting/structured-exports/investment-portfolio-cuts?fundProfileId=fund-alpha",
+        dataDictionaryRoute: "/api/workstation/reporting",
+        validationSummary: "2 row(s), 13 field(s), and 4 source record(s) are ready.",
+        evidenceRoute: "/api/fund-structure/report-packs",
+        versionStamp: "structured-export:20260411160000:rows-2:sources-4:schema-1",
+        tags: ["investment", "portfolio-cuts", "shadow-nav"]
+      }
+    ],
     templates: [
       {
         templateId: "investor-monthly-statement",
@@ -152,6 +246,39 @@ describe("ReportingScreen", () => {
     expect(screen.getByLabelText(
       "Compliance archive report-pack distribution: No governed report pack is queued for Compliance archive."
     )).toBeInTheDocument();
+  });
+
+  it("renders portfolio reporting cuts from the shared reporting payload", () => {
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
+
+    expect(screen.getByRole("region", { name: "Portfolio reporting cuts" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Consolidated fund Fund portfolio reporting cut")).toHaveTextContent("Gross");
+    expect(screen.getByLabelText("Consolidated fund Fund portfolio reporting cut")).toHaveTextContent("$400.00");
+    expect(screen.getByLabelText("Consolidated fund Fund portfolio reporting cut")).toHaveTextContent("P&L");
+    expect(screen.getByLabelText("Consolidated fund Fund portfolio reporting cut")).toHaveTextContent("$50.00");
+    expect(screen.getByLabelText("Consolidated fund Fund portfolio reporting cut")).toHaveTextContent("Shadow NAV");
+    expect(screen.getByLabelText("Carry Strategy Strategy portfolio reporting cut")).toHaveTextContent(
+      "portfolio-cut:20260411160000:runs-1:accounts-0"
+    );
+  });
+
+  it("renders structured exports from the shared reporting payload", () => {
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
+
+    expect(screen.getByRole("region", { name: "Structured reporting exports" })).toBeInTheDocument();
+    const regulatoryRow = screen.getByRole("listitem", { name: "Regulatory trial balance structured export" });
+    expect(within(regulatoryRow).getByText("Regulatory")).toBeInTheDocument();
+    expect(within(regulatoryRow).getByText("Csv")).toBeInTheDocument();
+    expect(within(regulatoryRow).getByText("12")).toBeInTheDocument();
+    expect(within(regulatoryRow).getByText("exports/reporting/fund-alpha/20260411160000/regulatory-trial-balance.csv")).toBeInTheDocument();
+    expect(within(regulatoryRow).getByRole("link", { name: "Open Regulatory trial balance structured export" })).toHaveAttribute(
+      "href",
+      "/api/fund-structure/reporting/structured-exports/regulatory-trial-balance?fundProfileId=fund-alpha"
+    );
+
+    const investmentRow = screen.getByRole("listitem", { name: "Investment portfolio cuts structured export" });
+    expect(within(investmentRow).getByText("InvestmentDecision")).toBeInTheDocument();
+    expect(within(investmentRow).getByText("structured-export:20260411160000:rows-2:sources-4:schema-1")).toBeInTheDocument();
   });
 
   it("renders template designer lifecycle controls for governed versions", () => {
@@ -318,7 +445,28 @@ describe("ReportingScreen", () => {
             deliveryReference: "board-portal:packet-1",
             note: "Delivered after approval.",
             failureReason: null,
-            evidenceLinks: []
+            evidenceLinks: [],
+            package: {
+              packageId: "pkg-board-1",
+              reportId: "11111111-1111-1111-1111-111111111111",
+              distributionId: "board-reporting-committee",
+              deliveryMode: "SecurePortal",
+              secureLink: "/portal/reporting/packages/pkg-board-1?token=abc123",
+              portalRoute: "/reporting/report-packs/11111111-1111-1111-1111-111111111111/packages/pkg-board-1",
+              formats: ["Pdf", "Xlsx", "Csv"],
+              artifacts: [
+                {
+                  format: "Pdf",
+                  artifactName: "board-pack.pdf",
+                  contentType: "application/pdf",
+                  retainedPath: "workstation/reporting/deliveries/report-1/board-pack.pdf",
+                  byteSize: 128,
+                  evidenceId: "delivery-artifact:pdf"
+                }
+              ],
+              createdAtUtc: "2026-05-03T20:15:00Z",
+              retainedManifestPath: "workstation/reporting/deliveries/report-1/manifest.json"
+            }
           }
         ]
       }
@@ -335,6 +483,16 @@ describe("ReportingScreen", () => {
     expect(screen.getByRole("list", { name: "Report-pack delivery attempts" })).toBeInTheDocument();
     expect(screen.getByLabelText("Board reporting committee delivery attempt Delivered")).toHaveTextContent(
       "board-portal:packet-1"
+    );
+    expect(screen.getByLabelText("Board reporting committee delivery attempt Delivered")).toHaveTextContent(
+      "SecurePortal package · Pdf, Xlsx, Csv"
+    );
+    expect(screen.getByLabelText("Board reporting committee delivery attempt Delivered")).toHaveTextContent(
+      "/portal/reporting/packages/pkg-board-1?token=abc123"
+    );
+    expect(screen.getByRole("link", { name: "/portal/reporting/packages/pkg-board-1?token=abc123" })).toHaveAttribute(
+      "href",
+      "/portal/reporting/packages/pkg-board-1?token=abc123"
     );
   });
 

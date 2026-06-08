@@ -295,6 +295,9 @@ describe("useReportingScreenViewModel", () => {
         statusVariant: "success",
         sourceLabel: "Built-in",
         approvalSummary: "Built-in approved template for InvestorStatement.",
+        accessMode: "CompanyWide",
+        accessSummary: "Company-wide access",
+        isAccessible: true,
         authoringHref: "/api/fund-structure/reporting/templates/investor-monthly-statement/versions/1",
         actionLabel: "Draft revision",
         actionAriaLabel: "Draft a revision of Investor Monthly Statement",
@@ -336,6 +339,69 @@ describe("useReportingScreenViewModel", () => {
       ]
     });
     expect(result.current.hasRunStatusRows).toBe(true);
+  });
+
+  it("surfaces report-template access posture and disables inaccessible runs", () => {
+    const restrictedReporting: GovernanceReportingSummary = {
+      ...reporting,
+      templates: [
+        {
+          ...reporting.templates![0],
+          accessMode: "Private",
+          accessSummary: "Private user-locked access owned by report.owner.",
+          isAccessible: false
+        }
+      ]
+    };
+
+    const { result } = renderHook(() => useReportingScreenViewModel(restrictedReporting));
+
+    expect(result.current.templateRows[0]).toMatchObject({
+      accessMode: "Private",
+      accessSummary: "Private user-locked access owned by report.owner.",
+      isAccessible: false,
+      canRunOnDemand: false,
+      runDisabledReason: "Current user does not have access to this report template."
+    });
+  });
+
+  it("summarizes report-writer grids on governed template rows", () => {
+    const withGridTemplate: GovernanceReportingSummary = {
+      ...reporting,
+      templates: [
+        ...(reporting.templates ?? []),
+        {
+          templateId: "custom-exposure-grid",
+          family: "CustomReport",
+          name: "Custom Exposure Grid",
+          version: "1",
+          sections: ["exposures"],
+          lifecycleStatus: "Approved",
+          isBuiltIn: false,
+          isLatestApproved: true,
+          approvalSummary: "Approved by controller.admin (APP-GRID-1).",
+          authoringRoute: "/api/fund-structure/reporting/templates/custom-exposure-grid/versions/1",
+          reportWriterGrids: [
+            {
+              gridId: "sector-pivot",
+              title: "Sector Pivot",
+              kind: "Pivot",
+              dimensionCount: 1,
+              metricCount: 2,
+              formulaCount: 1
+            }
+          ]
+        }
+      ]
+    };
+
+    const { result } = renderHook(() => useReportingScreenViewModel(withGridTemplate));
+
+    expect(result.current.templateRows.find((row) => row.id === "custom-exposure-grid")).toMatchObject({
+      sectionSummary: "1 section; 1 report-writer grid with 3 metrics",
+      sourceLabel: "Custom",
+      runDisabledReason: "Custom template rendering uses the template render endpoint; on-demand runs still use approved built-in orchestration templates."
+    });
   });
 
   it("builds a route-specific report-pack approval task panel", () => {

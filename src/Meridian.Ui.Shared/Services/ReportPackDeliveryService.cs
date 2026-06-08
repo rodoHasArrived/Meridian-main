@@ -1,4 +1,7 @@
 using System.Text.Json;
+using System.Security.Cryptography;
+using System.Text;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
@@ -117,6 +120,34 @@ public sealed class ReportPackDeliveryService
         }
     }
 
+    public ReportPackDeliveryPackageDto GetPackage(Guid reportId, Guid attemptId, string? token)
+    {
+        var attempt = GetDeliveredAttempt(reportId, attemptId)
+            ?? throw new KeyNotFoundException("delivery package not found");
+        EnsureValidPackageToken(attempt, token);
+        return attempt.Package!;
+    }
+
+    public ReportPackDeliveryPackageDto GetPortalPackage(string packageId, string? token)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(packageId);
+        ReportPackDeliveryAttemptDto? attempt;
+        lock (_gate)
+        {
+            attempt = _attempts.FirstOrDefault(item =>
+                item.Package is not null
+                && string.Equals(item.Package.PackageId, packageId.Trim(), StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (attempt is null)
+        {
+            throw new KeyNotFoundException("delivery package not found");
+        }
+
+        EnsureValidPackageToken(attempt, token);
+        return attempt.Package!;
+    }
+
     public ReportPackDeliveryAttemptDto Deliver(Guid reportId, ReportPackDeliveryRequestDto request, string fallbackActor)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -130,7 +161,9 @@ public sealed class ReportPackDeliveryService
             request.DeliveryReference,
             request.Note,
             failureReason: null,
-            request.EvidenceLinks);
+            request.EvidenceLinks,
+            request.Formats,
+            request.DeliveryMode);
     }
 
     public ReportPackDeliveryAttemptDto RecordFailure(Guid reportId, ReportPackDeliveryFailureRequestDto request, string fallbackActor)
@@ -147,7 +180,9 @@ public sealed class ReportPackDeliveryService
             request.DeliveryReference,
             request.Note,
             request.FailureReason,
-            request.EvidenceLinks);
+            request.EvidenceLinks,
+            formats: null,
+            deliveryMode: null);
     }
 
     private ReportPackDeliveryAttemptDto AppendAttempt(
@@ -158,7 +193,9 @@ public sealed class ReportPackDeliveryService
         string? deliveryReference,
         string? note,
         string? failureReason,
-        IReadOnlyList<ReportPackEvidenceLinkDto>? evidenceLinks)
+        IReadOnlyList<ReportPackEvidenceLinkDto>? evidenceLinks,
+        IReadOnlyList<GovernanceReportArtifactFormatDto>? formats,
+        ReportPackDeliveryModeDto? deliveryMode)
     {
         var record = _workflowService.GetRecord(reportId)
             ?? throw new KeyNotFoundException("report pack not found");
@@ -178,6 +215,16 @@ public sealed class ReportPackDeliveryService
             var reference = string.IsNullOrWhiteSpace(deliveryReference)
                 ? $"delivery:{normalizedDistributionId}:{reportId:N}:{attemptNumber}"
                 : deliveryReference.Trim();
+            var package = state == ReportPackDeliveryStateDto.Delivered
+                ? BuildDeliveryPackage(record, policy, attemptId, attemptNumber, formats, deliveryMode)
+                : null;
+            var packageEvidenceLinks = package?.Artifacts
+                .Select(static artifact => new ReportPackEvidenceLinkDto(
+                    artifact.EvidenceId,
+                    artifact.ArtifactName,
+                    artifact.RetainedPath,
+                    "report-pack-delivery"))
+                .ToArray() ?? [];
             var attempt = new ReportPackDeliveryAttemptDto(
                 attemptId,
                 reportId,
@@ -192,7 +239,8 @@ public sealed class ReportPackDeliveryService
                 reference,
                 NormalizeNullable(note),
                 NormalizeNullable(failureReason),
-                NormalizeEvidenceLinks(evidenceLinks));
+                NormalizeEvidenceLinks((evidenceLinks ?? []).Concat(packageEvidenceLinks).ToArray()),
+                package);
             _attempts.Add(attempt);
             _store?.Save(_attempts);
             return attempt;
@@ -208,6 +256,167 @@ public sealed class ReportPackDeliveryService
 
     private static string? NormalizeNullable(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static ReportPackDeliveryPackageDto BuildDeliveryPackage(
+        ReportPackWorkflowRecordDto record,
+        ReportPackRunReadService.ReportPackDistributionPolicy policy,
+        Guid attemptId,
+        int attemptNumber,
+        IReadOnlyList<GovernanceReportArtifactFormatDto>? requestedFormats,
+        ReportPackDeliveryModeDto? requestedMode)
+    {
+        var formats = NormalizeFormats(requestedFormats);
+        var mode = requestedMode ?? InferDeliveryMode(policy.Channel);
+        var packageId = $"pkg-{record.ReportId:N}-{policy.DistributionId}-{attemptNumber}";
+        var retainedManifestPath = $"workstation/reporting/deliveries/{record.ReportId:N}/{policy.DistributionId}/{attemptNumber}/manifest.json";
+        var artifacts = formats
+            .Select(format => BuildArtifact(record, policy, packageId, format))
+            .ToArray();
+        var token = BuildSecureToken(record.ReportId, policy.DistributionId, attemptId);
+            var secureLink = mode switch
+            {
+            ReportPackDeliveryModeDto.EmailLink => UiApiRoutes.WithQuery(
+                UiApiRoutes.WithParam(
+                    UiApiRoutes.WithParam(UiApiRoutes.ReportingPackWorkflowDeliveryPackage, "reportId", record.ReportId.ToString("D")),
+                    "attemptId",
+                    attemptId.ToString("D")),
+                $"token={Uri.EscapeDataString(token)}"),
+            ReportPackDeliveryModeDto.SecurePortal => UiApiRoutes.WithQuery(
+                UiApiRoutes.WithParam(UiApiRoutes.ReportingPackDeliveryPortalPackage, "packageId", packageId),
+                $"token={Uri.EscapeDataString(token)}"),
+            ReportPackDeliveryModeDto.EvidenceVault => retainedManifestPath,
+            _ => $"/reporting/report-packs/{record.ReportId:D}/packages/{packageId}"
+        };
+        var portalRoute = $"/reporting/report-packs/{record.ReportId:D}/packages/{packageId}";
+
+        return new ReportPackDeliveryPackageDto(
+            packageId,
+            record.ReportId,
+            policy.DistributionId,
+            mode,
+            secureLink,
+            portalRoute,
+            formats,
+            artifacts,
+            DateTimeOffset.UtcNow,
+            retainedManifestPath);
+    }
+
+    private static ReportPackDeliveryArtifactDto BuildArtifact(
+        ReportPackWorkflowRecordDto record,
+        ReportPackRunReadService.ReportPackDistributionPolicy policy,
+        string packageId,
+        GovernanceReportArtifactFormatDto format)
+    {
+        var extension = ResolveExtension(format);
+        var artifactName = $"{record.TemplateId.Name}-v{record.TemplateId.Version}-{record.Period}-{policy.DistributionId}.{extension}";
+        var retainedPath = $"workstation/reporting/deliveries/{record.ReportId:N}/{policy.DistributionId}/{packageId}/{artifactName}";
+        var evidenceId = $"delivery-artifact:{record.ReportId:N}:{policy.DistributionId}:{format.ToString().ToLowerInvariant()}";
+        var byteSize = Encoding.UTF8.GetByteCount($"{record.ReportId:D}|{policy.DistributionId}|{format}|{retainedPath}|{record.Publication?.EvidenceHash}");
+        return new ReportPackDeliveryArtifactDto(
+            format,
+            artifactName,
+            ResolveContentType(format),
+            retainedPath,
+            byteSize,
+            evidenceId);
+    }
+
+    private static IReadOnlyList<GovernanceReportArtifactFormatDto> NormalizeFormats(
+        IReadOnlyList<GovernanceReportArtifactFormatDto>? requestedFormats)
+    {
+        var formats = requestedFormats is { Count: > 0 }
+            ? requestedFormats
+            : [GovernanceReportArtifactFormatDto.Pdf, GovernanceReportArtifactFormatDto.Xlsx, GovernanceReportArtifactFormatDto.Csv];
+
+        var seen = new HashSet<GovernanceReportArtifactFormatDto>();
+        var normalized = new List<GovernanceReportArtifactFormatDto>(formats.Count);
+        foreach (var format in formats)
+        {
+            if (seen.Add(format))
+            {
+                normalized.Add(format);
+            }
+        }
+
+        return normalized.ToArray();
+    }
+
+    private static ReportPackDeliveryModeDto InferDeliveryMode(string channel)
+    {
+        if (channel.Contains("email", StringComparison.OrdinalIgnoreCase))
+        {
+            return ReportPackDeliveryModeDto.EmailLink;
+        }
+
+        if (channel.Contains("portal", StringComparison.OrdinalIgnoreCase))
+        {
+            return ReportPackDeliveryModeDto.SecurePortal;
+        }
+
+        if (channel.Contains("vault", StringComparison.OrdinalIgnoreCase))
+        {
+            return ReportPackDeliveryModeDto.EvidenceVault;
+        }
+
+        return ReportPackDeliveryModeDto.InternalRoute;
+    }
+
+    private static string ResolveExtension(GovernanceReportArtifactFormatDto format) =>
+        format switch
+        {
+            GovernanceReportArtifactFormatDto.Csv => "csv",
+            GovernanceReportArtifactFormatDto.Xlsx => "xlsx",
+            GovernanceReportArtifactFormatDto.Html => "html",
+            GovernanceReportArtifactFormatDto.Pdf => "pdf",
+            _ => "json"
+        };
+
+    private static string ResolveContentType(GovernanceReportArtifactFormatDto format) =>
+        format switch
+        {
+            GovernanceReportArtifactFormatDto.Csv => "text/csv",
+            GovernanceReportArtifactFormatDto.Xlsx => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            GovernanceReportArtifactFormatDto.Html => "text/html",
+            GovernanceReportArtifactFormatDto.Pdf => "application/pdf",
+            _ => "application/json"
+        };
+
+    private static string BuildSecureToken(Guid reportId, string distributionId, Guid attemptId)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes($"{reportId:D}:{distributionId}:{attemptId:D}:report-pack-delivery"));
+        return Convert.ToHexString(bytes).ToLowerInvariant()[..24];
+    }
+
+    private ReportPackDeliveryAttemptDto? GetDeliveredAttempt(Guid reportId, Guid attemptId)
+    {
+        lock (_gate)
+        {
+            return _attempts.FirstOrDefault(item =>
+                item.ReportId == reportId
+                && item.AttemptId == attemptId
+                && item.State == ReportPackDeliveryStateDto.Delivered
+                && item.Package is not null);
+        }
+    }
+
+    private static void EnsureValidPackageToken(ReportPackDeliveryAttemptDto attempt, string? token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            throw new UnauthorizedAccessException("A valid package token is required.");
+        }
+
+        var expectedToken = BuildSecureToken(attempt.ReportId, attempt.DistributionId, attempt.AttemptId);
+        var suppliedToken = token.Trim();
+        var expectedBytes = Encoding.ASCII.GetBytes(expectedToken);
+        var suppliedBytes = Encoding.ASCII.GetBytes(suppliedToken);
+        if (expectedBytes.Length != suppliedBytes.Length ||
+            !CryptographicOperations.FixedTimeEquals(expectedBytes, suppliedBytes))
+        {
+            throw new UnauthorizedAccessException("A valid package token is required.");
+        }
+    }
 
     private static IReadOnlyList<ReportPackEvidenceLinkDto> NormalizeEvidenceLinks(
         IReadOnlyList<ReportPackEvidenceLinkDto>? evidenceLinks) =>

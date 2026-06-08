@@ -106,10 +106,26 @@ persists chart accounts, templates, posting rules, and accounting action audit e
 persists draft and submitted manual journal records at
 `workstation/accounting/manual-journal-drafts.json`. Manual journal drafts carry a shared
 `ManualJournalEntryTypeDto` so accrual, prepaid expense, expense, amortization, deferral,
-reclassification, reversal, and general adjustment workflows persist as typed accounting records
-instead of client-local labels. Stronger host registrations can still replace those stores, but
-browser and WPF clients should consume the shared services instead of keeping process-local
-accounting configuration or draft state.
+reclassification, reversal, capital-call, distribution, subscription, redemption, LP-transfer,
+management-fee, and general adjustment workflows persist as typed accounting records instead of
+client-local labels. Private-capital entry types require shared treasury ledger context before
+approval submission: effective date, idempotency key, fund-event type/id, and capital account
+context, with optional investor, payment-intent, and settlement references. Stronger host
+registrations can still replace those stores, but browser and WPF clients should consume the shared
+services instead of keeping process-local accounting configuration, treasury-context validation, or
+draft state. `ManualJournalEntryWorkbenchService` now derives a private-capital activity projection
+from retained manual JE drafts and, when registered, `ILedgerJournalStore` posted journals plus
+`ReportPackWorkflowService` workflow records. Posted ledger-backed fund events win over same-id
+drafts, and the projection keeps fund-event rows, ordered capital-account subledger entries,
+ledger-impact rows, capital-account aggregates, published report-output state, signed net activity,
+and incomplete-context warnings server-owned for both browser and WPF consumers. When a posted
+fund event matches a governed report-pack workflow, the projection maps report-pack id, workflow
+state, retained publication manifest details, publication evidence hash, signer/timestamp, and
+matched report-line provenance count into the private-capital report-output row.
+`/api/ledger/private-capital/activity` can also be filtered by `fundEventId`, `capitalAccountId`,
+and `investorId`; the endpoint returns a recomputed slice so report-package drill-throughs retain
+matching events, subledger rows, ledger impacts, report outputs, counts, and net activity without
+leaking unrelated capital-account rows.
 The shared workflow library owns close-lane command routing as well: `AccountingReviewOperationsContinuity`
 targets `OperationsContinuity` and `AccountingReviewCloseReadiness` targets `OperationsClose`, with
 route metadata tied to the operations-continuity API. Browser and WPF clients should consume those
@@ -177,10 +193,19 @@ exposes shared list, draft, submit, approve, reject, and render routes under
 drafts cannot enter review, and approving a new version marks earlier approved records as no longer
 latest without mutating built-in history. Custom draft and approval records are retained under the
 resolved workstation data root at `workstation/reporting/report-templates.json`, so template
-authoring state survives host restart. Browser and WPF clients should render that shared template
-state instead of treating built-in templates as the full authoring workflow. `ReportPackRunReadService`
-uses the same registry list when it is registered, so Reporting payloads include custom template
-drafts, in-review records, approvals, and latest-approved status alongside built-in templates.
+authoring state survives host restart. Approved custom templates can carry report-writer grid
+definitions; the shared registry validates and renders those grids through `ReportWriterGridEngine`
+instead of returning browser-local or WPF-local calculations. Browser and WPF clients should render
+that shared template state instead of treating built-in templates as the full authoring workflow.
+Template definitions and report-pack workflow records now carry shared access policies for
+user-locked, restricted user/group/company, and company-wide report audiences. `ReportAccessPolicyEvaluator`
+normalizes and validates those policies, `/api/fund-structure/reporting/templates*` filters and
+guards template reads/renders with the session actor plus admin override, and the workstation
+Reporting payload filters restricted template and report-pack rows before distribution and recent-run
+aggregates are projected.
+`ReportPackRunReadService` uses the same registry list when it is registered, so Reporting payloads
+include custom template drafts, in-review records, approvals, latest-approved status, and
+report-writer grid metadata alongside built-in templates.
 Generic Reporting orchestration runs and governed report-pack workflow records also share one
 operator read model here. `FileReportingRunStore` persists `ReportingOutputManifest` plus audit
 trail snapshots for scheduled/ad-hoc Reporting runs, `FileReportPackWorkflowRecordStore` persists
@@ -192,10 +217,28 @@ drilldown status instead of reintroducing fixture rows in workstation bootstrap 
 Those recent-run rows also include typed drilldown links and next-action references for evidence,
 approval submission/review, publication, release review, restatement, and archival work so clients
 can render clickable routes while preserving reference-only POST/action metadata.
+Fund-operations Reporting payloads now include portfolio reporting cuts derived from the same
+shared cash/financing, strategy-run portfolio, account, and NAV attribution state used by
+Accounting. `FundOperationsWorkspaceReadService` emits consolidated fund, strategy, and user-tag
+rows with exposure, cash, P&L, shadow-NAV, variance, source-count, and version-stamp fields so
+browser and WPF clients do not recalculate report cuts from separate portfolio APIs.
+The same read service also emits structured export descriptors for regulatory trial-balance,
+warehouse ledger-fact, and investment portfolio-cut outputs, and serves
+`/api/fund-structure/reporting/structured-exports/{exportId}` from the same source-backed workspace
+projection. The JSON payload includes stable column metadata, culture-invariant string row values,
+readiness warnings, retained-path metadata, and deterministic version stamps so downstream
+regulatory, warehousing, and investment-decision consumers can ingest governed data without
+browser-local export shaping.
 `ReportPackDeliveryService` persists delivery and delivery-failure attempts under the resolved
 workstation data root at `workstation/reporting/report-pack-deliveries.json`; published and
 restated workflow records can therefore show real delivery history, retry attempts, recipient
-state, and last-sent timestamps instead of static distribution placeholders. `ReportingScheduleService`
+state, and last-sent timestamps instead of static distribution placeholders. Delivered attempts
+also receive deterministic package metadata with default PDF/XLSX/CSV artifacts, retained-package
+paths, secure email-link or portal URLs, and delivery-mode inference for portal, vault, and
+internal-route channels; callers can override the mode and requested formats in
+`ReportPackDeliveryRequestDto`. Package manifest reads are token-gated by
+`ReportPackDeliveryService`, using constant-time token comparison and shared GET routes for the
+email-link package URL and `/portal/reporting/packages/{packageId}`. `ReportingScheduleService`
 persists operator-managed schedule records at `workstation/reporting/reporting-schedules.json`,
 runs due schedules through `IReportingOrchestrationService`, advances next due/as-of dates, and
 projects schedule run results back through the shared Reporting payload. `ReportingRunCommandService`
@@ -500,10 +543,17 @@ closed-period summaries across a selected book, fund, node, accounting basis, an
 regulatory, investor, and internal reporting surfaces.
 Manual journal entry workbench routes under `/api/ledger/journal-entry-workbench*` persist draft
 and submitted approval records under the resolved workstation data root. The shared service
-validates GL account, balance, currency, Security Master, typed evidence attachments, and version
-state before save or approval submission. Draft save remains permissive for in-progress work, but
-approval submission requires retained source evidence so browser and WPF clients do not present
-process-local accounting work as durable ledger evidence.
+validates GL account, balance, currency, Security Master, typed evidence attachments, private-capital
+treasury context, and version state before save or approval submission. Draft save remains
+permissive for in-progress work, but approval submission requires retained source evidence and, for
+private-capital entry types, retry-safe fund-event/capital-account context so browser and WPF
+clients do not present process-local accounting work as durable ledger evidence. The workbench
+response includes the shared private-capital activity projection, which skips incomplete fund-event
+drafts and surfaces ledger-impact, projection, and report-output readiness warnings instead of
+inventing capital-account, GL-impact, or stakeholder-package rows. The read-only
+`/api/ledger/private-capital/activity` endpoint returns that same projection directly, giving
+Reporting, browser diagnostics, WPF, and later LP/audit review surfaces a first-class activity
+read model without loading the manual journal authoring payload.
 Closed Operations Continuity workflow detail payloads include the governed close-package
 publication manifest metadata produced by the close command: signer, sign-off rationale, retained
 manifest id/route, evidence hash, report pack id, linked evidence, and checklist approvals.

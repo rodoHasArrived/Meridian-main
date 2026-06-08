@@ -30,6 +30,8 @@ import {
   coveredCallRunStatusEndpoint,
   coveredCallRunsEndpoint,
   exportPreviewEndpoint,
+  reportPackDeliveryPackageEndpoint,
+  reportPackDeliveryPortalPackageEndpoint,
   reportPackEvidenceBundleEndpoint,
   executionAuditEndpoint,
   executionManualOverrideClearEndpoint,
@@ -146,6 +148,7 @@ describe("workstation API endpoint catalog", () => {
       assetOperations: "/api/workstation/assets",
       data: "/api/workstation/data",
       accounting: "/api/workstation/accounting",
+      privateCapitalActivity: "/api/ledger/private-capital/activity",
       reporting: "/api/workstation/reporting",
       workflowSummary: "/api/workstation/workflow-summary",
       operationsContinuity: "/api/workstation/operations/continuity",
@@ -238,6 +241,17 @@ describe("workstation API endpoint catalog", () => {
     expect(FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingWorkbench).toBe("/api/fund-structure/ledger-mapping-view");
     expect(FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingAssignments).toBe("/api/fund-structure/ledger-mapping-assignments");
     expect(FUND_STRUCTURE_API_ENDPOINTS.transactionLabPreview).toBe("/api/fund-structure/accounting/transaction-lab/preview");
+    expect(FUND_STRUCTURE_API_ENDPOINTS.reportPackWorkflowDeliveryPackage).toBe(
+      "/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/package"
+    );
+    expect(FUND_STRUCTURE_API_ENDPOINTS.reportPackDeliveryPortalPackage).toBe("/portal/reporting/packages/{packageId}");
+    expect(FUND_STRUCTURE_API_ENDPOINTS.reportingStructuredExport).toBe("/api/fund-structure/reporting/structured-exports/{exportId}");
+    expect(reportPackDeliveryPackageEndpoint("report / 1", "attempt / 1", "tok / 1")).toBe(
+      "/api/fund-structure/reporting/packs/report%20%2F%201/deliveries/attempt%20%2F%201/package?token=tok+%2F+1"
+    );
+    expect(reportPackDeliveryPortalPackageEndpoint("pkg / 1", "tok / 1")).toBe(
+      "/portal/reporting/packages/pkg%20%2F%201?token=tok+%2F+1"
+    );
   });
 
   it("builds Chief of Staff workstation endpoint routes", () => {

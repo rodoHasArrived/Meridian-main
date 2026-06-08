@@ -197,9 +197,65 @@ public sealed class ReportPackWorkflowServiceTests
 
         Action act = () => svc.Submit(draft.Definition.TemplateId, "report.author");
 
-        draft.ValidationIssues.Should().Contain("At least one report section is required.");
+        draft.ValidationIssues.Should().Contain("At least one report section or report writer grid is required.");
         act.Should().Throw<InvalidOperationException>()
-            .WithMessage("Template custom-board-pack@v1 is not ready for review: At least one report section is required.");
+            .WithMessage("Template custom-board-pack@v1 is not ready for review: At least one report section or report writer grid is required.");
+    }
+
+    [Fact]
+    public void TemplateRegistry_RenderApprovedReportWriterGridTemplate_ReturnsStructuredGridResults()
+    {
+        var svc = new ReportTemplateRegistryService();
+        var draft = svc.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "custom-exposure-grid",
+                "Custom Exposure Grid",
+                [],
+                [new ReportTemplateParameterDefinitionDto("period", Required: true)],
+                Family: "CustomReport",
+                Rationale: "No-code exposure writer",
+                Grids:
+                [
+                    new ReportWriterGridDefinitionDto(
+                        "sector-pivot",
+                        "Sector Pivot",
+                        ReportWriterGridKindDto.Pivot,
+                        RowFields: ["sector"],
+                        Metrics:
+                        [
+                            new ReportWriterMetricDefinitionDto("marketValue", "marketValue"),
+                            new ReportWriterMetricDefinitionDto("pnl", "pnl")
+                        ],
+                        Formulas: [new ReportWriterFormulaDefinitionDto("returnPct", "{pnl} / {marketValue} * 100")])
+                ]),
+            "report.author");
+
+        draft.ValidationIssues.Should().BeEmpty();
+        svc.Submit(draft.Definition.TemplateId, "report.author", "ready");
+        svc.Approve(
+            draft.Definition.TemplateId,
+            new ReportTemplateDecisionRequestDto("Controller approved no-code grid", "APP-GRID-1"),
+            "controller.admin");
+
+        var rendered = svc.Render(new RenderReportTemplateRequestDto(
+            draft.Definition.TemplateId,
+            new Dictionary<string, string> { ["period"] = "2026-05" },
+            [
+                new Dictionary<string, string> { ["sector"] = "Technology", ["marketValue"] = "100", ["pnl"] = "10" },
+                new Dictionary<string, string> { ["sector"] = "Technology", ["marketValue"] = "50", ["pnl"] = "5" },
+                new Dictionary<string, string> { ["sector"] = "Rates", ["marketValue"] = "50", ["pnl"] = "-2" }
+            ]));
+
+        rendered.MissingRequiredParameters.Should().BeEmpty();
+        rendered.RenderedContent.Should().Contain("grids=sector-pivot:2r");
+        rendered.Grids.Should().ContainSingle(grid => grid.GridId == "sector-pivot");
+        var grid = rendered.Grids!.Single();
+        grid.Columns.Select(column => column.Key).Should().ContainInOrder("sector", "marketValue", "pnl", "returnPct");
+        grid.Rows.Should().Contain(row =>
+            row.Values["sector"] == "Technology" &&
+            row.Values["marketValue"] == "150" &&
+            row.Values["pnl"] == "15" &&
+            row.Values["returnPct"] == "10");
     }
 
     [Fact]
@@ -661,29 +717,118 @@ public sealed class ReportPackWorkflowServiceTests
                 Actor: "fund-controller",
                 DeliveryReference: "board-portal:packet-1",
                 Note: "Delivered after publication.",
-                EvidenceLinks: [new ReportPackEvidenceLinkDto("delivery-evidence-1", "Board portal receipt", "/evidence/board-portal-receipt", "delivery")]),
+                EvidenceLinks: [new ReportPackEvidenceLinkDto("delivery-evidence-1", "Board portal receipt", "/evidence/board-portal-receipt", "delivery")],
+                Formats:
+                [
+                    GovernanceReportArtifactFormatDto.Pdf,
+                    GovernanceReportArtifactFormatDto.Xlsx,
+                    GovernanceReportArtifactFormatDto.Csv
+                ],
+                DeliveryMode: ReportPackDeliveryModeDto.EmailLink),
             fallbackActor: "fallback");
 
         attempt.State.Should().Be(ReportPackDeliveryStateDto.Delivered);
         attempt.AttemptNumber.Should().Be(1);
         attempt.Recipient.Should().Be("Board reporting committee");
         attempt.DeliveryReference.Should().Be("board-portal:packet-1");
+        attempt.Package.Should().NotBeNull();
+        attempt.Package!.DeliveryMode.Should().Be(ReportPackDeliveryModeDto.EmailLink);
+        attempt.Package.Formats.Should().Equal(
+            [
+                GovernanceReportArtifactFormatDto.Pdf,
+                GovernanceReportArtifactFormatDto.Xlsx,
+                GovernanceReportArtifactFormatDto.Csv
+            ]);
+        attempt.Package.Artifacts.Should().Contain(artifact =>
+            artifact.Format == GovernanceReportArtifactFormatDto.Pdf &&
+            artifact.ContentType == "application/pdf" &&
+            artifact.RetainedPath.Contains("/board-reporting-committee/", StringComparison.OrdinalIgnoreCase));
+        attempt.Package.Artifacts.Should().Contain(artifact =>
+            artifact.Format == GovernanceReportArtifactFormatDto.Xlsx &&
+            artifact.ContentType == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        attempt.Package.Artifacts.Should().Contain(artifact =>
+            artifact.Format == GovernanceReportArtifactFormatDto.Csv &&
+            artifact.ContentType == "text/csv");
+        attempt.Package.SecureLink.Should().Contain("/package?token=");
+        attempt.EvidenceLinks.Should().Contain(link => link.Source == "report-pack-delivery");
+        var token = attempt.Package.SecureLink.Split("token=", 2, StringSplitOptions.None)[1];
+        service.GetPackage(published.ReportId, attempt.AttemptId, token).PackageId.Should().Be(attempt.Package.PackageId);
+        service.GetPortalPackage(attempt.Package.PackageId, token).ReportId.Should().Be(published.ReportId);
+        service.Invoking(item => item.GetPackage(published.ReportId, attempt.AttemptId, "bad-token"))
+            .Should().Throw<UnauthorizedAccessException>()
+            .WithMessage("A valid package token is required.");
 
         var reloaded = new ReportPackDeliveryService(workflow, store);
         reloaded.GetHistory(published.ReportId).Should().ContainSingle(item =>
             item.DistributionId == "board-reporting-committee" &&
-            item.DeliveryReference == "board-portal:packet-1");
+            item.DeliveryReference == "board-portal:packet-1" &&
+            item.Package != null &&
+            item.Package.DeliveryMode == ReportPackDeliveryModeDto.EmailLink);
 
         var payload = new ReportPackRunReadService(
             new DefaultReportingTemplateCatalog(),
             workflowService: workflow,
             deliveryService: reloaded).BuildPayload();
-        payload.DeliveryAttempts.Should().ContainSingle(item => item.AttemptId == attempt.AttemptId);
+        payload.DeliveryAttempts.Should().ContainSingle(item =>
+            item.AttemptId == attempt.AttemptId &&
+            item.Package != null &&
+            item.Package.Artifacts.Count == 3);
         payload.ReportPackDistributions.Should().Contain(distribution =>
             distribution.DistributionId == "board-reporting-committee" &&
             distribution.State == "Delivered" &&
             distribution.PendingItems == 0 &&
             distribution.LastSentAtUtc != null);
+    }
+
+    [Fact]
+    public async Task Endpoint_DeliveryPackageLink_ReturnsPackageManifestWhenTokenMatches()
+    {
+        await using var app = await CreateFundStructureAppAsync(UserRole.Admin);
+        var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
+        var delivery = app.Services.GetRequiredService<ReportPackDeliveryService>();
+        var created = workflow.Create(
+            "fund-a",
+            "acct-1",
+            "2026-03",
+            new VersionedReportTemplateIdDto("board-pack", 1),
+            "author");
+        workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
+        workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
+        var published = workflow.Publish(
+            created.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:abc123",
+            "manifest-1",
+            "vault/report-packs/manifest-1.json",
+            [new ReportPackEvidenceLinkDto("report-pack-1", "Report pack manifest", "/evidence/report-pack-1", "reporting")]);
+        var attempt = delivery.Deliver(
+            published.ReportId,
+            new ReportPackDeliveryRequestDto(
+                "board-reporting-committee",
+                Actor: "fund-controller",
+                DeliveryMode: ReportPackDeliveryModeDto.SecurePortal),
+            fallbackActor: "fund-controller");
+        var client = app.GetTestClient();
+        var token = attempt.Package!.SecureLink.Split("token=", 2, StringSplitOptions.None)[1];
+
+        var portalResponse = await client.GetAsync(attempt.Package.SecureLink);
+        var emailLinkResponse = await client.GetAsync($"/api/fund-structure/reporting/packs/{published.ReportId:D}/deliveries/{attempt.AttemptId:D}/package?token={token}");
+        var badTokenResponse = await client.GetAsync($"/api/fund-structure/reporting/packs/{published.ReportId:D}/deliveries/{attempt.AttemptId:D}/package?token=bad-token");
+
+        portalResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var portalPackage = await portalResponse.Content.ReadFromJsonAsync<ReportPackDeliveryPackageDto>(ServerJsonOptions);
+        portalPackage.Should().NotBeNull();
+        portalPackage!.PackageId.Should().Be(attempt.Package.PackageId);
+        portalPackage.DeliveryMode.Should().Be(ReportPackDeliveryModeDto.SecurePortal);
+        portalPackage.Artifacts.Should().HaveCount(3);
+
+        emailLinkResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var emailPackage = await emailLinkResponse.Content.ReadFromJsonAsync<ReportPackDeliveryPackageDto>(ServerJsonOptions);
+        emailPackage.Should().NotBeNull();
+        emailPackage!.PackageId.Should().Be(attempt.Package.PackageId);
+        badTokenResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -820,6 +965,161 @@ public sealed class ReportPackWorkflowServiceTests
             template.Version == "1" &&
             template.IsBuiltIn &&
             !template.IsLatestApproved);
+    }
+
+    [Fact]
+    public void ReportPackRunReadService_ProjectsReportWriterGridMetadataForCustomTemplates()
+    {
+        var registry = new ReportTemplateRegistryService();
+        var draft = registry.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "custom-exposure-grid",
+                "Custom Exposure Grid",
+                ["exposures"],
+                [new ReportTemplateParameterDefinitionDto("period", Required: true)],
+                Family: "CustomReport",
+                Rationale: "Expose no-code grid",
+                Grids:
+                [
+                    new ReportWriterGridDefinitionDto(
+                        "strategy-contribution",
+                        "Strategy Contribution",
+                        ReportWriterGridKindDto.Contribution,
+                        RowFields: ["strategy"],
+                        Metrics: [new ReportWriterMetricDefinitionDto("marketValue", "marketValue")],
+                        Formulas: [new ReportWriterFormulaDefinitionDto("weightCheck", "{contributionPercent}")]
+                    )
+                ]),
+            "report.author");
+
+        var payload = new ReportPackRunReadService(
+            new DefaultReportingTemplateCatalog(),
+            templateRegistry: registry).BuildPayload();
+
+        var template = payload.Templates.Single(template => template.TemplateId == draft.Definition.TemplateId.Name);
+        template.ReportWriterGrids.Should().ContainSingle();
+        template.ReportWriterGrids![0].GridId.Should().Be("strategy-contribution");
+        template.ReportWriterGrids[0].Kind.Should().Be(ReportWriterGridKindDto.Contribution.ToString());
+        template.ReportWriterGrids[0].DimensionCount.Should().Be(1);
+        template.ReportWriterGrids[0].MetricCount.Should().Be(1);
+        template.ReportWriterGrids[0].FormulaCount.Should().Be(1);
+    }
+
+    [Fact]
+    public void ReportAccessPolicyEvaluator_MatchesUserGroupCompanyAndOwnerPrincipals()
+    {
+        var policy = new ReportAccessPolicyDto(
+            ReportAccessModeDto.Restricted,
+            OwnerPrincipalId: "owner.user",
+            Principals:
+            [
+                new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.User, "report.user"),
+                new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Group, "ops-control"),
+                new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Company, "company-a")
+            ]);
+
+        ReportAccessPolicyEvaluator.Evaluate(policy, new ReportAccessQueryContext("owner.user")).IsAccessible.Should().BeTrue();
+        ReportAccessPolicyEvaluator.Evaluate(policy, new ReportAccessQueryContext("report.user")).IsAccessible.Should().BeTrue();
+        ReportAccessPolicyEvaluator.Evaluate(policy, new ReportAccessQueryContext("viewer.user", ["ops-control"])).IsAccessible.Should().BeTrue();
+        ReportAccessPolicyEvaluator.Evaluate(policy, new ReportAccessQueryContext("viewer.user", CompanyId: "company-a")).IsAccessible.Should().BeTrue();
+        ReportAccessPolicyEvaluator.Evaluate(policy, new ReportAccessQueryContext("viewer.user", ["unrelated"])).IsAccessible.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ReportPackRunReadService_FiltersTemplatesAndPacksByAccessPolicy()
+    {
+        var registry = new ReportTemplateRegistryService();
+        var privateTemplate = registry.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "owner-only-pack",
+                "Owner Only Pack",
+                ["summary"],
+                [new ReportTemplateParameterDefinitionDto("period", Required: true)],
+                Family: "CustomReport",
+                Rationale: "User-locked report",
+                AccessPolicy: new ReportAccessPolicyDto(ReportAccessModeDto.Private, OwnerPrincipalId: "owner.user")),
+            "owner.user");
+        var groupTemplate = registry.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "ops-control-pack",
+                "Ops Control Pack",
+                ["summary"],
+                [new ReportTemplateParameterDefinitionDto("period", Required: true)],
+                Family: "CustomReport",
+                Rationale: "Ops control report",
+                AccessPolicy: new ReportAccessPolicyDto(
+                    ReportAccessModeDto.Restricted,
+                    Principals: [new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Group, "ops-control")])),
+            "owner.user");
+        var workflow = new ReportPackWorkflowService();
+        var privatePack = workflow.Create(
+            "fund-a",
+            "acct-1",
+            "2026-03",
+            privateTemplate.Definition.TemplateId,
+            "owner.user",
+            accessPolicy: new ReportAccessPolicyDto(ReportAccessModeDto.Private, OwnerPrincipalId: "owner.user"));
+        var groupPack = workflow.Create(
+            "fund-a",
+            "acct-1",
+            "2026-03",
+            groupTemplate.Definition.TemplateId,
+            "owner.user",
+            accessPolicy: new ReportAccessPolicyDto(
+                ReportAccessModeDto.Restricted,
+                Principals: [new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Group, "ops-control")]));
+
+        var readService = new ReportPackRunReadService(
+            new DefaultReportingTemplateCatalog(),
+            workflowService: workflow,
+            templateRegistry: registry);
+        var groupPayload = readService.BuildPayload(new ReportAccessQueryContext("viewer.user", ["ops-control"]));
+        var strangerPayload = readService.BuildPayload(new ReportAccessQueryContext("viewer.user"));
+
+        groupPayload.Templates.Select(static template => template.TemplateId).Should().Contain(groupTemplate.Definition.TemplateId.Name);
+        groupPayload.Templates.Select(static template => template.TemplateId).Should().NotContain(privateTemplate.Definition.TemplateId.Name);
+        groupPayload.RecentRuns.Select(static run => run.RunId).Should().Contain($"report-pack:{groupPack.ReportId:D}");
+        groupPayload.RecentRuns.Select(static run => run.RunId).Should().NotContain($"report-pack:{privatePack.ReportId:D}");
+        groupPayload.Templates.Single(template => template.TemplateId == groupTemplate.Definition.TemplateId.Name).AccessMode.Should().Be(ReportAccessModeDto.Restricted.ToString());
+
+        strangerPayload.Templates.Select(static template => template.TemplateId).Should().NotContain(groupTemplate.Definition.TemplateId.Name);
+        strangerPayload.Templates.Select(static template => template.TemplateId).Should().NotContain(privateTemplate.Definition.TemplateId.Name);
+        strangerPayload.RecentRuns.Select(static run => run.RunId).Should().NotContain($"report-pack:{groupPack.ReportId:D}");
+        strangerPayload.RecentRuns.Select(static run => run.RunId).Should().NotContain($"report-pack:{privatePack.ReportId:D}");
+    }
+
+    [Fact]
+    public async Task Endpoint_RenderPrivateTemplate_WhenCallerIsNotOwner_ReturnsForbidden()
+    {
+        await using var app = await CreateFundStructureAppAsync(UserRole.Analysis, "viewer.user");
+        var registry = app.Services.GetRequiredService<ReportTemplateRegistryService>();
+        var draft = registry.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "private-investor-pack",
+                "Private Investor Pack",
+                ["summary"],
+                [new ReportTemplateParameterDefinitionDto("period", Required: true)],
+                Family: "InvestorStatement",
+                Rationale: "Private report test",
+                AccessPolicy: new ReportAccessPolicyDto(ReportAccessModeDto.Private, OwnerPrincipalId: "owner.user")),
+            "owner.user");
+        registry.Submit(draft.Definition.TemplateId, "owner.user", "ready");
+        registry.Approve(draft.Definition.TemplateId, new ReportTemplateDecisionRequestDto("approved", "APP-PRIVATE-1"), "controller.admin");
+        var client = app.GetTestClient();
+
+        var listResponse = await client.GetAsync("/api/fund-structure/reporting/templates");
+        var renderResponse = await client.PostAsJsonAsync(
+            "/api/fund-structure/reporting/templates/render",
+            new RenderReportTemplateRequestDto(
+                draft.Definition.TemplateId,
+                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["period"] = "2026-03" }),
+            ServerJsonOptions);
+
+        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var records = await listResponse.Content.ReadFromJsonAsync<IReadOnlyList<ReportTemplateGovernanceRecordDto>>(ServerJsonOptions);
+        records.Should().NotBeNull();
+        records!.Select(static record => record.Definition.TemplateId.Name).Should().NotContain(draft.Definition.TemplateId.Name);
+        renderResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -1150,7 +1450,7 @@ public sealed class ReportPackWorkflowServiceTests
         Converters = { new JsonStringEnumConverter() }
     };
 
-    private static async Task<WebApplication> CreateFundStructureAppAsync(UserRole role)
+    private static async Task<WebApplication> CreateFundStructureAppAsync(UserRole role, string username = "controller.admin")
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -1159,11 +1459,12 @@ public sealed class ReportPackWorkflowServiceTests
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton<ReportTemplateRegistryService>();
         builder.Services.AddSingleton<ReportPackWorkflowService>();
+        builder.Services.AddSingleton<ReportPackDeliveryService>();
 
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
-            context.Items[LoginSessionMiddleware.CurrentUserKey] = "controller.admin";
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = username;
             context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = role;
             await next();
         });

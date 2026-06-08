@@ -403,11 +403,10 @@ public sealed class MainPageUiWorkflowTests
             var fundContextService = new FundContextService(Path.Combine(Path.GetTempPath(), $"mainpage-workflow-{Guid.NewGuid():N}.json"));
             using var facade = new MainPageUiAutomationFacade(fundContextService);
 
-            facade.ViewModel.RefreshPageCommand.Execute(null);
-            await WaitForConditionAsync(() =>
-                facade.ViewModel.PrimaryWorkflowSummary is not null &&
-                facade.ViewModel.SecondaryWorkflowSummaries.Count == 6,
-                timeoutMs: 10000).ConfigureAwait(true);
+            await RefreshShellContextAsync(facade.ViewModel).ConfigureAwait(true);
+            RunMatUiAutomationFacade.DrainDispatcher();
+            facade.ViewModel.PrimaryWorkflowSummary.Should().NotBeNull();
+            facade.ViewModel.SecondaryWorkflowSummaries.Should().HaveCount(6);
 
             facade.Click(facade.TradingWorkspaceButton);
             await WaitForConditionAsync(() => facade.ViewModel.PrimaryWorkflowSummary?.WorkspaceId == "trading").ConfigureAwait(true);
@@ -631,6 +630,18 @@ public sealed class MainPageUiWorkflowTests
         }
 
         predicate().Should().BeTrue("expected condition to become true within the timeout window");
+    }
+
+    private static Task RefreshShellContextAsync(MainPageViewModel viewModel)
+    {
+        var method = typeof(MainPageViewModel).GetMethod(
+            "RefreshShellContextAsync",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        method.Should().NotBeNull();
+
+        var task = method!.Invoke(viewModel, [System.Threading.CancellationToken.None]) as Task;
+        task.Should().NotBeNull();
+        return task!;
     }
 
     private sealed class RecordingOperatorInboxApiClient : IWorkstationOperatorInboxApiClient

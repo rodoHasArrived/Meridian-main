@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Identity.Auth;
 using Meridian.Application.FundStructure;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
@@ -847,6 +848,53 @@ public static class FundStructureEndpoints
         .Produces<IReadOnlyList<FundReportPackHistoryItemDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest);
 
+        group.MapGet("/reporting/structured-exports/{exportId}", async (
+            string exportId,
+            string fundProfileId,
+            DateTimeOffset? asOf,
+            string? currency,
+            HttpContext context) =>
+        {
+            if (!HasReportingReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveWorkspaceService(context);
+            if (service is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            if (string.IsNullOrWhiteSpace(fundProfileId))
+            {
+                return Results.Problem(
+                    "fundProfileId is required.",
+                    statusCode: StatusCodes.Status400BadRequest);
+            }
+
+            try
+            {
+                var result = await service.GetStructuredReportingExportAsync(
+                    new StructuredReportingExportRequestDto(fundProfileId, exportId, asOf, currency),
+                    context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status404NotFound);
+            }
+        })
+        .WithName("GetStructuredReportingExport")
+        .Produces<StructuredReportingExportPayloadDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound);
+
 
         group.MapGet("/reporting/templates", (HttpContext context) =>
         {
@@ -865,7 +913,12 @@ public static class FundStructureEndpoints
                 context.Request.Query["includeSuperseded"].FirstOrDefault(),
                 "true",
                 StringComparison.OrdinalIgnoreCase);
-            return Results.Json(registry.List(includeSuperseded), jsonOptions);
+            var accessContext = BuildReportAccessQueryContext(context);
+            var records = registry
+                .List(includeSuperseded)
+                .Where(record => ReportAccessPolicyEvaluator.Evaluate(record.Definition.AccessPolicy, accessContext).IsAccessible)
+                .ToArray();
+            return Results.Json(records, jsonOptions);
         })
         .WithName("ListReportTemplates")
         .Produces<IReadOnlyList<ReportTemplateGovernanceRecordDto>>(StatusCodes.Status200OK)
@@ -1032,6 +1085,17 @@ public static class FundStructureEndpoints
 
             try
             {
+                var template = registry.Get(request.TemplateId);
+                if (template is null)
+                {
+                    return Results.Problem("Template not found.", statusCode: StatusCodes.Status400BadRequest);
+                }
+
+                if (!ReportAccessPolicyEvaluator.Evaluate(template.AccessPolicy, BuildReportAccessQueryContext(context)).IsAccessible)
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+
                 return Results.Json(registry.Render(request), jsonOptions);
             }
             catch (ArgumentException ex)
@@ -1075,7 +1139,7 @@ public static class FundStructureEndpoints
             }
 
             return Results.Json(
-                svc.Create(request.FundProfileId, request.FundAccountId, request.Period, request.TemplateId, actor, request.LineProvenance),
+                svc.Create(request.FundProfileId, request.FundAccountId, request.Period, request.TemplateId, actor, request.LineProvenance, request.AccessPolicy),
                 jsonOptions,
                 statusCode: StatusCodes.Status201Created);
         })
@@ -1210,6 +1274,58 @@ public static class FundStructureEndpoints
         .WithName("GetReportingPackDeliveryHistory")
         .Produces<ReportPackDeliveryHistoryDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden);
+
+        group.MapGet("/reporting/packs/{reportId:guid}/deliveries/{attemptId:guid}/package", (Guid reportId, Guid attemptId, string? token, HttpContext context) =>
+        {
+            var svc = context.RequestServices.GetService<ReportPackDeliveryService>();
+            if (svc is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            try
+            {
+                return Results.Json(svc.GetPackage(reportId, attemptId, token), jsonOptions);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status403Forbidden);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status404NotFound);
+            }
+        })
+        .WithName("GetReportingPackDeliveryPackage")
+        .Produces<ReportPackDeliveryPackageDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound);
+
+        app.MapGet(UiApiRoutes.ReportingPackDeliveryPortalPackage, (string packageId, string? token, HttpContext context) =>
+        {
+            var svc = context.RequestServices.GetService<ReportPackDeliveryService>();
+            if (svc is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            try
+            {
+                return Results.Json(svc.GetPortalPackage(packageId, token), jsonOptions);
+            }
+            catch (Exception ex) when (ex is ArgumentException or UnauthorizedAccessException)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status403Forbidden);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status404NotFound);
+            }
+        })
+        .WithName("GetReportingPortalDeliveryPackage")
+        .Produces<ReportPackDeliveryPackageDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound);
 
         group.MapPost("/reporting/packs/{reportId:guid}/deliveries", (Guid reportId, ReportPackDeliveryRequestDto request, HttpContext context) =>
         {
@@ -1458,7 +1574,17 @@ public static class FundStructureEndpoints
             }
 
             var svc = context.RequestServices.GetService<ReportPackWorkflowService>();
-            return svc is null ? WorkspaceServiceUnavailable() : Results.Json(svc.GetHistory(period, fundAccountId), jsonOptions);
+            if (svc is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            var accessContext = BuildReportAccessQueryContext(context);
+            var history = svc
+                .GetHistory(period, fundAccountId)
+                .Where(record => ReportAccessPolicyEvaluator.Evaluate(record.AccessPolicy, accessContext).IsAccessible)
+                .ToArray();
+            return Results.Json(history, jsonOptions);
         });
         group.MapGet("/report-packs/{reportId:guid}", async (Guid reportId, HttpContext context) =>
         {
@@ -1641,6 +1767,16 @@ public static class FundStructureEndpoints
 
     private static bool HasReportingReadPermission(HttpContext context)
         => EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewAnalytics, UserPermission.ManageStrategies, UserPermission.AdminMaintenance);
+
+    private static ReportAccessQueryContext BuildReportAccessQueryContext(HttpContext context)
+    {
+        var actor = EndpointAuthorization.TryResolveActor(context, out var resolvedActor)
+            ? resolvedActor
+            : null;
+        return new ReportAccessQueryContext(
+            ActorPrincipalId: actor,
+            HasGlobalOverride: EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance));
+    }
 
     private static bool TryResolveAuthorizedActorAndRole(HttpContext context, out string actor, out string role)
     {

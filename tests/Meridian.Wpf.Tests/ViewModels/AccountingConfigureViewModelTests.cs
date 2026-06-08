@@ -49,7 +49,13 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             ManualJournalEntryTypeDto.Amortization,
             ManualJournalEntryTypeDto.Deferral,
             ManualJournalEntryTypeDto.Reclassification,
-            ManualJournalEntryTypeDto.Reversal
+            ManualJournalEntryTypeDto.Reversal,
+            ManualJournalEntryTypeDto.CapitalCall,
+            ManualJournalEntryTypeDto.Distribution,
+            ManualJournalEntryTypeDto.Subscription,
+            ManualJournalEntryTypeDto.Redemption,
+            ManualJournalEntryTypeDto.LpTransfer,
+            ManualJournalEntryTypeDto.ManagementFee
         ]);
         harness.ViewModel.ManualJournalEntryTypeRows.Should().Contain(row =>
             row.Status == ManualJournalEntryTypeDto.Amortization.ToString()
@@ -57,6 +63,10 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             && row.Detail.Contains("Assets:Accumulated Amortization", StringComparison.OrdinalIgnoreCase));
         harness.ViewModel.SelectedEntryType = ManualJournalEntryTypeDto.Amortization;
         harness.ViewModel.DraftAmount = 125m;
+        await harness.ViewModel.SaveManualJournalDraftAsync();
+        await harness.ViewModel.ValidateManualJournalDraftAsync();
+        harness.ViewModel.SelectedEntryType = ManualJournalEntryTypeDto.CapitalCall;
+        harness.ViewModel.DraftAmount = 250m;
         await harness.ViewModel.SaveManualJournalDraftAsync();
         await harness.ViewModel.ValidateManualJournalDraftAsync();
         await harness.ViewModel.RefreshExternalGlAsync();
@@ -74,22 +84,51 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
                 "Expenses:Operating Expenses",
                 "Expenses:Amortization Expense",
                 "Assets:Accumulated Amortization",
-                "Liabilities:Deferred Revenue"
+                "Liabilities:Deferred Revenue",
+                "Equity:Capital Contributions",
+                "Equity:Distributions",
+                "Assets:Subscription Receivable",
+                "Equity:Redemptions",
+                "Equity:LP Transfer Out",
+                "Equity:LP Transfer In",
+                "Expenses:Management Fees"
             ]);
         harness.ViewModel.TemplateRows.Should().Contain(row => row.Name == "desktop-manual-adjustment-v1");
         harness.ViewModel.TemplateRows.Should().Contain(row => row.Name == "desktop-accrued-balance-v1");
         harness.ViewModel.TemplateRows.Should().Contain(row => row.Name == "desktop-prepaid-expense-v1");
         harness.ViewModel.TemplateRows.Should().Contain(row => row.Name == "desktop-expense-v1");
         harness.ViewModel.TemplateRows.Should().Contain(row => row.Name == "desktop-amortization-v1");
+        harness.ViewModel.TemplateRows.Should().Contain(row => row.Name == "desktop-capital-call-v1");
+        harness.ViewModel.TemplateRows.Should().Contain(row => row.Name == "desktop-distribution-v1");
+        harness.ViewModel.TemplateRows.Should().Contain(row => row.Name == "desktop-lp-transfer-v1");
         harness.ViewModel.PostingRuleRows.Should().Contain(row => row.Name == "manual-adjustment-policy-v1");
         harness.ViewModel.PostingRuleRows.Should().Contain(row => row.Name == "manual-accrued-balance-policy-v1");
         harness.ViewModel.PostingRuleRows.Should().Contain(row => row.Name == "manual-prepaid-expense-policy-v1");
         harness.ViewModel.PostingRuleRows.Should().Contain(row => row.Name == "manual-expense-policy-v1");
         harness.ViewModel.PostingRuleRows.Should().Contain(row => row.Name == "manual-amortization-policy-v1");
+        harness.ViewModel.PostingRuleRows.Should().Contain(row => row.Name == "manual-capital-call-policy-v1");
+        harness.ViewModel.PostingRuleRows.Should().Contain(row => row.Name == "manual-distribution-policy-v1");
+        harness.ViewModel.PostingRuleRows.Should().Contain(row => row.Name == "manual-lp-transfer-policy-v1");
         harness.ViewModel.AuditRows.Should().NotBeEmpty();
         harness.ViewModel.ManualJournalDraftRows.Should().ContainSingle(row =>
-            row.Name.Contains("Amortization", StringComparison.OrdinalIgnoreCase)
-            && row.Name.Contains("Amortization entry", StringComparison.OrdinalIgnoreCase));
+            row.Name.Contains("Capital call", StringComparison.OrdinalIgnoreCase)
+            && row.Name.Contains("Capital call entry", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ManualJournalCapitalAccountRows.Should().ContainSingle(row =>
+            row.Name == "capital-account:alpha-fund:default"
+            && row.Status == "+250 USD"
+            && row.Evidence.Contains("Calls 250 USD", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ManualJournalFundEventRows.Should().ContainSingle(row =>
+            row.Name.Contains("CapitalCall", StringComparison.OrdinalIgnoreCase)
+            && row.Detail.Contains("+250 USD net", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ManualJournalLedgerImpactRows.Should().ContainSingle(row =>
+            row.Name.Contains("CapitalCall", StringComparison.OrdinalIgnoreCase)
+            && row.Status == "Review"
+            && row.Detail.Contains("250 USD debit", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("2 line", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ManualJournalReportOutputRows.Should().ContainSingle(row =>
+            row.Name.Contains("CapitalCallNotice", StringComparison.OrdinalIgnoreCase)
+            && row.Status == "Review"
+            && row.Evidence.Contains("evidence", StringComparison.OrdinalIgnoreCase));
         harness.ViewModel.ValidationRows.Should().Contain(row => row.Name == "manual-je.book-missing");
         harness.ViewModel.ProviderRows.Should().Contain(row => row.Evidence == "quickbooks-fixture");
         harness.ViewModel.ProviderRows.Should().Contain(row => row.Evidence == "quickbooks" && row.Status == "Planned");
@@ -105,8 +144,10 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         reloadedWorkspace.ChartOfAccounts.Should().Contain(node => node.Path == "Assets:Cash");
         reloadedWorkspace.JournalTemplates.Should().Contain(template => template.TemplateId == "desktop-manual-adjustment-v1");
         reloadedWorkspace.JournalTemplates.Should().Contain(template => template.TemplateId == "desktop-amortization-v1");
+        reloadedWorkspace.JournalTemplates.Should().Contain(template => template.TemplateId == "desktop-capital-call-v1");
         reloadedWorkspace.PostingRules.Should().Contain(rule => rule.RuleId == "manual-adjustment-policy-v1");
         reloadedWorkspace.PostingRules.Should().Contain(rule => rule.RuleId == "manual-amortization-policy-v1");
+        reloadedWorkspace.PostingRules.Should().Contain(rule => rule.RuleId == "manual-capital-call-policy-v1");
         reloadedWorkspace.AuditTrail.Select(static audit => audit.Action)
             .Should()
             .Contain(["chart.upsert", "template.upsert", "posting-rule.upsert", "manual-je.save-draft"]);
@@ -114,10 +155,68 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         var reloadedDraftStore = new FileManualJournalEntryDraftStore(harness.DraftsPath);
         var reloadedDrafts = await reloadedDraftStore.ListAsync(profile.FundProfileId);
         reloadedDrafts.Should().ContainSingle(draft =>
-            draft.EntryType == ManualJournalEntryTypeDto.Amortization
-            && draft.Memo == "Amortization entry"
-            && draft.TotalDebits == 125m
-            && draft.TotalCredits == 125m);
+            draft.EntryType == ManualJournalEntryTypeDto.CapitalCall
+            && draft.TreasuryContext != null
+            && draft.TreasuryContext.FundEventType == nameof(ManualJournalEntryTypeDto.CapitalCall)
+            && draft.TreasuryContext.CapitalAccountId == "capital-account:alpha-fund:default"
+            && draft.TotalDebits == 250m
+            && draft.TotalCredits == 250m);
+    }
+
+    [Fact]
+    public async Task LoadAsync_WithPostedPrivateCapitalProjection_ShowsPostedAndPublishedActivityStatus()
+    {
+        Directory.CreateDirectory(_root);
+        var fundContext = new FundContextService(Path.Combine(_root, "fund-context.json"));
+        var profile = await fundContext.UpsertProfileAsync(new FundProfileDetail(
+            FundProfileId: "alpha-fund",
+            DisplayName: "Alpha Fund",
+            LegalEntityName: "Alpha Fund LP",
+            BaseCurrency: "USD",
+            DefaultWorkspaceId: "accounting",
+            DefaultLandingPageTag: "FundAccountingConfigure",
+            DefaultLedgerScope: FundLedgerScope.Consolidated,
+            EntityIds: ["entity-alpha"],
+            SleeveIds: ["sleeve-credit"],
+            VehicleIds: ["vehicle-master"],
+            IsDefault: true));
+        await fundContext.SelectFundProfileAsync(profile.FundProfileId);
+
+        var configurationPath = Path.Combine(_root, "accounting-configuration.json");
+        var configurationStore = new FileAccountingConfigurationStore(configurationPath);
+        var configurationService = new AccountingConfigurationService(configurationStore, configurationStore);
+        var projection = CreatePostedPrivateCapitalProjection(profile.FundProfileId);
+        var viewModel = new AccountingConfigureViewModel(
+            fundContext,
+            configurationService,
+            new StaticManualJournalEntryWorkbenchService(projection),
+            configurationStore);
+
+        await viewModel.LoadAsync();
+
+        viewModel.ManualJournalStatusText.Should().Contain("Private-capital projection");
+        viewModel.ManualJournalStatusText.Should().Contain("1 event(s)");
+        viewModel.ManualJournalStatusText.Should().Contain("1 posted");
+        viewModel.ManualJournalStatusText.Should().Contain("1 capital account(s)");
+        viewModel.ManualJournalStatusText.Should().Contain("1 subledger movement(s)");
+        viewModel.ManualJournalStatusText.Should().Contain("1 ledger impact(s)");
+        viewModel.ManualJournalStatusText.Should().Contain("1 report output(s)");
+        viewModel.ManualJournalStatusText.Should().Contain("1 published");
+        viewModel.ManualJournalFundEventRows.Should().ContainSingle(row =>
+            row.Name.Contains("CapitalCall", StringComparison.OrdinalIgnoreCase)
+            && row.Status == "Posted"
+            && row.Evidence.Contains("evidence", StringComparison.OrdinalIgnoreCase));
+        viewModel.ManualJournalLedgerImpactRows.Should().ContainSingle(row =>
+            row.Name.Contains("CapitalCall", StringComparison.OrdinalIgnoreCase)
+            && row.Status == "Posting ready"
+            && row.Evidence.Contains("2 line", StringComparison.OrdinalIgnoreCase));
+        viewModel.ManualJournalReportOutputRows.Should().ContainSingle(row =>
+            row.Name == "Capital Account Statement"
+            && row.Status == "Published"
+            && row.Detail.Contains("Published", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("evidence", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("1 provenance", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("manifest-capital-account-statement", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -159,6 +258,10 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         xaml.Should().Contain("AccountingConfigureRefreshButton");
         xaml.Should().Contain("AccountingConfigureSeedBaselineButton");
         xaml.Should().Contain("AccountingConfigureActivateButton");
+        xaml.Should().Contain("ManualJournalCapitalAccountGrid");
+        xaml.Should().Contain("ManualJournalFundEventGrid");
+        xaml.Should().Contain("ManualJournalLedgerImpactGrid");
+        xaml.Should().Contain("ManualJournalReportOutputGrid");
         xaml.Should().Contain("ToolTip=\"{Binding StatusText}\"");
         xaml.Should().Contain("ToolTip=\"{Binding ConfigurationDetailText}\"");
         xaml.Should().Contain("ToolTip=\"{Binding CloseDetailText}\"");
@@ -205,4 +308,220 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         AccountingConfigureViewModel ViewModel,
         string ConfigurationPath,
         string DraftsPath);
+
+    private static PrivateCapitalActivityProjectionDto CreatePostedPrivateCapitalProjection(string fundProfileId)
+    {
+        var journalEntryId = Guid.Parse("24a3dc53-d1f4-46e0-9dde-e276d0bb0d9e");
+        var effectiveDate = new DateOnly(2026, 6, 1);
+        var updatedAtUtc = new DateTimeOffset(2026, 6, 1, 17, 0, 0, TimeSpan.Zero);
+        var fundEventId = $"fund-event:{fundProfileId}:capital-call:20260601";
+        var capitalAccountId = $"capital-account:{fundProfileId}:lp-001";
+        string[] evidenceLinks =
+        [
+            "evidence://capital-call/notice-20260601",
+            "evidence://capital-call/wire-20260601"
+        ];
+
+        var fundEvent = new PrivateCapitalFundEventDto(
+            fundEventId,
+            "CapitalCall",
+            ManualJournalEntryTypeDto.CapitalCall,
+            ManualJournalEntryStatusDto.Approved,
+            journalEntryId,
+            effectiveDate,
+            capitalAccountId,
+            "investor:lp-001",
+            "USD",
+            250m,
+            250m,
+            "Posted capital call",
+            $"payment:{fundProfileId}:capital-call:20260601",
+            $"settlement:{fundProfileId}:capital-call:20260601",
+            evidenceLinks,
+            [],
+            updatedAtUtc,
+            IsPosted: true);
+        var capitalAccount = new PrivateCapitalCapitalAccountActivityDto(
+            capitalAccountId,
+            "investor:lp-001",
+            "USD",
+            Contributions: 250m,
+            Distributions: 0m,
+            Subscriptions: 0m,
+            Redemptions: 0m,
+            ManagementFees: 0m,
+            NetActivity: 250m,
+            FundEventCount: 1,
+            LastEffectiveDate: effectiveDate,
+            LastFundEventType: "CapitalCall",
+            FundEventIds: [fundEventId]);
+        var subledgerEntry = new PrivateCapitalCapitalAccountSubledgerEntryDto(
+            $"capital-account-subledger:{fundEventId}",
+            capitalAccountId,
+            "investor:lp-001",
+            "USD",
+            fundEventId,
+            "CapitalCall",
+            ManualJournalEntryTypeDto.CapitalCall,
+            ManualJournalEntryStatusDto.Approved,
+            journalEntryId,
+            effectiveDate,
+            GrossAmount: 250m,
+            NetCapitalActivity: 250m,
+            RunningNetActivity: 250m,
+            Memo: "Posted capital call",
+            EvidenceLinks: evidenceLinks,
+            ValidationIssues: [],
+            UpdatedAtUtc: updatedAtUtc,
+            IsPosted: true);
+        var ledgerImpact = new PrivateCapitalLedgerImpactDto(
+            $"ledger-impact:{fundEventId}",
+            journalEntryId,
+            fundEventId,
+            "CapitalCall",
+            capitalAccountId,
+            "investor:lp-001",
+            ManualJournalEntryStatusDto.Approved,
+            effectiveDate,
+            "USD",
+            TotalDebits: 250m,
+            TotalCredits: 250m,
+            Imbalance: 0m,
+            LineCount: 2,
+            IsBalanced: true,
+            IsPostingReady: true,
+            EvidenceLinks: evidenceLinks,
+            Lines:
+            [
+                new PrivateCapitalLedgerLineImpactDto(
+                    "line-debit",
+                    "Assets:Cash",
+                    AccountingTemplateLineSideDto.Debit,
+                    250m,
+                    "USD",
+                    "entity-alpha",
+                    null,
+                    null,
+                    evidenceLinks[1]),
+                new PrivateCapitalLedgerLineImpactDto(
+                    "line-credit",
+                    "Equity:Capital Contributions",
+                    AccountingTemplateLineSideDto.Credit,
+                    250m,
+                    "USD",
+                    "entity-alpha",
+                    null,
+                    null,
+                    evidenceLinks[0])
+            ],
+            ValidationIssues: []);
+        var reportOutput = new PrivateCapitalReportOutputDto(
+            $"report-output:{fundEventId}:capital-account-statement",
+            "GovernedReportPack",
+            "Capital Account Statement",
+            "/workstation/reporting/report-packs/capital-account-statement",
+            fundEventId,
+            "CapitalCall",
+            capitalAccountId,
+            "investor:lp-001",
+            ManualJournalEntryStatusDto.Approved,
+            effectiveDate,
+            "USD",
+            250m,
+            EvidenceLinkCount: evidenceLinks.Length,
+            EvidenceLinks: evidenceLinks,
+            IsReportReady: true,
+            ValidationIssues: [],
+            IsPublished: true,
+            ReportPackId: "27da2bb6-55dd-4428-a30e-34e516f3381b",
+            ReportWorkflowState: "Published",
+            PublicationManifestId: "manifest-capital-account-statement",
+            RetainedManifestPath: "/retained/report-packs/capital-account-statement.json",
+            PublicationEvidenceHash: "sha256:capital-account-statement",
+            PublishedAtUtc: updatedAtUtc,
+            PublishedBy: "controller",
+            ReportLineProvenanceCount: 1);
+
+        return new PrivateCapitalActivityProjectionDto(
+            fundProfileId,
+            null,
+            updatedAtUtc,
+            FundEventCount: 1,
+            CapitalAccountCount: 1,
+            SubmittedFundEventCount: 1,
+            ApprovalQueueCount: 0,
+            PostedFundEventCount: 1,
+            PublishedReportOutputCount: 1,
+            NetCapitalActivity: 250m,
+            Currency: "USD",
+            FundEvents: [fundEvent],
+            CapitalAccounts: [capitalAccount],
+            CapitalAccountSubledgerEntries: [subledgerEntry],
+            LedgerImpacts: [ledgerImpact],
+            ReportOutputs: [reportOutput],
+            ValidationIssues: []);
+    }
+
+    private sealed class StaticManualJournalEntryWorkbenchService(
+        PrivateCapitalActivityProjectionDto privateCapitalActivity) : IManualJournalEntryWorkbenchService
+    {
+        public Task<ManualJournalEntryWorkbenchDto> GetWorkbenchAsync(
+            string? fundProfileId = null,
+            Guid? ledgerBookId = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var projection = privateCapitalActivity with
+            {
+                FundProfileId = NormalizeFundProfileId(fundProfileId),
+                LedgerBookId = ledgerBookId
+            };
+
+            return Task.FromResult(new ManualJournalEntryWorkbenchDto(
+                projection.FundProfileId,
+                ledgerBookId,
+                DateTimeOffset.UtcNow,
+                LedgerBooks: [],
+                ChartOfAccounts: [],
+                Drafts: [],
+                AuditTrail: [],
+                PrivateCapitalActivity: projection));
+        }
+
+        public Task<PrivateCapitalActivityProjectionDto> GetPrivateCapitalActivityAsync(
+            string? fundProfileId = null,
+            Guid? ledgerBookId = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(privateCapitalActivity with
+            {
+                FundProfileId = NormalizeFundProfileId(fundProfileId),
+                LedgerBookId = ledgerBookId
+            });
+        }
+
+        public Task<ManualJournalEntryDraftDto> SaveDraftAsync(
+            SaveManualJournalEntryDraftRequest request,
+            CancellationToken ct = default)
+            => Task.FromException<ManualJournalEntryDraftDto>(
+                new NotSupportedException("Static workbench does not persist manual journal drafts."));
+
+        public Task<ManualJournalEntryDraftDto> ValidateDraftAsync(
+            ValidateManualJournalEntryDraftRequest request,
+            CancellationToken ct = default)
+            => Task.FromException<ManualJournalEntryDraftDto>(
+                new NotSupportedException("Static workbench does not validate manual journal drafts."));
+
+        public Task<ManualJournalEntryDraftDto> SubmitApprovalAsync(
+            SubmitManualJournalEntryApprovalRequest request,
+            CancellationToken ct = default)
+            => Task.FromException<ManualJournalEntryDraftDto>(
+                new NotSupportedException("Static workbench does not submit manual journal approvals."));
+
+        private string NormalizeFundProfileId(string? fundProfileId)
+            => string.IsNullOrWhiteSpace(fundProfileId)
+                ? privateCapitalActivity.FundProfileId
+                : fundProfileId.Trim();
+    }
 }

@@ -130,6 +130,91 @@ public sealed record FundReportingProfileDto(
     bool LoaderScript,
     bool DataDictionary);
 
+[JsonConverter(typeof(JsonStringEnumConverter<PortfolioReportingCutKindDto>))]
+public enum PortfolioReportingCutKindDto
+{
+    Fund = 0,
+    Strategy = 1,
+    UserTag = 2
+}
+
+/// <summary>
+/// Portfolio reporting row for exposure, cash, P&amp;L, and shadow-NAV cuts.
+/// </summary>
+public sealed record PortfolioReportingCutDto(
+    string CutId,
+    string Label,
+    PortfolioReportingCutKindDto Kind,
+    string Currency,
+    decimal GrossExposure,
+    decimal NetExposure,
+    decimal LongMarketValue,
+    decimal ShortMarketValue,
+    decimal TotalCash,
+    decimal PendingSettlement,
+    decimal RealizedPnl,
+    decimal UnrealizedPnl,
+    decimal TotalPnl,
+    decimal ShadowNav,
+    decimal ShadowNavVariance,
+    int SourceCount,
+    IReadOnlyList<string> Tags,
+    DateTimeOffset AsOf,
+    string? EvidenceRoute = null,
+    string? ShadowNavNote = null,
+    string? VersionStamp = null);
+
+[JsonConverter(typeof(JsonStringEnumConverter<StructuredReportingExportPurposeDto>))]
+public enum StructuredReportingExportPurposeDto
+{
+    Regulatory = 0,
+    DataWarehouse = 1,
+    InvestmentDecision = 2
+}
+
+/// <summary>
+/// Structured export descriptor for governed downstream reporting consumers.
+/// </summary>
+public sealed record StructuredReportingExportDto(
+    string ExportId,
+    string Label,
+    StructuredReportingExportPurposeDto Purpose,
+    GovernanceReportArtifactFormatDto Format,
+    string Dataset,
+    string Consumer,
+    int SchemaVersion,
+    int RowCount,
+    int FieldCount,
+    int SourceCount,
+    string Currency,
+    DateTimeOffset AsOf,
+    bool IsReady,
+    string RetainedPath,
+    string Route,
+    string? DataDictionaryRoute = null,
+    string? ValidationSummary = null,
+    string? EvidenceRoute = null,
+    string? VersionStamp = null,
+    IReadOnlyList<string>? Tags = null);
+
+public sealed record StructuredReportingExportColumnDto(
+    string Name,
+    string DataType,
+    string? Description = null);
+
+public sealed record StructuredReportingExportPayloadDto(
+    StructuredReportingExportDto Export,
+    IReadOnlyList<StructuredReportingExportColumnDto> Columns,
+    IReadOnlyList<IReadOnlyDictionary<string, string?>> Rows,
+    IReadOnlyList<string> Warnings,
+    DateTimeOffset GeneratedAtUtc);
+
+public sealed record StructuredReportingExportRequestDto(
+    string FundProfileId,
+    string ExportId,
+    DateTimeOffset? AsOf = null,
+    string? Currency = null);
+
 /// <summary>
 /// Report/export posture for the Accounting workspace.
 /// </summary>
@@ -141,7 +226,9 @@ public sealed record FundReportingSummaryDto(
     string Summary,
     IReadOnlyList<ReportPackWorkflowRecordDto>? WorkflowRecords = null,
     IReadOnlyList<ReportingScheduleRecordDto>? Schedules = null,
-    IReadOnlyList<ReportPackDeliveryAttemptDto>? DeliveryAttempts = null);
+    IReadOnlyList<ReportPackDeliveryAttemptDto>? DeliveryAttempts = null,
+    IReadOnlyList<PortfolioReportingCutDto>? PortfolioCuts = null,
+    IReadOnlyList<StructuredReportingExportDto>? StructuredExports = null);
 
 /// <summary>
 /// Shared Accounting workspace payload combining ledger, banking, cash, reconciliation,
@@ -517,6 +604,35 @@ public enum ReportPackDeliveryStateDto
     Blocked = 4
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<ReportPackDeliveryModeDto>))]
+public enum ReportPackDeliveryModeDto
+{
+    EmailLink = 0,
+    SecurePortal = 1,
+    EvidenceVault = 2,
+    InternalRoute = 3
+}
+
+public sealed record ReportPackDeliveryArtifactDto(
+    GovernanceReportArtifactFormatDto Format,
+    string ArtifactName,
+    string ContentType,
+    string RetainedPath,
+    long ByteSize,
+    string EvidenceId);
+
+public sealed record ReportPackDeliveryPackageDto(
+    string PackageId,
+    Guid ReportId,
+    string DistributionId,
+    ReportPackDeliveryModeDto DeliveryMode,
+    string SecureLink,
+    string PortalRoute,
+    IReadOnlyList<GovernanceReportArtifactFormatDto> Formats,
+    IReadOnlyList<ReportPackDeliveryArtifactDto> Artifacts,
+    DateTimeOffset CreatedAtUtc,
+    string RetainedManifestPath);
+
 public sealed record ReportPackDeliveryAttemptDto(
     Guid AttemptId,
     Guid ReportId,
@@ -531,14 +647,17 @@ public sealed record ReportPackDeliveryAttemptDto(
     string DeliveryReference,
     string? Note = null,
     string? FailureReason = null,
-    IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null,
+    ReportPackDeliveryPackageDto? Package = null);
 
 public sealed record ReportPackDeliveryRequestDto(
     string DistributionId,
     string? Actor = null,
     string? DeliveryReference = null,
     string? Note = null,
-    IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null,
+    IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null,
+    ReportPackDeliveryModeDto? DeliveryMode = null);
 
 public sealed record ReportPackDeliveryFailureRequestDto(
     string DistributionId,
@@ -628,13 +747,116 @@ public enum ReportPackWorkflowStateDto
 
 public sealed record VersionedReportTemplateIdDto(string Name, int Version);
 public sealed record ReportTemplateParameterDefinitionDto(string Name, bool Required);
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportWriterGridKindDto>))]
+public enum ReportWriterGridKindDto
+{
+    Detail = 0,
+    Pivot = 1,
+    TopN = 2,
+    Contribution = 3
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportWriterAggregateFunctionDto>))]
+public enum ReportWriterAggregateFunctionDto
+{
+    Sum = 0,
+    Count = 1,
+    Average = 2,
+    Min = 3,
+    Max = 4
+}
+
+public sealed record ReportWriterMetricDefinitionDto(
+    string Name,
+    string SourceField,
+    ReportWriterAggregateFunctionDto Function = ReportWriterAggregateFunctionDto.Sum,
+    string? Label = null);
+
+public sealed record ReportWriterFormulaDefinitionDto(
+    string Name,
+    string Expression,
+    string? Label = null);
+
+public sealed record ReportWriterGridDefinitionDto(
+    string GridId,
+    string Title,
+    ReportWriterGridKindDto Kind,
+    IReadOnlyList<string>? RowFields = null,
+    IReadOnlyList<string>? ColumnFields = null,
+    IReadOnlyList<ReportWriterMetricDefinitionDto>? Metrics = null,
+    IReadOnlyList<ReportWriterFormulaDefinitionDto>? Formulas = null,
+    int? TopN = null,
+    string? SortBy = null,
+    bool SortDescending = true);
+
+public sealed record ReportWriterGridColumnDto(
+    string Key,
+    string Label,
+    string Role);
+
+public sealed record ReportWriterGridRowDto(
+    string RowKey,
+    IReadOnlyDictionary<string, string> Values);
+
+public sealed record ReportWriterGridRenderDto(
+    string GridId,
+    string Title,
+    ReportWriterGridKindDto Kind,
+    IReadOnlyList<ReportWriterGridColumnDto> Columns,
+    IReadOnlyList<ReportWriterGridRowDto> Rows,
+    IReadOnlyList<string> Warnings);
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportAccessModeDto>))]
+public enum ReportAccessModeDto
+{
+    Private = 0,
+    Restricted = 1,
+    CompanyWide = 2
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<ReportAccessPrincipalKindDto>))]
+public enum ReportAccessPrincipalKindDto
+{
+    User = 0,
+    Group = 1,
+    Company = 2
+}
+
+public sealed record ReportAccessPrincipalDto(
+    ReportAccessPrincipalKindDto Kind,
+    string PrincipalId,
+    string? DisplayName = null);
+
+public sealed record ReportAccessPolicyDto(
+    ReportAccessModeDto Mode = ReportAccessModeDto.CompanyWide,
+    string? OwnerPrincipalId = null,
+    IReadOnlyList<ReportAccessPrincipalDto>? Principals = null,
+    string? CompanyId = null,
+    bool AllowOwnerAccess = true);
+
+public sealed record ReportAccessEvaluationDto(
+    bool IsAccessible,
+    string Reason,
+    IReadOnlyList<ReportAccessPrincipalDto> MatchedPrincipals);
+
 public sealed record ReportTemplateDefinitionDto(
     VersionedReportTemplateIdDto TemplateId,
     string DisplayName,
     IReadOnlyList<ReportTemplateParameterDefinitionDto> Parameters,
-    IReadOnlyList<string>? Sections = null);
-public sealed record RenderReportTemplateRequestDto(VersionedReportTemplateIdDto TemplateId, IReadOnlyDictionary<string, string> Parameters);
-public sealed record RenderReportTemplateResponseDto(VersionedReportTemplateIdDto TemplateId, string RenderedContent, IReadOnlyList<string> MissingRequiredParameters);
+    IReadOnlyList<string>? Sections = null,
+    IReadOnlyList<ReportWriterGridDefinitionDto>? Grids = null,
+    ReportAccessPolicyDto? AccessPolicy = null);
+public sealed record RenderReportTemplateRequestDto(
+    VersionedReportTemplateIdDto TemplateId,
+    IReadOnlyDictionary<string, string> Parameters,
+    IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null);
+public sealed record RenderReportTemplateResponseDto(
+    VersionedReportTemplateIdDto TemplateId,
+    string RenderedContent,
+    IReadOnlyList<string> MissingRequiredParameters,
+    IReadOnlyList<ReportWriterGridRenderDto>? Grids = null,
+    IReadOnlyList<string>? Warnings = null);
 
 [JsonConverter(typeof(JsonStringEnumConverter<ReportTemplateLifecycleStatusDto>))]
 public enum ReportTemplateLifecycleStatusDto
@@ -683,7 +905,9 @@ public sealed record ReportTemplateDraftRequestDto(
     IReadOnlyList<ReportTemplateParameterDefinitionDto> Parameters,
     string? Family = null,
     int? BasedOnVersion = null,
-    string? Rationale = null);
+    string? Rationale = null,
+    IReadOnlyList<ReportWriterGridDefinitionDto>? Grids = null,
+    ReportAccessPolicyDto? AccessPolicy = null);
 
 public sealed record ReportTemplateDecisionRequestDto(
     string Rationale,
@@ -734,7 +958,8 @@ public sealed record ReportPackCreateRequestDto(
     string FundAccountId,
     string Period,
     VersionedReportTemplateIdDto TemplateId,
-    IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null);
+    IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null,
+    ReportAccessPolicyDto? AccessPolicy = null);
 /// <summary>Durable metadata captured when a published report pack is restated.</summary>
 public sealed record ReportPackRestatementMetadataDto(
     string ReasonCode,
@@ -769,4 +994,5 @@ public sealed record ReportPackWorkflowRecordDto(
     ReportPackRestatementMetadataDto? Restatement,
     IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null,
     ReportPackPublicationManifestDto? Publication = null,
-    ReportPackRejectionMetadataDto? Rejection = null);
+    ReportPackRejectionMetadataDto? Rejection = null,
+    ReportAccessPolicyDto? AccessPolicy = null);

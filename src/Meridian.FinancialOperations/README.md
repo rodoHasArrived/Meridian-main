@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-06
+last_reviewed: 2026-06-08
 ---
 
 # src/Meridian.FinancialOperations
@@ -73,6 +73,11 @@ Accounting-basis policy and ledger text-journal reporting also live here. Applic
 registers the policy/projection services and the CLI command invokes the text-journal report service,
 but Application no longer owns accounting policy resolution, ledger write projection metadata, or
 text-journal parser/report semantics.
+`AccountingJournalDraftService` accepts shared treasury ledger context and stamps the resulting
+journal metadata with effective date, idempotency, fund-event, capital-account, investor,
+payment-intent, and settlement references before a governed ledger write is projected. Keep this
+behavior in Financial Operations so private-capital and payment-linked drafts are validated once
+before browser, WPF, storage, or reporting surfaces inspect them.
 
 Payment approval and bank-transaction records also live here. `IBankingService` publishes the
 approval workflow and `IBankTransactionSource` evidence surface used by reconciliation, Plaid

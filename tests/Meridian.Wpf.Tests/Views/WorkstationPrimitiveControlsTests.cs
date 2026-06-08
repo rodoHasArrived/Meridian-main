@@ -7,6 +7,9 @@ using Meridian.Wpf.Models;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.Workstation.Controls;
 using Meridian.Wpf.Workstation.Models;
+using TableActivityLogGridControl = Meridian.Wpf.Workstation.Tables.ActivityLogGridControl;
+using TableDenseDataGridControl = Meridian.Wpf.Workstation.Tables.DenseDataGridControl;
+using TableKeyValueFactGridControl = Meridian.Wpf.Workstation.Tables.KeyValueFactGridControl;
 
 namespace Meridian.Wpf.Tests.Views;
 
@@ -269,6 +272,32 @@ public sealed class WorkstationPrimitiveControlsTests
         xaml.Should().Contain("EmptyContentPresenter");
         xaml.Should().Contain("VirtualizingPanel.VirtualizationMode=\"Recycling\"");
         xaml.Should().Contain("VirtualizingPanel.ScrollUnit=\"Item\"");
+    }
+
+    [Fact]
+    public void LegacyDataGridWrappers_ShouldDefaultToVirtualizedReadOnlyTables()
+    {
+        WpfTestThread.Run(() =>
+        {
+            var grids = new DataGrid[]
+            {
+                new TableDenseDataGridControl(),
+                new TableKeyValueFactGridControl(),
+                new TableActivityLogGridControl()
+            };
+
+            foreach (var grid in grids)
+            {
+                grid.IsReadOnly.Should().BeTrue();
+                grid.EnableRowVirtualization.Should().BeTrue();
+                grid.EnableColumnVirtualization.Should().BeTrue();
+                ScrollViewer.GetCanContentScroll(grid).Should().BeTrue();
+                VirtualizingPanel.GetIsVirtualizing(grid).Should().BeTrue();
+                VirtualizingPanel.GetVirtualizationMode(grid).Should().Be(VirtualizationMode.Recycling);
+            }
+
+            grids[0].AutoGenerateColumns.Should().BeFalse();
+        });
     }
 
     [Fact]

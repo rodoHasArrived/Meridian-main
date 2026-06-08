@@ -75,6 +75,12 @@ import type {
   ManualJournalEntryEvidenceAttachment,
   ManualJournalEntryLine,
   ManualJournalEntryWorkbench,
+  PrivateCapitalActivityProjection,
+  PrivateCapitalCapitalAccountActivity,
+  PrivateCapitalCapitalAccountSubledgerEntry,
+  PrivateCapitalFundEvent,
+  PrivateCapitalLedgerImpact,
+  PrivateCapitalReportOutput,
   ResolveReconciliationBreakRequest,
   ReviewReconciliationBreakRequest,
   SaveManualJournalEntryDraftRequest,
@@ -768,6 +774,103 @@ export interface ManualJournalEvidenceAttachmentDraft {
   description: string;
 }
 
+export interface ManualJournalPrivateCapitalMetricViewModel {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+  tone: "default" | "success" | "warning" | "danger";
+}
+
+export interface ManualJournalPrivateCapitalFundEventRowViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  statusLabel: string;
+  statusTone: "outline" | "success" | "warning" | "danger";
+  effectiveDateLabel: string;
+  amountLabel: string;
+  grossAmountLabel: string;
+  evidenceLabel: string;
+  memoLabel: string;
+  paymentLabel: string;
+  validationLabel: string;
+}
+
+export interface ManualJournalPrivateCapitalAccountRowViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  netActivityLabel: string;
+  contributionLabel: string;
+  distributionLabel: string;
+  subscriptionLabel: string;
+  redemptionLabel: string;
+  managementFeeLabel: string;
+  eventCountLabel: string;
+  lastEventLabel: string;
+}
+
+export interface ManualJournalPrivateCapitalSubledgerEntryRowViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  statusLabel: string;
+  statusTone: "outline" | "success" | "warning" | "danger";
+  effectiveDateLabel: string;
+  netActivityLabel: string;
+  runningBalanceLabel: string;
+  grossAmountLabel: string;
+  evidenceLabel: string;
+  memoLabel: string;
+  issueLabel: string;
+}
+
+export interface ManualJournalPrivateCapitalLedgerImpactRowViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  readinessLabel: string;
+  readinessTone: "outline" | "success" | "warning" | "danger";
+  effectiveDateLabel: string;
+  debitLabel: string;
+  creditLabel: string;
+  imbalanceLabel: string;
+  evidenceLabel: string;
+  lineLabel: string;
+  issueLabel: string;
+}
+
+export interface ManualJournalPrivateCapitalReportOutputRowViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  readinessLabel: string;
+  readinessTone: "outline" | "success" | "warning" | "danger";
+  effectiveDateLabel: string;
+  amountLabel: string;
+  evidenceLabel: string;
+  routeLabel: string;
+  issueLabel: string;
+  workflowLabel: string;
+  publicationLabel: string;
+  provenanceLabel: string;
+}
+
+export interface ManualJournalPrivateCapitalActivityViewModel {
+  title: string;
+  statusLabel: string;
+  projectedAtLabel: string;
+  emptyText: string;
+  summaryCards: ManualJournalPrivateCapitalMetricViewModel[];
+  fundEvents: ManualJournalPrivateCapitalFundEventRowViewModel[];
+  capitalAccounts: ManualJournalPrivateCapitalAccountRowViewModel[];
+  capitalAccountSubledgerEntries: ManualJournalPrivateCapitalSubledgerEntryRowViewModel[];
+  ledgerImpacts: ManualJournalPrivateCapitalLedgerImpactRowViewModel[];
+  reportOutputs: ManualJournalPrivateCapitalReportOutputRowViewModel[];
+  validationIssues: AccountingConfigurationIssueViewModel[];
+}
+
 export interface ManualJournalEntryWorkbenchViewModel {
   title: string;
   description: string;
@@ -786,6 +889,8 @@ export interface ManualJournalEntryWorkbenchViewModel {
   attachmentDraft: ManualJournalEvidenceAttachmentDraft;
   totalsLabel: string;
   imbalanceLabel: string;
+  treasuryContextLabel: string;
+  privateCapitalActivity: ManualJournalPrivateCapitalActivityViewModel;
   validationIssues: AccountingConfigurationIssueViewModel[];
   saveBusy: boolean;
   validateBusy: boolean;
@@ -1143,6 +1248,40 @@ export interface AccountingTrialBalanceViewState {
 }
 
 export type AccountingToolingTone = "default" | "success" | "warning" | "danger";
+
+export interface AccountingWorkflowStepViewModel {
+  id: AccountingWorkstream;
+  label: string;
+  caption: string;
+  href: string;
+  metricLabel: string;
+  metricValue: string;
+  statusLabel: string;
+  tone: AccountingToolingTone;
+  isActive: boolean;
+  ariaLabel: string;
+}
+
+export interface AccountingWorkflowActionViewModel {
+  id: string;
+  label: string;
+  detail: string;
+  href: string;
+  ariaLabel: string;
+  tone: AccountingToolingTone;
+}
+
+export interface AccountingWorkflowLaunchViewState {
+  title: string;
+  description: string;
+  ariaLabel: string;
+  activeLabel: string;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  steps: AccountingWorkflowStepViewModel[];
+  actionRows: AccountingWorkflowActionViewModel[];
+  liveRegionText: string;
+}
 
 export type CloseCommandCenterStatus = "ready" | "at-risk" | "blocked" | "loading";
 
@@ -2618,6 +2757,11 @@ export function useManualJournalEntryWorkbenchViewModel(
   }, [draft.evidenceAttachments, draft.lines, draft.validationIssues]);
   const hasEvidence = (draft.evidenceLinks?.length ?? 0) > 0 || (draft.evidenceAttachments?.length ?? 0) > 0;
   const canSubmit = draft.validationIssues.every((issue) => issue.severity !== "Critical") && Math.abs(draft.imbalance) === 0 && draft.lines.length >= 2 && hasEvidence;
+  const treasuryContextLabel = formatManualJournalTreasuryContext(draft);
+  const privateCapitalActivity = useMemo(
+    () => buildManualJournalPrivateCapitalActivityView(workbench?.privateCapitalActivity ?? null),
+    [workbench?.privateCapitalActivity]
+  );
   const securitySearchStatusText = securitySearchBusy
     ? "Searching Security Master."
     : securitySearchError?.summary ?? (securitySearchResults.length > 0
@@ -2644,6 +2788,8 @@ export function useManualJournalEntryWorkbenchViewModel(
     attachmentDraft,
     totalsLabel: `Debits ${formatCurrency(draft.totalDebits)} / Credits ${formatCurrency(draft.totalCredits)}`,
     imbalanceLabel: `Imbalance ${formatCurrency(draft.imbalance)}`,
+    treasuryContextLabel,
+    privateCapitalActivity,
     validationIssues,
     saveBusy,
     validateBusy,
@@ -2668,6 +2814,250 @@ export function useManualJournalEntryWorkbenchViewModel(
     validate,
     submit
   };
+}
+
+function buildManualJournalPrivateCapitalActivityView(
+  activity: PrivateCapitalActivityProjection | null
+): ManualJournalPrivateCapitalActivityViewModel {
+  if (!activity) {
+    return {
+      title: "Private-capital activity",
+      statusLabel: "No projection",
+      projectedAtLabel: "Not loaded",
+      emptyText: "No private-capital fund events are retained in the manual JE workbench yet.",
+      summaryCards: [
+        { id: "fund-events", label: "Fund events", value: "0", detail: "No retained fund-event rows", tone: "default" },
+        { id: "capital-accounts", label: "Capital accounts", value: "0", detail: "No capital-account activity", tone: "default" },
+        { id: "ledger-impacts", label: "Ledger impacts", value: "0", detail: "No GL impact rows", tone: "default" },
+        { id: "report-outputs", label: "Report outputs", value: "0", detail: "No package candidates", tone: "default" },
+        { id: "net-activity", label: "Net activity", value: "$0", detail: "No projected balance movement", tone: "default" },
+        { id: "projection-issues", label: "Projection issues", value: "0", detail: "No projection warnings", tone: "success" }
+      ],
+      fundEvents: [],
+      capitalAccounts: [],
+      capitalAccountSubledgerEntries: [],
+      ledgerImpacts: [],
+      reportOutputs: [],
+      validationIssues: []
+    };
+  }
+
+  const currency = activity.currency || "USD";
+  const capitalAccountSubledgerEntries = activity.capitalAccountSubledgerEntries ?? [];
+  const ledgerImpacts = activity.ledgerImpacts ?? [];
+  const reportOutputs = activity.reportOutputs ?? [];
+  const postedFundEventCount = activity.postedFundEventCount ?? 0;
+  const publishedReportOutputCount = activity.publishedReportOutputCount ?? 0;
+  const validationIssues = activity.validationIssues.map<AccountingConfigurationIssueViewModel>((issue, index) => ({
+    id: `${issue.code}-${index}`,
+    label: issue.code,
+    message: issue.message,
+    detail: issue.suggestedAction ?? issue.targetId ?? "Review private-capital context.",
+    tone: issue.severity === "Critical" ? "danger" : issue.severity === "Warning" ? "warning" : "default"
+  }));
+
+  return {
+    title: "Private-capital activity",
+    statusLabel: `${activity.fundEventCount} fund events / ${activity.capitalAccountCount} capital accounts`,
+    projectedAtLabel: formatDateTimeLabel(activity.projectedAtUtc),
+    emptyText: "No private-capital fund events are retained in the manual JE workbench yet.",
+    summaryCards: [
+      {
+        id: "fund-events",
+        label: "Fund events",
+        value: activity.fundEventCount.toLocaleString(),
+        detail: `${postedFundEventCount.toLocaleString()} posted / ${activity.submittedFundEventCount.toLocaleString()} submitted or approved`,
+        tone: activity.fundEventCount > 0 ? "success" : "default"
+      },
+      {
+        id: "posted-fund-events",
+        label: "Posted events",
+        value: postedFundEventCount.toLocaleString(),
+        detail: "Ledger-backed fund-event rows",
+        tone: postedFundEventCount > 0 ? "success" : "default"
+      },
+      {
+        id: "capital-accounts",
+        label: "Capital accounts",
+        value: activity.capitalAccountCount.toLocaleString(),
+        detail: `${activity.approvalQueueCount.toLocaleString()} pending approval`,
+        tone: activity.approvalQueueCount > 0 ? "warning" : activity.capitalAccountCount > 0 ? "success" : "default"
+      },
+      {
+        id: "capital-account-subledger",
+        label: "Subledger rows",
+        value: capitalAccountSubledgerEntries.length.toLocaleString(),
+        detail: "Ordered capital-account movements",
+        tone: capitalAccountSubledgerEntries.length > 0 ? "success" : "default"
+      },
+      {
+        id: "report-outputs",
+        label: "Report outputs",
+        value: reportOutputs.length.toLocaleString(),
+        detail: `${publishedReportOutputCount.toLocaleString()} published / ${reportOutputs.filter((item) => item.isReportReady).length.toLocaleString()} ready`,
+        tone: reportOutputs.some((item) => !item.isReportReady) ? "warning" : reportOutputs.length > 0 ? "success" : "default"
+      },
+      {
+        id: "published-report-outputs",
+        label: "Published outputs",
+        value: publishedReportOutputCount.toLocaleString(),
+        detail: "Governed report-pack outputs",
+        tone: publishedReportOutputCount > 0 ? "success" : "default"
+      },
+      {
+        id: "ledger-impacts",
+        label: "Ledger impacts",
+        value: ledgerImpacts.length.toLocaleString(),
+        detail: `${ledgerImpacts.filter((item) => item.isPostingReady).length.toLocaleString()} posting-ready`,
+        tone: ledgerImpacts.some((item) => !item.isPostingReady) ? "warning" : ledgerImpacts.length > 0 ? "success" : "default"
+      },
+      {
+        id: "net-activity",
+        label: "Net activity",
+        value: formatCurrencyWithCode(activity.netCapitalActivity, currency, true),
+        detail: "Ledger-derived capital activity",
+        tone: activity.netCapitalActivity < 0 ? "warning" : activity.netCapitalActivity > 0 ? "success" : "default"
+      },
+      {
+        id: "projection-issues",
+        label: "Projection issues",
+        value: validationIssues.length.toLocaleString(),
+        detail: validationIssues.length > 0 ? "Context needs review" : "Projection context complete",
+        tone: validationIssues.length > 0 ? "warning" : "success"
+      }
+    ],
+    fundEvents: activity.fundEvents.map(buildManualJournalPrivateCapitalFundEventRow),
+    capitalAccounts: activity.capitalAccounts.map(buildManualJournalPrivateCapitalAccountRow),
+    capitalAccountSubledgerEntries: capitalAccountSubledgerEntries.map(buildManualJournalPrivateCapitalSubledgerEntryRow),
+    ledgerImpacts: ledgerImpacts.map(buildManualJournalPrivateCapitalLedgerImpactRow),
+    reportOutputs: reportOutputs.map(buildManualJournalPrivateCapitalReportOutputRow),
+    validationIssues
+  };
+}
+
+function buildManualJournalPrivateCapitalFundEventRow(
+  event: PrivateCapitalFundEvent
+): ManualJournalPrivateCapitalFundEventRowViewModel {
+  return {
+    id: event.fundEventId,
+    title: event.fundEventType || event.entryType,
+    subtitle: `${event.capitalAccountId}${event.investorId ? ` / ${event.investorId}` : ""}`,
+    statusLabel: event.isPosted ? "Posted" : event.journalStatus,
+    statusTone: event.isPosted ? "success" : manualJournalPrivateCapitalStatusTone(event.journalStatus),
+    effectiveDateLabel: event.effectiveDate,
+    amountLabel: formatCurrencyWithCode(event.netCapitalActivity, event.currency, true),
+    grossAmountLabel: formatCurrencyWithCode(event.grossAmount, event.currency),
+    evidenceLabel: `${event.evidenceLinks.length.toLocaleString()} evidence`,
+    memoLabel: event.memo || event.journalEntryId,
+    paymentLabel: [event.paymentIntentId, event.settlementReference].filter((value): value is string => Boolean(value)).join(" / ") || "No payment link",
+    validationLabel: event.validationIssues.length > 0
+      ? `${event.validationIssues.length.toLocaleString()} validation issues`
+      : "No validation issues"
+  };
+}
+
+function buildManualJournalPrivateCapitalAccountRow(
+  account: PrivateCapitalCapitalAccountActivity
+): ManualJournalPrivateCapitalAccountRowViewModel {
+  return {
+    id: `${account.capitalAccountId}-${account.currency}`,
+    title: account.capitalAccountId,
+    subtitle: account.investorId ?? "Investor not assigned",
+    netActivityLabel: formatCurrencyWithCode(account.netActivity, account.currency, true),
+    contributionLabel: formatCurrencyWithCode(account.contributions, account.currency),
+    distributionLabel: formatCurrencyWithCode(account.distributions, account.currency),
+    subscriptionLabel: formatCurrencyWithCode(account.subscriptions, account.currency),
+    redemptionLabel: formatCurrencyWithCode(account.redemptions, account.currency),
+    managementFeeLabel: formatCurrencyWithCode(account.managementFees, account.currency),
+    eventCountLabel: `${account.fundEventCount.toLocaleString()} events`,
+    lastEventLabel: account.lastEffectiveDate
+      ? `${account.lastFundEventType ?? "Fund event"} / ${account.lastEffectiveDate}`
+      : "No effective date"
+  };
+}
+
+function buildManualJournalPrivateCapitalSubledgerEntryRow(
+  entry: PrivateCapitalCapitalAccountSubledgerEntry
+): ManualJournalPrivateCapitalSubledgerEntryRowViewModel {
+  return {
+    id: entry.subledgerEntryId,
+    title: entry.fundEventType || entry.entryType,
+    subtitle: `${entry.capitalAccountId}${entry.investorId ? ` / ${entry.investorId}` : ""}`,
+    statusLabel: entry.isPosted ? "Posted" : entry.approvalState,
+    statusTone: entry.isPosted ? "success" : manualJournalPrivateCapitalStatusTone(entry.approvalState),
+    effectiveDateLabel: entry.effectiveDate,
+    netActivityLabel: formatCurrencyWithCode(entry.netCapitalActivity, entry.currency, true),
+    runningBalanceLabel: formatCurrencyWithCode(entry.runningNetActivity, entry.currency, true),
+    grossAmountLabel: formatCurrencyWithCode(entry.grossAmount, entry.currency),
+    evidenceLabel: `${entry.evidenceLinks.length.toLocaleString()} evidence`,
+    memoLabel: entry.memo || entry.journalEntryId,
+    issueLabel: entry.validationIssues.length > 0
+      ? `${entry.validationIssues.length.toLocaleString()} subledger issues`
+      : "No subledger issues"
+  };
+}
+
+function buildManualJournalPrivateCapitalLedgerImpactRow(
+  impact: PrivateCapitalLedgerImpact
+): ManualJournalPrivateCapitalLedgerImpactRowViewModel {
+  return {
+    id: impact.ledgerImpactId,
+    title: impact.fundEventType || impact.fundEventId,
+    subtitle: `${impact.capitalAccountId}${impact.investorId ? ` / ${impact.investorId}` : ""}`,
+    readinessLabel: impact.isPostingReady ? "Posting ready" : impact.isBalanced ? "Review" : "Unbalanced",
+    readinessTone: impact.isPostingReady ? "success" : impact.validationIssues.some((issue) => issue.severity === "Critical") ? "danger" : "warning",
+    effectiveDateLabel: impact.effectiveDate,
+    debitLabel: formatCurrencyWithCode(impact.totalDebits, impact.currency),
+    creditLabel: formatCurrencyWithCode(impact.totalCredits, impact.currency),
+    imbalanceLabel: formatCurrencyWithCode(impact.imbalance, impact.currency, true),
+    evidenceLabel: `${impact.evidenceLinks.length.toLocaleString()} evidence`,
+    lineLabel: `${impact.lineCount.toLocaleString()} GL lines`,
+    issueLabel: impact.validationIssues.length > 0
+      ? `${impact.validationIssues.length.toLocaleString()} ledger issues`
+      : "No ledger issues"
+  };
+}
+
+function buildManualJournalPrivateCapitalReportOutputRow(
+  output: PrivateCapitalReportOutput
+): ManualJournalPrivateCapitalReportOutputRowViewModel {
+  return {
+    id: output.reportOutputId,
+    title: output.displayName || output.reportOutputType,
+    subtitle: `${output.capitalAccountId}${output.investorId ? ` / ${output.investorId}` : ""}`,
+    readinessLabel: output.isPublished ? "Published" : output.isReportReady ? "Ready" : "Review",
+    readinessTone: output.isPublished || output.isReportReady ? "success" : output.validationIssues.some((issue) => issue.severity === "Critical") ? "danger" : "warning",
+    effectiveDateLabel: output.effectiveDate,
+    amountLabel: formatCurrencyWithCode(output.netCapitalActivity, output.currency, true),
+    evidenceLabel: `${output.evidenceLinkCount.toLocaleString()} evidence`,
+    routeLabel: output.reportRoute,
+    issueLabel: output.validationIssues.length > 0
+      ? `${output.validationIssues.length.toLocaleString()} readiness issues`
+      : "No readiness issues",
+    workflowLabel: [output.reportPackId, output.reportWorkflowState].filter((value): value is string => Boolean(value)).join(" / ") || output.reportOutputType,
+    publicationLabel: output.publishedAtUtc
+      ? `${output.publishedBy ?? "publisher"} / ${formatDateTimeLabel(output.publishedAtUtc)}`
+      : output.publicationManifestId ?? "No publication manifest",
+    provenanceLabel: `${(output.reportLineProvenanceCount ?? 0).toLocaleString()} provenance line(s)`
+  };
+}
+
+function manualJournalPrivateCapitalStatusTone(
+  status: PrivateCapitalFundEvent["journalStatus"]
+): ManualJournalPrivateCapitalFundEventRowViewModel["statusTone"] {
+  if (status === "Approved") {
+    return "success";
+  }
+
+  if (status === "Submitted") {
+    return "warning";
+  }
+
+  if (status === "NeedsFix" || status === "Rejected") {
+    return "danger";
+  }
+
+  return "outline";
 }
 
 function createManualJournalEntryDraft(
@@ -2704,8 +3094,28 @@ function createManualJournalEntryDraft(
     imbalance: 0,
     approvalId: null,
     submittedAtUtc: null,
-    submittedBy: null
+    submittedBy: null,
+    entryType: "General",
+    treasuryContext: null
   };
+}
+
+function formatManualJournalTreasuryContext(draft: ManualJournalEntryDraft): string {
+  const context = draft.treasuryContext;
+  if (!context) {
+    return `${draft.entryType} | No treasury context`;
+  }
+
+  const parts = [
+    draft.entryType,
+    context.effectiveDate ? `effective ${context.effectiveDate}` : null,
+    context.fundEventType ?? context.fundEventId ?? null,
+    context.capitalAccountId ? `capital ${context.capitalAccountId}` : null,
+    context.paymentIntentId || context.settlementReference ? "payment-linked" : null,
+    context.idempotencyKey ? "idempotent" : null
+  ].filter((part): part is string => Boolean(part));
+
+  return parts.join(" | ");
 }
 
 function createManualJournalAttachmentDraft(): ManualJournalEvidenceAttachmentDraft {
@@ -4450,6 +4860,224 @@ export function buildGovernanceReportingViewState(
   return buildAccountingReportingViewState(options);
 }
 
+export function buildAccountingWorkflowLaunchViewState({
+  data,
+  workstream,
+  closeCommandCenter
+}: {
+  data: AccountingWorkspaceResponse;
+  workstream: AccountingWorkstream;
+  closeCommandCenter: CloseCommandCenterViewState | null | undefined;
+}): AccountingWorkflowLaunchViewState {
+  const openBreakCount = data.breakQueue.filter((item) => isOpenAccountingBreakStatus(item.status)).length;
+  const totalBreakCount = data.breakQueue.length;
+  const metricRows = closeCommandCenter?.metricRows ?? [];
+  const pendingAdjustmentMetric = metricRows.find((item) => item.id === "adjustments") ?? null;
+  const providerMetric = metricRows.find((item) => item.id === "providers") ?? null;
+  const sourceMetric = metricRows.find((item) => item.id === "source-files") ?? null;
+  const reportPackMetric = metricRows.find((item) => item.id === "report-pack") ?? null;
+  const pendingAdjustmentCount = parseAccountingWorkflowMetricCount(pendingAdjustmentMetric?.value);
+  const sourceGapCount = parseAccountingWorkflowMetricCount(sourceMetric?.value);
+  const securityGapCount = parseAccountingWorkflowMetricCount(
+    data.metrics.find((item) => item.label.toLowerCase().includes("security"))?.value
+  );
+  const activeStepLabel = accountingWorkflowStepLabel(workstream);
+  const workflowStatusTone = closeCommandCenter?.statusTone ?? (openBreakCount > 0 ? "warning" : "default");
+  const workflowStatusLabel = closeCommandCenter?.statusLabel ?? (openBreakCount > 0 ? "Review" : "Ready");
+  const steps: AccountingWorkflowStepViewModel[] = [
+    buildAccountingWorkflowStep({
+      id: "configure",
+      label: "Set up books",
+      caption: "Books, chart, templates, and posting controls.",
+      href: WORKSTATION_ROUTE_CATALOG.accountingConfigure,
+      metricLabel: "Setup",
+      metricValue: "Shared",
+      statusLabel: "Endpoint-backed",
+      tone: "default",
+      workstream
+    }),
+    buildAccountingWorkflowStep({
+      id: "journal-entries",
+      label: "Record adjustments",
+      caption: "Manual JEs, evidence, Security Master, and approval submit.",
+      href: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries,
+      metricLabel: "Pending",
+      metricValue: pendingAdjustmentMetric?.value ?? "0",
+      statusLabel: pendingAdjustmentCount > 0 ? "Approval review" : "Ready",
+      tone: pendingAdjustmentCount > 0 ? "warning" : "success",
+      workstream
+    }),
+    buildAccountingWorkflowStep({
+      id: "ledger",
+      label: "Review ledger",
+      caption: "Meridian-owned trial balance and journal evidence.",
+      href: WORKSTATION_ROUTE_CATALOG.accountingLedger,
+      metricLabel: providerMetric?.label ?? "Truth",
+      metricValue: providerMetric?.value ?? "Meridian",
+      statusLabel: providerMetric?.tone === "warning" || providerMetric?.tone === "danger"
+        ? "Evidence review"
+        : "Ledger authority",
+      tone: providerMetric?.tone ?? "default",
+      workstream
+    }),
+    buildAccountingWorkflowStep({
+      id: "reconciliation",
+      label: "Reconcile",
+      caption: "Statement runs, trial balance, and open break review.",
+      href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
+      metricLabel: "Open breaks",
+      metricValue: String(openBreakCount),
+      statusLabel: openBreakCount > 0 ? "Review breaks" : "Balanced queue",
+      tone: openBreakCount > 0 ? "warning" : "success",
+      workstream
+    }),
+    buildAccountingWorkflowStep({
+      id: "exceptions",
+      label: "Resolve exceptions",
+      caption: "Casework, comments, evidence, and sign-off handoffs.",
+      href: WORKSTATION_ROUTE_CATALOG.accountingExceptions,
+      metricLabel: "Cases",
+      metricValue: String(totalBreakCount),
+      statusLabel: totalBreakCount > 0 ? "Casework open" : "No active cases",
+      tone: totalBreakCount > 0 ? "warning" : "success",
+      workstream
+    }),
+    buildAccountingWorkflowStep({
+      id: "security-master",
+      label: "Clear security",
+      caption: "Identifiers, schedules, lots, and posting readiness.",
+      href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster,
+      metricLabel: "Gaps",
+      metricValue: String(securityGapCount),
+      statusLabel: securityGapCount > 0 ? "Coverage gaps" : "Coverage clean",
+      tone: securityGapCount > 0 ? "warning" : "success",
+      workstream
+    }),
+    buildAccountingWorkflowStep({
+      id: "approvals",
+      label: "Approve close",
+      caption: "Signer decisions, blockers, and audit trail.",
+      href: WORKSTATION_ROUTE_CATALOG.accountingApprovals,
+      metricLabel: "Approvals",
+      metricValue: pendingAdjustmentMetric?.value ?? "0",
+      statusLabel: pendingAdjustmentCount > 0 ? "Signer review" : "No backlog",
+      tone: pendingAdjustmentCount > 0 ? "warning" : "success",
+      workstream
+    }),
+    buildAccountingWorkflowStep({
+      id: "reporting",
+      label: "Package evidence",
+      caption: "Report packs, retained manifests, exports, and audit output.",
+      href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
+      metricLabel: reportPackMetric?.label ?? "Profiles",
+      metricValue: reportPackMetric?.value ?? String(data.reporting.profileCount),
+      statusLabel: reportPackMetric?.tone === "success" ? "Ready" : "Evidence review",
+      tone: reportPackMetric?.tone ?? (data.reporting.profileCount > 0 ? "default" : "warning"),
+      workstream
+    })
+  ];
+  const actionRows: AccountingWorkflowActionViewModel[] = [
+    {
+      id: "reconcile",
+      label: openBreakCount > 0 ? "Reconcile breaks" : "Review reconciliation",
+      detail: openBreakCount > 0 ? `${formatCount(openBreakCount, "open break")} require operator review.` : "Statement and run reconciliation are ready for inspection.",
+      href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
+      ariaLabel: "Open Accounting reconciliation workflow",
+      tone: openBreakCount > 0 ? "warning" : "success"
+    },
+    {
+      id: "journal-entry",
+      label: "Enter journal entry",
+      detail: pendingAdjustmentCount > 0 ? `${formatCount(pendingAdjustmentCount, "adjustment")} remain in approval scope.` : "Create or validate a controller-owned accounting adjustment.",
+      href: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries,
+      ariaLabel: "Open Accounting journal entry workbench",
+      tone: pendingAdjustmentCount > 0 ? "warning" : "default"
+    },
+    {
+      id: "approvals",
+      label: "Review approvals",
+      detail: pendingAdjustmentCount > 0 ? "Signer action is needed before close release." : "Open the close approval gate and audit trail.",
+      href: WORKSTATION_ROUTE_CATALOG.accountingApprovals,
+      ariaLabel: "Open Accounting approvals workflow",
+      tone: pendingAdjustmentCount > 0 ? "warning" : "success"
+    },
+    {
+      id: "evidence",
+      label: sourceGapCount > 0 ? "Attach evidence" : "Open evidence",
+      detail: sourceGapCount > 0 ? `${formatCount(sourceGapCount, "source gap")} are visible in close readiness.` : "Inspect retained accounting-record evidence and report manifests.",
+      href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
+      ariaLabel: "Open retained accounting record evidence",
+      tone: sourceGapCount > 0 ? "warning" : reportPackMetric?.tone ?? "default"
+    }
+  ];
+
+  return {
+    title: "Accounting workflow",
+    description: "Books-before-broker accounting, reconciliation, approvals, and retained report evidence are grouped in one operator lane.",
+    ariaLabel: "Accounting workflow launch paths",
+    activeLabel: `${activeStepLabel} active`,
+    statusLabel: workflowStatusLabel,
+    statusTone: workflowStatusTone,
+    steps,
+    actionRows,
+    liveRegionText: `Accounting workflow ${workflowStatusLabel}. ${activeStepLabel} active. ${formatCount(openBreakCount, "open break")}.`
+  };
+}
+
+function buildAccountingWorkflowStep({
+  id,
+  label,
+  caption,
+  href,
+  metricLabel,
+  metricValue,
+  statusLabel,
+  tone,
+  workstream
+}: {
+  id: AccountingWorkstream;
+  label: string;
+  caption: string;
+  href: string;
+  metricLabel: string;
+  metricValue: string;
+  statusLabel: string;
+  tone: AccountingToolingTone;
+  workstream: AccountingWorkstream;
+}): AccountingWorkflowStepViewModel {
+  const isActive = id === workstream;
+
+  return {
+    id,
+    label,
+    caption,
+    href,
+    metricLabel,
+    metricValue,
+    statusLabel,
+    tone,
+    isActive,
+    ariaLabel: `${label}: ${statusLabel}${isActive ? ", current Accounting workstream" : ""}`
+  };
+}
+
+function accountingWorkflowStepLabel(workstream: AccountingWorkstream): string {
+  if (workstream === "journal-entries") {
+    return "Journal entries";
+  }
+
+  if (workstream === "security-master") {
+    return "Security Master";
+  }
+
+  return workstream.charAt(0).toUpperCase() + workstream.slice(1).replace("-", " ");
+}
+
+function parseAccountingWorkflowMetricCount(value: string | null | undefined): number {
+  const normalized = value?.replace(/,/g, "").match(/-?\d+/)?.[0];
+  return normalized ? Number.parseInt(normalized, 10) : 0;
+}
+
 export function buildCloseCommandCenterViewState({
   data,
   workflow,
@@ -5674,6 +6302,12 @@ function formatBytes(value: number): string {
 function formatCurrency(value: number) {
   const prefix = value >= 0 ? "$" : "-$";
   return `${prefix}${Math.abs(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+}
+
+function formatCurrencyWithCode(value: number, currency: string, signed = false): string {
+  const amount = signed ? formatSignedCurrency(value) : formatCurrency(value);
+  const code = currency.trim();
+  return code ? `${amount} ${code}` : amount;
 }
 
 function formatSignedCurrency(value: number): string {

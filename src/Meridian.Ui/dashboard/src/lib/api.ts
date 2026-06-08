@@ -164,6 +164,7 @@ import type {
   UserSessionRevokeResult,
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
+  PrivateCapitalActivityProjection,
   ReportPackDeliveryAttempt,
   ReportPackDeliveryFailureRequest,
   ReportPackDeliveryHistory,
@@ -907,6 +908,32 @@ export function getAccountingConfiguration(options: ApiRequestOptions = {}) {
 
 export function getManualJournalEntryWorkbench(options: ApiRequestOptions = {}) {
   return getJson<ManualJournalEntryWorkbench>(WORKSTATION_API_ENDPOINTS.manualJournalEntryWorkbench, options);
+}
+
+export interface PrivateCapitalActivityQuery {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  fundEventId?: string | null;
+  capitalAccountId?: string | null;
+  investorId?: string | null;
+}
+
+export function getPrivateCapitalActivity(
+  query: PrivateCapitalActivityQuery = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value) {
+      params.set(key, value);
+    }
+  }
+
+  const suffix = params.toString();
+  return getJson<PrivateCapitalActivityProjection>(
+    `${WORKSTATION_API_ENDPOINTS.privateCapitalActivity}${suffix ? `?${suffix}` : ""}`,
+    options
+  );
 }
 
 export function saveManualJournalEntryDraft(

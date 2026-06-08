@@ -62,6 +62,15 @@ public sealed class AccountingJournalDraftServiceTests
             PolicyId: "gaap-accrual-v1",
             TreatmentKind: AccountingTreatmentKindDto.Accrual,
             SourceEventType: "CustodianInterestAccrual",
+            TreasuryContext: new TreasuryLedgerContextDto(
+                EffectiveDate: new DateOnly(2026, 5, 31),
+                IdempotencyKey: "custodian-interest:fund-alpha:202605",
+                FundEventId: "fund-event:fund-alpha:interest-accrual:202605",
+                FundEventType: "InterestAccrual",
+                CapitalAccountId: "capital-account:fund-alpha:master",
+                InvestorId: "investor:fund-alpha:master",
+                PaymentIntentId: "payment:fund-alpha:interest-accrual:202605",
+                SettlementReference: "settlement:fund-alpha:interest-accrual:202605"),
             EvidenceLinks: ["provider://custodian/interest-accruals/2026-05"]));
 
         result.Policy.PolicyId.Should().Be("gaap-accrual-v1");
@@ -79,6 +88,11 @@ public sealed class AccountingJournalDraftServiceTests
         result.Write.RuleId.Should().Be("accrual.interest-income");
         result.Write.RuleVersion.Should().Be("v1");
         result.Write.SourceEventId.Should().Be(sourceEventId);
+        result.Write.Entry.Metadata.EffectiveDate.Should().Be(new DateOnly(2026, 5, 31));
+        result.Write.Entry.Metadata.IdempotencyKey.Should().Be("custodian-interest:fund-alpha:202605");
+        result.Write.Entry.Metadata.FundEventId.Should().Be("fund-event:fund-alpha:interest-accrual:202605");
+        result.Write.Entry.Metadata.CapitalAccountId.Should().Be("capital-account:fund-alpha:master");
+        result.Write.Entry.Metadata.PaymentIntentId.Should().Be("payment:fund-alpha:interest-accrual:202605");
         result.ValidationIssues.Should().Contain(issue => issue.Code == "JOURNAL_DRAFT_APPROVAL_REQUIRED");
         result.EvidenceLinks.Should().ContainSingle("provider://custodian/interest-accruals/2026-05");
     }

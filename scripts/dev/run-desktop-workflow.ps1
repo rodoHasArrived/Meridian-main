@@ -316,6 +316,20 @@ function Get-SeedSampleContextsButton {
     return Find-ButtonByName -Window $Window -Names @('Seed Sample Contexts', 'Seed Sample Profiles')
 }
 
+function Get-StartupContinueWithoutCredentialsButton {
+    param(
+        [Parameter(Mandatory = $true)]
+        [System.Windows.Automation.AutomationElement]$Window
+    )
+
+    $button = Find-AutomationElementById -Window $Window -AutomationId 'StartupContinueWithoutCredentialsButton'
+    if ($null -ne $button) {
+        return $button
+    }
+
+    return Find-ButtonByName -Window $Window -Names @('Continue without credentials')
+}
+
 function Invoke-AutomationButton {
     param(
         [Parameter(Mandatory = $true)]
@@ -509,6 +523,46 @@ function Ensure-EnteredOperatingContext {
 
     if ($shell) {
         return $true
+    }
+
+    $startupContinueButton = Wait-ForElement -Attempts 8 -DelayMilliseconds 300 -Finder {
+        if ($null -ne $Process -and $Process.HasExited) {
+            throw "Meridian desktop exited before startup authentication could be completed."
+        }
+
+        $currentWindow = Find-MeridianWindow -Process $Process
+        if ($null -eq $currentWindow) {
+            return $null
+        }
+
+        return Get-StartupContinueWithoutCredentialsButton -Window $currentWindow
+    }
+
+    if ($startupContinueButton -and (Test-AutomationElementEnabled -Element $startupContinueButton)) {
+        Activate-MeridianWindow | Out-Null
+        if (Invoke-AutomationButton -Button $startupContinueButton -Description 'continue without credentials') {
+            Start-Sleep -Seconds $contextEnterSettleSeconds
+            $shell = Wait-ForElement -Attempts 24 -DelayMilliseconds 500 -Finder {
+                if ($null -ne $Process -and $Process.HasExited) {
+                    throw "Meridian desktop exited before the workstation shell appeared after startup authentication."
+                }
+
+                $currentWindow = Find-MeridianWindow -Process $Process
+                if ($null -eq $currentWindow) {
+                    return $null
+                }
+
+                if (Test-ShellAutomationReady -Window $currentWindow) {
+                    return $currentWindow
+                }
+
+                return $null
+            }
+
+            if ($shell) {
+                return $true
+            }
+        }
     }
 
     $enterButton = Wait-ForElement -Attempts $contextSelectorProbeAttempts -DelayMilliseconds 300 -Finder {
@@ -761,6 +815,74 @@ function Test-BitmapHasVisualContent {
     return $false
 }
 
+function Test-ImageFileHasVisualContent {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        return $false
+    }
+
+    $stream = $null
+    $bitmap = $null
+    try {
+        $stream = [System.IO.File]::Open($Path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite)
+        $bitmap = [System.Drawing.Bitmap]::new($stream)
+        return Test-BitmapHasVisualContent -Bitmap $bitmap
+    }
+    finally {
+        if ($null -ne $bitmap) { $bitmap.Dispose() }
+        if ($null -ne $stream) { $stream.Dispose() }
+    }
+}
+
+function Save-InProcessWindowCapture {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+
+        [int]$TimeoutMs = 15000
+    )
+
+    $resolvedPath = [System.IO.Path]::GetFullPath($Path)
+    $directory = [System.IO.Path]::GetDirectoryName($resolvedPath)
+    if (-not [string]::IsNullOrWhiteSpace($directory)) {
+        New-Item -ItemType Directory -Force -Path $directory | Out-Null
+    }
+
+    if (Test-Path -LiteralPath $resolvedPath -PathType Leaf) {
+        Remove-Item -LiteralPath $resolvedPath -Force
+    }
+
+    if (-not (Send-ForwardedLaunchArgs -Arguments @("--screenshot=$resolvedPath") -TimeoutMs 10000)) {
+        throw 'Unable to forward in-process screenshot request to the running Meridian desktop instance.'
+    }
+
+    $deadline = (Get-Date).AddMilliseconds($TimeoutMs)
+    $lastReason = 'screenshot file was not created'
+    while ((Get-Date) -lt $deadline) {
+        if (Test-Path -LiteralPath $resolvedPath -PathType Leaf) {
+            try {
+                $file = Get-Item -LiteralPath $resolvedPath
+                if ($file.Length -gt 0 -and (Test-ImageFileHasVisualContent -Path $resolvedPath)) {
+                    return $resolvedPath
+                }
+
+                $lastReason = "screenshot file exists but failed visual-content validation ($($file.Length) bytes)"
+            }
+            catch {
+                $lastReason = $_.Exception.Message
+            }
+        }
+
+        Start-Sleep -Milliseconds 250
+    }
+
+    throw "In-process desktop screenshot capture did not produce a valid image before timeout: $lastReason."
+}
+
 function Save-WindowCapture {
     param(
         [Parameter(Mandatory = $true)]
@@ -853,6 +975,10 @@ public static class MeridianDesktopCaptureNative
             finally {
                 [MeridianDesktopCaptureNative]::ReleaseDC([System.IntPtr]::Zero, $screenDc) | Out-Null
             }
+        }
+
+        if (-not (Test-BitmapHasVisualContent -Bitmap $bitmap)) {
+            throw 'Desktop screenshot capture remained blank after PrintWindow and screen fallback.'
         }
 
         $bitmap.Save($Path, [System.Drawing.Imaging.ImageFormat]::Png)
@@ -1221,7 +1347,13 @@ $window = $null
 $workflowTranscriptActive = $false
 $stageStatusEntries = [System.Collections.Generic.List[object]]::new()
 $lastSuccessfulStep = $null
-$originalFixtureEnv = [Environment]::GetEnvironmentVariable('MDC_FIXTURE_MODE', 'Process')
+$originalWorkflowEnv = @{
+    MDC_FIXTURE_MODE = [Environment]::GetEnvironmentVariable('MDC_FIXTURE_MODE', 'Process')
+    DOTNET_ENVIRONMENT = [Environment]::GetEnvironmentVariable('DOTNET_ENVIRONMENT', 'Process')
+    ASPNETCORE_ENVIRONMENT = [Environment]::GetEnvironmentVariable('ASPNETCORE_ENVIRONMENT', 'Process')
+    MERIDIAN_USE_INMEMORY_GOVERNANCE = [Environment]::GetEnvironmentVariable('MERIDIAN_USE_INMEMORY_GOVERNANCE', 'Process')
+    MDC_WPF_SOFTWARE_RENDERING = [Environment]::GetEnvironmentVariable('MDC_WPF_SOFTWARE_RENDERING', 'Process')
+}
 $fixtureFileStates = @()
 
 $environmentSnapshot = [ordered]@{
@@ -1429,9 +1561,14 @@ try {
             else {
                 if ($useFixture) {
                     [Environment]::SetEnvironmentVariable('MDC_FIXTURE_MODE', '1', 'Process')
+                    [Environment]::SetEnvironmentVariable('DOTNET_ENVIRONMENT', 'Development', 'Process')
+                    [Environment]::SetEnvironmentVariable('ASPNETCORE_ENVIRONMENT', 'Development', 'Process')
+                    [Environment]::SetEnvironmentVariable('MERIDIAN_USE_INMEMORY_GOVERNANCE', 'true', 'Process')
+                    [Environment]::SetEnvironmentVariable('MDC_WPF_SOFTWARE_RENDERING', '1', 'Process')
                 }
                 else {
                     [Environment]::SetEnvironmentVariable('MDC_FIXTURE_MODE', $null, 'Process')
+                    [Environment]::SetEnvironmentVariable('MDC_WPF_SOFTWARE_RENDERING', $null, 'Process')
                 }
 
                 $launchArguments = @()
@@ -1656,7 +1793,14 @@ try {
 
                     Activate-MeridianWindow | Out-Null
                     if ($shouldCapture -and $null -ne $capturePath) {
-                        $savedPath = Save-WindowCapture -Window $readiness.window -Path $capturePath
+                        try {
+                            $savedPath = Save-InProcessWindowCapture -Path $capturePath
+                        }
+                        catch {
+                            Write-Warn "In-process desktop screenshot capture failed; falling back to native window capture: $($_.Exception.Message)"
+                            $savedPath = Save-WindowCapture -Window $readiness.window -Path $capturePath
+                        }
+
                         return [pscustomobject]@{
                             capturePath = $savedPath
                             state = $readiness.state
@@ -1895,7 +2039,9 @@ finally {
         Restore-FileState -States $fixtureFileStates
     }
 
-    [Environment]::SetEnvironmentVariable('MDC_FIXTURE_MODE', $originalFixtureEnv, 'Process')
+    foreach ($entry in $originalWorkflowEnv.GetEnumerator()) {
+        [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value, 'Process')
+    }
     if ($workflowTranscriptActive) {
         try {
             Stop-Transcript | Out-Null

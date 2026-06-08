@@ -313,6 +313,109 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
         ))}
       </section>
 
+      {(data.reporting.portfolioCuts ?? []).length > 0 ? (
+        <section role="region" aria-label="Portfolio reporting cuts">
+          <Card className="panel-surface">
+            <CardHeader>
+              <div className="eyebrow-label">Portfolio cuts</div>
+              <CardTitle>Exposure, cash, P&L, and shadow NAV</CardTitle>
+              <CardDescription>Fund, strategy, and tag views are projected from the shared portfolio and NAV reporting payload.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div role="list" aria-label="Portfolio reporting cut rows" className="grid gap-3 lg:grid-cols-3">
+                {(data.reporting.portfolioCuts ?? []).slice(0, 6).map((cut) => (
+                  <div
+                    key={cut.cutId}
+                    role="listitem"
+                    aria-label={`${cut.label} ${cut.kind} portfolio reporting cut`}
+                    className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <span className="min-w-0">
+                        <span className="block font-semibold text-foreground">{cut.label}</span>
+                        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{cut.cutId}</span>
+                      </span>
+                      <Badge variant="outline">{cut.kind}</Badge>
+                    </div>
+                    <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                      <ReportingCutMetric label="Gross" value={formatReportingMoney(cut.grossExposure, cut.currency)} />
+                      <ReportingCutMetric label="Net" value={formatReportingMoney(cut.netExposure, cut.currency)} />
+                      <ReportingCutMetric label="Cash" value={formatReportingMoney(cut.totalCash, cut.currency)} />
+                      <ReportingCutMetric label="P&L" value={formatReportingMoney(cut.totalPnl, cut.currency)} />
+                      <ReportingCutMetric label="Shadow NAV" value={formatReportingMoney(cut.shadowNav, cut.currency)} />
+                      <ReportingCutMetric label="Variance" value={formatReportingMoney(cut.shadowNavVariance, cut.currency)} />
+                    </dl>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {cut.sourceCount} source{cut.sourceCount === 1 ? "" : "s"} · {cut.versionStamp ?? cut.asOf}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      ) : null}
+
+      {(data.reporting.structuredExports ?? []).length > 0 ? (
+        <section role="region" aria-label="Structured reporting exports">
+          <Card className="panel-surface">
+            <CardHeader>
+              <div className="eyebrow-label">Structured exports</div>
+              <CardTitle>Regulatory, warehouse, and decision outputs</CardTitle>
+              <CardDescription>Source-backed JSON descriptors keep downstream exports tied to governed Reporting evidence.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div role="list" aria-label="Structured export rows" className="grid gap-3 lg:grid-cols-3">
+                {(data.reporting.structuredExports ?? []).map((structuredExport) => (
+                  <div
+                    key={structuredExport.exportId}
+                    role="listitem"
+                    aria-label={`${structuredExport.label} structured export`}
+                    className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <span className="min-w-0">
+                        <span className="block font-semibold text-foreground">{structuredExport.label}</span>
+                        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">
+                          {structuredExport.exportId}
+                        </span>
+                      </span>
+                      <span className="flex flex-wrap items-center justify-end gap-1.5">
+                        <Badge variant="outline">{structuredExport.purpose}</Badge>
+                        <Badge variant="outline">{structuredExport.isReady ? "Ready" : "Blocked"}</Badge>
+                      </span>
+                    </div>
+                    <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                      <ReportingCutMetric label="Format" value={structuredExport.format} />
+                      <ReportingCutMetric label="Rows" value={structuredExport.rowCount.toLocaleString()} />
+                      <ReportingCutMetric label="Fields" value={structuredExport.fieldCount.toLocaleString()} />
+                      <ReportingCutMetric label="Sources" value={structuredExport.sourceCount.toLocaleString()} />
+                      <ReportingCutMetric label="Schema" value={`v${structuredExport.schemaVersion}`} />
+                      <ReportingCutMetric label="Currency" value={structuredExport.currency} />
+                    </dl>
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                      {structuredExport.consumer} · {structuredExport.validationSummary ?? structuredExport.dataset}
+                    </p>
+                    <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{structuredExport.retainedPath}</p>
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                      <span className="break-all font-mono text-[11px] text-muted-foreground">
+                        {structuredExport.versionStamp ?? structuredExport.asOf}
+                      </span>
+                      <Button asChild variant="outline" size="sm" disabled={!structuredExport.isReady}>
+                        <a href={structuredExport.route} target="_blank" rel="noreferrer" aria-label={`Open ${structuredExport.label} structured export`}>
+                          <FileText className="h-4 w-4" aria-hidden="true" />
+                          Open
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      ) : null}
+
       <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
         <Card className="panel-surface">
           <CardHeader>
@@ -329,6 +432,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                     <Badge variant={template.statusVariant}>{template.statusLabel}</Badge>
                     <Badge variant="outline">{template.sourceLabel}</Badge>
                     <Badge variant="outline">{template.family}</Badge>
+                    <Badge variant="outline">{template.accessMode}</Badge>
                   </span>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
@@ -336,7 +440,8 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                 </p>
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                   <p className="min-w-0 flex-1 text-xs leading-5 text-muted-foreground">
-                    {template.approvalSummary}
+                    <span className="block">{template.approvalSummary}</span>
+                    <span className="block">{template.accessSummary}</span>
                   </p>
                   <span className="flex flex-wrap items-center gap-2">
                     <Button
@@ -560,6 +665,28 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                     <p className="mt-1 text-xs leading-5 text-muted-foreground">
                       Attempt {attempt.attemptNumber} by {attempt.actor} at {attempt.attemptedAtUtc}
                     </p>
+                    {attempt.package ? (
+                      <div className="mt-2 space-y-1 text-xs leading-5 text-muted-foreground">
+                        <p>
+                          {attempt.package.deliveryMode} package · {attempt.package.formats.join(", ")}
+                        </p>
+                        {attempt.package.secureLink.startsWith("/") ? (
+                          <a
+                            className="block break-all font-mono text-[11px] text-primary underline-offset-2 hover:underline"
+                            href={attempt.package.secureLink}
+                          >
+                            {attempt.package.secureLink}
+                          </a>
+                        ) : (
+                          <p className="break-all font-mono text-[11px]">
+                            {attempt.package.secureLink}
+                          </p>
+                        )}
+                        <p className="break-all font-mono text-[11px]">
+                          {attempt.package.retainedManifestPath}
+                        </p>
+                      </div>
+                    ) : null}
                     {attempt.failureReason ? <p className="mt-1 text-xs text-warning">{attempt.failureReason}</p> : null}
                   </div>
                 ))}
@@ -1193,6 +1320,15 @@ function ReportingChip({ label, value }: { label: string; value: string }) {
   );
 }
 
+function ReportingCutMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</dt>
+      <dd className="mt-1 break-words font-mono text-xs text-foreground">{value}</dd>
+    </div>
+  );
+}
+
 function ReportingScheduleField({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-sm border border-border/60 bg-background/30 px-2.5 py-2">
@@ -1200,6 +1336,18 @@ function ReportingScheduleField({ label, value }: { label: string; value: string
       <dd className="mt-1 break-words font-mono text-xs text-foreground">{value}</dd>
     </div>
   );
+}
+
+function formatReportingMoney(value: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: currency || "USD",
+      maximumFractionDigits: Math.abs(value) >= 1000 ? 0 : 2
+    }).format(value);
+  } catch {
+    return `${currency || "USD"} ${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+  }
 }
 
 function ReportingCommandStatusView({ status }: { status: ReportingCommandStatus }) {
@@ -1236,6 +1384,7 @@ async function executeRunAction(run: ReportingRunStatusRow, action: ReportingRun
       distributionId,
       actor: "browser-workstation",
       note: "Delivered from browser Reporting workspace.",
+      formats: ["Pdf", "Xlsx", "Csv"],
       evidenceLinks: buildEvidenceLinksFromRun(run)
     });
     return;

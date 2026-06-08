@@ -7,6 +7,7 @@ import {
   buildAccountingCashFlowViewState,
   buildAccountingLoadingViewState,
   buildAccountingReportingViewState,
+  buildAccountingWorkflowLaunchViewState,
   buildCloseCommandCenterViewState,
   buildAccountingTrialBalanceViewState,
   buildSecurityScheduleRows,
@@ -848,7 +849,18 @@ const manualJournalDraft: ManualJournalEntryDraft = {
   imbalance: 0,
   approvalId: null,
   submittedAtUtc: null,
-  submittedBy: null
+  submittedBy: null,
+  entryType: "CapitalCall",
+  treasuryContext: {
+    effectiveDate: "2026-06-30",
+    idempotencyKey: "browser:fund-alpha:capital-call:manual-je-1",
+    fundEventId: "fund-event:fund-alpha:capital-call:20260630",
+    fundEventType: "CapitalCall",
+    capitalAccountId: "capital-account:fund-alpha:lp-1",
+    investorId: "investor:lp-1",
+    paymentIntentId: "payment:fund-alpha:capital-call:manual-je-1",
+    settlementReference: "settlement:fund-alpha:capital-call:20260630"
+  }
 };
 
 const manualJournalWorkbench: ManualJournalEntryWorkbench = {
@@ -861,10 +873,225 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
     { nodeId: "interest-income", path: "Income:Interest", accountName: "Interest Income", accountType: "Revenue", isArchived: false }
   ],
   drafts: [manualJournalDraft],
-  auditTrail: []
+  auditTrail: [],
+  privateCapitalActivity: {
+    fundProfileId: "fund-alpha",
+    ledgerBookId: "book-alpha",
+    projectedAtUtc: "2026-06-30T00:00:00Z",
+    fundEventCount: 1,
+    capitalAccountCount: 1,
+    submittedFundEventCount: 0,
+    approvalQueueCount: 0,
+    postedFundEventCount: 0,
+    publishedReportOutputCount: 0,
+    netCapitalActivity: 100,
+    currency: "USD",
+    fundEvents: [
+      {
+        fundEventId: "fund-event:fund-alpha:capital-call:20260630",
+        fundEventType: "CapitalCall",
+        entryType: "CapitalCall",
+        journalStatus: "Draft",
+        journalEntryId: "manual-je-1",
+        effectiveDate: "2026-06-30",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        currency: "USD",
+        grossAmount: 100,
+        netCapitalActivity: 100,
+        memo: "Manual close adjustment",
+        paymentIntentId: "payment:fund-alpha:capital-call:manual-je-1",
+        settlementReference: "settlement:fund-alpha:capital-call:20260630",
+        evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+        validationIssues: [],
+        updatedAtUtc: "2026-06-30T00:00:00Z"
+      }
+    ],
+    capitalAccounts: [
+      {
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        currency: "USD",
+        contributions: 100,
+        distributions: 0,
+        subscriptions: 0,
+        redemptions: 0,
+        managementFees: 0,
+        netActivity: 100,
+        fundEventCount: 1,
+        lastEffectiveDate: "2026-06-30",
+        lastFundEventType: "CapitalCall",
+        fundEventIds: ["fund-event:fund-alpha:capital-call:20260630"]
+      }
+    ],
+    capitalAccountSubledgerEntries: [
+      {
+        subledgerEntryId: "capital-account-subledger:fund-event:fund-alpha:capital-call:20260630",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        currency: "USD",
+        fundEventId: "fund-event:fund-alpha:capital-call:20260630",
+        fundEventType: "CapitalCall",
+        entryType: "CapitalCall",
+        approvalState: "Draft",
+        journalEntryId: "manual-je-1",
+        effectiveDate: "2026-06-30",
+        grossAmount: 100,
+        netCapitalActivity: 100,
+        runningNetActivity: 100,
+        memo: "Manual close adjustment",
+        evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+        validationIssues: [],
+        updatedAtUtc: "2026-06-30T00:00:00Z"
+      }
+    ],
+    ledgerImpacts: [
+      {
+        ledgerImpactId: "ledger-impact:fund-event:fund-alpha:capital-call:20260630:manual-je-1",
+        journalEntryId: "manual-je-1",
+        fundEventId: "fund-event:fund-alpha:capital-call:20260630",
+        fundEventType: "CapitalCall",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        approvalState: "Draft",
+        effectiveDate: "2026-06-30",
+        currency: "USD",
+        totalDebits: 100,
+        totalCredits: 100,
+        imbalance: 0,
+        lineCount: 2,
+        isBalanced: true,
+        isPostingReady: false,
+        evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+        lines: [
+          {
+            lineId: "line-debit",
+            accountPath: "Assets:Cash",
+            side: "Debit",
+            amount: 100,
+            currency: "USD",
+            entityId: null,
+            securityId: null,
+            securityDisplayName: null,
+            evidenceLink: null
+          },
+          {
+            lineId: "line-credit",
+            accountPath: "Equity:Capital Contributions",
+            side: "Credit",
+            amount: 100,
+            currency: "USD",
+            entityId: null,
+            securityId: null,
+            securityDisplayName: null,
+            evidenceLink: null
+          }
+        ],
+        validationIssues: [
+          {
+            code: "manual-je.private-capital-ledger-impact-approval-pending",
+            severity: "Warning",
+            message: "Approval is pending.",
+            targetId: "manual-je-1",
+            suggestedAction: "Submit approval."
+          }
+        ]
+      }
+    ],
+    reportOutputs: [
+      {
+        reportOutputId: "report-output:fund-event:fund-alpha:capital-call:20260630:capitalcallnotice",
+        reportOutputType: "CapitalCallNotice",
+        displayName: "CapitalCallNotice for CapitalCall",
+        reportRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630",
+        fundEventId: "fund-event:fund-alpha:capital-call:20260630",
+        fundEventType: "CapitalCall",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        approvalState: "Draft",
+        effectiveDate: "2026-06-30",
+        currency: "USD",
+        netCapitalActivity: 100,
+        evidenceLinkCount: 1,
+        evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+        isReportReady: false,
+        reportWorkflowState: "Draft",
+        reportLineProvenanceCount: 1,
+        validationIssues: [
+          {
+            code: "manual-je.private-capital-report-approval-pending",
+            severity: "Warning",
+            message: "Approval is pending.",
+            targetId: "fund-event:fund-alpha:capital-call:20260630",
+            suggestedAction: "Submit approval."
+          }
+        ]
+      }
+    ],
+    validationIssues: []
+  }
 };
 
 describe("accounting-screen view model", () => {
+  it("derives a route-aware accounting workflow launch model", () => {
+    const closeCommandCenter = buildCloseCommandCenterViewState({
+      data: accountingWorkspace,
+      workflow: closeWorkflow,
+      workflowLoading: false,
+      workflowError: null,
+      accountingSystemProviders: [],
+      accountingSystemImport: null,
+      accountingSystemReconciliation: null,
+      multiAssetCoverage: null
+    });
+
+    const state = buildAccountingWorkflowLaunchViewState({
+      data: accountingWorkspace,
+      workstream: "reconciliation",
+      closeCommandCenter
+    });
+
+    expect(state).toMatchObject({
+      title: "Accounting workflow",
+      activeLabel: "Reconciliation active",
+      statusLabel: "Blocked",
+      statusTone: "danger",
+      ariaLabel: "Accounting workflow launch paths"
+    });
+    expect(state.steps.map((step) => step.href)).toEqual([
+      "/accounting/configure",
+      "/accounting/journal-entries",
+      "/accounting/ledger",
+      "/accounting/reconciliation",
+      "/accounting/exceptions",
+      "/accounting/security-master",
+      "/accounting/approvals",
+      "/reporting/evidence"
+    ]);
+    expect(state.steps.find((step) => step.id === "reconciliation")).toMatchObject({
+      metricLabel: "Open breaks",
+      metricValue: "1",
+      statusLabel: "Review breaks",
+      tone: "warning",
+      isActive: true
+    });
+    expect(state.steps.find((step) => step.id === "approvals")).toMatchObject({
+      metricValue: "2",
+      statusLabel: "Signer review",
+      tone: "warning"
+    });
+    expect(state.actionRows.map((action) => action.href)).toEqual([
+      "/accounting/reconciliation",
+      "/accounting/journal-entries",
+      "/accounting/approvals",
+      "/reporting/evidence"
+    ]);
+    expect(state.actionRows.find((action) => action.id === "evidence")).toMatchObject({
+      label: "Attach evidence",
+      tone: "warning"
+    });
+  });
+
   it("derives the accounting workstream and selected reconciliation run", () => {
     expect(resolveAccountingWorkstream("/accounting/security-master")).toBe("security-master");
     expect(resolveAccountingWorkstream("/accounting/reconciliation")).toBe("reconciliation");
@@ -911,6 +1138,40 @@ describe("accounting-screen view model", () => {
     await waitFor(() => expect(result.current.draft.journalEntryId).toBe("manual-je-1"));
 
     expect(result.current.getLineBadges("line-debit").map((badge) => badge.label)).toContain("Blocked");
+    expect(result.current.privateCapitalActivity.statusLabel).toBe("1 fund events / 1 capital accounts");
+    expect(result.current.privateCapitalActivity.summaryCards).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "net-activity", value: "+$100.00 USD" }),
+      expect.objectContaining({ id: "ledger-impacts", value: "1" }),
+      expect.objectContaining({ id: "capital-account-subledger", value: "1" }),
+      expect.objectContaining({ id: "report-outputs", value: "1" })
+    ]));
+    expect(result.current.privateCapitalActivity.capitalAccounts[0]).toMatchObject({
+      title: "capital-account:fund-alpha:lp-1",
+      netActivityLabel: "+$100.00 USD",
+      contributionLabel: "$100 USD"
+    });
+    expect(result.current.privateCapitalActivity.capitalAccountSubledgerEntries[0]).toMatchObject({
+      title: "CapitalCall",
+      statusLabel: "Draft",
+      netActivityLabel: "+$100.00 USD",
+      runningBalanceLabel: "+$100.00 USD",
+      evidenceLabel: "1 evidence"
+    });
+    expect(result.current.privateCapitalActivity.ledgerImpacts[0]).toMatchObject({
+      title: "CapitalCall",
+      readinessLabel: "Review",
+      debitLabel: "$100 USD",
+      creditLabel: "$100 USD",
+      lineLabel: "2 GL lines"
+    });
+    expect(result.current.privateCapitalActivity.reportOutputs[0]).toMatchObject({
+      title: "CapitalCallNotice for CapitalCall",
+      readinessLabel: "Review",
+      evidenceLabel: "1 evidence",
+      workflowLabel: "Draft",
+      publicationLabel: "No publication manifest",
+      provenanceLabel: "1 provenance line(s)"
+    });
 
     act(() => result.current.updateSecuritySearchQuery("AAPL"));
     await act(async () => {

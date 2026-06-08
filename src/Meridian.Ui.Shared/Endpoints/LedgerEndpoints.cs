@@ -601,6 +601,35 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
 
+        app.MapGet(UiApiRoutes.LedgerPrivateCapitalActivity, async (
+            string? fundProfileId,
+            Guid? ledgerBookId,
+            string? fundEventId,
+            string? capitalAccountId,
+            string? investorId,
+            HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveManualJournalEntryWorkbenchService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(
+                FilterPrivateCapitalActivity(activity, fundEventId, capitalAccountId, investorId),
+                jsonOptions);
+        })
+        .WithName("GetLedgerPrivateCapitalActivity")
+        .Produces<PrivateCapitalActivityProjectionDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented);
+
         app.MapPost(UiApiRoutes.LedgerManualJournalEntryDrafts, async (SaveManualJournalEntryDraftRequest request, HttpContext context) =>
         {
             if (!HasLedgerMutationPermission(context))
@@ -739,7 +768,9 @@ public static class LedgerEndpoints
                 draftStore,
                 configurationService,
                 auditStore,
-                context.RequestServices.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>());
+                context.RequestServices.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                context.RequestServices.GetService<ILedgerJournalStore>(),
+                context.RequestServices.GetService<ReportPackWorkflowService>());
     }
 
     private static IResult ServiceUnavailable()
@@ -938,6 +969,148 @@ public static class LedgerEndpoints
 
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static PrivateCapitalActivityProjectionDto FilterPrivateCapitalActivity(
+        PrivateCapitalActivityProjectionDto activity,
+        string? fundEventId,
+        string? capitalAccountId,
+        string? investorId)
+    {
+        var normalizedFundEventId = NormalizeOptional(fundEventId);
+        var normalizedCapitalAccountId = NormalizeOptional(capitalAccountId);
+        var normalizedInvestorId = NormalizeOptional(investorId);
+        if (normalizedFundEventId is null &&
+            normalizedCapitalAccountId is null &&
+            normalizedInvestorId is null)
+        {
+            return activity;
+        }
+
+        var fundEvents = activity.FundEvents
+            .Where(item =>
+                MatchesPrivateCapitalFilter(item.FundEventId, normalizedFundEventId) &&
+                MatchesPrivateCapitalFilter(item.CapitalAccountId, normalizedCapitalAccountId) &&
+                MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId))
+            .ToArray();
+        var retainedFundEventIds = fundEvents
+            .Select(static item => item.FundEventId)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var capitalAccountSubledgerEntries = activity.CapitalAccountSubledgerEntries
+            .Where(item =>
+                MatchesPrivateCapitalFilter(item.FundEventId, normalizedFundEventId) &&
+                MatchesPrivateCapitalFilter(item.CapitalAccountId, normalizedCapitalAccountId) &&
+                MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId) &&
+                retainedFundEventIds.Contains(item.FundEventId))
+            .ToArray();
+        var ledgerImpacts = activity.LedgerImpacts
+            .Where(item =>
+                MatchesPrivateCapitalFilter(item.FundEventId, normalizedFundEventId) &&
+                MatchesPrivateCapitalFilter(item.CapitalAccountId, normalizedCapitalAccountId) &&
+                MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId) &&
+                retainedFundEventIds.Contains(item.FundEventId))
+            .ToArray();
+        var reportOutputs = activity.ReportOutputs
+            .Where(item =>
+                MatchesPrivateCapitalFilter(item.FundEventId, normalizedFundEventId) &&
+                MatchesPrivateCapitalFilter(item.CapitalAccountId, normalizedCapitalAccountId) &&
+                MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId) &&
+                retainedFundEventIds.Contains(item.FundEventId))
+            .ToArray();
+        var capitalAccounts = BuildFilteredCapitalAccounts(fundEvents);
+        var retainedCapitalAccountIds = capitalAccounts
+            .Select(static item => item.CapitalAccountId)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var retainedJournalEntryIds = fundEvents
+            .Select(static item => item.JournalEntryId.ToString("D"))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var validationIssues = activity.ValidationIssues
+            .Where(issue => MatchesFilteredPrivateCapitalIssue(
+                issue,
+                retainedFundEventIds,
+                retainedCapitalAccountIds,
+                retainedJournalEntryIds))
+            .ToArray();
+        var currency = fundEvents
+            .Select(static item => item.Currency)
+            .Concat(capitalAccountSubledgerEntries.Select(static item => item.Currency))
+            .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)) ?? activity.Currency;
+
+        return new PrivateCapitalActivityProjectionDto(
+            activity.FundProfileId,
+            activity.LedgerBookId,
+            activity.ProjectedAtUtc,
+            fundEvents.Length,
+            capitalAccounts.Count,
+            fundEvents.Count(static item => item.JournalStatus is ManualJournalEntryStatusDto.Submitted or ManualJournalEntryStatusDto.Approved),
+            fundEvents.Count(static item => item.JournalStatus == ManualJournalEntryStatusDto.Submitted),
+            fundEvents.Count(static item => item.IsPosted),
+            reportOutputs.Count(static item => item.IsPublished),
+            fundEvents.Sum(static item => item.NetCapitalActivity),
+            currency,
+            fundEvents,
+            capitalAccounts,
+            capitalAccountSubledgerEntries,
+            ledgerImpacts,
+            reportOutputs,
+            validationIssues);
+    }
+
+    private static IReadOnlyList<PrivateCapitalCapitalAccountActivityDto> BuildFilteredCapitalAccounts(
+        IReadOnlyList<PrivateCapitalFundEventDto> fundEvents)
+        => fundEvents
+            .GroupBy(item => new { item.CapitalAccountId, item.InvestorId, item.Currency })
+            .Select(group =>
+            {
+                var ordered = group
+                    .OrderByDescending(static item => item.EffectiveDate)
+                    .ThenByDescending(static item => item.UpdatedAtUtc)
+                    .ToArray();
+                return new PrivateCapitalCapitalAccountActivityDto(
+                    group.Key.CapitalAccountId,
+                    group.Key.InvestorId,
+                    group.Key.Currency,
+                    group.Where(static item => item.EntryType == ManualJournalEntryTypeDto.CapitalCall).Sum(static item => Math.Abs(item.NetCapitalActivity)),
+                    group.Where(static item => item.EntryType == ManualJournalEntryTypeDto.Distribution).Sum(static item => Math.Abs(item.NetCapitalActivity)),
+                    group.Where(static item => item.EntryType == ManualJournalEntryTypeDto.Subscription).Sum(static item => Math.Abs(item.NetCapitalActivity)),
+                    group.Where(static item => item.EntryType == ManualJournalEntryTypeDto.Redemption).Sum(static item => Math.Abs(item.NetCapitalActivity)),
+                    group.Where(static item => item.EntryType == ManualJournalEntryTypeDto.ManagementFee).Sum(static item => Math.Abs(item.NetCapitalActivity)),
+                    group.Sum(static item => item.NetCapitalActivity),
+                    group.Count(),
+                    ordered.Length == 0 ? null : ordered[0].EffectiveDate,
+                    ordered.Length == 0 ? null : ordered[0].FundEventType,
+                    group
+                        .Select(static item => item.FundEventId)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .Order(StringComparer.OrdinalIgnoreCase)
+                        .ToArray());
+            })
+            .OrderBy(static item => item.CapitalAccountId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static item => item.InvestorId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static item => item.Currency, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    private static bool MatchesPrivateCapitalFilter(string? value, string? filter)
+        => filter is null || string.Equals(value?.Trim(), filter, StringComparison.OrdinalIgnoreCase);
+
+    private static bool MatchesFilteredPrivateCapitalIssue(
+        AccountingConfigurationValidationIssueDto issue,
+        IReadOnlySet<string> retainedFundEventIds,
+        IReadOnlySet<string> retainedCapitalAccountIds,
+        IReadOnlySet<string> retainedJournalEntryIds)
+    {
+        if (retainedFundEventIds.Count == 0 &&
+            retainedCapitalAccountIds.Count == 0 &&
+            retainedJournalEntryIds.Count == 0)
+        {
+            return false;
+        }
+
+        var targetId = NormalizeOptional(issue.TargetId);
+        return targetId is null ||
+               retainedFundEventIds.Contains(targetId) ||
+               retainedCapitalAccountIds.Contains(targetId) ||
+               retainedJournalEntryIds.Contains(targetId);
+    }
 
     private static async Task<IReadOnlyList<(LedgerPeriodDto period, LedgerPeriodSummaryDto summary)>> LoadClosedPeriodSummariesAsync(
         ILedgerBookService service,

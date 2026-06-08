@@ -1,9 +1,9 @@
-# Meridian Design Document — Version 0.15
+# Meridian Design Document — Version 0.16
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-06-04
-**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.15 extends the roadmap and source-module registry evidence with the v0.15 accounting records and operational evidence release package.
+**Reviewed:** 2026-06-08
+**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.16 extends the roadmap and source-module registry evidence with the v0.15 accounting records package plus current Carta Fund ERP, Carta Data Warehouse, Carta Management Company Administration, FundStudio fund administrator, FundStudio managed-services, FundStudio general-ledger/accounting, and Modern Treasury ledger research.
 
 ## 1. Product Vision
 
@@ -33,6 +33,54 @@ happened, why it happened, whether it can be trusted, and what was reconciled, a
 or reported. Capabilities outside that operational record workflow remain deferred unless the
 roadmap registry explicitly moves them into scope.
 
+### External Service Inspiration
+
+Meridian should draw product inspiration from adjacent private-capital, fund-administration, and
+treasury-ledger platforms without copying their product boundaries or making unverified
+implementation claims. Research checked on 2026-06-08 points to useful operational patterns:
+connected fund records, event-based fund accounting, stakeholder-ready evidence, management-company
+administration, real-time portfolio control, administrator-grade close discipline, and
+treasury-grade ledger invariants.
+
+| Reference | Useful Product Pattern | Meridian Translation |
+| --- | --- | --- |
+| [Carta Fund Administration](https://carta.com/fund-management/fund-administration/), [Carta Fund Management](https://carta.com/fund-management/), [Carta Data Warehouse](https://docs.carta.com/api-platform/docs/overview), and [Carta Management Company Administration](https://carta.com/fund-management/manco-administration/) | A connected private-capital operating suite for fund administration, event-based fund accounting, capital calls, distributions, investments, LP closings and support, KYC/AML, tax and K-1 support, SPVs, portfolio valuations, management-company expense allocation, intercompany balances, cash reconciliation, budget/cash planning, and queryable fund intelligence. | Strengthen Meridian as the private-capital operational record: first-class fund events, capital account evidence, LP/stakeholder report packages, tax and audit support files, portfolio valuation inputs, management-company operating records, certified operational datasets, and report-line provenance. |
+| [FundStudio Fund Administrators](https://fundstudio.com/fund-administrators/), [FundStudio Managed Services](https://fundstudio.com/managed-services/), [FundStudio General Ledger/Accounting](https://fundstudio.com/general-ledger-accounting/), and [FundStudio Portfolio Management](https://fundstudio.com/portfolio-management/) | Administrator-grade middle/back-office control across portfolios, custodians, primes, reconciliation, shadow NAV, multi-book/multi-currency accounting, locked periods, recurring journals, year-end close, capital-account and shadow-NAV packs, role-based JE/report/period-lock permissions, immutable logs, onboarding templates, T+0 capture, T+1 reconciliation, file distribution, SLA tracking, and reporting. | Strengthen Meridian's portfolio/accounting control plane: multi-asset operations, cash and collateral monitoring, reconciliation queues, close packages, versioned NAV support, journal evidence, fund/book/period/report admin scopes, delivery logs, exception SLAs, and drill-through reporting. |
+| [Modern Treasury Ledgers](https://docs.moderntreasury.com/ledgers/docs/overview), [ledger guarantees](https://docs.moderntreasury.com/ledgers/docs/ledgers-guarantees), and ledger engineering posts on [transaction models](https://www.moderntreasury.com/journal/how-to-scale-a-ledger-part-iii), [immutability and double-entry](https://www.moderntreasury.com/journal/how-to-scale-a-ledger-part-v), and [optimistic locking](https://www.moderntreasury.com/journal/designing-ledgers-with-optimistic-locking) | Immutable double-entry ledgering, idempotent writes, atomic transactions, per-currency balancing, pending/posted/archived transaction states, append-only versions, and concurrency controls. | Make Meridian-owned ledger records treasury-grade: posted entries are immutable, corrections use reversing or adjusting journals, writes are idempotent and atomic, balance-affecting records are per-currency balanced, and authoritative ledger writes fail closed under stale versions or missing evidence. |
+
+Meridian should not treat this as permission to build a full cap-table system, outsourced services
+operation, live payment processor, broad investor portal, or autonomous-agent workflow that bypasses
+operator evidence. Those remain separate product decisions unless the roadmap moves them into scope.
+
+### External Functionality Translation Requirements
+
+Carta and FundStudio should translate into Meridian-owned software capabilities, not copied service
+promises:
+
+* Fund events should become first-class operational records: formation/closing, subscription packet,
+  capital call, contribution receipt, investment, distribution, valuation, fee/expense, tax request,
+  audit request, and dissolution/wind-down support.
+* Capital accounts should be governed ledger projections with commitment, contribution,
+  distribution, allocation, NAV, statement, and evidence lineage.
+* LP support should start as governed package production and delivery evidence: capital notices,
+  distribution notices, statements, K-1/tax support packages, audit packages, stakeholder recipient
+  lists, and amendment/restatement trails. A broad LP portal remains deferred.
+* Data warehouse functionality should map to certified operational data marts, queryable evidence,
+  report-line provenance, refresh cadence metadata, and secure exports into BI tools.
+* Management-company administration should cover expense allocation, intercompany balances,
+  management-fee evidence, bank/card feeds, cash reconciliation, budget/cash-plan snapshots, and
+  bill-pay or payment-intent linkage. Native live bill pay remains later productization.
+* FundStudio-style admin controls should drive fund/book/period/report administration: multi-book
+  ledgers, locked periods, period reopen evidence, journal templates, recurring journals,
+  year-end-close workflows, portfolio-specific pricing rules, fund cloning/onboarding templates, and
+  immutable logs for every posting, lock, export, and delivery event.
+* Middle-office managed-service patterns should become internal workflow primitives: T+0 booking,
+  T+1 trade/cash/position reconciliation, true-break escalation, SLA timers, normalized file
+  distribution to admins/custodians/counterparties, and archived delivery logs.
+* AI or agent-like automation is acceptable only as reviewed discrepancy detection, extraction, or
+  draft-preparation assistance; it cannot bypass operator approval, evidence, ledger controls, or
+  period locks.
+
 ---
 
 ## 2. Target Customer Organizations
@@ -44,6 +92,7 @@ Meridian is intended to support several related customer types through one confi
 | Customer Type                  | Primary Needs                                                                                                       |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
 | Fund Administrators            | Reconciliation, NAV support, investor reporting, capital activity, audit evidence, workflow management              |
+| Private Fund Managers / Fund CFOs | Fund operations, capital accounts, fund events, portfolio valuations, tax/audit support, LP reporting, data exports |
 | Registered Investment Advisors | Portfolio operations, client reporting, data aggregation, performance review, advisor workflows, compliance support |
 | Single Family Offices          | Entity management, trust and beneficiary reporting, alternative assets, treasury, payments, consolidated reporting  |
 | Hybrid / Institutional Users   | Configurable workflows across operations, reporting, financing, planning, and governance                            |
@@ -220,9 +269,9 @@ Settings
 | Domain | Current Posture | Existing Foundation |
 | --- | --- | --- |
 | Data & Integration | Implemented evidence | Provider SDK, infrastructure adapters, provider validation, credential/setup flows, source-module validation, and data-confidence gates. |
-| Financial Operations | Implemented evidence | Reconciliation, casework, accounting close, evidence routing, and W4 ledger review flows. |
-| Treasury & Payments | Supported foundation | Cash-flow views, payment-oriented workflow design, and account/ledger seams exist; full payment execution remains later productization. |
-| Portfolio & Investment Operations | Implemented evidence | Portfolio, fund-structure, brokerage sync, fund accounts, positions, paper-session, and ledger-backed workflows. |
+| Financial Operations | Implemented evidence | Reconciliation, casework, accounting close, evidence routing, W4 ledger review flows, NAV-support posture, and fund-event accounting records. |
+| Treasury & Payments | Supported foundation | Cash-flow views, payment-oriented workflow design, account/ledger seams, and treasury-ledger control principles exist; full payment execution remains later productization. |
+| Portfolio & Investment Operations | Implemented evidence | Portfolio, fund-structure, brokerage sync, fund accounts, positions, paper-session, valuation evidence, and ledger-backed workflows. |
 | Reference Data | Implemented evidence | Security Master contracts, provider-to-security mapping, asset profiles, trust/conflict summaries, and shared multi-asset readiness coverage. |
 | Instrument, Contract & Obligation Management | Implemented evidence | Security Master, direct-lending/F# rule kernels, factor/corporate-action evidence, obligation-oriented ledger support, and multi-asset operational blockers. |
 | Entity & Relationship Management | Supported foundation | Fund-structure setup, ownership graph, legal-entity, vehicle, account-handoff, and assignment workflows. |
@@ -233,7 +282,7 @@ Settings
 | Risk Management | Supported foundation | Pre-trade risk rules and live-readiness controls exist; full enterprise risk management remains expansion work. |
 | Client & Stakeholder Reporting | Implemented evidence | Governed report-pack readiness, provenance, export evidence, and publication/restatement lifecycle are W4 baselines. |
 | Collaboration & Communication | Design-led foundation | Workflow assignment, comments, audit events, and queue state exist; broad collaboration tooling remains later work. |
-| Administration & Governance | Implemented evidence | Settings, policy, provider setup, audit trail, approval controls, and governed stage gates exist. |
+| Administration & Governance | Implemented evidence | Settings, policy, provider setup, audit trail, approval controls, and governed stage gates exist; Carta/FundStudio-style fund, book, period, report, and delivery admin scopes remain productization targets. |
 | Audit, Compliance & Regulatory | Implemented evidence | Audit events, evidence manifests, report provenance, approval history, and controlled close/report workflows exist. |
 | Workflow & Process Automation | Supported foundation | Shared workflow DTOs, route targets, operator queues, lifecycle transitions, and acceptance gates exist; no-code workflow design remains future work. |
 | Document & Knowledge Management | Design-led foundation | Evidence links and report artifacts exist; full document vault and knowledge-management features remain future work. |
@@ -315,6 +364,11 @@ Receive Activity
 * Exception management
 * Break assignment and escalation
 * Close checklists
+* Fund-event accounting support
+* Partner capital account tie-outs
+* Shadow NAV and NAV-support packages
+* Expense, fee, and allocation review
+* Period close locks and reopen evidence
 * Operational dashboards
 * Evidence packages
 * Approval history
@@ -344,6 +398,8 @@ Request Payment
 * Cash balances
 * Liquidity monitoring
 * Cash forecasting
+* Treasury ledger accounts
+* Idempotent payment and settlement intents
 * ACH processing
 * Wire processing
 * Internal transfers
@@ -352,8 +408,21 @@ Request Payment
 * Distributions
 * Investor payments
 * Fee payments
+* Returns, reversals, and failed-payment evidence
 * Positive pay support
 * Bank integration
+
+### Operating Requirements
+
+* Payment execution remains later productization unless a roadmap item explicitly moves it forward.
+* Near-term treasury work should focus on requests, approvals, expected cash flows, bank evidence,
+  reconciliation, and ledger-backed audit records.
+* Every money-movement workflow should link payment intent, approval, bank confirmation, return, or
+  reversal evidence to an atomic double-entry ledger transaction.
+* Posted treasury ledger entries are immutable; corrections must be represented as reversing or
+  adjusting entries with explicit lineage.
+* Balance-affecting writes must be idempotent, per-currency balanced, and protected by version or
+  close-period checks where concurrent activity could change the result.
 
 ---
 
@@ -385,6 +454,11 @@ Acquire Holdings
 * Allocation analysis
 * Benchmarking
 * Valuation source hierarchy
+* Portfolio company data collection
+* Portfolio one-pagers and tear sheets
+* Multi-prime, custodian, and account overlap views
+* Cash, collateral, margin, and liquidity monitoring
+* Versioned valuation and NAV-support inputs
 * Portfolio grouping
 * Corporate action support
 
@@ -527,6 +601,9 @@ Create Entity
 * Foundations
 * Beneficiaries
 * Advisors
+* General partners
+* Limited partners
+* Subscribers
 * Trustees
 * Custodians
 * Banks
@@ -536,6 +613,8 @@ Create Entity
 * Ownership percentages
 * Authority tracking
 * Authorized signers
+* Commitments and side-letter references
+* KYC / AML posture references
 
 ---
 
@@ -566,10 +645,14 @@ Acquire Asset
 * Credit monitoring
 * Private equity investments
 * Portfolio companies
+* Portfolio company operating metrics
 * Structured products
 * MBS / ABS / CLO / CMBS
 * Fund interests
+* SPVs
+* Look-through fund interests
 * Capital commitments
+* Capital account schedules
 * Valuation support
 * Waterfall modeling
 
@@ -735,13 +818,19 @@ Collect Approved Information
 * Family office reports
 * Investor reports
 * Client reports
+* LP statements
+* Capital call and distribution notices
+* Tax and K-1 support packages
+* Schedule of investments packages
+* Portfolio company one-pagers and tear sheets
 * Board packets
 * Audit packages
 * Report templates
 * Report packages
 * Report approvals
 * Distribution rules
-* Client portal support
+* Approved stakeholder delivery records
+* Client portal support (later; near-term delivery is governed report-package distribution)
 * Document delivery
 
 ---
@@ -786,6 +875,13 @@ Manage platform configuration, security, roles, rules, and governance.
 * System settings
 * Configuration versioning
 * Configuration approvals
+* Fund, book, period, report, and delivery administration scopes
+* JE-level, report-level, period-lock, export, and delivery permissions
+* Fund onboarding and cloning templates
+* Management-company expense allocation and intercompany policy configuration
+* Period close, lock, reopen, and year-end workflow controls
+* Provider, counterparty, API, SFTP, and file-delivery policies
+* Immutable admin logs for postings, locks, exports, and stakeholder deliveries
 
 ---
 
@@ -884,6 +980,8 @@ Provide shared analytics, dashboards, visualizations, exports, and reporting inf
 * Data exports
 * Report snapshots
 * Certified datasets
+* Certified operational data marts
+* Queryable evidence and report-line provenance
 
 ---
 
@@ -985,13 +1083,13 @@ Tenant / Organization
         ↓
 Entity
         ↓
-Account
+Account / Capital Account / Ledger Account
         ↓
 Position / Contract / Obligation
         ↓
 Expected Cash Flow
         ↓
-Actual Transaction / Actual Cash Flow
+Actual Transaction / Actual Cash Flow / Journal Entry
         ↓
 Reconciliation / Reporting / Audit
 ```
@@ -1004,11 +1102,15 @@ Reconciliation / Reporting / Audit
 | Entity             | Legal or economic party                        | Fund, trust, LLC, individual, SPV                             |
 | Relationship       | Link between entities                          | Owner, beneficiary, advisor, custodian, lender, borrower      |
 | Account            | Container where assets, cash, or activity live | Bank account, custody account, investment account, GL account |
+| Capital Account    | Economic record for investor or owner activity | Commitment, contribution, distribution, allocation, NAV share |
+| Ledger Account     | Accounting account used for balanced postings  | Cash, receivable, payable, income, expense, capital account   |
 | Instrument         | Defines what something is                      | Bond, stock, loan, lease, swap, real estate asset             |
 | Contract           | Defines rights and obligations                 | Loan agreement, bond indenture, lease, credit facility        |
 | Obligation         | Future duty or right to pay or receive         | Coupon, principal, rent, capital call, distribution           |
 | Expected Cash Flow | Forecasted cash movement from terms            | Scheduled interest, maturity payment, rent payment            |
+| Fund Event         | Operational event requiring accounting evidence | Closing, investment, capital call, distribution, expense      |
 | Transaction        | Actual observed activity                       | Trade, wire, coupon receipt, journal entry                    |
+| Journal Entry      | Balanced accounting record owned by Meridian   | Accrual, valuation adjustment, cash receipt, capital activity |
 | Position           | Ownership or exposure at a point in time       | Shares, par value, LP interest, loan balance                  |
 | Valuation          | Value assigned to an object                    | Market value, NAV, appraisal, fair value                      |
 | Reconciliation     | Comparison between sources                     | Custodian vs internal, bank vs ledger, expected vs actual     |
@@ -1016,6 +1118,7 @@ Reconciliation / Reporting / Audit
 | Document           | Supporting evidence                            | Statement, invoice, confirmation, agreement                   |
 | Task               | Work assigned to a user                        | Review break, approve payment, validate import                |
 | Report Package     | Final output for review/distribution           | Investor report, audit package, board packet                  |
+| Delivery Record    | Evidence of stakeholder publication            | Recipient list, timestamp, channel, package version           |
 | Audit Event        | Immutable history of meaningful actions        | Approved recon, changed terms, imported file                  |
 
 ## 9.3 Object Relationship Model
@@ -1069,7 +1172,7 @@ Meridian should support configurable source hierarchy rules.
 | Security Terms     | Bloomberg / Refinitiv / vendor | Custodian                    | Yes              |
 | Prices             | Approved pricing vendor        | Broker quote                 | Yes              |
 | Transactions       | Custodian                      | Internal import              | Yes              |
-| Accounting Entries | GL / accounting system         | Meridian adjustment          | Limited          |
+| Accounting Entries | Meridian ledger                | GL / accounting-system export | Via approved reversing or adjusting journal |
 | Contract Terms     | Executed agreement             | Data vendor                  | Yes              |
 | Entity Ownership   | Legal documents                | Internal admin               | Yes              |
 
@@ -1161,6 +1264,25 @@ Meridian should reconcile across three dimensions.
 | Expected-to-Actual   | Expected coupon vs actual coupon received    |
 | Internal-to-Official | Meridian record vs general ledger            |
 
+## 10.7 Treasury Ledger Principles
+
+Modern treasury-ledger design reinforces Meridian's ledger authority. Meridian should use these
+principles wherever records affect cash, capital accounts, accounting balances, payment workflows,
+or close packages:
+
+| Principle | Meridian Requirement |
+| --- | --- |
+| Double-entry | Every balance-affecting journal transaction has at least one debit and one credit, and debits equal credits per currency. |
+| Atomic write | A journal transaction's entries either all persist or all fail; callers cannot create orphan debit or credit rows. |
+| Idempotency | Import runs, payment intents, bank confirmations, and journal requests carry stable source keys so retries cannot duplicate money movement or accounting entries. |
+| Posted immutability | Posted entries cannot be edited or deleted; corrections use reversing or adjusting journals linked to the original record. |
+| Pending lifecycle | Draft or pending journal transactions can be amended before approval, then posted, archived, or superseded with version history. |
+| Versioned balances | Ledger accounts, journal transactions, close packages, and settlements expose versions so past states can be reconstructed precisely. |
+| Effective dating | Entries keep effective date, posted timestamp, source timestamp, and approval timestamp separately so operations can distinguish economic date from processing date. |
+| Concurrency control | Writes that depend on balance, close status, settlement status, or approval state use optimistic version checks and fail closed on stale state. |
+| Payment linkage | Payment requests, bank orders, confirmations, returns, and reversals link to ledger transactions, but payment processors do not become the source of ledger truth. |
+| Audit reconstruction | Every ledger balance in a report package can drill back to entries, source records, approvals, documents, and any reversal chain. |
+
 ---
 
 ## 11. Extensibility Strategy
@@ -1196,6 +1318,10 @@ Position
 Valuation
 Reconciliation
 Exception
+Capital Account
+Ledger Account
+Journal Entry
+Fund Event
 Document
 Task
 Report Package
@@ -1209,11 +1335,12 @@ Audit Event
 | Workflows       | Review steps, approval chains, task queues                    |
 | Rules           | Validation rules, matching tolerances, materiality thresholds |
 | Integrations    | Provider mappings, file layouts, API connections              |
-| Reports         | Templates, schedules, recipients, sections                    |
+| Reports         | Templates, schedules, recipients, sections, evidence packages |
 | Permissions     | Roles, data scopes, approval authority                        |
 | Classifications | Asset classes, strategies, categories                         |
 | Custom Fields   | Tenant-specific attributes                                    |
 | Source Priority | Which source wins for prices, positions, cash, terms          |
+| Ledger Controls | Posting rules, idempotency keys, period locks, reversal policy |
 | Notifications   | Alerts, escalations, reminders                                |
 
 ### Not Fully Configurable
@@ -1320,6 +1447,8 @@ Rollback Version
 | Report Templates            | Reporting                      |               Yes |       Yes |             Yes |         Yes | Limited |
 | Report Definitions          | Reporting                      |               Yes |       Yes |             Yes |         Yes |     Yes |
 | Report Package Types        | Reporting                      |               Yes |       Yes |             Yes |         Yes |     Yes |
+| Ledger Posting Policy       | Accounting / Ledger            |               Yes |       Yes |             Yes |         Yes |     Yes |
+| Period Close Policy         | Accounting / Ledger            |               Yes |       Yes |             Yes |         Yes |     Yes |
 | Document Type Catalog       | Document & Knowledge           |               Yes |       Yes |             Yes |         Yes |     Yes |
 | Document Metadata Fields    | Document & Knowledge           |               Yes |       Yes |             Yes |         Yes |     Yes |
 | Custom Fields               | Platform Governance            |         Sometimes |       Yes |             Yes |         Yes | Limited |
@@ -1351,6 +1480,8 @@ Source-of-record rules
 Instrument type catalog
 Obligation type catalog
 Transaction type catalog
+Ledger posting policy
+Journal reversal policy
 Reconciliation types
 Matching rules
 Tolerance rules
@@ -1371,6 +1502,7 @@ Custom fields
 Report templates
 Cash flow generation rules
 Contract templates
+Advanced capital account allocation rules
 Close checklist templates
 Client portal configuration
 Report distribution rules
@@ -1468,7 +1600,7 @@ Client Fund Group
     ↓
 Fund
     ↓
-Investor / Vehicle / Account
+Investor / Vehicle / Account / Capital Account
 ```
 
 #### RIA
@@ -1753,6 +1885,9 @@ Published Business Record
 * Market data vendor
 * Fund administrator
 * Accounting system
+* Treasury or banking platform
+* Tax or audit provider
+* KYC / AML provider
 * Document repository
 * Manual upload
 
@@ -1785,6 +1920,8 @@ Distribution history
 Recipient lists
 Rendered outputs
 Approval status
+Certified dataset definitions
+Stakeholder delivery records
 ```
 
 ### Reporting Consumes
@@ -1799,6 +1936,9 @@ Reconciliations
 Cash flows
 Documents
 Audit events
+Journal entries
+Capital accounts
+Fund events
 ```
 
 ### Published Report Rule
@@ -1814,6 +1954,7 @@ Which template version was used
 Who approved it
 Who received it
 Whether it was later amended
+Which certified dataset or evidence manifest supported it
 ```
 
 ---
@@ -1831,12 +1972,16 @@ A document may support:
 ```text
 Entity
 Account
+Capital Account
 Contract
 Transaction
+Journal Entry
+Fund Event
 Reconciliation
 Exception
 Payment
 Report Package
+Delivery Record
 Audit Event
 ```
 
@@ -1870,6 +2015,9 @@ Configurability creates power, but also risk. Meridian should include guardrails
 | Mapping changes corrupt data               | Mapping versions are tied to import runs                   |
 | Report templates change historical outputs | Published report packages are frozen snapshots             |
 | Source priority changes create confusion   | Source-of-record policy changes require audit and approval |
+| Ledger retries duplicate money movement    | Idempotency keys and source-event uniqueness are required  |
+| Concurrent posts overdraw or corrupt state  | Balance-sensitive writes use version checks and fail closed |
+| Posted accounting history is mutated        | Corrections use reversing or adjusting journals only       |
 | Users bypass controls                      | Segregation of duties enforced by permissions and workflow |
 | Reprocessing changes historical data       | Import replay must preserve lineage and prior versions     |
 | Rules become untestable                    | Rules require test cases before activation                 |
@@ -1879,7 +2027,7 @@ Configurability creates power, but also risk. Meridian should include guardrails
 
 ## 24. Updated Design Thesis
 
-> Meridian is designed as a modular, configurable financial operations platform. Its core financial model is intentionally stable, centered on entities, accounts, instruments, contracts, obligations, cash flows, transactions, positions, reconciliations, documents, workflows, reports, and audit events. Around that stable core, Meridian provides tenant-specific configuration for workflows, rules, integrations, source-of-record policies, reporting, permissions, and custom attributes. This allows Meridian to support fund administrators, RIAs, family offices, and other investment organizations without creating separate products or sacrificing auditability.
+> Meridian is designed as a modular, configurable financial operations platform. Its core financial model is intentionally stable, centered on entities, accounts, capital accounts, ledger accounts, instruments, contracts, obligations, cash flows, transactions, journal entries, positions, reconciliations, documents, workflows, reports, delivery records, and audit events. Around that stable core, Meridian provides tenant-specific configuration for workflows, rules, integrations, source-of-record policies, reporting, permissions, ledger controls, and custom attributes. This allows Meridian to support fund administrators, private fund managers, RIAs, family offices, and other investment organizations without creating separate products or sacrificing auditability.
 
 ---
 
@@ -1948,6 +2096,21 @@ Defines core entities, relationships, storage boundaries, read models, and contr
 
 Uses `docs/roadmap/data/*.yml` as the durable source of delivery state, with the design document explaining why each wave matters.
 
+### 6. Competitive Inspiration Translation Register
+
+Maintain a compact register that maps researched external product patterns into Meridian-owned
+requirements, scope status, and evidence lanes. Initial rows should cover:
+
+* Carta-inspired fund ERP, fund administration, LP relations, fund events, capital activity,
+  tax/audit support, SPVs, portfolio valuations, management-company administration, and fund data
+  warehouse patterns.
+* FundStudio-inspired fund administrator operations, multi-book general ledger, multi-prime
+  reconciliation, shadow NAV, multi-currency accounting, locked periods, recurring journals,
+  year-end close, capital-account packs, managed-service workflows, file distribution, SLA tracking,
+  and portfolio drill-down.
+* Modern Treasury-inspired ledger invariants: double-entry, idempotency, atomicity, immutable
+  posted entries, versioned balances, effective dating, and optimistic concurrency controls.
+
 ### v0.15 Release Package: Accounting Records and Operational Evidence
 
 The v0.15 release package establishes W1-W5 as the near-term operational record baseline. It delays Backtesting Studio and focuses on accounting, reconciliation, approval, retained-evidence, and record-keeping functionality. This makes Meridian stronger as the operational system of record before expanding research tooling, live-readiness surfaces, full payment execution, forecasting, enterprise risk, client portal, no-code workflow design, mobile, or other broad platform lanes.
@@ -1967,6 +2130,31 @@ The package should preserve the shared-first UI direction: browser and WPF surfa
 
 Backtesting Studio remains valuable, but it stays behind this accounting records package so that strategy, paper, and later live-readiness work can rely on stronger books, audit, and reporting evidence.
 
+### v0.16 Product Direction Addendum: Private-Capital Operations and Treasury Ledger
+
+The v0.16 design direction keeps W1-W5 as the active baseline but clarifies the next product shape:
+Meridian should feel closer to a private-capital operating system than a generic portfolio dashboard.
+The priority is not a broad client portal, cap-table replacement, outsourced fund-admin service, or
+uncontrolled autonomous-agent layer. The priority is connected fund operations: fund events, capital
+accounts, capital calls, distributions, investments, portfolio valuations, tax/audit support
+packages, LP-ready report packages, management-company operating records, and queryable certified
+datasets, all backed by Meridian ledger truth.
+
+The Carta-inspired design move is to make fund operations navigable through event-based records and
+stakeholder-ready evidence: closings, subdocs, capital notices, investor commitments, portfolio
+valuation support, tax support, audit support, and data warehouse outputs should all trace back to
+the same approved fund-event and ledger lineage.
+
+The FundStudio-inspired design move is to make administration operationally disciplined: fund/book
+setup, period locks, recurring journals, year-end close, shadow NAV, multi-book/multi-currency
+accounting, capital-account packs, admin/custodian file delivery, and SLA-tracked reconciliation
+breaks should be governed workflows with immutable audit logs and scoped permissions.
+
+The treasury-ledger model becomes a product design rule for accounting and money-movement surfaces:
+every cash, settlement, capital-activity, fee, valuation, and close-related posting should be
+traceable through immutable, idempotent, double-entry journal records with explicit source evidence,
+approval state, period-close posture, and reversal lineage.
+
 ---
 
 ## 26. Foundational Product Slice
@@ -1982,6 +2170,8 @@ This slice is no longer only a recommendation. It is the product baseline that W
 * Tenant profile
 * Entity model
 * Account model
+* Capital account model
+* Ledger account and journal entry model
 * Provider setup
 * File/API import
 * Raw data preservation
@@ -1991,6 +2181,8 @@ This slice is no longer only a recommendation. It is the product baseline that W
 * Reconciliation run
 * Exception queue
 * Workflow approvals
+* Capital activity evidence
+* Treasury-ledger posting controls
 * Audit events
 * Basic reporting package
 
@@ -2006,6 +2198,7 @@ Current repository evidence already covers:
 * Accounting record summaries linking source data, normalized activity, reconciliation cases, ledger evidence, approvals, and report-pack lineage
 * Multi-asset operational coverage with provider evidence, ledger classification, reconciliation signals, and close blockers
 * Shared browser and WPF workstation read models for operator workflows
+* Shared manual journal entry workbench projection of retained private-capital fund events and capital-account activity from treasury-ledger context, plus a first-class private-capital activity review endpoint for reporting and audit consumers
 
 ### Remaining Expansion Work
 

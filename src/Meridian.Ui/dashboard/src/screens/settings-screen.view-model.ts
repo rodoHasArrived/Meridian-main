@@ -1154,6 +1154,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     unavailableDetail: "Accounting workspace payload has not loaded.",
     endpoints: [
       { id: "accounting-workspace", method: "GET", label: "Workspace", href: WORKSTATION_API_ENDPOINTS.accounting },
+      { id: "private-capital-activity", method: "GET", label: "Private-capital activity", href: WORKSTATION_API_ENDPOINTS.privateCapitalActivity },
       { id: "recon-runs", method: "POST", label: "Run reconciliation", href: RECONCILIATION_API_ENDPOINTS.runs },
       { id: "break-queue", method: "GET", label: "Break queue", href: RECONCILIATION_API_ENDPOINTS.breakQueue },
       { id: "calibration", method: "GET", label: "Calibration", href: RECONCILIATION_API_ENDPOINTS.calibrationSummary },

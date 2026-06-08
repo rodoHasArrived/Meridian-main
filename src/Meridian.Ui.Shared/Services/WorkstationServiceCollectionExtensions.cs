@@ -288,7 +288,9 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IManualJournalEntryDraftStore>(),
                 sp.GetRequiredService<IAccountingConfigurationService>(),
                 sp.GetRequiredService<IAccountingActionAuditStore>(),
-                sp.GetService<ContractSecurityMasterQueryService>()));
+                sp.GetService<ContractSecurityMasterQueryService>(),
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetService<ReportPackWorkflowService>()));
         services.TryAddSingleton<IReconciliationBreakQueueRepository>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<FileReconciliationBreakQueueRepository>>();

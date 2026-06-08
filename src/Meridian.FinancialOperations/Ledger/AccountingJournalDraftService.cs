@@ -39,6 +39,7 @@ public sealed record AccountingJournalDraftRequest(
     string? SourceEventType = null,
     LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
     LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
+    TreasuryLedgerContextDto? TreasuryContext = null,
     IReadOnlyList<string>? EvidenceLinks = null);
 
 public sealed record AccountingJournalDraftResult(
@@ -141,7 +142,9 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
         }
 
         ValidateHeader(request, issues);
-        var (draftEntry, totalDebits, totalCredits) = BuildDraftEntry(request, issues, evidenceLinks);
+        var treasuryContext = NormalizeTreasuryContext(request.TreasuryContext, effectiveDate);
+        ValidateTreasuryContext(treasuryContext, request, issues);
+        var (draftEntry, totalDebits, totalCredits) = BuildDraftEntry(request, issues, evidenceLinks, treasuryContext);
         var imbalance = totalDebits - totalCredits;
         var isBalanced = Math.Abs(imbalance) <= BalanceTolerance;
 
@@ -265,7 +268,8 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
     private static (JournalEntry? Entry, decimal TotalDebits, decimal TotalCredits) BuildDraftEntry(
         AccountingJournalDraftRequest request,
         List<AccountingConfigurationValidationIssueDto> issues,
-        List<string> evidenceLinks)
+        List<string> evidenceLinks,
+        TreasuryLedgerContextDto? treasuryContext)
     {
         if (request.Lines is null || request.Lines.Count == 0)
         {
@@ -338,7 +342,15 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
 
         try
         {
-            return (new JournalEntry(journalEntryId, request.AccountingTimestamp, description, lines), totalDebits, totalCredits);
+            return (
+                new JournalEntry(
+                    journalEntryId,
+                    request.AccountingTimestamp,
+                    description,
+                    lines,
+                    BuildJournalEntryMetadata(request, evidenceLinks, treasuryContext)),
+                totalDebits,
+                totalCredits);
         }
         catch (LedgerValidationException ex)
         {
@@ -351,6 +363,139 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
                 "Correct the draft line metadata before submitting.");
             return (null, totalDebits, totalCredits);
         }
+    }
+
+    private static JournalEntryMetadata BuildJournalEntryMetadata(
+        AccountingJournalDraftRequest request,
+        IReadOnlyList<string> evidenceLinks,
+        TreasuryLedgerContextDto? treasuryContext)
+    {
+        var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (evidenceLinks.Count > 0)
+        {
+            tags["evidenceLinks"] = string.Join("|", evidenceLinks);
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.SourceEventType))
+        {
+            tags["sourceEventType"] = request.SourceEventType.Trim();
+        }
+
+        return new JournalEntryMetadata(
+            ActivityType: NormalizeOptional(request.SourceEventType) ?? "ManualJournalEntry",
+            ProjectId: NormalizeOptional(request.FundProfileId),
+            LedgerView: null,
+            EffectiveDate: treasuryContext?.EffectiveDate ?? request.EffectiveDate,
+            IdempotencyKey: NormalizeOptional(treasuryContext?.IdempotencyKey),
+            FundEventId: NormalizeOptional(treasuryContext?.FundEventId),
+            FundEventType: NormalizeOptional(treasuryContext?.FundEventType),
+            CapitalAccountId: NormalizeOptional(treasuryContext?.CapitalAccountId),
+            InvestorId: NormalizeOptional(treasuryContext?.InvestorId),
+            PaymentIntentId: NormalizeOptional(treasuryContext?.PaymentIntentId),
+            SettlementReference: NormalizeOptional(treasuryContext?.SettlementReference),
+            Tags: tags.Count == 0 ? null : tags);
+    }
+
+    private static TreasuryLedgerContextDto? NormalizeTreasuryContext(
+        TreasuryLedgerContextDto? context,
+        DateOnly effectiveDate)
+    {
+        if (context is null)
+        {
+            return null;
+        }
+
+        return context with
+        {
+            EffectiveDate = context.EffectiveDate ?? effectiveDate,
+            IdempotencyKey = NormalizeOptional(context.IdempotencyKey),
+            FundEventId = NormalizeOptional(context.FundEventId),
+            FundEventType = NormalizeOptional(context.FundEventType),
+            CapitalAccountId = NormalizeOptional(context.CapitalAccountId),
+            InvestorId = NormalizeOptional(context.InvestorId),
+            PaymentIntentId = NormalizeOptional(context.PaymentIntentId),
+            SettlementReference = NormalizeOptional(context.SettlementReference)
+        };
+    }
+
+    private static void ValidateTreasuryContext(
+        TreasuryLedgerContextDto? context,
+        AccountingJournalDraftRequest request,
+        List<AccountingConfigurationValidationIssueDto> issues)
+    {
+        if (context is null)
+        {
+            return;
+        }
+
+        if (context.EffectiveDate is null)
+        {
+            AddIssue(
+                issues,
+                "JOURNAL_DRAFT_EFFECTIVE_DATE_REQUIRED",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Treasury ledger context requires an effective date.",
+                "treasuryContext.effectiveDate",
+                "Set the business-effective date that controls ledger balances.");
+        }
+
+        if (string.IsNullOrWhiteSpace(context.IdempotencyKey))
+        {
+            AddIssue(
+                issues,
+                "JOURNAL_DRAFT_IDEMPOTENCY_KEY_REQUIRED",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                "Treasury ledger context requires an idempotency key.",
+                "treasuryContext.idempotencyKey",
+                "Provide a stable key for the source event and posting attempt.");
+        }
+
+        var hasFundEventContext =
+            !string.IsNullOrWhiteSpace(context.FundEventId) ||
+            !string.IsNullOrWhiteSpace(context.FundEventType) ||
+            !string.IsNullOrWhiteSpace(context.CapitalAccountId) ||
+            !string.IsNullOrWhiteSpace(context.InvestorId);
+        if (hasFundEventContext)
+        {
+            RequireTreasuryContextText(issues, context.FundEventId, "JOURNAL_DRAFT_FUND_EVENT_REQUIRED", "fund event id", "treasuryContext.fundEventId");
+            RequireTreasuryContextText(issues, context.FundEventType, "JOURNAL_DRAFT_FUND_EVENT_TYPE_REQUIRED", "fund event type", "treasuryContext.fundEventType");
+            RequireTreasuryContextText(issues, context.CapitalAccountId, "JOURNAL_DRAFT_CAPITAL_ACCOUNT_REQUIRED", "capital account id", "treasuryContext.capitalAccountId");
+        }
+
+        var hasPaymentContext =
+            !string.IsNullOrWhiteSpace(context.PaymentIntentId) ||
+            !string.IsNullOrWhiteSpace(context.SettlementReference);
+        if (hasPaymentContext && request.SourceEventId is null)
+        {
+            AddIssue(
+                issues,
+                "JOURNAL_DRAFT_PAYMENT_SOURCE_EVENT_REQUIRED",
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Payment-linked treasury ledger drafts should carry a source event id for audit reconstruction.",
+                "sourceEventId",
+                "Link the payment or settlement event id before final posting.");
+        }
+    }
+
+    private static void RequireTreasuryContextText(
+        List<AccountingConfigurationValidationIssueDto> issues,
+        string? value,
+        string code,
+        string label,
+        string targetId)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            return;
+        }
+
+        AddIssue(
+            issues,
+            code,
+            AccountingConfigurationValidationSeverityDto.Critical,
+            $"Treasury ledger context requires {label}.",
+            targetId,
+            $"Attach {label} before submitting or posting the draft.");
     }
 
     private static AccountingPolicyRuleDto? ResolveRule(
@@ -402,6 +547,9 @@ public sealed class AccountingJournalDraftService : IAccountingJournalDraftServi
             .Order(StringComparer.OrdinalIgnoreCase)
             .ToList();
     }
+
+    private static string? NormalizeOptional(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static void AddLineIssue(
         List<AccountingConfigurationValidationIssueDto> issues,

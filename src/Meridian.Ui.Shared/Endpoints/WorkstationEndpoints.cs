@@ -4708,7 +4708,7 @@ public static partial class WorkstationEndpoints
         var runs = allRuns.Take(6).ToArray();
         if (runs.Length == 0)
         {
-            var reporting = BuildReportingPayload(context.RequestServices);
+            var reporting = BuildReportingPayload(context);
             // PR-03: return typed DTO
             return new WorkstationAccountingPayload(
                 Metrics:
@@ -4746,7 +4746,7 @@ public static partial class WorkstationEndpoints
             (detail?.Ledger?.SecurityMissingCount ?? 0) > 0);
         var auditReadyRuns = runs.Count(static run => !string.IsNullOrWhiteSpace(run.AuditReference)) - runsWithBreaks;
         var breakQueueItems = await GetBreakQueueItemsAsync(context.RequestServices, status: null, fundAccountId: null, context.RequestAborted).ConfigureAwait(false);
-        var reportingPayload = BuildReportingPayload(context.RequestServices);
+        var reportingPayload = BuildReportingPayload(context);
 
         // PR-03: return typed DTO
         return new WorkstationAccountingPayload(
@@ -6042,9 +6042,19 @@ public static partial class WorkstationEndpoints
         return ledgerCash.Value - portfolioCash.Value;
     }
 
-    private static WorkstationReportingPayload BuildReportingPayload(IServiceProvider? services = null)
-        => services?.GetService<ReportPackRunReadService>()?.BuildPayload()
+    private static WorkstationReportingPayload BuildReportingPayload(HttpContext? context = null)
+        => context?.RequestServices.GetService<ReportPackRunReadService>()?.BuildPayload(BuildReportAccessQueryContext(context))
            ?? ReportPackRunReadService.BuildFallbackPayload();
+
+    private static ReportAccessQueryContext BuildReportAccessQueryContext(HttpContext context)
+    {
+        var actor = EndpointAuthorization.TryResolveActor(context, out var resolvedActor)
+            ? resolvedActor
+            : null;
+        return new ReportAccessQueryContext(
+            ActorPrincipalId: actor,
+            HasGlobalOverride: EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance));
+    }
 
     private static object BuildAccountingControlCenterPayload(
         IReadOnlyList<ReconciliationBreakQueueItem> breakQueue,

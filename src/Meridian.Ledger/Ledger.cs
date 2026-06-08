@@ -203,6 +203,30 @@ public sealed class Ledger : IReadOnlyLedger
         if (query.AccountType is not null)
             filtered = filtered.Where(entry => entry.Lines.Any(l => l.Account.AccountType == query.AccountType.Value));
 
+        if (query.EffectiveDate is not null)
+            filtered = filtered.Where(entry => entry.Metadata.EffectiveDate == query.EffectiveDate.Value);
+
+        if (!string.IsNullOrWhiteSpace(query.IdempotencyKey))
+            filtered = filtered.Where(entry => string.Equals(entry.Metadata.IdempotencyKey, query.IdempotencyKey.Trim(), StringComparison.OrdinalIgnoreCase));
+
+        if (!string.IsNullOrWhiteSpace(query.FundEventId))
+            filtered = filtered.Where(entry => string.Equals(entry.Metadata.FundEventId, query.FundEventId.Trim(), StringComparison.OrdinalIgnoreCase));
+
+        if (!string.IsNullOrWhiteSpace(query.FundEventType))
+            filtered = filtered.Where(entry => string.Equals(entry.Metadata.FundEventType, query.FundEventType.Trim(), StringComparison.OrdinalIgnoreCase));
+
+        if (!string.IsNullOrWhiteSpace(query.CapitalAccountId))
+            filtered = filtered.Where(entry => string.Equals(entry.Metadata.CapitalAccountId, query.CapitalAccountId.Trim(), StringComparison.OrdinalIgnoreCase));
+
+        if (!string.IsNullOrWhiteSpace(query.InvestorId))
+            filtered = filtered.Where(entry => string.Equals(entry.Metadata.InvestorId, query.InvestorId.Trim(), StringComparison.OrdinalIgnoreCase));
+
+        if (!string.IsNullOrWhiteSpace(query.PaymentIntentId))
+            filtered = filtered.Where(entry => string.Equals(entry.Metadata.PaymentIntentId, query.PaymentIntentId.Trim(), StringComparison.OrdinalIgnoreCase));
+
+        if (!string.IsNullOrWhiteSpace(query.SettlementReference))
+            filtered = filtered.Where(entry => string.Equals(entry.Metadata.SettlementReference, query.SettlementReference.Trim(), StringComparison.OrdinalIgnoreCase));
+
         return filtered.ToList();
     }
 

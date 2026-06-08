@@ -116,7 +116,9 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             strategyId: "carry-1",
             strategyName: "Carry Strategy",
             fundProfileId: fundProfileId,
-            fundDisplayName: "Alpha Income Fund"));
+            fundDisplayName: "Alpha Income Fund",
+            realizedPnl: 20m,
+            unrealizedPnl: 30m));
 
         var workspace = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(
             FundProfileId: fundProfileId,
@@ -140,6 +142,56 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         workspace.LedgerReconciliationSnapshot.Vehicles.Should().BeEmpty();
         workspace.Nav.ComponentCount.Should().BeGreaterThan(0);
         workspace.Reporting.ProfileCount.Should().BeGreaterThan(0);
+        workspace.Reporting.PortfolioCuts.Should().NotBeNull();
+        workspace.Reporting.PortfolioCuts!.Should().Contain(cut =>
+            cut.Kind == PortfolioReportingCutKindDto.Fund &&
+            cut.CutId == "fund:consolidated" &&
+            cut.GrossExposure == workspace.CashFinancing.GrossExposure &&
+            cut.TotalPnl == 50m &&
+            cut.ShadowNav == workspace.Nav.TotalNav);
+        workspace.Reporting.PortfolioCuts.Should().Contain(cut =>
+            cut.Kind == PortfolioReportingCutKindDto.Strategy &&
+            cut.Label == "Carry Strategy" &&
+            cut.SourceCount == 1 &&
+            cut.TotalPnl == 50m &&
+            cut.ShadowNav == 1_150m &&
+            cut.Tags.Contains("run-governance-001"));
+        workspace.Reporting.PortfolioCuts.Should().Contain(cut =>
+            cut.Kind == PortfolioReportingCutKindDto.UserTag &&
+            cut.SourceCount == 2 &&
+            cut.TotalCash == 3_250m &&
+            cut.ShadowNav == 3_650m);
+        workspace.Reporting.StructuredExports.Should().NotBeNull();
+        workspace.Reporting.StructuredExports!.Should().Contain(export =>
+            export.ExportId == "regulatory-trial-balance" &&
+            export.Purpose == StructuredReportingExportPurposeDto.Regulatory &&
+            export.Format == GovernanceReportArtifactFormatDto.Csv &&
+            export.RowCount == workspace.Ledger.TrialBalance.Count &&
+            export.IsReady);
+        workspace.Reporting.StructuredExports.Should().Contain(export =>
+            export.ExportId == "investment-portfolio-cuts" &&
+            export.Purpose == StructuredReportingExportPurposeDto.InvestmentDecision &&
+            export.Format == GovernanceReportArtifactFormatDto.Xlsx &&
+            export.RowCount == workspace.Reporting.PortfolioCuts!.Count &&
+            export.Route.Contains("fundProfileId=", StringComparison.Ordinal) &&
+            export.VersionStamp!.StartsWith("structured-export:20260411160000", StringComparison.Ordinal));
+        var portfolioExport = await service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
+            fundProfileId,
+            "investment-portfolio-cuts",
+            new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero),
+            "USD"));
+        portfolioExport.Export.ExportId.Should().Be("investment-portfolio-cuts");
+        portfolioExport.Columns.Should().Contain(column => column.Name == "shadowNav");
+        portfolioExport.Rows.Should().Contain(row =>
+            row["cutId"] == "fund:consolidated" &&
+            row["totalPnl"] == "50" &&
+            row["shadowNav"] == "2000");
+        Func<Task> missingExport = () => service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
+            fundProfileId,
+            "missing-export",
+            new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero),
+            "USD"));
+        await missingExport.Should().ThrowAsync<KeyNotFoundException>();
         workspace.Workspace.TotalAccounts.Should().Be(2);
         workspace.Governance.Should().NotBeNull();
         workspace.Governance!.DecisionPosture.Should().NotBeNullOrWhiteSpace();
@@ -980,14 +1032,16 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         string strategyId,
         string strategyName,
         string fundProfileId,
-        string fundDisplayName)
+        string fundDisplayName,
+        decimal realizedPnl = 0m,
+        decimal unrealizedPnl = 0m)
     {
         var startedAt = new DateTimeOffset(2026, 4, 11, 14, 0, 0, TimeSpan.Zero);
         var completedAt = startedAt.AddMinutes(30);
         var ledger = CreateLedger();
         var positions = new Dictionary<string, Position>(StringComparer.OrdinalIgnoreCase)
         {
-            ["AAPL"] = new("AAPL", 10, 40m, 0m, 0m)
+            ["AAPL"] = new("AAPL", 10, 40m, realizedPnl, unrealizedPnl)
         };
         var accountSnapshot = new FinancialAccountSnapshot(
             AccountId: BacktestDefaults.DefaultBrokerageAccountId,

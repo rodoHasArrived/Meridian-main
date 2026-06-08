@@ -195,6 +195,58 @@ public sealed class LedgerJournalStoreTests
     }
 
     [Fact]
+    public void PostingGuard_TreasuryLedgerMetadata_AllowsCompleteContextWithinPeriod()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildTreasuryJournalWrite(period.PeriodId);
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void PostingGuard_EffectiveDateOnlyMetadata_AllowsGeneralLedgerEntry()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildBalancedJournalWrite(period.PeriodId);
+        var entry = new JournalEntry(
+            write.Entry.JournalEntryId,
+            write.Entry.Timestamp,
+            write.Entry.Description,
+            write.Entry.Lines,
+            new JournalEntryMetadata(EffectiveDate: new DateOnly(2026, 1, 31)));
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write with { Entry = entry }, period);
+
+        act.Should().NotThrow();
+    }
+
+    [Fact]
+    public void PostingGuard_TreasuryLedgerMetadata_RejectsMissingIdempotencyKey()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildTreasuryJournalWrite(period.PeriodId, idempotencyKey: null);
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*idempotency key*");
+    }
+
+    [Fact]
+    public void PostingGuard_TreasuryLedgerMetadata_RejectsEffectiveDateOutsidePeriod()
+    {
+        var period = BuildAccountingPeriod("Open");
+        var write = BuildTreasuryJournalWrite(period.PeriodId, effectiveDate: new DateOnly(2026, 2, 1));
+
+        var act = () => LedgerPeriodPostingGuard.Validate(write, period);
+
+        act.Should().Throw<LedgerValidationException>()
+            .WithMessage("*effective date*outside accounting period*");
+    }
+
+    [Fact]
     public void PostingGuard_InstrumentEntry_AllowsApprovedMappedSecurityMasterLineage()
     {
         var period = BuildAccountingPeriod("Open");
@@ -656,6 +708,31 @@ public sealed class LedgerJournalStoreTests
                 ]),
             AggregateId: Guid.NewGuid(),
             PeriodId: periodId);
+    }
+
+    private static LedgerJournalEntryWrite BuildTreasuryJournalWrite(
+        Guid periodId,
+        DateOnly? effectiveDate = null,
+        string? idempotencyKey = "capital-call:fund-alpha:20260131")
+    {
+        var write = BuildBalancedJournalWrite(periodId);
+        var entry = new JournalEntry(
+            write.Entry.JournalEntryId,
+            write.Entry.Timestamp,
+            write.Entry.Description,
+            write.Entry.Lines,
+            new JournalEntryMetadata(
+                ActivityType: "CapitalCall",
+                EffectiveDate: effectiveDate ?? new DateOnly(2026, 1, 31),
+                IdempotencyKey: idempotencyKey,
+                FundEventId: "fund-event:fund-alpha:capital-call:20260131",
+                FundEventType: "CapitalCall",
+                CapitalAccountId: "capital-account:fund-alpha:lp-1",
+                InvestorId: "investor:lp-1",
+                PaymentIntentId: "payment:fund-alpha:capital-call:20260131",
+                SettlementReference: "settlement:fund-alpha:capital-call:20260131"));
+
+        return write with { Entry = entry };
     }
 
     private static LedgerJournalEntryWrite BuildInstrumentJournalWrite(

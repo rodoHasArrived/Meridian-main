@@ -2545,17 +2545,56 @@ export interface AccountingReportingProfile {
   dataDictionary: boolean;
 }
 
+export type PortfolioReportingCutKind = "Fund" | "Strategy" | "UserTag";
+
+export interface PortfolioReportingCut {
+  cutId: string;
+  label: string;
+  kind: PortfolioReportingCutKind;
+  currency: string;
+  grossExposure: number;
+  netExposure: number;
+  longMarketValue: number;
+  shortMarketValue: number;
+  totalCash: number;
+  pendingSettlement: number;
+  realizedPnl: number;
+  unrealizedPnl: number;
+  totalPnl: number;
+  shadowNav: number;
+  shadowNavVariance: number;
+  sourceCount: number;
+  tags: string[];
+  asOf: string;
+  evidenceRoute: string | null;
+  shadowNavNote: string | null;
+  versionStamp: string | null;
+}
+
 export interface ReportingTemplateMetadata {
   templateId: string;
   family: string;
   name: string;
   version: string;
   sections: string[];
+  reportWriterGrids?: ReportingTemplateGridMetadata[] | null;
   lifecycleStatus?: string;
   isBuiltIn?: boolean;
   isLatestApproved?: boolean;
   approvalSummary?: string;
   authoringRoute?: string;
+  accessMode?: string;
+  accessSummary?: string;
+  isAccessible?: boolean;
+}
+
+export interface ReportingTemplateGridMetadata {
+  gridId: string;
+  title: string;
+  kind: string;
+  dimensionCount: number;
+  metricCount: number;
+  formulaCount: number;
 }
 
 export interface ReportingRunStatusProjection {
@@ -2609,6 +2648,31 @@ export interface ReportPackDistributionRecord {
   route: string;
 }
 
+export type GovernanceReportArtifactFormat = "Json" | "Csv" | "Xlsx" | "Html" | "Pdf";
+export type ReportPackDeliveryMode = "EmailLink" | "SecurePortal" | "EvidenceVault" | "InternalRoute";
+
+export interface ReportPackDeliveryArtifact {
+  format: GovernanceReportArtifactFormat;
+  artifactName: string;
+  contentType: string;
+  retainedPath: string;
+  byteSize: number;
+  evidenceId: string;
+}
+
+export interface ReportPackDeliveryPackage {
+  packageId: string;
+  reportId: string;
+  distributionId: string;
+  deliveryMode: ReportPackDeliveryMode;
+  secureLink: string;
+  portalRoute: string;
+  formats: GovernanceReportArtifactFormat[];
+  artifacts: ReportPackDeliveryArtifact[];
+  createdAtUtc: string;
+  retainedManifestPath: string;
+}
+
 export interface ReportPackDeliveryAttempt {
   attemptId: string;
   reportId: string;
@@ -2624,6 +2688,7 @@ export interface ReportPackDeliveryAttempt {
   note: string | null;
   failureReason: string | null;
   evidenceLinks: ReportingWorkflowEvidenceLink[] | null;
+  package: ReportPackDeliveryPackage | null;
 }
 
 export interface ReportPackDeliveryRequest {
@@ -2632,6 +2697,8 @@ export interface ReportPackDeliveryRequest {
   deliveryReference?: string | null;
   note?: string | null;
   evidenceLinks?: ReportingWorkflowEvidenceLink[] | null;
+  formats?: GovernanceReportArtifactFormat[] | null;
+  deliveryMode?: ReportPackDeliveryMode | null;
 }
 
 export interface ReportPackDeliveryFailureRequest extends ReportPackDeliveryRequest {
@@ -2641,6 +2708,45 @@ export interface ReportPackDeliveryFailureRequest extends ReportPackDeliveryRequ
 export interface ReportPackDeliveryHistory {
   reportId: string;
   attempts: ReportPackDeliveryAttempt[];
+}
+
+export type StructuredReportingExportPurpose = "Regulatory" | "DataWarehouse" | "InvestmentDecision";
+
+export interface StructuredReportingExport {
+  exportId: string;
+  label: string;
+  purpose: StructuredReportingExportPurpose;
+  format: GovernanceReportArtifactFormat;
+  dataset: string;
+  consumer: string;
+  schemaVersion: number;
+  rowCount: number;
+  fieldCount: number;
+  sourceCount: number;
+  currency: string;
+  asOf: string;
+  isReady: boolean;
+  retainedPath: string;
+  route: string;
+  dataDictionaryRoute: string | null;
+  validationSummary: string | null;
+  evidenceRoute: string | null;
+  versionStamp: string | null;
+  tags: string[] | null;
+}
+
+export interface StructuredReportingExportColumn {
+  name: string;
+  dataType: string;
+  description: string | null;
+}
+
+export interface StructuredReportingExportPayload {
+  export: StructuredReportingExport;
+  columns: StructuredReportingExportColumn[];
+  rows: Record<string, string | null>[];
+  warnings: string[];
+  generatedAtUtc: string;
 }
 
 export interface ReportingScheduleRecord {
@@ -2777,6 +2883,8 @@ export interface AccountingReportingSummary {
   workflowRecords?: ReportingWorkflowRecord[];
   schedules?: ReportingScheduleRecord[];
   deliveryAttempts?: ReportPackDeliveryAttempt[];
+  portfolioCuts?: PortfolioReportingCut[];
+  structuredExports?: StructuredReportingExport[];
 }
 
 export type GovernanceCashFlowSummary = AccountingCashFlowSummary;
@@ -3190,6 +3298,22 @@ export type AccountingConfigurationStatus = "Draft" | "Active" | "Archived";
 export type AccountingConfigurationValidationSeverity = "Info" | "Warning" | "Critical";
 export type AccountingTemplateLineSide = "Debit" | "Credit";
 export type ManualJournalEntryStatus = "Draft" | "NeedsFix" | "Submitted" | "Approved" | "Rejected";
+export type ManualJournalEntryType =
+  | "General"
+  | "AccruedBalance"
+  | "AccruedExpense"
+  | "PrepaidExpense"
+  | "Expense"
+  | "Amortization"
+  | "Deferral"
+  | "Reclassification"
+  | "Reversal"
+  | "CapitalCall"
+  | "Distribution"
+  | "Subscription"
+  | "Redemption"
+  | "LpTransfer"
+  | "ManagementFee";
 
 export interface LedgerBook {
   ledgerBookId: string;
@@ -3327,6 +3451,17 @@ export interface ManualJournalEntryEvidenceAttachment {
   description?: string | null;
 }
 
+export interface TreasuryLedgerContext {
+  effectiveDate?: string | null;
+  idempotencyKey?: string | null;
+  fundEventId?: string | null;
+  fundEventType?: string | null;
+  capitalAccountId?: string | null;
+  investorId?: string | null;
+  paymentIntentId?: string | null;
+  settlementReference?: string | null;
+}
+
 export interface ManualJournalEntryDraft {
   journalEntryId: string;
   status: ManualJournalEntryStatus;
@@ -3353,6 +3488,147 @@ export interface ManualJournalEntryDraft {
   approvalId?: string | null;
   submittedAtUtc?: string | null;
   submittedBy?: string | null;
+  entryType: ManualJournalEntryType;
+  treasuryContext?: TreasuryLedgerContext | null;
+}
+
+export interface PrivateCapitalFundEvent {
+  fundEventId: string;
+  fundEventType: string;
+  entryType: ManualJournalEntryType;
+  journalStatus: ManualJournalEntryStatus;
+  journalEntryId: string;
+  effectiveDate: string;
+  capitalAccountId: string;
+  investorId?: string | null;
+  currency: string;
+  grossAmount: number;
+  netCapitalActivity: number;
+  memo: string;
+  paymentIntentId?: string | null;
+  settlementReference?: string | null;
+  evidenceLinks: string[];
+  validationIssues: AccountingConfigurationValidationIssue[];
+  updatedAtUtc: string;
+  isPosted?: boolean;
+}
+
+export interface PrivateCapitalCapitalAccountActivity {
+  capitalAccountId: string;
+  investorId?: string | null;
+  currency: string;
+  contributions: number;
+  distributions: number;
+  subscriptions: number;
+  redemptions: number;
+  managementFees: number;
+  netActivity: number;
+  fundEventCount: number;
+  lastEffectiveDate?: string | null;
+  lastFundEventType?: string | null;
+  fundEventIds: string[];
+}
+
+export interface PrivateCapitalCapitalAccountSubledgerEntry {
+  subledgerEntryId: string;
+  capitalAccountId: string;
+  investorId?: string | null;
+  currency: string;
+  fundEventId: string;
+  fundEventType: string;
+  entryType: ManualJournalEntryType;
+  approvalState: ManualJournalEntryStatus;
+  journalEntryId: string;
+  effectiveDate: string;
+  grossAmount: number;
+  netCapitalActivity: number;
+  runningNetActivity: number;
+  memo: string;
+  evidenceLinks: string[];
+  validationIssues: AccountingConfigurationValidationIssue[];
+  updatedAtUtc: string;
+  isPosted?: boolean;
+}
+
+export interface PrivateCapitalLedgerLineImpact {
+  lineId: string;
+  accountPath: string;
+  side: AccountingTemplateLineSide;
+  amount: number;
+  currency: string;
+  entityId?: string | null;
+  securityId?: string | null;
+  securityDisplayName?: string | null;
+  evidenceLink?: string | null;
+}
+
+export interface PrivateCapitalLedgerImpact {
+  ledgerImpactId: string;
+  journalEntryId: string;
+  fundEventId: string;
+  fundEventType: string;
+  capitalAccountId: string;
+  investorId?: string | null;
+  approvalState: ManualJournalEntryStatus;
+  effectiveDate: string;
+  currency: string;
+  totalDebits: number;
+  totalCredits: number;
+  imbalance: number;
+  lineCount: number;
+  isBalanced: boolean;
+  isPostingReady: boolean;
+  evidenceLinks: string[];
+  lines: PrivateCapitalLedgerLineImpact[];
+  validationIssues: AccountingConfigurationValidationIssue[];
+}
+
+export interface PrivateCapitalReportOutput {
+  reportOutputId: string;
+  reportOutputType: string;
+  displayName: string;
+  reportRoute: string;
+  fundEventId: string;
+  fundEventType: string;
+  capitalAccountId: string;
+  investorId?: string | null;
+  approvalState: ManualJournalEntryStatus;
+  effectiveDate: string;
+  currency: string;
+  netCapitalActivity: number;
+  evidenceLinkCount: number;
+  evidenceLinks: string[];
+  isReportReady: boolean;
+  validationIssues: AccountingConfigurationValidationIssue[];
+  isPublished?: boolean;
+  reportPackId?: string | null;
+  reportWorkflowState?: string | null;
+  publicationManifestId?: string | null;
+  retainedManifestPath?: string | null;
+  publicationEvidenceHash?: string | null;
+  publishedAtUtc?: string | null;
+  publishedBy?: string | null;
+  reportLineProvenanceCount?: number;
+}
+
+export interface PrivateCapitalActivityProjection {
+  fundProfileId: string;
+  ledgerBookId?: string | null;
+  projectedAtUtc: string;
+  fundEventCount: number;
+  capitalAccountCount: number;
+  submittedFundEventCount: number;
+  approvalQueueCount: number;
+  postedFundEventCount: number;
+  publishedReportOutputCount: number;
+  netCapitalActivity: number;
+  currency: string;
+  fundEvents: PrivateCapitalFundEvent[];
+  capitalAccounts: PrivateCapitalCapitalAccountActivity[];
+  capitalAccountSubledgerEntries?: PrivateCapitalCapitalAccountSubledgerEntry[] | null;
+  ledgerImpacts?: PrivateCapitalLedgerImpact[] | null;
+  reportOutputs?: PrivateCapitalReportOutput[] | null;
+  validationIssues: AccountingConfigurationValidationIssue[];
 }
 
 export interface ManualJournalEntryWorkbench {
@@ -3363,6 +3639,7 @@ export interface ManualJournalEntryWorkbench {
   chartOfAccounts: ChartOfAccountsNode[];
   drafts: ManualJournalEntryDraft[];
   auditTrail: AccountingActionAuditEvent[];
+  privateCapitalActivity?: PrivateCapitalActivityProjection | null;
 }
 
 export interface SaveManualJournalEntryDraftRequest {

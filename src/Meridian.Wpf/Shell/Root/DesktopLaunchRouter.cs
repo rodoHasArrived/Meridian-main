@@ -10,7 +10,7 @@ public sealed class DesktopLaunchRouter
 
     public bool HasActions(string[] args) => Parse(args).HasActions;
 
-    public bool RequiresShell(string[] args) => Parse(args).HasPageNavigation;
+    public bool RequiresShell(string[] args) => Parse(args).RequiresShell;
 
     public void Apply(string[] args, MainWindowViewModel viewModel)
     {

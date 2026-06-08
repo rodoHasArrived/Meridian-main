@@ -580,7 +580,18 @@ const manualJournalDraft: ManualJournalEntryDraft = {
   imbalance: 0,
   approvalId: null,
   submittedAtUtc: null,
-  submittedBy: null
+  submittedBy: null,
+  entryType: "Distribution",
+  treasuryContext: {
+    effectiveDate: "2026-06-30",
+    idempotencyKey: "browser:fund-alpha:distribution:manual-je-1",
+    fundEventId: "fund-event:fund-alpha:distribution:20260630",
+    fundEventType: "Distribution",
+    capitalAccountId: "capital-account:fund-alpha:lp-1",
+    investorId: "investor:lp-1",
+    paymentIntentId: "payment:fund-alpha:distribution:manual-je-1",
+    settlementReference: "settlement:fund-alpha:distribution:20260630"
+  }
 };
 
 const manualJournalWorkbench: ManualJournalEntryWorkbench = {
@@ -593,7 +604,163 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
     { nodeId: "interest-income", path: "Income:Interest", accountName: "Interest Income", accountType: "Revenue", isArchived: false }
   ],
   drafts: [manualJournalDraft],
-  auditTrail: []
+  auditTrail: [],
+  privateCapitalActivity: {
+    fundProfileId: "fund-alpha",
+    ledgerBookId: "book-alpha",
+    projectedAtUtc: "2026-06-30T00:00:00Z",
+    fundEventCount: 1,
+    capitalAccountCount: 1,
+    submittedFundEventCount: 0,
+    approvalQueueCount: 0,
+    postedFundEventCount: 0,
+    publishedReportOutputCount: 0,
+    netCapitalActivity: -100,
+    currency: "USD",
+    fundEvents: [
+      {
+        fundEventId: "fund-event:fund-alpha:distribution:20260630",
+        fundEventType: "Distribution",
+        entryType: "Distribution",
+        journalStatus: "Draft",
+        journalEntryId: "manual-je-1",
+        effectiveDate: "2026-06-30",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        currency: "USD",
+        grossAmount: 100,
+        netCapitalActivity: -100,
+        memo: "Manual close adjustment",
+        paymentIntentId: "payment:fund-alpha:distribution:manual-je-1",
+        settlementReference: "settlement:fund-alpha:distribution:20260630",
+        evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+        validationIssues: [],
+        updatedAtUtc: "2026-06-30T00:00:00Z"
+      }
+    ],
+    capitalAccounts: [
+      {
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        currency: "USD",
+        contributions: 0,
+        distributions: 100,
+        subscriptions: 0,
+        redemptions: 0,
+        managementFees: 0,
+        netActivity: -100,
+        fundEventCount: 1,
+        lastEffectiveDate: "2026-06-30",
+        lastFundEventType: "Distribution",
+        fundEventIds: ["fund-event:fund-alpha:distribution:20260630"]
+      }
+    ],
+    capitalAccountSubledgerEntries: [
+      {
+        subledgerEntryId: "capital-account-subledger:fund-event:fund-alpha:distribution:20260630",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        currency: "USD",
+        fundEventId: "fund-event:fund-alpha:distribution:20260630",
+        fundEventType: "Distribution",
+        entryType: "Distribution",
+        approvalState: "Draft",
+        journalEntryId: "manual-je-1",
+        effectiveDate: "2026-06-30",
+        grossAmount: 100,
+        netCapitalActivity: -100,
+        runningNetActivity: -100,
+        memo: "Manual close adjustment",
+        evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+        validationIssues: [],
+        updatedAtUtc: "2026-06-30T00:00:00Z"
+      }
+    ],
+    ledgerImpacts: [
+      {
+        ledgerImpactId: "ledger-impact:fund-event:fund-alpha:distribution:20260630:manual-je-1",
+        journalEntryId: "manual-je-1",
+        fundEventId: "fund-event:fund-alpha:distribution:20260630",
+        fundEventType: "Distribution",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        approvalState: "Draft",
+        effectiveDate: "2026-06-30",
+        currency: "USD",
+        totalDebits: 100,
+        totalCredits: 100,
+        imbalance: 0,
+        lineCount: 2,
+        isBalanced: true,
+        isPostingReady: false,
+        evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+        lines: [
+          {
+            lineId: "line-debit",
+            accountPath: "Equity:Distributions",
+            side: "Debit",
+            amount: 100,
+            currency: "USD",
+            entityId: null,
+            securityId: null,
+            securityDisplayName: null,
+            evidenceLink: null
+          },
+          {
+            lineId: "line-credit",
+            accountPath: "Assets:Cash",
+            side: "Credit",
+            amount: 100,
+            currency: "USD",
+            entityId: null,
+            securityId: null,
+            securityDisplayName: null,
+            evidenceLink: null
+          }
+        ],
+        validationIssues: [
+          {
+            code: "manual-je.private-capital-ledger-impact-approval-pending",
+            severity: "Warning",
+            message: "Approval is pending.",
+            targetId: "manual-je-1",
+            suggestedAction: "Submit approval."
+          }
+        ]
+      }
+    ],
+    reportOutputs: [
+      {
+        reportOutputId: "report-output:fund-event:fund-alpha:distribution:20260630:distributionnotice",
+        reportOutputType: "DistributionNotice",
+        displayName: "DistributionNotice for Distribution",
+        reportRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Adistribution%3A20260630",
+        fundEventId: "fund-event:fund-alpha:distribution:20260630",
+        fundEventType: "Distribution",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        approvalState: "Draft",
+        effectiveDate: "2026-06-30",
+        currency: "USD",
+        netCapitalActivity: -100,
+        evidenceLinkCount: 1,
+        evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+        isReportReady: false,
+        reportWorkflowState: "Draft",
+        reportLineProvenanceCount: 1,
+        validationIssues: [
+          {
+            code: "manual-je.private-capital-report-approval-pending",
+            severity: "Warning",
+            message: "Approval is pending.",
+            targetId: "fund-event:fund-alpha:distribution:20260630",
+            suggestedAction: "Submit approval."
+          }
+        ]
+      }
+    ],
+    validationIssues: []
+  }
 };
 
 async function renderAccountingScreen(
@@ -648,6 +815,23 @@ describe("AccountingScreen", () => {
 
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
     expect(screen.getByText("Reconciliation queue")).toBeInTheDocument();
+    const workflow = screen.getByRole("region", { name: "Accounting workflow launch paths" });
+    expect(within(workflow).getByRole("link", { name: "Review ledger: Ledger authority, current Accounting workstream" })).toHaveAttribute(
+      "href",
+      "/accounting/ledger"
+    );
+    expect(within(workflow).getByRole("link", { name: "Review ledger: Ledger authority, current Accounting workstream" })).toHaveAttribute(
+      "aria-current",
+      "page"
+    );
+    expect(within(workflow).getByRole("link", { name: "Open Accounting journal entry workbench" })).toHaveAttribute(
+      "href",
+      "/accounting/journal-entries"
+    );
+    expect(within(workflow).getByRole("link", { name: "Open retained accounting record evidence" })).toHaveAttribute(
+      "href",
+      "/reporting/evidence"
+    );
     expect(screen.getByRole("link", { name: "Open Accounting reconciliation workstream" })).toHaveAttribute(
       "href",
       "/accounting/reconciliation"
@@ -674,6 +858,16 @@ describe("AccountingScreen", () => {
     expect(screen.getByDisplayValue("Manual close adjustment")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Microsoft Corp./ })).toBeInTheDocument();
     expect(screen.getByText("Controller support package")).toBeInTheDocument();
+    expect(screen.getByText("Private-capital activity")).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "Private-capital capital account activity" })).toHaveTextContent("capital-account:fund-alpha:lp-1");
+    expect(screen.getByRole("table", { name: "Private-capital capital account subledger" })).toHaveTextContent("Distribution");
+    expect(screen.getByRole("table", { name: "Private-capital capital account subledger" })).toHaveTextContent("-$100.00 USD");
+    expect(screen.getByRole("table", { name: "Private-capital ledger impacts" })).toHaveTextContent("Distribution");
+    expect(screen.getByRole("table", { name: "Private-capital report outputs" })).toHaveTextContent("DistributionNotice for Distribution");
+    expect(screen.getByRole("table", { name: "Private-capital report outputs" })).toHaveTextContent("Draft");
+    expect(screen.getByRole("table", { name: "Private-capital report outputs" })).toHaveTextContent("1 provenance line");
+    expect(screen.getAllByText("-$100.00 USD").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Distribution").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Security").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Save draft" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "Submit approval" })).toBeEnabled();

@@ -13,6 +13,7 @@ using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.ViewModels.Accounting;
 using Meridian.Wpf.Views;
+using Meridian.Storage.Ledger;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -45,7 +46,14 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(
                 Path.Combine(ResolveAccountingDataDirectory(sp), "manual-journal-drafts.json")));
-        services.TryAddSingleton<IManualJournalEntryWorkbenchService, ManualJournalEntryWorkbenchService>();
+        services.TryAddSingleton<IManualJournalEntryWorkbenchService>(sp =>
+            new ManualJournalEntryWorkbenchService(
+                sp.GetRequiredService<IManualJournalEntryDraftStore>(),
+                sp.GetRequiredService<IAccountingConfigurationService>(),
+                sp.GetRequiredService<IAccountingActionAuditStore>(),
+                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+                sp.GetService<ILedgerJournalStore>(),
+                sp.GetService<ReportPackWorkflowService>()));
         services.TryAddSingleton<IAccountingPolicyService, AccountingPolicyService>();
         services.TryAddSingleton<IAccountingBasisProjectionService, AccountingBasisProjectionService>();
         services.TryAddSingleton<IAccountingJournalDraftService, AccountingJournalDraftService>();

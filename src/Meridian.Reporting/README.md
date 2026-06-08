@@ -15,7 +15,8 @@ last_reviewed: 2026-06-07
 
 Physical bounded-context module project for report packs, governed exports, reporting run
 contracts, template catalogs, Security Master-enriched report generation, NAV attribution,
-orchestration, publication, restatement, distribution, and reporting ownership conformance.
+orchestration, publication, restatement, distribution, no-code report-writer grid rendering, and
+reporting ownership conformance.
 
 ## Layer responsibility
 
@@ -31,6 +32,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   audit contracts.
 - `ReportingOrchestrationService.cs` - deterministic report run execution, due-schedule handling,
   lineage rendering, approval transitions, retry/failure state, and run-store persistence handoff.
+- `ReportWriterGridEngine.cs` - governed no-code grid renderer for detail, pivot, Top-N,
+  contribution, and formula-backed report-writer tables over supplied dataset rows.
 - `ReportGenerationService.cs` - trial-balance report-pack generation with Security Master
   enrichment, lookup-quality classification, and asset-class section grouping.
 - `NavAttributionService.cs` - fund/entity/sleeve/vehicle NAV attribution over ledger snapshots
@@ -71,10 +74,14 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 `IReportingOrchestrationService`, `IReportingTemplateCatalog`, `IReportingSectionRenderer`,
 `IReportingRunStore`, `ReportGenerationService`, and `NavAttributionService` publish the Reporting
 module seams consumed by UI Shared report-pack workflows, UI Services reporting status projections,
-and WPF fund-operation views. Reporting template families now cover investor, SEC, shadow NAV,
-performance, holdings, capital-account, board, audit, certified-dataset, and custom report packs;
-shared UI services layer schedule persistence, delivery history, and rendered HTML/PDF artifacts on
-top of those module contracts without moving orchestration ownership out of Reporting.
+and WPF fund-operation views. `ReportWriterGridEngine` renders governed template grid definitions
+without script execution: row/column dimensions, aggregate metrics, Top-N limits, contribution
+percentages, and bounded arithmetic formulas are evaluated against caller-supplied dataset rows with
+structured warnings for missing or non-numeric inputs. Reporting template families now cover
+investor, SEC, shadow NAV, performance, holdings, capital-account, board, audit, certified-dataset,
+and custom report packs; shared UI services layer schedule persistence, delivery history, template
+grid render calls, and rendered HTML/PDF artifacts on top of those module contracts without moving
+orchestration ownership out of Reporting.
 
 ### Migration and archive notes
 

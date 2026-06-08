@@ -6,7 +6,7 @@ module_id: SRC-LEDGER
 path: src/Meridian.Ledger
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-05-20
+last_reviewed: 2026-06-08
 ---
 
 # src/Meridian.Ledger
@@ -78,6 +78,17 @@ stakeholder delivery workflows.
 occurrence into a delivery manifest and regulator-facing XML summary artifact when requested by the
 schedule, preserving recipients, due date, requested formats, report-pack signature, and statement
 totals without claiming full XBRL/iXBRL coverage.
+`JournalEntryMetadata` and `LedgerQuery` now carry treasury-ledger audit context for private-capital
+and payment-linked postings: effective date, idempotency key, fund event, capital account, investor,
+payment intent, and settlement references. Keep those fields additive and metadata-owned so ledger
+consumers can reconstruct capital-call, distribution, subscription, redemption, LP-transfer, and
+management-fee postings without introducing UI- or storage-specific query forks.
+`PrivateCapitalFundEventLedgerProjector` reconstructs a posted Fund Event Ledger view from those
+journal entries and optional ledger report packs. It groups private-capital journal entries by fund
+event, exposes balanced ledger impact rows, capital-account subledger impact, retained evidence,
+approval metadata, reconstruction issues, and report-output links so downstream Reporting, WPF,
+and browser surfaces can consume one ledger-owned model instead of rebuilding private-capital
+event state locally.
 
 ## Diagrams
 

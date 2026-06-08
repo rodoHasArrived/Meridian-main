@@ -42,6 +42,7 @@ import { markWorkflowPresetUsed } from "@/lib/api";
 import { PriceAlertsProvider, usePriceAlerts } from "@/lib/price-alerts/service";
 import { cn } from "@/lib/utils";
 import { legacyWorkspaceRedirect } from "@/lib/workspace";
+import type { WorkspaceKey } from "@/types";
 
 const DataScreen = lazy(() => import("@/screens/data-screen").then((module) => ({ default: module.DataScreen })));
 const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-screen").then((module) => ({ default: module.EvidenceWorkbenchScreen })));
@@ -82,6 +83,7 @@ function AppShell() {
   const suppressScopePersistRef = useRef(false);
   const navigate = useNavigate();
   const { hash, pathname, search } = useLocation();
+  const activeWorkspace = resolveWorkspaceKeyFromPath(pathname);
   const routeOperatingScope = readOperatingScopeFromSearch(search);
   const operatingScopeInput = mergeOperatingScopes(storedOperatingScope, routeOperatingScope);
   const operatingContextSymbol = operatingScopeInput.symbol ?? null;
@@ -116,11 +118,12 @@ function AppShell() {
     loading,
     error,
     workspaceErrors,
+    refreshStatus,
     refresh,
     refreshProviderRouting,
     updateFeatureCapability,
     upsertWorkflowPreset
-  } = useWorkstationData();
+  } = useWorkstationData({ activeWorkspace });
   const handleWorkflowPresetUsed = (presetId: string) =>
     markWorkflowPresetUsed(presetId).then((preset) => {
       upsertWorkflowPreset(preset);
@@ -324,7 +327,7 @@ function AppShell() {
             workspace={shell.activeWorkspace}
             session={session}
             onRefresh={refresh}
-            refreshing={loading}
+            refreshing={loading || refreshStatus.inFlight}
           />
           <WorkflowContinuityDock
             viewModel={shell.workflowContinuity}
@@ -468,6 +471,22 @@ function AppShell() {
       </Sheet>
     </div>
   );
+}
+
+function resolveWorkspaceKeyFromPath(pathname: string): WorkspaceKey {
+  const root = pathname.split("/").filter(Boolean)[0]?.toLowerCase();
+  switch (root) {
+    case "portfolio":
+    case "accounting":
+    case "reporting":
+    case "strategy":
+    case "data":
+    case "settings":
+      return root;
+    case "trading":
+    default:
+      return "trading";
+  }
 }
 
 function focusRouteTargetWhenReady(

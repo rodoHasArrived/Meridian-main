@@ -54,9 +54,12 @@ primary configure actions. The workbench reads and mutates shared accounting con
 surfaces chart accounts, templates, posting rules, validation, and audit rows, saves manual journal
 entry drafts through the shared workbench service, offers type-specific draft presets for accrued
 balances, accrued expenses, prepaid expenses, expenses, amortization, deferrals, reclassifications,
-and reversals, shows read-only external GL evidence, projects close/evidence/reconciliation posture
-from shared operations continuity when available, and creates fund-scoped accounting-basis policy
-records through the Financial Operations policy service.
+reversals, capital calls, distributions, subscriptions, redemptions, LP transfers, and management
+fees, shows read-only external GL evidence, projects close/evidence/reconciliation posture from
+shared operations continuity when available, and creates fund-scoped accounting-basis policy
+records through the Financial Operations policy service. Private-capital presets attach the shared
+treasury ledger context expected by the approval service, including effective date, idempotency,
+fund-event, capital-account, investor, payment, and settlement references.
 Registration stays feature-owned in `Features/Accounting/AccountingFeatureModule.cs`; the
 desktop fallback stores configuration/audit state in `workstation/accounting/accounting-configuration.json`
 and manual journal drafts in `workstation/accounting/manual-journal-drafts.json` under the
@@ -118,6 +121,15 @@ The WPF workflow library also projects the shared v0.15 `Accounting Records Evid
 workflow, preserving the source-record, normalized-activity, reconciliation-case, ledger-evidence,
 approval-history, report-lineage, export-evidence, and restatement-lineage action sequence from the
 shared catalog.
+The Accounting Configure manual-journal tab consumes the shared private-capital activity projection
+from `ManualJournalEntryWorkbenchDto`, exposing capital-account activity, fund-event, ledger-impact,
+and report-output readiness grids plus subledger movement, posted fund-event, and published
+report-output counts from server-owned treasury context instead of deriving private-capital ledger
+rows, GL-impact rows, or stakeholder-package state in desktop code. Posted ledger-backed fund events
+and published governed report outputs use the explicit shared source-state flags for desktop row
+labels instead of inferring those states from approval or readiness text, and report-output rows
+show shared report-pack workflow state, publication manifest identity, and provenance counts when
+the shared projection provides them.
 The desktop diagnostics surface reads colocation profile state through
 `Meridian.Platform.Performance.ICoLocationProfileActivator`, keeping runtime-performance ownership
 in Platform while WPF remains a presentation surface.

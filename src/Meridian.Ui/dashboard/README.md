@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-07
+last_reviewed: 2026-06-08
 ---
 
 # src/Meridian.Ui/dashboard
@@ -105,6 +105,10 @@ validation, or case-state rules.
 The Accounting screen also carries a stable Investment Accounting Transaction Lab panel view model
 so the browser renders the Books Before Broker preview entry point without crashing while endpoint
 request wiring remains a follow-on workflow.
+The Accounting workspace workflow launch strip is derived from the Accounting view model and shared
+route catalog, covering setup, journal entries, ledger review, reconciliation, exception casework,
+Security Master readiness, approvals, and retained evidence packaging without browser-local close
+state.
 Operations Continuity close-checklist fields mirror the shared workstation DTO, including required
 approval counts, expiration dates, and close-readiness blockers, so the browser reads the same
 approval gate state enforced by the API and WPF clients. The browser checklist summary is also
@@ -143,6 +147,13 @@ evidence packet distribution labels follow the same canonical root naming.
 The app-shell trading continuity title uses `Trading Controls` so cross-workspace recovery copy
 does not reintroduce `Governance` as a visible workspace label.
 Reporting workspace status rows consume shared template metadata and recent run projections for investor statements, SEC filing packets, and shadow NAV packs; React renders approval status, retry attempts, audit actions, and lineage completeness rather than reimplementing report orchestration rules.
+The Reporting workspace also renders shared `portfolioCuts` rows for fund, strategy, and tag
+reporting views. The browser shows exposure, cash, P&L, shadow-NAV, variance, source-count, and
+version stamp from the backend payload instead of recomputing those cuts in React.
+It also renders shared `structuredExports` rows for regulatory, warehouse, and investment-decision
+outputs. The browser displays readiness, format, row/field/source counts, schema version, retained
+path, version stamp, and direct JSON payload links from the backend contract instead of deriving
+export inventory from report-profile labels.
 Those rows render typed drilldown links and next-action references from the shared payload, opening
 browser-safe evidence routes while executing shared POST actions for approval submission/review,
 publication, archive, and report-pack delivery. Restatements remain guarded by changed-line
@@ -150,7 +161,10 @@ evidence requirements instead of being submitted as a one-click browser action.
 The Reporting workspace also renders operator-managed schedule rows from the shared schedule
 payload and wires run-now, pause, and resume controls through the shared schedule endpoints. Retained
 delivery attempts render from the shared delivery-history payload, so browser Reporting shows actual
-recipient delivery state and retry history instead of static status chips.
+recipient delivery state and retry history instead of static status chips. Delivered attempts also
+show the shared package mode, requested artifact formats, secure link, and retained manifest path
+when the backend includes `ReportPackDeliveryPackageDto`; app-relative secure links render as
+anchors so operators can open the token-gated email-link or secure-portal package manifest.
 Approved built-in report template rows also expose an on-demand `Run report` command that posts to
 the shared `/api/fund-structure/reporting/runs` endpoint and reports the generated ad-hoc run id
 back to the operator. Custom/unapproved templates stay disabled for this command until the shared
@@ -169,7 +183,11 @@ The Reporting template panel also renders the shared template authoring lifecycl
 custom source, draft/in-review/approved state, latest-approved posture, approval summary, and the
 server-owned authoring route for drafting or reviewing a version. No-host fixtures include both an
 approved built-in template and an in-review custom revision so the browser surface demonstrates the
-version-approval workflow without adding browser-local lifecycle rules.
+version-approval workflow without adding browser-local lifecycle rules. When the shared payload
+marks a template with report-writer grids, the browser summarizes those grid counts from
+`reportWriterGrids`; grid calculation and formula evaluation remain server/shared-service owned.
+Template cards also show the shared access mode and summary from the reporting payload, and
+inaccessible template rows stay disabled instead of allowing browser-local report runs.
 Portfolio run drill-ins consume the shared attribution, equity-curve, cash-flow, and fill payloads
 and project browser view state for run comparison, realized/unrealized P&L bridge rows, and recent
 trade evidence. Keep those projections in the Portfolio view model so the React screen renders
@@ -236,8 +254,20 @@ instead of browser-derived support rows.
 The Accounting journal-entry workstream at `/accounting/journal-entries` is a thin browser surface
 over the shared manual journal entry workbench endpoints. React renders draft headers, GL account
 selection, selected-line Security Master search/picker results, line validation badges, typed source
-evidence attachments, save draft, validate, and submit approval commands from the shared DTOs while
-versioning, validation, persistence, evidence gating, and approval handoff remain server-owned.
+evidence attachments, treasury-context readiness, save draft, validate, and submit approval commands
+from the shared DTOs while versioning, validation, persistence, private-capital fund-event context,
+evidence gating, and approval handoff remain server-owned. The same workstream renders the shared
+private-capital activity projection as fund-event rows, capital-account aggregates, signed net
+activity, ordered capital-account subledger movements with running net activity, posted fund-event
+counts, ledger-impact readiness, published report-output counts, report-output readiness
+candidates, report-pack workflow/publication/provenance metadata, and projection warnings rather
+than deriving capital-account, GL-impact, or stakeholder-package state in React. The browser
+API catalog also exposes `/api/ledger/private-capital/activity` through generated route metadata,
+`getPrivateCapitalActivity`, and the Settings backend-capability diagnostics so operators can
+verify the first-class private-capital review endpoint outside the manual journal editor. The API
+helper accepts fund, ledger-book, fund-event, capital-account, and investor filters for report-pack
+drill-throughs while the React view model preserves posted-event and published-output labels from
+the shared DTOs.
 The Accounting entry screen now includes a CFO / Controller close command center that derives
 ready, blocked, and at-risk close posture from the latest operations-continuity workflow, retained
 accounting-record evidence, reconciliation breaks, approvals, external GL provider warnings,

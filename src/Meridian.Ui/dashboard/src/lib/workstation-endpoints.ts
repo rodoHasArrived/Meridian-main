@@ -24,6 +24,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   accountingConfigurationActivate: UI_API_ROUTES.LedgerAccountingConfigurationActivate,
   accountingConfigurationAudit: UI_API_ROUTES.LedgerAccountingConfigurationAudit,
   manualJournalEntryWorkbench: UI_API_ROUTES.LedgerManualJournalEntryWorkbench,
+  privateCapitalActivity: UI_API_ROUTES.LedgerPrivateCapitalActivity,
   manualJournalEntryDrafts: UI_API_ROUTES.LedgerManualJournalEntryDrafts,
   manualJournalEntryValidate: UI_API_ROUTES.LedgerManualJournalEntryValidate,
   manualJournalEntrySubmitApproval: UI_API_ROUTES.LedgerManualJournalEntrySubmitApproval,
@@ -65,7 +66,10 @@ export const FUND_STRUCTURE_API_ENDPOINTS = {
   transactionLabPreview: "/api/fund-structure/accounting/transaction-lab/preview",
   reportPackWorkflows: UI_API_ROUTES.ReportingPackWorkflows,
   reportPackWorkflowDeliveries: UI_API_ROUTES.ReportingPackWorkflowDeliveries,
+  reportPackWorkflowDeliveryPackage: UI_API_ROUTES.ReportingPackWorkflowDeliveryPackage,
   reportPackWorkflowDeliveryFailures: UI_API_ROUTES.ReportingPackWorkflowDeliveryFailures,
+  reportPackDeliveryPortalPackage: UI_API_ROUTES.ReportingPackDeliveryPortalPackage,
+  reportingStructuredExport: UI_API_ROUTES.ReportingStructuredExport,
   reportingRuns: UI_API_ROUTES.ReportingRuns,
   reportingSchedules: UI_API_ROUTES.ReportingSchedules,
   reportingScheduleRunDue: UI_API_ROUTES.ReportingScheduleRunDue,
@@ -316,6 +320,18 @@ export function workstationOperationsContinuityEndpoint(options: {
   status?: string;
 } = {}): string {
   return `${WORKSTATION_API_ENDPOINTS.operationsContinuity}${queryString(options)}`;
+}
+
+export function reportPackDeliveryPackageEndpoint(reportId: string, attemptId: string, token?: string): string {
+  return `${routeWithParam(
+    routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportPackWorkflowDeliveryPackage, "reportId", reportId),
+    "attemptId",
+    attemptId
+  )}${queryString({ token })}`;
+}
+
+export function reportPackDeliveryPortalPackageEndpoint(packageId: string, token?: string): string {
+  return `${routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportPackDeliveryPortalPackage, "packageId", packageId)}${queryString({ token })}`;
 }
 
 export function workstationOperationsContinuityDetailEndpoint(workflowId: string): string {

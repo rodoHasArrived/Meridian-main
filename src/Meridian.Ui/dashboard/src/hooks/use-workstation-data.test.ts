@@ -1,6 +1,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { createElement, StrictMode, type ReactNode } from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import * as api from "@/lib/api";
 import { createApiErrorFromResponseBody } from "@/lib/api-errors";
@@ -123,6 +123,11 @@ describe("useWorkstationData", () => {
       capabilities: []
     } as never);
     vi.mocked(api.hasDevelopmentFixtureUsage).mockReturnValue(false);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it("ignores an older full refresh that resolves after a newer refresh", async () => {
@@ -250,6 +255,99 @@ describe("useWorkstationData", () => {
     });
 
     expect(result.current.session?.displayName).toBe("strict-active session");
+  });
+
+  it("publishes the active workspace before slower secondary workspaces settle", async () => {
+    const { result } = renderHook(() => useWorkstationData({ activeWorkspace: "accounting" }));
+
+    await waitFor(() => expect(api.getAccountingWorkspace).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveRequest<SessionInfo>("session", 0, {
+        activeWorkspace: "accounting",
+        commandCount: 1,
+        displayName: "active session",
+        environment: "paper",
+        role: "Operator"
+      });
+      resolveRequest<SystemOverviewResponse>("overview", 0, { marker: "active overview" } as unknown as SystemOverviewResponse);
+      resolveRequest<AccountingWorkspaceResponse>("accounting", 0, { marker: "active accounting" } as unknown as AccountingWorkspaceResponse);
+      resolveRequest<MultiAssetCoverageSummary>(
+        "portfolioMultiAssetCoverage",
+        0,
+        { marker: "active portfolio coverage" } as unknown as MultiAssetCoverageSummary
+      );
+      resolveRequest<WorkflowLibrary>("workflowLibrary", 0, { marker: "active workflows" } as unknown as WorkflowLibrary);
+      resolveRequest<WorkflowPresetLibrary>("workflowPresets", 0, {
+        generatedAt: "2026-01-01T00:00:00Z",
+        presets: []
+      });
+      await flushAsync();
+    });
+
+    expect(result.current.loading).toBe(false);
+    expect(result.current.accounting).toEqual({ marker: "active accounting" });
+    expect(result.current.strategy).toBeNull();
+    expect(result.current.refreshStatus.inFlight).toBe(true);
+
+    await act(async () => {
+      resolveSecondaryRefreshBatch(0, "secondary");
+      await flushAsync();
+    });
+
+    expect(result.current.strategy).toEqual({ marker: "secondary strategy" });
+    expect(result.current.trading).toEqual({ marker: "secondary trading" });
+    expect(result.current.refreshStatus.inFlight).toBe(false);
+  });
+
+  it("polls only the visible route-relevant refresh lanes", async () => {
+    const intervals: Array<{ handler: TimerHandler; delay?: number }> = [];
+    vi.spyOn(window, "setInterval").mockImplementation((handler: TimerHandler, delay?: number) => {
+      intervals.push({ handler, delay });
+      return intervals.length as unknown as ReturnType<typeof setInterval>;
+    });
+    vi.spyOn(window, "clearInterval").mockImplementation(() => undefined);
+    const { unmount } = renderHook(() => useWorkstationData({ activeWorkspace: "data" }));
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+
+    const workstationIntervals = intervals.filter((interval) => interval.delay === 30_000 || interval.delay === 5_000);
+    expect(workstationIntervals).toHaveLength(1);
+    expect(workstationIntervals[0].delay).toBe(30_000);
+    act(() => {
+      const handler = workstationIntervals[0].handler;
+      if (typeof handler === "function") {
+        handler();
+      }
+    });
+    await waitFor(() => expect(api.getProviderConnections).toHaveBeenCalledTimes(2));
+
+    expect(api.getTradingWorkspace).toHaveBeenCalledTimes(1);
+    expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(1);
+    unmount();
+  });
+
+  it("pauses automatic polling while the document is hidden", async () => {
+    const setIntervalSpy = vi.spyOn(window, "setInterval");
+    vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
+    const { unmount } = renderHook(() => useWorkstationData({ activeWorkspace: "portfolio" }));
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+
+    const workstationIntervalCalls = setIntervalSpy.mock.calls.filter(([, delay]) => delay === 30_000 || delay === 5_000);
+    expect(workstationIntervalCalls).toHaveLength(0);
+    expect(api.getTradingWorkspace).toHaveBeenCalledTimes(1);
+    expect(api.getProviderConnections).toHaveBeenCalledTimes(1);
+    expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(1);
+    unmount();
   });
 
   it("surfaces development fixture usage after bootstrap", async () => {
@@ -691,6 +789,21 @@ function createDeferred<T>(): Deferred<T> {
 
 function resolveRefreshBatch(index: number, marker: string) {
   resolveRefreshBatchWithIndexes({ marker, defaultIndex: index, tradingIndex: index });
+}
+
+function resolveSecondaryRefreshBatch(index: number, marker: string) {
+  resolveRequest<StrategyWorkspaceResponse>("strategy", index, { marker: `${marker} strategy` } as unknown as StrategyWorkspaceResponse);
+  resolveRequest<TradingWorkspaceResponse>("trading", index, { marker: `${marker} trading` } as unknown as TradingWorkspaceResponse);
+  resolveRequest<PortfolioWorkspaceResponse>("portfolio", index, { marker: `${marker} portfolio` } as unknown as PortfolioWorkspaceResponse);
+  resolveRequest<DataWorkspaceResponse>("data", index, { marker: `${marker} data` } as unknown as DataWorkspaceResponse);
+  resolveRequest<ReportingWorkspaceResponse>("reporting", index, { marker: `${marker} reporting` } as unknown as ReportingWorkspaceResponse);
+  resolveRequest<BrokerageConnectionStatus>("brokerageConnection", index, { marker: `${marker} connection` } as unknown as BrokerageConnectionStatus);
+  resolveRequest<ProviderConnectionRow[]>("providerConnections", index, []);
+  resolveRequest<ProviderReadinessSummary>("providerReadiness", index, buildProviderReadiness(marker));
+  resolveRequest<ProviderRoutingConnection[]>("providerRoutingConnections", index, []);
+  resolveRequest<ProviderRoutingBinding[]>("providerRoutingBindings", index, []);
+  resolveRequest<ProviderRoutingTrustSnapshot[]>("providerRoutingTrustSnapshots", index, []);
+  resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", index, { marker: `${marker} brokerage` } as unknown as BrokerageHouseholdPortfolio);
 }
 
 function resolveRefreshBatchWithIndexes({

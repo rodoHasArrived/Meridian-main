@@ -46,7 +46,13 @@ public enum ManualJournalEntryTypeDto
     Amortization = 5,
     Deferral = 6,
     Reclassification = 7,
-    Reversal = 8
+    Reversal = 8,
+    CapitalCall = 9,
+    Distribution = 10,
+    Subscription = 11,
+    Redemption = 12,
+    LpTransfer = 13,
+    ManagementFee = 14
 }
 
 public sealed record ChartOfAccountsNodeDto(
@@ -187,6 +193,16 @@ public sealed record ManualJournalEntryEvidenceAttachmentDto(
     string? LineId = null,
     string? Description = null);
 
+public sealed record TreasuryLedgerContextDto(
+    DateOnly? EffectiveDate = null,
+    string? IdempotencyKey = null,
+    string? FundEventId = null,
+    string? FundEventType = null,
+    string? CapitalAccountId = null,
+    string? InvestorId = null,
+    string? PaymentIntentId = null,
+    string? SettlementReference = null);
+
 public sealed record ManualJournalEntryDraftDto(
     Guid JournalEntryId,
     ManualJournalEntryStatusDto Status,
@@ -213,7 +229,140 @@ public sealed record ManualJournalEntryDraftDto(
     string? ApprovalId = null,
     DateTimeOffset? SubmittedAtUtc = null,
     string? SubmittedBy = null,
-    ManualJournalEntryTypeDto EntryType = ManualJournalEntryTypeDto.General);
+    ManualJournalEntryTypeDto EntryType = ManualJournalEntryTypeDto.General,
+    TreasuryLedgerContextDto? TreasuryContext = null);
+
+public sealed record PrivateCapitalFundEventDto(
+    string FundEventId,
+    string FundEventType,
+    ManualJournalEntryTypeDto EntryType,
+    ManualJournalEntryStatusDto JournalStatus,
+    Guid JournalEntryId,
+    DateOnly EffectiveDate,
+    string CapitalAccountId,
+    string? InvestorId,
+    string Currency,
+    decimal GrossAmount,
+    decimal NetCapitalActivity,
+    string Memo,
+    string? PaymentIntentId,
+    string? SettlementReference,
+    IReadOnlyList<string> EvidenceLinks,
+    IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
+    DateTimeOffset UpdatedAtUtc,
+    bool IsPosted = false);
+
+public sealed record PrivateCapitalCapitalAccountActivityDto(
+    string CapitalAccountId,
+    string? InvestorId,
+    string Currency,
+    decimal Contributions,
+    decimal Distributions,
+    decimal Subscriptions,
+    decimal Redemptions,
+    decimal ManagementFees,
+    decimal NetActivity,
+    int FundEventCount,
+    DateOnly? LastEffectiveDate,
+    string? LastFundEventType,
+    IReadOnlyList<string> FundEventIds);
+
+public sealed record PrivateCapitalCapitalAccountSubledgerEntryDto(
+    string SubledgerEntryId,
+    string CapitalAccountId,
+    string? InvestorId,
+    string Currency,
+    string FundEventId,
+    string FundEventType,
+    ManualJournalEntryTypeDto EntryType,
+    ManualJournalEntryStatusDto ApprovalState,
+    Guid JournalEntryId,
+    DateOnly EffectiveDate,
+    decimal GrossAmount,
+    decimal NetCapitalActivity,
+    decimal RunningNetActivity,
+    string Memo,
+    IReadOnlyList<string> EvidenceLinks,
+    IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
+    DateTimeOffset UpdatedAtUtc,
+    bool IsPosted = false);
+
+public sealed record PrivateCapitalLedgerLineImpactDto(
+    string LineId,
+    string AccountPath,
+    AccountingTemplateLineSideDto Side,
+    decimal Amount,
+    string Currency,
+    string? EntityId,
+    Guid? SecurityId,
+    string? SecurityDisplayName,
+    string? EvidenceLink);
+
+public sealed record PrivateCapitalLedgerImpactDto(
+    string LedgerImpactId,
+    Guid JournalEntryId,
+    string FundEventId,
+    string FundEventType,
+    string CapitalAccountId,
+    string? InvestorId,
+    ManualJournalEntryStatusDto ApprovalState,
+    DateOnly EffectiveDate,
+    string Currency,
+    decimal TotalDebits,
+    decimal TotalCredits,
+    decimal Imbalance,
+    int LineCount,
+    bool IsBalanced,
+    bool IsPostingReady,
+    IReadOnlyList<string> EvidenceLinks,
+    IReadOnlyList<PrivateCapitalLedgerLineImpactDto> Lines,
+    IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues);
+
+public sealed record PrivateCapitalReportOutputDto(
+    string ReportOutputId,
+    string ReportOutputType,
+    string DisplayName,
+    string ReportRoute,
+    string FundEventId,
+    string FundEventType,
+    string CapitalAccountId,
+    string? InvestorId,
+    ManualJournalEntryStatusDto ApprovalState,
+    DateOnly EffectiveDate,
+    string Currency,
+    decimal NetCapitalActivity,
+    int EvidenceLinkCount,
+    IReadOnlyList<string> EvidenceLinks,
+    bool IsReportReady,
+    IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
+    bool IsPublished = false,
+    string? ReportPackId = null,
+    string? ReportWorkflowState = null,
+    string? PublicationManifestId = null,
+    string? RetainedManifestPath = null,
+    string? PublicationEvidenceHash = null,
+    DateTimeOffset? PublishedAtUtc = null,
+    string? PublishedBy = null,
+    int ReportLineProvenanceCount = 0);
+
+public sealed record PrivateCapitalActivityProjectionDto(
+    string FundProfileId,
+    Guid? LedgerBookId,
+    DateTimeOffset ProjectedAtUtc,
+    int FundEventCount,
+    int CapitalAccountCount,
+    int SubmittedFundEventCount,
+    int ApprovalQueueCount,
+    int PostedFundEventCount,
+    int PublishedReportOutputCount,
+    decimal NetCapitalActivity,
+    string Currency,
+    IReadOnlyList<PrivateCapitalFundEventDto> FundEvents,
+    IReadOnlyList<PrivateCapitalCapitalAccountActivityDto> CapitalAccounts,
+    IReadOnlyList<PrivateCapitalCapitalAccountSubledgerEntryDto> CapitalAccountSubledgerEntries,
+    IReadOnlyList<PrivateCapitalLedgerImpactDto> LedgerImpacts,
+    IReadOnlyList<PrivateCapitalReportOutputDto> ReportOutputs,
+    IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues);
 
 public sealed record ManualJournalEntryWorkbenchDto(
     string FundProfileId,
@@ -222,7 +371,8 @@ public sealed record ManualJournalEntryWorkbenchDto(
     IReadOnlyList<LedgerBookDto> LedgerBooks,
     IReadOnlyList<ChartOfAccountsNodeDto> ChartOfAccounts,
     IReadOnlyList<ManualJournalEntryDraftDto> Drafts,
-    IReadOnlyList<AccountingActionAuditEventDto> AuditTrail);
+    IReadOnlyList<AccountingActionAuditEventDto> AuditTrail,
+    PrivateCapitalActivityProjectionDto? PrivateCapitalActivity = null);
 
 public sealed record SaveManualJournalEntryDraftRequest(
     ManualJournalEntryDraftDto Draft,
@@ -287,6 +437,11 @@ public interface IAccountingConfigurationService
 public interface IManualJournalEntryWorkbenchService
 {
     Task<ManualJournalEntryWorkbenchDto> GetWorkbenchAsync(
+        string? fundProfileId = null,
+        Guid? ledgerBookId = null,
+        CancellationToken ct = default);
+
+    Task<PrivateCapitalActivityProjectionDto> GetPrivateCapitalActivityAsync(
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
         CancellationToken ct = default);

@@ -6,7 +6,7 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-05-20
+last_reviewed: 2026-06-08
 ---
 
 # src/Meridian.Ui
@@ -36,6 +36,9 @@ state so host-served workstation assets retain the same financial-operations flo
 The dashboard Accounting Closeout trail also mirrors the design-document Financial Operations flow:
 `Receive Activity`, `Match Records`, `Resolve Exceptions`, `Approve Results`, and `Produce Evidence`.
 The browser Accounting screen renders that same lane above its detailed closeout panels.
+The dashboard Accounting journal-entry workstream renders the shared manual journal workbench
+contract, including typed private-capital entries and treasury-context readiness, while validation,
+fund-event/capital-account requirements, persistence, and approval submission stay server-owned.
 Browser navigation and command-palette root commands canonicalize supplied workspace metadata to
 `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings` so legacy
 root names stay compatibility aliases. App-shell evidence timeline labels follow the same rule when

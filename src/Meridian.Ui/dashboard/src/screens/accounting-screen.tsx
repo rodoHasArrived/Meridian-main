@@ -22,6 +22,7 @@ import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
 import {
   buildAccountingLoadingViewState,
   buildCloseCommandCenterViewState,
+  buildAccountingWorkflowLaunchViewState,
   resolveAccountingWorkstream,
   SECURITY_IDENTITY_DETAIL_PANEL_ID,
   useAccountingConfigurationViewModel,
@@ -54,6 +55,7 @@ import type {
   SecurityOpenLotRowViewModel,
   SecuritySearchResultRowViewModel,
   CloseCommandCenterViewState,
+  AccountingWorkflowLaunchViewState,
   AccountingToolingTone,
   TradingParametersViewState
 } from "@/screens/accounting-screen.view-model";
@@ -1164,6 +1166,14 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       multiAssetCoverage
     ]
   );
+  const workflowLaunch = useMemo(
+    () => data ? buildAccountingWorkflowLaunchViewState({
+      data,
+      workstream,
+      closeCommandCenter
+    }) : null,
+    [closeCommandCenter, data, workstream]
+  );
 
   if (!data) {
     const loading = buildAccountingLoadingViewState(pathname);
@@ -1246,6 +1256,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
           <AccountingChip label="Profiles" value={String(data.reporting.profileCount)} />
         </div>
       </section>
+
+      {workflowLaunch ? <AccountingWorkflowLaunchPanel view={workflowLaunch} /> : null}
 
       <CloseCommandCenterPanel
         view={closeCommandCenter}
@@ -3395,6 +3407,99 @@ function AccountingHighlight({
   );
 }
 
+const accountingWorkflowStepIcons: Record<AccountingWorkflowLaunchViewState["steps"][number]["id"], typeof ShieldCheck> = {
+  ledger: Table2,
+  configure: Landmark,
+  "journal-entries": BookCheck,
+  reconciliation: Network,
+  exceptions: AlertCircle,
+  "security-master": ShieldCheck,
+  approvals: UserCheck,
+  reporting: Paperclip
+};
+
+const accountingWorkflowActionIcons: Record<string, typeof ShieldCheck> = {
+  reconcile: Network,
+  "journal-entry": BookCheck,
+  approvals: UserCheck,
+  evidence: Paperclip
+};
+
+function AccountingWorkflowLaunchPanel({ view }: { view: AccountingWorkflowLaunchViewState }) {
+  return (
+    <section className="workspace-section-band" aria-labelledby="accounting-workflow-heading">
+      <span className="sr-only" aria-live="polite">{view.liveRegionText}</span>
+      <div className="workspace-section-subheader">
+        <div className="min-w-0">
+          <p className="eyebrow-label">Workflow</p>
+          <h3 id="accounting-workflow-heading" className="workspace-section-title">{view.title}</h3>
+          <p className="workspace-section-summary">{view.description}</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant={accountingToolingBadgeVariant(view.statusTone)} dot>{view.statusLabel}</Badge>
+          <AccountingChip label="Active" value={view.activeLabel} />
+        </div>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_19rem]" role="region" aria-label={view.ariaLabel}>
+        <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+          {view.steps.map((step) => {
+            const Icon = accountingWorkflowStepIcons[step.id];
+            return (
+              <Link
+                key={step.id}
+                to={step.href}
+                aria-label={step.ariaLabel}
+                aria-current={step.isActive ? "page" : undefined}
+                className={cn(
+                  "group rounded-md border px-3 py-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                  accountingToolingBorderClass(step.tone),
+                  step.isActive && "border-primary/60 bg-primary/10"
+                )}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Icon className={cn("h-4 w-4", step.isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary")} aria-hidden="true" />
+                      <span className="font-semibold text-foreground">{step.label}</span>
+                    </div>
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">{step.caption}</p>
+                  </div>
+                  <Badge variant={accountingToolingBadgeVariant(step.tone)}>{step.statusLabel}</Badge>
+                </div>
+                <div className="mt-3 flex items-center justify-between gap-2 border-t border-border/60 pt-2 text-xs">
+                  <span className="text-muted-foreground">{step.metricLabel}</span>
+                  <span className="font-mono text-foreground">{step.metricValue}</span>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+
+        <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3">
+          <div className="text-xs font-semibold uppercase text-muted-foreground">Operator actions</div>
+          <div className="mt-3 grid gap-2">
+            {view.actionRows.map((action) => {
+              const Icon = accountingWorkflowActionIcons[action.id] ?? ShieldCheck;
+              return (
+                <Button key={action.id} asChild variant={action.tone === "warning" || action.tone === "danger" ? "default" : "outline"} size="sm" className="h-auto justify-start py-2 text-left">
+                  <Link to={action.href} aria-label={action.ariaLabel}>
+                    <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    <span className="min-w-0">
+                      <span className="block font-semibold">{action.label}</span>
+                      <span className="mt-1 block text-xs font-normal leading-5 text-muted-foreground">{action.detail}</span>
+                    </span>
+                  </Link>
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function accountingToolingBadgeVariant(tone: AccountingToolingTone): "default" | "outline" | "success" | "warning" | "danger" {
   if (tone === "success" || tone === "warning" || tone === "danger") {
     return tone;
@@ -3417,6 +3522,243 @@ function accountingToolingBorderClass(tone: AccountingToolingTone): string {
   }
 
   return "border-border/70 bg-secondary/20";
+}
+
+function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: ManualJournalEntryWorkbenchViewModel["privateCapitalActivity"] }) {
+  return (
+    <Card className="panel-surface">
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <div className="min-w-0">
+            <CardTitle className="text-base">{activity.title}</CardTitle>
+            <CardDescription>{activity.statusLabel} / {activity.projectedAtLabel}</CardDescription>
+          </div>
+          <Badge variant={activity.validationIssues.length > 0 ? "warning" : activity.fundEvents.length > 0 ? "success" : "outline"} dot>
+            {activity.validationIssues.length > 0 ? "Review" : activity.fundEvents.length > 0 ? "Projected" : "Empty"}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-2 sm:grid-cols-2">
+          {activity.summaryCards.map((metric) => (
+            <div
+              key={metric.id}
+              className={cn(
+                "rounded-md border px-3 py-2 text-sm",
+                metric.tone === "success" ? "border-success/30 bg-success/10 text-success" :
+                  metric.tone === "warning" ? "border-warning/30 bg-warning/10 text-warning" :
+                    metric.tone === "danger" ? "border-danger/30 bg-danger/10 text-danger" :
+                      "border-border/70 bg-secondary/20 text-muted-foreground"
+              )}
+            >
+              <div className="text-[11px] font-semibold uppercase">{metric.label}</div>
+              <div className="mt-1 font-mono text-base text-foreground">{metric.value}</div>
+              <div className="mt-1 text-xs">{metric.detail}</div>
+            </div>
+          ))}
+        </div>
+
+        {activity.validationIssues.length > 0 ? (
+          <div className="space-y-2">
+            {activity.validationIssues.map((issue) => (
+              <div key={issue.id} className="rounded border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+                <div className="font-semibold">{issue.label}</div>
+                <div className="mt-1">{issue.message}</div>
+                <div className="mt-1 text-xs">{issue.detail}</div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+
+        {activity.capitalAccounts.length > 0 ? (
+          <div className="overflow-x-auto rounded-md border border-border/70">
+            <table className="w-full min-w-[760px] text-sm" aria-label="Private-capital capital account activity">
+              <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2 text-left">Capital account</th>
+                  <th className="px-3 py-2 text-left">Net</th>
+                  <th className="px-3 py-2 text-left">Calls</th>
+                  <th className="px-3 py-2 text-left">Distributions</th>
+                  <th className="px-3 py-2 text-left">Other</th>
+                  <th className="px-3 py-2 text-left">Last event</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activity.capitalAccounts.map((account) => (
+                  <tr key={account.id} className="border-t border-border/60 bg-background/30 align-top">
+                    <td className="px-3 py-2">
+                      <div className="break-all font-mono text-xs text-foreground">{account.title}</div>
+                      <div className="mt-1 break-all text-[11px] text-muted-foreground">{account.subtitle}</div>
+                    </td>
+                    <td className="px-3 py-2 font-mono">{account.netActivityLabel}</td>
+                    <td className="px-3 py-2 font-mono">{account.contributionLabel}</td>
+                    <td className="px-3 py-2 font-mono">{account.distributionLabel}</td>
+                    <td className="px-3 py-2 text-xs">
+                      <div>Subscriptions {account.subscriptionLabel}</div>
+                      <div>Redemptions {account.redemptionLabel}</div>
+                      <div>Fees {account.managementFeeLabel}</div>
+                    </td>
+                    <td className="px-3 py-2 text-xs">
+                      <div>{account.eventCountLabel}</div>
+                      <div className="mt-1 text-muted-foreground">{account.lastEventLabel}</div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+
+        {activity.capitalAccountSubledgerEntries.length > 0 ? (
+          <div className="overflow-x-auto rounded-md border border-border/70">
+            <table className="w-full min-w-[820px] text-sm" aria-label="Private-capital capital account subledger">
+              <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2 text-left">Event</th>
+                  <th className="px-3 py-2 text-left">Status</th>
+                  <th className="px-3 py-2 text-left">Effective</th>
+                  <th className="px-3 py-2 text-left">Net</th>
+                  <th className="px-3 py-2 text-left">Running</th>
+                  <th className="px-3 py-2 text-left">Gross</th>
+                  <th className="px-3 py-2 text-left">Evidence</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activity.capitalAccountSubledgerEntries.map((entry) => (
+                  <tr key={entry.id} className="border-t border-border/60 bg-background/30 align-top">
+                    <td className="px-3 py-2">
+                      <div className="font-semibold text-foreground">{entry.title}</div>
+                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{entry.subtitle}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">{entry.memoLabel}</div>
+                    </td>
+                    <td className="px-3 py-2">
+                      <Badge variant={entry.statusTone} dot>{entry.statusLabel}</Badge>
+                      <div className="mt-1 text-xs text-muted-foreground">{entry.issueLabel}</div>
+                    </td>
+                    <td className="px-3 py-2 font-mono text-xs">{entry.effectiveDateLabel}</td>
+                    <td className="px-3 py-2 font-mono text-xs">{entry.netActivityLabel}</td>
+                    <td className="px-3 py-2 font-mono text-xs">{entry.runningBalanceLabel}</td>
+                    <td className="px-3 py-2 font-mono text-xs">{entry.grossAmountLabel}</td>
+                    <td className="px-3 py-2 text-xs">{entry.evidenceLabel}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+
+        {activity.ledgerImpacts.length > 0 ? (
+          <div className="overflow-x-auto rounded-md border border-border/70">
+            <table className="w-full min-w-[820px] text-sm" aria-label="Private-capital ledger impacts">
+              <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2 text-left">Impact</th>
+                  <th className="px-3 py-2 text-left">Readiness</th>
+                  <th className="px-3 py-2 text-left">Effective</th>
+                  <th className="px-3 py-2 text-left">Debits</th>
+                  <th className="px-3 py-2 text-left">Credits</th>
+                  <th className="px-3 py-2 text-left">Imbalance</th>
+                  <th className="px-3 py-2 text-left">Evidence</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activity.ledgerImpacts.map((impact) => (
+                  <tr key={impact.id} className="border-t border-border/60 bg-background/30 align-top">
+                    <td className="px-3 py-2">
+                      <div className="font-semibold text-foreground">{impact.title}</div>
+                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{impact.subtitle}</div>
+                    </td>
+                    <td className="px-3 py-2">
+                      <Badge variant={impact.readinessTone} dot>{impact.readinessLabel}</Badge>
+                      <div className="mt-1 text-xs text-muted-foreground">{impact.issueLabel}</div>
+                    </td>
+                    <td className="px-3 py-2 font-mono text-xs">{impact.effectiveDateLabel}</td>
+                    <td className="px-3 py-2 font-mono text-xs">{impact.debitLabel}</td>
+                    <td className="px-3 py-2 font-mono text-xs">{impact.creditLabel}</td>
+                    <td className="px-3 py-2 font-mono text-xs">{impact.imbalanceLabel}</td>
+                    <td className="px-3 py-2 text-xs">
+                      <div>{impact.evidenceLabel}</div>
+                      <div className="mt-1 text-muted-foreground">{impact.lineLabel}</div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+
+        {activity.reportOutputs.length > 0 ? (
+          <div className="overflow-x-auto rounded-md border border-border/70">
+            <table className="w-full min-w-[960px] text-sm" aria-label="Private-capital report outputs">
+              <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2 text-left">Output</th>
+                  <th className="px-3 py-2 text-left">Readiness</th>
+                  <th className="px-3 py-2 text-left">Effective</th>
+                  <th className="px-3 py-2 text-left">Amount</th>
+                  <th className="px-3 py-2 text-left">Evidence</th>
+                  <th className="px-3 py-2 text-left">Workflow</th>
+                  <th className="px-3 py-2 text-left">Route</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activity.reportOutputs.map((output) => (
+                  <tr key={output.id} className="border-t border-border/60 bg-background/30 align-top">
+                    <td className="px-3 py-2">
+                      <div className="font-semibold text-foreground">{output.title}</div>
+                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{output.subtitle}</div>
+                    </td>
+                    <td className="px-3 py-2">
+                      <Badge variant={output.readinessTone} dot>{output.readinessLabel}</Badge>
+                      <div className="mt-1 text-xs text-muted-foreground">{output.issueLabel}</div>
+                    </td>
+                    <td className="px-3 py-2 font-mono text-xs">{output.effectiveDateLabel}</td>
+                    <td className="px-3 py-2 font-mono text-xs">{output.amountLabel}</td>
+                    <td className="px-3 py-2 text-xs">{output.evidenceLabel}</td>
+                    <td className="px-3 py-2 text-xs">
+                      <div className="break-all font-mono text-[11px] text-foreground">{output.workflowLabel}</div>
+                      <div className="mt-1 text-muted-foreground">{output.publicationLabel}</div>
+                      <div className="mt-1 text-muted-foreground">{output.provenanceLabel}</div>
+                    </td>
+                    <td className="px-3 py-2 break-all font-mono text-[11px] text-muted-foreground">{output.routeLabel}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+
+        {activity.fundEvents.length > 0 ? (
+          <div className="space-y-2">
+            {activity.fundEvents.map((event) => (
+              <div key={event.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="font-semibold text-foreground">{event.title}</div>
+                    <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{event.subtitle}</div>
+                  </div>
+                  <Badge variant={event.statusTone} dot>{event.statusLabel}</Badge>
+                </div>
+                <dl className="mt-2 grid gap-2 text-xs sm:grid-cols-2">
+                  <div><dt className="text-muted-foreground">Effective</dt><dd className="font-mono">{event.effectiveDateLabel}</dd></div>
+                  <div><dt className="text-muted-foreground">Net</dt><dd className="font-mono">{event.amountLabel}</dd></div>
+                  <div><dt className="text-muted-foreground">Gross</dt><dd className="font-mono">{event.grossAmountLabel}</dd></div>
+                  <div><dt className="text-muted-foreground">Evidence</dt><dd>{event.evidenceLabel}</dd></div>
+                  <div><dt className="text-muted-foreground">Payment</dt><dd className="break-all">{event.paymentLabel}</dd></div>
+                  <div><dt className="text-muted-foreground">Validation</dt><dd>{event.validationLabel}</dd></div>
+                </dl>
+                <div className="mt-2 text-xs text-muted-foreground">{event.memoLabel}</div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p role="status" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm text-muted-foreground">
+            {activity.emptyText}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
 }
 
 function ManualJournalLineBadges({ badges }: { badges: ReturnType<ManualJournalEntryWorkbenchViewModel["getLineBadges"]> }) {
@@ -3488,33 +3830,38 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
       ) : null}
 
       <div className="grid gap-4 xl:grid-cols-[minmax(15rem,0.32fr)_minmax(0,1fr)]">
-        <Card className="panel-surface">
-          <CardHeader>
-            <CardTitle className="text-base">Draft queue</CardTitle>
-            <CardDescription>Saved manual JE drafts and submitted approval records from the shared workbench API.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {view.drafts.length > 0 ? view.drafts.map((draft) => (
-              <button
-                key={draft.journalEntryId}
-                type="button"
-                className={cn(
-                  "w-full rounded-md border px-3 py-2 text-left text-sm transition hover:border-primary/50 hover:bg-primary/10",
-                  draft.journalEntryId === view.draft.journalEntryId ? "border-primary/60 bg-primary/10" : "border-border/70 bg-secondary/20"
-                )}
-                onClick={() => view.selectDraft(draft.journalEntryId)}
-              >
-                <span className="block font-semibold text-foreground">{draft.memo || "Untitled journal entry"}</span>
-                <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{draft.status} / v{draft.version}</span>
-                <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{draft.accountingDate} / {draft.currency}</span>
-              </button>
-            )) : (
-              <p role="status" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm text-muted-foreground">
-                No saved drafts yet. Save the current entry to add it to the queue.
-              </p>
-            )}
-          </CardContent>
-        </Card>
+        <div className="space-y-4">
+          <Card className="panel-surface">
+            <CardHeader>
+              <CardTitle className="text-base">Draft queue</CardTitle>
+              <CardDescription>Saved manual JE drafts and submitted approval records from the shared workbench API.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {view.drafts.length > 0 ? view.drafts.map((draft) => (
+                <button
+                  key={draft.journalEntryId}
+                  type="button"
+                  className={cn(
+                    "w-full rounded-md border px-3 py-2 text-left text-sm transition hover:border-primary/50 hover:bg-primary/10",
+                    draft.journalEntryId === view.draft.journalEntryId ? "border-primary/60 bg-primary/10" : "border-border/70 bg-secondary/20"
+                  )}
+                  onClick={() => view.selectDraft(draft.journalEntryId)}
+                >
+                  <span className="block font-semibold text-foreground">{draft.memo || "Untitled journal entry"}</span>
+                  <span className="mt-1 block text-[11px] text-muted-foreground">{draft.entryType}</span>
+                  <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{draft.status} / v{draft.version}</span>
+                  <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{draft.accountingDate} / {draft.currency}</span>
+                </button>
+              )) : (
+                <p role="status" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm text-muted-foreground">
+                  No saved drafts yet. Save the current entry to add it to the queue.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          <ManualJournalPrivateCapitalActivityPanel activity={view.privateCapitalActivity} />
+        </div>
 
         <Card className="panel-surface">
           <CardHeader>
@@ -3526,6 +3873,7 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
               <div className="flex flex-wrap gap-2">
                 <AccountingChip label="Totals" value={view.totalsLabel} />
                 <AccountingChip label="Balance" value={view.imbalanceLabel} />
+                <AccountingChip label="Treasury" value={view.treasuryContextLabel} />
               </div>
             </div>
           </CardHeader>

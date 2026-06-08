@@ -31,18 +31,23 @@ public sealed class ReportPackRunReadService
         _scheduleService = scheduleService;
     }
 
-    public WorkstationReportingPayload BuildPayload(int recentRunLimit = DefaultRecentRunLimit)
+    public WorkstationReportingPayload BuildPayload(int recentRunLimit = DefaultRecentRunLimit) =>
+        BuildPayload(accessContext: null, recentRunLimit);
+
+    public WorkstationReportingPayload BuildPayload(
+        ReportAccessQueryContext? accessContext,
+        int recentRunLimit = DefaultRecentRunLimit)
     {
         var profiles = BuildProfiles();
         var recommended = profiles
             .Where(static profile => profile.Id is "excel" or "python-pandas" or "postgresql" or "arrow-feather")
             .Select(static profile => profile.Id)
             .ToArray();
-        var templates = BuildTemplates();
+        var templates = BuildTemplates(accessContext);
         var familyByTemplate = templates
             .GroupBy(static template => template.TemplateId, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(static group => group.Key, static group => group.First().Family, StringComparer.OrdinalIgnoreCase);
-        var workflowRecords = _workflowService?.ListRecords(200) ?? [];
+        var workflowRecords = FilterWorkflowRecords(_workflowService?.ListRecords(200) ?? [], accessContext);
         var runs = BuildRecentRuns(Math.Clamp(recentRunLimit, 1, 200), familyByTemplate, workflowRecords);
         var deliveryAttempts = _deliveryService?.ListAttempts(500) ?? [];
         var schedules = _scheduleService?.ListSchedules(100) ?? [];
@@ -85,13 +90,14 @@ public sealed class ReportPackRunReadService
             .OrderBy(static profile => profile.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-    private WorkstationReportingTemplatePayload[] BuildTemplates()
+    private WorkstationReportingTemplatePayload[] BuildTemplates(ReportAccessQueryContext? accessContext)
     {
         if (_templateRegistry is not null)
         {
             return _templateRegistry
                 .List()
-                .Select(ProjectTemplateRecord)
+                .Where(record => IsAccessible(record.Definition.AccessPolicy, accessContext))
+                .Select(record => ProjectTemplateRecord(record, accessContext))
                 .OrderBy(static template => template.Name, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static template => template.Version, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
@@ -99,36 +105,92 @@ public sealed class ReportPackRunReadService
 
         return _templateCatalog
             .ListTemplates()
-            .Select(static template => new WorkstationReportingTemplatePayload(
-                template.TemplateId,
-                template.Family.ToString(),
-                template.Name,
-                template.Version,
-                template.Sections.ToArray(),
-                LifecycleStatus: ReportTemplateLifecycleStatusDto.Approved.ToString(),
-                IsBuiltIn: true,
-                IsLatestApproved: true,
-                ApprovalSummary: $"Built-in approved template for {template.Family}.",
-                AuthoringRoute: $"/api/fund-structure/reporting/templates/{template.TemplateId}/versions/1"))
+            .Select(template => ProjectCatalogTemplate(template, accessContext))
             .OrderBy(static template => template.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
     }
 
-    private static WorkstationReportingTemplatePayload ProjectTemplateRecord(ReportTemplateGovernanceRecordDto record)
+    private static IReadOnlyList<ReportPackWorkflowRecordDto> FilterWorkflowRecords(
+        IReadOnlyList<ReportPackWorkflowRecordDto> records,
+        ReportAccessQueryContext? accessContext)
+    {
+        if (accessContext is null)
+        {
+            return records;
+        }
+
+        return records
+            .Where(record => IsAccessible(record.AccessPolicy, accessContext))
+            .ToArray();
+    }
+
+    private static bool IsAccessible(ReportAccessPolicyDto? policy, ReportAccessQueryContext? accessContext) =>
+        accessContext is null || ReportAccessPolicyEvaluator.Evaluate(policy, accessContext).IsAccessible;
+
+    private static WorkstationReportingTemplatePayload ProjectCatalogTemplate(
+        ReportingTemplateMetadata template,
+        ReportAccessQueryContext? accessContext)
+    {
+        var accessPolicy = ReportAccessPolicyEvaluator.Normalize(null);
+        var accessEvaluation = EvaluateForProjection(accessPolicy, accessContext);
+        return new WorkstationReportingTemplatePayload(
+            template.TemplateId,
+            template.Family.ToString(),
+            template.Name,
+            template.Version,
+            template.Sections.ToArray(),
+            LifecycleStatus: ReportTemplateLifecycleStatusDto.Approved.ToString(),
+            IsBuiltIn: true,
+            IsLatestApproved: true,
+            ApprovalSummary: $"Built-in approved template for {template.Family}.",
+            AuthoringRoute: $"/api/fund-structure/reporting/templates/{template.TemplateId}/versions/1",
+            ReportWriterGrids: [],
+            AccessMode: accessPolicy.Mode.ToString(),
+            AccessSummary: ReportAccessPolicyEvaluator.BuildSummary(accessPolicy),
+            IsAccessible: accessEvaluation.IsAccessible);
+    }
+
+    private static WorkstationReportingTemplatePayload ProjectTemplateRecord(
+        ReportTemplateGovernanceRecordDto record,
+        ReportAccessQueryContext? accessContext)
     {
         var definition = record.Definition;
+        var accessPolicy = ReportAccessPolicyEvaluator.Normalize(definition.AccessPolicy);
+        var accessEvaluation = EvaluateForProjection(accessPolicy, accessContext);
         return new WorkstationReportingTemplatePayload(
             definition.TemplateId.Name,
             record.Family,
             definition.DisplayName,
             definition.TemplateId.Version.ToString(),
-            definition.Sections.ToArray(),
+            definition.Sections?.ToArray() ?? [],
             LifecycleStatus: record.Status.ToString(),
             IsBuiltIn: record.IsBuiltIn,
             IsLatestApproved: record.IsLatestApproved,
             ApprovalSummary: BuildTemplateApprovalSummary(record),
-            AuthoringRoute: $"/api/fund-structure/reporting/templates/{Uri.EscapeDataString(definition.TemplateId.Name)}/versions/{definition.TemplateId.Version}");
+            AuthoringRoute: $"/api/fund-structure/reporting/templates/{Uri.EscapeDataString(definition.TemplateId.Name)}/versions/{definition.TemplateId.Version}",
+            ReportWriterGrids: ProjectReportWriterGrids(definition),
+            AccessMode: accessPolicy.Mode.ToString(),
+            AccessSummary: ReportAccessPolicyEvaluator.BuildSummary(accessPolicy),
+            IsAccessible: accessEvaluation.IsAccessible);
     }
+
+    private static ReportAccessEvaluationDto EvaluateForProjection(
+        ReportAccessPolicyDto accessPolicy,
+        ReportAccessQueryContext? accessContext) =>
+        accessContext is null
+            ? new ReportAccessEvaluationDto(true, ReportAccessPolicyEvaluator.BuildSummary(accessPolicy), [])
+            : ReportAccessPolicyEvaluator.Evaluate(accessPolicy, accessContext);
+
+    private static IReadOnlyList<WorkstationReportWriterGridPayload> ProjectReportWriterGrids(ReportTemplateDefinitionDto definition) =>
+        definition.Grids?
+            .Select(static grid => new WorkstationReportWriterGridPayload(
+                grid.GridId,
+                grid.Title,
+                grid.Kind.ToString(),
+                (grid.RowFields?.Count ?? 0) + (grid.ColumnFields?.Count ?? 0),
+                grid.Metrics?.Count ?? 0,
+                grid.Formulas?.Count ?? 0))
+            .ToArray() ?? [];
 
     private static string BuildTemplateApprovalSummary(ReportTemplateGovernanceRecordDto record) =>
         record.Status switch

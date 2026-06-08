@@ -90,7 +90,55 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             "Reversal entry",
             "Income:Investment Income",
             "Assets:Cash",
-            "evidence://manual-je/reversal-approval")
+            "evidence://manual-je/reversal-approval"),
+        new(
+            ManualJournalEntryTypeDto.CapitalCall,
+            "Capital call",
+            "Record a capital call against retained LP notice and cash evidence.",
+            "Capital call entry",
+            "Assets:Cash",
+            "Equity:Capital Contributions",
+            "evidence://manual-je/capital-call-notice"),
+        new(
+            ManualJournalEntryTypeDto.Distribution,
+            "Distribution",
+            "Record an LP distribution with capital account and payment linkage.",
+            "Distribution entry",
+            "Equity:Distributions",
+            "Assets:Cash",
+            "evidence://manual-je/distribution-notice"),
+        new(
+            ManualJournalEntryTypeDto.Subscription,
+            "Subscription",
+            "Record a subscription receivable and capital contribution allocation.",
+            "Subscription entry",
+            "Assets:Subscription Receivable",
+            "Equity:Capital Contributions",
+            "evidence://manual-je/subscription-agreement"),
+        new(
+            ManualJournalEntryTypeDto.Redemption,
+            "Redemption",
+            "Record investor redemption activity with approval evidence.",
+            "Redemption entry",
+            "Equity:Redemptions",
+            "Assets:Cash",
+            "evidence://manual-je/redemption-approval"),
+        new(
+            ManualJournalEntryTypeDto.LpTransfer,
+            "LP transfer",
+            "Move capital account ownership between investor allocations.",
+            "LP transfer entry",
+            "Equity:LP Transfer Out",
+            "Equity:LP Transfer In",
+            "evidence://manual-je/lp-transfer-agreement"),
+        new(
+            ManualJournalEntryTypeDto.ManagementFee,
+            "Management fee",
+            "Recognize management fee expense from retained fee calculation support.",
+            "Management fee entry",
+            "Expenses:Management Fees",
+            "Assets:Cash",
+            "evidence://manual-je/management-fee-calculation")
     ];
 
     private readonly FundContextService _fundContextService;
@@ -188,6 +236,10 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public ObservableCollection<AccountingWorkbenchRow> ProviderRows { get; } = [];
     public ObservableCollection<ExternalGlEvidenceRow> ExternalGlRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalDraftRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> ManualJournalCapitalAccountRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> ManualJournalFundEventRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> ManualJournalLedgerImpactRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> ManualJournalReportOutputRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalEntryTypeRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> EvidenceRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ReconciliationRows { get; } = [];
@@ -772,10 +824,9 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 $"{draft.TotalDebits:0.##} / {draft.TotalCredits:0.##} {draft.Currency}",
                 $"{draft.ValidationIssues.Count} issue(s) | v{draft.Version}",
                 draft.JournalEntryId.ToString("D"))));
+        ApplyPrivateCapitalActivityRows(workbench.PrivateCapitalActivity);
         _selectedDraft ??= workbench.Drafts.FirstOrDefault();
-        ManualJournalStatusText = workbench.Drafts.Count == 0
-            ? "No manual journal drafts saved yet. Drafts are durable and approval-gated."
-            : $"{workbench.Drafts.Count} manual journal draft(s) loaded; latest status {workbench.Drafts[0].Status}.";
+        ManualJournalStatusText = BuildManualJournalStatusText(workbench);
         RaisePropertyChanged(nameof(CanSubmitManualJournal));
     }
 
@@ -872,13 +923,15 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         var fundProfileId = _activeFundProfile?.FundProfileId ?? "default-fund";
         var currency = string.IsNullOrWhiteSpace(DraftCurrency) ? "USD" : DraftCurrency.Trim().ToUpperInvariant();
         var ledgerBookId = _configuration?.LedgerBookId ?? _configuration?.LedgerBooks.FirstOrDefault()?.LedgerBookId;
+        var journalEntryId = _selectedDraft?.JournalEntryId ?? Guid.NewGuid();
+        var accountingDate = DateOnly.FromDateTime(DateTime.UtcNow);
         return new ManualJournalEntryDraftDto(
-            _selectedDraft?.JournalEntryId ?? Guid.NewGuid(),
+            journalEntryId,
             _selectedDraft?.Status ?? ManualJournalEntryStatusDto.Draft,
             fundProfileId,
             ledgerBookId,
             SelectedAccountingBasis,
-            DateOnly.FromDateTime(DateTime.UtcNow),
+            accountingDate,
             PeriodId: null,
             EntityId: null,
             FundNodeId: null,
@@ -904,7 +957,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                     now,
                     DefaultActor))
                 .ToArray(),
-            EntryType: SelectedEntryType);
+            EntryType: SelectedEntryType,
+            TreasuryContext: BuildManualJournalTreasuryContext(fundProfileId, SelectedEntryType, accountingDate, journalEntryId));
     }
 
     private void ApplyManualJournalEntryTypePreset(ManualJournalEntryTypeDto entryType)
@@ -924,7 +978,14 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             new ChartOfAccountsNodeDto("expenses-operating-expenses", "Expenses:Operating Expenses", "Operating Expenses", "Expense"),
             new ChartOfAccountsNodeDto("expenses-amortization-expense", "Expenses:Amortization Expense", "Amortization Expense", "Expense"),
             new ChartOfAccountsNodeDto("assets-accumulated-amortization", "Assets:Accumulated Amortization", "Accumulated Amortization", "ContraAsset"),
-            new ChartOfAccountsNodeDto("liabilities-deferred-revenue", "Liabilities:Deferred Revenue", "Deferred Revenue", "Liability")
+            new ChartOfAccountsNodeDto("liabilities-deferred-revenue", "Liabilities:Deferred Revenue", "Deferred Revenue", "Liability"),
+            new ChartOfAccountsNodeDto("equity-capital-contributions", "Equity:Capital Contributions", "Capital Contributions", "Equity"),
+            new ChartOfAccountsNodeDto("equity-distributions", "Equity:Distributions", "Distributions", "Equity"),
+            new ChartOfAccountsNodeDto("assets-subscription-receivable", "Assets:Subscription Receivable", "Subscription Receivable", "Asset"),
+            new ChartOfAccountsNodeDto("equity-redemptions", "Equity:Redemptions", "Redemptions", "Equity"),
+            new ChartOfAccountsNodeDto("equity-lp-transfer-out", "Equity:LP Transfer Out", "LP Transfer Out", "Equity"),
+            new ChartOfAccountsNodeDto("equity-lp-transfer-in", "Equity:LP Transfer In", "LP Transfer In", "Equity"),
+            new ChartOfAccountsNodeDto("expenses-management-fees", "Expenses:Management Fees", "Management Fees", "Expense")
         ];
 
     private static IReadOnlyList<JournalEntryTemplateDto> BuildManualJournalEntryTypeTemplates(string currency)
@@ -994,8 +1055,54 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ManualJournalEntryTypeDto.Deferral => "deferral",
             ManualJournalEntryTypeDto.Reclassification => "reclassification",
             ManualJournalEntryTypeDto.Reversal => "reversal",
+            ManualJournalEntryTypeDto.CapitalCall => "capital-call",
+            ManualJournalEntryTypeDto.Distribution => "distribution",
+            ManualJournalEntryTypeDto.Subscription => "subscription",
+            ManualJournalEntryTypeDto.Redemption => "redemption",
+            ManualJournalEntryTypeDto.LpTransfer => "lp-transfer",
+            ManualJournalEntryTypeDto.ManagementFee => "management-fee",
             _ => "manual-adjustment"
         };
+
+    private static TreasuryLedgerContextDto? BuildManualJournalTreasuryContext(
+        string fundProfileId,
+        ManualJournalEntryTypeDto entryType,
+        DateOnly accountingDate,
+        Guid journalEntryId)
+    {
+        if (!RequiresPrivateCapitalTreasuryContext(entryType))
+        {
+            return null;
+        }
+
+        var normalizedFundProfileId = string.IsNullOrWhiteSpace(fundProfileId) ? "default-fund" : fundProfileId.Trim();
+        var slug = GetManualJournalEntrySlug(entryType);
+        var dateToken = accountingDate.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
+        var entryToken = journalEntryId.ToString("N");
+        return new TreasuryLedgerContextDto(
+            EffectiveDate: accountingDate,
+            IdempotencyKey: $"wpf:{normalizedFundProfileId}:{slug}:{entryToken}",
+            FundEventId: $"fund-event:{normalizedFundProfileId}:{slug}:{dateToken}",
+            FundEventType: entryType.ToString(),
+            CapitalAccountId: $"capital-account:{normalizedFundProfileId}:default",
+            InvestorId: $"investor:{normalizedFundProfileId}:default",
+            PaymentIntentId: RequiresPaymentLinkage(entryType) ? $"payment:{normalizedFundProfileId}:{slug}:{entryToken}" : null,
+            SettlementReference: RequiresPaymentLinkage(entryType) ? $"settlement:{normalizedFundProfileId}:{slug}:{dateToken}" : null);
+    }
+
+    private static bool RequiresPrivateCapitalTreasuryContext(ManualJournalEntryTypeDto entryType)
+        => entryType is ManualJournalEntryTypeDto.CapitalCall
+            or ManualJournalEntryTypeDto.Distribution
+            or ManualJournalEntryTypeDto.Subscription
+            or ManualJournalEntryTypeDto.Redemption
+            or ManualJournalEntryTypeDto.LpTransfer
+            or ManualJournalEntryTypeDto.ManagementFee;
+
+    private static bool RequiresPaymentLinkage(ManualJournalEntryTypeDto entryType)
+        => entryType is ManualJournalEntryTypeDto.CapitalCall
+            or ManualJournalEntryTypeDto.Distribution
+            or ManualJournalEntryTypeDto.Redemption
+            or ManualJournalEntryTypeDto.ManagementFee;
 
     private void ApplyManualJournalValidationRows(IReadOnlyList<AccountingConfigurationValidationIssueDto> issues)
     {
@@ -1003,10 +1110,108 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             new AccountingWorkbenchRow(issue.Code, issue.Severity.ToString(), issue.Message, issue.SuggestedAction ?? string.Empty, issue.TargetId ?? string.Empty)));
     }
 
+    private void ApplyPrivateCapitalActivityRows(PrivateCapitalActivityProjectionDto? activity)
+    {
+        if (activity is null)
+        {
+            ManualJournalCapitalAccountRows.Clear();
+            ManualJournalFundEventRows.Clear();
+            ManualJournalLedgerImpactRows.Clear();
+            ManualJournalReportOutputRows.Clear();
+            return;
+        }
+
+        ManualJournalCapitalAccountRows.ReplaceWith(activity.CapitalAccounts.Select(account =>
+            new AccountingWorkbenchRow(
+                account.CapitalAccountId,
+                FormatSignedCurrencyAmount(account.NetActivity, account.Currency),
+                $"{account.FundEventCount} event(s); last {FormatFundEventDate(account.LastFundEventType, account.LastEffectiveDate)}",
+                $"Calls {FormatCurrencyAmount(account.Contributions, account.Currency)}; distributions {FormatCurrencyAmount(account.Distributions, account.Currency)}",
+                account.InvestorId ?? string.Empty)));
+        ManualJournalFundEventRows.ReplaceWith(activity.FundEvents.Select(item =>
+            new AccountingWorkbenchRow(
+                $"{item.FundEventType} | {item.Memo}",
+                item.IsPosted ? "Posted" : item.JournalStatus.ToString(),
+                $"{FormatSignedCurrencyAmount(item.NetCapitalActivity, item.Currency)} net / {FormatCurrencyAmount(item.GrossAmount, item.Currency)} gross",
+                $"{item.CapitalAccountId} | {item.EvidenceLinks.Count} evidence",
+                item.FundEventId)));
+        ManualJournalLedgerImpactRows.ReplaceWith(activity.LedgerImpacts.Select(impact =>
+            new AccountingWorkbenchRow(
+                impact.FundEventType,
+                impact.IsPostingReady ? "Posting ready" : impact.IsBalanced ? "Review" : "Unbalanced",
+                $"{FormatCurrencyAmount(impact.TotalDebits, impact.Currency)} debit / {FormatCurrencyAmount(impact.TotalCredits, impact.Currency)} credit",
+                $"{impact.LineCount} line(s) | {impact.EvidenceLinks.Count} evidence | {impact.ValidationIssues.Count} issue(s)",
+                impact.CapitalAccountId)));
+        ManualJournalReportOutputRows.ReplaceWith(activity.ReportOutputs.Select(output =>
+        {
+            var workflow = string.IsNullOrWhiteSpace(output.ReportWorkflowState)
+                ? output.ReportOutputType
+                : output.ReportWorkflowState;
+            var reportPack = string.IsNullOrWhiteSpace(output.ReportPackId)
+                ? workflow
+                : $"{workflow} | {output.ReportPackId}";
+            var publication = string.IsNullOrWhiteSpace(output.PublicationManifestId)
+                ? "no publication manifest"
+                : output.PublicationManifestId;
+
+            return new AccountingWorkbenchRow(
+                output.DisplayName,
+                output.IsPublished ? "Published" : output.IsReportReady ? "Ready" : "Review",
+                $"{FormatSignedCurrencyAmount(output.NetCapitalActivity, output.Currency)} | {output.EffectiveDate:yyyy-MM-dd} | {reportPack}",
+                $"{output.EvidenceLinkCount} evidence | {output.ValidationIssues.Count} issue(s) | {output.ReportLineProvenanceCount} provenance | {publication}",
+                output.ReportRoute);
+        }));
+    }
+
     private static string BuildManualJournalValidationText(ManualJournalEntryDraftDto draft)
         => draft.ValidationIssues.Any(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
             ? $"{draft.ValidationIssues.Count(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)} critical issue(s) block approval submission."
             : $"Manual journal draft is balanced at {draft.TotalDebits:0.##} / {draft.TotalCredits:0.##} {draft.Currency} and ready for approval submission.";
+
+    private static string BuildManualJournalStatusText(ManualJournalEntryWorkbenchDto workbench)
+    {
+        var draftText = workbench.Drafts.Count == 0
+            ? "No manual journal drafts saved yet. Drafts are durable and approval-gated."
+            : $"{workbench.Drafts.Count} manual journal draft(s) loaded; latest status {workbench.Drafts[0].Status}.";
+        if (workbench.PrivateCapitalActivity is not { } activity)
+        {
+            return draftText;
+        }
+
+        var issueText = activity.ValidationIssues.Count == 0
+            ? "no projection issue(s)"
+            : $"{activity.ValidationIssues.Count} projection issue(s)";
+
+        return string.Concat(
+            draftText,
+            " Private-capital projection: ",
+            $"{activity.FundEventCount} event(s), ",
+            $"{activity.PostedFundEventCount} posted, ",
+            $"{activity.CapitalAccountCount} capital account(s), ",
+            $"{activity.CapitalAccountSubledgerEntries.Count} subledger movement(s), ",
+            $"{activity.LedgerImpacts.Count} ledger impact(s), ",
+            $"{activity.ReportOutputs.Count} report output(s), ",
+            $"{activity.PublishedReportOutputCount} published, ",
+            issueText,
+            ".");
+    }
+
+    private static string FormatCurrencyAmount(decimal amount, string currency)
+    {
+        var code = string.IsNullOrWhiteSpace(currency) ? string.Empty : $" {currency.Trim().ToUpperInvariant()}";
+        return $"{amount:0.##}{code}";
+    }
+
+    private static string FormatSignedCurrencyAmount(decimal amount, string currency)
+    {
+        var prefix = amount > 0m ? "+" : string.Empty;
+        return $"{prefix}{FormatCurrencyAmount(amount, currency)}";
+    }
+
+    private static string FormatFundEventDate(string? eventType, DateOnly? effectiveDate)
+        => effectiveDate is null
+            ? eventType ?? "No effective date"
+            : $"{eventType ?? "Fund event"} {effectiveDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}";
 
     private string BuildStoragePosture()
     {
@@ -1025,6 +1230,10 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ProviderRows.Clear();
         ExternalGlRows.Clear();
         ManualJournalDraftRows.Clear();
+        ManualJournalCapitalAccountRows.Clear();
+        ManualJournalFundEventRows.Clear();
+        ManualJournalLedgerImpactRows.Clear();
+        ManualJournalReportOutputRows.Clear();
         EvidenceRows.Clear();
         ReconciliationRows.Clear();
         PolicyRows.Clear();

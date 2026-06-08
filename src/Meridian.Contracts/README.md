@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-06-07
+last_reviewed: 2026-06-08
 ---
 
 # src/Meridian.Contracts
@@ -135,6 +135,13 @@ report-pack delivery attempts, delivery failure attempts, delivery history, oper
 reporting schedules, due-schedule run results, ad-hoc report-run requests/results, and HTML/PDF
 rendered-statement artifact formats so browser, WPF, endpoints, and host bootstrap payloads
 consume the same reporting command and history shape.
+Delivered report-pack attempts can also carry `ReportPackDeliveryPackageDto`, including the
+delivery mode, secure link or portal route, retained manifest path, requested PDF/XLSX/CSV
+formats, and retained artifact metadata. Keep those package fields shared so email-link, secure
+portal, evidence-vault, and internal-route distribution clients do not infer report package output
+from delivery-reference strings. The shared route catalog includes both the token-gated package
+manifest URL under `/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/package`
+and the secure-portal package URL under `/portal/reporting/packages/{packageId}`.
 Workstation Reporting run rows carry typed drilldown links and next-action references so browser
 and WPF clients can distinguish open evidence routes from reference-only approval, publication, and
 restatement actions without parsing artifact strings.
@@ -143,11 +150,26 @@ recipient-level distribution records instead of static `reportPackTargets` strin
 render recipient, role, channel, owner, state, due time, pending item count, and pending summary so
 operators can see who receives each package and what is still waiting on approval, publication, or
 delivery.
+Fund-operations reporting summaries also expose `PortfolioReportingCutDto` rows for fund,
+strategy, and user-tag views. These rows carry exposure, cash, P&L, shadow-NAV, variance,
+source-count, evidence-route, and version-stamp fields so Reporting clients can show portfolio
+cuts without recalculating portfolio or NAV state locally.
+The same summary carries `StructuredReportingExportDto` descriptors for regulatory trial balance,
+warehouse ledger facts, and investment portfolio-cut outputs. Each descriptor includes purpose,
+format, dataset, consumer, schema version, row/field/source counts, retained path, API route,
+readiness summary, evidence route, and version stamp; `StructuredReportingExportPayloadDto`
+returns stable column metadata plus string-valued JSON rows for downstream export consumers.
 Report template contracts now also carry the governed authoring lifecycle for built-in and custom
 template versions: draft requests, review submission, approval/rejection decisions, immutable
 built-in markers, latest-approved posture, validation issues, approval references, and audit events.
-Keep those template lifecycle fields shared so Reporting, browser, WPF, and endpoint tests use the
-same version-approval vocabulary instead of maintaining client-local template state.
+Template definitions can include report-writer grid definitions for detail, pivot, Top-N,
+contribution, and formula-backed tables, and render responses carry structured grid rows, columns,
+and warnings alongside the compatibility rendered-content string. Keep those template lifecycle and
+grid fields shared so Reporting, browser, WPF, and endpoint tests use the same version-approval and
+no-code report-writer vocabulary instead of maintaining client-local template state. Template
+definitions and report-pack workflow records also carry `ReportAccessPolicyDto` with private,
+restricted user/group/company, and company-wide modes; workstation template payloads expose access
+mode, summary, and accessibility posture so clients do not invent report audience rules locally.
 Pilot readiness contracts also carry W4 acceptance evidence categories and roles so acceptance proof
 can be distinguished from evidence-vault manifest/export support in serialized artifacts.
 Report-line provenance carries the reported value plus run, source-session, ledger-entry,
@@ -394,6 +416,29 @@ optimistic concurrency conflicts, and idempotency/command conflicts so persisten
 operator-safe failure reasons without parsing exception text.
 
 Accounting reconciliation casework contracts are shared here: break queue items carry assignee, priority, SLA policy/state/timestamps, age band, versioned taxonomy, threaded comments with mention/evidence/hash metadata, evidence counts, sign-off/reopen metadata, source-origin metadata, and optimistic concurrency versions. Casework command, bulk-triage, taxonomy, SLA policy, validation-problem, and sequenced audit-event payloads must remain additive so browser and WPF workstation clients use the same Accounting workflow.
+
+Manual journal entry contracts include private-capital entry types for capital calls,
+distributions, subscriptions, redemptions, LP transfers, and management fees. `TreasuryLedgerContextDto`
+is the shared audit context for those drafts and carries effective date, idempotency key, fund
+event, capital account, investor, payment intent, and settlement references so browser, WPF,
+Financial Operations, and ledger metadata use the same retry-safe fund-event vocabulary.
+`ManualJournalEntryWorkbenchDto` also carries an optional `PrivateCapitalActivityProjectionDto`
+with server-owned fund-event rows, capital-account activity aggregates, ordered capital-account
+subledger entries with running net activity, ledger-impact rows, report-output readiness candidates,
+signed net activity, and projection validation issues so browser and WPF clients do not rebuild
+private-capital ledger views from draft-local heuristics. Report-output rows also carry governed
+report-pack identity, workflow state, publication manifest path/hash, signed-off publication
+metadata, and report-line provenance counts when retained report-pack workflow records are linked
+to the fund event.
+The projection is additive across draft and posted sources: posted ledger-backed fund events win
+over same-id drafts, and it exposes posted fund-event and published report-output counts so clients
+can distinguish retained ledger truth from unposted authoring state. Fund-event and subledger rows
+also carry `IsPosted`, while report-output rows carry `IsPublished`, so drill-through clients do
+not have to infer source state from approval labels.
+`IManualJournalEntryWorkbenchService.GetPrivateCapitalActivityAsync`
+and `UiApiRoutes.LedgerPrivateCapitalActivity` expose the same projection as a first-class review
+endpoint for reporting, audit, and future LP support surfaces that should not depend on the manual
+journal editor payload.
 
 ## Diagrams
 

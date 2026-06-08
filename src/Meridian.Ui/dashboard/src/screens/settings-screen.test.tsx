@@ -1411,6 +1411,10 @@ describe("SettingsScreen", () => {
       "href",
       "/api/workstation/runs/history"
     );
+    expect(screen.getByRole("link", { name: "GET /api/ledger/private-capital/activity for Accounting Private-capital activity" })).toHaveAttribute(
+      "href",
+      "/api/ledger/private-capital/activity"
+    );
     expect(screen.queryByRole("link", { name: "POST /api/workstation/reconciliation/runs for Accounting Run reconciliation" })).toBeNull();
     expect(screen.getByRole("group", {
       name: "Reference-only POST /api/workstation/reconciliation/runs for Accounting Run reconciliation"

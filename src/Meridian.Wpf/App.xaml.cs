@@ -148,6 +148,7 @@ public partial class App : System.Windows.Application
 
         // Detect fixture mode from --fixture arg or MDC_FIXTURE_MODE env var
         _isFixtureMode = DetectFixtureMode(e.Args);
+        ApplyRenderModeOverrides();
 
         // Configure the host with dependency injection
         _host = Host.CreateDefaultBuilder()
@@ -215,6 +216,20 @@ public partial class App : System.Windows.Application
         var envValue = Environment.GetEnvironmentVariable("MDC_FIXTURE_MODE");
         return string.Equals(envValue, "1", StringComparison.Ordinal)
             || string.Equals(envValue, "true", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static void ApplyRenderModeOverrides()
+    {
+        var softwareRendering = Environment.GetEnvironmentVariable("MDC_WPF_SOFTWARE_RENDERING");
+        if (!string.Equals(softwareRendering, "1", StringComparison.Ordinal) &&
+            !string.Equals(softwareRendering, "true", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        System.Windows.Media.RenderOptions.ProcessRenderMode =
+            System.Windows.Interop.RenderMode.SoftwareOnly;
+        WpfServices.LoggingService.Instance.LogInfo("WPF software rendering enabled for automation capture");
     }
 
     private static bool ShowStartupWindow()

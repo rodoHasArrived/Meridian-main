@@ -2,7 +2,7 @@
 
 **Status:** active  
 **Owner:** core-team  
-**Reviewed:** 2026-06-04
+**Reviewed:** 2026-06-08
 
 This is the canonical stakeholder-facing entrypoint for Meridian product direction, capability posture, and roadmap interpretation.
 It routes non-technical audiences to verified evidence and prevents duplicate claims that compete with roadmap/source registries.
@@ -10,7 +10,7 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
 ## What a Stakeholder Should Read Here
 
 - If you need the current product framing, start with:
-  - [Meridian Design Document (Version 0.15)](meridian-design-document.md) — design baseline extended with current implementation posture and the v0.15 accounting records package
+  - [Meridian Design Document (Version 0.16)](meridian-design-document.md) — design baseline extended with current implementation posture, the v0.15 accounting records package, and the v0.16 private-capital operations and treasury-ledger addendum
   - [Roadmap Registry](../roadmap/README.md)
   - [Roadmap Generated Summary](../roadmap/generated/ROADMAP_SUMMARY.md)
 - If you need evidence-backed examples of current operations, check:
@@ -61,10 +61,10 @@ Defer Backtesting Studio, live-readiness beyond paper-first governance, full tre
 
 ## Design Charter Integration
 
-- The [Meridian Design Document (Version 0.15)](meridian-design-document.md) is the active stakeholder-facing product framing source.
+- The [Meridian Design Document (Version 0.16)](meridian-design-document.md) is the active stakeholder-facing product framing source.
 - It is treated as the canonical product design charter and should be updated as the first step before changing stakeholder capability narrative.
 - Current roadmap-facing status claims must point to registry-backed outputs (`docs/roadmap/data/*.yml`, `docs/roadmap/generated/*`) and reference this design charter for scope.
-- Design Baseline: `Meridian Design Document (Version 0.15)` is the canonical product thesis for this rebuild phase, extended from the imported design draft with current roadmap and source-module evidence.
+- Design Baseline: `Meridian Design Document (Version 0.16)` is the canonical product thesis for this rebuild phase, extended from the imported design draft with current roadmap, source-module evidence, private-capital operating patterns, and treasury-ledger controls.
 
 ## Stakeholder Narrative
 
@@ -72,7 +72,8 @@ Defer Backtesting Studio, live-readiness beyond paper-first governance, full tre
   - trusted data intake and provider validation,
   - reconciliation and exception workflows,
   - approval and promotion controls,
-  - governed reporting and evidence retention.
+  - governed reporting and evidence retention,
+  - capital-account, fund-event, and treasury-ledger records.
 - Operating model: configurable tenant-aware system, not separate apps per organization type.
 - Shared operator root model remains: `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, `Settings`.
 
@@ -131,7 +132,7 @@ Use this matrix to avoid source-of-truth drift:
 
 | Topic | Canonical home | Why |
 | --- | --- | --- |
-| Product design and assumptions | [Meridian Design Document (Version 0.15)](meridian-design-document.md) | Core design source for stakeholder framing |
+| Product design and assumptions | [Meridian Design Document (Version 0.16)](meridian-design-document.md) | Core design source for stakeholder framing |
 | Wave sequencing and acceptance | [Roadmap Registry](../roadmap/README.md) | Durable sequence and acceptance control |
 | Current capability status | Generated roadmap artifacts + source registries | Verifiable and machine-checkable status posture |
 | Detailed planning / historical analysis | `docs/plans/`, `docs/evaluations/`, `docs/status/` | Source material only; extract only active facts |
@@ -155,7 +156,7 @@ If a legacy page is still actively needed for non-stakeholder operations, keep a
 
 ## High-Value Input Files for Stakeholder Questions
 
-- [Meridian Design Document (Version 0.15)](meridian-design-document.md)
+- [Meridian Design Document (Version 0.16)](meridian-design-document.md)
 - [Roadmap README](../roadmap/README.md)
 - [Roadmap item list](../roadmap/README.md)
 - [Generated roadmap summary](../roadmap/generated/ROADMAP_SUMMARY.md)

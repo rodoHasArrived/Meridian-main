@@ -90,7 +90,9 @@ Before any screenshot is saved, the runner now:
 2. enters the operating-context selector when fixture startup lands on that first-run surface and fails immediately if that selection cannot be confirmed,
 3. re-queries the live shell window,
 4. checks `ShellAutomationState` / `PageTitleText` markers, whose automation names expose the current page tag and page title,
-5. fails the step if the requested page was not actually confirmed.
+5. requests an in-process WPF render with `--screenshot=<path>` and validates the resulting PNG,
+6. falls back to native window capture only when the in-process render is unavailable,
+7. fails the step if the requested page was not actually confirmed or the saved screenshot is blank.
 
 The runner resolves the Meridian window from the owned `Meridian.Desktop` process handle first and
 only falls back to narrow title-based UI Automation lookup. Avoid broad root-window scans in this

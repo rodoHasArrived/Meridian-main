@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-07
+last_reviewed: 2026-06-08
 ---
 
 # src/Meridian.Storage
@@ -108,6 +108,13 @@ mapping evidence for the same instrument. This prevents an accounting entry from
 symbol at the journal level while posting a different instrument line underneath it. Until durable
 journal writes carry line-level Security Master ids, one journal entry may not combine multiple
 instrument symbols behind one entry-level Security Master id.
+
+Ledger journal writes that opt into treasury-ledger metadata also fail closed. When a posting carries
+effective-date, idempotency, fund-event, capital-account, investor, payment-intent, or settlement
+metadata, `LedgerPeriodPostingGuard` requires an effective date inside the target accounting period
+and a non-empty idempotency key before the write can reach Postgres. Partial fund-event context must
+also include fund event id, fund event type, and capital account id so private-capital postings can
+be reconstructed from durable journal evidence.
 
 Ledger tax-lot state is stored as account-scoped policy records plus open-lot records in the ledger
 schema. The storage layer keeps the FIFO/LIFO/HIFO/SpecificId policy inputs and open-lot balances;
