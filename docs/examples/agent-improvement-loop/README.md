@@ -17,7 +17,7 @@ Run from the repository root in a Python virtual environment with Node.js availa
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install openai openai-agents halo-engine
+pip install jupyter openai openai-agents halo-engine
 export OPENAI_API_KEY=...
 ```
 
