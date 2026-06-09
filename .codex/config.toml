@@ -10,6 +10,15 @@ sandbox_mode = "workspace-write"
 # should override this in their own Codex home, not in repository-local config.
 approval_policy = "on-request"
 
+# Meridian work often depends on current external API/tooling behavior. Keep the
+# web-search surface live by default; operator-specific domain limits belong in
+# user-level profiles.
+web_search = "live"
+
+# Anchor project discovery on the Meridian solution first, then fall back to the
+# Git checkout marker when Codex searches parent directories for .codex folders.
+project_root_markers = ["Meridian.sln", ".git"]
+
 # Allow the root AGENTS.md plus the narrower .codex/AGENTS.md guidance to fit
 # comfortably while still limiting accidental instruction bloat.
 project_doc_max_bytes = 65536
@@ -19,7 +28,32 @@ project_doc_max_bytes = 65536
 project_doc_fallback_filenames = ["CLAUDE.md"]
 
 # Project-local config should stay free of secrets and machine-specific values.
-# Do not add API keys, tokens, user-only paths, or personal model preferences here.
+# Do not add API keys, tokens, user-only paths, provider overrides, telemetry,
+# notifications, or personal model preferences here.
+
+[features]
+# Meridian keeps many reusable specialist profiles in .codex/agents. Enable the
+# stable multi-agent surface while keeping concurrency bounded below.
+multi_agent = true
+child_agents_md = true
+
+[features.multi_agent_v2]
+enabled = true
+max_concurrent_threads_per_session = 6
+min_wait_timeout_ms = 10000
+default_wait_timeout_ms = 30000
+max_wait_timeout_ms = 3600000
+usage_hint_enabled = true
+usage_hint_text = "Use Meridian specialist agents only for explicit delegation or parallel work; keep ownership disjoint and preserve user-owned changes."
+
+[skills]
+include_instructions = true
+
+[skills.bundled]
+enabled = true
+
+[tools.web_search]
+context_size = "medium"
 
 # Keep project-local subagent orchestration bounded. Specialist profiles live
 # in .codex/agents/ and inherit these conservative defaults unless an operator
@@ -27,3 +61,79 @@ project_doc_fallback_filenames = ["CLAUDE.md"]
 [agents]
 max_threads = 6
 max_depth = 1
+job_max_runtime_seconds = 3600
+
+[agents."dense-data-grid-inspector-panel"]
+config_file = "agents/dense-data-grid-inspector-panel.toml"
+
+[agents."desktop-test-generation"]
+config_file = "agents/desktop-test-generation.toml"
+
+[agents."diagnostics-audit-timeline"]
+config_file = "agents/diagnostics-audit-timeline.toml"
+
+[agents."meridian-archive-organizer"]
+config_file = "agents/meridian-archive-organizer.toml"
+
+[agents."meridian-blueprint"]
+config_file = "agents/meridian-blueprint.toml"
+
+[agents."meridian-brainstorm"]
+config_file = "agents/meridian-brainstorm.toml"
+
+[agents."meridian-browser-workstation"]
+config_file = "agents/meridian-browser-workstation.toml"
+
+[agents."meridian-cleanup"]
+config_file = "agents/meridian-cleanup.toml"
+
+[agents."meridian-code-review"]
+config_file = "agents/meridian-code-review.toml"
+
+[agents."meridian-docs"]
+config_file = "agents/meridian-docs.toml"
+
+[agents."meridian-implementation-assurance"]
+config_file = "agents/meridian-implementation-assurance.toml"
+
+[agents."meridian-navigation"]
+config_file = "agents/meridian-navigation.toml"
+
+[agents."meridian-provider-builder"]
+config_file = "agents/meridian-provider-builder.toml"
+
+[agents."meridian-repo-navigation"]
+config_file = "agents/meridian-repo-navigation.toml"
+
+[agents."meridian-roadmap-strategist"]
+config_file = "agents/meridian-roadmap-strategist.toml"
+
+[agents."meridian-simulated-user-panel"]
+config_file = "agents/meridian-simulated-user-panel.toml"
+
+[agents."meridian-test-writer"]
+config_file = "agents/meridian-test-writer.toml"
+
+[agents."meridian-user-panel"]
+config_file = "agents/meridian-user-panel.toml"
+
+[agents."modular-desktop-mvvm"]
+config_file = "agents/modular-desktop-mvvm.toml"
+
+[agents."performance-resource-review"]
+config_file = "agents/performance-resource-review.toml"
+
+[agents."provider-management-workflow"]
+config_file = "agents/provider-management-workflow.toml"
+
+[agents."research-data-acquisition"]
+config_file = "agents/research-data-acquisition.toml"
+
+[agents."safe-refactoring"]
+config_file = "agents/safe-refactoring.toml"
+
+[agents."shared-component-extraction"]
+config_file = "agents/shared-component-extraction.toml"
+
+[agents."workstation-screen-composition"]
+config_file = "agents/workstation-screen-composition.toml"
