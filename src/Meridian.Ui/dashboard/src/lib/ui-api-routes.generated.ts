@@ -549,6 +549,7 @@ export const UI_API_ROUTES = {
   LedgerManualJournalEntryWorkbench: "/api/ledger/journal-entry-workbench",
   LedgerPrivateCapitalActivity: "/api/ledger/private-capital/activity",
   LedgerPrivateCapitalFundEventRecord: "/api/ledger/private-capital/fund-event-record",
+  LedgerPrivateCapitalCapitalAccountSubledger: "/api/ledger/private-capital/capital-account-subledger",
   LedgerManualJournalEntryDrafts: "/api/ledger/journal-entry-workbench/drafts",
   LedgerManualJournalEntryValidate: "/api/ledger/journal-entry-workbench/validate",
   LedgerManualJournalEntrySubmitApproval: "/api/ledger/journal-entry-workbench/submit-approval",

@@ -140,6 +140,11 @@ no fund events qualify, keeping browser and desktop consumers on the same non-nu
 `/api/ledger/private-capital/fund-event-record` returns one of those shared event-level records
 directly by `fundEventId`, including child rows and readiness posture, and returns 404 when the
 fund-event id is absent instead of sending clients an empty aggregate to interpret.
+`PrivateCapitalCapitalAccountSubledgerBuilder` also groups those event-level records with the
+running capital-account subledger, ledger impacts, report outputs, retained evidence, approval
+queue, posted/published counts, and validation issues into a capital-account-level record.
+`/api/ledger/private-capital/capital-account-subledger` returns that grouped subledger directly by
+`capitalAccountId`, returning 404 when the capital account is absent.
 The shared workflow library owns close-lane command routing as well: `AccountingReviewOperationsContinuity`
 targets `OperationsContinuity` and `AccountingReviewCloseReadiness` targets `OperationsClose`, with
 route metadata tied to the operations-continuity API. Browser and WPF clients should consume those

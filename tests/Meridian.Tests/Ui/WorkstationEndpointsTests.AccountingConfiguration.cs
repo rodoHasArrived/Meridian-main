@@ -175,10 +175,14 @@ public sealed partial class WorkstationEndpointsTests
             $"{UiApiRoutes.LedgerPrivateCapitalActivity}?fundProfileId=fund-alpha&fundEventId={Uri.EscapeDataString("fund-event:fund-alpha:capital-call:20260630")}");
         using var fundEventRecordResponse = await client.GetAsync(
             $"{UiApiRoutes.LedgerPrivateCapitalFundEventRecord}?fundProfileId=fund-alpha&fundEventId={Uri.EscapeDataString("fund-event:fund-alpha:capital-call:20260630")}");
+        using var capitalAccountSubledgerResponse = await client.GetAsync(
+            $"{UiApiRoutes.LedgerPrivateCapitalCapitalAccountSubledger}?fundProfileId=fund-alpha&capitalAccountId={Uri.EscapeDataString("capital-account:fund-alpha:lp-1")}");
         using var missingPrivateCapitalResponse = await client.GetAsync(
             $"{UiApiRoutes.LedgerPrivateCapitalActivity}?fundProfileId=fund-alpha&fundEventId={Uri.EscapeDataString("fund-event:fund-alpha:missing")}");
         using var missingFundEventRecordResponse = await client.GetAsync(
             $"{UiApiRoutes.LedgerPrivateCapitalFundEventRecord}?fundProfileId=fund-alpha&fundEventId={Uri.EscapeDataString("fund-event:fund-alpha:missing")}");
+        using var missingCapitalAccountSubledgerResponse = await client.GetAsync(
+            $"{UiApiRoutes.LedgerPrivateCapitalCapitalAccountSubledger}?fundProfileId=fund-alpha&capitalAccountId={Uri.EscapeDataString("capital-account:fund-alpha:missing")}");
 
         validateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -187,13 +191,16 @@ public sealed partial class WorkstationEndpointsTests
         privateCapitalResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         filteredPrivateCapitalResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         fundEventRecordResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        capitalAccountSubledgerResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         missingPrivateCapitalResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         missingFundEventRecordResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        missingCapitalAccountSubledgerResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
         var submitted = await submitResponse.Content.ReadFromJsonAsync<ManualJournalEntryDraftDto>(ServerJsonOptions);
         var workbench = await workbenchResponse.Content.ReadFromJsonAsync<ManualJournalEntryWorkbenchDto>(ServerJsonOptions);
         var privateCapitalActivity = await privateCapitalResponse.Content.ReadFromJsonAsync<PrivateCapitalActivityProjectionDto>(ServerJsonOptions);
         var filteredPrivateCapitalActivity = await filteredPrivateCapitalResponse.Content.ReadFromJsonAsync<PrivateCapitalActivityProjectionDto>(ServerJsonOptions);
         var fundEventRecord = await fundEventRecordResponse.Content.ReadFromJsonAsync<PrivateCapitalFundEventLedgerRecordDto>(ServerJsonOptions);
+        var capitalAccountSubledger = await capitalAccountSubledgerResponse.Content.ReadFromJsonAsync<PrivateCapitalCapitalAccountSubledgerDto>(ServerJsonOptions);
         var missingPrivateCapitalActivity = await missingPrivateCapitalResponse.Content.ReadFromJsonAsync<PrivateCapitalActivityProjectionDto>(ServerJsonOptions);
         submitted!.Status.Should().Be(ManualJournalEntryStatusDto.Submitted);
         submitted.ApprovalId.Should().NotBeNullOrWhiteSpace();
@@ -329,6 +336,24 @@ public sealed partial class WorkstationEndpointsTests
         fundEventRecord.ReportOutputs.Should().ContainSingle(item =>
             item.ReportOutputType == "CapitalCallNotice" &&
             item.IsReportReady);
+        capitalAccountSubledger.Should().NotBeNull();
+        capitalAccountSubledger!.CapitalAccountId.Should().Be("capital-account:fund-alpha:lp-1");
+        capitalAccountSubledger.InvestorId.Should().Be("investor:lp-1");
+        capitalAccountSubledger.Contributions.Should().Be(100m);
+        capitalAccountSubledger.OpeningNetActivity.Should().Be(0m);
+        capitalAccountSubledger.EndingNetActivity.Should().Be(100m);
+        capitalAccountSubledger.NetCapitalActivity.Should().Be(100m);
+        capitalAccountSubledger.FundEventCount.Should().Be(1);
+        capitalAccountSubledger.ApprovalQueueCount.Should().Be(1);
+        capitalAccountSubledger.EvidenceLinkCount.Should().Be(1);
+        capitalAccountSubledger.ActivityRoute
+            .Contains("capitalAccountId=capital-account%3Afund-alpha%3Alp-1", StringComparison.OrdinalIgnoreCase)
+            .Should()
+            .BeTrue();
+        capitalAccountSubledger.FundEventRecords.Should().ContainSingle(item => item.FundEventId == "fund-event:fund-alpha:capital-call:20260630");
+        capitalAccountSubledger.SubledgerEntries.Should().ContainSingle(item => item.RunningNetActivity == 100m);
+        capitalAccountSubledger.LedgerImpacts.Should().ContainSingle(item => item.IsPostingReady);
+        capitalAccountSubledger.ReportOutputs.Should().ContainSingle(item => item.IsReportReady);
         missingPrivateCapitalActivity.Should().NotBeNull();
         missingPrivateCapitalActivity!.FundEventCount.Should().Be(0);
         missingPrivateCapitalActivity.CapitalAccountCount.Should().Be(0);
@@ -338,6 +363,7 @@ public sealed partial class WorkstationEndpointsTests
         missingPrivateCapitalActivity.LedgerImpacts.Should().BeEmpty();
         missingPrivateCapitalActivity.ReportOutputs.Should().BeEmpty();
         missingPrivateCapitalActivity.FundEventRecords.Should().BeEmpty();
+        missingPrivateCapitalActivity.CapitalAccountSubledgers.Should().BeEmpty();
     }
 
     private static void RegisterAccountingConfigurationServices(IServiceCollection services)

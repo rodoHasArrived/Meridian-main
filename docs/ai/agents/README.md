@@ -15,6 +15,9 @@ ledger, and MCP foundations.
 
 When an agent lane needs validator, route, handoff-packet, or maintenance-script selection, load
 [`../tooling/README.md`](../tooling/README.md) instead of rediscovering command lanes from scratch.
+When an agent, prompt, skill, rubric, or graph-memory workflow is being improved from feedback,
+use the Codex self-improving loop in [`../codex/self-improving-agents.md`](../codex/self-improving-agents.md)
+and keep promotion evidence tied to the owning skill or agent profile.
 
 ---
 
@@ -158,6 +161,8 @@ handoff so downstream agents do not repeat discovery or validation without cause
   do not hand-edit docs under `docs/ai/generated/` or generator outputs in `docs/generated/`.
 - Agent orchestration: `docs/ai/parallel-task-manifest-template.md`, `docs/ai/agent-handoff-checklist.md`,
   and `.codex/agents/` profiles for cross-lane routing
+- Agent improvement: `docs/ai/codex/self-improving-agents.md` for baseline, feedback, eval,
+  promotion, and graph/retrieval guardrails
 - Tooling and validators: prefer [`../tooling/README.md`](../tooling/README.md) for script choice,
   route artifacts, and maintenance lanes instead of copying command catalogs into agent prompts
 - Parallel workflow: keep lane scopes disjoint in the manifest and record handoff expectations before merge
@@ -183,6 +188,7 @@ handoff so downstream agents do not repeat discovery or validation without cause
 | ---------- | --------- |
 | [`../README.md`](../README.md) | Master AI resource index |
 | [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md) | Provider-agnostic workflow and alignment rules for all assistant surfaces |
+| [`../codex/self-improving-agents.md`](../codex/self-improving-agents.md) | Baseline-to-eval promotion loop for improving agents, prompts, skills, and agent retrieval memory |
 | [`../navigation/README.md`](../navigation/README.md) | Navigation workflow guide |
 | [`../generated/repo-navigation.md`](../generated/repo-navigation.md) | Generated routing digest |
 | [`../skills/README.md`](../skills/README.md) | Skill catalog across Codex and portable packages |

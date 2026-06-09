@@ -407,6 +407,40 @@ public sealed record PrivateCapitalFundEventLedgerRecordDto(
     IReadOnlyList<PrivateCapitalReportOutputDto> ReportOutputs,
     IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues);
 
+public sealed record PrivateCapitalCapitalAccountSubledgerDto(
+    string SubledgerId,
+    string FundProfileId,
+    Guid? LedgerBookId,
+    DateTimeOffset ProjectedAtUtc,
+    string CapitalAccountId,
+    string? InvestorId,
+    string Currency,
+    string ActivityRoute,
+    decimal Contributions,
+    decimal Distributions,
+    decimal Subscriptions,
+    decimal Redemptions,
+    decimal ManagementFees,
+    decimal OpeningNetActivity,
+    decimal EndingNetActivity,
+    decimal NetCapitalActivity,
+    int FundEventCount,
+    int ApprovalQueueCount,
+    int PostedFundEventCount,
+    int PublishedReportOutputCount,
+    int EvidenceLinkCount,
+    int ValidationIssueCount,
+    DateOnly? FirstEffectiveDate,
+    DateOnly? LastEffectiveDate,
+    string? LastFundEventType,
+    IReadOnlyList<string> EvidenceLinks,
+    PrivateCapitalCapitalAccountActivityDto? CapitalAccount,
+    IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> FundEventRecords,
+    IReadOnlyList<PrivateCapitalCapitalAccountSubledgerEntryDto> SubledgerEntries,
+    IReadOnlyList<PrivateCapitalLedgerImpactDto> LedgerImpacts,
+    IReadOnlyList<PrivateCapitalReportOutputDto> ReportOutputs,
+    IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues);
+
 public sealed record PrivateCapitalActivityProjectionDto(
     string FundProfileId,
     Guid? LedgerBookId,
@@ -425,10 +459,14 @@ public sealed record PrivateCapitalActivityProjectionDto(
     IReadOnlyList<PrivateCapitalLedgerImpactDto> LedgerImpacts,
     IReadOnlyList<PrivateCapitalReportOutputDto> ReportOutputs,
     IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
-    IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto>? FundEventRecords = null)
+    IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto>? FundEventRecords = null,
+    IReadOnlyList<PrivateCapitalCapitalAccountSubledgerDto>? CapitalAccountSubledgers = null)
 {
     public IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> FundEventRecords { get; init; } =
         FundEventRecords ?? [];
+
+    public IReadOnlyList<PrivateCapitalCapitalAccountSubledgerDto> CapitalAccountSubledgers { get; init; } =
+        CapitalAccountSubledgers ?? [];
 }
 
 public sealed record ManualJournalEntryWorkbenchDto(

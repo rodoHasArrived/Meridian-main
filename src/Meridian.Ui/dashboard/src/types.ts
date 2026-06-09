@@ -3941,6 +3941,41 @@ export interface PrivateCapitalFundEventLedgerRecord {
   validationIssues: AccountingConfigurationValidationIssue[];
 }
 
+export interface PrivateCapitalCapitalAccountSubledger {
+  subledgerId: string;
+  fundProfileId: string;
+  ledgerBookId?: string | null;
+  projectedAtUtc: string;
+  capitalAccountId: string;
+  investorId?: string | null;
+  currency: string;
+  activityRoute: string;
+  contributions: number;
+  distributions: number;
+  subscriptions: number;
+  redemptions: number;
+  managementFees: number;
+  openingNetActivity: number;
+  endingNetActivity: number;
+  netCapitalActivity: number;
+  fundEventCount: number;
+  approvalQueueCount: number;
+  postedFundEventCount: number;
+  publishedReportOutputCount: number;
+  evidenceLinkCount: number;
+  validationIssueCount: number;
+  firstEffectiveDate?: string | null;
+  lastEffectiveDate?: string | null;
+  lastFundEventType?: string | null;
+  evidenceLinks: string[];
+  capitalAccount?: PrivateCapitalCapitalAccountActivity | null;
+  fundEventRecords: PrivateCapitalFundEventLedgerRecord[];
+  subledgerEntries: PrivateCapitalCapitalAccountSubledgerEntry[];
+  ledgerImpacts: PrivateCapitalLedgerImpact[];
+  reportOutputs: PrivateCapitalReportOutput[];
+  validationIssues: AccountingConfigurationValidationIssue[];
+}
+
 export interface PrivateCapitalActivityProjection {
   fundProfileId: string;
   ledgerBookId?: string | null;
@@ -3959,6 +3994,7 @@ export interface PrivateCapitalActivityProjection {
   ledgerImpacts: PrivateCapitalLedgerImpact[];
   reportOutputs: PrivateCapitalReportOutput[];
   fundEventRecords: PrivateCapitalFundEventLedgerRecord[];
+  capitalAccountSubledgers?: PrivateCapitalCapitalAccountSubledger[] | null;
   validationIssues: AccountingConfigurationValidationIssue[];
 }
 

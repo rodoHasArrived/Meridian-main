@@ -12,6 +12,8 @@ Deliver production-ready code changes and leave documentation in a consistent, c
 > **Navigation index:** [`docs/ai/skills/README.md`](../../../docs/ai/skills/README.md)
 
 Read `../_shared/project-context.md` and `../_shared/codex-execution-contract.md` before coding.
+Read [`docs/ai/codex/self-improving-agents.md`](../../../docs/ai/codex/self-improving-agents.md)
+before improving prompts, skills, agent profiles, eval rubrics, or agent retrieval memory.
 Read `references/documentation-routing.md` before writing docs. Read
 `references/evaluation-harness.md` before finalizing output.
 
@@ -25,6 +27,7 @@ Trigger examples:
 - "Implement this plan and prove it with the required gates."
 - "Certify this provider change is complete."
 - "Update the AI skill catalog and verify drift checks."
+- "Improve this Codex agent from judge feedback and update the baseline."
 
 ## Do Not Use When
 
@@ -46,6 +49,7 @@ A task delivered by this skill is complete when **all** of the following are tru
 - [ ] **Validation evidence is explicit:** the final response includes exact commands and their pass/fail results.
 - [ ] **Documentation is in sync:** existing docs covering the changed behavior are updated in-place, or a new doc is created in the correct subtree with a cross-link from the nearest index.
 - [ ] **AI tooling gates pass for AI/tooling changes:** run `make ai-verify`, run `make ai-arch-check`, and confirm `.github/workflows/ci.yml` still contains the `Validate AI contract drift` step.
+- [ ] **Agent improvements are promoted through the eval loop:** baseline, feedback source, candidate diff, aggregate score, threshold, retry count, and updated catalog paths are recorded.
 - [ ] **Rubric score >= 8/10, no category at 0:** `scripts/score_eval.py` is run and the report is included in the response.
 - [ ] **Performance-sensitive paths are annotated:** any hot path touched by the change includes an explicit note on allocation, async, or buffering risk.
 - [ ] **Summary is traceable:** the closing summary links requirement -> files changed -> validation artifact -> doc update.
@@ -59,6 +63,19 @@ A task delivered by this skill is complete when **all** of the following are tru
 5. Update related documentation; if missing, add docs in the correct doc area.
 6. Run the evaluation harness and report pass/fail with evidence.
 7. Summarize code and docs updates and call out residual risk.
+
+## Self-Improving Agent Loop
+
+Use `docs/ai/codex/self-improving-agents.md` whenever this skill improves an agent, prompt, skill,
+eval rubric, or graph-backed memory workflow. Treat the current artifact as the baseline, capture
+human feedback or LLM-as-judge findings, apply one candidate change at a time, run the relevant
+evals, compare the aggregate score to the target threshold, and promote only after validation,
+catalog updates, and rollback notes are complete.
+
+For graph, semantic-memory, or retrieval-agent changes, require source-backed temporal records,
+non-destructive versioning, retention and pruning policy, staged concurrency with backpressure,
+token-cost controls, and source-cited retrieval behavior before claiming the agent is production
+ready.
 
 ## Handoffs
 

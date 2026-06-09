@@ -165,6 +165,7 @@ import type {
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
   PrivateCapitalActivityProjection,
+  PrivateCapitalCapitalAccountSubledger,
   PrivateCapitalFundEventLedgerRecord,
   ReportPackDeliveryAttempt,
   ReportPackDeliveryFailureRequest,
@@ -964,6 +965,30 @@ export function getPrivateCapitalFundEventRecord(
 
   return getJson<PrivateCapitalFundEventLedgerRecord>(
     `${WORKSTATION_API_ENDPOINTS.privateCapitalFundEventRecord}?${params.toString()}`,
+    options
+  );
+}
+
+export interface PrivateCapitalCapitalAccountSubledgerQuery {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  capitalAccountId: string;
+  investorId?: string | null;
+}
+
+export function getPrivateCapitalCapitalAccountSubledger(
+  query: PrivateCapitalCapitalAccountSubledgerQuery,
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value) {
+      params.set(key, value);
+    }
+  }
+
+  return getJson<PrivateCapitalCapitalAccountSubledger>(
+    `${WORKSTATION_API_ENDPOINTS.privateCapitalCapitalAccountSubledger}?${params.toString()}`,
     options
   );
 }

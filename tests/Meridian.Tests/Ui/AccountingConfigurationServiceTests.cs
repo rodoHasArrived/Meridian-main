@@ -33,6 +33,7 @@ public sealed class AccountingConfigurationServiceTests
             ValidationIssues: []);
 
         projection.FundEventRecords.Should().BeEmpty();
+        projection.CapitalAccountSubledgers.Should().BeEmpty();
     }
 
     [Theory]
@@ -301,6 +302,26 @@ public sealed class AccountingConfigurationServiceTests
             item.IsPostingReady &&
             item.IsReportReady &&
             !item.IsPublished);
+        workbench.PrivateCapitalActivity.CapitalAccountSubledgers.Should().ContainSingle(item =>
+            item.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
+            item.InvestorId == "investor:lp-1" &&
+            item.Currency == "USD" &&
+            item.Contributions == 100m &&
+            item.OpeningNetActivity == 0m &&
+            item.EndingNetActivity == 100m &&
+            item.NetCapitalActivity == 100m &&
+            item.FundEventCount == 1 &&
+            item.ApprovalQueueCount == 1 &&
+            item.PostedFundEventCount == 0 &&
+            item.PublishedReportOutputCount == 0 &&
+            item.EvidenceLinkCount == 1 &&
+            item.ValidationIssueCount == 0 &&
+            item.ActivityRoute.Contains("capitalAccountId=capital-account%3Afund-alpha%3Alp-1", StringComparison.OrdinalIgnoreCase) &&
+            item.CapitalAccount != null &&
+            item.FundEventRecords.Count == 1 &&
+            item.SubledgerEntries.Count == 1 &&
+            item.LedgerImpacts.Count == 1 &&
+            item.ReportOutputs.Count == 1);
         workbench.PrivateCapitalActivity.SubmittedFundEventCount.Should().Be(1);
         workbench.PrivateCapitalActivity.ApprovalQueueCount.Should().Be(1);
         var directActivity = await service.GetPrivateCapitalActivityAsync("fund-alpha");
@@ -345,6 +366,16 @@ public sealed class AccountingConfigurationServiceTests
             item.NextAction == "Review report output" &&
             item.NextActionRoute == item.PrimaryReportRoute &&
             item.CapitalAccountSubledgerEntries.Count == 1 &&
+            item.LedgerImpacts.Count == 1 &&
+            item.ReportOutputs.Count == 1);
+        directActivity.CapitalAccountSubledgers.Should().ContainSingle(item =>
+            item.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
+            item.InvestorId == "investor:lp-1" &&
+            item.Contributions == 100m &&
+            item.OpeningNetActivity == 0m &&
+            item.EndingNetActivity == 100m &&
+            item.FundEventRecords.Count == 1 &&
+            item.SubledgerEntries.Count == 1 &&
             item.LedgerImpacts.Count == 1 &&
             item.ReportOutputs.Count == 1);
     }

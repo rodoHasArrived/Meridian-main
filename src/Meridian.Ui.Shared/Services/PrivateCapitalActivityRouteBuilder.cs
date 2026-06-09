@@ -31,6 +31,31 @@ internal static class PrivateCapitalActivityRouteBuilder
         return UiApiRoutes.WithQuery(UiApiRoutes.LedgerPrivateCapitalActivity, string.Join("&", query));
     }
 
+    public static string BuildCapitalAccountSubledgerRoute(
+        string fundProfileId,
+        Guid? ledgerBookId,
+        string capitalAccountId,
+        string? investorId = null)
+    {
+        var query = new List<string>
+        {
+            $"fundProfileId={Uri.EscapeDataString(fundProfileId.Trim())}",
+            $"capitalAccountId={Uri.EscapeDataString(capitalAccountId.Trim())}"
+        };
+
+        if (ledgerBookId.HasValue)
+        {
+            query.Add($"ledgerBookId={Uri.EscapeDataString(ledgerBookId.Value.ToString("D"))}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(investorId))
+        {
+            query.Add($"investorId={Uri.EscapeDataString(investorId.Trim())}");
+        }
+
+        return UiApiRoutes.WithQuery(UiApiRoutes.LedgerPrivateCapitalCapitalAccountSubledger, string.Join("&", query));
+    }
+
     public static string BuildEvidenceRoute(string fundEventId)
         => UiApiRoutes.WithParam(
             UiApiRoutes.WithParam(

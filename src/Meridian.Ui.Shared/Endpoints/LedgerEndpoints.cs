@@ -671,6 +671,48 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented);
 
+        app.MapGet(UiApiRoutes.LedgerPrivateCapitalCapitalAccountSubledger, async (
+            string? fundProfileId,
+            Guid? ledgerBookId,
+            string? capitalAccountId,
+            string? investorId,
+            HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var normalizedCapitalAccountId = NormalizeOptional(capitalAccountId);
+            if (normalizedCapitalAccountId is null)
+            {
+                return Results.BadRequest(new { error = "capitalAccountId is required." });
+            }
+
+            var service = ResolveManualJournalEntryWorkbenchService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            var filtered = FilterPrivateCapitalActivity(activity, null, normalizedCapitalAccountId, investorId);
+            var subledger = filtered.CapitalAccountSubledgers
+                .FirstOrDefault(item => string.Equals(item.CapitalAccountId, normalizedCapitalAccountId, StringComparison.OrdinalIgnoreCase));
+            if (subledger is null)
+            {
+                return Results.NotFound();
+            }
+
+            return Results.Json(subledger, jsonOptions);
+        })
+        .WithName("GetLedgerPrivateCapitalCapitalAccountSubledger")
+        .Produces<PrivateCapitalCapitalAccountSubledgerDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented);
+
         app.MapPost(UiApiRoutes.LedgerManualJournalEntryDrafts, async (SaveManualJournalEntryDraftRequest request, HttpContext context) =>
         {
             if (!HasLedgerMutationPermission(context))
@@ -1081,6 +1123,16 @@ public static class LedgerEndpoints
             .Select(static item => item.Currency)
             .Concat(capitalAccountSubledgerEntries.Select(static item => item.Currency))
             .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value)) ?? activity.Currency;
+        var capitalAccountSubledgers = PrivateCapitalCapitalAccountSubledgerBuilder.Build(
+            activity.FundProfileId,
+            activity.LedgerBookId,
+            activity.ProjectedAtUtc,
+            capitalAccounts,
+            fundEventRecords,
+            capitalAccountSubledgerEntries,
+            ledgerImpacts,
+            reportOutputs,
+            validationIssues);
 
         return new PrivateCapitalActivityProjectionDto(
             activity.FundProfileId,
@@ -1100,7 +1152,8 @@ public static class LedgerEndpoints
             ledgerImpacts,
             reportOutputs,
             validationIssues,
-            fundEventRecords);
+            fundEventRecords,
+            capitalAccountSubledgers);
     }
 
     private static IReadOnlyList<PrivateCapitalCapitalAccountActivityDto> BuildFilteredCapitalAccounts(

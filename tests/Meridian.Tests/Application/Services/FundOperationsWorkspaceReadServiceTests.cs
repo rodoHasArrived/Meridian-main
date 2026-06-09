@@ -1325,7 +1325,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         var ledger = CreateLedger();
         var positions = new Dictionary<string, Position>(StringComparer.OrdinalIgnoreCase)
         {
-            ["AAPL"] = new("AAPL", 10, 40m, realizedPnl, unrealizedPnl)
+            ["AAPL"] = new("AAPL", 10, 40m, UnrealizedPnl: unrealizedPnl, RealizedPnl: realizedPnl)
         };
         var accountSnapshot = new FinancialAccountSnapshot(
             AccountId: BacktestDefaults.DefaultBrokerageAccountId,

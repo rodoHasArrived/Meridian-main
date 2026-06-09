@@ -12,6 +12,7 @@ Keep it short and route detailed work to the canonical Meridian guidance sources
 - `CLAUDE.md` for the full repository guide.
 - `.codex/skills/_shared/project-context.md` for current Codex project context.
 - `docs/ai/codex/quickstart.md` for the fastest Codex task startup path.
+- `docs/ai/codex/self-improving-agents.md` for Codex agent improvement, eval promotion, and graph-memory guardrails.
 - `docs/product/meridian-design-document.md` for the canonical stakeholder design framing.
 - `docs/ai/navigation/README.md` and `docs/ai/generated/repo-navigation.md` for repo routing.
 - `docs/architecture/project-structure.md` and `docs/architecture/module-map.md` for structure and boundaries.

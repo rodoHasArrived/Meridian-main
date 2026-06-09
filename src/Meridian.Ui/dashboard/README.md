@@ -291,12 +291,14 @@ candidates, report-pack workflow/publication/provenance metadata, per-event ledg
 and projection warnings rather than deriving capital-account, GL-impact, or stakeholder-package
 state in React. The browser
 API catalog also exposes `/api/ledger/private-capital/activity`,
-`/api/ledger/private-capital/fund-event-record`, `getPrivateCapitalActivity`,
-`getPrivateCapitalFundEventRecord`, and the Settings backend-capability diagnostics so operators can
-verify the first-class private-capital review endpoints outside the manual journal editor. The
-activity API helper accepts fund, ledger-book, fund-event, capital-account, and investor filters for
-report-pack drill-throughs, while the direct record helper resolves one fund event to the same
-server-owned event-level DTO the aggregate projection carries. The React view model preserves
+`/api/ledger/private-capital/fund-event-record`,
+`/api/ledger/private-capital/capital-account-subledger`, `getPrivateCapitalActivity`,
+`getPrivateCapitalFundEventRecord`, `getPrivateCapitalCapitalAccountSubledger`, and the Settings
+backend-capability diagnostics so operators can verify the first-class private-capital review
+endpoints outside the manual journal editor. The activity API helper accepts fund, ledger-book,
+fund-event, capital-account, and investor filters for report-pack drill-throughs, while the direct
+record helpers resolve one fund event or one capital account to the same server-owned DTOs the
+aggregate projection carries. The React view model preserves
 posted-event and published-output labels from the shared DTOs and renders server-owned fund-event
 ledger records as the primary event-level table before the decomposed subledger, GL-impact, and
 report-output tables. Those rows display promoted

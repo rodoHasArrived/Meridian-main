@@ -20,6 +20,7 @@ For documentation work, start from the rebuilt canonical docs model:
 | [`quickstart.md`](quickstart.md) | First-10-minutes Codex task routing, proof matrix, and dirty-worktree protocol |
 | [`advanced-configuration.md`](advanced-configuration.md) | Advanced Codex local-client configuration patterns for profiles, providers, sandboxes, hooks, telemetry, notifications, and TUI options |
 | [`prompt-execution-trace.md`](prompt-execution-trace.md) | One-page prompt-to-execution diagram and execution-path refinements |
+| [`self-improving-agents.md`](self-improving-agents.md) | Codex agent improvement loop, eval promotion rules, and graph/retrieval guardrails |
 | [`prompt-route-rules.json`](prompt-route-rules.json) | Schema v2 deterministic routing rules for lane, skill, mode, model route, validation floor, telemetry, and escalation triggers |
 | [`route-cards.md`](route-cards.md) | Compact subsystem cards with first docs, entrypoints, and validation lanes |
 | [`../agent-handoff-checklist.md`](../agent-handoff-checklist.md) | Shared handoff format for multi-agent/lane transitions and context minimization |
@@ -212,6 +213,9 @@ Local helper surfaces:
   folders such as `docs/plans/`, `docs/status/`, `docs/development/`, or `docs/operations/`.
 - Keep root `AGENTS.md` compact. It should route to canonical docs, not duplicate command catalogs,
   repo maps, or long validation tables.
+- For prompt, profile, skill, rubric, or agent-memory improvements, use
+  [`self-improving-agents.md`](self-improving-agents.md) so baseline feedback, eval scoring,
+  promotion, and manual follow-up are traceable.
 - Before editing `src/**`, read the nearest registered source README and identify the module in
   `docs/source/data/source-modules.yml`.
 - For meaningful source behavior, workflow, validation, diagram, ownership, or TODO changes, update

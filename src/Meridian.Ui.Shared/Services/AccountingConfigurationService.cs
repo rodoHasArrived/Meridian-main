@@ -908,6 +908,16 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             capitalAccountSubledgerEntries,
             orderedLedgerImpacts,
             reportOutputs);
+        var capitalAccountSubledgers = PrivateCapitalCapitalAccountSubledgerBuilder.Build(
+            fundProfileId,
+            ledgerBookId,
+            projectedAtUtc,
+            capitalAccounts,
+            fundEventRecords,
+            capitalAccountSubledgerEntries,
+            orderedLedgerImpacts,
+            reportOutputs,
+            projectionIssues);
 
         return new PrivateCapitalActivityProjectionDto(
             fundProfileId,
@@ -931,7 +941,8 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 .ThenBy(issue => issue.Code, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(issue => issue.TargetId, StringComparer.OrdinalIgnoreCase)
                 .ToArray(),
-            fundEventRecords);
+            fundEventRecords,
+            capitalAccountSubledgers);
     }
 
     private async Task<PrivateCapitalFundEventLedgerProjection?> BuildPostedPrivateCapitalActivityProjectionAsync(

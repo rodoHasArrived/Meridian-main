@@ -463,7 +463,11 @@ route, approval id/route when an approval exists, child-row counts, primary repo
 id/type/route, workflow state, publication manifest path, provenance counts, server-derived
 readiness label/reason, and next-action route so operator tables and report-package
 drill-throughs do not reopen nested arrays for basic record posture. The
-projection normalizes omitted fund-event ledger records to an empty collection
+projection also includes `PrivateCapitalCapitalAccountSubledgerDto`, which groups a capital
+account's fund-event records, running subledger entries, GL impacts, retained evidence, approval
+queue count, posted/published counts, report outputs, and validation issues into one
+capital-account-level accounting record. It normalizes omitted fund-event ledger records and
+capital-account subledgers to empty collections
 so clients can treat that event-level model as present even when there are no private-capital
 events yet.
 The projection is additive across draft and posted sources: posted ledger-backed fund events win
@@ -475,8 +479,10 @@ not have to infer source state from approval labels.
 and `UiApiRoutes.LedgerPrivateCapitalActivity` expose the same projection as a first-class review
 endpoint for reporting, audit, and future LP support surfaces that should not depend on the manual
 journal editor payload. `UiApiRoutes.LedgerPrivateCapitalFundEventRecord` exposes one shared
-event-level record by `fundEventId` so review and report drill-through surfaces can load the
-single fund-event ledger record without interpreting an empty aggregate.
+event-level record by `fundEventId`, and
+`UiApiRoutes.LedgerPrivateCapitalCapitalAccountSubledger` exposes one capital-account subledger by
+`capitalAccountId`, so review and report drill-through surfaces can load the needed accounting
+record without interpreting an empty aggregate.
 
 ## Diagrams
 

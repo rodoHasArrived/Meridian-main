@@ -26,6 +26,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   manualJournalEntryWorkbench: UI_API_ROUTES.LedgerManualJournalEntryWorkbench,
   privateCapitalActivity: UI_API_ROUTES.LedgerPrivateCapitalActivity,
   privateCapitalFundEventRecord: UI_API_ROUTES.LedgerPrivateCapitalFundEventRecord,
+  privateCapitalCapitalAccountSubledger: UI_API_ROUTES.LedgerPrivateCapitalCapitalAccountSubledger,
   manualJournalEntryDrafts: UI_API_ROUTES.LedgerManualJournalEntryDrafts,
   manualJournalEntryValidate: UI_API_ROUTES.LedgerManualJournalEntryValidate,
   manualJournalEntrySubmitApproval: UI_API_ROUTES.LedgerManualJournalEntrySubmitApproval,
