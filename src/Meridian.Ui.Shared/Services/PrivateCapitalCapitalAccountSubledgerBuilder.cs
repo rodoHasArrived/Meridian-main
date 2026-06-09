@@ -112,7 +112,12 @@ internal static class PrivateCapitalCapitalAccountSubledgerBuilder
             key.CapitalAccountId,
             key.InvestorId,
             key.Currency,
-            PrivateCapitalActivityRouteBuilder.BuildCapitalAccountSubledgerRoute(fundProfileId, ledgerBookId, key.CapitalAccountId, key.InvestorId),
+            PrivateCapitalActivityRouteBuilder.BuildCapitalAccountSubledgerRoute(
+                fundProfileId,
+                ledgerBookId,
+                key.CapitalAccountId,
+                key.InvestorId,
+                key.Currency),
             account?.Contributions ?? SumByType(records, ManualJournalEntryTypeDto.CapitalCall),
             account?.Distributions ?? SumByType(records, ManualJournalEntryTypeDto.Distribution),
             account?.Subscriptions ?? SumByType(records, ManualJournalEntryTypeDto.Subscription),

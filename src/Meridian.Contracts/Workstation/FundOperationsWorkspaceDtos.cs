@@ -246,6 +246,46 @@ public sealed record PortfolioReportingPnlSliceDto(
     IReadOnlyList<string> Tags,
     string? VersionStamp = null);
 
+[JsonConverter(typeof(JsonStringEnumConverter<PortfolioReportingAnalyticsKindDto>))]
+public enum PortfolioReportingAnalyticsKindDto
+{
+    TopWinner = 0,
+    TopLaggard = 1,
+    Contribution = 2
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<PortfolioReportingAnalyticsScopeDto>))]
+public enum PortfolioReportingAnalyticsScopeDto
+{
+    Security = 0,
+    Strategy = 1,
+    AssetClass = 2
+}
+
+/// <summary>
+/// Top-N and contribution analytics row derived from retained portfolio P&amp;L sources.
+/// </summary>
+public sealed record PortfolioReportingAnalyticsRowDto(
+    string AnalyticsId,
+    PortfolioReportingAnalyticsKindDto Kind,
+    PortfolioReportingAnalyticsScopeDto Scope,
+    int Rank,
+    string Label,
+    string? Symbol,
+    string? Classification,
+    string Currency,
+    decimal RealizedPnl,
+    decimal UnrealizedPnl,
+    decimal TotalPnl,
+    decimal ContributionPercent,
+    decimal HeatMapIntensity,
+    int SourceCount,
+    DateTimeOffset AsOf,
+    string Route,
+    string ReadinessSummary,
+    IReadOnlyList<string> Tags,
+    string? VersionStamp = null);
+
 [JsonConverter(typeof(JsonStringEnumConverter<CrossFundReportingConsolidationScopeDto>))]
 public enum CrossFundReportingConsolidationScopeDto
 {
@@ -351,7 +391,10 @@ public sealed record FundReportingSummaryDto(
     IReadOnlyList<ReportBrandingThemeDto>? BrandingThemes = null,
     IReadOnlyList<PortfolioReportingLiveViewDto>? LivePortfolioViews = null,
     IReadOnlyList<CrossFundReportingConsolidationDto>? CrossFundConsolidations = null,
-    IReadOnlyList<PortfolioReportingPnlSliceDto>? PnlSlices = null);
+    IReadOnlyList<PortfolioReportingPnlSliceDto>? PnlSlices = null,
+    IReadOnlyList<PortfolioReportingAnalyticsRowDto>? AnalyticsRows = null,
+    string? FundProfileId = null,
+    IReadOnlyList<ReportingScheduleDeliveryPlanDto>? ScheduleDeliveryPlans = null);
 
 /// <summary>
 /// Shared Accounting workspace payload combining ledger, banking, cash, reconciliation,
@@ -802,6 +845,30 @@ public sealed record ReportingScheduleDeliveryTargetDto(
     IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null,
     ReportPackDeliveryModeDto? DeliveryMode = null,
     string? Note = null);
+
+public sealed record ReportingScheduleDeliveryPlanDto(
+    string PlanId,
+    string ScheduleId,
+    string TemplateId,
+    string DistributionId,
+    string Recipient,
+    string RecipientRole,
+    string Channel,
+    ReportPackDeliveryModeDto DeliveryMode,
+    IReadOnlyList<GovernanceReportArtifactFormatDto> Formats,
+    bool IsReady,
+    string ReadinessSummary,
+    string Route,
+    DateTimeOffset DueAtUtc,
+    DateOnly NextAsOfDate,
+    string Owner,
+    string? Note = null,
+    Guid? LastDeliveryAttemptId = null,
+    ReportPackDeliveryStateDto? LastDeliveryState = null,
+    DateTimeOffset? LastDeliveryAtUtc = null,
+    string? LastDeliveryPackageRoute = null,
+    string? LastDeliverySecureLink = null,
+    string? VersionStamp = null);
 
 [JsonConverter(typeof(JsonStringEnumConverter<ReportingScheduleStateDto>))]
 public enum ReportingScheduleStateDto

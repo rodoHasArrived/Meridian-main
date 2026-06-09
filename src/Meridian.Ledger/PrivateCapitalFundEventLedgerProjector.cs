@@ -72,7 +72,7 @@ public sealed record PrivateCapitalFundEventLedgerEvent(
         LedgerImpacts.All(static item => item.IsBalanced) &&
         CapitalAccountImpacts.Count > 0;
 
-    public bool IsReportReady => ReportOutputs.Any(static item => item.IsPublished);
+    public bool IsReportReady => IsPostingReady && ReportOutputs.Any(static item => item.IsPublished);
 }
 
 public sealed record PrivateCapitalFundEventLedgerImpact(
@@ -340,6 +340,32 @@ public static class PrivateCapitalFundEventLedgerProjector
             AddIssue(issues, "private-capital.capital-account-missing", PrivateCapitalFundEventIssueSeverity.Critical, "Posted private-capital journal metadata is missing a capital account id.");
         }
 
+        AddMetadataConsistencyIssue(
+            issues,
+            entries.Select(static entry => entry.Metadata.FundEventType ?? entry.Metadata.ActivityType),
+            "private-capital.fund-event-type-conflict",
+            "Posted private-capital journals grouped into one fund event disagree on fund event type.");
+        AddMetadataConsistencyIssue(
+            issues,
+            entries.Select(static entry => entry.Metadata.CapitalAccountId),
+            "private-capital.capital-account-conflict",
+            "Posted private-capital journals grouped into one fund event disagree on capital account id.");
+        AddMetadataConsistencyIssue(
+            issues,
+            entries.Select(static entry => entry.Metadata.InvestorId),
+            "private-capital.investor-conflict",
+            "Posted private-capital journals grouped into one fund event disagree on investor id.");
+        AddMetadataConsistencyIssue(
+            issues,
+            entries.Select(static entry => entry.Metadata.EffectiveDate?.ToString("yyyy-MM-dd")),
+            "private-capital.effective-date-conflict",
+            "Posted private-capital journals grouped into one fund event disagree on effective date.");
+        AddMetadataConsistencyIssue(
+            issues,
+            entries.Select(ResolveApprovalStatusText),
+            "private-capital.approval-state-conflict",
+            "Posted private-capital journals grouped into one fund event disagree on approval state.");
+
         if (!entries.Any(static entry => entry.Metadata.EffectiveDate is not null))
         {
             AddIssue(issues, "private-capital.effective-date-missing", PrivateCapitalFundEventIssueSeverity.Critical, "Posted private-capital journal metadata is missing an effective date.");
@@ -371,6 +397,25 @@ public static class PrivateCapitalFundEventLedgerProjector
         }
 
         return issues;
+    }
+
+    private static void AddMetadataConsistencyIssue(
+        List<PrivateCapitalFundEventIssue> issues,
+        IEnumerable<string?> values,
+        string code,
+        string message)
+    {
+        var distinctValues = values
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(2)
+            .ToArray();
+
+        if (distinctValues.Length > 1)
+        {
+            AddIssue(issues, code, PrivateCapitalFundEventIssueSeverity.Critical, message);
+        }
     }
 
     private static void AddIssue(
@@ -420,9 +465,7 @@ public static class PrivateCapitalFundEventLedgerProjector
 
     private static PrivateCapitalFundEventApprovalState ResolveApprovalState(IReadOnlyList<JournalEntry> entries)
     {
-        var status = FirstTagText(entries, "automatedJournalStatus") ??
-            FirstTagText(entries, "approvalStatus") ??
-            FirstTagText(entries, "journalApprovalStatus");
+        var status = entries.Select(ResolveApprovalStatusText).FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value));
         if (Enum.TryParse<AutomatedJournalApprovalStatus>(status, ignoreCase: true, out var automatedStatus))
         {
             return automatedStatus switch
@@ -445,6 +488,11 @@ public static class PrivateCapitalFundEventLedgerProjector
         return PrivateCapitalFundEventApprovalState.Missing;
     }
 
+    private static string? ResolveApprovalStatusText(JournalEntry entry) =>
+        TryGetTagText(entry, "automatedJournalStatus") ??
+        TryGetTagText(entry, "approvalStatus") ??
+        TryGetTagText(entry, "journalApprovalStatus");
+
     private static string? FirstText(IReadOnlyList<JournalEntry> entries, Func<JournalEntryMetadata, string?> selector) =>
         entries
             .Select(entry => selector(entry.Metadata))
@@ -465,6 +513,13 @@ public static class PrivateCapitalFundEventLedgerProjector
 
         return null;
     }
+
+    private static string? TryGetTagText(JournalEntry entry, string key)
+        => entry.Metadata.Tags is not null &&
+           entry.Metadata.Tags.TryGetValue(key, out var value) &&
+           !string.IsNullOrWhiteSpace(value)
+            ? value.Trim()
+            : null;
 
     private static decimal CalculateNormalBalanceImpact(LedgerAccountType accountType, decimal debit, decimal credit) =>
         accountType is LedgerAccountType.Asset or LedgerAccountType.Expense

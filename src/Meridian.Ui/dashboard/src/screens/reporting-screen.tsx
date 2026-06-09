@@ -13,6 +13,7 @@ import {
   approveReportTemplateDraft,
   createReportTemplateDraft,
   deliverReportPack,
+  generateReportPack,
   pauseReportingSchedule,
   rejectReportTemplateDraft,
   renderReportTemplate,
@@ -39,6 +40,7 @@ import type {
   AccountingWorkspaceResponse,
   ReportAccessMode,
   ReportAccessPrincipalKind,
+  ReportBrandingTheme,
   ReportTemplateDecisionRequest,
   ReportTemplateDraftRequest,
   ReportWriterAggregateFunction,
@@ -138,6 +140,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
   const [writerCustomFormulas, setWriterCustomFormulas] = useState<Record<string, Partial<ReportWriterCustomFormulaDraft>>>({});
   const [writerDraftStatus, setWriterDraftStatus] = useState<ReportingCommandStatus | null>(null);
   const [writerPreviewStatus, setWriterPreviewStatus] = useState<ReportingCommandStatus | null>(null);
+  const [brandingPackStatus, setBrandingPackStatus] = useState<ReportingCommandStatus | null>(null);
   const [writerPreviewByGridId, setWriterPreviewByGridId] = useState<Record<string, ReportWriterGridRender | null>>({});
   const runningRunActionId = runActionStatus?.state === "running" ? runActionStatus.id : null;
   const runningTemplateRunId = templateRunStatus?.state === "running" ? templateRunStatus.id : null;
@@ -145,6 +148,8 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
   const runningScheduleActionId = scheduleActionStatus?.state === "running" ? scheduleActionStatus.id : null;
   const savingWriterDraftId = writerDraftStatus?.state === "running" ? writerDraftStatus.id : null;
   const previewingWriterDraftId = writerPreviewStatus?.state === "running" ? writerPreviewStatus.id : null;
+  const runningBrandingThemeId = brandingPackStatus?.state === "running" ? brandingPackStatus.id : null;
+  const reportingFundProfileId = resolveReportingFundProfileId(data?.reporting ?? null);
   const writerGrids = vm.templateRows.flatMap((template) => template.writerGrids);
 
   useEffect(() => {
@@ -552,6 +557,52 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
     }
   }
 
+  async function handleGenerateBrandedPack(theme: ReportBrandingTheme) {
+    if (!reportingFundProfileId || runningBrandingThemeId) {
+      return;
+    }
+
+    setBrandingPackStatus({
+      id: theme.themeId,
+      label: "Generate branded report pack",
+      state: "running",
+      message: `${theme.name} report pack is generating.`,
+      details: []
+    });
+
+    try {
+      const result = await generateReportPack({
+        fundProfileId: reportingFundProfileId,
+        auditActor: "browser.reporting",
+        reportKind: "BoardPacket",
+        formats: ["Pdf", "Xlsx", "Csv"],
+        brandingThemeId: theme.themeId,
+        decisionRationale: `Generated from Reporting branding theme ${theme.name}.`
+      });
+
+      setBrandingPackStatus({
+        id: theme.themeId,
+        label: "Generate branded report pack",
+        state: "success",
+        message: `${theme.name} report pack generated.`,
+        details: [
+          `Report ID: ${result.reportId}`,
+          `Artifacts: ${result.artifacts.length}`,
+          `Theme: ${result.brandingTheme?.name ?? theme.name}`
+        ]
+      });
+    } catch (error) {
+      const display = describeApiError(error, `${theme.name} report pack generation failed.`);
+      setBrandingPackStatus({
+        id: theme.themeId,
+        label: "Generate branded report pack",
+        state: "error",
+        message: display.summary,
+        details: display.details
+      });
+    }
+  }
+
   if (!data) {
     return (
       <Card
@@ -781,6 +832,78 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
         </section>
       ) : null}
 
+      {(data.reporting.analyticsRows ?? []).length > 0 ? (
+        <section role="region" aria-label="Top-N and contribution analytics">
+          <Card className="panel-surface">
+            <CardHeader>
+              <div className="eyebrow-label">Top-N analytics</div>
+              <CardTitle>Winners, laggards, and contribution breakdowns</CardTitle>
+              <CardDescription>Security, strategy, and asset-class rows come from retained portfolio P&L sources.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div role="list" aria-label="Top-N and contribution analytics rows" className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {(data.reporting.analyticsRows ?? []).map((row) => (
+                  <div
+                    key={row.analyticsId}
+                    role="listitem"
+                    aria-label={`${row.label} ${row.kind} ${row.scope} analytics row`}
+                    className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <span className="min-w-0">
+                        <span className="block font-semibold text-foreground">{row.label}</span>
+                        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">
+                          {row.symbol ?? row.analyticsId}
+                        </span>
+                      </span>
+                      <span className="flex flex-wrap items-center justify-end gap-1.5">
+                        <Badge variant="outline">{row.kind}</Badge>
+                        <Badge variant="outline">{row.scope}</Badge>
+                      </span>
+                    </div>
+                    <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                      <ReportingCutMetric label="Rank" value={row.rank.toLocaleString()} />
+                      <ReportingCutMetric label="Class" value={row.classification ?? "Unclassified"} />
+                      <ReportingCutMetric label="Realized" value={formatReportingMoney(row.realizedPnl, row.currency)} />
+                      <ReportingCutMetric label="Unrealized" value={formatReportingMoney(row.unrealizedPnl, row.currency)} />
+                      <ReportingCutMetric label="P&L" value={formatReportingMoney(row.totalPnl, row.currency)} />
+                      <ReportingCutMetric label="Contribution" value={formatReportingPercent(row.contributionPercent)} />
+                    </dl>
+                    <div className="mt-3" aria-label={`${row.label} heat-map intensity ${formatReportingPercent(row.heatMapIntensity)}`}>
+                      <div className="h-2 overflow-hidden rounded-sm bg-muted">
+                        <div
+                          className={cn(
+                            "h-full rounded-sm",
+                            row.totalPnl < 0 ? "bg-warning" : "bg-success"
+                          )}
+                          style={{ width: formatHeatMapWidth(row.heatMapIntensity) }}
+                        />
+                      </div>
+                      <div className="mt-1 flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+                        <span>{formatReportingPercent(row.heatMapIntensity)} intensity</span>
+                        <span>
+                          {row.sourceCount} source{row.sourceCount === 1 ? "" : "s"}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.readinessSummary}</p>
+                    <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{row.versionStamp ?? row.asOf}</p>
+                    <div className="mt-3 flex justify-end">
+                      <Button asChild variant="outline" size="sm">
+                        <a href={row.route} target="_blank" rel="noreferrer" aria-label={`Open ${row.label} analytics row`}>
+                          <FileText className="h-4 w-4" aria-hidden="true" />
+                          Open
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      ) : null}
+
       {(data.reporting.crossFundConsolidations ?? []).length > 0 ? (
         <section role="region" aria-label="Cross-fund consolidations">
           <Card className="panel-surface">
@@ -941,9 +1064,29 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                       {theme.footerText ?? "No footer text"} · {theme.disclaimer ?? "No disclaimer"}
                     </p>
                     <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{theme.logoUri ?? theme.themeId}</p>
+                    <div className="mt-3 flex justify-end">
+                      <Button
+                        aria-label={`Generate ${theme.name} branded report pack`}
+                        busy={runningBrandingThemeId === theme.themeId}
+                        busyLabel="Generating"
+                        disabled={!reportingFundProfileId || Boolean(runningBrandingThemeId)}
+                        disabledReason={reportingFundProfileId ? null : "A fund profile is required before generating a governed report pack."}
+                        onClick={() => void handleGenerateBrandedPack(theme)}
+                        size="sm"
+                        variant="outline"
+                      >
+                        <FileText className="h-4 w-4" aria-hidden="true" />
+                        Generate
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
+              {brandingPackStatus ? (
+                <div className="mt-3">
+                  <ReportingCommandStatusView status={brandingPackStatus} />
+                </div>
+              ) : null}
             </CardContent>
           </Card>
         </section>
@@ -1233,6 +1376,66 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
             {scheduleActionStatus ? (
               <ReportingCommandStatusView status={scheduleActionStatus} />
             ) : null}
+            <div className="border-t border-border/70 pt-3">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h4 className="text-sm font-semibold text-foreground">Delivery plans</h4>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{vm.scheduleDeliveryPlanSummary}</p>
+                </div>
+                <Badge variant="outline">{vm.scheduleDeliveryPlanRows.length} target{vm.scheduleDeliveryPlanRows.length === 1 ? "" : "s"}</Badge>
+              </div>
+              {vm.hasScheduleDeliveryPlanRows ? (
+                <div role="list" aria-label={vm.scheduleDeliveryPlanListLabel} className="mt-3 space-y-2">
+                  {vm.scheduleDeliveryPlanRows.map((plan) => (
+                    <div
+                      key={plan.id}
+                      role="listitem"
+                      aria-label={plan.ariaLabel}
+                      className="rounded-md border border-border/70 bg-background/40 px-3 py-2"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <span className="min-w-0">
+                          <span className="block font-semibold text-foreground">{plan.recipient}</span>
+                          <span className="mt-1 block text-xs text-muted-foreground">
+                            {plan.recipientRole} · {plan.channel}
+                          </span>
+                        </span>
+                        <Badge variant={plan.readinessVariant}>{plan.deliveryMode}</Badge>
+                      </div>
+                      <p className="mt-2 text-xs leading-5 text-muted-foreground">{plan.readinessSummary}</p>
+                      <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+                        <ReportingScheduleField label="Formats" value={plan.formatsLabel} />
+                        <ReportingScheduleField label="Due" value={plan.dueLabel} />
+                        <ReportingScheduleField label="As of" value={plan.nextAsOfLabel} />
+                        <ReportingScheduleField label="Owner" value={plan.ownerLabel} />
+                        <ReportingScheduleField label="Last delivery" value={plan.lastDeliveryLabel} />
+                        <ReportingScheduleField label="Schedule" value={plan.scheduleId} />
+                      </dl>
+                      {plan.note ? (
+                        <p className="mt-2 text-xs leading-5 text-muted-foreground">{plan.note}</p>
+                      ) : null}
+                      <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
+                        <a className="break-all font-mono text-primary underline-offset-2 hover:underline" href={plan.route}>
+                          {plan.route}
+                        </a>
+                        {plan.lastDeliveryHref ? (
+                          <a className="break-all font-mono text-primary underline-offset-2 hover:underline" href={plan.lastDeliveryHref}>
+                            {plan.lastDeliveryHref}
+                          </a>
+                        ) : null}
+                      </div>
+                      {plan.versionStamp ? (
+                        <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{plan.versionStamp}</p>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p role="status" className="mt-3 rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+                  {vm.scheduleDeliveryPlanEmptyText}
+                </p>
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -2691,6 +2894,29 @@ function formatReportingMoney(value: number, currency: string): string {
 
 function formatReportingDateRange(startDate: string, endDate: string): string {
   return startDate === endDate ? startDate : `${startDate} to ${endDate}`;
+}
+
+function formatReportingPercent(value: number): string {
+  return `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}%`;
+}
+
+function formatHeatMapWidth(value: number): string {
+  if (!Number.isFinite(value) || value <= 0) {
+    return "2%";
+  }
+
+  return `${Math.min(100, Math.max(2, value))}%`;
+}
+
+function resolveReportingFundProfileId(reporting: AccountingWorkspaceResponse["reporting"] | null): string | null {
+  const direct = reporting?.fundProfileId?.trim() || reporting?.selectedFundProfileId?.trim();
+  if (direct) {
+    return direct;
+  }
+
+  return reporting?.workflowRecords
+    ?.map((record) => record.fundProfileId?.trim())
+    .find((fundProfileId): fundProfileId is string => Boolean(fundProfileId)) ?? null;
 }
 
 function ReportingCommandStatusView({ status }: { status: ReportingCommandStatus }) {

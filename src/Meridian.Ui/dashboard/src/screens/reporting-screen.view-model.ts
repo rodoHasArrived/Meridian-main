@@ -5,7 +5,7 @@ import { describeApiError } from "@/lib/api-errors";
 import { EXPORT_API_ENDPOINTS, exportPreviewEndpoint, reportPackEvidenceBundleEndpoint } from "@/lib/workstation-endpoints";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { getReportPackDistributions } from "@/lib/reporting-distributions";
-import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportWriterAggregateFunction, ReportingScheduleDeliveryTarget, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowRecord } from "@/types";
+import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportWriterAggregateFunction, ReportingScheduleDeliveryPlan, ReportingScheduleDeliveryTarget, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowRecord } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
 export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
@@ -267,6 +267,28 @@ export interface ReportingScheduleRow {
   ariaLabel: string;
 }
 
+export interface ReportingScheduleDeliveryPlanRow {
+  id: string;
+  scheduleId: string;
+  templateId: string;
+  recipient: string;
+  recipientRole: string;
+  channel: string;
+  deliveryMode: string;
+  formatsLabel: string;
+  readinessSummary: string;
+  readinessVariant: Exclude<ReportingBadgeVariant, "default">;
+  dueLabel: string;
+  nextAsOfLabel: string;
+  ownerLabel: string;
+  route: string;
+  note: string | null;
+  lastDeliveryLabel: string;
+  lastDeliveryHref: string | null;
+  versionStamp: string | null;
+  ariaLabel: string;
+}
+
 export interface ReportingWorkbenchAction {
   id: "evidence";
   label: string;
@@ -406,6 +428,11 @@ export interface ReportingScreenViewModel {
   scheduleSummary: string;
   scheduleListLabel: string;
   scheduleEmptyText: string;
+  scheduleDeliveryPlanRows: ReportingScheduleDeliveryPlanRow[];
+  hasScheduleDeliveryPlanRows: boolean;
+  scheduleDeliveryPlanSummary: string;
+  scheduleDeliveryPlanListLabel: string;
+  scheduleDeliveryPlanEmptyText: string;
   detailId: string;
   statusTitle: string;
   statusDetail: string;
@@ -540,6 +567,11 @@ export function useReportingScreenViewModel(
       scheduleSummary: "No reporting schedules configured.",
       scheduleListLabel: "Reporting schedules",
       scheduleEmptyText: "No reporting schedules are configured.",
+      scheduleDeliveryPlanRows: [],
+      hasScheduleDeliveryPlanRows: false,
+      scheduleDeliveryPlanSummary: "No schedule delivery plans configured.",
+      scheduleDeliveryPlanListLabel: "Reporting schedule delivery plans",
+      scheduleDeliveryPlanEmptyText: "No scheduled delivery targets are configured.",
       detailId,
       statusTitle: "No profile selected",
       statusDetail: "Reporting data is unavailable. Check the Reporting workspace API connection.",
@@ -654,6 +686,7 @@ export function useReportingScreenViewModel(
   const templateRows = buildTemplateRows(reporting.templates ?? []);
   const runStatusRows = buildRunStatusRows(reporting.recentRuns ?? []);
   const scheduleRows = buildScheduleRows(reporting.schedules ?? []);
+  const scheduleDeliveryPlanRows = buildScheduleDeliveryPlanRows(reporting.scheduleDeliveryPlans ?? []);
 
   return {
     title: "Report packs",
@@ -679,6 +712,11 @@ export function useReportingScreenViewModel(
     scheduleSummary: buildScheduleSummary(scheduleRows),
     scheduleListLabel: "Reporting schedules",
     scheduleEmptyText: "No reporting schedules are configured.",
+    scheduleDeliveryPlanRows,
+    hasScheduleDeliveryPlanRows: scheduleDeliveryPlanRows.length > 0,
+    scheduleDeliveryPlanSummary: buildScheduleDeliveryPlanSummary(scheduleDeliveryPlanRows),
+    scheduleDeliveryPlanListLabel: "Reporting schedule delivery plans",
+    scheduleDeliveryPlanEmptyText: "No scheduled delivery targets are configured.",
     detailId,
     statusTitle,
     statusDetail: selectedProfileData
@@ -1220,6 +1258,47 @@ function buildScheduleSummary(schedules: ReportingScheduleRow[]): string {
 
   const activeCount = schedules.filter((schedule) => schedule.state === "Active").length;
   return `${schedules.length} schedule${schedules.length === 1 ? "" : "s"} configured; ${activeCount} active.`;
+}
+
+function buildScheduleDeliveryPlanRows(plans: ReportingScheduleDeliveryPlan[]): ReportingScheduleDeliveryPlanRow[] {
+  return plans.map((plan) => ({
+    id: plan.planId,
+    scheduleId: plan.scheduleId,
+    templateId: plan.templateId,
+    recipient: plan.recipient,
+    recipientRole: plan.recipientRole,
+    channel: plan.channel,
+    deliveryMode: plan.deliveryMode,
+    formatsLabel: plan.formats.length > 0 ? plan.formats.join(", ") : "Pdf, Xlsx, Csv",
+    readinessSummary: plan.readinessSummary,
+    readinessVariant: plan.isReady ? "success" : "warning",
+    dueLabel: formatTimestamp(plan.dueAtUtc),
+    nextAsOfLabel: plan.nextAsOfDate,
+    ownerLabel: plan.owner,
+    route: plan.route,
+    note: plan.note,
+    lastDeliveryLabel: formatSchedulePlanLastDelivery(plan),
+    lastDeliveryHref: plan.lastDeliverySecureLink ?? plan.lastDeliveryPackageRoute,
+    versionStamp: plan.versionStamp,
+    ariaLabel: `${plan.recipient} ${plan.deliveryMode} scheduled delivery plan for ${plan.scheduleId}`
+  }));
+}
+
+function buildScheduleDeliveryPlanSummary(plans: ReportingScheduleDeliveryPlanRow[]): string {
+  if (plans.length === 0) {
+    return "No schedule delivery plans configured.";
+  }
+
+  const readyCount = plans.filter((plan) => plan.readinessVariant === "success").length;
+  return `${plans.length} delivery plan${plans.length === 1 ? "" : "s"} configured; ${readyCount} ready.`;
+}
+
+function formatSchedulePlanLastDelivery(plan: ReportingScheduleDeliveryPlan): string {
+  if (!plan.lastDeliveryAtUtc || !plan.lastDeliveryState) {
+    return "No retained delivery yet";
+  }
+
+  return `${plan.lastDeliveryState} ${formatTimestamp(plan.lastDeliveryAtUtc)}`;
 }
 
 function formatScheduleDeliveryTargets(targets: ReportingScheduleDeliveryTarget[] | null | undefined): string {

@@ -366,6 +366,63 @@ public sealed partial class WorkstationEndpointsTests
         missingPrivateCapitalActivity.CapitalAccountSubledgers.Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task LedgerPrivateCapitalCapitalAccountSubledger_WhenMultipleInvestorSubledgersMatch_ReturnsBadRequestUntilDisambiguated()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterAccountingConfigurationServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest(
+                FundProfileId: "fund-alpha",
+                Node: new ChartOfAccountsNodeDto("cash", "Assets:Cash", "Cash", "Asset"),
+                Actor: "browser-user"),
+            ServerJsonOptions);
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest(
+                FundProfileId: "fund-alpha",
+                Node: new ChartOfAccountsNodeDto("capital-contributions", "Equity:Capital Contributions", "Capital Contributions", "Equity"),
+                Actor: "browser-user"),
+            ServerJsonOptions);
+
+        var lp1Draft = ManualJournalEntryDraft(
+            fundEventId: "fund-event:fund-alpha:capital-call:lp-1",
+            capitalAccountId: "capital-account:fund-alpha:shared",
+            investorId: "investor:lp-1",
+            amount: 100m);
+        var lp2Draft = ManualJournalEntryDraft(
+            fundEventId: "fund-event:fund-alpha:capital-call:lp-2",
+            capitalAccountId: "capital-account:fund-alpha:shared",
+            investorId: "investor:lp-2",
+            amount: 75m);
+        await SaveAndSubmitManualJournalDraftAsync(client, lp1Draft, "lp-1");
+        await SaveAndSubmitManualJournalDraftAsync(client, lp2Draft, "lp-2");
+
+        using var ambiguousResponse = await client.GetAsync(
+            $"{UiApiRoutes.LedgerPrivateCapitalCapitalAccountSubledger}?fundProfileId=fund-alpha&capitalAccountId={Uri.EscapeDataString("capital-account:fund-alpha:shared")}");
+        using var lp2Response = await client.GetAsync(
+            $"{UiApiRoutes.LedgerPrivateCapitalCapitalAccountSubledger}?fundProfileId=fund-alpha&capitalAccountId={Uri.EscapeDataString("capital-account:fund-alpha:shared")}&investorId={Uri.EscapeDataString("investor:lp-2")}&currency=USD");
+
+        ambiguousResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var ambiguousBody = await ambiguousResponse.Content.ReadAsStringAsync();
+        ambiguousBody.Should().Contain("Provide investorId and currency");
+        lp2Response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var lp2Subledger = await lp2Response.Content.ReadFromJsonAsync<PrivateCapitalCapitalAccountSubledgerDto>(ServerJsonOptions);
+        lp2Subledger.Should().NotBeNull();
+        lp2Subledger!.CapitalAccountId.Should().Be("capital-account:fund-alpha:shared");
+        lp2Subledger.InvestorId.Should().Be("investor:lp-2");
+        lp2Subledger.Currency.Should().Be("USD");
+        lp2Subledger.EndingNetActivity.Should().Be(75m);
+        lp2Subledger.FundEventRecords.Should().ContainSingle(item => item.FundEventId == "fund-event:fund-alpha:capital-call:lp-2");
+        lp2Subledger.FundEventRecords.Should().NotContain(item => item.FundEventId == "fund-event:fund-alpha:capital-call:lp-1");
+        lp2Subledger.ActivityRoute.Should().Contain("investorId=investor%3Alp-2");
+        lp2Subledger.ActivityRoute.Should().Contain("currency=USD");
+    }
+
     private static void RegisterAccountingConfigurationServices(IServiceCollection services)
     {
         services.AddSingleton<IAccountingConfigurationStore, InMemoryAccountingConfigurationStore>();
@@ -375,9 +432,40 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<IManualJournalEntryWorkbenchService, ManualJournalEntryWorkbenchService>();
     }
 
-    private static ManualJournalEntryDraftDto ManualJournalEntryDraft()
+    private static async Task<ManualJournalEntryDraftDto> SaveAndSubmitManualJournalDraftAsync(
+        HttpClient client,
+        ManualJournalEntryDraftDto draft,
+        string correlationSuffix)
+    {
+        using var saveResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryDrafts,
+            new SaveManualJournalEntryDraftRequest(draft, "browser-user", CorrelationId: $"manual-je-save-{correlationSuffix}"),
+            ServerJsonOptions);
+        saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var saved = await saveResponse.Content.ReadFromJsonAsync<ManualJournalEntryDraftDto>(ServerJsonOptions);
+        using var submitResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntrySubmitApproval,
+            new SubmitManualJournalEntryApprovalRequest(
+                saved!.JournalEntryId,
+                saved.FundProfileId,
+                "controller",
+                saved.Version,
+                CorrelationId: $"manual-je-submit-{correlationSuffix}"),
+            ServerJsonOptions);
+        submitResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var submitted = await submitResponse.Content.ReadFromJsonAsync<ManualJournalEntryDraftDto>(ServerJsonOptions);
+        submitted.Should().NotBeNull();
+        return submitted!;
+    }
+
+    private static ManualJournalEntryDraftDto ManualJournalEntryDraft(
+        string fundEventId = "fund-event:fund-alpha:capital-call:20260630",
+        string capitalAccountId = "capital-account:fund-alpha:lp-1",
+        string? investorId = "investor:lp-1",
+        decimal amount = 100m)
     {
         var now = DateTimeOffset.UtcNow;
+        var fundEventSuffix = fundEventId.Split(':', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).LastOrDefault() ?? "event";
         return new ManualJournalEntryDraftDto(
             Guid.NewGuid(),
             ManualJournalEntryStatusDto.Draft,
@@ -396,8 +484,8 @@ public sealed partial class WorkstationEndpointsTests
             0,
             Lines:
             [
-                new ManualJournalEntryLineDto("debit-cash", AccountingTemplateLineSideDto.Debit, 100m, "USD", "Assets:Cash", SecurityId: Guid.NewGuid()),
-                new ManualJournalEntryLineDto("credit-capital", AccountingTemplateLineSideDto.Credit, 100m, "USD", "Equity:Capital Contributions")
+                new ManualJournalEntryLineDto("debit-cash", AccountingTemplateLineSideDto.Debit, amount, "USD", "Assets:Cash", SecurityId: Guid.NewGuid()),
+                new ManualJournalEntryLineDto("credit-capital", AccountingTemplateLineSideDto.Credit, amount, "USD", "Equity:Capital Contributions")
             ],
             EvidenceLinks: [],
             ValidationIssues: [],
@@ -415,12 +503,12 @@ public sealed partial class WorkstationEndpointsTests
             EntryType: ManualJournalEntryTypeDto.CapitalCall,
             TreasuryContext: new TreasuryLedgerContextDto(
                 EffectiveDate: new DateOnly(2026, 6, 30),
-                IdempotencyKey: "manual-je:fund-alpha:capital-call:20260630",
-                FundEventId: "fund-event:fund-alpha:capital-call:20260630",
+                IdempotencyKey: $"manual-je:fund-alpha:capital-call:{fundEventSuffix}",
+                FundEventId: fundEventId,
                 FundEventType: "CapitalCall",
-                CapitalAccountId: "capital-account:fund-alpha:lp-1",
-                InvestorId: "investor:lp-1",
-                PaymentIntentId: "payment:fund-alpha:capital-call:20260630",
-                SettlementReference: "settlement:fund-alpha:capital-call:20260630"));
+                CapitalAccountId: capitalAccountId,
+                InvestorId: investorId,
+                PaymentIntentId: $"payment:fund-alpha:capital-call:{fundEventSuffix}",
+                SettlementReference: $"settlement:fund-alpha:capital-call:{fundEventSuffix}"));
     }
 }

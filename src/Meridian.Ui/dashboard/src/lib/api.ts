@@ -167,6 +167,8 @@ import type {
   PrivateCapitalActivityProjection,
   PrivateCapitalCapitalAccountSubledger,
   PrivateCapitalFundEventLedgerRecord,
+  FundReportPackGenerateRequest,
+  FundReportPackSnapshot,
   ReportPackDeliveryAttempt,
   ReportPackDeliveryFailureRequest,
   ReportPackDeliveryHistory,
@@ -974,6 +976,7 @@ export interface PrivateCapitalCapitalAccountSubledgerQuery {
   ledgerBookId?: string | null;
   capitalAccountId: string;
   investorId?: string | null;
+  currency?: string | null;
 }
 
 export function getPrivateCapitalCapitalAccountSubledger(
@@ -1078,6 +1081,10 @@ export function getReportingWorkspace(options: ApiRequestOptions = {}) {
 
 export function runReportingNow(request: ReportingRunRequest, options: ApiRequestOptions = {}) {
   return postJson<ReportingRunResult>(FUND_STRUCTURE_API_ENDPOINTS.reportingRuns, request, options);
+}
+
+export function generateReportPack(request: FundReportPackGenerateRequest, options: ApiRequestOptions = {}) {
+  return postJson<FundReportPackSnapshot>(FUND_STRUCTURE_API_ENDPOINTS.reportPacks, request, options);
 }
 
 export function createReportTemplateDraft(request: ReportTemplateDraftRequest, options: ApiRequestOptions = {}) {

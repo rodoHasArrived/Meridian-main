@@ -1036,6 +1036,8 @@ const fixtureAccountingWorkspace: AccountingWorkspaceResponse = {
   },
   reporting: {
     profileCount: 4,
+    fundProfileId: "default-fund",
+    selectedFundProfileId: "default-fund",
     recommendedProfiles: ["excel"],
     profiles: [
       {
@@ -1141,6 +1143,71 @@ const fixtureAccountingWorkspace: AccountingWorkspaceResponse = {
         versionStamp: "pnl-slice:20260503200000:yearly:sources-5:prior-0"
       }
     ],
+    analyticsRows: [
+      {
+        analyticsId: "analytics:topwinner:security:bdc-a",
+        kind: "TopWinner",
+        scope: "Security",
+        rank: 1,
+        label: "BDC Alpha",
+        symbol: "BDC-A",
+        classification: "Equity",
+        currency: "USD",
+        realizedPnl: 2800,
+        unrealizedPnl: 1900,
+        totalPnl: 4700,
+        contributionPercent: 49.4737,
+        heatMapIntensity: 49.4737,
+        sourceCount: 2,
+        asOf: "2026-05-03T20:00:00Z",
+        route: "/api/workstation/reporting?analyticsId=analytics%3Atopwinner%3Asecurity%3Abdc-a",
+        readinessSummary: "Top-N winner from 2 source-backed run(s); contributes 49.47% of portfolio P&L.",
+        tags: ["analytics", "topwinner", "security", "equity"],
+        versionStamp: "analytics:20260503200000:topwinner:security:sources-2"
+      },
+      {
+        analyticsId: "analytics:toplaggard:security:hedge-overlay",
+        kind: "TopLaggard",
+        scope: "Security",
+        rank: 1,
+        label: "Hedge Overlay",
+        symbol: "HEDGE",
+        classification: "Derivative",
+        currency: "USD",
+        realizedPnl: -900,
+        unrealizedPnl: -350,
+        totalPnl: -1250,
+        contributionPercent: -13.1579,
+        heatMapIntensity: 13.1579,
+        sourceCount: 1,
+        asOf: "2026-05-03T20:00:00Z",
+        route: "/api/workstation/reporting?analyticsId=analytics%3Atoplaggard%3Asecurity%3Ahedge-overlay",
+        readinessSummary: "Top-N laggard from 1 source-backed run(s); contributes -13.16% of portfolio P&L.",
+        tags: ["analytics", "toplaggard", "security", "derivative"],
+        versionStamp: "analytics:20260503200000:toplaggard:security:sources-1"
+      },
+      {
+        analyticsId: "analytics:contribution:strategy:paper-income",
+        kind: "Contribution",
+        scope: "Strategy",
+        rank: 1,
+        label: "Paper Income",
+        symbol: null,
+        classification: "Strategy",
+        currency: "USD",
+        realizedPnl: 5200,
+        unrealizedPnl: 4300,
+        totalPnl: 9500,
+        contributionPercent: 100,
+        heatMapIntensity: 100,
+        sourceCount: 5,
+        asOf: "2026-05-03T20:00:00Z",
+        route: "/api/workstation/reporting?analyticsId=analytics%3Acontribution%3Astrategy%3Apaper-income",
+        readinessSummary: "5 source-backed run(s); contribution is 100% of portfolio P&L with 100% heat-map intensity.",
+        tags: ["analytics", "contribution", "strategy", "strategy"],
+        versionStamp: "analytics:20260503200000:contribution:strategy:sources-5"
+      }
+    ],
     crossFundConsolidations: [
       {
         consolidationId: "cross-fund:company",
@@ -1193,6 +1260,140 @@ const fixtureAccountingWorkspace: AccountingWorkspaceResponse = {
         readinessSummary: "3 source record(s) across 1 fund(s), 1 entity row(s), 2 account(s), and 1 run(s).",
         tags: ["fund", "cross-fund", "consolidated"],
         versionStamp: "cross-fund:20260503200000:funds-1:entities-1:sources-3"
+      }
+    ],
+    structuredExports: [
+      {
+        exportId: "investment-topn-contribution-analytics",
+        label: "Top-N contribution analytics",
+        purpose: "InvestmentDecision",
+        format: "Csv",
+        dataset: "portfolio-topn-contribution-analytics",
+        consumer: "Investment and risk decision workflows",
+        schemaVersion: 1,
+        rowCount: 3,
+        fieldCount: 18,
+        sourceCount: 8,
+        currency: "USD",
+        asOf: "2026-05-03T20:00:00Z",
+        isReady: true,
+        retainedPath: "exports/reporting/default-fund/20260503200000/investment-topn-contribution-analytics.csv",
+        route: "/api/fund-structure/reporting/structured-exports/investment-topn-contribution-analytics?fundProfileId=default-fund",
+        dataDictionaryRoute: "/api/workstation/reporting",
+        validationSummary: "Exports source-backed Top-N winners, laggards, and contribution rows with P&L percentages and heat-map intensities. 3 row(s), 18 field(s), and 8 source record(s) are ready.",
+        evidenceRoute: "/api/fund-structure/report-packs",
+        versionStamp: "structured-export:20260503200000:rows-3:sources-8:schema-1",
+        tags: ["investment", "top-n", "contribution", "analytics"]
+      }
+    ],
+    schedules: [
+      {
+        scheduleId: "sched-monthly-board-pack",
+        templateId: "monthly-board-pack",
+        cronExpression: "0 8 1 * *",
+        nextAsOfDate: "2026-06-01",
+        dueAtUtc: "2026-06-01T08:00:00Z",
+        maxRetries: 2,
+        requestedBy: "fund-controller",
+        state: "Active",
+        createdAtUtc: "2026-05-01T08:00:00Z",
+        updatedAtUtc: "2026-05-28T12:00:00Z",
+        lastRunAtUtc: "2026-05-01T08:05:00Z",
+        lastRunId: "sched-monthly-board-pack-20260501",
+        runCount: 1,
+        description: "Monthly board packet with portal and email-link delivery.",
+        deliveryTargets: [
+          {
+            distributionId: "board-reporting-committee",
+            formats: ["Pdf", "Xlsx", "Csv"],
+            deliveryMode: "SecurePortal",
+            note: "Board portal delivery."
+          },
+          {
+            distributionId: "investor-relations",
+            formats: ["Pdf", "Csv"],
+            deliveryMode: "EmailLink",
+            note: "Investor email-link delivery."
+          }
+        ]
+      }
+    ],
+    scheduleDeliveryPlans: [
+      {
+        planId: "schedule-delivery:sched-monthly-board-pack:board-reporting-committee",
+        scheduleId: "sched-monthly-board-pack",
+        templateId: "monthly-board-pack",
+        distributionId: "board-reporting-committee",
+        recipient: "Board reporting committee",
+        recipientRole: "Board",
+        channel: "Board portal",
+        deliveryMode: "SecurePortal",
+        formats: ["Pdf", "Xlsx", "Csv"],
+        isReady: true,
+        readinessSummary: "Will deliver Pdf/Xlsx/Csv by SecurePortal to Board reporting committee when schedule 'sched-monthly-board-pack' runs.",
+        route: "/reporting/report-packs?recipient=board",
+        dueAtUtc: "2026-06-01T08:00:00Z",
+        nextAsOfDate: "2026-06-01",
+        owner: "fund-controller",
+        note: "Board portal delivery.",
+        lastDeliveryAttemptId: null,
+        lastDeliveryState: null,
+        lastDeliveryAtUtc: null,
+        lastDeliveryPackageRoute: null,
+        lastDeliverySecureLink: null,
+        versionStamp: "schedule-delivery-plan:sched-monthly-board-pack:board-reporting-committee:20260528120000:formats-3"
+      },
+      {
+        planId: "schedule-delivery:sched-monthly-board-pack:investor-relations",
+        scheduleId: "sched-monthly-board-pack",
+        templateId: "monthly-board-pack",
+        distributionId: "investor-relations",
+        recipient: "Investor relations",
+        recipientRole: "Investor communications",
+        channel: "Investor portal",
+        deliveryMode: "EmailLink",
+        formats: ["Pdf", "Csv"],
+        isReady: true,
+        readinessSummary: "Will deliver Pdf/Csv by EmailLink to Investor relations when schedule 'sched-monthly-board-pack' runs.",
+        route: "/reporting/report-packs?recipient=investor-relations",
+        dueAtUtc: "2026-06-01T08:00:00Z",
+        nextAsOfDate: "2026-06-01",
+        owner: "investor-relations",
+        note: "Investor email-link delivery.",
+        lastDeliveryAttemptId: null,
+        lastDeliveryState: null,
+        lastDeliveryAtUtc: null,
+        lastDeliveryPackageRoute: null,
+        lastDeliverySecureLink: null,
+        versionStamp: "schedule-delivery-plan:sched-monthly-board-pack:investor-relations:20260528120000:formats-2"
+      }
+    ],
+    brandingThemes: [
+      {
+        themeId: "meridianstandard",
+        name: "Meridian Standard",
+        firmName: "Meridian",
+        primaryColor: "#195E63",
+        accentColor: "#2F9C95",
+        textColor: "#102A2D",
+        backgroundColor: "#FFFFFF",
+        logoUri: null,
+        footerText: "Generated by Meridian Reporting",
+        disclaimer: "For authorized recipients only.",
+        isBuiltIn: true
+      },
+      {
+        themeId: "lpcustomtheme",
+        name: "LP Custom Theme",
+        firmName: "Northstar Capital",
+        primaryColor: "#101828",
+        accentColor: "#AA5500",
+        textColor: "#111827",
+        backgroundColor: "#FFFFFF",
+        logoUri: "https://example.test/northstar.png",
+        footerText: "Northstar Capital confidential.",
+        disclaimer: "Prepared for authorized allocator review.",
+        isBuiltIn: false
       }
     ],
     summary: "4 export/reporting profiles are available for Accounting and Reporting workflows.",

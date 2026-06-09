@@ -439,7 +439,7 @@ public sealed class AccountingConfigurationServiceTests
                 Guid.NewGuid(),
                 FundStructureNodeKindDto.Fund,
                 "Fund Alpha GAAP book",
-                "USD",
+                "EUR",
                 timestamp,
                 timestamp),
             new LedgerAccountingPeriod(
@@ -502,15 +502,18 @@ public sealed class AccountingConfigurationServiceTests
         activity.PostedFundEventCount.Should().Be(1);
         activity.PublishedReportOutputCount.Should().Be(1);
         activity.NetCapitalActivity.Should().Be(250000m);
+        activity.Currency.Should().Be("EUR");
         activity.FundEvents.Should().ContainSingle(item =>
             item.FundEventId == fundEventId &&
             item.JournalStatus == ManualJournalEntryStatusDto.Approved &&
             item.ApprovalId == "approval:capital-call-controller" &&
             item.IsPosted &&
+            item.Currency == "EUR" &&
             item.NetCapitalActivity == 250000m &&
             item.EvidenceLinks.Contains("/api/workstation/evidence/subjects/private-capital/capital-call-source"));
         activity.CapitalAccounts.Should().ContainSingle(item =>
             item.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
+            item.Currency == "EUR" &&
             item.Contributions == 250000m &&
             item.NetActivity == 250000m);
         activity.CapitalAccountSubledgerEntries.Should().ContainSingle(item =>
@@ -518,18 +521,22 @@ public sealed class AccountingConfigurationServiceTests
             item.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
             item.ApprovalState == ManualJournalEntryStatusDto.Approved &&
             item.IsPosted &&
+            item.Currency == "EUR" &&
             item.NetCapitalActivity == 250000m &&
             item.RunningNetActivity == 250000m &&
             item.EvidenceLinks.Contains("/api/workstation/evidence/subjects/private-capital/capital-call-source"));
         activity.LedgerImpacts.Should().ContainSingle(item =>
             item.FundEventId == fundEventId &&
             item.ApprovalState == ManualJournalEntryStatusDto.Approved &&
+            item.Currency == "EUR" &&
+            item.Lines.All(line => line.Currency == "EUR") &&
             item.IsPostingReady &&
             item.LineCount == 2);
         activity.ReportOutputs.Should().ContainSingle(item =>
             item.FundEventId == fundEventId &&
             item.ReportOutputType == "GovernedReportPack" &&
             item.DisplayName == "CapitalAccountStatement v1" &&
+            item.Currency == "EUR" &&
             item.IsReportReady &&
             item.IsPublished &&
             item.ReportPackId == reportPackId.ToString("D") &&
@@ -544,6 +551,7 @@ public sealed class AccountingConfigurationServiceTests
         activity.FundEventRecords.Should().ContainSingle(item =>
             item.FundEventId == fundEventId &&
             item.JournalEntryId == journalEntryId &&
+            item.Currency == "EUR" &&
             item.GrossAmount == 250000m &&
             item.NetCapitalActivity == 250000m &&
             item.CapitalAccountOpeningNetActivity == 0m &&
@@ -583,7 +591,147 @@ public sealed class AccountingConfigurationServiceTests
             item.CapitalAccountSubledgerEntries.Count == 1 &&
             item.LedgerImpacts.Count == 1 &&
             item.ReportOutputs.Count == 1);
+        activity.CapitalAccountSubledgers.Should().ContainSingle(item =>
+            item.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
+            item.Currency == "EUR" &&
+            item.FundEventRecords.Single().Currency == "EUR" &&
+            item.SubledgerEntries.Single().Currency == "EUR" &&
+            item.LedgerImpacts.Single().Currency == "EUR" &&
+            item.ReportOutputs.Single().Currency == "EUR");
         activity.ValidationIssues.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Scenario_PrivateCapitalActivityProjection_DoesNotMarkPublishedReportReadyWhenPostedEventIsNotPostingReady()
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var timestamp = new DateTimeOffset(2026, 6, 30, 17, 0, 0, TimeSpan.Zero);
+        var journalEntryId = Guid.NewGuid();
+        var cashLedgerEntryId = Guid.NewGuid();
+        var payableLedgerEntryId = Guid.NewGuid();
+        var reportPackId = Guid.NewGuid();
+        const string fundEventId = "fund-event:fund-alpha:capital-call:posted-incomplete";
+        var journal = new JournalEntry(
+            journalEntryId,
+            timestamp,
+            "Incomplete posted Fund Alpha capital call",
+            [
+                new LedgerEntry(
+                    cashLedgerEntryId,
+                    journalEntryId,
+                    timestamp,
+                    new LedgerAccount("Cash", LedgerAccountType.Asset, FinancialAccountId: "entity-master"),
+                    100000m,
+                    0m,
+                    "Incomplete posted Fund Alpha capital call"),
+                new LedgerEntry(
+                    payableLedgerEntryId,
+                    journalEntryId,
+                    timestamp,
+                    new LedgerAccount("Subscription Payable", LedgerAccountType.Liability, FinancialAccountId: "liability:subscription-payable"),
+                    0m,
+                    100000m,
+                    "Incomplete posted Fund Alpha capital call")
+            ],
+            new JournalEntryMetadata(
+                ActivityType: "CapitalCall",
+                EffectiveDate: new DateOnly(2026, 6, 30),
+                IdempotencyKey: "posted:fund-alpha:capital-call:incomplete",
+                FundEventId: fundEventId,
+                FundEventType: "CapitalCall",
+                InvestorId: "investor:lp-1",
+                Tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["evidenceLinks"] = "/api/workstation/evidence/subjects/private-capital/incomplete-capital-call-source",
+                    ["automatedJournalStatus"] = "Posted",
+                    ["automatedJournalApprovalId"] = "approval:incomplete-capital-call-controller",
+                    ["approvedBy"] = "controller"
+                }));
+        var journalStore = new PostedPrivateCapitalLedgerJournalStore(
+            new LedgerBookRecord(
+                ledgerBookId,
+                "fund-alpha",
+                Guid.NewGuid(),
+                FundStructureNodeKindDto.Fund,
+                "Fund Alpha GAAP book",
+                "USD",
+                timestamp,
+                timestamp),
+            new LedgerAccountingPeriod(
+                periodId,
+                ledgerBookId,
+                2026,
+                6,
+                "2026-06",
+                new DateOnly(2026, 6, 1),
+                new DateOnly(2026, 6, 30),
+                "Closed",
+                timestamp,
+                timestamp,
+                1),
+            new LedgerJournalEntryRecord(
+                journal,
+                Guid.NewGuid(),
+                periodId,
+                CommandId: null,
+                CorrelationId: null,
+                GlobalSequence: 1,
+                CreatedAt: timestamp));
+        var workflowService = new ReportPackWorkflowService(new StaticReportPackWorkflowRecordStore(
+            new ReportPackWorkflowRecordDto(
+                reportPackId,
+                "fund-alpha",
+                "capital-account:fund-alpha:lp-1",
+                "2026-06",
+                new VersionedReportTemplateIdDto("CapitalAccountStatement", 1),
+                ReportPackWorkflowStateDto.Published,
+                3,
+                timestamp,
+                "controller",
+                timestamp,
+                [new ReportPackAuditEventDto(timestamp, "controller", "publish", ReportPackWorkflowStateDto.Approved, ReportPackWorkflowStateDto.Published)],
+                null,
+                LineProvenance:
+                [
+                    new ReportPackLineProvenanceDto(
+                        "capital-account.contribution",
+                        "ledger",
+                        fundEventId,
+                        "ledger-evidence-incomplete",
+                        LedgerEntryId: payableLedgerEntryId.ToString("D"),
+                        ReportValue: "100000",
+                        ApprovalId: "approval:incomplete-capital-call-controller")
+                ],
+                Publication: new ReportPackPublicationManifestDto(
+                    "manifest-incomplete-capital-call",
+                    "/retained/report-packs/incomplete-capital-call.json",
+                    "sha256:incomplete-capital-call",
+                    "controller",
+                    timestamp,
+                    [new ReportPackEvidenceLinkDto("publication-evidence-incomplete", "Publication manifest", "/api/workstation/evidence/report-packs/incomplete-capital-call", "EvidenceVault", timestamp)]))));
+        var service = CreateManualJournalEntryWorkbenchService(configuration, journalStore, workflowService);
+
+        var activity = await service.GetPrivateCapitalActivityAsync("fund-alpha", ledgerBookId);
+
+        activity.ReportOutputs.Should().ContainSingle(item =>
+            item.FundEventId == fundEventId &&
+            item.IsPublished &&
+            !item.IsReportReady &&
+            item.ReportPackId == reportPackId.ToString("D") &&
+            item.ValidationIssues.Any(issue => issue.Code == "private-capital.report-output-posting-not-ready"));
+        activity.FundEventRecords.Should().ContainSingle(item =>
+            item.FundEventId == fundEventId &&
+            item.IsPublished &&
+            !item.IsPostingReady &&
+            !item.IsReportReady &&
+            item.Readiness == PrivateCapitalFundEventLedgerReadinessDto.Blocked &&
+            item.ValidationIssues.Any(issue => issue.Code == "private-capital.capital-account-missing") &&
+            item.ValidationIssues.Any(issue => issue.Code == "private-capital.capital-account-impact-missing") &&
+            item.ReportOutputs.Single().ValidationIssues.Any(issue => issue.Code == "private-capital.report-output-posting-not-ready"));
+        activity.PublishedReportOutputCount.Should().Be(1);
     }
 
     [Fact]

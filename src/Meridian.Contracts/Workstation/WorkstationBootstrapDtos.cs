@@ -359,7 +359,9 @@ public sealed record WorkstationReportingPayload(
     IReadOnlyList<WorkstationReportingTemplatePayload> Templates,
     IReadOnlyList<WorkstationReportingRunPayload> RecentRuns,
     IReadOnlyList<ReportingScheduleRecordDto>? Schedules = null,
-    IReadOnlyList<ReportPackDeliveryAttemptDto>? DeliveryAttempts = null);
+    IReadOnlyList<ReportPackDeliveryAttemptDto>? DeliveryAttempts = null,
+    string? SelectedFundProfileId = null,
+    IReadOnlyList<ReportingScheduleDeliveryPlanDto>? ScheduleDeliveryPlans = null);
 
 /// <summary>
 /// Typed payload returned by <c>GET /api/workstation/accounting</c> and

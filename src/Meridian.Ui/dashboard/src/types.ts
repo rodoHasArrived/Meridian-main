@@ -2562,6 +2562,8 @@ export interface ReportBrandingTheme {
 export type PortfolioReportingCutKind = "Fund" | "Strategy" | "UserTag";
 export type PortfolioReportingLiveViewState = "LiveLinked" | "SourceBacked" | "Stale" | "Blocked";
 export type PortfolioReportingPnlSlicePeriod = "Daily" | "Weekly" | "Monthly" | "Yearly";
+export type PortfolioReportingAnalyticsKind = "TopWinner" | "TopLaggard" | "Contribution";
+export type PortfolioReportingAnalyticsScope = "Security" | "Strategy" | "AssetClass";
 export type CrossFundReportingConsolidationScope = "Company" | "Fund" | "Entity";
 
 export interface PortfolioReportingCut {
@@ -2624,6 +2626,28 @@ export interface PortfolioReportingPnlSlice {
   totalPnl: number;
   priorTotalPnl: number;
   pnlChange: number;
+  sourceCount: number;
+  asOf: string;
+  route: string;
+  readinessSummary: string;
+  tags: string[];
+  versionStamp: string | null;
+}
+
+export interface PortfolioReportingAnalyticsRow {
+  analyticsId: string;
+  kind: PortfolioReportingAnalyticsKind;
+  scope: PortfolioReportingAnalyticsScope;
+  rank: number;
+  label: string;
+  symbol: string | null;
+  classification: string | null;
+  currency: string;
+  realizedPnl: number;
+  unrealizedPnl: number;
+  totalPnl: number;
+  contributionPercent: number;
+  heatMapIntensity: number;
   sourceCount: number;
   asOf: string;
   route: string;
@@ -2904,8 +2928,82 @@ export interface ReportPackDistributionRecord {
   route: string;
 }
 
+export type GovernanceReportKind =
+  | "TrialBalance"
+  | "NavSummary"
+  | "AssetAllocation"
+  | "ReconciliationPack"
+  | "PerformanceReport"
+  | "HoldingsReport"
+  | "CapitalAccountStatement"
+  | "InvestorStatement"
+  | "BoardPacket"
+  | "AuditPackage"
+  | "CertifiedDataset"
+  | "CustomReport";
 export type GovernanceReportArtifactFormat = "Json" | "Csv" | "Xlsx" | "Html" | "Pdf";
+export type GovernanceReportPackStatus =
+  | "Unknown"
+  | "Draft"
+  | "Generated"
+  | "Validated"
+  | "ReviewRequired"
+  | "Approved"
+  | "Rejected"
+  | "Exported"
+  | "Retained"
+  | "Superseded"
+  | "Restated"
+  | "InReview"
+  | "Published";
 export type ReportPackDeliveryMode = "EmailLink" | "SecurePortal" | "EvidenceVault" | "InternalRoute";
+
+export interface FundReportPackGenerateRequest {
+  fundProfileId: string;
+  auditActor: string;
+  reportKind?: GovernanceReportKind;
+  asOf?: string | null;
+  currency?: string | null;
+  correlationId?: string | null;
+  decisionRationale?: string | null;
+  formats?: GovernanceReportArtifactFormat[] | null;
+  expectedSchemaVersion?: number | null;
+  brandingThemeId?: string | null;
+  brandingThemeOverride?: ReportBrandingTheme | null;
+}
+
+export interface FundReportPackArtifact {
+  artifactKind: string;
+  format: GovernanceReportArtifactFormat;
+  relativePath: string;
+  sizeBytes: number;
+  checksumSha256: string;
+  schemaVersion: number;
+}
+
+export interface FundReportPackSnapshot {
+  reportId: string;
+  fundProfileId: string;
+  displayName: string;
+  reportKind: GovernanceReportKind;
+  currency: string;
+  asOf: string;
+  generatedAt: string;
+  totalNetAssets: number;
+  auditActor: string;
+  correlationId: string;
+  decisionRationale: string | null;
+  provenance: unknown;
+  artifacts: FundReportPackArtifact[];
+  warnings: string[];
+  contractName: string;
+  schemaVersion: number;
+  brandingTheme: ReportBrandingTheme | null;
+  status: GovernanceReportPackStatus;
+  validationIssues: unknown[];
+  lifecycleEvents: unknown[];
+  auditPackReadiness: unknown | null;
+}
 
 export interface ReportPackDeliveryArtifact {
   format: GovernanceReportArtifactFormat;
@@ -2971,6 +3069,31 @@ export interface ReportingScheduleDeliveryTarget {
   formats?: GovernanceReportArtifactFormat[] | null;
   deliveryMode?: ReportPackDeliveryMode | null;
   note?: string | null;
+}
+
+export interface ReportingScheduleDeliveryPlan {
+  planId: string;
+  scheduleId: string;
+  templateId: string;
+  distributionId: string;
+  recipient: string;
+  recipientRole: string;
+  channel: string;
+  deliveryMode: ReportPackDeliveryMode;
+  formats: GovernanceReportArtifactFormat[];
+  isReady: boolean;
+  readinessSummary: string;
+  route: string;
+  dueAtUtc: string;
+  nextAsOfDate: string;
+  owner: string;
+  note: string | null;
+  lastDeliveryAttemptId: string | null;
+  lastDeliveryState: string | null;
+  lastDeliveryAtUtc: string | null;
+  lastDeliveryPackageRoute: string | null;
+  lastDeliverySecureLink: string | null;
+  versionStamp: string | null;
 }
 
 export type StructuredReportingExportPurpose = "Regulatory" | "DataWarehouse" | "InvestmentDecision";
@@ -3140,6 +3263,8 @@ export interface ReportingWorkflowRecord {
 
 export interface AccountingReportingSummary {
   profileCount: number;
+  fundProfileId?: string | null;
+  selectedFundProfileId?: string | null;
   recommendedProfiles: string[];
   profiles: AccountingReportingProfile[];
   reportPackDistributions?: ReportPackDistributionRecord[];
@@ -3150,12 +3275,14 @@ export interface AccountingReportingSummary {
   workflowRecords?: ReportingWorkflowRecord[];
   schedules?: ReportingScheduleRecord[];
   deliveryAttempts?: ReportPackDeliveryAttempt[];
+  scheduleDeliveryPlans?: ReportingScheduleDeliveryPlan[];
   portfolioCuts?: PortfolioReportingCut[];
   structuredExports?: StructuredReportingExport[];
   brandingThemes?: ReportBrandingTheme[];
   livePortfolioViews?: PortfolioReportingLiveView[];
   crossFundConsolidations?: CrossFundReportingConsolidation[];
   pnlSlices?: PortfolioReportingPnlSlice[];
+  analyticsRows?: PortfolioReportingAnalyticsRow[];
 }
 
 export type GovernanceCashFlowSummary = AccountingCashFlowSummary;

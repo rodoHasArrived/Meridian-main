@@ -140,7 +140,12 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             fundProfileId: fundProfileId,
             fundDisplayName: "Alpha Income Fund",
             realizedPnl: 20m,
-            unrealizedPnl: 30m));
+            unrealizedPnl: 30m,
+            positionPnl: new Dictionary<string, (decimal RealizedPnl, decimal UnrealizedPnl)>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["AAPL"] = (30m, 30m),
+                ["HEDGE"] = (-10m, 0m)
+            }));
         await repository.RecordRunAsync(BuildRun(
             runId: "run-sibling-001",
             strategyId: "sibling-1",
@@ -172,6 +177,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         workspace.LedgerReconciliationSnapshot.Vehicles.Should().BeEmpty();
         workspace.Nav.ComponentCount.Should().BeGreaterThan(0);
         workspace.Reporting.ProfileCount.Should().BeGreaterThan(0);
+        workspace.Reporting.FundProfileId.Should().Be(fundProfileId);
         workspace.Reporting.BrandingThemes.Should().NotBeNull();
         workspace.Reporting.BrandingThemes!.Should().Contain(theme =>
             theme.ThemeId == "meridian-standard" &&
@@ -233,6 +239,30 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             slice.EndDate == new DateOnly(2026, 4, 11) &&
             slice.TotalPnl == 50m &&
             slice.VersionStamp == "pnl-slice:20260411160000:yearly:sources-1:prior-0");
+        workspace.Reporting.AnalyticsRows.Should().NotBeNull();
+        workspace.Reporting.AnalyticsRows!.Should().Contain(row =>
+            row.Kind == PortfolioReportingAnalyticsKindDto.TopWinner &&
+            row.Scope == PortfolioReportingAnalyticsScopeDto.Security &&
+            row.Rank == 1 &&
+            row.Symbol == "AAPL" &&
+            row.TotalPnl == 60m &&
+            row.ContributionPercent == 120m &&
+            row.HeatMapIntensity == 85.7143m &&
+            row.Route == "/api/workstation/reporting?analyticsId=analytics%3Atopwinner%3Asecurity%3Aaapl");
+        workspace.Reporting.AnalyticsRows.Should().Contain(row =>
+            row.Kind == PortfolioReportingAnalyticsKindDto.TopLaggard &&
+            row.Scope == PortfolioReportingAnalyticsScopeDto.Security &&
+            row.Rank == 1 &&
+            row.Symbol == "HEDGE" &&
+            row.TotalPnl == -10m &&
+            row.ContributionPercent == -20m &&
+            row.HeatMapIntensity == 14.2857m);
+        workspace.Reporting.AnalyticsRows.Should().Contain(row =>
+            row.Kind == PortfolioReportingAnalyticsKindDto.Contribution &&
+            row.Scope == PortfolioReportingAnalyticsScopeDto.Strategy &&
+            row.Label == "Carry Strategy" &&
+            row.TotalPnl == 50m &&
+            row.ReadinessSummary.Contains("contribution is 100% of portfolio P&L", StringComparison.Ordinal));
         workspace.Reporting.LivePortfolioViews.Should().NotBeNull();
         var fundLiveView = workspace.Reporting.LivePortfolioViews!.Should().ContainSingle(view =>
                 view.ViewId == "live:fund:consolidated")
@@ -284,6 +314,13 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             export.Route.Contains("fundProfileId=", StringComparison.Ordinal) &&
             export.VersionStamp!.StartsWith("structured-export:20260411160000", StringComparison.Ordinal));
         workspace.Reporting.StructuredExports.Should().Contain(export =>
+            export.ExportId == "investment-topn-contribution-analytics" &&
+            export.Purpose == StructuredReportingExportPurposeDto.InvestmentDecision &&
+            export.Format == GovernanceReportArtifactFormatDto.Csv &&
+            export.RowCount == workspace.Reporting.AnalyticsRows!.Count &&
+            export.FieldCount == 18 &&
+            export.IsReady);
+        workspace.Reporting.StructuredExports.Should().Contain(export =>
             export.ExportId == "cross-fund-consolidation" &&
             export.Purpose == StructuredReportingExportPurposeDto.InvestmentDecision &&
             export.RowCount == workspace.Reporting.CrossFundConsolidations!.Count &&
@@ -300,6 +337,22 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             row["cutId"] == "fund:consolidated" &&
             row["totalPnl"] == "50" &&
             row["shadowNav"] == "2000");
+        var analyticsExport = await service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
+            fundProfileId,
+            "investment-topn-contribution-analytics",
+            new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero),
+            "USD"));
+        analyticsExport.Export.ExportId.Should().Be("investment-topn-contribution-analytics");
+        analyticsExport.Columns.Should().Contain(column => column.Name == "contributionPercent");
+        analyticsExport.Columns.Should().Contain(column => column.Name == "heatMapIntensity");
+        analyticsExport.Rows.Should().Contain(row =>
+            row["analyticsId"] == "analytics:topwinner:security:aapl" &&
+            row["kind"] == "TopWinner" &&
+            row["scope"] == "Security" &&
+            row["symbol"] == "AAPL" &&
+            row["totalPnl"] == "60" &&
+            row["contributionPercent"] == "120.0" &&
+            row["heatMapIntensity"] == "85.7143");
         var crossFundExport = await service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
             fundProfileId,
             "cross-fund-consolidation",
@@ -354,6 +407,17 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             slice.SourceCount == 0 &&
             slice.TotalPnl == 0m &&
             slice.ReadinessSummary.StartsWith("Blocked: no source-backed P&L runs", StringComparison.Ordinal));
+        workspace.Reporting.AnalyticsRows.Should().ContainSingle(row =>
+            row.AnalyticsId == "analytics:blocked" &&
+            row.SourceCount == 0 &&
+            row.TotalPnl == 0m &&
+            row.ReadinessSummary.StartsWith("Blocked: no source-backed portfolio runs", StringComparison.Ordinal));
+        workspace.Reporting.StructuredExports.Should().Contain(export =>
+            export.ExportId == "investment-topn-contribution-analytics" &&
+            !export.IsReady &&
+            export.RowCount == 1 &&
+            export.SourceCount == 0 &&
+            export.ValidationSummary!.StartsWith("No source-backed Top-N or contribution analytics rows", StringComparison.Ordinal));
         var crossFundRow = workspace.Reporting.CrossFundConsolidations.Should().ContainSingle(row =>
                 row.ConsolidationId == "cross-fund:company")
             .Which;
@@ -1318,15 +1382,20 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         string fundProfileId,
         string fundDisplayName,
         decimal realizedPnl = 0m,
-        decimal unrealizedPnl = 0m)
+        decimal unrealizedPnl = 0m,
+        IReadOnlyDictionary<string, (decimal RealizedPnl, decimal UnrealizedPnl)>? positionPnl = null)
     {
         var startedAt = new DateTimeOffset(2026, 4, 11, 14, 0, 0, TimeSpan.Zero);
         var completedAt = startedAt.AddMinutes(30);
         var ledger = CreateLedger();
-        var positions = new Dictionary<string, Position>(StringComparer.OrdinalIgnoreCase)
+        positionPnl ??= new Dictionary<string, (decimal RealizedPnl, decimal UnrealizedPnl)>(StringComparer.OrdinalIgnoreCase)
         {
-            ["AAPL"] = new("AAPL", 10, 40m, UnrealizedPnl: unrealizedPnl, RealizedPnl: realizedPnl)
+            ["AAPL"] = (realizedPnl, unrealizedPnl)
         };
+        var positions = positionPnl.ToDictionary(
+            static pair => pair.Key,
+            static pair => new Position(pair.Key, 10, 40m, UnrealizedPnl: pair.Value.UnrealizedPnl, RealizedPnl: pair.Value.RealizedPnl),
+            StringComparer.OrdinalIgnoreCase);
         var accountSnapshot = new FinancialAccountSnapshot(
             AccountId: BacktestDefaults.DefaultBrokerageAccountId,
             DisplayName: "Primary Brokerage",

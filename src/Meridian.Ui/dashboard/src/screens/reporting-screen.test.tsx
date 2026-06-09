@@ -21,6 +21,8 @@ const accounting: AccountingWorkspaceResponse = {
   },
   reporting: {
     profileCount: 2,
+    fundProfileId: "fund-alpha",
+    selectedFundProfileId: "fund-alpha",
     recommendedProfiles: ["excel"],
     profiles: [
       {
@@ -245,6 +247,71 @@ const accounting: AccountingWorkspaceResponse = {
         versionStamp: "pnl-slice:20260411160000:yearly:sources-1:prior-0"
       }
     ],
+    analyticsRows: [
+      {
+        analyticsId: "analytics:topwinner:security:aapl",
+        kind: "TopWinner",
+        scope: "Security",
+        rank: 1,
+        label: "Apple Inc.",
+        symbol: "AAPL",
+        classification: "Equity",
+        currency: "USD",
+        realizedPnl: 20,
+        unrealizedPnl: 30,
+        totalPnl: 50,
+        contributionPercent: 125,
+        heatMapIntensity: 83.3333,
+        sourceCount: 1,
+        asOf: "2026-04-11T16:00:00Z",
+        route: "/api/workstation/reporting?analyticsId=analytics%3Atopwinner%3Asecurity%3Aaapl",
+        readinessSummary: "Top-N winner from 1 source-backed run(s); contributes 125% of portfolio P&L.",
+        tags: ["analytics", "topwinner", "security", "equity"],
+        versionStamp: "analytics:20260411160000:topwinner:security:sources-1"
+      },
+      {
+        analyticsId: "analytics:toplaggard:security:hedge",
+        kind: "TopLaggard",
+        scope: "Security",
+        rank: 1,
+        label: "Hedge Overlay",
+        symbol: "HEDGE",
+        classification: "Derivative",
+        currency: "USD",
+        realizedPnl: -10,
+        unrealizedPnl: -5,
+        totalPnl: -15,
+        contributionPercent: -37.5,
+        heatMapIntensity: 25,
+        sourceCount: 1,
+        asOf: "2026-04-11T16:00:00Z",
+        route: "/api/workstation/reporting?analyticsId=analytics%3Atoplaggard%3Asecurity%3Ahedge",
+        readinessSummary: "Top-N laggard from 1 source-backed run(s); contributes -37.5% of portfolio P&L.",
+        tags: ["analytics", "toplaggard", "security", "derivative"],
+        versionStamp: "analytics:20260411160000:toplaggard:security:sources-1"
+      },
+      {
+        analyticsId: "analytics:contribution:strategy:carry-1",
+        kind: "Contribution",
+        scope: "Strategy",
+        rank: 1,
+        label: "Carry Strategy",
+        symbol: null,
+        classification: "Strategy",
+        currency: "USD",
+        realizedPnl: 20,
+        unrealizedPnl: 30,
+        totalPnl: 50,
+        contributionPercent: 125,
+        heatMapIntensity: 83.3333,
+        sourceCount: 1,
+        asOf: "2026-04-11T16:00:00Z",
+        route: "/api/workstation/reporting?analyticsId=analytics%3Acontribution%3Astrategy%3Acarry-1",
+        readinessSummary: "1 source-backed run(s); contribution is 125% of portfolio P&L with 83.33% heat-map intensity.",
+        tags: ["analytics", "contribution", "strategy", "strategy"],
+        versionStamp: "analytics:20260411160000:contribution:strategy:sources-1"
+      }
+    ],
     crossFundConsolidations: [
       {
         consolidationId: "cross-fund:company",
@@ -343,6 +410,28 @@ const accounting: AccountingWorkspaceResponse = {
         evidenceRoute: "/api/fund-structure/report-packs",
         versionStamp: "structured-export:20260411160000:rows-2:sources-4:schema-1",
         tags: ["investment", "portfolio-cuts", "shadow-nav"]
+      },
+      {
+        exportId: "investment-topn-contribution-analytics",
+        label: "Top-N contribution analytics",
+        purpose: "InvestmentDecision",
+        format: "Csv",
+        dataset: "portfolio-topn-contribution-analytics",
+        consumer: "Investment and risk decision workflows",
+        schemaVersion: 1,
+        rowCount: 3,
+        fieldCount: 18,
+        sourceCount: 4,
+        currency: "USD",
+        asOf: "2026-04-11T16:00:00Z",
+        isReady: true,
+        retainedPath: "exports/reporting/fund-alpha/20260411160000/investment-topn-contribution-analytics.csv",
+        route: "/api/fund-structure/reporting/structured-exports/investment-topn-contribution-analytics?fundProfileId=fund-alpha",
+        dataDictionaryRoute: "/api/workstation/reporting",
+        validationSummary: "Exports source-backed Top-N winners, laggards, and contribution rows with P&L percentages and heat-map intensities. 3 row(s), 18 field(s), and 4 source record(s) are ready.",
+        evidenceRoute: "/api/fund-structure/report-packs",
+        versionStamp: "structured-export:20260411160000:rows-3:sources-4:schema-1",
+        tags: ["investment", "top-n", "contribution", "analytics"]
       },
       {
         exportId: "cross-fund-consolidation",
@@ -600,6 +689,31 @@ describe("ReportingScreen", () => {
     expect(yearlySlice).toHaveTextContent("pnl-slice:20260411160000:yearly:sources-1:prior-0");
   });
 
+  it("renders Top-N and contribution analytics rows from the shared reporting payload", () => {
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
+
+    expect(screen.getByRole("region", { name: "Top-N and contribution analytics" })).toBeInTheDocument();
+    const winner = screen.getByRole("listitem", { name: "Apple Inc. TopWinner Security analytics row" });
+    expect(within(winner).getByText("TopWinner")).toBeInTheDocument();
+    expect(within(winner).getByText("Security")).toBeInTheDocument();
+    expect(winner).toHaveTextContent("AAPL");
+    expect(winner).toHaveTextContent("$50.00");
+    expect(winner).toHaveTextContent("125%");
+    expect(winner).toHaveTextContent("83.33% intensity");
+    expect(within(winner).getByRole("link", { name: "Open Apple Inc. analytics row" })).toHaveAttribute(
+      "href",
+      "/api/workstation/reporting?analyticsId=analytics%3Atopwinner%3Asecurity%3Aaapl"
+    );
+
+    const laggard = screen.getByRole("listitem", { name: "Hedge Overlay TopLaggard Security analytics row" });
+    expect(laggard).toHaveTextContent("Derivative");
+    expect(laggard).toHaveTextContent("-$15.00");
+
+    const contribution = screen.getByRole("listitem", { name: "Carry Strategy Contribution Strategy analytics row" });
+    expect(contribution).toHaveTextContent("1 source-backed run(s); contribution is 125% of portfolio P&L");
+    expect(contribution).toHaveTextContent("analytics:20260411160000:contribution:strategy:sources-1");
+  });
+
   it("renders cross-fund consolidations from the shared reporting payload", () => {
     renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
 
@@ -634,6 +748,13 @@ describe("ReportingScreen", () => {
     const investmentRow = screen.getByRole("listitem", { name: "Investment portfolio cuts structured export" });
     expect(within(investmentRow).getByText("InvestmentDecision")).toBeInTheDocument();
     expect(within(investmentRow).getByText("structured-export:20260411160000:rows-2:sources-4:schema-1")).toBeInTheDocument();
+    const analyticsExportRow = screen.getByRole("listitem", { name: "Top-N contribution analytics structured export" });
+    expect(within(analyticsExportRow).getByText("Csv")).toBeInTheDocument();
+    expect(within(analyticsExportRow).getByText("structured-export:20260411160000:rows-3:sources-4:schema-1")).toBeInTheDocument();
+    expect(within(analyticsExportRow).getByRole("link", { name: "Open Top-N contribution analytics structured export" })).toHaveAttribute(
+      "href",
+      "/api/fund-structure/reporting/structured-exports/investment-topn-contribution-analytics?fundProfileId=fund-alpha"
+    );
     expect(screen.getByRole("listitem", { name: "Cross-fund consolidation structured export" })).toHaveTextContent(
       "structured-export:20260411160000:rows-2:sources-5:schema-1"
     );
@@ -647,6 +768,7 @@ describe("ReportingScreen", () => {
     expect(within(standardTheme).getByText("Built-in")).toBeInTheDocument();
     expect(within(standardTheme).getByText("#195E63")).toBeInTheDocument();
     expect(standardTheme).toHaveTextContent("Generated by Meridian Reporting");
+    expect(within(standardTheme).getByRole("button", { name: "Generate Meridian Standard branded report pack" })).toBeEnabled();
 
     const customTheme = screen.getByRole("listitem", { name: "LP Custom Theme report branding theme" });
     expect(within(customTheme).getByText("Custom")).toBeInTheDocument();
@@ -654,6 +776,107 @@ describe("ReportingScreen", () => {
     expect(within(customTheme).getByText("#AA5500")).toBeInTheDocument();
     expect(customTheme).toHaveTextContent("Prepared for authorized allocator review.");
     expect(within(customTheme).getByText("https://example.test/northstar.png")).toBeInTheDocument();
+  });
+
+  it("generates governed report packs with the selected branding theme", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify({
+        reportId: "report-branded-1",
+        fundProfileId: "fund-alpha",
+        displayName: "Fund Alpha",
+        reportKind: "BoardPacket",
+        currency: "USD",
+        asOf: "2026-06-08T00:00:00Z",
+        generatedAt: "2026-06-08T00:01:00Z",
+        totalNetAssets: 1250000,
+        auditActor: "browser.reporting",
+        correlationId: "corr-branded-1",
+        decisionRationale: "Generated from Reporting branding theme LP Custom Theme.",
+        provenance: {},
+        artifacts: [
+          {
+            artifactKind: "report-pack",
+            format: "Pdf",
+            relativePath: "fund-alpha/report-branded-1/board.pdf",
+            sizeBytes: 2048,
+            checksumSha256: "sha256:pdf",
+            schemaVersion: 1
+          },
+          {
+            artifactKind: "report-pack",
+            format: "Xlsx",
+            relativePath: "fund-alpha/report-branded-1/board.xlsx",
+            sizeBytes: 1024,
+            checksumSha256: "sha256:xlsx",
+            schemaVersion: 1
+          }
+        ],
+        warnings: [],
+        contractName: "GovernedReportPack",
+        schemaVersion: 1,
+        brandingTheme: {
+          themeId: "lpcustomtheme",
+          name: "LP Custom Theme",
+          firmName: "Northstar Capital",
+          primaryColor: "#101828",
+          accentColor: "#AA5500",
+          textColor: "#111827",
+          backgroundColor: "#FFFFFF",
+          logoUri: "https://example.test/northstar.png",
+          footerText: "Northstar Capital confidential.",
+          disclaimer: "Prepared for authorized allocator review.",
+          isBuiltIn: false
+        },
+        status: "Generated",
+        validationIssues: [],
+        lifecycleEvents: [],
+        auditPackReadiness: null
+      })
+    });
+
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
+    await user.click(screen.getByRole("button", { name: "Generate LP Custom Theme branded report pack" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/report-packs",
+      expect.objectContaining({ method: "POST" })
+    ));
+    const request = JSON.parse((fetchMock.mock.calls[0]?.[1] as RequestInit).body as string);
+    expect(request).toEqual({
+      fundProfileId: "fund-alpha",
+      auditActor: "browser.reporting",
+      reportKind: "BoardPacket",
+      formats: ["Pdf", "Xlsx", "Csv"],
+      brandingThemeId: "lpcustomtheme",
+      decisionRationale: "Generated from Reporting branding theme LP Custom Theme."
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("status", { name: "Generate branded report pack status" })).toHaveTextContent(
+        "LP Custom Theme report pack generated."
+      );
+    });
+    expect(screen.getByRole("status", { name: "Generate branded report pack status" })).toHaveTextContent("Artifacts: 2");
+  });
+
+  it("keeps themed report-pack generation disabled without fund context", () => {
+    renderWithRouter(
+      <ReportingScreen
+        data={{
+          ...accounting,
+          reporting: {
+            ...accounting.reporting,
+            fundProfileId: null,
+            selectedFundProfileId: null,
+            workflowRecords: []
+          }
+        }}
+      />,
+      { initialEntries: ["/reporting"] }
+    );
+
+    expect(screen.getByRole("button", { name: "Generate Meridian Standard branded report pack" })).toBeDisabled();
   });
 
   it("renders template designer lifecycle controls for governed versions", () => {
@@ -1177,6 +1400,56 @@ describe("ReportingScreen", () => {
             ]
           }
         ],
+        scheduleDeliveryPlans: [
+          {
+            planId: "schedule-delivery:sched-investor:board-reporting-committee",
+            scheduleId: "sched-investor",
+            templateId: "investor-monthly-statement",
+            distributionId: "board-reporting-committee",
+            recipient: "Board reporting committee",
+            recipientRole: "Board",
+            channel: "Board portal",
+            deliveryMode: "SecurePortal",
+            formats: ["Pdf", "Xlsx", "Csv"],
+            isReady: true,
+            readinessSummary: "Will deliver Pdf/Xlsx/Csv by SecurePortal to Board reporting committee when schedule 'sched-investor' runs.",
+            route: "/reporting/report-packs?recipient=board",
+            dueAtUtc: "2026-06-01T08:00:00Z",
+            nextAsOfDate: "2026-06-01",
+            owner: "fund-controller",
+            note: "Board package.",
+            lastDeliveryAttemptId: "attempt-1",
+            lastDeliveryState: "Delivered",
+            lastDeliveryAtUtc: "2026-05-03T20:15:00Z",
+            lastDeliveryPackageRoute: "/reporting/report-packs/11111111-1111-1111-1111-111111111111/packages/pkg-board-1",
+            lastDeliverySecureLink: "/portal/reporting/packages/pkg-board-1?token=abc123",
+            versionStamp: "schedule-delivery-plan:sched-investor:board-reporting-committee:20260503080000:formats-3"
+          },
+          {
+            planId: "schedule-delivery:sched-investor:investor-relations",
+            scheduleId: "sched-investor",
+            templateId: "investor-monthly-statement",
+            distributionId: "investor-relations",
+            recipient: "Investor relations",
+            recipientRole: "Investor communications",
+            channel: "Investor portal",
+            deliveryMode: "EmailLink",
+            formats: ["Pdf", "Csv"],
+            isReady: true,
+            readinessSummary: "Will deliver Pdf/Csv by EmailLink to Investor relations when schedule 'sched-investor' runs.",
+            route: "/reporting/report-packs?recipient=investor-relations",
+            dueAtUtc: "2026-06-01T08:00:00Z",
+            nextAsOfDate: "2026-06-01",
+            owner: "investor-relations",
+            note: "Investor package.",
+            lastDeliveryAttemptId: null,
+            lastDeliveryState: null,
+            lastDeliveryAtUtc: null,
+            lastDeliveryPackageRoute: null,
+            lastDeliverySecureLink: null,
+            versionStamp: "schedule-delivery-plan:sched-investor:investor-relations:20260503080000:formats-2"
+          }
+        ],
         deliveryAttempts: [
           {
             attemptId: "attempt-1",
@@ -1227,18 +1500,35 @@ describe("ReportingScreen", () => {
     expect(screen.getByRole("button", { name: "Pause" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "Resume" })).toBeDisabled();
     expect(screen.getByText("board-reporting-committee via SecurePortal (Pdf/Xlsx/Csv); investor-relations via EmailLink (Pdf/Csv)")).toBeInTheDocument();
-
-    expect(screen.getByRole("list", { name: "Report-pack delivery attempts" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Board reporting committee delivery attempt Delivered")).toHaveTextContent(
-      "board-portal:packet-1"
-    );
-    expect(screen.getByLabelText("Board reporting committee delivery attempt Delivered")).toHaveTextContent(
-      "SecurePortal package · Pdf, Xlsx, Csv"
-    );
-    expect(screen.getByLabelText("Board reporting committee delivery attempt Delivered")).toHaveTextContent(
+    expect(screen.getByRole("list", { name: "Reporting schedule delivery plans" })).toBeInTheDocument();
+    const boardPlan = screen.getByRole("listitem", {
+      name: "Board reporting committee SecurePortal scheduled delivery plan for sched-investor"
+    });
+    expect(boardPlan).toHaveTextContent("Will deliver Pdf/Xlsx/Csv by SecurePortal to Board reporting committee");
+    expect(boardPlan).toHaveTextContent("Pdf, Xlsx, Csv");
+    expect(boardPlan).toHaveTextContent("Board package.");
+    expect(boardPlan).toHaveTextContent("schedule-delivery-plan:sched-investor:board-reporting-committee:20260503080000:formats-3");
+    expect(within(boardPlan).getByRole("link", { name: "/portal/reporting/packages/pkg-board-1?token=abc123" })).toHaveAttribute(
+      "href",
       "/portal/reporting/packages/pkg-board-1?token=abc123"
     );
-    expect(screen.getByRole("link", { name: "/portal/reporting/packages/pkg-board-1?token=abc123" })).toHaveAttribute(
+    const investorPlan = screen.getByRole("listitem", {
+      name: "Investor relations EmailLink scheduled delivery plan for sched-investor"
+    });
+    expect(investorPlan).toHaveTextContent("No retained delivery yet");
+
+    expect(screen.getByRole("list", { name: "Report-pack delivery attempts" })).toBeInTheDocument();
+    const boardAttempt = screen.getByLabelText("Board reporting committee delivery attempt Delivered");
+    expect(boardAttempt).toHaveTextContent(
+      "board-portal:packet-1"
+    );
+    expect(boardAttempt).toHaveTextContent(
+      "SecurePortal package · Pdf, Xlsx, Csv"
+    );
+    expect(boardAttempt).toHaveTextContent(
+      "/portal/reporting/packages/pkg-board-1?token=abc123"
+    );
+    expect(within(boardAttempt).getByRole("link", { name: "/portal/reporting/packages/pkg-board-1?token=abc123" })).toHaveAttribute(
       "href",
       "/portal/reporting/packages/pkg-board-1?token=abc123"
     );

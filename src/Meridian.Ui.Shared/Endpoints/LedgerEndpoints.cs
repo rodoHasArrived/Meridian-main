@@ -676,6 +676,7 @@ public static class LedgerEndpoints
             Guid? ledgerBookId,
             string? capitalAccountId,
             string? investorId,
+            string? currency,
             HttpContext context) =>
         {
             if (!HasLedgerReadPermission(context))
@@ -695,16 +696,32 @@ public static class LedgerEndpoints
                 return ServiceUnavailable();
             }
 
+            var normalizedInvestorId = NormalizeOptional(investorId);
+            var normalizedCurrency = NormalizeOptional(currency);
             var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
-            var filtered = FilterPrivateCapitalActivity(activity, null, normalizedCapitalAccountId, investorId);
-            var subledger = filtered.CapitalAccountSubledgers
-                .FirstOrDefault(item => string.Equals(item.CapitalAccountId, normalizedCapitalAccountId, StringComparison.OrdinalIgnoreCase));
-            if (subledger is null)
+            var filtered = FilterPrivateCapitalActivity(activity, null, normalizedCapitalAccountId, normalizedInvestorId);
+            var subledgers = filtered.CapitalAccountSubledgers
+                .Where(item =>
+                    string.Equals(item.CapitalAccountId, normalizedCapitalAccountId, StringComparison.OrdinalIgnoreCase) &&
+                    (normalizedInvestorId is null || string.Equals(item.InvestorId ?? string.Empty, normalizedInvestorId, StringComparison.OrdinalIgnoreCase)) &&
+                    (normalizedCurrency is null || string.Equals(item.Currency, normalizedCurrency, StringComparison.OrdinalIgnoreCase)))
+                .OrderBy(static item => item.InvestorId, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(static item => item.Currency, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            if (subledgers.Length == 0)
             {
                 return Results.NotFound();
             }
 
-            return Results.Json(subledger, jsonOptions);
+            if (subledgers.Length > 1)
+            {
+                return Results.BadRequest(new
+                {
+                    error = $"capitalAccountId '{normalizedCapitalAccountId}' matched {subledgers.Length} private-capital subledgers. Provide investorId and currency to select a single capital-account subledger."
+                });
+            }
+
+            return Results.Json(subledgers[0], jsonOptions);
         })
         .WithName("GetLedgerPrivateCapitalCapitalAccountSubledger")
         .Produces<PrivateCapitalCapitalAccountSubledgerDto>(StatusCodes.Status200OK)

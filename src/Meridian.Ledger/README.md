@@ -88,7 +88,12 @@ journal entries and optional ledger report packs. It groups private-capital jour
 event, exposes balanced ledger impact rows, capital-account subledger impact, retained evidence,
 approval metadata, reconstruction issues, and report-output links so downstream Reporting, WPF,
 and browser surfaces can consume one ledger-owned model instead of rebuilding private-capital
-event state locally.
+event state locally. Published report-pack links remain publication facts, but the projector only
+marks a fund event report-ready when the event is also posting-ready across approval, evidence,
+balanced ledger impact, and capital-account impact. If journal entries grouped under one fund-event
+id disagree on event type, capital account, investor, effective date, or approval state, the
+projector emits critical reconstruction issues and keeps the event out of posting-ready status
+instead of silently merging incompatible capital-account subledger rows.
 
 ## Diagrams
 

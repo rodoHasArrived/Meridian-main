@@ -61,6 +61,7 @@ public sealed class FundOperationsWorkspaceReadService
     private const string RegulatoryTrialBalanceExportId = "regulatory-trial-balance";
     private const string WarehouseLedgerFactsExportId = "warehouse-ledger-facts";
     private const string InvestmentPortfolioCutsExportId = "investment-portfolio-cuts";
+    private const string InvestmentTopNContributionAnalyticsExportId = "investment-topn-contribution-analytics";
     private const string CrossFundConsolidationExportId = "cross-fund-consolidation";
 
     private static readonly StructuredReportingExportColumnDto[] RegulatoryTrialBalanceColumns =
@@ -128,6 +129,28 @@ public sealed class FundOperationsWorkspaceReadService
         new("sourceCount", "integer", "Contributing account plus run source count."),
         new("readinessSummary", "string", "Source-backed readiness description."),
         new("versionStamp", "string", "Deterministic export/consolidation version marker.")
+    ];
+
+    private static readonly StructuredReportingExportColumnDto[] InvestmentTopNContributionAnalyticsColumns =
+    [
+        new("analyticsId", "string", "Stable Top-N or contribution analytics row identifier."),
+        new("kind", "string", "Analytics row kind: TopWinner, TopLaggard, or Contribution."),
+        new("scope", "string", "Analytics scope: Security, Strategy, or AssetClass."),
+        new("rank", "integer", "Rank within the analytics kind and scope."),
+        new("label", "string", "Human-readable row label."),
+        new("symbol", "string", "Security symbol when the row is security-scoped."),
+        new("classification", "string", "Security asset class, strategy, or asset-class classification."),
+        new("currency", "string", "Reporting currency."),
+        new("realizedPnl", "decimal", "Realized P&L included in the analytics row."),
+        new("unrealizedPnl", "decimal", "Unrealized P&L included in the analytics row."),
+        new("totalPnl", "decimal", "Realized plus unrealized P&L."),
+        new("contributionPercent", "decimal", "Percent contribution to total portfolio P&L."),
+        new("heatMapIntensity", "decimal", "Absolute P&L intensity used by reporting heat maps."),
+        new("sourceCount", "integer", "Number of contributing source runs."),
+        new("asOfUtc", "datetime", "Analytics as-of timestamp in UTC."),
+        new("readinessSummary", "string", "Source-backed readiness description."),
+        new("versionStamp", "string", "Deterministic analytics version marker."),
+        new("tags", "string", "Pipe-delimited analytics tags.")
     ];
 
     private static readonly ReportBrandingThemeDto[] BuiltInReportBrandingThemes =
@@ -2292,6 +2315,27 @@ public sealed class FundOperationsWorkspaceReadService
         string? FundDisplayName,
         PortfolioSummary Portfolio);
 
+    private sealed record PortfolioReportingAnalyticsSource(
+        PortfolioReportingAnalyticsScopeDto Scope,
+        string Key,
+        string Label,
+        string? Symbol,
+        string? Classification,
+        string RunId,
+        decimal RealizedPnl,
+        decimal UnrealizedPnl);
+
+    private sealed record PortfolioReportingAnalyticsGroup(
+        PortfolioReportingAnalyticsScopeDto Scope,
+        string Key,
+        string Label,
+        string? Symbol,
+        string? Classification,
+        decimal RealizedPnl,
+        decimal UnrealizedPnl,
+        decimal TotalPnl,
+        int SourceCount);
+
     private sealed record CrossFundReportingSource(
         string FundKey,
         string FundLabel,
@@ -2559,14 +2603,17 @@ public sealed class FundOperationsWorkspaceReadService
         var workflowRecords = BuildReportPackWorkflowRecords(accounts, asOf);
         var deliveryAttempts = _reportPackDeliveryService?.ListAttempts(500) ?? [];
         var schedules = _reportingScheduleService?.ListSchedules(100) ?? [];
+        var scheduleDeliveryPlans = ReportPackRunReadService.BuildScheduleDeliveryPlans(schedules, deliveryAttempts);
         var portfolioCuts = BuildPortfolioReportingCuts(accounts, cashFinancing, nav, runSources, asOf);
         var livePortfolioViews = BuildPortfolioReportingLiveViews(accounts.Count, portfolioCuts, runSources, asOf);
         var pnlSlices = BuildPortfolioReportingPnlSlices(runSources, cashFinancing.Currency, asOf);
+        var analyticsRows = BuildPortfolioReportingAnalyticsRows(runSources, cashFinancing.Currency, asOf);
         var structuredExports = BuildStructuredReportingExports(
             fundProfileId,
             ledger,
             ledgerReconciliationSnapshot,
             portfolioCuts,
+            analyticsRows,
             crossFundConsolidations,
             cashFinancing.Currency,
             asOf);
@@ -2585,7 +2632,10 @@ public sealed class FundOperationsWorkspaceReadService
             BrandingThemes: BuiltInReportBrandingThemes,
             LivePortfolioViews: livePortfolioViews,
             CrossFundConsolidations: crossFundConsolidations,
-            PnlSlices: pnlSlices);
+            PnlSlices: pnlSlices,
+            AnalyticsRows: analyticsRows,
+            FundProfileId: fundProfileId,
+            ScheduleDeliveryPlans: scheduleDeliveryPlans);
     }
 
     private async Task<IReadOnlyList<CrossFundReportingConsolidationDto>> BuildCrossFundReportingConsolidationsAsync(
@@ -2843,6 +2893,7 @@ public sealed class FundOperationsWorkspaceReadService
         FundLedgerSummary ledger,
         FundLedgerReconciliationSnapshot ledgerReconciliationSnapshot,
         IReadOnlyList<PortfolioReportingCutDto> portfolioCuts,
+        IReadOnlyList<PortfolioReportingAnalyticsRowDto> analyticsRows,
         IReadOnlyList<CrossFundReportingConsolidationDto> crossFundConsolidations,
         string currency,
         DateTimeOffset asOf)
@@ -2862,6 +2913,12 @@ public sealed class FundOperationsWorkspaceReadService
             ?.SourceCount
             ?? crossFundConsolidations.Sum(static row => row.SourceCount);
         var crossFundReady = crossFundConsolidations.Any(static row => row.IsReady);
+        var analyticsReady = analyticsRows.Any(static row =>
+            !string.Equals(row.AnalyticsId, "analytics:blocked", StringComparison.OrdinalIgnoreCase)
+            && row.SourceCount > 0);
+        var analyticsSourceCount = analyticsRows
+            .Where(static row => !string.Equals(row.AnalyticsId, "analytics:blocked", StringComparison.OrdinalIgnoreCase))
+            .Sum(static row => row.SourceCount);
 
         return
         [
@@ -2916,6 +2973,23 @@ public sealed class FundOperationsWorkspaceReadService
                 "Exports fund, strategy, and user-tag exposure, cash, P&L, and shadow-NAV cuts.",
                 "No source-backed portfolio cut values are available for this as-of date.",
                 ["investment", "portfolio-cuts", "shadow-nav"]),
+            BuildStructuredExportDescriptor(
+                fundProfileId,
+                InvestmentTopNContributionAnalyticsExportId,
+                "Top-N contribution analytics",
+                StructuredReportingExportPurposeDto.InvestmentDecision,
+                GovernanceReportArtifactFormatDto.Csv,
+                "portfolio-topn-contribution-analytics",
+                "Investment and risk decision workflows",
+                analyticsRows.Count,
+                InvestmentTopNContributionAnalyticsColumns.Length,
+                analyticsSourceCount,
+                currency,
+                asOf,
+                analyticsReady,
+                "Exports source-backed Top-N winners, laggards, and contribution rows with P&L percentages and heat-map intensities.",
+                "No source-backed Top-N or contribution analytics rows are available for this as-of date.",
+                ["investment", "top-n", "contribution", "analytics"]),
             BuildStructuredExportDescriptor(
                 fundProfileId,
                 CrossFundConsolidationExportId,
@@ -3282,6 +3356,253 @@ public sealed class FundOperationsWorkspaceReadService
             : $"{sourceCount} source-backed run(s) in the {periodLabel} window; compared with {priorSourceCount} prior-period run(s).";
     }
 
+    private static IReadOnlyList<PortfolioReportingAnalyticsRowDto> BuildPortfolioReportingAnalyticsRows(
+        IReadOnlyList<PortfolioReportingRunSource> runSources,
+        string currency,
+        DateTimeOffset asOf)
+    {
+        var boundedSources = runSources
+            .Where(source => source.Portfolio.AsOf <= asOf)
+            .ToArray();
+        var positionSources = boundedSources
+            .SelectMany(source => source.Portfolio.Positions.Select(position =>
+            {
+                var classification = ResolvePortfolioAnalyticsClassification(position);
+                return new PortfolioReportingAnalyticsSource(
+                    Scope: PortfolioReportingAnalyticsScopeDto.Security,
+                    Key: position.Symbol,
+                    Label: position.Security?.DisplayName ?? position.Symbol,
+                    Symbol: position.Symbol,
+                    Classification: classification,
+                    RunId: source.RunId,
+                    RealizedPnl: position.RealizedPnl,
+                    UnrealizedPnl: position.UnrealizedPnl);
+            }))
+            .ToArray();
+
+        if (positionSources.Length == 0)
+        {
+            return
+            [
+                BuildPortfolioReportingAnalyticsBlockedRow(boundedSources.Length, currency, asOf)
+            ];
+        }
+
+        var strategySources = boundedSources
+            .Select(source => new PortfolioReportingAnalyticsSource(
+                Scope: PortfolioReportingAnalyticsScopeDto.Strategy,
+                Key: string.IsNullOrWhiteSpace(source.StrategyId) ? source.StrategyName : source.StrategyId,
+                Label: source.StrategyName,
+                Symbol: null,
+                Classification: "Strategy",
+                RunId: source.RunId,
+                RealizedPnl: source.Portfolio.RealizedPnl,
+                UnrealizedPnl: source.Portfolio.UnrealizedPnl))
+            .ToArray();
+        var assetClassSources = positionSources
+            .Select(source => source with
+            {
+                Scope = PortfolioReportingAnalyticsScopeDto.AssetClass,
+                Key = source.Classification ?? "Unclassified",
+                Label = source.Classification ?? "Unclassified",
+                Symbol = null
+            })
+            .ToArray();
+        var securityGroups = GroupPortfolioReportingAnalyticsSources(positionSources);
+        var allGroups = securityGroups
+            .Concat(GroupPortfolioReportingAnalyticsSources(strategySources))
+            .Concat(GroupPortfolioReportingAnalyticsSources(assetClassSources))
+            .ToArray();
+        var totalPnl = securityGroups.Sum(static group => group.TotalPnl);
+        var absolutePnl = securityGroups.Sum(static group => Math.Abs(group.TotalPnl));
+        var rows = new List<PortfolioReportingAnalyticsRowDto>();
+
+        rows.AddRange(BuildPortfolioReportingAnalyticsRows(
+            PortfolioReportingAnalyticsKindDto.TopWinner,
+            securityGroups
+                .Where(static group => group.TotalPnl > 0m)
+                .OrderByDescending(static group => group.TotalPnl)
+                .ThenBy(static group => group.Label, StringComparer.OrdinalIgnoreCase)
+                .Take(5),
+            totalPnl,
+            absolutePnl,
+            currency,
+            asOf));
+        rows.AddRange(BuildPortfolioReportingAnalyticsRows(
+            PortfolioReportingAnalyticsKindDto.TopLaggard,
+            securityGroups
+                .Where(static group => group.TotalPnl < 0m)
+                .OrderBy(static group => group.TotalPnl)
+                .ThenBy(static group => group.Label, StringComparer.OrdinalIgnoreCase)
+                .Take(5),
+            totalPnl,
+            absolutePnl,
+            currency,
+            asOf));
+        rows.AddRange(BuildPortfolioReportingAnalyticsRows(
+            PortfolioReportingAnalyticsKindDto.Contribution,
+            allGroups
+                .Where(static group => group.TotalPnl != 0m)
+                .OrderByDescending(static group => Math.Abs(group.TotalPnl))
+                .ThenBy(static group => group.Scope)
+                .ThenBy(static group => group.Label, StringComparer.OrdinalIgnoreCase)
+                .Take(12),
+            totalPnl,
+            absolutePnl,
+            currency,
+            asOf));
+
+        return rows.Count == 0
+            ?
+            [
+                BuildPortfolioReportingAnalyticsBlockedRow(boundedSources.Length, currency, asOf)
+            ]
+            : rows;
+    }
+
+    private static IReadOnlyList<PortfolioReportingAnalyticsGroup> GroupPortfolioReportingAnalyticsSources(
+        IReadOnlyList<PortfolioReportingAnalyticsSource> sources)
+        => sources
+            .GroupBy(
+                static source => (source.Scope, Key: source.Key.Trim()),
+                source => source,
+                (key, group) =>
+                {
+                    var ordered = group
+                        .OrderBy(static source => source.Label, StringComparer.OrdinalIgnoreCase)
+                        .ThenBy(static source => source.RunId, StringComparer.OrdinalIgnoreCase)
+                        .ToArray();
+                    var first = ordered[0];
+                    var realized = ordered.Sum(static source => source.RealizedPnl);
+                    var unrealized = ordered.Sum(static source => source.UnrealizedPnl);
+                    return new PortfolioReportingAnalyticsGroup(
+                        Scope: key.Scope,
+                        Key: key.Key,
+                        Label: first.Label,
+                        Symbol: first.Symbol,
+                        Classification: first.Classification,
+                        RealizedPnl: realized,
+                        UnrealizedPnl: unrealized,
+                        TotalPnl: realized + unrealized,
+                        SourceCount: ordered.Select(static source => source.RunId).Distinct(StringComparer.OrdinalIgnoreCase).Count());
+                })
+            .ToArray();
+
+    private static IReadOnlyList<PortfolioReportingAnalyticsRowDto> BuildPortfolioReportingAnalyticsRows(
+        PortfolioReportingAnalyticsKindDto kind,
+        IEnumerable<PortfolioReportingAnalyticsGroup> groups,
+        decimal totalPnl,
+        decimal absolutePnl,
+        string currency,
+        DateTimeOffset asOf)
+    {
+        var rank = 0;
+        return groups
+            .Select(group =>
+            {
+                rank++;
+                var contributionPercent = totalPnl == 0m
+                    ? 0m
+                    : decimal.Round(group.TotalPnl / totalPnl * 100m, 4, MidpointRounding.AwayFromZero);
+                var heatMapIntensity = absolutePnl == 0m
+                    ? 0m
+                    : decimal.Round(Math.Abs(group.TotalPnl) / absolutePnl * 100m, 4, MidpointRounding.AwayFromZero);
+                var analyticsId = BuildPortfolioReportingAnalyticsId(kind, group.Scope, group.Key);
+                return new PortfolioReportingAnalyticsRowDto(
+                    AnalyticsId: analyticsId,
+                    Kind: kind,
+                    Scope: group.Scope,
+                    Rank: rank,
+                    Label: group.Label,
+                    Symbol: group.Symbol,
+                    Classification: group.Classification,
+                    Currency: currency,
+                    RealizedPnl: group.RealizedPnl,
+                    UnrealizedPnl: group.UnrealizedPnl,
+                    TotalPnl: group.TotalPnl,
+                    ContributionPercent: contributionPercent,
+                    HeatMapIntensity: heatMapIntensity,
+                    SourceCount: group.SourceCount,
+                    AsOf: asOf,
+                    Route: UiApiRoutes.WithQuery(UiApiRoutes.WorkstationReporting, $"analyticsId={Uri.EscapeDataString(analyticsId)}"),
+                    ReadinessSummary: BuildPortfolioReportingAnalyticsReadiness(kind, group, contributionPercent, heatMapIntensity),
+                    Tags: BuildPortfolioReportingAnalyticsTags(kind, group),
+                    VersionStamp: BuildPortfolioReportingAnalyticsVersionStamp(asOf, kind, group.Scope, group.SourceCount));
+            })
+            .ToArray();
+    }
+
+    private static PortfolioReportingAnalyticsRowDto BuildPortfolioReportingAnalyticsBlockedRow(
+        int sourceCount,
+        string currency,
+        DateTimeOffset asOf)
+    {
+        const string analyticsId = "analytics:blocked";
+        return new PortfolioReportingAnalyticsRowDto(
+            AnalyticsId: analyticsId,
+            Kind: PortfolioReportingAnalyticsKindDto.Contribution,
+            Scope: PortfolioReportingAnalyticsScopeDto.Security,
+            Rank: 0,
+            Label: "No source-backed position P&L",
+            Symbol: null,
+            Classification: null,
+            Currency: currency,
+            RealizedPnl: 0m,
+            UnrealizedPnl: 0m,
+            TotalPnl: 0m,
+            ContributionPercent: 0m,
+            HeatMapIntensity: 0m,
+            SourceCount: sourceCount,
+            AsOf: asOf,
+            Route: UiApiRoutes.WithQuery(UiApiRoutes.WorkstationReporting, $"analyticsId={Uri.EscapeDataString(analyticsId)}"),
+            ReadinessSummary: sourceCount == 0
+                ? "Blocked: no source-backed portfolio runs are available for Top-N and contribution analytics."
+                : $"Blocked: {sourceCount} portfolio run(s) are available, but none include position-level P&L rows for analytics.",
+            Tags: ["analytics", "blocked"],
+            VersionStamp: BuildPortfolioReportingAnalyticsVersionStamp(
+                asOf,
+                PortfolioReportingAnalyticsKindDto.Contribution,
+                PortfolioReportingAnalyticsScopeDto.Security,
+                sourceCount));
+    }
+
+    private static string ResolvePortfolioAnalyticsClassification(PortfolioPositionSummary position)
+        => string.IsNullOrWhiteSpace(position.Security?.AssetClass)
+            ? "Unclassified"
+            : position.Security.AssetClass.Trim();
+
+    private static string BuildPortfolioReportingAnalyticsReadiness(
+        PortfolioReportingAnalyticsKindDto kind,
+        PortfolioReportingAnalyticsGroup group,
+        decimal contributionPercent,
+        decimal heatMapIntensity)
+        => kind switch
+        {
+            PortfolioReportingAnalyticsKindDto.TopWinner => $"Top-N winner from {group.SourceCount} source-backed run(s); contributes {FormatAnalyticsPercent(contributionPercent)} of portfolio P&L.",
+            PortfolioReportingAnalyticsKindDto.TopLaggard => $"Top-N laggard from {group.SourceCount} source-backed run(s); contributes {FormatAnalyticsPercent(contributionPercent)} of portfolio P&L.",
+            _ => $"{group.SourceCount} source-backed run(s); contribution is {FormatAnalyticsPercent(contributionPercent)} of portfolio P&L with {FormatAnalyticsPercent(heatMapIntensity)} heat-map intensity."
+        };
+
+    private static IReadOnlyList<string> BuildPortfolioReportingAnalyticsTags(
+        PortfolioReportingAnalyticsKindDto kind,
+        PortfolioReportingAnalyticsGroup group)
+        =>
+        [
+            "analytics",
+            kind.ToString().ToLowerInvariant(),
+            group.Scope.ToString().ToLowerInvariant(),
+            NormalizeCutId(group.Classification ?? group.Label)
+        ];
+
+    private static string BuildPortfolioReportingAnalyticsId(
+        PortfolioReportingAnalyticsKindDto kind,
+        PortfolioReportingAnalyticsScopeDto scope,
+        string key)
+        => $"analytics:{kind.ToString().ToLowerInvariant()}:{scope.ToString().ToLowerInvariant()}:{NormalizeCutId(key)}";
+
+    private static string FormatAnalyticsPercent(decimal value)
+        => value.ToString("0.##", CultureInfo.InvariantCulture) + "%";
+
     private static PortfolioReportingLiveViewStateDto ResolveLivePortfolioViewState(
         int sourceCount,
         DateTimeOffset? sourceAsOf,
@@ -3354,6 +3675,7 @@ public sealed class FundOperationsWorkspaceReadService
             RegulatoryTrialBalanceExportId => RegulatoryTrialBalanceColumns,
             WarehouseLedgerFactsExportId => WarehouseLedgerFactColumns,
             InvestmentPortfolioCutsExportId => InvestmentPortfolioCutColumns,
+            InvestmentTopNContributionAnalyticsExportId => InvestmentTopNContributionAnalyticsColumns,
             CrossFundConsolidationExportId => CrossFundConsolidationColumns,
             _ => throw new KeyNotFoundException($"Structured reporting export '{exportId}' is not available.")
         };
@@ -3367,6 +3689,7 @@ public sealed class FundOperationsWorkspaceReadService
             RegulatoryTrialBalanceExportId => BuildRegulatoryTrialBalanceRows(workspace, ct),
             WarehouseLedgerFactsExportId => BuildWarehouseLedgerFactRows(workspace, ct),
             InvestmentPortfolioCutsExportId => BuildInvestmentPortfolioCutRows(workspace, ct),
+            InvestmentTopNContributionAnalyticsExportId => BuildInvestmentTopNContributionAnalyticsRows(workspace, ct),
             CrossFundConsolidationExportId => BuildCrossFundConsolidationRows(workspace, ct),
             _ => throw new KeyNotFoundException($"Structured reporting export '{exportId}' is not available.")
         };
@@ -3447,6 +3770,41 @@ public sealed class FundOperationsWorkspaceReadService
                     ("shadowNavVariance", FormatStructuredDecimal(cut.ShadowNavVariance)),
                     ("sourceCount", cut.SourceCount.ToString(CultureInfo.InvariantCulture)),
                     ("versionStamp", cut.VersionStamp));
+            })
+            .ToArray();
+    }
+
+    private static IReadOnlyList<IReadOnlyDictionary<string, string?>> BuildInvestmentTopNContributionAnalyticsRows(
+        FundOperationsWorkspaceDto workspace,
+        CancellationToken ct)
+    {
+        return (workspace.Reporting.AnalyticsRows ?? [])
+            .OrderBy(static row => row.Kind)
+            .ThenBy(static row => row.Scope)
+            .ThenBy(static row => row.Rank)
+            .ThenBy(static row => row.Label, StringComparer.OrdinalIgnoreCase)
+            .Select(row =>
+            {
+                ct.ThrowIfCancellationRequested();
+                return BuildStructuredRow(
+                    ("analyticsId", row.AnalyticsId),
+                    ("kind", row.Kind.ToString()),
+                    ("scope", row.Scope.ToString()),
+                    ("rank", row.Rank.ToString(CultureInfo.InvariantCulture)),
+                    ("label", row.Label),
+                    ("symbol", row.Symbol),
+                    ("classification", row.Classification),
+                    ("currency", row.Currency),
+                    ("realizedPnl", FormatStructuredDecimal(row.RealizedPnl)),
+                    ("unrealizedPnl", FormatStructuredDecimal(row.UnrealizedPnl)),
+                    ("totalPnl", FormatStructuredDecimal(row.TotalPnl)),
+                    ("contributionPercent", FormatStructuredPercent(row.ContributionPercent)),
+                    ("heatMapIntensity", FormatStructuredPercent(row.HeatMapIntensity)),
+                    ("sourceCount", row.SourceCount.ToString(CultureInfo.InvariantCulture)),
+                    ("asOfUtc", FormatStructuredDateTime(row.AsOf)),
+                    ("readinessSummary", row.ReadinessSummary),
+                    ("versionStamp", row.VersionStamp),
+                    ("tags", string.Join("|", row.Tags)));
             })
             .ToArray();
     }
@@ -3535,7 +3893,10 @@ public sealed class FundOperationsWorkspaceReadService
         value.Trim().ToLowerInvariant();
 
     private static string FormatStructuredDecimal(decimal value) =>
-        value.ToString(CultureInfo.InvariantCulture);
+        value.ToString("0.#############################", CultureInfo.InvariantCulture);
+
+    private static string FormatStructuredPercent(decimal value) =>
+        value.ToString("0.0###", CultureInfo.InvariantCulture);
 
     private static string FormatStructuredDateTime(DateTimeOffset value) =>
         value.UtcDateTime.ToString("O", CultureInfo.InvariantCulture);
@@ -3558,6 +3919,13 @@ public sealed class FundOperationsWorkspaceReadService
         int sourceCount,
         int priorSourceCount)
         => $"pnl-slice:{asOf.UtcDateTime:yyyyMMddHHmmss}:{period.ToString().ToLowerInvariant()}:sources-{sourceCount}:prior-{priorSourceCount}";
+
+    private static string BuildPortfolioReportingAnalyticsVersionStamp(
+        DateTimeOffset asOf,
+        PortfolioReportingAnalyticsKindDto kind,
+        PortfolioReportingAnalyticsScopeDto scope,
+        int sourceCount)
+        => $"analytics:{asOf.UtcDateTime:yyyyMMddHHmmss}:{kind.ToString().ToLowerInvariant()}:{scope.ToString().ToLowerInvariant()}:sources-{sourceCount}";
 
     private IReadOnlyList<ReportPackWorkflowRecordDto> BuildReportPackWorkflowRecords(
         IReadOnlyList<FundAccountSummary> accounts,

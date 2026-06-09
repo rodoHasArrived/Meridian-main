@@ -71,6 +71,7 @@ export const FUND_STRUCTURE_API_ENDPOINTS = {
   reportPackWorkflowDeliveryPackage: UI_API_ROUTES.ReportingPackWorkflowDeliveryPackage,
   reportPackWorkflowDeliveryFailures: UI_API_ROUTES.ReportingPackWorkflowDeliveryFailures,
   reportPackDeliveryPortalPackage: UI_API_ROUTES.ReportingPackDeliveryPortalPackage,
+  reportPacks: UI_API_ROUTES.FundReportPacks,
   reportingStructuredExport: UI_API_ROUTES.ReportingStructuredExport,
   reportingTemplateDrafts: "/api/fund-structure/reporting/templates/drafts",
   reportingTemplateRender: "/api/fund-structure/reporting/templates/render",

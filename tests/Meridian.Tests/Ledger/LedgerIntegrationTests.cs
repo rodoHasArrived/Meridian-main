@@ -389,7 +389,26 @@ public sealed class LedgerIntegrationTests
                 FundEventId: "fund-event:fund-alpha:capital-call:incomplete",
                 FundEventType: "CapitalCall"));
 
-        var projection = PrivateCapitalFundEventLedgerProjector.Project(ledger);
+        var reportPack = LedgerReportPackBuilder.Build(
+                ledger,
+                new LedgerReportPackRequest(
+                    "lrp-private-capital-incomplete",
+                    "fund-alpha",
+                    "2026-06",
+                    new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero),
+                    new DateTimeOffset(2026, 6, 30, 23, 59, 59, TimeSpan.Zero),
+                    new DateTimeOffset(2026, 6, 30, 23, 59, 59, TimeSpan.Zero),
+                    "usd",
+                    "controller",
+                    DateTimeOffset.Parse("2026-07-01T13:00:00Z"),
+                    sourceRunId: "run-private-capital-incomplete",
+                    reconciliationEvidenceLinks: ["reconciliation:capital-call:incomplete"],
+                    approvalEvidenceLinks: ["approval:capital-call:incomplete"]))
+            .Validate("controller", DateTimeOffset.Parse("2026-07-01T14:00:00Z"), "incomplete event retained for review", ["evidence:capital-account-review"])
+            .Approve("controller", DateTimeOffset.Parse("2026-07-01T15:00:00Z"), "approved package publication", ["approval:capital-account-review"])
+            .Publish("controller", DateTimeOffset.Parse("2026-07-01T16:00:00Z"), "published package", ["vault:report-pack/lrp-private-capital-incomplete"]);
+
+        var projection = PrivateCapitalFundEventLedgerProjector.Project(ledger, [reportPack]);
 
         projection.EventCount.Should().Be(1);
         projection.PostingReadyCount.Should().Be(0);
@@ -397,6 +416,9 @@ public sealed class LedgerIntegrationTests
         var fundEvent = projection.Events.Single();
         fundEvent.IsPostingReady.Should().BeFalse();
         fundEvent.IsReportReady.Should().BeFalse();
+        fundEvent.ReportOutputs.Should().ContainSingle(output =>
+            output.IsPublished &&
+            output.ReportId == "lrp-private-capital-incomplete");
         fundEvent.ApprovalState.Should().Be(PrivateCapitalFundEventApprovalState.Missing);
         fundEvent.CapitalAccountImpacts.Should().BeEmpty();
         fundEvent.EvidenceLinks.Should().BeEmpty();
@@ -411,6 +433,78 @@ public sealed class LedgerIntegrationTests
         ]);
         fundEvent.Issues.Should().Contain(issue =>
             issue.Code == "private-capital.evidence-missing" &&
+            issue.Severity == PrivateCapitalFundEventIssueSeverity.Critical);
+    }
+
+    [Fact]
+    public void PrivateCapitalFundEventLedgerProjector_BlocksOneFundEventMappedToMultipleCapitalAccounts()
+    {
+        var ledger = new Meridian.Ledger.Ledger();
+        const string fundEventId = "fund-event:fund-alpha:capital-call:conflicted";
+
+        ledger.PostLines(
+            DateTimeOffset.Parse("2026-06-30T20:00:00Z"),
+            "capital call - LP 1",
+            new[]
+            {
+                (LedgerAccounts.CashAccount("fund-alpha-operating"), 100m, 0m),
+                (LedgerAccounts.InvestorCapitalFor("investor:lp-1"), 0m, 100m),
+            },
+            new JournalEntryMetadata(
+                ActivityType: "CapitalCall",
+                EffectiveDate: new DateOnly(2026, 6, 30),
+                IdempotencyKey: "capital-call:fund-alpha:conflicted:lp-1",
+                FundEventId: fundEventId,
+                FundEventType: "CapitalCall",
+                CapitalAccountId: "capital-account:fund-alpha:lp-1",
+                InvestorId: "investor:lp-1",
+                Tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["evidenceLinks"] = "source:capital-call-conflicted:lp-1",
+                    ["automatedJournalStatus"] = "Posted",
+                    ["automatedJournalApprovalId"] = "approval:capital-call-conflicted",
+                    ["approvedBy"] = "controller"
+                }));
+        ledger.PostLines(
+            DateTimeOffset.Parse("2026-06-30T20:05:00Z"),
+            "capital call - LP 2",
+            new[]
+            {
+                (LedgerAccounts.CashAccount("fund-alpha-operating"), 200m, 0m),
+                (LedgerAccounts.InvestorCapitalFor("investor:lp-2"), 0m, 200m),
+            },
+            new JournalEntryMetadata(
+                ActivityType: "CapitalCall",
+                EffectiveDate: new DateOnly(2026, 6, 30),
+                IdempotencyKey: "capital-call:fund-alpha:conflicted:lp-2",
+                FundEventId: fundEventId,
+                FundEventType: "CapitalCall",
+                CapitalAccountId: "capital-account:fund-alpha:lp-2",
+                InvestorId: "investor:lp-2",
+                Tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["evidenceLinks"] = "source:capital-call-conflicted:lp-2",
+                    ["automatedJournalStatus"] = "Posted",
+                    ["automatedJournalApprovalId"] = "approval:capital-call-conflicted",
+                    ["approvedBy"] = "controller"
+                }));
+
+        var projection = PrivateCapitalFundEventLedgerProjector.Project(ledger);
+
+        projection.EventCount.Should().Be(1);
+        projection.PostingReadyCount.Should().Be(0);
+        projection.ReportReadyCount.Should().Be(0);
+        var fundEvent = projection.Events.Should().ContainSingle().Subject;
+        fundEvent.FundEventId.Should().Be(fundEventId);
+        fundEvent.IsPostingReady.Should().BeFalse();
+        fundEvent.HasCriticalIssues.Should().BeTrue();
+        fundEvent.LedgerImpacts.Should().HaveCount(2);
+        fundEvent.CapitalAccountImpacts.Should().HaveCount(2);
+        fundEvent.Issues.Should().Contain(issue =>
+            issue.Code == "private-capital.capital-account-conflict" &&
+            issue.Severity == PrivateCapitalFundEventIssueSeverity.Critical);
+        fundEvent.Issues.Should().Contain(issue =>
+            issue.Code == "private-capital.investor-conflict" &&
             issue.Severity == PrivateCapitalFundEventIssueSeverity.Critical);
     }
 

@@ -67,7 +67,8 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         EvidenceSubjectResolver.AnalysisExportKind,
         EvidenceSubjectResolver.SecurityMasterConflictKind,
         EvidenceSubjectResolver.ApprovalKind,
-        EvidenceSubjectResolver.AccountingRecordKind
+        EvidenceSubjectResolver.AccountingRecordKind,
+        EvidenceSubjectResolver.PrivateCapitalFundEventKind
     };
 
     private readonly string _rootDirectory;

@@ -694,6 +694,7 @@ public sealed class ReportPackWorkflowServiceTests
 
         var payload = new ReportPackRunReadService(new DefaultReportingTemplateCatalog(), runStore, workflow).BuildPayload();
 
+        payload.SelectedFundProfileId.Should().Be(published.FundProfileId);
         payload.RecentRuns.Select(static run => run.RunId).Should().Contain(manifest.RunId);
         payload.RecentRuns.Select(static run => run.RunId).Should().NotContain("investor-monthly-statement-20260501");
         payload.RecentRuns.Select(static run => run.RunId).Should().NotContain("shadow-nav-daily-pack-20260503");
@@ -1023,6 +1024,27 @@ public sealed class ReportPackWorkflowServiceTests
         reloadedSchedules.ListSchedules().Should().ContainSingle(schedule =>
             schedule.ScheduleId == "sched-board-distribution" &&
             schedule.DeliveryTargets.Count == 2);
+        var payload = new ReportPackRunReadService(
+            new DefaultReportingTemplateCatalog(),
+            workflowService: workflow,
+            deliveryService: reloadedDelivery,
+            scheduleService: reloadedSchedules).BuildPayload();
+        payload.ScheduleDeliveryPlans.Should().NotBeNull().And.HaveCount(2);
+        var boardPlan = payload.ScheduleDeliveryPlans!.Single(plan => plan.DistributionId == "board-reporting-committee");
+        boardPlan.ScheduleId.Should().Be("sched-board-distribution");
+        boardPlan.TemplateId.Should().Be("holdings-board-report");
+        boardPlan.Recipient.Should().Be("Board reporting committee");
+        boardPlan.DeliveryMode.Should().Be(ReportPackDeliveryModeDto.SecurePortal);
+        boardPlan.Formats.Should().Equal(
+            GovernanceReportArtifactFormatDto.Pdf,
+            GovernanceReportArtifactFormatDto.Xlsx,
+            GovernanceReportArtifactFormatDto.Csv);
+        boardPlan.IsReady.Should().BeTrue();
+        boardPlan.ReadinessSummary.Should().Contain("Will deliver Pdf/Xlsx/Csv by SecurePortal to Board reporting committee");
+        boardPlan.LastDeliveryState.Should().Be(ReportPackDeliveryStateDto.Delivered);
+        boardPlan.LastDeliveryAttemptId.Should().NotBeNull();
+        boardPlan.LastDeliverySecureLink.Should().NotBeNullOrWhiteSpace();
+        boardPlan.VersionStamp.Should().StartWith("schedule-delivery-plan:sched-board-distribution:board-reporting-committee:");
     }
 
     [Fact]

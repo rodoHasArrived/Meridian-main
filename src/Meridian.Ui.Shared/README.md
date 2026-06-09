@@ -137,6 +137,12 @@ readiness label/reason, and next-action route from the grouped source rows so fi
 drill-throughs stay useful without client-side stitching.
 Projections expose the event-level record collection as an empty list when
 no fund events qualify, keeping browser and desktop consumers on the same non-null contract.
+Posted private-capital fund events inherit the owning ledger book's base currency through
+fund-event rows, ledger impacts, capital-account subledgers, and report outputs so multi-currency
+fund books do not appear as USD-only activity after posting.
+Report-output rows keep `IsPublished` separate from `IsReportReady`: a retained publication can
+remain visible for audit, but readiness stays false until the linked fund event is posting-ready
+across approval, retained evidence, GL impact, and capital-account impact.
 `/api/ledger/private-capital/fund-event-record` returns one of those shared event-level records
 directly by `fundEventId`, including child rows and readiness posture, and returns 404 when the
 fund-event id is absent instead of sending clients an empty aggregate to interpret.
@@ -144,7 +150,13 @@ fund-event id is absent instead of sending clients an empty aggregate to interpr
 running capital-account subledger, ledger impacts, report outputs, retained evidence, approval
 queue, posted/published counts, and validation issues into a capital-account-level record.
 `/api/ledger/private-capital/capital-account-subledger` returns that grouped subledger directly by
-`capitalAccountId`, returning 404 when the capital account is absent.
+`capitalAccountId`, returning 404 when the capital account is absent and 400 when multiple investor
+or currency subledgers match until the caller also provides `investorId` and `currency`.
+The evidence fabric also resolves `private-capital-fund-event` subjects from the shared manual
+journal entry workbench projection. Its packet uses the `private-capital-fund-event-review`
+template to require linked fund-event state, retained evidence, approval state, capital-account
+subledger impact, GL impact, and report output before the event-level evidence graph can be
+treated as complete.
 The shared workflow library owns close-lane command routing as well: `AccountingReviewOperationsContinuity`
 targets `OperationsContinuity` and `AccountingReviewCloseReadiness` targets `OperationsClose`, with
 route metadata tied to the operations-continuity API. Browser and WPF clients should consume those
@@ -238,6 +250,8 @@ mutations, and `ReportPackRunReadService` projects both sources into the shared
 `WorkstationReportingPayload`. Browser and WPF Reporting surfaces should consume those recent-run
 rows for true template, schedule, attempt, approval, publication, evidence-bundle, restatement, and
 drilldown status instead of reintroducing fixture rows in workstation bootstrap payloads.
+When retained workflow records are present, the same payload exposes `SelectedFundProfileId` so
+clients can post governed report-pack commands against an explicit fund context.
 Those recent-run rows also include typed drilldown links and next-action references for evidence,
 approval submission/review, publication, release review, restatement, and archival work so clients
 can render clickable routes while preserving reference-only POST/action metadata.
@@ -256,24 +270,33 @@ timestamps. Each row carries realized/unrealized/current/prior/change values, so
 readiness text, a shared `/api/workstation/reporting?pnlSlice=...` route, and deterministic version
 stamps; windows with no current source run fail closed as blocked instead of displaying synthetic
 period P&L.
+It also projects `analyticsRows` for Top-N winner, Top-N laggard, and contribution reporting from
+retained portfolio position P&L. Rows are grouped by security, strategy, and asset class, include
+contribution percent plus heat-map intensity, and expose shared
+`/api/workstation/reporting?analyticsId=...` routes; workspaces without position-level P&L emit a
+blocked analytics row instead of synthetic winners or laggards.
 `FundOperationsWorkspaceReadService` also projects `crossFundConsolidations` from all active fund
 accounts plus all fund-scoped strategy-run portfolio summaries. It emits company-wide, fund-level,
 and legal-entity rows with exposure, cash, P&L, shadow-NAV, source counts, readiness text, and
 deterministic version stamps; when no source-backed account or run data exists, the company row
 fails closed with blocked readiness instead of synthetic consolidation values.
 The same read service also emits structured export descriptors for regulatory trial-balance,
-warehouse ledger-fact, investment portfolio-cut, and cross-fund consolidation outputs, and serves
-`/api/fund-structure/reporting/structured-exports/{exportId}` from the same source-backed workspace
-projection. The JSON payload includes stable column metadata, culture-invariant string row values,
-readiness warnings, retained-path metadata, and deterministic version stamps so downstream
-regulatory, warehousing, and investment-decision consumers can ingest governed data without
-browser-local export shaping.
-`FundOperationsWorkspaceReadService` also exposes built-in report branding themes through the
-reporting summary, validates custom branding overrides with normalized theme ids and hex colors,
-persists the selected theme on generated report-pack snapshots and manifests, and applies the same
-theme to generated HTML, PDF text, and the XLSX `Branding` worksheet. That keeps logos, colors,
-footer copy, disclaimers, and firm identity attached to the retained package artifact instead of the
-browser view.
+warehouse ledger-fact, investment portfolio-cut, Top-N/contribution analytics, and cross-fund
+consolidation outputs, and serves `/api/fund-structure/reporting/structured-exports/{exportId}`
+from the same source-backed workspace projection. The JSON payload includes stable column metadata,
+culture-invariant string row values, readiness warnings, retained-path metadata, and deterministic
+version stamps so downstream regulatory, warehousing, and investment-decision consumers can ingest
+governed data without browser-local export shaping.
+`FundOperationsWorkspaceReadService` also exposes built-in report branding themes and fund-profile
+context through the reporting summary, validates custom branding overrides with normalized theme ids
+and hex colors, persists the selected theme on generated report-pack snapshots and manifests, and
+applies the same theme to generated HTML, PDF text, and the XLSX `Branding` worksheet. That keeps
+logos, colors, footer copy, disclaimers, and firm identity attached to the retained package artifact
+instead of the browser view.
+`ReportPackRunReadService` derives `scheduleDeliveryPlans` from retained reporting schedules,
+distribution policies, and delivery attempts so browser and desktop clients can show which scheduled
+packs will deliver by email link, secure portal, evidence vault, or internal route without
+duplicating delivery-policy logic.
 `ReportPackDeliveryService` persists delivery and delivery-failure attempts under the resolved
 workstation data root at `workstation/reporting/report-pack-deliveries.json`; published and
 restated workflow records can therefore show real delivery history, retry attempts, recipient

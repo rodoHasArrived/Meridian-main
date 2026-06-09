@@ -51,8 +51,10 @@ public sealed class ReportPackRunReadService
         var runs = BuildRecentRuns(Math.Clamp(recentRunLimit, 1, 200), familyByTemplate, workflowRecords);
         var deliveryAttempts = _deliveryService?.ListAttempts(500) ?? [];
         var schedules = _scheduleService?.ListSchedules(100) ?? [];
+        var scheduleDeliveryPlans = BuildScheduleDeliveryPlans(schedules, deliveryAttempts);
         var distributions = BuildDistributionRecords(workflowRecords, deliveryAttempts);
         var pendingDistributionCount = distributions.Count(static distribution => distribution.PendingItems > 0);
+        var selectedFundProfileId = ResolveSelectedFundProfileId(workflowRecords);
 
         return new WorkstationReportingPayload(
             ProfileCount: profiles.Length,
@@ -63,7 +65,9 @@ public sealed class ReportPackRunReadService
             Templates: templates,
             RecentRuns: runs.Select(static run => run.Payload).ToArray(),
             Schedules: schedules,
-            DeliveryAttempts: deliveryAttempts);
+            DeliveryAttempts: deliveryAttempts,
+            SelectedFundProfileId: selectedFundProfileId,
+            ScheduleDeliveryPlans: scheduleDeliveryPlans);
     }
 
     public static WorkstationReportingPayload BuildFallbackPayload() =>
@@ -89,6 +93,13 @@ public sealed class ReportPackRunReadService
                 DataDictionary: profile.IncludeDataDictionary))
             .OrderBy(static profile => profile.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+
+    private static string? ResolveSelectedFundProfileId(IReadOnlyList<ReportPackWorkflowRecordDto> workflowRecords) =>
+        workflowRecords
+            .Where(static record => !string.IsNullOrWhiteSpace(record.FundProfileId))
+            .OrderByDescending(static record => record.UpdatedAt)
+            .Select(static record => record.FundProfileId.Trim())
+            .FirstOrDefault();
 
     private WorkstationReportingTemplatePayload[] BuildTemplates(ReportAccessQueryContext? accessContext)
     {
@@ -283,6 +294,175 @@ public sealed class ReportPackRunReadService
                 deliveryAttempts ?? []))
             .ToArray();
     }
+
+    public static ReportingScheduleDeliveryPlanDto[] BuildScheduleDeliveryPlans(
+        IReadOnlyList<ReportingScheduleRecordDto> schedules,
+        IReadOnlyList<ReportPackDeliveryAttemptDto>? deliveryAttempts = null)
+    {
+        ArgumentNullException.ThrowIfNull(schedules);
+        var attempts = deliveryAttempts ?? [];
+        return schedules
+            .OrderBy(static schedule => schedule.DueAtUtc)
+            .ThenBy(static schedule => schedule.ScheduleId, StringComparer.OrdinalIgnoreCase)
+            .SelectMany(schedule => BuildScheduleDeliveryPlans(schedule, attempts))
+            .ToArray();
+    }
+
+    private static IEnumerable<ReportingScheduleDeliveryPlanDto> BuildScheduleDeliveryPlans(
+        ReportingScheduleRecordDto schedule,
+        IReadOnlyList<ReportPackDeliveryAttemptDto> deliveryAttempts)
+    {
+        foreach (var target in schedule.DeliveryTargets ?? [])
+        {
+            if (string.IsNullOrWhiteSpace(target.DistributionId))
+            {
+                continue;
+            }
+
+            var distributionId = target.DistributionId.Trim();
+            var formats = ResolveScheduleDeliveryFormats(target.Formats);
+            var latestAttempt = FindLatestScheduleDeliveryAttempt(schedule, distributionId, deliveryAttempts);
+            ReportPackDistributionPolicy? policy = null;
+            ReportingScheduleDeliveryPlanDto? fallbackPlan = null;
+            try
+            {
+                policy = ResolveDistributionPolicy(distributionId);
+            }
+            catch (KeyNotFoundException)
+            {
+                fallbackPlan = new ReportingScheduleDeliveryPlanDto(
+                    PlanId: BuildScheduleDeliveryPlanId(schedule.ScheduleId, distributionId),
+                    ScheduleId: schedule.ScheduleId,
+                    TemplateId: schedule.TemplateId,
+                    DistributionId: distributionId,
+                    Recipient: distributionId,
+                    RecipientRole: "Unknown recipient",
+                    Channel: "Unknown channel",
+                    DeliveryMode: target.DeliveryMode ?? ReportPackDeliveryModeDto.InternalRoute,
+                    Formats: formats,
+                    IsReady: false,
+                    ReadinessSummary: $"Delivery target '{distributionId}' is not backed by a known report-pack distribution policy.",
+                    Route: "/api/workstation/reporting",
+                    DueAtUtc: schedule.DueAtUtc,
+                    NextAsOfDate: schedule.NextAsOfDate,
+                    Owner: schedule.RequestedBy,
+                    Note: NormalizeOptional(target.Note),
+                    LastDeliveryAttemptId: latestAttempt?.AttemptId,
+                    LastDeliveryState: latestAttempt?.State,
+                    LastDeliveryAtUtc: latestAttempt?.AttemptedAtUtc,
+                    LastDeliveryPackageRoute: latestAttempt?.Package?.PortalRoute,
+                    LastDeliverySecureLink: latestAttempt?.Package?.SecureLink,
+                    VersionStamp: BuildScheduleDeliveryPlanVersionStamp(schedule, distributionId, formats));
+            }
+
+            if (fallbackPlan is not null)
+            {
+                yield return fallbackPlan;
+                continue;
+            }
+
+            if (policy is null)
+            {
+                continue;
+            }
+
+            var deliveryMode = target.DeliveryMode ?? InferScheduleDeliveryMode(policy.Channel);
+            var isReady = schedule.State == ReportingScheduleStateDto.Active;
+            yield return new ReportingScheduleDeliveryPlanDto(
+                PlanId: BuildScheduleDeliveryPlanId(schedule.ScheduleId, policy.DistributionId),
+                ScheduleId: schedule.ScheduleId,
+                TemplateId: schedule.TemplateId,
+                DistributionId: policy.DistributionId,
+                Recipient: policy.Recipient,
+                RecipientRole: policy.RecipientRole,
+                Channel: policy.Channel,
+                DeliveryMode: deliveryMode,
+                Formats: formats,
+                IsReady: isReady,
+                ReadinessSummary: BuildScheduleDeliveryPlanReadinessSummary(schedule, policy, deliveryMode, formats, isReady),
+                Route: policy.Route,
+                DueAtUtc: schedule.DueAtUtc,
+                NextAsOfDate: schedule.NextAsOfDate,
+                Owner: policy.Owner,
+                Note: NormalizeOptional(target.Note),
+                LastDeliveryAttemptId: latestAttempt?.AttemptId,
+                LastDeliveryState: latestAttempt?.State,
+                LastDeliveryAtUtc: latestAttempt?.AttemptedAtUtc,
+                LastDeliveryPackageRoute: latestAttempt?.Package?.PortalRoute,
+                LastDeliverySecureLink: latestAttempt?.Package?.SecureLink,
+                VersionStamp: BuildScheduleDeliveryPlanVersionStamp(schedule, policy.DistributionId, formats));
+        }
+    }
+
+    private static ReportPackDeliveryAttemptDto? FindLatestScheduleDeliveryAttempt(
+        ReportingScheduleRecordDto schedule,
+        string distributionId,
+        IReadOnlyList<ReportPackDeliveryAttemptDto> deliveryAttempts)
+    {
+        var referencePrefix = $"schedule:{schedule.TemplateId.Trim()}:";
+        return deliveryAttempts
+            .Where(attempt => string.Equals(attempt.DistributionId, distributionId, StringComparison.OrdinalIgnoreCase))
+            .Where(attempt => attempt.DeliveryReference.StartsWith(referencePrefix, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(static attempt => attempt.AttemptedAtUtc)
+            .ThenByDescending(static attempt => attempt.AttemptNumber)
+            .FirstOrDefault();
+    }
+
+    private static IReadOnlyList<GovernanceReportArtifactFormatDto> ResolveScheduleDeliveryFormats(
+        IReadOnlyList<GovernanceReportArtifactFormatDto>? formats)
+    {
+        IReadOnlyList<GovernanceReportArtifactFormatDto> requested = formats is { Count: > 0 }
+            ? formats
+            : [GovernanceReportArtifactFormatDto.Pdf, GovernanceReportArtifactFormatDto.Xlsx, GovernanceReportArtifactFormatDto.Csv];
+        return requested
+            .Distinct()
+            .ToArray();
+    }
+
+    private static string BuildScheduleDeliveryPlanReadinessSummary(
+        ReportingScheduleRecordDto schedule,
+        ReportPackDistributionPolicy policy,
+        ReportPackDeliveryModeDto deliveryMode,
+        IReadOnlyList<GovernanceReportArtifactFormatDto> formats,
+        bool isReady) =>
+        isReady
+            ? $"Will deliver {FormatScheduleDeliveryFormats(formats)} by {deliveryMode} to {policy.Recipient} when schedule '{schedule.ScheduleId}' runs."
+            : $"Schedule '{schedule.ScheduleId}' is {schedule.State}; {policy.Recipient} delivery will not run until it is active.";
+
+    private static string BuildScheduleDeliveryPlanId(string scheduleId, string distributionId) =>
+        $"schedule-delivery:{scheduleId}:{distributionId}";
+
+    private static string BuildScheduleDeliveryPlanVersionStamp(
+        ReportingScheduleRecordDto schedule,
+        string distributionId,
+        IReadOnlyList<GovernanceReportArtifactFormatDto> formats) =>
+        $"schedule-delivery-plan:{schedule.ScheduleId}:{distributionId}:{schedule.UpdatedAtUtc.UtcDateTime:yyyyMMddHHmmss}:formats-{formats.Count}";
+
+    private static string FormatScheduleDeliveryFormats(IReadOnlyList<GovernanceReportArtifactFormatDto> formats) =>
+        string.Join("/", formats.Select(static format => format.ToString()));
+
+    private static ReportPackDeliveryModeDto InferScheduleDeliveryMode(string channel)
+    {
+        if (channel.Contains("email", StringComparison.OrdinalIgnoreCase))
+        {
+            return ReportPackDeliveryModeDto.EmailLink;
+        }
+
+        if (channel.Contains("portal", StringComparison.OrdinalIgnoreCase))
+        {
+            return ReportPackDeliveryModeDto.SecurePortal;
+        }
+
+        if (channel.Contains("vault", StringComparison.OrdinalIgnoreCase))
+        {
+            return ReportPackDeliveryModeDto.EvidenceVault;
+        }
+
+        return ReportPackDeliveryModeDto.InternalRoute;
+    }
+
+    private static string? NormalizeOptional(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static WorkstationReportPackDistributionPayload BuildDistribution(
         ReportPackDistributionPolicy policy,

@@ -113,6 +113,26 @@ public sealed class EvidenceTemplateRegistry
             ExportSettings: ManifestOnlyV1),
 
         new EvidenceTemplateDto(
+            WorkflowId: "private-capital-fund-event-review",
+            RequiredEvidenceKinds:
+            [
+                "private-capital-fund-event",
+                "retained-evidence",
+                "approval-state",
+                "capital-account-subledger",
+                "ledger-impact",
+                "report-output"
+            ],
+            OptionalEvidenceKinds:
+            [
+                "payment-intent",
+                "settlement-state",
+                "report-pack"
+            ],
+            NoOrphanRule: true,
+            ExportSettings: ManifestOnlyV1),
+
+        new EvidenceTemplateDto(
             WorkflowId: "retained-vault-artifact-review",
             RequiredEvidenceKinds:
             [

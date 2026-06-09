@@ -727,6 +727,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 {
     private const string DefaultFundProfileId = "default-fund";
     private const decimal BalanceTolerance = 0.000001m;
+    private static readonly IReadOnlyDictionary<Guid, string> EmptyJournalEntryCurrencies = new Dictionary<Guid, string>();
 
     private readonly IManualJournalEntryDraftStore _draftStore;
     private readonly IAccountingConfigurationService _configurationService;
@@ -791,7 +792,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         string fundProfileId,
         Guid? ledgerBookId,
         IReadOnlyList<ManualJournalEntryDraftDto> drafts,
-        PrivateCapitalFundEventLedgerProjection? postedProjection)
+        PostedPrivateCapitalActivityProjection? postedProjection)
     {
         var projectedAtUtc = DateTimeOffset.UtcNow;
         var fundEvents = new List<PrivateCapitalFundEventDto>();
@@ -864,8 +865,9 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             .ThenByDescending(item => item.UpdatedAtUtc)
             .ThenBy(item => item.FundEventId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var postedEvents = (postedProjection?.Events ?? [])
-            .Select(MapPostedFundEvent)
+        var postedJournalEntryCurrencies = postedProjection?.JournalEntryCurrencies ?? EmptyJournalEntryCurrencies;
+        var postedEvents = (postedProjection?.Projection.Events ?? [])
+            .Select(item => MapPostedFundEvent(item, postedJournalEntryCurrencies))
             .ToArray();
         var postedEventIds = postedEvents
             .Select(static item => item.FundEventId)
@@ -881,7 +883,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var capitalAccountSubledgerEntries = BuildCapitalAccountSubledgerEntries(combinedFundEvents);
         var orderedLedgerImpacts = ledgerImpacts
             .Where(item => !postedEventIds.Contains(item.FundEventId))
-            .Concat((postedProjection?.Events ?? []).SelectMany(MapPostedLedgerImpacts))
+            .Concat((postedProjection?.Projection.Events ?? []).SelectMany(item => MapPostedLedgerImpacts(item, postedJournalEntryCurrencies)))
             .OrderByDescending(item => item.EffectiveDate)
             .ThenBy(item => item.FundEventId, StringComparer.OrdinalIgnoreCase)
             .ThenBy(item => item.JournalEntryId)
@@ -890,17 +892,18 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             .Select(item => item.Currency)
             .FirstOrDefault(currency => !string.IsNullOrWhiteSpace(currency)) ?? string.Empty;
         var reportPackWorkflowRecords = _reportPackWorkflowService?.ListRecords(200) ?? [];
+        var postingReadyByFundEventId = BuildPostingReadyByFundEventId(orderedLedgerImpacts);
         var reportOutputs = orderedFundEvents
             .Where(item => !postedEventIds.Contains(item.FundEventId))
-            .Select(item => BuildPrivateCapitalReportOutput(fundProfileId, item))
-            .Concat(BuildPostedReportOutputs(fundProfileId, postedProjection?.Events ?? [], reportPackWorkflowRecords))
+            .Select(item => BuildPrivateCapitalReportOutput(fundProfileId, item, postingReadyByFundEventId))
+            .Concat(BuildPostedReportOutputs(fundProfileId, postedProjection?.Projection.Events ?? [], postedJournalEntryCurrencies, reportPackWorkflowRecords))
             .OrderByDescending(item => item.EffectiveDate)
             .ThenBy(item => item.ReportOutputType, StringComparer.OrdinalIgnoreCase)
             .ThenBy(item => item.ReportOutputId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var publishedReportOutputCount = CountPublishedReportOutputs(
             fundProfileId,
-            postedProjection?.Events ?? [],
+            postedProjection?.Projection.Events ?? [],
             reportPackWorkflowRecords);
         var fundEventRecords = PrivateCapitalFundEventLedgerRecordBuilder.Build(
             fundProfileId,
@@ -945,7 +948,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             capitalAccountSubledgers);
     }
 
-    private async Task<PrivateCapitalFundEventLedgerProjection?> BuildPostedPrivateCapitalActivityProjectionAsync(
+    private async Task<PostedPrivateCapitalActivityProjection?> BuildPostedPrivateCapitalActivityProjectionAsync(
         string fundProfileId,
         Guid? ledgerBookId,
         CancellationToken ct)
@@ -960,25 +963,54 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             .ConfigureAwait(false);
         if (periods.Count == 0)
         {
-            return new PrivateCapitalFundEventLedgerProjection([]);
+            return new PostedPrivateCapitalActivityProjection(new PrivateCapitalFundEventLedgerProjection([]), EmptyJournalEntryCurrencies);
         }
 
         var ledger = new Meridian.Ledger.Ledger();
         var journalEntryIds = new HashSet<Guid>();
+        var journalEntryCurrencies = new Dictionary<Guid, string>();
+        var ledgerBookCurrencies = new Dictionary<Guid, string>();
         foreach (var period in periods.OrderBy(static item => item.StartDate).ThenBy(static item => item.PeriodNo))
         {
             ct.ThrowIfCancellationRequested();
+            var bookCurrency = await ResolveLedgerBookCurrencyAsync(period.LedgerBookId, ledgerBookCurrencies, ct).ConfigureAwait(false);
             var records = await _journalStore.GetByPeriodAsync(period.PeriodId, ct).ConfigureAwait(false);
             foreach (var record in records.OrderBy(static item => item.GlobalSequence).ThenBy(static item => item.Entry.Timestamp))
             {
                 if (journalEntryIds.Add(record.Entry.JournalEntryId))
                 {
                     ledger.Post(record.Entry);
+                    journalEntryCurrencies[record.Entry.JournalEntryId] = bookCurrency;
                 }
             }
         }
 
-        return PrivateCapitalFundEventLedgerProjector.Project(ledger);
+        return new PostedPrivateCapitalActivityProjection(
+            PrivateCapitalFundEventLedgerProjector.Project(ledger),
+            journalEntryCurrencies);
+    }
+
+    private async Task<string> ResolveLedgerBookCurrencyAsync(
+        Guid? ledgerBookId,
+        Dictionary<Guid, string> cache,
+        CancellationToken ct)
+    {
+        if (ledgerBookId is not { } resolvedLedgerBookId)
+        {
+            return "USD";
+        }
+
+        if (cache.TryGetValue(resolvedLedgerBookId, out var cached))
+        {
+            return cached;
+        }
+
+        var book = _journalStore is null
+            ? null
+            : await _journalStore.GetLedgerBookAsync(resolvedLedgerBookId, ct).ConfigureAwait(false);
+        var currency = NormalizeCurrency(book?.BaseCurrency);
+        cache[resolvedLedgerBookId] = currency;
+        return currency;
     }
 
     private static IReadOnlyList<PrivateCapitalCapitalAccountActivityDto> BuildCapitalAccounts(
@@ -1060,9 +1092,12 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             .ToArray();
     }
 
-    private static PrivateCapitalFundEventDto MapPostedFundEvent(PrivateCapitalFundEventLedgerEvent fundEvent)
+    private static PrivateCapitalFundEventDto MapPostedFundEvent(
+        PrivateCapitalFundEventLedgerEvent fundEvent,
+        IReadOnlyDictionary<Guid, string> journalEntryCurrencies)
     {
         var entryType = MapPrivateCapitalEntryType(fundEvent.FundEventType);
+        var currency = ResolvePostedEventCurrency(fundEvent, journalEntryCurrencies);
         var evidenceLinks = fundEvent.EvidenceLinks
             .Concat(fundEvent.ReportOutputs.SelectMany(static item => item.EvidenceLinks))
             .Where(static link => !string.IsNullOrWhiteSpace(link))
@@ -1087,7 +1122,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             fundEvent.EffectiveDate ?? DateOnly.FromDateTime(fundEvent.FirstPostedAt.UtcDateTime),
             NormalizeOptional(fundEvent.CapitalAccountId) ?? "capital-account:unassigned",
             NormalizeOptional(fundEvent.InvestorId),
-            "USD",
+            currency,
             grossAmount,
             netCapitalActivity,
             fundEvent.LedgerImpacts.FirstOrDefault()?.Description ?? fundEvent.FundEventType,
@@ -1101,9 +1136,11 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
     }
 
     private static IEnumerable<PrivateCapitalLedgerImpactDto> MapPostedLedgerImpacts(
-        PrivateCapitalFundEventLedgerEvent fundEvent)
+        PrivateCapitalFundEventLedgerEvent fundEvent,
+        IReadOnlyDictionary<Guid, string> journalEntryCurrencies)
     {
         var approvalState = MapPostedApprovalState(fundEvent.ApprovalState, fundEvent.HasCriticalIssues);
+        var currency = ResolvePostedEventCurrency(fundEvent, journalEntryCurrencies);
         var evidenceLinks = fundEvent.EvidenceLinks
             .Where(static link => !string.IsNullOrWhiteSpace(link))
             .Select(static link => link.Trim())
@@ -1125,7 +1162,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 NormalizeOptional(fundEvent.InvestorId),
                 approvalState,
                 effectiveDate,
-                "USD",
+                currency,
                 impact.TotalDebits,
                 impact.TotalCredits,
                 impact.Imbalance,
@@ -1133,12 +1170,14 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 impact.IsBalanced,
                 fundEvent.IsPostingReady,
                 evidenceLinks,
-                impact.Lines.Select(MapPostedLedgerLine).ToArray(),
+                impact.Lines.Select(line => MapPostedLedgerLine(line, currency)).ToArray(),
                 issues);
         }
     }
 
-    private static PrivateCapitalLedgerLineImpactDto MapPostedLedgerLine(PrivateCapitalFundEventLedgerLine line)
+    private static PrivateCapitalLedgerLineImpactDto MapPostedLedgerLine(
+        PrivateCapitalFundEventLedgerLine line,
+        string currency)
     {
         var side = line.Debit > 0m ? AccountingTemplateLineSideDto.Debit : AccountingTemplateLineSideDto.Credit;
         return new PrivateCapitalLedgerLineImpactDto(
@@ -1146,16 +1185,30 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             line.AccountName,
             side,
             Math.Abs(line.Debit > 0m ? line.Debit : line.Credit),
-            "USD",
+            currency,
             NormalizeOptional(line.FinancialAccountId),
             null,
             NormalizeOptional(line.Symbol),
             null);
     }
 
+    private static string ResolvePostedEventCurrency(
+        PrivateCapitalFundEventLedgerEvent fundEvent,
+        IReadOnlyDictionary<Guid, string> journalEntryCurrencies)
+    {
+        var currencies = fundEvent.JournalEntryIds
+            .Select(id => journalEntryCurrencies.TryGetValue(id, out var currency) ? NormalizeCurrency(currency) : null)
+            .Where(static currency => !string.IsNullOrWhiteSpace(currency))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        return currencies.Length == 0 ? "USD" : currencies[0]!;
+    }
+
     private static IReadOnlyList<PrivateCapitalReportOutputDto> BuildPostedReportOutputs(
         string fundProfileId,
         IReadOnlyList<PrivateCapitalFundEventLedgerEvent> postedEvents,
+        IReadOnlyDictionary<Guid, string> journalEntryCurrencies,
         IReadOnlyList<ReportPackWorkflowRecordDto> reportPackWorkflowRecords)
     {
         if (postedEvents.Count == 0)
@@ -1169,7 +1222,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         if (records.Length == 0)
         {
             return postedEvents
-                .Select(fundEvent => BuildMissingPostedReportOutput(fundProfileId, fundEvent))
+                .Select(fundEvent => BuildMissingPostedReportOutput(fundProfileId, fundEvent, journalEntryCurrencies))
                 .ToArray();
         }
 
@@ -1178,12 +1231,12 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             {
                 var matched = records
                     .Where(record => MatchesPostedFundEventReport(record, fundEvent))
-                    .Select(record => BuildPostedReportOutput(fundEvent, record))
+                    .Select(record => BuildPostedReportOutput(fundEvent, record, journalEntryCurrencies))
                     .ToArray();
 
                 return matched.Length > 0
                     ? matched
-                    : [BuildMissingPostedReportOutput(fundProfileId, fundEvent)];
+                    : [BuildMissingPostedReportOutput(fundProfileId, fundEvent, journalEntryCurrencies)];
             })
             .ToArray();
     }
@@ -1208,10 +1261,21 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         return ledgerPublishedOutputIds.Count + workflowPublishedOutputIds.Count;
     }
 
+    private static IReadOnlyDictionary<string, bool> BuildPostingReadyByFundEventId(
+        IReadOnlyList<PrivateCapitalLedgerImpactDto> ledgerImpacts)
+        => ledgerImpacts
+            .GroupBy(static item => item.FundEventId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.Any() && group.All(static item => item.IsPostingReady),
+                StringComparer.OrdinalIgnoreCase);
+
     private static PrivateCapitalReportOutputDto BuildPostedReportOutput(
         PrivateCapitalFundEventLedgerEvent fundEvent,
-        ReportPackWorkflowRecordDto record)
+        ReportPackWorkflowRecordDto record,
+        IReadOnlyDictionary<Guid, string> journalEntryCurrencies)
     {
+        var currency = ResolvePostedEventCurrency(fundEvent, journalEntryCurrencies);
         var matchedProvenance = (record.LineProvenance ?? [])
             .Where(line => MatchesPostedFundEventLine(line, fundEvent))
             .ToArray();
@@ -1249,6 +1313,17 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 "Attach retained publication evidence before relying on report output."));
         }
 
+        if (!fundEvent.IsPostingReady)
+        {
+            validationIssues.Add(Issue(
+                "private-capital.report-output-posting-not-ready",
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Posted private-capital report output is not ready because the linked fund event is not posting-ready.",
+                fundEvent.FundEventId,
+                "Repair approval, evidence, ledger impact, or capital-account impact before relying on report output."));
+        }
+
+        var isReportReady = fundEvent.IsPostingReady && IsReadyReportPack(record);
         return new PrivateCapitalReportOutputDto(
             $"report-output:{fundEvent.FundEventId}:{record.ReportId:D}".ToLowerInvariant(),
             "GovernedReportPack",
@@ -1260,11 +1335,11 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             NormalizeOptional(fundEvent.InvestorId),
             MapPostedWorkflowState(record.State),
             fundEvent.EffectiveDate ?? DateOnly.FromDateTime(fundEvent.FirstPostedAt.UtcDateTime),
-            "USD",
+            currency,
             netCapitalActivity,
             evidenceLinks.Count,
             evidenceLinks,
-            IsReadyReportPack(record),
+            isReportReady,
             validationIssues
                 .OrderByDescending(issue => issue.Severity)
                 .ThenBy(issue => issue.Code, StringComparer.OrdinalIgnoreCase)
@@ -1282,8 +1357,10 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 
     private static PrivateCapitalReportOutputDto BuildMissingPostedReportOutput(
         string fundProfileId,
-        PrivateCapitalFundEventLedgerEvent fundEvent)
+        PrivateCapitalFundEventLedgerEvent fundEvent,
+        IReadOnlyDictionary<Guid, string> journalEntryCurrencies)
     {
+        var currency = ResolvePostedEventCurrency(fundEvent, journalEntryCurrencies);
         var evidenceLinks = fundEvent.EvidenceLinks
             .Where(static link => !string.IsNullOrWhiteSpace(link))
             .Select(static link => link.Trim())
@@ -1306,7 +1383,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             NormalizeOptional(fundEvent.InvestorId),
             MapPostedApprovalState(fundEvent.ApprovalState, fundEvent.HasCriticalIssues),
             fundEvent.EffectiveDate ?? DateOnly.FromDateTime(fundEvent.FirstPostedAt.UtcDateTime),
-            "USD",
+            currency,
             netCapitalActivity,
             evidenceLinks.Length,
             evidenceLinks,
@@ -1532,7 +1609,10 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 .ToArray());
     }
 
-    private static PrivateCapitalReportOutputDto BuildPrivateCapitalReportOutput(string fundProfileId, PrivateCapitalFundEventDto fundEvent)
+    private static PrivateCapitalReportOutputDto BuildPrivateCapitalReportOutput(
+        string fundProfileId,
+        PrivateCapitalFundEventDto fundEvent,
+        IReadOnlyDictionary<string, bool> postingReadyByFundEventId)
     {
         var reportOutputType = fundEvent.EntryType switch
         {
@@ -1544,7 +1624,9 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             ManualJournalEntryTypeDto.ManagementFee => "ManagementFeeSupportPackage",
             _ => "PrivateCapitalActivityStatement"
         };
+        var isPostingReady = postingReadyByFundEventId.TryGetValue(fundEvent.FundEventId, out var resolvedPostingReady) && resolvedPostingReady;
         var isReportReady =
+            isPostingReady &&
             fundEvent.JournalStatus is ManualJournalEntryStatusDto.Submitted or ManualJournalEntryStatusDto.Approved &&
             fundEvent.EvidenceLinks.Count > 0 &&
             fundEvent.ValidationIssues.All(issue => issue.Severity != AccountingConfigurationValidationSeverityDto.Critical);
@@ -1567,6 +1649,16 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 "Private-capital report output is not ready because the linked journal entry has not been submitted for approval.",
                 fundEvent.FundEventId,
                 "Submit or approve the fund-event journal before report-package production."));
+        }
+
+        if (!isPostingReady)
+        {
+            issues.Add(Issue(
+                "manual-je.private-capital-report-ledger-impact-not-ready",
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Private-capital report output is not ready because the linked ledger and capital-account impact is not posting-ready.",
+                fundEvent.FundEventId,
+                "Resolve ledger-impact readiness before producing or publishing the report output."));
         }
 
         var reportOutputId = $"report-output:{fundEvent.FundEventId}:{reportOutputType}".ToLowerInvariant();
@@ -1990,6 +2082,9 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
     private static string NormalizeFundProfileId(string? value)
         => string.IsNullOrWhiteSpace(value) ? DefaultFundProfileId : value.Trim();
 
+    private static string NormalizeCurrency(string? value)
+        => string.IsNullOrWhiteSpace(value) ? "USD" : value.Trim().ToUpperInvariant();
+
     private static string RequireText(string? value, string parameterName)
         => string.IsNullOrWhiteSpace(value)
             ? throw new ArgumentException($"{parameterName} is required.", parameterName)
@@ -1998,3 +2093,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
+
+internal sealed record PostedPrivateCapitalActivityProjection(
+    PrivateCapitalFundEventLedgerProjection Projection,
+    IReadOnlyDictionary<Guid, string> JournalEntryCurrencies);

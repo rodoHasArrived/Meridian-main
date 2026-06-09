@@ -163,18 +163,29 @@ of implying live market ticks when the shared source evidence is missing or stal
 retained portfolio run timestamps. Rows include current/prior period totals, realized/unrealized
 P&L, change, source counts, readiness text, route, tags, and version stamp so clients can show
 period P&L without inventing browser-local time-series logic.
+`PortfolioReportingAnalyticsRowDto` carries source-backed Top-N winner, Top-N laggard, and
+contribution rows for Reporting. Rows include security/strategy/asset-class scope, rank,
+realized/unrealized/total P&L, contribution percent, heat-map intensity, source counts, route,
+readiness text, tags, and version stamp so clients can render P&L contribution analytics without
+recomputing retained portfolio positions.
 `CrossFundReportingConsolidationDto` carries company, fund, and legal-entity rollups for
 cross-fund reporting. Rows include fund/entity/account/run counts, gross and net exposure, cash,
 P&L, shadow-NAV, variance, source counts, readiness text, route, tags, and version stamp so
 Reporting clients can display consolidated portfolio metrics without deriving multi-fund state.
 The same summary carries `StructuredReportingExportDto` descriptors for regulatory trial balance,
-warehouse ledger facts, investment portfolio-cut outputs, and cross-fund consolidation outputs.
+warehouse ledger facts, investment portfolio-cut outputs, Top-N/contribution analytics outputs,
+and cross-fund consolidation outputs.
 Each descriptor includes purpose, format, dataset, consumer, schema version, row/field/source
 counts, retained path, API route, readiness summary, evidence route, and version stamp;
 `StructuredReportingExportPayloadDto` returns stable column metadata plus string-valued JSON rows
 for downstream export consumers.
 Reporting summaries and generated report-pack snapshots also carry shared `ReportBrandingThemeDto`
-metadata for firm name, colors, logo URI, footer, disclaimer, and built-in/custom posture.
+metadata for firm name, colors, logo URI, footer, disclaimer, and built-in/custom posture. Summary
+payloads retain fund-profile context so clients can generate branded governed report packs without
+hard-coded fund ids.
+`ReportingScheduleDeliveryPlanDto` carries schedule-to-recipient delivery plans with PDF/XLS/CSV
+format sets, email-link or secure-portal mode, readiness text, due/as-of posture, last retained
+delivery attempt metadata, and version stamps.
 `FundReportPackGenerateRequestDto` accepts either a `BrandingThemeId` or validated
 `BrandingThemeOverride`, so browser, WPF, distribution, and retained-artifact readers consume the
 same branding contract instead of inventing presentation metadata locally.
@@ -474,15 +485,20 @@ The projection is additive across draft and posted sources: posted ledger-backed
 over same-id drafts, and it exposes posted fund-event and published report-output counts so clients
 can distinguish retained ledger truth from unposted authoring state. Fund-event and subledger rows
 also carry `IsPosted`, while report-output rows carry `IsPublished`, so drill-through clients do
-not have to infer source state from approval labels.
+not have to infer source state from approval labels. `IsPublished` remains a report-workflow fact;
+`IsReportReady` is only true when the same fund event is posting-ready across approval, retained
+evidence, balanced ledger impact, and capital-account impact. Posted private-capital rows inherit
+the owning ledger book's base currency across event, ledger-impact, capital-account subledger, and
+report-output records instead of falling back to a client-local currency default.
 `IManualJournalEntryWorkbenchService.GetPrivateCapitalActivityAsync`
 and `UiApiRoutes.LedgerPrivateCapitalActivity` expose the same projection as a first-class review
 endpoint for reporting, audit, and future LP support surfaces that should not depend on the manual
 journal editor payload. `UiApiRoutes.LedgerPrivateCapitalFundEventRecord` exposes one shared
 event-level record by `fundEventId`, and
 `UiApiRoutes.LedgerPrivateCapitalCapitalAccountSubledger` exposes one capital-account subledger by
-`capitalAccountId`, so review and report drill-through surfaces can load the needed accounting
-record without interpreting an empty aggregate.
+`capitalAccountId`, `investorId`, and `currency` when those fields are needed to identify one
+subledger, so review and report drill-through surfaces can load the needed accounting record
+without interpreting an empty aggregate or accidentally selecting the wrong investor record.
 
 ## Diagrams
 

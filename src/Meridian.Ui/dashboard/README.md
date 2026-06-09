@@ -157,16 +157,26 @@ It also renders shared `pnlSlices` rows for daily, weekly, monthly, and yearly P
 date windows, realized/unrealized/current/prior/change values, source-backed or blocked posture,
 readiness text, version stamps, and backend routes from the payload instead of fabricating browser
 period bridges.
+It also renders shared `analyticsRows` rows for Top-N winners, Top-N laggards, and contribution
+breakdowns. React shows security/strategy/asset-class scope, rank, P&L, contribution percent,
+heat-map intensity, source counts, readiness text, version stamps, and backend routes from the
+payload instead of recalculating portfolio contribution analytics in the browser.
 It also renders shared `crossFundConsolidations` rows for company, fund, and legal-entity rollups.
 React shows source counts, exposure, cash, P&L, readiness, version stamps, and backend routes from
 the payload instead of aggregating multi-fund state in the browser.
 It also renders shared `structuredExports` rows for regulatory, warehouse, and investment-decision
 outputs. The browser displays readiness, format, row/field/source counts, schema version, retained
-path, version stamp, and direct JSON payload links from the backend contract instead of deriving
-export inventory from report-profile labels.
+path, version stamp, and direct JSON payload links from the backend contract, including
+Top-N/contribution analytics exports, instead of deriving export inventory from report-profile
+labels.
 The Reporting workspace also renders shared `brandingThemes` rows with firm identity, built-in or
-custom posture, color swatches, logo URI, footer text, and disclaimer copy. React displays that
-payload read-only so retained report-pack styling stays owned by the shared reporting service.
+custom posture, color swatches, logo URI, footer text, and disclaimer copy. When the payload carries
+fund context, React can generate a governed BoardPacket report pack with PDF/XLSX/CSV artifacts by
+posting the selected `brandingThemeId` to the shared report-pack endpoint; without fund context the
+command stays disabled instead of using a browser-local default.
+It also renders shared `scheduleDeliveryPlans` rows for scheduled report packs, including recipient,
+channel, delivery mode, PDF/XLS/CSV formats, readiness, retained package links, and version stamps
+from the backend payload.
 Those rows render typed drilldown links and next-action references from the shared payload, opening
 browser-safe evidence routes while executing shared POST actions for approval submission/review,
 publication, archive, and report-pack delivery. Restatements remain guarded by changed-line

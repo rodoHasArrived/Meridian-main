@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using Meridian.Contracts.Ledger;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,7 @@ public sealed class EvidenceSubjectResolver
     public const string SecurityMasterConflictKind = "security-master-conflict";
     public const string ApprovalKind = "approval";
     public const string AccountingRecordKind = "accounting-record";
+    public const string PrivateCapitalFundEventKind = "private-capital-fund-event";
     public const string EvidenceVaultKind = "evidence-vault";
 
     private static readonly HashSet<string> SupportedKinds = new(StringComparer.OrdinalIgnoreCase)
@@ -31,6 +33,7 @@ public sealed class EvidenceSubjectResolver
         SecurityMasterConflictKind,
         ApprovalKind,
         AccountingRecordKind,
+        PrivateCapitalFundEventKind,
         EvidenceVaultKind
     };
 
@@ -138,6 +141,23 @@ public sealed class EvidenceSubjectResolver
                 }));
         }
 
+        var manualJournalService = _services.GetService<IManualJournalEntryWorkbenchService>();
+        if (manualJournalService is not null)
+        {
+            var activity = await manualJournalService.GetPrivateCapitalActivityAsync(ct: ct).ConfigureAwait(false);
+            subjects.AddRange(activity.FundEventRecords
+                .OrderByDescending(static record => record.EffectiveDate)
+                .ThenBy(static record => record.FundEventId, StringComparer.OrdinalIgnoreCase)
+                .Take(100)
+                .Select(static record => new EvidenceSubjectDto(
+                    SubjectId: record.FundEventId,
+                    SubjectKind: PrivateCapitalFundEventKind,
+                    Label: $"Private-capital fund event {record.FundEventType}",
+                    Workspace: "Accounting",
+                    Route: $"/accounting/journal-entries?fundEventId={Uri.EscapeDataString(record.FundEventId)}",
+                    PageTag: "AccountingJournalEntries")));
+        }
+
         return subjects
             .OrderBy(static subject => subject.Workspace, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static subject => subject.Label, StringComparer.OrdinalIgnoreCase)
@@ -172,6 +192,11 @@ public sealed class EvidenceSubjectResolver
                     Workspace: ResolveWorkspace(run.Summary.Mode),
                     Route: $"/strategy?runId={Uri.EscapeDataString(run.Summary.RunId)}",
                     PageTag: "StrategyRuns");
+        }
+
+        if (string.Equals(subjectKind, PrivateCapitalFundEventKind, StringComparison.OrdinalIgnoreCase))
+        {
+            return await ResolvePrivateCapitalFundEventSubjectAsync(subjectId, ct).ConfigureAwait(false);
         }
 
         return subjectKind.ToLowerInvariant() switch
@@ -242,6 +267,32 @@ public sealed class EvidenceSubjectResolver
         };
     }
 
+    private async Task<EvidenceSubjectDto?> ResolvePrivateCapitalFundEventSubjectAsync(string subjectId, CancellationToken ct)
+    {
+        var service = _services.GetService<IManualJournalEntryWorkbenchService>();
+        if (service is null)
+        {
+            return null;
+        }
+
+        var fundProfileId = TryResolveFundProfileIdFromFundEventId(subjectId);
+        var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId: null, ct).ConfigureAwait(false);
+        var record = activity.FundEventRecords.FirstOrDefault(item =>
+            string.Equals(item.FundEventId, subjectId, StringComparison.OrdinalIgnoreCase));
+        if (record is null)
+        {
+            return null;
+        }
+
+        return new EvidenceSubjectDto(
+            SubjectId: record.FundEventId,
+            SubjectKind: PrivateCapitalFundEventKind,
+            Label: $"Private-capital fund event {record.FundEventType}",
+            Workspace: "Accounting",
+            Route: $"/accounting/journal-entries?fundEventId={Uri.EscapeDataString(record.FundEventId)}",
+            PageTag: "AccountingJournalEntries");
+    }
+
     private async Task<EvidenceSubjectDto?> ResolveApprovalSubjectAsync(string subjectId, CancellationToken ct)
     {
         var service = _services.GetService<IOperationsContinuityWorkflowService>();
@@ -306,4 +357,18 @@ public sealed class EvidenceSubjectResolver
 
     private static string ResolveWorkspace(StrategyRunMode mode)
         => mode is StrategyRunMode.Paper or StrategyRunMode.Live ? "Trading" : "Strategy";
+
+    private static string? TryResolveFundProfileIdFromFundEventId(string fundEventId)
+    {
+        if (string.IsNullOrWhiteSpace(fundEventId))
+        {
+            return null;
+        }
+
+        var parts = fundEventId.Split(':', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length >= 3 &&
+               string.Equals(parts[0], "fund-event", StringComparison.OrdinalIgnoreCase)
+            ? parts[1]
+            : null;
+    }
 }

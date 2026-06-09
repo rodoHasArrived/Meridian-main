@@ -184,6 +184,7 @@ public sealed class EvidenceGraphService
             EvidenceSubjectResolver.SecurityMasterConflictKind => "security-master-conflict-review",
             EvidenceSubjectResolver.ApprovalKind => "operations-approval-review",
             EvidenceSubjectResolver.AccountingRecordKind => "accounting-records-evidence-review",
+            EvidenceSubjectResolver.PrivateCapitalFundEventKind => "private-capital-fund-event-review",
             _ => string.Empty
         };
 

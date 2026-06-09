@@ -1,4 +1,5 @@
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Ledger;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
@@ -913,10 +914,17 @@ public sealed class OperationsApprovalEvidenceContributor : IEvidenceContributor
 
     private static string BuildAccountingRecordCategorySummary(OperationsAccountingRecordEvidenceCategoryDto category)
     {
-        var requiredEvidence = category.RequiredEvidence is { Count: > 0 }
-            ? string.Join(", ", category.RequiredEvidence.Where(static item => !string.IsNullOrWhiteSpace(item)))
+        var requiredEvidenceItems = category.RequiredEvidence?
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .ToArray() ?? [];
+        var requiredEvidence = requiredEvidenceItems.Length > 0
+            ? string.Join(", ", requiredEvidenceItems)
             : "required evidence not specified";
-        return $"{category.Label}: {category.Status} Required evidence: {requiredEvidence}.";
+        var closePackageLineage = requiredEvidenceItems.Any(static item =>
+            item.Contains("export manifest", StringComparison.OrdinalIgnoreCase))
+            ? " Close-package lineage includes retained document attachments and restatement lineage."
+            : string.Empty;
+        return $"{category.Label}: {category.Status} Required evidence: {requiredEvidence}.{closePackageLineage}";
     }
 
     private static async Task<OperationsContinuityWorkflowDto?> ResolveWorkflowAsync(
@@ -991,6 +999,268 @@ public sealed class OperationsApprovalEvidenceContributor : IEvidenceContributor
         => string.IsNullOrWhiteSpace(value)
             ? "evidence"
             : string.Join("-", value.Trim().Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
+}
+
+public sealed class PrivateCapitalFundEventEvidenceContributor : IEvidenceContributor
+{
+    private readonly IServiceProvider _services;
+
+    public PrivateCapitalFundEventEvidenceContributor(IServiceProvider services)
+    {
+        _services = services ?? throw new ArgumentNullException(nameof(services));
+    }
+
+    public string ContributorId => "private-capital-fund-event";
+
+    public bool Supports(EvidenceSubjectDto subject)
+        => string.Equals(subject.SubjectKind, EvidenceSubjectResolver.PrivateCapitalFundEventKind, StringComparison.OrdinalIgnoreCase);
+
+    public async Task<EvidenceContribution> ContributeAsync(EvidenceContributionContext context)
+    {
+        var service = _services.GetService<IManualJournalEntryWorkbenchService>();
+        if (service is null)
+        {
+            return Empty("Manual journal entry workbench service is not registered.");
+        }
+
+        var fundProfileId = TryResolveFundProfileIdFromFundEventId(context.Subject.SubjectId);
+        var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId: null, context.CancellationToken)
+            .ConfigureAwait(false);
+        var record = activity.FundEventRecords.FirstOrDefault(item =>
+            string.Equals(item.FundEventId, context.Subject.SubjectId, StringComparison.OrdinalIgnoreCase));
+        if (record is null)
+        {
+            return Empty($"Private-capital fund event '{context.Subject.SubjectId}' was not found.");
+        }
+
+        var generatedAt = DateTimeOffset.UtcNow;
+        var rootId = NodeId(context.Subject, "fund-event");
+        var evidenceId = NodeId(context.Subject, "retained-evidence");
+        var approvalId = NodeId(context.Subject, "approval");
+        var capitalAccountId = NodeId(context.Subject, "capital-account-subledger");
+        var ledgerImpactId = NodeId(context.Subject, "ledger-impact");
+        var reportOutputId = NodeId(context.Subject, "report-output");
+        var nodes = new List<EvidenceNodeDto>
+        {
+            Node(
+                context.Subject,
+                rootId,
+                "private-capital-fund-event",
+                MapReadiness(record.Readiness),
+                $"{record.FundEventType} fund event {record.FundEventId} is {record.ReadinessLabel}: {record.ReadinessReason}",
+                "ManualJournalEntryWorkbenchService",
+                record.FundEvent.UpdatedAtUtc,
+                artifacts:
+                [
+                    Artifact(
+                        $"{rootId}:record-route",
+                        "fund-event-ledger-record-route",
+                        route: PrivateCapitalActivityRouteBuilder.BuildFundEventRecordRoute(activity.FundProfileId, activity.LedgerBookId, record.FundEventId),
+                        generatedAt: generatedAt),
+                    Artifact(
+                        $"{rootId}:activity-route",
+                        "private-capital-activity-route",
+                        route: record.ActivityRoute,
+                        generatedAt: generatedAt)
+                ],
+                workItemIds: BuildWorkItemIds(record))
+        };
+        var edges = new List<EvidenceEdgeDto>();
+        var required = new List<string> { rootId };
+
+        nodes.Add(Node(
+            context.Subject,
+            evidenceId,
+            "retained-evidence",
+            record.EvidenceLinkCount == 0 ? EvidenceStatusDto.Missing : EvidenceStatusDto.Ready,
+            record.EvidenceLinkCount == 0
+                ? "No retained source, approval, settlement, ledger, or report evidence link is attached to this fund event."
+                : $"{record.EvidenceLinkCount} retained evidence link(s) support this fund event.",
+            "ManualJournalEntryWorkbenchService",
+            record.FundEvent.UpdatedAtUtc,
+            artifacts: BuildEvidenceArtifacts(record, evidenceId, generatedAt)));
+        edges.Add(new EvidenceEdgeDto(rootId, evidenceId, "supported-by", "Retained evidence supports the private-capital fund event."));
+        required.Add(evidenceId);
+
+        nodes.Add(Node(
+            context.Subject,
+            approvalId,
+            "approval-state",
+            MapJournalApprovalStatus(record.ApprovalState),
+            record.ApprovalId is null
+                ? $"Fund-event journal approval state is {record.ApprovalState}."
+                : $"Fund-event journal approval {record.ApprovalId} is {record.ApprovalState}.",
+            "ManualJournalEntryWorkbenchService",
+            record.FundEvent.UpdatedAtUtc,
+            artifacts: record.ApprovalRoute is null
+                ? []
+                :
+                [
+                    Artifact(
+                        $"{approvalId}:approval-route",
+                        "approval-route",
+                        route: record.ApprovalRoute,
+                        generatedAt: generatedAt)
+                ]));
+        edges.Add(new EvidenceEdgeDto(rootId, approvalId, "approved-by", "Approval state gates posting, capital-account reliance, and stakeholder report output."));
+        required.Add(approvalId);
+
+        nodes.Add(Node(
+            context.Subject,
+            capitalAccountId,
+            "capital-account-subledger",
+            record.CapitalAccountSubledgerEntryCount == 0 ? EvidenceStatusDto.Missing : EvidenceStatusDto.Ready,
+            record.CapitalAccountSubledgerEntryCount == 0
+                ? "No capital-account subledger movement is linked to this fund event."
+                : $"{record.CapitalAccountSubledgerEntryCount} capital-account subledger entr{(record.CapitalAccountSubledgerEntryCount == 1 ? "y" : "ies")} move net activity from {record.CapitalAccountOpeningNetActivity} to {record.CapitalAccountEndingNetActivity} {record.Currency}.",
+            "ManualJournalEntryWorkbenchService",
+            record.CapitalAccountSubledgerEntries.Select(static item => (DateTimeOffset?)item.UpdatedAtUtc).DefaultIfEmpty(record.FundEvent.UpdatedAtUtc).Max(),
+            artifacts:
+            [
+                Artifact(
+                    $"{capitalAccountId}:subledger-route",
+                    "capital-account-subledger-route",
+                    route: PrivateCapitalActivityRouteBuilder.BuildCapitalAccountSubledgerRoute(
+                        activity.FundProfileId,
+                        activity.LedgerBookId,
+                        record.CapitalAccountId,
+                        record.InvestorId,
+                        record.Currency),
+                    generatedAt: generatedAt)
+            ]));
+        edges.Add(new EvidenceEdgeDto(rootId, capitalAccountId, "posts-to", "Capital-account subledger movement is derived from the same fund event."));
+        required.Add(capitalAccountId);
+
+        nodes.Add(Node(
+            context.Subject,
+            ledgerImpactId,
+            "ledger-impact",
+            record.LedgerImpactCount == 0
+                ? EvidenceStatusDto.Missing
+                : record.IsPostingReady ? EvidenceStatusDto.Ready : EvidenceStatusDto.ReviewRequired,
+            record.LedgerImpactCount == 0
+                ? "No GL impact is linked to this fund event."
+                : $"{record.LedgerImpactCount} GL impact row(s) are linked; posting readiness is {record.IsPostingReady}.",
+            "ManualJournalEntryWorkbenchService",
+            record.FundEvent.UpdatedAtUtc,
+            artifacts: record.LedgerImpacts
+                .Select(impact => Artifact(
+                    $"{ledgerImpactId}:{SanitizeNodePart(impact.LedgerImpactId)}",
+                    "private-capital-ledger-impact-route",
+                    route: record.ActivityRoute,
+                    generatedAt: generatedAt))
+                .ToArray()));
+        edges.Add(new EvidenceEdgeDto(rootId, ledgerImpactId, "posts-to", "Ledger impact is derived from the same approved private-capital fund event."));
+        required.Add(ledgerImpactId);
+
+        nodes.Add(Node(
+            context.Subject,
+            reportOutputId,
+            "report-output",
+            record.ReportOutputCount == 0
+                ? EvidenceStatusDto.Missing
+                : record.IsReportReady ? EvidenceStatusDto.Ready : EvidenceStatusDto.ReviewRequired,
+            record.ReportOutputCount == 0
+                ? "No retained stakeholder report output is linked to this fund event."
+                : $"{record.ReportOutputCount} report output row(s) are linked; report readiness is {record.IsReportReady} and publication is {record.IsPublished}.",
+            "ManualJournalEntryWorkbenchService",
+            record.FundEvent.UpdatedAtUtc,
+            artifacts: record.ReportOutputs
+                .Select(output => Artifact(
+                    $"{reportOutputId}:{SanitizeNodePart(output.ReportOutputId)}",
+                    output.IsPublished ? "published-report-output-route" : "report-output-route",
+                    route: output.ReportRoute,
+                    generatedAt: generatedAt,
+                    hash: output.PublicationEvidenceHash,
+                    retained: output.IsPublished))
+                .ToArray()));
+        edges.Add(new EvidenceEdgeDto(rootId, reportOutputId, "reported-by", "Report output is tied to the same fund-event ledger and capital-account activity."));
+        required.Add(reportOutputId);
+
+        var warnings = record.ValidationIssues
+            .Select(static issue => $"{issue.Code}: {issue.Message}")
+            .ToArray();
+
+        return new EvidenceContribution(nodes, edges, [], required, warnings);
+    }
+
+    private static EvidenceStatusDto MapReadiness(PrivateCapitalFundEventLedgerReadinessDto readiness)
+        => readiness switch
+        {
+            PrivateCapitalFundEventLedgerReadinessDto.Blocked => EvidenceStatusDto.Blocked,
+            PrivateCapitalFundEventLedgerReadinessDto.Ready or PrivateCapitalFundEventLedgerReadinessDto.Published => EvidenceStatusDto.Ready,
+            _ => EvidenceStatusDto.ReviewRequired
+        };
+
+    private static EvidenceContribution Empty(string warning)
+        => new([], [], [], [], [warning]);
+
+    private static EvidenceStatusDto MapJournalApprovalStatus(ManualJournalEntryStatusDto status)
+        => status switch
+        {
+            ManualJournalEntryStatusDto.Submitted or ManualJournalEntryStatusDto.Approved => EvidenceStatusDto.Ready,
+            ManualJournalEntryStatusDto.Rejected or ManualJournalEntryStatusDto.NeedsFix => EvidenceStatusDto.Blocked,
+            _ => EvidenceStatusDto.ReviewRequired
+        };
+
+    private static IReadOnlyList<string> BuildWorkItemIds(PrivateCapitalFundEventLedgerRecordDto record)
+    {
+        var ids = new List<string>();
+        if (record.Readiness is not PrivateCapitalFundEventLedgerReadinessDto.Ready and not PrivateCapitalFundEventLedgerReadinessDto.Published)
+        {
+            ids.Add($"private-capital-fund-event:{record.Readiness.ToString().ToLowerInvariant()}:{record.FundEventId}");
+        }
+
+        return ids;
+    }
+
+    private static IReadOnlyList<EvidenceArtifactRefDto> BuildEvidenceArtifacts(
+        PrivateCapitalFundEventLedgerRecordDto record,
+        string evidenceId,
+        DateTimeOffset generatedAt)
+        => record.EvidenceLinks
+            .Select((link, index) => BuildEvidenceArtifact(evidenceId, link, index, generatedAt))
+            .Prepend(Artifact(
+                $"{evidenceId}:packet-route",
+                "evidence-packet-route",
+                route: record.EvidenceRoute,
+                generatedAt: generatedAt))
+            .ToArray();
+
+    private static EvidenceArtifactRefDto BuildEvidenceArtifact(
+        string evidenceId,
+        string link,
+        int index,
+        DateTimeOffset generatedAt)
+    {
+        var artifactId = $"{evidenceId}:retained-{index + 1}";
+        return link.StartsWith("/", StringComparison.OrdinalIgnoreCase) ||
+               link.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+               link.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+            ? Artifact(artifactId, "retained-evidence-link", route: link, generatedAt: generatedAt, retained: true)
+            : Artifact(artifactId, "retained-evidence-link", path: link, generatedAt: generatedAt, retained: true);
+    }
+
+    private static string? TryResolveFundProfileIdFromFundEventId(string fundEventId)
+    {
+        if (string.IsNullOrWhiteSpace(fundEventId))
+        {
+            return null;
+        }
+
+        var parts = fundEventId.Split(':', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length >= 3 &&
+               string.Equals(parts[0], "fund-event", StringComparison.OrdinalIgnoreCase)
+            ? parts[1]
+            : null;
+    }
+
+    private static string SanitizeNodePart(string value)
+        => string.IsNullOrWhiteSpace(value)
+            ? "artifact"
+            : string.Join("-", value.Trim().Split(
+                Path.GetInvalidFileNameChars().Concat([':', '/', '\\', '?', '&', '=']).Distinct().ToArray(),
+                StringSplitOptions.RemoveEmptyEntries));
 }
 
 public sealed class EvidenceVaultEvidenceContributor : IEvidenceContributor

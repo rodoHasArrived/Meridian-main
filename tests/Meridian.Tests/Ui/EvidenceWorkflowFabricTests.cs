@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Endpoints;
@@ -512,6 +513,84 @@ public sealed class EvidenceWorkflowFabricTests
             subject.SubjectId == workflow.WorkflowId.ToString("D") &&
             subject.Label.Contains(workflow.PeriodId, StringComparison.OrdinalIgnoreCase));
         resolver.IsSupportedKind(EvidenceSubjectResolver.AccountingRecordKind).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task EvidenceGraphService_DuringPrivateCapitalFundEventReview_ProjectsUnifiedLedgerEvidence()
+    {
+        var activity = PrivateCapitalActivityProjection();
+        var provider = new ServiceCollection()
+            .AddSingleton<IManualJournalEntryWorkbenchService>(new StubManualJournalEntryWorkbenchService(activity))
+            .BuildServiceProvider();
+        var graph = new EvidenceGraphService(
+            new EvidenceSubjectResolver(provider),
+            new EvidenceTemplateRegistry(),
+            [new PrivateCapitalFundEventEvidenceContributor(provider)],
+            NullLogger<EvidenceGraphService>.Instance);
+
+        var packet = await graph.GetPacketAsync(
+            EvidenceSubjectResolver.PrivateCapitalFundEventKind,
+            "fund-event:fund-alpha:capital-call:20260630");
+
+        packet.Should().NotBeNull();
+        packet!.Subject.SubjectKind.Should().Be(EvidenceSubjectResolver.PrivateCapitalFundEventKind);
+        packet.Subject.Route.Should().Contain("/accounting/journal-entries");
+        packet.Nodes.Select(static node => node.Kind).Should().Contain([
+            "private-capital-fund-event",
+            "retained-evidence",
+            "approval-state",
+            "capital-account-subledger",
+            "ledger-impact",
+            "report-output"
+        ]);
+        packet.Nodes.Should().Contain(node =>
+            node.Kind == "private-capital-fund-event" &&
+            node.Status == EvidenceStatusDto.Ready &&
+            node.ArtifactRefs.Any(artifact =>
+                artifact.Kind == "fund-event-ledger-record-route" &&
+                artifact.Route!.Contains("/api/ledger/private-capital/fund-event-record", StringComparison.OrdinalIgnoreCase)));
+        packet.Nodes.Should().Contain(node =>
+            node.Kind == "retained-evidence" &&
+            node.Status == EvidenceStatusDto.Ready &&
+            node.ArtifactRefs.Any(artifact => artifact.Retained));
+        packet.Nodes.Should().Contain(node =>
+            node.Kind == "capital-account-subledger" &&
+            node.Status == EvidenceStatusDto.Ready &&
+            node.ArtifactRefs.Any(artifact =>
+                artifact.Kind == "capital-account-subledger-route" &&
+                artifact.Route!.Contains("/api/ledger/private-capital/capital-account-subledger", StringComparison.OrdinalIgnoreCase)));
+        packet.Nodes.Should().Contain(node => node.Kind == "ledger-impact" && node.Status == EvidenceStatusDto.Ready);
+        packet.Nodes.Should().Contain(node => node.Kind == "report-output" && node.Status == EvidenceStatusDto.Ready);
+        packet.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
+        packet.Completeness.MissingIds.Should().BeEmpty();
+
+        var retainedNode = Node(
+            packet.Subject,
+            "private-capital-retained-artifact",
+            "retained-evidence",
+            EvidenceStatusDto.Ready,
+            artifacts:
+            [
+                new EvidenceArtifactRefDto(
+                    "private-capital-retained-artifact:canonical-link",
+                    "retained-evidence-link",
+                    Path: "/evidence/fund-alpha/capital-call.pdf",
+                    Route: null,
+                    GeneratedAt: DateTimeOffset.UtcNow,
+                    Hash: "sha256:private-capital-fund-event",
+                    Retained: true,
+                    CanonicalSubjectKind: EvidenceSubjectResolver.PrivateCapitalFundEventKind,
+                    CanonicalSubjectId: packet.Subject.SubjectId)
+            ]);
+        var validation = new EvidencePacketValidationService().Validate(
+            [retainedNode],
+            [],
+            new HashSet<string>(["private-capital-retained-artifact"], StringComparer.OrdinalIgnoreCase),
+            enforceNoOrphanRule: false);
+
+        validation.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
+        validation.Completeness.ValidationIssues.Should().NotContain(issue =>
+            issue.Code.Contains("canonical-subject", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -1506,6 +1585,139 @@ public sealed class EvidenceWorkflowFabricTests
             AccountingRecordSummary: BuildAccountingRecordSummary(workflowId, now, accountingRecordAuditReady));
     }
 
+    private static PrivateCapitalActivityProjectionDto PrivateCapitalActivityProjection()
+    {
+        var now = new DateTimeOffset(2026, 6, 30, 17, 0, 0, TimeSpan.Zero);
+        var journalEntryId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var fundEvent = new PrivateCapitalFundEventDto(
+            "fund-event:fund-alpha:capital-call:20260630",
+            "CapitalCall",
+            ManualJournalEntryTypeDto.CapitalCall,
+            ManualJournalEntryStatusDto.Submitted,
+            journalEntryId,
+            new DateOnly(2026, 6, 30),
+            "capital-account:fund-alpha:lp-1",
+            "investor:lp-1",
+            "USD",
+            100m,
+            100m,
+            "Capital call for Fund Alpha LP",
+            "payment:fund-alpha:capital-call:20260630",
+            "settlement:fund-alpha:capital-call:20260630",
+            ["/evidence/fund-alpha/capital-call.pdf"],
+            [],
+            now,
+            ApprovalId: "approval:fund-alpha:capital-call:20260630");
+        var subledgerEntry = new PrivateCapitalCapitalAccountSubledgerEntryDto(
+            "capital-account-subledger:capital-account:fund-alpha:lp-1:fund-event:fund-alpha:capital-call:20260630:11111111-1111-1111-1111-111111111111",
+            "capital-account:fund-alpha:lp-1",
+            "investor:lp-1",
+            "USD",
+            fundEvent.FundEventId,
+            fundEvent.FundEventType,
+            ManualJournalEntryTypeDto.CapitalCall,
+            ManualJournalEntryStatusDto.Submitted,
+            journalEntryId,
+            new DateOnly(2026, 6, 30),
+            100m,
+            100m,
+            100m,
+            "Capital call for Fund Alpha LP",
+            ["/evidence/fund-alpha/capital-call.pdf"],
+            [],
+            now);
+        var ledgerImpact = new PrivateCapitalLedgerImpactDto(
+            "ledger-impact:fund-event:fund-alpha:capital-call:20260630",
+            journalEntryId,
+            fundEvent.FundEventId,
+            fundEvent.FundEventType,
+            fundEvent.CapitalAccountId,
+            fundEvent.InvestorId,
+            ManualJournalEntryStatusDto.Submitted,
+            new DateOnly(2026, 6, 30),
+            "USD",
+            100m,
+            100m,
+            0m,
+            2,
+            IsBalanced: true,
+            IsPostingReady: true,
+            ["/evidence/fund-alpha/capital-call.pdf"],
+            [
+                new PrivateCapitalLedgerLineImpactDto("line-debit", "Assets:Cash", AccountingTemplateLineSideDto.Debit, 100m, "USD", null, null, null, "/evidence/fund-alpha/capital-call.pdf"),
+                new PrivateCapitalLedgerLineImpactDto("line-credit", "Equity:Capital Contributions", AccountingTemplateLineSideDto.Credit, 100m, "USD", null, null, null, "/evidence/fund-alpha/capital-call.pdf")
+            ],
+            []);
+        var reportOutput = new PrivateCapitalReportOutputDto(
+            "report-output:fund-event:fund-alpha:capital-call:20260630",
+            "CapitalCallNotice",
+            "Capital call notice",
+            "/api/fund-structure/reporting/runs?fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630",
+            fundEvent.FundEventId,
+            fundEvent.FundEventType,
+            fundEvent.CapitalAccountId,
+            fundEvent.InvestorId,
+            ManualJournalEntryStatusDto.Submitted,
+            new DateOnly(2026, 6, 30),
+            "USD",
+            100m,
+            1,
+            ["/evidence/fund-alpha/capital-call.pdf"],
+            IsReportReady: true,
+            []);
+        var capitalAccount = new PrivateCapitalCapitalAccountActivityDto(
+            fundEvent.CapitalAccountId,
+            fundEvent.InvestorId,
+            "USD",
+            Contributions: 100m,
+            Distributions: 0m,
+            Subscriptions: 0m,
+            Redemptions: 0m,
+            ManagementFees: 0m,
+            NetActivity: 100m,
+            FundEventCount: 1,
+            LastEffectiveDate: new DateOnly(2026, 6, 30),
+            LastFundEventType: fundEvent.FundEventType,
+            FundEventIds: [fundEvent.FundEventId]);
+        var records = PrivateCapitalFundEventLedgerRecordBuilder.Build(
+            "fund-alpha",
+            [fundEvent],
+            [subledgerEntry],
+            [ledgerImpact],
+            [reportOutput]);
+        var subledgers = PrivateCapitalCapitalAccountSubledgerBuilder.Build(
+            "fund-alpha",
+            ledgerBookId: null,
+            now,
+            [capitalAccount],
+            records,
+            [subledgerEntry],
+            [ledgerImpact],
+            [reportOutput],
+            []);
+
+        return new PrivateCapitalActivityProjectionDto(
+            "fund-alpha",
+            null,
+            now,
+            FundEventCount: 1,
+            CapitalAccountCount: 1,
+            SubmittedFundEventCount: 1,
+            ApprovalQueueCount: 1,
+            PostedFundEventCount: 0,
+            PublishedReportOutputCount: 0,
+            NetCapitalActivity: 100m,
+            Currency: "USD",
+            FundEvents: [fundEvent],
+            CapitalAccounts: [capitalAccount],
+            CapitalAccountSubledgerEntries: [subledgerEntry],
+            LedgerImpacts: [ledgerImpact],
+            ReportOutputs: [reportOutput],
+            ValidationIssues: [],
+            FundEventRecords: records,
+            CapitalAccountSubledgers: subledgers);
+    }
+
     private static OperationsAccountingRecordSummaryDto BuildAccountingRecordSummary(
         Guid workflowId,
         DateTimeOffset now,
@@ -1675,6 +1887,51 @@ public sealed class EvidenceWorkflowFabricTests
            artifact.GetProperty("hash").ValueKind == JsonValueKind.Null &&
            artifact.GetProperty("canonicalSubjectKind").GetString() == EvidenceSubjectResolver.StrategyRunKind &&
            artifact.GetProperty("canonicalSubjectId").GetString() == "run-ledger-proof";
+
+    private sealed class StubManualJournalEntryWorkbenchService : IManualJournalEntryWorkbenchService
+    {
+        private readonly PrivateCapitalActivityProjectionDto _activity;
+
+        public StubManualJournalEntryWorkbenchService(PrivateCapitalActivityProjectionDto activity)
+        {
+            _activity = activity;
+        }
+
+        public Task<ManualJournalEntryWorkbenchDto> GetWorkbenchAsync(
+            string? fundProfileId = null,
+            Guid? ledgerBookId = null,
+            CancellationToken ct = default)
+            => Task.FromResult(new ManualJournalEntryWorkbenchDto(
+                _activity.FundProfileId,
+                _activity.LedgerBookId,
+                _activity.ProjectedAtUtc,
+                LedgerBooks: [],
+                ChartOfAccounts: [],
+                Drafts: [],
+                AuditTrail: [],
+                PrivateCapitalActivity: _activity));
+
+        public Task<PrivateCapitalActivityProjectionDto> GetPrivateCapitalActivityAsync(
+            string? fundProfileId = null,
+            Guid? ledgerBookId = null,
+            CancellationToken ct = default)
+            => Task.FromResult(_activity);
+
+        public Task<ManualJournalEntryDraftDto> SaveDraftAsync(
+            SaveManualJournalEntryDraftRequest request,
+            CancellationToken ct = default)
+            => throw new NotSupportedException("Evidence review tests do not mutate manual journal drafts.");
+
+        public Task<ManualJournalEntryDraftDto> ValidateDraftAsync(
+            ValidateManualJournalEntryDraftRequest request,
+            CancellationToken ct = default)
+            => throw new NotSupportedException("Evidence review tests do not mutate manual journal drafts.");
+
+        public Task<ManualJournalEntryDraftDto> SubmitApprovalAsync(
+            SubmitManualJournalEntryApprovalRequest request,
+            CancellationToken ct = default)
+            => throw new NotSupportedException("Evidence review tests do not mutate manual journal drafts.");
+    }
 
     private sealed class StubContributor : IEvidenceContributor
     {

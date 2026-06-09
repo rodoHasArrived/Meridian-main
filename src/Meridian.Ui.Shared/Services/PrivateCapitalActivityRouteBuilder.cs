@@ -35,7 +35,8 @@ internal static class PrivateCapitalActivityRouteBuilder
         string fundProfileId,
         Guid? ledgerBookId,
         string capitalAccountId,
-        string? investorId = null)
+        string? investorId = null,
+        string? currency = null)
     {
         var query = new List<string>
         {
@@ -53,7 +54,31 @@ internal static class PrivateCapitalActivityRouteBuilder
             query.Add($"investorId={Uri.EscapeDataString(investorId.Trim())}");
         }
 
+        if (!string.IsNullOrWhiteSpace(currency))
+        {
+            query.Add($"currency={Uri.EscapeDataString(currency.Trim().ToUpperInvariant())}");
+        }
+
         return UiApiRoutes.WithQuery(UiApiRoutes.LedgerPrivateCapitalCapitalAccountSubledger, string.Join("&", query));
+    }
+
+    public static string BuildFundEventRecordRoute(
+        string fundProfileId,
+        Guid? ledgerBookId,
+        string fundEventId)
+    {
+        var query = new List<string>
+        {
+            $"fundProfileId={Uri.EscapeDataString(fundProfileId.Trim())}",
+            $"fundEventId={Uri.EscapeDataString(fundEventId.Trim())}"
+        };
+
+        if (ledgerBookId.HasValue)
+        {
+            query.Add($"ledgerBookId={Uri.EscapeDataString(ledgerBookId.Value.ToString("D"))}");
+        }
+
+        return UiApiRoutes.WithQuery(UiApiRoutes.LedgerPrivateCapitalFundEventRecord, string.Join("&", query));
     }
 
     public static string BuildEvidenceRoute(string fundEventId)

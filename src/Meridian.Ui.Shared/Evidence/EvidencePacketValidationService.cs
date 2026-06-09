@@ -537,7 +537,15 @@ public sealed class EvidencePacketValidationService
     {
         var canonicalKinds = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            "run", "account", "fund", "strategy", "instrument", "reconciliation", "report", "approval"
+            "run",
+            "account",
+            "fund",
+            "strategy",
+            "instrument",
+            "reconciliation",
+            "report",
+            "approval",
+            EvidenceSubjectResolver.PrivateCapitalFundEventKind
         };
 
         foreach (var node in nodes)
