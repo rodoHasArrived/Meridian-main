@@ -1,11 +1,11 @@
 ---
 name: meridian-implementation-assurance
-description: Implement Meridian changes with built-in correctness checks, performance guardrails, documentation synchronization, and structured self-evaluation. Use when Codex is asked to build or refactor code and must also verify behavior, prevent performance regressions, update existing docs, or add new docs in the correct repository section when none exists.
+description: Implement Meridian changes with Codex-specific execution discipline, requirement traceability, narrow validation, performance guardrails, documentation synchronization, and structured self-evaluation. Use when Codex is asked to build, refactor, certify, or improve repository work while preserving user-owned changes and producing explicit evidence.
 ---
 
 # Meridian Implementation Assurance
 
-Deliver production-ready code changes and leave documentation in a consistent, current state.
+Deliver production-ready Codex changes with explicit evidence, bounded scope, and synchronized documentation.
 
 > **GitHub Copilot equivalent:** [`.github/agents/implementation-assurance-agent.md`](../../../.github/agents/implementation-assurance-agent.md)
 > **Claude Code equivalent:** [`.claude/skills/meridian-implementation-assurance/SKILL.md`](../../../.claude/skills/meridian-implementation-assurance/SKILL.md)
@@ -53,16 +53,28 @@ A task delivered by this skill is complete when **all** of the following are tru
 - [ ] **Rubric score >= 8/10, no category at 0:** `scripts/score_eval.py` is run and the report is included in the response.
 - [ ] **Performance-sensitive paths are annotated:** any hot path touched by the change includes an explicit note on allocation, async, or buffering risk.
 - [ ] **Summary is traceable:** the closing summary links requirement -> files changed -> validation artifact -> doc update.
+- [ ] **Codex scope is respected:** user-owned worktree changes are preserved, host-specific metadata is kept valid, and Codex-only requests do not unnecessarily rewrite Claude, GitHub, or portable mirrors.
 
 ## Workflow
 
-1. Define requested behavior, risks, and acceptance checks.
-2. Identify impacted layers and likely performance-sensitive paths before editing.
-3. Implement the smallest safe change set that satisfies the request.
-4. Run targeted validation and capture exact command results.
-5. Update related documentation; if missing, add docs in the correct doc area.
-6. Run the evaluation harness and report pass/fail with evidence.
-7. Summarize code and docs updates and call out residual risk.
+1. Define requested behavior, risks, acceptance checks, and whether the request is Codex-only or shared across agent hosts.
+2. Snapshot `git status --short`, protect unrelated work, and identify impacted layers plus likely performance-sensitive paths before editing.
+3. Build a small requirement -> implementation -> evidence ledger before changing files.
+4. Implement the smallest safe change set that satisfies the request.
+5. Run targeted validation and capture exact command results.
+6. Update related documentation; if missing, add docs in the correct doc area.
+7. Run the evaluation harness and report pass/fail with evidence.
+8. Summarize code and docs updates, scope choices, and residual risk.
+
+### Evidence Ledger
+
+Maintain this ledger mentally during the task and include it in the response when the work spans more than one file or validation lane:
+
+| Requirement | Files changed | Validation evidence | Docs/catalog evidence | Residual risk |
+| --- | --- | --- | --- | --- |
+| `<acceptance criterion>` | `<path>` | `<command/result>` | `<path or none>` | `<none or gap>` |
+
+Use the ledger to prevent two common Codex failures: claiming completion without a testable artifact, and updating a skill or doc without updating the discoverability/catalog surface that points to it.
 
 ## Self-Improving Agent Loop
 
@@ -86,7 +98,8 @@ ready.
 ## Validation
 
 - Run the narrowest command that proves the touched surface, then broaden only when risk justifies it.
-- For AI/tooling changes, run `check-codex-skills.py`, `check-ai-inventory.py`, `validate-skill-packages.py`, implementation-assurance eval dry-run, and `git diff --check`.
+- For AI/tooling changes, run `python3 build/scripts/docs/check-codex-skills.py --summary`, `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/validate-skill-packages.py`, the implementation-assurance eval dry-run, and `git diff --check`.
+- For Codex-skill changes with `agents/openai.yaml`, verify the YAML metadata still matches the frontmatter description, default prompt, and routing behavior.
 - For registered source module changes, run `python3 build/scripts/docs/mark-stale-docs.py --write --summary` before source-doc updates so only stale module docs are targeted, then run `python3 build/scripts/docs/validate-doc-hashes.py --summary` after source README and registry review. Refresh the hash manifest with `--write` only when code/docs alignment is intentionally accepted.
 - Confirm `.github/workflows/ci.yml` still contains the `Validate AI contract drift` step when AI workflow behavior changes.
 
@@ -94,9 +107,15 @@ ready.
 
 Use these gates before and during implementation.
 
+### Codex Start Gate
+
+- Run `git status --short` before editing and identify user-owned changes.
+- Read the nearest `AGENTS.md`, source README, and `docs/source/data/source-modules.yml` before source edits under `src/**`.
+- Decide whether the task is code, docs, AI tooling, or mixed; pick the minimum validation lane before editing.
+- Keep branch-local changes committable: avoid generated churn unless it is required evidence, and never hide failing validation behind broad summaries.
+
 ### Concurrent Implementation Gate
 
-- Check `git status --short` before editing and treat unrelated changes as user-owned.
 - Split concurrent work only across disjoint files, projects, or subsystems with explicit ownership.
 - Keep one coordinator responsible for integrating worker results, resolving conflicts, and running final validation.
 - Do not assign overlapping write scopes unless the overlap is intentionally sequenced and documented.
@@ -154,7 +173,8 @@ Use this lane whenever the task creates or updates a Codex, Claude, or GitHub AI
 - Keep mirrored Codex, Claude, and GitHub agent guidance aligned only when a shared workflow or policy changes. If the user scopes the work to Codex only, update the Codex skill, Codex catalog, and `agents/openai.yaml` metadata without widening into Claude or GitHub surfaces.
 - Avoid auxiliary docs inside skill folders unless they directly support execution or are required by the host format.
 - If `agents/openai.yaml` exists, regenerate or update it so the UI-facing metadata still matches the skill instructions.
-- Run `python build/scripts/docs/check-ai-inventory.py --summary` after Codex skill metadata or shared-context edits, and run representative tests for any added or changed scripts.
+- Run `python3 build/scripts/docs/check-codex-skills.py --summary`, `python3 build/scripts/docs/check-ai-inventory.py --summary`, and `python3 build/scripts/docs/validate-skill-packages.py` after Codex skill metadata or shared-context edits; run representative tests for any added or changed scripts.
+- Update eval prompts or baselines when the skill's observable behavior changes, especially when new Codex-only routing or final-response requirements are added.
 
 ## Correctness Guardrails
 
@@ -226,7 +246,7 @@ Before finishing, confirm:
 
 Use this skill's final response structure unless the user requested a narrower report. Include
 implemented behavior, docs sync, required gates, narrow checks, advisory checks, concurrency/scope,
-and residual risk.
+and residual risk. If the surrounding Codex session requires file citations, commits, PR text, or emoji-prefixed tests, honor those session instructions in addition to this structure.
 
 Use this response structure for implementation turns:
 

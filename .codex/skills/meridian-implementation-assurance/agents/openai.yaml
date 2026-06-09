@@ -1,4 +1,4 @@
 interface:
   display_name: "Meridian Implementation Assurance"
-  short_description: "Ship Meridian changes with strict gates and evidence"
-  default_prompt: "Use $meridian-implementation-assurance to implement and verify this Meridian change with strict Codex execution gates, narrow validation, explicit evidence, and doc sync."
+  short_description: "Ship Meridian changes with traceable Codex evidence"
+  default_prompt: "Use $meridian-implementation-assurance to implement, certify, or improve this Meridian change with Codex scope control, requirement-to-evidence traceability, narrow validation, performance review, and synchronized docs/catalogs."
