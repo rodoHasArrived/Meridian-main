@@ -344,6 +344,10 @@ project_root_markers = []
 - Configure subagent roles under `[agents]` in `config.toml` and keep role definitions user- or
   project-appropriate. In Meridian, repository-local role and skill inventory starts from
   [`README.md`](README.md) and `.codex/agents/`.
+- Keep `.codex/config.toml` as the shared registration point for repo-local Codex agent profile
+  files. Each `[agents.<role>]` table should point at the matching `.codex/agents/<role>.toml` file,
+  while model choices, provider routing, credentials, telemetry, and machine notifications stay in
+  user-level profiles.
 
 ## Observability, Metrics, And Feedback
 

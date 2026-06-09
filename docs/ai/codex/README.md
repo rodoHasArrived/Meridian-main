@@ -16,7 +16,7 @@ For documentation work, start from the rebuilt canonical docs model:
 
 | Surface | Purpose |
 | --- | --- |
-| [`.codex/config.toml`](../../../.codex/config.toml) | Repository-local Codex sandbox, approval, and bounded subagent defaults |
+| [`.codex/config.toml`](../../../.codex/config.toml) | Repository-local Codex sandbox, approval, search, skill loading, and bounded subagent role defaults |
 | [`quickstart.md`](quickstart.md) | First-10-minutes Codex task routing, proof matrix, and dirty-worktree protocol |
 | [`advanced-configuration.md`](advanced-configuration.md) | Advanced Codex local-client configuration patterns for profiles, providers, sandboxes, hooks, telemetry, notifications, and TUI options |
 | [`prompt-execution-trace.md`](prompt-execution-trace.md) | One-page prompt-to-execution diagram and execution-path refinements |
