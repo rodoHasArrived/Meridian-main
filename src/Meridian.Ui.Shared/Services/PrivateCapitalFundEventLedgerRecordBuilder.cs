@@ -35,10 +35,12 @@ internal static class PrivateCapitalFundEventLedgerRecordBuilder
             .ThenBy(item => item.SubledgerEntryId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var eventSubledgerNetActivity = subledgerEntries.Sum(static item => item.NetCapitalActivity);
+        var openingNetActivity = subledgerEntries.Length == 0
+            ? fundEvent.NetCapitalActivity
+            : subledgerEntries.Sum(static item => item.RunningNetActivity - item.NetCapitalActivity);
         var endingNetActivity = subledgerEntries.Length == 0
             ? fundEvent.NetCapitalActivity
-            : subledgerEntries[^1].RunningNetActivity;
-        var openingNetActivity = endingNetActivity - eventSubledgerNetActivity;
+            : subledgerEntries.Sum(static item => item.RunningNetActivity);
         var eventLedgerImpacts = ledgerImpacts
             .Where(item => string.Equals(item.FundEventId, fundEvent.FundEventId, StringComparison.OrdinalIgnoreCase))
             .OrderBy(item => item.EffectiveDate)
@@ -79,6 +81,7 @@ internal static class PrivateCapitalFundEventLedgerRecordBuilder
         var isPostingReady = eventLedgerImpacts.Length > 0 && eventLedgerImpacts.All(static item => item.IsPostingReady);
         var isReportReady = eventReportOutputs.Length > 0 && eventReportOutputs.All(static item => item.IsReportReady);
         var isPublished = eventReportOutputs.Any(static item => item.IsPublished);
+        var primaryReportRoute = primaryReportOutput?.ReportOutputRoute ?? primaryReportOutput?.ReportRoute;
         var readiness = PrivateCapitalFundEventLedgerReadinessBuilder.Build(
             fundEvent.JournalStatus,
             evidenceLinks.Count,
@@ -90,7 +93,13 @@ internal static class PrivateCapitalFundEventLedgerRecordBuilder
             activityRoute,
             evidenceRoute,
             approvalRoute,
-            primaryReportOutput?.ReportRoute);
+            primaryReportRoute);
+        var evidenceCategories = PrivateCapitalEvidenceCategoryBuilder.BuildForFundEvent(
+            fundEvent,
+            subledgerEntries,
+            eventLedgerImpacts,
+            eventReportOutputs,
+            approvalRoute);
 
         return new PrivateCapitalFundEventLedgerRecordDto(
             $"fund-event-ledger-record:{fundEvent.FundEventId}".ToLowerInvariant(),
@@ -129,7 +138,7 @@ internal static class PrivateCapitalFundEventLedgerRecordBuilder
             validationIssues.Length,
             primaryReportOutput?.ReportOutputId,
             primaryReportOutput?.ReportOutputType,
-            primaryReportOutput?.ReportRoute,
+            primaryReportRoute,
             primaryReportOutput?.ReportWorkflowState,
             primaryReportOutput?.PublicationManifestId,
             primaryReportOutput?.RetainedManifestPath,
@@ -139,7 +148,8 @@ internal static class PrivateCapitalFundEventLedgerRecordBuilder
             subledgerEntries,
             eventLedgerImpacts,
             eventReportOutputs,
-            validationIssues);
+            validationIssues,
+            EvidenceCategories: evidenceCategories);
     }
 
     private static PrivateCapitalReportOutputDto? SelectPrimaryReportOutput(

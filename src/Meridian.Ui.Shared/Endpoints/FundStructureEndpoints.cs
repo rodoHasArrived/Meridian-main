@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using Meridian.Identity.Auth;
 using Meridian.Application.FundStructure;
@@ -6,6 +7,7 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
 using Meridian.Entities.FundStructure;
+using Meridian.Storage.Export;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -853,6 +855,7 @@ public static class FundStructureEndpoints
             string fundProfileId,
             DateTimeOffset? asOf,
             string? currency,
+            string? format,
             HttpContext context) =>
         {
             if (!HasReportingReadPermission(context))
@@ -878,6 +881,24 @@ public static class FundStructureEndpoints
                 var result = await service.GetStructuredReportingExportAsync(
                     new StructuredReportingExportRequestDto(fundProfileId, exportId, asOf, currency),
                     context.RequestAborted).ConfigureAwait(false);
+                if (IsStructuredCsvRequest(format))
+                {
+                    var fileName = $"{result.Export.ExportId}-{result.Export.AsOf.UtcDateTime:yyyyMMddHHmmss}.csv";
+                    return Results.File(
+                        BuildStructuredExportCsv(result),
+                        "text/csv",
+                        fileName);
+                }
+
+                if (IsStructuredXlsxRequest(format))
+                {
+                    var fileName = $"{result.Export.ExportId}-{result.Export.AsOf.UtcDateTime:yyyyMMddHHmmss}.xlsx";
+                    return Results.File(
+                        BuildStructuredExportXlsx(result),
+                        StructuredXlsxContentType,
+                        fileName);
+                }
+
                 return Results.Json(result, jsonOptions);
             }
             catch (ArgumentException ex)
@@ -891,6 +912,8 @@ public static class FundStructureEndpoints
         })
         .WithName("GetStructuredReportingExport")
         .Produces<StructuredReportingExportPayloadDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status200OK, contentType: "text/csv")
+        .Produces(StatusCodes.Status200OK, contentType: StructuredXlsxContentType)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
@@ -1169,6 +1192,12 @@ public static class FundStructureEndpoints
 
             try
             {
+                var accessResult = EnsureReportPackWorkflowAccess(context, svc, reportId);
+                if (accessResult is not null)
+                {
+                    return accessResult;
+                }
+
                 var auditRequest = request with
                 {
                     Actor = actor,
@@ -1207,6 +1236,12 @@ public static class FundStructureEndpoints
 
             try
             {
+                var accessResult = EnsureReportPackWorkflowAccess(context, svc, reportId);
+                if (accessResult is not null)
+                {
+                    return accessResult;
+                }
+
                 return Results.Json(
                     svc.Publish(
                         reportId,
@@ -1246,6 +1281,12 @@ public static class FundStructureEndpoints
 
             try
             {
+                var accessResult = EnsureReportPackWorkflowAccess(context, svc, reportId);
+                if (accessResult is not null)
+                {
+                    return accessResult;
+                }
+
                 var approver = string.IsNullOrWhiteSpace(request.Approver) ? actor : request.Approver.Trim();
                 return Results.Json(svc.Restate(reportId, actor, role, request.ReasonCode, approver, request.PriorVersionReportId, request.ChangedLines), jsonOptions);
             }
@@ -1267,13 +1308,24 @@ public static class FundStructureEndpoints
             }
 
             var svc = context.RequestServices.GetService<ReportPackDeliveryService>();
-            return svc is null
-                ? WorkspaceServiceUnavailable()
-                : Results.Json(new ReportPackDeliveryHistoryDto(reportId, svc.GetHistory(reportId)), jsonOptions);
+            var workflow = context.RequestServices.GetService<ReportPackWorkflowService>();
+            if (svc is null || workflow is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            var accessResult = EnsureReportPackWorkflowAccess(context, workflow, reportId, StatusCodes.Status404NotFound);
+            if (accessResult is not null)
+            {
+                return accessResult;
+            }
+
+            return Results.Json(new ReportPackDeliveryHistoryDto(reportId, svc.GetHistory(reportId)), jsonOptions);
         })
         .WithName("GetReportingPackDeliveryHistory")
         .Produces<ReportPackDeliveryHistoryDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status403Forbidden);
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound);
 
         group.MapGet("/reporting/packs/{reportId:guid}/deliveries/{attemptId:guid}/package", (Guid reportId, Guid attemptId, string? token, HttpContext context) =>
         {
@@ -1298,6 +1350,33 @@ public static class FundStructureEndpoints
         })
         .WithName("GetReportingPackDeliveryPackage")
         .Produces<ReportPackDeliveryPackageDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound);
+
+        group.MapGet("/reporting/packs/{reportId:guid}/deliveries/{attemptId:guid}/artifacts/{artifactName}", (Guid reportId, Guid attemptId, string artifactName, string? token, HttpContext context) =>
+        {
+            var svc = context.RequestServices.GetService<ReportPackDeliveryService>();
+            if (svc is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            try
+            {
+                var artifact = svc.GetArtifact(reportId, attemptId, artifactName, token);
+                return Results.File(artifact.Content, artifact.ContentType, artifact.ArtifactName);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status403Forbidden);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status404NotFound);
+            }
+        })
+        .WithName("GetReportingPackDeliveryArtifact")
+        .Produces(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -1340,13 +1419,20 @@ public static class FundStructureEndpoints
             }
 
             var svc = context.RequestServices.GetService<ReportPackDeliveryService>();
-            if (svc is null)
+            var workflow = context.RequestServices.GetService<ReportPackWorkflowService>();
+            if (svc is null || workflow is null)
             {
                 return WorkspaceServiceUnavailable();
             }
 
             try
             {
+                var accessResult = EnsureReportPackWorkflowAccess(context, workflow, reportId);
+                if (accessResult is not null)
+                {
+                    return accessResult;
+                }
+
                 return Results.Json(svc.Deliver(reportId, request, actor), jsonOptions, statusCode: StatusCodes.Status201Created);
             }
             catch (Exception ex) when (ex is ArgumentException or UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
@@ -1374,13 +1460,20 @@ public static class FundStructureEndpoints
             }
 
             var svc = context.RequestServices.GetService<ReportPackDeliveryService>();
-            if (svc is null)
+            var workflow = context.RequestServices.GetService<ReportPackWorkflowService>();
+            if (svc is null || workflow is null)
             {
                 return WorkspaceServiceUnavailable();
             }
 
             try
             {
+                var accessResult = EnsureReportPackWorkflowAccess(context, workflow, reportId);
+                if (accessResult is not null)
+                {
+                    return accessResult;
+                }
+
                 return Results.Json(svc.RecordFailure(reportId, request, actor), jsonOptions, statusCode: StatusCodes.Status201Created);
             }
             catch (Exception ex) when (ex is ArgumentException or UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
@@ -1415,6 +1508,12 @@ public static class FundStructureEndpoints
 
             try
             {
+                var accessResult = EnsureReportPackWorkflowAccess(context, svc, reportId);
+                if (accessResult is not null)
+                {
+                    return accessResult;
+                }
+
                 return Results.Json(svc.Restate(reportId, actor, role, reasonCode, actor, priorVersionReportId, changedLines), jsonOptions);
             }
             catch (Exception ex) when (ex is ArgumentException or UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
@@ -1683,6 +1782,12 @@ public static class FundStructureEndpoints
 
         try
         {
+            var accessResult = EnsureReportPackWorkflowAccess(context, svc, reportId);
+            if (accessResult is not null)
+            {
+                return accessResult;
+            }
+
             return Results.Json(svc.Submit(reportId, actor, role), statusCode: StatusCodes.Status200OK);
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
@@ -1711,6 +1816,12 @@ public static class FundStructureEndpoints
 
         try
         {
+            var accessResult = EnsureReportPackWorkflowAccess(context, svc, reportId);
+            if (accessResult is not null)
+            {
+                return accessResult;
+            }
+
             return Results.Json(svc.Transition(reportId, target, actor, role), statusCode: StatusCodes.Status200OK);
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
@@ -1768,6 +1879,23 @@ public static class FundStructureEndpoints
     private static bool HasReportingReadPermission(HttpContext context)
         => EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewAnalytics, UserPermission.ManageStrategies, UserPermission.AdminMaintenance);
 
+    private static IResult? EnsureReportPackWorkflowAccess(
+        HttpContext context,
+        ReportPackWorkflowService service,
+        Guid reportId,
+        int missingStatusCode = StatusCodes.Status400BadRequest)
+    {
+        var record = service.GetRecord(reportId);
+        if (record is null)
+        {
+            return Results.Problem("report pack not found", statusCode: missingStatusCode);
+        }
+
+        return ReportAccessPolicyEvaluator.Evaluate(record.AccessPolicy, BuildReportAccessQueryContext(context)).IsAccessible
+            ? null
+            : EndpointHelpers.Forbidden();
+    }
+
     private static ReportAccessQueryContext BuildReportAccessQueryContext(HttpContext context)
     {
         var actor = EndpointAuthorization.TryResolveActor(context, out var resolvedActor)
@@ -1775,6 +1903,8 @@ public static class FundStructureEndpoints
             : null;
         return new ReportAccessQueryContext(
             ActorPrincipalId: actor,
+            GroupPrincipalIds: EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
+            CompanyId: EndpointAuthorization.ResolveCompanyId(context),
             HasGlobalOverride: EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance));
     }
 
@@ -2080,6 +2210,78 @@ public static class FundStructureEndpoints
             error = $"assignmentReference is invalid for '{LedgerGroupingRules.LedgerGroupAssignmentType}'. {LedgerGroupId.ValidationMessage}";
             return request;
         }
+    }
+
+    private const string StructuredXlsxContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+    private static bool IsStructuredCsvRequest(string? format) =>
+        string.Equals(format, "csv", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsStructuredXlsxRequest(string? format) =>
+        string.Equals(format, "xlsx", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(format, "xls", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(format, "excel", StringComparison.OrdinalIgnoreCase);
+
+    private static byte[] BuildStructuredExportCsv(StructuredReportingExportPayloadDto payload)
+    {
+        var builder = new StringBuilder();
+        AppendStructuredExportCsvRow(builder, payload.Columns.Select(static column => column.Name));
+
+        foreach (var row in payload.Rows)
+        {
+            AppendStructuredExportCsvRow(
+                builder,
+                payload.Columns.Select(column =>
+                    row.TryGetValue(column.Name, out var value) ? value : null));
+        }
+
+        return Encoding.UTF8.GetBytes(builder.ToString());
+    }
+
+    private static byte[] BuildStructuredExportXlsx(StructuredReportingExportPayloadDto payload)
+    {
+        var headers = payload.Columns.Select(static column => column.Name).ToArray();
+        var rows = payload.Rows
+            .Select(row => headers
+                .Select(header => row.TryGetValue(header, out var value) ? value : null)
+                .Cast<object?>()
+                .ToArray())
+            .Cast<IReadOnlyList<object?>>()
+            .ToArray();
+
+        return XlsxWorkbookWriter.CreateWorkbook(
+        [
+            new XlsxWorksheet(payload.Export.Dataset, headers, rows)
+        ]);
+    }
+
+    private static void AppendStructuredExportCsvRow(StringBuilder builder, IEnumerable<string?> values)
+    {
+        var first = true;
+        foreach (var value in values)
+        {
+            if (!first)
+            {
+                builder.Append(',');
+            }
+
+            builder.Append(EscapeStructuredExportCsvValue(value));
+            first = false;
+        }
+
+        builder.AppendLine();
+    }
+
+    private static string EscapeStructuredExportCsvValue(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return string.Empty;
+        }
+
+        return value.IndexOfAny([',', '"', '\r', '\n']) >= 0
+            ? $"\"{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\""
+            : value;
     }
 
     private static int ParseInt(string? value, int defaultValue) =>

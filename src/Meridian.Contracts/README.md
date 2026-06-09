@@ -138,11 +138,17 @@ formats so browser, WPF, endpoints, and host bootstrap payloads consume the same
 and history shape.
 Delivered report-pack attempts can also carry `ReportPackDeliveryPackageDto`, including the
 delivery mode, secure link or portal route, retained manifest path, requested PDF/XLSX/CSV
-formats, and retained artifact metadata. Keep those package fields shared so email-link, secure
-portal, evidence-vault, and internal-route distribution clients do not infer report package output
-from delivery-reference strings. The shared route catalog includes both the token-gated package
-manifest URL under `/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/package`
-and the secure-portal package URL under `/portal/reporting/packages/{packageId}`.
+formats, retained artifact metadata, artifact SHA-256 checksums, artifact version stamps, and the
+publication evidence hash used for package integrity summaries. Keep those package fields shared so
+email-link, secure portal, evidence-vault, and internal-route distribution clients do not infer
+report package output or integrity from delivery-reference strings. The shared route catalog
+includes both the token-gated package manifest URL under
+`/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/package` and the
+secure-portal package URL under `/portal/reporting/packages/{packageId}`. Package artifacts can
+also carry token-gated `DownloadRoute` values under
+`/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/artifacts/{artifactName}`
+so clients download retained PDF/XLSX/CSV outputs from the shared package contract instead of
+building artifact URLs locally.
 Workstation Reporting run rows carry typed drilldown links and next-action references so browser
 and WPF clients can distinguish open evidence routes from reference-only approval, publication, and
 restatement actions without parsing artifact strings.
@@ -158,7 +164,9 @@ cuts without recalculating portfolio or NAV state locally.
 `PortfolioReportingLiveViewDto` extends those cuts with shared live-summary routes, source-backed
 freshness state, liquidity summaries, optional run cash-ladder routes, and telemetry copy. Clients
 must render the `LiveLinked`, `SourceBacked`, `Stale`, or `Blocked` state from the contract instead
-of implying live market ticks when the shared source evidence is missing or stale.
+of implying live market ticks when the shared source evidence is missing or stale. `LiveLinked`
+is reserved for source snapshots inside the server-owned live freshness window; older retained
+snapshots remain `SourceBacked` until they cross the stale threshold.
 `PortfolioReportingPnlSliceDto` carries daily, weekly, monthly, and yearly P&L rows derived from
 retained portfolio run timestamps. Rows include current/prior period totals, realized/unrealized
 P&L, change, source counts, readiness text, route, tags, and version stamp so clients can show
@@ -178,14 +186,17 @@ and cross-fund consolidation outputs.
 Each descriptor includes purpose, format, dataset, consumer, schema version, row/field/source
 counts, retained path, API route, readiness summary, evidence route, and version stamp;
 `StructuredReportingExportPayloadDto` returns stable column metadata plus string-valued JSON rows
-for downstream export consumers.
+for downstream export consumers. The same endpoint accepts `format=csv` or `format=xlsx` for
+schema-ordered file output, including data-warehouse descriptors whose default retained format is
+JSON.
 Reporting summaries and generated report-pack snapshots also carry shared `ReportBrandingThemeDto`
 metadata for firm name, colors, logo URI, footer, disclaimer, and built-in/custom posture. Summary
 payloads retain fund-profile context so clients can generate branded governed report packs without
 hard-coded fund ids.
 `ReportingScheduleDeliveryPlanDto` carries schedule-to-recipient delivery plans with PDF/XLS/CSV
 format sets, email-link or secure-portal mode, readiness text, due/as-of posture, last retained
-delivery attempt metadata, and version stamps.
+delivery attempt metadata, latest package artifact counts, checksum integrity summaries, and
+version stamps.
 `FundReportPackGenerateRequestDto` accepts either a `BrandingThemeId` or validated
 `BrandingThemeOverride`, so browser, WPF, distribution, and retained-artifact readers consume the
 same branding contract instead of inventing presentation metadata locally.
@@ -194,14 +205,18 @@ template versions: draft requests, review submission, approval/rejection decisio
 built-in markers, latest-approved posture, validation issues, approval references, and audit events.
 Template definitions can include report-writer grid definitions for detail, pivot, Top-N,
 contribution, and formula-backed tables, and render responses carry structured grid rows, columns,
-and warnings alongside the compatibility rendered-content string. Render requests can also carry a
-temporary `Grids` override, allowing no-code clients to preview an unsaved drag/drop layout through
-the shared renderer without mutating the approved template record. Keep those template lifecycle and
-grid fields shared so Reporting, browser, WPF, and endpoint tests use the same version-approval and
-no-code report-writer vocabulary instead of maintaining client-local template state. Workstation
+warnings, and lineage metadata alongside the compatibility rendered-content string. The lineage
+payload includes input/output row counts, filtered-input row counts, source fields, metric source
+mappings, formula dependencies, and saved-filter lineage so report previews and exports can retain
+an auditable dataset trace. Render requests can also carry a temporary `Grids` override, allowing
+no-code clients to preview an unsaved drag/drop layout through the shared renderer without mutating
+the approved template record. Keep those template lifecycle and grid fields shared so Reporting,
+browser, WPF, and endpoint tests use the same version-approval and no-code report-writer vocabulary
+instead of maintaining client-local template state. Workstation
 template metadata also carries report-writer row fields, column fields, metrics, formula
-expressions, Top-N, and sort settings so operator clients can render no-code writer canvases
-without parsing template JSON or deriving grid composition from count-only summaries. Template
+expressions, Top-N, sort settings, and saved filters so operator clients can render no-code writer
+canvases without parsing template JSON or deriving grid composition from count-only summaries.
+Template
 definitions and report-pack workflow records also carry `ReportAccessPolicyDto` with private,
 restricted user/group/company, and company-wide modes; workstation template payloads expose access
 mode, summary, and accessibility posture so clients do not invent report audience rules locally.
@@ -464,10 +479,19 @@ signed net activity, and projection validation issues so browser and WPF clients
 private-capital ledger views from draft-local heuristics. Report-output rows also carry governed
 report-pack identity, workflow state, publication manifest path/hash, signed-off publication
 metadata, and report-line provenance counts when retained report-pack workflow records are linked
-to the fund event. `PrivateCapitalFundEventLedgerRecordDto` groups each fund event with its
+to the fund event. Posted report-output rows scope to the report-pack target capital account or
+retained line provenance when either identifies one capital-account impact; unresolved multi-account
+outputs remain `capital-account:unassigned` so clients do not display one investor's statement on
+another investor's subledger. They also carry canonical report-output, fund-event record,
+capital-account subledger, evidence-packet, and approval routes so report-package clients can drill
+back into the same accounting record without reconstructing endpoint URLs.
+`PrivateCapitalFundEventLedgerRecordDto` groups each fund event with its
 capital-account subledger movements, GL impacts, retained evidence links, approval state, and
 report outputs so detail and drill-through clients can consume a single event-level accounting
-record instead of stitching sibling arrays together. The event-level record also promotes journal
+record instead of stitching sibling arrays together. It also carries `PrivateCapitalEvidenceCategoryDto`
+rows that classify source support, capital-account subledger support, ledger impact, approval state,
+and report output readiness so clients can show operational evidence coverage without parsing child
+arrays. The event-level record also promotes journal
 entry id, gross and net capital activity, capital-account opening/ending net activity, memo,
 payment and settlement references, canonical private-capital activity route, event evidence-packet
 route, approval id/route when an approval exists, child-row counts, primary report-output
@@ -477,7 +501,9 @@ drill-throughs do not reopen nested arrays for basic record posture. The
 projection also includes `PrivateCapitalCapitalAccountSubledgerDto`, which groups a capital
 account's fund-event records, running subledger entries, GL impacts, retained evidence, approval
 queue count, posted/published counts, report outputs, and validation issues into one
-capital-account-level accounting record. It normalizes omitted fund-event ledger records and
+capital-account-level accounting record. It carries the same classified evidence categories at the
+capital-account level so report and audit surfaces can compare source, ledger, approval, and report
+coverage for one LP subledger without rebuilding coverage state. It normalizes omitted fund-event ledger records and
 capital-account subledgers to empty collections
 so clients can treat that event-level model as present even when there are no private-capital
 events yet.
@@ -493,12 +519,20 @@ report-output records instead of falling back to a client-local currency default
 `IManualJournalEntryWorkbenchService.GetPrivateCapitalActivityAsync`
 and `UiApiRoutes.LedgerPrivateCapitalActivity` expose the same projection as a first-class review
 endpoint for reporting, audit, and future LP support surfaces that should not depend on the manual
-journal editor payload. `UiApiRoutes.LedgerPrivateCapitalFundEventRecord` exposes one shared
-event-level record by `fundEventId`, and
+journal editor payload. The activity endpoint accepts optional `fundEventId`, `capitalAccountId`,
+and `investorId` filters, retains posted fund events through matching child subledger, GL-impact,
+or report-output rows, and recomputes account totals and net activity from the retained subledger
+rows so multi-account posted events still drill into the selected capital account.
+`UiApiRoutes.LedgerPrivateCapitalFundEventRecord` exposes one shared event-level record by
+`fundEventId`, and
 `UiApiRoutes.LedgerPrivateCapitalCapitalAccountSubledger` exposes one capital-account subledger by
 `capitalAccountId`, `investorId`, and `currency` when those fields are needed to identify one
 subledger, so review and report drill-through surfaces can load the needed accounting record
 without interpreting an empty aggregate or accidentally selecting the wrong investor record.
+`UiApiRoutes.LedgerPrivateCapitalReportOutput` exposes one private-capital report-output row by
+`reportOutputId`, `reportPackId`, or `fundEventId` with optional capital-account and investor
+filters, keeping report-to-ledger navigation on the same shared contract as activity, event-record,
+and capital-account subledger review.
 
 ## Diagrams
 

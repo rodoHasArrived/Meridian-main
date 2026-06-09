@@ -98,6 +98,40 @@ public static class EndpointAuthorization
         return false;
     }
 
+    public static IReadOnlyList<string> ResolveReportGroupPrincipalIds(HttpContext context)
+    {
+        var groups = new List<string>();
+        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserRoleKey, out var rawRole) &&
+            rawRole is UserRole role)
+        {
+            groups.Add(role.ToString());
+        }
+
+        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserRoleProfileNameKey, out var rawProfile) &&
+            rawProfile is string profileName &&
+            !string.IsNullOrWhiteSpace(profileName))
+        {
+            groups.Add(profileName.Trim());
+        }
+
+        return groups
+            .Where(static group => !string.IsNullOrWhiteSpace(group))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    public static string? ResolveCompanyId(HttpContext context)
+    {
+        if (context.Items.TryGetValue(LoginSessionMiddleware.CurrentUserCompanyIdKey, out var rawCompanyId) &&
+            rawCompanyId is string companyId &&
+            !string.IsNullOrWhiteSpace(companyId))
+        {
+            return companyId.Trim();
+        }
+
+        return null;
+    }
+
     public static Func<EndpointFilterInvocationContext, EndpointFilterDelegate, ValueTask<object?>> Require(
         UserPermission permission)
         => (context, next) =>

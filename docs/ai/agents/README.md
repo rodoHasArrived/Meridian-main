@@ -51,6 +51,11 @@ Primary inputs:
 Codex TOML profiles route recurring specialist work to compact, provider-specific entrypoints while
 the shared policy remains in [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md)
 and [`../codex/README.md`](../codex/README.md).
+Each profile must define `name`, `description`, and `developer_instructions`; it can also include
+supported Codex `config.toml` keys such as `model`, `model_reasoning_effort`, `sandbox_mode`,
+`mcp_servers`, and `skills.config` for lane-specific overrides. Keep shared project profiles
+conservative and put secrets, provider auth, notifications, telemetry, and personal model choices
+in user-level Codex config.
 
 | Profile | Purpose |
 | ------ | --------- |
@@ -196,4 +201,4 @@ handoff so downstream agents do not repeat discovery or validation without cause
 
 ---
 
-_Last Updated: 2026-06-03_
+_Last Updated: 2026-06-09_

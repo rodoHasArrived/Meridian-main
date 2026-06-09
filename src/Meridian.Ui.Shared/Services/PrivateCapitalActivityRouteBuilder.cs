@@ -62,6 +62,43 @@ internal static class PrivateCapitalActivityRouteBuilder
         return UiApiRoutes.WithQuery(UiApiRoutes.LedgerPrivateCapitalCapitalAccountSubledger, string.Join("&", query));
     }
 
+    public static string BuildReportOutputRoute(
+        string fundProfileId,
+        Guid? ledgerBookId,
+        string reportOutputId,
+        string? fundEventId = null,
+        string? capitalAccountId = null,
+        string? investorId = null)
+    {
+        var query = new List<string>
+        {
+            $"fundProfileId={Uri.EscapeDataString(fundProfileId.Trim())}",
+            $"reportOutputId={Uri.EscapeDataString(reportOutputId.Trim())}"
+        };
+
+        if (ledgerBookId.HasValue)
+        {
+            query.Add($"ledgerBookId={Uri.EscapeDataString(ledgerBookId.Value.ToString("D"))}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(fundEventId))
+        {
+            query.Add($"fundEventId={Uri.EscapeDataString(fundEventId.Trim())}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(capitalAccountId))
+        {
+            query.Add($"capitalAccountId={Uri.EscapeDataString(capitalAccountId.Trim())}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(investorId))
+        {
+            query.Add($"investorId={Uri.EscapeDataString(investorId.Trim())}");
+        }
+
+        return UiApiRoutes.WithQuery(UiApiRoutes.LedgerPrivateCapitalReportOutput, string.Join("&", query));
+    }
+
     public static string BuildFundEventRecordRoute(
         string fundProfileId,
         Guid? ledgerBookId,

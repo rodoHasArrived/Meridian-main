@@ -15,7 +15,8 @@ public sealed record UserAccountDto(
     DateTimeOffset? LastPasswordResetAtUtc = null,
     DateTimeOffset? DisabledAtUtc = null,
     string? DisabledBy = null,
-    string? LastAuditId = null);
+    string? LastAuditId = null,
+    string? CompanyId = null);
 
 public sealed record UserAccountUpsertRequestDto(
     string Username,
@@ -28,7 +29,8 @@ public sealed record UserAccountUpsertRequestDto(
     bool PasswordResetRequired,
     string RequestedBy,
     string Rationale,
-    string? CorrelationId = null);
+    string? CorrelationId = null,
+    string? CompanyId = null);
 
 public sealed record UserPasswordResetRequestDto(
     string Username,
@@ -83,4 +85,5 @@ public sealed record UserAccountAuditEventDto(
     long PermissionMask,
     bool IsDisabled,
     bool PasswordResetRequired,
-    int RevokedSessionCount = 0);
+    int RevokedSessionCount = 0,
+    string? CompanyId = null);

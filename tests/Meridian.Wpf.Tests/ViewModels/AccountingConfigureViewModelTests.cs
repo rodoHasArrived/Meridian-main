@@ -123,6 +123,12 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             row.Name == "capital-account:alpha-fund:default"
             && row.Status == "+250 USD"
             && row.Evidence.Contains("Calls 250 USD", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ManualJournalCapitalAccountSubledgerRows.Should().ContainSingle(row =>
+            row.Name == "capital-account:alpha-fund:default"
+            && row.Detail.Contains("+250 USD net", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("1 event(s)", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("evidence categories", StringComparison.OrdinalIgnoreCase)
+            && row.Key.Contains("/api/ledger/private-capital/capital-account-subledger", StringComparison.OrdinalIgnoreCase));
         harness.ViewModel.ManualJournalFundEventRows.Should().ContainSingle(row =>
             row.Name.Contains("CapitalCall", StringComparison.OrdinalIgnoreCase)
             && row.Detail.Contains("+250 USD net", StringComparison.OrdinalIgnoreCase));
@@ -205,6 +211,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         viewModel.ManualJournalStatusText.Should().Contain("1 posted");
         viewModel.ManualJournalStatusText.Should().Contain("1 event record(s)");
         viewModel.ManualJournalStatusText.Should().Contain("1 capital account(s)");
+        viewModel.ManualJournalStatusText.Should().Contain("1 account subledger(s)");
         viewModel.ManualJournalStatusText.Should().Contain("1 subledger movement(s)");
         viewModel.ManualJournalStatusText.Should().Contain("1 ledger impact(s)");
         viewModel.ManualJournalStatusText.Should().Contain("1 report output(s)");
@@ -222,10 +229,24 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             && row.Evidence.Contains("Published", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("1 provenance", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("readiness Published", StringComparison.OrdinalIgnoreCase)
-            && row.Evidence.Contains("next Open published report", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("next Open published report via /api/ledger/private-capital/report-output", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("2 evidence via /api/workstation/evidence/subjects/private-capital-fund-event/", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("approval approval:capital-call-controller via /api/ledger/journal-entry-workbench", StringComparison.OrdinalIgnoreCase)
             && row.Key.Contains("fundEventId=fund-event%3A", StringComparison.OrdinalIgnoreCase)
+            && row.Key.Contains("capitalAccountId=capital-account%3A", StringComparison.OrdinalIgnoreCase));
+        viewModel.ManualJournalCapitalAccountSubledgerRows.Should().ContainSingle(row =>
+            row.Name == "capital-account:alpha-fund:lp-001"
+            && row.Status == "Ready"
+            && row.Detail.Contains("0 USD opening", StringComparison.OrdinalIgnoreCase)
+            && row.Detail.Contains("+250 USD net", StringComparison.OrdinalIgnoreCase)
+            && row.Detail.Contains("+250 USD ending", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("1 event(s)", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("0 approval queue", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("1 posted", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("1 published report", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("5/5 evidence categories ready", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("Report output Ready", StringComparison.OrdinalIgnoreCase)
+            && row.Key.Contains("/api/ledger/private-capital/capital-account-subledger", StringComparison.OrdinalIgnoreCase)
             && row.Key.Contains("capitalAccountId=capital-account%3A", StringComparison.OrdinalIgnoreCase));
         viewModel.ManualJournalFundEventRows.Should().ContainSingle(row =>
             row.Name.Contains("CapitalCall", StringComparison.OrdinalIgnoreCase)
@@ -241,7 +262,9 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             && row.Detail.Contains("Published", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("evidence", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("1 provenance", StringComparison.OrdinalIgnoreCase)
-            && row.Evidence.Contains("manifest-capital-account-statement", StringComparison.OrdinalIgnoreCase));
+            && row.Evidence.Contains("manifest-capital-account-statement", StringComparison.OrdinalIgnoreCase)
+            && row.Key.Contains("/api/ledger/private-capital/report-output", StringComparison.OrdinalIgnoreCase)
+            && row.Key.Contains("reportOutputId=report-output%3Afund-event%3A", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -256,6 +279,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.ActiveFundText.Should().Be("No fund selected");
         harness.ViewModel.ChartRows.Should().BeEmpty();
         harness.ViewModel.ManualJournalDraftRows.Should().BeEmpty();
+        harness.ViewModel.ManualJournalCapitalAccountSubledgerRows.Should().BeEmpty();
         harness.ViewModel.ExternalGlRows.Should().BeEmpty();
         harness.ViewModel.PolicyRows.Should().BeEmpty();
         harness.ViewModel.StatusText.ToLowerInvariant().Should().Contain("unlock accounting configure");
@@ -285,9 +309,12 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         xaml.Should().Contain("AccountingConfigureActivateButton");
         xaml.Should().Contain("ManualJournalFundEventLedgerRecordGrid");
         xaml.Should().Contain("ManualJournalCapitalAccountGrid");
+        xaml.Should().Contain("ManualJournalCapitalAccountSubledgerGrid");
+        xaml.Should().Contain("Subledger Route");
         xaml.Should().Contain("ManualJournalFundEventGrid");
         xaml.Should().Contain("ManualJournalLedgerImpactGrid");
         xaml.Should().Contain("ManualJournalReportOutputGrid");
+        xaml.Should().Contain("Report Output Route");
         xaml.Should().Contain("ToolTip=\"{Binding StatusText}\"");
         xaml.Should().Contain("ToolTip=\"{Binding ConfigurationDetailText}\"");
         xaml.Should().Contain("ToolTip=\"{Binding CloseDetailText}\"");
@@ -442,8 +469,10 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
                     evidenceLinks[0])
             ],
             ValidationIssues: []);
+        var reportOutputId = $"report-output:{fundEventId}:capital-account-statement";
+        var reportOutputRoute = $"/api/ledger/private-capital/report-output?fundProfileId={fundProfileId}&reportOutputId={Uri.EscapeDataString(reportOutputId)}&fundEventId={Uri.EscapeDataString(fundEventId)}&capitalAccountId={Uri.EscapeDataString(capitalAccountId)}&investorId=investor%3Alp-001";
         var reportOutput = new PrivateCapitalReportOutputDto(
-            $"report-output:{fundEventId}:capital-account-statement",
+            reportOutputId,
             "GovernedReportPack",
             "Capital Account Statement",
             "/workstation/reporting/report-packs/capital-account-statement",
@@ -467,7 +496,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             PublicationEvidenceHash: "sha256:capital-account-statement",
             PublishedAtUtc: updatedAtUtc,
             PublishedBy: "controller",
-            ReportLineProvenanceCount: 1);
+            ReportLineProvenanceCount: 1,
+            ReportOutputRoute: reportOutputRoute);
         var fundEventLedgerRecord = new PrivateCapitalFundEventLedgerRecordDto(
             $"fund-event-ledger-record:{fundEventId}",
             fundEventId,
@@ -497,7 +527,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             ReadinessLabel: "Published",
             ReadinessReason: "The event is linked to retained evidence, posting-ready ledger impact, capital-account movement, and published report output.",
             NextAction: "Open published report",
-            NextActionRoute: reportOutput.ReportRoute,
+            NextActionRoute: reportOutput.ReportOutputRoute,
             EvidenceLinkCount: evidenceLinks.Length,
             CapitalAccountSubledgerEntryCount: 1,
             LedgerImpactCount: 1,
@@ -505,7 +535,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             ValidationIssueCount: 0,
             PrimaryReportOutputId: reportOutput.ReportOutputId,
             PrimaryReportOutputType: reportOutput.ReportOutputType,
-            PrimaryReportRoute: reportOutput.ReportRoute,
+            PrimaryReportRoute: reportOutput.ReportOutputRoute,
             ReportWorkflowState: reportOutput.ReportWorkflowState,
             PublicationManifestId: reportOutput.PublicationManifestId,
             RetainedManifestPath: reportOutput.RetainedManifestPath,
@@ -516,6 +546,86 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             LedgerImpacts: [ledgerImpact],
             ReportOutputs: [reportOutput],
             ValidationIssues: []);
+        var capitalAccountSubledger = new PrivateCapitalCapitalAccountSubledgerDto(
+            $"capital-account-subledger:{capitalAccountId}:investor:lp-001:usd",
+            fundProfileId,
+            LedgerBookId: null,
+            ProjectedAtUtc: updatedAtUtc,
+            capitalAccountId,
+            "investor:lp-001",
+            "USD",
+            ActivityRoute: $"/api/ledger/private-capital/capital-account-subledger?fundProfileId={fundProfileId}&capitalAccountId={Uri.EscapeDataString(capitalAccountId)}&investorId=investor%3Alp-001&currency=USD",
+            Contributions: 250m,
+            Distributions: 0m,
+            Subscriptions: 0m,
+            Redemptions: 0m,
+            ManagementFees: 0m,
+            OpeningNetActivity: 0m,
+            EndingNetActivity: 250m,
+            NetCapitalActivity: 250m,
+            FundEventCount: 1,
+            ApprovalQueueCount: 0,
+            PostedFundEventCount: 1,
+            PublishedReportOutputCount: 1,
+            EvidenceLinkCount: evidenceLinks.Length,
+            ValidationIssueCount: 0,
+            FirstEffectiveDate: effectiveDate,
+            LastEffectiveDate: effectiveDate,
+            LastFundEventType: "CapitalCall",
+            EvidenceLinks: evidenceLinks,
+            CapitalAccount: capitalAccount,
+            FundEventRecords: [fundEventLedgerRecord],
+            SubledgerEntries: [subledgerEntry],
+            LedgerImpacts: [ledgerImpact],
+            ReportOutputs: [reportOutput],
+            ValidationIssues: [],
+            EvidenceCategories:
+            [
+                new PrivateCapitalEvidenceCategoryDto(
+                    "source-support",
+                    "Source support",
+                    IsReady: true,
+                    "Source support is retained for this capital account's fund events.",
+                    evidenceLinks.Length,
+                    evidenceLinks,
+                    ["Source document or retained evidence link"]),
+                new PrivateCapitalEvidenceCategoryDto(
+                    "capital-account-subledger",
+                    "Capital-account subledger",
+                    IsReady: true,
+                    "Capital-account impacts are represented in the running subledger.",
+                    evidenceLinks.Length,
+                    evidenceLinks,
+                    ["Capital-account impact"]),
+                new PrivateCapitalEvidenceCategoryDto(
+                    "ledger-impact",
+                    "Ledger impact",
+                    IsReady: true,
+                    "Ledger impacts are linked to this capital account.",
+                    evidenceLinks.Length,
+                    evidenceLinks,
+                    ["Balanced ledger impact", "Ledger line evidence"]),
+                new PrivateCapitalEvidenceCategoryDto(
+                    "approval-state",
+                    "Approval state",
+                    IsReady: true,
+                    "Approval references are linked to this capital account's fund events.",
+                    EvidenceLinkCount: 2,
+                    EvidenceLinks:
+                    [
+                        "approval:capital-call-controller",
+                        $"/api/ledger/journal-entry-workbench?fundProfileId={fundProfileId}&journalEntryId=24a3dc53-d1f4-46e0-9dde-e276d0bb0d9e&approvalId=approval%3Acapital-call-controller"
+                    ],
+                    RequiredEvidence: ["Approval reference"]),
+                new PrivateCapitalEvidenceCategoryDto(
+                    "report-output",
+                    "Report output",
+                    IsReady: true,
+                    "Governed report outputs are linked to this capital account.",
+                    evidenceLinks.Length,
+                    evidenceLinks,
+                    ["Governed report output"])
+            ]);
 
         return new PrivateCapitalActivityProjectionDto(
             fundProfileId,
@@ -535,7 +645,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             LedgerImpacts: [ledgerImpact],
             ReportOutputs: [reportOutput],
             ValidationIssues: [],
-            FundEventRecords: [fundEventLedgerRecord]);
+            FundEventRecords: [fundEventLedgerRecord],
+            CapitalAccountSubledgers: [capitalAccountSubledger]);
     }
 
     private sealed class StaticManualJournalEntryWorkbenchService(

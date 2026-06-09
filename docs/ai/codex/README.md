@@ -42,6 +42,11 @@ For documentation work, start from the rebuilt canonical docs model:
 specialist lane, plus the existing `meridian-navigation` routing profile and legacy
 `meridian-user-panel` compatibility alias. Use these profiles when a task benefits from a compact
 specialist entrypoint, then keep the matching skill as the canonical workflow definition.
+Each custom agent TOML file must define `name`, `description`, and `developer_instructions`; it may
+also include supported Codex `config.toml` keys such as `model`, `model_reasoning_effort`,
+`sandbox_mode`, `mcp_servers`, and `skills.config` when the specialist lane needs a deliberate
+override. Keep repository-local overrides conservative and leave secrets, provider auth,
+notifications, telemetry, and personal model preferences in user-level config.
 
 | Profile | Purpose |
 | ------ | --------- |

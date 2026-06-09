@@ -3663,6 +3663,26 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                           {record.evidenceRouteLabel}
                         </a>
                       ) : null}
+                      {record.evidenceCategories.length > 0 ? (
+                        <div className="mt-2 space-y-1" aria-label={`Evidence readiness categories for ${record.title}`}>
+                          <div className="text-[11px] font-semibold uppercase text-muted-foreground">
+                            {record.evidenceCategorySummaryLabel}
+                          </div>
+                          {record.evidenceCategories.map((category) => (
+                            <div key={category.id} className="rounded border border-border/60 bg-secondary/20 px-2 py-1">
+                              <div className="flex flex-wrap items-center gap-1">
+                                <Badge variant={category.tone} dot>{category.label}</Badge>
+                                <span className="text-[11px] text-muted-foreground">{category.statusLabel}</span>
+                                <span className="font-mono text-[11px] text-muted-foreground">{category.evidenceLabel}</span>
+                              </div>
+                              <div className="mt-1 text-[11px] text-muted-foreground">{category.summaryLabel}</div>
+                              <div className="mt-1 text-[11px] text-muted-foreground">{category.requiredEvidenceLabel}</div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="mt-2 text-[11px] text-muted-foreground">{record.evidenceCategorySummaryLabel}</div>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -3702,6 +3722,88 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                     <td className="px-3 py-2 text-xs">
                       <div>{account.eventCountLabel}</div>
                       <div className="mt-1 text-muted-foreground">{account.lastEventLabel}</div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+
+        {activity.capitalAccountSubledgers.length > 0 ? (
+          <div className="overflow-x-auto rounded-md border border-border/70">
+            <table className="w-full min-w-[980px] text-sm" aria-label="Private-capital capital account subledgers">
+              <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2 text-left">Capital account</th>
+                  <th className="px-3 py-2 text-left">Status</th>
+                  <th className="px-3 py-2 text-left">Roll-forward</th>
+                  <th className="px-3 py-2 text-left">Activity</th>
+                  <th className="px-3 py-2 text-left">Counts</th>
+                  <th className="px-3 py-2 text-left">Evidence</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activity.capitalAccountSubledgers.map((subledger) => (
+                  <tr key={subledger.id} className="border-t border-border/60 bg-background/30 align-top">
+                    <td className="px-3 py-2">
+                      <div className="break-all font-mono text-xs text-foreground">{subledger.title}</div>
+                      <div className="mt-1 break-all text-[11px] text-muted-foreground">{subledger.subtitle}</div>
+                      {subledger.activityRouteLabel !== "No subledger route" ? (
+                        <a
+                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                          href={subledger.activityRouteLabel}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Open capital-account subledger for ${subledger.title}`}
+                        >
+                          {subledger.activityRouteLabel}
+                        </a>
+                      ) : null}
+                    </td>
+                    <td className="px-3 py-2">
+                      <Badge variant={subledger.statusTone} dot>{subledger.statusLabel}</Badge>
+                      <div className="mt-1 text-xs text-muted-foreground">{subledger.issueLabel}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">{subledger.dateRangeLabel}</div>
+                    </td>
+                    <td className="px-3 py-2 font-mono text-xs">
+                      <div>{subledger.openingLabel} opening</div>
+                      <div className="mt-1">{subledger.netActivityLabel} net</div>
+                      <div className="mt-1">{subledger.endingLabel} ending</div>
+                    </td>
+                    <td className="px-3 py-2 text-xs">
+                      <div>Calls {subledger.contributionLabel}</div>
+                      <div>Distributions {subledger.distributionLabel}</div>
+                      <div className="mt-1 text-muted-foreground">{subledger.otherActivityLabel}</div>
+                    </td>
+                    <td className="px-3 py-2 text-xs">
+                      <div>{subledger.eventCountLabel}</div>
+                      <div className="mt-1">{subledger.approvalQueueLabel}</div>
+                      <div className="mt-1">{subledger.postedEventLabel}</div>
+                      <div className="mt-1">{subledger.publishedReportLabel}</div>
+                    </td>
+                    <td className="px-3 py-2 text-xs">
+                      <div>{subledger.evidenceLabel}</div>
+                      {subledger.evidenceCategories.length > 0 ? (
+                        <div className="mt-2 space-y-1" aria-label={`Subledger evidence readiness categories for ${subledger.title}`}>
+                          <div className="text-[11px] font-semibold uppercase text-muted-foreground">
+                            {subledger.evidenceCategorySummaryLabel}
+                          </div>
+                          {subledger.evidenceCategories.map((category) => (
+                            <div key={category.id} className="rounded border border-border/60 bg-secondary/20 px-2 py-1">
+                              <div className="flex flex-wrap items-center gap-1">
+                                <Badge variant={category.tone} dot>{category.label}</Badge>
+                                <span className="text-[11px] text-muted-foreground">{category.statusLabel}</span>
+                                <span className="font-mono text-[11px] text-muted-foreground">{category.evidenceLabel}</span>
+                              </div>
+                              <div className="mt-1 text-[11px] text-muted-foreground">{category.summaryLabel}</div>
+                              <div className="mt-1 text-[11px] text-muted-foreground">{category.requiredEvidenceLabel}</div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="mt-2 text-[11px] text-muted-foreground">{subledger.evidenceCategorySummaryLabel}</div>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -5,7 +5,7 @@ import { describeApiError } from "@/lib/api-errors";
 import { EXPORT_API_ENDPOINTS, exportPreviewEndpoint, reportPackEvidenceBundleEndpoint } from "@/lib/workstation-endpoints";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { getReportPackDistributions } from "@/lib/reporting-distributions";
-import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportWriterAggregateFunction, ReportingScheduleDeliveryPlan, ReportingScheduleDeliveryTarget, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowRecord } from "@/types";
+import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportWriterAggregateFunction, ReportWriterFilterOperator, ReportingScheduleDeliveryPlan, ReportingScheduleDeliveryTarget, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowRecord } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
 export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
@@ -188,6 +188,15 @@ export interface ReportingWriterToken {
   name?: string | null;
 }
 
+export interface ReportingWriterFilterRow {
+  id: string;
+  field: string;
+  operator: ReportWriterFilterOperator | string;
+  value: string | null;
+  label: string;
+  summary: string;
+}
+
 export interface ReportingWriterGridRow {
   id: string;
   gridId: string;
@@ -205,8 +214,10 @@ export interface ReportingWriterGridRow {
   columnFields: ReportingWriterToken[];
   metrics: ReportingWriterToken[];
   formulas: ReportingWriterToken[];
+  filters: ReportingWriterFilterRow[];
   topNLabel: string;
   sortLabel: string;
+  filterSummary: string;
   ariaLabel: string;
 }
 
@@ -285,6 +296,8 @@ export interface ReportingScheduleDeliveryPlanRow {
   note: string | null;
   lastDeliveryLabel: string;
   lastDeliveryHref: string | null;
+  integrityLabel: string;
+  integritySummary: string | null;
   versionStamp: string | null;
   ariaLabel: string;
 }
@@ -951,6 +964,7 @@ function buildWriterGridRows(template: ReportingTemplateMetadata): ReportingWrit
     const columnFields = buildFieldTokens(grid.columnFields, "column", 0);
     const metrics = buildMetricTokens(grid);
     const formulas = buildFormulaTokens(grid);
+    const filters = buildFilterRows(grid);
     const sourceFields = buildSourceFieldTokens(grid, rowFields, columnFields, metrics, formulas);
     const sortLabel = grid.sortBy
       ? `${grid.sortDescending === false ? "Ascending" : "Descending"} by ${grid.sortBy}`
@@ -958,6 +972,9 @@ function buildWriterGridRows(template: ReportingTemplateMetadata): ReportingWrit
     const topNLabel = grid.kind === "TopN" && grid.topN
       ? `Top ${grid.topN}`
       : grid.kind;
+    const filterSummary = filters.length > 0
+      ? `${filters.length} saved filter${filters.length === 1 ? "" : "s"}`
+      : "No saved filters";
 
     return {
       id: `${template.templateId}:${template.version}:${grid.gridId}`,
@@ -970,14 +987,16 @@ function buildWriterGridRows(template: ReportingTemplateMetadata): ReportingWrit
       topN: grid.topN ?? null,
       sortBy: grid.sortBy ?? null,
       sortDescending: grid.sortDescending ?? true,
-      summary: `${grid.kind} grid with ${rowFields.length + columnFields.length} dimension${rowFields.length + columnFields.length === 1 ? "" : "s"}, ${metrics.length} metric${metrics.length === 1 ? "" : "s"}, and ${formulas.length} formula${formulas.length === 1 ? "" : "s"}.`,
+      summary: `${grid.kind} grid with ${rowFields.length + columnFields.length} dimension${rowFields.length + columnFields.length === 1 ? "" : "s"}, ${metrics.length} metric${metrics.length === 1 ? "" : "s"}, ${formulas.length} formula${formulas.length === 1 ? "" : "s"}, and ${filters.length} saved filter${filters.length === 1 ? "" : "s"}.`,
       sourceFields,
       rowFields,
       columnFields,
       metrics,
       formulas,
+      filters,
       topNLabel,
       sortLabel,
+      filterSummary,
       ariaLabel: `${template.name} ${grid.title} ${grid.kind} report-writer grid`
     };
   });
@@ -1051,6 +1070,22 @@ function buildFormulaTokens(grid: ReportingTemplateGridMetadata): ReportingWrite
   }));
 }
 
+function buildFilterRows(grid: ReportingTemplateGridMetadata): ReportingWriterFilterRow[] {
+  return (grid.filters ?? []).map((filter, index) => {
+    const operator = normalizeFilterOperator(filter.operator);
+    const value = filter.value?.trim() || null;
+    const label = filter.label?.trim() || `${filter.field} ${formatFilterOperator(operator)}${value ? ` ${value}` : ""}`.trim();
+    return {
+      id: `filter:${filter.field}:${operator}:${value ?? index}`,
+      field: filter.field,
+      operator,
+      value,
+      label,
+      summary: `${filter.field} ${formatFilterOperator(operator)}${value ? ` ${value}` : ""}`.trim()
+    };
+  });
+}
+
 function buildSourceFieldTokens(
   grid: ReportingTemplateGridMetadata,
   rowFields: ReportingWriterToken[],
@@ -1075,6 +1110,10 @@ function buildSourceFieldTokens(
     }
   }
 
+  for (const filter of grid.filters ?? []) {
+    names.add(filter.field);
+  }
+
   if (grid.sortBy) {
     names.add(grid.sortBy);
   }
@@ -1094,6 +1133,69 @@ function buildSourceFieldTokens(
       kind: "field",
       fieldName: name
     }));
+}
+
+function normalizeFilterOperator(value: ReportWriterFilterOperator | string | null | undefined): ReportWriterFilterOperator {
+  switch ((value ?? "").toString().toLowerCase()) {
+    case "notequals":
+    case "not-equals":
+      return "NotEquals";
+    case "contains":
+      return "Contains";
+    case "startswith":
+    case "starts-with":
+      return "StartsWith";
+    case "endswith":
+    case "ends-with":
+      return "EndsWith";
+    case "greaterthan":
+    case "greater-than":
+      return "GreaterThan";
+    case "greaterthanorequal":
+    case "greater-than-or-equal":
+      return "GreaterThanOrEqual";
+    case "lessthan":
+    case "less-than":
+      return "LessThan";
+    case "lessthanorequal":
+    case "less-than-or-equal":
+      return "LessThanOrEqual";
+    case "isblank":
+    case "is-blank":
+      return "IsBlank";
+    case "isnotblank":
+    case "is-not-blank":
+      return "IsNotBlank";
+    default:
+      return "Equals";
+  }
+}
+
+function formatFilterOperator(operator: ReportWriterFilterOperator | string): string {
+  switch (normalizeFilterOperator(operator)) {
+    case "NotEquals":
+      return "!=";
+    case "Contains":
+      return "contains";
+    case "StartsWith":
+      return "starts with";
+    case "EndsWith":
+      return "ends with";
+    case "GreaterThan":
+      return ">";
+    case "GreaterThanOrEqual":
+      return ">=";
+    case "LessThan":
+      return "<";
+    case "LessThanOrEqual":
+      return "<=";
+    case "IsBlank":
+      return "is blank";
+    case "IsNotBlank":
+      return "is not blank";
+    default:
+      return "=";
+  }
 }
 
 function normalizeAggregateFunction(value: string | null | undefined): ReportWriterAggregateFunction {
@@ -1279,6 +1381,8 @@ function buildScheduleDeliveryPlanRows(plans: ReportingScheduleDeliveryPlan[]): 
     note: plan.note,
     lastDeliveryLabel: formatSchedulePlanLastDelivery(plan),
     lastDeliveryHref: plan.lastDeliverySecureLink ?? plan.lastDeliveryPackageRoute,
+    integrityLabel: formatSchedulePlanIntegrity(plan),
+    integritySummary: plan.lastDeliveryIntegritySummary ?? null,
     versionStamp: plan.versionStamp,
     ariaLabel: `${plan.recipient} ${plan.deliveryMode} scheduled delivery plan for ${plan.scheduleId}`
   }));
@@ -1299,6 +1403,15 @@ function formatSchedulePlanLastDelivery(plan: ReportingScheduleDeliveryPlan): st
   }
 
   return `${plan.lastDeliveryState} ${formatTimestamp(plan.lastDeliveryAtUtc)}`;
+}
+
+function formatSchedulePlanIntegrity(plan: ReportingScheduleDeliveryPlan): string {
+  const artifactCount = plan.lastDeliveryArtifactCount ?? 0;
+  if (artifactCount <= 0) {
+    return "No retained artifact checksums";
+  }
+
+  return `${artifactCount} artifact${artifactCount === 1 ? "" : "s"} with SHA-256`;
 }
 
 function formatScheduleDeliveryTargets(targets: ReportingScheduleDeliveryTarget[] | null | undefined): string {

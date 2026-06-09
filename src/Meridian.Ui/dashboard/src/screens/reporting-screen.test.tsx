@@ -126,7 +126,7 @@ const accounting: AccountingWorkspaceResponse = {
         viewId: "live:fund:consolidated",
         label: "Consolidated fund",
         kind: "Fund",
-        state: "SourceBacked",
+        state: "LiveLinked",
         currency: "USD",
         grossExposure: 400,
         netExposure: 400,
@@ -135,12 +135,12 @@ const accounting: AccountingWorkspaceResponse = {
         totalPnl: 50,
         shadowNav: 3650,
         asOf: "2026-04-11T16:00:00Z",
-        sourceAsOfUtc: "2026-04-11T14:30:00Z",
+        sourceAsOfUtc: "2026-04-11T15:58:00Z",
         sourceCount: 3,
         route: "/api/workstation/portfolio/summary?fundAccountId=all&strategyId=all&entity=portfolio",
         liquiditySummary: "3,250.00 USD cash with 150.00 pending settlement in this reporting cut.",
         cashLadderSummary: "Open the live portfolio summary route for consolidated cash and liquidity posture.",
-        telemetrySummary: "Source-backed portfolio telemetry is current through 2026-04-11T14:30:00.0000000Z; open the route for latest portfolio-summary telemetry.",
+        telemetrySummary: "Live-linked portfolio telemetry is current through 2026-04-11T15:58:00.0000000Z; open the route for the latest portfolio-summary telemetry.",
         tags: ["fund", "consolidated"],
         cashLadderRoute: null,
         versionStamp: "portfolio-cut:20260411160000:runs-1:accounts-2"
@@ -382,7 +382,7 @@ const accounting: AccountingWorkspaceResponse = {
         asOf: "2026-04-11T16:00:00Z",
         isReady: true,
         retainedPath: "exports/reporting/fund-alpha/20260411160000/regulatory-trial-balance.csv",
-        route: "/api/fund-structure/reporting/structured-exports/regulatory-trial-balance?fundProfileId=fund-alpha",
+        route: "/api/fund-structure/reporting/structured-exports/regulatory-trial-balance?fundProfileId=fund-alpha&format=csv",
         dataDictionaryRoute: "/api/workstation/reporting",
         validationSummary: "12 row(s), 10 field(s), and 18 source record(s) are ready.",
         evidenceRoute: "/api/fund-structure/report-packs",
@@ -412,6 +412,28 @@ const accounting: AccountingWorkspaceResponse = {
         tags: ["investment", "portfolio-cuts", "shadow-nav"]
       },
       {
+        exportId: "warehouse-ledger-facts",
+        label: "Warehouse ledger facts",
+        purpose: "DataWarehouse",
+        format: "Json",
+        dataset: "ledger-reconciliation-facts",
+        consumer: "Data warehouse and lakehouse ingestion",
+        schemaVersion: 1,
+        rowCount: 6,
+        fieldCount: 9,
+        sourceCount: 18,
+        currency: "USD",
+        asOf: "2026-04-11T16:00:00Z",
+        isReady: true,
+        retainedPath: "exports/reporting/fund-alpha/20260411160000/warehouse-ledger-facts.json",
+        route: "/api/fund-structure/reporting/structured-exports/warehouse-ledger-facts?fundProfileId=fund-alpha",
+        dataDictionaryRoute: "/api/workstation/reporting",
+        validationSummary: "Exports consolidated ledger snapshot facts for downstream warehouse loading. 6 row(s), 9 field(s), and 18 source record(s) are ready.",
+        evidenceRoute: "/api/fund-structure/report-packs",
+        versionStamp: "structured-export:20260411160000:rows-6:sources-18:schema-1",
+        tags: ["warehouse", "ledger", "reconciliation"]
+      },
+      {
         exportId: "investment-topn-contribution-analytics",
         label: "Top-N contribution analytics",
         purpose: "InvestmentDecision",
@@ -426,7 +448,7 @@ const accounting: AccountingWorkspaceResponse = {
         asOf: "2026-04-11T16:00:00Z",
         isReady: true,
         retainedPath: "exports/reporting/fund-alpha/20260411160000/investment-topn-contribution-analytics.csv",
-        route: "/api/fund-structure/reporting/structured-exports/investment-topn-contribution-analytics?fundProfileId=fund-alpha",
+        route: "/api/fund-structure/reporting/structured-exports/investment-topn-contribution-analytics?fundProfileId=fund-alpha&format=csv",
         dataDictionaryRoute: "/api/workstation/reporting",
         validationSummary: "Exports source-backed Top-N winners, laggards, and contribution rows with P&L percentages and heat-map intensities. 3 row(s), 18 field(s), and 4 source record(s) are ready.",
         evidenceRoute: "/api/fund-structure/report-packs",
@@ -515,7 +537,10 @@ const accounting: AccountingWorkspaceResponse = {
             ],
             topN: null,
             sortBy: "pnl",
-            sortDescending: true
+            sortDescending: true,
+            filters: [
+              { field: "strategy", operator: "Equals", value: "Core", label: "Core strategy" }
+            ]
           }
         ]
       }
@@ -654,8 +679,9 @@ describe("ReportingScreen", () => {
 
     expect(screen.getByRole("region", { name: "Live portfolio views" })).toBeInTheDocument();
     const fundView = screen.getByRole("listitem", { name: "Consolidated fund Fund live portfolio view" });
-    expect(within(fundView).getByText("SourceBacked")).toBeInTheDocument();
+    expect(within(fundView).getByText("LiveLinked")).toBeInTheDocument();
     expect(fundView).toHaveTextContent("3,250.00 USD cash with 150.00 pending settlement");
+    expect(fundView).toHaveTextContent("Live-linked portfolio telemetry is current through 2026-04-11T15:58:00.0000000Z");
     expect(within(fundView).getByRole("link", { name: "Open Consolidated fund live portfolio view" })).toHaveAttribute(
       "href",
       "/api/workstation/portfolio/summary?fundAccountId=all&strategyId=all&entity=portfolio"
@@ -742,18 +768,27 @@ describe("ReportingScreen", () => {
     expect(within(regulatoryRow).getByText("exports/reporting/fund-alpha/20260411160000/regulatory-trial-balance.csv")).toBeInTheDocument();
     expect(within(regulatoryRow).getByRole("link", { name: "Open Regulatory trial balance structured export" })).toHaveAttribute(
       "href",
-      "/api/fund-structure/reporting/structured-exports/regulatory-trial-balance?fundProfileId=fund-alpha"
+      "/api/fund-structure/reporting/structured-exports/regulatory-trial-balance?fundProfileId=fund-alpha&format=csv"
     );
 
     const investmentRow = screen.getByRole("listitem", { name: "Investment portfolio cuts structured export" });
     expect(within(investmentRow).getByText("InvestmentDecision")).toBeInTheDocument();
     expect(within(investmentRow).getByText("structured-export:20260411160000:rows-2:sources-4:schema-1")).toBeInTheDocument();
+    const warehouseRow = screen.getByRole("listitem", { name: "Warehouse ledger facts structured export" });
+    expect(within(warehouseRow).getByText("DataWarehouse")).toBeInTheDocument();
+    expect(within(warehouseRow).getByText("Json")).toBeInTheDocument();
+    expect(warehouseRow).toHaveTextContent("Data warehouse and lakehouse ingestion");
+    expect(warehouseRow).toHaveTextContent("Exports consolidated ledger snapshot facts for downstream warehouse loading");
+    expect(within(warehouseRow).getByRole("link", { name: "Open Warehouse ledger facts structured export" })).toHaveAttribute(
+      "href",
+      "/api/fund-structure/reporting/structured-exports/warehouse-ledger-facts?fundProfileId=fund-alpha"
+    );
     const analyticsExportRow = screen.getByRole("listitem", { name: "Top-N contribution analytics structured export" });
     expect(within(analyticsExportRow).getByText("Csv")).toBeInTheDocument();
     expect(within(analyticsExportRow).getByText("structured-export:20260411160000:rows-3:sources-4:schema-1")).toBeInTheDocument();
     expect(within(analyticsExportRow).getByRole("link", { name: "Open Top-N contribution analytics structured export" })).toHaveAttribute(
       "href",
-      "/api/fund-structure/reporting/structured-exports/investment-topn-contribution-analytics?fundProfileId=fund-alpha"
+      "/api/fund-structure/reporting/structured-exports/investment-topn-contribution-analytics?fundProfileId=fund-alpha&format=csv"
     );
     expect(screen.getByRole("listitem", { name: "Cross-fund consolidation structured export" })).toHaveTextContent(
       "structured-export:20260411160000:rows-2:sources-5:schema-1"
@@ -1018,8 +1053,13 @@ describe("ReportingScreen", () => {
     const grid = within(writer).getByRole("group", {
       name: "Investor Monthly Statement Sector Pivot Pivot report-writer grid"
     });
-    expect(grid).toHaveTextContent("Pivot grid with 2 dimensions, 2 metrics, and 1 formula.");
+    expect(grid).toHaveTextContent("Pivot grid with 2 dimensions, 2 metrics, 1 formula, and 1 saved filter.");
     expect(grid).toHaveTextContent("Descending by pnl");
+    expect(grid).toHaveTextContent("1 saved filter");
+    expect(within(grid).getByLabelText("Sector Pivot saved filters")).toHaveTextContent("strategy = Core");
+    expect(within(grid).getByLabelText("Sector Pivot filter field")).toHaveValue("strategy");
+    expect(within(grid).getByLabelText("Sector Pivot filter operator")).toHaveValue("Equals");
+    expect(within(grid).getByLabelText("Sector Pivot filter value")).toHaveValue("Core");
     expect(within(grid).getByRole("list", { name: "Sector Pivot Rows" })).toHaveTextContent("sector");
     expect(within(grid).getByRole("list", { name: "Sector Pivot Columns" })).toHaveTextContent("strategy");
     expect(within(grid).getByRole("list", { name: "Sector Pivot Metrics" })).toHaveTextContent("Market value");
@@ -1118,7 +1158,10 @@ describe("ReportingScreen", () => {
             { name: "gainLossRatio", expression: "{pnl} / {marketValue}", label: "Gain/loss ratio" }
           ],
           sortBy: "pnl",
-          sortDescending: true
+          sortDescending: true,
+          filters: [
+            { field: "strategy", operator: "Equals", value: "Core", label: "strategy = Core" }
+          ]
         }
       ],
       accessPolicy: {
@@ -1179,7 +1222,24 @@ describe("ReportingScreen", () => {
                 }
               }
             ],
-            warnings: []
+            warnings: [],
+            lineage: {
+              inputRowCount: 4,
+              filteredInputRowCount: 2,
+              outputRowCount: 2,
+              sourceFields: ["marketValue", "pnl", "sector", "strategy"],
+              metrics: [
+                { name: "marketValue", sourceField: "marketValue", function: "Sum" },
+                { name: "pnl", sourceField: "pnl", function: "Sum" }
+              ],
+              formulas: [
+                { name: "returnPct", expression: "{pnl} / {marketValue} * 100", sourceFields: ["marketValue", "pnl"] },
+                { name: "gainLossRatio", expression: "{pnl} / {marketValue}", sourceFields: ["marketValue", "pnl"] }
+              ],
+              filters: [
+                { field: "strategy", operator: "Equals", value: "Core", label: "strategy = Core" }
+              ]
+            }
           }
         ],
         warnings: []
@@ -1228,6 +1288,9 @@ describe("ReportingScreen", () => {
           formulas: [
             { name: "returnPct", expression: "{pnl} / {marketValue} * 100", label: "Return %" },
             { name: "gainLossRatio", expression: "{pnl} / {marketValue}", label: "Gain/loss ratio" }
+          ],
+          filters: [
+            { field: "strategy", operator: "Equals", value: "Core", label: "strategy = Core" }
           ]
         }
       ]
@@ -1239,6 +1302,9 @@ describe("ReportingScreen", () => {
       marketValue: "100",
       pnl: "10"
     });
+    expect(request.datasetRows[1]).toMatchObject({
+      strategy: "Core"
+    });
     await waitFor(() => {
       expect(screen.getByRole("status", { name: "Preview report-writer grid status" })).toHaveTextContent(
         "Sector Pivot preview rendered."
@@ -1249,6 +1315,12 @@ describe("ReportingScreen", () => {
     expect(within(preview).getByText("150")).toBeInTheDocument();
     expect(within(preview).getByText("Return %")).toBeInTheDocument();
     expect(within(preview).getByText("Gain/loss ratio")).toBeInTheDocument();
+    const auditTrace = within(preview).getByLabelText("Sector Pivot preview audit trace");
+    expect(auditTrace).toHaveTextContent("4 input / 2 filtered / 2 output");
+    expect(auditTrace).toHaveTextContent("marketValue, pnl, sector, strategy");
+    expect(auditTrace).toHaveTextContent("marketValue=Sum(marketValue)");
+    expect(auditTrace).toHaveTextContent("gainLossRatio=[marketValue, pnl]");
+    expect(auditTrace).toHaveTextContent("strategy = Core");
   });
 
   it("runs an approved report template on demand", async () => {
@@ -1423,7 +1495,9 @@ describe("ReportingScreen", () => {
             lastDeliveryAtUtc: "2026-05-03T20:15:00Z",
             lastDeliveryPackageRoute: "/reporting/report-packs/11111111-1111-1111-1111-111111111111/packages/pkg-board-1",
             lastDeliverySecureLink: "/portal/reporting/packages/pkg-board-1?token=abc123",
-            versionStamp: "schedule-delivery-plan:sched-investor:board-reporting-committee:20260503080000:formats-3"
+            versionStamp: "schedule-delivery-plan:sched-investor:board-reporting-committee:20260503080000:formats-3",
+            lastDeliveryArtifactCount: 3,
+            lastDeliveryIntegritySummary: "3 artifact(s) retained with SHA-256 checksums against publication evidence hash sha256:board-pack."
           },
           {
             planId: "schedule-delivery:sched-investor:investor-relations",
@@ -1447,7 +1521,9 @@ describe("ReportingScreen", () => {
             lastDeliveryAtUtc: null,
             lastDeliveryPackageRoute: null,
             lastDeliverySecureLink: null,
-            versionStamp: "schedule-delivery-plan:sched-investor:investor-relations:20260503080000:formats-2"
+            versionStamp: "schedule-delivery-plan:sched-investor:investor-relations:20260503080000:formats-2",
+            lastDeliveryArtifactCount: 0,
+            lastDeliveryIntegritySummary: null
           }
         ],
         deliveryAttempts: [
@@ -1481,11 +1557,16 @@ describe("ReportingScreen", () => {
                   contentType: "application/pdf",
                   retainedPath: "workstation/reporting/deliveries/report-1/board-pack.pdf",
                   byteSize: 128,
-                  evidenceId: "delivery-artifact:pdf"
+                  evidenceId: "delivery-artifact:pdf",
+                  checksumSha256: "f".repeat(64),
+                  versionStamp: "delivery-artifact:11111111111111111111111111111111:board-reporting-committee:1:pdf",
+                  downloadRoute: "/api/fund-structure/reporting/packs/11111111-1111-1111-1111-111111111111/deliveries/22222222-2222-2222-2222-222222222222/artifacts/board-pack.pdf?token=abc123"
                 }
               ],
               createdAtUtc: "2026-05-03T20:15:00Z",
-              retainedManifestPath: "workstation/reporting/deliveries/report-1/manifest.json"
+              retainedManifestPath: "workstation/reporting/deliveries/report-1/manifest.json",
+              publicationEvidenceHash: "sha256:board-pack",
+              integritySummary: "3 artifact(s) retained with SHA-256 checksums against publication evidence hash sha256:board-pack."
             }
           }
         ]
@@ -1506,6 +1587,8 @@ describe("ReportingScreen", () => {
     });
     expect(boardPlan).toHaveTextContent("Will deliver Pdf/Xlsx/Csv by SecurePortal to Board reporting committee");
     expect(boardPlan).toHaveTextContent("Pdf, Xlsx, Csv");
+    expect(boardPlan).toHaveTextContent("3 artifacts with SHA-256");
+    expect(boardPlan).toHaveTextContent("3 artifact(s) retained with SHA-256 checksums against publication evidence hash sha256:board-pack.");
     expect(boardPlan).toHaveTextContent("Board package.");
     expect(boardPlan).toHaveTextContent("schedule-delivery-plan:sched-investor:board-reporting-committee:20260503080000:formats-3");
     expect(within(boardPlan).getByRole("link", { name: "/portal/reporting/packages/pkg-board-1?token=abc123" })).toHaveAttribute(
@@ -1516,6 +1599,7 @@ describe("ReportingScreen", () => {
       name: "Investor relations EmailLink scheduled delivery plan for sched-investor"
     });
     expect(investorPlan).toHaveTextContent("No retained delivery yet");
+    expect(investorPlan).toHaveTextContent("No retained artifact checksums");
 
     expect(screen.getByRole("list", { name: "Report-pack delivery attempts" })).toBeInTheDocument();
     const boardAttempt = screen.getByLabelText("Board reporting committee delivery attempt Delivered");
@@ -1531,6 +1615,10 @@ describe("ReportingScreen", () => {
     expect(within(boardAttempt).getByRole("link", { name: "/portal/reporting/packages/pkg-board-1?token=abc123" })).toHaveAttribute(
       "href",
       "/portal/reporting/packages/pkg-board-1?token=abc123"
+    );
+    expect(within(boardAttempt).getByRole("link", { name: "Download board-pack.pdf" })).toHaveAttribute(
+      "href",
+      "/api/fund-structure/reporting/packs/11111111-1111-1111-1111-111111111111/deliveries/22222222-2222-2222-2222-222222222222/artifacts/board-pack.pdf?token=abc123"
     );
   });
 

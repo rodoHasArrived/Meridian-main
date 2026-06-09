@@ -1004,6 +1004,7 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
         reportOutputType: "CapitalCallNotice",
         displayName: "CapitalCallNotice for CapitalCall",
         reportRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
+        reportOutputRoute: "/api/ledger/private-capital/report-output?fundProfileId=fund-alpha&reportOutputId=report-output%3Afund-event%3Afund-alpha%3Acapital-call%3A20260630%3Acapitalcallnotice&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
         fundEventId: "fund-event:fund-alpha:capital-call:20260630",
         fundEventType: "CapitalCall",
         capitalAccountId: "capital-account:fund-alpha:lp-1",
@@ -1066,12 +1067,59 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
         validationIssueCount: 2,
         primaryReportOutputId: "report-output:fund-event:fund-alpha:capital-call:20260630:capitalcallnotice",
         primaryReportOutputType: "CapitalCallNotice",
-        primaryReportRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
+        primaryReportRoute: "/api/ledger/private-capital/report-output?fundProfileId=fund-alpha&reportOutputId=report-output%3Afund-event%3Afund-alpha%3Acapital-call%3A20260630%3Acapitalcallnotice&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
         reportWorkflowState: "Draft",
         publicationManifestId: null,
         retainedManifestPath: null,
         reportLineProvenanceCount: 1,
         evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+        evidenceCategories: [
+          {
+            categoryId: "source-support",
+            label: "Source support",
+            isReady: true,
+            summary: "Source documents or retained evidence links support the fund event.",
+            evidenceLinkCount: 1,
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            requiredEvidence: ["Source document or retained evidence link"]
+          },
+          {
+            categoryId: "capital-account-subledger",
+            label: "Capital-account subledger",
+            isReady: true,
+            summary: "Capital-account impact is represented in the subledger.",
+            evidenceLinkCount: 1,
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            requiredEvidence: ["Capital-account impact"]
+          },
+          {
+            categoryId: "ledger-impact",
+            label: "Ledger impact",
+            isReady: false,
+            summary: "Balanced ledger impact and line evidence are available for the fund event.",
+            evidenceLinkCount: 1,
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            requiredEvidence: ["Balanced ledger impact", "Ledger line evidence"]
+          },
+          {
+            categoryId: "approval-state",
+            label: "Approval state",
+            isReady: false,
+            summary: "Approval reference is missing for the fund event.",
+            evidenceLinkCount: 0,
+            evidenceLinks: [],
+            requiredEvidence: ["Approval reference"]
+          },
+          {
+            categoryId: "report-output",
+            label: "Report output",
+            isReady: false,
+            summary: "Governed report output is linked to the fund event.",
+            evidenceLinkCount: 1,
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            requiredEvidence: ["Governed report output"]
+          }
+        ],
         fundEvent: {
           fundEventId: "fund-event:fund-alpha:capital-call:20260630",
           fundEventType: "CapitalCall",
@@ -1213,6 +1261,104 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
         ]
       }
     ],
+    capitalAccountSubledgers: [
+      {
+        subledgerId: "capital-account-subledger:capital-account:fund-alpha:lp-1:investor:lp-1:usd",
+        fundProfileId: "fund-alpha",
+        ledgerBookId: "book-alpha",
+        projectedAtUtc: "2026-06-30T00:00:00Z",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        currency: "USD",
+        activityRoute: "/api/ledger/private-capital/capital-account-subledger?fundProfileId=fund-alpha&ledgerBookId=book-alpha&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1&currency=USD",
+        contributions: 100,
+        distributions: 0,
+        subscriptions: 0,
+        redemptions: 0,
+        managementFees: 0,
+        openingNetActivity: 0,
+        endingNetActivity: 100,
+        netCapitalActivity: 100,
+        fundEventCount: 1,
+        approvalQueueCount: 0,
+        postedFundEventCount: 0,
+        publishedReportOutputCount: 0,
+        evidenceLinkCount: 1,
+        validationIssueCount: 2,
+        firstEffectiveDate: "2026-06-30",
+        lastEffectiveDate: "2026-06-30",
+        lastFundEventType: "CapitalCall",
+        evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+        evidenceCategories: [
+          {
+            categoryId: "source-support",
+            label: "Source support",
+            isReady: true,
+            summary: "Source support is retained for this capital account's fund events.",
+            evidenceLinkCount: 1,
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            requiredEvidence: ["Source document or retained evidence link"]
+          },
+          {
+            categoryId: "capital-account-subledger",
+            label: "Capital-account subledger",
+            isReady: true,
+            summary: "Capital-account impacts are represented in the running subledger.",
+            evidenceLinkCount: 1,
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            requiredEvidence: ["Capital-account impact"]
+          },
+          {
+            categoryId: "ledger-impact",
+            label: "Ledger impact",
+            isReady: false,
+            summary: "Ledger impacts are linked to this capital account.",
+            evidenceLinkCount: 1,
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            requiredEvidence: ["Balanced ledger impact", "Ledger line evidence"]
+          },
+          {
+            categoryId: "approval-state",
+            label: "Approval state",
+            isReady: false,
+            summary: "Approval references are missing for this capital account.",
+            evidenceLinkCount: 0,
+            evidenceLinks: [],
+            requiredEvidence: ["Approval reference"]
+          },
+          {
+            categoryId: "report-output",
+            label: "Report output",
+            isReady: false,
+            summary: "Governed report outputs are linked to this capital account.",
+            evidenceLinkCount: 1,
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            requiredEvidence: ["Governed report output"]
+          }
+        ],
+        capitalAccount: null,
+        fundEventRecords: [],
+        subledgerEntries: [],
+        ledgerImpacts: [],
+        reportOutputs: [],
+        validationIssues: [
+          {
+            code: "manual-je.private-capital-ledger-impact-approval-pending",
+            severity: "Warning",
+            message: "Approval is pending.",
+            targetId: "manual-je-1",
+            suggestedAction: "Submit approval."
+          },
+          {
+            code: "manual-je.private-capital-report-approval-pending",
+            severity: "Warning",
+            message: "Approval is pending.",
+            targetId: "fund-event:fund-alpha:capital-call:20260630",
+            suggestedAction: "Submit approval."
+          }
+        ]
+      }
+    ],
     validationIssues: []
   }
 };
@@ -1336,6 +1482,30 @@ describe("accounting-screen view model", () => {
       netActivityLabel: "+$100.00 USD",
       contributionLabel: "$100 USD"
     });
+    expect(result.current.privateCapitalActivity.capitalAccountSubledgers[0]).toMatchObject({
+      title: "capital-account:fund-alpha:lp-1",
+      subtitle: "investor:lp-1 / USD",
+      statusLabel: "Review",
+      statusTone: "warning",
+      activityRouteLabel: "/api/ledger/private-capital/capital-account-subledger?fundProfileId=fund-alpha&ledgerBookId=book-alpha&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1&currency=USD",
+      netActivityLabel: "+$100.00 USD",
+      openingLabel: "$0 USD",
+      endingLabel: "+$100.00 USD",
+      contributionLabel: "$100 USD",
+      distributionLabel: "$0 USD",
+      eventCountLabel: "1 fund event(s)",
+      approvalQueueLabel: "0 approval queue",
+      postedEventLabel: "0 posted event(s)",
+      publishedReportLabel: "0 published report output(s)",
+      dateRangeLabel: "first 2026-06-30 / last 2026-06-30 / CapitalCall",
+      evidenceLabel: "1 evidence",
+      evidenceCategorySummaryLabel: "2/5 evidence categories ready",
+      evidenceCategories: expect.arrayContaining([
+        expect.objectContaining({ id: "capital-account-subledger", statusLabel: "Ready" }),
+        expect.objectContaining({ id: "approval-state", statusLabel: "Missing" })
+      ]),
+      issueLabel: "2 subledger issue(s)"
+    });
     expect(result.current.privateCapitalActivity.capitalAccountSubledgerEntries[0]).toMatchObject({
       title: "CapitalCall",
       statusLabel: "Draft",
@@ -1380,7 +1550,34 @@ describe("accounting-screen view model", () => {
       subledgerLabel: "1 subledger movement(s)",
       reportOutputLabel: "1 report output(s)",
       reportOutputDetailLabel: "CapitalCallNotice / Draft / 1 provenance",
-      reportOutputRouteLabel: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
+      reportOutputRouteLabel: "/api/ledger/private-capital/report-output?fundProfileId=fund-alpha&reportOutputId=report-output%3Afund-event%3Afund-alpha%3Acapital-call%3A20260630%3Acapitalcallnotice&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
+      evidenceCategorySummaryLabel: "2/5 evidence categories ready",
+      evidenceCategories: expect.arrayContaining([
+        expect.objectContaining({
+          id: "source-support",
+          label: "Source support",
+          statusLabel: "Ready",
+          tone: "success",
+          evidenceLabel: "1 evidence",
+          requiredEvidenceLabel: "Source document or retained evidence link"
+        }),
+        expect.objectContaining({
+          id: "approval-state",
+          label: "Approval state",
+          statusLabel: "Missing",
+          tone: "warning",
+          evidenceLabel: "0 evidence",
+          requiredEvidenceLabel: "Approval reference"
+        }),
+        expect.objectContaining({
+          id: "report-output",
+          label: "Report output",
+          statusLabel: "Missing",
+          tone: "warning",
+          evidenceLabel: "1 evidence",
+          requiredEvidenceLabel: "Governed report output"
+        })
+      ]),
       issueLabel: "2 record issue(s)"
     });
 

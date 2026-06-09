@@ -133,9 +133,13 @@ the shared projection provides them. The shared projection also carries event-le
 that group each fund event with its subledger rows, GL impacts, evidence, approval state, and
 report-output posture. The desktop grid reads promoted memo, gross/net activity, and child-count
 fields plus capital-account opening/ending net activity, the canonical activity route,
-evidence-packet route, approval id/route, primary report-output workflow/provenance,
-readiness reason, and next action from that record without introducing WPF-local accounting
-aggregation.
+evidence-packet route, approval id/route, the direct private-capital report-output route,
+primary report-output workflow/provenance, readiness reason, and next action from that record
+without introducing WPF-local accounting aggregation.
+Accounting Configure also renders account-level capital-account subledger rows from
+`PrivateCapitalCapitalAccountSubledgerDto`, including the shared subledger route,
+opening/ending roll-forward, net activity, contribution/distribution totals, approval queue,
+posted/published counts, validation issues, and evidence-category readiness.
 The desktop diagnostics surface reads colocation profile state through
 `Meridian.Platform.Performance.ICoLocationProfileActivator`, keeping runtime-performance ownership
 in Platform while WPF remains a presentation surface.
@@ -384,6 +388,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
+| `W5-MASSET-001` | Multi-asset operational coverage proof lane |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

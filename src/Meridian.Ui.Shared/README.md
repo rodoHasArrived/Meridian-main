@@ -118,23 +118,45 @@ from retained manual JE drafts and, when registered, `ILedgerJournalStore` poste
 `ReportPackWorkflowService` workflow records. Posted ledger-backed fund events win over same-id
 drafts, and the projection keeps fund-event rows, ordered capital-account subledger entries,
 ledger-impact rows, capital-account aggregates, published report-output state, signed net activity,
-and incomplete-context warnings server-owned for both browser and WPF consumers. When a posted
-fund event matches a governed report-pack workflow, the projection maps report-pack id, workflow
-state, retained publication manifest details, publication evidence hash, signer/timestamp, and
-matched report-line provenance count into the private-capital report-output row.
+and incomplete-context warnings server-owned for both browser and WPF consumers. Posted
+capital-account subledger rows and ledger-impact account scopes are reconstructed from the
+ledger-owned capital-account impacts, so a posted fund event that touches multiple capital accounts
+keeps those account/investor identities visible in shared Accounting, browser, and WPF projections
+instead of collapsing every row to the event-level fallback account. When a posted fund event
+matches a governed report-pack workflow, the projection maps report-pack id, workflow state,
+retained publication manifest details, publication evidence hash, signer/timestamp, and matched
+report-line provenance count into the private-capital report-output row.
+Posted report-output rows resolve capital-account identity from the report-pack target account
+first, then retained line provenance that points to one capital-account impact; unresolved
+multi-account outputs stay explicit as `capital-account:unassigned` instead of being attached to
+the event-level fallback account. Report-output rows also carry server-built report-output,
+fund-event record, capital-account subledger, evidence-packet, and approval routes, so reporting, browser, and WPF
+clients can move from a statement line back to the same fund-event ledger record without rebuilding
+private-capital URLs locally.
+Published workflow records can also match through retained publication/restatement/rejection
+evidence pointers to the fund-event id, journal id, or ledger-entry id, so an event-level evidence
+packet can keep the report output attached even before line provenance is populated.
 `/api/ledger/private-capital/activity` can also be filtered by `fundEventId`, `capitalAccountId`,
 and `investorId`; the endpoint returns a recomputed slice so report-package drill-throughs retain
 matching events, subledger rows, ledger impacts, report outputs, fund-event ledger records, counts,
-and net activity without leaking unrelated capital-account rows. Each fund-event ledger record is
+and net activity without leaking unrelated capital-account rows. Account and investor filters retain
+a posted fund event when any child capital-account subledger row, GL impact, or report-output row
+matches, then derive filtered account totals and net activity from the retained subledger rows before
+falling back to event-level rows. Each fund-event ledger record is
 rebuilt server-side through `PrivateCapitalFundEventLedgerRecordBuilder` from the filtered
 projection rows so browser and desktop clients receive a
 single event-level view containing event state, subledger impact, GL impact, evidence, approval,
 and report-output posture. Those rows also carry top-level journal, memo, gross/net activity,
-capital-account opening/ending net activity, payment/settlement, canonical activity route,
+capital-account opening/ending net activity aggregated across all matching child subledger rows,
+payment/settlement, canonical activity route,
 event evidence-packet route, approval id/route when an approval exists, child-count, primary
 report-output route/workflow, publication manifest, provenance fields, server-derived
 readiness label/reason, and next-action route from the grouped source rows so filtered
-drill-throughs stay useful without client-side stitching.
+drill-throughs stay useful without client-side stitching. Event and capital-account subledger
+records also include classified evidence categories for source support, capital-account subledger
+support, ledger impact, approval state, and report output readiness, giving browser and desktop
+clients a single server-owned evidence-coverage model instead of a flat link list that every client
+must reinterpret.
 Projections expose the event-level record collection as an empty list when
 no fund events qualify, keeping browser and desktop consumers on the same non-null contract.
 Posted private-capital fund events inherit the owning ledger book's base currency through
@@ -152,11 +174,17 @@ queue, posted/published counts, and validation issues into a capital-account-lev
 `/api/ledger/private-capital/capital-account-subledger` returns that grouped subledger directly by
 `capitalAccountId`, returning 404 when the capital account is absent and 400 when multiple investor
 or currency subledgers match until the caller also provides `investorId` and `currency`.
+`/api/ledger/private-capital/report-output` returns one private-capital report-output row by
+`reportOutputId`, `reportPackId`, or `fundEventId` with optional capital-account and investor
+filters, returning 404 when no report output matches and 400 when the selector is missing or still
+matches multiple outputs.
 The evidence fabric also resolves `private-capital-fund-event` subjects from the shared manual
 journal entry workbench projection. Its packet uses the `private-capital-fund-event-review`
 template to require linked fund-event state, retained evidence, approval state, capital-account
 subledger impact, GL impact, and report output before the event-level evidence graph can be
-treated as complete.
+treated as complete. Report-output evidence artifacts prefer the direct
+`/api/ledger/private-capital/report-output` route when the shared row provides it, keeping
+evidence graph drill-through aligned with the endpoint and workstation review surfaces.
 The shared workflow library owns close-lane command routing as well: `AccountingReviewOperationsContinuity`
 targets `OperationsContinuity` and `AccountingReviewCloseReadiness` targets `OperationsClose`, with
 route metadata tied to the operations-continuity API. Browser and WPF clients should consume those
@@ -228,20 +256,24 @@ authoring state survives host restart. Approved custom templates can carry repor
 definitions; the shared registry validates and renders those grids through `ReportWriterGridEngine`
 instead of returning browser-local or WPF-local calculations. Render requests may include temporary
 grid definitions for live no-code previews; the registry renders that request-scoped layout without
-persisting it back to the approved template. Browser and WPF clients should render that shared
+persisting it back to the approved template. Rendered grid responses carry input/output row counts,
+filtered-input row counts, source fields, metric source mappings, formula dependencies, and saved
+filter lineage so browser and WPF previews can display the same audit trace as retained exports.
+Browser and WPF clients should render that shared
 template state instead of treating built-in templates as the full authoring workflow.
 Template definitions and report-pack workflow records now carry shared access policies for
 user-locked, restricted user/group/company, and company-wide report audiences. `ReportAccessPolicyEvaluator`
 normalizes and validates those policies, `/api/fund-structure/reporting/templates*` filters and
-guards template reads/renders with the session actor plus admin override, and the workstation
-Reporting payload filters restricted template and report-pack rows before distribution and recent-run
-aggregates are projected.
+guards template reads/renders with the session actor, role, role-profile group, company id, and
+admin override, report-pack lifecycle and delivery-history/attempt endpoints enforce the same policy
+before mutating or exposing package state, and the workstation Reporting payload filters restricted
+template and report-pack rows before distribution and recent-run aggregates are projected.
 `ReportPackRunReadService` uses the same registry list when it is registered, so Reporting payloads
 include custom template drafts, in-review records, approvals, latest-approved status, and
 report-writer grid metadata alongside built-in templates. For custom templates, that projection
-keeps row fields, column fields, metrics, formula expressions, Top-N, and sort settings in the
-shared payload so browser and WPF surfaces can render no-code report-writer canvases without
-client-local template parsing or recalculation.
+keeps row fields, column fields, metrics, formula expressions, Top-N, sort settings, and saved
+filters in the shared payload so browser and WPF surfaces can render no-code report-writer canvases
+without client-local template parsing or recalculation.
 Generic Reporting orchestration runs and governed report-pack workflow records also share one
 operator read model here. `FileReportingRunStore` persists `ReportingOutputManifest` plus audit
 trail snapshots for scheduled/ad-hoc Reporting runs, `FileReportPackWorkflowRecordStore` persists
@@ -263,8 +295,10 @@ browser and WPF clients do not recalculate report cuts from separate portfolio A
 The read service also projects `livePortfolioViews` from those same cuts. Each row points to the
 shared `/api/workstation/portfolio/summary` route, preserves source-backed freshness state, carries
 liquidity text, and links single-run strategy cuts to `/api/portfolio/{runId}/cash-flows` for
-cash-ladder evidence. Rows fail closed as `Blocked` when no fund account or portfolio run source
-backs the reporting view.
+cash-ladder evidence. Fresh source snapshots inside the server live freshness window are emitted as
+`LiveLinked`; older retained snapshots remain `SourceBacked` until they cross the 24-hour stale
+threshold. Rows fail closed as `Blocked` when no fund account or portfolio run source backs the
+reporting view.
 It also projects `pnlSlices` for daily, weekly, monthly, and yearly P&L from retained portfolio run
 timestamps. Each row carries realized/unrealized/current/prior/change values, source counts,
 readiness text, a shared `/api/workstation/reporting?pnlSlice=...` route, and deterministic version
@@ -286,7 +320,10 @@ consolidation outputs, and serves `/api/fund-structure/reporting/structured-expo
 from the same source-backed workspace projection. The JSON payload includes stable column metadata,
 culture-invariant string row values, readiness warnings, retained-path metadata, and deterministic
 version stamps so downstream regulatory, warehousing, and investment-decision consumers can ingest
-governed data without browser-local export shaping.
+governed data without browser-local export shaping. The endpoint also accepts `format=csv` or
+`format=xlsx` for every structured export, including the data-warehouse ledger-facts descriptor
+whose default retained format is JSON, so users and downstream jobs can download a schema-ordered
+row file directly.
 `FundOperationsWorkspaceReadService` also exposes built-in report branding themes and fund-profile
 context through the reporting summary, validates custom branding overrides with normalized theme ids
 and hex colors, persists the selected theme on generated report-pack snapshots and manifests, and
@@ -302,11 +339,18 @@ workstation data root at `workstation/reporting/report-pack-deliveries.json`; pu
 restated workflow records can therefore show real delivery history, retry attempts, recipient
 state, and last-sent timestamps instead of static distribution placeholders. Delivered attempts
 also receive deterministic package metadata with default PDF/XLSX/CSV artifacts, retained-package
-paths, secure email-link or portal URLs, and delivery-mode inference for portal, vault, and
+paths, artifact SHA-256 checksums, artifact version stamps, publication evidence hashes, integrity
+summaries, secure email-link or portal URLs, and delivery-mode inference for portal, vault, and
 internal-route channels; callers can override the mode and requested formats in
-`ReportPackDeliveryRequestDto`. Package manifest reads are token-gated by
+`ReportPackDeliveryRequestDto`. Schedule delivery plan rows project the latest retained package
+artifact count and integrity summary so clients can show recipient/package readiness without
+fetching package manifests. Package manifest reads are token-gated by
 `ReportPackDeliveryService`, using constant-time token comparison and shared GET routes for the
-email-link package URL and `/portal/reporting/packages/{packageId}`. `ReportingScheduleService`
+email-link package URL and `/portal/reporting/packages/{packageId}`. Per-artifact package downloads
+reuse the same package token and expose generated PDF/XLSX/CSV content through
+`/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/artifacts/{artifactName}`,
+so clients open artifact `DownloadRoute` values from the retained package instead of synthesizing
+delivery file routes. `ReportingScheduleService`
 persists operator-managed schedule records at `workstation/reporting/reporting-schedules.json`,
 normalizes configured distribution targets, runs due schedules through `IReportingOrchestrationService`,
 advances next due/as-of dates, and asks `ReportPackDeliveryService` to package the latest published or
@@ -572,9 +616,11 @@ client-supplied request fields.
 Auth endpoints expose `/api/auth/role-profiles` as the governed write path for custom authority
 profiles. The Identity-owned file-backed role-profile store persists profile grants under the
 storage root, merges custom profiles into `/api/auth/roles`, and feeds `UserProfileRegistry` so
-configured `roleProfileName` accounts use the stored permissions after login. Keep this module as
-the endpoint/read-model adapter; do not reintroduce session, profile, or role-profile persistence
-state here.
+configured `roleProfileName` accounts use the stored permissions after login. Auth account payloads
+also pass through the Identity-owned company id attached to user profiles so Reporting access
+policies can evaluate company principals from session state. Keep this module as the
+endpoint/read-model adapter; do not reintroduce session, profile, role-profile, or company
+persistence state here.
 Operations Continuity endpoints expose
 `/api/workstation/operations/continuity/approval-policy-matrix` as the shared configuration read
 model for approval governance. The endpoint is read-permission protected and returns the

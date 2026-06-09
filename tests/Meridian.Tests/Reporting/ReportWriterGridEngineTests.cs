@@ -59,6 +59,20 @@ public sealed class ReportWriterGridEngineTests
             row.Values["marketValue"] == "300" &&
             row.Values["pnl"] == "20" &&
             row.Values["returnPct"] == "6.666667");
+        pivot.Lineage.Should().NotBeNull();
+        pivot.Lineage!.InputRowCount.Should().Be(4);
+        pivot.Lineage.OutputRowCount.Should().Be(3);
+        pivot.Lineage.SourceFields.Should().Equal("marketValue", "pnl", "sector");
+        pivot.Lineage.Metrics.Should().Contain(metric =>
+            metric.Name == "marketValue" &&
+            metric.SourceField == "marketValue" &&
+            metric.Function == ReportWriterAggregateFunctionDto.Sum.ToString());
+        pivot.Lineage.Formulas.Should().Contain(formula =>
+            formula.Name == "returnPct" &&
+            formula.Expression == "{pnl} / {marketValue} * 100" &&
+            formula.SourceFields.Count == 2 &&
+            formula.SourceFields[0] == "marketValue" &&
+            formula.SourceFields[1] == "pnl");
 
         var top = rendered.Single(grid => grid.GridId == "top-winners");
         top.Rows.Select(row => row.Values["security"]).Should().Equal("AAPL", "MSFT");
@@ -97,9 +111,57 @@ public sealed class ReportWriterGridEngineTests
         var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
 
         rendered.Rows.Should().HaveCount(2);
+        rendered.Lineage.Should().NotBeNull();
+        rendered.Lineage!.InputRowCount.Should().Be(2);
+        rendered.Lineage.OutputRowCount.Should().Be(2);
         rendered.Warnings.Should().Contain("Field 'marketValue' contained non-numeric values; affected cells were skipped.");
         rendered.Warnings.Should().Contain(warning => warning.StartsWith("Formula 'returnPct' could not be evaluated:", StringComparison.Ordinal));
         rendered.Rows.Should().Contain(row => row.Values["bucket"] == "Equity" && row.Values["returnPct"] == string.Empty);
+    }
+
+    [Fact]
+    public void RenderGrids_AppliesSavedFiltersAndReportsFilterLineage()
+    {
+        var rows = new[]
+        {
+            Row(("security", "AAPL"), ("sector", "Technology"), ("strategy", "Core"), ("marketValue", "100"), ("pnl", "15")),
+            Row(("security", "MSFT"), ("sector", "Technology"), ("strategy", "Core"), ("marketValue", "200"), ("pnl", "5")),
+            Row(("security", "TLT"), ("sector", "Rates"), ("strategy", "Hedge"), ("marketValue", "50"), ("pnl", "-3")),
+            Row(("security", "GLD"), ("sector", "Commodities"), ("strategy", "Hedge"), ("marketValue", "50"), ("pnl", "2"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "core-sector-pivot",
+                "Core Sector Pivot",
+                ReportWriterGridKindDto.Pivot,
+                RowFields: ["sector"],
+                Metrics: [new ReportWriterMetricDefinitionDto("marketValue", "marketValue")],
+                Filters:
+                [
+                    new ReportWriterFilterDefinitionDto(
+                        "strategy",
+                        ReportWriterFilterOperatorDto.Equals,
+                        "Core",
+                        "Core strategy only")
+                ])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        rendered.Rows.Should().ContainSingle();
+        rendered.Rows[0].Values["sector"].Should().Be("Technology");
+        rendered.Rows[0].Values["marketValue"].Should().Be("300");
+        rendered.Lineage.Should().NotBeNull();
+        rendered.Lineage!.InputRowCount.Should().Be(4);
+        rendered.Lineage.FilteredInputRowCount.Should().Be(2);
+        rendered.Lineage.OutputRowCount.Should().Be(1);
+        rendered.Lineage.SourceFields.Should().Equal("marketValue", "sector", "strategy");
+        rendered.Lineage.Filters.Should().ContainSingle(filter =>
+            filter.Field == "strategy" &&
+            filter.Operator == ReportWriterFilterOperatorDto.Equals.ToString() &&
+            filter.Value == "Core" &&
+            filter.Label == "Core strategy only");
     }
 
     private static IReadOnlyDictionary<string, string> Row(params (string Key, string Value)[] values) =>

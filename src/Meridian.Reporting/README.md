@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-REPORTING
 path: src/Meridian.Reporting
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-07
+last_reviewed: 2026-06-09
 ---
 
 # src/Meridian.Reporting
@@ -33,7 +33,7 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `ReportingOrchestrationService.cs` - deterministic report run execution, due-schedule handling,
   lineage rendering, approval transitions, retry/failure state, and run-store persistence handoff.
 - `ReportWriterGridEngine.cs` - governed no-code grid renderer for detail, pivot, Top-N,
-  contribution, and formula-backed report-writer tables over supplied dataset rows.
+  contribution, saved-filter, and formula-backed report-writer tables over supplied dataset rows.
 - `ReportGenerationService.cs` - trial-balance report-pack generation with Security Master
   enrichment, lookup-quality classification, and asset-class section grouping.
 - `NavAttributionService.cs` - fund/entity/sleeve/vehicle NAV attribution over ledger snapshots
@@ -77,7 +77,11 @@ module seams consumed by UI Shared report-pack workflows, UI Services reporting 
 and WPF fund-operation views. `ReportWriterGridEngine` renders governed template grid definitions
 without script execution: row/column dimensions, aggregate metrics, Top-N limits, contribution
 percentages, and bounded arithmetic formulas are evaluated against caller-supplied dataset rows with
-structured warnings for missing or non-numeric inputs. Reporting template families now cover
+structured warnings for missing or non-numeric inputs. Saved grid filters are applied before
+aggregation, Top-N, contribution, and formula rendering. Rendered grids also include input/output
+row counts, filtered-input counts, source-field lists, metric source mappings, formula dependency
+lineage, and filter lineage so report-writer previews and downstream exports can retain a
+source-backed audit trace. Reporting template families now cover
 investor, SEC, shadow NAV, performance, holdings, capital-account, board, audit, certified-dataset,
 and custom report packs; shared UI services layer schedule persistence, delivery history, template
 grid render calls, and rendered HTML/PDF artifacts on top of those module contracts without moving

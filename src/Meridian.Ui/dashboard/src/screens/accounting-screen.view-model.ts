@@ -77,7 +77,9 @@ import type {
   ManualJournalEntryWorkbench,
   PrivateCapitalActivityProjection,
   PrivateCapitalCapitalAccountActivity,
+  PrivateCapitalCapitalAccountSubledger,
   PrivateCapitalCapitalAccountSubledgerEntry,
+  PrivateCapitalEvidenceCategory,
   PrivateCapitalFundEvent,
   PrivateCapitalFundEventLedgerRecord,
   PrivateCapitalLedgerImpact,
@@ -812,6 +814,30 @@ export interface ManualJournalPrivateCapitalAccountRowViewModel {
   lastEventLabel: string;
 }
 
+export interface ManualJournalPrivateCapitalCapitalAccountSubledgerRowViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  statusLabel: string;
+  statusTone: "outline" | "success" | "warning" | "danger";
+  activityRouteLabel: string;
+  netActivityLabel: string;
+  openingLabel: string;
+  endingLabel: string;
+  contributionLabel: string;
+  distributionLabel: string;
+  otherActivityLabel: string;
+  eventCountLabel: string;
+  approvalQueueLabel: string;
+  postedEventLabel: string;
+  publishedReportLabel: string;
+  dateRangeLabel: string;
+  evidenceLabel: string;
+  evidenceCategorySummaryLabel: string;
+  evidenceCategories: ManualJournalPrivateCapitalEvidenceCategoryViewModel[];
+  issueLabel: string;
+}
+
 export interface ManualJournalPrivateCapitalSubledgerEntryRowViewModel {
   id: string;
   title: string;
@@ -858,6 +884,16 @@ export interface ManualJournalPrivateCapitalReportOutputRowViewModel {
   provenanceLabel: string;
 }
 
+export interface ManualJournalPrivateCapitalEvidenceCategoryViewModel {
+  id: string;
+  label: string;
+  statusLabel: string;
+  tone: "success" | "warning";
+  summaryLabel: string;
+  evidenceLabel: string;
+  requiredEvidenceLabel: string;
+}
+
 export interface ManualJournalPrivateCapitalFundEventLedgerRecordViewModel {
   id: string;
   title: string;
@@ -884,6 +920,8 @@ export interface ManualJournalPrivateCapitalFundEventLedgerRecordViewModel {
   reportOutputLabel: string;
   reportOutputDetailLabel: string;
   reportOutputRouteLabel: string;
+  evidenceCategorySummaryLabel: string;
+  evidenceCategories: ManualJournalPrivateCapitalEvidenceCategoryViewModel[];
   issueLabel: string;
 }
 
@@ -895,6 +933,7 @@ export interface ManualJournalPrivateCapitalActivityViewModel {
   summaryCards: ManualJournalPrivateCapitalMetricViewModel[];
   fundEvents: ManualJournalPrivateCapitalFundEventRowViewModel[];
   capitalAccounts: ManualJournalPrivateCapitalAccountRowViewModel[];
+  capitalAccountSubledgers: ManualJournalPrivateCapitalCapitalAccountSubledgerRowViewModel[];
   capitalAccountSubledgerEntries: ManualJournalPrivateCapitalSubledgerEntryRowViewModel[];
   ledgerImpacts: ManualJournalPrivateCapitalLedgerImpactRowViewModel[];
   reportOutputs: ManualJournalPrivateCapitalReportOutputRowViewModel[];
@@ -2866,6 +2905,7 @@ function buildManualJournalPrivateCapitalActivityView(
       ],
       fundEvents: [],
       capitalAccounts: [],
+      capitalAccountSubledgers: [],
       capitalAccountSubledgerEntries: [],
       ledgerImpacts: [],
       reportOutputs: [],
@@ -2875,6 +2915,7 @@ function buildManualJournalPrivateCapitalActivityView(
   }
 
   const currency = activity.currency || "USD";
+  const capitalAccountSubledgers = activity.capitalAccountSubledgers ?? [];
   const capitalAccountSubledgerEntries = activity.capitalAccountSubledgerEntries;
   const ledgerImpacts = activity.ledgerImpacts;
   const reportOutputs = activity.reportOutputs;
@@ -2928,7 +2969,7 @@ function buildManualJournalPrivateCapitalActivityView(
         id: "capital-account-subledger",
         label: "Subledger rows",
         value: capitalAccountSubledgerEntries.length.toLocaleString(),
-        detail: "Ordered capital-account movements",
+        detail: `${capitalAccountSubledgers.length.toLocaleString()} account-level subledger(s)`,
         tone: capitalAccountSubledgerEntries.length > 0 ? "success" : "default"
       },
       {
@@ -2969,6 +3010,7 @@ function buildManualJournalPrivateCapitalActivityView(
     ],
     fundEvents: activity.fundEvents.map(buildManualJournalPrivateCapitalFundEventRow),
     capitalAccounts: activity.capitalAccounts.map(buildManualJournalPrivateCapitalAccountRow),
+    capitalAccountSubledgers: capitalAccountSubledgers.map(buildManualJournalPrivateCapitalCapitalAccountSubledgerRow),
     capitalAccountSubledgerEntries: capitalAccountSubledgerEntries.map(buildManualJournalPrivateCapitalSubledgerEntryRow),
     ledgerImpacts: ledgerImpacts.map(buildManualJournalPrivateCapitalLedgerImpactRow),
     reportOutputs: reportOutputs.map(buildManualJournalPrivateCapitalReportOutputRow),
@@ -2977,9 +3019,56 @@ function buildManualJournalPrivateCapitalActivityView(
   };
 }
 
+function buildManualJournalPrivateCapitalCapitalAccountSubledgerRow(
+  subledger: PrivateCapitalCapitalAccountSubledger
+): ManualJournalPrivateCapitalCapitalAccountSubledgerRowViewModel {
+  const evidenceCategories = (subledger.evidenceCategories ?? []).map(buildManualJournalPrivateCapitalEvidenceCategoryRow);
+  const readyEvidenceCategoryCount = evidenceCategories.filter((category) => category.statusLabel === "Ready").length;
+  const hasCriticalIssue = subledger.validationIssues.some((issue) => issue.severity === "Critical");
+  const hasWarnings = subledger.validationIssues.length > 0 || subledger.approvalQueueCount > 0 || evidenceCategories.some((category) => category.statusLabel !== "Ready");
+
+  return {
+    id: subledger.subledgerId,
+    title: subledger.capitalAccountId,
+    subtitle: `${subledger.investorId ?? "Investor not assigned"} / ${subledger.currency}`,
+    statusLabel: hasCriticalIssue ? "Blocked" : hasWarnings ? "Review" : subledger.fundEventCount > 0 ? "Ready" : "Empty",
+    statusTone: hasCriticalIssue ? "danger" : hasWarnings ? "warning" : subledger.fundEventCount > 0 ? "success" : "outline",
+    activityRouteLabel: subledger.activityRoute || "No subledger route",
+    netActivityLabel: formatCurrencyWithCode(subledger.netCapitalActivity, subledger.currency, true),
+    openingLabel: formatCurrencyWithCode(subledger.openingNetActivity, subledger.currency, true),
+    endingLabel: formatCurrencyWithCode(subledger.endingNetActivity, subledger.currency, true),
+    contributionLabel: formatCurrencyWithCode(subledger.contributions, subledger.currency),
+    distributionLabel: formatCurrencyWithCode(subledger.distributions, subledger.currency),
+    otherActivityLabel: [
+      `Subscriptions ${formatCurrencyWithCode(subledger.subscriptions, subledger.currency)}`,
+      `Redemptions ${formatCurrencyWithCode(subledger.redemptions, subledger.currency)}`,
+      `Fees ${formatCurrencyWithCode(subledger.managementFees, subledger.currency)}`
+    ].join(" / "),
+    eventCountLabel: `${subledger.fundEventCount.toLocaleString()} fund event(s)`,
+    approvalQueueLabel: `${subledger.approvalQueueCount.toLocaleString()} approval queue`,
+    postedEventLabel: `${subledger.postedFundEventCount.toLocaleString()} posted event(s)`,
+    publishedReportLabel: `${subledger.publishedReportOutputCount.toLocaleString()} published report output(s)`,
+    dateRangeLabel: [
+      subledger.firstEffectiveDate ? `first ${subledger.firstEffectiveDate}` : "no first effective date",
+      subledger.lastEffectiveDate ? `last ${subledger.lastEffectiveDate}` : "no last effective date",
+      subledger.lastFundEventType ?? "no last event type"
+    ].join(" / "),
+    evidenceLabel: `${subledger.evidenceLinkCount.toLocaleString()} evidence`,
+    evidenceCategorySummaryLabel: evidenceCategories.length > 0
+      ? `${readyEvidenceCategoryCount.toLocaleString()}/${evidenceCategories.length.toLocaleString()} evidence categories ready`
+      : "No evidence categories",
+    evidenceCategories,
+    issueLabel: subledger.validationIssueCount > 0
+      ? `${subledger.validationIssueCount.toLocaleString()} subledger issue(s)`
+      : "No subledger issues"
+  };
+}
+
 function buildManualJournalPrivateCapitalFundEventLedgerRecordRow(
   record: PrivateCapitalFundEventLedgerRecord
 ): ManualJournalPrivateCapitalFundEventLedgerRecordViewModel {
+  const evidenceCategories = (record.evidenceCategories ?? []).map(buildManualJournalPrivateCapitalEvidenceCategoryRow);
+  const readyEvidenceCategoryCount = evidenceCategories.filter((category) => category.statusLabel === "Ready").length;
   return {
     id: record.fundEventRecordId,
     title: record.fundEventType || record.fundEventId,
@@ -3016,9 +3105,27 @@ function buildManualJournalPrivateCapitalFundEventLedgerRecordRow(
       `${record.reportLineProvenanceCount.toLocaleString()} provenance`
     ].join(" / "),
     reportOutputRouteLabel: record.primaryReportRoute ?? record.retainedManifestPath ?? record.publicationManifestId ?? "No report route",
+    evidenceCategorySummaryLabel: evidenceCategories.length > 0
+      ? `${readyEvidenceCategoryCount.toLocaleString()}/${evidenceCategories.length.toLocaleString()} evidence categories ready`
+      : "No evidence categories",
+    evidenceCategories,
     issueLabel: record.validationIssueCount > 0
       ? `${record.validationIssueCount.toLocaleString()} record issue(s)`
       : "No record issues"
+  };
+}
+
+function buildManualJournalPrivateCapitalEvidenceCategoryRow(
+  category: PrivateCapitalEvidenceCategory
+): ManualJournalPrivateCapitalEvidenceCategoryViewModel {
+  return {
+    id: category.categoryId,
+    label: category.label || category.categoryId,
+    statusLabel: category.isReady ? "Ready" : "Missing",
+    tone: category.isReady ? "success" : "warning",
+    summaryLabel: category.summary || "No category summary",
+    evidenceLabel: `${category.evidenceLinkCount.toLocaleString()} evidence`,
+    requiredEvidenceLabel: (category.requiredEvidence ?? []).filter(Boolean).join(" / ") || "No required evidence listed"
   };
 }
 
@@ -3125,7 +3232,7 @@ function buildManualJournalPrivateCapitalReportOutputRow(
     effectiveDateLabel: output.effectiveDate,
     amountLabel: formatCurrencyWithCode(output.netCapitalActivity, output.currency, true),
     evidenceLabel: `${output.evidenceLinkCount.toLocaleString()} evidence`,
-    routeLabel: output.reportRoute,
+    routeLabel: output.reportOutputRoute ?? output.reportRoute,
     issueLabel: output.validationIssues.length > 0
       ? `${output.validationIssues.length.toLocaleString()} readiness issues`
       : "No readiness issues",

@@ -218,7 +218,14 @@ public sealed class ReportPackRunReadService
                     .ToArray() ?? [],
                 TopN: grid.TopN,
                 SortBy: grid.SortBy,
-                SortDescending: grid.SortDescending))
+                SortDescending: grid.SortDescending,
+                Filters: grid.Filters?
+                    .Select(static filter => new WorkstationReportWriterFilterPayload(
+                        filter.Field,
+                        filter.Operator.ToString(),
+                        filter.Value,
+                        filter.Label))
+                    .ToArray() ?? []))
             .ToArray() ?? [];
 
     private static string BuildTemplateApprovalSummary(ReportTemplateGovernanceRecordDto record) =>
@@ -352,7 +359,9 @@ public sealed class ReportPackRunReadService
                     LastDeliveryAtUtc: latestAttempt?.AttemptedAtUtc,
                     LastDeliveryPackageRoute: latestAttempt?.Package?.PortalRoute,
                     LastDeliverySecureLink: latestAttempt?.Package?.SecureLink,
-                    VersionStamp: BuildScheduleDeliveryPlanVersionStamp(schedule, distributionId, formats));
+                    VersionStamp: BuildScheduleDeliveryPlanVersionStamp(schedule, distributionId, formats),
+                    LastDeliveryArtifactCount: latestAttempt?.Package?.Artifacts.Count ?? 0,
+                    LastDeliveryIntegritySummary: latestAttempt?.Package?.IntegritySummary);
             }
 
             if (fallbackPlan is not null)
@@ -390,7 +399,9 @@ public sealed class ReportPackRunReadService
                 LastDeliveryAtUtc: latestAttempt?.AttemptedAtUtc,
                 LastDeliveryPackageRoute: latestAttempt?.Package?.PortalRoute,
                 LastDeliverySecureLink: latestAttempt?.Package?.SecureLink,
-                VersionStamp: BuildScheduleDeliveryPlanVersionStamp(schedule, policy.DistributionId, formats));
+                VersionStamp: BuildScheduleDeliveryPlanVersionStamp(schedule, policy.DistributionId, formats),
+                LastDeliveryArtifactCount: latestAttempt?.Package?.Artifacts.Count ?? 0,
+                LastDeliveryIntegritySummary: latestAttempt?.Package?.IntegritySummary);
         }
     }
 

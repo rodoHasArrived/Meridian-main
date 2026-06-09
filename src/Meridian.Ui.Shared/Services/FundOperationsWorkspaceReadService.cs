@@ -63,6 +63,8 @@ public sealed class FundOperationsWorkspaceReadService
     private const string InvestmentPortfolioCutsExportId = "investment-portfolio-cuts";
     private const string InvestmentTopNContributionAnalyticsExportId = "investment-topn-contribution-analytics";
     private const string CrossFundConsolidationExportId = "cross-fund-consolidation";
+    private static readonly TimeSpan LivePortfolioViewFreshnessWindow = TimeSpan.FromMinutes(5);
+    private static readonly TimeSpan LivePortfolioViewStaleWindow = TimeSpan.FromHours(24);
 
     private static readonly StructuredReportingExportColumnDto[] RegulatoryTrialBalanceColumns =
     [
@@ -3043,7 +3045,7 @@ public sealed class FundOperationsWorkspaceReadService
             asOf,
             isReady,
             BuildStructuredExportRetainedPath(fundProfileId, exportId, asOf, format),
-            BuildStructuredExportRoute(fundProfileId, exportId, asOf, currency),
+            BuildStructuredExportRoute(fundProfileId, exportId, asOf, currency, format),
             UiApiRoutes.WorkstationReporting,
             isReady
                 ? $"{readySummary} {rowCount} row(s), {fieldCount} field(s), and {sourceCount} source record(s) are ready."
@@ -3619,7 +3621,12 @@ public sealed class FundOperationsWorkspaceReadService
             age = TimeSpan.Zero;
         }
 
-        if (age > TimeSpan.FromHours(24))
+        if (age <= LivePortfolioViewFreshnessWindow)
+        {
+            return PortfolioReportingLiveViewStateDto.LiveLinked;
+        }
+
+        if (age > LivePortfolioViewStaleWindow)
         {
             return PortfolioReportingLiveViewStateDto.Stale;
         }
@@ -3663,7 +3670,9 @@ public sealed class FundOperationsWorkspaceReadService
         {
             PortfolioReportingLiveViewStateDto.Blocked => "No source-backed portfolio records are available for this live reporting view.",
             PortfolioReportingLiveViewStateDto.Stale => $"Latest source snapshot is older than 24 hours as of {FormatStructuredDateTime(requestedAsOf)}.",
-            PortfolioReportingLiveViewStateDto.LiveLinked => "Live execution telemetry is linked to this reporting view.",
+            PortfolioReportingLiveViewStateDto.LiveLinked => sourceAsOf is null
+                ? "Live-linked portfolio telemetry is available through the live portfolio summary route."
+                : $"Live-linked portfolio telemetry is current through {FormatStructuredDateTime(sourceAsOf.Value)}; open the route for the latest portfolio-summary telemetry.",
             _ => sourceAsOf is null
                 ? "Source-backed portfolio telemetry is available through the live portfolio summary route."
                 : $"Source-backed portfolio telemetry is current through {FormatStructuredDateTime(sourceAsOf.Value)}; open the route for latest portfolio-summary telemetry."
@@ -3858,13 +3867,26 @@ public sealed class FundOperationsWorkspaceReadService
         string fundProfileId,
         string exportId,
         DateTimeOffset asOf,
-        string currency)
+        string currency,
+        GovernanceReportArtifactFormatDto format)
     {
         var route = UiApiRoutes.WithParam(UiApiRoutes.ReportingStructuredExport, "exportId", exportId);
-        var query = string.Join('&',
+        var queryParts = new List<string>
+        {
             $"fundProfileId={Uri.EscapeDataString(fundProfileId)}",
             $"asOf={Uri.EscapeDataString(FormatStructuredDateTime(asOf))}",
-            $"currency={Uri.EscapeDataString(currency)}");
+            $"currency={Uri.EscapeDataString(currency)}"
+        };
+        if (format == GovernanceReportArtifactFormatDto.Csv)
+        {
+            queryParts.Add("format=csv");
+        }
+        else if (format == GovernanceReportArtifactFormatDto.Xlsx)
+        {
+            queryParts.Add("format=xlsx");
+        }
+
+        var query = string.Join('&', queryParts);
         return UiApiRoutes.WithQuery(route, query);
     }
 

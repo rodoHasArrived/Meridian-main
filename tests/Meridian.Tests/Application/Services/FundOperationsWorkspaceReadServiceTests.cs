@@ -307,11 +307,22 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             export.RowCount == workspace.Ledger.TrialBalance.Count &&
             export.IsReady);
         workspace.Reporting.StructuredExports.Should().Contain(export =>
+            export.ExportId == "warehouse-ledger-facts" &&
+            export.Purpose == StructuredReportingExportPurposeDto.DataWarehouse &&
+            export.Format == GovernanceReportArtifactFormatDto.Json &&
+            export.Dataset == "ledger-reconciliation-facts" &&
+            export.RowCount == workspace.LedgerReconciliationSnapshot.Consolidated.Balances.Count &&
+            export.FieldCount == 9 &&
+            export.Route.Contains("warehouse-ledger-facts", StringComparison.Ordinal) &&
+            export.ValidationSummary!.Contains("downstream warehouse loading", StringComparison.Ordinal) &&
+            export.IsReady);
+        workspace.Reporting.StructuredExports.Should().Contain(export =>
             export.ExportId == "investment-portfolio-cuts" &&
             export.Purpose == StructuredReportingExportPurposeDto.InvestmentDecision &&
             export.Format == GovernanceReportArtifactFormatDto.Xlsx &&
             export.RowCount == workspace.Reporting.PortfolioCuts!.Count &&
             export.Route.Contains("fundProfileId=", StringComparison.Ordinal) &&
+            export.Route.Contains("format=xlsx", StringComparison.Ordinal) &&
             export.VersionStamp!.StartsWith("structured-export:20260411160000", StringComparison.Ordinal));
         workspace.Reporting.StructuredExports.Should().Contain(export =>
             export.ExportId == "investment-topn-contribution-analytics" &&
@@ -323,6 +334,8 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         workspace.Reporting.StructuredExports.Should().Contain(export =>
             export.ExportId == "cross-fund-consolidation" &&
             export.Purpose == StructuredReportingExportPurposeDto.InvestmentDecision &&
+            export.Format == GovernanceReportArtifactFormatDto.Xlsx &&
+            export.Route.Contains("format=xlsx", StringComparison.Ordinal) &&
             export.RowCount == workspace.Reporting.CrossFundConsolidations!.Count &&
             export.SourceCount == companyConsolidation.SourceCount &&
             export.IsReady);
@@ -337,6 +350,28 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             row["cutId"] == "fund:consolidated" &&
             row["totalPnl"] == "50" &&
             row["shadowNav"] == "2000");
+        var warehouseExport = await service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
+            fundProfileId,
+            "warehouse-ledger-facts",
+            new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero),
+            "USD"));
+        warehouseExport.Export.ExportId.Should().Be("warehouse-ledger-facts");
+        warehouseExport.Export.Purpose.Should().Be(StructuredReportingExportPurposeDto.DataWarehouse);
+        warehouseExport.Columns.Select(static column => column.Name).Should().ContainInOrder(
+            "scope",
+            "accountName",
+            "accountType",
+            "symbol",
+            "financialAccountId",
+            "balance",
+            "journalEntryCount",
+            "ledgerEntryCount",
+            "sourceAsOfUtc");
+        warehouseExport.Rows.Should().Contain(row =>
+            row["scope"] == "Consolidated" &&
+            row["accountName"] == "Cash" &&
+            row["journalEntryCount"] == workspace.LedgerReconciliationSnapshot.Consolidated.JournalEntryCount.ToString() &&
+            row["ledgerEntryCount"] == workspace.LedgerReconciliationSnapshot.Consolidated.LedgerEntryCount.ToString());
         var analyticsExport = await service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
             fundProfileId,
             "investment-topn-contribution-analytics",
@@ -424,6 +459,45 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         crossFundRow.IsReady.Should().BeFalse();
         crossFundRow.SourceCount.Should().Be(0);
         crossFundRow.ReadinessSummary.Should().Contain("No active fund accounts");
+    }
+
+    [Fact]
+    public async Task GetWorkspaceAsync_WithFreshPortfolioSource_MarksLivePortfolioViewLiveLinked()
+    {
+        var fundProfileId = $"fund-live-linked-{Guid.NewGuid():N}";
+        var repository = new StrategyRunStore();
+        var service = new FundOperationsWorkspaceReadService(
+            new InMemoryFundAccountService(),
+            repository,
+            new PortfolioReadService(),
+            new NavAttributionService(new NullSecurityMasterQueryService()),
+            new ReportGenerationService(new NullSecurityMasterQueryService()));
+
+        await repository.RecordRunAsync(BuildRun(
+            runId: "run-live-linked-001",
+            strategyId: "live-1",
+            strategyName: "Live Strategy",
+            fundProfileId: fundProfileId,
+            fundDisplayName: "Live Linked Fund",
+            startedAtUtc: new DateTimeOffset(2026, 4, 11, 15, 25, 0, TimeSpan.Zero)));
+
+        var workspace = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(
+            FundProfileId: fundProfileId,
+            AsOf: new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero),
+            Currency: "USD"));
+
+        var fundLiveView = workspace.Reporting.LivePortfolioViews.Should().ContainSingle(view =>
+                view.ViewId == "live:fund:consolidated")
+            .Which;
+        fundLiveView.State.Should().Be(PortfolioReportingLiveViewStateDto.LiveLinked);
+        fundLiveView.SourceAsOfUtc.Should().Be(new DateTimeOffset(2026, 4, 11, 15, 55, 0, TimeSpan.Zero));
+        fundLiveView.TelemetrySummary.Should().Contain("Live-linked portfolio telemetry is current through");
+
+        var strategyLiveView = workspace.Reporting.LivePortfolioViews.Should().ContainSingle(view =>
+                view.ViewId == "live:strategy:live-1")
+            .Which;
+        strategyLiveView.State.Should().Be(PortfolioReportingLiveViewStateDto.LiveLinked);
+        strategyLiveView.CashLadderRoute.Should().Be("/api/portfolio/run-live-linked-001/cash-flows");
     }
 
     [Fact]
@@ -1383,9 +1457,10 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         string fundDisplayName,
         decimal realizedPnl = 0m,
         decimal unrealizedPnl = 0m,
-        IReadOnlyDictionary<string, (decimal RealizedPnl, decimal UnrealizedPnl)>? positionPnl = null)
+        IReadOnlyDictionary<string, (decimal RealizedPnl, decimal UnrealizedPnl)>? positionPnl = null,
+        DateTimeOffset? startedAtUtc = null)
     {
-        var startedAt = new DateTimeOffset(2026, 4, 11, 14, 0, 0, TimeSpan.Zero);
+        var startedAt = startedAtUtc ?? new DateTimeOffset(2026, 4, 11, 14, 0, 0, TimeSpan.Zero);
         var completedAt = startedAt.AddMinutes(30);
         var ledger = CreateLedger();
         positionPnl ??= new Dictionary<string, (decimal RealizedPnl, decimal UnrealizedPnl)>(StringComparer.OrdinalIgnoreCase)

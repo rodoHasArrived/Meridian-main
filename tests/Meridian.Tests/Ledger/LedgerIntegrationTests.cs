@@ -458,6 +458,8 @@ public sealed class LedgerIntegrationTests
                 FundEventType: "CapitalCall",
                 CapitalAccountId: "capital-account:fund-alpha:lp-1",
                 InvestorId: "investor:lp-1",
+                PaymentIntentId: "payment:capital-call-conflicted:lp-1",
+                SettlementReference: "settlement:capital-call-conflicted:lp-1",
                 Tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["evidenceLinks"] = "source:capital-call-conflicted:lp-1",
@@ -481,6 +483,8 @@ public sealed class LedgerIntegrationTests
                 FundEventType: "CapitalCall",
                 CapitalAccountId: "capital-account:fund-alpha:lp-2",
                 InvestorId: "investor:lp-2",
+                PaymentIntentId: "payment:capital-call-conflicted:lp-2",
+                SettlementReference: "settlement:capital-call-conflicted:lp-2",
                 Tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 {
                     ["evidenceLinks"] = "source:capital-call-conflicted:lp-2",
@@ -500,11 +504,28 @@ public sealed class LedgerIntegrationTests
         fundEvent.HasCriticalIssues.Should().BeTrue();
         fundEvent.LedgerImpacts.Should().HaveCount(2);
         fundEvent.CapitalAccountImpacts.Should().HaveCount(2);
+        fundEvent.CapitalAccountImpacts.Should().Contain(impact =>
+            impact.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
+            impact.InvestorId == "investor:lp-1" &&
+            impact.NetCapitalAccountImpact == 100m);
+        fundEvent.CapitalAccountImpacts.Should().Contain(impact =>
+            impact.CapitalAccountId == "capital-account:fund-alpha:lp-2" &&
+            impact.InvestorId == "investor:lp-2" &&
+            impact.NetCapitalAccountImpact == 200m);
         fundEvent.Issues.Should().Contain(issue =>
             issue.Code == "private-capital.capital-account-conflict" &&
             issue.Severity == PrivateCapitalFundEventIssueSeverity.Critical);
         fundEvent.Issues.Should().Contain(issue =>
             issue.Code == "private-capital.investor-conflict" &&
+            issue.Severity == PrivateCapitalFundEventIssueSeverity.Critical);
+        fundEvent.Issues.Should().Contain(issue =>
+            issue.Code == "private-capital.idempotency-key-conflict" &&
+            issue.Severity == PrivateCapitalFundEventIssueSeverity.Critical);
+        fundEvent.Issues.Should().Contain(issue =>
+            issue.Code == "private-capital.payment-intent-conflict" &&
+            issue.Severity == PrivateCapitalFundEventIssueSeverity.Critical);
+        fundEvent.Issues.Should().Contain(issue =>
+            issue.Code == "private-capital.settlement-reference-conflict" &&
             issue.Severity == PrivateCapitalFundEventIssueSeverity.Critical);
     }
 

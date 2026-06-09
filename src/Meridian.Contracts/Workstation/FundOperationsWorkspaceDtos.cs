@@ -788,7 +788,10 @@ public sealed record ReportPackDeliveryArtifactDto(
     string ContentType,
     string RetainedPath,
     long ByteSize,
-    string EvidenceId);
+    string EvidenceId,
+    string ChecksumSha256 = "",
+    string VersionStamp = "",
+    string? DownloadRoute = null);
 
 public sealed record ReportPackDeliveryPackageDto(
     string PackageId,
@@ -800,7 +803,9 @@ public sealed record ReportPackDeliveryPackageDto(
     IReadOnlyList<GovernanceReportArtifactFormatDto> Formats,
     IReadOnlyList<ReportPackDeliveryArtifactDto> Artifacts,
     DateTimeOffset CreatedAtUtc,
-    string RetainedManifestPath);
+    string RetainedManifestPath,
+    string? PublicationEvidenceHash = null,
+    string? IntegritySummary = null);
 
 public sealed record ReportPackDeliveryAttemptDto(
     Guid AttemptId,
@@ -868,7 +873,9 @@ public sealed record ReportingScheduleDeliveryPlanDto(
     DateTimeOffset? LastDeliveryAtUtc = null,
     string? LastDeliveryPackageRoute = null,
     string? LastDeliverySecureLink = null,
-    string? VersionStamp = null);
+    string? VersionStamp = null,
+    int LastDeliveryArtifactCount = 0,
+    string? LastDeliveryIntegritySummary = null);
 
 [JsonConverter(typeof(JsonStringEnumConverter<ReportingScheduleStateDto>))]
 public enum ReportingScheduleStateDto
@@ -981,6 +988,28 @@ public sealed record ReportWriterFormulaDefinitionDto(
     string Expression,
     string? Label = null);
 
+[JsonConverter(typeof(JsonStringEnumConverter<ReportWriterFilterOperatorDto>))]
+public enum ReportWriterFilterOperatorDto
+{
+    Equals = 0,
+    NotEquals = 1,
+    Contains = 2,
+    StartsWith = 3,
+    EndsWith = 4,
+    GreaterThan = 5,
+    GreaterThanOrEqual = 6,
+    LessThan = 7,
+    LessThanOrEqual = 8,
+    IsBlank = 9,
+    IsNotBlank = 10
+}
+
+public sealed record ReportWriterFilterDefinitionDto(
+    string Field,
+    ReportWriterFilterOperatorDto Operator = ReportWriterFilterOperatorDto.Equals,
+    string? Value = null,
+    string? Label = null);
+
 public sealed record ReportWriterGridDefinitionDto(
     string GridId,
     string Title,
@@ -991,7 +1020,8 @@ public sealed record ReportWriterGridDefinitionDto(
     IReadOnlyList<ReportWriterFormulaDefinitionDto>? Formulas = null,
     int? TopN = null,
     string? SortBy = null,
-    bool SortDescending = true);
+    bool SortDescending = true,
+    IReadOnlyList<ReportWriterFilterDefinitionDto>? Filters = null);
 
 public sealed record ReportWriterGridColumnDto(
     string Key,
@@ -1002,13 +1032,39 @@ public sealed record ReportWriterGridRowDto(
     string RowKey,
     IReadOnlyDictionary<string, string> Values);
 
+public sealed record ReportWriterMetricLineageDto(
+    string Name,
+    string SourceField,
+    string Function);
+
+public sealed record ReportWriterFormulaLineageDto(
+    string Name,
+    string Expression,
+    IReadOnlyList<string> SourceFields);
+
+public sealed record ReportWriterFilterLineageDto(
+    string Field,
+    string Operator,
+    string? Value,
+    string? Label = null);
+
+public sealed record ReportWriterGridLineageDto(
+    int InputRowCount,
+    int OutputRowCount,
+    IReadOnlyList<string> SourceFields,
+    IReadOnlyList<ReportWriterMetricLineageDto> Metrics,
+    IReadOnlyList<ReportWriterFormulaLineageDto> Formulas,
+    int? FilteredInputRowCount = null,
+    IReadOnlyList<ReportWriterFilterLineageDto>? Filters = null);
+
 public sealed record ReportWriterGridRenderDto(
     string GridId,
     string Title,
     ReportWriterGridKindDto Kind,
     IReadOnlyList<ReportWriterGridColumnDto> Columns,
     IReadOnlyList<ReportWriterGridRowDto> Rows,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings,
+    ReportWriterGridLineageDto? Lineage = null);
 
 [JsonConverter(typeof(JsonStringEnumConverter<ReportAccessModeDto>))]
 public enum ReportAccessModeDto

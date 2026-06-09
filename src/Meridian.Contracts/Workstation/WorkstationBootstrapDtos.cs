@@ -263,6 +263,12 @@ public sealed record WorkstationReportWriterFormulaPayload(
     string Expression,
     string? Label = null);
 
+public sealed record WorkstationReportWriterFilterPayload(
+    string Field,
+    string Operator,
+    string? Value = null,
+    string? Label = null);
+
 public sealed record WorkstationReportWriterGridPayload(
     string GridId,
     string Title,
@@ -276,7 +282,8 @@ public sealed record WorkstationReportWriterGridPayload(
     IReadOnlyList<WorkstationReportWriterFormulaPayload>? Formulas = null,
     int? TopN = null,
     string? SortBy = null,
-    bool SortDescending = true);
+    bool SortDescending = true,
+    IReadOnlyList<WorkstationReportWriterFilterPayload>? Filters = null);
 
 public sealed record WorkstationReportingTemplatePayload(
     string TemplateId,

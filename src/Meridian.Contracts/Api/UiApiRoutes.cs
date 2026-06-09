@@ -661,6 +661,7 @@ public static class UiApiRoutes
     public const string LedgerPrivateCapitalActivity = "/api/ledger/private-capital/activity";
     public const string LedgerPrivateCapitalFundEventRecord = "/api/ledger/private-capital/fund-event-record";
     public const string LedgerPrivateCapitalCapitalAccountSubledger = "/api/ledger/private-capital/capital-account-subledger";
+    public const string LedgerPrivateCapitalReportOutput = "/api/ledger/private-capital/report-output";
     public const string LedgerManualJournalEntryDrafts = "/api/ledger/journal-entry-workbench/drafts";
     public const string LedgerManualJournalEntryValidate = "/api/ledger/journal-entry-workbench/validate";
     public const string LedgerManualJournalEntrySubmitApproval = "/api/ledger/journal-entry-workbench/submit-approval";
@@ -707,6 +708,7 @@ public static class UiApiRoutes
     public const string ReportingPackWorkflowArchive = "/api/fund-structure/reporting/packs/{reportId}/archive";
     public const string ReportingPackWorkflowDeliveries = "/api/fund-structure/reporting/packs/{reportId}/deliveries";
     public const string ReportingPackWorkflowDeliveryPackage = "/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/package";
+    public const string ReportingPackWorkflowDeliveryArtifact = "/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/artifacts/{artifactName}";
     public const string ReportingPackWorkflowDeliveryFailures = "/api/fund-structure/reporting/packs/{reportId}/deliveries/failures";
     public const string ReportingPackDeliveryPortalPackage = "/portal/reporting/packages/{packageId}";
     public const string ReportingStructuredExport = "/api/fund-structure/reporting/structured-exports/{exportId}";

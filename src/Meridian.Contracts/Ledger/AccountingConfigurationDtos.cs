@@ -356,7 +356,25 @@ public sealed record PrivateCapitalReportOutputDto(
     string? PublicationEvidenceHash = null,
     DateTimeOffset? PublishedAtUtc = null,
     string? PublishedBy = null,
-    int ReportLineProvenanceCount = 0);
+    int ReportLineProvenanceCount = 0,
+    string? ReportOutputRoute = null,
+    string? FundEventRecordRoute = null,
+    string? CapitalAccountSubledgerRoute = null,
+    string? EvidenceRoute = null,
+    string? ApprovalRoute = null);
+
+public sealed record PrivateCapitalEvidenceCategoryDto(
+    string CategoryId,
+    string Label,
+    bool IsReady,
+    string Summary,
+    int EvidenceLinkCount,
+    IReadOnlyList<string> EvidenceLinks,
+    IReadOnlyList<string>? RequiredEvidence = null)
+{
+    public IReadOnlyList<string> RequiredEvidence { get; init; } =
+        RequiredEvidence ?? [];
+}
 
 public sealed record PrivateCapitalFundEventLedgerRecordDto(
     string FundEventRecordId,
@@ -405,7 +423,12 @@ public sealed record PrivateCapitalFundEventLedgerRecordDto(
     IReadOnlyList<PrivateCapitalCapitalAccountSubledgerEntryDto> CapitalAccountSubledgerEntries,
     IReadOnlyList<PrivateCapitalLedgerImpactDto> LedgerImpacts,
     IReadOnlyList<PrivateCapitalReportOutputDto> ReportOutputs,
-    IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues);
+    IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
+    IReadOnlyList<PrivateCapitalEvidenceCategoryDto>? EvidenceCategories = null)
+{
+    public IReadOnlyList<PrivateCapitalEvidenceCategoryDto> EvidenceCategories { get; init; } =
+        EvidenceCategories ?? [];
+}
 
 public sealed record PrivateCapitalCapitalAccountSubledgerDto(
     string SubledgerId,
@@ -439,7 +462,12 @@ public sealed record PrivateCapitalCapitalAccountSubledgerDto(
     IReadOnlyList<PrivateCapitalCapitalAccountSubledgerEntryDto> SubledgerEntries,
     IReadOnlyList<PrivateCapitalLedgerImpactDto> LedgerImpacts,
     IReadOnlyList<PrivateCapitalReportOutputDto> ReportOutputs,
-    IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues);
+    IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
+    IReadOnlyList<PrivateCapitalEvidenceCategoryDto>? EvidenceCategories = null)
+{
+    public IReadOnlyList<PrivateCapitalEvidenceCategoryDto> EvidenceCategories { get; init; } =
+        EvidenceCategories ?? [];
+}
 
 public sealed record PrivateCapitalActivityProjectionDto(
     string FundProfileId,

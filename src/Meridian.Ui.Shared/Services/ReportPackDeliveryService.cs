@@ -3,12 +3,18 @@ using System.Security.Cryptography;
 using System.Text;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
+using Meridian.Storage.Export;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
 
 public sealed record ReportPackDeliveryStoreOptions(string SnapshotPath);
+
+public sealed record ReportPackDeliveryArtifactContent(
+    string ArtifactName,
+    string ContentType,
+    byte[] Content);
 
 public interface IReportPackDeliveryRecordStore
 {
@@ -146,6 +152,26 @@ public sealed class ReportPackDeliveryService
 
         EnsureValidPackageToken(attempt, token);
         return attempt.Package!;
+    }
+
+    public ReportPackDeliveryArtifactContent GetArtifact(Guid reportId, Guid attemptId, string artifactName, string? token)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(artifactName);
+        var attempt = GetDeliveredAttempt(reportId, attemptId)
+            ?? throw new KeyNotFoundException("delivery package not found");
+        EnsureValidPackageToken(attempt, token);
+        var package = attempt.Package!;
+        var artifact = package.Artifacts.FirstOrDefault(item =>
+            string.Equals(item.ArtifactName, artifactName.Trim(), StringComparison.OrdinalIgnoreCase));
+        if (artifact is null)
+        {
+            throw new KeyNotFoundException("delivery artifact not found");
+        }
+
+        return new ReportPackDeliveryArtifactContent(
+            artifact.ArtifactName,
+            artifact.ContentType,
+            BuildDeliveryArtifactContent(package, artifact));
     }
 
     public ReportPackDeliveryAttemptDto Deliver(Guid reportId, ReportPackDeliveryRequestDto request, string fallbackActor)
@@ -304,12 +330,12 @@ public sealed class ReportPackDeliveryService
         var mode = requestedMode ?? InferDeliveryMode(policy.Channel);
         var packageId = $"pkg-{record.ReportId:N}-{policy.DistributionId}-{attemptNumber}";
         var retainedManifestPath = $"workstation/reporting/deliveries/{record.ReportId:N}/{policy.DistributionId}/{attemptNumber}/manifest.json";
-        var artifacts = formats
-            .Select(format => BuildArtifact(record, policy, packageId, format))
-            .ToArray();
         var token = BuildSecureToken(record.ReportId, policy.DistributionId, attemptId);
-            var secureLink = mode switch
-            {
+        var artifacts = formats
+            .Select(format => BuildArtifact(record, policy, packageId, attemptId, token, format))
+            .ToArray();
+        var secureLink = mode switch
+        {
             ReportPackDeliveryModeDto.EmailLink => UiApiRoutes.WithQuery(
                 UiApiRoutes.WithParam(
                     UiApiRoutes.WithParam(UiApiRoutes.ReportingPackWorkflowDeliveryPackage, "reportId", record.ReportId.ToString("D")),
@@ -334,27 +360,281 @@ public sealed class ReportPackDeliveryService
             formats,
             artifacts,
             DateTimeOffset.UtcNow,
-            retainedManifestPath);
+            retainedManifestPath,
+            record.Publication?.EvidenceHash,
+            BuildIntegritySummary(artifacts, record.Publication?.EvidenceHash));
     }
 
     private static ReportPackDeliveryArtifactDto BuildArtifact(
         ReportPackWorkflowRecordDto record,
         ReportPackRunReadService.ReportPackDistributionPolicy policy,
         string packageId,
+        Guid attemptId,
+        string token,
         GovernanceReportArtifactFormatDto format)
     {
         var extension = ResolveExtension(format);
         var artifactName = $"{record.TemplateId.Name}-v{record.TemplateId.Version}-{record.Period}-{policy.DistributionId}.{extension}";
         var retainedPath = $"workstation/reporting/deliveries/{record.ReportId:N}/{policy.DistributionId}/{packageId}/{artifactName}";
         var evidenceId = $"delivery-artifact:{record.ReportId:N}:{policy.DistributionId}:{format.ToString().ToLowerInvariant()}";
-        var byteSize = Encoding.UTF8.GetByteCount($"{record.ReportId:D}|{policy.DistributionId}|{format}|{retainedPath}|{record.Publication?.EvidenceHash}");
+        var versionStamp = $"delivery-artifact:{record.ReportId:N}:{policy.DistributionId}:{record.Version}:{format.ToString().ToLowerInvariant()}";
+        var contentType = ResolveContentType(format);
+        var downloadRoute = BuildArtifactDownloadRoute(record.ReportId, attemptId, artifactName, token);
+        var content = BuildDeliveryArtifactContent(
+            packageId,
+            record.ReportId,
+            policy.DistributionId,
+            artifactName,
+            format,
+            contentType,
+            retainedPath,
+            record.Publication?.EvidenceHash,
+            versionStamp);
+        var byteSize = content.LongLength;
+        var checksum = ComputeSha256Hex(content);
         return new ReportPackDeliveryArtifactDto(
             format,
             artifactName,
-            ResolveContentType(format),
+            contentType,
             retainedPath,
             byteSize,
-            evidenceId);
+            evidenceId,
+            checksum,
+            versionStamp,
+            downloadRoute);
+    }
+
+    private static string BuildIntegritySummary(
+        IReadOnlyList<ReportPackDeliveryArtifactDto> artifacts,
+        string? publicationEvidenceHash)
+    {
+        var hashSummary = string.IsNullOrWhiteSpace(publicationEvidenceHash)
+            ? "without a publication evidence hash"
+            : $"against publication evidence hash {publicationEvidenceHash.Trim()}";
+        return $"{artifacts.Count} artifact(s) retained with SHA-256 checksums {hashSummary}.";
+    }
+
+    private static string BuildArtifactDownloadRoute(
+        Guid reportId,
+        Guid attemptId,
+        string artifactName,
+        string token)
+    {
+        var route = UiApiRoutes.WithParam(
+            UiApiRoutes.WithParam(
+                UiApiRoutes.WithParam(
+                    UiApiRoutes.ReportingPackWorkflowDeliveryArtifact,
+                    "reportId",
+                    reportId.ToString("D")),
+                "attemptId",
+                attemptId.ToString("D")),
+            "artifactName",
+            artifactName);
+        return UiApiRoutes.WithQuery(route, $"token={Uri.EscapeDataString(token)}");
+    }
+
+    private static byte[] BuildDeliveryArtifactContent(
+        ReportPackDeliveryPackageDto package,
+        ReportPackDeliveryArtifactDto artifact) =>
+        BuildDeliveryArtifactContent(
+            package.PackageId,
+            package.ReportId,
+            package.DistributionId,
+            artifact.ArtifactName,
+            artifact.Format,
+            artifact.ContentType,
+            artifact.RetainedPath,
+            package.PublicationEvidenceHash,
+            artifact.VersionStamp);
+
+    private static byte[] BuildDeliveryArtifactContent(
+        string packageId,
+        Guid reportId,
+        string distributionId,
+        string artifactName,
+        GovernanceReportArtifactFormatDto format,
+        string contentType,
+        string retainedPath,
+        string? publicationEvidenceHash,
+        string versionStamp)
+    {
+        var rows = BuildDeliveryArtifactRows(
+            packageId,
+            reportId,
+            distributionId,
+            artifactName,
+            format,
+            contentType,
+            retainedPath,
+            publicationEvidenceHash,
+            versionStamp);
+
+        return format switch
+        {
+            GovernanceReportArtifactFormatDto.Csv => BuildDeliveryArtifactCsv(rows),
+            GovernanceReportArtifactFormatDto.Xlsx => XlsxWorkbookWriter.CreateWorkbook(
+            [
+                new XlsxWorksheet(
+                    "Delivery",
+                    ["Field", "Value"],
+                    rows.Select(static row => (IReadOnlyList<object?>)[row.Key, row.Value]).ToArray())
+            ]),
+            GovernanceReportArtifactFormatDto.Html => BuildDeliveryArtifactHtml(rows),
+            GovernanceReportArtifactFormatDto.Pdf => BuildDeliveryArtifactPdf(rows),
+            _ => JsonSerializer.SerializeToUtf8Bytes(rows.ToDictionary(static row => row.Key, static row => row.Value))
+        };
+    }
+
+    private static IReadOnlyList<KeyValuePair<string, string>> BuildDeliveryArtifactRows(
+        string packageId,
+        Guid reportId,
+        string distributionId,
+        string artifactName,
+        GovernanceReportArtifactFormatDto format,
+        string contentType,
+        string retainedPath,
+        string? publicationEvidenceHash,
+        string versionStamp) =>
+    [
+        new("packageId", packageId),
+        new("reportId", reportId.ToString("D")),
+        new("distributionId", distributionId),
+        new("artifactName", artifactName),
+        new("format", format.ToString()),
+        new("contentType", contentType),
+        new("retainedPath", retainedPath),
+        new("publicationEvidenceHash", string.IsNullOrWhiteSpace(publicationEvidenceHash) ? "" : publicationEvidenceHash.Trim()),
+        new("versionStamp", versionStamp)
+    ];
+
+    private static byte[] BuildDeliveryArtifactCsv(IReadOnlyList<KeyValuePair<string, string>> rows)
+    {
+        var builder = new StringBuilder();
+        AppendCsvRow(builder, ["field", "value"]);
+        foreach (var row in rows)
+        {
+            AppendCsvRow(builder, [row.Key, row.Value]);
+        }
+
+        return Encoding.UTF8.GetBytes(builder.ToString());
+    }
+
+    private static void AppendCsvRow(StringBuilder builder, IEnumerable<string?> values)
+    {
+        var first = true;
+        foreach (var value in values)
+        {
+            if (!first)
+            {
+                builder.Append(',');
+            }
+
+            builder.Append(EscapeCsvValue(value));
+            first = false;
+        }
+
+        builder.AppendLine();
+    }
+
+    private static string EscapeCsvValue(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return string.Empty;
+        }
+
+        return value.IndexOfAny([',', '"', '\r', '\n']) >= 0
+            ? $"\"{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\""
+            : value;
+    }
+
+    private static byte[] BuildDeliveryArtifactHtml(IReadOnlyList<KeyValuePair<string, string>> rows)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("<!doctype html>");
+        builder.AppendLine("<html lang=\"en\"><head><meta charset=\"utf-8\"><title>Report Pack Delivery Artifact</title></head><body>");
+        builder.AppendLine("<h1>Report Pack Delivery Artifact</h1>");
+        builder.AppendLine("<table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>");
+        foreach (var row in rows)
+        {
+            builder.Append("<tr><td>")
+                .Append(EscapeHtml(row.Key))
+                .Append("</td><td>")
+                .Append(EscapeHtml(row.Value))
+                .AppendLine("</td></tr>");
+        }
+
+        builder.AppendLine("</tbody></table></body></html>");
+        return Encoding.UTF8.GetBytes(builder.ToString());
+    }
+
+    private static string EscapeHtml(string value) =>
+        value
+            .Replace("&", "&amp;", StringComparison.Ordinal)
+            .Replace("<", "&lt;", StringComparison.Ordinal)
+            .Replace(">", "&gt;", StringComparison.Ordinal)
+            .Replace("\"", "&quot;", StringComparison.Ordinal);
+
+    private static byte[] BuildDeliveryArtifactPdf(IReadOnlyList<KeyValuePair<string, string>> rows)
+    {
+        var content = new StringBuilder();
+        content.AppendLine("BT");
+        content.AppendLine("/F1 10 Tf");
+        var y = 760;
+        foreach (var row in rows.Take(40))
+        {
+            content.AppendLine($"1 0 0 1 72 {y} Tm");
+            content.AppendLine($"({EscapePdfText($"{row.Key}: {row.Value}")}) Tj");
+            y -= 14;
+        }
+
+        content.AppendLine("ET");
+        return BuildSinglePagePdf(content.ToString());
+    }
+
+    private static string EscapePdfText(string value) =>
+        value
+            .Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("(", "\\(", StringComparison.Ordinal)
+            .Replace(")", "\\)", StringComparison.Ordinal);
+
+    private static byte[] BuildSinglePagePdf(string contentStream)
+    {
+        var objects = new[]
+        {
+            "<< /Type /Catalog /Pages 2 0 R >>",
+            "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+            "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+            $"<< /Length {Encoding.ASCII.GetByteCount(contentStream)} >>\nstream\n{contentStream}\nendstream"
+        };
+
+        var builder = new StringBuilder();
+        var offsets = new List<int>(objects.Length + 1) { 0 };
+        builder.AppendLine("%PDF-1.4");
+        for (var index = 0; index < objects.Length; index++)
+        {
+            offsets.Add(Encoding.ASCII.GetByteCount(builder.ToString()));
+            builder.AppendLine($"{index + 1} 0 obj");
+            builder.AppendLine(objects[index]);
+            builder.AppendLine("endobj");
+        }
+
+        var xrefOffset = Encoding.ASCII.GetByteCount(builder.ToString());
+        builder.AppendLine("xref");
+        builder.AppendLine($"0 {objects.Length + 1}");
+        builder.AppendLine("0000000000 65535 f ");
+        foreach (var offset in offsets.Skip(1))
+        {
+            builder.AppendLine($"{offset:0000000000} 00000 n ");
+        }
+
+        builder.AppendLine("trailer");
+        builder.AppendLine($"<< /Size {objects.Length + 1} /Root 1 0 R >>");
+        builder.AppendLine("startxref");
+        builder.AppendLine(xrefOffset.ToString());
+        builder.AppendLine("%%EOF");
+        return Encoding.ASCII.GetBytes(builder.ToString());
     }
 
     private static IReadOnlyList<GovernanceReportArtifactFormatDto> NormalizeFormats(
@@ -419,8 +699,18 @@ public sealed class ReportPackDeliveryService
 
     private static string BuildSecureToken(Guid reportId, string distributionId, Guid attemptId)
     {
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes($"{reportId:D}:{distributionId}:{attemptId:D}:report-pack-delivery"));
-        return Convert.ToHexString(bytes).ToLowerInvariant()[..24];
+        return ComputeSha256Hex($"{reportId:D}:{distributionId}:{attemptId:D}:report-pack-delivery")[..24];
+    }
+
+    private static string ComputeSha256Hex(string value)
+    {
+        return ComputeSha256Hex(Encoding.UTF8.GetBytes(value));
+    }
+
+    private static string ComputeSha256Hex(byte[] value)
+    {
+        var bytes = SHA256.HashData(value);
+        return Convert.ToHexString(bytes).ToLowerInvariant();
     }
 
     private ReportPackDeliveryAttemptDto? GetDeliveredAttempt(Guid reportId, Guid attemptId)

@@ -6053,6 +6053,8 @@ public static partial class WorkstationEndpoints
             : null;
         return new ReportAccessQueryContext(
             ActorPrincipalId: actor,
+            GroupPrincipalIds: EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
+            CompanyId: EndpointAuthorization.ResolveCompanyId(context),
             HasGlobalOverride: EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance));
     }
 

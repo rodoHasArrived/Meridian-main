@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-06-08
+**Reviewed:** 2026-06-09
 
 Use this guide when a Meridian Codex setup needs more control than the quick start provides:
 custom models or providers, profile overlays, sandbox and approval tuning, hooks, telemetry,
@@ -348,6 +348,35 @@ project_root_markers = []
   files. Each `[agents.<role>]` table should point at the matching `.codex/agents/<role>.toml` file,
   while model choices, provider routing, credentials, telemetry, and machine notifications stay in
   user-level profiles.
+
+### Custom Agent Profile Files
+
+Project-scoped custom agents live under `.codex/agents/*.toml`. Every file must define `name`,
+`description`, and `developer_instructions`; optional fields such as `nickname_candidates`,
+`model`, `model_reasoning_effort`, `sandbox_mode`, `mcp_servers`, and `skills.config` inherit from
+the parent Codex session when omitted.
+
+Use those optional keys only when the agent lane has a concrete need for different runtime
+behavior, such as read-only review, a higher-reasoning model route, a narrower MCP tool surface, or
+a disabled skill. Keep the repo-local defaults conservative and move machine-specific values,
+provider auth, secrets, notifications, telemetry, and personal model choices to user-level
+`~/.codex/config.toml` or a user profile.
+
+```toml
+name = "example-readonly-reviewer"
+description = "Read-only reviewer focused on correctness, regressions, and missing tests."
+model_reasoning_effort = "high"
+sandbox_mode = "read-only"
+
+developer_instructions = """
+Review the requested change without editing files.
+Lead with concrete findings and cite file paths.
+"""
+
+[[skills.config]]
+path = ".codex/skills/meridian-code-review/SKILL.md"
+enabled = true
+```
 
 ## Observability, Metrics, And Feedback
 

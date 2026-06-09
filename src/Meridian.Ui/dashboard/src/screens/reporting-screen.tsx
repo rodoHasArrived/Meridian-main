@@ -1,5 +1,5 @@
 import { type DragEvent, type KeyboardEvent, useEffect, useRef, useState } from "react";
-import { CheckCircle2, Eye, FileText, GripVertical, Landmark, Network, PencilLine, RotateCcw, Send, XCircle } from "lucide-react";
+import { CheckCircle2, Eye, FileText, Filter, GripVertical, Landmark, Network, PencilLine, RotateCcw, Send, XCircle } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import {
   resumeReportingSchedule,
   runReportingNow,
   runReportingScheduleNow,
+  saveReportingSchedule,
   submitReportTemplateDraft
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
@@ -38,17 +39,22 @@ import {
 } from "@/screens/reporting-screen.view-model";
 import type {
   AccountingWorkspaceResponse,
+  GovernanceReportArtifactFormat,
   ReportAccessMode,
   ReportAccessPrincipalKind,
   ReportBrandingTheme,
+  ReportPackDeliveryMode,
   ReportTemplateDecisionRequest,
   ReportTemplateDraftRequest,
   ReportWriterAggregateFunction,
+  ReportWriterFilterDefinition,
+  ReportWriterFilterOperator,
   ReportWriterGridDefinition,
   ReportWriterGridKind,
   ReportWriterGridRender,
   ReportWriterMetricDefinition,
   RenderReportTemplateRequest,
+  ReportingScheduleUpsertRequest,
   ReportingWorkflowEvidenceLink
 } from "@/types";
 
@@ -66,8 +72,29 @@ interface ReportingCommandStatus {
 
 type ReportWriterDropZone = "rowFields" | "columnFields" | "metrics" | "formulas";
 type ReportWriterDraftState = Partial<Record<ReportWriterDropZone, ReportingWriterToken[]>>;
-type ReportWriterDraftSettingsField = "name" | "displayName" | "accessMode" | "principalKind" | "principalId";
+type ReportingScheduleArtifactFormat = Extract<GovernanceReportArtifactFormat, "Pdf" | "Xlsx" | "Csv">;
+type ReportWriterDraftSettingsField =
+  | "name"
+  | "displayName"
+  | "accessMode"
+  | "principalKind"
+  | "principalId"
+  | "filterField"
+  | "filterOperator"
+  | "filterValue";
 type ReportWriterCustomFormulaField = "name" | "label" | "expression";
+type ReportingScheduleDraftField =
+  | "scheduleId"
+  | "templateId"
+  | "cronExpression"
+  | "nextAsOfDate"
+  | "dueAtUtc"
+  | "maxRetries"
+  | "requestedBy"
+  | "description"
+  | "distributionId"
+  | "deliveryMode"
+  | "deliveryNote";
 
 interface ReportWriterDraftSettings {
   name: string;
@@ -75,6 +102,9 @@ interface ReportWriterDraftSettings {
   accessMode: ReportAccessMode;
   principalKind: ReportAccessPrincipalKind;
   principalId: string;
+  filterField: string;
+  filterOperator: ReportWriterFilterOperator;
+  filterValue: string;
 }
 
 interface ReportWriterCustomFormulaDraft {
@@ -82,6 +112,24 @@ interface ReportWriterCustomFormulaDraft {
   label: string;
   expression: string;
 }
+
+interface ReportingScheduleDraftState {
+  scheduleId: string;
+  templateId: string;
+  cronExpression: string;
+  nextAsOfDate: string;
+  dueAtUtc: string;
+  maxRetries: string;
+  requestedBy: string;
+  description: string;
+  distributionId: string;
+  deliveryMode: ReportPackDeliveryMode;
+  deliveryNote: string;
+  formats: Record<ReportingScheduleArtifactFormat, boolean>;
+}
+
+const reportingScheduleArtifactFormats: ReportingScheduleArtifactFormat[] = ["Pdf", "Xlsx", "Csv"];
+const reportingScheduleDeliveryModes: ReportPackDeliveryMode[] = ["SecurePortal", "EmailLink", "EvidenceVault", "InternalRoute"];
 
 const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
   {
@@ -135,6 +183,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
   const [templateRunStatus, setTemplateRunStatus] = useState<ReportingCommandStatus | null>(null);
   const [templateLifecycleStatus, setTemplateLifecycleStatus] = useState<ReportingCommandStatus | null>(null);
   const [scheduleActionStatus, setScheduleActionStatus] = useState<ReportingCommandStatus | null>(null);
+  const [scheduleDraft, setScheduleDraft] = useState<ReportingScheduleDraftState>(() => buildDefaultReportingScheduleDraft(data?.reporting ?? null));
   const [writerDrafts, setWriterDrafts] = useState<Record<string, ReportWriterDraftState>>({});
   const [writerDraftSettings, setWriterDraftSettings] = useState<Record<string, Partial<ReportWriterDraftSettings>>>({});
   const [writerCustomFormulas, setWriterCustomFormulas] = useState<Record<string, Partial<ReportWriterCustomFormulaDraft>>>({});
@@ -151,6 +200,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
   const runningBrandingThemeId = brandingPackStatus?.state === "running" ? brandingPackStatus.id : null;
   const reportingFundProfileId = resolveReportingFundProfileId(data?.reporting ?? null);
   const writerGrids = vm.templateRows.flatMap((template) => template.writerGrids);
+  const scheduleDistributionOptions = data?.reporting.reportPackDistributions ?? [];
 
   useEffect(() => {
     if (!shouldFocusReportPackProfile.current) {
@@ -330,6 +380,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
         [field]: value
       }
     }));
+    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
   }
 
   function updateWriterCustomFormula(
@@ -403,6 +454,15 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
       delete next[grid.id];
       return next;
     });
+    setWriterDraftSettings((current) => {
+      if (!current[grid.id]) {
+        return current;
+      }
+
+      const next = { ...current };
+      delete next[grid.id];
+      return next;
+    });
   }
 
   function getWriterCurrentZones(grid: ReportingWriterGridRow): Record<ReportWriterDropZone, ReportingWriterToken[]> {
@@ -462,7 +522,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
       return;
     }
 
-    const request = buildRenderReportTemplateRequest(grid, getWriterCurrentZones(grid));
+    const request = buildRenderReportTemplateRequest(grid, getWriterCurrentZones(grid), getWriterDraftSettings(grid));
     setWriterPreviewStatus({
       id: grid.id,
       label: "Preview report-writer grid",
@@ -550,6 +610,76 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
       setScheduleActionStatus({
         id: statusId,
         label,
+        state: "error",
+        message: display.summary,
+        details: display.details
+      });
+    }
+  }
+
+  function updateScheduleDraft(field: ReportingScheduleDraftField, value: string) {
+    setScheduleDraft((current) => ({
+      ...current,
+      [field]: field === "deliveryMode" ? normalizeReportingScheduleDeliveryMode(value) : value
+    } as ReportingScheduleDraftState));
+  }
+
+  function toggleScheduleDraftFormat(format: ReportingScheduleArtifactFormat, isSelected: boolean) {
+    setScheduleDraft((current) => ({
+      ...current,
+      formats: {
+        ...current.formats,
+        [format]: isSelected
+      }
+    }));
+  }
+
+  async function saveScheduleDraft() {
+    const statusId = "schedule-draft:save";
+    if (runningScheduleActionId) {
+      return;
+    }
+
+    const request = buildReportingScheduleUpsertRequest(scheduleDraft);
+    const formats = request.deliveryTargets?.[0]?.formats ?? [];
+    if (formats.length === 0) {
+      setScheduleActionStatus({
+        id: statusId,
+        label: "Save reporting schedule",
+        state: "error",
+        message: "Select at least one report artifact format before saving the schedule.",
+        details: ["PDF, XLSX, or CSV must be selected for scheduled delivery."]
+      });
+      return;
+    }
+
+    setScheduleActionStatus({
+      id: statusId,
+      label: "Save reporting schedule",
+      state: "running",
+      message: `${request.scheduleId} is saving.`,
+      details: []
+    });
+
+    try {
+      const result = await saveReportingSchedule(request);
+      const target = result.deliveryTargets?.[0] ?? request.deliveryTargets?.[0] ?? null;
+      setScheduleActionStatus({
+        id: statusId,
+        label: "Save reporting schedule",
+        state: "success",
+        message: `Reporting schedule ${result.scheduleId} saved.`,
+        details: [
+          `Template: ${result.templateId}`,
+          target ? `Delivery: ${target.distributionId} via ${target.deliveryMode ?? "SecurePortal"}` : "Delivery: no target",
+          `Formats: ${(target?.formats ?? formats).join(", ")}`
+        ]
+      });
+    } catch (error) {
+      const display = describeApiError(error, `${request.scheduleId} save failed.`);
+      setScheduleActionStatus({
+        id: statusId,
+        label: "Save reporting schedule",
         state: "error",
         message: display.summary,
         details: display.details
@@ -1304,6 +1434,160 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
             <CardDescription>{vm.scheduleSummary}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
+            <div role="group" aria-label="Schedule report distribution" className="rounded-md border border-border/70 bg-background/30 px-3 py-3">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <h4 className="text-sm font-semibold text-foreground">Schedule delivery</h4>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    Save or update governed report-pack schedules with PDF/XLSX/CSV delivery targets.
+                  </p>
+                </div>
+                <Badge variant="outline">{scheduleDraft.deliveryMode}</Badge>
+              </div>
+              <div className="mt-3 grid gap-2 md:grid-cols-3">
+                <label className="space-y-1">
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Schedule ID</span>
+                  <Input
+                    value={scheduleDraft.scheduleId}
+                    onChange={(event) => updateScheduleDraft("scheduleId", event.target.value)}
+                    aria-label="Reporting schedule ID"
+                    className="font-mono"
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Template ID</span>
+                  <Input
+                    value={scheduleDraft.templateId}
+                    onChange={(event) => updateScheduleDraft("templateId", event.target.value)}
+                    aria-label="Reporting schedule template ID"
+                    className="font-mono"
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Cron</span>
+                  <Input
+                    value={scheduleDraft.cronExpression}
+                    onChange={(event) => updateScheduleDraft("cronExpression", event.target.value)}
+                    aria-label="Reporting schedule cron expression"
+                    className="font-mono"
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Next as of</span>
+                  <Input
+                    value={scheduleDraft.nextAsOfDate}
+                    onChange={(event) => updateScheduleDraft("nextAsOfDate", event.target.value)}
+                    aria-label="Reporting schedule next as-of date"
+                    className="font-mono"
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Due UTC</span>
+                  <Input
+                    value={scheduleDraft.dueAtUtc}
+                    onChange={(event) => updateScheduleDraft("dueAtUtc", event.target.value)}
+                    aria-label="Reporting schedule due at UTC"
+                    className="font-mono"
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Retries</span>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={scheduleDraft.maxRetries}
+                    onChange={(event) => updateScheduleDraft("maxRetries", event.target.value)}
+                    aria-label="Reporting schedule max retries"
+                    className="font-mono"
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Requested by</span>
+                  <Input
+                    value={scheduleDraft.requestedBy}
+                    onChange={(event) => updateScheduleDraft("requestedBy", event.target.value)}
+                    aria-label="Reporting schedule requested by"
+                    className="font-mono"
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Distribution</span>
+                  <Select
+                    value={scheduleDraft.distributionId}
+                    onChange={(event) => updateScheduleDraft("distributionId", event.target.value)}
+                    aria-label="Reporting schedule distribution"
+                  >
+                    {scheduleDistributionOptions.some((target) => target.distributionId === scheduleDraft.distributionId) ? null : (
+                      <option value={scheduleDraft.distributionId}>{scheduleDraft.distributionId}</option>
+                    )}
+                    {scheduleDistributionOptions.map((target) => (
+                      <option key={target.distributionId} value={target.distributionId}>
+                        {target.recipient}
+                      </option>
+                    ))}
+                  </Select>
+                </label>
+                <label className="space-y-1">
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Delivery mode</span>
+                  <Select
+                    value={scheduleDraft.deliveryMode}
+                    onChange={(event) => updateScheduleDraft("deliveryMode", event.target.value)}
+                    aria-label="Reporting schedule delivery mode"
+                  >
+                    {reportingScheduleDeliveryModes.map((mode) => (
+                      <option key={mode} value={mode}>{mode}</option>
+                    ))}
+                  </Select>
+                </label>
+              </div>
+              <label className="mt-2 block space-y-1">
+                <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Description</span>
+                <Input
+                  value={scheduleDraft.description}
+                  onChange={(event) => updateScheduleDraft("description", event.target.value)}
+                  aria-label="Reporting schedule description"
+                />
+              </label>
+              <label className="mt-2 block space-y-1">
+                <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Delivery note</span>
+                <Input
+                  value={scheduleDraft.deliveryNote}
+                  onChange={(event) => updateScheduleDraft("deliveryNote", event.target.value)}
+                  aria-label="Reporting schedule delivery note"
+                />
+              </label>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                <div role="group" aria-label="Reporting schedule formats" className="flex flex-wrap gap-2">
+                  {reportingScheduleArtifactFormats.map((format) => (
+                    <label
+                      key={format}
+                      className="inline-flex items-center gap-2 rounded-sm border border-border/70 bg-secondary/25 px-2.5 py-1.5 text-xs text-foreground"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={scheduleDraft.formats[format]}
+                        onChange={(event) => toggleScheduleDraftFormat(format, event.target.checked)}
+                        aria-label={`Reporting schedule ${format} format`}
+                        className="h-3.5 w-3.5 accent-primary"
+                      />
+                      <span>{format}</span>
+                    </label>
+                  ))}
+                </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  busy={runningScheduleActionId === "schedule-draft:save"}
+                  busyLabel="Saving"
+                  disabled={Boolean(runningScheduleActionId)}
+                  onClick={() => void saveScheduleDraft()}
+                  aria-label="Save reporting schedule"
+                >
+                  <Send className="h-4 w-4" aria-hidden="true" />
+                  Save schedule
+                </Button>
+              </div>
+            </div>
             {vm.hasScheduleRows ? (
               <div role="list" aria-label={vm.scheduleListLabel} className="space-y-2">
                 {vm.scheduleRows.map((schedule) => (
@@ -1409,8 +1693,12 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                         <ReportingScheduleField label="As of" value={plan.nextAsOfLabel} />
                         <ReportingScheduleField label="Owner" value={plan.ownerLabel} />
                         <ReportingScheduleField label="Last delivery" value={plan.lastDeliveryLabel} />
+                        <ReportingScheduleField label="Artifact integrity" value={plan.integrityLabel} />
                         <ReportingScheduleField label="Schedule" value={plan.scheduleId} />
                       </dl>
+                      {plan.integritySummary ? (
+                        <p className="mt-2 text-xs leading-5 text-muted-foreground">{plan.integritySummary}</p>
+                      ) : null}
                       {plan.note ? (
                         <p className="mt-2 text-xs leading-5 text-muted-foreground">{plan.note}</p>
                       ) : null}
@@ -1486,6 +1774,23 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                         <p className="break-all font-mono text-[11px]">
                           {attempt.package.retainedManifestPath}
                         </p>
+                        {attempt.package.artifacts.some((artifact) => artifact.downloadRoute) ? (
+                          <ul aria-label={`${attempt.recipient} package artifact downloads`} className="flex flex-wrap gap-2 pt-1">
+                            {attempt.package.artifacts
+                              .filter((artifact) => artifact.downloadRoute)
+                              .map((artifact) => (
+                                <li key={`${attempt.attemptId}-${artifact.artifactName}`}>
+                                  <a
+                                    className="break-all font-mono text-[11px] text-primary underline-offset-2 hover:underline"
+                                    href={artifact.downloadRoute ?? undefined}
+                                    aria-label={`Download ${artifact.artifactName}`}
+                                  >
+                                    {artifact.artifactName}
+                                  </a>
+                                </li>
+                              ))}
+                          </ul>
+                        ) : null}
                       </div>
                     ) : null}
                     {attempt.failureReason ? <p className="mt-1 text-xs text-warning">{attempt.failureReason}</p> : null}
@@ -2193,7 +2498,11 @@ function ReportWriterDesignerGrid({
       </div>
       <p className="mt-2 text-xs leading-5 text-muted-foreground">{grid.summary}</p>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-        <span className="font-mono text-[11px] text-muted-foreground">{grid.sortLabel}</span>
+        <span className="flex flex-wrap items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
+          <span>{grid.sortLabel}</span>
+          <span aria-hidden="true">·</span>
+          <span>{grid.filterSummary}</span>
+        </span>
         <Button
           type="button"
           size="sm"
@@ -2257,6 +2566,65 @@ function ReportWriterDesignerGrid({
               aria-label={`${grid.title} draft principal id`}
               className="font-mono"
               disabled={settings.accessMode === "CompanyWide"}
+            />
+          </label>
+        </div>
+      </div>
+      <div className="mt-3 rounded-md border border-border/70 bg-background/25 px-2.5 py-2">
+        <div className="flex items-center gap-1.5">
+          <Filter className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+          <div className="eyebrow-label">Filter</div>
+        </div>
+        {grid.filters.length > 0 ? (
+          <div className="mt-2 flex flex-wrap gap-1.5" aria-label={`${grid.title} saved filters`}>
+            {grid.filters.map((filter) => (
+              <Badge key={filter.id} variant="outline">{filter.summary}</Badge>
+            ))}
+          </div>
+        ) : null}
+        <div className="mt-2 grid gap-2 md:grid-cols-[1fr_0.8fr_1fr]">
+          <label className="space-y-1">
+            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Field</span>
+            <Select
+              value={settings.filterField}
+              onChange={(event) => onSettingsChange(grid, "filterField", event.target.value)}
+              aria-label={`${grid.title} filter field`}
+            >
+              <option value="">No filter</option>
+              {grid.sourceFields.map((field) => (
+                <option key={field.id} value={field.fieldName ?? field.label}>{field.label}</option>
+              ))}
+            </Select>
+          </label>
+          <label className="space-y-1">
+            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Operator</span>
+            <Select
+              value={settings.filterOperator}
+              onChange={(event) => onSettingsChange(grid, "filterOperator", event.target.value)}
+              aria-label={`${grid.title} filter operator`}
+              disabled={!settings.filterField}
+            >
+              <option value="Equals">=</option>
+              <option value="NotEquals">!=</option>
+              <option value="Contains">Contains</option>
+              <option value="StartsWith">Starts with</option>
+              <option value="EndsWith">Ends with</option>
+              <option value="GreaterThan">&gt;</option>
+              <option value="GreaterThanOrEqual">&gt;=</option>
+              <option value="LessThan">&lt;</option>
+              <option value="LessThanOrEqual">&lt;=</option>
+              <option value="IsBlank">Is blank</option>
+              <option value="IsNotBlank">Is not blank</option>
+            </Select>
+          </label>
+          <label className="space-y-1">
+            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Value</span>
+            <Input
+              value={settings.filterValue}
+              onChange={(event) => onSettingsChange(grid, "filterValue", event.target.value)}
+              aria-label={`${grid.title} filter value`}
+              className="font-mono"
+              disabled={!settings.filterField || isBlankFilterOperator(settings.filterOperator)}
             />
           </label>
         </div>
@@ -2378,6 +2746,7 @@ function ReportWriterDesignerGrid({
 
 function ReportWriterPreviewTable({ grid, preview }: { grid: ReportingWriterGridRow; preview: ReportWriterGridRender }) {
   const rows = preview.rows.slice(0, 5);
+  const lineage = preview.lineage;
   return (
     <div className="mt-3 rounded-md border border-border/70 bg-background/35 px-2.5 py-2" aria-label={`${grid.title} live preview`}>
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -2417,6 +2786,47 @@ function ReportWriterPreviewTable({ grid, preview }: { grid: ReportingWriterGrid
           </tbody>
         </table>
       </div>
+      {lineage ? (
+        <div className="mt-2 rounded-sm border border-border/60 bg-secondary/25 px-2 py-2 text-xs" aria-label={`${grid.title} preview audit trace`}>
+          <div className="eyebrow-label">Audit trace</div>
+          <dl className="mt-2 grid gap-2 sm:grid-cols-2">
+            <div>
+              <dt className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Rows</dt>
+              <dd className="mt-1 font-mono text-foreground">
+                {lineage.inputRowCount} input / {lineage.filteredInputRowCount ?? lineage.inputRowCount} filtered / {lineage.outputRowCount} output
+              </dd>
+            </div>
+            <div>
+              <dt className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Sources</dt>
+              <dd className="mt-1 break-words font-mono text-foreground">{lineage.sourceFields.length > 0 ? lineage.sourceFields.join(", ") : "None"}</dd>
+            </div>
+            <div>
+              <dt className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Metrics</dt>
+              <dd className="mt-1 break-words font-mono text-foreground">
+                {lineage.metrics.length > 0
+                  ? lineage.metrics.map((metric) => `${metric.name}=${metric.function}(${metric.sourceField})`).join(", ")
+                  : "None"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Formulas</dt>
+              <dd className="mt-1 break-words font-mono text-foreground">
+                {lineage.formulas.length > 0
+                  ? lineage.formulas.map((formula) => `${formula.name}=[${formula.sourceFields.join(", ")}]`).join(", ")
+                  : "None"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Filters</dt>
+              <dd className="mt-1 break-words font-mono text-foreground">
+                {lineage.filters && lineage.filters.length > 0
+                  ? lineage.filters.map((filter) => `${filter.field} ${formatReportWriterFilterOperator(normalizeReportWriterFilterOperator(filter.operator))}${filter.value ? ` ${filter.value}` : ""}`).join(", ")
+                  : "None"}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      ) : null}
       {preview.warnings.length > 0 ? (
         <ul className="mt-2 space-y-1 text-xs text-warning">
           {preview.warnings.map((warning) => (
@@ -2508,12 +2918,16 @@ function clearWriterPreview(
 }
 
 function buildDefaultWriterDraftSettings(grid: ReportingWriterGridRow): ReportWriterDraftSettings {
+  const firstFilter = grid.filters[0] ?? null;
   return {
     name: grid.templateId,
     displayName: `${grid.title} Draft`,
     accessMode: "CompanyWide",
     principalKind: "Group",
-    principalId: "reporting-ops"
+    principalId: "reporting-ops",
+    filterField: firstFilter?.field ?? "",
+    filterOperator: normalizeReportWriterFilterOperator(firstFilter?.operator),
+    filterValue: firstFilter?.value ?? ""
   };
 }
 
@@ -2561,7 +2975,7 @@ function buildReportTemplateDraftRequest(
   settings: ReportWriterDraftSettings,
   zones: Record<ReportWriterDropZone, ReportingWriterToken[]>
 ): ReportTemplateDraftRequest {
-  const gridDefinition = buildReportWriterGridDefinition(grid, zones);
+  const gridDefinition = buildReportWriterGridDefinition(grid, zones, settings);
   return {
     name: normalizeDraftText(settings.name, `${grid.templateId}-draft`),
     displayName: normalizeDraftText(settings.displayName, `${grid.title} Draft`),
@@ -2577,9 +2991,10 @@ function buildReportTemplateDraftRequest(
 
 function buildRenderReportTemplateRequest(
   grid: ReportingWriterGridRow,
-  zones: Record<ReportWriterDropZone, ReportingWriterToken[]>
+  zones: Record<ReportWriterDropZone, ReportingWriterToken[]>,
+  settings: ReportWriterDraftSettings
 ): RenderReportTemplateRequest {
-  const gridDefinition = buildReportWriterGridDefinition(grid, zones);
+  const gridDefinition = buildReportWriterGridDefinition(grid, zones, settings);
   return {
     templateId: {
       name: grid.templateId,
@@ -2597,7 +3012,8 @@ function buildRenderReportTemplateRequest(
 
 function buildReportWriterGridDefinition(
   grid: ReportingWriterGridRow,
-  zones: Record<ReportWriterDropZone, ReportingWriterToken[]>
+  zones: Record<ReportWriterDropZone, ReportingWriterToken[]>,
+  settings: ReportWriterDraftSettings
 ): ReportWriterGridDefinition {
   return {
     gridId: grid.gridId,
@@ -2609,7 +3025,8 @@ function buildReportWriterGridDefinition(
     formulas: normalizeWriterFormulas(zones.formulas),
     topN: grid.kind === "TopN" ? grid.topN ?? 10 : grid.topN,
     sortBy: grid.sortBy,
-    sortDescending: grid.sortDescending
+    sortDescending: grid.sortDescending,
+    filters: buildWriterFilters(settings)
   };
 }
 
@@ -2626,8 +3043,10 @@ function buildReportWriterPreviewRows(grid: ReportWriterGridDefinition): Record<
     ...(grid.sortBy ? [grid.sortBy] : [])
   ]).filter((field) => !dimensionFields.some((dimension) => dimension.toLowerCase() === field.toLowerCase()));
   const fields = normalizeStringList([...dimensionFields, ...numericFields]);
+  const filters = grid.filters ?? [];
+  const filterFields = normalizeStringList(filters.map((filter) => filter.field));
 
-  if (fields.length === 0) {
+  if (fields.length === 0 && filterFields.length === 0) {
     return [{ previewRow: "1" }, { previewRow: "2" }];
   }
 
@@ -2639,6 +3058,14 @@ function buildReportWriterPreviewRows(grid: ReportWriterGridDefinition): Record<
 
     for (const field of numericFields) {
       row[field] = previewNumericValue(field, index);
+    }
+
+    for (const filter of filters) {
+      if (!filter.field) {
+        continue;
+      }
+
+      row[filter.field] = previewFilterValue(filter, index);
     }
 
     return row;
@@ -2667,6 +3094,32 @@ function buildReportAccessPolicy(settings: ReportWriterDraftSettings): ReportTem
     ],
     allowOwnerAccess: true
   };
+}
+
+function buildWriterFilters(settings: ReportWriterDraftSettings): ReportWriterFilterDefinition[] | null {
+  const field = normalizeDraftText(settings.filterField, "");
+  if (!field) {
+    return null;
+  }
+
+  const operator = normalizeReportWriterFilterOperator(settings.filterOperator);
+  const value = isBlankFilterOperator(operator)
+    ? null
+    : normalizeDraftText(settings.filterValue, "");
+  if (!isBlankFilterOperator(operator) && !value) {
+    return null;
+  }
+
+  return [
+    {
+      field,
+      operator,
+      value,
+      label: isBlankFilterOperator(operator)
+        ? `${field} ${formatReportWriterFilterOperator(operator)}`
+        : `${field} ${formatReportWriterFilterOperator(operator)} ${value}`
+    }
+  ];
 }
 
 function normalizeWriterMetrics(tokens: ReportingWriterToken[]): ReportWriterMetricDefinition[] {
@@ -2794,6 +3247,43 @@ function previewNumericValue(field: string, index: number): string {
   return String((index + 1) * 10);
 }
 
+function previewFilterValue(filter: ReportWriterFilterDefinition, index: number): string {
+  const operator = normalizeReportWriterFilterOperator(filter.operator);
+  const value = filter.value ?? "";
+  if (operator === "IsBlank") {
+    return index === 0 ? "" : previewDimensionValue(filter.field, index);
+  }
+
+  if (operator === "IsNotBlank") {
+    return index === 0 ? previewDimensionValue(filter.field, index) : "";
+  }
+
+  if (["GreaterThan", "GreaterThanOrEqual", "LessThan", "LessThanOrEqual"].includes(operator)) {
+    const numeric = Number.parseFloat(value);
+    if (Number.isFinite(numeric)) {
+      return index < 2 ? String(numeric + 10 + index) : String(numeric - 10 - index);
+    }
+  }
+
+  if (operator === "Contains") {
+    return index < 2 ? `Preview ${value} ${index + 1}` : `Other ${index + 1}`;
+  }
+
+  if (operator === "StartsWith") {
+    return index < 2 ? `${value}${index + 1}` : `Other ${index + 1}`;
+  }
+
+  if (operator === "EndsWith") {
+    return index < 2 ? `Preview ${index + 1}${value}` : `Other ${index + 1}`;
+  }
+
+  if (operator === "NotEquals") {
+    return index < 2 ? `${value}-alternate-${index + 1}` : value;
+  }
+
+  return index < 2 ? value : previewDimensionValue(filter.field, index);
+}
+
 function formatPreviewFieldLabel(field: string): string {
   const spaced = field
     .replace(/[_-]+/g, " ")
@@ -2818,6 +3308,74 @@ function normalizeReportWriterGridKind(kind: string): ReportWriterGridKind {
     default:
       return "Pivot";
   }
+}
+
+function normalizeReportWriterFilterOperator(value: ReportWriterFilterOperator | string | null | undefined): ReportWriterFilterOperator {
+  switch ((value ?? "").toString().toLowerCase()) {
+    case "notequals":
+    case "not-equals":
+      return "NotEquals";
+    case "contains":
+      return "Contains";
+    case "startswith":
+    case "starts-with":
+      return "StartsWith";
+    case "endswith":
+    case "ends-with":
+      return "EndsWith";
+    case "greaterthan":
+    case "greater-than":
+      return "GreaterThan";
+    case "greaterthanorequal":
+    case "greater-than-or-equal":
+      return "GreaterThanOrEqual";
+    case "lessthan":
+    case "less-than":
+      return "LessThan";
+    case "lessthanorequal":
+    case "less-than-or-equal":
+      return "LessThanOrEqual";
+    case "isblank":
+    case "is-blank":
+      return "IsBlank";
+    case "isnotblank":
+    case "is-not-blank":
+      return "IsNotBlank";
+    default:
+      return "Equals";
+  }
+}
+
+function formatReportWriterFilterOperator(operator: ReportWriterFilterOperator): string {
+  switch (operator) {
+    case "NotEquals":
+      return "!=";
+    case "Contains":
+      return "contains";
+    case "StartsWith":
+      return "starts with";
+    case "EndsWith":
+      return "ends with";
+    case "GreaterThan":
+      return ">";
+    case "GreaterThanOrEqual":
+      return ">=";
+    case "LessThan":
+      return "<";
+    case "LessThanOrEqual":
+      return "<=";
+    case "IsBlank":
+      return "is blank";
+    case "IsNotBlank":
+      return "is not blank";
+    default:
+      return "=";
+  }
+}
+
+function isBlankFilterOperator(operator: ReportWriterFilterOperator | string): boolean {
+  const normalized = normalizeReportWriterFilterOperator(operator);
+  return normalized === "IsBlank" || normalized === "IsNotBlank";
 }
 
 function normalizeAggregateFunction(value: ReportWriterAggregateFunction | string | null | undefined): ReportWriterAggregateFunction {

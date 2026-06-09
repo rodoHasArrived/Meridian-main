@@ -184,7 +184,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     public void UserProfileRegistry_MultiUser_CustomPermissionsOverrideBuiltInRolePermissions()
     {
         var usersJson = $$"""
-            [{"username":"ledger-admin","passwordHash":"{{PwHash}}","role":"Accounting","roleProfileName":"Ledger Admin","permissions":["ViewTrades","ViewAnalytics","ViewConfig","ModifyConfig"]}]
+            [{"username":"ledger-admin","passwordHash":"{{PwHash}}","role":"Accounting","roleProfileName":"Ledger Admin","companyId":"company-alpha","permissions":["ViewTrades","ViewAnalytics","ViewConfig","ModifyConfig"]}]
             """;
         Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
 
@@ -197,6 +197,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
             profile.Should().NotBeNull();
             profile!.Role.Should().Be(UserRole.Accounting);
             profile.RoleProfileName.Should().Be("Ledger Admin");
+            profile.CompanyId.Should().Be("company-alpha");
             profile.Permissions.Should().HaveFlag(UserPermission.ModifyConfig);
             profile.Permissions.Should().NotHaveFlag(UserPermission.ManageDirectLending);
         }
@@ -428,13 +429,16 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
                 PasswordResetRequired: false,
                 RequestedBy: "security-admin",
                 Rationale: "Create governed account.",
-                CorrelationId: "account-create-test"),
+                CorrelationId: "account-create-test",
+                CompanyId: "company-alpha"),
             actor: "security-admin");
 
         created.Account.Username.Should().Be("ops-admin");
+        created.Account.CompanyId.Should().Be("company-alpha");
         var accountPath = Path.Combine(artifacts.RootPath, "governance", "user-accounts.json");
         var accountJson = await File.ReadAllTextAsync(accountPath);
         accountJson.Should().Contain("pbkdf2-sha256");
+        accountJson.Should().Contain("company-alpha");
         accountJson.Should().NotContain("create-secret");
 
         var reset = await store.ResetPasswordAsync(
@@ -629,7 +633,7 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
     [Fact]
     public async Task AuthMe_AfterLogin_ReturnsCurrentUserProfile()
     {
-        var usersJson = $$"""[{"username":"analyst","passwordHash":"{{A1Hash}}","role":"Analysis"}]""";
+        var usersJson = $$"""[{"username":"analyst","passwordHash":"{{A1Hash}}","role":"Analysis","companyId":"company-alpha"}]""";
         Environment.SetEnvironmentVariable("MDC_USERS", usersJson);
         try
         {
@@ -661,6 +665,8 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
             username.GetString().Should().Be("analyst");
             meBody.TryGetProperty("role", out var role).Should().BeTrue();
             role.GetString().Should().Be("Analysis");
+            meBody.TryGetProperty("companyId", out var companyId).Should().BeTrue();
+            companyId.GetString().Should().Be("company-alpha");
         }
         finally
         {
@@ -743,19 +749,26 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
                 PasswordResetRequired: false,
                 RequestedBy: "account-admin",
                 Rationale: "Create account through product administration.",
-                CorrelationId: "auth-account-create"));
+                CorrelationId: "auth-account-create",
+                CompanyId: "company-alpha"));
         createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var createBody = await createResponse.Content.ReadFromJsonAsync<UserAccountMutationResultDto>(JsonOptions);
+        createBody.Should().NotBeNull();
+        createBody!.Account.CompanyId.Should().Be("company-alpha");
 
         var listResponse = await adminClient.GetAsync("/api/auth/accounts");
         listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var listJson = await listResponse.Content.ReadAsStringAsync();
         listJson.Should().Contain(username);
+        listJson.Should().Contain("company-alpha");
         listJson.Should().NotContain("passwordHash");
         listJson.Should().NotContain("initial-pass");
 
         using var sessionClient = Fixture.CreateNoRedirectClient();
         var loginResponse = await sessionClient.PostAsJsonAsync("/api/auth/login", new { Username = username, Password = "initial-pass" });
         loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var loginBody = await loginResponse.Content.ReadFromJsonAsync<JsonElement>(JsonOpts);
+        loginBody.GetProperty("companyId").GetString().Should().Be("company-alpha");
         var sessionCookie = loginResponse.Headers
             .Where(header => header.Key.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase))
             .SelectMany(header => header.Value)

@@ -78,7 +78,8 @@ public sealed class FileUserAccountStore : IUserAccountStore
                 account.RoleProfileName,
                 account.PermissionNames,
                 account.IsDisabled,
-                account.PasswordResetRequired))
+                account.PasswordResetRequired,
+                account.CompanyId))
             .ToArray();
 
     public Task<IReadOnlyList<UserAccountDto>> GetAccountsAsync(CancellationToken ct = default)
@@ -146,6 +147,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
             request.Role,
             request.RoleProfileName,
             request.PermissionNames,
+            request.CompanyId,
             request.RequestedBy,
             request.Rationale,
             actor);
@@ -170,6 +172,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
                 PasswordHash: passwordHash,
                 Role: validated.Role,
                 RoleProfileName: validated.RoleProfileName,
+                CompanyId: validated.CompanyId,
                 PermissionNames: validated.PermissionNames,
                 IsDisabled: request.IsDisabled ?? existing?.IsDisabled ?? false,
                 PasswordResetRequired: request.PasswordResetRequired,
@@ -423,6 +426,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
         string role,
         string? roleProfileName,
         IReadOnlyList<string>? permissionNames,
+        string? companyId,
         string requestedBy,
         string rationale,
         string actor)
@@ -455,6 +459,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
             AccountKey(normalizedUsername),
             parsedRole.ToString(),
             string.IsNullOrWhiteSpace(roleProfileName) ? null : roleProfileName.Trim(),
+            string.IsNullOrWhiteSpace(companyId) ? null : companyId.Trim(),
             resolvedPermissionNames,
             permissions,
             ResolveActor(actor, requestedBy),
@@ -493,6 +498,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
             Username: account.Username,
             Role: role.ToString(),
             RoleProfileName: account.RoleProfileName,
+            CompanyId: account.CompanyId,
             PermissionNames: permissionNames,
             PermissionMask: (long)permissions,
             IsDisabled: account.IsDisabled,
@@ -529,7 +535,8 @@ public sealed class FileUserAccountStore : IUserAccountStore
             account.PermissionMask,
             account.IsDisabled,
             account.PasswordResetRequired,
-            revokedSessionCount);
+            revokedSessionCount,
+            account.CompanyId);
 
     private static UserRole ParseRole(string role)
         => Enum.TryParse<UserRole>(role, ignoreCase: true, out var parsed) ? parsed : UserRole.ReadOnly;
@@ -573,6 +580,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
         string PasswordHash,
         string Role,
         string? RoleProfileName,
+        string? CompanyId,
         IReadOnlyList<string> PermissionNames,
         bool IsDisabled,
         bool PasswordResetRequired,
@@ -590,6 +598,7 @@ public sealed class FileUserAccountStore : IUserAccountStore
         string AccountKey,
         string Role,
         string? RoleProfileName,
+        string? CompanyId,
         IReadOnlyList<string> PermissionNames,
         UserPermission Permissions,
         string Actor,

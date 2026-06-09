@@ -45,7 +45,7 @@ internal static class PrivateCapitalCapitalAccountSubledgerBuilder
     {
         var account = capitalAccounts.FirstOrDefault(item => MatchesKey(item.CapitalAccountId, item.InvestorId, item.Currency, key));
         var records = fundEventRecords
-            .Where(item => MatchesKey(item.CapitalAccountId, item.InvestorId, item.Currency, key))
+            .Where(item => MatchesFundEventRecordKey(item, key))
             .OrderByDescending(static item => item.EffectiveDate)
             .ThenBy(static item => item.FundEventId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -60,7 +60,9 @@ internal static class PrivateCapitalCapitalAccountSubledgerBuilder
             .ThenBy(static item => item.LedgerImpactId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var outputs = reportOutputs
-            .Where(item => MatchesKey(item.CapitalAccountId, item.InvestorId, item.Currency, key))
+            .Where(item => MatchesKey(item.CapitalAccountId, item.InvestorId, item.Currency, key) ||
+                (IsEventLevelReportOutput(item) &&
+                 entries.Any(entry => string.Equals(entry.FundEventId, item.FundEventId, StringComparison.OrdinalIgnoreCase))))
             .OrderByDescending(static item => item.IsPublished)
             .ThenByDescending(static item => item.IsReportReady)
             .ThenBy(static item => item.EffectiveDate)
@@ -103,6 +105,11 @@ internal static class PrivateCapitalCapitalAccountSubledgerBuilder
             .OrderByDescending(static item => item.EffectiveDate)
             .ThenBy(static item => item.FundEventId, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault();
+        var evidenceCategories = PrivateCapitalEvidenceCategoryBuilder.BuildForCapitalAccountSubledger(
+            records,
+            entries,
+            impacts,
+            outputs);
 
         return new PrivateCapitalCapitalAccountSubledgerDto(
             $"capital-account-subledger:{key.CapitalAccountId}:{key.InvestorId ?? "unassigned"}:{key.Currency}".ToLowerInvariant(),
@@ -141,7 +148,8 @@ internal static class PrivateCapitalCapitalAccountSubledgerBuilder
             entries,
             impacts,
             outputs,
-            validationIssues);
+            validationIssues,
+            EvidenceCategories: evidenceCategories);
     }
 
     private static IReadOnlyList<CapitalAccountSubledgerKey> BuildKeys(
@@ -166,6 +174,15 @@ internal static class PrivateCapitalCapitalAccountSubledgerBuilder
         => string.Equals(capitalAccountId, key.CapitalAccountId, StringComparison.OrdinalIgnoreCase) &&
            string.Equals(investorId ?? string.Empty, key.InvestorId ?? string.Empty, StringComparison.OrdinalIgnoreCase) &&
            string.Equals(currency, key.Currency, StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsEventLevelReportOutput(PrivateCapitalReportOutputDto output)
+        => string.Equals(output.CapitalAccountId, "capital-account:unassigned", StringComparison.OrdinalIgnoreCase);
+
+    private static bool MatchesFundEventRecordKey(
+        PrivateCapitalFundEventLedgerRecordDto record,
+        CapitalAccountSubledgerKey key)
+        => MatchesKey(record.CapitalAccountId, record.InvestorId, record.Currency, key) ||
+           record.CapitalAccountSubledgerEntries.Any(entry => MatchesKey(entry.CapitalAccountId, entry.InvestorId, entry.Currency, key));
 
     private static bool MatchesValidationIssue(
         AccountingConfigurationValidationIssueDto issue,

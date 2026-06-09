@@ -101,6 +101,11 @@ Use this compact claim status model for stakeholder-facing updates:
 
 ## Current Supportability Claims
 
+- Source review on 2026-06-09 confirms the active W1-W5 support surface is centered on accounting configuration, manual journal entry workbenches, private-capital fund-event ledger records, capital-account subledgers, retained evidence categories, governed report outputs, report-pack delivery/readiness, report-writer grids, and company-scoped access metadata.
+- `src/Meridian.Contracts/`, `src/Meridian.Ledger/`, `src/Meridian.Reporting/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Ui/dashboard/`, and `src/Meridian.Wpf/` now carry the shared source seams for those workflows; browser and WPF surfaces should consume those seams instead of forking product state.
+- External GL and provider systems remain source evidence or integration context unless a route explicitly posts Meridian-owned records. Meridian-owned ledger entries, retained source evidence, approvals, documents, and report outputs are the operational record.
+- Mobile remains closed. Responsive browser validation is allowed for the browser workstation, but there is no native mobile, MAUI, React Native, Flutter, or mobile-first workflow lane.
+
 ## Current Wave Posture
 
 - W1-W5 are closed baselines in the registry and treated as the coherent near-term operational record release unless a later registry change says otherwise.

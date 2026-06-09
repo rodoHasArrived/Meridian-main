@@ -560,7 +560,13 @@ public sealed class EvidenceWorkflowFabricTests
                 artifact.Kind == "capital-account-subledger-route" &&
                 artifact.Route!.Contains("/api/ledger/private-capital/capital-account-subledger", StringComparison.OrdinalIgnoreCase)));
         packet.Nodes.Should().Contain(node => node.Kind == "ledger-impact" && node.Status == EvidenceStatusDto.Ready);
-        packet.Nodes.Should().Contain(node => node.Kind == "report-output" && node.Status == EvidenceStatusDto.Ready);
+        packet.Nodes.Should().Contain(node =>
+            node.Kind == "report-output" &&
+            node.Status == EvidenceStatusDto.Ready &&
+            node.ArtifactRefs.Any(artifact =>
+                artifact.Kind == "report-output-route" &&
+                artifact.Route!.Contains("/api/ledger/private-capital/report-output", StringComparison.OrdinalIgnoreCase) &&
+                artifact.Route.Contains("reportOutputId=report-output%3Afund-event%3Afund-alpha%3Acapital-call%3A20260630", StringComparison.OrdinalIgnoreCase)));
         packet.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
         packet.Completeness.MissingIds.Should().BeEmpty();
 
@@ -1664,7 +1670,8 @@ public sealed class EvidenceWorkflowFabricTests
             1,
             ["/evidence/fund-alpha/capital-call.pdf"],
             IsReportReady: true,
-            []);
+            [],
+            ReportOutputRoute: "/api/ledger/private-capital/report-output?fundProfileId=fund-alpha&reportOutputId=report-output%3Afund-event%3Afund-alpha%3Acapital-call%3A20260630&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1");
         var capitalAccount = new PrivateCapitalCapitalAccountActivityDto(
             fundEvent.CapitalAccountId,
             fundEvent.InvestorId,

@@ -729,6 +729,30 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
     private const decimal BalanceTolerance = 0.000001m;
     private static readonly IReadOnlyDictionary<Guid, string> EmptyJournalEntryCurrencies = new Dictionary<Guid, string>();
 
+    private sealed record PrivateCapitalCapitalAccountSubledgerSource(
+        string SubledgerEntryId,
+        string CapitalAccountId,
+        string? InvestorId,
+        string Currency,
+        string FundEventId,
+        string FundEventType,
+        ManualJournalEntryTypeDto EntryType,
+        ManualJournalEntryStatusDto ApprovalState,
+        Guid JournalEntryId,
+        DateOnly EffectiveDate,
+        decimal GrossAmount,
+        decimal NetCapitalActivity,
+        string Memo,
+        IReadOnlyList<string> EvidenceLinks,
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
+        DateTimeOffset UpdatedAtUtc,
+        bool IsPosted);
+
+    private sealed record PrivateCapitalReportOutputAccountScope(
+        string CapitalAccountId,
+        string? InvestorId,
+        decimal NetCapitalActivity);
+
     private readonly IManualJournalEntryDraftStore _draftStore;
     private readonly IAccountingConfigurationService _configurationService;
     private readonly IAccountingActionAuditStore _auditStore;
@@ -866,24 +890,31 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             .ThenBy(item => item.FundEventId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var postedJournalEntryCurrencies = postedProjection?.JournalEntryCurrencies ?? EmptyJournalEntryCurrencies;
-        var postedEvents = (postedProjection?.Projection.Events ?? [])
+        var postedLedgerEvents = postedProjection?.Projection.Events ?? [];
+        var postedEvents = postedLedgerEvents
             .Select(item => MapPostedFundEvent(item, postedJournalEntryCurrencies))
             .ToArray();
         var postedEventIds = postedEvents
             .Select(static item => item.FundEventId)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var combinedFundEvents = orderedFundEvents
+        var activeDraftFundEvents = orderedFundEvents
             .Where(item => !postedEventIds.Contains(item.FundEventId))
+            .ToArray();
+        var combinedFundEvents = activeDraftFundEvents
             .Concat(postedEvents)
             .OrderByDescending(item => item.EffectiveDate)
             .ThenByDescending(item => item.UpdatedAtUtc)
             .ThenBy(item => item.FundEventId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var capitalAccounts = BuildCapitalAccounts(combinedFundEvents);
-        var capitalAccountSubledgerEntries = BuildCapitalAccountSubledgerEntries(combinedFundEvents);
+        var capitalAccountSubledgerEntries = BuildCapitalAccountSubledgerEntries(
+            activeDraftFundEvents
+                .Select(MapFundEventSubledgerSource)
+                .Concat(postedLedgerEvents.SelectMany(item => MapPostedCapitalAccountSubledgerSources(item, postedJournalEntryCurrencies)))
+                .ToArray());
+        var capitalAccounts = BuildCapitalAccounts(capitalAccountSubledgerEntries);
         var orderedLedgerImpacts = ledgerImpacts
             .Where(item => !postedEventIds.Contains(item.FundEventId))
-            .Concat((postedProjection?.Projection.Events ?? []).SelectMany(item => MapPostedLedgerImpacts(item, postedJournalEntryCurrencies)))
+            .Concat(postedLedgerEvents.SelectMany(item => MapPostedLedgerImpacts(item, postedJournalEntryCurrencies)))
             .OrderByDescending(item => item.EffectiveDate)
             .ThenBy(item => item.FundEventId, StringComparer.OrdinalIgnoreCase)
             .ThenBy(item => item.JournalEntryId)
@@ -895,15 +926,15 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var postingReadyByFundEventId = BuildPostingReadyByFundEventId(orderedLedgerImpacts);
         var reportOutputs = orderedFundEvents
             .Where(item => !postedEventIds.Contains(item.FundEventId))
-            .Select(item => BuildPrivateCapitalReportOutput(fundProfileId, item, postingReadyByFundEventId))
-            .Concat(BuildPostedReportOutputs(fundProfileId, postedProjection?.Projection.Events ?? [], postedJournalEntryCurrencies, reportPackWorkflowRecords))
+            .Select(item => BuildPrivateCapitalReportOutput(fundProfileId, ledgerBookId, item, postingReadyByFundEventId))
+            .Concat(BuildPostedReportOutputs(fundProfileId, ledgerBookId, postedLedgerEvents, postedJournalEntryCurrencies, reportPackWorkflowRecords))
             .OrderByDescending(item => item.EffectiveDate)
             .ThenBy(item => item.ReportOutputType, StringComparer.OrdinalIgnoreCase)
             .ThenBy(item => item.ReportOutputId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var publishedReportOutputCount = CountPublishedReportOutputs(
             fundProfileId,
-            postedProjection?.Projection.Events ?? [],
+            postedLedgerEvents,
             reportPackWorkflowRecords);
         var fundEventRecords = PrivateCapitalFundEventLedgerRecordBuilder.Build(
             fundProfileId,
@@ -1014,8 +1045,8 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
     }
 
     private static IReadOnlyList<PrivateCapitalCapitalAccountActivityDto> BuildCapitalAccounts(
-        IReadOnlyList<PrivateCapitalFundEventDto> fundEvents)
-        => fundEvents
+        IReadOnlyList<PrivateCapitalCapitalAccountSubledgerEntryDto> subledgerEntries)
+        => subledgerEntries
             .GroupBy(item => new { item.CapitalAccountId, item.InvestorId, item.Currency })
             .Select(group =>
             {
@@ -1033,7 +1064,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                     group.Where(item => item.EntryType == ManualJournalEntryTypeDto.Redemption).Sum(item => Math.Abs(item.NetCapitalActivity)),
                     group.Where(item => item.EntryType == ManualJournalEntryTypeDto.ManagementFee).Sum(item => Math.Abs(item.NetCapitalActivity)),
                     group.Sum(item => item.NetCapitalActivity),
-                    group.Count(),
+                    group.Select(static item => item.FundEventId).Distinct(StringComparer.OrdinalIgnoreCase).Count(),
                     ordered[0].EffectiveDate,
                     ordered[0].FundEventType,
                     group
@@ -1048,10 +1079,10 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             .ToArray();
 
     private static IReadOnlyList<PrivateCapitalCapitalAccountSubledgerEntryDto> BuildCapitalAccountSubledgerEntries(
-        IReadOnlyList<PrivateCapitalFundEventDto> fundEvents)
+        IReadOnlyList<PrivateCapitalCapitalAccountSubledgerSource> sources)
     {
         var entries = new List<PrivateCapitalCapitalAccountSubledgerEntryDto>();
-        foreach (var group in fundEvents
+        foreach (var group in sources
             .GroupBy(item => new { item.CapitalAccountId, item.InvestorId, item.Currency }))
         {
             var runningNetActivity = 0m;
@@ -1063,14 +1094,14 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             {
                 runningNetActivity += item.NetCapitalActivity;
                 entries.Add(new PrivateCapitalCapitalAccountSubledgerEntryDto(
-                    $"capital-account-subledger:{item.CapitalAccountId}:{item.FundEventId}:{item.JournalEntryId:D}".ToLowerInvariant(),
+                    item.SubledgerEntryId,
                     item.CapitalAccountId,
                     item.InvestorId,
                     item.Currency,
                     item.FundEventId,
                     item.FundEventType,
                     item.EntryType,
-                    item.JournalStatus,
+                    item.ApprovalState,
                     item.JournalEntryId,
                     item.EffectiveDate,
                     item.GrossAmount,
@@ -1092,19 +1123,91 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             .ToArray();
     }
 
+    private static PrivateCapitalCapitalAccountSubledgerSource MapFundEventSubledgerSource(
+        PrivateCapitalFundEventDto fundEvent)
+        => new(
+            $"capital-account-subledger:{fundEvent.CapitalAccountId}:{fundEvent.FundEventId}:{fundEvent.JournalEntryId:D}".ToLowerInvariant(),
+            fundEvent.CapitalAccountId,
+            fundEvent.InvestorId,
+            fundEvent.Currency,
+            fundEvent.FundEventId,
+            fundEvent.FundEventType,
+            fundEvent.EntryType,
+            fundEvent.JournalStatus,
+            fundEvent.JournalEntryId,
+            fundEvent.EffectiveDate,
+            fundEvent.GrossAmount,
+            fundEvent.NetCapitalActivity,
+            fundEvent.Memo,
+            fundEvent.EvidenceLinks,
+            fundEvent.ValidationIssues,
+            fundEvent.UpdatedAtUtc,
+            fundEvent.IsPosted);
+
+    private static IEnumerable<PrivateCapitalCapitalAccountSubledgerSource> MapPostedCapitalAccountSubledgerSources(
+        PrivateCapitalFundEventLedgerEvent fundEvent,
+        IReadOnlyDictionary<Guid, string> journalEntryCurrencies)
+    {
+        if (fundEvent.CapitalAccountImpacts.Count == 0)
+        {
+            yield break;
+        }
+
+        var entryType = MapPrivateCapitalEntryType(fundEvent.FundEventType);
+        var approvalState = MapPostedApprovalState(fundEvent.ApprovalState, fundEvent.HasCriticalIssues);
+        var currency = ResolvePostedEventCurrency(fundEvent, journalEntryCurrencies);
+        var evidenceLinks = BuildPostedFundEventEvidenceLinks(fundEvent);
+        var issues = MapPostedIssues(fundEvent);
+        var effectiveDate = fundEvent.EffectiveDate ?? DateOnly.FromDateTime(fundEvent.FirstPostedAt.UtcDateTime);
+        var journalEntryId = fundEvent.JournalEntryIds.FirstOrDefault();
+        var memo = fundEvent.LedgerImpacts.FirstOrDefault()?.Description ?? fundEvent.FundEventType;
+
+        var groupedImpacts = fundEvent.CapitalAccountImpacts
+            .GroupBy(static item => new { item.CapitalAccountId, item.InvestorId })
+            .OrderBy(static group => group.Key.CapitalAccountId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static group => group.Key.InvestorId, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var group in groupedImpacts)
+        {
+            var netCapitalActivity = group.Sum(static item => item.NetCapitalAccountImpact);
+            var grossAmount = group.Sum(static item => Math.Abs(item.NetCapitalAccountImpact));
+            var ledgerEntryIds = group
+                .SelectMany(static item => item.LedgerEntryIds)
+                .Distinct()
+                .Order()
+                .ToArray();
+            var impactKey = ledgerEntryIds.Length == 0
+                ? journalEntryId.ToString("D")
+                : string.Join("-", ledgerEntryIds.Select(static id => id.ToString("D")));
+
+            yield return new PrivateCapitalCapitalAccountSubledgerSource(
+                $"capital-account-subledger:{group.Key.CapitalAccountId}:{fundEvent.FundEventId}:{impactKey}".ToLowerInvariant(),
+                group.Key.CapitalAccountId,
+                NormalizeOptional(group.Key.InvestorId),
+                currency,
+                fundEvent.FundEventId,
+                fundEvent.FundEventType,
+                entryType,
+                approvalState,
+                journalEntryId,
+                effectiveDate,
+                grossAmount,
+                netCapitalActivity,
+                memo,
+                evidenceLinks,
+                issues,
+                fundEvent.LastPostedAt,
+                true);
+        }
+    }
+
     private static PrivateCapitalFundEventDto MapPostedFundEvent(
         PrivateCapitalFundEventLedgerEvent fundEvent,
         IReadOnlyDictionary<Guid, string> journalEntryCurrencies)
     {
         var entryType = MapPrivateCapitalEntryType(fundEvent.FundEventType);
         var currency = ResolvePostedEventCurrency(fundEvent, journalEntryCurrencies);
-        var evidenceLinks = fundEvent.EvidenceLinks
-            .Concat(fundEvent.ReportOutputs.SelectMany(static item => item.EvidenceLinks))
-            .Where(static link => !string.IsNullOrWhiteSpace(link))
-            .Select(static link => link.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Order(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
+        var evidenceLinks = BuildPostedFundEventEvidenceLinks(fundEvent);
         var issues = MapPostedIssues(fundEvent);
         var grossAmount = fundEvent.LedgerImpacts.Count > 0
             ? fundEvent.LedgerImpacts.Max(static item => Math.Max(Math.Abs(item.TotalDebits), Math.Abs(item.TotalCredits)))
@@ -1135,6 +1238,16 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             ApprovalId: NormalizeOptional(fundEvent.ApprovalId));
     }
 
+    private static IReadOnlyList<string> BuildPostedFundEventEvidenceLinks(
+        PrivateCapitalFundEventLedgerEvent fundEvent)
+        => fundEvent.EvidenceLinks
+            .Concat(fundEvent.ReportOutputs.SelectMany(static item => item.EvidenceLinks))
+            .Where(static link => !string.IsNullOrWhiteSpace(link))
+            .Select(static link => link.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
     private static IEnumerable<PrivateCapitalLedgerImpactDto> MapPostedLedgerImpacts(
         PrivateCapitalFundEventLedgerEvent fundEvent,
         IReadOnlyDictionary<Guid, string> journalEntryCurrencies)
@@ -1153,13 +1266,14 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 
         foreach (var impact in fundEvent.LedgerImpacts)
         {
+            var capitalAccountImpact = ResolveLedgerImpactCapitalAccount(fundEvent, impact);
             yield return new PrivateCapitalLedgerImpactDto(
                 impact.LedgerImpactId,
                 impact.JournalEntryId,
                 fundEvent.FundEventId,
                 fundEvent.FundEventType,
-                capitalAccountId,
-                NormalizeOptional(fundEvent.InvestorId),
+                capitalAccountImpact?.CapitalAccountId ?? capitalAccountId,
+                NormalizeOptional(capitalAccountImpact?.InvestorId) ?? NormalizeOptional(fundEvent.InvestorId),
                 approvalState,
                 effectiveDate,
                 currency,
@@ -1173,6 +1287,26 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 impact.Lines.Select(line => MapPostedLedgerLine(line, currency)).ToArray(),
                 issues);
         }
+    }
+
+    private static PrivateCapitalFundEventCapitalAccountImpact? ResolveLedgerImpactCapitalAccount(
+        PrivateCapitalFundEventLedgerEvent fundEvent,
+        PrivateCapitalFundEventLedgerImpact ledgerImpact)
+    {
+        var ledgerEntryIds = ledgerImpact.Lines
+            .Select(static line => line.LedgerEntryId)
+            .ToHashSet();
+        if (ledgerEntryIds.Count == 0)
+        {
+            return null;
+        }
+
+        var matches = fundEvent.CapitalAccountImpacts
+            .Where(impact => impact.LedgerEntryIds.Any(ledgerEntryIds.Contains))
+            .Take(2)
+            .ToArray();
+
+        return matches.Length == 1 ? matches[0] : null;
     }
 
     private static PrivateCapitalLedgerLineImpactDto MapPostedLedgerLine(
@@ -1207,6 +1341,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 
     private static IReadOnlyList<PrivateCapitalReportOutputDto> BuildPostedReportOutputs(
         string fundProfileId,
+        Guid? ledgerBookId,
         IReadOnlyList<PrivateCapitalFundEventLedgerEvent> postedEvents,
         IReadOnlyDictionary<Guid, string> journalEntryCurrencies,
         IReadOnlyList<ReportPackWorkflowRecordDto> reportPackWorkflowRecords)
@@ -1222,7 +1357,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         if (records.Length == 0)
         {
             return postedEvents
-                .Select(fundEvent => BuildMissingPostedReportOutput(fundProfileId, fundEvent, journalEntryCurrencies))
+                .Select(fundEvent => BuildMissingPostedReportOutput(fundProfileId, ledgerBookId, fundEvent, journalEntryCurrencies))
                 .ToArray();
         }
 
@@ -1231,12 +1366,12 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             {
                 var matched = records
                     .Where(record => MatchesPostedFundEventReport(record, fundEvent))
-                    .Select(record => BuildPostedReportOutput(fundEvent, record, journalEntryCurrencies))
+                    .Select(record => BuildPostedReportOutput(fundProfileId, ledgerBookId, fundEvent, record, journalEntryCurrencies))
                     .ToArray();
 
                 return matched.Length > 0
                     ? matched
-                    : [BuildMissingPostedReportOutput(fundProfileId, fundEvent, journalEntryCurrencies)];
+                    : [BuildMissingPostedReportOutput(fundProfileId, ledgerBookId, fundEvent, journalEntryCurrencies)];
             })
             .ToArray();
     }
@@ -1271,6 +1406,8 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 StringComparer.OrdinalIgnoreCase);
 
     private static PrivateCapitalReportOutputDto BuildPostedReportOutput(
+        string fundProfileId,
+        Guid? ledgerBookId,
         PrivateCapitalFundEventLedgerEvent fundEvent,
         ReportPackWorkflowRecordDto record,
         IReadOnlyDictionary<Guid, string> journalEntryCurrencies)
@@ -1279,6 +1416,14 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var matchedProvenance = (record.LineProvenance ?? [])
             .Where(line => MatchesPostedFundEventLine(line, fundEvent))
             .ToArray();
+        var accountScope = ResolvePostedReportOutputAccountScope(fundEvent, record, matchedProvenance);
+        var reportEvidenceLinks = MergeEvidenceLinks(
+            record.Publication?.EvidenceLinks
+                .Select(link => link.Route ?? link.EvidenceId)
+                .ToArray() ?? [],
+            matchedProvenance
+                .Select(static line => line.EvidenceId)
+                .ToArray());
         var evidenceLinks = MergeEvidenceLinks(
             fundEvent.EvidenceLinks,
             record.Publication?.EvidenceLinks
@@ -1289,9 +1434,6 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             matchedProvenance
                 .Select(static line => line.EvidenceId)
                 .ToArray());
-        var netCapitalActivity = fundEvent.CapitalAccountImpacts.Count > 0
-            ? fundEvent.CapitalAccountImpacts.Sum(static item => item.NetCapitalAccountImpact)
-            : CalculateNetCapitalActivity(MapPrivateCapitalEntryType(fundEvent.FundEventType), fundEvent.LedgerImpacts.Sum(static item => Math.Max(Math.Abs(item.TotalDebits), Math.Abs(item.TotalCredits))));
         var validationIssues = new List<AccountingConfigurationValidationIssueDto>();
         if (!IsPublishedReportPack(record))
         {
@@ -1303,7 +1445,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 "Approve and publish the governed report pack before stakeholder package delivery."));
         }
 
-        if (evidenceLinks.Count == 0)
+        if (reportEvidenceLinks.Count == 0)
         {
             validationIssues.Add(Issue(
                 "private-capital.report-output-evidence-missing",
@@ -1323,20 +1465,22 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 "Repair approval, evidence, ledger impact, or capital-account impact before relying on report output."));
         }
 
-        var isReportReady = fundEvent.IsPostingReady && IsReadyReportPack(record);
+        var isReportReady = fundEvent.IsPostingReady && IsReadyReportPack(record) && reportEvidenceLinks.Count > 0;
+        var approvalRoute = BuildPostedReportOutputApprovalRoute(fundProfileId, fundEvent);
+        var reportOutputId = $"report-output:{fundEvent.FundEventId}:{record.ReportId:D}".ToLowerInvariant();
         return new PrivateCapitalReportOutputDto(
-            $"report-output:{fundEvent.FundEventId}:{record.ReportId:D}".ToLowerInvariant(),
+            reportOutputId,
             "GovernedReportPack",
             $"{record.TemplateId.Name} v{record.TemplateId.Version}",
             $"/api/fund-structure/report-packs/{Uri.EscapeDataString(record.ReportId.ToString("D"))}",
             fundEvent.FundEventId,
             fundEvent.FundEventType,
-            NormalizeOptional(fundEvent.CapitalAccountId) ?? "capital-account:unassigned",
-            NormalizeOptional(fundEvent.InvestorId),
+            accountScope.CapitalAccountId,
+            accountScope.InvestorId,
             MapPostedWorkflowState(record.State),
             fundEvent.EffectiveDate ?? DateOnly.FromDateTime(fundEvent.FirstPostedAt.UtcDateTime),
             currency,
-            netCapitalActivity,
+            accountScope.NetCapitalActivity,
             evidenceLinks.Count,
             evidenceLinks,
             isReportReady,
@@ -1352,39 +1496,60 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             PublicationEvidenceHash: NormalizeOptional(record.Publication?.EvidenceHash),
             PublishedAtUtc: record.Publication?.SignedOffAt,
             PublishedBy: NormalizeOptional(record.Publication?.SignedOffBy),
-            ReportLineProvenanceCount: matchedProvenance.Length);
+            ReportLineProvenanceCount: matchedProvenance.Length,
+            ReportOutputRoute: PrivateCapitalActivityRouteBuilder.BuildReportOutputRoute(
+                fundProfileId,
+                ledgerBookId,
+                reportOutputId,
+                fundEvent.FundEventId,
+                accountScope.CapitalAccountId,
+                accountScope.InvestorId),
+            FundEventRecordRoute: PrivateCapitalActivityRouteBuilder.BuildFundEventRecordRoute(
+                fundProfileId,
+                ledgerBookId,
+                fundEvent.FundEventId),
+            CapitalAccountSubledgerRoute: PrivateCapitalActivityRouteBuilder.BuildCapitalAccountSubledgerRoute(
+                fundProfileId,
+                ledgerBookId,
+                accountScope.CapitalAccountId,
+                accountScope.InvestorId,
+                currency),
+            EvidenceRoute: PrivateCapitalActivityRouteBuilder.BuildEvidenceRoute(fundEvent.FundEventId),
+            ApprovalRoute: approvalRoute);
     }
 
     private static PrivateCapitalReportOutputDto BuildMissingPostedReportOutput(
         string fundProfileId,
+        Guid? ledgerBookId,
         PrivateCapitalFundEventLedgerEvent fundEvent,
         IReadOnlyDictionary<Guid, string> journalEntryCurrencies)
     {
         var currency = ResolvePostedEventCurrency(fundEvent, journalEntryCurrencies);
+        var accountScope = ResolveMissingPostedReportOutputAccountScope(fundEvent);
         var evidenceLinks = fundEvent.EvidenceLinks
             .Where(static link => !string.IsNullOrWhiteSpace(link))
             .Select(static link => link.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Order(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var netCapitalActivity = fundEvent.CapitalAccountImpacts.Sum(static item => item.NetCapitalAccountImpact);
+        var reportOutputId = $"report-output:{fundEvent.FundEventId}:governed-report-pack-pending".ToLowerInvariant();
         return new PrivateCapitalReportOutputDto(
-            $"report-output:{fundEvent.FundEventId}:governed-report-pack-pending".ToLowerInvariant(),
+            reportOutputId,
             "GovernedReportPack",
             $"Governed report pack for {fundEvent.FundEventType}",
             PrivateCapitalActivityRouteBuilder.Build(
                 fundProfileId,
                 fundEvent.FundEventId,
-                fundEvent.CapitalAccountId,
-                fundEvent.InvestorId),
+                accountScope.CapitalAccountId,
+                accountScope.InvestorId),
             fundEvent.FundEventId,
             fundEvent.FundEventType,
-            NormalizeOptional(fundEvent.CapitalAccountId) ?? "capital-account:unassigned",
-            NormalizeOptional(fundEvent.InvestorId),
+            accountScope.CapitalAccountId,
+            accountScope.InvestorId,
             MapPostedApprovalState(fundEvent.ApprovalState, fundEvent.HasCriticalIssues),
             fundEvent.EffectiveDate ?? DateOnly.FromDateTime(fundEvent.FirstPostedAt.UtcDateTime),
             currency,
-            netCapitalActivity,
+            accountScope.NetCapitalActivity,
             evidenceLinks.Length,
             evidenceLinks,
             false,
@@ -1396,19 +1561,146 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                     fundEvent.FundEventId,
                     "Generate or attach the governed report pack before stakeholder package delivery.")
             ],
-            ReportWorkflowState: "Missing");
+            ReportWorkflowState: "Missing",
+            ReportOutputRoute: PrivateCapitalActivityRouteBuilder.BuildReportOutputRoute(
+                fundProfileId,
+                ledgerBookId,
+                reportOutputId,
+                fundEvent.FundEventId,
+                accountScope.CapitalAccountId,
+                accountScope.InvestorId),
+            FundEventRecordRoute: PrivateCapitalActivityRouteBuilder.BuildFundEventRecordRoute(
+                fundProfileId,
+                ledgerBookId,
+                fundEvent.FundEventId),
+            CapitalAccountSubledgerRoute: PrivateCapitalActivityRouteBuilder.BuildCapitalAccountSubledgerRoute(
+                fundProfileId,
+                ledgerBookId,
+                accountScope.CapitalAccountId,
+                accountScope.InvestorId,
+                currency),
+            EvidenceRoute: PrivateCapitalActivityRouteBuilder.BuildEvidenceRoute(fundEvent.FundEventId),
+            ApprovalRoute: BuildPostedReportOutputApprovalRoute(fundProfileId, fundEvent));
+    }
+
+    private static string? BuildPostedReportOutputApprovalRoute(
+        string fundProfileId,
+        PrivateCapitalFundEventLedgerEvent fundEvent)
+    {
+        if (fundEvent.JournalEntryIds.Count == 0)
+        {
+            return null;
+        }
+
+        return PrivateCapitalActivityRouteBuilder.BuildApprovalRoute(
+            fundProfileId,
+            fundEvent.JournalEntryIds[0],
+            NormalizeOptional(fundEvent.ApprovalId));
+    }
+
+    private static PrivateCapitalReportOutputAccountScope ResolvePostedReportOutputAccountScope(
+        PrivateCapitalFundEventLedgerEvent fundEvent,
+        ReportPackWorkflowRecordDto record,
+        IReadOnlyList<ReportPackLineProvenanceDto> matchedProvenance)
+    {
+        var targetCapitalAccountId = NormalizeOptional(record.FundAccountId);
+        if (targetCapitalAccountId is not null)
+        {
+            var targetMatches = fundEvent.CapitalAccountImpacts
+                .Where(impact => string.Equals(impact.CapitalAccountId, targetCapitalAccountId, StringComparison.OrdinalIgnoreCase))
+                .Take(2)
+                .ToArray();
+            if (targetMatches.Length == 1)
+            {
+                return BuildReportOutputAccountScope(targetMatches[0]);
+            }
+        }
+
+        var provenanceLedgerEntryIds = matchedProvenance
+            .SelectMany(EnumerateLineLedgerEntryIds)
+            .ToHashSet();
+        if (provenanceLedgerEntryIds.Count > 0)
+        {
+            var provenanceMatches = fundEvent.CapitalAccountImpacts
+                .Where(impact => impact.LedgerEntryIds.Any(provenanceLedgerEntryIds.Contains))
+                .Take(2)
+                .ToArray();
+            if (provenanceMatches.Length == 1)
+            {
+                return BuildReportOutputAccountScope(provenanceMatches[0]);
+            }
+        }
+
+        return ResolveMissingPostedReportOutputAccountScope(fundEvent);
+    }
+
+    private static PrivateCapitalReportOutputAccountScope ResolveMissingPostedReportOutputAccountScope(
+        PrivateCapitalFundEventLedgerEvent fundEvent)
+    {
+        if (fundEvent.CapitalAccountImpacts.Count == 1)
+        {
+            return BuildReportOutputAccountScope(fundEvent.CapitalAccountImpacts[0]);
+        }
+
+        var netCapitalActivity = fundEvent.CapitalAccountImpacts.Count > 0
+            ? fundEvent.CapitalAccountImpacts.Sum(static item => item.NetCapitalAccountImpact)
+            : CalculateNetCapitalActivity(
+                MapPrivateCapitalEntryType(fundEvent.FundEventType),
+                fundEvent.LedgerImpacts.Sum(static item => Math.Max(Math.Abs(item.TotalDebits), Math.Abs(item.TotalCredits))));
+        var hasAmbiguousCapitalAccount = fundEvent.CapitalAccountImpacts.Count > 1 ||
+            fundEvent.Issues.Any(static item => string.Equals(item.Code, "private-capital.capital-account-conflict", StringComparison.OrdinalIgnoreCase));
+        return new PrivateCapitalReportOutputAccountScope(
+            hasAmbiguousCapitalAccount
+                ? "capital-account:unassigned"
+                : NormalizeOptional(fundEvent.CapitalAccountId) ?? "capital-account:unassigned",
+            hasAmbiguousCapitalAccount ? null : NormalizeOptional(fundEvent.InvestorId),
+            netCapitalActivity);
+    }
+
+    private static PrivateCapitalReportOutputAccountScope BuildReportOutputAccountScope(
+        PrivateCapitalFundEventCapitalAccountImpact impact)
+        => new(
+            impact.CapitalAccountId,
+            NormalizeOptional(impact.InvestorId),
+            impact.NetCapitalAccountImpact);
+
+    private static IEnumerable<Guid> EnumerateLineLedgerEntryIds(ReportPackLineProvenanceDto line)
+    {
+        if (Guid.TryParse(line.LedgerEntryId, out var ledgerEntryId))
+        {
+            yield return ledgerEntryId;
+        }
+
+        if (Guid.TryParse(line.SourceId, out var sourceId))
+        {
+            yield return sourceId;
+        }
     }
 
     private static bool MatchesPostedFundEventReport(
         ReportPackWorkflowRecordDto record,
         PrivateCapitalFundEventLedgerEvent fundEvent)
-        => (record.LineProvenance ?? []).Any(line => MatchesPostedFundEventLine(line, fundEvent));
+    {
+        if ((record.LineProvenance ?? []).Any(line => MatchesPostedFundEventLine(line, fundEvent)))
+        {
+            return true;
+        }
+
+        return EnumerateReportPackEvidencePointers(record)
+            .Any(pointer => MatchesPostedFundEventPointer(pointer, fundEvent));
+    }
 
     private static bool MatchesPostedFundEventLine(
         ReportPackLineProvenanceDto line,
         PrivateCapitalFundEventLedgerEvent fundEvent)
     {
-        if (string.Equals(line.SourceId, fundEvent.FundEventId, StringComparison.OrdinalIgnoreCase))
+        if (MatchesPostedFundEventPointer(line.SourceId, fundEvent))
+        {
+            return true;
+        }
+
+        if (MatchesPostedFundEventPointer(line.EvidenceId, fundEvent) ||
+            MatchesPostedFundEventPointer(line.ApprovalId, fundEvent))
         {
             return true;
         }
@@ -1427,6 +1719,93 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         }
 
         return false;
+    }
+
+    private static IEnumerable<string> EnumerateReportPackEvidencePointers(ReportPackWorkflowRecordDto record)
+    {
+        foreach (var pointer in EnumerateReportPackEvidenceLinks(record.Publication?.EvidenceLinks))
+        {
+            yield return pointer;
+        }
+
+        foreach (var pointer in EnumerateReportPackEvidenceLinks(record.Restatement?.EvidenceLinks))
+        {
+            yield return pointer;
+        }
+
+        foreach (var pointer in EnumerateReportPackEvidenceLinks(record.Rejection?.EvidenceLinks))
+        {
+            yield return pointer;
+        }
+
+        if (!string.IsNullOrWhiteSpace(record.Publication?.ManifestId))
+        {
+            yield return record.Publication.ManifestId;
+        }
+
+        if (!string.IsNullOrWhiteSpace(record.Publication?.RetainedManifestPath))
+        {
+            yield return record.Publication.RetainedManifestPath;
+        }
+    }
+
+    private static IEnumerable<string> EnumerateReportPackEvidenceLinks(
+        IReadOnlyList<ReportPackEvidenceLinkDto>? evidenceLinks)
+    {
+        foreach (var link in evidenceLinks ?? [])
+        {
+            if (!string.IsNullOrWhiteSpace(link.EvidenceId))
+            {
+                yield return link.EvidenceId;
+            }
+
+            if (!string.IsNullOrWhiteSpace(link.Label))
+            {
+                yield return link.Label;
+            }
+
+            if (!string.IsNullOrWhiteSpace(link.Route))
+            {
+                yield return link.Route;
+            }
+
+            if (!string.IsNullOrWhiteSpace(link.Source))
+            {
+                yield return link.Source;
+            }
+        }
+    }
+
+    private static bool MatchesPostedFundEventPointer(
+        string? value,
+        PrivateCapitalFundEventLedgerEvent fundEvent)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var pointer = value.Trim();
+        if (pointer.Contains(fundEvent.FundEventId, StringComparison.OrdinalIgnoreCase) ||
+            pointer.Contains(Uri.EscapeDataString(fundEvent.FundEventId), StringComparison.OrdinalIgnoreCase) ||
+            MatchesAnyGuid(pointer, fundEvent.LedgerEntryIds) ||
+            MatchesAnyGuid(pointer, fundEvent.JournalEntryIds))
+        {
+            return true;
+        }
+
+        try
+        {
+            var unescaped = Uri.UnescapeDataString(pointer);
+            return !string.Equals(unescaped, pointer, StringComparison.Ordinal) &&
+                (unescaped.Contains(fundEvent.FundEventId, StringComparison.OrdinalIgnoreCase) ||
+                 MatchesAnyGuid(unescaped, fundEvent.LedgerEntryIds) ||
+                 MatchesAnyGuid(unescaped, fundEvent.JournalEntryIds));
+        }
+        catch (UriFormatException)
+        {
+            return false;
+        }
     }
 
     private static bool MatchesAnyGuid(string value, IReadOnlyList<Guid> ids)
@@ -1611,6 +1990,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 
     private static PrivateCapitalReportOutputDto BuildPrivateCapitalReportOutput(
         string fundProfileId,
+        Guid? ledgerBookId,
         PrivateCapitalFundEventDto fundEvent,
         IReadOnlyDictionary<string, bool> postingReadyByFundEventId)
     {
@@ -1688,7 +2068,29 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 .ThenBy(issue => issue.Code, StringComparer.OrdinalIgnoreCase)
                 .ToArray(),
             IsPublished: false,
-            ReportWorkflowState: fundEvent.JournalStatus.ToString());
+            ReportWorkflowState: fundEvent.JournalStatus.ToString(),
+            ReportOutputRoute: PrivateCapitalActivityRouteBuilder.BuildReportOutputRoute(
+                fundProfileId,
+                ledgerBookId,
+                reportOutputId,
+                fundEvent.FundEventId,
+                fundEvent.CapitalAccountId,
+                fundEvent.InvestorId),
+            FundEventRecordRoute: PrivateCapitalActivityRouteBuilder.BuildFundEventRecordRoute(
+                fundProfileId,
+                ledgerBookId,
+                fundEvent.FundEventId),
+            CapitalAccountSubledgerRoute: PrivateCapitalActivityRouteBuilder.BuildCapitalAccountSubledgerRoute(
+                fundProfileId,
+                ledgerBookId,
+                fundEvent.CapitalAccountId,
+                fundEvent.InvestorId,
+                fundEvent.Currency),
+            EvidenceRoute: PrivateCapitalActivityRouteBuilder.BuildEvidenceRoute(fundEvent.FundEventId),
+            ApprovalRoute: PrivateCapitalActivityRouteBuilder.BuildApprovalRoute(
+                fundProfileId,
+                fundEvent.JournalEntryId,
+                fundEvent.ApprovalId));
     }
 
     public async Task<ManualJournalEntryDraftDto> SaveDraftAsync(

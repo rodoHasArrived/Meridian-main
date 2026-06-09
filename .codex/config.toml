@@ -1,6 +1,11 @@
 # Repository-local Codex defaults must fail closed. Individual operators can
 # override these settings in their user profile when a task genuinely needs
-# broader filesystem access, unattended execution, or personal model choices.
+# broader filesystem access, unattended execution, external services, or
+# personal model choices.
+
+################################################################################
+# Permission Baseline
+################################################################################
 
 # Keep filesystem and approval posture conservative for shared project config.
 # Documented Codex values include: read-only, workspace-write, danger-full-access.
@@ -10,14 +15,18 @@ sandbox_mode = "workspace-write"
 # should override this in their own Codex home, not in repository-local config.
 approval_policy = "on-request"
 
+# Avoid loading user shell startup state from shared project defaults. User
+# profiles can opt back into login-shell behavior when a machine requires it.
+allow_login_shell = false
+
 # Meridian work often depends on current external API/tooling behavior. Keep the
 # web-search surface live by default; operator-specific domain limits belong in
 # user-level profiles.
 web_search = "live"
 
-# Anchor project discovery on the Meridian solution first, then fall back to the
-# Git checkout marker when Codex searches parent directories for .codex folders.
-project_root_markers = ["Meridian.sln", ".git"]
+################################################################################
+# Project Guidance Discovery
+################################################################################
 
 # Allow the root AGENTS.md plus the narrower .codex/AGENTS.md guidance to fit
 # comfortably while still limiting accidental instruction bloat.
@@ -27,9 +36,27 @@ project_doc_max_bytes = 65536
 # AGENTS.md / AGENTS.override.md. Prefer AGENTS.md for new directory-scoped rules.
 project_doc_fallback_filenames = ["CLAUDE.md"]
 
+# Anchor project discovery on the Meridian solution first, then fall back to the
+# Git checkout marker when Codex searches parent directories for .codex folders.
+project_root_markers = ["Meridian.sln", ".git"]
+
+################################################################################
+# Shared Config Boundary
+################################################################################
+
 # Project-local config should stay free of secrets and machine-specific values.
-# Do not add API keys, tokens, user-only paths, provider overrides, telemetry,
-# notifications, or personal model preferences here.
+# Do not add API keys, tokens, provider auth, endpoint overrides, user-only
+# paths, telemetry exporters, notification commands, or personal model
+# preferences here. Put those in ~/.codex/config.toml or a user profile.
+#
+# Keep model, model_reasoning_effort, model_provider, model_providers,
+# openai_base_url, chatgpt_base_url, mcp_servers, notify, profile, profiles, and
+# otel out of this shared file unless the current Codex documentation explicitly
+# permits the specific project-scoped use case and the value is secret-free.
+
+################################################################################
+# Shared Tooling Features
+################################################################################
 
 [features]
 # Meridian keeps many reusable specialist profiles in .codex/agents. Enable the
@@ -54,6 +81,10 @@ enabled = true
 
 [tools.web_search]
 context_size = "medium"
+
+################################################################################
+# Subagent Limits
+################################################################################
 
 # Keep project-local subagent orchestration bounded. Specialist profiles live
 # in .codex/agents/ and inherit these conservative defaults unless an operator
@@ -137,3 +168,41 @@ config_file = "agents/shared-component-extraction.toml"
 
 [agents."workstation-screen-composition"]
 config_file = "agents/workstation-screen-composition.toml"
+
+################################################################################
+# Workspace Sandbox
+################################################################################
+
+# Workspace-write mode should not imply broad network or machine writes. Keep
+# extra writable roots empty in shared config; add local paths in user config
+# when a specific workflow needs them.
+[sandbox_workspace_write]
+writable_roots = []
+network_access = false
+exclude_tmpdir_env_var = false
+exclude_slash_tmp = false
+
+################################################################################
+# Shell Environment
+################################################################################
+
+# Inherit the normal process environment for Windows/.NET/npm command discovery,
+# but keep Codex's default secret filters and add explicit cloud/provider guards.
+[shell_environment_policy]
+inherit = "all"
+ignore_default_excludes = false
+exclude = [
+  "AWS_*",
+  "AZURE_*",
+  "GCP_*",
+  "GOOGLE_*",
+  "GITHUB_TOKEN",
+  "OPENAI_API_KEY",
+  "ANTHROPIC_API_KEY",
+  "MERIDIAN_*_KEY",
+  "MERIDIAN_*_TOKEN",
+  "*PASSWORD*",
+]
+set = {}
+include_only = []
+experimental_use_profile = false

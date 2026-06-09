@@ -2714,6 +2714,7 @@ export interface ReportingTemplateGridMetadata {
   topN?: number | null;
   sortBy?: string | null;
   sortDescending?: boolean;
+  filters?: ReportingTemplateGridFilterMetadata[] | null;
 }
 
 export interface ReportingTemplateGridMetricMetadata {
@@ -2729,8 +2730,27 @@ export interface ReportingTemplateGridFormulaMetadata {
   label: string | null;
 }
 
+export interface ReportingTemplateGridFilterMetadata {
+  field: string;
+  operator: ReportWriterFilterOperator | string;
+  value?: string | null;
+  label?: string | null;
+}
+
 export type ReportWriterGridKind = "Detail" | "Pivot" | "TopN" | "Contribution";
 export type ReportWriterAggregateFunction = "Sum" | "Count" | "Average" | "Min" | "Max";
+export type ReportWriterFilterOperator =
+  | "Equals"
+  | "NotEquals"
+  | "Contains"
+  | "StartsWith"
+  | "EndsWith"
+  | "GreaterThan"
+  | "GreaterThanOrEqual"
+  | "LessThan"
+  | "LessThanOrEqual"
+  | "IsBlank"
+  | "IsNotBlank";
 export type ReportAccessMode = "Private" | "Restricted" | "CompanyWide";
 export type ReportAccessPrincipalKind = "User" | "Group" | "Company";
 
@@ -2757,6 +2777,13 @@ export interface ReportWriterFormulaDefinition {
   label?: string | null;
 }
 
+export interface ReportWriterFilterDefinition {
+  field: string;
+  operator?: ReportWriterFilterOperator;
+  value?: string | null;
+  label?: string | null;
+}
+
 export interface ReportWriterGridDefinition {
   gridId: string;
   title: string;
@@ -2768,6 +2795,7 @@ export interface ReportWriterGridDefinition {
   topN?: number | null;
   sortBy?: string | null;
   sortDescending?: boolean;
+  filters?: ReportWriterFilterDefinition[] | null;
 }
 
 export interface ReportWriterGridColumn {
@@ -2781,6 +2809,35 @@ export interface ReportWriterGridRow {
   values: Record<string, string>;
 }
 
+export interface ReportWriterMetricLineage {
+  name: string;
+  sourceField: string;
+  function: ReportWriterAggregateFunction | string;
+}
+
+export interface ReportWriterFormulaLineage {
+  name: string;
+  expression: string;
+  sourceFields: string[];
+}
+
+export interface ReportWriterFilterLineage {
+  field: string;
+  operator: ReportWriterFilterOperator | string;
+  value?: string | null;
+  label?: string | null;
+}
+
+export interface ReportWriterGridLineage {
+  inputRowCount: number;
+  outputRowCount: number;
+  sourceFields: string[];
+  metrics: ReportWriterMetricLineage[];
+  formulas: ReportWriterFormulaLineage[];
+  filteredInputRowCount?: number | null;
+  filters?: ReportWriterFilterLineage[] | null;
+}
+
 export interface ReportWriterGridRender {
   gridId: string;
   title: string;
@@ -2788,6 +2845,7 @@ export interface ReportWriterGridRender {
   columns: ReportWriterGridColumn[];
   rows: ReportWriterGridRow[];
   warnings: string[];
+  lineage?: ReportWriterGridLineage | null;
 }
 
 export interface ReportAccessPrincipal {
@@ -3012,6 +3070,9 @@ export interface ReportPackDeliveryArtifact {
   retainedPath: string;
   byteSize: number;
   evidenceId: string;
+  checksumSha256?: string | null;
+  versionStamp?: string | null;
+  downloadRoute?: string | null;
 }
 
 export interface ReportPackDeliveryPackage {
@@ -3025,6 +3086,8 @@ export interface ReportPackDeliveryPackage {
   artifacts: ReportPackDeliveryArtifact[];
   createdAtUtc: string;
   retainedManifestPath: string;
+  publicationEvidenceHash?: string | null;
+  integritySummary?: string | null;
 }
 
 export interface ReportPackDeliveryAttempt {
@@ -3094,6 +3157,8 @@ export interface ReportingScheduleDeliveryPlan {
   lastDeliveryPackageRoute: string | null;
   lastDeliverySecureLink: string | null;
   versionStamp: string | null;
+  lastDeliveryArtifactCount?: number;
+  lastDeliveryIntegritySummary?: string | null;
 }
 
 export type StructuredReportingExportPurpose = "Regulatory" | "DataWarehouse" | "InvestmentDecision";
@@ -3990,6 +4055,16 @@ export interface PrivateCapitalLedgerImpact {
   validationIssues: AccountingConfigurationValidationIssue[];
 }
 
+export interface PrivateCapitalEvidenceCategory {
+  categoryId: string;
+  label: string;
+  isReady: boolean;
+  summary: string;
+  evidenceLinkCount: number;
+  evidenceLinks: string[];
+  requiredEvidence?: string[] | null;
+}
+
 export interface PrivateCapitalReportOutput {
   reportOutputId: string;
   reportOutputType: string;
@@ -4016,6 +4091,11 @@ export interface PrivateCapitalReportOutput {
   publishedAtUtc?: string | null;
   publishedBy?: string | null;
   reportLineProvenanceCount?: number;
+  reportOutputRoute?: string | null;
+  fundEventRecordRoute?: string | null;
+  capitalAccountSubledgerRoute?: string | null;
+  evidenceRoute?: string | null;
+  approvalRoute?: string | null;
 }
 
 export interface PrivateCapitalFundEventLedgerRecord {
@@ -4061,6 +4141,7 @@ export interface PrivateCapitalFundEventLedgerRecord {
   retainedManifestPath?: string | null;
   reportLineProvenanceCount: number;
   evidenceLinks: string[];
+  evidenceCategories?: PrivateCapitalEvidenceCategory[] | null;
   fundEvent: PrivateCapitalFundEvent;
   capitalAccountSubledgerEntries: PrivateCapitalCapitalAccountSubledgerEntry[];
   ledgerImpacts: PrivateCapitalLedgerImpact[];
@@ -4095,6 +4176,7 @@ export interface PrivateCapitalCapitalAccountSubledger {
   lastEffectiveDate?: string | null;
   lastFundEventType?: string | null;
   evidenceLinks: string[];
+  evidenceCategories?: PrivateCapitalEvidenceCategory[] | null;
   capitalAccount?: PrivateCapitalCapitalAccountActivity | null;
   fundEventRecords: PrivateCapitalFundEventLedgerRecord[];
   subledgerEntries: PrivateCapitalCapitalAccountSubledgerEntry[];

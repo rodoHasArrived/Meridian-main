@@ -2,7 +2,7 @@
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-06-08
+**Reviewed:** 2026-06-09
 **Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.16 extends the roadmap and source-module registry evidence with the v0.15 accounting records package plus current Carta Fund ERP, Carta Data Warehouse, Carta Management Company Administration, FundStudio fund administrator, FundStudio managed-services, FundStudio general-ledger/accounting, and Modern Treasury ledger research.
 
 ## 1. Product Vision
@@ -249,6 +249,8 @@ Meridian has two active operator UI surfaces:
 * `src/Meridian.Ui/dashboard/` is the browser workstation source, with built host-served assets under `src/Meridian.Ui/wwwroot/workstation/`.
 * `src/Meridian.Wpf/` is the active Windows desktop operator workstation.
 * `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/`, and `src/Meridian.Contracts/` provide shared endpoint, read-model, and DTO support so browser and desktop do not invent separate product state.
+* `src/Meridian.Ledger/` and `src/Meridian.Reporting/` provide the current accounting and reporting implementation backbone: posted private-capital fund-event reconstruction, capital-account subledger impact, governed report-pack generation/delivery, report-writer grids, saved filters, formulas, and lineage.
+* Direct private-capital review routes under `/api/ledger/private-capital/...` are current operational-review surfaces for fund-event, capital-account, ledger-impact, approval, and report-output evidence. They are not a broad LP portal, payment execution, or mobile product lane.
 
 Visible root navigation should remain:
 

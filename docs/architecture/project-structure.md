@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-05-19
+**Reviewed:** 2026-06-09
 
 Meridian uses a standard repository layout organized around source projects,
 tests, automation, docs, design-system assets, and generated artifacts.
@@ -13,7 +13,7 @@ tests, automation, docs, design-system assets, and generated artifacts.
 | --- | --- | --- |
 | `src/Meridian/` | Active source code | Main CLI and desktop-local API host |
 | `src/Meridian.Application/` | Active source code | Application workflows, commands, orchestration, configuration |
-| `src/Meridian.Contracts/` | Active source code | Shared DTOs and contracts |
+| `src/Meridian.Contracts/` | Active source code | Shared DTOs, API routes, workstation payloads, accounting/private-capital records, report-pack/report-writer contracts, and identity-facing payloads |
 | `src/Meridian.Core/` | Active source code | Core config, exceptions, logging, serialization |
 | `src/Meridian.Domain/` | Active source code | Domain events, collectors, market abstractions |
 | `src/Meridian.Infrastructure*/` | Active source code | Provider and infrastructure adapters |
@@ -23,12 +23,15 @@ tests, automation, docs, design-system assets, and generated artifacts.
 | `src/Meridian.Risk/` | Active source code | Pre-trade risk rules |
 | `src/Meridian.Strategies/` | Active source code | Strategy lifecycle and run read models |
 | `src/Meridian.Backtesting*/` | Active source code | Replay, backtesting, and strategy SDK support |
-| `src/Meridian.Ledger/`, `src/Meridian.FSharp*/` | Active source code | Ledger, accounting, and F# domain support |
+| `src/Meridian.Identity/` | Active source code | Identity, scoped access, role profiles, fund-account authorization traversal, and company-scoped user account/profile state |
+| `src/Meridian.Ledger/`, `src/Meridian.FSharp.Ledger/` | Active source code | Ledger, accounting, private-capital fund-event reconstruction, capital-account subledger impact, and F# ledger domain support |
+| `src/Meridian.Reporting/` | Active source code | Governed report packs, report-writer grid rendering, saved filters, formulas, lineage, publication, restatement, and report generation |
+| `src/Meridian.FSharp*/` | Active source code | F# domain models, operations, direct-lending, trading, and functional workflow support |
 | `src/Meridian.QuantScript/` | Active source code | QuantScript parsing, compilation, and charting support |
 | `src/Meridian.Mcp*/` | Active source code | MCP hosts and tool surfaces |
-| `src/Meridian.Ui/dashboard/` | Active source code | Browser-first operator workstation |
-| `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/` | Active source code | Shared UI services, endpoints, and read models |
-| `src/Meridian.Wpf/` | Active source code | Active desktop shell for operator workflows |
+| `src/Meridian.Ui/dashboard/` | Active source code | Browser operator workstation for the canonical seven roots and W1-W5 accounting, reporting, private-capital, and multi-asset operational-record workflows |
+| `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/` | Active source code | Shared UI services, endpoints, and read models for accounting configuration, private-capital drill-through, report packs, auth/session adapters, and browser/WPF workflow parity |
+| `src/Meridian.Wpf/` | Active source code | Active desktop shell for operator workflows, Accounting Configure, shared private-capital ledger evidence, report-pack readiness, and multi-asset operational-record views |
 
 ## Tests And Validation
 

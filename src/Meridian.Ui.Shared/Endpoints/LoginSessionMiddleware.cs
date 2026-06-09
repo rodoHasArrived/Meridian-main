@@ -39,6 +39,18 @@ public sealed class LoginSessionMiddleware
     public const string CurrentUserRoleKey = "CurrentUserRole";
 
     /// <summary>
+    /// Key for the authenticated user's role-profile name stored in
+    /// <see cref="Microsoft.AspNetCore.Http.HttpContext.Items"/>.
+    /// </summary>
+    public const string CurrentUserRoleProfileNameKey = "CurrentUserRoleProfileName";
+
+    /// <summary>
+    /// Key for the authenticated user's company id stored in
+    /// <see cref="Microsoft.AspNetCore.Http.HttpContext.Items"/>.
+    /// </summary>
+    public const string CurrentUserCompanyIdKey = "CurrentUserCompanyId";
+
+    /// <summary>
     /// Key for the authenticated user's <see cref="Meridian.Identity.Auth.UserPermission"/> flags
     /// stored in <see cref="Microsoft.AspNetCore.Http.HttpContext.Items"/>.
     /// </summary>
@@ -103,6 +115,16 @@ public sealed class LoginSessionMiddleware
             {
                 context.Items[CurrentUserKey] = profile.Username;
                 context.Items[CurrentUserRoleKey] = profile.Role;
+                if (!string.IsNullOrWhiteSpace(profile.RoleProfileName))
+                {
+                    context.Items[CurrentUserRoleProfileNameKey] = profile.RoleProfileName.Trim();
+                }
+
+                if (!string.IsNullOrWhiteSpace(profile.CompanyId))
+                {
+                    context.Items[CurrentUserCompanyIdKey] = profile.CompanyId.Trim();
+                }
+
                 context.Items[CurrentUserPermissionsKey] = profile.Permissions;
                 CookieCsrfProtection.EnsureCsrfCookie(
                     context,

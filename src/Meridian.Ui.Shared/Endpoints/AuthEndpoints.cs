@@ -113,6 +113,7 @@ public static class AuthEndpoints
                     username = profile?.Username,
                     role = profile?.Role.ToString(),
                     roleProfileName = profile?.RoleProfileName,
+                    companyId = profile?.CompanyId,
                     passwordResetRequired = profile?.PasswordResetRequired ?? false,
                     permissions = profile?.Permissions.ToString(),
                     permissionNames = profile is null
@@ -157,6 +158,7 @@ public static class AuthEndpoints
                 username = profile.Username,
                 role = profile.Role.ToString(),
                 roleProfileName = profile.RoleProfileName,
+                companyId = profile.CompanyId,
                 passwordResetRequired = profile.PasswordResetRequired,
                 permissions = profile.Permissions.ToString(),
                 permissionNames = RolePermissions.GetPermissionNames(profile.Permissions).ToArray()
@@ -615,6 +617,8 @@ public static class AuthEndpoints
         var ctxUser = context.Items[LoginSessionMiddleware.CurrentUserKey] as string;
         var ctxRole = context.Items[LoginSessionMiddleware.CurrentUserRoleKey] as UserRole?;
         var ctxPerms = context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] as UserPermission?;
+        var ctxRoleProfileName = context.Items[LoginSessionMiddleware.CurrentUserRoleProfileNameKey] as string;
+        var ctxCompanyId = context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] as string;
 
         if (ctxUser is null || ctxRole is null)
             return null;
@@ -622,7 +626,9 @@ public static class AuthEndpoints
         return new UserProfile(
             ctxUser,
             ctxRole.Value,
-            PermissionOverride: ctxPerms);
+            PermissionOverride: ctxPerms,
+            RoleProfileName: string.IsNullOrWhiteSpace(ctxRoleProfileName) ? null : ctxRoleProfileName.Trim(),
+            CompanyId: string.IsNullOrWhiteSpace(ctxCompanyId) ? null : ctxCompanyId.Trim());
     }
 
     private static ManageUsersActor ResolveManageUsersActor(

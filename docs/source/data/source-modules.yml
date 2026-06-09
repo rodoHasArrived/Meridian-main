@@ -58,7 +58,7 @@ modules:
     layer: Contracts
     status: active
     owner_lane: Contract Compatibility
-    purpose: Shared DTOs, pipeline statistics DTOs, monitoring webhook sink contracts, backfill run-result and per-symbol completeness payloads, coordination lease/leadership/ownership contracts, acceptance evidence payloads, fund-structure service contracts, ETL job-definition store and SFTP publisher contracts, operational scheduler contracts, event-pipeline metrics contracts, and cross-layer contracts used by host, services, dashboard, and WPF.
+    purpose: Shared DTOs, pipeline statistics DTOs, monitoring webhook sink contracts, backfill run-result and per-symbol completeness payloads, coordination lease/leadership/ownership contracts, acceptance evidence payloads, fund-structure service contracts, accounting configuration and private-capital ledger payloads, report-pack/report-writer contracts, ETL job-definition store and SFTP publisher contracts, operational scheduler contracts, event-pipeline metrics contracts, and cross-layer contracts used by host, services, dashboard, and WPF.
     readme: src/Meridian.Contracts/README.md
     roadmap_items:
       - W1-DATA-001
@@ -90,7 +90,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-07
+    last_reviewed: 2026-06-09
 
   - id: SRC-CORE
     path: src/Meridian.Core
@@ -358,20 +358,22 @@ modules:
     layer: Ledger
     status: active
     owner_lane: Accounting and Ledger
-    purpose: Ledger and accounting domain support for books, reconciliation, and governed reporting.
+    purpose: Ledger and accounting domain support for books, reconciliation, governed reporting, private-capital fund-event ledger reconstruction, capital-account subledger impact, treasury ledger metadata, period reports, and locked-period report-pack handoff.
     readme: src/Meridian.Ledger/README.md
     roadmap_items:
       - W4-RECON-001
       - W4-RPT-001
+      - W5-ACCT-001
     stage_gates:
       - PortfolioLedgerReview
       - GovernedReportPack
+      - AccountingRecords
     validation:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-06-09
 
   - id: SRC-FSHARP
     path: src/Meridian.FSharp
@@ -437,7 +439,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-06-09
 
   - id: SRC-FSHARP-TRADING
     path: src/Meridian.FSharp.Trading
@@ -539,7 +541,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Identity and Access
-    purpose: Physical bounded-context module project for identity auth contracts, scoped access, fund-structure scope lineage, fund-account traversal queries, role/profile, and session ownership conformance.
+    purpose: Physical bounded-context module project for identity auth contracts, scoped access, fund-structure scope lineage, fund-account traversal queries, role/profile, company-scoped user account/profile persistence, and session ownership conformance.
     readme: src/Meridian.Identity/README.md
     roadmap_items:
       - W5-ACCT-001
@@ -552,7 +554,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-06
+    last_reviewed: 2026-06-09
 
   - id: SRC-DESIGN-ENTITIES
     path: src/Meridian.Entities
@@ -767,7 +769,7 @@ modules:
     layer: Design Module
     status: active
     owner_lane: Workstation Shell and UX
-    purpose: Physical bounded-context module project for report packs, governed exports, reporting run contracts, template catalogs, Security Master-enriched report generation, NAV attribution, orchestration, publication, restatement, distribution, and reporting ownership conformance.
+    purpose: Physical bounded-context module project for report packs, governed exports, reporting run contracts, template catalogs, Security Master-enriched report generation, NAV attribution, orchestration, publication, restatement, distribution, no-code report-writer grid rendering, saved filters, formulas, lineage, and reporting ownership conformance.
     readme: src/Meridian.Reporting/README.md
     roadmap_items:
       - W4-RPT-001
@@ -781,7 +783,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-05
+    last_reviewed: 2026-06-09
 
   - id: SRC-DESIGN-DOCUMENTS
     path: src/Meridian.Documents
@@ -879,7 +881,7 @@ modules:
     layer: UI Shared
     status: active
     owner_lane: Workstation Shell and UX
-    purpose: Shared UI read models, endpoint adapters, Security Master workbench projections, acceptance filters, and compatibility shims for browser and desktop surfaces.
+    purpose: Shared UI read models, endpoint adapters, Security Master workbench projections, ledger/accounting configuration services, private-capital activity drill-through, report-pack delivery and readiness projections, identity/auth adapters, acceptance filters, and compatibility shims for browser and desktop surfaces.
     readme: src/Meridian.Ui.Shared/README.md
     roadmap_items:
       - W2-TRD-001
@@ -898,7 +900,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-06-07
+    last_reviewed: 2026-06-09
 
   - id: SRC-UI-DASHBOARD
     path: src/Meridian.Ui/dashboard
@@ -906,17 +908,21 @@ modules:
     layer: UI Surface
     status: active
     owner_lane: Workstation Shell and UX
-    purpose: Active browser operator workstation.
+    purpose: Active browser operator workstation for the canonical Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings roots, including W1-W5 accounting, reporting, private-capital, and multi-asset operational-record workflows over shared contracts.
     readme: src/Meridian.Ui/dashboard/README.md
     roadmap_items:
       - W2-TRD-001
       - W2-PROMO-001
       - W3-CONT-001
+      - W4-RPT-001
       - W5-ACCT-001
+      - W5-MASSET-001
     stage_gates:
       - PaperSession
       - PromotionReview
       - ResearchContinuity
+      - PortfolioLedgerReview
+      - GovernedReportPack
       - AccountingRecords
     validation:
       - npm --prefix src/Meridian.Ui/dashboard run test
@@ -927,7 +933,7 @@ modules:
       - DIA-BROWSER-WORKSTATION-ROUTES
     todos:
       - TODO-SRC-UI-DASHBOARD-001
-    last_reviewed: 2026-06-02
+    last_reviewed: 2026-06-09
 
   - id: SRC-WPF
     path: src/Meridian.Wpf
@@ -935,12 +941,13 @@ modules:
     layer: UI Surface
     status: active
     owner_lane: Workstation Shell and UX
-    purpose: Active Windows desktop operator workstation sharing contracts and read models with the browser workstation.
+    purpose: Active Windows desktop operator workstation sharing contracts and read models with the browser workstation, including accounting configuration, private-capital ledger evidence, report-pack readiness, and multi-asset operational-record views.
     readme: src/Meridian.Wpf/README.md
     roadmap_items:
       - W4-RECON-001
       - W4-RPT-001
       - W5-ACCT-001
+      - W5-MASSET-001
     stage_gates:
       - PortfolioLedgerReview
       - GovernedReportPack
@@ -951,4 +958,4 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-06
+    last_reviewed: 2026-06-09

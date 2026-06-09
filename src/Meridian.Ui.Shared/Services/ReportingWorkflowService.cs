@@ -306,7 +306,8 @@ public sealed class ReportTemplateRegistryService
                 ColumnFields = NormalizeStringList(grid.ColumnFields),
                 Metrics = NormalizeGridMetrics(grid.Metrics),
                 Formulas = NormalizeGridFormulas(grid.Formulas),
-                SortBy = string.IsNullOrWhiteSpace(grid.SortBy) ? null : grid.SortBy.Trim()
+                SortBy = string.IsNullOrWhiteSpace(grid.SortBy) ? null : grid.SortBy.Trim(),
+                Filters = NormalizeGridFilters(grid.Filters)
             })
             .OrderBy(static grid => grid.GridId, StringComparer.OrdinalIgnoreCase)
             .ToArray() ?? [];
@@ -345,6 +346,21 @@ public sealed class ReportTemplateRegistryService
             .GroupBy(static formula => formula.Name, StringComparer.OrdinalIgnoreCase)
             .Select(static group => group.First())
             .OrderBy(static formula => formula.Name, StringComparer.OrdinalIgnoreCase)
+            .ToArray() ?? [];
+
+    private static IReadOnlyList<ReportWriterFilterDefinitionDto> NormalizeGridFilters(IReadOnlyList<ReportWriterFilterDefinitionDto>? filters) =>
+        filters?
+            .Where(static filter => filter is not null && !string.IsNullOrWhiteSpace(filter.Field))
+            .Select(static filter => filter with
+            {
+                Field = filter.Field.Trim(),
+                Value = string.IsNullOrWhiteSpace(filter.Value) ? null : filter.Value.Trim(),
+                Label = string.IsNullOrWhiteSpace(filter.Label) ? null : filter.Label.Trim()
+            })
+            .GroupBy(static filter => $"{filter.Field}:{filter.Operator}:{filter.Value}", StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .OrderBy(static filter => filter.Field, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static filter => filter.Operator)
             .ToArray() ?? [];
 
     private static IReadOnlyList<string> ValidateDefinition(ReportTemplateDefinitionDto definition)
@@ -452,6 +468,20 @@ public sealed class ReportTemplateRegistryService
                 if (string.IsNullOrWhiteSpace(formula.Expression))
                 {
                     issues.Add($"Report writer grid '{grid.GridId}' formula '{formula.Name}' requires an expression.");
+                }
+            }
+
+            foreach (var filter in grid.Filters ?? [])
+            {
+                if (string.IsNullOrWhiteSpace(filter.Field))
+                {
+                    issues.Add($"Report writer grid '{grid.GridId}' filter field is required.");
+                }
+
+                if (filter.Operator is not (ReportWriterFilterOperatorDto.IsBlank or ReportWriterFilterOperatorDto.IsNotBlank)
+                    && string.IsNullOrWhiteSpace(filter.Value))
+                {
+                    issues.Add($"Report writer grid '{grid.GridId}' filter '{filter.Field}' requires a value.");
                 }
             }
         }

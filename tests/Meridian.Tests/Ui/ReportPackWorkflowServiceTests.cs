@@ -3,9 +3,14 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
+using Meridian.Application.SecurityMaster;
+using Meridian.Application.Services;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Reporting;
 using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
+using Meridian.Strategies.Services;
+using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -256,6 +261,19 @@ public sealed class ReportPackWorkflowServiceTests
             row.Values["marketValue"] == "150" &&
             row.Values["pnl"] == "15" &&
             row.Values["returnPct"] == "10");
+        grid.Lineage.Should().NotBeNull();
+        grid.Lineage!.InputRowCount.Should().Be(3);
+        grid.Lineage.OutputRowCount.Should().Be(2);
+        grid.Lineage.SourceFields.Should().Equal("marketValue", "pnl", "sector");
+        grid.Lineage.Metrics.Should().Contain(metric =>
+            metric.Name == "pnl" &&
+            metric.SourceField == "pnl" &&
+            metric.Function == ReportWriterAggregateFunctionDto.Sum.ToString());
+        grid.Lineage.Formulas.Should().Contain(formula =>
+            formula.Name == "returnPct" &&
+            formula.SourceFields.Count == 2 &&
+            formula.SourceFields[0] == "marketValue" &&
+            formula.SourceFields[1] == "pnl");
     }
 
     [Fact]
@@ -400,6 +418,41 @@ public sealed class ReportPackWorkflowServiceTests
         approved.Should().NotBeNull();
         approved!.Status.Should().Be(ReportTemplateLifecycleStatusDto.Approved);
         approved.ApprovalReference.Should().Be("APP-TPL-2");
+
+        var renderApprovedResponse = await client.PostAsJsonAsync(
+            "/api/fund-structure/reporting/templates/render",
+            new RenderReportTemplateRequestDto(
+                approved.Definition.TemplateId,
+                new Dictionary<string, string> { ["period"] = "2026-05" },
+                DatasetRows:
+                [
+                    new Dictionary<string, string> { ["sector"] = "Technology", ["marketValue"] = "100", ["pnl"] = "10" },
+                    new Dictionary<string, string> { ["sector"] = "Technology", ["marketValue"] = "50", ["pnl"] = "5" },
+                    new Dictionary<string, string> { ["sector"] = "Rates", ["marketValue"] = "75", ["pnl"] = "-2" }
+                ],
+                Grids:
+                [
+                    new ReportWriterGridDefinitionDto(
+                        "endpoint-sector-pivot",
+                        "Endpoint Sector Pivot",
+                        ReportWriterGridKindDto.Pivot,
+                        RowFields: ["sector"],
+                        Metrics:
+                        [
+                            new ReportWriterMetricDefinitionDto("marketValue", "marketValue"),
+                            new ReportWriterMetricDefinitionDto("pnl", "pnl")
+                        ],
+                        Formulas: [new ReportWriterFormulaDefinitionDto("returnPct", "{pnl} / {marketValue} * 100")])
+                ]),
+            ServerJsonOptions);
+        renderApprovedResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var rendered = await renderApprovedResponse.Content.ReadFromJsonAsync<RenderReportTemplateResponseDto>(ServerJsonOptions);
+        rendered.Should().NotBeNull();
+        var renderedGrid = rendered!.Grids.Should().ContainSingle().Subject;
+        renderedGrid.Lineage.Should().NotBeNull();
+        renderedGrid.Lineage!.InputRowCount.Should().Be(3);
+        renderedGrid.Lineage.OutputRowCount.Should().Be(2);
+        renderedGrid.Lineage.SourceFields.Should().Equal("marketValue", "pnl", "sector");
 
         var listResponse = await client.GetAsync("/api/fund-structure/reporting/templates?includeSuperseded=true");
         listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -881,12 +934,81 @@ public sealed class ReportPackWorkflowServiceTests
         portalPackage!.PackageId.Should().Be(attempt.Package.PackageId);
         portalPackage.DeliveryMode.Should().Be(ReportPackDeliveryModeDto.SecurePortal);
         portalPackage.Artifacts.Should().HaveCount(3);
+        portalPackage.PublicationEvidenceHash.Should().Be("sha256:abc123");
+        portalPackage.IntegritySummary.Should().Be("3 artifact(s) retained with SHA-256 checksums against publication evidence hash sha256:abc123.");
+        var deliveryArtifactVersionPrefix = $"delivery-artifact:{published.ReportId:N}:board-reporting-committee:";
+        portalPackage.Artifacts.Should().OnlyContain(artifact =>
+            artifact.ChecksumSha256.Length == 64 &&
+            artifact.VersionStamp.StartsWith(deliveryArtifactVersionPrefix, StringComparison.Ordinal) &&
+            !string.IsNullOrWhiteSpace(artifact.DownloadRoute));
+        var csvArtifact = portalPackage.Artifacts.Should()
+            .ContainSingle(artifact => artifact.Format == GovernanceReportArtifactFormatDto.Csv)
+            .Subject;
+        csvArtifact.DownloadRoute.Should().Contain($"/api/fund-structure/reporting/packs/{published.ReportId:D}/deliveries/{attempt.AttemptId:D}/artifacts/");
 
         emailLinkResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var emailPackage = await emailLinkResponse.Content.ReadFromJsonAsync<ReportPackDeliveryPackageDto>(ServerJsonOptions);
         emailPackage.Should().NotBeNull();
         emailPackage!.PackageId.Should().Be(attempt.Package.PackageId);
+        var artifactResponse = await client.GetAsync(csvArtifact.DownloadRoute);
+        artifactResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        artifactResponse.Content.Headers.ContentType?.MediaType.Should().Be("text/csv");
+        artifactResponse.Content.Headers.ContentDisposition?.FileName.Should().Be(csvArtifact.ArtifactName);
+        artifactResponse.Content.Headers.ContentLength.Should().Be(csvArtifact.ByteSize);
+        var artifactCsv = await artifactResponse.Content.ReadAsStringAsync();
+        artifactCsv.Should().Contain($"packageId,{portalPackage.PackageId}");
+        artifactCsv.Should().Contain($"publicationEvidenceHash,{portalPackage.PublicationEvidenceHash}");
+        var badArtifactResponse = await client.GetAsync(csvArtifact.DownloadRoute!.Replace(token, "bad-token", StringComparison.Ordinal));
         badTokenResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        badArtifactResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Endpoint_StructuredReportingExport_ReturnsCsvAndXlsxWhenFormatRequested()
+    {
+        await using var app = await CreateFundStructureAppAsync(
+            UserRole.Admin,
+            workspaceService: CreateStructuredExportWorkspaceService());
+        var client = app.GetTestClient();
+
+        var response = await client.GetAsync("/api/fund-structure/reporting/structured-exports/regulatory-trial-balance?fundProfileId=fund-alpha&asOf=2026-04-11T16%3A00%3A00Z&currency=USD&format=csv");
+        var xlsxResponse = await client.GetAsync("/api/fund-structure/reporting/structured-exports/investment-portfolio-cuts?fundProfileId=fund-alpha&asOf=2026-04-11T16%3A00%3A00Z&currency=USD&format=xlsx");
+        var warehouseJsonResponse = await client.GetAsync("/api/fund-structure/reporting/structured-exports/warehouse-ledger-facts?fundProfileId=fund-alpha&asOf=2026-04-11T16%3A00%3A00Z&currency=USD");
+        var warehouseCsvResponse = await client.GetAsync("/api/fund-structure/reporting/structured-exports/warehouse-ledger-facts?fundProfileId=fund-alpha&asOf=2026-04-11T16%3A00%3A00Z&currency=USD&format=csv");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType?.MediaType.Should().Be("text/csv");
+        response.Content.Headers.ContentDisposition?.FileName.Should().Be("regulatory-trial-balance-20260411160000.csv");
+        var csv = await response.Content.ReadAsStringAsync();
+        csv.Should().StartWith("accountName,accountType,symbol,financialAccountId,currency,balance,entryCount,securityId,securityDisplayName,sourceAsOfUtc");
+        csv.Should().NotContain("\"exportId\"");
+        xlsxResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        xlsxResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        xlsxResponse.Content.Headers.ContentDisposition?.FileName.Should().Be("investment-portfolio-cuts-20260411160000.xlsx");
+        var workbook = await xlsxResponse.Content.ReadAsByteArrayAsync();
+        workbook.Should().StartWith([0x50, 0x4B]);
+        workbook.Length.Should().BeGreaterThan(1000);
+        warehouseJsonResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        warehouseJsonResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
+        var warehousePayload = await warehouseJsonResponse.Content.ReadFromJsonAsync<StructuredReportingExportPayloadDto>(ServerJsonOptions);
+        warehousePayload.Should().NotBeNull();
+        warehousePayload!.Export.ExportId.Should().Be("warehouse-ledger-facts");
+        warehousePayload.Export.Purpose.Should().Be(StructuredReportingExportPurposeDto.DataWarehouse);
+        warehousePayload.Columns.Select(static column => column.Name).Should().ContainInOrder(
+            "scope",
+            "accountName",
+            "accountType",
+            "symbol",
+            "financialAccountId",
+            "balance",
+            "journalEntryCount",
+            "ledgerEntryCount",
+            "sourceAsOfUtc");
+        warehouseCsvResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        warehouseCsvResponse.Content.Headers.ContentType?.MediaType.Should().Be("text/csv");
+        warehouseCsvResponse.Content.Headers.ContentDisposition?.FileName.Should().Be("warehouse-ledger-facts-20260411160000.csv");
+        var warehouseCsv = await warehouseCsvResponse.Content.ReadAsStringAsync();
+        warehouseCsv.Should().StartWith("scope,accountName,accountType,symbol,financialAccountId,balance,journalEntryCount,ledgerEntryCount,sourceAsOfUtc");
     }
 
     [Fact]
@@ -1023,6 +1145,7 @@ public sealed class ReportPackWorkflowServiceTests
         var reloadedSchedules = new ReportingScheduleService(orchestration, scheduleStore, reloadedDelivery);
         reloadedSchedules.ListSchedules().Should().ContainSingle(schedule =>
             schedule.ScheduleId == "sched-board-distribution" &&
+            schedule.DeliveryTargets != null &&
             schedule.DeliveryTargets.Count == 2);
         var payload = new ReportPackRunReadService(
             new DefaultReportingTemplateCatalog(),
@@ -1044,6 +1167,8 @@ public sealed class ReportPackWorkflowServiceTests
         boardPlan.LastDeliveryState.Should().Be(ReportPackDeliveryStateDto.Delivered);
         boardPlan.LastDeliveryAttemptId.Should().NotBeNull();
         boardPlan.LastDeliverySecureLink.Should().NotBeNullOrWhiteSpace();
+        boardPlan.LastDeliveryArtifactCount.Should().Be(3);
+        boardPlan.LastDeliveryIntegritySummary.Should().Be("3 artifact(s) retained with SHA-256 checksums against publication evidence hash sha256:scheduled-pack.");
         boardPlan.VersionStamp.Should().StartWith("schedule-delivery-plan:sched-board-distribution:board-reporting-committee:");
     }
 
@@ -1157,7 +1282,15 @@ public sealed class ReportPackWorkflowServiceTests
                         ReportWriterGridKindDto.Contribution,
                         RowFields: ["strategy"],
                         Metrics: [new ReportWriterMetricDefinitionDto("marketValue", "marketValue")],
-                        Formulas: [new ReportWriterFormulaDefinitionDto("weightCheck", "{contributionPercent}")]
+                        Formulas: [new ReportWriterFormulaDefinitionDto("weightCheck", "{contributionPercent}")],
+                        Filters:
+                        [
+                            new ReportWriterFilterDefinitionDto(
+                                "strategy",
+                                ReportWriterFilterOperatorDto.Equals,
+                                "Core",
+                                "Core strategy")
+                        ]
                     )
                 ]),
             "report.author");
@@ -1182,6 +1315,11 @@ public sealed class ReportPackWorkflowServiceTests
         template.ReportWriterGrids[0].Formulas.Should().ContainSingle(formula =>
             formula.Name == "weightCheck" &&
             formula.Expression == "{contributionPercent}");
+        template.ReportWriterGrids[0].Filters.Should().ContainSingle(filter =>
+            filter.Field == "strategy" &&
+            filter.Operator == ReportWriterFilterOperatorDto.Equals.ToString() &&
+            filter.Value == "Core" &&
+            filter.Label == "Core strategy");
     }
 
     [Fact]
@@ -1299,6 +1437,193 @@ public sealed class ReportPackWorkflowServiceTests
         records.Should().NotBeNull();
         records!.Select(static record => record.Definition.TemplateId.Name).Should().NotContain(draft.Definition.TemplateId.Name);
         renderResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Endpoint_RenderRestrictedTemplate_WhenRoleProfileMatchesGroup_AllowsRender()
+    {
+        await using var app = await CreateFundStructureAppAsync(
+            UserRole.Analysis,
+            "viewer.user",
+            roleProfileName: "ops-control");
+        var registry = app.Services.GetRequiredService<ReportTemplateRegistryService>();
+        var draft = registry.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "ops-control-template",
+                "Ops Control Template",
+                ["summary"],
+                [new ReportTemplateParameterDefinitionDto("period", Required: true)],
+                Family: "CustomReport",
+                Rationale: "Restricted group report test",
+                AccessPolicy: new ReportAccessPolicyDto(
+                    ReportAccessModeDto.Restricted,
+                    Principals: [new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Group, "ops-control")])),
+            "owner.user");
+        registry.Submit(draft.Definition.TemplateId, "owner.user", "ready");
+        registry.Approve(draft.Definition.TemplateId, new ReportTemplateDecisionRequestDto("approved", "APP-GROUP-1"), "controller.admin");
+        var client = app.GetTestClient();
+
+        var listResponse = await client.GetAsync("/api/fund-structure/reporting/templates");
+        var renderResponse = await client.PostAsJsonAsync(
+            "/api/fund-structure/reporting/templates/render",
+            new RenderReportTemplateRequestDto(
+                draft.Definition.TemplateId,
+                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["period"] = "2026-03" }),
+            ServerJsonOptions);
+
+        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var records = await listResponse.Content.ReadFromJsonAsync<IReadOnlyList<ReportTemplateGovernanceRecordDto>>(ServerJsonOptions);
+        records.Should().NotBeNull();
+        records!.Select(static record => record.Definition.TemplateId.Name).Should().Contain(draft.Definition.TemplateId.Name);
+        renderResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Endpoint_RenderRestrictedTemplate_WhenCompanyMatchesSession_AllowsRender()
+    {
+        await using var app = await CreateFundStructureAppAsync(
+            UserRole.Analysis,
+            "viewer.user",
+            companyId: "company-alpha");
+        var registry = app.Services.GetRequiredService<ReportTemplateRegistryService>();
+        var draft = registry.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "company-alpha-template",
+                "Company Alpha Template",
+                ["summary"],
+                [new ReportTemplateParameterDefinitionDto("period", Required: true)],
+                Family: "CustomReport",
+                Rationale: "Restricted company report test",
+                AccessPolicy: new ReportAccessPolicyDto(
+                    ReportAccessModeDto.Restricted,
+                    Principals: [new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Company, "company-alpha")])),
+            "owner.user");
+        registry.Submit(draft.Definition.TemplateId, "owner.user", "ready");
+        registry.Approve(draft.Definition.TemplateId, new ReportTemplateDecisionRequestDto("approved", "APP-COMPANY-1"), "controller.admin");
+        var client = app.GetTestClient();
+
+        var listResponse = await client.GetAsync("/api/fund-structure/reporting/templates");
+        var renderResponse = await client.PostAsJsonAsync(
+            "/api/fund-structure/reporting/templates/render",
+            new RenderReportTemplateRequestDto(
+                draft.Definition.TemplateId,
+                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["period"] = "2026-03" }),
+            ServerJsonOptions);
+
+        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var records = await listResponse.Content.ReadFromJsonAsync<IReadOnlyList<ReportTemplateGovernanceRecordDto>>(ServerJsonOptions);
+        records.Should().NotBeNull();
+        records!.Select(static record => record.Definition.TemplateId.Name).Should().Contain(draft.Definition.TemplateId.Name);
+        renderResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Endpoint_DeliveryCommands_PrivateReportPack_WhenCallerIsOwner_AllowsDelivery()
+    {
+        await using var app = await CreateFundStructureAppAsync(UserRole.TradeDesk, "owner.user");
+        var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
+        var approved = CreateApprovedPack(
+            workflow,
+            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")],
+            accessPolicy: new ReportAccessPolicyDto(ReportAccessModeDto.Private, OwnerPrincipalId: "owner.user"));
+        var published = workflow.Publish(
+            approved.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:abc123",
+            "manifest-1",
+            "vault/report-packs/manifest-1.json",
+            CompleteLineProvenanceEvidenceLinks("ledger-evidence-1"));
+        var client = app.GetTestClient();
+
+        var deliveryResponse = await client.PostAsJsonAsync(
+            $"/api/fund-structure/reporting/packs/{published.ReportId:D}/deliveries",
+            new ReportPackDeliveryRequestDto(
+                "board-reporting-committee",
+                DeliveryReference: "owner-delivery",
+                DeliveryMode: ReportPackDeliveryModeDto.SecurePortal),
+            ServerJsonOptions);
+        var historyResponse = await client.GetAsync($"/api/fund-structure/reporting/packs/{published.ReportId:D}/deliveries");
+
+        deliveryResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var history = await historyResponse.Content.ReadFromJsonAsync<ReportPackDeliveryHistoryDto>(ServerJsonOptions);
+        history.Should().NotBeNull();
+        history!.Attempts.Should().ContainSingle(attempt => attempt.DeliveryReference == "owner-delivery");
+    }
+
+    [Fact]
+    public async Task Endpoint_DeliveryCommands_RestrictedReportPack_WhenRoleMatchesGroup_AllowsDelivery()
+    {
+        await using var app = await CreateFundStructureAppAsync(UserRole.TradeDesk, "viewer.user");
+        var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
+        var approved = CreateApprovedPack(
+            workflow,
+            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")],
+            accessPolicy: new ReportAccessPolicyDto(
+                ReportAccessModeDto.Restricted,
+                Principals: [new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Group, UserRole.TradeDesk.ToString())]));
+        var published = workflow.Publish(
+            approved.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:abc123",
+            "manifest-1",
+            "vault/report-packs/manifest-1.json",
+            CompleteLineProvenanceEvidenceLinks("ledger-evidence-1"));
+        var client = app.GetTestClient();
+
+        var deliveryResponse = await client.PostAsJsonAsync(
+            $"/api/fund-structure/reporting/packs/{published.ReportId:D}/deliveries",
+            new ReportPackDeliveryRequestDto(
+                "board-reporting-committee",
+                DeliveryReference: "group-delivery",
+                DeliveryMode: ReportPackDeliveryModeDto.SecurePortal),
+            ServerJsonOptions);
+        var historyResponse = await client.GetAsync($"/api/fund-structure/reporting/packs/{published.ReportId:D}/deliveries");
+
+        deliveryResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var history = await historyResponse.Content.ReadFromJsonAsync<ReportPackDeliveryHistoryDto>(ServerJsonOptions);
+        history.Should().NotBeNull();
+        history!.Attempts.Should().ContainSingle(attempt => attempt.DeliveryReference == "group-delivery");
+    }
+
+    [Fact]
+    public async Task Endpoint_DeliveryCommands_PrivateReportPack_WhenCallerIsNotOwner_ReturnsForbidden()
+    {
+        await using var app = await CreateFundStructureAppAsync(UserRole.TradeDesk, "viewer.user");
+        var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
+        var approved = CreateApprovedPack(
+            workflow,
+            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")],
+            accessPolicy: new ReportAccessPolicyDto(ReportAccessModeDto.Private, OwnerPrincipalId: "owner.user"));
+        var published = workflow.Publish(
+            approved.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:abc123",
+            "manifest-1",
+            "vault/report-packs/manifest-1.json",
+            CompleteLineProvenanceEvidenceLinks("ledger-evidence-1"));
+        var client = app.GetTestClient();
+
+        var historyResponse = await client.GetAsync($"/api/fund-structure/reporting/packs/{published.ReportId:D}/deliveries");
+        var deliveryResponse = await client.PostAsJsonAsync(
+            $"/api/fund-structure/reporting/packs/{published.ReportId:D}/deliveries",
+            new ReportPackDeliveryRequestDto("board-reporting-committee"),
+            ServerJsonOptions);
+        var failureResponse = await client.PostAsJsonAsync(
+            $"/api/fund-structure/reporting/packs/{published.ReportId:D}/deliveries/failures",
+            new ReportPackDeliveryFailureRequestDto("board-reporting-committee", "Blocked by recipient portal."),
+            ServerJsonOptions);
+
+        historyResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        deliveryResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        failureResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -1569,7 +1894,8 @@ public sealed class ReportPackWorkflowServiceTests
     private static ReportPackWorkflowRecordDto CreateApprovedPack(
         ReportPackWorkflowService svc,
         IReadOnlyList<ReportPackLineProvenanceDto> lineProvenance,
-        string templateName = "board-pack")
+        string templateName = "board-pack",
+        ReportAccessPolicyDto? accessPolicy = null)
     {
         var created = svc.Create(
             "fund-a",
@@ -1577,7 +1903,8 @@ public sealed class ReportPackWorkflowServiceTests
             "2026-03",
             new VersionedReportTemplateIdDto(templateName, 1),
             "author",
-            lineProvenance);
+            lineProvenance,
+            accessPolicy);
         svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         return svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
     }
@@ -1630,7 +1957,12 @@ public sealed class ReportPackWorkflowServiceTests
         Converters = { new JsonStringEnumConverter() }
     };
 
-    private static async Task<WebApplication> CreateFundStructureAppAsync(UserRole role, string username = "controller.admin")
+    private static async Task<WebApplication> CreateFundStructureAppAsync(
+        UserRole role,
+        string username = "controller.admin",
+        FundOperationsWorkspaceReadService? workspaceService = null,
+        string? roleProfileName = null,
+        string? companyId = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -1640,17 +1972,42 @@ public sealed class ReportPackWorkflowServiceTests
         builder.Services.AddSingleton<ReportTemplateRegistryService>();
         builder.Services.AddSingleton<ReportPackWorkflowService>();
         builder.Services.AddSingleton<ReportPackDeliveryService>();
+        if (workspaceService is not null)
+        {
+            builder.Services.AddSingleton(workspaceService);
+        }
 
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
             context.Items[LoginSessionMiddleware.CurrentUserKey] = username;
             context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = role;
+            if (!string.IsNullOrWhiteSpace(roleProfileName))
+            {
+                context.Items[LoginSessionMiddleware.CurrentUserRoleProfileNameKey] = roleProfileName.Trim();
+            }
+
+            if (!string.IsNullOrWhiteSpace(companyId))
+            {
+                context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = companyId.Trim();
+            }
+
             await next();
         });
         app.MapFundStructureEndpoints(ServerJsonOptions);
 
         await app.StartAsync();
         return app;
+    }
+
+    private static FundOperationsWorkspaceReadService CreateStructuredExportWorkspaceService()
+    {
+        var securityMaster = new NullSecurityMasterQueryService();
+        return new FundOperationsWorkspaceReadService(
+            new InMemoryFundAccountService(),
+            new StrategyRunStore(),
+            new PortfolioReadService(),
+            new NavAttributionService(securityMaster),
+            new ReportGenerationService(securityMaster));
     }
 }

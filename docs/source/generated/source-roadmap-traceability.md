@@ -83,6 +83,7 @@ do_not_edit: true
 | `SRC-INFRASTRUCTURE` | Meridian infrastructure | `W7-LIVE-001` | Live-readiness governance |
 | `SRC-LEDGER` | Meridian ledger | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-LEDGER` | Meridian ledger | `W4-RPT-001` | Governed report pack readiness |
+| `SRC-LEDGER` | Meridian ledger | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-MCP` | Meridian MCP host | `W7-LIVE-001` | Live-readiness governance |
 | `SRC-PROVIDER-SDK` | Provider SDK | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `SRC-PROVIDER-SDK` | Provider SDK | `W7-LIVE-001` | Live-readiness governance |
@@ -103,7 +104,9 @@ do_not_edit: true
 | `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W3-CONT-001` | Research to paper continuity |
+| `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W4-RPT-001` | Governed report pack readiness |
 | `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-UI-DASHBOARD` | Browser workstation dashboard | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
 | `SRC-UI-SERVICES` | UI services | `W2-TRD-001` | Paper trading cockpit reliability |
 | `SRC-UI-SERVICES` | UI services | `W2-PROMO-001` | Paper promotion evidence and operator acceptance |
 | `SRC-UI-SERVICES` | UI services | `W3-CONT-001` | Research to paper continuity |
@@ -117,3 +120,4 @@ do_not_edit: true
 | `SRC-WPF` | WPF workstation | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-WPF` | WPF workstation | `W4-RPT-001` | Governed report pack readiness |
 | `SRC-WPF` | WPF workstation | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-WPF` | WPF workstation | `W5-MASSET-001` | Multi-asset operational coverage proof lane |

@@ -152,7 +152,8 @@ public sealed class UserProfileRegistry
                 PermissionOverride: permissions,
                 RoleProfileName: account.RoleProfileName,
                 InvalidPermissionNames: invalidPermissionNames,
-                PasswordResetRequired: account.PasswordResetRequired);
+                PasswordResetRequired: account.PasswordResetRequired,
+                CompanyId: account.CompanyId);
         }
 
         if (!string.IsNullOrWhiteSpace(account.RoleProfileName) &&
@@ -169,14 +170,16 @@ public sealed class UserProfileRegistry
                 PermissionOverride: roleProfilePermissions,
                 RoleProfileName: profile.Role,
                 InvalidPermissionNames: roleProfileInvalidPermissions,
-                PasswordResetRequired: account.PasswordResetRequired);
+                PasswordResetRequired: account.PasswordResetRequired,
+                CompanyId: account.CompanyId);
         }
 
         return new UserProfile(
             account.Username,
             account.Role,
             RoleProfileName: account.RoleProfileName,
-            PasswordResetRequired: account.PasswordResetRequired);
+            PasswordResetRequired: account.PasswordResetRequired,
+            CompanyId: account.CompanyId);
     }
 
     private static bool IsUsableAccountConfig(UserAccountConfig account)
@@ -211,7 +214,8 @@ public sealed record UserProfile(
     UserPermission? PermissionOverride = null,
     string? RoleProfileName = null,
     IReadOnlyList<string>? InvalidPermissionNames = null,
-    bool PasswordResetRequired = false)
+    bool PasswordResetRequired = false,
+    string? CompanyId = null)
 {
     /// <summary>The permissions granted to this user based on their <see cref="Role"/>.</summary>
     public UserPermission Permissions => PermissionOverride ?? RolePermissions.For(Role);
@@ -227,7 +231,8 @@ public sealed record UserAccountConfig(
     [property: JsonPropertyName("roleProfileName")] string? RoleProfileName = null,
     [property: JsonPropertyName("permissions")] IReadOnlyList<string>? Permissions = null,
     [property: JsonPropertyName("disabled")] bool IsDisabled = false,
-    [property: JsonPropertyName("passwordResetRequired")] bool PasswordResetRequired = false);
+    [property: JsonPropertyName("passwordResetRequired")] bool PasswordResetRequired = false,
+    [property: JsonPropertyName("companyId")] string? CompanyId = null);
 
 /// <summary>AOT-safe JSON context for deserializing <see cref="UserAccountConfig"/> arrays.</summary>
 [JsonSerializable(typeof(UserAccountConfig[]))]

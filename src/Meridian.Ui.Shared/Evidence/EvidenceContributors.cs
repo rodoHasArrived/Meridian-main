@@ -1169,7 +1169,9 @@ public sealed class PrivateCapitalFundEventEvidenceContributor : IEvidenceContri
                 .Select(output => Artifact(
                     $"{reportOutputId}:{SanitizeNodePart(output.ReportOutputId)}",
                     output.IsPublished ? "published-report-output-route" : "report-output-route",
-                    route: output.ReportRoute,
+                    route: string.IsNullOrWhiteSpace(output.ReportOutputRoute)
+                        ? output.ReportRoute
+                        : output.ReportOutputRoute,
                     generatedAt: generatedAt,
                     hash: output.PublicationEvidenceHash,
                     retained: output.IsPublished))

@@ -72,7 +72,7 @@ public sealed record PrivateCapitalFundEventLedgerEvent(
         LedgerImpacts.All(static item => item.IsBalanced) &&
         CapitalAccountImpacts.Count > 0;
 
-    public bool IsReportReady => IsPostingReady && ReportOutputs.Any(static item => item.IsPublished);
+    public bool IsReportReady => IsPostingReady && ReportOutputs.Any(static item => item.IsPublished && item.EvidenceLinks.Count > 0);
 }
 
 public sealed record PrivateCapitalFundEventLedgerImpact(
@@ -127,6 +127,11 @@ public sealed record PrivateCapitalFundEventIssue(
 public static class PrivateCapitalFundEventLedgerProjector
 {
     private const decimal BalanceTolerance = 0.000001m;
+
+    private sealed record CapitalAccountImpactLine(
+        string CapitalAccountId,
+        string? InvestorId,
+        LedgerEntry Line);
 
     public static PrivateCapitalFundEventLedgerProjection Project(
         IReadOnlyLedger ledger,
@@ -230,35 +235,50 @@ public static class PrivateCapitalFundEventLedgerProjector
         string? capitalAccountId,
         string? investorId)
     {
-        if (string.IsNullOrWhiteSpace(capitalAccountId))
-        {
-            return [];
-        }
-
         return entries
-            .SelectMany(static entry => entry.Lines)
-            .Where(static line => line.Account.AccountType == LedgerAccountType.Equity)
+            .SelectMany(entry => entry.Lines
+                .Where(static line => line.Account.AccountType == LedgerAccountType.Equity)
+                .Select(line => BuildCapitalAccountImpactLine(entry.Metadata, line, capitalAccountId, investorId)))
+            .Where(static line => line is not null)
+            .Select(static line => line!)
             .GroupBy(
-                static line => $"{line.Account.Name}\u001f{line.Account.FinancialAccountId}",
+                static line => $"{line.CapitalAccountId}\u001f{line.InvestorId}\u001f{line.Line.Account.Name}\u001f{line.Line.Account.FinancialAccountId}",
                 StringComparer.OrdinalIgnoreCase)
             .Select(group =>
             {
                 var first = group.First();
-                var debits = group.Sum(static line => line.Debit);
-                var credits = group.Sum(static line => line.Credit);
+                var debits = group.Sum(static line => line.Line.Debit);
+                var credits = group.Sum(static line => line.Line.Credit);
                 return new PrivateCapitalFundEventCapitalAccountImpact(
-                    capitalAccountId,
-                    investorId,
-                    first.Account.Name,
-                    first.Account.FinancialAccountId,
+                    first.CapitalAccountId,
+                    first.InvestorId,
+                    first.Line.Account.Name,
+                    first.Line.Account.FinancialAccountId,
                     debits,
                     credits,
                     credits - debits,
-                    group.Select(static line => line.EntryId).Distinct().ToArray());
+                    group.Select(static line => line.Line.EntryId).Distinct().ToArray());
             })
             .OrderBy(static item => item.CapitalAccountId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static item => item.InvestorId, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static item => item.AccountName, StringComparer.Ordinal)
             .ToArray();
+    }
+
+    private static CapitalAccountImpactLine? BuildCapitalAccountImpactLine(
+        JournalEntryMetadata metadata,
+        LedgerEntry line,
+        string? fallbackCapitalAccountId,
+        string? fallbackInvestorId)
+    {
+        var resolvedCapitalAccountId = NormalizeText(metadata.CapitalAccountId) ?? NormalizeText(fallbackCapitalAccountId);
+        if (resolvedCapitalAccountId is null)
+        {
+            return null;
+        }
+
+        var resolvedInvestorId = NormalizeText(metadata.InvestorId) ?? NormalizeText(fallbackInvestorId);
+        return new CapitalAccountImpactLine(resolvedCapitalAccountId, resolvedInvestorId, line);
     }
 
     private static IReadOnlyList<PrivateCapitalFundEventReportOutput> BuildReportOutputs(
@@ -365,6 +385,21 @@ public static class PrivateCapitalFundEventLedgerProjector
             entries.Select(ResolveApprovalStatusText),
             "private-capital.approval-state-conflict",
             "Posted private-capital journals grouped into one fund event disagree on approval state.");
+        AddMetadataConsistencyIssue(
+            issues,
+            entries.Select(static entry => entry.Metadata.IdempotencyKey),
+            "private-capital.idempotency-key-conflict",
+            "Posted private-capital journals grouped into one fund event disagree on idempotency key.");
+        AddMetadataConsistencyIssue(
+            issues,
+            entries.Select(static entry => entry.Metadata.PaymentIntentId),
+            "private-capital.payment-intent-conflict",
+            "Posted private-capital journals grouped into one fund event disagree on payment intent id.");
+        AddMetadataConsistencyIssue(
+            issues,
+            entries.Select(static entry => entry.Metadata.SettlementReference),
+            "private-capital.settlement-reference-conflict",
+            "Posted private-capital journals grouped into one fund event disagree on settlement reference.");
 
         if (!entries.Any(static entry => entry.Metadata.EffectiveDate is not null))
         {
@@ -498,6 +533,9 @@ public static class PrivateCapitalFundEventLedgerProjector
             .Select(entry => selector(entry.Metadata))
             .FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))
             ?.Trim();
+
+    private static string? NormalizeText(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string? FirstTagText(IReadOnlyList<JournalEntry> entries, string key)
     {

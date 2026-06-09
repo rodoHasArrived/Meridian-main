@@ -308,6 +308,16 @@
                                         <DataGridTextColumn Header="Activity" Binding="{Binding Evidence}" Width="*" />
                                     </DataGrid.Columns>
                                 </DataGrid>
+                                <TextBlock Text="Capital Account Subledgers" Style="{StaticResource CardHeaderStyle}" Margin="0,16,0,0" />
+                                <DataGrid ItemsSource="{Binding ManualJournalCapitalAccountSubledgerRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="ManualJournalCapitalAccountSubledgerGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Capital Account" Binding="{Binding Name}" Width="260" />
+                                        <DataGridTextColumn Header="Readiness" Binding="{Binding Status}" Width="110" />
+                                        <DataGridTextColumn Header="Roll-Forward" Binding="{Binding Detail}" Width="280" />
+                                        <DataGridTextColumn Header="Evidence and Counts" Binding="{Binding Evidence}" Width="*" />
+                                        <DataGridTextColumn Header="Subledger Route" Binding="{Binding Key}" Width="260" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
                                 <TextBlock Text="Fund Events" Style="{StaticResource CardHeaderStyle}" Margin="0,16,0,0" />
                                 <DataGrid ItemsSource="{Binding ManualJournalFundEventRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="ManualJournalFundEventGrid">
                                     <DataGrid.Columns>
@@ -332,7 +342,8 @@
                                         <DataGridTextColumn Header="Output" Binding="{Binding Name}" Width="260" />
                                         <DataGridTextColumn Header="Readiness" Binding="{Binding Status}" Width="110" />
                                         <DataGridTextColumn Header="Amount" Binding="{Binding Detail}" Width="180" />
-                                        <DataGridTextColumn Header="Evidence / Route" Binding="{Binding Evidence}" Width="*" />
+                                        <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="*" />
+                                        <DataGridTextColumn Header="Report Output Route" Binding="{Binding Key}" Width="260" />
                                     </DataGrid.Columns>
                                 </DataGrid>
                             </StackPanel>

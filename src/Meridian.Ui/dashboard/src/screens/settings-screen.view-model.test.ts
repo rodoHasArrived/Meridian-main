@@ -1116,6 +1116,11 @@ describe("buildSettingsScreenViewModel", () => {
           href: "/api/ledger/private-capital/activity",
           method: "GET",
           isBrowserNavigable: true
+        }),
+        expect.objectContaining({
+          href: "/api/ledger/private-capital/report-output",
+          method: "GET",
+          isBrowserNavigable: true
         })
       ])
     );

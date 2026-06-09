@@ -31,16 +31,19 @@ public static class ReportWriterGridEngine
             .ToArray();
         var metrics = NormalizeMetrics(grid.Metrics);
         var formulas = NormalizeFormulas(grid.Formulas);
+        var filters = NormalizeFilters(grid.Filters);
 
         if (rows.Count == 0)
         {
             warnings.Add($"Grid '{grid.GridId}' has no dataset rows to render.");
         }
 
+        var filteredRows = ApplyFilters(grid, rows, filters, warnings);
         var columnList = BuildColumns(dimensions, metrics, formulas, includeContribution: grid.Kind == ReportWriterGridKindDto.Contribution);
         var renderedRows = grid.Kind == ReportWriterGridKindDto.Detail
-            ? RenderDetailRows(grid, rows, dimensions, metrics, formulas, warnings)
-            : RenderAggregateRows(grid, rows, dimensions, metrics, formulas, warnings);
+            ? RenderDetailRows(grid, filteredRows, dimensions, metrics, formulas, warnings)
+            : RenderAggregateRows(grid, filteredRows, dimensions, metrics, formulas, warnings);
+        var lineage = BuildLineage(rows.Count, filteredRows.Count, renderedRows.Count, dimensions, metrics, formulas, filters);
 
         return new ReportWriterGridRenderDto(
             grid.GridId.Trim(),
@@ -48,7 +51,8 @@ public static class ReportWriterGridEngine
             grid.Kind,
             columnList,
             renderedRows,
-            warnings.ToArray());
+            warnings.ToArray(),
+            lineage);
     }
 
     private static IReadOnlyList<ReportWriterGridRowDto> RenderDetailRows(
@@ -153,6 +157,92 @@ public static class ReportWriterGridEngine
 
         columns.AddRange(formulas.Select(formula => new ReportWriterGridColumnDto(formula.Name, formula.Label ?? formula.Name, "formula")));
         return columns;
+    }
+
+    private static ReportWriterGridLineageDto BuildLineage(
+        int inputRowCount,
+        int filteredInputRowCount,
+        int outputRowCount,
+        IReadOnlyList<string> dimensions,
+        IReadOnlyList<ReportWriterMetricDefinitionDto> metrics,
+        IReadOnlyList<ReportWriterFormulaDefinitionDto> formulas,
+        IReadOnlyList<ReportWriterFilterDefinitionDto> filters)
+    {
+        var formulaLineage = formulas
+            .Select(formula => new ReportWriterFormulaLineageDto(
+                formula.Name,
+                formula.Expression,
+                ExtractFormulaSourceFields(formula.Expression)))
+            .ToArray();
+        var filterLineage = filters
+            .Select(static filter => new ReportWriterFilterLineageDto(
+                filter.Field,
+                filter.Operator.ToString(),
+                filter.Value,
+                filter.Label))
+            .ToArray();
+        var sourceFields = dimensions
+            .Concat(metrics.Select(static metric => metric.SourceField))
+            .Concat(formulaLineage.SelectMany(static formula => formula.SourceFields))
+            .Concat(filterLineage.Select(static filter => filter.Field))
+            .Where(static field => !string.IsNullOrWhiteSpace(field))
+            .Select(static field => field.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static field => field, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var metricLineage = metrics
+            .Select(static metric => new ReportWriterMetricLineageDto(
+                metric.Name,
+                metric.SourceField,
+                metric.Function.ToString()))
+            .ToArray();
+
+        return new ReportWriterGridLineageDto(
+            inputRowCount,
+            outputRowCount,
+            sourceFields,
+            metricLineage,
+            formulaLineage,
+            filteredInputRowCount,
+            filterLineage);
+    }
+
+    private static IReadOnlyList<string> ExtractFormulaSourceFields(string expression)
+    {
+        if (string.IsNullOrWhiteSpace(expression))
+        {
+            return [];
+        }
+
+        var fields = new List<string>();
+        var position = 0;
+        while (position < expression.Length)
+        {
+            if (expression[position] != '{')
+            {
+                position++;
+                continue;
+            }
+
+            var end = expression.IndexOf('}', position + 1);
+            if (end < 0)
+            {
+                break;
+            }
+
+            var field = expression[(position + 1)..end].Trim();
+            if (field.Length > 0)
+            {
+                fields.Add(field);
+            }
+
+            position = end + 1;
+        }
+
+        return fields
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static field => field, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     private static void ApplyContribution(IReadOnlyList<WorkingRow> rows, string metricName)
@@ -301,6 +391,78 @@ public static class ReportWriterGridEngine
                 Label = string.IsNullOrWhiteSpace(formula.Label) ? null : formula.Label.Trim()
             })
             .ToArray() ?? [];
+
+    private static ReportWriterFilterDefinitionDto[] NormalizeFilters(IReadOnlyList<ReportWriterFilterDefinitionDto>? filters) =>
+        filters?
+            .Where(static filter => !string.IsNullOrWhiteSpace(filter.Field))
+            .Select(static filter => filter with
+            {
+                Field = filter.Field.Trim(),
+                Value = string.IsNullOrWhiteSpace(filter.Value) ? null : filter.Value.Trim(),
+                Label = string.IsNullOrWhiteSpace(filter.Label) ? null : filter.Label.Trim()
+            })
+            .ToArray() ?? [];
+
+    private static IReadOnlyList<IReadOnlyDictionary<string, string>> ApplyFilters(
+        ReportWriterGridDefinitionDto grid,
+        IReadOnlyList<IReadOnlyDictionary<string, string>> rows,
+        IReadOnlyList<ReportWriterFilterDefinitionDto> filters,
+        ISet<string> warnings)
+    {
+        if (filters.Count == 0 || rows.Count == 0)
+        {
+            return rows;
+        }
+
+        var filtered = rows
+            .Where(row => filters.All(filter => MatchesFilter(row, filter, warnings)))
+            .ToArray();
+        if (filtered.Length == 0)
+        {
+            warnings.Add($"Grid '{grid.GridId}' filters removed all {rows.Count} dataset rows.");
+        }
+
+        return filtered;
+    }
+
+    private static bool MatchesFilter(
+        IReadOnlyDictionary<string, string> row,
+        ReportWriterFilterDefinitionDto filter,
+        ISet<string> warnings)
+    {
+        var actual = GetValue(row, filter.Field);
+        var expected = filter.Value ?? string.Empty;
+        return filter.Operator switch
+        {
+            ReportWriterFilterOperatorDto.NotEquals => !string.Equals(actual, expected, StringComparison.OrdinalIgnoreCase),
+            ReportWriterFilterOperatorDto.Contains => actual.Contains(expected, StringComparison.OrdinalIgnoreCase),
+            ReportWriterFilterOperatorDto.StartsWith => actual.StartsWith(expected, StringComparison.OrdinalIgnoreCase),
+            ReportWriterFilterOperatorDto.EndsWith => actual.EndsWith(expected, StringComparison.OrdinalIgnoreCase),
+            ReportWriterFilterOperatorDto.GreaterThan => CompareFilterNumbers(actual, expected, filter, warnings) is { } comparison && comparison > 0,
+            ReportWriterFilterOperatorDto.GreaterThanOrEqual => CompareFilterNumbers(actual, expected, filter, warnings) is { } comparison && comparison >= 0,
+            ReportWriterFilterOperatorDto.LessThan => CompareFilterNumbers(actual, expected, filter, warnings) is { } comparison && comparison < 0,
+            ReportWriterFilterOperatorDto.LessThanOrEqual => CompareFilterNumbers(actual, expected, filter, warnings) is { } comparison && comparison <= 0,
+            ReportWriterFilterOperatorDto.IsBlank => string.IsNullOrWhiteSpace(actual),
+            ReportWriterFilterOperatorDto.IsNotBlank => !string.IsNullOrWhiteSpace(actual),
+            _ => string.Equals(actual, expected, StringComparison.OrdinalIgnoreCase)
+        };
+    }
+
+    private static int? CompareFilterNumbers(
+        string actual,
+        string expected,
+        ReportWriterFilterDefinitionDto filter,
+        ISet<string> warnings)
+    {
+        if (decimal.TryParse(actual, NumberStyles.Number, CultureInfo.InvariantCulture, out var actualNumber) &&
+            decimal.TryParse(expected, NumberStyles.Number, CultureInfo.InvariantCulture, out var expectedNumber))
+        {
+            return actualNumber.CompareTo(expectedNumber);
+        }
+
+        warnings.Add($"Filter '{filter.Field} {filter.Operator}' requires numeric values; non-numeric rows were excluded.");
+        return null;
+    }
 
     private static decimal? TryGetDecimal(
         IReadOnlyDictionary<string, string> row,

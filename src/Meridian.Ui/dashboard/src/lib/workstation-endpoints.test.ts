@@ -151,6 +151,7 @@ describe("workstation API endpoint catalog", () => {
       privateCapitalActivity: "/api/ledger/private-capital/activity",
       privateCapitalFundEventRecord: "/api/ledger/private-capital/fund-event-record",
       privateCapitalCapitalAccountSubledger: "/api/ledger/private-capital/capital-account-subledger",
+      privateCapitalReportOutput: "/api/ledger/private-capital/report-output",
       reporting: "/api/workstation/reporting",
       workflowSummary: "/api/workstation/workflow-summary",
       operationsContinuity: "/api/workstation/operations/continuity",
