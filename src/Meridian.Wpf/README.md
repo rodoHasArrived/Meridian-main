@@ -129,7 +129,13 @@ rows, GL-impact rows, or stakeholder-package state in desktop code. Posted ledge
 and published governed report outputs use the explicit shared source-state flags for desktop row
 labels instead of inferring those states from approval or readiness text, and report-output rows
 show shared report-pack workflow state, publication manifest identity, and provenance counts when
-the shared projection provides them.
+the shared projection provides them. The shared projection also carries event-level ledger records
+that group each fund event with its subledger rows, GL impacts, evidence, approval state, and
+report-output posture. The desktop grid reads promoted memo, gross/net activity, and child-count
+fields plus capital-account opening/ending net activity, the canonical activity route,
+evidence-packet route, approval id/route, primary report-output workflow/provenance,
+readiness reason, and next action from that record without introducing WPF-local accounting
+aggregation.
 The desktop diagnostics surface reads colocation profile state through
 `Meridian.Platform.Performance.ICoLocationProfileActivator`, keeping runtime-performance ownership
 in Platform while WPF remains a presentation surface.

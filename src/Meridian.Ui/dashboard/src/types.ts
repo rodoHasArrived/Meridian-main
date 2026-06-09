@@ -2545,7 +2545,24 @@ export interface AccountingReportingProfile {
   dataDictionary: boolean;
 }
 
+export interface ReportBrandingTheme {
+  themeId: string;
+  name: string;
+  firmName: string;
+  primaryColor: string;
+  accentColor: string;
+  textColor: string;
+  backgroundColor: string;
+  logoUri: string | null;
+  footerText: string | null;
+  disclaimer: string | null;
+  isBuiltIn: boolean;
+}
+
 export type PortfolioReportingCutKind = "Fund" | "Strategy" | "UserTag";
+export type PortfolioReportingLiveViewState = "LiveLinked" | "SourceBacked" | "Stale" | "Blocked";
+export type PortfolioReportingPnlSlicePeriod = "Daily" | "Weekly" | "Monthly" | "Yearly";
+export type CrossFundReportingConsolidationScope = "Company" | "Fund" | "Entity";
 
 export interface PortfolioReportingCut {
   cutId: string;
@@ -2568,6 +2585,77 @@ export interface PortfolioReportingCut {
   asOf: string;
   evidenceRoute: string | null;
   shadowNavNote: string | null;
+  versionStamp: string | null;
+}
+
+export interface PortfolioReportingLiveView {
+  viewId: string;
+  label: string;
+  kind: PortfolioReportingCutKind;
+  state: PortfolioReportingLiveViewState;
+  currency: string;
+  grossExposure: number;
+  netExposure: number;
+  totalCash: number;
+  pendingSettlement: number;
+  totalPnl: number;
+  shadowNav: number;
+  asOf: string;
+  sourceAsOfUtc: string | null;
+  sourceCount: number;
+  route: string;
+  liquiditySummary: string;
+  cashLadderSummary: string;
+  telemetrySummary: string;
+  tags: string[];
+  cashLadderRoute: string | null;
+  versionStamp: string | null;
+}
+
+export interface PortfolioReportingPnlSlice {
+  sliceId: string;
+  period: PortfolioReportingPnlSlicePeriod;
+  label: string;
+  currency: string;
+  startDate: string;
+  endDate: string;
+  realizedPnl: number;
+  unrealizedPnl: number;
+  totalPnl: number;
+  priorTotalPnl: number;
+  pnlChange: number;
+  sourceCount: number;
+  asOf: string;
+  route: string;
+  readinessSummary: string;
+  tags: string[];
+  versionStamp: string | null;
+}
+
+export interface CrossFundReportingConsolidation {
+  consolidationId: string;
+  label: string;
+  scope: CrossFundReportingConsolidationScope;
+  currency: string;
+  isReady: boolean;
+  fundCount: number;
+  entityCount: number;
+  accountCount: number;
+  runCount: number;
+  grossExposure: number;
+  netExposure: number;
+  longMarketValue: number;
+  shortMarketValue: number;
+  totalCash: number;
+  pendingSettlement: number;
+  totalPnl: number;
+  shadowNav: number;
+  shadowNavVariance: number;
+  sourceCount: number;
+  asOf: string;
+  route: string;
+  readinessSummary: string;
+  tags: string[];
   versionStamp: string | null;
 }
 
@@ -2595,6 +2683,174 @@ export interface ReportingTemplateGridMetadata {
   dimensionCount: number;
   metricCount: number;
   formulaCount: number;
+  rowFields?: string[] | null;
+  columnFields?: string[] | null;
+  metrics?: ReportingTemplateGridMetricMetadata[] | null;
+  formulas?: ReportingTemplateGridFormulaMetadata[] | null;
+  topN?: number | null;
+  sortBy?: string | null;
+  sortDescending?: boolean;
+}
+
+export interface ReportingTemplateGridMetricMetadata {
+  name: string;
+  sourceField: string;
+  function: string;
+  label: string | null;
+}
+
+export interface ReportingTemplateGridFormulaMetadata {
+  name: string;
+  expression: string;
+  label: string | null;
+}
+
+export type ReportWriterGridKind = "Detail" | "Pivot" | "TopN" | "Contribution";
+export type ReportWriterAggregateFunction = "Sum" | "Count" | "Average" | "Min" | "Max";
+export type ReportAccessMode = "Private" | "Restricted" | "CompanyWide";
+export type ReportAccessPrincipalKind = "User" | "Group" | "Company";
+
+export interface VersionedReportTemplateId {
+  name: string;
+  version: number;
+}
+
+export interface ReportTemplateParameterDefinition {
+  name: string;
+  required: boolean;
+}
+
+export interface ReportWriterMetricDefinition {
+  name: string;
+  sourceField: string;
+  function?: ReportWriterAggregateFunction;
+  label?: string | null;
+}
+
+export interface ReportWriterFormulaDefinition {
+  name: string;
+  expression: string;
+  label?: string | null;
+}
+
+export interface ReportWriterGridDefinition {
+  gridId: string;
+  title: string;
+  kind: ReportWriterGridKind;
+  rowFields?: string[] | null;
+  columnFields?: string[] | null;
+  metrics?: ReportWriterMetricDefinition[] | null;
+  formulas?: ReportWriterFormulaDefinition[] | null;
+  topN?: number | null;
+  sortBy?: string | null;
+  sortDescending?: boolean;
+}
+
+export interface ReportWriterGridColumn {
+  key: string;
+  label: string;
+  role: string;
+}
+
+export interface ReportWriterGridRow {
+  rowKey: string;
+  values: Record<string, string>;
+}
+
+export interface ReportWriterGridRender {
+  gridId: string;
+  title: string;
+  kind: ReportWriterGridKind;
+  columns: ReportWriterGridColumn[];
+  rows: ReportWriterGridRow[];
+  warnings: string[];
+}
+
+export interface ReportAccessPrincipal {
+  kind: ReportAccessPrincipalKind;
+  principalId: string;
+  displayName?: string | null;
+}
+
+export interface ReportAccessPolicy {
+  mode: ReportAccessMode;
+  ownerPrincipalId?: string | null;
+  principals?: ReportAccessPrincipal[] | null;
+  companyId?: string | null;
+  allowOwnerAccess?: boolean;
+}
+
+export interface ReportTemplateDraftRequest {
+  name: string;
+  displayName: string;
+  sections: string[];
+  parameters: ReportTemplateParameterDefinition[];
+  family?: string | null;
+  basedOnVersion?: number | null;
+  rationale?: string | null;
+  grids?: ReportWriterGridDefinition[] | null;
+  accessPolicy?: ReportAccessPolicy | null;
+}
+
+export interface RenderReportTemplateRequest {
+  templateId: VersionedReportTemplateId;
+  parameters: Record<string, string>;
+  datasetRows?: Record<string, string>[] | null;
+  grids?: ReportWriterGridDefinition[] | null;
+}
+
+export interface RenderReportTemplateResponse {
+  templateId: VersionedReportTemplateId;
+  renderedContent: string;
+  missingRequiredParameters: string[];
+  grids?: ReportWriterGridRender[] | null;
+  warnings?: string[] | null;
+}
+
+export interface ReportTemplateDecisionRequest {
+  rationale: string;
+  approvalReference?: string | null;
+}
+
+export interface ReportTemplateAuditEvent {
+  at: string;
+  actor: string;
+  action: string;
+  fromStatus: string;
+  toStatus: string;
+  note: string | null;
+}
+
+export interface ReportTemplateDefinition {
+  templateId: VersionedReportTemplateId;
+  displayName: string;
+  parameters: ReportTemplateParameterDefinition[];
+  sections: string[] | null;
+  grids: ReportWriterGridDefinition[] | null;
+  accessPolicy: ReportAccessPolicy | null;
+}
+
+export interface ReportTemplateGovernanceRecord {
+  definition: ReportTemplateDefinition;
+  status: string;
+  family: string;
+  isBuiltIn: boolean;
+  isLatestApproved: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedBy: string;
+  updatedAt: string;
+  validationIssues: string[];
+  auditTrail: ReportTemplateAuditEvent[];
+  submittedBy?: string | null;
+  submittedAt?: string | null;
+  approvedBy?: string | null;
+  approvedAt?: string | null;
+  rejectedBy?: string | null;
+  rejectedAt?: string | null;
+  decisionRationale?: string | null;
+  approvalReference?: string | null;
+  basedOnTemplateId?: VersionedReportTemplateId | null;
 }
 
 export interface ReportingRunStatusProjection {
@@ -2710,6 +2966,13 @@ export interface ReportPackDeliveryHistory {
   attempts: ReportPackDeliveryAttempt[];
 }
 
+export interface ReportingScheduleDeliveryTarget {
+  distributionId: string;
+  formats?: GovernanceReportArtifactFormat[] | null;
+  deliveryMode?: ReportPackDeliveryMode | null;
+  note?: string | null;
+}
+
 export type StructuredReportingExportPurpose = "Regulatory" | "DataWarehouse" | "InvestmentDecision";
 
 export interface StructuredReportingExport {
@@ -2764,6 +3027,7 @@ export interface ReportingScheduleRecord {
   lastRunId: string | null;
   runCount: number;
   description: string | null;
+  deliveryTargets?: ReportingScheduleDeliveryTarget[] | null;
 }
 
 export interface ReportingScheduleUpsertRequest {
@@ -2776,11 +3040,14 @@ export interface ReportingScheduleUpsertRequest {
   requestedBy: string;
   description?: string | null;
   state?: string;
+  deliveryTargets?: ReportingScheduleDeliveryTarget[] | null;
 }
 
 export interface ReportingScheduleRunResult {
   schedule: ReportingScheduleRecord;
   run: ReportingRunStatusProjection;
+  deliveryAttempts?: ReportPackDeliveryAttempt[] | null;
+  deliveryWarnings?: string[] | null;
 }
 
 export interface ReportingDueScheduleRunResult {
@@ -2885,6 +3152,10 @@ export interface AccountingReportingSummary {
   deliveryAttempts?: ReportPackDeliveryAttempt[];
   portfolioCuts?: PortfolioReportingCut[];
   structuredExports?: StructuredReportingExport[];
+  brandingThemes?: ReportBrandingTheme[];
+  livePortfolioViews?: PortfolioReportingLiveView[];
+  crossFundConsolidations?: CrossFundReportingConsolidation[];
+  pnlSlices?: PortfolioReportingPnlSlice[];
 }
 
 export type GovernanceCashFlowSummary = AccountingCashFlowSummary;
@@ -3298,6 +3569,14 @@ export type AccountingConfigurationStatus = "Draft" | "Active" | "Archived";
 export type AccountingConfigurationValidationSeverity = "Info" | "Warning" | "Critical";
 export type AccountingTemplateLineSide = "Debit" | "Credit";
 export type ManualJournalEntryStatus = "Draft" | "NeedsFix" | "Submitted" | "Approved" | "Rejected";
+export type PrivateCapitalFundEventLedgerReadiness =
+  | "Blocked"
+  | "EvidenceMissing"
+  | "ApprovalPending"
+  | "PostingReview"
+  | "ReportReview"
+  | "Ready"
+  | "Published";
 export type ManualJournalEntryType =
   | "General"
   | "AccruedBalance"
@@ -3511,6 +3790,7 @@ export interface PrivateCapitalFundEvent {
   validationIssues: AccountingConfigurationValidationIssue[];
   updatedAtUtc: string;
   isPosted?: boolean;
+  approvalId?: string | null;
 }
 
 export interface PrivateCapitalCapitalAccountActivity {
@@ -3611,6 +3891,56 @@ export interface PrivateCapitalReportOutput {
   reportLineProvenanceCount?: number;
 }
 
+export interface PrivateCapitalFundEventLedgerRecord {
+  fundEventRecordId: string;
+  fundEventId: string;
+  fundEventType: string;
+  capitalAccountId: string;
+  investorId?: string | null;
+  approvalState: ManualJournalEntryStatus;
+  journalEntryId: string;
+  effectiveDate: string;
+  currency: string;
+  grossAmount: number;
+  netCapitalActivity: number;
+  capitalAccountOpeningNetActivity: number;
+  capitalAccountEndingNetActivity: number;
+  memo: string;
+  paymentIntentId?: string | null;
+  settlementReference?: string | null;
+  activityRoute: string;
+  evidenceRoute: string;
+  approvalId?: string | null;
+  approvalRoute?: string | null;
+  isPosted: boolean;
+  isPostingReady: boolean;
+  isReportReady: boolean;
+  isPublished: boolean;
+  readiness: PrivateCapitalFundEventLedgerReadiness;
+  readinessLabel: string;
+  readinessReason: string;
+  nextAction: string;
+  nextActionRoute?: string | null;
+  evidenceLinkCount: number;
+  capitalAccountSubledgerEntryCount: number;
+  ledgerImpactCount: number;
+  reportOutputCount: number;
+  validationIssueCount: number;
+  primaryReportOutputId?: string | null;
+  primaryReportOutputType?: string | null;
+  primaryReportRoute?: string | null;
+  reportWorkflowState?: string | null;
+  publicationManifestId?: string | null;
+  retainedManifestPath?: string | null;
+  reportLineProvenanceCount: number;
+  evidenceLinks: string[];
+  fundEvent: PrivateCapitalFundEvent;
+  capitalAccountSubledgerEntries: PrivateCapitalCapitalAccountSubledgerEntry[];
+  ledgerImpacts: PrivateCapitalLedgerImpact[];
+  reportOutputs: PrivateCapitalReportOutput[];
+  validationIssues: AccountingConfigurationValidationIssue[];
+}
+
 export interface PrivateCapitalActivityProjection {
   fundProfileId: string;
   ledgerBookId?: string | null;
@@ -3625,9 +3955,10 @@ export interface PrivateCapitalActivityProjection {
   currency: string;
   fundEvents: PrivateCapitalFundEvent[];
   capitalAccounts: PrivateCapitalCapitalAccountActivity[];
-  capitalAccountSubledgerEntries?: PrivateCapitalCapitalAccountSubledgerEntry[] | null;
-  ledgerImpacts?: PrivateCapitalLedgerImpact[] | null;
-  reportOutputs?: PrivateCapitalReportOutput[] | null;
+  capitalAccountSubledgerEntries: PrivateCapitalCapitalAccountSubledgerEntry[];
+  ledgerImpacts: PrivateCapitalLedgerImpact[];
+  reportOutputs: PrivateCapitalReportOutput[];
+  fundEventRecords: PrivateCapitalFundEventLedgerRecord[];
   validationIssues: AccountingConfigurationValidationIssue[];
 }
 

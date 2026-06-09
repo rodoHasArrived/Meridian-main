@@ -289,6 +289,16 @@
                                         <DataGridTextColumn Header="Validation" Binding="{Binding Evidence}" Width="*" />
                                     </DataGrid.Columns>
                                 </DataGrid>
+                                <TextBlock Text="Fund Event Ledger Records" Style="{StaticResource CardHeaderStyle}" Margin="0,16,0,0" />
+                                <DataGrid ItemsSource="{Binding ManualJournalFundEventLedgerRecordRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="ManualJournalFundEventLedgerRecordGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Event" Binding="{Binding Name}" Width="260" />
+                                        <DataGridTextColumn Header="State" Binding="{Binding Status}" Width="110" />
+                                        <DataGridTextColumn Header="Capital Activity" Binding="{Binding Detail}" Width="190" />
+                                        <DataGridTextColumn Header="Linked Impact" Binding="{Binding Evidence}" Width="*" />
+                                        <DataGridTextColumn Header="Activity Route" Binding="{Binding Key}" Width="240" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
                                 <TextBlock Text="Capital Account Activity" Style="{StaticResource CardHeaderStyle}" Margin="0,16,0,0" />
                                 <DataGrid ItemsSource="{Binding ManualJournalCapitalAccountRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="ManualJournalCapitalAccountGrid">
                                     <DataGrid.Columns>

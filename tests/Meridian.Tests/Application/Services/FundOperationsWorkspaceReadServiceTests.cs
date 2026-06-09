@@ -28,6 +28,9 @@ public sealed class FundOperationsWorkspaceReadServiceTests
     {
         var fundProfileId = $"fund-{Guid.NewGuid():N}";
         var fundId = TranslateFundProfileId(fundProfileId);
+        var siblingFundProfileId = $"fund-sibling-{Guid.NewGuid():N}";
+        var siblingFundId = TranslateFundProfileId(siblingFundProfileId);
+        var siblingEntityId = Guid.NewGuid();
         var accountService = new InMemoryFundAccountService();
         var repository = new StrategyRunStore();
         var portfolioReadService = new PortfolioReadService();
@@ -71,6 +74,17 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             CreatedBy: "test",
             FundId: fundId,
             LedgerReference: "FUND-TB"));
+        var siblingAccount = await accountService.CreateAccountAsync(new CreateAccountRequest(
+            AccountId: Guid.NewGuid(),
+            AccountType: AccountTypeDto.Custody,
+            AccountCode: "CUST-002",
+            DisplayName: "Sibling Custody",
+            BaseCurrency: "USD",
+            EffectiveFrom: new DateTimeOffset(2026, 4, 10, 0, 0, 0, TimeSpan.Zero),
+            CreatedBy: "test",
+            FundId: siblingFundId,
+            EntityId: siblingEntityId,
+            LedgerReference: "SIBLING-TB"));
 
         await accountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
             AccountId: bankAccount.AccountId,
@@ -88,6 +102,14 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             Source: "custody",
             RecordedBy: "test",
             SecuritiesMarketValue: 400m));
+        await accountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+            AccountId: siblingAccount.AccountId,
+            AsOfDate: new DateOnly(2026, 4, 11),
+            Currency: "USD",
+            CashBalance: 1_000m,
+            Source: "custody",
+            RecordedBy: "test",
+            SecuritiesMarketValue: 200m));
         await accountService.IngestBankStatementAsync(new IngestBankStatementRequest(
             BatchId: Guid.NewGuid(),
             AccountId: bankAccount.AccountId,
@@ -119,6 +141,14 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             fundDisplayName: "Alpha Income Fund",
             realizedPnl: 20m,
             unrealizedPnl: 30m));
+        await repository.RecordRunAsync(BuildRun(
+            runId: "run-sibling-001",
+            strategyId: "sibling-1",
+            strategyName: "Sibling Strategy",
+            fundProfileId: siblingFundProfileId,
+            fundDisplayName: "Sibling Income Fund",
+            realizedPnl: 15m,
+            unrealizedPnl: 30m));
 
         var workspace = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(
             FundProfileId: fundProfileId,
@@ -142,6 +172,11 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         workspace.LedgerReconciliationSnapshot.Vehicles.Should().BeEmpty();
         workspace.Nav.ComponentCount.Should().BeGreaterThan(0);
         workspace.Reporting.ProfileCount.Should().BeGreaterThan(0);
+        workspace.Reporting.BrandingThemes.Should().NotBeNull();
+        workspace.Reporting.BrandingThemes!.Should().Contain(theme =>
+            theme.ThemeId == "meridian-standard" &&
+            theme.IsBuiltIn &&
+            theme.PrimaryColor == "#195E63");
         workspace.Reporting.PortfolioCuts.Should().NotBeNull();
         workspace.Reporting.PortfolioCuts!.Should().Contain(cut =>
             cut.Kind == PortfolioReportingCutKindDto.Fund &&
@@ -161,6 +196,79 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             cut.SourceCount == 2 &&
             cut.TotalCash == 3_250m &&
             cut.ShadowNav == 3_650m);
+        workspace.Reporting.PnlSlices.Should().NotBeNull();
+        workspace.Reporting.PnlSlices!.Should().HaveCount(4);
+        workspace.Reporting.PnlSlices.Select(slice => slice.Period).Should().BeEquivalentTo(
+            [
+                PortfolioReportingPnlSlicePeriodDto.Daily,
+                PortfolioReportingPnlSlicePeriodDto.Weekly,
+                PortfolioReportingPnlSlicePeriodDto.Monthly,
+                PortfolioReportingPnlSlicePeriodDto.Yearly
+            ]);
+        var dailyPnlSlice = workspace.Reporting.PnlSlices.Should().ContainSingle(slice =>
+                slice.Period == PortfolioReportingPnlSlicePeriodDto.Daily)
+            .Which;
+        dailyPnlSlice.StartDate.Should().Be(new DateOnly(2026, 4, 11));
+        dailyPnlSlice.EndDate.Should().Be(new DateOnly(2026, 4, 11));
+        dailyPnlSlice.RealizedPnl.Should().Be(20m);
+        dailyPnlSlice.UnrealizedPnl.Should().Be(30m);
+        dailyPnlSlice.TotalPnl.Should().Be(50m);
+        dailyPnlSlice.PnlChange.Should().Be(50m);
+        dailyPnlSlice.SourceCount.Should().Be(1);
+        dailyPnlSlice.Route.Should().Be("/api/workstation/reporting?pnlSlice=daily");
+        dailyPnlSlice.ReadinessSummary.Should().Contain("1 source-backed run(s) in the daily window");
+        workspace.Reporting.PnlSlices.Should().Contain(slice =>
+            slice.Period == PortfolioReportingPnlSlicePeriodDto.Weekly &&
+            slice.StartDate == new DateOnly(2026, 4, 5) &&
+            slice.EndDate == new DateOnly(2026, 4, 11) &&
+            slice.TotalPnl == 50m);
+        workspace.Reporting.PnlSlices.Should().Contain(slice =>
+            slice.Period == PortfolioReportingPnlSlicePeriodDto.Monthly &&
+            slice.StartDate == new DateOnly(2026, 4, 1) &&
+            slice.EndDate == new DateOnly(2026, 4, 11) &&
+            slice.TotalPnl == 50m);
+        workspace.Reporting.PnlSlices.Should().Contain(slice =>
+            slice.Period == PortfolioReportingPnlSlicePeriodDto.Yearly &&
+            slice.StartDate == new DateOnly(2026, 1, 1) &&
+            slice.EndDate == new DateOnly(2026, 4, 11) &&
+            slice.TotalPnl == 50m &&
+            slice.VersionStamp == "pnl-slice:20260411160000:yearly:sources-1:prior-0");
+        workspace.Reporting.LivePortfolioViews.Should().NotBeNull();
+        var fundLiveView = workspace.Reporting.LivePortfolioViews!.Should().ContainSingle(view =>
+                view.ViewId == "live:fund:consolidated")
+            .Which;
+        fundLiveView.State.Should().Be(PortfolioReportingLiveViewStateDto.SourceBacked);
+        fundLiveView.SourceCount.Should().Be(3);
+        fundLiveView.SourceAsOfUtc.Should().Be(new DateTimeOffset(2026, 4, 11, 14, 30, 0, TimeSpan.Zero));
+        fundLiveView.Route.Should().Be("/api/workstation/portfolio/summary?fundAccountId=all&strategyId=all&entity=portfolio");
+        fundLiveView.LiquiditySummary.Should().Contain("pending settlement");
+        var strategyLiveView = workspace.Reporting.LivePortfolioViews.Should().ContainSingle(view =>
+                view.ViewId == "live:strategy:carry-1")
+            .Which;
+        strategyLiveView.State.Should().Be(PortfolioReportingLiveViewStateDto.SourceBacked);
+        strategyLiveView.CashLadderRoute.Should().Be("/api/portfolio/run-governance-001/cash-flows");
+        strategyLiveView.Route.Should().Contain("strategyId=carry-1");
+        workspace.Reporting.CrossFundConsolidations.Should().NotBeNull();
+        var companyConsolidation = workspace.Reporting.CrossFundConsolidations!.Should().ContainSingle(row =>
+                row.ConsolidationId == "cross-fund:company")
+            .Which;
+        companyConsolidation.IsReady.Should().BeTrue();
+        companyConsolidation.FundCount.Should().Be(2);
+        companyConsolidation.EntityCount.Should().Be(1);
+        companyConsolidation.AccountCount.Should().Be(3);
+        companyConsolidation.RunCount.Should().Be(2);
+        companyConsolidation.SourceCount.Should().Be(5);
+        companyConsolidation.TotalPnl.Should().Be(95m);
+        companyConsolidation.Route.Should().Be("/api/workstation/reporting?consolidationId=cross-fund%3Acompany");
+        workspace.Reporting.CrossFundConsolidations.Should().Contain(row =>
+            row.Scope == CrossFundReportingConsolidationScopeDto.Fund &&
+            row.Label == "Sibling Income Fund" &&
+            row.RunCount == 1 &&
+            row.AccountCount == 1);
+        workspace.Reporting.CrossFundConsolidations.Should().Contain(row =>
+            row.Scope == CrossFundReportingConsolidationScopeDto.Entity &&
+            row.EntityCount == 1 &&
+            row.AccountCount == 1);
         workspace.Reporting.StructuredExports.Should().NotBeNull();
         workspace.Reporting.StructuredExports!.Should().Contain(export =>
             export.ExportId == "regulatory-trial-balance" &&
@@ -175,6 +283,12 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             export.RowCount == workspace.Reporting.PortfolioCuts!.Count &&
             export.Route.Contains("fundProfileId=", StringComparison.Ordinal) &&
             export.VersionStamp!.StartsWith("structured-export:20260411160000", StringComparison.Ordinal));
+        workspace.Reporting.StructuredExports.Should().Contain(export =>
+            export.ExportId == "cross-fund-consolidation" &&
+            export.Purpose == StructuredReportingExportPurposeDto.InvestmentDecision &&
+            export.RowCount == workspace.Reporting.CrossFundConsolidations!.Count &&
+            export.SourceCount == companyConsolidation.SourceCount &&
+            export.IsReady);
         var portfolioExport = await service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
             fundProfileId,
             "investment-portfolio-cuts",
@@ -186,6 +300,17 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             row["cutId"] == "fund:consolidated" &&
             row["totalPnl"] == "50" &&
             row["shadowNav"] == "2000");
+        var crossFundExport = await service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
+            fundProfileId,
+            "cross-fund-consolidation",
+            new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero),
+            "USD"));
+        crossFundExport.Export.ExportId.Should().Be("cross-fund-consolidation");
+        crossFundExport.Columns.Should().Contain(column => column.Name == "fundCount");
+        crossFundExport.Rows.Should().Contain(row =>
+            row["consolidationId"] == "cross-fund:company" &&
+            row["fundCount"] == "2" &&
+            row["sourceCount"] == "5");
         Func<Task> missingExport = () => service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
             fundProfileId,
             "missing-export",
@@ -202,10 +327,49 @@ public sealed class FundOperationsWorkspaceReadServiceTests
     }
 
     [Fact]
+    public async Task GetWorkspaceAsync_WithNoPortfolioSources_MarksLivePortfolioViewBlocked()
+    {
+        var service = new FundOperationsWorkspaceReadService(
+            new InMemoryFundAccountService(),
+            new StrategyRunStore(),
+            new PortfolioReadService(),
+            new NavAttributionService(new NullSecurityMasterQueryService()),
+            new ReportGenerationService(new NullSecurityMasterQueryService()));
+
+        var workspace = await service.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(
+            FundProfileId: $"fund-empty-live-{Guid.NewGuid():N}",
+            AsOf: new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero),
+            Currency: "USD"));
+
+        var liveView = workspace.Reporting.LivePortfolioViews.Should().ContainSingle(view =>
+                view.ViewId == "live:fund:consolidated")
+            .Which;
+        liveView.State.Should().Be(PortfolioReportingLiveViewStateDto.Blocked);
+        liveView.SourceCount.Should().Be(0);
+        liveView.SourceAsOfUtc.Should().BeNull();
+        liveView.TelemetrySummary.Should().Contain("No source-backed portfolio records");
+        workspace.Reporting.PnlSlices.Should().NotBeNull();
+        workspace.Reporting.PnlSlices!.Should().HaveCount(4);
+        workspace.Reporting.PnlSlices.Should().OnlyContain(slice =>
+            slice.SourceCount == 0 &&
+            slice.TotalPnl == 0m &&
+            slice.ReadinessSummary.StartsWith("Blocked: no source-backed P&L runs", StringComparison.Ordinal));
+        var crossFundRow = workspace.Reporting.CrossFundConsolidations.Should().ContainSingle(row =>
+                row.ConsolidationId == "cross-fund:company")
+            .Which;
+        crossFundRow.IsReady.Should().BeFalse();
+        crossFundRow.SourceCount.Should().Be(0);
+        crossFundRow.ReadinessSummary.Should().Contain("No active fund accounts");
+    }
+
+    [Fact]
     public async Task GetWorkspaceAsync_WithReportPackWorkflowService_ReturnsRestatementRecordsInReportingSummary()
     {
         var fundProfileId = $"fund-{Guid.NewGuid():N}";
         var fundId = TranslateFundProfileId(fundProfileId);
+        var siblingFundProfileId = $"fund-sibling-{Guid.NewGuid():N}";
+        var siblingFundId = TranslateFundProfileId(siblingFundProfileId);
+        var siblingEntityId = Guid.NewGuid();
         var accountService = new InMemoryFundAccountService();
         var repository = new StrategyRunStore();
         var portfolioReadService = new PortfolioReadService();
@@ -640,6 +804,126 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             archive.GetEntry("xl/workbook.xml").Should().NotBeNull();
             archive.GetEntry("xl/worksheets/sheet1.xml").Should().NotBeNull();
             archive.GetEntry("xl/worksheets/sheet2.xml").Should().NotBeNull();
+            archive.GetEntry("xl/worksheets/sheet3.xml").Should().NotBeNull();
+        }
+        finally
+        {
+            DeleteDirectory(tempRoot);
+        }
+    }
+
+    [Fact]
+    public async Task GenerateReportPackAsync_WithBrandingOverride_AppliesThemeToManifestAndDocuments()
+    {
+        var fundProfileId = $"fund-branded-{Guid.NewGuid():N}";
+        var strategyRepository = new StrategyRunStore();
+        await strategyRepository.RecordRunAsync(BuildRun(
+            runId: "run-brand-001",
+            strategyId: "brand-1",
+            strategyName: "Brand Strategy",
+            fundProfileId: fundProfileId,
+            fundDisplayName: "Branded Fund"));
+        var tempRoot = CreateTempDirectory();
+        try
+        {
+            var service = CreateReportPackService(
+                new InMemoryFundAccountService(),
+                strategyRepository,
+                CreateReportPackRepository(tempRoot));
+            var customTheme = new ReportBrandingThemeDto(
+                "LP Custom Theme",
+                "LP Custom Theme",
+                "Northstar Capital",
+                "#123456",
+                "#AA5500",
+                "#111111",
+                "#FAFAFA",
+                LogoUri: "https://example.test/northstar.png",
+                FooterText: "Northstar investor reporting",
+                Disclaimer: "Prepared for authorized allocator review.",
+                IsBuiltIn: false);
+
+            var snapshot = await service.GenerateReportPackAsync(new FundReportPackGenerateRequestDto(
+                FundProfileId: fundProfileId,
+                AuditActor: "unit-test",
+                AsOf: new DateTimeOffset(2026, 4, 11, 16, 0, 0, TimeSpan.Zero),
+                Formats:
+                [
+                    GovernanceReportArtifactFormatDto.Html,
+                    GovernanceReportArtifactFormatDto.Pdf,
+                    GovernanceReportArtifactFormatDto.Xlsx
+                ],
+                BrandingThemeOverride: customTheme));
+
+            snapshot.BrandingTheme.Should().NotBeNull();
+            snapshot.BrandingTheme!.ThemeId.Should().Be("lpcustomtheme");
+            snapshot.BrandingTheme.FirmName.Should().Be("Northstar Capital");
+            snapshot.BrandingTheme.PrimaryColor.Should().Be("#123456");
+            snapshot.BrandingTheme.IsBuiltIn.Should().BeFalse();
+
+            var manifestPath = Directory.EnumerateFiles(
+                    Path.Combine(tempRoot, "governance-report-packs"),
+                    "manifest.json",
+                    SearchOption.AllDirectories)
+                .Single();
+            var manifest = await File.ReadAllTextAsync(manifestPath);
+            manifest.Should().Contain("\"firmName\": \"Northstar Capital\"");
+            manifest.Should().Contain("\"themeId\": \"lpcustomtheme\"");
+
+            var htmlArtifact = snapshot.Artifacts.Single(artifact => artifact.Format == GovernanceReportArtifactFormatDto.Html);
+            var html = await File.ReadAllTextAsync(ResolveArtifactPath(tempRoot, htmlArtifact));
+            html.Should().Contain("Northstar Capital");
+            html.Should().Contain("--report-primary:#123456");
+            html.Should().Contain("https://example.test/northstar.png");
+            html.Should().Contain("Prepared for authorized allocator review.");
+
+            var pdfArtifact = snapshot.Artifacts.Single(artifact => artifact.Format == GovernanceReportArtifactFormatDto.Pdf);
+            var pdfText = Encoding.ASCII.GetString(await File.ReadAllBytesAsync(ResolveArtifactPath(tempRoot, pdfArtifact)));
+            pdfText.Should().Contain("Northstar Capital");
+            pdfText.Should().Contain("LP Custom Theme");
+
+            var workbook = snapshot.Artifacts.Single(artifact => artifact.Format == GovernanceReportArtifactFormatDto.Xlsx);
+            using var archive = ZipFile.OpenRead(ResolveArtifactPath(tempRoot, workbook));
+            archive.GetEntry("xl/worksheets/sheet3.xml").Should().NotBeNull();
+            var sharedStrings = archive.GetEntry("xl/sharedStrings.xml");
+            sharedStrings.Should().NotBeNull();
+            using var reader = new StreamReader(sharedStrings!.Open());
+            var stringsXml = await reader.ReadToEndAsync();
+            stringsXml.Should().Contain("Northstar Capital");
+            stringsXml.Should().Contain("LP Custom Theme");
+        }
+        finally
+        {
+            DeleteDirectory(tempRoot);
+        }
+    }
+
+    [Fact]
+    public async Task GenerateReportPackAsync_WithInvalidBrandingOverride_ThrowsArgumentException()
+    {
+        var tempRoot = CreateTempDirectory();
+        try
+        {
+            var service = CreateReportPackService(
+                new InMemoryFundAccountService(),
+                new StrategyRunStore(),
+                CreateReportPackRepository(tempRoot));
+            var invalidTheme = new ReportBrandingThemeDto(
+                "bad-theme",
+                "Bad Theme",
+                "Bad Firm",
+                "blue",
+                "#AA5500",
+                "#111111",
+                "#FFFFFF");
+
+            var act = () => service.GenerateReportPackAsync(new FundReportPackGenerateRequestDto(
+                FundProfileId: "fund-bad-branding",
+                AuditActor: "unit-test",
+                BrandingThemeOverride: invalidTheme));
+
+            await act.Should().ThrowAsync<ArgumentException>()
+                .WithMessage("*PrimaryColor*#RRGGBB*");
         }
         finally
         {

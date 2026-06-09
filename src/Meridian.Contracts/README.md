@@ -132,9 +132,10 @@ requests, explicit `Rejected` state support, explicit review-state rejection req
 actor/role, and optional evidence-link metadata, and restatement requests with approver,
 prior-version, changed-line, and evidence-link metadata. The same shared contracts also carry
 report-pack delivery attempts, delivery failure attempts, delivery history, operator-managed
-reporting schedules, due-schedule run results, ad-hoc report-run requests/results, and HTML/PDF
-rendered-statement artifact formats so browser, WPF, endpoints, and host bootstrap payloads
-consume the same reporting command and history shape.
+reporting schedules, schedule delivery targets, due-schedule run results with delivery
+attempts/warnings, ad-hoc report-run requests/results, and HTML/PDF rendered-statement artifact
+formats so browser, WPF, endpoints, and host bootstrap payloads consume the same reporting command
+and history shape.
 Delivered report-pack attempts can also carry `ReportPackDeliveryPackageDto`, including the
 delivery mode, secure link or portal route, retained manifest path, requested PDF/XLSX/CSV
 formats, and retained artifact metadata. Keep those package fields shared so email-link, secure
@@ -154,19 +155,42 @@ Fund-operations reporting summaries also expose `PortfolioReportingCutDto` rows 
 strategy, and user-tag views. These rows carry exposure, cash, P&L, shadow-NAV, variance,
 source-count, evidence-route, and version-stamp fields so Reporting clients can show portfolio
 cuts without recalculating portfolio or NAV state locally.
+`PortfolioReportingLiveViewDto` extends those cuts with shared live-summary routes, source-backed
+freshness state, liquidity summaries, optional run cash-ladder routes, and telemetry copy. Clients
+must render the `LiveLinked`, `SourceBacked`, `Stale`, or `Blocked` state from the contract instead
+of implying live market ticks when the shared source evidence is missing or stale.
+`PortfolioReportingPnlSliceDto` carries daily, weekly, monthly, and yearly P&L rows derived from
+retained portfolio run timestamps. Rows include current/prior period totals, realized/unrealized
+P&L, change, source counts, readiness text, route, tags, and version stamp so clients can show
+period P&L without inventing browser-local time-series logic.
+`CrossFundReportingConsolidationDto` carries company, fund, and legal-entity rollups for
+cross-fund reporting. Rows include fund/entity/account/run counts, gross and net exposure, cash,
+P&L, shadow-NAV, variance, source counts, readiness text, route, tags, and version stamp so
+Reporting clients can display consolidated portfolio metrics without deriving multi-fund state.
 The same summary carries `StructuredReportingExportDto` descriptors for regulatory trial balance,
-warehouse ledger facts, and investment portfolio-cut outputs. Each descriptor includes purpose,
-format, dataset, consumer, schema version, row/field/source counts, retained path, API route,
-readiness summary, evidence route, and version stamp; `StructuredReportingExportPayloadDto`
-returns stable column metadata plus string-valued JSON rows for downstream export consumers.
+warehouse ledger facts, investment portfolio-cut outputs, and cross-fund consolidation outputs.
+Each descriptor includes purpose, format, dataset, consumer, schema version, row/field/source
+counts, retained path, API route, readiness summary, evidence route, and version stamp;
+`StructuredReportingExportPayloadDto` returns stable column metadata plus string-valued JSON rows
+for downstream export consumers.
+Reporting summaries and generated report-pack snapshots also carry shared `ReportBrandingThemeDto`
+metadata for firm name, colors, logo URI, footer, disclaimer, and built-in/custom posture.
+`FundReportPackGenerateRequestDto` accepts either a `BrandingThemeId` or validated
+`BrandingThemeOverride`, so browser, WPF, distribution, and retained-artifact readers consume the
+same branding contract instead of inventing presentation metadata locally.
 Report template contracts now also carry the governed authoring lifecycle for built-in and custom
 template versions: draft requests, review submission, approval/rejection decisions, immutable
 built-in markers, latest-approved posture, validation issues, approval references, and audit events.
 Template definitions can include report-writer grid definitions for detail, pivot, Top-N,
 contribution, and formula-backed tables, and render responses carry structured grid rows, columns,
-and warnings alongside the compatibility rendered-content string. Keep those template lifecycle and
+and warnings alongside the compatibility rendered-content string. Render requests can also carry a
+temporary `Grids` override, allowing no-code clients to preview an unsaved drag/drop layout through
+the shared renderer without mutating the approved template record. Keep those template lifecycle and
 grid fields shared so Reporting, browser, WPF, and endpoint tests use the same version-approval and
-no-code report-writer vocabulary instead of maintaining client-local template state. Template
+no-code report-writer vocabulary instead of maintaining client-local template state. Workstation
+template metadata also carries report-writer row fields, column fields, metrics, formula
+expressions, Top-N, and sort settings so operator clients can render no-code writer canvases
+without parsing template JSON or deriving grid composition from count-only summaries. Template
 definitions and report-pack workflow records also carry `ReportAccessPolicyDto` with private,
 restricted user/group/company, and company-wide modes; workstation template payloads expose access
 mode, summary, and accessibility posture so clients do not invent report audience rules locally.
@@ -429,7 +453,19 @@ signed net activity, and projection validation issues so browser and WPF clients
 private-capital ledger views from draft-local heuristics. Report-output rows also carry governed
 report-pack identity, workflow state, publication manifest path/hash, signed-off publication
 metadata, and report-line provenance counts when retained report-pack workflow records are linked
-to the fund event.
+to the fund event. `PrivateCapitalFundEventLedgerRecordDto` groups each fund event with its
+capital-account subledger movements, GL impacts, retained evidence links, approval state, and
+report outputs so detail and drill-through clients can consume a single event-level accounting
+record instead of stitching sibling arrays together. The event-level record also promotes journal
+entry id, gross and net capital activity, capital-account opening/ending net activity, memo,
+payment and settlement references, canonical private-capital activity route, event evidence-packet
+route, approval id/route when an approval exists, child-row counts, primary report-output
+id/type/route, workflow state, publication manifest path, provenance counts, server-derived
+readiness label/reason, and next-action route so operator tables and report-package
+drill-throughs do not reopen nested arrays for basic record posture. The
+projection normalizes omitted fund-event ledger records to an empty collection
+so clients can treat that event-level model as present even when there are no private-capital
+events yet.
 The projection is additive across draft and posted sources: posted ledger-backed fund events win
 over same-id drafts, and it exposes posted fund-event and published report-output counts so clients
 can distinguish retained ledger truth from unposted authoring state. Fund-event and subledger rows
@@ -438,7 +474,9 @@ not have to infer source state from approval labels.
 `IManualJournalEntryWorkbenchService.GetPrivateCapitalActivityAsync`
 and `UiApiRoutes.LedgerPrivateCapitalActivity` expose the same projection as a first-class review
 endpoint for reporting, audit, and future LP support surfaces that should not depend on the manual
-journal editor payload.
+journal editor payload. `UiApiRoutes.LedgerPrivateCapitalFundEventRecord` exposes one shared
+event-level record by `fundEventId` so review and report drill-through surfaces can load the
+single fund-event ledger record without interpreting an empty aggregate.
 
 ## Diagrams
 

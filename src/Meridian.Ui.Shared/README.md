@@ -124,8 +124,22 @@ state, retained publication manifest details, publication evidence hash, signer/
 matched report-line provenance count into the private-capital report-output row.
 `/api/ledger/private-capital/activity` can also be filtered by `fundEventId`, `capitalAccountId`,
 and `investorId`; the endpoint returns a recomputed slice so report-package drill-throughs retain
-matching events, subledger rows, ledger impacts, report outputs, counts, and net activity without
-leaking unrelated capital-account rows.
+matching events, subledger rows, ledger impacts, report outputs, fund-event ledger records, counts,
+and net activity without leaking unrelated capital-account rows. Each fund-event ledger record is
+rebuilt server-side through `PrivateCapitalFundEventLedgerRecordBuilder` from the filtered
+projection rows so browser and desktop clients receive a
+single event-level view containing event state, subledger impact, GL impact, evidence, approval,
+and report-output posture. Those rows also carry top-level journal, memo, gross/net activity,
+capital-account opening/ending net activity, payment/settlement, canonical activity route,
+event evidence-packet route, approval id/route when an approval exists, child-count, primary
+report-output route/workflow, publication manifest, provenance fields, server-derived
+readiness label/reason, and next-action route from the grouped source rows so filtered
+drill-throughs stay useful without client-side stitching.
+Projections expose the event-level record collection as an empty list when
+no fund events qualify, keeping browser and desktop consumers on the same non-null contract.
+`/api/ledger/private-capital/fund-event-record` returns one of those shared event-level records
+directly by `fundEventId`, including child rows and readiness posture, and returns 404 when the
+fund-event id is absent instead of sending clients an empty aggregate to interpret.
 The shared workflow library owns close-lane command routing as well: `AccountingReviewOperationsContinuity`
 targets `OperationsContinuity` and `AccountingReviewCloseReadiness` targets `OperationsClose`, with
 route metadata tied to the operations-continuity API. Browser and WPF clients should consume those
@@ -195,8 +209,10 @@ latest without mutating built-in history. Custom draft and approval records are 
 resolved workstation data root at `workstation/reporting/report-templates.json`, so template
 authoring state survives host restart. Approved custom templates can carry report-writer grid
 definitions; the shared registry validates and renders those grids through `ReportWriterGridEngine`
-instead of returning browser-local or WPF-local calculations. Browser and WPF clients should render
-that shared template state instead of treating built-in templates as the full authoring workflow.
+instead of returning browser-local or WPF-local calculations. Render requests may include temporary
+grid definitions for live no-code previews; the registry renders that request-scoped layout without
+persisting it back to the approved template. Browser and WPF clients should render that shared
+template state instead of treating built-in templates as the full authoring workflow.
 Template definitions and report-pack workflow records now carry shared access policies for
 user-locked, restricted user/group/company, and company-wide report audiences. `ReportAccessPolicyEvaluator`
 normalizes and validates those policies, `/api/fund-structure/reporting/templates*` filters and
@@ -205,7 +221,10 @@ Reporting payload filters restricted template and report-pack rows before distri
 aggregates are projected.
 `ReportPackRunReadService` uses the same registry list when it is registered, so Reporting payloads
 include custom template drafts, in-review records, approvals, latest-approved status, and
-report-writer grid metadata alongside built-in templates.
+report-writer grid metadata alongside built-in templates. For custom templates, that projection
+keeps row fields, column fields, metrics, formula expressions, Top-N, and sort settings in the
+shared payload so browser and WPF surfaces can render no-code report-writer canvases without
+client-local template parsing or recalculation.
 Generic Reporting orchestration runs and governed report-pack workflow records also share one
 operator read model here. `FileReportingRunStore` persists `ReportingOutputManifest` plus audit
 trail snapshots for scheduled/ad-hoc Reporting runs, `FileReportPackWorkflowRecordStore` persists
@@ -222,13 +241,34 @@ shared cash/financing, strategy-run portfolio, account, and NAV attribution stat
 Accounting. `FundOperationsWorkspaceReadService` emits consolidated fund, strategy, and user-tag
 rows with exposure, cash, P&L, shadow-NAV, variance, source-count, and version-stamp fields so
 browser and WPF clients do not recalculate report cuts from separate portfolio APIs.
+The read service also projects `livePortfolioViews` from those same cuts. Each row points to the
+shared `/api/workstation/portfolio/summary` route, preserves source-backed freshness state, carries
+liquidity text, and links single-run strategy cuts to `/api/portfolio/{runId}/cash-flows` for
+cash-ladder evidence. Rows fail closed as `Blocked` when no fund account or portfolio run source
+backs the reporting view.
+It also projects `pnlSlices` for daily, weekly, monthly, and yearly P&L from retained portfolio run
+timestamps. Each row carries realized/unrealized/current/prior/change values, source counts,
+readiness text, a shared `/api/workstation/reporting?pnlSlice=...` route, and deterministic version
+stamps; windows with no current source run fail closed as blocked instead of displaying synthetic
+period P&L.
+`FundOperationsWorkspaceReadService` also projects `crossFundConsolidations` from all active fund
+accounts plus all fund-scoped strategy-run portfolio summaries. It emits company-wide, fund-level,
+and legal-entity rows with exposure, cash, P&L, shadow-NAV, source counts, readiness text, and
+deterministic version stamps; when no source-backed account or run data exists, the company row
+fails closed with blocked readiness instead of synthetic consolidation values.
 The same read service also emits structured export descriptors for regulatory trial-balance,
-warehouse ledger-fact, and investment portfolio-cut outputs, and serves
+warehouse ledger-fact, investment portfolio-cut, and cross-fund consolidation outputs, and serves
 `/api/fund-structure/reporting/structured-exports/{exportId}` from the same source-backed workspace
 projection. The JSON payload includes stable column metadata, culture-invariant string row values,
 readiness warnings, retained-path metadata, and deterministic version stamps so downstream
 regulatory, warehousing, and investment-decision consumers can ingest governed data without
 browser-local export shaping.
+`FundOperationsWorkspaceReadService` also exposes built-in report branding themes through the
+reporting summary, validates custom branding overrides with normalized theme ids and hex colors,
+persists the selected theme on generated report-pack snapshots and manifests, and applies the same
+theme to generated HTML, PDF text, and the XLSX `Branding` worksheet. That keeps logos, colors,
+footer copy, disclaimers, and firm identity attached to the retained package artifact instead of the
+browser view.
 `ReportPackDeliveryService` persists delivery and delivery-failure attempts under the resolved
 workstation data root at `workstation/reporting/report-pack-deliveries.json`; published and
 restated workflow records can therefore show real delivery history, retry attempts, recipient
@@ -240,9 +280,11 @@ internal-route channels; callers can override the mode and requested formats in
 `ReportPackDeliveryService`, using constant-time token comparison and shared GET routes for the
 email-link package URL and `/portal/reporting/packages/{packageId}`. `ReportingScheduleService`
 persists operator-managed schedule records at `workstation/reporting/reporting-schedules.json`,
-runs due schedules through `IReportingOrchestrationService`, advances next due/as-of dates, and
-projects schedule run results back through the shared Reporting payload. `ReportingRunCommandService`
-also runs approved built-in templates on demand through the same orchestration and run-store seam,
+normalizes configured distribution targets, runs due schedules through `IReportingOrchestrationService`,
+advances next due/as-of dates, and asks `ReportPackDeliveryService` to package the latest published or
+restated report pack for each target. Schedule run results return delivery attempts and warnings so
+operators can distinguish generated reports from actually packaged email-link or portal deliveries.
+`ReportingRunCommandService` also runs approved built-in templates on demand through the same orchestration and run-store seam,
 returning `WorkstationReportingRunPayload` rows with ad-hoc trigger metadata and review next
 actions. The fund-structure
 endpoint group exposes those delivery and schedule commands, while `FundOperationsWorkspaceReadService`

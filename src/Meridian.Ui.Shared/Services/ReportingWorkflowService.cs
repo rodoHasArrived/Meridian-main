@@ -229,7 +229,8 @@ public sealed class ReportTemplateRegistryService
         var sections = template.Sections is { Count: > 0 }
             ? string.Join(',', template.Sections)
             : "sections:not-configured";
-        var grids = ReportWriterGridEngine.RenderGrids(template.Grids, request.DatasetRows);
+        var gridDefinitions = request.Grids ?? template.Grids;
+        var grids = ReportWriterGridEngine.RenderGrids(gridDefinitions, request.DatasetRows);
         var gridSummary = grids.Count > 0
             ? $";grids={string.Join(',', grids.Select(static grid => $"{grid.GridId}:{grid.Rows.Count}r"))}"
             : ";grids=0";

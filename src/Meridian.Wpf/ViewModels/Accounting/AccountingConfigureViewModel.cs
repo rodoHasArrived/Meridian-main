@@ -236,6 +236,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public ObservableCollection<AccountingWorkbenchRow> ProviderRows { get; } = [];
     public ObservableCollection<ExternalGlEvidenceRow> ExternalGlRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalDraftRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> ManualJournalFundEventLedgerRecordRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalCapitalAccountRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalFundEventRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalLedgerImpactRows { get; } = [];
@@ -1114,6 +1115,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     {
         if (activity is null)
         {
+            ManualJournalFundEventLedgerRecordRows.Clear();
             ManualJournalCapitalAccountRows.Clear();
             ManualJournalFundEventRows.Clear();
             ManualJournalLedgerImpactRows.Clear();
@@ -1121,6 +1123,27 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             return;
         }
 
+        ManualJournalFundEventLedgerRecordRows.ReplaceWith(activity.FundEventRecords.Select(record =>
+        {
+            var reportOutput = string.IsNullOrWhiteSpace(record.PrimaryReportOutputType)
+                ? "no primary report"
+                : record.PrimaryReportOutputType;
+            var reportWorkflow = string.IsNullOrWhiteSpace(record.ReportWorkflowState)
+                ? "no workflow"
+                : record.ReportWorkflowState;
+            var approval = string.IsNullOrWhiteSpace(record.ApprovalId)
+                ? "no approval route"
+                : $"{record.ApprovalId} via {record.ApprovalRoute ?? "approval route unavailable"}";
+            var nextAction = string.IsNullOrWhiteSpace(record.NextActionRoute)
+                ? record.NextAction
+                : $"{record.NextAction} via {record.NextActionRoute}";
+            return new AccountingWorkbenchRow(
+                $"{record.FundEventType} | {record.Memo}",
+                record.IsPosted ? "Posted" : record.ApprovalState.ToString(),
+                $"{FormatSignedCurrencyAmount(record.NetCapitalActivity, record.Currency)} net / {FormatCurrencyAmount(record.GrossAmount, record.Currency)} gross | {FormatSignedCurrencyAmount(record.CapitalAccountOpeningNetActivity, record.Currency)} opening -> {FormatSignedCurrencyAmount(record.CapitalAccountEndingNetActivity, record.Currency)} ending | {record.EffectiveDate:yyyy-MM-dd}",
+                $"{record.CapitalAccountSubledgerEntryCount} subledger | {record.LedgerImpactCount} ledger | {record.ReportOutputCount} report | {reportOutput} | {reportWorkflow} | {record.ReportLineProvenanceCount} provenance | readiness {record.ReadinessLabel}: {record.ReadinessReason} | next {nextAction} | {record.EvidenceLinkCount} evidence via {record.EvidenceRoute} | approval {approval} | {record.ValidationIssueCount} issue(s)",
+                record.ActivityRoute);
+        }));
         ManualJournalCapitalAccountRows.ReplaceWith(activity.CapitalAccounts.Select(account =>
             new AccountingWorkbenchRow(
                 account.CapitalAccountId,
@@ -1187,6 +1210,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             " Private-capital projection: ",
             $"{activity.FundEventCount} event(s), ",
             $"{activity.PostedFundEventCount} posted, ",
+            $"{activity.FundEventRecords.Count} event record(s), ",
             $"{activity.CapitalAccountCount} capital account(s), ",
             $"{activity.CapitalAccountSubledgerEntries.Count} subledger movement(s), ",
             $"{activity.LedgerImpacts.Count} ledger impact(s), ",
@@ -1230,6 +1254,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ProviderRows.Clear();
         ExternalGlRows.Clear();
         ManualJournalDraftRows.Clear();
+        ManualJournalFundEventLedgerRecordRows.Clear();
         ManualJournalCapitalAccountRows.Clear();
         ManualJournalFundEventRows.Clear();
         ManualJournalLedgerImpactRows.Clear();

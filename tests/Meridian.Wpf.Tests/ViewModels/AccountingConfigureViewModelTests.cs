@@ -113,6 +113,12 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.ManualJournalDraftRows.Should().ContainSingle(row =>
             row.Name.Contains("Capital call", StringComparison.OrdinalIgnoreCase)
             && row.Name.Contains("Capital call entry", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ManualJournalFundEventLedgerRecordRows.Should().ContainSingle(row =>
+            row.Name.Contains("CapitalCall", StringComparison.OrdinalIgnoreCase)
+            && row.Detail.Contains("+250 USD", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("1 subledger", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("1 ledger", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("1 report", StringComparison.OrdinalIgnoreCase));
         harness.ViewModel.ManualJournalCapitalAccountRows.Should().ContainSingle(row =>
             row.Name == "capital-account:alpha-fund:default"
             && row.Status == "+250 USD"
@@ -197,11 +203,30 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         viewModel.ManualJournalStatusText.Should().Contain("Private-capital projection");
         viewModel.ManualJournalStatusText.Should().Contain("1 event(s)");
         viewModel.ManualJournalStatusText.Should().Contain("1 posted");
+        viewModel.ManualJournalStatusText.Should().Contain("1 event record(s)");
         viewModel.ManualJournalStatusText.Should().Contain("1 capital account(s)");
         viewModel.ManualJournalStatusText.Should().Contain("1 subledger movement(s)");
         viewModel.ManualJournalStatusText.Should().Contain("1 ledger impact(s)");
         viewModel.ManualJournalStatusText.Should().Contain("1 report output(s)");
         viewModel.ManualJournalStatusText.Should().Contain("1 published");
+        viewModel.ManualJournalFundEventLedgerRecordRows.Should().ContainSingle(row =>
+            row.Name.Contains("CapitalCall", StringComparison.OrdinalIgnoreCase)
+            && row.Status == "Posted"
+            && row.Detail.Contains("+250 USD", StringComparison.OrdinalIgnoreCase)
+            && row.Detail.Contains("0 USD opening", StringComparison.OrdinalIgnoreCase)
+            && row.Detail.Contains("+250 USD ending", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("1 subledger", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("1 ledger", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("1 report", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("GovernedReportPack", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("Published", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("1 provenance", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("readiness Published", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("next Open published report", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("2 evidence via /api/workstation/evidence/subjects/private-capital-fund-event/", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("approval approval:capital-call-controller via /api/ledger/journal-entry-workbench", StringComparison.OrdinalIgnoreCase)
+            && row.Key.Contains("fundEventId=fund-event%3A", StringComparison.OrdinalIgnoreCase)
+            && row.Key.Contains("capitalAccountId=capital-account%3A", StringComparison.OrdinalIgnoreCase));
         viewModel.ManualJournalFundEventRows.Should().ContainSingle(row =>
             row.Name.Contains("CapitalCall", StringComparison.OrdinalIgnoreCase)
             && row.Status == "Posted"
@@ -258,6 +283,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         xaml.Should().Contain("AccountingConfigureRefreshButton");
         xaml.Should().Contain("AccountingConfigureSeedBaselineButton");
         xaml.Should().Contain("AccountingConfigureActivateButton");
+        xaml.Should().Contain("ManualJournalFundEventLedgerRecordGrid");
         xaml.Should().Contain("ManualJournalCapitalAccountGrid");
         xaml.Should().Contain("ManualJournalFundEventGrid");
         xaml.Should().Contain("ManualJournalLedgerImpactGrid");
@@ -340,7 +366,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             evidenceLinks,
             [],
             updatedAtUtc,
-            IsPosted: true);
+            IsPosted: true,
+            ApprovalId: "approval:capital-call-controller");
         var capitalAccount = new PrivateCapitalCapitalAccountActivityDto(
             capitalAccountId,
             "investor:lp-001",
@@ -441,6 +468,54 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             PublishedAtUtc: updatedAtUtc,
             PublishedBy: "controller",
             ReportLineProvenanceCount: 1);
+        var fundEventLedgerRecord = new PrivateCapitalFundEventLedgerRecordDto(
+            $"fund-event-ledger-record:{fundEventId}",
+            fundEventId,
+            "CapitalCall",
+            capitalAccountId,
+            "investor:lp-001",
+            ManualJournalEntryStatusDto.Approved,
+            journalEntryId,
+            effectiveDate,
+            "USD",
+            250m,
+            250m,
+            0m,
+            250m,
+            "Posted capital call",
+            $"payment:{fundProfileId}:capital-call:20260601",
+            $"settlement:{fundProfileId}:capital-call:20260601",
+            ActivityRoute: $"/api/ledger/private-capital/activity?fundProfileId={fundProfileId}&fundEventId={Uri.EscapeDataString(fundEventId)}&capitalAccountId={Uri.EscapeDataString(capitalAccountId)}&investorId=investor%3Alp-001",
+            EvidenceRoute: $"/api/workstation/evidence/subjects/private-capital-fund-event/{Uri.EscapeDataString(fundEventId)}/packet",
+            ApprovalId: "approval:capital-call-controller",
+            ApprovalRoute: $"/api/ledger/journal-entry-workbench?fundProfileId={fundProfileId}&journalEntryId=24a3dc53-d1f4-46e0-9dde-e276d0bb0d9e&approvalId=approval%3Acapital-call-controller",
+            IsPosted: true,
+            IsPostingReady: true,
+            IsReportReady: true,
+            IsPublished: true,
+            Readiness: PrivateCapitalFundEventLedgerReadinessDto.Published,
+            ReadinessLabel: "Published",
+            ReadinessReason: "The event is linked to retained evidence, posting-ready ledger impact, capital-account movement, and published report output.",
+            NextAction: "Open published report",
+            NextActionRoute: reportOutput.ReportRoute,
+            EvidenceLinkCount: evidenceLinks.Length,
+            CapitalAccountSubledgerEntryCount: 1,
+            LedgerImpactCount: 1,
+            ReportOutputCount: 1,
+            ValidationIssueCount: 0,
+            PrimaryReportOutputId: reportOutput.ReportOutputId,
+            PrimaryReportOutputType: reportOutput.ReportOutputType,
+            PrimaryReportRoute: reportOutput.ReportRoute,
+            ReportWorkflowState: reportOutput.ReportWorkflowState,
+            PublicationManifestId: reportOutput.PublicationManifestId,
+            RetainedManifestPath: reportOutput.RetainedManifestPath,
+            ReportLineProvenanceCount: reportOutput.ReportLineProvenanceCount,
+            EvidenceLinks: evidenceLinks,
+            FundEvent: fundEvent,
+            CapitalAccountSubledgerEntries: [subledgerEntry],
+            LedgerImpacts: [ledgerImpact],
+            ReportOutputs: [reportOutput],
+            ValidationIssues: []);
 
         return new PrivateCapitalActivityProjectionDto(
             fundProfileId,
@@ -459,7 +534,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             CapitalAccountSubledgerEntries: [subledgerEntry],
             LedgerImpacts: [ledgerImpact],
             ReportOutputs: [reportOutput],
-            ValidationIssues: []);
+            ValidationIssues: [],
+            FundEventRecords: [fundEventLedgerRecord]);
     }
 
     private sealed class StaticManualJournalEntryWorkbenchService(

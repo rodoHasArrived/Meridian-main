@@ -165,10 +165,16 @@ import type {
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
   PrivateCapitalActivityProjection,
+  PrivateCapitalFundEventLedgerRecord,
   ReportPackDeliveryAttempt,
   ReportPackDeliveryFailureRequest,
   ReportPackDeliveryHistory,
   ReportPackDeliveryRequest,
+  ReportTemplateDecisionRequest,
+  ReportTemplateDraftRequest,
+  ReportTemplateGovernanceRecord,
+  RenderReportTemplateRequest,
+  RenderReportTemplateResponse,
   ReportingDueScheduleRunResult,
   ReportingRunRequest,
   ReportingRunResult,
@@ -250,6 +256,9 @@ import {
   replaySessionActionEndpoint,
   reportingPackDeliveriesEndpoint,
   reportingPackDeliveryFailuresEndpoint,
+  reportingTemplateApproveEndpoint,
+  reportingTemplateRejectEndpoint,
+  reportingTemplateSubmitEndpoint,
   reportingSchedulePauseEndpoint,
   reportingScheduleResumeEndpoint,
   reportingScheduleRunNowEndpoint,
@@ -936,6 +945,29 @@ export function getPrivateCapitalActivity(
   );
 }
 
+export interface PrivateCapitalFundEventRecordQuery {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  fundEventId: string;
+}
+
+export function getPrivateCapitalFundEventRecord(
+  query: PrivateCapitalFundEventRecordQuery,
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value) {
+      params.set(key, value);
+    }
+  }
+
+  return getJson<PrivateCapitalFundEventLedgerRecord>(
+    `${WORKSTATION_API_ENDPOINTS.privateCapitalFundEventRecord}?${params.toString()}`,
+    options
+  );
+}
+
 export function saveManualJournalEntryDraft(
   request: SaveManualJournalEntryDraftRequest,
   options: ApiRequestOptions = {}
@@ -1021,6 +1053,61 @@ export function getReportingWorkspace(options: ApiRequestOptions = {}) {
 
 export function runReportingNow(request: ReportingRunRequest, options: ApiRequestOptions = {}) {
   return postJson<ReportingRunResult>(FUND_STRUCTURE_API_ENDPOINTS.reportingRuns, request, options);
+}
+
+export function createReportTemplateDraft(request: ReportTemplateDraftRequest, options: ApiRequestOptions = {}) {
+  return postJson<ReportTemplateGovernanceRecord>(
+    FUND_STRUCTURE_API_ENDPOINTS.reportingTemplateDrafts,
+    request,
+    options
+  );
+}
+
+export function renderReportTemplate(request: RenderReportTemplateRequest, options: ApiRequestOptions = {}) {
+  return postJson<RenderReportTemplateResponse>(
+    FUND_STRUCTURE_API_ENDPOINTS.reportingTemplateRender,
+    request,
+    options
+  );
+}
+
+export function submitReportTemplateDraft(
+  templateName: string,
+  version: number,
+  request: ReportTemplateDecisionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ReportTemplateGovernanceRecord>(
+    reportingTemplateSubmitEndpoint(templateName, version),
+    request,
+    options
+  );
+}
+
+export function approveReportTemplateDraft(
+  templateName: string,
+  version: number,
+  request: ReportTemplateDecisionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ReportTemplateGovernanceRecord>(
+    reportingTemplateApproveEndpoint(templateName, version),
+    request,
+    options
+  );
+}
+
+export function rejectReportTemplateDraft(
+  templateName: string,
+  version: number,
+  request: ReportTemplateDecisionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ReportTemplateGovernanceRecord>(
+    reportingTemplateRejectEndpoint(templateName, version),
+    request,
+    options
+  );
 }
 
 export function deliverReportPack(

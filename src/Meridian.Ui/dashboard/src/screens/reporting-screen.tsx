@@ -1,18 +1,25 @@
-import { type KeyboardEvent, useEffect, useRef, useState } from "react";
-import { FileText, Landmark, Network, PencilLine } from "lucide-react";
+import { type DragEvent, type KeyboardEvent, useEffect, useRef, useState } from "react";
+import { CheckCircle2, Eye, FileText, GripVertical, Landmark, Network, PencilLine, RotateCcw, Send, XCircle } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   apiPostJson,
+  approveReportTemplateDraft,
+  createReportTemplateDraft,
   deliverReportPack,
   pauseReportingSchedule,
+  rejectReportTemplateDraft,
+  renderReportTemplate,
   resumeReportingSchedule,
   runReportingNow,
-  runReportingScheduleNow
+  runReportingScheduleNow,
+  submitReportTemplateDraft
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
@@ -23,9 +30,25 @@ import {
   type ReportingRunActionRow,
   type ReportingRunStatusRow,
   type ReportingScheduleRow,
-  type ReportingTemplateRow
+  type ReportingTemplateLifecycleActionRow,
+  type ReportingTemplateRow,
+  type ReportingWriterGridRow,
+  type ReportingWriterToken
 } from "@/screens/reporting-screen.view-model";
-import type { AccountingWorkspaceResponse, ReportingWorkflowEvidenceLink } from "@/types";
+import type {
+  AccountingWorkspaceResponse,
+  ReportAccessMode,
+  ReportAccessPrincipalKind,
+  ReportTemplateDecisionRequest,
+  ReportTemplateDraftRequest,
+  ReportWriterAggregateFunction,
+  ReportWriterGridDefinition,
+  ReportWriterGridKind,
+  ReportWriterGridRender,
+  ReportWriterMetricDefinition,
+  RenderReportTemplateRequest,
+  ReportingWorkflowEvidenceLink
+} from "@/types";
 
 interface ReportingScreenProps {
   data: AccountingWorkspaceResponse | null;
@@ -37,6 +60,25 @@ interface ReportingCommandStatus {
   state: "running" | "success" | "error";
   message: string;
   details: string[];
+}
+
+type ReportWriterDropZone = "rowFields" | "columnFields" | "metrics" | "formulas";
+type ReportWriterDraftState = Partial<Record<ReportWriterDropZone, ReportingWriterToken[]>>;
+type ReportWriterDraftSettingsField = "name" | "displayName" | "accessMode" | "principalKind" | "principalId";
+type ReportWriterCustomFormulaField = "name" | "label" | "expression";
+
+interface ReportWriterDraftSettings {
+  name: string;
+  displayName: string;
+  accessMode: ReportAccessMode;
+  principalKind: ReportAccessPrincipalKind;
+  principalId: string;
+}
+
+interface ReportWriterCustomFormulaDraft {
+  name: string;
+  label: string;
+  expression: string;
 }
 
 const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
@@ -89,10 +131,21 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
   const shouldFocusReportPackProfile = useRef(false);
   const [runActionStatus, setRunActionStatus] = useState<ReportingCommandStatus | null>(null);
   const [templateRunStatus, setTemplateRunStatus] = useState<ReportingCommandStatus | null>(null);
+  const [templateLifecycleStatus, setTemplateLifecycleStatus] = useState<ReportingCommandStatus | null>(null);
   const [scheduleActionStatus, setScheduleActionStatus] = useState<ReportingCommandStatus | null>(null);
+  const [writerDrafts, setWriterDrafts] = useState<Record<string, ReportWriterDraftState>>({});
+  const [writerDraftSettings, setWriterDraftSettings] = useState<Record<string, Partial<ReportWriterDraftSettings>>>({});
+  const [writerCustomFormulas, setWriterCustomFormulas] = useState<Record<string, Partial<ReportWriterCustomFormulaDraft>>>({});
+  const [writerDraftStatus, setWriterDraftStatus] = useState<ReportingCommandStatus | null>(null);
+  const [writerPreviewStatus, setWriterPreviewStatus] = useState<ReportingCommandStatus | null>(null);
+  const [writerPreviewByGridId, setWriterPreviewByGridId] = useState<Record<string, ReportWriterGridRender | null>>({});
   const runningRunActionId = runActionStatus?.state === "running" ? runActionStatus.id : null;
   const runningTemplateRunId = templateRunStatus?.state === "running" ? templateRunStatus.id : null;
+  const runningTemplateLifecycleActionId = templateLifecycleStatus?.state === "running" ? templateLifecycleStatus.id : null;
   const runningScheduleActionId = scheduleActionStatus?.state === "running" ? scheduleActionStatus.id : null;
+  const savingWriterDraftId = writerDraftStatus?.state === "running" ? writerDraftStatus.id : null;
+  const previewingWriterDraftId = writerPreviewStatus?.state === "running" ? writerPreviewStatus.id : null;
+  const writerGrids = vm.templateRows.flatMap((template) => template.writerGrids);
 
   useEffect(() => {
     if (!shouldFocusReportPackProfile.current) {
@@ -177,7 +230,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
 
     try {
       const result = await runReportingNow({
-        templateId: template.id,
+        templateId: template.templateName,
         asOfDate: new Date().toISOString().slice(0, 10),
         maxRetries: 0
       });
@@ -193,6 +246,252 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
       setTemplateRunStatus({
         id: template.id,
         label: template.runActionLabel,
+        state: "error",
+        message: display.summary,
+        details: display.details
+      });
+    }
+  }
+
+  async function handleTemplateLifecycleAction(
+    template: ReportingTemplateRow,
+    action: ReportingTemplateLifecycleActionRow
+  ) {
+    if (!action.isEnabled || runningTemplateLifecycleActionId) {
+      return;
+    }
+
+    setTemplateLifecycleStatus({
+      id: action.id,
+      label: "Report template lifecycle",
+      state: "running",
+      message: `${action.label} is running for ${template.name}.`,
+      details: []
+    });
+
+    try {
+      const request = buildReportTemplateDecisionRequest(template, action);
+      const result = await executeTemplateLifecycleAction(template, action, request);
+      setTemplateLifecycleStatus({
+        id: action.id,
+        label: "Report template lifecycle",
+        state: "success",
+        message: `${template.name} moved to ${result.status}.`,
+        details: [
+          `Template: ${result.definition.templateId.name}@v${result.definition.templateId.version}`,
+          `Action: ${action.label}`,
+          result.decisionRationale ? `Rationale: ${result.decisionRationale}` : `Target: ${action.targetStatus}`
+        ]
+      });
+    } catch (error) {
+      const display = describeApiError(error, `${action.label} ${template.name} failed.`);
+      setTemplateLifecycleStatus({
+        id: action.id,
+        label: "Report template lifecycle",
+        state: "error",
+        message: display.summary,
+        details: display.details
+      });
+    }
+  }
+
+  function getWriterZoneTokens(grid: ReportingWriterGridRow, zone: ReportWriterDropZone): ReportingWriterToken[] {
+    return writerDrafts[grid.id]?.[zone] ?? grid[zone];
+  }
+
+  function getWriterDraftSettings(grid: ReportingWriterGridRow): ReportWriterDraftSettings {
+    return {
+      ...buildDefaultWriterDraftSettings(grid),
+      ...writerDraftSettings[grid.id]
+    };
+  }
+
+  function getWriterCustomFormula(grid: ReportingWriterGridRow): ReportWriterCustomFormulaDraft {
+    return {
+      ...buildDefaultWriterCustomFormula(grid),
+      ...writerCustomFormulas[grid.id]
+    };
+  }
+
+  function updateWriterDraftSetting(
+    grid: ReportingWriterGridRow,
+    field: ReportWriterDraftSettingsField,
+    value: string
+  ) {
+    setWriterDraftSettings((current) => ({
+      ...current,
+      [grid.id]: {
+        ...current[grid.id],
+        [field]: value
+      }
+    }));
+  }
+
+  function updateWriterCustomFormula(
+    grid: ReportingWriterGridRow,
+    field: ReportWriterCustomFormulaField,
+    value: string
+  ) {
+    setWriterCustomFormulas((current) => ({
+      ...current,
+      [grid.id]: {
+        ...current[grid.id],
+        [field]: value
+      }
+    }));
+    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+  }
+
+  function handleWriterTokenDragStart(event: DragEvent<HTMLElement>, token: ReportingWriterToken) {
+    event.dataTransfer.effectAllowed = "copy";
+    event.dataTransfer.setData("application/x-meridian-report-writer-token", JSON.stringify(token));
+  }
+
+  function handleWriterZoneDrop(event: DragEvent<HTMLElement>, grid: ReportingWriterGridRow, zone: ReportWriterDropZone) {
+    event.preventDefault();
+    const payload = event.dataTransfer.getData("application/x-meridian-report-writer-token");
+    if (!payload) {
+      return;
+    }
+
+    let token: ReportingWriterToken;
+    try {
+      token = JSON.parse(payload) as ReportingWriterToken;
+    } catch {
+      return;
+    }
+
+    setWriterDrafts((current) => {
+      const existing = current[grid.id]?.[zone] ?? grid[zone];
+      if (existing.some((item) => item.id === token.id)) {
+        return current;
+      }
+
+      return {
+        ...current,
+        [grid.id]: {
+          ...current[grid.id],
+          [zone]: [...existing, token]
+        }
+      };
+    });
+    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+  }
+
+  function resetWriterGrid(grid: ReportingWriterGridRow) {
+    setWriterDrafts((current) => {
+      if (!current[grid.id]) {
+        return current;
+      }
+
+      const next = { ...current };
+      delete next[grid.id];
+      return next;
+    });
+    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+    setWriterCustomFormulas((current) => {
+      if (!current[grid.id]) {
+        return current;
+      }
+
+      const next = { ...current };
+      delete next[grid.id];
+      return next;
+    });
+  }
+
+  function getWriterCurrentZones(grid: ReportingWriterGridRow): Record<ReportWriterDropZone, ReportingWriterToken[]> {
+    return {
+      rowFields: getWriterZoneTokens(grid, "rowFields"),
+      columnFields: getWriterZoneTokens(grid, "columnFields"),
+      metrics: getWriterZoneTokens(grid, "metrics"),
+      formulas: appendCustomFormulaToken(getWriterZoneTokens(grid, "formulas"), grid, getWriterCustomFormula(grid))
+    };
+  }
+
+  async function saveWriterGridDraft(grid: ReportingWriterGridRow) {
+    if (savingWriterDraftId) {
+      return;
+    }
+
+    const settings = getWriterDraftSettings(grid);
+    const request = buildReportTemplateDraftRequest(grid, settings, getWriterCurrentZones(grid));
+
+    setWriterDraftStatus({
+      id: grid.id,
+      label: "Save report-writer draft",
+      state: "running",
+      message: `${settings.displayName} is saving.`,
+      details: []
+    });
+
+    try {
+      const result = await createReportTemplateDraft(request);
+      setWriterDraftStatus({
+        id: grid.id,
+        label: "Save report-writer draft",
+        state: "success",
+        message: `${result.definition.displayName} draft saved.`,
+        details: [
+          `Template: ${result.definition.templateId.name}@v${result.definition.templateId.version}`,
+          `Status: ${result.status}`,
+          result.validationIssues.length > 0
+            ? `Validation: ${result.validationIssues.join("; ")}`
+            : "Validation: ready"
+        ]
+      });
+    } catch (error) {
+      const display = describeApiError(error, `${settings.displayName} draft failed.`);
+      setWriterDraftStatus({
+        id: grid.id,
+        label: "Save report-writer draft",
+        state: "error",
+        message: display.summary,
+        details: display.details
+      });
+    }
+  }
+
+  async function previewWriterGrid(grid: ReportingWriterGridRow) {
+    if (previewingWriterDraftId) {
+      return;
+    }
+
+    const request = buildRenderReportTemplateRequest(grid, getWriterCurrentZones(grid));
+    setWriterPreviewStatus({
+      id: grid.id,
+      label: "Preview report-writer grid",
+      state: "running",
+      message: `${grid.title} preview is rendering.`,
+      details: []
+    });
+
+    try {
+      const result = await renderReportTemplate(request);
+      const renderedGrid = result.grids?.find((item) => item.gridId === grid.gridId) ?? result.grids?.[0] ?? null;
+      setWriterPreviewByGridId((current) => ({
+        ...current,
+        [grid.id]: renderedGrid
+      }));
+      setWriterPreviewStatus({
+        id: grid.id,
+        label: "Preview report-writer grid",
+        state: "success",
+        message: `${grid.title} preview rendered.`,
+        details: [
+          `Template: ${result.templateId.name}@v${result.templateId.version}`,
+          `Rows: ${renderedGrid?.rows.length ?? 0}`,
+          result.missingRequiredParameters.length > 0
+            ? `Missing parameters: ${result.missingRequiredParameters.join(", ")}`
+            : "Required parameters: satisfied",
+          ...(result.warnings ?? [])
+        ]
+      });
+    } catch (error) {
+      const display = describeApiError(error, `${grid.title} preview failed.`);
+      setWriterPreviewStatus({
+        id: grid.id,
+        label: "Preview report-writer grid",
         state: "error",
         message: display.summary,
         details: display.details
@@ -220,12 +519,18 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
     });
 
     try {
+      let details: string[] = [];
       if (action === "pause") {
         await pauseReportingSchedule(schedule.id);
       } else if (action === "resume") {
         await resumeReportingSchedule(schedule.id);
       } else {
-        await runReportingScheduleNow(schedule.id);
+        const result = await runReportingScheduleNow(schedule.id);
+        details = [
+          `Run ID: ${result.run.runId}`,
+          `Deliveries: ${result.deliveryAttempts?.length ?? 0}`,
+          ...(result.deliveryWarnings ?? []).map((warning) => `Delivery warning: ${warning}`)
+        ];
       }
 
       setScheduleActionStatus({
@@ -233,7 +538,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
         label,
         state: "success",
         message: `${label} completed.`,
-        details: []
+        details
       });
     } catch (error) {
       const display = describeApiError(error, `${label} failed.`);
@@ -356,6 +661,181 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
         </section>
       ) : null}
 
+      {(data.reporting.livePortfolioViews ?? []).length > 0 ? (
+        <section role="region" aria-label="Live portfolio views">
+          <Card className="panel-surface">
+            <CardHeader>
+              <div className="eyebrow-label">Live views</div>
+              <CardTitle>Tick-linked portfolio reporting</CardTitle>
+              <CardDescription>Reporting cuts carry shared live-summary routes, source freshness, liquidity, and cash-ladder evidence.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div role="list" aria-label="Live portfolio view rows" className="grid gap-3 lg:grid-cols-3">
+                {(data.reporting.livePortfolioViews ?? []).slice(0, 6).map((view) => (
+                  <div
+                    key={view.viewId}
+                    role="listitem"
+                    aria-label={`${view.label} ${view.kind} live portfolio view`}
+                    className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <span className="min-w-0">
+                        <span className="block font-semibold text-foreground">{view.label}</span>
+                        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{view.viewId}</span>
+                      </span>
+                      <span className="flex flex-wrap items-center justify-end gap-1.5">
+                        <Badge variant="outline">{view.kind}</Badge>
+                        <Badge variant="outline">{view.state}</Badge>
+                      </span>
+                    </div>
+                    <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                      <ReportingCutMetric label="Gross" value={formatReportingMoney(view.grossExposure, view.currency)} />
+                      <ReportingCutMetric label="Net" value={formatReportingMoney(view.netExposure, view.currency)} />
+                      <ReportingCutMetric label="Cash" value={formatReportingMoney(view.totalCash, view.currency)} />
+                      <ReportingCutMetric label="P&L" value={formatReportingMoney(view.totalPnl, view.currency)} />
+                    </dl>
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">{view.liquiditySummary}</p>
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">{view.telemetrySummary}</p>
+                    <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">
+                      {view.sourceCount} source{view.sourceCount === 1 ? "" : "s"} · {view.sourceAsOfUtc ?? view.asOf}
+                    </p>
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-xs text-muted-foreground">{view.cashLadderSummary}</span>
+                      <span className="flex flex-wrap gap-2">
+                        {view.cashLadderRoute ? (
+                          <Button asChild variant="outline" size="sm">
+                            <a href={view.cashLadderRoute} target="_blank" rel="noreferrer" aria-label={`Open ${view.label} cash ladder`}>
+                              <FileText className="h-4 w-4" aria-hidden="true" />
+                              Cash
+                            </a>
+                          </Button>
+                        ) : null}
+                        <Button asChild variant="outline" size="sm">
+                          <a href={view.route} target="_blank" rel="noreferrer" aria-label={`Open ${view.label} live portfolio view`}>
+                            <FileText className="h-4 w-4" aria-hidden="true" />
+                            Open
+                          </a>
+                        </Button>
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      ) : null}
+
+      {(data.reporting.pnlSlices ?? []).length > 0 ? (
+        <section role="region" aria-label="P&L slicing">
+          <Card className="panel-surface">
+            <CardHeader>
+              <div className="eyebrow-label">P&L slices</div>
+              <CardTitle>Daily, weekly, monthly, and yearly P&L</CardTitle>
+              <CardDescription>Period windows are calculated from retained portfolio run timestamps and marked blocked when source runs are absent.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div role="list" aria-label="P&L slice rows" className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                {(data.reporting.pnlSlices ?? []).map((slice) => (
+                  <div
+                    key={slice.sliceId}
+                    role="listitem"
+                    aria-label={`${slice.label} ${slice.period} P&L slice`}
+                    className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <span className="min-w-0">
+                        <span className="block font-semibold text-foreground">{slice.label}</span>
+                        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">
+                          {formatReportingDateRange(slice.startDate, slice.endDate)}
+                        </span>
+                      </span>
+                      <span className="flex flex-wrap items-center justify-end gap-1.5">
+                        <Badge variant="outline">{slice.period}</Badge>
+                        <Badge variant="outline">{slice.sourceCount > 0 ? "Source-backed" : "Blocked"}</Badge>
+                      </span>
+                    </div>
+                    <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                      <ReportingCutMetric label="Realized" value={formatReportingMoney(slice.realizedPnl, slice.currency)} />
+                      <ReportingCutMetric label="Unrealized" value={formatReportingMoney(slice.unrealizedPnl, slice.currency)} />
+                      <ReportingCutMetric label="P&L" value={formatReportingMoney(slice.totalPnl, slice.currency)} />
+                      <ReportingCutMetric label="Prior" value={formatReportingMoney(slice.priorTotalPnl, slice.currency)} />
+                      <ReportingCutMetric label="Change" value={formatReportingMoney(slice.pnlChange, slice.currency)} />
+                      <ReportingCutMetric label="Sources" value={slice.sourceCount.toLocaleString()} />
+                    </dl>
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">{slice.readinessSummary}</p>
+                    <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{slice.versionStamp ?? slice.asOf}</p>
+                    <div className="mt-3 flex justify-end">
+                      <Button asChild variant="outline" size="sm">
+                        <a href={slice.route} target="_blank" rel="noreferrer" aria-label={`Open ${slice.label} P&L slice`}>
+                          <FileText className="h-4 w-4" aria-hidden="true" />
+                          Open
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      ) : null}
+
+      {(data.reporting.crossFundConsolidations ?? []).length > 0 ? (
+        <section role="region" aria-label="Cross-fund consolidations">
+          <Card className="panel-surface">
+            <CardHeader>
+              <div className="eyebrow-label">Cross-fund</div>
+              <CardTitle>Company, fund, and entity rollups</CardTitle>
+              <CardDescription>Reporting aggregates source-backed exposure, cash, P&L, and shadow NAV across available funds and entities.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div role="list" aria-label="Cross-fund consolidation rows" className="grid gap-3 lg:grid-cols-3">
+                {(data.reporting.crossFundConsolidations ?? []).slice(0, 6).map((row) => (
+                  <div
+                    key={row.consolidationId}
+                    role="listitem"
+                    aria-label={`${row.label} ${row.scope} cross-fund consolidation`}
+                    className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <span className="min-w-0">
+                        <span className="block font-semibold text-foreground">{row.label}</span>
+                        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.consolidationId}</span>
+                      </span>
+                      <span className="flex flex-wrap items-center justify-end gap-1.5">
+                        <Badge variant="outline">{row.scope}</Badge>
+                        <Badge variant="outline">{row.isReady ? "Ready" : "Blocked"}</Badge>
+                      </span>
+                    </div>
+                    <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                      <ReportingCutMetric label="Funds" value={row.fundCount.toLocaleString()} />
+                      <ReportingCutMetric label="Entities" value={row.entityCount.toLocaleString()} />
+                      <ReportingCutMetric label="Gross" value={formatReportingMoney(row.grossExposure, row.currency)} />
+                      <ReportingCutMetric label="Net" value={formatReportingMoney(row.netExposure, row.currency)} />
+                      <ReportingCutMetric label="Cash" value={formatReportingMoney(row.totalCash, row.currency)} />
+                      <ReportingCutMetric label="P&L" value={formatReportingMoney(row.totalPnl, row.currency)} />
+                    </dl>
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.readinessSummary}</p>
+                    <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">
+                      {row.sourceCount} source{row.sourceCount === 1 ? "" : "s"} · {row.versionStamp ?? row.asOf}
+                    </p>
+                    <div className="mt-3 flex justify-end">
+                      <Button asChild variant="outline" size="sm" disabled={!row.isReady}>
+                        <a href={row.route} target="_blank" rel="noreferrer" aria-label={`Open ${row.label} cross-fund consolidation`}>
+                          <FileText className="h-4 w-4" aria-hidden="true" />
+                          Open
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      ) : null}
+
       {(data.reporting.structuredExports ?? []).length > 0 ? (
         <section role="region" aria-label="Structured reporting exports">
           <Card className="panel-surface">
@@ -416,6 +896,104 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
         </section>
       ) : null}
 
+      {(data.reporting.brandingThemes ?? []).length > 0 ? (
+        <section role="region" aria-label="Report branding themes">
+          <Card className="panel-surface">
+            <CardHeader>
+              <div className="eyebrow-label">Branding</div>
+              <CardTitle>Investor-ready styling themes</CardTitle>
+              <CardDescription>Report packs carry shared firm identity, colors, footer text, and disclaimer metadata into generated documents.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div role="list" aria-label="Report branding theme rows" className="grid gap-3 lg:grid-cols-3">
+                {(data.reporting.brandingThemes ?? []).map((theme) => (
+                  <div
+                    key={theme.themeId}
+                    role="listitem"
+                    aria-label={`${theme.name} report branding theme`}
+                    className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <span className="min-w-0">
+                        <span className="block font-semibold text-foreground">{theme.name}</span>
+                        <span className="mt-1 block text-xs text-muted-foreground">{theme.firmName}</span>
+                      </span>
+                      <Badge variant="outline">{theme.isBuiltIn ? "Built-in" : "Custom"}</Badge>
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2" aria-label={`${theme.name} color palette`}>
+                      {[
+                        ["Primary", theme.primaryColor],
+                        ["Accent", theme.accentColor],
+                        ["Text", theme.textColor],
+                        ["Background", theme.backgroundColor]
+                      ].map(([label, color]) => (
+                        <span key={`${theme.themeId}-${label}`} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <span
+                            aria-hidden="true"
+                            className="h-4 w-4 rounded-sm border border-border"
+                            style={{ backgroundColor: color }}
+                          />
+                          <span className="font-mono">{color}</span>
+                        </span>
+                      ))}
+                    </div>
+                    <p className="mt-3 text-xs leading-5 text-muted-foreground">
+                      {theme.footerText ?? "No footer text"} · {theme.disclaimer ?? "No disclaimer"}
+                    </p>
+                    <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{theme.logoUri ?? theme.themeId}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+      ) : null}
+
+      {writerGrids.length > 0 ? (
+        <section role="region" aria-label="No-code report writer">
+          <Card className="panel-surface">
+            <CardHeader>
+              <div className="eyebrow-label">Report writer</div>
+              <CardTitle>No-code grid designer</CardTitle>
+              <CardDescription>Pivot, Top-N, contribution, and formula grids from governed template metadata.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3 xl:grid-cols-2">
+                {writerGrids.map((grid) => (
+                  <ReportWriterDesignerGrid
+                    key={grid.id}
+                    grid={grid}
+                    settings={getWriterDraftSettings(grid)}
+                    customFormula={getWriterCustomFormula(grid)}
+                    isSaving={savingWriterDraftId === grid.id}
+                    isPreviewing={previewingWriterDraftId === grid.id}
+                    preview={writerPreviewByGridId[grid.id] ?? null}
+                    getZoneTokens={getWriterZoneTokens}
+                    onTokenDragStart={handleWriterTokenDragStart}
+                    onZoneDrop={handleWriterZoneDrop}
+                    onReset={resetWriterGrid}
+                    onSettingsChange={updateWriterDraftSetting}
+                    onCustomFormulaChange={updateWriterCustomFormula}
+                    onPreview={previewWriterGrid}
+                    onSave={saveWriterGridDraft}
+                  />
+                ))}
+              </div>
+              {writerPreviewStatus ? (
+                <div className="mt-3">
+                  <ReportingCommandStatusView status={writerPreviewStatus} />
+                </div>
+              ) : null}
+              {writerDraftStatus ? (
+                <div className="mt-3">
+                  <ReportingCommandStatusView status={writerDraftStatus} />
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+        </section>
+      ) : null}
+
       <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
         <Card className="panel-surface">
           <CardHeader>
@@ -463,12 +1041,31 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                         {template.actionLabel}
                       </a>
                     </Button>
+                    {template.lifecycleActions.map((action) => (
+                      <Button
+                        key={action.id}
+                        variant={action.kind === "reject" ? "ghost" : "outline"}
+                        size="sm"
+                        aria-label={action.ariaLabel}
+                        disabled={!action.isEnabled || Boolean(runningTemplateLifecycleActionId)}
+                        disabledReason={action.disabledReason}
+                        busy={runningTemplateLifecycleActionId === action.id}
+                        busyLabel={buildTemplateLifecycleBusyLabel(action.kind)}
+                        onClick={() => void handleTemplateLifecycleAction(template, action)}
+                      >
+                        <TemplateLifecycleActionIcon action={action.kind} />
+                        {action.label}
+                      </Button>
+                    ))}
                   </span>
                 </div>
               </div>
             ))}
             {templateRunStatus ? (
               <ReportingCommandStatusView status={templateRunStatus} />
+            ) : null}
+            {templateLifecycleStatus ? (
+              <ReportingCommandStatusView status={templateLifecycleStatus} />
             ) : null}
           </CardContent>
         </Card>
@@ -588,6 +1185,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                       <ReportingScheduleField label="Due" value={schedule.dueLabel} />
                       <ReportingScheduleField label="As of" value={schedule.nextAsOfLabel} />
                       <ReportingScheduleField label="Last run" value={schedule.lastRunLabel} />
+                      <ReportingScheduleField label="Delivery" value={schedule.deliveryTargetLabel} />
                     </dl>
                     <div className="mt-3 flex flex-wrap items-center gap-2">
                       <Badge variant="outline">{schedule.runCountLabel}</Badge>
@@ -1329,6 +1927,747 @@ function ReportingCutMetric({ label, value }: { label: string; value: string }) 
   );
 }
 
+function TemplateLifecycleActionIcon({ action }: { action: ReportingTemplateLifecycleActionRow["kind"] }) {
+  if (action === "approve") {
+    return <CheckCircle2 className="h-4 w-4" aria-hidden="true" />;
+  }
+
+  if (action === "reject") {
+    return <XCircle className="h-4 w-4" aria-hidden="true" />;
+  }
+
+  return <Send className="h-4 w-4" aria-hidden="true" />;
+}
+
+interface ReportWriterDesignerGridProps {
+  grid: ReportingWriterGridRow;
+  settings: ReportWriterDraftSettings;
+  customFormula: ReportWriterCustomFormulaDraft;
+  isSaving: boolean;
+  isPreviewing: boolean;
+  preview: ReportWriterGridRender | null;
+  getZoneTokens: (grid: ReportingWriterGridRow, zone: ReportWriterDropZone) => ReportingWriterToken[];
+  onTokenDragStart: (event: DragEvent<HTMLElement>, token: ReportingWriterToken) => void;
+  onZoneDrop: (event: DragEvent<HTMLElement>, grid: ReportingWriterGridRow, zone: ReportWriterDropZone) => void;
+  onReset: (grid: ReportingWriterGridRow) => void;
+  onSettingsChange: (grid: ReportingWriterGridRow, field: ReportWriterDraftSettingsField, value: string) => void;
+  onCustomFormulaChange: (grid: ReportingWriterGridRow, field: ReportWriterCustomFormulaField, value: string) => void;
+  onPreview: (grid: ReportingWriterGridRow) => void | Promise<void>;
+  onSave: (grid: ReportingWriterGridRow) => void | Promise<void>;
+}
+
+function ReportWriterDesignerGrid({
+  grid,
+  settings,
+  customFormula,
+  isSaving,
+  isPreviewing,
+  preview,
+  getZoneTokens,
+  onTokenDragStart,
+  onZoneDrop,
+  onReset,
+  onSettingsChange,
+  onCustomFormulaChange,
+  onPreview,
+  onSave
+}: ReportWriterDesignerGridProps) {
+  return (
+    <div
+      role="group"
+      aria-label={grid.ariaLabel}
+      className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold text-foreground">{grid.title}</h3>
+          <p className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{grid.templateId} · v{grid.templateVersion}</p>
+        </div>
+        <span className="flex flex-wrap items-center gap-1.5">
+          <Badge variant="outline">{grid.kind}</Badge>
+          <Badge variant="outline">{grid.topNLabel}</Badge>
+        </span>
+      </div>
+      <p className="mt-2 text-xs leading-5 text-muted-foreground">{grid.summary}</p>
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+        <span className="font-mono text-[11px] text-muted-foreground">{grid.sortLabel}</span>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          aria-label={`Reset ${grid.title} report-writer draft`}
+          onClick={() => onReset(grid)}
+        >
+          <RotateCcw className="h-4 w-4" aria-hidden="true" />
+          Reset
+        </Button>
+      </div>
+      <div className="mt-3 grid gap-2 md:grid-cols-2">
+        <label className="space-y-1">
+          <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Draft name</span>
+          <Input
+            value={settings.name}
+            onChange={(event) => onSettingsChange(grid, "name", event.target.value)}
+            aria-label={`${grid.title} draft name`}
+            className="font-mono"
+          />
+        </label>
+        <label className="space-y-1">
+          <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Display name</span>
+          <Input
+            value={settings.displayName}
+            onChange={(event) => onSettingsChange(grid, "displayName", event.target.value)}
+            aria-label={`${grid.title} draft display name`}
+          />
+        </label>
+        <label className="space-y-1">
+          <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Access</span>
+          <Select
+            value={settings.accessMode}
+            onChange={(event) => onSettingsChange(grid, "accessMode", event.target.value)}
+            aria-label={`${grid.title} draft access mode`}
+          >
+            <option value="CompanyWide">Company-wide</option>
+            <option value="Restricted">User or group</option>
+            <option value="Private">User-locked</option>
+          </Select>
+        </label>
+        <div className="grid gap-2 sm:grid-cols-[0.8fr_1.2fr]">
+          <label className="space-y-1">
+            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Principal</span>
+            <Select
+              value={settings.principalKind}
+              onChange={(event) => onSettingsChange(grid, "principalKind", event.target.value)}
+              aria-label={`${grid.title} draft principal kind`}
+              disabled={settings.accessMode === "CompanyWide"}
+            >
+              <option value="User">User</option>
+              <option value="Group">Group</option>
+              <option value="Company">Company</option>
+            </Select>
+          </label>
+          <label className="space-y-1">
+            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Principal ID</span>
+            <Input
+              value={settings.principalId}
+              onChange={(event) => onSettingsChange(grid, "principalId", event.target.value)}
+              aria-label={`${grid.title} draft principal id`}
+              className="font-mono"
+              disabled={settings.accessMode === "CompanyWide"}
+            />
+          </label>
+        </div>
+      </div>
+      <div className="mt-3 grid gap-3 lg:grid-cols-[0.85fr_1.15fr]">
+        <div>
+          <div className="eyebrow-label">Fields</div>
+          <div role="list" aria-label={`${grid.title} source fields`} className="mt-2 flex flex-wrap gap-1.5">
+            {grid.sourceFields.map((token) => (
+              <ReportWriterTokenChip
+                key={token.id}
+                token={token}
+                draggable
+                onDragStart={onTokenDragStart}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <ReportWriterDropZoneView
+            grid={grid}
+            zone="rowFields"
+            label="Rows"
+            tokens={getZoneTokens(grid, "rowFields")}
+            onTokenDragStart={onTokenDragStart}
+            onZoneDrop={onZoneDrop}
+          />
+          <ReportWriterDropZoneView
+            grid={grid}
+            zone="columnFields"
+            label="Columns"
+            tokens={getZoneTokens(grid, "columnFields")}
+            onTokenDragStart={onTokenDragStart}
+            onZoneDrop={onZoneDrop}
+          />
+          <ReportWriterDropZoneView
+            grid={grid}
+            zone="metrics"
+            label="Metrics"
+            tokens={getZoneTokens(grid, "metrics")}
+            onTokenDragStart={onTokenDragStart}
+            onZoneDrop={onZoneDrop}
+          />
+          <ReportWriterDropZoneView
+            grid={grid}
+            zone="formulas"
+            label="Formulas"
+            tokens={getZoneTokens(grid, "formulas")}
+            onTokenDragStart={onTokenDragStart}
+            onZoneDrop={onZoneDrop}
+          />
+        </div>
+      </div>
+      <div className="mt-3 rounded-md border border-border/70 bg-background/25 px-2.5 py-2">
+        <div className="eyebrow-label">Custom formula</div>
+        <div className="mt-2 grid gap-2 md:grid-cols-[0.8fr_0.9fr_1.3fr]">
+          <label className="space-y-1">
+            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Name</span>
+            <Input
+              value={customFormula.name}
+              onChange={(event) => onCustomFormulaChange(grid, "name", event.target.value)}
+              aria-label={`${grid.title} custom formula name`}
+              className="font-mono"
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Label</span>
+            <Input
+              value={customFormula.label}
+              onChange={(event) => onCustomFormulaChange(grid, "label", event.target.value)}
+              aria-label={`${grid.title} custom formula label`}
+            />
+          </label>
+          <label className="space-y-1">
+            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Expression</span>
+            <Input
+              value={customFormula.expression}
+              onChange={(event) => onCustomFormulaChange(grid, "expression", event.target.value)}
+              aria-label={`${grid.title} custom formula expression`}
+              className="font-mono"
+              placeholder="{pnl} / {marketValue} * 100"
+            />
+          </label>
+        </div>
+      </div>
+      <div className="mt-3 flex flex-wrap justify-end gap-2">
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          aria-label={`Preview ${grid.title} report-writer grid`}
+          disabled={isPreviewing}
+          busy={isPreviewing}
+          busyLabel="Previewing"
+          onClick={() => void onPreview(grid)}
+        >
+          <Eye className="h-4 w-4" aria-hidden="true" />
+          Preview
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          aria-label={`Save ${grid.title} as governed report template draft`}
+          disabled={isSaving}
+          busy={isSaving}
+          busyLabel="Saving"
+          onClick={() => void onSave(grid)}
+        >
+          <PencilLine className="h-4 w-4" aria-hidden="true" />
+          Save draft
+        </Button>
+      </div>
+      {preview ? (
+        <ReportWriterPreviewTable grid={grid} preview={preview} />
+      ) : null}
+    </div>
+  );
+}
+
+function ReportWriterPreviewTable({ grid, preview }: { grid: ReportingWriterGridRow; preview: ReportWriterGridRender }) {
+  const rows = preview.rows.slice(0, 5);
+  return (
+    <div className="mt-3 rounded-md border border-border/70 bg-background/35 px-2.5 py-2" aria-label={`${grid.title} live preview`}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <div className="eyebrow-label">Live preview</div>
+          <p className="mt-1 text-xs text-muted-foreground">{preview.title} · {preview.rows.length} row{preview.rows.length === 1 ? "" : "s"}</p>
+        </div>
+        <Badge variant="outline">{preview.kind}</Badge>
+      </div>
+      <div className="mt-2 max-h-56 overflow-auto rounded-sm border border-border/60">
+        <table className="min-w-full table-fixed text-left text-xs">
+          <thead className="bg-secondary/40 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+            <tr>
+              {preview.columns.map((column) => (
+                <th key={column.key} scope="col" className="min-w-28 px-2 py-1.5 font-semibold">
+                  <span className="block truncate" title={column.label}>{column.label}</span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length > 0 ? rows.map((row) => (
+              <tr key={row.rowKey} className="border-t border-border/50">
+                {preview.columns.map((column) => (
+                  <td key={`${row.rowKey}:${column.key}`} className="px-2 py-1.5 font-mono text-foreground">
+                    <span className="block truncate" title={row.values[column.key] ?? ""}>{row.values[column.key] ?? ""}</span>
+                  </td>
+                ))}
+              </tr>
+            )) : (
+              <tr>
+                <td className="px-2 py-2 text-muted-foreground" colSpan={Math.max(preview.columns.length, 1)}>
+                  No rows returned.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      {preview.warnings.length > 0 ? (
+        <ul className="mt-2 space-y-1 text-xs text-warning">
+          {preview.warnings.map((warning) => (
+            <li key={warning}>{warning}</li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
+interface ReportWriterDropZoneViewProps {
+  grid: ReportingWriterGridRow;
+  zone: ReportWriterDropZone;
+  label: string;
+  tokens: ReportingWriterToken[];
+  onTokenDragStart: (event: DragEvent<HTMLElement>, token: ReportingWriterToken) => void;
+  onZoneDrop: (event: DragEvent<HTMLElement>, grid: ReportingWriterGridRow, zone: ReportWriterDropZone) => void;
+}
+
+function ReportWriterDropZoneView({
+  grid,
+  zone,
+  label,
+  tokens,
+  onTokenDragStart,
+  onZoneDrop
+}: ReportWriterDropZoneViewProps) {
+  return (
+    <div
+      role="list"
+      aria-label={`${grid.title} ${label}`}
+      className="min-h-24 rounded-md border border-dashed border-border/70 bg-background/25 px-2.5 py-2"
+      onDragOver={(event) => event.preventDefault()}
+      onDrop={(event) => onZoneDrop(event, grid, zone)}
+    >
+      <div className="mb-2 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
+      <div className="flex flex-wrap gap-1.5">
+        {tokens.length > 0 ? tokens.map((token) => (
+          <ReportWriterTokenChip
+            key={token.id}
+            token={token}
+            draggable
+            onDragStart={onTokenDragStart}
+          />
+        )) : (
+          <span className="text-xs text-muted-foreground">No fields</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ReportWriterTokenChip({
+  token,
+  draggable,
+  onDragStart
+}: {
+  token: ReportingWriterToken;
+  draggable?: boolean;
+  onDragStart: (event: DragEvent<HTMLElement>, token: ReportingWriterToken) => void;
+}) {
+  return (
+    <span
+      role="listitem"
+      draggable={draggable}
+      onDragStart={(event) => onDragStart(event, token)}
+      className="inline-flex max-w-full items-center gap-1.5 rounded-sm border border-border/70 bg-secondary/35 px-2 py-1 text-[11px] text-foreground"
+      title={token.detail}
+    >
+      <GripVertical className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+      <Badge variant={token.kind === "formula" ? "warning" : token.kind === "metric" ? "success" : "outline"}>{token.kind}</Badge>
+      <span className="truncate font-mono">{token.label}</span>
+    </span>
+  );
+}
+
+function clearWriterPreview(
+  current: Record<string, ReportWriterGridRender | null>,
+  gridId: string
+): Record<string, ReportWriterGridRender | null> {
+  if (!(gridId in current)) {
+    return current;
+  }
+
+  const next = { ...current };
+  delete next[gridId];
+  return next;
+}
+
+function buildDefaultWriterDraftSettings(grid: ReportingWriterGridRow): ReportWriterDraftSettings {
+  return {
+    name: grid.templateId,
+    displayName: `${grid.title} Draft`,
+    accessMode: "CompanyWide",
+    principalKind: "Group",
+    principalId: "reporting-ops"
+  };
+}
+
+function buildDefaultWriterCustomFormula(grid: ReportingWriterGridRow): ReportWriterCustomFormulaDraft {
+  return {
+    name: `${normalizeIdentifierToken(grid.gridId, "grid")}CustomFormula`,
+    label: "Custom formula",
+    expression: ""
+  };
+}
+
+function appendCustomFormulaToken(
+  tokens: ReportingWriterToken[],
+  grid: ReportingWriterGridRow,
+  customFormula: ReportWriterCustomFormulaDraft
+): ReportingWriterToken[] {
+  const token = buildCustomFormulaToken(grid, customFormula);
+  return token ? [...tokens, token] : tokens;
+}
+
+function buildCustomFormulaToken(
+  grid: ReportingWriterGridRow,
+  customFormula: ReportWriterCustomFormulaDraft
+): ReportingWriterToken | null {
+  const expression = normalizeDraftText(customFormula.expression, "");
+  if (!expression) {
+    return null;
+  }
+
+  const fallbackName = `${normalizeIdentifierToken(grid.gridId, "grid")}CustomFormula`;
+  const name = normalizeIdentifierToken(customFormula.name, fallbackName);
+  const label = normalizeDraftText(customFormula.label, name);
+  return {
+    id: `formula:${grid.id}:custom:${name}`,
+    label,
+    detail: expression,
+    kind: "formula",
+    name,
+    expression
+  };
+}
+
+function buildReportTemplateDraftRequest(
+  grid: ReportingWriterGridRow,
+  settings: ReportWriterDraftSettings,
+  zones: Record<ReportWriterDropZone, ReportingWriterToken[]>
+): ReportTemplateDraftRequest {
+  const gridDefinition = buildReportWriterGridDefinition(grid, zones);
+  return {
+    name: normalizeDraftText(settings.name, `${grid.templateId}-draft`),
+    displayName: normalizeDraftText(settings.displayName, `${grid.title} Draft`),
+    sections: [],
+    parameters: [],
+    family: grid.family || "CustomReport",
+    basedOnVersion: parseReportTemplateVersion(grid.templateVersion),
+    rationale: `No-code report-writer draft from ${grid.templateId} ${grid.title}.`,
+    grids: [gridDefinition],
+    accessPolicy: buildReportAccessPolicy(settings)
+  };
+}
+
+function buildRenderReportTemplateRequest(
+  grid: ReportingWriterGridRow,
+  zones: Record<ReportWriterDropZone, ReportingWriterToken[]>
+): RenderReportTemplateRequest {
+  const gridDefinition = buildReportWriterGridDefinition(grid, zones);
+  return {
+    templateId: {
+      name: grid.templateId,
+      version: parseReportTemplateVersion(grid.templateVersion) ?? 1
+    },
+    parameters: {
+      period: "preview-period",
+      asOfDate: "preview-as-of",
+      preview: "browser-report-writer"
+    },
+    datasetRows: buildReportWriterPreviewRows(gridDefinition),
+    grids: [gridDefinition]
+  };
+}
+
+function buildReportWriterGridDefinition(
+  grid: ReportingWriterGridRow,
+  zones: Record<ReportWriterDropZone, ReportingWriterToken[]>
+): ReportWriterGridDefinition {
+  return {
+    gridId: grid.gridId,
+    title: grid.title,
+    kind: normalizeReportWriterGridKind(grid.kind),
+    rowFields: normalizeStringList(zones.rowFields.map(resolveWriterFieldName)),
+    columnFields: normalizeStringList(zones.columnFields.map(resolveWriterFieldName)),
+    metrics: normalizeWriterMetrics(zones.metrics),
+    formulas: normalizeWriterFormulas(zones.formulas),
+    topN: grid.kind === "TopN" ? grid.topN ?? 10 : grid.topN,
+    sortBy: grid.sortBy,
+    sortDescending: grid.sortDescending
+  };
+}
+
+function buildReportWriterPreviewRows(grid: ReportWriterGridDefinition): Record<string, string>[] {
+  const dimensionFields = normalizeStringList([
+    ...(grid.rowFields ?? []),
+    ...(grid.columnFields ?? [])
+  ]);
+  const metricSourceFields = normalizeStringList((grid.metrics ?? []).map((metric) => metric.sourceField));
+  const formulaFields = normalizeStringList((grid.formulas ?? []).flatMap((formula) => extractReportWriterFormulaFields(formula.expression)));
+  const numericFields = normalizeStringList([
+    ...metricSourceFields,
+    ...formulaFields,
+    ...(grid.sortBy ? [grid.sortBy] : [])
+  ]).filter((field) => !dimensionFields.some((dimension) => dimension.toLowerCase() === field.toLowerCase()));
+  const fields = normalizeStringList([...dimensionFields, ...numericFields]);
+
+  if (fields.length === 0) {
+    return [{ previewRow: "1" }, { previewRow: "2" }];
+  }
+
+  return Array.from({ length: 4 }, (_, index) => {
+    const row: Record<string, string> = {};
+    for (const field of dimensionFields) {
+      row[field] = previewDimensionValue(field, index);
+    }
+
+    for (const field of numericFields) {
+      row[field] = previewNumericValue(field, index);
+    }
+
+    return row;
+  });
+}
+
+function buildReportAccessPolicy(settings: ReportWriterDraftSettings): ReportTemplateDraftRequest["accessPolicy"] {
+  if (settings.accessMode === "CompanyWide") {
+    return {
+      mode: "CompanyWide",
+      allowOwnerAccess: true
+    };
+  }
+
+  const principalId = normalizeDraftText(settings.principalId, "browser-workstation");
+  const principalKind = settings.accessMode === "Private" ? "User" : settings.principalKind;
+  return {
+    mode: settings.accessMode,
+    ownerPrincipalId: settings.accessMode === "Private" ? principalId : "browser-workstation",
+    principals: [
+      {
+        kind: principalKind,
+        principalId,
+        displayName: principalId
+      }
+    ],
+    allowOwnerAccess: true
+  };
+}
+
+function normalizeWriterMetrics(tokens: ReportingWriterToken[]): ReportWriterMetricDefinition[] {
+  const metrics = tokens
+    .map(tokenToMetricDefinition)
+    .filter((metric): metric is ReportWriterMetricDefinition => Boolean(metric));
+  return dedupeBy(metrics, (metric) => metric.name.toLowerCase());
+}
+
+function tokenToMetricDefinition(token: ReportingWriterToken): ReportWriterMetricDefinition | null {
+  if (token.kind === "formula") {
+    return null;
+  }
+
+  const sourceField = normalizeDraftText(token.sourceField ?? token.fieldName ?? token.label, "");
+  if (!sourceField) {
+    return null;
+  }
+
+  const name = normalizeIdentifierToken(token.name ?? sourceField, sourceField);
+  return {
+    name,
+    sourceField,
+    function: normalizeAggregateFunction(token.function),
+    label: token.kind === "metric" ? token.label : sourceField
+  };
+}
+
+function normalizeWriterFormulas(tokens: ReportingWriterToken[]) {
+  const formulas = tokens
+    .map(tokenToFormulaDefinition)
+    .filter((formula): formula is NonNullable<ReturnType<typeof tokenToFormulaDefinition>> => Boolean(formula));
+  return dedupeBy(formulas, (formula) => formula.name.toLowerCase());
+}
+
+function tokenToFormulaDefinition(token: ReportingWriterToken) {
+  if (token.kind === "metric") {
+    const metricName = normalizeIdentifierToken(token.name ?? token.label, "");
+    return metricName
+      ? {
+          name: `${metricName}Formula`,
+          expression: `{${metricName}}`,
+          label: `${token.label} formula`
+        }
+      : null;
+  }
+
+  if (token.kind === "field") {
+    const field = normalizeDraftText(token.fieldName ?? token.sourceField ?? token.label, "");
+    return field
+      ? {
+          name: normalizeIdentifierToken(field, "fieldFormula"),
+          expression: `{${field}}`,
+          label: field
+        }
+      : null;
+  }
+
+  const name = normalizeIdentifierToken(token.name ?? token.label, "");
+  const expression = normalizeDraftText(token.expression ?? token.detail, "");
+  return name && expression
+    ? {
+        name,
+        expression,
+        label: token.label
+      }
+    : null;
+}
+
+function resolveWriterFieldName(token: ReportingWriterToken): string {
+  return normalizeDraftText(token.fieldName ?? token.sourceField ?? token.name ?? token.label, "");
+}
+
+function extractReportWriterFormulaFields(expression: string | null | undefined): string[] {
+  if (!expression) {
+    return [];
+  }
+
+  return Array.from(expression.matchAll(/\{([^}]+)\}/g), (match) => match[1]?.trim() ?? "").filter(Boolean);
+}
+
+function previewDimensionValue(field: string, index: number): string {
+  const normalized = field.toLowerCase();
+  if (normalized.includes("sector")) {
+    return ["Technology", "Technology", "Rates", "Credit"][index] ?? "Other";
+  }
+
+  if (normalized.includes("strategy")) {
+    return ["Core", "Growth", "Rates", "Credit"][index] ?? "Core";
+  }
+
+  if (normalized.includes("fund")) {
+    return ["Fund A", "Fund A", "Fund B", "Fund B"][index] ?? "Fund A";
+  }
+
+  if (normalized.includes("region")) {
+    return ["North America", "Europe", "Asia Pacific", "North America"][index] ?? "North America";
+  }
+
+  if (normalized.includes("security") || normalized.includes("asset")) {
+    return ["ABC Corp", "XYZ Fund", "UST 10Y", "Cash USD"][index] ?? "Position";
+  }
+
+  return `${formatPreviewFieldLabel(field)} ${(index % 2) + 1}`;
+}
+
+function previewNumericValue(field: string, index: number): string {
+  const normalized = field.toLowerCase();
+  if (normalized.includes("pnl") || normalized.includes("p&l")) {
+    return ["10", "5", "-2", "4"][index] ?? "0";
+  }
+
+  if (normalized.includes("cash") || normalized.includes("liquidity")) {
+    return ["1000", "750", "400", "250"][index] ?? "0";
+  }
+
+  if (normalized.includes("nav") || normalized.includes("value") || normalized.includes("exposure")) {
+    return ["100", "50", "75", "25"][index] ?? "0";
+  }
+
+  if (normalized.includes("percent") || normalized.includes("pct")) {
+    return ["12.5", "8.25", "-3.5", "6"][index] ?? "0";
+  }
+
+  return String((index + 1) * 10);
+}
+
+function formatPreviewFieldLabel(field: string): string {
+  const spaced = field
+    .replace(/[_-]+/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .trim();
+  if (!spaced) {
+    return "Value";
+  }
+
+  return spaced.replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function normalizeReportWriterGridKind(kind: string): ReportWriterGridKind {
+  switch (kind.toLowerCase()) {
+    case "detail":
+      return "Detail";
+    case "topn":
+    case "top-n":
+      return "TopN";
+    case "contribution":
+      return "Contribution";
+    default:
+      return "Pivot";
+  }
+}
+
+function normalizeAggregateFunction(value: ReportWriterAggregateFunction | string | null | undefined): ReportWriterAggregateFunction {
+  switch ((value ?? "").toString().toLowerCase()) {
+    case "count":
+      return "Count";
+    case "average":
+      return "Average";
+    case "min":
+      return "Min";
+    case "max":
+      return "Max";
+    default:
+      return "Sum";
+  }
+}
+
+function normalizeStringList(values: string[]): string[] {
+  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
+}
+
+function normalizeDraftText(value: string | null | undefined, fallback: string): string {
+  const normalized = value?.trim();
+  return normalized || fallback;
+}
+
+function normalizeIdentifierToken(value: string | null | undefined, fallback: string): string {
+  const normalized = normalizeDraftText(value, fallback)
+    .replace(/[^A-Za-z0-9_.-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return normalized || fallback;
+}
+
+function parseReportTemplateVersion(version: string): number | null {
+  const first = version.split(".", 1)[0];
+  const parsed = Number.parseInt(first, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function dedupeBy<T>(items: T[], keySelector: (item: T) => string): T[] {
+  const seen = new Set<string>();
+  const output: T[] = [];
+  for (const item of items) {
+    const key = keySelector(item);
+    if (!seen.has(key)) {
+      seen.add(key);
+      output.push(item);
+    }
+  }
+
+  return output;
+}
+
 function ReportingScheduleField({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-sm border border-border/60 bg-background/30 px-2.5 py-2">
@@ -1348,6 +2687,10 @@ function formatReportingMoney(value: number, currency: string): string {
   } catch {
     return `${currency || "USD"} ${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
   }
+}
+
+function formatReportingDateRange(startDate: string, endDate: string): string {
+  return startDate === endDate ? startDate : `${startDate} to ${endDate}`;
 }
 
 function ReportingCommandStatusView({ status }: { status: ReportingCommandStatus }) {
@@ -1414,6 +2757,56 @@ async function executeRunAction(run: ReportingRunStatusRow, action: ReportingRun
   }
 
   await apiPostJson<unknown>(action.href);
+}
+
+function buildReportTemplateDecisionRequest(
+  template: ReportingTemplateRow,
+  action: ReportingTemplateLifecycleActionRow
+): ReportTemplateDecisionRequest {
+  if (action.kind === "approve") {
+    return {
+      rationale: "Approved from browser Reporting workspace.",
+      approvalReference: `browser-template-approval:${template.templateName}:v${template.versionNumber}`
+    };
+  }
+
+  if (action.kind === "reject") {
+    return {
+      rationale: "Returned from browser Reporting workspace."
+    };
+  }
+
+  return {
+    rationale: "Ready for controller review."
+  };
+}
+
+function executeTemplateLifecycleAction(
+  template: ReportingTemplateRow,
+  action: ReportingTemplateLifecycleActionRow,
+  request: ReportTemplateDecisionRequest
+) {
+  if (action.kind === "approve") {
+    return approveReportTemplateDraft(template.templateName, template.versionNumber, request);
+  }
+
+  if (action.kind === "reject") {
+    return rejectReportTemplateDraft(template.templateName, template.versionNumber, request);
+  }
+
+  return submitReportTemplateDraft(template.templateName, template.versionNumber, request);
+}
+
+function buildTemplateLifecycleBusyLabel(action: ReportingTemplateLifecycleActionRow["kind"]): string {
+  if (action === "approve") {
+    return "Approving";
+  }
+
+  if (action === "reject") {
+    return "Rejecting";
+  }
+
+  return "Submitting";
 }
 
 function extractReportPackId(run: ReportingRunStatusRow, action: ReportingRunActionRow): string {

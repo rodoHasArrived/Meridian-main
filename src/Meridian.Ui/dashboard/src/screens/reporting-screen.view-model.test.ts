@@ -286,10 +286,12 @@ describe("useReportingScreenViewModel", () => {
 
     expect(result.current.templateRows).toEqual([
       {
-        id: "investor-monthly-statement",
+        id: "investor-monthly-statement:1.0.0",
+        templateName: "investor-monthly-statement",
         name: "Investor Monthly Statement",
         family: "InvestorStatement",
         version: "1.0.0",
+        versionNumber: 1,
         sectionSummary: "2 sections",
         statusLabel: "Approved",
         statusVariant: "success",
@@ -304,7 +306,12 @@ describe("useReportingScreenViewModel", () => {
         canRunOnDemand: true,
         runActionLabel: "Run report",
         runActionAriaLabel: "Run Investor Monthly Statement report on demand",
-        runDisabledReason: null
+        runDisabledReason: null,
+        lifecycleActions: [],
+        hasLifecycleActions: false,
+        writerGrids: [],
+        hasWriterGrids: false,
+        writerGridSummary: "No report-writer grids"
       }
     ]);
     expect(result.current.runStatusRows[0]).toMatchObject({
@@ -361,7 +368,113 @@ describe("useReportingScreenViewModel", () => {
       accessSummary: "Private user-locked access owned by report.owner.",
       isAccessible: false,
       canRunOnDemand: false,
+      lifecycleActions: [],
+      hasLifecycleActions: false,
       runDisabledReason: "Current user does not have access to this report template."
+    });
+  });
+
+  it("summarizes configured reporting schedule delivery targets", () => {
+    const scheduledReporting: GovernanceReportingSummary = {
+      ...reporting,
+      schedules: [
+        {
+          scheduleId: "sched-investor",
+          templateId: "investor-monthly-statement",
+          cronExpression: "0 8 1 * *",
+          nextAsOfDate: "2026-06-01",
+          dueAtUtc: "2026-06-01T08:00:00Z",
+          maxRetries: 2,
+          requestedBy: "fund-controller",
+          state: "Active",
+          createdAtUtc: "2026-05-01T08:00:00Z",
+          updatedAtUtc: "2026-05-03T08:00:00Z",
+          lastRunAtUtc: null,
+          lastRunId: null,
+          runCount: 0,
+          description: "Monthly investor statement close packet.",
+          deliveryTargets: [
+            {
+              distributionId: "board-reporting-committee",
+              formats: ["Pdf", "Xlsx", "Csv"],
+              deliveryMode: "SecurePortal",
+              note: "Board package."
+            }
+          ]
+        }
+      ]
+    };
+
+    const { result } = renderHook(() => useReportingScreenViewModel(scheduledReporting));
+
+    expect(result.current.scheduleRows[0]).toMatchObject({
+      id: "sched-investor",
+      deliveryTargetLabel: "board-reporting-committee via SecurePortal (Pdf/Xlsx/Csv)",
+      lastRunLabel: "Not run"
+    });
+  });
+
+  it("surfaces lifecycle actions for custom report-template versions", () => {
+    const lifecycleReporting: GovernanceReportingSummary = {
+      ...reporting,
+      templates: [
+        ...(reporting.templates ?? []),
+        {
+          templateId: "custom-exposure-draft",
+          family: "CustomReport",
+          name: "Custom Exposure Draft",
+          version: "2",
+          sections: ["exposures"],
+          lifecycleStatus: "Draft",
+          isBuiltIn: false,
+          isLatestApproved: false,
+          approvalSummary: "Draft by reporting.ops.",
+          authoringRoute: "/api/fund-structure/reporting/templates/custom-exposure-draft/versions/2"
+        },
+        {
+          templateId: "custom-exposure-review",
+          family: "CustomReport",
+          name: "Custom Exposure Review",
+          version: "3",
+          sections: ["exposures"],
+          lifecycleStatus: "InReview",
+          isBuiltIn: false,
+          isLatestApproved: false,
+          approvalSummary: "Submitted by reporting.ops.",
+          authoringRoute: "/api/fund-structure/reporting/templates/custom-exposure-review/versions/3"
+        }
+      ]
+    };
+
+    const { result } = renderHook(() => useReportingScreenViewModel(lifecycleReporting));
+
+    expect(result.current.templateRows.find((row) => row.templateName === "investor-monthly-statement")).toMatchObject({
+      lifecycleActions: [],
+      hasLifecycleActions: false
+    });
+    expect(result.current.templateRows.find((row) => row.templateName === "custom-exposure-draft")).toMatchObject({
+      id: "custom-exposure-draft:2",
+      versionNumber: 2,
+      statusLabel: "Draft",
+      lifecycleActions: [
+        expect.objectContaining({
+          kind: "submit",
+          label: "Submit",
+          ariaLabel: "Submit Custom Exposure Draft template version 2 for review",
+          targetStatus: "InReview"
+        })
+      ],
+      hasLifecycleActions: true
+    });
+    expect(result.current.templateRows.find((row) => row.templateName === "custom-exposure-review")).toMatchObject({
+      id: "custom-exposure-review:3",
+      versionNumber: 3,
+      statusLabel: "InReview",
+      lifecycleActions: [
+        expect.objectContaining({ kind: "approve", label: "Approve", targetStatus: "Approved" }),
+        expect.objectContaining({ kind: "reject", label: "Reject", targetStatus: "Rejected" })
+      ],
+      hasLifecycleActions: true
     });
   });
 
@@ -388,7 +501,19 @@ describe("useReportingScreenViewModel", () => {
               kind: "Pivot",
               dimensionCount: 1,
               metricCount: 2,
-              formulaCount: 1
+              formulaCount: 1,
+              rowFields: ["sector"],
+              columnFields: [],
+              metrics: [
+                { name: "marketValue", sourceField: "marketValue", function: "Sum", label: "Market value" },
+                { name: "pnl", sourceField: "pnl", function: "Sum", label: "P&L" }
+              ],
+              formulas: [
+                { name: "returnPct", expression: "{pnl} / {marketValue} * 100", label: "Return %" }
+              ],
+              topN: null,
+              sortBy: "pnl",
+              sortDescending: true
             }
           ]
         }
@@ -397,10 +522,25 @@ describe("useReportingScreenViewModel", () => {
 
     const { result } = renderHook(() => useReportingScreenViewModel(withGridTemplate));
 
-    expect(result.current.templateRows.find((row) => row.id === "custom-exposure-grid")).toMatchObject({
+    expect(result.current.templateRows.find((row) => row.templateName === "custom-exposure-grid")).toMatchObject({
+      id: "custom-exposure-grid:1",
       sectionSummary: "1 section; 1 report-writer grid with 3 metrics",
       sourceLabel: "Custom",
-      runDisabledReason: "Custom template rendering uses the template render endpoint; on-demand runs still use approved built-in orchestration templates."
+      runDisabledReason: "Custom template rendering uses the template render endpoint; on-demand runs still use approved built-in orchestration templates.",
+      hasWriterGrids: true,
+      writerGridSummary: "1 grid ready for no-code layout"
+    });
+    expect(result.current.templateRows.find((row) => row.templateName === "custom-exposure-grid")?.writerGrids[0]).toMatchObject({
+      title: "Sector Pivot",
+      kind: "Pivot",
+      topNLabel: "Pivot",
+      sortLabel: "Descending by pnl",
+      rowFields: [expect.objectContaining({ label: "sector" })],
+      metrics: [
+        expect.objectContaining({ label: "Market value", detail: "Sum(marketValue)" }),
+        expect.objectContaining({ label: "P&L", detail: "Sum(pnl)" })
+      ],
+      formulas: [expect.objectContaining({ label: "Return %", detail: "{pnl} / {marketValue} * 100" })]
     });
   });
 

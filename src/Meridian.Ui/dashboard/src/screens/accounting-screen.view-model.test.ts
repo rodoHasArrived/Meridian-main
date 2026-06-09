@@ -1003,7 +1003,7 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
         reportOutputId: "report-output:fund-event:fund-alpha:capital-call:20260630:capitalcallnotice",
         reportOutputType: "CapitalCallNotice",
         displayName: "CapitalCallNotice for CapitalCall",
-        reportRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630",
+        reportRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
         fundEventId: "fund-event:fund-alpha:capital-call:20260630",
         fundEventType: "CapitalCall",
         capitalAccountId: "capital-account:fund-alpha:lp-1",
@@ -1018,6 +1018,191 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
         reportWorkflowState: "Draft",
         reportLineProvenanceCount: 1,
         validationIssues: [
+          {
+            code: "manual-je.private-capital-report-approval-pending",
+            severity: "Warning",
+            message: "Approval is pending.",
+            targetId: "fund-event:fund-alpha:capital-call:20260630",
+            suggestedAction: "Submit approval."
+          }
+        ]
+      }
+    ],
+    fundEventRecords: [
+      {
+        fundEventRecordId: "fund-event-ledger-record:fund-event:fund-alpha:capital-call:20260630",
+        fundEventId: "fund-event:fund-alpha:capital-call:20260630",
+        fundEventType: "CapitalCall",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        approvalState: "Draft",
+        journalEntryId: "manual-je-1",
+        effectiveDate: "2026-06-30",
+        currency: "USD",
+        grossAmount: 100,
+        netCapitalActivity: 100,
+        capitalAccountOpeningNetActivity: 0,
+        capitalAccountEndingNetActivity: 100,
+        memo: "Manual close adjustment",
+        paymentIntentId: "payment:fund-alpha:capital-call:manual-je-1",
+        settlementReference: "settlement:fund-alpha:capital-call:20260630",
+        activityRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
+        evidenceRoute: "/api/workstation/evidence/subjects/private-capital-fund-event/fund-event%3Afund-alpha%3Acapital-call%3A20260630/packet",
+        approvalId: null,
+        approvalRoute: null,
+        isPosted: false,
+        isPostingReady: false,
+        isReportReady: false,
+        isPublished: false,
+        readiness: "ApprovalPending",
+        readinessLabel: "Approval pending",
+        readinessReason: "Submit the fund-event journal for approval before posting or stakeholder report output.",
+        nextAction: "Submit approval",
+        nextActionRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
+        evidenceLinkCount: 1,
+        capitalAccountSubledgerEntryCount: 1,
+        ledgerImpactCount: 1,
+        reportOutputCount: 1,
+        validationIssueCount: 2,
+        primaryReportOutputId: "report-output:fund-event:fund-alpha:capital-call:20260630:capitalcallnotice",
+        primaryReportOutputType: "CapitalCallNotice",
+        primaryReportRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
+        reportWorkflowState: "Draft",
+        publicationManifestId: null,
+        retainedManifestPath: null,
+        reportLineProvenanceCount: 1,
+        evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+        fundEvent: {
+          fundEventId: "fund-event:fund-alpha:capital-call:20260630",
+          fundEventType: "CapitalCall",
+          entryType: "CapitalCall",
+          journalStatus: "Draft",
+          journalEntryId: "manual-je-1",
+          effectiveDate: "2026-06-30",
+          capitalAccountId: "capital-account:fund-alpha:lp-1",
+          investorId: "investor:lp-1",
+          currency: "USD",
+          grossAmount: 100,
+          netCapitalActivity: 100,
+          memo: "Manual close adjustment",
+          paymentIntentId: "payment:fund-alpha:capital-call:manual-je-1",
+          settlementReference: "settlement:fund-alpha:capital-call:20260630",
+          evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+          validationIssues: [],
+          updatedAtUtc: "2026-06-30T00:00:00Z"
+        },
+        capitalAccountSubledgerEntries: [
+          {
+            subledgerEntryId: "capital-account-subledger:fund-event:fund-alpha:capital-call:20260630",
+            capitalAccountId: "capital-account:fund-alpha:lp-1",
+            investorId: "investor:lp-1",
+            currency: "USD",
+            fundEventId: "fund-event:fund-alpha:capital-call:20260630",
+            fundEventType: "CapitalCall",
+            entryType: "CapitalCall",
+            approvalState: "Draft",
+            journalEntryId: "manual-je-1",
+            effectiveDate: "2026-06-30",
+            grossAmount: 100,
+            netCapitalActivity: 100,
+            runningNetActivity: 100,
+            memo: "Manual close adjustment",
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            validationIssues: [],
+            updatedAtUtc: "2026-06-30T00:00:00Z"
+          }
+        ],
+        ledgerImpacts: [
+          {
+            ledgerImpactId: "ledger-impact:fund-event:fund-alpha:capital-call:20260630:manual-je-1",
+            journalEntryId: "manual-je-1",
+            fundEventId: "fund-event:fund-alpha:capital-call:20260630",
+            fundEventType: "CapitalCall",
+            capitalAccountId: "capital-account:fund-alpha:lp-1",
+            investorId: "investor:lp-1",
+            approvalState: "Draft",
+            effectiveDate: "2026-06-30",
+            currency: "USD",
+            totalDebits: 100,
+            totalCredits: 100,
+            imbalance: 0,
+            lineCount: 2,
+            isBalanced: true,
+            isPostingReady: false,
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            lines: [
+              {
+                lineId: "line-debit",
+                accountPath: "Assets:Cash",
+                side: "Debit",
+                amount: 100,
+                currency: "USD",
+                entityId: null,
+                securityId: null,
+                securityDisplayName: null,
+                evidenceLink: null
+              },
+              {
+                lineId: "line-credit",
+                accountPath: "Equity:Capital Contributions",
+                side: "Credit",
+                amount: 100,
+                currency: "USD",
+                entityId: null,
+                securityId: null,
+                securityDisplayName: null,
+                evidenceLink: null
+              }
+            ],
+            validationIssues: [
+              {
+                code: "manual-je.private-capital-ledger-impact-approval-pending",
+                severity: "Warning",
+                message: "Approval is pending.",
+                targetId: "manual-je-1",
+                suggestedAction: "Submit approval."
+              }
+            ]
+          }
+        ],
+        reportOutputs: [
+          {
+            reportOutputId: "report-output:fund-event:fund-alpha:capital-call:20260630:capitalcallnotice",
+            reportOutputType: "CapitalCallNotice",
+            displayName: "CapitalCallNotice for CapitalCall",
+            reportRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
+            fundEventId: "fund-event:fund-alpha:capital-call:20260630",
+            fundEventType: "CapitalCall",
+            capitalAccountId: "capital-account:fund-alpha:lp-1",
+            investorId: "investor:lp-1",
+            approvalState: "Draft",
+            effectiveDate: "2026-06-30",
+            currency: "USD",
+            netCapitalActivity: 100,
+            evidenceLinkCount: 1,
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            isReportReady: false,
+            reportWorkflowState: "Draft",
+            reportLineProvenanceCount: 1,
+            validationIssues: [
+              {
+                code: "manual-je.private-capital-report-approval-pending",
+                severity: "Warning",
+                message: "Approval is pending.",
+                targetId: "fund-event:fund-alpha:capital-call:20260630",
+                suggestedAction: "Submit approval."
+              }
+            ]
+          }
+        ],
+        validationIssues: [
+          {
+            code: "manual-je.private-capital-ledger-impact-approval-pending",
+            severity: "Warning",
+            message: "Approval is pending.",
+            targetId: "manual-je-1",
+            suggestedAction: "Submit approval."
+          },
           {
             code: "manual-je.private-capital-report-approval-pending",
             severity: "Warning",
@@ -1142,6 +1327,7 @@ describe("accounting-screen view model", () => {
     expect(result.current.privateCapitalActivity.summaryCards).toEqual(expect.arrayContaining([
       expect.objectContaining({ id: "net-activity", value: "+$100.00 USD" }),
       expect.objectContaining({ id: "ledger-impacts", value: "1" }),
+      expect.objectContaining({ id: "fund-event-ledger-records", value: "1" }),
       expect.objectContaining({ id: "capital-account-subledger", value: "1" }),
       expect.objectContaining({ id: "report-outputs", value: "1" })
     ]));
@@ -1171,6 +1357,31 @@ describe("accounting-screen view model", () => {
       workflowLabel: "Draft",
       publicationLabel: "No publication manifest",
       provenanceLabel: "1 provenance line(s)"
+    });
+    expect(result.current.privateCapitalActivity.fundEventLedgerRecords[0]).toMatchObject({
+      title: "CapitalCall",
+      statusLabel: "Draft",
+      statusTone: "warning",
+      readinessLabel: "Approval pending",
+      readinessTone: "warning",
+      readinessReasonLabel: "Submit the fund-event journal for approval before posting or stakeholder report output.",
+      nextActionLabel: "Submit approval",
+      nextActionRouteLabel: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
+      netActivityLabel: "+$100.00 USD",
+      grossActivityLabel: "$100 USD",
+      capitalAccountRollForwardLabel: "$0 USD opening -> +$100.00 USD ending",
+      memoLabel: "Manual close adjustment",
+      referenceLabel: "payment:fund-alpha:capital-call:manual-je-1 / settlement:fund-alpha:capital-call:20260630",
+      activityRouteLabel: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
+      evidenceRouteLabel: "/api/workstation/evidence/subjects/private-capital-fund-event/fund-event%3Afund-alpha%3Acapital-call%3A20260630/packet",
+      approvalRouteLabel: "No approval route",
+      evidenceLabel: "1 evidence",
+      ledgerImpactLabel: "1 ledger impact(s)",
+      subledgerLabel: "1 subledger movement(s)",
+      reportOutputLabel: "1 report output(s)",
+      reportOutputDetailLabel: "CapitalCallNotice / Draft / 1 provenance",
+      reportOutputRouteLabel: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
+      issueLabel: "2 record issue(s)"
     });
 
     act(() => result.current.updateSecuritySearchQuery("AAPL"));

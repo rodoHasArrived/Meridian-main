@@ -659,6 +659,7 @@ public static class UiApiRoutes
     public const string LedgerAccountingConfigurationAudit = "/api/ledger/accounting-configuration/audit";
     public const string LedgerManualJournalEntryWorkbench = "/api/ledger/journal-entry-workbench";
     public const string LedgerPrivateCapitalActivity = "/api/ledger/private-capital/activity";
+    public const string LedgerPrivateCapitalFundEventRecord = "/api/ledger/private-capital/fund-event-record";
     public const string LedgerManualJournalEntryDrafts = "/api/ledger/journal-entry-workbench/drafts";
     public const string LedgerManualJournalEntryValidate = "/api/ledger/journal-entry-workbench/validate";
     public const string LedgerManualJournalEntrySubmitApproval = "/api/ledger/journal-entry-workbench/submit-approval";

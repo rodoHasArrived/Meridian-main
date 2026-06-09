@@ -855,7 +855,8 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 NormalizeOptional(context.SettlementReference),
                 evidenceLinks,
                 draft.ValidationIssues,
-                draft.UpdatedAtUtc));
+                draft.UpdatedAtUtc,
+                ApprovalId: NormalizeOptional(draft.ApprovalId)));
         }
 
         var orderedFundEvents = fundEvents
@@ -901,6 +902,12 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             fundProfileId,
             postedProjection?.Events ?? [],
             reportPackWorkflowRecords);
+        var fundEventRecords = PrivateCapitalFundEventLedgerRecordBuilder.Build(
+            fundProfileId,
+            combinedFundEvents,
+            capitalAccountSubledgerEntries,
+            orderedLedgerImpacts,
+            reportOutputs);
 
         return new PrivateCapitalActivityProjectionDto(
             fundProfileId,
@@ -923,7 +930,8 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 .OrderByDescending(issue => issue.Severity)
                 .ThenBy(issue => issue.Code, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(issue => issue.TargetId, StringComparer.OrdinalIgnoreCase)
-                .ToArray());
+                .ToArray(),
+            fundEventRecords);
     }
 
     private async Task<PrivateCapitalFundEventLedgerProjection?> BuildPostedPrivateCapitalActivityProjectionAsync(
@@ -1077,7 +1085,8 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             evidenceLinks,
             issues,
             fundEvent.LastPostedAt,
-            IsPosted: true);
+            IsPosted: true,
+            ApprovalId: NormalizeOptional(fundEvent.ApprovalId));
     }
 
     private static IEnumerable<PrivateCapitalLedgerImpactDto> MapPostedLedgerImpacts(
@@ -1275,7 +1284,11 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             $"report-output:{fundEvent.FundEventId}:governed-report-pack-pending".ToLowerInvariant(),
             "GovernedReportPack",
             $"Governed report pack for {fundEvent.FundEventType}",
-            $"/api/ledger/private-capital/activity?fundProfileId={Uri.EscapeDataString(fundProfileId)}&fundEventId={Uri.EscapeDataString(fundEvent.FundEventId)}",
+            PrivateCapitalActivityRouteBuilder.Build(
+                fundProfileId,
+                fundEvent.FundEventId,
+                fundEvent.CapitalAccountId,
+                fundEvent.InvestorId),
             fundEvent.FundEventId,
             fundEvent.FundEventType,
             NormalizeOptional(fundEvent.CapitalAccountId) ?? "capital-account:unassigned",
@@ -1546,7 +1559,11 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         }
 
         var reportOutputId = $"report-output:{fundEvent.FundEventId}:{reportOutputType}".ToLowerInvariant();
-        var reportRoute = $"/api/ledger/private-capital/activity?fundProfileId={Uri.EscapeDataString(fundProfileId)}&fundEventId={Uri.EscapeDataString(fundEvent.FundEventId)}";
+        var reportRoute = PrivateCapitalActivityRouteBuilder.Build(
+            fundProfileId,
+            fundEvent.FundEventId,
+            fundEvent.CapitalAccountId,
+            fundEvent.InvestorId);
         return new PrivateCapitalReportOutputDto(
             reportOutputId,
             reportOutputType,

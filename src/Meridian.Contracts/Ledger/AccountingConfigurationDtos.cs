@@ -55,6 +55,18 @@ public enum ManualJournalEntryTypeDto
     ManagementFee = 14
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<PrivateCapitalFundEventLedgerReadinessDto>))]
+public enum PrivateCapitalFundEventLedgerReadinessDto
+{
+    Blocked = 0,
+    EvidenceMissing = 1,
+    ApprovalPending = 2,
+    PostingReview = 3,
+    ReportReview = 4,
+    Ready = 5,
+    Published = 6
+}
+
 public sealed record ChartOfAccountsNodeDto(
     string NodeId,
     string Path,
@@ -250,7 +262,8 @@ public sealed record PrivateCapitalFundEventDto(
     IReadOnlyList<string> EvidenceLinks,
     IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
     DateTimeOffset UpdatedAtUtc,
-    bool IsPosted = false);
+    bool IsPosted = false,
+    string? ApprovalId = null);
 
 public sealed record PrivateCapitalCapitalAccountActivityDto(
     string CapitalAccountId,
@@ -345,6 +358,55 @@ public sealed record PrivateCapitalReportOutputDto(
     string? PublishedBy = null,
     int ReportLineProvenanceCount = 0);
 
+public sealed record PrivateCapitalFundEventLedgerRecordDto(
+    string FundEventRecordId,
+    string FundEventId,
+    string FundEventType,
+    string CapitalAccountId,
+    string? InvestorId,
+    ManualJournalEntryStatusDto ApprovalState,
+    Guid JournalEntryId,
+    DateOnly EffectiveDate,
+    string Currency,
+    decimal GrossAmount,
+    decimal NetCapitalActivity,
+    decimal CapitalAccountOpeningNetActivity,
+    decimal CapitalAccountEndingNetActivity,
+    string Memo,
+    string? PaymentIntentId,
+    string? SettlementReference,
+    string ActivityRoute,
+    string EvidenceRoute,
+    string? ApprovalId,
+    string? ApprovalRoute,
+    bool IsPosted,
+    bool IsPostingReady,
+    bool IsReportReady,
+    bool IsPublished,
+    PrivateCapitalFundEventLedgerReadinessDto Readiness,
+    string ReadinessLabel,
+    string ReadinessReason,
+    string NextAction,
+    string? NextActionRoute,
+    int EvidenceLinkCount,
+    int CapitalAccountSubledgerEntryCount,
+    int LedgerImpactCount,
+    int ReportOutputCount,
+    int ValidationIssueCount,
+    string? PrimaryReportOutputId,
+    string? PrimaryReportOutputType,
+    string? PrimaryReportRoute,
+    string? ReportWorkflowState,
+    string? PublicationManifestId,
+    string? RetainedManifestPath,
+    int ReportLineProvenanceCount,
+    IReadOnlyList<string> EvidenceLinks,
+    PrivateCapitalFundEventDto FundEvent,
+    IReadOnlyList<PrivateCapitalCapitalAccountSubledgerEntryDto> CapitalAccountSubledgerEntries,
+    IReadOnlyList<PrivateCapitalLedgerImpactDto> LedgerImpacts,
+    IReadOnlyList<PrivateCapitalReportOutputDto> ReportOutputs,
+    IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues);
+
 public sealed record PrivateCapitalActivityProjectionDto(
     string FundProfileId,
     Guid? LedgerBookId,
@@ -362,7 +424,12 @@ public sealed record PrivateCapitalActivityProjectionDto(
     IReadOnlyList<PrivateCapitalCapitalAccountSubledgerEntryDto> CapitalAccountSubledgerEntries,
     IReadOnlyList<PrivateCapitalLedgerImpactDto> LedgerImpacts,
     IReadOnlyList<PrivateCapitalReportOutputDto> ReportOutputs,
-    IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues);
+    IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
+    IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto>? FundEventRecords = null)
+{
+    public IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> FundEventRecords { get; init; } =
+        FundEventRecords ?? [];
+}
 
 public sealed record ManualJournalEntryWorkbenchDto(
     string FundProfileId,

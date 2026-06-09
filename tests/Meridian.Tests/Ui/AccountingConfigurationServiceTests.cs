@@ -11,6 +11,49 @@ namespace Meridian.Tests.Ui;
 public sealed class AccountingConfigurationServiceTests
 {
     [Fact]
+    public void PrivateCapitalActivityProjection_NormalizesOmittedFundEventRecordsToEmptyList()
+    {
+        var projection = new PrivateCapitalActivityProjectionDto(
+            "fund-alpha",
+            null,
+            new DateTimeOffset(2026, 6, 30, 17, 0, 0, TimeSpan.Zero),
+            FundEventCount: 0,
+            CapitalAccountCount: 0,
+            SubmittedFundEventCount: 0,
+            ApprovalQueueCount: 0,
+            PostedFundEventCount: 0,
+            PublishedReportOutputCount: 0,
+            NetCapitalActivity: 0m,
+            Currency: "USD",
+            FundEvents: [],
+            CapitalAccounts: [],
+            CapitalAccountSubledgerEntries: [],
+            LedgerImpacts: [],
+            ReportOutputs: [],
+            ValidationIssues: []);
+
+        projection.FundEventRecords.Should().BeEmpty();
+    }
+
+    [Theory]
+    [MemberData(nameof(PrivateCapitalFundEventLedgerReadinessCases))]
+    public void PrivateCapitalFundEventLedgerRecordBuilder_DerivesSharedReadinessAndNextAction(
+        PrivateCapitalFundEventLedgerReadinessCase testCase)
+    {
+        var record = BuildPrivateCapitalFundEventLedgerRecord(testCase);
+
+        record.Readiness.Should().Be(testCase.ExpectedReadiness);
+        record.ReadinessLabel.Should().Be(testCase.ExpectedLabel);
+        record.NextAction.Should().Be(testCase.ExpectedNextAction);
+        record.NextActionRoute.Should().Contain(testCase.ExpectedNextActionRouteFragment);
+        record.EvidenceLinkCount.Should().Be(testCase.ExpectedEvidenceCount);
+        record.ValidationIssueCount.Should().Be(testCase.ExpectedValidationIssueCount);
+        record.CapitalAccountSubledgerEntryCount.Should().Be(1);
+        record.LedgerImpactCount.Should().Be(testCase.IncludeLedgerImpact ? 1 : 0);
+        record.ReportOutputCount.Should().Be(testCase.IncludeReportOutput ? 1 : 0);
+    }
+
+    [Fact]
     public async Task Scenario_MonthEndSetup_ConfigurationMutationsWriteAuditTrail()
     {
         var service = CreateService();
@@ -193,6 +236,7 @@ public sealed class AccountingConfigurationServiceTests
             item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
             item.EntryType == ManualJournalEntryTypeDto.CapitalCall &&
             item.JournalStatus == ManualJournalEntryStatusDto.Submitted &&
+            item.ApprovalId == submitted.ApprovalId &&
             item.NetCapitalActivity == 100m);
         workbench.PrivateCapitalActivity.CapitalAccounts.Should().ContainSingle(item =>
             item.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
@@ -220,12 +264,50 @@ public sealed class AccountingConfigurationServiceTests
             item.ApprovalState == ManualJournalEntryStatusDto.Submitted &&
             item.EvidenceLinkCount == 1 &&
             item.IsReportReady);
+        workbench.PrivateCapitalActivity.FundEventRecords.Should().ContainSingle(item =>
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.JournalEntryId == submitted.JournalEntryId &&
+            item.GrossAmount == 100m &&
+            item.CapitalAccountOpeningNetActivity == 0m &&
+            item.CapitalAccountEndingNetActivity == 100m &&
+            item.Memo == "Capital call for Fund Alpha LP" &&
+            item.PaymentIntentId == "payment:fund-alpha:capital-call:20260630" &&
+            item.SettlementReference == "settlement:fund-alpha:capital-call:20260630" &&
+            item.ActivityRoute.Contains("fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630", StringComparison.OrdinalIgnoreCase) &&
+            item.ActivityRoute.Contains("capitalAccountId=capital-account%3Afund-alpha%3Alp-1", StringComparison.OrdinalIgnoreCase) &&
+            item.ActivityRoute.Contains("investorId=investor%3Alp-1", StringComparison.OrdinalIgnoreCase) &&
+            item.EvidenceRoute.Contains("/api/workstation/evidence/subjects/private-capital-fund-event/fund-event%3Afund-alpha%3Acapital-call%3A20260630/packet", StringComparison.OrdinalIgnoreCase) &&
+            item.ApprovalId == submitted.ApprovalId &&
+            item.ApprovalRoute != null &&
+            item.ApprovalRoute.Contains("approvalId=" + submitted.ApprovalId, StringComparison.OrdinalIgnoreCase) &&
+            item.ApprovalRoute.Contains("journalEntryId=" + submitted.JournalEntryId.ToString("D"), StringComparison.OrdinalIgnoreCase) &&
+            item.CapitalAccountSubledgerEntryCount == 1 &&
+            item.LedgerImpactCount == 1 &&
+            item.ReportOutputCount == 1 &&
+            item.ValidationIssueCount == 0 &&
+            item.PrimaryReportOutputType == "CapitalCallNotice" &&
+            item.PrimaryReportRoute != null &&
+            item.PrimaryReportRoute.Contains("fund-event%3Afund-alpha%3Acapital-call%3A20260630", StringComparison.OrdinalIgnoreCase) &&
+            item.ReportWorkflowState == ManualJournalEntryStatusDto.Submitted.ToString() &&
+            item.ReportLineProvenanceCount == 0 &&
+            item.Readiness == PrivateCapitalFundEventLedgerReadinessDto.Ready &&
+            item.ReadinessLabel == "Ready" &&
+            item.NextAction == "Review report output" &&
+            item.NextActionRoute == item.PrimaryReportRoute &&
+            item.EvidenceLinkCount == 1 &&
+            item.CapitalAccountSubledgerEntries.Count == 1 &&
+            item.LedgerImpacts.Count == 1 &&
+            item.ReportOutputs.Count == 1 &&
+            item.IsPostingReady &&
+            item.IsReportReady &&
+            !item.IsPublished);
         workbench.PrivateCapitalActivity.SubmittedFundEventCount.Should().Be(1);
         workbench.PrivateCapitalActivity.ApprovalQueueCount.Should().Be(1);
         var directActivity = await service.GetPrivateCapitalActivityAsync("fund-alpha");
         directActivity.FundEvents.Should().ContainSingle(item =>
             item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
-            item.JournalStatus == ManualJournalEntryStatusDto.Submitted);
+            item.JournalStatus == ManualJournalEntryStatusDto.Submitted &&
+            item.ApprovalId == submitted.ApprovalId);
         directActivity.CapitalAccounts.Should().ContainSingle(item =>
             item.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
             item.NetActivity == 100m);
@@ -241,6 +323,30 @@ public sealed class AccountingConfigurationServiceTests
         directActivity.ReportOutputs.Should().ContainSingle(item =>
             item.ReportOutputType == "CapitalCallNotice" &&
             item.IsReportReady);
+        directActivity.FundEventRecords.Should().ContainSingle(item =>
+            item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
+            item.ApprovalState == ManualJournalEntryStatusDto.Submitted &&
+            item.JournalEntryId == submitted.JournalEntryId &&
+            item.CapitalAccountOpeningNetActivity == 0m &&
+            item.CapitalAccountEndingNetActivity == 100m &&
+            item.ActivityRoute.Contains("fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630", StringComparison.OrdinalIgnoreCase) &&
+            item.ActivityRoute.Contains("capitalAccountId=capital-account%3Afund-alpha%3Alp-1", StringComparison.OrdinalIgnoreCase) &&
+            item.EvidenceRoute.Contains("/api/workstation/evidence/subjects/private-capital-fund-event/fund-event%3Afund-alpha%3Acapital-call%3A20260630/packet", StringComparison.OrdinalIgnoreCase) &&
+            item.ApprovalId == submitted.ApprovalId &&
+            item.ApprovalRoute != null &&
+            item.ApprovalRoute.Contains("approvalId=" + submitted.ApprovalId, StringComparison.OrdinalIgnoreCase) &&
+            item.CapitalAccountSubledgerEntryCount == 1 &&
+            item.LedgerImpactCount == 1 &&
+            item.ReportOutputCount == 1 &&
+            item.PrimaryReportOutputType == "CapitalCallNotice" &&
+            item.ReportWorkflowState == ManualJournalEntryStatusDto.Submitted.ToString() &&
+            item.Readiness == PrivateCapitalFundEventLedgerReadinessDto.Ready &&
+            item.ReadinessLabel == "Ready" &&
+            item.NextAction == "Review report output" &&
+            item.NextActionRoute == item.PrimaryReportRoute &&
+            item.CapitalAccountSubledgerEntries.Count == 1 &&
+            item.LedgerImpacts.Count == 1 &&
+            item.ReportOutputs.Count == 1);
     }
 
     [Fact]
@@ -368,6 +474,7 @@ public sealed class AccountingConfigurationServiceTests
         activity.FundEvents.Should().ContainSingle(item =>
             item.FundEventId == fundEventId &&
             item.JournalStatus == ManualJournalEntryStatusDto.Approved &&
+            item.ApprovalId == "approval:capital-call-controller" &&
             item.IsPosted &&
             item.NetCapitalActivity == 250000m &&
             item.EvidenceLinks.Contains("/api/workstation/evidence/subjects/private-capital/capital-call-source"));
@@ -403,6 +510,48 @@ public sealed class AccountingConfigurationServiceTests
             item.PublishedBy == "controller" &&
             item.ReportLineProvenanceCount == 1 &&
             item.EvidenceLinks.Contains("/api/workstation/evidence/report-packs/capital-call-1"));
+        activity.FundEventRecords.Should().ContainSingle(item =>
+            item.FundEventId == fundEventId &&
+            item.JournalEntryId == journalEntryId &&
+            item.GrossAmount == 250000m &&
+            item.NetCapitalActivity == 250000m &&
+            item.CapitalAccountOpeningNetActivity == 0m &&
+            item.CapitalAccountEndingNetActivity == 250000m &&
+            item.Memo == "Posted Fund Alpha capital call" &&
+            item.PaymentIntentId == "payment:fund-alpha:posted-capital-call" &&
+            item.SettlementReference == "settlement:fund-alpha:posted-capital-call" &&
+            item.ActivityRoute.Contains("fundEventId=fund-event%3Afund-alpha%3Acapital-call%3Aposted", StringComparison.OrdinalIgnoreCase) &&
+            item.ActivityRoute.Contains("capitalAccountId=capital-account%3Afund-alpha%3Alp-1", StringComparison.OrdinalIgnoreCase) &&
+            item.EvidenceRoute.Contains("/api/workstation/evidence/subjects/private-capital-fund-event/fund-event%3Afund-alpha%3Acapital-call%3Aposted/packet", StringComparison.OrdinalIgnoreCase) &&
+            item.ApprovalId == "approval:capital-call-controller" &&
+            item.ApprovalRoute != null &&
+            item.ApprovalRoute.Contains("approvalId=approval%3Acapital-call-controller", StringComparison.OrdinalIgnoreCase) &&
+            item.IsPosted &&
+            item.IsPostingReady &&
+            item.IsReportReady &&
+            item.IsPublished &&
+            item.EvidenceLinkCount == 3 &&
+            item.CapitalAccountSubledgerEntryCount == 1 &&
+            item.LedgerImpactCount == 1 &&
+            item.ReportOutputCount == 1 &&
+            item.ValidationIssueCount == 0 &&
+            item.PrimaryReportOutputType == "GovernedReportPack" &&
+            item.PrimaryReportOutputId == $"report-output:{fundEventId}:{reportPackId:D}".ToLowerInvariant() &&
+            item.PrimaryReportRoute == $"/api/fund-structure/report-packs/{reportPackId:D}" &&
+            item.ReportWorkflowState == ReportPackWorkflowStateDto.Published.ToString() &&
+            item.PublicationManifestId == "manifest-capital-call-1" &&
+            item.RetainedManifestPath == "/retained/report-packs/capital-call-1.json" &&
+            item.ReportLineProvenanceCount == 1 &&
+            item.Readiness == PrivateCapitalFundEventLedgerReadinessDto.Published &&
+            item.ReadinessLabel == "Published" &&
+            item.NextAction == "Open published report" &&
+            item.NextActionRoute == item.PrimaryReportRoute &&
+            item.EvidenceLinks.Contains("/api/workstation/evidence/subjects/private-capital/capital-call-source") &&
+            item.EvidenceLinks.Contains("/api/workstation/evidence/report-packs/capital-call-1") &&
+            item.EvidenceLinks.Contains("ledger-evidence-1") &&
+            item.CapitalAccountSubledgerEntries.Count == 1 &&
+            item.LedgerImpacts.Count == 1 &&
+            item.ReportOutputs.Count == 1);
         activity.ValidationIssues.Should().BeEmpty();
     }
 
@@ -541,6 +690,221 @@ public sealed class AccountingConfigurationServiceTests
             .WithMessage("*critical validation issues*");
         var audit = await service.ListAuditAsync("fund-alpha");
         audit.Should().NotContain(item => item.Action == "configuration.activate");
+    }
+
+    public static TheoryData<PrivateCapitalFundEventLedgerReadinessCase> PrivateCapitalFundEventLedgerReadinessCases()
+        => new()
+        {
+            new(
+                Suffix: "blocked-critical",
+                ApprovalState: ManualJournalEntryStatusDto.Submitted,
+                IncludeFundEventEvidence: true,
+                IncludeLedgerImpact: true,
+                LedgerPostingReady: true,
+                IncludeReportOutput: true,
+                ReportReady: true,
+                ReportPublished: false,
+                HasCriticalIssue: true,
+                ExpectedReadiness: PrivateCapitalFundEventLedgerReadinessDto.Blocked,
+                ExpectedLabel: "Blocked",
+                ExpectedNextAction: "Repair fund event",
+                ExpectedNextActionRouteFragment: "approvalId=approval%3Ablocked-critical",
+                ExpectedEvidenceCount: 1,
+                ExpectedValidationIssueCount: 1),
+            new(
+                Suffix: "evidence-missing",
+                ApprovalState: ManualJournalEntryStatusDto.Submitted,
+                IncludeFundEventEvidence: false,
+                IncludeLedgerImpact: true,
+                LedgerPostingReady: true,
+                IncludeReportOutput: true,
+                ReportReady: true,
+                ReportPublished: false,
+                HasCriticalIssue: false,
+                ExpectedReadiness: PrivateCapitalFundEventLedgerReadinessDto.EvidenceMissing,
+                ExpectedLabel: "Evidence missing",
+                ExpectedNextAction: "Attach retained evidence",
+                ExpectedNextActionRouteFragment: "/api/workstation/evidence/subjects/private-capital-fund-event/",
+                ExpectedEvidenceCount: 0,
+                ExpectedValidationIssueCount: 0),
+            new(
+                Suffix: "approval-pending",
+                ApprovalState: ManualJournalEntryStatusDto.Draft,
+                IncludeFundEventEvidence: true,
+                IncludeLedgerImpact: true,
+                LedgerPostingReady: true,
+                IncludeReportOutput: true,
+                ReportReady: true,
+                ReportPublished: false,
+                HasCriticalIssue: false,
+                ExpectedReadiness: PrivateCapitalFundEventLedgerReadinessDto.ApprovalPending,
+                ExpectedLabel: "Approval pending",
+                ExpectedNextAction: "Submit approval",
+                ExpectedNextActionRouteFragment: "/api/ledger/private-capital/activity",
+                ExpectedEvidenceCount: 1,
+                ExpectedValidationIssueCount: 0),
+            new(
+                Suffix: "posting-review",
+                ApprovalState: ManualJournalEntryStatusDto.Submitted,
+                IncludeFundEventEvidence: true,
+                IncludeLedgerImpact: true,
+                LedgerPostingReady: false,
+                IncludeReportOutput: true,
+                ReportReady: true,
+                ReportPublished: false,
+                HasCriticalIssue: false,
+                ExpectedReadiness: PrivateCapitalFundEventLedgerReadinessDto.PostingReview,
+                ExpectedLabel: "Posting review",
+                ExpectedNextAction: "Review ledger impact",
+                ExpectedNextActionRouteFragment: "/api/ledger/private-capital/activity",
+                ExpectedEvidenceCount: 1,
+                ExpectedValidationIssueCount: 0),
+            new(
+                Suffix: "report-output-missing",
+                ApprovalState: ManualJournalEntryStatusDto.Submitted,
+                IncludeFundEventEvidence: true,
+                IncludeLedgerImpact: true,
+                LedgerPostingReady: true,
+                IncludeReportOutput: false,
+                ReportReady: false,
+                ReportPublished: false,
+                HasCriticalIssue: false,
+                ExpectedReadiness: PrivateCapitalFundEventLedgerReadinessDto.ReportReview,
+                ExpectedLabel: "Report output missing",
+                ExpectedNextAction: "Prepare report output",
+                ExpectedNextActionRouteFragment: "/api/ledger/private-capital/activity",
+                ExpectedEvidenceCount: 1,
+                ExpectedValidationIssueCount: 0)
+        };
+
+    public sealed record PrivateCapitalFundEventLedgerReadinessCase(
+        string Suffix,
+        ManualJournalEntryStatusDto ApprovalState,
+        bool IncludeFundEventEvidence,
+        bool IncludeLedgerImpact,
+        bool LedgerPostingReady,
+        bool IncludeReportOutput,
+        bool ReportReady,
+        bool ReportPublished,
+        bool HasCriticalIssue,
+        PrivateCapitalFundEventLedgerReadinessDto ExpectedReadiness,
+        string ExpectedLabel,
+        string ExpectedNextAction,
+        string ExpectedNextActionRouteFragment,
+        int ExpectedEvidenceCount,
+        int ExpectedValidationIssueCount);
+
+    private static PrivateCapitalFundEventLedgerRecordDto BuildPrivateCapitalFundEventLedgerRecord(
+        PrivateCapitalFundEventLedgerReadinessCase testCase)
+    {
+        var timestamp = new DateTimeOffset(2026, 6, 30, 17, 0, 0, TimeSpan.Zero);
+        var effectiveDate = new DateOnly(2026, 6, 30);
+        var journalEntryId = Guid.NewGuid();
+        var fundEventId = $"fund-event:fund-alpha:{testCase.Suffix}";
+        var validationIssues = testCase.HasCriticalIssue
+            ? [new AccountingConfigurationValidationIssueDto("private-capital.critical", AccountingConfigurationValidationSeverityDto.Critical, "Critical event issue.", fundEventId)]
+            : Array.Empty<AccountingConfigurationValidationIssueDto>();
+        var eventEvidence = testCase.IncludeFundEventEvidence
+            ? [$"/api/workstation/evidence/subjects/private-capital/{testCase.Suffix}"]
+            : Array.Empty<string>();
+        var fundEvent = new PrivateCapitalFundEventDto(
+            fundEventId,
+            "CapitalCall",
+            ManualJournalEntryTypeDto.CapitalCall,
+            testCase.ApprovalState,
+            journalEntryId,
+            effectiveDate,
+            "capital-account:fund-alpha:lp-1",
+            "investor:lp-1",
+            "USD",
+            100m,
+            100m,
+            "Fund Alpha capital call",
+            "payment:fund-alpha:capital-call",
+            "settlement:fund-alpha:capital-call",
+            eventEvidence,
+            validationIssues,
+            timestamp,
+            ApprovalId: "approval:" + testCase.Suffix);
+        var subledgerEntry = new PrivateCapitalCapitalAccountSubledgerEntryDto(
+            $"subledger:{testCase.Suffix}",
+            "capital-account:fund-alpha:lp-1",
+            "investor:lp-1",
+            "USD",
+            fundEventId,
+            "CapitalCall",
+            ManualJournalEntryTypeDto.CapitalCall,
+            testCase.ApprovalState,
+            journalEntryId,
+            effectiveDate,
+            100m,
+            100m,
+            100m,
+            "Fund Alpha capital call",
+            [],
+            [],
+            timestamp);
+        var ledgerImpacts = testCase.IncludeLedgerImpact
+            ?
+            [
+                new PrivateCapitalLedgerImpactDto(
+                    $"ledger-impact:{testCase.Suffix}",
+                    journalEntryId,
+                    fundEventId,
+                    "CapitalCall",
+                    "capital-account:fund-alpha:lp-1",
+                    "investor:lp-1",
+                    testCase.ApprovalState,
+                    effectiveDate,
+                    "USD",
+                    100m,
+                    testCase.LedgerPostingReady ? 100m : 90m,
+                    testCase.LedgerPostingReady ? 0m : 10m,
+                    2,
+                    testCase.LedgerPostingReady,
+                    testCase.LedgerPostingReady,
+                    [],
+                    [
+                        new PrivateCapitalLedgerLineImpactDto("debit-cash", "Assets:Cash", AccountingTemplateLineSideDto.Debit, 100m, "USD", "entity-master", null, null, null),
+                        new PrivateCapitalLedgerLineImpactDto("credit-capital", "Equity:Capital Contributions", AccountingTemplateLineSideDto.Credit, testCase.LedgerPostingReady ? 100m : 90m, "USD", "entity-master", null, null, null)
+                    ],
+                    [])
+            ]
+            : Array.Empty<PrivateCapitalLedgerImpactDto>();
+        var reportOutputs = testCase.IncludeReportOutput
+            ?
+            [
+                new PrivateCapitalReportOutputDto(
+                    $"report-output:{testCase.Suffix}",
+                    "CapitalCallNotice",
+                    "Capital call notice",
+                    $"/api/fund-structure/report-packs/{testCase.Suffix}",
+                    fundEventId,
+                    "CapitalCall",
+                    "capital-account:fund-alpha:lp-1",
+                    "investor:lp-1",
+                    testCase.ApprovalState,
+                    effectiveDate,
+                    "USD",
+                    100m,
+                    0,
+                    [],
+                    testCase.ReportReady,
+                    [],
+                    IsPublished: testCase.ReportPublished,
+                    ReportWorkflowState: testCase.ReportPublished ? "Published" : "Submitted")
+            ]
+            : Array.Empty<PrivateCapitalReportOutputDto>();
+
+        var records = PrivateCapitalFundEventLedgerRecordBuilder.Build(
+            "fund-alpha",
+            [fundEvent],
+            [subledgerEntry],
+            ledgerImpacts,
+            reportOutputs);
+
+        records.Should().ContainSingle();
+        return records[0];
     }
 
     private static AccountingConfigurationService CreateService()

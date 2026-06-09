@@ -259,6 +259,63 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public void TemplateRegistry_RenderWithRequestGridOverride_DoesNotMutateApprovedTemplate()
+    {
+        var svc = new ReportTemplateRegistryService();
+        var draft = svc.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "previewable-exposure-grid",
+                "Previewable Exposure Grid",
+                [],
+                [],
+                Family: "CustomReport",
+                Rationale: "No-code preview writer",
+                Grids:
+                [
+                    new ReportWriterGridDefinitionDto(
+                        "saved-sector-pivot",
+                        "Saved Sector Pivot",
+                        ReportWriterGridKindDto.Pivot,
+                        RowFields: ["sector"],
+                        Metrics: [new ReportWriterMetricDefinitionDto("marketValue", "marketValue")])
+                ]),
+            "report.author");
+        svc.Submit(draft.Definition.TemplateId, "report.author", "ready");
+        svc.Approve(
+            draft.Definition.TemplateId,
+            new ReportTemplateDecisionRequestDto("Controller approved saved grid", "APP-GRID-2"),
+            "controller.admin");
+
+        var rendered = svc.Render(new RenderReportTemplateRequestDto(
+            draft.Definition.TemplateId,
+            new Dictionary<string, string>(),
+            [
+                new Dictionary<string, string> { ["security"] = "ABC", ["pnl"] = "25" },
+                new Dictionary<string, string> { ["security"] = "XYZ", ["pnl"] = "10" }
+            ],
+            Grids:
+            [
+                new ReportWriterGridDefinitionDto(
+                    "preview-topn",
+                    "Preview Top-N",
+                    ReportWriterGridKindDto.TopN,
+                    RowFields: ["security"],
+                    Metrics: [new ReportWriterMetricDefinitionDto("pnl", "pnl")],
+                    TopN: 1,
+                    SortBy: "pnl")
+            ]));
+
+        rendered.RenderedContent.Should().Contain("grids=preview-topn:1r");
+        rendered.RenderedContent.Should().NotContain("saved-sector-pivot");
+        rendered.Grids.Should().ContainSingle(grid => grid.GridId == "preview-topn");
+        rendered.Grids!.Single().Rows.Should().ContainSingle().Which.Values["security"].Should().Be("ABC");
+
+        var stored = svc.Get(draft.Definition.TemplateId);
+        stored.Should().NotBeNull();
+        stored!.Grids.Should().ContainSingle().Which.GridId.Should().Be("saved-sector-pivot");
+    }
+
+    [Fact]
     public void TemplateRegistry_ReloadsCustomDraftsAndApprovedRevisionsFromStore()
     {
         var snapshotPath = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"), "report-templates.json");
@@ -878,6 +935,97 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public async Task ReportingScheduleService_DeliversConfiguredReportPackTargetsAfterScheduledRun()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var workflow = new ReportPackWorkflowService();
+        var approved = CreateApprovedPack(
+            workflow,
+            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")],
+            "holdings-board-report");
+        var published = workflow.Publish(
+            approved.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:scheduled-pack",
+            "manifest-scheduled",
+            "vault/report-packs/manifest-scheduled.json",
+            CompleteLineProvenanceEvidenceLinks("ledger-evidence-1"));
+        var deliveryStore = new FileReportPackDeliveryRecordStore(
+            new ReportPackDeliveryStoreOptions(Path.Combine(root, "report-pack-deliveries.json")),
+            NullLogger<FileReportPackDeliveryRecordStore>.Instance);
+        var delivery = new ReportPackDeliveryService(workflow, deliveryStore);
+        var runStore = new FileReportingRunStore(
+            new ReportingRunStoreOptions(Path.Combine(root, "reporting-runs")),
+            NullLogger<FileReportingRunStore>.Instance);
+        var orchestration = new ReportingOrchestrationService(
+            new DefaultReportingTemplateCatalog(),
+            new DeterministicReportingSectionRenderer(),
+            () => new DateTimeOffset(2026, 5, 1, 8, 0, 0, TimeSpan.Zero),
+            runStore);
+        var scheduleStore = new FileReportingScheduleStore(
+            new ReportingScheduleStoreOptions(Path.Combine(root, "reporting-schedules.json")),
+            NullLogger<FileReportingScheduleStore>.Instance);
+        var schedules = new ReportingScheduleService(orchestration, scheduleStore, delivery);
+
+        var created = schedules.Upsert(new ReportingScheduleUpsertRequestDto(
+            "sched-board-distribution",
+            "holdings-board-report",
+            "0 8 1 * *",
+            new DateOnly(2026, 5, 1),
+            new DateTimeOffset(2026, 5, 1, 8, 0, 0, TimeSpan.Zero),
+            1,
+            "fund-controller",
+            "Monthly board packet with secure delivery.",
+            DeliveryTargets:
+            [
+                new ReportingScheduleDeliveryTargetDto(
+                    "board-reporting-committee",
+                    [GovernanceReportArtifactFormatDto.Pdf, GovernanceReportArtifactFormatDto.Xlsx, GovernanceReportArtifactFormatDto.Csv],
+                    ReportPackDeliveryModeDto.SecurePortal,
+                    "Board portal delivery."),
+                new ReportingScheduleDeliveryTargetDto(
+                    "investor-relations",
+                    [GovernanceReportArtifactFormatDto.Pdf, GovernanceReportArtifactFormatDto.Csv],
+                    ReportPackDeliveryModeDto.EmailLink,
+                    "Investor email-link delivery.")
+            ]));
+
+        created.DeliveryTargets.Should().HaveCount(2);
+        var due = await schedules.RunDueAsync(new DateTimeOffset(2026, 5, 1, 8, 5, 0, TimeSpan.Zero));
+
+        due.Runs.Should().ContainSingle();
+        var result = due.Runs.Single();
+        result.Run.RunId.Should().Be("sched-board-distribution-20260501");
+        result.DeliveryWarnings.Should().NotBeNull().And.BeEmpty();
+        result.DeliveryAttempts.Should().NotBeNull();
+        var attempts = result.DeliveryAttempts!;
+        attempts.Should().HaveCount(2);
+        attempts.Should().Contain(attempt =>
+            attempt.ReportId == published.ReportId &&
+            attempt.DistributionId == "board-reporting-committee" &&
+            attempt.Package != null &&
+            attempt.Package.DeliveryMode == ReportPackDeliveryModeDto.SecurePortal &&
+            attempt.Package.Artifacts.Count == 3);
+        attempts.Should().Contain(attempt =>
+            attempt.ReportId == published.ReportId &&
+            attempt.DistributionId == "investor-relations" &&
+            attempt.Package != null &&
+            attempt.Package.DeliveryMode == ReportPackDeliveryModeDto.EmailLink &&
+            attempt.Package.Formats.SequenceEqual(new[] { GovernanceReportArtifactFormatDto.Pdf, GovernanceReportArtifactFormatDto.Csv }));
+        attempts.Should().OnlyContain(attempt =>
+            attempt.DeliveryReference.StartsWith("schedule:holdings-board-report:", StringComparison.Ordinal));
+
+        var reloadedDelivery = new ReportPackDeliveryService(workflow, deliveryStore);
+        reloadedDelivery.GetHistory(published.ReportId).Should().HaveCount(2);
+        var reloadedSchedules = new ReportingScheduleService(orchestration, scheduleStore, reloadedDelivery);
+        reloadedSchedules.ListSchedules().Should().ContainSingle(schedule =>
+            schedule.ScheduleId == "sched-board-distribution" &&
+            schedule.DeliveryTargets.Count == 2);
+    }
+
+    [Fact]
     public async Task ReportingRunCommandService_RunsAdHocReportsOnDemand()
     {
         var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
@@ -1003,6 +1151,15 @@ public sealed class ReportPackWorkflowServiceTests
         template.ReportWriterGrids[0].DimensionCount.Should().Be(1);
         template.ReportWriterGrids[0].MetricCount.Should().Be(1);
         template.ReportWriterGrids[0].FormulaCount.Should().Be(1);
+        template.ReportWriterGrids[0].RowFields.Should().ContainSingle().Which.Should().Be("strategy");
+        template.ReportWriterGrids[0].ColumnFields.Should().BeEmpty();
+        template.ReportWriterGrids[0].Metrics.Should().ContainSingle(metric =>
+            metric.Name == "marketValue" &&
+            metric.SourceField == "marketValue" &&
+            metric.Function == ReportWriterAggregateFunctionDto.Sum.ToString());
+        template.ReportWriterGrids[0].Formulas.Should().ContainSingle(formula =>
+            formula.Name == "weightCheck" &&
+            formula.Expression == "{contributionPercent}");
     }
 
     [Fact]
@@ -1389,13 +1546,14 @@ public sealed class ReportPackWorkflowServiceTests
 
     private static ReportPackWorkflowRecordDto CreateApprovedPack(
         ReportPackWorkflowService svc,
-        IReadOnlyList<ReportPackLineProvenanceDto> lineProvenance)
+        IReadOnlyList<ReportPackLineProvenanceDto> lineProvenance,
+        string templateName = "board-pack")
     {
         var created = svc.Create(
             "fund-a",
             "acct-1",
             "2026-03",
-            new VersionedReportTemplateIdDto("board-pack", 1),
+            new VersionedReportTemplateIdDto(templateName, 1),
             "author",
             lineProvenance);
         svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");

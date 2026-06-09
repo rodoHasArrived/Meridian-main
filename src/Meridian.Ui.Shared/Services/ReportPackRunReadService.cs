@@ -189,7 +189,25 @@ public sealed class ReportPackRunReadService
                 grid.Kind.ToString(),
                 (grid.RowFields?.Count ?? 0) + (grid.ColumnFields?.Count ?? 0),
                 grid.Metrics?.Count ?? 0,
-                grid.Formulas?.Count ?? 0))
+                grid.Formulas?.Count ?? 0,
+                RowFields: grid.RowFields?.ToArray() ?? [],
+                ColumnFields: grid.ColumnFields?.ToArray() ?? [],
+                Metrics: grid.Metrics?
+                    .Select(static metric => new WorkstationReportWriterMetricPayload(
+                        metric.Name,
+                        metric.SourceField,
+                        metric.Function.ToString(),
+                        metric.Label))
+                    .ToArray() ?? [],
+                Formulas: grid.Formulas?
+                    .Select(static formula => new WorkstationReportWriterFormulaPayload(
+                        formula.Name,
+                        formula.Expression,
+                        formula.Label))
+                    .ToArray() ?? [],
+                TopN: grid.TopN,
+                SortBy: grid.SortBy,
+                SortDescending: grid.SortDescending))
             .ToArray() ?? [];
 
     private static string BuildTemplateApprovalSummary(ReportTemplateGovernanceRecordDto record) =>

@@ -25,6 +25,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   accountingConfigurationAudit: UI_API_ROUTES.LedgerAccountingConfigurationAudit,
   manualJournalEntryWorkbench: UI_API_ROUTES.LedgerManualJournalEntryWorkbench,
   privateCapitalActivity: UI_API_ROUTES.LedgerPrivateCapitalActivity,
+  privateCapitalFundEventRecord: UI_API_ROUTES.LedgerPrivateCapitalFundEventRecord,
   manualJournalEntryDrafts: UI_API_ROUTES.LedgerManualJournalEntryDrafts,
   manualJournalEntryValidate: UI_API_ROUTES.LedgerManualJournalEntryValidate,
   manualJournalEntrySubmitApproval: UI_API_ROUTES.LedgerManualJournalEntrySubmitApproval,
@@ -70,6 +71,8 @@ export const FUND_STRUCTURE_API_ENDPOINTS = {
   reportPackWorkflowDeliveryFailures: UI_API_ROUTES.ReportingPackWorkflowDeliveryFailures,
   reportPackDeliveryPortalPackage: UI_API_ROUTES.ReportingPackDeliveryPortalPackage,
   reportingStructuredExport: UI_API_ROUTES.ReportingStructuredExport,
+  reportingTemplateDrafts: "/api/fund-structure/reporting/templates/drafts",
+  reportingTemplateRender: "/api/fund-structure/reporting/templates/render",
   reportingRuns: UI_API_ROUTES.ReportingRuns,
   reportingSchedules: UI_API_ROUTES.ReportingSchedules,
   reportingScheduleRunDue: UI_API_ROUTES.ReportingScheduleRunDue,
@@ -332,6 +335,18 @@ export function reportPackDeliveryPackageEndpoint(reportId: string, attemptId: s
 
 export function reportPackDeliveryPortalPackageEndpoint(packageId: string, token?: string): string {
   return `${routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportPackDeliveryPortalPackage, "packageId", packageId)}${queryString({ token })}`;
+}
+
+export function reportingTemplateSubmitEndpoint(templateName: string, version: number): string {
+  return reportingTemplateLifecycleEndpoint(templateName, version, "submit");
+}
+
+export function reportingTemplateApproveEndpoint(templateName: string, version: number): string {
+  return reportingTemplateLifecycleEndpoint(templateName, version, "approve");
+}
+
+export function reportingTemplateRejectEndpoint(templateName: string, version: number): string {
+  return reportingTemplateLifecycleEndpoint(templateName, version, "reject");
 }
 
 export function workstationOperationsContinuityDetailEndpoint(workflowId: string): string {
@@ -866,6 +881,21 @@ function workstationRunBaseEndpoint(runId: string): string {
 
 function workstationRunRootEndpoint(): string {
   return "/api/workstation/runs";
+}
+
+function reportingTemplateLifecycleEndpoint(
+  templateName: string,
+  version: number,
+  action: "submit" | "approve" | "reject"
+): string {
+  if (!Number.isInteger(version) || version < 1) {
+    throw new Error("Cannot build Meridian API endpoint: report template version must be a positive integer.");
+  }
+
+  return `${FUND_STRUCTURE_API_ENDPOINTS.reportingTemplateDrafts.replace(/\/drafts$/, "")}/${pathSegment(
+    templateName,
+    "templateName"
+  )}/versions/${version}/${action}`;
 }
 
 function pathSegment(value: string, name: string): string {

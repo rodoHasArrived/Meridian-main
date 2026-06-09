@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReportingScreen } from "@/screens/reporting-screen";
 import { renderWithRouter } from "@/test/render";
-import type { AccountingWorkspaceResponse } from "@/types";
+import type { AccountingWorkspaceResponse, ReportingTemplateMetadata } from "@/types";
 
 const accounting: AccountingWorkspaceResponse = {
   metrics: [],
@@ -119,6 +119,186 @@ const accounting: AccountingWorkspaceResponse = {
         versionStamp: "portfolio-cut:20260411160000:runs-1:accounts-0"
       }
     ],
+    livePortfolioViews: [
+      {
+        viewId: "live:fund:consolidated",
+        label: "Consolidated fund",
+        kind: "Fund",
+        state: "SourceBacked",
+        currency: "USD",
+        grossExposure: 400,
+        netExposure: 400,
+        totalCash: 3250,
+        pendingSettlement: 150,
+        totalPnl: 50,
+        shadowNav: 3650,
+        asOf: "2026-04-11T16:00:00Z",
+        sourceAsOfUtc: "2026-04-11T14:30:00Z",
+        sourceCount: 3,
+        route: "/api/workstation/portfolio/summary?fundAccountId=all&strategyId=all&entity=portfolio",
+        liquiditySummary: "3,250.00 USD cash with 150.00 pending settlement in this reporting cut.",
+        cashLadderSummary: "Open the live portfolio summary route for consolidated cash and liquidity posture.",
+        telemetrySummary: "Source-backed portfolio telemetry is current through 2026-04-11T14:30:00.0000000Z; open the route for latest portfolio-summary telemetry.",
+        tags: ["fund", "consolidated"],
+        cashLadderRoute: null,
+        versionStamp: "portfolio-cut:20260411160000:runs-1:accounts-2"
+      },
+      {
+        viewId: "live:strategy:carry-1",
+        label: "Carry Strategy",
+        kind: "Strategy",
+        state: "SourceBacked",
+        currency: "USD",
+        grossExposure: 400,
+        netExposure: 400,
+        totalCash: 750,
+        pendingSettlement: 0,
+        totalPnl: 50,
+        shadowNav: 1150,
+        asOf: "2026-04-11T16:00:00Z",
+        sourceAsOfUtc: "2026-04-11T14:30:00Z",
+        sourceCount: 1,
+        route: "/api/workstation/portfolio/summary?fundAccountId=all&strategyId=carry-1&entity=portfolio",
+        liquiditySummary: "750.00 USD cash is available with no pending settlement in this reporting cut.",
+        cashLadderSummary: "Run cash-ladder evidence is available for Carry Strategy.",
+        telemetrySummary: "Source-backed portfolio telemetry is current through 2026-04-11T14:30:00.0000000Z; open the route for latest portfolio-summary telemetry.",
+        tags: ["run-governance-001"],
+        cashLadderRoute: "/api/portfolio/run-governance-001/cash-flows",
+        versionStamp: "portfolio-cut:20260411160000:runs-1:accounts-0"
+      }
+    ],
+    pnlSlices: [
+      {
+        sliceId: "pnl:daily",
+        period: "Daily",
+        label: "Daily P&L",
+        currency: "USD",
+        startDate: "2026-04-11",
+        endDate: "2026-04-11",
+        realizedPnl: 20,
+        unrealizedPnl: 30,
+        totalPnl: 50,
+        priorTotalPnl: 0,
+        pnlChange: 50,
+        sourceCount: 1,
+        asOf: "2026-04-11T16:00:00Z",
+        route: "/api/workstation/reporting?pnlSlice=daily",
+        readinessSummary: "1 source-backed run(s) in the daily window; no prior-period source run is available for comparison.",
+        tags: ["pnl", "daily", "source-backed"],
+        versionStamp: "pnl-slice:20260411160000:daily:sources-1:prior-0"
+      },
+      {
+        sliceId: "pnl:weekly",
+        period: "Weekly",
+        label: "Weekly P&L",
+        currency: "USD",
+        startDate: "2026-04-05",
+        endDate: "2026-04-11",
+        realizedPnl: 20,
+        unrealizedPnl: 30,
+        totalPnl: 50,
+        priorTotalPnl: 0,
+        pnlChange: 50,
+        sourceCount: 1,
+        asOf: "2026-04-11T16:00:00Z",
+        route: "/api/workstation/reporting?pnlSlice=weekly",
+        readinessSummary: "1 source-backed run(s) in the weekly window; no prior-period source run is available for comparison.",
+        tags: ["pnl", "weekly", "source-backed"],
+        versionStamp: "pnl-slice:20260411160000:weekly:sources-1:prior-0"
+      },
+      {
+        sliceId: "pnl:monthly",
+        period: "Monthly",
+        label: "Monthly P&L",
+        currency: "USD",
+        startDate: "2026-04-01",
+        endDate: "2026-04-11",
+        realizedPnl: 20,
+        unrealizedPnl: 30,
+        totalPnl: 50,
+        priorTotalPnl: 0,
+        pnlChange: 50,
+        sourceCount: 1,
+        asOf: "2026-04-11T16:00:00Z",
+        route: "/api/workstation/reporting?pnlSlice=monthly",
+        readinessSummary: "1 source-backed run(s) in the monthly window; no prior-period source run is available for comparison.",
+        tags: ["pnl", "monthly", "source-backed"],
+        versionStamp: "pnl-slice:20260411160000:monthly:sources-1:prior-0"
+      },
+      {
+        sliceId: "pnl:yearly",
+        period: "Yearly",
+        label: "Yearly P&L",
+        currency: "USD",
+        startDate: "2026-01-01",
+        endDate: "2026-04-11",
+        realizedPnl: 20,
+        unrealizedPnl: 30,
+        totalPnl: 50,
+        priorTotalPnl: 0,
+        pnlChange: 50,
+        sourceCount: 1,
+        asOf: "2026-04-11T16:00:00Z",
+        route: "/api/workstation/reporting?pnlSlice=yearly",
+        readinessSummary: "1 source-backed run(s) in the yearly window; no prior-period source run is available for comparison.",
+        tags: ["pnl", "yearly", "source-backed"],
+        versionStamp: "pnl-slice:20260411160000:yearly:sources-1:prior-0"
+      }
+    ],
+    crossFundConsolidations: [
+      {
+        consolidationId: "cross-fund:company",
+        label: "Company-wide consolidation",
+        scope: "Company",
+        currency: "USD",
+        isReady: true,
+        fundCount: 2,
+        entityCount: 1,
+        accountCount: 3,
+        runCount: 2,
+        grossExposure: 1200,
+        netExposure: 1200,
+        longMarketValue: 1200,
+        shortMarketValue: 0,
+        totalCash: 4750,
+        pendingSettlement: 150,
+        totalPnl: 95,
+        shadowNav: 5950,
+        shadowNavVariance: 4750,
+        sourceCount: 5,
+        asOf: "2026-04-11T16:00:00Z",
+        route: "/api/workstation/reporting?consolidationId=cross-fund%3Acompany",
+        readinessSummary: "5 source record(s) across 2 fund(s), 1 entity row(s), 3 account(s), and 2 run(s).",
+        tags: ["company", "cross-fund", "consolidated"],
+        versionStamp: "cross-fund:20260411160000:funds-2:entities-1:sources-5"
+      },
+      {
+        consolidationId: "cross-fund:fund:fund-alpha",
+        label: "fund-alpha",
+        scope: "Fund",
+        currency: "USD",
+        isReady: true,
+        fundCount: 1,
+        entityCount: 1,
+        accountCount: 2,
+        runCount: 1,
+        grossExposure: 800,
+        netExposure: 800,
+        longMarketValue: 800,
+        shortMarketValue: 0,
+        totalCash: 4000,
+        pendingSettlement: 150,
+        totalPnl: 50,
+        shadowNav: 4800,
+        shadowNavVariance: 4000,
+        sourceCount: 3,
+        asOf: "2026-04-11T16:00:00Z",
+        route: "/api/workstation/reporting?consolidationId=cross-fund%3Afund%3Afund-alpha",
+        readinessSummary: "3 source record(s) across 1 fund(s), 1 entity row(s), 2 account(s), and 1 run(s).",
+        tags: ["fund", "cross-fund", "consolidated"],
+        versionStamp: "cross-fund:20260411160000:funds-1:entities-1:sources-3"
+      }
+    ],
     structuredExports: [
       {
         exportId: "regulatory-trial-balance",
@@ -163,6 +343,56 @@ const accounting: AccountingWorkspaceResponse = {
         evidenceRoute: "/api/fund-structure/report-packs",
         versionStamp: "structured-export:20260411160000:rows-2:sources-4:schema-1",
         tags: ["investment", "portfolio-cuts", "shadow-nav"]
+      },
+      {
+        exportId: "cross-fund-consolidation",
+        label: "Cross-fund consolidation",
+        purpose: "InvestmentDecision",
+        format: "Xlsx",
+        dataset: "cross-fund-reporting-consolidation",
+        consumer: "Investment and operating committee reporting",
+        schemaVersion: 1,
+        rowCount: 2,
+        fieldCount: 19,
+        sourceCount: 5,
+        currency: "USD",
+        asOf: "2026-04-11T16:00:00Z",
+        isReady: true,
+        retainedPath: "exports/reporting/fund-alpha/20260411160000/cross-fund-consolidation.xlsx",
+        route: "/api/fund-structure/reporting/structured-exports/cross-fund-consolidation?fundProfileId=fund-alpha",
+        dataDictionaryRoute: "/api/workstation/reporting",
+        validationSummary: "2 row(s), 19 field(s), and 5 source record(s) are ready.",
+        evidenceRoute: "/api/fund-structure/report-packs",
+        versionStamp: "structured-export:20260411160000:rows-2:sources-5:schema-1",
+        tags: ["investment", "cross-fund", "consolidation"]
+      }
+    ],
+    brandingThemes: [
+      {
+        themeId: "meridian-standard",
+        name: "Meridian Standard",
+        firmName: "Meridian",
+        primaryColor: "#195E63",
+        accentColor: "#2F8F83",
+        textColor: "#1F2933",
+        backgroundColor: "#F8FAFC",
+        logoUri: null,
+        footerText: "Generated by Meridian Reporting",
+        disclaimer: "Confidential report pack generated from retained Meridian source evidence.",
+        isBuiltIn: true
+      },
+      {
+        themeId: "lpcustomtheme",
+        name: "LP Custom Theme",
+        firmName: "Northstar Capital",
+        primaryColor: "#123456",
+        accentColor: "#AA5500",
+        textColor: "#111111",
+        backgroundColor: "#FAFAFA",
+        logoUri: "https://example.test/northstar.png",
+        footerText: "Northstar investor reporting",
+        disclaimer: "Prepared for authorized allocator review.",
+        isBuiltIn: false
       }
     ],
     templates: [
@@ -176,11 +406,79 @@ const accounting: AccountingWorkspaceResponse = {
         isBuiltIn: true,
         isLatestApproved: true,
         approvalSummary: "Built-in approved template for InvestorStatement.",
-        authoringRoute: "/api/fund-structure/reporting/templates/investor-monthly-statement/versions/1"
+        authoringRoute: "/api/fund-structure/reporting/templates/investor-monthly-statement/versions/1",
+        reportWriterGrids: [
+          {
+            gridId: "sector-pivot",
+            title: "Sector Pivot",
+            kind: "Pivot",
+            dimensionCount: 2,
+            metricCount: 2,
+            formulaCount: 1,
+            rowFields: ["sector"],
+            columnFields: ["strategy"],
+            metrics: [
+              { name: "marketValue", sourceField: "marketValue", function: "Sum", label: "Market value" },
+              { name: "pnl", sourceField: "pnl", function: "Sum", label: "P&L" }
+            ],
+            formulas: [
+              { name: "returnPct", expression: "{pnl} / {marketValue} * 100", label: "Return %" }
+            ],
+            topN: null,
+            sortBy: "pnl",
+            sortDescending: true
+          }
+        ]
       }
     ]
   }
 };
+
+function withReportTemplate(template: ReportingTemplateMetadata): AccountingWorkspaceResponse {
+  return {
+    ...accounting,
+    reporting: {
+      ...accounting.reporting,
+      templates: [
+        ...(accounting.reporting.templates ?? []),
+        template
+      ]
+    }
+  };
+}
+
+function reportTemplateGovernanceResponse(options: {
+  name: string;
+  version: number;
+  displayName: string;
+  status: string;
+  family?: string;
+  rationale?: string | null;
+  approvalReference?: string | null;
+}) {
+  return {
+    definition: {
+      templateId: { name: options.name, version: options.version },
+      displayName: options.displayName,
+      parameters: [],
+      sections: [],
+      grids: [],
+      accessPolicy: null
+    },
+    status: options.status,
+    family: options.family ?? "CustomReport",
+    isBuiltIn: false,
+    isLatestApproved: options.status === "Approved",
+    createdBy: "controller.admin",
+    createdAt: "2026-06-08T00:00:00Z",
+    updatedBy: "controller.admin",
+    updatedAt: "2026-06-08T00:00:00Z",
+    validationIssues: [],
+    auditTrail: [],
+    decisionRationale: options.rationale ?? null,
+    approvalReference: options.approvalReference ?? null
+  };
+}
 
 describe("ReportingScreen", () => {
   const fetchMock = vi.fn();
@@ -262,6 +560,63 @@ describe("ReportingScreen", () => {
     );
   });
 
+  it("renders live portfolio views from the shared reporting payload", () => {
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
+
+    expect(screen.getByRole("region", { name: "Live portfolio views" })).toBeInTheDocument();
+    const fundView = screen.getByRole("listitem", { name: "Consolidated fund Fund live portfolio view" });
+    expect(within(fundView).getByText("SourceBacked")).toBeInTheDocument();
+    expect(fundView).toHaveTextContent("3,250.00 USD cash with 150.00 pending settlement");
+    expect(within(fundView).getByRole("link", { name: "Open Consolidated fund live portfolio view" })).toHaveAttribute(
+      "href",
+      "/api/workstation/portfolio/summary?fundAccountId=all&strategyId=all&entity=portfolio"
+    );
+
+    const strategyView = screen.getByRole("listitem", { name: "Carry Strategy Strategy live portfolio view" });
+    expect(strategyView).toHaveTextContent("Run cash-ladder evidence is available for Carry Strategy.");
+    expect(within(strategyView).getByRole("link", { name: "Open Carry Strategy cash ladder" })).toHaveAttribute(
+      "href",
+      "/api/portfolio/run-governance-001/cash-flows"
+    );
+  });
+
+  it("renders P&L slices from retained portfolio run timestamps", () => {
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
+
+    expect(screen.getByRole("region", { name: "P&L slicing" })).toBeInTheDocument();
+    const dailySlice = screen.getByRole("listitem", { name: "Daily P&L Daily P&L slice" });
+    expect(within(dailySlice).getByText("Daily")).toBeInTheDocument();
+    expect(within(dailySlice).getByText("Source-backed")).toBeInTheDocument();
+    expect(dailySlice).toHaveTextContent("2026-04-11");
+    expect(dailySlice).toHaveTextContent("$50.00");
+    expect(dailySlice).toHaveTextContent("1 source-backed run(s) in the daily window");
+    expect(within(dailySlice).getByRole("link", { name: "Open Daily P&L P&L slice" })).toHaveAttribute(
+      "href",
+      "/api/workstation/reporting?pnlSlice=daily"
+    );
+
+    const yearlySlice = screen.getByRole("listitem", { name: "Yearly P&L Yearly P&L slice" });
+    expect(yearlySlice).toHaveTextContent("2026-01-01 to 2026-04-11");
+    expect(yearlySlice).toHaveTextContent("pnl-slice:20260411160000:yearly:sources-1:prior-0");
+  });
+
+  it("renders cross-fund consolidations from the shared reporting payload", () => {
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
+
+    expect(screen.getByRole("region", { name: "Cross-fund consolidations" })).toBeInTheDocument();
+    const companyRow = screen.getByRole("listitem", { name: "Company-wide consolidation Company cross-fund consolidation" });
+    expect(within(companyRow).getByText("Ready")).toBeInTheDocument();
+    expect(companyRow).toHaveTextContent("5 source record(s) across 2 fund(s)");
+    expect(companyRow).toHaveTextContent("$1,200");
+    expect(within(companyRow).getByRole("link", { name: "Open Company-wide consolidation cross-fund consolidation" })).toHaveAttribute(
+      "href",
+      "/api/workstation/reporting?consolidationId=cross-fund%3Acompany"
+    );
+
+    const fundRow = screen.getByRole("listitem", { name: "fund-alpha Fund cross-fund consolidation" });
+    expect(fundRow).toHaveTextContent("cross-fund:20260411160000:funds-1:entities-1:sources-3");
+  });
+
   it("renders structured exports from the shared reporting payload", () => {
     renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
 
@@ -279,20 +634,398 @@ describe("ReportingScreen", () => {
     const investmentRow = screen.getByRole("listitem", { name: "Investment portfolio cuts structured export" });
     expect(within(investmentRow).getByText("InvestmentDecision")).toBeInTheDocument();
     expect(within(investmentRow).getByText("structured-export:20260411160000:rows-2:sources-4:schema-1")).toBeInTheDocument();
+    expect(screen.getByRole("listitem", { name: "Cross-fund consolidation structured export" })).toHaveTextContent(
+      "structured-export:20260411160000:rows-2:sources-5:schema-1"
+    );
+  });
+
+  it("renders report branding themes from the shared reporting payload", () => {
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
+
+    expect(screen.getByRole("region", { name: "Report branding themes" })).toBeInTheDocument();
+    const standardTheme = screen.getByRole("listitem", { name: "Meridian Standard report branding theme" });
+    expect(within(standardTheme).getByText("Built-in")).toBeInTheDocument();
+    expect(within(standardTheme).getByText("#195E63")).toBeInTheDocument();
+    expect(standardTheme).toHaveTextContent("Generated by Meridian Reporting");
+
+    const customTheme = screen.getByRole("listitem", { name: "LP Custom Theme report branding theme" });
+    expect(within(customTheme).getByText("Custom")).toBeInTheDocument();
+    expect(within(customTheme).getByText("Northstar Capital")).toBeInTheDocument();
+    expect(within(customTheme).getByText("#AA5500")).toBeInTheDocument();
+    expect(customTheme).toHaveTextContent("Prepared for authorized allocator review.");
+    expect(within(customTheme).getByText("https://example.test/northstar.png")).toBeInTheDocument();
   });
 
   it("renders template designer lifecycle controls for governed versions", () => {
     renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
 
     expect(screen.getByText("Investor Monthly Statement")).toBeInTheDocument();
-    expect(screen.getByText("Approved")).toBeInTheDocument();
-    expect(screen.getByText("Built-in")).toBeInTheDocument();
+    const templateRow = screen.getByText("Investor Monthly Statement").closest("div");
+    expect(templateRow).not.toBeNull();
+    expect(within(templateRow!).getByText("Approved")).toBeInTheDocument();
+    expect(within(templateRow!).getByText("Built-in")).toBeInTheDocument();
     expect(screen.getByText("Built-in approved template for InvestorStatement.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Draft a revision of Investor Monthly Statement" })).toHaveAttribute(
       "href",
       "/api/fund-structure/reporting/templates/investor-monthly-statement/versions/1"
     );
     expect(screen.getByRole("button", { name: "Run Investor Monthly Statement report on demand" })).toBeEnabled();
+  });
+
+  it("submits custom report-template drafts for review", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify(reportTemplateGovernanceResponse({
+        name: "custom-exposure-draft",
+        version: 2,
+        displayName: "Custom Exposure Draft",
+        status: "InReview",
+        rationale: "Ready for controller review."
+      }))
+    });
+    const customDraft = withReportTemplate({
+      templateId: "custom-exposure-draft",
+      family: "CustomReport",
+      name: "Custom Exposure Draft",
+      version: "2",
+      sections: ["exposures"],
+      lifecycleStatus: "Draft",
+      isBuiltIn: false,
+      isLatestApproved: false,
+      approvalSummary: "Draft by reporting.ops.",
+      authoringRoute: "/api/fund-structure/reporting/templates/custom-exposure-draft/versions/2"
+    });
+
+    renderWithRouter(<ReportingScreen data={customDraft} />, { initialEntries: ["/reporting"] });
+    await user.click(screen.getByRole("button", {
+      name: "Submit Custom Exposure Draft template version 2 for review"
+    }));
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/templates/custom-exposure-draft/versions/2/submit",
+      expect.objectContaining({ method: "POST" })
+    );
+    const [, request] = fetchMock.mock.calls[0];
+    expect(JSON.parse((request as RequestInit).body as string)).toEqual({
+      rationale: "Ready for controller review."
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("status", { name: "Report template lifecycle status" })).toHaveTextContent(
+        "Custom Exposure Draft moved to InReview."
+      );
+    });
+  });
+
+  it("approves and rejects custom report-template versions in review", async () => {
+    const user = userEvent.setup();
+    fetchMock
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => JSON.stringify(reportTemplateGovernanceResponse({
+          name: "custom-exposure-review",
+          version: 3,
+          displayName: "Custom Exposure Review",
+          status: "Approved",
+          rationale: "Approved from browser Reporting workspace.",
+          approvalReference: "browser-template-approval:custom-exposure-review:v3"
+        }))
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => JSON.stringify(reportTemplateGovernanceResponse({
+          name: "custom-exposure-review",
+          version: 3,
+          displayName: "Custom Exposure Review",
+          status: "Rejected",
+          rationale: "Returned from browser Reporting workspace."
+        }))
+      });
+    const customReview = withReportTemplate({
+      templateId: "custom-exposure-review",
+      family: "CustomReport",
+      name: "Custom Exposure Review",
+      version: "3",
+      sections: ["exposures"],
+      lifecycleStatus: "InReview",
+      isBuiltIn: false,
+      isLatestApproved: false,
+      approvalSummary: "Submitted by reporting.ops.",
+      authoringRoute: "/api/fund-structure/reporting/templates/custom-exposure-review/versions/3"
+    });
+
+    renderWithRouter(<ReportingScreen data={customReview} />, { initialEntries: ["/reporting"] });
+    await user.click(screen.getByRole("button", {
+      name: "Approve Custom Exposure Review template version 3"
+    }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    await user.click(screen.getByRole("button", {
+      name: "Reject Custom Exposure Review template version 3"
+    }));
+
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      1,
+      "/api/fund-structure/reporting/templates/custom-exposure-review/versions/3/approve",
+      expect.objectContaining({ method: "POST" })
+    );
+    expect(JSON.parse((fetchMock.mock.calls[0]?.[1] as RequestInit).body as string)).toEqual({
+      rationale: "Approved from browser Reporting workspace.",
+      approvalReference: "browser-template-approval:custom-exposure-review:v3"
+    });
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      "/api/fund-structure/reporting/templates/custom-exposure-review/versions/3/reject",
+      expect.objectContaining({ method: "POST" })
+    );
+    expect(JSON.parse((fetchMock.mock.calls[1]?.[1] as RequestInit).body as string)).toEqual({
+      rationale: "Returned from browser Reporting workspace."
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("status", { name: "Report template lifecycle status" })).toHaveTextContent(
+        "Custom Exposure Review moved to Rejected."
+      );
+    });
+  });
+
+  it("renders no-code report-writer grid fields and supports local drag-and-drop drafts", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
+
+    const writer = screen.getByRole("region", { name: "No-code report writer" });
+    const grid = within(writer).getByRole("group", {
+      name: "Investor Monthly Statement Sector Pivot Pivot report-writer grid"
+    });
+    expect(grid).toHaveTextContent("Pivot grid with 2 dimensions, 2 metrics, and 1 formula.");
+    expect(grid).toHaveTextContent("Descending by pnl");
+    expect(within(grid).getByRole("list", { name: "Sector Pivot Rows" })).toHaveTextContent("sector");
+    expect(within(grid).getByRole("list", { name: "Sector Pivot Columns" })).toHaveTextContent("strategy");
+    expect(within(grid).getByRole("list", { name: "Sector Pivot Metrics" })).toHaveTextContent("Market value");
+    expect(within(grid).getByRole("list", { name: "Sector Pivot Formulas" })).toHaveTextContent("Return %");
+
+    const sourceField = within(within(grid).getByRole("list", { name: "Sector Pivot source fields" }))
+      .getByText("pnl")
+      .closest("[role='listitem']");
+    expect(sourceField).not.toBeNull();
+    const formulas = within(grid).getByRole("list", { name: "Sector Pivot Formulas" });
+    const transferStore = new Map<string, string>();
+    const dataTransfer = {
+      effectAllowed: "",
+      setData: vi.fn((type: string, value: string) => transferStore.set(type, value)),
+      getData: vi.fn((type: string) => transferStore.get(type) ?? "")
+    };
+
+    fireEvent.dragStart(sourceField!, { dataTransfer });
+    fireEvent.drop(formulas, { dataTransfer });
+
+    expect(within(formulas).getByText("pnl")).toBeInTheDocument();
+    await user.click(within(grid).getByRole("button", { name: "Reset Sector Pivot report-writer draft" }));
+    expect(within(formulas).queryByText("pnl")).not.toBeInTheDocument();
+  });
+
+  it("saves no-code report-writer drafts through the governed template endpoint", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify({
+        definition: {
+          templateId: { name: "investor-monthly-statement", version: 2 },
+          displayName: "Sector Pivot Draft",
+          parameters: [],
+          sections: [],
+          grids: [],
+          accessPolicy: null
+        },
+        status: "Draft",
+        family: "InvestorStatement",
+        isBuiltIn: false,
+        isLatestApproved: false,
+        createdBy: "controller.admin",
+        createdAt: "2026-06-08T00:00:00Z",
+        updatedBy: "controller.admin",
+        updatedAt: "2026-06-08T00:00:00Z",
+        validationIssues: [],
+        auditTrail: []
+      })
+    });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
+
+    const writer = screen.getByRole("region", { name: "No-code report writer" });
+    const grid = within(writer).getByRole("group", {
+      name: "Investor Monthly Statement Sector Pivot Pivot report-writer grid"
+    });
+
+    await user.selectOptions(within(grid).getByLabelText("Sector Pivot draft access mode"), "Restricted");
+    await user.clear(within(grid).getByLabelText("Sector Pivot custom formula name"));
+    await user.type(within(grid).getByLabelText("Sector Pivot custom formula name"), "gainLossRatio");
+    await user.clear(within(grid).getByLabelText("Sector Pivot custom formula label"));
+    await user.type(within(grid).getByLabelText("Sector Pivot custom formula label"), "Gain/loss ratio");
+    fireEvent.change(within(grid).getByLabelText("Sector Pivot custom formula expression"), {
+      target: { value: "{pnl} / {marketValue}" }
+    });
+    await user.click(within(grid).getByRole("button", { name: "Save Sector Pivot as governed report template draft" }));
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/templates/drafts",
+      expect.objectContaining({
+        method: "POST"
+      })
+    );
+    const [, request] = fetchMock.mock.calls[0];
+    const body = JSON.parse((request as RequestInit).body as string);
+    expect(body).toMatchObject({
+      name: "investor-monthly-statement",
+      displayName: "Sector Pivot Draft",
+      sections: [],
+      parameters: [],
+      family: "InvestorStatement",
+      basedOnVersion: 1,
+      grids: [
+        {
+          gridId: "sector-pivot",
+          title: "Sector Pivot",
+          kind: "Pivot",
+          rowFields: ["sector"],
+          columnFields: ["strategy"],
+          metrics: [
+            { name: "marketValue", sourceField: "marketValue", function: "Sum", label: "Market value" },
+            { name: "pnl", sourceField: "pnl", function: "Sum", label: "P&L" }
+          ],
+          formulas: [
+            { name: "returnPct", expression: "{pnl} / {marketValue} * 100", label: "Return %" },
+            { name: "gainLossRatio", expression: "{pnl} / {marketValue}", label: "Gain/loss ratio" }
+          ],
+          sortBy: "pnl",
+          sortDescending: true
+        }
+      ],
+      accessPolicy: {
+        mode: "Restricted",
+        ownerPrincipalId: "browser-workstation",
+        principals: [
+          { kind: "Group", principalId: "reporting-ops", displayName: "reporting-ops" }
+        ],
+        allowOwnerAccess: true
+      }
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("status", { name: "Save report-writer draft status" })).toHaveTextContent(
+        "Sector Pivot Draft draft saved."
+      );
+    });
+  });
+
+  it("previews no-code report-writer drafts through the shared render endpoint", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify({
+        templateId: { name: "investor-monthly-statement", version: 1 },
+        renderedContent: "template:investor-monthly-statement@v1;grids=sector-pivot:2r",
+        missingRequiredParameters: [],
+        grids: [
+          {
+            gridId: "sector-pivot",
+            title: "Sector Pivot",
+            kind: "Pivot",
+            columns: [
+              { key: "sector", label: "sector", role: "dimension" },
+              { key: "marketValue", label: "Market value", role: "metric" },
+              { key: "pnl", label: "P&L", role: "metric" },
+              { key: "returnPct", label: "Return %", role: "formula" },
+              { key: "gainLossRatio", label: "Gain/loss ratio", role: "formula" }
+            ],
+            rows: [
+              {
+                rowKey: "Technology",
+                values: {
+                  sector: "Technology",
+                  marketValue: "150",
+                  pnl: "15",
+                  returnPct: "10",
+                  gainLossRatio: "0.1"
+                }
+              },
+              {
+                rowKey: "Rates",
+                values: {
+                  sector: "Rates",
+                  marketValue: "75",
+                  pnl: "-2",
+                  returnPct: "-2.666667",
+                  gainLossRatio: "-0.026667"
+                }
+              }
+            ],
+            warnings: []
+          }
+        ],
+        warnings: []
+      })
+    });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
+
+    const writer = screen.getByRole("region", { name: "No-code report writer" });
+    const grid = within(writer).getByRole("group", {
+      name: "Investor Monthly Statement Sector Pivot Pivot report-writer grid"
+    });
+
+    await user.clear(within(grid).getByLabelText("Sector Pivot custom formula name"));
+    await user.type(within(grid).getByLabelText("Sector Pivot custom formula name"), "gainLossRatio");
+    await user.clear(within(grid).getByLabelText("Sector Pivot custom formula label"));
+    await user.type(within(grid).getByLabelText("Sector Pivot custom formula label"), "Gain/loss ratio");
+    fireEvent.change(within(grid).getByLabelText("Sector Pivot custom formula expression"), {
+      target: { value: "{pnl} / {marketValue}" }
+    });
+    await user.click(within(grid).getByRole("button", { name: "Preview Sector Pivot report-writer grid" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/templates/render",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.any(String)
+      })
+    ));
+    const request = JSON.parse((fetchMock.mock.calls[0]?.[1] as RequestInit).body as string);
+    expect(request).toMatchObject({
+      templateId: { name: "investor-monthly-statement", version: 1 },
+      parameters: {
+        preview: "browser-report-writer"
+      },
+      grids: [
+        {
+          gridId: "sector-pivot",
+          title: "Sector Pivot",
+          kind: "Pivot",
+          rowFields: ["sector"],
+          columnFields: ["strategy"],
+          metrics: [
+            { name: "marketValue", sourceField: "marketValue", function: "Sum", label: "Market value" },
+            { name: "pnl", sourceField: "pnl", function: "Sum", label: "P&L" }
+          ],
+          formulas: [
+            { name: "returnPct", expression: "{pnl} / {marketValue} * 100", label: "Return %" },
+            { name: "gainLossRatio", expression: "{pnl} / {marketValue}", label: "Gain/loss ratio" }
+          ]
+        }
+      ]
+    });
+    expect(request.datasetRows).toHaveLength(4);
+    expect(request.datasetRows[0]).toMatchObject({
+      sector: "Technology",
+      strategy: "Core",
+      marketValue: "100",
+      pnl: "10"
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("status", { name: "Preview report-writer grid status" })).toHaveTextContent(
+        "Sector Pivot preview rendered."
+      );
+    });
+    const preview = within(grid).getByLabelText("Sector Pivot live preview");
+    expect(within(preview).getByText("Technology")).toBeInTheDocument();
+    expect(within(preview).getByText("150")).toBeInTheDocument();
+    expect(within(preview).getByText("Return %")).toBeInTheDocument();
+    expect(within(preview).getByText("Gain/loss ratio")).toBeInTheDocument();
   });
 
   it("runs an approved report template on demand", async () => {
@@ -427,7 +1160,21 @@ describe("ReportingScreen", () => {
             lastRunAtUtc: "2026-05-01T08:05:00Z",
             lastRunId: "investor-monthly-statement-20260501",
             runCount: 3,
-            description: "Monthly investor statement close packet."
+            description: "Monthly investor statement close packet.",
+            deliveryTargets: [
+              {
+                distributionId: "board-reporting-committee",
+                formats: ["Pdf", "Xlsx", "Csv"],
+                deliveryMode: "SecurePortal",
+                note: "Board package."
+              },
+              {
+                distributionId: "investor-relations",
+                formats: ["Pdf", "Csv"],
+                deliveryMode: "EmailLink",
+                note: "Investor package."
+              }
+            ]
           }
         ],
         deliveryAttempts: [
@@ -479,6 +1226,7 @@ describe("ReportingScreen", () => {
     expect(screen.getByRole("button", { name: "Run now" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Pause" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "Resume" })).toBeDisabled();
+    expect(screen.getByText("board-reporting-committee via SecurePortal (Pdf/Xlsx/Csv); investor-relations via EmailLink (Pdf/Csv)")).toBeInTheDocument();
 
     expect(screen.getByRole("list", { name: "Report-pack delivery attempts" })).toBeInTheDocument();
     expect(screen.getByLabelText("Board reporting committee delivery attempt Delivered")).toHaveTextContent(
@@ -494,6 +1242,95 @@ describe("ReportingScreen", () => {
       "href",
       "/portal/reporting/packages/pkg-board-1?token=abc123"
     );
+  });
+
+  it("shows schedule delivery counts after running a configured reporting schedule", async () => {
+    const user = userEvent.setup();
+    const scheduledAccounting: AccountingWorkspaceResponse = {
+      ...accounting,
+      reporting: {
+        ...accounting.reporting,
+        schedules: [
+          {
+            scheduleId: "sched-investor",
+            templateId: "investor-monthly-statement",
+            cronExpression: "0 8 1 * *",
+            nextAsOfDate: "2026-06-01",
+            dueAtUtc: "2026-06-01T08:00:00Z",
+            maxRetries: 2,
+            requestedBy: "fund-controller",
+            state: "Active",
+            createdAtUtc: "2026-05-01T08:00:00Z",
+            updatedAtUtc: "2026-05-03T08:00:00Z",
+            lastRunAtUtc: "2026-05-01T08:05:00Z",
+            lastRunId: "investor-monthly-statement-20260501",
+            runCount: 3,
+            description: "Monthly investor statement close packet.",
+            deliveryTargets: [
+              {
+                distributionId: "board-reporting-committee",
+                formats: ["Pdf", "Xlsx", "Csv"],
+                deliveryMode: "SecurePortal",
+                note: "Board package."
+              }
+            ]
+          }
+        ]
+      }
+    };
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify({
+        schedule: scheduledAccounting.reporting.schedules![0],
+        run: {
+          runId: "sched-investor-20260601",
+          templateId: "investor-monthly-statement",
+          family: "InvestorStatement",
+          status: "Released",
+          trigger: "Scheduled",
+          attemptCount: 1,
+          sectionCount: 4,
+          lineageCount: 4,
+          artifacts: ["sched-investor-20260601.manifest.json"],
+          auditTrail: ["RunGenerated"],
+          failureReason: null,
+          drilldownLinks: [],
+          nextActions: []
+        },
+        deliveryAttempts: [
+          {
+            attemptId: "attempt-1",
+            reportId: "11111111-1111-1111-1111-111111111111",
+            distributionId: "board-reporting-committee",
+            recipient: "Board reporting committee",
+            recipientRole: "Board",
+            channel: "Board portal",
+            state: "Delivered",
+            attemptedAtUtc: "2026-06-01T08:10:00Z",
+            actor: "fund-controller",
+            attemptNumber: 1,
+            deliveryReference: "schedule:investor-monthly-statement:11111111111111111111111111111111:board-reporting-committee",
+            note: "Board package.",
+            failureReason: null,
+            evidenceLinks: [],
+            package: null
+          }
+        ],
+        deliveryWarnings: []
+      })
+    });
+
+    renderWithRouter(<ReportingScreen data={scheduledAccounting} />, { initialEntries: ["/reporting"] });
+    await user.click(screen.getByRole("button", { name: "Run now" }));
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/schedules/sched-investor/run",
+      expect.objectContaining({ method: "POST" })
+    );
+    const status = await screen.findByRole("status", { name: "Run sched-investor status" });
+    expect(status).toHaveTextContent("Run sched-investor completed.");
+    expect(status).toHaveTextContent("Run ID: sched-investor-20260601");
+    expect(status).toHaveTextContent("Deliveries: 1");
   });
 
   it("renders the VM-owned no-target state with warning token classes", () => {

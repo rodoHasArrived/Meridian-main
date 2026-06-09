@@ -130,12 +130,37 @@ public sealed record FundReportingProfileDto(
     bool LoaderScript,
     bool DataDictionary);
 
+/// <summary>
+/// Branding and styling options applied to governed report-pack documents.
+/// </summary>
+public sealed record ReportBrandingThemeDto(
+    string ThemeId,
+    string Name,
+    string FirmName,
+    string PrimaryColor,
+    string AccentColor,
+    string TextColor,
+    string BackgroundColor,
+    string? LogoUri = null,
+    string? FooterText = null,
+    string? Disclaimer = null,
+    bool IsBuiltIn = true);
+
 [JsonConverter(typeof(JsonStringEnumConverter<PortfolioReportingCutKindDto>))]
 public enum PortfolioReportingCutKindDto
 {
     Fund = 0,
     Strategy = 1,
     UserTag = 2
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<PortfolioReportingLiveViewStateDto>))]
+public enum PortfolioReportingLiveViewStateDto
+{
+    LiveLinked = 0,
+    SourceBacked = 1,
+    Stale = 2,
+    Blocked = 3
 }
 
 /// <summary>
@@ -162,6 +187,100 @@ public sealed record PortfolioReportingCutDto(
     DateTimeOffset AsOf,
     string? EvidenceRoute = null,
     string? ShadowNavNote = null,
+    string? VersionStamp = null);
+
+/// <summary>
+/// Reporting-owned pointer to live portfolio summary, liquidity, and cash-ladder evidence.
+/// </summary>
+public sealed record PortfolioReportingLiveViewDto(
+    string ViewId,
+    string Label,
+    PortfolioReportingCutKindDto Kind,
+    PortfolioReportingLiveViewStateDto State,
+    string Currency,
+    decimal GrossExposure,
+    decimal NetExposure,
+    decimal TotalCash,
+    decimal PendingSettlement,
+    decimal TotalPnl,
+    decimal ShadowNav,
+    DateTimeOffset AsOf,
+    DateTimeOffset? SourceAsOfUtc,
+    int SourceCount,
+    string Route,
+    string LiquiditySummary,
+    string CashLadderSummary,
+    string TelemetrySummary,
+    IReadOnlyList<string> Tags,
+    string? CashLadderRoute = null,
+    string? VersionStamp = null);
+
+[JsonConverter(typeof(JsonStringEnumConverter<PortfolioReportingPnlSlicePeriodDto>))]
+public enum PortfolioReportingPnlSlicePeriodDto
+{
+    Daily = 0,
+    Weekly = 1,
+    Monthly = 2,
+    Yearly = 3
+}
+
+/// <summary>
+/// Period-scoped P&amp;L row derived from retained portfolio run timestamps.
+/// </summary>
+public sealed record PortfolioReportingPnlSliceDto(
+    string SliceId,
+    PortfolioReportingPnlSlicePeriodDto Period,
+    string Label,
+    string Currency,
+    DateOnly StartDate,
+    DateOnly EndDate,
+    decimal RealizedPnl,
+    decimal UnrealizedPnl,
+    decimal TotalPnl,
+    decimal PriorTotalPnl,
+    decimal PnlChange,
+    int SourceCount,
+    DateTimeOffset AsOf,
+    string Route,
+    string ReadinessSummary,
+    IReadOnlyList<string> Tags,
+    string? VersionStamp = null);
+
+[JsonConverter(typeof(JsonStringEnumConverter<CrossFundReportingConsolidationScopeDto>))]
+public enum CrossFundReportingConsolidationScopeDto
+{
+    Company = 0,
+    Fund = 1,
+    Entity = 2
+}
+
+/// <summary>
+/// Cross-fund Reporting consolidation row for aggregated exposures and metrics.
+/// </summary>
+public sealed record CrossFundReportingConsolidationDto(
+    string ConsolidationId,
+    string Label,
+    CrossFundReportingConsolidationScopeDto Scope,
+    string Currency,
+    bool IsReady,
+    int FundCount,
+    int EntityCount,
+    int AccountCount,
+    int RunCount,
+    decimal GrossExposure,
+    decimal NetExposure,
+    decimal LongMarketValue,
+    decimal ShortMarketValue,
+    decimal TotalCash,
+    decimal PendingSettlement,
+    decimal TotalPnl,
+    decimal ShadowNav,
+    decimal ShadowNavVariance,
+    int SourceCount,
+    DateTimeOffset AsOf,
+    string Route,
+    string ReadinessSummary,
+    IReadOnlyList<string> Tags,
     string? VersionStamp = null);
 
 [JsonConverter(typeof(JsonStringEnumConverter<StructuredReportingExportPurposeDto>))]
@@ -228,7 +347,11 @@ public sealed record FundReportingSummaryDto(
     IReadOnlyList<ReportingScheduleRecordDto>? Schedules = null,
     IReadOnlyList<ReportPackDeliveryAttemptDto>? DeliveryAttempts = null,
     IReadOnlyList<PortfolioReportingCutDto>? PortfolioCuts = null,
-    IReadOnlyList<StructuredReportingExportDto>? StructuredExports = null);
+    IReadOnlyList<StructuredReportingExportDto>? StructuredExports = null,
+    IReadOnlyList<ReportBrandingThemeDto>? BrandingThemes = null,
+    IReadOnlyList<PortfolioReportingLiveViewDto>? LivePortfolioViews = null,
+    IReadOnlyList<CrossFundReportingConsolidationDto>? CrossFundConsolidations = null,
+    IReadOnlyList<PortfolioReportingPnlSliceDto>? PnlSlices = null);
 
 /// <summary>
 /// Shared Accounting workspace payload combining ledger, banking, cash, reconciliation,
@@ -314,7 +437,9 @@ public sealed record FundReportPackGenerateRequestDto(
     string? CorrelationId = null,
     string? DecisionRationale = null,
     IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null,
-    int? ExpectedSchemaVersion = null);
+    int? ExpectedSchemaVersion = null,
+    string? BrandingThemeId = null,
+    ReportBrandingThemeDto? BrandingThemeOverride = null);
 
 /// <summary>
 /// One persisted report-pack artifact and its integrity metadata.
@@ -515,7 +640,8 @@ public sealed record FundReportPackSnapshotDto(
     IReadOnlyList<FundReportPackArtifactDto> Artifacts,
     IReadOnlyList<string> Warnings,
     string ContractName = GovernanceReportPackContract.ContractName,
-    int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion)
+    int SchemaVersion = GovernanceReportPackContract.CurrentSchemaVersion,
+    ReportBrandingThemeDto? BrandingTheme = null)
 {
     public GovernanceReportPackStatusDto Status { get; init; } = GovernanceReportPackStatusDto.Unknown;
 
@@ -671,6 +797,12 @@ public sealed record ReportPackDeliveryHistoryDto(
     Guid ReportId,
     IReadOnlyList<ReportPackDeliveryAttemptDto> Attempts);
 
+public sealed record ReportingScheduleDeliveryTargetDto(
+    string DistributionId,
+    IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null,
+    ReportPackDeliveryModeDto? DeliveryMode = null,
+    string? Note = null);
+
 [JsonConverter(typeof(JsonStringEnumConverter<ReportingScheduleStateDto>))]
 public enum ReportingScheduleStateDto
 {
@@ -693,7 +825,8 @@ public sealed record ReportingScheduleRecordDto(
     DateTimeOffset? LastRunAtUtc = null,
     string? LastRunId = null,
     int RunCount = 0,
-    string? Description = null);
+    string? Description = null,
+    IReadOnlyList<ReportingScheduleDeliveryTargetDto>? DeliveryTargets = null);
 
 public sealed record ReportingScheduleUpsertRequestDto(
     string ScheduleId,
@@ -704,11 +837,14 @@ public sealed record ReportingScheduleUpsertRequestDto(
     int MaxRetries,
     string RequestedBy,
     string? Description = null,
-    ReportingScheduleStateDto State = ReportingScheduleStateDto.Active);
+    ReportingScheduleStateDto State = ReportingScheduleStateDto.Active,
+    IReadOnlyList<ReportingScheduleDeliveryTargetDto>? DeliveryTargets = null);
 
 public sealed record ReportingScheduleRunResultDto(
     ReportingScheduleRecordDto Schedule,
-    WorkstationReportingRunPayload Run);
+    WorkstationReportingRunPayload Run,
+    IReadOnlyList<ReportPackDeliveryAttemptDto>? DeliveryAttempts = null,
+    IReadOnlyList<string>? DeliveryWarnings = null);
 
 public sealed record ReportingDueScheduleRunResultDto(
     DateTimeOffset EvaluatedAtUtc,
@@ -850,7 +986,8 @@ public sealed record ReportTemplateDefinitionDto(
 public sealed record RenderReportTemplateRequestDto(
     VersionedReportTemplateIdDto TemplateId,
     IReadOnlyDictionary<string, string> Parameters,
-    IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null);
+    IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null,
+    IReadOnlyList<ReportWriterGridDefinitionDto>? Grids = null);
 public sealed record RenderReportTemplateResponseDto(
     VersionedReportTemplateIdDto TemplateId,
     string RenderedContent,

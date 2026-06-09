@@ -3570,6 +3570,107 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
           </div>
         ) : null}
 
+        {activity.fundEventLedgerRecords.length > 0 ? (
+          <div className="overflow-x-auto rounded-md border border-border/70">
+            <table className="w-full min-w-[980px] text-sm" aria-label="Private-capital fund event ledger records">
+              <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2 text-left">Fund event</th>
+                  <th className="px-3 py-2 text-left">Approval</th>
+                  <th className="px-3 py-2 text-left">Effective</th>
+                  <th className="px-3 py-2 text-left">Net</th>
+                  <th className="px-3 py-2 text-left">Subledger</th>
+                  <th className="px-3 py-2 text-left">GL impact</th>
+                  <th className="px-3 py-2 text-left">Report output</th>
+                  <th className="px-3 py-2 text-left">Evidence</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activity.fundEventLedgerRecords.map((record) => (
+                  <tr key={record.id} className="border-t border-border/60 bg-background/30 align-top">
+                    <td className="px-3 py-2">
+                      <div className="font-semibold text-foreground">{record.title}</div>
+                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{record.subtitle}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">{record.memoLabel}</div>
+                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{record.referenceLabel}</div>
+                      <a
+                        className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                        href={record.activityRouteLabel}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`Open private-capital activity record for ${record.title}`}
+                      >
+                        {record.activityRouteLabel}
+                      </a>
+                    </td>
+                    <td className="px-3 py-2">
+                      <Badge variant={record.statusTone} dot>{record.statusLabel}</Badge>
+                      <div className="mt-2">
+                        <Badge variant={record.readinessTone} dot>{record.readinessLabel}</Badge>
+                      </div>
+                      <div className="mt-1 text-xs text-muted-foreground">{record.readinessReasonLabel}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">{record.issueLabel}</div>
+                      {record.nextActionRouteLabel !== "No next-action route" ? (
+                        <a
+                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                          href={record.nextActionRouteLabel}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Open next action for ${record.title}`}
+                        >
+                          {record.nextActionLabel}
+                        </a>
+                      ) : (
+                        <div className="mt-1 text-[11px] text-muted-foreground">{record.nextActionLabel}</div>
+                      )}
+                      {record.approvalRouteLabel !== "No approval route" ? (
+                        <a
+                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                          href={record.approvalRouteLabel}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Open approval route for ${record.title}`}
+                        >
+                          {record.approvalRouteLabel}
+                        </a>
+                      ) : null}
+                    </td>
+                    <td className="px-3 py-2 font-mono text-xs">{record.effectiveDateLabel}</td>
+                    <td className="px-3 py-2 font-mono text-xs">
+                      <div>{record.netActivityLabel}</div>
+                      <div className="mt-1 text-[11px] text-muted-foreground">{record.grossActivityLabel} gross</div>
+                    </td>
+                    <td className="px-3 py-2 text-xs">
+                      <div>{record.subledgerLabel}</div>
+                      <div className="mt-1 text-muted-foreground">{record.capitalAccountRollForwardLabel}</div>
+                    </td>
+                    <td className="px-3 py-2 text-xs">{record.ledgerImpactLabel}</td>
+                    <td className="px-3 py-2 text-xs">
+                      <div>{record.reportOutputLabel}</div>
+                      <div className="mt-1 text-muted-foreground">{record.reportOutputDetailLabel}</div>
+                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{record.reportOutputRouteLabel}</div>
+                    </td>
+                    <td className="px-3 py-2 text-xs">
+                      <div>{record.evidenceLabel}</div>
+                      {record.evidenceRouteLabel !== "No evidence route" ? (
+                        <a
+                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                          href={record.evidenceRouteLabel}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Open evidence packet for ${record.title}`}
+                        >
+                          {record.evidenceRouteLabel}
+                        </a>
+                      ) : null}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+
         {activity.capitalAccounts.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
             <table className="w-full min-w-[760px] text-sm" aria-label="Private-capital capital account activity">

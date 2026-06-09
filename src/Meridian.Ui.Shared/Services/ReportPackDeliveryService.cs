@@ -166,6 +166,41 @@ public sealed class ReportPackDeliveryService
             request.DeliveryMode);
     }
 
+    public ReportPackDeliveryAttemptDto? DeliverLatestForTemplate(
+        string templateId,
+        ReportingScheduleDeliveryTargetDto target,
+        string fallbackActor)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(templateId);
+        ArgumentNullException.ThrowIfNull(target);
+        ArgumentException.ThrowIfNullOrWhiteSpace(target.DistributionId);
+
+        var normalizedTemplateId = templateId.Trim();
+        var record = _workflowService
+            .ListRecords(200)
+            .Where(static item => item.State is ReportPackWorkflowStateDto.Published or ReportPackWorkflowStateDto.Restated)
+            .Where(item => string.Equals(item.TemplateId.Name, normalizedTemplateId, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(static item => item.Publication?.SignedOffAt ?? item.UpdatedAt)
+            .ThenByDescending(static item => item.Version)
+            .ThenBy(static item => item.ReportId)
+            .FirstOrDefault();
+        if (record is null)
+        {
+            return null;
+        }
+
+        return Deliver(
+            record.ReportId,
+            new ReportPackDeliveryRequestDto(
+                target.DistributionId,
+                Actor: fallbackActor,
+                DeliveryReference: $"schedule:{normalizedTemplateId}:{record.ReportId:N}:{target.DistributionId}",
+                Note: NormalizeNullable(target.Note) ?? $"Scheduled delivery for {normalizedTemplateId}.",
+                Formats: target.Formats,
+                DeliveryMode: target.DeliveryMode),
+            fallbackActor);
+    }
+
     public ReportPackDeliveryAttemptDto RecordFailure(Guid reportId, ReportPackDeliveryFailureRequestDto request, string fallbackActor)
     {
         ArgumentNullException.ThrowIfNull(request);

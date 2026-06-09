@@ -252,13 +252,31 @@ public sealed record WorkstationReportingProfilePayload(
 /// <summary>
 /// Template metadata exposed to browser and desktop Reporting operator surfaces.
 /// </summary>
+public sealed record WorkstationReportWriterMetricPayload(
+    string Name,
+    string SourceField,
+    string Function,
+    string? Label = null);
+
+public sealed record WorkstationReportWriterFormulaPayload(
+    string Name,
+    string Expression,
+    string? Label = null);
+
 public sealed record WorkstationReportWriterGridPayload(
     string GridId,
     string Title,
     string Kind,
     int DimensionCount,
     int MetricCount,
-    int FormulaCount);
+    int FormulaCount,
+    IReadOnlyList<string>? RowFields = null,
+    IReadOnlyList<string>? ColumnFields = null,
+    IReadOnlyList<WorkstationReportWriterMetricPayload>? Metrics = null,
+    IReadOnlyList<WorkstationReportWriterFormulaPayload>? Formulas = null,
+    int? TopN = null,
+    string? SortBy = null,
+    bool SortDescending = true);
 
 public sealed record WorkstationReportingTemplatePayload(
     string TemplateId,

@@ -78,15 +78,18 @@ public sealed class FileReportingScheduleStore : IReportingScheduleStore
 public sealed class ReportingScheduleService
 {
     private readonly IReportingOrchestrationService _orchestrationService;
+    private readonly ReportPackDeliveryService? _deliveryService;
     private readonly IReportingScheduleStore? _store;
     private readonly Dictionary<string, ReportingScheduleRecordDto> _schedules = new(StringComparer.OrdinalIgnoreCase);
     private readonly object _gate = new();
 
     public ReportingScheduleService(
         IReportingOrchestrationService orchestrationService,
-        IReportingScheduleStore? store = null)
+        IReportingScheduleStore? store = null,
+        ReportPackDeliveryService? deliveryService = null)
     {
         _orchestrationService = orchestrationService ?? throw new ArgumentNullException(nameof(orchestrationService));
+        _deliveryService = deliveryService;
         _store = store;
         foreach (var schedule in _store?.Load() ?? [])
         {
@@ -123,6 +126,9 @@ public sealed class ReportingScheduleService
             var now = DateTimeOffset.UtcNow;
             var scheduleId = request.ScheduleId.Trim();
             var existing = _schedules.GetValueOrDefault(scheduleId);
+            var deliveryTargets = request.DeliveryTargets is null
+                ? existing?.DeliveryTargets
+                : NormalizeDeliveryTargets(request.DeliveryTargets);
             var record = new ReportingScheduleRecordDto(
                 scheduleId,
                 request.TemplateId.Trim(),
@@ -137,7 +143,8 @@ public sealed class ReportingScheduleService
                 existing?.LastRunAtUtc,
                 existing?.LastRunId,
                 existing?.RunCount ?? 0,
-                string.IsNullOrWhiteSpace(request.Description) ? existing?.Description : request.Description.Trim());
+                string.IsNullOrWhiteSpace(request.Description) ? existing?.Description : request.Description.Trim(),
+                deliveryTargets);
             _schedules[record.ScheduleId] = record;
             PersistSchedules();
             return record;
@@ -226,13 +233,54 @@ public sealed class ReportingScheduleService
         var manifest = await _orchestrationService.ExecuteAsync(contract, ct).ConfigureAwait(false);
         var run = ProjectRun(manifest, _orchestrationService.GetAudit(manifest.RunId));
         var advanced = AdvanceSchedule(schedule, manifest);
+        var delivery = DeliverScheduledPackages(schedule, actor);
         lock (_gate)
         {
             _schedules[advanced.ScheduleId] = advanced;
             PersistSchedules();
         }
 
-        return new ReportingScheduleRunResultDto(advanced, run);
+        return new ReportingScheduleRunResultDto(advanced, run, delivery.Attempts, delivery.Warnings);
+    }
+
+    private (IReadOnlyList<ReportPackDeliveryAttemptDto> Attempts, IReadOnlyList<string> Warnings) DeliverScheduledPackages(
+        ReportingScheduleRecordDto schedule,
+        string actor)
+    {
+        var targets = schedule.DeliveryTargets ?? [];
+        if (targets.Count == 0)
+        {
+            return ([], []);
+        }
+
+        if (_deliveryService is null)
+        {
+            return ([], [$"Schedule '{schedule.ScheduleId}' has delivery targets, but report-pack delivery service is unavailable."]);
+        }
+
+        var attempts = new List<ReportPackDeliveryAttemptDto>(targets.Count);
+        var warnings = new List<string>();
+        foreach (var target in targets)
+        {
+            try
+            {
+                var attempt = _deliveryService.DeliverLatestForTemplate(schedule.TemplateId, target, actor);
+                if (attempt is null)
+                {
+                    warnings.Add($"No published or restated report pack is available for template '{schedule.TemplateId}' and distribution '{target.DistributionId}'.");
+                }
+                else
+                {
+                    attempts.Add(attempt);
+                }
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or KeyNotFoundException)
+            {
+                warnings.Add($"Delivery target '{target.DistributionId}' failed: {ex.Message}");
+            }
+        }
+
+        return (attempts, warnings);
     }
 
     private static WorkstationReportingRunPayload ProjectRun(
@@ -306,6 +354,52 @@ public sealed class ReportingScheduleService
         if (templateId.StartsWith("audit", StringComparison.OrdinalIgnoreCase)) return ReportingTemplateFamily.AuditPackage.ToString();
         if (templateId.StartsWith("certified", StringComparison.OrdinalIgnoreCase)) return ReportingTemplateFamily.CertifiedDataset.ToString();
         return ReportingTemplateFamily.CustomReport.ToString();
+    }
+
+    private static IReadOnlyList<ReportingScheduleDeliveryTargetDto>? NormalizeDeliveryTargets(
+        IReadOnlyList<ReportingScheduleDeliveryTargetDto>? targets)
+    {
+        if (targets is not { Count: > 0 })
+        {
+            return [];
+        }
+
+        return targets
+            .Where(static target => !string.IsNullOrWhiteSpace(target.DistributionId))
+            .GroupBy(static target => target.DistributionId.Trim(), StringComparer.OrdinalIgnoreCase)
+            .Select(static group =>
+            {
+                var target = group.First();
+                ReportPackRunReadService.ReportPackDistributionPolicy policy;
+                try
+                {
+                    policy = ReportPackRunReadService.ResolveDistributionPolicy(target.DistributionId);
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    throw new ArgumentException(ex.Message, nameof(targets), ex);
+                }
+
+                return new ReportingScheduleDeliveryTargetDto(
+                    policy.DistributionId,
+                    NormalizeDeliveryFormats(target.Formats),
+                    target.DeliveryMode,
+                    string.IsNullOrWhiteSpace(target.Note) ? null : target.Note.Trim());
+            })
+            .ToArray();
+    }
+
+    private static IReadOnlyList<GovernanceReportArtifactFormatDto>? NormalizeDeliveryFormats(
+        IReadOnlyList<GovernanceReportArtifactFormatDto>? formats)
+    {
+        if (formats is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        return formats
+            .Distinct()
+            .ToArray();
     }
 
     private void PersistSchedules()

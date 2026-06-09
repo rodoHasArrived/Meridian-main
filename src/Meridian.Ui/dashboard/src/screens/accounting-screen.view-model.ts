@@ -79,6 +79,7 @@ import type {
   PrivateCapitalCapitalAccountActivity,
   PrivateCapitalCapitalAccountSubledgerEntry,
   PrivateCapitalFundEvent,
+  PrivateCapitalFundEventLedgerRecord,
   PrivateCapitalLedgerImpact,
   PrivateCapitalReportOutput,
   ResolveReconciliationBreakRequest,
@@ -857,6 +858,35 @@ export interface ManualJournalPrivateCapitalReportOutputRowViewModel {
   provenanceLabel: string;
 }
 
+export interface ManualJournalPrivateCapitalFundEventLedgerRecordViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  statusLabel: string;
+  statusTone: "outline" | "success" | "warning" | "danger";
+  readinessLabel: string;
+  readinessTone: "outline" | "success" | "warning" | "danger";
+  readinessReasonLabel: string;
+  nextActionLabel: string;
+  nextActionRouteLabel: string;
+  effectiveDateLabel: string;
+  netActivityLabel: string;
+  grossActivityLabel: string;
+  capitalAccountRollForwardLabel: string;
+  memoLabel: string;
+  referenceLabel: string;
+  activityRouteLabel: string;
+  evidenceRouteLabel: string;
+  approvalRouteLabel: string;
+  evidenceLabel: string;
+  ledgerImpactLabel: string;
+  subledgerLabel: string;
+  reportOutputLabel: string;
+  reportOutputDetailLabel: string;
+  reportOutputRouteLabel: string;
+  issueLabel: string;
+}
+
 export interface ManualJournalPrivateCapitalActivityViewModel {
   title: string;
   statusLabel: string;
@@ -868,6 +898,7 @@ export interface ManualJournalPrivateCapitalActivityViewModel {
   capitalAccountSubledgerEntries: ManualJournalPrivateCapitalSubledgerEntryRowViewModel[];
   ledgerImpacts: ManualJournalPrivateCapitalLedgerImpactRowViewModel[];
   reportOutputs: ManualJournalPrivateCapitalReportOutputRowViewModel[];
+  fundEventLedgerRecords: ManualJournalPrivateCapitalFundEventLedgerRecordViewModel[];
   validationIssues: AccountingConfigurationIssueViewModel[];
 }
 
@@ -2838,14 +2869,17 @@ function buildManualJournalPrivateCapitalActivityView(
       capitalAccountSubledgerEntries: [],
       ledgerImpacts: [],
       reportOutputs: [],
+      fundEventLedgerRecords: [],
       validationIssues: []
     };
   }
 
   const currency = activity.currency || "USD";
-  const capitalAccountSubledgerEntries = activity.capitalAccountSubledgerEntries ?? [];
-  const ledgerImpacts = activity.ledgerImpacts ?? [];
-  const reportOutputs = activity.reportOutputs ?? [];
+  const capitalAccountSubledgerEntries = activity.capitalAccountSubledgerEntries;
+  const ledgerImpacts = activity.ledgerImpacts;
+  const reportOutputs = activity.reportOutputs;
+  const fundEventLedgerRecords = activity.fundEventRecords;
+  const fundEventLedgerRecordCount = fundEventLedgerRecords.length;
   const postedFundEventCount = activity.postedFundEventCount ?? 0;
   const publishedReportOutputCount = activity.publishedReportOutputCount ?? 0;
   const validationIssues = activity.validationIssues.map<AccountingConfigurationIssueViewModel>((issue, index) => ({
@@ -2875,6 +2909,13 @@ function buildManualJournalPrivateCapitalActivityView(
         value: postedFundEventCount.toLocaleString(),
         detail: "Ledger-backed fund-event rows",
         tone: postedFundEventCount > 0 ? "success" : "default"
+      },
+      {
+        id: "fund-event-ledger-records",
+        label: "Event ledger records",
+        value: fundEventLedgerRecordCount.toLocaleString(),
+        detail: "Event, subledger, GL, evidence, approval, and report output",
+        tone: fundEventLedgerRecordCount === activity.fundEventCount && activity.fundEventCount > 0 ? "success" : fundEventLedgerRecordCount > 0 ? "warning" : "default"
       },
       {
         id: "capital-accounts",
@@ -2931,8 +2972,62 @@ function buildManualJournalPrivateCapitalActivityView(
     capitalAccountSubledgerEntries: capitalAccountSubledgerEntries.map(buildManualJournalPrivateCapitalSubledgerEntryRow),
     ledgerImpacts: ledgerImpacts.map(buildManualJournalPrivateCapitalLedgerImpactRow),
     reportOutputs: reportOutputs.map(buildManualJournalPrivateCapitalReportOutputRow),
+    fundEventLedgerRecords: fundEventLedgerRecords.map(buildManualJournalPrivateCapitalFundEventLedgerRecordRow),
     validationIssues
   };
+}
+
+function buildManualJournalPrivateCapitalFundEventLedgerRecordRow(
+  record: PrivateCapitalFundEventLedgerRecord
+): ManualJournalPrivateCapitalFundEventLedgerRecordViewModel {
+  return {
+    id: record.fundEventRecordId,
+    title: record.fundEventType || record.fundEventId,
+    subtitle: `${record.capitalAccountId}${record.investorId ? ` / ${record.investorId}` : ""}`,
+    statusLabel: record.isPosted ? "Posted" : record.approvalState,
+    statusTone: record.isPosted
+      ? "success"
+      : record.validationIssues.some((issue) => issue.severity === "Critical")
+        ? "danger"
+        : record.validationIssues.length > 0
+          ? "warning"
+          : manualJournalPrivateCapitalStatusTone(record.approvalState),
+    readinessLabel: record.readinessLabel || record.readiness,
+    readinessTone: manualJournalPrivateCapitalReadinessTone(record.readiness),
+    readinessReasonLabel: record.readinessReason || "No readiness reason",
+    nextActionLabel: record.nextAction || "No next action",
+    nextActionRouteLabel: record.nextActionRoute ?? "No next-action route",
+    effectiveDateLabel: record.effectiveDate,
+    netActivityLabel: formatCurrencyWithCode(record.netCapitalActivity, record.currency, true),
+    grossActivityLabel: formatCurrencyWithCode(record.grossAmount, record.currency),
+    capitalAccountRollForwardLabel: `${formatCurrencyWithCode(record.capitalAccountOpeningNetActivity, record.currency, true)} opening -> ${formatCurrencyWithCode(record.capitalAccountEndingNetActivity, record.currency, true)} ending`,
+    memoLabel: record.memo || record.journalEntryId,
+    referenceLabel: [record.paymentIntentId, record.settlementReference].filter((value): value is string => Boolean(value)).join(" / ") || record.journalEntryId,
+    activityRouteLabel: record.activityRoute || "No activity route",
+    evidenceRouteLabel: record.evidenceRoute || "No evidence route",
+    approvalRouteLabel: record.approvalRoute ?? (record.approvalId ? `/accounting/approvals?approvalId=${encodeURIComponent(record.approvalId)}` : "No approval route"),
+    evidenceLabel: `${record.evidenceLinkCount.toLocaleString()} evidence`,
+    ledgerImpactLabel: `${record.ledgerImpactCount.toLocaleString()} ledger impact(s)${record.isPostingReady ? " / posting ready" : ""}`,
+    subledgerLabel: `${record.capitalAccountSubledgerEntryCount.toLocaleString()} subledger movement(s)`,
+    reportOutputLabel: `${record.reportOutputCount.toLocaleString()} report output(s)${record.isPublished ? " / published" : record.isReportReady ? " / ready" : ""}`,
+    reportOutputDetailLabel: [
+      record.primaryReportOutputType ?? "No primary output",
+      record.reportWorkflowState ?? "No workflow state",
+      `${record.reportLineProvenanceCount.toLocaleString()} provenance`
+    ].join(" / "),
+    reportOutputRouteLabel: record.primaryReportRoute ?? record.retainedManifestPath ?? record.publicationManifestId ?? "No report route",
+    issueLabel: record.validationIssueCount > 0
+      ? `${record.validationIssueCount.toLocaleString()} record issue(s)`
+      : "No record issues"
+  };
+}
+
+function manualJournalPrivateCapitalReadinessTone(
+  readiness: PrivateCapitalFundEventLedgerRecord["readiness"]
+): ManualJournalPrivateCapitalFundEventLedgerRecordViewModel["readinessTone"] {
+  if (readiness === "Blocked") return "danger";
+  if (readiness === "Ready" || readiness === "Published") return "success";
+  return readiness ? "warning" : "outline";
 }
 
 function buildManualJournalPrivateCapitalFundEventRow(

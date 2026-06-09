@@ -5,7 +5,7 @@ import { describeApiError } from "@/lib/api-errors";
 import { EXPORT_API_ENDPOINTS, exportPreviewEndpoint, reportPackEvidenceBundleEndpoint } from "@/lib/workstation-endpoints";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { getReportPackDistributions } from "@/lib/reporting-distributions";
-import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowRecord } from "@/types";
+import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportWriterAggregateFunction, ReportingScheduleDeliveryTarget, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowRecord } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
 export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
@@ -135,9 +135,11 @@ export interface ReportingChipViewModel {
 
 export interface ReportingTemplateRow {
   id: string;
+  templateName: string;
   name: string;
   family: string;
   version: string;
+  versionNumber: number;
   sectionSummary: string;
   statusLabel: string;
   statusVariant: Exclude<ReportingBadgeVariant, "default">;
@@ -153,6 +155,59 @@ export interface ReportingTemplateRow {
   runActionLabel: string;
   runActionAriaLabel: string;
   runDisabledReason: string | null;
+  lifecycleActions: ReportingTemplateLifecycleActionRow[];
+  hasLifecycleActions: boolean;
+  writerGrids: ReportingWriterGridRow[];
+  hasWriterGrids: boolean;
+  writerGridSummary: string;
+}
+
+export type ReportingTemplateLifecycleActionKind = "submit" | "approve" | "reject";
+
+export interface ReportingTemplateLifecycleActionRow {
+  id: string;
+  kind: ReportingTemplateLifecycleActionKind;
+  label: string;
+  ariaLabel: string;
+  targetStatus: string;
+  isEnabled: boolean;
+  disabledReason: string | null;
+}
+
+export type ReportingWriterTokenKind = "field" | "metric" | "formula";
+
+export interface ReportingWriterToken {
+  id: string;
+  label: string;
+  detail: string;
+  kind: ReportingWriterTokenKind;
+  fieldName?: string | null;
+  sourceField?: string | null;
+  function?: ReportWriterAggregateFunction | null;
+  expression?: string | null;
+  name?: string | null;
+}
+
+export interface ReportingWriterGridRow {
+  id: string;
+  gridId: string;
+  templateId: string;
+  templateVersion: string;
+  family: string;
+  title: string;
+  kind: string;
+  topN: number | null;
+  sortBy: string | null;
+  sortDescending: boolean;
+  summary: string;
+  sourceFields: ReportingWriterToken[];
+  rowFields: ReportingWriterToken[];
+  columnFields: ReportingWriterToken[];
+  metrics: ReportingWriterToken[];
+  formulas: ReportingWriterToken[];
+  topNLabel: string;
+  sortLabel: string;
+  ariaLabel: string;
 }
 
 export interface ReportingRunStatusRow {
@@ -206,6 +261,7 @@ export interface ReportingScheduleRow {
   lastRunLabel: string;
   runCountLabel: string;
   description: string;
+  deliveryTargetLabel: string;
   canPause: boolean;
   canResume: boolean;
   ariaLabel: string;
@@ -750,6 +806,7 @@ function countRestatementEvidence(selected: ReportingWorkflowRecord | null, chan
 
 function buildTemplateRows(templates: ReportingTemplateMetadata[]): ReportingTemplateRow[] {
   return templates.map((template) => {
+    const writerGrids = buildWriterGridRows(template);
     const gridCount = template.reportWriterGrids?.length ?? 0;
     const gridMetricCount = template.reportWriterGrids?.reduce((total, grid) => total + grid.metricCount + grid.formulaCount, 0) ?? 0;
     const sectionLabel = `${template.sections.length} section${template.sections.length === 1 ? "" : "s"}`;
@@ -758,13 +815,17 @@ function buildTemplateRows(templates: ReportingTemplateMetadata[]): ReportingTem
       : "";
     const isAccessible = template.isAccessible ?? true;
     const lifecycleStatus = template.lifecycleStatus ?? "Approved";
+    const versionNumber = parseTemplateVersionNumber(template.version);
     const runDisabledReason = resolveTemplateRunDisabledReason(template, isAccessible, lifecycleStatus);
+    const lifecycleActions = buildTemplateLifecycleActions(template, isAccessible, lifecycleStatus);
 
     return {
-      id: template.templateId,
+      id: `${template.templateId}:${template.version}`,
+      templateName: template.templateId,
       name: template.name,
       family: template.family,
       version: template.version,
+      versionNumber,
       sectionSummary: `${sectionLabel}${gridLabel}`,
       statusLabel: lifecycleStatus,
       statusVariant: templateStatusVariant(template.lifecycleStatus),
@@ -785,9 +846,250 @@ function buildTemplateRows(templates: ReportingTemplateMetadata[]): ReportingTem
       canRunOnDemand: isAccessible && (template.isBuiltIn !== false) && lifecycleStatus === "Approved",
       runActionLabel: "Run report",
       runActionAriaLabel: `Run ${template.name} report on demand`,
-      runDisabledReason
+      runDisabledReason,
+      lifecycleActions,
+      hasLifecycleActions: lifecycleActions.length > 0,
+      writerGrids,
+      hasWriterGrids: writerGrids.length > 0,
+      writerGridSummary: writerGrids.length > 0
+        ? `${writerGrids.length} grid${writerGrids.length === 1 ? "" : "s"} ready for no-code layout`
+        : "No report-writer grids"
     };
   });
+}
+
+function buildTemplateLifecycleActions(
+  template: ReportingTemplateMetadata,
+  isAccessible: boolean,
+  lifecycleStatus: string
+): ReportingTemplateLifecycleActionRow[] {
+  if (template.isBuiltIn !== false || !isAccessible) {
+    return [];
+  }
+
+  if (lifecycleStatus === "Draft" || lifecycleStatus === "Rejected") {
+    return [
+      {
+        id: `${template.templateId}:${template.version}:submit`,
+        kind: "submit",
+        label: "Submit",
+        ariaLabel: `Submit ${template.name} template version ${template.version} for review`,
+        targetStatus: "InReview",
+        isEnabled: true,
+        disabledReason: null
+      }
+    ];
+  }
+
+  if (lifecycleStatus === "InReview") {
+    return [
+      {
+        id: `${template.templateId}:${template.version}:approve`,
+        kind: "approve",
+        label: "Approve",
+        ariaLabel: `Approve ${template.name} template version ${template.version}`,
+        targetStatus: "Approved",
+        isEnabled: true,
+        disabledReason: null
+      },
+      {
+        id: `${template.templateId}:${template.version}:reject`,
+        kind: "reject",
+        label: "Reject",
+        ariaLabel: `Reject ${template.name} template version ${template.version}`,
+        targetStatus: "Rejected",
+        isEnabled: true,
+        disabledReason: null
+      }
+    ];
+  }
+
+  return [];
+}
+
+function buildWriterGridRows(template: ReportingTemplateMetadata): ReportingWriterGridRow[] {
+  return (template.reportWriterGrids ?? []).map((grid) => {
+    const rowFields = buildFieldTokens(grid.rowFields, "row", grid.dimensionCount);
+    const columnFields = buildFieldTokens(grid.columnFields, "column", 0);
+    const metrics = buildMetricTokens(grid);
+    const formulas = buildFormulaTokens(grid);
+    const sourceFields = buildSourceFieldTokens(grid, rowFields, columnFields, metrics, formulas);
+    const sortLabel = grid.sortBy
+      ? `${grid.sortDescending === false ? "Ascending" : "Descending"} by ${grid.sortBy}`
+      : "Default order";
+    const topNLabel = grid.kind === "TopN" && grid.topN
+      ? `Top ${grid.topN}`
+      : grid.kind;
+
+    return {
+      id: `${template.templateId}:${template.version}:${grid.gridId}`,
+      gridId: grid.gridId,
+      templateId: template.templateId,
+      templateVersion: template.version,
+      family: template.family,
+      title: grid.title,
+      kind: grid.kind,
+      topN: grid.topN ?? null,
+      sortBy: grid.sortBy ?? null,
+      sortDescending: grid.sortDescending ?? true,
+      summary: `${grid.kind} grid with ${rowFields.length + columnFields.length} dimension${rowFields.length + columnFields.length === 1 ? "" : "s"}, ${metrics.length} metric${metrics.length === 1 ? "" : "s"}, and ${formulas.length} formula${formulas.length === 1 ? "" : "s"}.`,
+      sourceFields,
+      rowFields,
+      columnFields,
+      metrics,
+      formulas,
+      topNLabel,
+      sortLabel,
+      ariaLabel: `${template.name} ${grid.title} ${grid.kind} report-writer grid`
+    };
+  });
+}
+
+function buildFieldTokens(fields: string[] | null | undefined, zone: string, fallbackCount: number): ReportingWriterToken[] {
+  if (fields && fields.length > 0) {
+    return fields.map((field) => ({
+      id: `${zone}:${field}`,
+      label: field,
+      detail: "Dataset field",
+      kind: "field",
+      fieldName: field
+    }));
+  }
+
+  return Array.from({ length: fallbackCount }, (_, index) => ({
+    id: `${zone}:field-${index + 1}`,
+    label: `Field ${index + 1}`,
+    detail: "Field metadata unavailable",
+    kind: "field",
+    fieldName: null
+  }));
+}
+
+function buildMetricTokens(grid: ReportingTemplateGridMetadata): ReportingWriterToken[] {
+  if (grid.metrics && grid.metrics.length > 0) {
+    return grid.metrics.map((metric) => ({
+      id: `metric:${metric.name}`,
+      label: metric.label ?? metric.name,
+      detail: `${metric.function}(${metric.sourceField})`,
+      kind: "metric",
+      name: metric.name,
+      sourceField: metric.sourceField,
+      function: normalizeAggregateFunction(metric.function),
+      fieldName: metric.sourceField
+    }));
+  }
+
+  return Array.from({ length: grid.metricCount }, (_, index) => ({
+    id: `metric:metric-${index + 1}`,
+    label: `Metric ${index + 1}`,
+    detail: "Metric metadata unavailable",
+    kind: "metric",
+    name: null,
+    sourceField: null,
+    function: "Sum",
+    fieldName: null
+  }));
+}
+
+function buildFormulaTokens(grid: ReportingTemplateGridMetadata): ReportingWriterToken[] {
+  if (grid.formulas && grid.formulas.length > 0) {
+    return grid.formulas.map((formula) => ({
+      id: `formula:${formula.name}`,
+      label: formula.label ?? formula.name,
+      detail: formula.expression,
+      kind: "formula",
+      name: formula.name,
+      expression: formula.expression
+    }));
+  }
+
+  return Array.from({ length: grid.formulaCount }, (_, index) => ({
+    id: `formula:formula-${index + 1}`,
+    label: `Formula ${index + 1}`,
+    detail: "Formula metadata unavailable",
+    kind: "formula",
+    name: null,
+    expression: null
+  }));
+}
+
+function buildSourceFieldTokens(
+  grid: ReportingTemplateGridMetadata,
+  rowFields: ReportingWriterToken[],
+  columnFields: ReportingWriterToken[],
+  metrics: ReportingWriterToken[],
+  formulas: ReportingWriterToken[]
+): ReportingWriterToken[] {
+  const names = new Set<string>();
+  for (const token of [...rowFields, ...columnFields]) {
+    if (!token.label.startsWith("Field ")) {
+      names.add(token.label);
+    }
+  }
+
+  for (const metric of grid.metrics ?? []) {
+    names.add(metric.sourceField);
+  }
+
+  for (const formula of grid.formulas ?? []) {
+    for (const field of extractFormulaFields(formula.expression)) {
+      names.add(field);
+    }
+  }
+
+  if (grid.sortBy) {
+    names.add(grid.sortBy);
+  }
+
+  if (names.size === 0) {
+    for (const token of [...metrics, ...formulas]) {
+      names.add(token.label);
+    }
+  }
+
+  return Array.from(names)
+    .sort((left, right) => left.localeCompare(right))
+    .map((name) => ({
+      id: `source:${name}`,
+      label: name,
+      detail: "Available dataset field",
+      kind: "field",
+      fieldName: name
+    }));
+}
+
+function normalizeAggregateFunction(value: string | null | undefined): ReportWriterAggregateFunction {
+  switch ((value ?? "").toLowerCase()) {
+    case "count":
+      return "Count";
+    case "average":
+      return "Average";
+    case "min":
+      return "Min";
+    case "max":
+      return "Max";
+    default:
+      return "Sum";
+  }
+}
+
+function extractFormulaFields(expression: string): string[] {
+  const fields = new Set<string>();
+  const matches = expression.matchAll(/\{([^}]+)\}/g);
+  for (const match of matches) {
+    const field = match[1]?.trim();
+    if (field) {
+      fields.add(field);
+    }
+  }
+
+  return Array.from(fields);
+}
+
+function parseTemplateVersionNumber(version: string): number {
+  const match = version.match(/\d+/);
+  const parsed = match ? Number.parseInt(match[0], 10) : Number.NaN;
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : 1;
 }
 
 function resolveTemplateRunDisabledReason(
@@ -904,6 +1206,7 @@ function buildScheduleRows(schedules: ReportingScheduleRecord[]): ReportingSched
     lastRunLabel: schedule.lastRunAtUtc ? formatTimestamp(schedule.lastRunAtUtc) : "Not run",
     runCountLabel: `${schedule.runCount} run${schedule.runCount === 1 ? "" : "s"}`,
     description: schedule.description?.trim() || "No schedule note",
+    deliveryTargetLabel: formatScheduleDeliveryTargets(schedule.deliveryTargets),
     canPause: schedule.state === "Active",
     canResume: schedule.state === "Paused",
     ariaLabel: `${schedule.scheduleId} ${schedule.templateId} reporting schedule is ${schedule.state}`
@@ -917,6 +1220,22 @@ function buildScheduleSummary(schedules: ReportingScheduleRow[]): string {
 
   const activeCount = schedules.filter((schedule) => schedule.state === "Active").length;
   return `${schedules.length} schedule${schedules.length === 1 ? "" : "s"} configured; ${activeCount} active.`;
+}
+
+function formatScheduleDeliveryTargets(targets: ReportingScheduleDeliveryTarget[] | null | undefined): string {
+  if (!targets || targets.length === 0) {
+    return "No delivery targets";
+  }
+
+  return targets.map(formatScheduleDeliveryTarget).join("; ");
+}
+
+function formatScheduleDeliveryTarget(target: ReportingScheduleDeliveryTarget): string {
+  const formats = target.formats && target.formats.length > 0
+    ? target.formats.join("/")
+    : "Pdf/Xlsx/Csv";
+  const mode = target.deliveryMode ?? "Policy";
+  return `${target.distributionId} via ${mode} (${formats})`;
 }
 
 function formatTimestamp(value: string): string {

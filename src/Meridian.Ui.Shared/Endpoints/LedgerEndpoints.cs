@@ -630,6 +630,47 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
 
+        app.MapGet(UiApiRoutes.LedgerPrivateCapitalFundEventRecord, async (
+            string? fundProfileId,
+            Guid? ledgerBookId,
+            string? fundEventId,
+            HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var normalizedFundEventId = NormalizeOptional(fundEventId);
+            if (normalizedFundEventId is null)
+            {
+                return Results.BadRequest(new { error = "fundEventId is required." });
+            }
+
+            var service = ResolveManualJournalEntryWorkbenchService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
+            var record = FilterPrivateCapitalActivity(activity, normalizedFundEventId, null, null)
+                .FundEventRecords
+                .FirstOrDefault(item => string.Equals(item.FundEventId, normalizedFundEventId, StringComparison.OrdinalIgnoreCase));
+            if (record is null)
+            {
+                return Results.NotFound();
+            }
+
+            return Results.Json(record, jsonOptions);
+        })
+        .WithName("GetLedgerPrivateCapitalFundEventRecord")
+        .Produces<PrivateCapitalFundEventLedgerRecordDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented);
+
         app.MapPost(UiApiRoutes.LedgerManualJournalEntryDrafts, async (SaveManualJournalEntryDraftRequest request, HttpContext context) =>
         {
             if (!HasLedgerMutationPermission(context))
@@ -1016,6 +1057,12 @@ public static class LedgerEndpoints
                 MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId) &&
                 retainedFundEventIds.Contains(item.FundEventId))
             .ToArray();
+        var fundEventRecords = PrivateCapitalFundEventLedgerRecordBuilder.Build(
+            activity.FundProfileId,
+            fundEvents,
+            capitalAccountSubledgerEntries,
+            ledgerImpacts,
+            reportOutputs);
         var capitalAccounts = BuildFilteredCapitalAccounts(fundEvents);
         var retainedCapitalAccountIds = capitalAccounts
             .Select(static item => item.CapitalAccountId)
@@ -1052,7 +1099,8 @@ public static class LedgerEndpoints
             capitalAccountSubledgerEntries,
             ledgerImpacts,
             reportOutputs,
-            validationIssues);
+            validationIssues,
+            fundEventRecords);
     }
 
     private static IReadOnlyList<PrivateCapitalCapitalAccountActivityDto> BuildFilteredCapitalAccounts(
