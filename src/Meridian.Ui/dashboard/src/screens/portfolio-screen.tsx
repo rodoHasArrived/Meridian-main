@@ -14,7 +14,7 @@ import {
 } from "@/components/meridian/financial-record-explorer";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { MetricCard } from "@/components/meridian/metric-card";
-import { getRunAttribution, getRunCashFlows, getRunEquityCurve, getRunFills } from "@/lib/api";
+import { getFinancialRecordExplorer, getRunAttribution, getRunCashFlows, getRunEquityCurve, getRunFills, saveFinancialRecordExplorerView } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import {
   resolveBrokerageAccountFilterKeyCommand,
@@ -30,6 +30,8 @@ import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
   AccountingWorkspaceResponse,
+  FinancialRecordExplorer,
+  FinancialRecordExplorerSavedViewSaveRequest,
   MultiAssetCoverageSummary,
   PortfolioWorkspaceResponse,
   StrategyWorkspaceResponse,
@@ -267,6 +269,7 @@ export function PortfolioScreen({
   const shouldFocusBrokerageAccount = useRef(false);
   const drillInRequestId = useRef(0);
   const [selectedRunDrillIn, setSelectedRunDrillIn] = useState<PortfolioRunDrillInData | null>(null);
+  const [portfolioExplorer, setPortfolioExplorer] = useState<FinancialRecordExplorer | null>(null);
   const vm = usePortfolioScreenViewModel({
     portfolio,
     trading,
@@ -293,6 +296,32 @@ export function PortfolioScreen({
       setSelectedRunDrillIn(null);
     }
   }, [selectedRunDrillIn, vm.selectedRun?.id]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void getFinancialRecordExplorer("portfolio", { signal: controller.signal })
+      .then((explorer) => {
+        if (!controller.signal.aborted) {
+          setPortfolioExplorer(explorer);
+        }
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setPortfolioExplorer(null);
+        }
+      });
+
+    return () => controller.abort();
+  }, []);
+
+  function savePortfolioExplorerView(request: FinancialRecordExplorerSavedViewSaveRequest) {
+    return saveFinancialRecordExplorerView("portfolio", request)
+      .then((savedView) => getFinancialRecordExplorer("portfolio")
+        .then((updatedExplorer) => {
+          setPortfolioExplorer(updatedExplorer);
+          return savedView;
+        }));
+  }
 
   async function loadSelectedRunDrillIn() {
     const runId = vm.selectedRun?.id;
@@ -950,6 +979,7 @@ export function PortfolioScreen({
       )}
 
       <FinancialRecordExplorerShell
+        explorer={portfolioExplorer}
         explorerLabel="Financial Record Explorer"
         title="Portfolio Explorer"
         titleId="portfolio-financial-record-explorer-title"
@@ -959,6 +989,7 @@ export function PortfolioScreen({
         summaryItems={financialRecordExplorerSummaryItems}
         appliedFilters={financialRecordExplorerAppliedFilters}
         actions={financialRecordExplorerActions}
+        onSaveView={savePortfolioExplorerView}
       >
         <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
           <Card className="panel-surface">

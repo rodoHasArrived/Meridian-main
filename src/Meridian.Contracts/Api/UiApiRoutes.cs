@@ -576,6 +576,9 @@ public static class UiApiRoutes
     public const string WorkstationPortfolio = "/api/workstation/portfolio";
     public const string WorkstationPortfolioSummary = "/api/workstation/portfolio/summary";
     public const string WorkstationPortfolioMultiAssetCoverage = "/api/workstation/portfolio/multi-asset-coverage";
+    public const string WorkstationFinancialRecordExplorer = "/api/workstation/financial-record-explorers/{explorerId}";
+    public const string WorkstationFinancialRecordExplorerRecord = "/api/workstation/financial-record-explorers/{explorerId}/records/{recordId}";
+    public const string WorkstationFinancialRecordExplorerSavedViews = "/api/workstation/financial-record-explorers/{explorerId}/saved-views";
 
     // Strategy run comparison and diff endpoints
     public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";

@@ -1273,7 +1273,8 @@ public static class FundStructureEndpoints
                         request.ManifestId,
                         request.RetainedManifestPath,
                         request.EvidenceLinks,
-                        request.Note),
+                        request.Note,
+                        request.BrandingTheme),
                     jsonOptions);
             }
             catch (Exception ex) when (ex is ArgumentException or UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)

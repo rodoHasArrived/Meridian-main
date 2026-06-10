@@ -272,12 +272,20 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         fundLiveView.SourceAsOfUtc.Should().Be(new DateTimeOffset(2026, 4, 11, 14, 30, 0, TimeSpan.Zero));
         fundLiveView.Route.Should().Be("/api/workstation/portfolio/summary?fundAccountId=all&strategyId=all&entity=portfolio");
         fundLiveView.LiquiditySummary.Should().Contain("pending settlement");
+        fundLiveView.ReadinessBlockers.Should().NotBeNull();
+        fundLiveView.ReadinessBlockers!.Should().Contain(blocker =>
+            blocker.Contains("outside the 5-minute live-link window", StringComparison.Ordinal));
+        fundLiveView.ReadinessBlockers.Should().Contain(blocker =>
+            blocker.Contains("Pending settlement of 150.00 USD requires cash-ladder evidence", StringComparison.Ordinal));
         var strategyLiveView = workspace.Reporting.LivePortfolioViews.Should().ContainSingle(view =>
                 view.ViewId == "live:strategy:carry-1")
             .Which;
         strategyLiveView.State.Should().Be(PortfolioReportingLiveViewStateDto.SourceBacked);
         strategyLiveView.CashLadderRoute.Should().Be("/api/portfolio/run-governance-001/cash-flows");
         strategyLiveView.Route.Should().Contain("strategyId=carry-1");
+        strategyLiveView.ReadinessBlockers.Should().NotBeNull();
+        strategyLiveView.ReadinessBlockers!.Should().ContainSingle(blocker =>
+            blocker.Contains("outside the 5-minute live-link window", StringComparison.Ordinal));
         workspace.Reporting.CrossFundConsolidations.Should().NotBeNull();
         var companyConsolidation = workspace.Reporting.CrossFundConsolidations!.Should().ContainSingle(row =>
                 row.ConsolidationId == "cross-fund:company")
@@ -436,6 +444,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         liveView.SourceCount.Should().Be(0);
         liveView.SourceAsOfUtc.Should().BeNull();
         liveView.TelemetrySummary.Should().Contain("No source-backed portfolio records");
+        liveView.ReadinessBlockers.Should().NotBeNull().And.Contain("No source-backed portfolio records are available for this live reporting view.");
         workspace.Reporting.PnlSlices.Should().NotBeNull();
         workspace.Reporting.PnlSlices!.Should().HaveCount(4);
         workspace.Reporting.PnlSlices.Should().OnlyContain(slice =>
@@ -492,12 +501,14 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         fundLiveView.State.Should().Be(PortfolioReportingLiveViewStateDto.LiveLinked);
         fundLiveView.SourceAsOfUtc.Should().Be(new DateTimeOffset(2026, 4, 11, 15, 55, 0, TimeSpan.Zero));
         fundLiveView.TelemetrySummary.Should().Contain("Live-linked portfolio telemetry is current through");
+        fundLiveView.ReadinessBlockers.Should().NotBeNull().And.BeEmpty();
 
         var strategyLiveView = workspace.Reporting.LivePortfolioViews.Should().ContainSingle(view =>
                 view.ViewId == "live:strategy:live-1")
             .Which;
         strategyLiveView.State.Should().Be(PortfolioReportingLiveViewStateDto.LiveLinked);
         strategyLiveView.CashLadderRoute.Should().Be("/api/portfolio/run-live-linked-001/cash-flows");
+        strategyLiveView.ReadinessBlockers.Should().NotBeNull().And.BeEmpty();
     }
 
     [Fact]

@@ -11,6 +11,8 @@ export const WORKSTATION_API_ENDPOINTS = {
   portfolio: UI_API_ROUTES.WorkstationPortfolio,
   portfolioSummary: UI_API_ROUTES.WorkstationPortfolioSummary,
   portfolioMultiAssetCoverage: UI_API_ROUTES.WorkstationPortfolioMultiAssetCoverage,
+  financialRecordExplorer: UI_API_ROUTES.WorkstationFinancialRecordExplorer,
+  financialRecordExplorerSavedViews: UI_API_ROUTES.WorkstationFinancialRecordExplorerSavedViews,
   assetOperations: "/api/workstation/assets",
   data: UI_API_ROUTES.WorkstationData,
   dataUploadTemplates: UI_API_ROUTES.WorkstationDataUploadTemplates,
@@ -88,7 +90,10 @@ export const WORKSTATION_API_ENDPOINT_TEMPLATES = {
   runLedger: UI_API_ROUTES.RunsLedger,
   runContinuity: UI_API_ROUTES.RunsContinuity,
   runReviewPacket: UI_API_ROUTES.RunsReviewPacket,
-  runReconciliation: UI_API_ROUTES.RunsReconciliation
+  runReconciliation: UI_API_ROUTES.RunsReconciliation,
+  financialRecordExplorer: UI_API_ROUTES.WorkstationFinancialRecordExplorer,
+  financialRecordExplorerRecord: UI_API_ROUTES.WorkstationFinancialRecordExplorerRecord,
+  financialRecordExplorerSavedViews: UI_API_ROUTES.WorkstationFinancialRecordExplorerSavedViews
 } as const;
 
 export const EXECUTION_API_ENDPOINTS = {
@@ -318,6 +323,22 @@ export function workstationWorkflowPresetPinEndpoint(presetId: string): string {
 
 export function workstationWorkflowPresetUsedEndpoint(presetId: string): string {
   return `${workstationWorkflowPresetEndpoint(presetId)}/used`;
+}
+
+export function workstationFinancialRecordExplorerEndpoint(explorerId: string): string {
+  return routeWithParam(UI_API_ROUTES.WorkstationFinancialRecordExplorer, "explorerId", explorerId);
+}
+
+export function workstationFinancialRecordExplorerRecordEndpoint(explorerId: string, recordId: string): string {
+  return routeWithParam(
+    routeWithParam(UI_API_ROUTES.WorkstationFinancialRecordExplorerRecord, "explorerId", explorerId),
+    "recordId",
+    recordId
+  );
+}
+
+export function workstationFinancialRecordExplorerSavedViewsEndpoint(explorerId: string): string {
+  return routeWithParam(UI_API_ROUTES.WorkstationFinancialRecordExplorerSavedViews, "explorerId", explorerId);
 }
 
 export function workstationOperationsContinuityEndpoint(options: {

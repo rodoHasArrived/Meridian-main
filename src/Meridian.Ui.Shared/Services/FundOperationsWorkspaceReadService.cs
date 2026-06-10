@@ -3226,6 +3226,7 @@ public sealed class FundOperationsWorkspaceReadService
                 };
                 var state = ResolveLivePortfolioViewState(actualSourceCount, sourceAsOf, asOf);
                 var route = BuildLivePortfolioViewRoute(cut, strategySource.StrategyId);
+                var cashLadderRoute = strategySource.CashLadderRoute;
 
                 return new PortfolioReportingLiveViewDto(
                     ViewId: $"live:{cut.CutId}",
@@ -3244,11 +3245,12 @@ public sealed class FundOperationsWorkspaceReadService
                     SourceCount: actualSourceCount,
                     Route: route,
                     LiquiditySummary: BuildLivePortfolioLiquiditySummary(cut),
-                    CashLadderSummary: BuildLivePortfolioCashLadderSummary(cut, strategySource.CashLadderRoute),
+                    CashLadderSummary: BuildLivePortfolioCashLadderSummary(cut, cashLadderRoute),
                     TelemetrySummary: BuildLivePortfolioTelemetrySummary(state, sourceAsOf, asOf),
                     Tags: cut.Tags,
-                    CashLadderRoute: strategySource.CashLadderRoute,
-                    VersionStamp: cut.VersionStamp);
+                    CashLadderRoute: cashLadderRoute,
+                    VersionStamp: cut.VersionStamp,
+                    ReadinessBlockers: BuildLivePortfolioReadinessBlockers(state, sourceAsOf, asOf, cut, cashLadderRoute));
             })
             .OrderBy(static view => view.Kind)
             .ThenBy(static view => view.Label, StringComparer.OrdinalIgnoreCase)
@@ -3705,6 +3707,35 @@ public sealed class FundOperationsWorkspaceReadService
                 ? "Source-backed portfolio telemetry is available through the live portfolio summary route."
                 : $"Source-backed portfolio telemetry is current through {FormatStructuredDateTime(sourceAsOf.Value)}; open the route for latest portfolio-summary telemetry."
         };
+
+    private static IReadOnlyList<string> BuildLivePortfolioReadinessBlockers(
+        PortfolioReportingLiveViewStateDto state,
+        DateTimeOffset? sourceAsOf,
+        DateTimeOffset requestedAsOf,
+        PortfolioReportingCutDto cut,
+        string? cashLadderRoute)
+    {
+        var blockers = new List<string>();
+        switch (state)
+        {
+            case PortfolioReportingLiveViewStateDto.Blocked:
+                blockers.Add("No source-backed portfolio records are available for this live reporting view.");
+                break;
+            case PortfolioReportingLiveViewStateDto.Stale:
+                blockers.Add($"Latest source snapshot is older than 24 hours as of {FormatStructuredDateTime(requestedAsOf)}.");
+                break;
+            case PortfolioReportingLiveViewStateDto.SourceBacked when sourceAsOf is not null:
+                blockers.Add($"Latest source snapshot is outside the {LivePortfolioViewFreshnessWindow.TotalMinutes:0}-minute live-link window.");
+                break;
+        }
+
+        if (cut.PendingSettlement != 0m && string.IsNullOrWhiteSpace(cashLadderRoute))
+        {
+            blockers.Add($"Pending settlement of {cut.PendingSettlement:N2} {cut.Currency} requires cash-ladder evidence before treating this live view as fully delivery-ready.");
+        }
+
+        return blockers.ToArray();
+    }
 
     private static IReadOnlyList<StructuredReportingExportColumnDto> GetStructuredExportColumns(string exportId) =>
         NormalizeStructuredExportId(exportId) switch

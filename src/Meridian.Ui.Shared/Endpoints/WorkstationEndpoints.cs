@@ -93,6 +93,7 @@ public static partial class WorkstationEndpoints
         MapFeatureCapabilityEndpoints(group, jsonOptions);
         MapFamilyOfficeEndpoints(group);
         MapDataUploadEndpoints(group, jsonOptions);
+        MapFinancialRecordExplorerEndpoints(group, jsonOptions);
 
         group.MapGet("/workflow-summary", async (
             bool? hasOperatingContext,

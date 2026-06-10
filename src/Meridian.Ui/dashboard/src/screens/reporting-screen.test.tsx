@@ -143,7 +143,8 @@ const accounting: AccountingWorkspaceResponse = {
         telemetrySummary: "Live-linked portfolio telemetry is current through 2026-04-11T15:58:00.0000000Z; open the route for the latest portfolio-summary telemetry.",
         tags: ["fund", "consolidated"],
         cashLadderRoute: null,
-        versionStamp: "portfolio-cut:20260411160000:runs-1:accounts-2"
+        versionStamp: "portfolio-cut:20260411160000:runs-1:accounts-2",
+        readinessBlockers: ["Pending settlement of 150.00 USD requires cash-ladder evidence before treating this live view as fully delivery-ready."]
       },
       {
         viewId: "live:strategy:carry-1",
@@ -166,7 +167,8 @@ const accounting: AccountingWorkspaceResponse = {
         telemetrySummary: "Source-backed portfolio telemetry is current through 2026-04-11T14:30:00.0000000Z; open the route for latest portfolio-summary telemetry.",
         tags: ["run-governance-001"],
         cashLadderRoute: "/api/portfolio/run-governance-001/cash-flows",
-        versionStamp: "portfolio-cut:20260411160000:runs-1:accounts-0"
+        versionStamp: "portfolio-cut:20260411160000:runs-1:accounts-0",
+        readinessBlockers: ["Latest source snapshot is outside the 5-minute live-link window."]
       }
     ],
     pnlSlices: [
@@ -1022,6 +1024,9 @@ describe("ReportingScreen", () => {
     expect(within(fundView).getByText("LiveLinked")).toBeInTheDocument();
     expect(fundView).toHaveTextContent("3,250.00 USD cash with 150.00 pending settlement");
     expect(fundView).toHaveTextContent("Live-linked portfolio telemetry is current through 2026-04-11T15:58:00.0000000Z");
+    expect(within(fundView).getByRole("list", { name: "Consolidated fund readiness blockers" })).toHaveTextContent(
+      "Pending settlement of 150.00 USD requires cash-ladder evidence"
+    );
     expect(within(fundView).getByRole("link", { name: "Open Consolidated fund live portfolio view" })).toHaveAttribute(
       "href",
       "/api/workstation/portfolio/summary?fundAccountId=all&strategyId=all&entity=portfolio"
@@ -1029,6 +1034,9 @@ describe("ReportingScreen", () => {
 
     const strategyView = screen.getByRole("listitem", { name: "Carry Strategy Strategy live portfolio view" });
     expect(strategyView).toHaveTextContent("Run cash-ladder evidence is available for Carry Strategy.");
+    expect(within(strategyView).getByRole("list", { name: "Carry Strategy readiness blockers" })).toHaveTextContent(
+      "Latest source snapshot is outside the 5-minute live-link window."
+    );
     expect(within(strategyView).getByRole("link", { name: "Open Carry Strategy cash ladder" })).toHaveAttribute(
       "href",
       "/api/portfolio/run-governance-001/cash-flows"

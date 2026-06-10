@@ -388,7 +388,8 @@ public sealed class ReportPackDeliveryService
             createdAtUtc,
             artifacts,
             requestEvidenceLinks,
-            artifactEvidenceLinks);
+            artifactEvidenceLinks,
+            record.Publication?.BrandingTheme);
         var secureLink = mode switch
         {
             ReportPackDeliveryModeDto.EmailLink => UiApiRoutes.WithQuery(
@@ -429,7 +430,8 @@ public sealed class ReportPackDeliveryService
             RestatementApprover: record.Restatement?.Approver,
             RestatementChangedLines: record.Restatement?.ChangedLines,
             RestatementEvidenceLinks: record.Restatement?.EvidenceLinks,
-            DeliveryEvidencePacket: deliveryEvidencePacket);
+            DeliveryEvidencePacket: deliveryEvidencePacket,
+            BrandingTheme: record.Publication?.BrandingTheme);
     }
 
     private static ReportPackDeliveryPackageDto BuildDeliveryPackage(
@@ -492,7 +494,8 @@ public sealed class ReportPackDeliveryService
         DateTimeOffset deliveredAtUtc,
         IReadOnlyList<ReportPackDeliveryArtifactDto> artifacts,
         IReadOnlyList<ReportPackEvidenceLinkDto> requestEvidenceLinks,
-        IReadOnlyList<ReportPackEvidenceLinkDto> artifactEvidenceLinks)
+        IReadOnlyList<ReportPackEvidenceLinkDto> artifactEvidenceLinks,
+        ReportBrandingThemeDto? brandingTheme)
     {
         var lineProvenance = record.LineProvenance ?? [];
         var publicationEvidenceLinks = record.Publication?.EvidenceLinks ?? [];
@@ -504,7 +507,8 @@ public sealed class ReportPackDeliveryService
         var packageContents = DistinctValues(
             artifacts.Select(static artifact => artifact.ArtifactName)
                 .Concat(lineProvenance.Select(static line => $"report-line:{line.LineKey}"))
-                .Concat(restatementContents));
+                .Concat(restatementContents)
+                .Append(string.IsNullOrWhiteSpace(brandingTheme?.ThemeId) ? null : $"branding-theme:{brandingTheme.ThemeId.Trim()}"));
         var supportEvidenceIds = DistinctValues(
             publicationEvidenceLinks.Select(static link => link.EvidenceId)
                 .Concat(lineProvenance.Select(static line => line.EvidenceId))
@@ -667,6 +671,7 @@ public sealed class ReportPackDeliveryService
             record.Restatement?.Approver,
             record.Restatement?.ChangedLines ?? [],
             record.Restatement?.EvidenceLinks ?? [],
+            record.Publication?.BrandingTheme,
             versionStamp);
         var byteSize = content.LongLength;
         var checksum = ComputeSha256Hex(content);
@@ -775,6 +780,7 @@ public sealed class ReportPackDeliveryService
                 package.RestatementApprover,
                 package.RestatementChangedLines ?? [],
                 package.RestatementEvidenceLinks ?? [],
+                package.BrandingTheme,
                 artifact.VersionStamp)
             : BuildReportingRunDeliveryArtifactContent(
                 package.PackageId,
@@ -809,6 +815,7 @@ public sealed class ReportPackDeliveryService
         string? restatementApprover,
         IReadOnlyList<ReportPackChangedLineDto> restatementChangedLines,
         IReadOnlyList<ReportPackEvidenceLinkDto> restatementEvidenceLinks,
+        ReportBrandingThemeDto? brandingTheme,
         string versionStamp)
     {
         var rows = BuildDeliveryArtifactRows(
@@ -831,6 +838,7 @@ public sealed class ReportPackDeliveryService
             restatementApprover,
             restatementChangedLines,
             restatementEvidenceLinks,
+            brandingTheme,
             versionStamp);
 
         return format switch
@@ -947,6 +955,7 @@ public sealed class ReportPackDeliveryService
         string? restatementApprover,
         IReadOnlyList<ReportPackChangedLineDto> restatementChangedLines,
         IReadOnlyList<ReportPackEvidenceLinkDto> restatementEvidenceLinks,
+        ReportBrandingThemeDto? brandingTheme,
         string versionStamp)
     {
         var rows = new List<KeyValuePair<string, string>>
@@ -970,6 +979,14 @@ public sealed class ReportPackDeliveryService
             new("restatementApprover", restatementApprover ?? ""),
             new("restatementChangedLineCount", restatementChangedLines.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)),
             new("restatementEvidenceLinkCount", restatementEvidenceLinks.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+            new("brandingThemeId", brandingTheme?.ThemeId ?? ""),
+            new("brandingThemeName", brandingTheme?.Name ?? ""),
+            new("brandingFirmName", brandingTheme?.FirmName ?? ""),
+            new("brandingPrimaryColor", brandingTheme?.PrimaryColor ?? ""),
+            new("brandingAccentColor", brandingTheme?.AccentColor ?? ""),
+            new("brandingLogoUri", brandingTheme?.LogoUri ?? ""),
+            new("brandingFooterText", brandingTheme?.FooterText ?? ""),
+            new("brandingDisclaimer", brandingTheme?.Disclaimer ?? ""),
             new("versionStamp", versionStamp)
         };
 

@@ -213,7 +213,8 @@ public sealed record PortfolioReportingLiveViewDto(
     string TelemetrySummary,
     IReadOnlyList<string> Tags,
     string? CashLadderRoute = null,
-    string? VersionStamp = null);
+    string? VersionStamp = null,
+    IReadOnlyList<string>? ReadinessBlockers = null);
 
 [JsonConverter(typeof(JsonStringEnumConverter<PortfolioReportingPnlSlicePeriodDto>))]
 public enum PortfolioReportingPnlSlicePeriodDto
@@ -859,7 +860,8 @@ public sealed record ReportPackDeliveryPackageDto(
     string? RestatementApprover = null,
     IReadOnlyList<ReportPackChangedLineDto>? RestatementChangedLines = null,
     IReadOnlyList<ReportPackEvidenceLinkDto>? RestatementEvidenceLinks = null,
-    ReportPackDeliveryEvidencePacketDto? DeliveryEvidencePacket = null);
+    ReportPackDeliveryEvidencePacketDto? DeliveryEvidencePacket = null,
+    ReportBrandingThemeDto? BrandingTheme = null);
 
 public sealed record ReportPackDeliveryAttemptDto(
     Guid AttemptId,
@@ -1253,7 +1255,8 @@ public sealed record ReportPackPublicationManifestDto(
     string EvidenceHash,
     string SignedOffBy,
     DateTimeOffset SignedOffAt,
-    IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks);
+    IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks,
+    ReportBrandingThemeDto? BrandingTheme = null);
 /// <summary>Request payload for publishing an approved report pack into retained evidence storage.</summary>
 public sealed record ReportPackPublishRequestDto(
     string SignedOffBy,
@@ -1261,7 +1264,8 @@ public sealed record ReportPackPublishRequestDto(
     string ManifestId,
     string RetainedManifestPath,
     IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks,
-    string? Note = null);
+    string? Note = null,
+    ReportBrandingThemeDto? BrandingTheme = null);
 /// <summary>Request payload for rejecting an in-review report pack with reviewer metadata and supporting evidence.</summary>
 public sealed record ReportPackRejectRequestDto(
     string Reason,

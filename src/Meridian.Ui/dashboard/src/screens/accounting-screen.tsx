@@ -11,12 +11,14 @@ import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/se
 import {
   approveOperationsContinuityWorkflow,
   getAccountingSystemProviders,
+  getFinancialRecordExplorer,
   getLatestAccountingSystemImport,
   getLatestAccountingSystemReconciliation,
   getOperationsContinuityWorkflow,
   getOperationsContinuityWorkflows,
   previewAccountingSystemImport,
-  rejectOperationsContinuityWorkflow
+  rejectOperationsContinuityWorkflow,
+  saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
@@ -65,6 +67,8 @@ import type {
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
   AccountingWorkspaceResponse,
+  FinancialRecordExplorer,
+  FinancialRecordExplorerSavedViewSaveRequest,
   MultiAssetCoverageSummary,
   OperationsApproval,
   OperationsApprovalState,
@@ -992,6 +996,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const [closeWorkflow, setCloseWorkflow] = useState<OperationsContinuityWorkflow | null>(null);
   const [closeWorkflowLoading, setCloseWorkflowLoading] = useState(false);
   const [closeWorkflowError, setCloseWorkflowError] = useState<string | null>(null);
+  const [ledgerExplorer, setLedgerExplorer] = useState<FinancialRecordExplorer | null>(null);
+  const [securityInstrumentExplorer, setSecurityInstrumentExplorer] = useState<FinancialRecordExplorer | null>(null);
   const identity = securityMaster.identityView;
   const selectedSecurityEntry = securityMaster.selectedSecurityId
     ? securityMaster.results?.find((entry) => entry.securityId === securityMaster.selectedSecurityId) ?? null
@@ -1039,6 +1045,44 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const activeResolveBreak = resolveDialog.active
     ? reconciliation.rows.find((item) => item.breakId === resolveDialog.active?.breakId) ?? null
     : null;
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void Promise.allSettled([
+      getFinancialRecordExplorer("ledger", { signal: controller.signal }),
+      getFinancialRecordExplorer("security-instrument", { signal: controller.signal })
+    ]).then(([ledgerResult, securityResult]) => {
+      if (controller.signal.aborted) {
+        return;
+      }
+
+      if (ledgerResult.status === "fulfilled") {
+        setLedgerExplorer(ledgerResult.value);
+      }
+
+      if (securityResult.status === "fulfilled") {
+        setSecurityInstrumentExplorer(securityResult.value);
+      }
+    });
+
+    return () => controller.abort();
+  }, []);
+
+  function saveAccountingExplorerView(explorerId: string, request: FinancialRecordExplorerSavedViewSaveRequest) {
+    return saveFinancialRecordExplorerView(explorerId, request)
+      .then((savedView) => {
+        const refresh = getFinancialRecordExplorer(explorerId);
+        return refresh.then((updatedExplorer) => {
+          if (explorerId === "ledger") {
+            setLedgerExplorer(updatedExplorer);
+          } else if (explorerId === "security-instrument") {
+            setSecurityInstrumentExplorer(updatedExplorer);
+          }
+
+          return savedView;
+        });
+      });
+  }
   const reconciliationBreakTableColumns: DenseDataTableColumn<ReconciliationBreakRowViewModel>[] = [
     ...reconciliationBreakColumns,
     {
@@ -1709,6 +1753,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
 
       {workstream === "ledger" && selectedReconciliation ? (
         <FinancialRecordExplorerShell
+          explorer={ledgerExplorer}
           explorerLabel="Financial Record Explorer"
           title="Ledger Explorer"
           titleId="accounting-ledger-explorer-title"
@@ -1762,6 +1807,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
               ariaLabel: reconciliation.detailActions?.auditPacketAriaLabel
             }
           ]}
+          onSaveView={(request) => saveAccountingExplorerView("ledger", request)}
         >
         <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
           <Card aria-labelledby="trial-balance-title" aria-describedby="trial-balance-description" className="panel-surface">
@@ -2255,6 +2301,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       {/* --- Security Master panel (shown when security-master workstream is active) --- */}
       {workstream === "security-master" && (
         <FinancialRecordExplorerShell
+          explorer={securityInstrumentExplorer}
           explorerLabel="Financial Record Explorer"
           title="Security & Instrument Explorer"
           titleId="accounting-security-master-explorer-title"
@@ -2315,6 +2362,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
               ariaLabel: securityMaster.selectedSecurityId ? "Open selected Security Master record detail" : undefined
             }
           ]}
+          onSaveView={(request) => saveAccountingExplorerView("security-instrument", request)}
         >
         <section className="space-y-6">
           <section className="panel-surface-strong space-y-4 p-5" aria-label={securityMaster.pageView.ariaLabel}>

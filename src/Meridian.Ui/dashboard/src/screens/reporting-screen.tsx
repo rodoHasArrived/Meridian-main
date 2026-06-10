@@ -1020,6 +1020,16 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                     </dl>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{view.liquiditySummary}</p>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{view.telemetrySummary}</p>
+                    {(view.readinessBlockers ?? []).length > 0 ? (
+                      <ul aria-label={`${view.label} readiness blockers`} className="mt-2 space-y-1 text-xs text-destructive">
+                        {(view.readinessBlockers ?? []).map((blocker) => (
+                          <li key={blocker} className="flex gap-1.5 leading-5">
+                            <XCircle className="mt-0.5 h-3.5 w-3.5 flex-none" aria-hidden="true" />
+                            <span>{blocker}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
                     <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">
                       {view.sourceCount} source{view.sourceCount === 1 ? "" : "s"} · {view.sourceAsOfUtc ?? view.asOf}
                     </p>

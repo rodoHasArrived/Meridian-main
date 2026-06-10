@@ -86,8 +86,8 @@ export evidence, and restatement lineage. Keep these categories shared so browse
 accounting-record review surfaces do not derive audit readiness or evidence grouping independently.
 Report-pack delivery packages also expose a contract-owned delivery evidence packet that binds the
 stakeholder recipient, entitlement scope, approval chain, publication manifest, report-line
-provenance, delivery artifacts, request history, and restatement lineage into one reconstructable
-proof object.
+provenance, selected branding theme, delivery artifacts, request history, and restatement lineage
+into one reconstructable proof object.
 The shared audit-pack readiness model exposes completeness, missing category keys, warnings,
 evidence-category summaries, measured generation seconds, a 60-second SLA target, and SLA pass/fail
 posture. Older report-pack manifests may omit readiness; clients must treat that as unknown or
@@ -155,9 +155,10 @@ Delivered report-pack attempts can also carry `ReportPackDeliveryPackageDto`, in
 delivery mode, secure link or portal route, retained manifest path, requested PDF/XLSX/CSV
 formats, retained artifact metadata, artifact SHA-256 checksums, artifact version stamps, the
 publication evidence hash used for package integrity summaries, optional publication manifest
-metadata, publication evidence links, and retained line provenance. Keep those package fields shared
-so email-link, secure portal, evidence-vault, and internal-route distribution clients do not infer
-report package output or integrity from delivery-reference strings. The shared route catalog
+metadata, publication evidence links, retained line provenance, retained branding metadata, and restatement reason, prior
+version, approver, changed-line, and evidence-link metadata. Keep those package fields shared so
+email-link, secure portal, evidence-vault, and internal-route distribution clients do not infer
+report package output, integrity, or amendment lineage from delivery-reference strings. The shared route catalog
 includes both the token-gated package manifest URL under
 `/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/package` and the
 secure-portal package URL under `/portal/reporting/packages/{packageId}`. Package artifacts can
@@ -165,7 +166,8 @@ also carry token-gated `DownloadRoute` values under
 `/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/artifacts/{artifactName}`
 so clients download retained PDF/XLSX/CSV outputs from the shared package contract instead of
 building artifact URLs locally; downloaded artifacts include package identity, publication manifest
-fields, publication evidence links, and report-line provenance for downstream audit review.
+fields, publication evidence links, report-line provenance, and restatement lineage for downstream
+audit review.
 `ReportingScheduleDeliveryPlanDto` also carries contract-owned `ReadinessBlockers` beside
 `IsReady` and `ReadinessSummary`, so clients can fail closed when a scheduled recipient is inactive,
 overdue without a retained package, configured with an incompatible email-link/portal/vault/internal
@@ -183,10 +185,10 @@ strategy, and user-tag views. These rows carry exposure, cash, P&L, shadow-NAV, 
 source-count, evidence-route, and version-stamp fields so Reporting clients can show portfolio
 cuts without recalculating portfolio or NAV state locally.
 `PortfolioReportingLiveViewDto` extends those cuts with shared live-summary routes, source-backed
-freshness state, liquidity summaries, optional run cash-ladder routes, and telemetry copy. Clients
-must render the `LiveLinked`, `SourceBacked`, `Stale`, or `Blocked` state from the contract instead
-of implying live market ticks when the shared source evidence is missing or stale. `LiveLinked`
-is reserved for source snapshots inside the server-owned live freshness window; older retained
+freshness state, liquidity summaries, optional run cash-ladder routes, telemetry copy, and
+structured `ReadinessBlockers`. Clients must render the `LiveLinked`, `SourceBacked`, `Stale`, or
+`Blocked` state from the contract instead of implying live market ticks when the shared source
+evidence is missing or stale. `LiveLinked` is reserved for source snapshots inside the server-owned live freshness window; older retained
 snapshots remain `SourceBacked` until they cross the stale threshold.
 `PortfolioReportingPnlSliceDto` carries daily, weekly, monthly, and yearly P&L rows derived from
 retained portfolio run timestamps. Rows include current/prior period totals, realized/unrealized
@@ -219,8 +221,10 @@ format sets, email-link or secure-portal mode, readiness text, due/as-of posture
 delivery attempt metadata, latest package artifact counts, checksum integrity summaries, and
 version stamps.
 `FundReportPackGenerateRequestDto` accepts either a `BrandingThemeId` or validated
-`BrandingThemeOverride`, so browser, WPF, distribution, and retained-artifact readers consume the
-same branding contract instead of inventing presentation metadata locally.
+`BrandingThemeOverride`, and `ReportPackPublishRequestDto` can retain that selected
+`ReportBrandingThemeDto` on the publication manifest for downstream packages. Browser, WPF,
+distribution, and retained-artifact readers therefore consume the same branding contract instead
+of inventing presentation metadata locally.
 Report template contracts now also carry the governed authoring lifecycle for built-in and custom
 template versions: draft requests, review submission, approval/rejection decisions, immutable
 built-in markers, latest-approved posture, validation issues, approval references, and audit events.

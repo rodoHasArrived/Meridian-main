@@ -351,7 +351,9 @@ liquidity text, and links single-run strategy cuts to `/api/portfolio/{runId}/ca
 cash-ladder evidence. Fresh source snapshots inside the server live freshness window are emitted as
 `LiveLinked`; older retained snapshots remain `SourceBacked` until they cross the 24-hour stale
 threshold. Rows fail closed as `Blocked` when no fund account or portfolio run source backs the
-reporting view.
+reporting view. Live-view rows also emit structured readiness blockers for missing sources, stale
+or not-live-linked snapshots, and pending settlement without cash-ladder evidence, so clients can
+show delivery readiness without parsing telemetry copy.
 It also projects `pnlSlices` for daily, weekly, monthly, and yearly P&L from retained portfolio run
 timestamps. Each row carries realized/unrealized/current/prior/change values, source counts,
 readiness text, a shared `/api/workstation/reporting?pnlSlice=...` route, and deterministic version
@@ -383,6 +385,9 @@ and hex colors, persists the selected theme on generated report-pack snapshots a
 applies the same theme to generated HTML, PDF text, and the XLSX `Branding` worksheet. That keeps
 logos, colors, footer copy, disclaimers, and firm identity attached to the retained package artifact
 instead of the browser view.
+`ReportPackWorkflowService` can also retain that selected `ReportBrandingThemeDto` on the
+publication manifest, so downstream delivery packages use publication-approved branding metadata
+rather than accepting delivery-time restyling.
 `ReportPackRunReadService` derives `scheduleDeliveryPlans` from retained reporting schedules,
 distribution policies, and delivery attempts so browser and desktop clients can show which scheduled
 packs will deliver by email link, secure portal, evidence vault, or internal route without
@@ -394,14 +399,17 @@ state, and last-sent timestamps instead of static distribution placeholders. Del
 also receive deterministic package metadata with default PDF/XLSX/CSV artifacts, retained-package
 paths, artifact SHA-256 checksums, artifact version stamps, publication evidence hashes, integrity
 summaries, publication manifest fields, publication evidence links, retained line provenance,
-stakeholder delivery evidence packets, secure email-link or portal URLs, and delivery-mode inference
-for portal, vault, and internal-route channels; callers can override the mode and requested formats
-in `ReportPackDeliveryRequestDto`.
+publication-approved branding metadata, restatement reason, prior-version, approver, changed-line,
+and evidence-link metadata, stakeholder delivery evidence packets, secure email-link or portal
+URLs, and delivery-mode inference for portal, vault, and internal-route channels; callers can
+override the mode and requested formats in `ReportPackDeliveryRequestDto`.
 Generated package downloads rebuild CSV, XLSX, HTML, and PDF artifacts from that retained package
-metadata, so recipients receive report-line provenance and publication evidence in the downloaded
-files instead of package identifiers only. The shared delivery evidence packet carries recipient and
-entitlement scope, approval chain, request history, publication manifest, report-line provenance,
-retained delivery evidence, and restatement lineage for the Version 0.18 operational proof layer.
+metadata, so recipients receive report-line provenance, publication evidence, selected branding,
+and restatement changed-line lineage in the downloaded files instead of package identifiers only.
+The shared delivery evidence packet carries recipient and entitlement scope, approval chain,
+request history, publication manifest, report-line provenance, retained delivery evidence,
+branding-theme package contents, and restatement lineage for the Version 0.18 operational proof
+layer.
 Schedule delivery plan rows project explicit readiness
 blockers, the latest retained package artifact count, and the integrity summary, so clients can
 show recipient/package readiness without fetching package manifests or inferring failure reasons

@@ -244,6 +244,11 @@ public static class WorkstationServiceCollectionExtensions
         });
         services.TryAddSingleton<LedgerAmountProvenanceService>();
         services.TryAddSingleton<FundOperationsWorkspaceReadService>();
+        services.TryAddSingleton<IFinancialRecordExplorerSavedViewStore>(sp =>
+            new FileFinancialRecordExplorerSavedViewStore(
+                ResolveWorkstationDataDirectory(sp),
+                sp.GetRequiredService<ILogger<FileFinancialRecordExplorerSavedViewStore>>()));
+        services.TryAddSingleton<FinancialRecordExplorerReadService>();
         services.TryAddSingleton(sp => new FamilyOfficeReadService(
             sp.GetService<IFundStructureService>(),
             sp.GetService<Meridian.PortfolioRecords.FundAccounts.IFundAccountService>(),

@@ -134,6 +134,9 @@ import type {
   ExecutionManualOverride,
   UpdateExecutionPositionLimitRequest,
   FeatureCapabilitySettingsResponse,
+  FinancialRecordExplorer,
+  FinancialRecordExplorerSavedViewDto,
+  FinancialRecordExplorerSavedViewSaveRequest,
   LedgerMappingAssignmentRequest,
   LedgerMappingAssignmentResult,
   LedgerMappingWorkbench,
@@ -289,6 +292,8 @@ import {
   workstationEvidenceGraphEndpoint,
   workstationEvidencePacketEndpoint,
   workstationEvidenceValidateEndpoint,
+  workstationFinancialRecordExplorerEndpoint,
+  workstationFinancialRecordExplorerSavedViewsEndpoint,
   workstationAssetOperationsEndpoint,
   workstationOperatorInboxEndpoint,
   workstationOperationsContinuityApprovalApproveEndpoint,
@@ -631,6 +636,22 @@ export function getWorkflowPresets(options: ApiRequestOptions = {}) {
 
 export function getFeatureCapabilities(options: ApiRequestOptions = {}) {
   return getJson<FeatureCapabilitySettingsResponse>(WORKSTATION_API_ENDPOINTS.featureCapabilities, options);
+}
+
+export function getFinancialRecordExplorer(explorerId: string, options: ApiRequestOptions = {}) {
+  return getJson<FinancialRecordExplorer>(workstationFinancialRecordExplorerEndpoint(explorerId), options);
+}
+
+export function saveFinancialRecordExplorerView(
+  explorerId: string,
+  request: FinancialRecordExplorerSavedViewSaveRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<FinancialRecordExplorerSavedViewDto>(
+    workstationFinancialRecordExplorerSavedViewsEndpoint(explorerId),
+    request,
+    options
+  );
 }
 
 export function getRolePermissionCatalog(options: ApiRequestOptions = {}) {

@@ -37,6 +37,162 @@ export interface FeatureCapabilityToggleRequest {
   isEnabled: boolean;
 }
 
+export type FinancialRecordExplorerTone = "default" | "success" | "warning" | "danger";
+
+export interface FinancialRecordExplorer {
+  explorerId: string;
+  explorerLabel: string;
+  title: string;
+  description: string;
+  workspaceId: string;
+  recordSetLabel: string;
+  isBlocked: boolean;
+  blockedReason: string | null;
+  emptyTitle: string;
+  emptyDetail: string;
+  scopeItems: FinancialRecordExplorerScopeItemDto[];
+  savedViews: FinancialRecordExplorerSavedViewDto[];
+  summaryItems: FinancialRecordExplorerSummaryItemDto[];
+  filters: FinancialRecordExplorerFilterDto[];
+  columns: FinancialRecordExplorerColumnDto[];
+  rows: FinancialRecordExplorerRowDto[];
+  selectedRecord: FinancialRecordExplorerSelectedRecordDto | null;
+  recordGraph: FinancialRecordExplorerRecordGraphDto;
+  usedIn: FinancialRecordExplorerRelationshipDto[];
+  impacts: FinancialRecordExplorerRelationshipDto[];
+}
+
+export interface FinancialRecordExplorerScopeItemDto {
+  id: string;
+  label: string;
+  value: string;
+}
+
+export interface FinancialRecordExplorerSavedViewDto {
+  savedViewId: string;
+  name: string;
+  description: string | null;
+  filters: FinancialRecordExplorerFilterDto[];
+  columnIds: string[];
+  isSystem: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FinancialRecordExplorerSummaryItemDto {
+  id: string;
+  label: string;
+  value: string;
+  tone: FinancialRecordExplorerTone;
+}
+
+export interface FinancialRecordExplorerFilterDto {
+  id: string;
+  label: string;
+  value: string;
+  operator: string;
+  isActive: boolean;
+}
+
+export interface FinancialRecordExplorerColumnDto {
+  columnId: string;
+  header: string;
+  valueType: string;
+  width: number;
+  isKey: boolean;
+  isSortable: boolean;
+}
+
+export interface FinancialRecordExplorerCellDto {
+  columnId: string;
+  value: string;
+  displayValue: string | null;
+  tone: FinancialRecordExplorerTone;
+  href: string | null;
+}
+
+export interface FinancialRecordExplorerRowDto {
+  recordId: string;
+  recordType: string;
+  label: string;
+  status: string;
+  tone: FinancialRecordExplorerTone;
+  cells: FinancialRecordExplorerCellDto[];
+  detail: FinancialRecordExplorerSelectedRecordDto;
+}
+
+export interface FinancialRecordExplorerSelectedRecordDto {
+  recordId: string;
+  recordType: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  status: string;
+  tone: FinancialRecordExplorerTone;
+  fullRecordRoute: string | null;
+  fields: FinancialRecordExplorerFieldDto[];
+  proofActions: FinancialRecordExplorerProofActionDto[];
+  recordGraph: FinancialRecordExplorerRecordGraphDto;
+  usedIn: FinancialRecordExplorerRelationshipDto[];
+  impacts: FinancialRecordExplorerRelationshipDto[];
+}
+
+export interface FinancialRecordExplorerFieldDto {
+  label: string;
+  value: string;
+  detail: string | null;
+  tone: FinancialRecordExplorerTone;
+}
+
+export interface FinancialRecordExplorerProofActionDto {
+  actionId: string;
+  label: string;
+  href: string | null;
+  method: string;
+  isEnabled: boolean;
+  disabledReason: string | null;
+  kind: string;
+}
+
+export interface FinancialRecordExplorerRecordGraphDto {
+  nodes: FinancialRecordExplorerGraphNodeDto[];
+  edges: FinancialRecordExplorerGraphEdgeDto[];
+}
+
+export interface FinancialRecordExplorerGraphNodeDto {
+  nodeId: string;
+  label: string;
+  nodeType: string;
+  tone: FinancialRecordExplorerTone;
+  href: string | null;
+}
+
+export interface FinancialRecordExplorerGraphEdgeDto {
+  edgeId: string;
+  sourceNodeId: string;
+  targetNodeId: string;
+  label: string;
+}
+
+export interface FinancialRecordExplorerRelationshipDto {
+  relationshipId: string;
+  label: string;
+  targetType: string;
+  targetId: string;
+  detail: string;
+  href: string | null;
+  tone: FinancialRecordExplorerTone;
+}
+
+export interface FinancialRecordExplorerSavedViewSaveRequest {
+  savedViewId?: string | null;
+  name: string;
+  description?: string | null;
+  filters?: FinancialRecordExplorerFilterDto[] | null;
+  columnIds?: string[] | null;
+}
+
 export type LedgerMappingSource =
   | "AccountAssignment"
   | "InvestmentPortfolioAssignment"
@@ -2612,6 +2768,7 @@ export interface PortfolioReportingLiveView {
   tags: string[];
   cashLadderRoute: string | null;
   versionStamp: string | null;
+  readinessBlockers?: string[] | null;
 }
 
 export interface PortfolioReportingPnlSlice {

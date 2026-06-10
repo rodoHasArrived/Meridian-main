@@ -630,6 +630,11 @@ public partial class App : System.Windows.Application
         services.AddSingleton<NavAttributionService>();
         services.AddSingleton<ReportGenerationService>();
         services.AddSingleton<FundOperationsWorkspaceReadService>();
+        services.AddSingleton<IFinancialRecordExplorerSavedViewStore>(sp =>
+            new FileFinancialRecordExplorerSavedViewStore(
+                ResolveWpfWorkstationDataDirectory(sp),
+                sp.GetRequiredService<ILogger<FileFinancialRecordExplorerSavedViewStore>>()));
+        services.AddSingleton<FinancialRecordExplorerReadService>();
         services.AddSingleton<ISecurityMasterOperatorWorkflowClient, SecurityMasterOperatorWorkflowClient>();
         services.AddSingleton<WpfServices.StrategyRunWorkspaceService>(sp =>
         {
@@ -640,6 +645,28 @@ public partial class App : System.Windows.Application
             WpfServices.StrategyRunWorkspaceService.SetInstance(service);
             return service;
         });
+    }
+
+    private static string ResolveWpfWorkstationDataDirectory(IServiceProvider services)
+    {
+        var configService = services.GetService<WpfServices.ConfigService>();
+        if (configService is not null)
+        {
+            try
+            {
+                var config = configService.LoadConfigAsync().GetAwaiter().GetResult();
+                return Path.Combine(configService.ResolveDataRoot(config), "workstation");
+            }
+            catch
+            {
+                // Fall through to the user-local workstation path when config is unavailable.
+            }
+        }
+
+        return Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Meridian",
+            "workstation");
     }
 
     private static int ParseInt(string name, int defaultValue)

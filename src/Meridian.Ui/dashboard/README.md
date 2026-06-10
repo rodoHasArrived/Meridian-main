@@ -152,7 +152,9 @@ reporting views. The browser shows exposure, cash, P&L, shadow-NAV, variance, so
 version stamp from the backend payload instead of recomputing those cuts in React.
 It also renders shared `livePortfolioViews` rows for tick-linked portfolio reporting. React shows
 the backend-owned live/source-backed/stale/blocked state, liquidity and telemetry copy, and links to
-the portfolio-summary and cash-ladder routes rather than deriving live freshness locally. The
+the portfolio-summary and cash-ladder routes rather than deriving live freshness locally. React also
+renders backend-owned readiness blockers for missing source evidence, stale snapshots, and pending
+settlement without cash-ladder proof instead of parsing telemetry copy for delivery gating. The
 Reporting route participates in the same portfolio refresh lane as Portfolio so the server-owned
 `livePortfolioViews` payload is refreshed with the source portfolio evidence while preserving
 backend freshness classification.
@@ -209,7 +211,10 @@ show the shared package mode, requested artifact formats, secure link, retained 
 token-gated package artifact download links when the backend includes
 `ReportPackDeliveryPackageDto`; app-relative secure links render as anchors so operators can open
 the token-gated email-link or secure-portal package manifest, while artifact `DownloadRoute` values
-render as direct retained PDF/XLSX/CSV links. When a schedule targets a custom report-writer
+render as direct retained PDF/XLSX/CSV links. The browser type contract also carries the shared
+delivery evidence packet so recipient, entitlement, approval-chain, retained-evidence, request,
+and restatement proof stay backend-owned when Reporting surfaces later render those details. When a
+schedule targets a custom report-writer
 template that has not produced a published report-pack workflow record, those package rows still
 render because the backend now falls back to the generated reporting run and includes its retained
 manifest/report-writer artifact provenance on the delivery package; the browser renders the
