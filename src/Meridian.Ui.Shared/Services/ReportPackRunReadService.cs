@@ -49,8 +49,15 @@ public sealed class ReportPackRunReadService
             .ToDictionary(static group => group.Key, static group => group.First().Family, StringComparer.OrdinalIgnoreCase);
         var workflowRecords = FilterWorkflowRecords(_workflowService?.ListRecords(200) ?? [], accessContext);
         var runs = BuildRecentRuns(Math.Clamp(recentRunLimit, 1, 200), familyByTemplate, workflowRecords);
-        var deliveryAttempts = _deliveryService?.ListAttempts(500) ?? [];
-        var schedules = _scheduleService?.ListSchedules(100) ?? [];
+        var deliveryAttempts = FilterDeliveryAttempts(
+            _deliveryService?.ListAttempts(500) ?? [],
+            accessContext,
+            templates,
+            workflowRecords);
+        var schedules = FilterSchedules(
+            _scheduleService?.ListSchedules(100) ?? [],
+            accessContext,
+            templates);
         var scheduleDeliveryPlans = BuildScheduleDeliveryPlans(schedules, deliveryAttempts);
         var distributions = BuildDistributionRecords(workflowRecords, deliveryAttempts);
         var pendingDistributionCount = distributions.Count(static distribution => distribution.PendingItems > 0);
@@ -132,6 +139,51 @@ public sealed class ReportPackRunReadService
 
         return records
             .Where(record => IsAccessible(record.AccessPolicy, accessContext))
+            .ToArray();
+    }
+
+    private static IReadOnlyList<ReportingScheduleRecordDto> FilterSchedules(
+        IReadOnlyList<ReportingScheduleRecordDto> schedules,
+        ReportAccessQueryContext? accessContext,
+        IReadOnlyList<WorkstationReportingTemplatePayload> visibleTemplates)
+    {
+        if (accessContext is null)
+        {
+            return schedules;
+        }
+
+        var visibleTemplateIds = visibleTemplates
+            .Where(static template => template.IsAccessible)
+            .Select(static template => template.TemplateId)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return schedules
+            .Where(schedule => visibleTemplateIds.Contains(schedule.TemplateId))
+            .ToArray();
+    }
+
+    private static IReadOnlyList<ReportPackDeliveryAttemptDto> FilterDeliveryAttempts(
+        IReadOnlyList<ReportPackDeliveryAttemptDto> attempts,
+        ReportAccessQueryContext? accessContext,
+        IReadOnlyList<WorkstationReportingTemplatePayload> visibleTemplates,
+        IReadOnlyList<ReportPackWorkflowRecordDto> visibleWorkflowRecords)
+    {
+        if (accessContext is null)
+        {
+            return attempts;
+        }
+
+        var visibleTemplateIds = visibleTemplates
+            .Where(static template => template.IsAccessible)
+            .Select(static template => template.TemplateId)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var visibleReportIds = visibleWorkflowRecords
+            .Select(static record => record.ReportId)
+            .ToHashSet();
+        return attempts
+            .Where(attempt =>
+                visibleReportIds.Contains(attempt.ReportId)
+                || (!string.IsNullOrWhiteSpace(attempt.Package?.ReportingTemplateId)
+                    && visibleTemplateIds.Contains(attempt.Package.ReportingTemplateId)))
             .ToArray();
     }
 

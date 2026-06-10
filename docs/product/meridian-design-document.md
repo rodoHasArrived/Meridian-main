@@ -1,9 +1,9 @@
-# Meridian Design Document — Version 0.16
+# Meridian Design Document — Version 0.18
 
 **Status:** canonical  
 **Owner:** core-team  
 **Reviewed:** 2026-06-09
-**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.16 extends the roadmap and source-module registry evidence with the v0.15 accounting records package plus current Carta Fund ERP, Carta Data Warehouse, Carta Management Company Administration, FundStudio fund administrator, FundStudio managed-services, FundStudio general-ledger/accounting, and Modern Treasury ledger research.
+**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.16 extends the roadmap and source-module registry evidence with the v0.15 accounting records package plus current Carta Fund ERP, Carta Data Warehouse, Carta Management Company Administration, FundStudio fund administrator, FundStudio managed-services, FundStudio general-ledger/accounting, and Modern Treasury ledger research. Version 0.17 adds the shared Financial Record Explorer productization target from `C:\Users\Andrew James Rowden\.codex\attachments\e76a7c8a-33a1-45f6-bf2e-036d6635920d\pasted-text.txt`. Version 0.18 incorporates the operational proof layer market-gap update from `C:\Users\Andrew James Rowden\.codex\attachments\7c4bee43-4269-4284-8747-2bdeadf0287b\pasted-text.txt`.
 
 ## 1. Product Vision
 
@@ -16,6 +16,10 @@ The current product scope is deliberately narrower than the full long-term domai
 ### Core Vision Statement
 
 > Meridian helps financial operations professionals transform fragmented financial data into trusted, auditable operational outcomes.
+
+Meridian should not merely show an operational number. It should prove the number by preserving the
+chain from source evidence through normalization, validation, reconciliation, ledger impact,
+capital-account impact, report usage, delivery evidence, and audit history.
 
 ### Core User Objective
 
@@ -37,10 +41,12 @@ roadmap registry explicitly moves them into scope.
 
 Meridian should draw product inspiration from adjacent private-capital, fund-administration, and
 treasury-ledger platforms without copying their product boundaries or making unverified
-implementation claims. Research checked on 2026-06-08 points to useful operational patterns:
+implementation claims. Research checked on 2026-06-08 and continued on 2026-06-09 points to useful
+operational patterns:
 connected fund records, event-based fund accounting, stakeholder-ready evidence, management-company
-administration, real-time portfolio control, administrator-grade close discipline, and
-treasury-grade ledger invariants.
+administration, real-time portfolio control, administrator-grade close discipline,
+treasury-grade ledger invariants, document-to-accounting evidence, private-capital close control,
+admin-neutral verification, governed automation, and cross-domain proof chains.
 
 | Reference | Useful Product Pattern | Meridian Translation |
 | --- | --- | --- |
@@ -54,7 +60,7 @@ operator evidence. Those remain separate product decisions unless the roadmap mo
 
 ### External Functionality Translation Requirements
 
-Carta and FundStudio should translate into Meridian-owned software capabilities, not copied service
+External offerings should translate into Meridian-owned software capabilities, not copied service
 promises:
 
 * Fund events should become first-class operational records: formation/closing, subscription packet,
@@ -80,6 +86,24 @@ promises:
 * AI or agent-like automation is acceptable only as reviewed discrepancy detection, extraction, or
   draft-preparation assistance; it cannot bypass operator approval, evidence, ledger controls, or
   period locks.
+* Fund events should become end-to-end operating objects that connect evidence, workflow, treasury,
+  ledger, capital accounts, reconciliation, reporting, delivery, tax, and audit impact.
+* Shadow accounting and administrator tie-outs should be evidence-native: every variance needs
+  source records, a root-cause explanation, reviewer state, ledger impact, close effect, and report
+  effect before it can be treated as resolved.
+* Private-capital close support should connect data receipt, reconciliation, journals, capital
+  accounts, valuation support, NAV tie-out, investor statements, package delivery, and period locks
+  into one readiness model.
+* Document extraction should become accounting-grade evidence only after it is validated, linked to
+  fund events or journals, reviewed, and frozen into close, tax, audit, or reporting manifests.
+* Reconciliation should act as a close-blocking operating control: exceptions must expose owner,
+  SLA, materiality, root cause, supporting evidence, approval state, and the specific NAV, close,
+  capital-account, tax, audit, or report outputs they block.
+* Payment work should begin as payment intent and cash evidence, not premature live execution:
+  request, approval, expected cash movement, bank confirmation, ledger intent, reconciliation, and
+  report linkage are the near-term product surface.
+* Authority must be scoped by tenant, organization, fund, legal entity, account, book, period,
+  document, report package, delivery record, amount limit, and segregation-of-duties posture.
 
 ---
 
@@ -2170,6 +2194,172 @@ The treasury-ledger model becomes a product design rule for accounting and money
 every cash, settlement, capital-activity, fee, valuation, and close-related posting should be
 traceable through immutable, idempotent, double-entry journal records with explicit source evidence,
 approval state, period-close posture, and reversal lineage.
+
+### v0.17 Product Direction Addendum: Shared Financial Record Explorers
+
+The v0.17 design direction turns the W1-W5 operational-record baseline into a reusable operator
+surface pattern. Meridian should provide a family of dedicated Financial Record Explorers instead
+of isolated one-off tables:
+
+| Workspace | Explorer | Primary record focus |
+| --- | --- | --- |
+| Accounting | Ledger Explorer | Journal entries, ledger detail, account activity, trial balance, fund-event impact, capital-account impact, cash ledger, adjustments, close activity, and report usage |
+| Portfolio | Portfolio Explorer | Holdings, positions, transactions, lots, cost basis, cash flows, valuations, income and accruals, exposure, reconciliation status, ledger impact, and report usage |
+| Portfolio / Data | Security & Instrument Explorer | Instruments, held securities, identifier maps, terms, obligations, valuation inputs, source conflicts, corporate actions, accounting classification, and evidence coverage |
+
+Each explorer should use the same interaction model: scope the record set, choose or save a view,
+filter the grid, review summary signals, select a row, inspect a right-side proof drawer, open the
+full record page only when deeper review is needed, and drill into evidence, reconciliation, ledger,
+report, approval, and audit impact without losing the original context.
+
+The standard depth model is:
+
+| Level | UI pattern | Purpose |
+| --- | --- | --- |
+| 1 | Explorer grid | Find, filter, group, sort, export, and compare records quickly. |
+| 2 | Side drawer or proof panel | Inspect a selected row without leaving the grid. |
+| 3 | Full record page | Review approvals, evidence, history, related records, and protected actions. |
+
+The shared explorer shell should include:
+
+* scope bar for tenant, fund, legal entity, portfolio, account, book, period, currency, and as-of date where applicable
+* saved-view selector surfaced near the top, not hidden inside advanced filters
+* visible basic filters plus an advanced filter drawer
+* applied filter chips that can be removed quickly
+* summary strip for totals, counts, exceptions, unreconciled items, blockers, stale values, and missing evidence
+* dense but configurable grid with default and optional columns
+* column chooser, grouping, export policy, row actions, and saved column layouts
+* right-side record drawer with action links into evidence, reconciliation, ledger, report usage, and audit trail
+* full record page with record header, proof ribbon, summary cards, tabs, proof panel, audit timeline, Used In, Impacts, and Record Graph sections
+
+Record Graph does not need to be visually elaborate in the first slice. A structured tree is enough
+when it clearly shows how a fund event, journal, position, instrument, cash flow, report line,
+evidence document, approval, and audit event are connected.
+
+The browser workstation should emphasize review, navigation, saved views, drill-through, and
+manager/controller flows. The WPF desktop should emphasize high-density workpaper modes, bulk
+review, frozen columns, large reconciliation or journal grids, import validation, and evidence
+review. Both surfaces must share filters, saved views, status definitions, proof-ribbon states,
+record identifiers, audit events, evidence links, approval states, and read models. Presentation can
+differ; business state cannot.
+
+The implementation sequence should stay conservative:
+
+1. Build the reusable explorer framework: `ExplorerShell`, `ScopeBar`, `SavedViewSelector`,
+   `FilterBar`, `ExplorerGrid`, `RecordDrawer`, `ProofRibbon`, `ProofPanel`, `ColumnChooser`, and
+   `AuditTimeline`.
+2. Build Ledger Explorer first with Journal Entries and Ledger Detail views, core filters, saved
+   views, journal drawer/detail, evidence, approval, reversal-chain, and report-usage links.
+3. Build Portfolio Explorer second with Holdings and Transactions views, position drawer/detail,
+   valuation and reconciliation status, ledger-impact links, instrument links, and report usage.
+4. Build Security & Instrument Explorer third with instrument list, identifier map, term status,
+   source conflicts, held positions, evidence links, valuation status, expected cash flows, and
+   accounting classification.
+5. Connect all three through a Proof Trail that can move from Instrument to Position, Transaction,
+   Reconciliation, Journal, Report Line, Evidence, and Audit Event.
+
+This is a planned productization target, not a completion claim. The roadmap item
+`W5X-FREX-001` tracks the delivery slice that turns the existing accounting-record and
+multi-asset coverage evidence into these shared explorers.
+
+### v0.18 Product Direction Addendum: Operational Proof Layer
+
+The v0.18 design direction sharpens Meridian's market wedge: the product should not compete as
+another standalone fund accounting system, reconciliation tool, investor portal, treasury dashboard,
+or document extractor. Those categories already have mature point solutions. Meridian should make
+the proof chain across those categories the product.
+
+The operating chain to own is:
+
+```text
+Source document / provider file
+→ normalized record
+→ validation
+→ reconciliation
+→ exception resolution
+→ journal / ledger impact
+→ capital account impact
+→ close package
+→ report line
+→ delivery record
+→ audit evidence
+```
+
+This reframes Meridian as a service-neutral private-capital and investment-operations control plane.
+It should help a GP, fund CFO, family office, RIA, investment accountant, or fund administrator keep
+internal control over the operating record without requiring the customer to replace every external
+administrator, custodian, GL, bank, tax provider, audit provider, BI tool, or investor portal.
+
+The central v0.18 product object is the Operational Evidence Graph:
+
+| Layer | Meridian-owned proof |
+| --- | --- |
+| Source | file, API payload, document, provider record, source hash, receipt timestamp |
+| Normalization | mapping version, import run, validation result, extraction confidence, reviewer state |
+| Reconciliation | match rule, break, true-break narrative, resolution code, owner, SLA, approval |
+| Ledger | draft journal, posted journal, posting policy, reversal chain, period lock, version |
+| Capital accounts | commitment, contribution, distribution, allocation, NAV impact, statement lineage |
+| Close | readiness lane, blocker status, period lock, reopen evidence, late adjustment |
+| Reporting | dataset version, report line, template version, package approval, restatement lineage |
+| Delivery | recipient list, package version, timestamp, channel, delivery evidence |
+| Audit | immutable event trail, retained support package, request list, evidence manifest |
+
+The highest-value feature gaps should be prioritized in this order:
+
+| Tier | Product target | Product intent |
+| --- | --- | --- |
+| 1 | Operational Evidence Graph | Differentiate Meridian from dashboards and point tools by proving the chain from source to output. |
+| 1 | Fund Event Command Center | Make capital calls, distributions, investments, fees, valuations, closings, tax requests, audit requests, and wind-downs the universal operating spine. |
+| 1 | Capital Account Workbench | Treat capital accounts as governed ledger projections with investor-level evidence, allocation rules, statements, restatements, and audit support. |
+| 1 | Private-Capital Close Cockpit | Connect data receipt, reconciliation, journals, capital accounts, NAV support, valuation evidence, reporting, delivery, and period locks. |
+| 1 | Evidence Vault with Request Lists | Turn document intake and extraction into close, tax, audit, and reporting support packages with frozen manifests. |
+| 2 | Shadow NAV and Admin Tie-Out Workbench | Explain administrator-versus-Meridian differences through source records, evidence, reviewer state, ledger impact, close effect, and report effect. |
+| 2 | Certified Operational Data Marts | Publish certified cash, positions, transactions, journal entries, capital accounts, fund events, valuations, trial balance, report lines, and evidence indexes with row-level lineage. |
+| 2 | SLA-Driven Exception Operations | Make each break operational by showing owner, SLA, materiality, root cause, supporting evidence, approval state, and blocked outputs. |
+| 2 | Payment Intent and Cash Evidence Layer | Capture payment requests, approval chains, expected cash movement, bank confirmations, return/reversal evidence, ledger intent, reconciliation, and report linkage before live payment execution. |
+| 2 | Scoped Access Assignment Console | Govern authority by role, permission, scope kind, scope ID, approval limit, segregation-of-duties rule, effective date, version, revocation evidence, and audit event. |
+| 3 | Management Company Administration Lite | Support expense allocation, intercompany balances, management fees, bank/card evidence, budget snapshots, cash-plan snapshots, and reimbursements without becoming full ERP. |
+| 3 | Report-Line Provenance Explorer | Let operators drill from a report number to source records, reconciliations, journals, approvals, delivery history, and restatements. |
+| 3 | Reviewed Automation Assistant | Use AI only for extraction, suggested matches, variance explanations, duplicate detection, journal-template drafts, evidence summaries, missing-support flags, report commentary drafts, and audit request lists. |
+| 3 | Hybrid Tenant Profiles | Serve fund administrators, private fund CFOs, RIAs, family offices, and insurance investment accounting teams through one core model with profile-specific emphasis. |
+
+The Fund Event Command Center should make each event navigable by evidence, workflow, ledger impact,
+capital-account impact, treasury expectation, reconciliation status, report usage, delivery record,
+tax support, and audit history. The event is not complete merely because accounting output exists;
+it is complete when the event's evidence, approvals, journals, investor impact, reporting outputs,
+delivery records, and support package can be reconstructed.
+
+The Private-Capital Close Cockpit should operate by fund, book, period, and entity. A close lane is
+ready only when required data arrived, imports validated, reconciliation blockers cleared, journals
+posted, reversals approved, recurring journals completed, capital-account roll-forwards tied out,
+valuation support attached, stale marks resolved, shadow NAV tied out, statements approved,
+packages delivered, and period locks or reopen evidence are retained.
+
+The Evidence Vault should not be a passive document store. It should manage request lists by event,
+close, audit, tax, and report package; capture documents through upload, email, API, portal download,
+or SFTP; extract fields with confidence and review state; validate extracted values against expected
+records; link evidence to fund events, journals, reconciliations, and report lines; and freeze
+manifests for downstream support packages.
+
+The Admin-Neutral Control Plane is a design constraint: external administrators, GLs, custodians,
+banks, tax providers, audit providers, BI tools, and investor portals remain valid external systems,
+but Meridian owns the verification, evidence, reconciliation, approval, ledger impact, report
+provenance, delivery history, and audit trail that prove whether outputs can be trusted.
+
+Reviewed automation must remain ledger-safe. It can suggest, classify, extract, match, summarize,
+draft, and flag. It cannot post material journals without approval, override period locks, approve
+its own work, release payments, publish reports, edit posted entries, or erase evidence.
+
+The v0.18 product promise is:
+
+```text
+Meridian does not just show the number.
+Meridian proves the number.
+```
+
+This is a planned product direction, not a completion claim. Roadmap and implementation claims still
+require registry-backed acceptance evidence before stakeholder-facing status can move from planned
+or supported to complete.
 
 ---
 

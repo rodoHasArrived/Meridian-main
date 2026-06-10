@@ -1443,19 +1443,35 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         IReadOnlyList<PrivateCapitalFundEventLedgerEvent> postedEvents,
         IReadOnlyList<ReportPackWorkflowRecordDto> reportPackWorkflowRecords)
     {
-        var ledgerPublishedOutputIds = postedEvents
-            .SelectMany(static fundEvent => fundEvent.ReportOutputs)
-            .Where(static output => output.IsPublished)
-            .Select(static output => output.ReportOutputId)
+        var publishedOutputKeys = postedEvents
+            .SelectMany(static fundEvent => fundEvent.ReportOutputs
+                .Where(static output => output.IsPublished)
+                .Select(output => BuildPublishedReportOutputKey(fundEvent.FundEventId, output.ReportId, output.ReportOutputId)))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var workflowPublishedOutputIds = reportPackWorkflowRecords
+        var workflowPublishedOutputKeys = reportPackWorkflowRecords
             .Where(record => string.Equals(record.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
             .Where(IsPublishedReportPack)
-            .Where(record => postedEvents.Any(fundEvent => MatchesPostedFundEventReport(record, fundEvent)))
-            .Select(static record => record.ReportId.ToString("D"))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            .SelectMany(record => postedEvents
+                .Where(fundEvent => MatchesPostedFundEventReport(record, fundEvent))
+                .Select(fundEvent => BuildPublishedReportOutputKey(fundEvent.FundEventId, record.ReportId.ToString("D"), null)));
+        publishedOutputKeys.UnionWith(workflowPublishedOutputKeys);
 
-        return ledgerPublishedOutputIds.Count + workflowPublishedOutputIds.Count;
+        return publishedOutputKeys.Count;
+    }
+
+    private static string BuildPublishedReportOutputKey(string fundEventId, string? reportPackId, string? reportOutputId)
+    {
+        var normalizedFundEventId = string.IsNullOrWhiteSpace(fundEventId) ? "unknown-fund-event" : fundEventId.Trim();
+        var normalizedReportPackId = NormalizeOptional(reportPackId);
+        if (normalizedReportPackId is not null)
+        {
+            return $"{normalizedFundEventId}:report-pack:{normalizedReportPackId}";
+        }
+
+        var normalizedReportOutputId = NormalizeOptional(reportOutputId);
+        return normalizedReportOutputId is null
+            ? $"{normalizedFundEventId}:report-output:unknown"
+            : $"{normalizedFundEventId}:report-output:{normalizedReportOutputId}";
     }
 
     private static IReadOnlyDictionary<string, bool> BuildPostingReadyByFundEventId(

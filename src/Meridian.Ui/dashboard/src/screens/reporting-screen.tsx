@@ -2070,6 +2070,26 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                         <p className="break-all font-mono text-[11px]">
                           {attempt.package.retainedManifestPath}
                         </p>
+                        {attempt.package.reportingRunId ? (
+                          <p className="break-all font-mono text-[11px]">
+                            Reporting run: {attempt.package.reportingRunId}
+                          </p>
+                        ) : null}
+                        {attempt.package.reportingTemplateId ? (
+                          <p className="break-all font-mono text-[11px]">
+                            Template: {attempt.package.reportingTemplateId}
+                          </p>
+                        ) : null}
+                        {attempt.package.reportingScheduleId ? (
+                          <p className="break-all font-mono text-[11px]">
+                            Schedule: {attempt.package.reportingScheduleId}
+                          </p>
+                        ) : null}
+                        {attempt.package.sourceArtifacts?.length ? (
+                          <p className="break-all font-mono text-[11px]">
+                            Source artifacts: {attempt.package.sourceArtifacts.join(", ")}
+                          </p>
+                        ) : null}
                         {attempt.package.artifacts.some((artifact) => artifact.downloadRoute) ? (
                           <ul aria-label={`${attempt.recipient} package artifact downloads`} className="flex flex-wrap gap-2 pt-1">
                             {attempt.package.artifacts

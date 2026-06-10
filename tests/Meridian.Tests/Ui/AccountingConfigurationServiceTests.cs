@@ -5,6 +5,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
+using System.Reflection;
 
 namespace Meridian.Tests.Ui;
 
@@ -36,6 +37,82 @@ public sealed class AccountingConfigurationServiceTests
         projection.CapitalAccountSubledgers.Should().BeEmpty();
     }
 
+    [Fact]
+    public void PrivateCapitalActivityProjection_CountsPublishedLedgerAndWorkflowReportOutputOnce()
+    {
+        var reportPackId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var journalEntryId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var ledgerEntryId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
+        var timestamp = new DateTimeOffset(2026, 6, 30, 17, 0, 0, TimeSpan.Zero);
+        const string fundEventId = "fund-event:fund-alpha:capital-call:published";
+        var postedEvent = new PrivateCapitalFundEventLedgerEvent(
+            fundEventId,
+            "CapitalCall",
+            new DateOnly(2026, 6, 30),
+            "capital-account:fund-alpha:lp-1",
+            "investor:lp-1",
+            "payment:fund-alpha:published",
+            "settlement:fund-alpha:published",
+            "posted:fund-alpha:published",
+            timestamp,
+            timestamp,
+            PrivateCapitalFundEventApprovalState.Posted,
+            "approval:fund-alpha:published",
+            "controller",
+            [journalEntryId],
+            [ledgerEntryId],
+            [],
+            [],
+            ["/api/workstation/evidence/subjects/private-capital/published"],
+            [
+                new PrivateCapitalFundEventReportOutput(
+                    $"{reportPackId:D}:private-capital:{fundEventId}",
+                    reportPackId.ToString("D"),
+                    LedgerReportPackLifecycleStatus.Published,
+                    timestamp,
+                    "sha256:published",
+                    ["capital-account-statement.pdf"],
+                    ["/api/workstation/evidence/report-packs/published"],
+                    IsPublished: true)
+            ],
+            []);
+        var workflowRecord = new ReportPackWorkflowRecordDto(
+            reportPackId,
+            "fund-alpha",
+            "capital-account:fund-alpha:lp-1",
+            "2026-06",
+            new VersionedReportTemplateIdDto("CapitalAccountStatement", 1),
+            ReportPackWorkflowStateDto.Published,
+            3,
+            timestamp,
+            "controller",
+            timestamp,
+            [new ReportPackAuditEventDto(timestamp, "controller", "publish", ReportPackWorkflowStateDto.Approved, ReportPackWorkflowStateDto.Published)],
+            null,
+            LineProvenance:
+            [
+                new ReportPackLineProvenanceDto(
+                    "capital-account.contribution",
+                    "ledger",
+                    fundEventId,
+                    "ledger-evidence-published",
+                    LedgerEntryId: ledgerEntryId.ToString("D"),
+                    ReportValue: "100000",
+                    ApprovalId: "approval:fund-alpha:published")
+            ],
+            Publication: new ReportPackPublicationManifestDto(
+                "manifest-published",
+                "/retained/report-packs/published.json",
+                "sha256:published",
+                "controller",
+                timestamp,
+                [new ReportPackEvidenceLinkDto("publication-evidence-published", "Publication manifest", "/api/workstation/evidence/report-packs/published", "EvidenceVault", timestamp)]));
+
+        var count = InvokePublishedReportOutputCount("fund-alpha", [postedEvent], [workflowRecord]);
+
+        count.Should().Be(1);
+    }
+
     [Theory]
     [MemberData(nameof(PrivateCapitalFundEventLedgerReadinessCases))]
     public void PrivateCapitalFundEventLedgerRecordBuilder_DerivesSharedReadinessAndNextAction(
@@ -52,6 +129,104 @@ public sealed class AccountingConfigurationServiceTests
         record.CapitalAccountSubledgerEntryCount.Should().Be(1);
         record.LedgerImpactCount.Should().Be(testCase.IncludeLedgerImpact ? 1 : 0);
         record.ReportOutputCount.Should().Be(testCase.IncludeReportOutput ? 1 : 0);
+    }
+
+    [Theory]
+    [InlineData(
+        "blocked-critical",
+        PrivateCapitalFundEventLedgerReadinessDto.Blocked,
+        "Blocked",
+        "A critical validation issue or blocked fund event prevents capital-account subledger reliance.",
+        "Repair capital-account subledger",
+        "approvalId=approval%3Ablocked-critical")]
+    [InlineData(
+        "evidence-missing",
+        PrivateCapitalFundEventLedgerReadinessDto.EvidenceMissing,
+        "Evidence missing",
+        "Retained source evidence is missing for one or more fund events in this capital-account subledger.",
+        "Attach retained evidence",
+        "/api/workstation/evidence/subjects/private-capital-fund-event/")]
+    [InlineData(
+        "approval-pending",
+        PrivateCapitalFundEventLedgerReadinessDto.ApprovalPending,
+        "Approval pending",
+        "One or more fund events require approval before the capital-account subledger can be treated as posting ready.",
+        "Submit or review approval",
+        "/api/ledger/private-capital/activity")]
+    [InlineData(
+        "posting-review",
+        PrivateCapitalFundEventLedgerReadinessDto.PostingReview,
+        "Posting review",
+        "One or more fund events have approval and evidence but are not posting ready in the ledger.",
+        "Review ledger impact",
+        "/api/ledger/private-capital/activity")]
+    [InlineData(
+        "report-output-missing",
+        PrivateCapitalFundEventLedgerReadinessDto.ReportReview,
+        "Report review",
+        "Ledger impact is ready, but one or more retained report outputs are not ready for stakeholder use.",
+        "Prepare report output",
+        "/api/ledger/private-capital/activity")]
+    [InlineData(
+        "ready-report-output",
+        PrivateCapitalFundEventLedgerReadinessDto.Ready,
+        "Ready",
+        "The capital-account subledger has retained evidence, posting-ready ledger impact, capital-account movement, and report output ready for publication.",
+        "Review report output",
+        "/api/fund-structure/report-packs/ready-report-output")]
+    [InlineData(
+        "published-report-output",
+        PrivateCapitalFundEventLedgerReadinessDto.Published,
+        "Published",
+        "All fund events in this capital-account subledger have retained evidence, posting-ready ledger impact, capital-account movement, and published report output.",
+        "Open published report",
+        "/api/fund-structure/report-packs/published-report-output")]
+    public void PrivateCapitalCapitalAccountSubledgerBuilder_DerivesReadinessAndNextAction(
+        string caseSuffix,
+        PrivateCapitalFundEventLedgerReadinessDto expectedReadiness,
+        string expectedLabel,
+        string expectedReason,
+        string expectedNextAction,
+        string expectedRouteFragment)
+    {
+        var record = BuildPrivateCapitalFundEventLedgerRecord(FindPrivateCapitalFundEventLedgerReadinessCase(caseSuffix));
+        var reportOutputs = caseSuffix is "ready-report-output" or "published-report-output"
+            ? AddRetainedReportEvidence(record.ReportOutputs)
+            : record.ReportOutputs;
+        var capitalAccount = new PrivateCapitalCapitalAccountActivityDto(
+            record.CapitalAccountId,
+            record.InvestorId,
+            record.Currency,
+            Contributions: 100m,
+            Distributions: 0m,
+            Subscriptions: 0m,
+            Redemptions: 0m,
+            ManagementFees: 0m,
+            NetActivity: 100m,
+            FundEventCount: 1,
+            LastEffectiveDate: record.EffectiveDate,
+            LastFundEventType: record.FundEventType,
+            FundEventIds: [record.FundEventId]);
+
+        var subledger = PrivateCapitalCapitalAccountSubledgerBuilder.Build(
+            "fund-alpha",
+            ledgerBookId: null,
+            new DateTimeOffset(2026, 6, 30, 17, 0, 0, TimeSpan.Zero),
+            [capitalAccount],
+            [record],
+            record.CapitalAccountSubledgerEntries,
+            record.LedgerImpacts,
+            reportOutputs,
+            []).Should().ContainSingle().Subject;
+
+        subledger.Readiness.Should().Be(expectedReadiness);
+        subledger.ReadinessLabel.Should().Be(expectedLabel);
+        subledger.ReadinessReason.Should().Be(expectedReason);
+        subledger.NextAction.Should().Be(expectedNextAction);
+        subledger.NextActionRoute.Should().Contain(expectedRouteFragment);
+        subledger.FundEventRecords.Should().ContainSingle(item =>
+            item.FundEventId == record.FundEventId &&
+            item.Readiness == record.Readiness);
     }
 
     [Fact]
@@ -1931,6 +2106,38 @@ public sealed class AccountingConfigurationServiceTests
                 ExpectedNextAction: "Prepare report output",
                 ExpectedNextActionRouteFragment: "/api/ledger/private-capital/activity",
                 ExpectedEvidenceCount: 1,
+                ExpectedValidationIssueCount: 0),
+            new(
+                Suffix: "ready-report-output",
+                ApprovalState: ManualJournalEntryStatusDto.Submitted,
+                IncludeFundEventEvidence: true,
+                IncludeLedgerImpact: true,
+                LedgerPostingReady: true,
+                IncludeReportOutput: true,
+                ReportReady: true,
+                ReportPublished: false,
+                HasCriticalIssue: false,
+                ExpectedReadiness: PrivateCapitalFundEventLedgerReadinessDto.Ready,
+                ExpectedLabel: "Ready",
+                ExpectedNextAction: "Review report output",
+                ExpectedNextActionRouteFragment: "/api/fund-structure/report-packs/ready-report-output",
+                ExpectedEvidenceCount: 1,
+                ExpectedValidationIssueCount: 0),
+            new(
+                Suffix: "published-report-output",
+                ApprovalState: ManualJournalEntryStatusDto.Submitted,
+                IncludeFundEventEvidence: true,
+                IncludeLedgerImpact: true,
+                LedgerPostingReady: true,
+                IncludeReportOutput: true,
+                ReportReady: true,
+                ReportPublished: true,
+                HasCriticalIssue: false,
+                ExpectedReadiness: PrivateCapitalFundEventLedgerReadinessDto.Published,
+                ExpectedLabel: "Published",
+                ExpectedNextAction: "Open published report",
+                ExpectedNextActionRouteFragment: "/api/fund-structure/report-packs/published-report-output",
+                ExpectedEvidenceCount: 1,
                 ExpectedValidationIssueCount: 0)
         };
 
@@ -2064,6 +2271,29 @@ public sealed class AccountingConfigurationServiceTests
         return records[0];
     }
 
+    private static PrivateCapitalFundEventLedgerReadinessCase FindPrivateCapitalFundEventLedgerReadinessCase(string suffix)
+    {
+        foreach (var row in PrivateCapitalFundEventLedgerReadinessCases())
+        {
+            if (string.Equals(row.Suffix, suffix, StringComparison.OrdinalIgnoreCase))
+            {
+                return row;
+            }
+        }
+
+        throw new InvalidOperationException($"Unknown private-capital readiness case '{suffix}'.");
+    }
+
+    private static IReadOnlyList<PrivateCapitalReportOutputDto> AddRetainedReportEvidence(
+        IReadOnlyList<PrivateCapitalReportOutputDto> reportOutputs)
+        => reportOutputs
+            .Select(output => output with
+            {
+                EvidenceLinkCount = 1,
+                EvidenceLinks = [$"/api/workstation/evidence/report-packs/{output.ReportOutputId}"]
+            })
+            .ToArray();
+
     private static AccountingConfigurationService CreateService()
     {
         return new AccountingConfigurationService(
@@ -2166,6 +2396,19 @@ public sealed class AccountingConfigurationServiceTests
         public IReadOnlyList<ReportPackWorkflowRecordDto> Load() => _records;
 
         public void Save(IReadOnlyList<ReportPackWorkflowRecordDto> records) => _records = records.ToArray();
+    }
+
+    private static int InvokePublishedReportOutputCount(
+        string fundProfileId,
+        IReadOnlyList<PrivateCapitalFundEventLedgerEvent> postedEvents,
+        IReadOnlyList<ReportPackWorkflowRecordDto> workflowRecords)
+    {
+        var method = typeof(ManualJournalEntryWorkbenchService).GetMethod(
+            "CountPublishedReportOutputs",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        method.Should().NotBeNull();
+
+        return (int)method!.Invoke(null, [fundProfileId, postedEvents, workflowRecords])!;
     }
 
     private static async Task SeedBalancedConfigurationAsync(AccountingConfigurationService service)

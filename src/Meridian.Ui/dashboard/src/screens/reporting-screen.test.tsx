@@ -2263,7 +2263,11 @@ describe("ReportingScreen", () => {
               createdAtUtc: "2026-05-03T20:15:00Z",
               retainedManifestPath: "workstation/reporting/deliveries/report-1/manifest.json",
               publicationEvidenceHash: "sha256:board-pack",
-              integritySummary: "3 artifact(s) retained with SHA-256 checksums against publication evidence hash sha256:board-pack."
+              integritySummary: "3 artifact(s) retained with SHA-256 checksums against publication evidence hash sha256:board-pack.",
+              reportingRunId: "investor-monthly-statement-20260501",
+              reportingTemplateId: "investor-monthly-statement",
+              reportingScheduleId: "sched-investor",
+              sourceArtifacts: ["workstation/reporting/runs/investor-monthly-statement-20260501/manifest.json"]
             }
           }
         ]
@@ -2313,6 +2317,10 @@ describe("ReportingScreen", () => {
       "href",
       "/portal/reporting/packages/pkg-board-1?token=abc123"
     );
+    expect(boardAttempt).toHaveTextContent("Reporting run: investor-monthly-statement-20260501");
+    expect(boardAttempt).toHaveTextContent("Template: investor-monthly-statement");
+    expect(boardAttempt).toHaveTextContent("Schedule: sched-investor");
+    expect(boardAttempt).toHaveTextContent("Source artifacts: workstation/reporting/runs/investor-monthly-statement-20260501/manifest.json");
     expect(within(boardAttempt).getByRole("link", { name: "Download board-pack.pdf" })).toHaveAttribute(
       "href",
       "/api/fund-structure/reporting/packs/11111111-1111-1111-1111-111111111111/deliveries/22222222-2222-2222-2222-222222222222/artifacts/board-pack.pdf?token=abc123"

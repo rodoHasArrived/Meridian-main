@@ -3103,6 +3103,10 @@ export interface ReportPackDeliveryPackage {
   retainedManifestPath: string;
   publicationEvidenceHash?: string | null;
   integritySummary?: string | null;
+  reportingRunId?: string | null;
+  reportingTemplateId?: string | null;
+  reportingScheduleId?: string | null;
+  sourceArtifacts?: string[] | null;
 }
 
 export interface ReportPackDeliveryAttempt {

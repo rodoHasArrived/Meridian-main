@@ -1601,11 +1601,122 @@ public sealed class ReportPackWorkflowServiceTests
             accessPolicy: new ReportAccessPolicyDto(
                 ReportAccessModeDto.Restricted,
                 Principals: [new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Group, "ops-control")]));
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var scheduleStore = new FileReportingScheduleStore(
+            new ReportingScheduleStoreOptions(Path.Combine(root, "reporting-schedules.json")),
+            NullLogger<FileReportingScheduleStore>.Instance);
+        scheduleStore.Save(
+        [
+            new ReportingScheduleRecordDto(
+                "sched-owner-only",
+                privateTemplate.Definition.TemplateId.Name,
+                "0 8 1 * *",
+                new DateOnly(2026, 4, 1),
+                new DateTimeOffset(2026, 4, 1, 8, 0, 0, TimeSpan.Zero),
+                0,
+                "owner.user",
+                ReportingScheduleStateDto.Active,
+                new DateTimeOffset(2026, 3, 20, 9, 0, 0, TimeSpan.Zero),
+                new DateTimeOffset(2026, 3, 20, 9, 0, 0, TimeSpan.Zero),
+                DeliveryTargets:
+                [
+                    new ReportingScheduleDeliveryTargetDto(
+                        "investor-relations",
+                        [GovernanceReportArtifactFormatDto.Pdf],
+                        ReportPackDeliveryModeDto.EmailLink)
+                ]),
+            new ReportingScheduleRecordDto(
+                "sched-ops-control",
+                groupTemplate.Definition.TemplateId.Name,
+                "0 8 1 * *",
+                new DateOnly(2026, 4, 1),
+                new DateTimeOffset(2026, 4, 1, 8, 0, 0, TimeSpan.Zero),
+                0,
+                "owner.user",
+                ReportingScheduleStateDto.Active,
+                new DateTimeOffset(2026, 3, 20, 9, 0, 0, TimeSpan.Zero),
+                new DateTimeOffset(2026, 3, 20, 9, 0, 0, TimeSpan.Zero),
+                DeliveryTargets:
+                [
+                    new ReportingScheduleDeliveryTargetDto(
+                        "board-reporting-committee",
+                        [GovernanceReportArtifactFormatDto.Pdf, GovernanceReportArtifactFormatDto.Csv],
+                        ReportPackDeliveryModeDto.SecurePortal)
+                ])
+        ]);
+        var schedules = new ReportingScheduleService(
+            new ReportingOrchestrationService(new DefaultReportingTemplateCatalog()),
+            scheduleStore);
+        var groupDeliveryAttemptId = Guid.NewGuid();
+        var privateDeliveryAttemptId = Guid.NewGuid();
+        var genericRunDeliveryAttemptId = Guid.NewGuid();
+        var genericRunReportId = Guid.NewGuid();
+        var deliveryStore = new FileReportPackDeliveryRecordStore(
+            new ReportPackDeliveryStoreOptions(Path.Combine(root, "report-pack-deliveries.json")),
+            NullLogger<FileReportPackDeliveryRecordStore>.Instance);
+        deliveryStore.Save(
+        [
+            new ReportPackDeliveryAttemptDto(
+                privateDeliveryAttemptId,
+                privatePack.ReportId,
+                "investor-relations",
+                "Investor relations",
+                "Investor communications",
+                "Investor portal",
+                ReportPackDeliveryStateDto.Delivered,
+                new DateTimeOffset(2026, 3, 21, 9, 0, 0, TimeSpan.Zero),
+                "owner.user",
+                1,
+                "delivery:private-owner-only"),
+            new ReportPackDeliveryAttemptDto(
+                groupDeliveryAttemptId,
+                groupPack.ReportId,
+                "board-reporting-committee",
+                "Board reporting committee",
+                "Board",
+                "Board portal",
+                ReportPackDeliveryStateDto.Delivered,
+                new DateTimeOffset(2026, 3, 21, 9, 5, 0, TimeSpan.Zero),
+                "owner.user",
+                1,
+                "delivery:ops-control"),
+            new ReportPackDeliveryAttemptDto(
+                genericRunDeliveryAttemptId,
+                genericRunReportId,
+                "board-reporting-committee",
+                "Board reporting committee",
+                "Board",
+                "Board portal",
+                ReportPackDeliveryStateDto.Delivered,
+                new DateTimeOffset(2026, 3, 21, 9, 10, 0, TimeSpan.Zero),
+                "owner.user",
+                1,
+                $"schedule:{groupTemplate.Definition.TemplateId.Name}:sched-ops-control-20260401:board-reporting-committee",
+                Package: new ReportPackDeliveryPackageDto(
+                    "pkg-generic-ops-control",
+                    genericRunReportId,
+                    "board-reporting-committee",
+                    ReportPackDeliveryModeDto.SecurePortal,
+                    "/portal/reporting/packages/pkg-generic-ops-control?token=token",
+                    "/reporting/runs/sched-ops-control-20260401/packages/pkg-generic-ops-control",
+                    [GovernanceReportArtifactFormatDto.Pdf],
+                    [],
+                    new DateTimeOffset(2026, 3, 21, 9, 10, 0, TimeSpan.Zero),
+                    "workstation/reporting/runs/sched-ops-control-20260401/deliveries/board-reporting-committee/1/manifest.json",
+                    IntegritySummary: "1 artifact retained.",
+                    ReportingRunId: "sched-ops-control-20260401",
+                    ReportingTemplateId: groupTemplate.Definition.TemplateId.Name,
+                    ReportingScheduleId: "sched-ops-control",
+                    SourceArtifacts: ["sched-ops-control-20260401.manifest.json"]))
+        ]);
+        var delivery = new ReportPackDeliveryService(workflow, deliveryStore);
 
         var readService = new ReportPackRunReadService(
             new DefaultReportingTemplateCatalog(),
             workflowService: workflow,
-            templateRegistry: registry);
+            templateRegistry: registry,
+            deliveryService: delivery,
+            scheduleService: schedules);
         var groupPayload = readService.BuildPayload(new ReportAccessQueryContext("viewer.user", ["ops-control"]));
         var strangerPayload = readService.BuildPayload(new ReportAccessQueryContext("viewer.user"));
 
@@ -1614,11 +1725,25 @@ public sealed class ReportPackWorkflowServiceTests
         groupPayload.RecentRuns.Select(static run => run.RunId).Should().Contain($"report-pack:{groupPack.ReportId:D}");
         groupPayload.RecentRuns.Select(static run => run.RunId).Should().NotContain($"report-pack:{privatePack.ReportId:D}");
         groupPayload.Templates.Single(template => template.TemplateId == groupTemplate.Definition.TemplateId.Name).AccessMode.Should().Be(ReportAccessModeDto.Restricted.ToString());
+        groupPayload.Schedules.Should().NotBeNull();
+        groupPayload.Schedules!.Select(static schedule => schedule.ScheduleId).Should().Contain("sched-ops-control");
+        groupPayload.Schedules.Select(static schedule => schedule.ScheduleId).Should().NotContain("sched-owner-only");
+        groupPayload.ScheduleDeliveryPlans.Should().NotBeNull();
+        groupPayload.ScheduleDeliveryPlans!.Select(static plan => plan.ScheduleId).Should().Contain("sched-ops-control");
+        groupPayload.ScheduleDeliveryPlans.Select(static plan => plan.ScheduleId).Should().NotContain("sched-owner-only");
+        groupPayload.DeliveryAttempts.Should().NotBeNull();
+        groupPayload.DeliveryAttempts!.Select(static attempt => attempt.AttemptId).Should().Contain(groupDeliveryAttemptId);
+        groupPayload.DeliveryAttempts.Select(static attempt => attempt.AttemptId).Should().Contain(genericRunDeliveryAttemptId);
+        groupPayload.DeliveryAttempts.Select(static attempt => attempt.AttemptId).Should().NotContain(privateDeliveryAttemptId);
+        groupPayload.ScheduleDeliveryPlans.Single(plan => plan.ScheduleId == "sched-ops-control").LastDeliveryAttemptId.Should().Be(genericRunDeliveryAttemptId);
 
         strangerPayload.Templates.Select(static template => template.TemplateId).Should().NotContain(groupTemplate.Definition.TemplateId.Name);
         strangerPayload.Templates.Select(static template => template.TemplateId).Should().NotContain(privateTemplate.Definition.TemplateId.Name);
         strangerPayload.RecentRuns.Select(static run => run.RunId).Should().NotContain($"report-pack:{groupPack.ReportId:D}");
         strangerPayload.RecentRuns.Select(static run => run.RunId).Should().NotContain($"report-pack:{privatePack.ReportId:D}");
+        strangerPayload.Schedules.Should().NotBeNull().And.BeEmpty();
+        strangerPayload.ScheduleDeliveryPlans.Should().NotBeNull().And.BeEmpty();
+        strangerPayload.DeliveryAttempts.Should().NotBeNull().And.BeEmpty();
     }
 
     [Fact]

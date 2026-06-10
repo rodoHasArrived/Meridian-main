@@ -48,6 +48,18 @@ from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Sequence
 
+
+def _configure_stdio() -> None:
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            try:
+                stream.reconfigure(encoding="utf-8", errors="replace")
+            except OSError:
+                pass
+
+
+_configure_stdio()
+
 # ---------------------------------------------------------------------------
 # Data model
 # ---------------------------------------------------------------------------
@@ -678,44 +690,62 @@ def print_summary(results: list[CheckResult]) -> int:
 # CLI
 # ---------------------------------------------------------------------------
 
+_COMMAND_HELP = {
+    "check": "Run all compliance checks (default)",
+    "check-cpm": "CPM violations only",
+    "check-deps": "Forbidden dependency directions only",
+    "check-adrs": "Missing [ImplementsAdr] attributes only",
+    "check-channels": "Raw Channel.Create* calls only",
+    "check-sinks": "Direct FileStream writes in sinks only",
+    "check-json": "Reflection JSON serialization only",
+    "summary": "One-line summary (useful in CI)",
+}
+
+
+def _add_common_options(
+    parser: argparse.ArgumentParser,
+    *,
+    suppress_defaults: bool = False,
+) -> None:
+    default = argparse.SUPPRESS if suppress_defaults else None
+    parser.add_argument(
+        "--src",
+        default=argparse.SUPPRESS if suppress_defaults else "src",
+        metavar="PATH",
+        help="Source root to scan (default: src/)",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        default=default,
+        help="Emit JSON output instead of human-readable text",
+    )
+    parser.add_argument(
+        "--no-color",
+        action="store_true",
+        default=default,
+        help="Disable ANSI colour output",
+    )
+    parser.add_argument(
+        "--fail-on",
+        choices=["CRITICAL", "WARNING", "INFO"],
+        default=argparse.SUPPRESS if suppress_defaults else "CRITICAL",
+        metavar="LEVEL",
+        help="Exit non-zero if any finding at or above this severity (default: CRITICAL)",
+    )
+
+
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="ai-architecture-check",
         description="AI Architecture Guard — static compliance checker for Meridian",
     )
-    p.add_argument(
-        "--src",
-        default="src",
-        metavar="PATH",
-        help="Source root to scan (default: src/)",
-    )
-    p.add_argument(
-        "--json",
-        action="store_true",
-        help="Emit JSON output instead of human-readable text",
-    )
-    p.add_argument(
-        "--no-color",
-        action="store_true",
-        help="Disable ANSI colour output",
-    )
-    p.add_argument(
-        "--fail-on",
-        choices=["CRITICAL", "WARNING", "INFO"],
-        default="CRITICAL",
-        metavar="LEVEL",
-        help="Exit non-zero if any finding at or above this severity (default: CRITICAL)",
-    )
+    _add_common_options(p)
 
     sub = p.add_subparsers(dest="command")
-    sub.add_parser("check",          help="Run all compliance checks (default)")
-    sub.add_parser("check-cpm",      help="CPM violations only")
-    sub.add_parser("check-deps",     help="Forbidden dependency directions only")
-    sub.add_parser("check-adrs",     help="Missing [ImplementsAdr] attributes only")
-    sub.add_parser("check-channels", help="Raw Channel.Create* calls only")
-    sub.add_parser("check-sinks",    help="Direct FileStream writes in sinks only")
-    sub.add_parser("check-json",     help="Reflection JSON serialization only")
-    sub.add_parser("summary",        help="One-line summary (useful in CI)")
+    for command, help_text in _COMMAND_HELP.items():
+        command_parser = sub.add_parser(command, help=help_text)
+        _add_common_options(command_parser, suppress_defaults=True)
 
     return p
 

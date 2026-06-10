@@ -210,7 +210,9 @@ the token-gated email-link or secure-portal package manifest, while artifact `Do
 render as direct retained PDF/XLSX/CSV links. When a schedule targets a custom report-writer
 template that has not produced a published report-pack workflow record, those package rows still
 render because the backend now falls back to the generated reporting run and includes its retained
-manifest/report-writer artifact provenance on the delivery package. Operators can also save or update schedule records
+manifest/report-writer artifact provenance on the delivery package; the browser renders the
+reporting run, template, schedule, and source-artifact provenance beside the package links.
+Operators can also save or update schedule records
 from Reporting by choosing a template, cron, as-of date, due timestamp, recipient distribution,
 delivery mode, and PDF/XLSX/CSV formats; the browser posts the shared
 `ReportingScheduleUpsertRequestDto` instead of maintaining local schedule rules. Schedule cards
@@ -219,6 +221,9 @@ warnings from `ReportingScheduleRunResultDto`, keeping generated report runs dis
 client/internal distributions. The backend applies the same governed template access policy to
 schedule saves and manual schedule runs as it does to ad-hoc report runs, so browser controls cannot
 schedule or execute user-locked custom templates outside the authorized owner, group, or company.
+The Reporting payload also omits schedule rows, schedule-delivery-plan rows, and delivery attempts
+whose template or report-pack workflow is not visible to the current user, so browser state cannot
+reveal locked recipients, cadence, package links, or delivery status for another user or group.
 Approved accessible report template rows, including governed custom report-writer templates, expose
 an on-demand `Run report` command that posts to the shared
 `/api/fund-structure/reporting/runs` endpoint and reports the generated ad-hoc run id back to the

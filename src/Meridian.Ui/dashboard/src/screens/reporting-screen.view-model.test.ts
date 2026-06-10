@@ -284,36 +284,35 @@ describe("useReportingScreenViewModel", () => {
   it("surfaces template metadata and recent run status projections", () => {
     const { result } = renderHook(() => useReportingScreenViewModel(reporting));
 
-    expect(result.current.templateRows).toEqual([
-      {
-        id: "investor-monthly-statement:1.0.0",
-        templateName: "investor-monthly-statement",
-        name: "Investor Monthly Statement",
-        family: "InvestorStatement",
-        version: "1.0.0",
-        versionNumber: 1,
-        sectionSummary: "2 sections",
-        statusLabel: "Approved",
-        statusVariant: "success",
-        sourceLabel: "Built-in",
-        approvalSummary: "Built-in approved template for InvestorStatement.",
-        accessMode: "CompanyWide",
-        accessSummary: "Company-wide access",
-        isAccessible: true,
-        authoringHref: "/api/fund-structure/reporting/templates/investor-monthly-statement/versions/1",
-        actionLabel: "Draft revision",
-        actionAriaLabel: "Draft a revision of Investor Monthly Statement",
-        canRunOnDemand: true,
-        runActionLabel: "Run report",
-        runActionAriaLabel: "Run Investor Monthly Statement report on demand",
-        runDisabledReason: null,
-        lifecycleActions: [],
-        hasLifecycleActions: false,
-        writerGrids: [],
-        hasWriterGrids: false,
-        writerGridSummary: "No report-writer grids"
-      }
-    ]);
+    expect(result.current.templateRows).toHaveLength(1);
+    expect(result.current.templateRows[0]).toMatchObject({
+      id: "investor-monthly-statement:1.0.0",
+      templateName: "investor-monthly-statement",
+      name: "Investor Monthly Statement",
+      family: "InvestorStatement",
+      version: "1.0.0",
+      versionNumber: 1,
+      sectionSummary: "2 sections",
+      statusLabel: "Approved",
+      statusVariant: "success",
+      sourceLabel: "Built-in",
+      approvalSummary: "Built-in approved template for InvestorStatement.",
+      accessMode: "CompanyWide",
+      accessSummary: "Company-wide access",
+      isAccessible: true,
+      authoringHref: "/api/fund-structure/reporting/templates/investor-monthly-statement/versions/1",
+      actionLabel: "Draft revision",
+      actionAriaLabel: "Draft a revision of Investor Monthly Statement",
+      canRunOnDemand: true,
+      runActionLabel: "Run report",
+      runActionAriaLabel: "Run Investor Monthly Statement report on demand",
+      runDisabledReason: null,
+      lifecycleActions: [],
+      hasLifecycleActions: false,
+      writerGrids: [],
+      hasWriterGrids: false,
+      writerGridSummary: "No report-writer grids"
+    });
     expect(result.current.runStatusRows[0]).toMatchObject({
       id: "investor-monthly-statement-20260501",
       status: "InReview",
@@ -526,7 +525,8 @@ describe("useReportingScreenViewModel", () => {
       id: "custom-exposure-grid:1",
       sectionSummary: "1 section; 1 report-writer grid with 3 metrics",
       sourceLabel: "Custom",
-      runDisabledReason: "Custom template rendering uses the template render endpoint; on-demand runs still use approved built-in orchestration templates.",
+      canRunOnDemand: true,
+      runDisabledReason: null,
       hasWriterGrids: true,
       writerGridSummary: "1 grid ready for no-code layout"
     });

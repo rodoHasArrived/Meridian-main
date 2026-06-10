@@ -298,7 +298,11 @@ custom report-writer templates through the same run-store path as built-in repor
 orchestration, so a direct run request cannot bypass the list/render filters for private or
 restricted report templates. Reporting schedule upserts and manual schedule runs apply the same
 governed template access check, so locked custom templates cannot be scheduled or run from an
-existing schedule by callers outside the owner, user, group, or company policy.
+existing schedule by callers outside the owner, user, group, or company policy. Reporting payload
+reads also filter schedule rows, `scheduleDeliveryPlans`, and `DeliveryAttempts` through the visible
+template/workflow set for the current `ReportAccessQueryContext`, so unauthorized users cannot
+infer locked schedule recipients, delivery modes, due dates, package links, or delivery status from
+the read model.
 Approved custom report-writer templates carry their saved grid definitions into the reporting
 catalog as well. Generic ad-hoc and scheduled runs now retain `report-writer://.../grids/{gridId}`
 artifacts and audit the grid count, so pivot, Top-N, contribution, and custom-formula grids remain
