@@ -63,7 +63,7 @@ digraph ExecutionLayer {
     bgcolor="#edf2f7";
 
     LIVE_GATEWAY [fillcolor="#e2e8f0",
-      label="Brokerage gateways\nlive execution support remains\ngated by governance,\nreadiness, and approvals"];
+      label="Brokerage gateway lane\nfuture W7 readiness only;\ngated by governance,\nreadiness, and approvals"];
   }
 
   WORKSTATION -> ORDER_MODEL;

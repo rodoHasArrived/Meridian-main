@@ -245,6 +245,12 @@ describe("PortfolioScreen", () => {
   it("renders position table with trading data", () => {
     renderWithRouter(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />);
     expect(screen.getByRole("region", { name: /portfolio workbench context/i })).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Portfolio Explorer" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Portfolio");
+    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Trading workspace");
+    expect(screen.getByLabelText("Saved explorer views")).toHaveTextContent("Open positions + run evidence");
+    expect(screen.getByLabelText("Applied explorer filters")).toHaveTextContent("AAPL");
+    expect(screen.getByLabelText("Portfolio Explorer proof actions")).toHaveTextContent("Open evidence packet");
     expect(screen.getByRole("table", { name: /open positions/i })).toBeDefined();
     expect(screen.getByRole("row", { name: /inspect aapl long holding/i })).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("complementary", { name: /aapl holding detail/i })).toBeDefined();
@@ -259,7 +265,7 @@ describe("PortfolioScreen", () => {
     const positionsTable = screen.getByRole("table", { name: /open positions/i });
     expect(within(positionsTable).getByText("NVDA")).toBeDefined();
     expect(within(positionsTable).queryByText("AAPL")).toBeNull();
-    expect(screen.getByText("Portfolio workspace")).toBeDefined();
+    expect(screen.getAllByText("Portfolio workspace").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("row", { name: /inspect portfolio endpoint run run evidence/i })).toBeDefined();
     expect(screen.getByText(/portfolio endpoint cash posture/i)).toBeDefined();
   });
@@ -296,7 +302,7 @@ describe("PortfolioScreen", () => {
   it("shows empty text when trading is null", () => {
     renderWithRouter(<PortfolioScreen trading={null} strategy={strategy} accounting={accounting} />);
     expect(screen.getAllByText(/portfolio workspace data unavailable/i)).toHaveLength(2);
-    expect(screen.getByText(/no holding selected/i)).toBeDefined();
+    expect(screen.getAllByText(/no holding selected/i).length).toBeGreaterThanOrEqual(1);
   });
 
   it("shows empty text when strategy is null", () => {

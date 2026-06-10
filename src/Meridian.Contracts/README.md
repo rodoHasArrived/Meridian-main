@@ -84,6 +84,10 @@ contract-owned evidence categories: retained source data, normalized transaction
 reconciliation case history, journal and ledger evidence, approval history, report-pack lineage,
 export evidence, and restatement lineage. Keep these categories shared so browser and WPF
 accounting-record review surfaces do not derive audit readiness or evidence grouping independently.
+Report-pack delivery packages also expose a contract-owned delivery evidence packet that binds the
+stakeholder recipient, entitlement scope, approval chain, publication manifest, report-line
+provenance, delivery artifacts, request history, and restatement lineage into one reconstructable
+proof object.
 The shared audit-pack readiness model exposes completeness, missing category keys, warnings,
 evidence-category summaries, measured generation seconds, a 60-second SLA target, and SLA pass/fail
 posture. Older report-pack manifests may omit readiness; clients must treat that as unknown or
@@ -149,9 +153,10 @@ formats so browser, WPF, endpoints, and host bootstrap payloads consume the same
 and history shape.
 Delivered report-pack attempts can also carry `ReportPackDeliveryPackageDto`, including the
 delivery mode, secure link or portal route, retained manifest path, requested PDF/XLSX/CSV
-formats, retained artifact metadata, artifact SHA-256 checksums, artifact version stamps, and the
-publication evidence hash used for package integrity summaries. Keep those package fields shared so
-email-link, secure portal, evidence-vault, and internal-route distribution clients do not infer
+formats, retained artifact metadata, artifact SHA-256 checksums, artifact version stamps, the
+publication evidence hash used for package integrity summaries, optional publication manifest
+metadata, publication evidence links, and retained line provenance. Keep those package fields shared
+so email-link, secure portal, evidence-vault, and internal-route distribution clients do not infer
 report package output or integrity from delivery-reference strings. The shared route catalog
 includes both the token-gated package manifest URL under
 `/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/package` and the
@@ -159,7 +164,12 @@ secure-portal package URL under `/portal/reporting/packages/{packageId}`. Packag
 also carry token-gated `DownloadRoute` values under
 `/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/artifacts/{artifactName}`
 so clients download retained PDF/XLSX/CSV outputs from the shared package contract instead of
-building artifact URLs locally.
+building artifact URLs locally; downloaded artifacts include package identity, publication manifest
+fields, publication evidence links, and report-line provenance for downstream audit review.
+`ReportingScheduleDeliveryPlanDto` also carries contract-owned `ReadinessBlockers` beside
+`IsReady` and `ReadinessSummary`, so clients can fail closed when a scheduled recipient is inactive,
+overdue without a retained package, configured with an incompatible email-link/portal/vault/internal
+mode, or missing one of the requested artifact formats.
 Workstation Reporting run rows carry typed drilldown links and next-action references so browser
 and WPF clients can distinguish open evidence routes from reference-only approval, publication, and
 restatement actions without parsing artifact strings.
@@ -197,9 +207,9 @@ and cross-fund consolidation outputs.
 Each descriptor includes purpose, format, dataset, consumer, schema version, row/field/source
 counts, retained path, API route, readiness summary, evidence route, and version stamp;
 `StructuredReportingExportPayloadDto` returns stable column metadata plus string-valued JSON rows
-for downstream export consumers. The same endpoint accepts `format=csv` or `format=xlsx` for
-schema-ordered file output, including data-warehouse descriptors whose default retained format is
-JSON.
+for downstream export consumers. The same endpoint accepts `format=json`, `format=csv`, or
+`format=xlsx` for schema-ordered file output, including data-warehouse descriptors whose default
+retained format is JSON.
 Reporting summaries and generated report-pack snapshots also carry shared `ReportBrandingThemeDto`
 metadata for firm name, colors, logo URI, footer, disclaimer, and built-in/custom posture. Summary
 payloads retain fund-profile context so clients can generate branded governed report packs without

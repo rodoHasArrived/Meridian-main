@@ -3090,6 +3090,47 @@ export interface ReportPackDeliveryArtifact {
   downloadRoute?: string | null;
 }
 
+export interface ReportPackDeliveryRecipient {
+  distributionId: string;
+  recipient: string;
+  recipientRole: string;
+  channel: string;
+}
+
+export interface ReportPackDeliveryApprovalStep {
+  at: string;
+  actor: string;
+  action: string;
+  fromState: string;
+  toState: string;
+  note?: string | null;
+}
+
+export interface ReportPackDeliveryEvidencePacket {
+  packetId: string;
+  packetKind: string;
+  packageId: string;
+  reportId: string;
+  fundProfileId: string;
+  fundAccountId: string;
+  period: string;
+  packageContents: string[];
+  supportEvidenceIds: string[];
+  recipientList: ReportPackDeliveryRecipient[];
+  entitlementScope: string;
+  approvalChain: ReportPackDeliveryApprovalStep[];
+  datasetVersion: string;
+  templateVersion: string;
+  deliveryChannel: string;
+  deliveredAtUtc: string;
+  deliveryEvidence: ReportingWorkflowEvidenceLink[];
+  requestHistory: string[];
+  amendmentReason?: string | null;
+  restatementLineage?: string | null;
+  auditEventReferences?: string[] | null;
+  blockedDownstreamOutputs?: string[] | null;
+}
+
 export interface ReportPackDeliveryPackage {
   packageId: string;
   reportId: string;
@@ -3107,6 +3148,7 @@ export interface ReportPackDeliveryPackage {
   reportingTemplateId?: string | null;
   reportingScheduleId?: string | null;
   sourceArtifacts?: string[] | null;
+  deliveryEvidencePacket?: ReportPackDeliveryEvidencePacket | null;
 }
 
 export interface ReportPackDeliveryAttempt {

@@ -903,6 +903,15 @@ public static class FundStructureEndpoints
                         fileName);
                 }
 
+                if (IsStructuredJsonRequest(format))
+                {
+                    var fileName = $"{result.Export.ExportId}-{result.Export.AsOf.UtcDateTime:yyyyMMddHHmmss}.json";
+                    return Results.File(
+                        BuildStructuredExportJson(result, jsonOptions),
+                        "application/json",
+                        fileName);
+                }
+
                 return Results.Json(result, jsonOptions);
             }
             catch (ArgumentException ex)
@@ -916,6 +925,7 @@ public static class FundStructureEndpoints
         })
         .WithName("GetStructuredReportingExport")
         .Produces<StructuredReportingExportPayloadDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status200OK, contentType: "application/json")
         .Produces(StatusCodes.Status200OK, contentType: "text/csv")
         .Produces(StatusCodes.Status200OK, contentType: StructuredXlsxContentType)
         .Produces(StatusCodes.Status400BadRequest)
@@ -2245,10 +2255,18 @@ public static class FundStructureEndpoints
     private static bool IsStructuredCsvRequest(string? format) =>
         string.Equals(format, "csv", StringComparison.OrdinalIgnoreCase);
 
+    private static bool IsStructuredJsonRequest(string? format) =>
+        string.Equals(format, "json", StringComparison.OrdinalIgnoreCase);
+
     private static bool IsStructuredXlsxRequest(string? format) =>
         string.Equals(format, "xlsx", StringComparison.OrdinalIgnoreCase)
         || string.Equals(format, "xls", StringComparison.OrdinalIgnoreCase)
         || string.Equals(format, "excel", StringComparison.OrdinalIgnoreCase);
+
+    private static byte[] BuildStructuredExportJson(
+        StructuredReportingExportPayloadDto payload,
+        JsonSerializerOptions jsonOptions) =>
+        JsonSerializer.SerializeToUtf8Bytes(payload, jsonOptions);
 
     private static byte[] BuildStructuredExportCsv(StructuredReportingExportPayloadDto payload)
     {

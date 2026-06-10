@@ -535,6 +535,8 @@ public sealed class ReportTemplateRegistryService
                 }
             }
 
+            issues.AddRange(ValidateGridFormulas(grid));
+
             foreach (var filter in grid.Filters ?? [])
             {
                 if (string.IsNullOrWhiteSpace(filter.Field))
@@ -552,6 +554,273 @@ public sealed class ReportTemplateRegistryService
 
         return issues;
     }
+
+    private static IReadOnlyList<string> ValidateGridFormulas(ReportWriterGridDefinitionDto grid)
+    {
+        var formulas = (grid.Formulas ?? [])
+            .Where(static formula => !string.IsNullOrWhiteSpace(formula.Name) && !string.IsNullOrWhiteSpace(formula.Expression))
+            .ToArray();
+        if (formulas.Length == 0)
+        {
+            return [];
+        }
+
+        var issues = new List<string>();
+        var metricNames = (grid.Metrics ?? [])
+            .Where(static metric => !string.IsNullOrWhiteSpace(metric.Name))
+            .Select(static metric => metric.Name.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var totalFields = (grid.Metrics ?? [])
+            .Where(static metric => !string.IsNullOrWhiteSpace(metric.Name))
+            .Select(static metric => metric.Name.Trim())
+            .Concat((grid.Metrics ?? [])
+                .Where(static metric => !string.IsNullOrWhiteSpace(metric.SourceField))
+                .Select(static metric => metric.SourceField.Trim()))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var formulaIndexes = formulas
+            .Select((formula, index) => (formula.Name, Index: index))
+            .ToDictionary(static item => item.Name.Trim(), static item => item.Index, StringComparer.OrdinalIgnoreCase);
+        var availableRowReferences = metricNames
+            .Concat(formulaIndexes.Keys)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var dependencies = formulas.ToDictionary(
+            static formula => formula.Name.Trim(),
+            static _ => new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+            StringComparer.OrdinalIgnoreCase);
+
+        foreach (var formula in formulas)
+        {
+            var formulaName = formula.Name.Trim();
+            var references = ExtractFormulaReferences(formula.Expression);
+            foreach (var reference in references.RowReferences)
+            {
+                if (!availableRowReferences.Contains(reference))
+                {
+                    issues.Add($"Report writer grid '{grid.GridId}' formula '{formulaName}' references unknown metric or formula '{reference}'.");
+                    continue;
+                }
+
+                if (formulaIndexes.TryGetValue(reference, out var referencedFormulaIndex))
+                {
+                    dependencies[formulaName].Add(reference);
+                    if (string.Equals(reference, formulaName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        issues.Add($"Report writer grid '{grid.GridId}' formula '{formulaName}' cannot reference itself.");
+                    }
+                    else if (referencedFormulaIndex > formulaIndexes[formulaName])
+                    {
+                        issues.Add($"Report writer grid '{grid.GridId}' formula '{formulaName}' references formula '{reference}' before it is evaluated.");
+                    }
+                }
+            }
+
+            foreach (var reference in references.TotalReferences)
+            {
+                if (!totalFields.Contains(reference))
+                {
+                    issues.Add($"Report writer grid '{grid.GridId}' formula '{formulaName}' total field '{reference}' is not a configured metric or metric source field.");
+                }
+            }
+        }
+
+        foreach (var cycle in FindFormulaCycles(dependencies))
+        {
+            issues.Add($"Report writer grid '{grid.GridId}' formula dependencies cannot be circular: {cycle}.");
+        }
+
+        return issues
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static FormulaReferenceSet ExtractFormulaReferences(string expression)
+    {
+        var rowReferences = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var totalReferences = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var position = 0;
+        while (position < expression.Length)
+        {
+            var current = expression[position];
+            if (current == '{')
+            {
+                if (TryReadBraceReference(expression, position, out var reference, out var next))
+                {
+                    rowReferences.Add(reference);
+                    position = next;
+                    continue;
+                }
+
+                position++;
+                continue;
+            }
+
+            if (!IsIdentifierStart(current))
+            {
+                position++;
+                continue;
+            }
+
+            var identifierStart = position;
+            var identifier = ReadIdentifier(expression, ref position);
+            var nextToken = SkipWhitespace(expression, position);
+            if (string.Equals(identifier, "total", StringComparison.OrdinalIgnoreCase)
+                && nextToken < expression.Length
+                && expression[nextToken] == '(')
+            {
+                if (TryReadTotalArgument(expression, nextToken + 1, out var totalReference, out var afterTotal))
+                {
+                    totalReferences.Add(totalReference);
+                    position = afterTotal;
+                    continue;
+                }
+
+                position = identifierStart + identifier.Length;
+                continue;
+            }
+
+            rowReferences.Add(identifier);
+        }
+
+        return new FormulaReferenceSet(rowReferences.ToArray(), totalReferences.ToArray());
+    }
+
+    private static bool TryReadBraceReference(
+        string expression,
+        int openBracePosition,
+        out string reference,
+        out int nextPosition)
+    {
+        reference = string.Empty;
+        nextPosition = openBracePosition + 1;
+        var close = expression.IndexOf('}', openBracePosition + 1);
+        if (close < 0)
+        {
+            return false;
+        }
+
+        reference = expression[(openBracePosition + 1)..close].Trim();
+        nextPosition = close + 1;
+        return reference.Length > 0;
+    }
+
+    private static bool TryReadTotalArgument(
+        string expression,
+        int argumentStart,
+        out string reference,
+        out int nextPosition)
+    {
+        reference = string.Empty;
+        nextPosition = argumentStart;
+        var start = SkipWhitespace(expression, argumentStart);
+        if (start >= expression.Length)
+        {
+            return false;
+        }
+
+        if (expression[start] == '{')
+        {
+            if (!TryReadBraceReference(expression, start, out reference, out var afterBrace))
+            {
+                return false;
+            }
+
+            nextPosition = SkipWhitespace(expression, afterBrace);
+            if (nextPosition < expression.Length && expression[nextPosition] == ')')
+            {
+                nextPosition++;
+                return true;
+            }
+
+            return false;
+        }
+
+        var close = expression.IndexOf(')', start);
+        if (close < 0)
+        {
+            return false;
+        }
+
+        reference = expression[start..close].Trim();
+        nextPosition = close + 1;
+        return reference.Length > 0;
+    }
+
+    private static string ReadIdentifier(string expression, ref int position)
+    {
+        var start = position;
+        while (position < expression.Length && IsIdentifierPart(expression[position]))
+        {
+            position++;
+        }
+
+        return expression[start..position];
+    }
+
+    private static int SkipWhitespace(string expression, int position)
+    {
+        while (position < expression.Length && char.IsWhiteSpace(expression[position]))
+        {
+            position++;
+        }
+
+        return position;
+    }
+
+    private static bool IsIdentifierStart(char value) =>
+        char.IsLetter(value) || value == '_';
+
+    private static bool IsIdentifierPart(char value) =>
+        char.IsLetterOrDigit(value) || value is '_' or '-' or '.';
+
+    private static IReadOnlyList<string> FindFormulaCycles(IReadOnlyDictionary<string, HashSet<string>> dependencies)
+    {
+        var cycles = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var formula in dependencies.Keys)
+        {
+            Visit(formula, formula, [], dependencies, cycles);
+        }
+
+        return cycles.ToArray();
+    }
+
+    private static void Visit(
+        string root,
+        string current,
+        IReadOnlyList<string> path,
+        IReadOnlyDictionary<string, HashSet<string>> dependencies,
+        ISet<string> cycles)
+    {
+        var nextPath = path.Append(current).ToArray();
+        if (!dependencies.TryGetValue(current, out var next))
+        {
+            return;
+        }
+
+        foreach (var dependency in next)
+        {
+            if (!dependencies.ContainsKey(dependency))
+            {
+                continue;
+            }
+
+            if (string.Equals(dependency, root, StringComparison.OrdinalIgnoreCase))
+            {
+                cycles.Add(string.Join(" -> ", nextPath.Append(root)));
+                continue;
+            }
+
+            if (nextPath.Contains(dependency, StringComparer.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            Visit(root, dependency, nextPath, dependencies, cycles);
+        }
+    }
+
+    private sealed record FormulaReferenceSet(
+        IReadOnlyList<string> RowReferences,
+        IReadOnlyList<string> TotalReferences);
 
     private ReportTemplateGovernanceRecordDto GetRecord(VersionedReportTemplateIdDto id) =>
         _templates.TryGetValue(ToKey(id), out var record)

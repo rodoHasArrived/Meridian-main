@@ -5,7 +5,13 @@ import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
+import {
+  FinancialRecordExplorerShell,
+  type FinancialRecordExplorerAction,
+  type FinancialRecordExplorerSavedView,
+  type FinancialRecordExplorerScopeItem,
+  type FinancialRecordExplorerSummaryItem
+} from "@/components/meridian/financial-record-explorer";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { getRunAttribution, getRunCashFlows, getRunEquityCurve, getRunFills } from "@/lib/api";
@@ -340,14 +346,14 @@ export function PortfolioScreen({
     vm.selectAdjacentBrokerageAccount(command);
   }
 
-  const financialRecordExplorerScopeItems = [
+  const financialRecordExplorerScopeItems: FinancialRecordExplorerScopeItem[] = [
+    { id: "portfolio-workspace", label: "Workspace", value: "Portfolio" },
     { id: "portfolio-source", label: "Source", value: vm.positionSourceLabel },
     { id: "portfolio-positions", label: "Positions", value: vm.positionCountLabel },
-    { id: "portfolio-runs", label: "Runs", value: vm.runCountLabel },
-    { id: "portfolio-brokerage", label: "Brokerage", value: vm.brokerageConnectionLabel }
+    { id: "portfolio-runs", label: "Runs", value: vm.runCountLabel }
   ];
 
-  const financialRecordExplorerSavedViews = [
+  const financialRecordExplorerSavedViews: FinancialRecordExplorerSavedView[] = [
     {
       id: "portfolio-open-positions-run-evidence",
       label: "Open positions + run evidence",
@@ -366,7 +372,7 @@ export function PortfolioScreen({
     }
   ];
 
-  const financialRecordExplorerSummaryItems = [
+  const financialRecordExplorerSummaryItems: FinancialRecordExplorerSummaryItem[] = [
     {
       id: "portfolio-open-position-count",
       label: "Open positions",
@@ -393,18 +399,19 @@ export function PortfolioScreen({
     }
   ];
 
-  const financialRecordExplorerAppliedFilters = [
+  const financialRecordExplorerAppliedFilters: FinancialRecordExplorerScopeItem[] = [
     { id: "portfolio-filter-source", label: "Position source", value: vm.positionSourceLabel },
     { id: "portfolio-filter-holding", label: vm.selectedPositionChip.label, value: vm.selectedPositionChip.value },
     { id: "portfolio-filter-run", label: vm.selectedRunChip.label, value: vm.selectedRunChip.value },
     { id: "portfolio-filter-brokerage-account", label: "Brokerage account", value: vm.selectedBrokerageAccount.title }
   ];
 
-  const financialRecordExplorerActions = [
+  const financialRecordExplorerActions: FinancialRecordExplorerAction[] = [
     vm.selectedPosition
       ? {
           id: "portfolio-position-proof",
           label: `Holding proof: ${vm.selectedPosition.title}`,
+          href: `#${vm.positionDetailId}`,
           ariaLabel: vm.selectedPosition.ariaLabel
         }
       : {
@@ -944,7 +951,7 @@ export function PortfolioScreen({
 
       <FinancialRecordExplorerShell
         explorerLabel="Financial Record Explorer"
-        title="Portfolio proof workbench"
+        title="Portfolio Explorer"
         titleId="portfolio-financial-record-explorer-title"
         description="Open holdings, run evidence, brokerage posture, and retained proof links stay anchored to the existing portfolio read model."
         scopeItems={financialRecordExplorerScopeItems}

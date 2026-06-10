@@ -228,6 +228,48 @@ These users primarily consume information rather than operate workflows.
 | Security Administrator            | Administration               | Protect platform and manage permissions                      | Roles, access logs, policies, user scopes                          | Grant, revoke, review, audit                              | Daily / Weekly      |
 | Integration Administrator         | Administration               | Maintain provider and system connections                     | API credentials, SFTP settings, mappings, import runs              | Configure, test, monitor                                  | Weekly              |
 
+### Persona-Specific Operating Journeys
+
+The persona matrix identifies who Meridian serves. The operating journeys define how those personas
+move through the proof chain and what Meridian must retain for each decision.
+
+| Journey | Trigger | Inputs | Primary surface | Decisions and approvals | Blocked states | Output | Retained evidence |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Data Operations Daily Workflow | Scheduled provider/file arrival, manual import request, provider-health alert, schema-drift alert, or downstream close/report blocker. | Provider payloads, SFTP/API files, credentials status, mapping profile, schema version, prior import run, validation rules, lineage manifest, downstream dependency map. | `Data` workspace import-run queue and provider validation packet, shared into Accounting and Reporting blockers. | Accept/reject import, classify severity, choose repair/replay path, escalate provider issue, approve remapped schema, release certified dataset. | Missing source, stale provider credentials, schema drift, validation failure, duplicate source key, incomplete lineage, unresolved severity-high issue, or downstream blast radius not acknowledged. | Certified import run, rejected run with repair instructions, replay request, provider incident, or blocked downstream output. | Import Run Evidence Contract with source hash, payload location, mapping version, validation results, reviewer, repair/replay actions, alert severity, affected accounting/reporting/close objects, and audit event IDs. |
+| Fund Accountant Monthly Close Workflow | Period close opens, NAV support due, administrator package arrives, late activity appears, or capital activity requires statement support. | Trial balance, positions, cash, valuations, accruals, fund events, capital activity, administrator package, reconciliation cases, journal drafts, period-lock policy, report package checklist. | `Accounting` close cockpit, ledger explorer, capital account workbench, and report-pack readiness view. | Approve/reject journals, approve reversals or adjustments, certify NAV support, assign reviewer, release investor statements, approve amendment or restatement path. | Required source missing, unreconciled cash/positions, stale marks, unresolved valuation exceptions, unapproved journals, capital-account roll-forward mismatch, missing reviewer, period lock conflict, or statement support incomplete. | NAV Readiness Packet, closed period, investor statements, amendment/restatement packet, tax/K-1 support package, or blocked-close report. | NAV Readiness Packet with close-state ladder, reviewer ownership, journal/reversal approval chain, capital-account lineage, statement contents, administrator tie-out, blocked outputs, period-lock state, and support manifest. |
+| CFO Weekly / Monthly Control Review | Weekly control meeting, month-end close checkpoint, material exception, liquidity concern, report package deadline, or board/investor package review. | Cash confidence, bank evidence, material breaks, close readiness, NAV readiness, report package status, approval queue, stale-data report, liquidity watchlist, blocked outputs. | Executive financial control brief in `Accounting`, `Reporting`, and `Portfolio` review routes. | Approve material adjustments, direct escalation, approve package release, require restatement, authorize scoped payment request, approve exception waiver, or hold downstream reporting. | Unclear cash confidence, unapproved material journal, stale data beyond SLA, unresolved material break, missing report-package approval, incomplete delivery evidence, or blocked stakeholder output. | Executive Financial Control Brief, approved action list, held package, escalation memo, or board-ready control summary. | Control brief with materiality thresholds, owner, SLA, approval need, stale-data flags, blocked outputs, reviewer comments, decision history, and linked audit events. |
+| Compliance Officer Review Workflow | Scheduled access certification, policy review, audit request, exception escalation, permission change, legal hold, or report delivery review. | Audit events, scoped access assignments, policy mappings, approval history, retention policy, legal-hold markers, user/fund/entity/report scopes, delivery logs. | `Settings` access review, audit timeline, evidence vault, and compliance-filtered queues; no separate root Governance workspace. | Certify/revoke access, approve exception, map policy to action, place legal hold, approve retention disposition, request additional evidence, or escalate segregation-of-duties breach. | Missing audit event, orphan permission, stale certification, policy/action mismatch, retention conflict, legal-hold ambiguity, unowned exception, or evidence manifest gap. | Scoped Access Review Packet, audit request response, access revocation, policy exception, or legal-hold evidence set. | Audit Event Catalog plus access review packet with actor, action, scope, before/after state, reason, approval, source object, retention class, legal-hold state, and route mapping. |
+| Portfolio Manager Daily Review | Start-of-day review, material position change, benchmark underperformance, stale mark, breach alert, unreconciled position, liquidity watchlist event, or valuation exception. | Holdings, positions, exposure, performance, benchmarks, valuations, liquidity, breaches, unreconciled positions, stale marks, source confidence, evidence drill-down. | `Portfolio` workspace daily review, portfolio explorer, proof drawer, risk and reconciliation links. | Approve watchlist classification, acknowledge breach, request valuation review, approve non-accounting commentary, escalate unresolved position, or hold investment-facing report commentary. | Stale marks, unreconciled positions, unresolved breach, missing source evidence, benchmark underperformance without explanation, valuation exception, or liquidity watchlist item without owner. | Portfolio Daily Review Packet, escalation, valuation-review request, commentary draft, or held report input. | Daily packet with material changes, benchmark variance, stale marks, breaches, liquidity watchlist, valuation exceptions, PM acknowledgements, permissible approvals, and links to reconciliation/ledger evidence. |
+| LP / Stakeholder Report Package Journey | Capital call, distribution, quarterly statement, K-1/tax support, audit support request, board package, amendment, restatement, or recipient-list change. | Approved report data, capital account activity, statement contents, notices, recipient list, delivery rules, package version, amendment/restatement lineage, stakeholder entitlement scope. | `Reporting` package builder, delivery evidence view, stakeholder package history, and request workflow; broad self-service portal remains deferred. | Approve package, approve recipient list, release delivery, amend/restated package, respond to request, limit stakeholder view to entitled outputs. | Unapproved report line, incomplete recipient approval, missing delivery evidence, stale capital account, unresolved restatement lineage, entitlement mismatch, or missing support package. | Stakeholder Delivery / Restatement Packet, delivered statement package, held package, amended package, or request response. | Delivery packet with package contents, capital activity support, recipient list, channel, timestamp, approval chain, view/request permissions, delivery evidence, amendment/restatement lifecycle, and audit event IDs. |
+
+### Reusable Evidence Packet Objects
+
+Evidence packets are first-class product objects, not ad hoc attachments. They should be durable,
+versioned, permission-scoped, and reconstructable from the Operational Evidence Graph.
+
+| Evidence packet | Purpose | Required fields | Owner and approver | Blocked downstream outputs |
+| --- | --- | --- | --- | --- |
+| Import Run Evidence Contract | Prove that a provider/file/API import is complete, mapped, validated, lineage-safe, and replayable. | Import ID, source kind, source URI or vault reference, source hash, receipt timestamp, provider/account scope, mapping version, schema version, validation results, extraction confidence, repair/replay rule, severity, owner, reviewer, release state, downstream dependency map, audit event IDs. | Data Operations owns; Operations Manager or domain owner approves release when the run affects close/reporting. | Certified dataset, reconciliation run, close package, NAV readiness, report package, and stakeholder delivery. |
+| NAV Readiness Packet | Prove that a fund/book/period can support NAV, investor statements, administrator tie-out, and close sign-off. | Fund/book/period/entity, close-state ladder, trial balance, positions, cash, valuations, accruals, journal list, reversal/adjustment approvals, capital-account roll-forward, reconciliation blockers, administrator tie-out, reviewer, period-lock state, statement support, amendment/restatement links. | Fund Accountant owns; Controller or CFO approves material close readiness. | Period lock, investor statements, report package, tax/K-1 support, audit package, and restatement release. |
+| Executive Financial Control Brief | Give CFOs a compact, decision-grade control view of cash, exceptions, close, reports, and blocked outputs. | Cash confidence, bank-evidence freshness, material exceptions, close readiness, NAV readiness, report package status, stale data, approval needs, owner, SLA, materiality threshold, blocked outputs, decision log, audit event IDs. | CFO owns review; Controller, Fund Accountant, Data Operations, Treasury, and Reporting supply evidence. | Board package, investor package, executive sign-off, payment authorization, and restatement decision. |
+| Audit Event Catalog | Standardize auditable event capture across imports, reconciliation, journals, access, reports, delivery, retention, and automation. | Event ID, timestamp, actor, actor role, action, object type, object ID, scope, before state, after state, reason code, policy mapping, approval reference, source evidence, retention class, legal-hold state, correlation ID. | Compliance Officer owns schema; System/Security Administrators own technical retention; domain owners emit events. | Access certification, audit request response, legal hold, policy exception, package approval, and evidence manifest freeze. |
+| Scoped Access Review Packet | Prove that permissions are scoped, justified, reviewed, revoked when needed, and aligned with segregation of duties. | User/group, role, permission, scope kind, scope ID, fund/entity/account/book/period/report scope, amount limit, effective date, expiration, requester, approver, justification, SoD result, certification status, revocation evidence, audit events. | Security Administrator owns mechanics; Compliance Officer certifies; domain owner approves business scope. | Journal approval, report release, package delivery, payment request approval, admin actions, and external evidence access. |
+| Portfolio Daily Review Packet | Capture the daily PM control review without giving PMs accounting authority they should not have. | Portfolio/fund/date, material changes, exposure, performance, benchmark variance, stale marks, breaches, liquidity watchlist, unreconciled positions, valuation exceptions, source confidence, PM acknowledgement, escalation state, comments, linked evidence. | Portfolio Manager owns review; Risk, Accounting, and Data Operations own evidence inputs. | Investment commentary, risk escalation closure, valuation acceptance, report commentary, and unresolved-position sign-off. |
+| Stakeholder Delivery / Restatement Packet | Prove governed delivery, recipient entitlement, package contents, amendments, and restatements. | Package ID, package type, statement contents, capital activity support, recipient list, entitlement scope, approval chain, dataset version, template version, delivery channel, timestamp, delivery evidence, request history, amendment reason, restatement lineage, audit event IDs. | Reporting Analyst owns package; Controller or CFO approves release/restatement; Compliance reviews entitlement and retention. | Stakeholder publication, investor statement release, board package, amendment, restatement, and audit/tax support response. |
+
+### Operating Ownership Matrix
+
+| Object or workflow | Responsible | Accountable approver | Consulted | Informed |
+| --- | --- | --- | --- | --- |
+| Journals and reversals | Fund Accountant / Investment Accountant | Controller; CFO for material or late-close items | Data Operations, Portfolio Manager, Compliance | Auditor, Reporting Analyst |
+| NAV support and period close | Fund Accountant | Controller or CFO | Data Operations, Portfolio Manager, Treasury, Reporting | LP/stakeholder recipients after approved delivery |
+| Report packages | Reporting Analyst | Controller or CFO | Fund Accountant, Compliance, Portfolio Manager | Stakeholders, Auditor |
+| Scoped access and entitlement | Security Administrator | Compliance Officer plus domain owner for business scope | System Administrator, Controller, Reporting Analyst | Affected user and auditors |
+| Stakeholder delivery | Reporting Analyst | Controller or CFO | Compliance, Fund Accountant, Relationship owner | LPs, trustees, board, RIA clients, beneficiaries |
+| Amendments and restatements | Reporting Analyst / Fund Accountant | Controller or CFO | Compliance, Auditor, Portfolio Manager where performance commentary changes | Stakeholder recipients and administrators |
+| Payment request and cash evidence | Treasury Operations Specialist | CFO or configured payment approver | Fund Accountant, Compliance, Controller | Reporting Analyst, Auditor |
+| Import run certification | Data Operations Analyst | Operations Manager or affected domain owner | Integration Administrator, Fund Accountant, Reporting Analyst | Portfolio Manager, CFO when material |
+
 ---
 
 ## Current Implementation Baseline
@@ -313,6 +355,23 @@ Settings
 | Workflow & Process Automation | Supported foundation | Shared workflow DTOs, route targets, operator queues, lifecycle transitions, and acceptance gates exist; no-code workflow design remains future work. |
 | Document & Knowledge Management | Design-led foundation | Evidence links and report artifacts exist; full document vault and knowledge-management features remain future work. |
 | Reporting & Analytics Platform | Implemented evidence | Report-pack workflow, line provenance, trial-balance reporting, report freshness, and export evidence exist. |
+
+### Current, Supported, and Planned Productization Matrix
+
+Use this matrix when describing what Meridian has today versus what the design document is directing
+next. "Implemented evidence" means the repository has accepted evidence for the capability baseline.
+"Supported foundation" means underlying models, routes, services, or workflow concepts exist but the
+operator product is not complete. "Planned productization" means the design is intentional but must
+not be presented as shipped.
+
+| Capability area | Implemented evidence | Supported foundation | Planned productization |
+| --- | --- | --- | --- |
+| Treasury and payments | Treasury-ledger principles, cash-oriented records, approval evidence, payment-intent language, and ledger linkage expectations. | Payment request, approval, expected cash movement, bank evidence, reconciliation, return/reversal evidence, and audit linkage can be modeled as operating records. | Native live payment execution, bank release automation, full bill pay, and payment processor orchestration. |
+| Private-capital close cockpit | W5 accounting records, close-lane blockers, fund-event reconstruction, capital-account subledger impact, ledger evidence, report-pack lineage, and shared browser/WPF read models. | NAV readiness, period lock/reopen posture, administrator tie-out, journal/reversal boundaries, reviewer ownership, and report readiness are defined as product objects. | Complete close cockpit with fund/book/period dashboards, close-state ladder, SLA ownership, statement release, amendment, restatement, and tax/K-1 support workflows. |
+| Financial Record Explorers | Shared accounting/reporting/portfolio evidence routes, ledger and report pack foundations, private-capital review endpoints, and multi-asset operational coverage. | Explorer shell concepts, proof drawers, saved views, right-side record inspection, proof ribbons, audit timelines, and record graphs are productized design patterns. | Ledger Explorer, Portfolio Explorer, and Security & Instrument Explorer as complete shared browser/WPF product surfaces. |
+| Stakeholder delivery | Governed report-pack readiness, provenance, export evidence, publication/restatement lifecycle, and report-pack delivery service foundations. | Recipient lists, entitlement scope, delivery evidence, package versioning, amendment reasons, and restatement lineage are defined evidence requirements. | Broad LP/client portal, self-service stakeholder workspace, and external collaboration workflows beyond governed package delivery. |
+| Risk | Pre-trade rules, live-readiness controls, exposure/portfolio evidence, breach-style signals, and operational blockers. | Daily PM review, breach acknowledgement, liquidity watchlist, stale marks, benchmark underperformance, valuation exceptions, and blocked report commentary. | Full enterprise risk engine, stress/scenario suite, independent risk cockpit, and cross-portfolio risk governance program. |
+| Forecasting | Strategy analytics, run comparison, reporting evidence, cash-plan snapshots, and design-level forecasting requirements. | Forecast inputs can be retained as evidence and linked to cash, budget, close, and report objects. | Full forecasting engine, scenario engine, autonomous planning workflows, and broad decision-support modeling. |
 
 ---
 
@@ -405,7 +464,9 @@ Receive Activity
 
 ### Purpose
 
-Manage cash movement, liquidity, payment workflows, and capital activity.
+Manage payment requests, liquidity, expected cash movement, bank evidence, reconciliation, and
+capital activity. Near-term treasury work records and proves money-movement intent; live payment
+execution remains later productization.
 
 ### Core Flow
 
@@ -413,9 +474,10 @@ Manage cash movement, liquidity, payment workflows, and capital activity.
 Request Payment
 → Validate Payment
 → Approve Payment
-→ Execute Payment
-→ Reconcile Payment
-→ Report Payment
+→ Record Expected Cash Movement
+→ Attach Bank Evidence
+→ Reconcile Cash and Ledger Impact
+→ Report Payment Status
 ```
 
 ### Capabilities
@@ -426,8 +488,8 @@ Request Payment
 * Cash forecasting
 * Treasury ledger accounts
 * Idempotent payment and settlement intents
-* ACH processing
-* Wire processing
+* ACH intent and bank evidence
+* Wire intent and bank evidence
 * Internal transfers
 * Payment approvals
 * Capital calls
@@ -449,6 +511,19 @@ Request Payment
   adjusting entries with explicit lineage.
 * Balance-affecting writes must be idempotent, per-currency balanced, and protected by version or
   close-period checks where concurrent activity could change the result.
+
+### Acceptance Criteria
+
+* Each payment request has requester, amount, currency, payee, account scope, business purpose,
+  approval policy, expected settlement date, and source evidence.
+* Approval state is explicit: draft, submitted, first approval, second approval where required,
+  rejected, bank evidence received, reconciled, returned, reversed, or cancelled.
+* No workflow copy should imply Meridian has released money unless a future roadmap item explicitly
+  implements live payment execution.
+* Downstream cash, ledger, close, and report outputs remain blocked when approval, bank evidence,
+  reconciliation, or reversal lineage is missing.
+* Every state transition emits an audit event with actor, scope, previous state, next state, reason,
+  and linked evidence.
 
 ---
 
@@ -831,6 +906,19 @@ Identify, monitor, and mitigate financial, investment, liquidity, compliance, an
 * Scenario analysis
 * Risk reporting
 
+### Acceptance Criteria
+
+* Each risk alert has owner, risk type, scope, materiality, severity, threshold, source evidence,
+  affected holdings or reports, SLA, and current state.
+* Breach states are explicit: detected, acknowledged, assigned, under review, mitigated, waived,
+  escalated, closed, or expired.
+* PM acknowledgements cannot approve accounting records, override compliance policy, or close
+  unresolved reconciliation blockers.
+* Material breaches block downstream investment commentary, report release, or close sign-off until
+  owner, decision, approval, and audit event are retained.
+* Risk reports must disclose stale marks, missing source evidence, unresolved breaches, liquidity
+  watchlist items, and valuation exceptions.
+
 ---
 
 ## 5.13 Client & Stakeholder Reporting
@@ -873,6 +961,20 @@ Collect Approved Information
 * Client portal support (later; near-term delivery is governed report-package distribution)
 * Document delivery
 
+### Acceptance Criteria
+
+* Each report package has package ID, tenant/fund/entity scope, dataset version, template version,
+  report-line provenance, recipient list, entitlement scope, owner, reviewer, approver, and delivery
+  policy.
+* Package states are explicit: draft, evidence incomplete, in review, approved, held, delivered,
+  amended, restated, revoked, or archived.
+* Report delivery is blocked by missing approval, unresolved material breaks, stale certified data,
+  incomplete recipient approval, entitlement mismatch, or missing delivery evidence.
+* Amendments and restatements must preserve original package version, reason, approval, recipient
+  impact, delivery evidence, and audit events.
+* Stakeholders can view or request only their entitled package outputs; broad self-service portal
+  behavior remains later productization.
+
 ---
 
 ## 5.14 Collaboration & Communication
@@ -894,6 +996,19 @@ Support coordination between operators, reviewers, managers, clients, advisors, 
 * Approval requests
 * Internal collaboration
 * External communication tracking
+
+### Acceptance Criteria
+
+* Every task, comment, review request, notification, or escalation is linked to a business object,
+  owner, scope, due date or SLA, current state, and audit event.
+* Collaboration states are explicit: open, assigned, waiting on evidence, waiting on approval,
+  escalated, resolved, rejected, or archived.
+* External communication must retain recipient, channel, timestamp, package or evidence reference,
+  entitlement check, and retention class.
+* Collaboration cannot substitute for domain approval; journal, report, access, payment request, and
+  close decisions must still use their owning approval workflow.
+* Blocked collaboration items must name the downstream output they block, such as NAV readiness,
+  package delivery, access certification, or close sign-off.
 
 ---
 
@@ -945,6 +1060,19 @@ Provide evidence, controls, record retention, compliance workflows, and audit su
 * Regulatory report support
 * Examination support
 
+### Acceptance Criteria
+
+* Every compliance review has policy mapping, scope, owner, due date, evidence manifest, decision,
+  approver, retention class, legal-hold state, and audit event IDs.
+* Audit events follow the Audit Event Catalog fields: actor, action, object, scope, before/after
+  state, reason, evidence, policy mapping, retention class, and correlation ID.
+* Access certification states are explicit: pending, certified, exception requested, revoked,
+  expired, escalated, or legally held.
+* Legal holds override disposal and must be visible in evidence packet, report package, delivery,
+  and audit request workflows.
+* A compliance blocker prevents report release, stakeholder delivery, payment request approval,
+  journal posting, or access grant when policy mapping or evidence is incomplete.
+
 ---
 
 ## 5.17 Workflow & Process Automation
@@ -978,6 +1106,18 @@ Trigger Workflow
 * Event triggers
 * Scheduling
 * Process templates
+
+### Acceptance Criteria
+
+* Each workflow instance has trigger, object scope, owner, SLA, required inputs, allowed states,
+  approval policy, blocked downstream outputs, and evidence packet target.
+* State transitions are explicit and auditable; workflows cannot silently skip review, approval,
+  rejection, escalation, or evidence-archive steps.
+* Automation may draft, classify, match, summarize, or flag, but cannot approve its own work, post
+  material journals, override period locks, release payments, publish reports, or erase evidence.
+* SLA breaches produce severity, owner, escalation path, affected outputs, and audit events.
+* Workflow templates remain domain-aware; generic process configuration cannot own reconciliation,
+  payment request, report, journal, or access-control truth.
 
 ---
 
@@ -1022,6 +1162,19 @@ Provide shared analytics, dashboards, visualizations, exports, and reporting inf
 * Certified datasets
 * Certified operational data marts
 * Queryable evidence and report-line provenance
+
+### Acceptance Criteria
+
+* Each certified dataset has source run IDs, validation results, reconciliation status, refresh
+  cadence, owner, version, release approval, lineage manifest, and permitted consumers.
+* Dashboards and reports disclose stale data, incomplete source evidence, unresolved exceptions,
+  materiality thresholds, and blocked downstream outputs.
+* Report lines drill through to source records, reconciliation cases, journals, approvals, delivery
+  records, and restatement history where applicable.
+* Scheduled exports require approval, entitlement policy, destination, version, timestamp, delivery
+  evidence, and audit event.
+* Analytics outputs cannot be marked certified when upstream import, reconciliation, journal,
+  access, or package approval states are incomplete.
 
 ---
 
@@ -1828,9 +1981,10 @@ Payment Request
 → Validation
 → First Approval
 → Second Approval
-→ Release to Bank
-→ Bank Confirmation
-→ Reconciliation
+→ Record Expected Cash Movement
+→ Attach Bank Instruction or Bank Confirmation Evidence
+→ Reconcile Cash and Ledger Intent
+→ Retain Payment Evidence Packet
 ```
 
 ### Ownership Rule

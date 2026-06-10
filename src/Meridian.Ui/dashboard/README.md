@@ -342,6 +342,10 @@ Record Explorer pattern from the design document. It wraps the existing shared t
 ledger-line, reconciliation, evidence-packet, audit-packet, and report-usage read models with
 explorer scope, saved-view labels, filter chips, summary signals, and proof drill-through actions
 without creating a separate browser ledger state or adding new root navigation.
+That shared explorer shell also wraps `/portfolio` and `/accounting/security-master`: Portfolio
+anchors open holdings, selected run evidence, brokerage posture, and coverage proof to the existing
+Portfolio view model, while Security Master anchors instrument search, identity evidence, conflicts,
+schedules, lots, and trading controls to the Accounting-owned Security Master view model.
 The Accounting journal-entry workstream at `/accounting/journal-entries` is a thin browser surface
 over the shared manual journal entry workbench endpoints. React renders draft headers, GL account
 selection, selected-line Security Master search/picker results, line validation badges, typed source

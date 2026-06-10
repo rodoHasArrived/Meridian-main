@@ -250,13 +250,7 @@ public sealed class ReportPackDeliveryService
             var attemptId = Guid.NewGuid();
             var reference = BuildReportingRunDeliveryReference(manifest, normalizedDistributionId);
             var package = BuildDeliveryPackage(manifest, policy, reportId, attemptId, attemptNumber, target.Formats, target.DeliveryMode);
-            var packageEvidenceLinks = package.Artifacts
-                .Select(static artifact => new ReportPackEvidenceLinkDto(
-                    artifact.EvidenceId,
-                    artifact.ArtifactName,
-                    artifact.RetainedPath,
-                    "reporting-run-delivery"))
-                .ToArray();
+            var packageEvidenceLinks = BuildArtifactEvidenceLinks(package.Artifacts, "reporting-run-delivery");
             var attempt = new ReportPackDeliveryAttemptDto(
                 attemptId,
                 reportId,
@@ -328,16 +322,13 @@ public sealed class ReportPackDeliveryService
             var reference = string.IsNullOrWhiteSpace(deliveryReference)
                 ? $"delivery:{normalizedDistributionId}:{reportId:N}:{attemptNumber}"
                 : deliveryReference.Trim();
+            var requestEvidenceLinks = NormalizeEvidenceLinks(evidenceLinks);
             var package = state == ReportPackDeliveryStateDto.Delivered
-                ? BuildDeliveryPackage(record, policy, attemptId, attemptNumber, formats, deliveryMode)
+                ? BuildDeliveryPackage(record, policy, attemptId, attemptNumber, formats, deliveryMode, requestEvidenceLinks)
                 : null;
-            var packageEvidenceLinks = package?.Artifacts
-                .Select(static artifact => new ReportPackEvidenceLinkDto(
-                    artifact.EvidenceId,
-                    artifact.ArtifactName,
-                    artifact.RetainedPath,
-                    "report-pack-delivery"))
-                .ToArray() ?? [];
+            var packageEvidenceLinks = package is null
+                ? []
+                : BuildArtifactEvidenceLinks(package.Artifacts, "report-pack-delivery");
             var attempt = new ReportPackDeliveryAttemptDto(
                 attemptId,
                 reportId,
@@ -352,7 +343,7 @@ public sealed class ReportPackDeliveryService
                 reference,
                 NormalizeNullable(note),
                 NormalizeNullable(failureReason),
-                NormalizeEvidenceLinks((evidenceLinks ?? []).Concat(packageEvidenceLinks).ToArray()),
+                NormalizeEvidenceLinks(requestEvidenceLinks.Concat(packageEvidenceLinks).ToArray()),
                 package);
             _attempts.Add(attempt);
             _store?.Save(_attempts);
@@ -376,16 +367,28 @@ public sealed class ReportPackDeliveryService
         Guid attemptId,
         int attemptNumber,
         IReadOnlyList<GovernanceReportArtifactFormatDto>? requestedFormats,
-        ReportPackDeliveryModeDto? requestedMode)
+        ReportPackDeliveryModeDto? requestedMode,
+        IReadOnlyList<ReportPackEvidenceLinkDto> requestEvidenceLinks)
     {
         var formats = NormalizeFormats(requestedFormats);
         var mode = requestedMode ?? InferDeliveryMode(policy.Channel);
         var packageId = $"pkg-{record.ReportId:N}-{policy.DistributionId}-{attemptNumber}";
         var retainedManifestPath = $"workstation/reporting/deliveries/{record.ReportId:N}/{policy.DistributionId}/{attemptNumber}/manifest.json";
         var token = BuildSecureToken(record.ReportId, policy.DistributionId, attemptId);
+        var createdAtUtc = DateTimeOffset.UtcNow;
         var artifacts = formats
             .Select(format => BuildArtifact(record, policy, packageId, attemptId, token, format))
             .ToArray();
+        var artifactEvidenceLinks = BuildArtifactEvidenceLinks(artifacts, "report-pack-delivery");
+        var deliveryEvidencePacket = BuildDeliveryEvidencePacket(
+            record,
+            policy,
+            packageId,
+            mode,
+            createdAtUtc,
+            artifacts,
+            requestEvidenceLinks,
+            artifactEvidenceLinks);
         var secureLink = mode switch
         {
             ReportPackDeliveryModeDto.EmailLink => UiApiRoutes.WithQuery(
@@ -411,10 +414,22 @@ public sealed class ReportPackDeliveryService
             portalRoute,
             formats,
             artifacts,
-            DateTimeOffset.UtcNow,
+            createdAtUtc,
             retainedManifestPath,
             record.Publication?.EvidenceHash,
-            BuildIntegritySummary(artifacts, record.Publication?.EvidenceHash));
+            BuildIntegritySummary(artifacts, record.Publication?.EvidenceHash),
+            PublicationManifestId: record.Publication?.ManifestId,
+            PublicationRetainedManifestPath: record.Publication?.RetainedManifestPath,
+            PublicationSignedOffBy: record.Publication?.SignedOffBy,
+            PublicationSignedOffAtUtc: record.Publication?.SignedOffAt,
+            PublicationEvidenceLinks: record.Publication?.EvidenceLinks,
+            LineProvenance: record.LineProvenance,
+            RestatementReasonCode: record.Restatement?.ReasonCode,
+            RestatementPriorVersionReportId: record.Restatement?.PriorVersionReportId,
+            RestatementApprover: record.Restatement?.Approver,
+            RestatementChangedLines: record.Restatement?.ChangedLines,
+            RestatementEvidenceLinks: record.Restatement?.EvidenceLinks,
+            DeliveryEvidencePacket: deliveryEvidencePacket);
     }
 
     private static ReportPackDeliveryPackageDto BuildDeliveryPackage(
@@ -469,6 +484,154 @@ public sealed class ReportPackDeliveryService
             manifest.Artifacts.ToArray());
     }
 
+    private static ReportPackDeliveryEvidencePacketDto BuildDeliveryEvidencePacket(
+        ReportPackWorkflowRecordDto record,
+        ReportPackRunReadService.ReportPackDistributionPolicy policy,
+        string packageId,
+        ReportPackDeliveryModeDto deliveryMode,
+        DateTimeOffset deliveredAtUtc,
+        IReadOnlyList<ReportPackDeliveryArtifactDto> artifacts,
+        IReadOnlyList<ReportPackEvidenceLinkDto> requestEvidenceLinks,
+        IReadOnlyList<ReportPackEvidenceLinkDto> artifactEvidenceLinks)
+    {
+        var lineProvenance = record.LineProvenance ?? [];
+        var publicationEvidenceLinks = record.Publication?.EvidenceLinks ?? [];
+        var restatementEvidenceLinks = record.Restatement?.EvidenceLinks ?? [];
+        var restatementContents = record.Restatement?.ChangedLines
+            .Select(static line => $"restatement-line:{line.LineKey}")
+            .ToArray() ?? [];
+        var deliveryEvidence = NormalizeEvidenceLinks(requestEvidenceLinks.Concat(artifactEvidenceLinks).ToArray());
+        var packageContents = DistinctValues(
+            artifacts.Select(static artifact => artifact.ArtifactName)
+                .Concat(lineProvenance.Select(static line => $"report-line:{line.LineKey}"))
+                .Concat(restatementContents));
+        var supportEvidenceIds = DistinctValues(
+            publicationEvidenceLinks.Select(static link => link.EvidenceId)
+                .Concat(lineProvenance.Select(static line => line.EvidenceId))
+                .Concat(restatementEvidenceLinks.Select(static link => link.EvidenceId))
+                .Concat(deliveryEvidence.Select(static link => link.EvidenceId)));
+        var approvalChain = record.AuditTrail
+            .Select(static item => new ReportPackDeliveryApprovalStepDto(
+                item.At,
+                item.Actor,
+                item.Action,
+                item.FromState,
+                item.ToState,
+                item.Note))
+            .ToArray();
+
+        return new ReportPackDeliveryEvidencePacketDto(
+            PacketId: $"stakeholder-delivery:{packageId}",
+            PacketKind: "StakeholderDeliveryRestatement",
+            PackageId: packageId,
+            ReportId: record.ReportId,
+            FundProfileId: record.FundProfileId,
+            FundAccountId: record.FundAccountId,
+            Period: record.Period,
+            PackageContents: packageContents,
+            SupportEvidenceIds: supportEvidenceIds,
+            RecipientList:
+            [
+                new ReportPackDeliveryRecipientDto(
+                    policy.DistributionId,
+                    policy.Recipient,
+                    policy.RecipientRole,
+                    policy.Channel)
+            ],
+            EntitlementScope: BuildEntitlementScope(record.AccessPolicy),
+            ApprovalChain: approvalChain,
+            DatasetVersion: record.Publication?.ManifestId ?? $"report-pack:{record.ReportId:N}:v{record.Version}",
+            TemplateVersion: $"{record.TemplateId.Name}@v{record.TemplateId.Version}",
+            DeliveryChannel: $"{deliveryMode} via {policy.Channel}",
+            DeliveredAtUtc: deliveredAtUtc,
+            DeliveryEvidence: deliveryEvidence,
+            RequestHistory: BuildRequestHistory(record, policy.DistributionId),
+            AmendmentReason: record.Restatement?.ReasonCode,
+            RestatementLineage: BuildRestatementLineage(record.Restatement),
+            AuditEventReferences: BuildAuditEventReferences(record),
+            BlockedDownstreamOutputs: []);
+    }
+
+    private static IReadOnlyList<ReportPackEvidenceLinkDto> BuildArtifactEvidenceLinks(
+        IReadOnlyList<ReportPackDeliveryArtifactDto> artifacts,
+        string source) =>
+        artifacts
+            .Select(artifact => new ReportPackEvidenceLinkDto(
+                artifact.EvidenceId,
+                artifact.ArtifactName,
+                artifact.RetainedPath,
+                source))
+            .ToArray();
+
+    private static IReadOnlyList<string> DistinctValues(IEnumerable<string?> values) =>
+        values
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    private static string BuildEntitlementScope(ReportAccessPolicyDto? accessPolicy)
+    {
+        if (accessPolicy is null)
+        {
+            return ReportAccessModeDto.CompanyWide.ToString();
+        }
+
+        var principalScope = accessPolicy.Principals is { Count: > 0 }
+            ? string.Join(
+                ",",
+                accessPolicy.Principals
+                    .Where(static principal => !string.IsNullOrWhiteSpace(principal.PrincipalId))
+                    .Select(static principal => $"{principal.Kind}:{principal.PrincipalId.Trim()}"))
+            : "none";
+
+        return accessPolicy.Mode switch
+        {
+            ReportAccessModeDto.Private =>
+                $"Private owner={accessPolicy.OwnerPrincipalId ?? "unspecified"} allowOwnerAccess={accessPolicy.AllowOwnerAccess}",
+            ReportAccessModeDto.Restricted => $"Restricted principals={principalScope}",
+            ReportAccessModeDto.CompanyWide when !string.IsNullOrWhiteSpace(accessPolicy.CompanyId) =>
+                $"CompanyWide company={accessPolicy.CompanyId.Trim()}",
+            ReportAccessModeDto.CompanyWide => ReportAccessModeDto.CompanyWide.ToString(),
+            _ => accessPolicy.Mode.ToString()
+        };
+    }
+
+    private static IReadOnlyList<string> BuildRequestHistory(
+        ReportPackWorkflowRecordDto record,
+        string distributionId)
+    {
+        var history = record.AuditTrail
+            .Select(static item => $"{item.At:O}|{item.Actor}|{item.Action}|{item.FromState}->{item.ToState}");
+
+        if (record.Restatement is null)
+        {
+            return history
+                .Append($"delivery-request:{distributionId}")
+                .ToArray();
+        }
+
+        return history
+            .Append($"restatement:{record.Restatement.ReasonCode}:{record.Restatement.ChangedLines.Count} changed line(s)")
+            .Append($"delivery-request:{distributionId}")
+            .ToArray();
+    }
+
+    private static string? BuildRestatementLineage(ReportPackRestatementMetadataDto? restatement)
+    {
+        if (restatement is null)
+        {
+            return null;
+        }
+
+        return $"{restatement.PriorVersionReportId:D};reason={restatement.ReasonCode};approver={restatement.Approver};changedLines={restatement.ChangedLines.Count}";
+    }
+
+    private static IReadOnlyList<string> BuildAuditEventReferences(ReportPackWorkflowRecordDto record) =>
+        record.AuditTrail
+            .Select((item, index) => $"{record.ReportId:N}:{index + 1}:{item.Action}:{item.At.UtcDateTime:yyyyMMddHHmmssfff}")
+            .ToArray();
+
     private static ReportPackDeliveryArtifactDto BuildArtifact(
         ReportPackWorkflowRecordDto record,
         ReportPackRunReadService.ReportPackDistributionPolicy policy,
@@ -493,6 +656,17 @@ public sealed class ReportPackDeliveryService
             contentType,
             retainedPath,
             record.Publication?.EvidenceHash,
+            record.Publication?.ManifestId,
+            record.Publication?.RetainedManifestPath,
+            record.Publication?.SignedOffBy,
+            record.Publication?.SignedOffAt,
+            record.Publication?.EvidenceLinks ?? [],
+            record.LineProvenance ?? [],
+            record.Restatement?.ReasonCode,
+            record.Restatement?.PriorVersionReportId,
+            record.Restatement?.Approver,
+            record.Restatement?.ChangedLines ?? [],
+            record.Restatement?.EvidenceLinks ?? [],
             versionStamp);
         var byteSize = content.LongLength;
         var checksum = ComputeSha256Hex(content);
@@ -590,6 +764,17 @@ public sealed class ReportPackDeliveryService
                 artifact.ContentType,
                 artifact.RetainedPath,
                 package.PublicationEvidenceHash,
+                package.PublicationManifestId,
+                package.PublicationRetainedManifestPath,
+                package.PublicationSignedOffBy,
+                package.PublicationSignedOffAtUtc,
+                package.PublicationEvidenceLinks ?? [],
+                package.LineProvenance ?? [],
+                package.RestatementReasonCode,
+                package.RestatementPriorVersionReportId,
+                package.RestatementApprover,
+                package.RestatementChangedLines ?? [],
+                package.RestatementEvidenceLinks ?? [],
                 artifact.VersionStamp)
             : BuildReportingRunDeliveryArtifactContent(
                 package.PackageId,
@@ -613,6 +798,17 @@ public sealed class ReportPackDeliveryService
         string contentType,
         string retainedPath,
         string? publicationEvidenceHash,
+        string? publicationManifestId,
+        string? publicationRetainedManifestPath,
+        string? publicationSignedOffBy,
+        DateTimeOffset? publicationSignedOffAtUtc,
+        IReadOnlyList<ReportPackEvidenceLinkDto> publicationEvidenceLinks,
+        IReadOnlyList<ReportPackLineProvenanceDto> lineProvenance,
+        string? restatementReasonCode,
+        Guid? restatementPriorVersionReportId,
+        string? restatementApprover,
+        IReadOnlyList<ReportPackChangedLineDto> restatementChangedLines,
+        IReadOnlyList<ReportPackEvidenceLinkDto> restatementEvidenceLinks,
         string versionStamp)
     {
         var rows = BuildDeliveryArtifactRows(
@@ -624,6 +820,17 @@ public sealed class ReportPackDeliveryService
             contentType,
             retainedPath,
             publicationEvidenceHash,
+            publicationManifestId,
+            publicationRetainedManifestPath,
+            publicationSignedOffBy,
+            publicationSignedOffAtUtc,
+            publicationEvidenceLinks,
+            lineProvenance,
+            restatementReasonCode,
+            restatementPriorVersionReportId,
+            restatementApprover,
+            restatementChangedLines,
+            restatementEvidenceLinks,
             versionStamp);
 
         return format switch
@@ -729,18 +936,110 @@ public sealed class ReportPackDeliveryService
         string contentType,
         string retainedPath,
         string? publicationEvidenceHash,
-        string versionStamp) =>
-    [
-        new("packageId", packageId),
-        new("reportId", reportId.ToString("D")),
-        new("distributionId", distributionId),
-        new("artifactName", artifactName),
-        new("format", format.ToString()),
-        new("contentType", contentType),
-        new("retainedPath", retainedPath),
-        new("publicationEvidenceHash", string.IsNullOrWhiteSpace(publicationEvidenceHash) ? "" : publicationEvidenceHash.Trim()),
-        new("versionStamp", versionStamp)
-    ];
+        string? publicationManifestId,
+        string? publicationRetainedManifestPath,
+        string? publicationSignedOffBy,
+        DateTimeOffset? publicationSignedOffAtUtc,
+        IReadOnlyList<ReportPackEvidenceLinkDto> publicationEvidenceLinks,
+        IReadOnlyList<ReportPackLineProvenanceDto> lineProvenance,
+        string? restatementReasonCode,
+        Guid? restatementPriorVersionReportId,
+        string? restatementApprover,
+        IReadOnlyList<ReportPackChangedLineDto> restatementChangedLines,
+        IReadOnlyList<ReportPackEvidenceLinkDto> restatementEvidenceLinks,
+        string versionStamp)
+    {
+        var rows = new List<KeyValuePair<string, string>>
+        {
+            new("packageId", packageId),
+            new("reportId", reportId.ToString("D")),
+            new("distributionId", distributionId),
+            new("artifactName", artifactName),
+            new("format", format.ToString()),
+            new("contentType", contentType),
+            new("retainedPath", retainedPath),
+            new("publicationEvidenceHash", string.IsNullOrWhiteSpace(publicationEvidenceHash) ? "" : publicationEvidenceHash.Trim()),
+            new("publicationManifestId", publicationManifestId ?? ""),
+            new("publicationRetainedManifestPath", publicationRetainedManifestPath ?? ""),
+            new("publicationSignedOffBy", publicationSignedOffBy ?? ""),
+            new("publicationSignedOffAtUtc", publicationSignedOffAtUtc?.ToString("O") ?? ""),
+            new("publicationEvidenceLinkCount", publicationEvidenceLinks.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+            new("lineProvenanceCount", lineProvenance.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+            new("restatementReasonCode", restatementReasonCode ?? ""),
+            new("restatementPriorVersionReportId", restatementPriorVersionReportId?.ToString("D") ?? ""),
+            new("restatementApprover", restatementApprover ?? ""),
+            new("restatementChangedLineCount", restatementChangedLines.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+            new("restatementEvidenceLinkCount", restatementEvidenceLinks.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+            new("versionStamp", versionStamp)
+        };
+
+        for (var index = 0; index < publicationEvidenceLinks.Count; index++)
+        {
+            var link = publicationEvidenceLinks[index];
+            var prefix = $"publicationEvidenceLinks[{index}]";
+            rows.Add(new($"{prefix}.evidenceId", link.EvidenceId));
+            rows.Add(new($"{prefix}.label", link.Label));
+            rows.Add(new($"{prefix}.route", link.Route ?? ""));
+            rows.Add(new($"{prefix}.source", link.Source));
+            rows.Add(new($"{prefix}.capturedAtUtc", link.CapturedAtUtc?.ToString("O") ?? ""));
+        }
+
+        for (var index = 0; index < lineProvenance.Count; index++)
+        {
+            var line = lineProvenance[index];
+            var prefix = $"lineProvenance[{index}]";
+            rows.Add(new($"{prefix}.lineKey", line.LineKey));
+            rows.Add(new($"{prefix}.sourceKind", line.SourceKind));
+            rows.Add(new($"{prefix}.sourceId", line.SourceId));
+            rows.Add(new($"{prefix}.evidenceId", line.EvidenceId));
+            rows.Add(new($"{prefix}.reportValue", line.ReportValue ?? ""));
+            rows.Add(new($"{prefix}.runId", line.RunId ?? ""));
+            rows.Add(new($"{prefix}.ledgerEntryId", line.LedgerEntryId ?? ""));
+            rows.Add(new($"{prefix}.reconciliationCaseId", line.ReconciliationCaseId ?? ""));
+            rows.Add(new($"{prefix}.sourceSessionId", line.SourceSessionId ?? ""));
+            rows.Add(new($"{prefix}.reconciliationRunId", line.ReconciliationRunId ?? ""));
+            rows.Add(new($"{prefix}.providerEventId", line.ProviderEventId ?? ""));
+            rows.Add(new($"{prefix}.securityMasterId", line.SecurityMasterId ?? ""));
+            rows.Add(new($"{prefix}.securityDefinitionId", line.SecurityDefinitionId ?? ""));
+            rows.Add(new($"{prefix}.reconciliationOutcome", line.ReconciliationOutcome ?? ""));
+            rows.Add(new($"{prefix}.approvalId", line.ApprovalId ?? ""));
+        }
+
+        for (var index = 0; index < restatementChangedLines.Count; index++)
+        {
+            var line = restatementChangedLines[index];
+            var prefix = $"restatementChangedLines[{index}]";
+            var evidenceLinks = line.EvidenceLinks ?? [];
+            rows.Add(new($"{prefix}.lineKey", line.LineKey));
+            rows.Add(new($"{prefix}.previousValue", line.PreviousValue));
+            rows.Add(new($"{prefix}.currentValue", line.CurrentValue));
+            rows.Add(new($"{prefix}.evidenceLinkCount", evidenceLinks.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+
+            for (var evidenceIndex = 0; evidenceIndex < evidenceLinks.Count; evidenceIndex++)
+            {
+                var link = evidenceLinks[evidenceIndex];
+                var evidencePrefix = $"{prefix}.evidenceLinks[{evidenceIndex}]";
+                rows.Add(new($"{evidencePrefix}.evidenceId", link.EvidenceId));
+                rows.Add(new($"{evidencePrefix}.label", link.Label));
+                rows.Add(new($"{evidencePrefix}.route", link.Route ?? ""));
+                rows.Add(new($"{evidencePrefix}.source", link.Source));
+                rows.Add(new($"{evidencePrefix}.capturedAtUtc", link.CapturedAtUtc?.ToString("O") ?? ""));
+            }
+        }
+
+        for (var index = 0; index < restatementEvidenceLinks.Count; index++)
+        {
+            var link = restatementEvidenceLinks[index];
+            var prefix = $"restatementEvidenceLinks[{index}]";
+            rows.Add(new($"{prefix}.evidenceId", link.EvidenceId));
+            rows.Add(new($"{prefix}.label", link.Label));
+            rows.Add(new($"{prefix}.route", link.Route ?? ""));
+            rows.Add(new($"{prefix}.source", link.Source));
+            rows.Add(new($"{prefix}.capturedAtUtc", link.CapturedAtUtc?.ToString("O") ?? ""));
+        }
+
+        return rows;
+    }
 
     private static IReadOnlyList<KeyValuePair<string, string>> BuildReportingRunDeliveryArtifactRows(
         string packageId,

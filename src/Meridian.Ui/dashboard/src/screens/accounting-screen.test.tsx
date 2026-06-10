@@ -1686,6 +1686,12 @@ describe("AccountingScreen", () => {
   it("adapts the hero copy for security-master deep links", async () => {
     await renderAccountingScreen(data, "/accounting/security-master");
 
+    expect(screen.getByRole("heading", { name: "Security & Instrument Explorer" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Accounting");
+    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Security Master instruments");
+    expect(screen.getByLabelText("Saved explorer views")).toHaveTextContent("Instrument proof");
+    expect(screen.getByLabelText("Applied explorer filters")).toHaveTextContent("No selection");
+    expect(screen.getByLabelText("Security & Instrument Explorer proof actions")).toHaveTextContent("Open search");
     expect(screen.getAllByText("Security coverage").length).toBeGreaterThan(0);
   });
 

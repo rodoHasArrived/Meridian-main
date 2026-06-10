@@ -208,6 +208,90 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public void TemplateRegistry_ReportWriterFormulaValidation_BlocksUnknownAndCircularReferences()
+    {
+        var svc = new ReportTemplateRegistryService();
+        var draft = svc.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "invalid-formula-grid",
+                "Invalid Formula Grid",
+                [],
+                [],
+                Family: "CustomReport",
+                Rationale: "Validate no-code formula dependencies",
+                Grids:
+                [
+                    new ReportWriterGridDefinitionDto(
+                        "formula-grid",
+                        "Formula Grid",
+                        ReportWriterGridKindDto.Pivot,
+                        RowFields: ["sector"],
+                        Metrics:
+                        [
+                            new ReportWriterMetricDefinitionDto("marketValue", "marketValue")
+                        ],
+                        Formulas:
+                        [
+                            new ReportWriterFormulaDefinitionDto("badReference", "{pnl} / {marketValue}"),
+                            new ReportWriterFormulaDefinitionDto("selfReference", "{selfReference} + 1"),
+                            new ReportWriterFormulaDefinitionDto("unsupportedTotal", "total(unconfiguredAmount)")
+                        ])
+                ]),
+            "report.author");
+
+        Action act = () => svc.Submit(draft.Definition.TemplateId, "report.author", "ready");
+
+        draft.ValidationIssues.Should().Contain("Report writer grid 'formula-grid' formula 'badReference' references unknown metric or formula 'pnl'.");
+        draft.ValidationIssues.Should().Contain("Report writer grid 'formula-grid' formula 'selfReference' cannot reference itself.");
+        draft.ValidationIssues.Should().Contain("Report writer grid 'formula-grid' formula 'unsupportedTotal' total field 'unconfiguredAmount' is not a configured metric or metric source field.");
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Template invalid-formula-grid@v1 is not ready for review: Report writer grid 'formula-grid' formula 'badReference' references unknown metric or formula 'pnl'.*");
+    }
+
+    [Fact]
+    public void TemplateRegistry_ReportWriterFormulaValidation_AllowsPriorFormulaAndConfiguredTotals()
+    {
+        var svc = new ReportTemplateRegistryService();
+        var draft = svc.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "valid-formula-grid",
+                "Valid Formula Grid",
+                [],
+                [],
+                Family: "CustomReport",
+                Rationale: "Validate no-code formula dependencies",
+                Grids:
+                [
+                    new ReportWriterGridDefinitionDto(
+                        "formula-grid",
+                        "Formula Grid",
+                        ReportWriterGridKindDto.Pivot,
+                        RowFields: ["sector"],
+                        Metrics:
+                        [
+                            new ReportWriterMetricDefinitionDto("marketValue", "market_value"),
+                            new ReportWriterMetricDefinitionDto("pnl", "pnl")
+                        ],
+                        Formulas:
+                        [
+                            new ReportWriterFormulaDefinitionDto("returnPct", "{pnl} / {marketValue} * 100"),
+                            new ReportWriterFormulaDefinitionDto("fundWeightPct", "{marketValue} / total(market_value) * 100"),
+                            new ReportWriterFormulaDefinitionDto("score", "{returnPct} + {fundWeightPct}")
+                        ])
+                ]),
+            "report.author");
+
+        draft.ValidationIssues.Should().BeEmpty();
+        svc.Submit(draft.Definition.TemplateId, "report.author", "ready");
+        var approved = svc.Approve(
+            draft.Definition.TemplateId,
+            new ReportTemplateDecisionRequestDto("Controller approved formula dependencies", "APP-FORMULA-1"),
+            "controller.admin");
+
+        approved.Status.Should().Be(ReportTemplateLifecycleStatusDto.Approved);
+    }
+
+    [Fact]
     public void TemplateRegistry_RenderApprovedReportWriterGridTemplate_ReturnsStructuredGridResults()
     {
         var svc = new ReportTemplateRegistryService();
@@ -1047,18 +1131,32 @@ public sealed class ReportPackWorkflowServiceTests
             "manifest-1",
             "vault/report-packs/manifest-1.json",
             CompleteLineProvenanceEvidenceLinks("ledger-evidence-1"));
+        var restated = workflow.Restate(
+            published.ReportId,
+            "approver",
+            "approver",
+            "NAV_CORRECTION",
+            "controller",
+            published.ReportId,
+            [
+                new ReportPackChangedLineDto(
+                    "trial-balance.cash",
+                    "100.00",
+                    "101.00",
+                    [new ReportPackEvidenceLinkDto("cash-restatement-1", "Cash restatement", "/evidence/cash-restatement-1", "reporting")])
+            ]);
         var store = new FileReportPackDeliveryRecordStore(
             new ReportPackDeliveryStoreOptions(Path.Combine(root, "report-pack-deliveries.json")),
             NullLogger<FileReportPackDeliveryRecordStore>.Instance);
 
         var service = new ReportPackDeliveryService(workflow, store);
         var attempt = service.Deliver(
-            published.ReportId,
+            restated.ReportId,
             new ReportPackDeliveryRequestDto(
                 "board-reporting-committee",
                 Actor: "fund-controller",
                 DeliveryReference: "board-portal:packet-1",
-                Note: "Delivered after publication.",
+                Note: "Delivered after restatement.",
                 EvidenceLinks: [new ReportPackEvidenceLinkDto("delivery-evidence-1", "Board portal receipt", "/evidence/board-portal-receipt", "delivery")],
                 Formats:
                 [
@@ -1092,10 +1190,68 @@ public sealed class ReportPackWorkflowServiceTests
             artifact.Format == GovernanceReportArtifactFormatDto.Csv &&
             artifact.ContentType == "text/csv");
         attempt.Package.SecureLink.Should().Contain("/package?token=");
+        attempt.Package.PublicationManifestId.Should().Be("manifest-1");
+        attempt.Package.PublicationRetainedManifestPath.Should().Be("vault/report-packs/manifest-1.json");
+        attempt.Package.PublicationSignedOffBy.Should().Be("controller");
+        attempt.Package.PublicationEvidenceLinks.Should().NotBeNull().And.HaveCount(10);
+        attempt.Package.LineProvenance.Should().NotBeNull().And.ContainSingle(line =>
+            line.LineKey == "trial-balance.cash" &&
+            line.EvidenceId == "ledger-evidence-1" &&
+            line.ReportValue == "100.00");
+        attempt.Package.RestatementReasonCode.Should().Be("NAV_CORRECTION");
+        attempt.Package.RestatementPriorVersionReportId.Should().Be(published.ReportId);
+        attempt.Package.RestatementApprover.Should().Be("controller");
+        attempt.Package.RestatementChangedLines.Should().NotBeNull().And.ContainSingle(line =>
+            line.LineKey == "trial-balance.cash" &&
+            line.PreviousValue == "100.00" &&
+            line.CurrentValue == "101.00");
+        attempt.Package.RestatementEvidenceLinks.Should().NotBeNull().And.ContainSingle(link =>
+            link.EvidenceId == "cash-restatement-1");
+        var packet = attempt.Package.DeliveryEvidencePacket.Should().NotBeNull().Subject;
+        packet.PacketKind.Should().Be("StakeholderDeliveryRestatement");
+        packet.PackageId.Should().Be(attempt.Package.PackageId);
+        packet.FundProfileId.Should().Be("fund-a");
+        packet.FundAccountId.Should().Be("acct-1");
+        packet.Period.Should().Be("2026-03");
+        packet.PackageContents.Should().Contain(item => item.EndsWith(".csv", StringComparison.OrdinalIgnoreCase));
+        packet.PackageContents.Should().Contain("report-line:trial-balance.cash");
+        packet.PackageContents.Should().Contain("restatement-line:trial-balance.cash");
+        packet.SupportEvidenceIds.Should().Contain("ledger-evidence-1");
+        packet.SupportEvidenceIds.Should().Contain("delivery-evidence-1");
+        packet.SupportEvidenceIds.Should().Contain("cash-restatement-1");
+        packet.RecipientList.Should().ContainSingle(recipient =>
+            recipient.DistributionId == "board-reporting-committee" &&
+            recipient.Recipient == "Board reporting committee" &&
+            recipient.Channel == "Board portal");
+        packet.EntitlementScope.Should().Be("CompanyWide");
+        packet.ApprovalChain.Should().Contain(step => step.Action == "published");
+        packet.DatasetVersion.Should().Be("manifest-1");
+        packet.TemplateVersion.Should().Be("board-pack@v1");
+        packet.DeliveryChannel.Should().Be("EmailLink via Board portal");
+        packet.DeliveryEvidence.Should().Contain(link => link.EvidenceId == "delivery-evidence-1");
+        packet.DeliveryEvidence.Should().Contain(link => link.Source == "report-pack-delivery");
+        packet.RequestHistory.Should().Contain(item => item.Contains("delivery-request:board-reporting-committee", StringComparison.Ordinal));
+        packet.AmendmentReason.Should().Be("NAV_CORRECTION");
+        packet.RestatementLineage.Should().Contain("reason=NAV_CORRECTION");
+        packet.AuditEventReferences.Should().NotBeNull().And.HaveCountGreaterThan(0);
+        packet.BlockedDownstreamOutputs.Should().BeEmpty();
         attempt.EvidenceLinks.Should().Contain(link => link.Source == "report-pack-delivery");
         var token = attempt.Package.SecureLink.Split("token=", 2, StringSplitOptions.None)[1];
         service.GetPackage(published.ReportId, attempt.AttemptId, token).PackageId.Should().Be(attempt.Package.PackageId);
         service.GetPortalPackage(attempt.Package.PackageId, token).ReportId.Should().Be(published.ReportId);
+        var csvArtifact = attempt.Package.Artifacts.Single(artifact => artifact.Format == GovernanceReportArtifactFormatDto.Csv);
+        var csv = System.Text.Encoding.UTF8.GetString(service.GetArtifact(published.ReportId, attempt.AttemptId, csvArtifact.ArtifactName, token).Content);
+        csv.Should().Contain("publicationManifestId,manifest-1");
+        csv.Should().Contain("publicationEvidenceLinkCount,10");
+        csv.Should().Contain("lineProvenanceCount,1");
+        csv.Should().Contain("lineProvenance[0].lineKey,trial-balance.cash");
+        csv.Should().Contain("lineProvenance[0].reportValue,100.00");
+        csv.Should().Contain("publicationEvidenceLinks[0].evidenceId,ledger-evidence-1");
+        csv.Should().Contain("restatementReasonCode,NAV_CORRECTION");
+        csv.Should().Contain("restatementChangedLineCount,1");
+        csv.Should().Contain("restatementChangedLines[0].lineKey,trial-balance.cash");
+        csv.Should().Contain("restatementChangedLines[0].currentValue,101.00");
+        csv.Should().Contain("restatementEvidenceLinks[0].evidenceId,cash-restatement-1");
         service.Invoking(item => item.GetPackage(published.ReportId, attempt.AttemptId, "bad-token"))
             .Should().Throw<UnauthorizedAccessException>()
             .WithMessage("A valid package token is required.");
@@ -1105,7 +1261,9 @@ public sealed class ReportPackWorkflowServiceTests
             item.DistributionId == "board-reporting-committee" &&
             item.DeliveryReference == "board-portal:packet-1" &&
             item.Package != null &&
-            item.Package.DeliveryMode == ReportPackDeliveryModeDto.EmailLink);
+            item.Package.DeliveryMode == ReportPackDeliveryModeDto.EmailLink &&
+            item.Package.DeliveryEvidencePacket != null &&
+            item.Package.DeliveryEvidencePacket.SupportEvidenceIds.Contains("ledger-evidence-1"));
 
         var payload = new ReportPackRunReadService(
             new DefaultReportingTemplateCatalog(),
@@ -1167,6 +1325,12 @@ public sealed class ReportPackWorkflowServiceTests
         portalPackage.Artifacts.Should().HaveCount(3);
         portalPackage.PublicationEvidenceHash.Should().Be("sha256:abc123");
         portalPackage.IntegritySummary.Should().Be("3 artifact(s) retained with SHA-256 checksums against publication evidence hash sha256:abc123.");
+        portalPackage.DeliveryEvidencePacket.Should().NotBeNull();
+        portalPackage.DeliveryEvidencePacket!.RecipientList.Should().ContainSingle(recipient =>
+            recipient.DistributionId == "board-reporting-committee" &&
+            recipient.Recipient == "Board reporting committee");
+        portalPackage.DeliveryEvidencePacket.DeliveryEvidence.Should().OnlyContain(link =>
+            link.Source == "report-pack-delivery");
         var deliveryArtifactVersionPrefix = $"delivery-artifact:{published.ReportId:N}:board-reporting-committee:";
         portalPackage.Artifacts.Should().OnlyContain(artifact =>
             artifact.ChecksumSha256.Length == 64 &&
@@ -1195,7 +1359,7 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
-    public async Task Endpoint_StructuredReportingExport_ReturnsCsvAndXlsxWhenFormatRequested()
+    public async Task Endpoint_StructuredReportingExport_ReturnsJsonCsvAndXlsxWhenFormatRequested()
     {
         await using var app = await CreateFundStructureAppAsync(
             UserRole.Admin,
@@ -1205,6 +1369,7 @@ public sealed class ReportPackWorkflowServiceTests
         var response = await client.GetAsync("/api/fund-structure/reporting/structured-exports/regulatory-trial-balance?fundProfileId=fund-alpha&asOf=2026-04-11T16%3A00%3A00Z&currency=USD&format=csv");
         var xlsxResponse = await client.GetAsync("/api/fund-structure/reporting/structured-exports/investment-portfolio-cuts?fundProfileId=fund-alpha&asOf=2026-04-11T16%3A00%3A00Z&currency=USD&format=xlsx");
         var warehouseJsonResponse = await client.GetAsync("/api/fund-structure/reporting/structured-exports/warehouse-ledger-facts?fundProfileId=fund-alpha&asOf=2026-04-11T16%3A00%3A00Z&currency=USD");
+        var warehouseJsonDownloadResponse = await client.GetAsync("/api/fund-structure/reporting/structured-exports/warehouse-ledger-facts?fundProfileId=fund-alpha&asOf=2026-04-11T16%3A00%3A00Z&currency=USD&format=json");
         var warehouseCsvResponse = await client.GetAsync("/api/fund-structure/reporting/structured-exports/warehouse-ledger-facts?fundProfileId=fund-alpha&asOf=2026-04-11T16%3A00%3A00Z&currency=USD&format=csv");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -1235,6 +1400,12 @@ public sealed class ReportPackWorkflowServiceTests
             "journalEntryCount",
             "ledgerEntryCount",
             "sourceAsOfUtc");
+        warehouseJsonDownloadResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        warehouseJsonDownloadResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
+        warehouseJsonDownloadResponse.Content.Headers.ContentDisposition?.FileName.Should().Be("warehouse-ledger-facts-20260411160000.json");
+        var warehouseJsonDownload = await warehouseJsonDownloadResponse.Content.ReadAsStringAsync();
+        warehouseJsonDownload.Should().Contain("\"exportId\":\"warehouse-ledger-facts\"");
+        warehouseJsonDownload.Should().Contain("\"rows\"");
         warehouseCsvResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         warehouseCsvResponse.Content.Headers.ContentType?.MediaType.Should().Be("text/csv");
         warehouseCsvResponse.Content.Headers.ContentDisposition?.FileName.Should().Be("warehouse-ledger-facts-20260411160000.csv");
@@ -1394,13 +1565,85 @@ public sealed class ReportPackWorkflowServiceTests
             GovernanceReportArtifactFormatDto.Xlsx,
             GovernanceReportArtifactFormatDto.Csv);
         boardPlan.IsReady.Should().BeTrue();
-        boardPlan.ReadinessSummary.Should().Contain("Will deliver Pdf/Xlsx/Csv by SecurePortal to Board reporting committee");
+        boardPlan.ReadinessSummary.Should().Contain("Ready to deliver Pdf/Xlsx/Csv by SecurePortal to Board reporting committee");
+        boardPlan.ReadinessBlockers.Should().NotBeNull().And.BeEmpty();
         boardPlan.LastDeliveryState.Should().Be(ReportPackDeliveryStateDto.Delivered);
         boardPlan.LastDeliveryAttemptId.Should().NotBeNull();
         boardPlan.LastDeliverySecureLink.Should().NotBeNullOrWhiteSpace();
         boardPlan.LastDeliveryArtifactCount.Should().Be(3);
         boardPlan.LastDeliveryIntegritySummary.Should().Be("3 artifact(s) retained with SHA-256 checksums against publication evidence hash sha256:scheduled-pack.");
         boardPlan.VersionStamp.Should().StartWith("schedule-delivery-plan:sched-board-distribution:board-reporting-committee:");
+    }
+
+    [Fact]
+    public void ReportingScheduleDeliveryPlans_SurfaceModeAndArtifactReadinessBlockers()
+    {
+        var reportId = Guid.NewGuid();
+        var schedule = new ReportingScheduleRecordDto(
+            "sched-board-readiness",
+            "holdings-board-report",
+            "0 8 1 * *",
+            new DateOnly(2026, 5, 1),
+            DateTimeOffset.UtcNow.AddHours(-2),
+            1,
+            "fund-controller",
+            ReportingScheduleStateDto.Active,
+            DateTimeOffset.UtcNow.AddDays(-2),
+            DateTimeOffset.UtcNow.AddDays(-1),
+            DeliveryTargets:
+            [
+                new ReportingScheduleDeliveryTargetDto(
+                    "board-reporting-committee",
+                    [GovernanceReportArtifactFormatDto.Pdf, GovernanceReportArtifactFormatDto.Csv],
+                    ReportPackDeliveryModeDto.EvidenceVault,
+                    "Invalid board vault delivery.")
+            ]);
+        var latestAttempt = new ReportPackDeliveryAttemptDto(
+            Guid.NewGuid(),
+            reportId,
+            "board-reporting-committee",
+            "Board reporting committee",
+            "Board",
+            "Board portal",
+            ReportPackDeliveryStateDto.Delivered,
+            DateTimeOffset.UtcNow.AddMinutes(-30),
+            "fund-controller",
+            1,
+            "schedule:holdings-board-report:run-1:board-reporting-committee",
+            Package: new ReportPackDeliveryPackageDto(
+                "package-1",
+                reportId,
+                "board-reporting-committee",
+                ReportPackDeliveryModeDto.EvidenceVault,
+                "/api/fund-structure/reporting/packs/package?token=t",
+                "/portal/reporting/packages/package-1",
+                [GovernanceReportArtifactFormatDto.Pdf],
+                [
+                    new ReportPackDeliveryArtifactDto(
+                        GovernanceReportArtifactFormatDto.Pdf,
+                        "package-1.pdf",
+                        "application/pdf",
+                        "vault/report-packs/package-1.pdf",
+                        128,
+                        "artifact-pdf",
+                        "sha256:pdf")
+                ],
+                DateTimeOffset.UtcNow.AddMinutes(-30),
+                "vault/report-packs/package-1.json",
+                IntegritySummary: "1 artifact retained."));
+
+        var plan = ReportPackRunReadService.BuildScheduleDeliveryPlans([schedule], [latestAttempt])
+            .Should()
+            .ContainSingle()
+            .Subject;
+
+        plan.IsReady.Should().BeFalse();
+        plan.ReadinessBlockers.Should().NotBeNull();
+        plan.ReadinessBlockers!.Should().Contain("Delivery mode EvidenceVault is not compatible with Board portal for Board reporting committee.");
+        plan.ReadinessBlockers.Should().Contain("Latest delivery package for Board reporting committee is missing requested artifact format(s): Csv.");
+        plan.ReadinessSummary.Should().Contain("Delivery mode EvidenceVault is not compatible with Board portal");
+        plan.LastDeliveryArtifactCount.Should().Be(1);
+        plan.LastDeliveryIntegritySummary.Should().Be("1 artifact retained.");
     }
 
     [Fact]
@@ -1429,7 +1672,7 @@ public sealed class ReportPackWorkflowServiceTests
                         ],
                         Formulas:
                         [
-                            new ReportWriterFormulaDefinitionDto("weightPct", "marketValue / totalMarketValue", "Weight %")
+                            new ReportWriterFormulaDefinitionDto("weightPct", "{marketValue} / total(marketValue) * 100", "Weight %")
                         ]),
                     new ReportWriterGridDefinitionDto(
                         "top-laggards",

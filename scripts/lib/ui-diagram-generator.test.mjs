@@ -7,6 +7,7 @@ import {
   parseMainPageXaml,
   parseNavigationService,
   parsePagesFile,
+  parseShellPageDescriptors,
   parseTransientPages,
 } from './ui-diagram-generator.mjs';
 
@@ -54,4 +55,34 @@ test('parsers extract sections, navigation tags, and workspace labels', () => {
   assert.deepEqual(parsePagesFile(pagesContent), [{ section: 'Primary navigation pages', pageType: 'DashboardPage' }]);
   assert.deepEqual(parseNavigationService(navContent), [{ group: 'Primary navigation', tag: 'Dashboard', pageType: 'DashboardPage' }]);
   assert.deepEqual(parseMainPageXaml(xamlContent), [{ workspace: 'MONITOR', tag: 'Dashboard', label: 'Dashboard' }]);
+});
+
+test('registry parser extracts current shell page descriptors', () => {
+  const content = `
+ShellPageRegistryBuilder.Page<DashboardPage>("Dashboard", "Reporting dashboard", "Monitor evidence readiness.", "reporting", "Dashboard", "\\uE71D", 20, ShellNavigationVisibilityTier.Primary, ["overview"], ["ReportingShell"]);
+Page<Meridian.Wpf.Views.AccountingWorkspaceShellPage>("AccountingShell", "Accounting Workspace", "Govern accounting records.", "accounting", "Launchpad", "\\uE8D2", 0, ShellNavigationVisibilityTier.Primary, ["accounting"], ["FundLedger"]);
+`;
+
+  assert.deepEqual(parseShellPageDescriptors(content), [
+    {
+      pageType: 'AccountingWorkspaceShellPage',
+      tag: 'AccountingShell',
+      title: 'Accounting Workspace',
+      subtitle: 'Govern accounting records.',
+      workspaceId: 'accounting',
+      section: 'Launchpad',
+      order: 0,
+      visibilityTier: 'Primary',
+    },
+    {
+      pageType: 'DashboardPage',
+      tag: 'Dashboard',
+      title: 'Reporting dashboard',
+      subtitle: 'Monitor evidence readiness.',
+      workspaceId: 'reporting',
+      section: 'Dashboard',
+      order: 20,
+      visibilityTier: 'Primary',
+    },
+  ]);
 });

@@ -443,7 +443,7 @@ public sealed class ReportPackRunReadService
             }
 
             var deliveryMode = target.DeliveryMode ?? InferScheduleDeliveryMode(policy.Channel);
-            var isReady = schedule.State == ReportingScheduleStateDto.Active;
+            var readiness = EvaluateScheduleDeliveryReadiness(schedule, policy, deliveryMode, formats, latestAttempt);
             yield return new ReportingScheduleDeliveryPlanDto(
                 PlanId: BuildScheduleDeliveryPlanId(schedule.ScheduleId, policy.DistributionId),
                 ScheduleId: schedule.ScheduleId,
@@ -454,8 +454,8 @@ public sealed class ReportPackRunReadService
                 Channel: policy.Channel,
                 DeliveryMode: deliveryMode,
                 Formats: formats,
-                IsReady: isReady,
-                ReadinessSummary: BuildScheduleDeliveryPlanReadinessSummary(schedule, policy, deliveryMode, formats, isReady),
+                IsReady: readiness.IsReady,
+                ReadinessSummary: readiness.Summary,
                 Route: policy.Route,
                 DueAtUtc: schedule.DueAtUtc,
                 NextAsOfDate: schedule.NextAsOfDate,
@@ -468,7 +468,8 @@ public sealed class ReportPackRunReadService
                 LastDeliverySecureLink: latestAttempt?.Package?.SecureLink,
                 VersionStamp: BuildScheduleDeliveryPlanVersionStamp(schedule, policy.DistributionId, formats),
                 LastDeliveryArtifactCount: latestAttempt?.Package?.Artifacts.Count ?? 0,
-                LastDeliveryIntegritySummary: latestAttempt?.Package?.IntegritySummary);
+                LastDeliveryIntegritySummary: latestAttempt?.Package?.IntegritySummary,
+                ReadinessBlockers: readiness.Blockers);
         }
     }
 
@@ -497,15 +498,85 @@ public sealed class ReportPackRunReadService
             .ToArray();
     }
 
-    private static string BuildScheduleDeliveryPlanReadinessSummary(
+    private static ScheduleDeliveryReadiness EvaluateScheduleDeliveryReadiness(
         ReportingScheduleRecordDto schedule,
         ReportPackDistributionPolicy policy,
         ReportPackDeliveryModeDto deliveryMode,
         IReadOnlyList<GovernanceReportArtifactFormatDto> formats,
-        bool isReady) =>
-        isReady
-            ? $"Will deliver {FormatScheduleDeliveryFormats(formats)} by {deliveryMode} to {policy.Recipient} when schedule '{schedule.ScheduleId}' runs."
-            : $"Schedule '{schedule.ScheduleId}' is {schedule.State}; {policy.Recipient} delivery will not run until it is active.";
+        ReportPackDeliveryAttemptDto? latestAttempt)
+    {
+        var blockers = new List<string>();
+        if (schedule.State != ReportingScheduleStateDto.Active)
+        {
+            blockers.Add($"Schedule '{schedule.ScheduleId}' is {schedule.State}; delivery will not run until it is active.");
+        }
+
+        if (formats.Count == 0)
+        {
+            blockers.Add($"Schedule '{schedule.ScheduleId}' has no requested delivery formats.");
+        }
+
+        if (!IsDeliveryModeCompatible(policy.Channel, deliveryMode))
+        {
+            blockers.Add($"Delivery mode {deliveryMode} is not compatible with {policy.Channel} for {policy.Recipient}.");
+        }
+
+        if (schedule.DueAtUtc <= DateTimeOffset.UtcNow &&
+            latestAttempt?.State != ReportPackDeliveryStateDto.Delivered)
+        {
+            blockers.Add($"Schedule '{schedule.ScheduleId}' is due and has no successful retained delivery package for {policy.Recipient}.");
+        }
+
+        var missingFormats = FindMissingDeliveryFormats(formats, latestAttempt);
+        if (missingFormats.Length > 0)
+        {
+            blockers.Add($"Latest delivery package for {policy.Recipient} is missing requested artifact format(s): {FormatScheduleDeliveryFormats(missingFormats)}.");
+        }
+
+        var summary = blockers.Count == 0
+            ? $"Ready to deliver {FormatScheduleDeliveryFormats(formats)} by {deliveryMode} to {policy.Recipient} when schedule '{schedule.ScheduleId}' runs."
+            : string.Join(" ", blockers);
+        return new ScheduleDeliveryReadiness(blockers.Count == 0, summary, blockers.ToArray());
+    }
+
+    private static bool IsDeliveryModeCompatible(string channel, ReportPackDeliveryModeDto deliveryMode)
+    {
+        if (deliveryMode == ReportPackDeliveryModeDto.EmailLink)
+        {
+            return true;
+        }
+
+        if (channel.Contains("portal", StringComparison.OrdinalIgnoreCase))
+        {
+            return deliveryMode == ReportPackDeliveryModeDto.SecurePortal;
+        }
+
+        if (channel.Contains("vault", StringComparison.OrdinalIgnoreCase))
+        {
+            return deliveryMode == ReportPackDeliveryModeDto.EvidenceVault;
+        }
+
+        return deliveryMode == ReportPackDeliveryModeDto.InternalRoute;
+    }
+
+    private static GovernanceReportArtifactFormatDto[] FindMissingDeliveryFormats(
+        IReadOnlyList<GovernanceReportArtifactFormatDto> formats,
+        ReportPackDeliveryAttemptDto? latestAttempt)
+    {
+        if (latestAttempt?.Package is null || latestAttempt.State != ReportPackDeliveryStateDto.Delivered)
+        {
+            return [];
+        }
+
+        var deliveredFormats = latestAttempt.Package.Artifacts
+            .Select(static artifact => artifact.Format)
+            .ToHashSet();
+        return formats
+            .Where(format => !deliveredFormats.Contains(format))
+            .Distinct()
+            .OrderBy(static format => format)
+            .ToArray();
+    }
 
     private static string BuildScheduleDeliveryPlanId(string scheduleId, string distributionId) =>
         $"schedule-delivery:{scheduleId}:{distributionId}";
@@ -1223,4 +1294,9 @@ public sealed class ReportPackRunReadService
         TimeSpan CorrectionSla);
 
     private sealed record UnifiedReportingRun(WorkstationReportingRunPayload Payload, DateTimeOffset UpdatedAtUtc);
+
+    private sealed record ScheduleDeliveryReadiness(
+        bool IsReady,
+        string Summary,
+        IReadOnlyList<string> Blockers);
 }

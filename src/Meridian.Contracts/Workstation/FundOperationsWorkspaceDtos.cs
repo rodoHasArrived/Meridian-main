@@ -793,6 +793,44 @@ public sealed record ReportPackDeliveryArtifactDto(
     string VersionStamp = "",
     string? DownloadRoute = null);
 
+public sealed record ReportPackDeliveryRecipientDto(
+    string DistributionId,
+    string Recipient,
+    string RecipientRole,
+    string Channel);
+
+public sealed record ReportPackDeliveryApprovalStepDto(
+    DateTimeOffset At,
+    string Actor,
+    string Action,
+    ReportPackWorkflowStateDto FromState,
+    ReportPackWorkflowStateDto ToState,
+    string? Note = null);
+
+public sealed record ReportPackDeliveryEvidencePacketDto(
+    string PacketId,
+    string PacketKind,
+    string PackageId,
+    Guid ReportId,
+    string FundProfileId,
+    string FundAccountId,
+    string Period,
+    IReadOnlyList<string> PackageContents,
+    IReadOnlyList<string> SupportEvidenceIds,
+    IReadOnlyList<ReportPackDeliveryRecipientDto> RecipientList,
+    string EntitlementScope,
+    IReadOnlyList<ReportPackDeliveryApprovalStepDto> ApprovalChain,
+    string DatasetVersion,
+    string TemplateVersion,
+    string DeliveryChannel,
+    DateTimeOffset DeliveredAtUtc,
+    IReadOnlyList<ReportPackEvidenceLinkDto> DeliveryEvidence,
+    IReadOnlyList<string> RequestHistory,
+    string? AmendmentReason = null,
+    string? RestatementLineage = null,
+    IReadOnlyList<string>? AuditEventReferences = null,
+    IReadOnlyList<string>? BlockedDownstreamOutputs = null);
+
 public sealed record ReportPackDeliveryPackageDto(
     string PackageId,
     Guid ReportId,
@@ -809,7 +847,19 @@ public sealed record ReportPackDeliveryPackageDto(
     string? ReportingRunId = null,
     string? ReportingTemplateId = null,
     string? ReportingScheduleId = null,
-    IReadOnlyList<string>? SourceArtifacts = null);
+    IReadOnlyList<string>? SourceArtifacts = null,
+    string? PublicationManifestId = null,
+    string? PublicationRetainedManifestPath = null,
+    string? PublicationSignedOffBy = null,
+    DateTimeOffset? PublicationSignedOffAtUtc = null,
+    IReadOnlyList<ReportPackEvidenceLinkDto>? PublicationEvidenceLinks = null,
+    IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null,
+    string? RestatementReasonCode = null,
+    Guid? RestatementPriorVersionReportId = null,
+    string? RestatementApprover = null,
+    IReadOnlyList<ReportPackChangedLineDto>? RestatementChangedLines = null,
+    IReadOnlyList<ReportPackEvidenceLinkDto>? RestatementEvidenceLinks = null,
+    ReportPackDeliveryEvidencePacketDto? DeliveryEvidencePacket = null);
 
 public sealed record ReportPackDeliveryAttemptDto(
     Guid AttemptId,
@@ -879,7 +929,8 @@ public sealed record ReportingScheduleDeliveryPlanDto(
     string? LastDeliverySecureLink = null,
     string? VersionStamp = null,
     int LastDeliveryArtifactCount = 0,
-    string? LastDeliveryIntegritySummary = null);
+    string? LastDeliveryIntegritySummary = null,
+    IReadOnlyList<string>? ReadinessBlockers = null);
 
 [JsonConverter(typeof(JsonStringEnumConverter<ReportingScheduleStateDto>))]
 public enum ReportingScheduleStateDto

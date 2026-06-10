@@ -286,7 +286,10 @@ grid responses expand pivot column fields into first-observed cross-tab metric c
 flattening them into extra row groups, while formulas continue to evaluate against each row's
 aggregate metric totals. They also carry input/output row counts, filtered-input row counts, source
 fields, metric source mappings, formula dependencies, and saved filter lineage so browser and WPF
-previews can display the same audit trace as retained exports.
+previews can display the same audit trace as retained exports. Template governance validation now
+blocks report-writer formulas that reference unknown metrics/formulas, unsupported `total(...)`
+fields, or self/forward/circular formula dependencies before those templates can enter review or
+approval.
 Browser and WPF clients should render that shared
 template state instead of treating built-in templates as the full authoring workflow.
 Template definitions and report-pack workflow records now carry shared access policies for
@@ -370,10 +373,10 @@ consolidation outputs, and serves `/api/fund-structure/reporting/structured-expo
 from the same source-backed workspace projection. The JSON payload includes stable column metadata,
 culture-invariant string row values, readiness warnings, retained-path metadata, and deterministic
 version stamps so downstream regulatory, warehousing, and investment-decision consumers can ingest
-governed data without browser-local export shaping. The endpoint also accepts `format=csv` or
-`format=xlsx` for every structured export, including the data-warehouse ledger-facts descriptor
-whose default retained format is JSON, so users and downstream jobs can download a schema-ordered
-row file directly.
+governed data without browser-local export shaping. The endpoint also accepts `format=json`,
+`format=csv`, or `format=xlsx` for every structured export, including the data-warehouse
+ledger-facts descriptor whose default retained format is JSON, so users and downstream jobs can
+download schema-ordered row files directly.
 `FundOperationsWorkspaceReadService` also exposes built-in report branding themes and fund-profile
 context through the reporting summary, validates custom branding overrides with normalized theme ids
 and hex colors, persists the selected theme on generated report-pack snapshots and manifests, and
@@ -390,11 +393,21 @@ restated workflow records can therefore show real delivery history, retry attemp
 state, and last-sent timestamps instead of static distribution placeholders. Delivered attempts
 also receive deterministic package metadata with default PDF/XLSX/CSV artifacts, retained-package
 paths, artifact SHA-256 checksums, artifact version stamps, publication evidence hashes, integrity
-summaries, secure email-link or portal URLs, and delivery-mode inference for portal, vault, and
-internal-route channels; callers can override the mode and requested formats in
-`ReportPackDeliveryRequestDto`. Schedule delivery plan rows project the latest retained package
-artifact count and integrity summary so clients can show recipient/package readiness without
-fetching package manifests. Package manifest reads are token-gated by
+summaries, publication manifest fields, publication evidence links, retained line provenance,
+stakeholder delivery evidence packets, secure email-link or portal URLs, and delivery-mode inference
+for portal, vault, and internal-route channels; callers can override the mode and requested formats
+in `ReportPackDeliveryRequestDto`.
+Generated package downloads rebuild CSV, XLSX, HTML, and PDF artifacts from that retained package
+metadata, so recipients receive report-line provenance and publication evidence in the downloaded
+files instead of package identifiers only. The shared delivery evidence packet carries recipient and
+entitlement scope, approval chain, request history, publication manifest, report-line provenance,
+retained delivery evidence, and restatement lineage for the Version 0.18 operational proof layer.
+Schedule delivery plan rows project explicit readiness
+blockers, the latest retained package artifact count, and the integrity summary, so clients can
+show recipient/package readiness without fetching package manifests or inferring failure reasons
+from prose. The shared read model marks a scheduled target unready when the schedule is inactive,
+due without a successful retained package, configured with an incompatible delivery mode for its
+channel, or missing one of the requested artifact formats from the latest package. Package manifest reads are token-gated by
 `ReportPackDeliveryService`, using constant-time token comparison and shared GET routes for the
 email-link package URL and `/portal/reporting/packages/{packageId}`. Per-artifact package downloads
 reuse the same package token and expose generated PDF/XLSX/CSV content through

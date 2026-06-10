@@ -26,6 +26,30 @@ export function normalizeTypeName(typeName) {
   return typeName.split('.').pop()?.trim() ?? typeName.trim();
 }
 
+function workspaceDisplayName(workspaceId) {
+  const labels = new Map([
+    ['trading', 'Trading'],
+    ['portfolio', 'Portfolio'],
+    ['accounting', 'Accounting'],
+    ['reporting', 'Reporting'],
+    ['strategy', 'Strategy'],
+    ['data', 'Data'],
+    ['settings', 'Settings'],
+  ]);
+
+  return labels.get(workspaceId.toLowerCase()) ?? displayName(workspaceId);
+}
+
+const workspaceOrder = new Map([
+  ['trading', 0],
+  ['portfolio', 1],
+  ['accounting', 2],
+  ['reporting', 3],
+  ['strategy', 4],
+  ['data', 5],
+  ['settings', 6],
+]);
+
 export function parsePagesFile(content) {
   const lines = content.split(/\r?\n/);
   const pages = [];
@@ -70,6 +94,53 @@ export function parseNavigationService(content) {
   }
 
   return pages;
+}
+
+export function parseShellPageDescriptors(content) {
+  const pages = [];
+  const pagePattern = /(?:ShellPageRegistryBuilder\.)?Page<([\w.]+)>\(([\s\S]*?)\)/g;
+
+  for (const match of content.matchAll(pagePattern)) {
+    const pageType = normalizeTypeName(match[1]);
+    const args = match[2];
+    const stringArgs = [...args.matchAll(/"((?:\\.|[^"\\])*)"/g)].map(([, value]) => value);
+    if (stringArgs.length < 5) {
+      continue;
+    }
+
+    const orderMatch = args.match(/,\s*(\d+)\s*,\s*ShellNavigationVisibilityTier\.(\w+)/);
+    pages.push({
+      pageType,
+      tag: stringArgs[0],
+      title: stringArgs[1],
+      subtitle: stringArgs[2],
+      workspaceId: stringArgs[3],
+      section: stringArgs[4],
+      order: orderMatch ? Number.parseInt(orderMatch[1], 10) : pages.length,
+      visibilityTier: orderMatch?.[2] ?? 'Unspecified',
+    });
+  }
+
+  const seen = new Set();
+  return pages
+    .filter((page) => {
+      const key = page.tag.toLowerCase();
+      if (seen.has(key)) {
+        return false;
+      }
+
+      seen.add(key);
+      return true;
+    })
+    .sort((left, right) => {
+      const leftWorkspace = workspaceOrder.get(left.workspaceId.toLowerCase()) ?? Number.MAX_SAFE_INTEGER;
+      const rightWorkspace = workspaceOrder.get(right.workspaceId.toLowerCase()) ?? Number.MAX_SAFE_INTEGER;
+      return leftWorkspace - rightWorkspace
+        || left.workspaceId.localeCompare(right.workspaceId)
+        || left.visibilityTier.localeCompare(right.visibilityTier)
+        || left.order - right.order
+        || left.title.localeCompare(right.title);
+    });
 }
 
 export function parseMainPageXaml(content) {
@@ -169,7 +240,7 @@ export function buildUiNavigationDot({ fingerprint, navigationPages, workspacePa
     '  graph [',
     '    rankdir=LR,',
     '    labelloc=t,',
-    '    label="Meridian WPF UI navigation map\\n(auto-generated from MainPage.xaml + NavigationService.cs)",',
+    '    label="Meridian WPF UI navigation map\\n(auto-generated from ShellPageRegistryBuilder + feature modules)",',
     '    fontname="Segoe UI",',
     '    fontsize=20,',
     '    pad=0.4,',
@@ -180,10 +251,10 @@ export function buildUiNavigationDot({ fingerprint, navigationPages, workspacePa
     '  node [fontname="Segoe UI", shape=box, style="rounded,filled", color="#475569", fontcolor="#e2e8f0", fillcolor="#1e293b"];',
     '  edge [fontname="Segoe UI", color="#94a3b8", penwidth=1.3, arrowsize=0.8];',
     '',
-    `  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: ${escapeLabel(fingerprint)}\\nShell entries: ${workspacePages.length}\\nRegistered pages: ${navigationPages.length}"];`,
-    '  shell [shape=component, fillcolor="#0f766e", color="#2dd4bf", label="MainPage.xaml\\nWorkspace shell"];',
-    '  navigation [shape=component, fillcolor="#7c3aed", color="#c4b5fd", label="NavigationService\\nRegisterAllPages()"];',
-    '  shell -> navigation [label="navigate via tags", color="#38bdf8"];',
+    `  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: ${escapeLabel(fingerprint)}\\nWorkspaces: ${workspaceMap.size}\\nRegistry pages: ${navigationPages.length}"];`,
+    '  shell [shape=component, fillcolor="#0f766e", color="#2dd4bf", label="ShellNavigationCatalog\\nWorkspace registry"];',
+    '  navigation [shape=component, fillcolor="#7c3aed", color="#c4b5fd", label="NavigationService\\nBuildDefault registry"];',
+    '  shell -> navigation [label="resolve canonical page tags", color="#38bdf8"];',
     '',
   ];
 
@@ -258,7 +329,7 @@ export function buildUiImplementationDot({ fingerprint, appPages, pagesBySection
     '  graph [',
     '    rankdir=TB,',
     '    labelloc=t,',
-    '    label="Meridian WPF UI implementation flow\\n(auto-generated from App/MainWindow/MainPage/Pages source)",',
+    '    label="Meridian WPF UI implementation flow\\n(auto-generated from App + ShellPageRegistryBuilder source)",',
     '    fontname="Segoe UI",',
     '    fontsize=20,',
     '    pad=0.4,',
@@ -269,12 +340,12 @@ export function buildUiImplementationDot({ fingerprint, appPages, pagesBySection
     '  node [fontname="Segoe UI", shape=box, style="rounded,filled", color="#475569", fontcolor="#e2e8f0", fillcolor="#1e293b"];',
     '  edge [fontname="Segoe UI", color="#94a3b8", penwidth=1.3, arrowsize=0.8];',
     '',
-    `  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: ${escapeLabel(fingerprint)}\\nTransient pages in App.xaml.cs: ${uniqueAppPages.size}\\nNavigation tags: ${navigationPages.length}"];`,
+    `  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: ${escapeLabel(fingerprint)}\\nTransient pages in App.xaml.cs: ${uniqueAppPages.size}\\nRegistry tags: ${navigationPages.length}"];`,
     '  app [shape=component, fillcolor="#0f766e", color="#2dd4bf", label="App.xaml.cs\\nHost + DI composition"];',
     '  window [shape=component, fillcolor="#2563eb", color="#93c5fd", label="MainWindow.xaml(.cs)\\nRoot frame + global shortcuts"];',
     '  page [shape=component, fillcolor="#7c3aed", color="#c4b5fd", label="MainPage.xaml(.cs)\\nSidebar shell + command palette"];',
-    '  nav [shape=component, fillcolor="#9333ea", color="#d8b4fe", label="NavigationService.cs\\nTag registry + frame navigation"];',
-    '  views [shape=component, fillcolor="#1d4ed8", color="#60a5fa", label="Views/Pages.cs\\nPage inventory"];',
+    '  nav [shape=component, fillcolor="#9333ea", color="#d8b4fe", label="NavigationService.cs\\nBuildDefault registry + frame navigation"];',
+    '  views [shape=component, fillcolor="#1d4ed8", color="#60a5fa", label="ShellPageRegistryBuilder\\nPage descriptors"];',
     '  frame [shape=tab, fillcolor="#0f766e", color="#5eead4", label="ContentFrame / RootFrame"];',
     '  app -> window [label="resolve MainWindow from DI"];',
     '  window -> page [label="RootFrame.Navigate(MainPage)"];',
@@ -336,21 +407,47 @@ export async function readUiDiagramInputs(repoRoot) {
     navigationService: path.join(repoRoot, 'src', 'Meridian.Wpf', 'Services', 'NavigationService.cs'),
     pages: path.join(repoRoot, 'src', 'Meridian.Wpf', 'Views', 'Pages.cs'),
   };
+  const registryPaths = [
+    ...(await listFilesRecursive(path.join(repoRoot, 'src', 'Meridian.Wpf', 'Features'), (filePath) => filePath.endsWith('.cs'))),
+    ...(await listFilesRecursive(path.join(repoRoot, 'src', 'Meridian.Wpf', 'Models'), (filePath) => path.basename(filePath).startsWith('ShellNavigationCatalog') && filePath.endsWith('.cs'))),
+    path.join(repoRoot, 'src', 'Meridian.Wpf', 'Shell', 'Services', 'ShellPageRegistryBuilder.cs'),
+  ].sort((left, right) => left.localeCompare(right));
 
   const entries = await Promise.all(
     Object.entries(paths).map(async ([key, filePath]) => [key, await fs.readFile(filePath, 'utf8')]),
   );
+  const registryEntries = await Promise.all(
+    registryPaths.map(async (filePath) => {
+      const relativePath = path.relative(repoRoot, filePath).replaceAll(path.sep, '/');
+      return `// ${relativePath}\n${await fs.readFile(filePath, 'utf8')}`;
+    }),
+  );
 
-  return Object.fromEntries(entries);
+  return {
+    ...Object.fromEntries(entries),
+    registrySources: registryEntries.join('\n\n'),
+  };
 }
 
 export async function buildUiDiagramOutputs(repoRoot) {
   const contents = await readUiDiagramInputs(repoRoot);
   const fingerprint = createFingerprint(Object.values(contents));
 
-  const pagesBySection = parsePagesFile(contents.pages);
-  const navigationPages = parseNavigationService(contents.navigationService);
-  const workspacePages = parseMainPageXaml(contents.mainPageXaml);
+  const registryPages = parseShellPageDescriptors(contents.registrySources);
+  const pagesBySection = registryPages.map((page) => ({
+    section: `${workspaceDisplayName(page.workspaceId)} / ${page.section}`,
+    pageType: page.pageType,
+  }));
+  const navigationPages = registryPages.map((page) => ({
+    group: `${workspaceDisplayName(page.workspaceId)} / ${page.section}`,
+    tag: page.tag,
+    pageType: page.pageType,
+  }));
+  const workspacePages = registryPages.map((page) => ({
+    workspace: workspaceDisplayName(page.workspaceId),
+    tag: page.tag,
+    label: page.title,
+  }));
   const appPages = parseTransientPages(contents.app);
   const mainWindowDeps = parseInjectedMembers(contents.mainWindow);
   const mainPageDeps = parseInjectedMembers(contents.mainPageCodeBehind);
@@ -362,6 +459,24 @@ export async function buildUiDiagramOutputs(repoRoot) {
       ['ui-implementation-flow.dot', buildUiImplementationDot({ fingerprint, appPages, pagesBySection, navigationPages, mainWindowDeps, mainPageDeps })],
     ]),
   };
+}
+
+async function listFilesRecursive(rootDir, predicate) {
+  const entries = await fs.readdir(rootDir, { withFileTypes: true });
+  const files = [];
+  for (const entry of entries) {
+    const filePath = path.join(rootDir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...await listFilesRecursive(filePath, predicate));
+      continue;
+    }
+
+    if (entry.isFile() && predicate(filePath)) {
+      files.push(filePath);
+    }
+  }
+
+  return files;
 }
 
 async function writeFileIfChanged(filePath, contents) {
@@ -405,21 +520,26 @@ export async function renderDotFile(viz, dotPath) {
 
 export async function generateUiDiagrams({ repoRoot, renderAll = false }) {
   const docsDiagramsDir = path.join(repoRoot, 'docs', 'diagrams');
+  const uiDiagramsDir = path.join(docsDiagramsDir, 'ui');
   const { files } = await buildUiDiagramOutputs(repoRoot);
+  await fs.mkdir(uiDiagramsDir, { recursive: true });
 
   for (const [fileName, contents] of files) {
     await writeFileIfChanged(path.join(docsDiagramsDir, fileName), contents);
+    await writeFileIfChanged(path.join(uiDiagramsDir, fileName), contents);
   }
 
   const viz = await instance();
-  const dotFiles = (await fs.readdir(docsDiagramsDir))
+  const rootDotPaths = (await fs.readdir(docsDiagramsDir))
     .filter((fileName) => fileName.endsWith('.dot'))
     .filter((fileName) => renderAll || fileName.startsWith('ui-'))
-    .sort();
+    .map((fileName) => path.join(docsDiagramsDir, fileName));
+  const uiDotPaths = [...files.keys()].map((fileName) => path.join(uiDiagramsDir, fileName));
+  const dotPaths = [...rootDotPaths, ...uiDotPaths].sort((left, right) => left.localeCompare(right));
 
   const rendered = [];
-  for (const fileName of dotFiles) {
-    rendered.push(await renderDotFile(viz, path.join(docsDiagramsDir, fileName)));
+  for (const dotPath of dotPaths) {
+    rendered.push(await renderDotFile(viz, dotPath));
   }
 
   return rendered;
