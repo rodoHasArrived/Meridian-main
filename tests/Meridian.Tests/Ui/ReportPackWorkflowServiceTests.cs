@@ -105,13 +105,25 @@ public sealed class ReportPackWorkflowServiceTests
             "sha256:abc123",
             "manifest-1",
             "vault/report-packs/manifest-1.json",
-            [new ReportPackEvidenceLinkDto("report-pack-1", "Report pack manifest", "/evidence/report-pack-1", "reporting")]);
+            [new ReportPackEvidenceLinkDto("report-pack-1", "Report pack manifest", "/evidence/report-pack-1", "reporting")],
+            BrandingTheme: new ReportBrandingThemeDto(
+                "investor-board",
+                "Investor Board",
+                "Northstar Capital",
+                "#123456",
+                "#55AA99",
+                "#111111",
+                "#FFFFFF"));
         var publishResponse = await client.PostAsJsonAsync($"/api/fund-structure/reporting/packs/{created.ReportId:D}/publish", publishRequest, ServerJsonOptions);
         publishResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var published = await publishResponse.Content.ReadFromJsonAsync<ReportPackWorkflowRecordDto>(ServerJsonOptions);
 
         published.Should().NotBeNull();
         published!.State.Should().Be(ReportPackWorkflowStateDto.Published);
+        published.Publication.Should().NotBeNull();
+        published.Publication!.BrandingTheme.Should().NotBeNull();
+        published.Publication.BrandingTheme!.ThemeId.Should().Be("investor-board");
+        published.Publication.BrandingTheme.FirmName.Should().Be("Northstar Capital");
         published.AuditTrail.Select(entry => entry.ToState).Should().ContainInOrder(
             ReportPackWorkflowStateDto.Draft,
             ReportPackWorkflowStateDto.InReview,
@@ -609,7 +621,11 @@ public sealed class ReportPackWorkflowServiceTests
                         "Strategy Contribution",
                         ReportWriterGridKindDto.Contribution,
                         RowFields: ["strategy"],
-                        Metrics: [new ReportWriterMetricDefinitionDto("pnl", "pnl")],
+                        Metrics:
+                        [
+                            new ReportWriterMetricDefinitionDto("pnl", "pnl"),
+                            new ReportWriterMetricDefinitionDto("contributionPercent", "contributionPercent")
+                        ],
                         Formulas: [new ReportWriterFormulaDefinitionDto("weightCheck", "{contributionPercent}")])
                 ]),
             "report.author");
@@ -1207,7 +1223,8 @@ public sealed class ReportPackWorkflowServiceTests
             line.CurrentValue == "101.00");
         attempt.Package.RestatementEvidenceLinks.Should().NotBeNull().And.ContainSingle(link =>
             link.EvidenceId == "cash-restatement-1");
-        var packet = attempt.Package.DeliveryEvidencePacket.Should().NotBeNull().Subject;
+        attempt.Package.DeliveryEvidencePacket.Should().NotBeNull();
+        var packet = attempt.Package.DeliveryEvidencePacket!;
         packet.PacketKind.Should().Be("StakeholderDeliveryRestatement");
         packet.PackageId.Should().Be(attempt.Package.PackageId);
         packet.FundProfileId.Should().Be("fund-a");
@@ -1294,6 +1311,18 @@ public sealed class ReportPackWorkflowServiceTests
             "author");
         workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
         workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
+        var brandingTheme = new ReportBrandingThemeDto(
+            "allocator-quarterly",
+            "Allocator Quarterly",
+            "Northstar Capital",
+            "#123456",
+            "#55AA99",
+            "#111111",
+            "#FFFFFF",
+            "/branding/northstar.svg",
+            "Northstar Capital confidential",
+            "For approved recipients only.",
+            IsBuiltIn: false);
         var published = workflow.Publish(
             created.ReportId,
             "publisher",
@@ -1302,7 +1331,8 @@ public sealed class ReportPackWorkflowServiceTests
             "sha256:abc123",
             "manifest-1",
             "vault/report-packs/manifest-1.json",
-            [new ReportPackEvidenceLinkDto("report-pack-1", "Report pack manifest", "/evidence/report-pack-1", "reporting")]);
+            [new ReportPackEvidenceLinkDto("report-pack-1", "Report pack manifest", "/evidence/report-pack-1", "reporting")],
+            brandingTheme: brandingTheme);
         var attempt = delivery.Deliver(
             published.ReportId,
             new ReportPackDeliveryRequestDto(
@@ -1325,10 +1355,14 @@ public sealed class ReportPackWorkflowServiceTests
         portalPackage.Artifacts.Should().HaveCount(3);
         portalPackage.PublicationEvidenceHash.Should().Be("sha256:abc123");
         portalPackage.IntegritySummary.Should().Be("3 artifact(s) retained with SHA-256 checksums against publication evidence hash sha256:abc123.");
+        portalPackage.BrandingTheme.Should().NotBeNull();
+        portalPackage.BrandingTheme!.ThemeId.Should().Be("allocator-quarterly");
+        portalPackage.BrandingTheme.FirmName.Should().Be("Northstar Capital");
         portalPackage.DeliveryEvidencePacket.Should().NotBeNull();
         portalPackage.DeliveryEvidencePacket!.RecipientList.Should().ContainSingle(recipient =>
             recipient.DistributionId == "board-reporting-committee" &&
             recipient.Recipient == "Board reporting committee");
+        portalPackage.DeliveryEvidencePacket.PackageContents.Should().Contain("branding-theme:allocator-quarterly");
         portalPackage.DeliveryEvidencePacket.DeliveryEvidence.Should().OnlyContain(link =>
             link.Source == "report-pack-delivery");
         var deliveryArtifactVersionPrefix = $"delivery-artifact:{published.ReportId:N}:board-reporting-committee:";
@@ -1353,6 +1387,9 @@ public sealed class ReportPackWorkflowServiceTests
         var artifactCsv = await artifactResponse.Content.ReadAsStringAsync();
         artifactCsv.Should().Contain($"packageId,{portalPackage.PackageId}");
         artifactCsv.Should().Contain($"publicationEvidenceHash,{portalPackage.PublicationEvidenceHash}");
+        artifactCsv.Should().Contain("brandingThemeId,allocator-quarterly");
+        artifactCsv.Should().Contain("brandingFirmName,Northstar Capital");
+        artifactCsv.Should().Contain("brandingDisclaimer,For approved recipients only.");
         var badArtifactResponse = await client.GetAsync(csvArtifact.DownloadRoute!.Replace(token, "bad-token", StringComparison.Ordinal));
         badTokenResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         badArtifactResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -2519,7 +2556,7 @@ public sealed class ReportPackWorkflowServiceTests
     public async Task Endpoint_CreateDraft_WithSessionCompanyAndRoleProfile_DefaultsTenantAwareAccessPolicy()
     {
         await using var app = await CreateFundStructureAppAsync(
-            UserRole.Analysis,
+            UserRole.TradeDesk,
             "viewer.user",
             roleProfileName: "reporting-ops",
             companyId: "company-alpha");
