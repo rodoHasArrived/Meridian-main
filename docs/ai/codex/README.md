@@ -38,9 +38,10 @@ For documentation work, start from the rebuilt canonical docs model:
 
 ## Current Codex Agent Profiles
 
-`.codex/agents/` has skill-backed Codex subagent profiles for the current Codex specialist lanes.
-Use these profiles when a task benefits from a compact specialist entrypoint, then keep the
-matching skill as the canonical workflow definition. The former `meridian-navigation` and
+`.codex/agents/` has skill-backed Codex subagent profiles for the current Codex specialist lanes
+and Persona Matrix user-testing profiles for single-persona critique. Use these profiles when a
+task benefits from a compact specialist entrypoint, then keep the matching skill or source
+document as the canonical workflow definition. The former `meridian-navigation` and
 `meridian-user-panel` compatibility aliases were pruned; use `meridian-repo-navigation` and
 `meridian-simulated-user-panel` instead.
 Each custom agent TOML file must define `name`, `description`, and `developer_instructions`; it may
@@ -74,6 +75,42 @@ notifications, telemetry, and personal model preferences in user-level config.
 | `safe-refactoring.toml` | Refactor desktop and shared code incrementally without behavior drift |
 | `shared-component-extraction.toml` | Extract repeated desktop patterns into reusable components |
 | `workstation-screen-composition.toml` | Compose desktop screens from shared workstation primitives |
+
+### Persona Matrix User Testing Profiles
+
+These Codex profiles simulate one role at a time from the Persona Matrix in
+[`../../product/meridian-design-document.md`](../../product/meridian-design-document.md). Use
+`meridian-simulated-user-panel` when the review needs a multi-persona panel; use these profiles when
+a workflow needs focused feedback from a specific persona. Each profile carries the persona's
+matrix facts plus domain experience, familiar programs, preferences, and testing pressure points.
+
+| Profile | Persona category |
+| ------ | --------- |
+| `meridian-user-testing-financial-operations-professional.toml` | Primary Operator |
+| `meridian-user-testing-investment-accountant.toml` | Primary Operator |
+| `meridian-user-testing-reconciliation-analyst.toml` | Primary Operator |
+| `meridian-user-testing-fund-accountant.toml` | Primary Operator |
+| `meridian-user-testing-operations-manager.toml` | Primary Operator / Manager |
+| `meridian-user-testing-data-operations-analyst.toml` | Primary Operator |
+| `meridian-user-testing-treasury-operations-specialist.toml` | Primary Operator |
+| `meridian-user-testing-reporting-analyst.toml` | Primary Operator |
+| `meridian-user-testing-portfolio-manager.toml` | Investment User |
+| `meridian-user-testing-investment-analyst.toml` | Investment User |
+| `meridian-user-testing-quantitative-researcher.toml` | Investment User |
+| `meridian-user-testing-trader.toml` | Investment User |
+| `meridian-user-testing-risk-manager.toml` | Governance / Investment User |
+| `meridian-user-testing-cfo.toml` | Executive |
+| `meridian-user-testing-cio.toml` | Executive |
+| `meridian-user-testing-controller.toml` | Governance |
+| `meridian-user-testing-compliance-officer.toml` | Governance |
+| `meridian-user-testing-fund-investor-lp.toml` | Stakeholder |
+| `meridian-user-testing-ria-client.toml` | Stakeholder |
+| `meridian-user-testing-family-beneficiary.toml` | Stakeholder |
+| `meridian-user-testing-trustee.toml` | Stakeholder |
+| `meridian-user-testing-auditor.toml` | External / Governance |
+| `meridian-user-testing-system-administrator.toml` | Administration |
+| `meridian-user-testing-security-administrator.toml` | Administration |
+| `meridian-user-testing-integration-administrator.toml` | Administration |
 
 ## Current Codex Skills
 

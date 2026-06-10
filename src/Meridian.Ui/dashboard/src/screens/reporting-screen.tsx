@@ -1279,17 +1279,30 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                       </span>
                       <span className="flex flex-wrap justify-end gap-1.5">
                         {structuredExportDownloadFormats.map((download) => (
-                          <Button asChild key={download.format} variant="outline" size="sm" disabled={!structuredExport.isReady}>
-                            <a
-                              href={buildStructuredExportDownloadHref(structuredExport.route, download.format)}
-                              target="_blank"
-                              rel="noreferrer"
-                              aria-label={`Download ${structuredExport.label} structured export as ${download.label}`}
+                          structuredExport.isReady ? (
+                            <Button asChild key={download.format} variant="outline" size="sm">
+                              <a
+                                href={buildStructuredExportDownloadHref(structuredExport.route, download.format)}
+                                target="_blank"
+                                rel="noreferrer"
+                                aria-label={`Download ${structuredExport.label} structured export as ${download.label}`}
+                              >
+                                <FileText className="h-4 w-4" aria-hidden="true" />
+                                {download.label}
+                              </a>
+                            </Button>
+                          ) : (
+                            <Button
+                              key={download.format}
+                              variant="outline"
+                              size="sm"
+                              disabled
+                              aria-label={`${structuredExport.label} structured export ${download.label} download blocked`}
                             >
                               <FileText className="h-4 w-4" aria-hidden="true" />
                               {download.label}
-                            </a>
-                          </Button>
+                            </Button>
+                          )
                         ))}
                       </span>
                     </div>

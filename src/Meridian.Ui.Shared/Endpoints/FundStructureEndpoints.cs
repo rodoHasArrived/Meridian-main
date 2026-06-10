@@ -754,7 +754,10 @@ public static class FundStructureEndpoints
                 ScopeId: q["scopeId"].FirstOrDefault(),
                 SelectedLedgerIds: ParseSelectedLedgerIds(q["selectedLedgerIds"], q["selectedLedgerId"]));
 
-            var result = await service.GetWorkspaceAsync(query, context.RequestAborted).ConfigureAwait(false);
+            var result = await service.GetWorkspaceAsync(
+                query,
+                BuildReportAccessQueryContext(context),
+                context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
         .WithName("GetFundOperationsWorkspaceView")
@@ -880,6 +883,7 @@ public static class FundStructureEndpoints
             {
                 var result = await service.GetStructuredReportingExportAsync(
                     new StructuredReportingExportRequestDto(fundProfileId, exportId, asOf, currency),
+                    BuildReportAccessQueryContext(context),
                     context.RequestAborted).ConfigureAwait(false);
                 if (IsStructuredCsvRequest(format))
                 {

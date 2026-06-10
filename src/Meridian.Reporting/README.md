@@ -75,10 +75,11 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 `IReportingRunStore`, `ReportGenerationService`, and `NavAttributionService` publish the Reporting
 module seams consumed by UI Shared report-pack workflows, UI Services reporting status projections,
 and WPF fund-operation views. `ReportWriterGridEngine` renders governed template grid definitions
-without script execution: row/column dimensions, aggregate metrics, Top-N limits, contribution
-percentages, and bounded arithmetic formulas are evaluated against caller-supplied dataset rows with
-structured warnings for missing or non-numeric inputs. Saved grid filters are applied before
-aggregation, Top-N, contribution, and formula rendering. Rendered grids also include input/output
+without script execution: row dimensions, column-field cross-tabs for pivot grids, aggregate
+metrics, Top-N limits, contribution percentages, and bounded arithmetic formulas are evaluated
+against caller-supplied dataset rows with structured warnings for missing or non-numeric inputs.
+Saved grid filters are applied before aggregation, cross-tab expansion, Top-N, contribution, and
+formula rendering. Rendered grids also include input/output
 row counts, filtered-input counts, source-field lists, metric source mappings, formula dependency
 lineage, and filter lineage so report-writer previews and downstream exports can retain a
 source-backed audit trace. Reporting template families now cover

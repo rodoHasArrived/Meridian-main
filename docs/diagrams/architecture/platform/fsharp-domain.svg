@@ -10,7 +10,7 @@
 <title>FSharpDomain</title>
 <polygon fill="white" stroke="none" points="-36,36 -36,-1489.6 2126,-1489.6 2126,36 -36,36"/>
 <text xml:space="preserve" text-anchor="middle" x="1045" y="-1438.8" font-family="Helvetica,sans-Serif" font-size="12.00">Meridian &#45; F# Domain Library</text>
-<text xml:space="preserve" text-anchor="middle" x="1045" y="-1424.4" font-family="Helvetica,sans-Serif" font-size="12.00">Railway&#45;Oriented Validation &amp; Type&#45;Safe Calculations</text>
+<text xml:space="preserve" text-anchor="middle" x="1045" y="-1424.4" font-family="Helvetica,sans-Serif" font-size="12.00">Validation and ledger calculations for operational records</text>
 <g id="clust1" class="cluster">
 <title>cluster_csharp_input</title>
 <path fill="#dbeafe" stroke="#2b6cb0" d="M1685,-1185.4C1685,-1185.4 1828,-1185.4 1828,-1185.4 1834,-1185.4 1840,-1191.4 1840,-1197.4 1840,-1197.4 1840,-1396.8 1840,-1396.8 1840,-1402.8 1834,-1408.8 1828,-1408.8 1828,-1408.8 1685,-1408.8 1685,-1408.8 1679,-1408.8 1673,-1402.8 1673,-1396.8 1673,-1396.8 1673,-1197.4 1673,-1197.4 1673,-1191.4 1679,-1185.4 1685,-1185.4"/>

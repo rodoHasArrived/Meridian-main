@@ -1170,6 +1170,31 @@ describe("ReportingScreen", () => {
     );
   });
 
+  it("does not expose download links for blocked structured exports", () => {
+    const blockedAccounting: AccountingWorkspaceResponse = {
+      ...accounting,
+      reporting: {
+        ...accounting.reporting,
+        structuredExports: [
+          {
+            ...accounting.reporting.structuredExports![0],
+            isReady: false,
+            validationSummary: "No normalized trial-balance rows are available for this as-of date."
+          }
+        ]
+      }
+    };
+
+    renderWithRouter(<ReportingScreen data={blockedAccounting} />, { initialEntries: ["/reporting"] });
+
+    const regulatoryRow = screen.getByRole("listitem", { name: "Regulatory trial balance structured export" });
+    expect(within(regulatoryRow).getByText("Blocked")).toBeInTheDocument();
+    expect(within(regulatoryRow).queryByRole("link", { name: "Download Regulatory trial balance structured export as CSV" })).not.toBeInTheDocument();
+    expect(within(regulatoryRow).getByRole("button", {
+      name: "Regulatory trial balance structured export CSV download blocked"
+    })).toBeDisabled();
+  });
+
   it("renders report branding themes from the shared reporting payload", () => {
     renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
 

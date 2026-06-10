@@ -277,6 +277,160 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public void TemplateRegistry_ReportWriterGridNormalization_PreservesAuthoredLayoutOrder()
+    {
+        var svc = new ReportTemplateRegistryService();
+        var draft = svc.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "ordered-report-writer-grid",
+                "Ordered Report Writer Grid",
+                [],
+                [],
+                Family: "CustomReport",
+                Rationale: "Preserve drag-and-drop report writer layout order",
+                Grids:
+                [
+                    new ReportWriterGridDefinitionDto(
+                        "ordered-grid",
+                        "Ordered Grid",
+                        ReportWriterGridKindDto.Pivot,
+                        RowFields: ["strategy", "sector", "strategy"],
+                        ColumnFields: ["region", "security"],
+                        Metrics:
+                        [
+                            new ReportWriterMetricDefinitionDto("pnl", "pnl", Label: "P&L"),
+                            new ReportWriterMetricDefinitionDto("marketValue", "marketValue", Label: "Market value")
+                        ],
+                        Formulas:
+                        [
+                            new ReportWriterFormulaDefinitionDto("returnPct", "{pnl} / {marketValue} * 100"),
+                            new ReportWriterFormulaDefinitionDto("weightPct", "{marketValue} / total(marketValue) * 100")
+                        ],
+                        Filters:
+                        [
+                            new ReportWriterFilterDefinitionDto("strategy", ReportWriterFilterOperatorDto.Equals, "Core"),
+                            new ReportWriterFilterDefinitionDto("region", ReportWriterFilterOperatorDto.NotEquals, "Closed")
+                        ])
+                ]),
+            "report.author");
+        svc.Submit(draft.Definition.TemplateId, "report.author", "ready");
+        svc.Approve(
+            draft.Definition.TemplateId,
+            new ReportTemplateDecisionRequestDto("Controller approved ordered grid", "APP-GRID-ORDER"),
+            "controller.admin");
+
+        var rendered = svc.Render(new RenderReportTemplateRequestDto(
+            draft.Definition.TemplateId,
+            new Dictionary<string, string>(),
+            [
+                new Dictionary<string, string>
+                {
+                    ["strategy"] = "Core",
+                    ["sector"] = "Technology",
+                    ["region"] = "US",
+                    ["security"] = "ABC",
+                    ["pnl"] = "12",
+                    ["marketValue"] = "100"
+                }
+            ]));
+
+        var stored = svc.Get(draft.Definition.TemplateId);
+        stored.Should().NotBeNull();
+        var storedGrid = stored!.Grids.Should().ContainSingle().Subject;
+        storedGrid.RowFields.Should().Equal("strategy", "sector");
+        storedGrid.ColumnFields.Should().Equal("region", "security");
+        storedGrid.Metrics!.Select(static metric => metric.Name).Should().Equal("pnl", "marketValue");
+        storedGrid.Formulas!.Select(static formula => formula.Name).Should().Equal("returnPct", "weightPct");
+        storedGrid.Filters!.Select(static filter => filter.Field).Should().Equal("strategy", "region");
+
+        var grid = rendered.Grids.Should().ContainSingle().Subject;
+        grid.Columns.Select(static column => column.Key).Should().Equal(
+            "strategy",
+            "sector",
+            "US|ABC:pnl",
+            "US|ABC:marketValue",
+            "returnPct",
+            "weightPct");
+        grid.Lineage!.Metrics.Select(static metric => metric.Name).Should().Equal("pnl", "marketValue");
+        grid.Lineage.Formulas.Select(static formula => formula.Name).Should().Equal("returnPct", "weightPct");
+        grid.Lineage.Filters!.Select(static filter => filter.Field).Should().Equal("strategy", "region");
+    }
+
+    [Fact]
+    public void TemplateRegistry_RenderPivotWithColumnFields_ReturnsCrosstabColumns()
+    {
+        var svc = new ReportTemplateRegistryService();
+        var draft = svc.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "custom-sector-region-crosstab",
+                "Custom Sector Region Crosstab",
+                [],
+                [],
+                Family: "CustomReport",
+                Rationale: "No-code crosstab writer",
+                Grids:
+                [
+                    new ReportWriterGridDefinitionDto(
+                        "sector-region-pivot",
+                        "Sector Region Pivot",
+                        ReportWriterGridKindDto.Pivot,
+                        RowFields: ["sector"],
+                        ColumnFields: ["region"],
+                        Metrics:
+                        [
+                            new ReportWriterMetricDefinitionDto("marketValue", "marketValue"),
+                            new ReportWriterMetricDefinitionDto("pnl", "pnl")
+                        ],
+                        Formulas:
+                        [
+                            new ReportWriterFormulaDefinitionDto("returnPct", "{pnl} / {marketValue} * 100")
+                        ])
+                ]),
+            "report.author");
+        svc.Submit(draft.Definition.TemplateId, "report.author", "ready");
+        svc.Approve(
+            draft.Definition.TemplateId,
+            new ReportTemplateDecisionRequestDto("Controller approved crosstab grid", "APP-GRID-CROSSTAB"),
+            "controller.admin");
+
+        var rendered = svc.Render(new RenderReportTemplateRequestDto(
+            draft.Definition.TemplateId,
+            new Dictionary<string, string>(),
+            [
+                new Dictionary<string, string> { ["sector"] = "Technology", ["region"] = "US", ["marketValue"] = "100", ["pnl"] = "10" },
+                new Dictionary<string, string> { ["sector"] = "Technology", ["region"] = "EU", ["marketValue"] = "50", ["pnl"] = "5" },
+                new Dictionary<string, string> { ["sector"] = "Rates", ["region"] = "US", ["marketValue"] = "40", ["pnl"] = "-2" }
+            ]));
+
+        rendered.RenderedContent.Should().Contain("grids=sector-region-pivot:2r");
+        var grid = rendered.Grids.Should().ContainSingle().Subject;
+        grid.Columns.Select(static column => column.Key).Should().Equal(
+            "sector",
+            "US:marketValue",
+            "US:pnl",
+            "EU:marketValue",
+            "EU:pnl",
+            "returnPct");
+        grid.Rows.Should().HaveCount(2);
+        grid.Rows.Should().Contain(row =>
+            row.Values["sector"] == "Technology" &&
+            row.Values["US:marketValue"] == "100" &&
+            row.Values["US:pnl"] == "10" &&
+            row.Values["EU:marketValue"] == "50" &&
+            row.Values["EU:pnl"] == "5" &&
+            row.Values["returnPct"] == "10");
+        grid.Rows.Should().Contain(row =>
+            row.Values["sector"] == "Rates" &&
+            row.Values["US:marketValue"] == "40" &&
+            row.Values["US:pnl"] == "-2" &&
+            row.Values["EU:marketValue"] == "0" &&
+            row.Values["EU:pnl"] == "0" &&
+            row.Values["returnPct"] == "-5");
+        grid.Lineage.Should().NotBeNull();
+        grid.Lineage!.SourceFields.Should().Equal("marketValue", "pnl", "region", "sector");
+    }
+
+    [Fact]
     public void TemplateRegistry_RenderWithRequestGridOverride_DoesNotMutateApprovedTemplate()
     {
         var svc = new ReportTemplateRegistryService();
@@ -1559,7 +1713,7 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
-    public void ReportPackRunReadService_FiltersTemplatesAndPacksByAccessPolicy()
+    public async Task ReportPackRunReadService_FiltersTemplatesAndPacksByAccessPolicy()
     {
         var registry = new ReportTemplateRegistryService();
         var privateTemplate = registry.CreateDraft(
@@ -1744,6 +1898,36 @@ public sealed class ReportPackWorkflowServiceTests
         strangerPayload.Schedules.Should().NotBeNull().And.BeEmpty();
         strangerPayload.ScheduleDeliveryPlans.Should().NotBeNull().And.BeEmpty();
         strangerPayload.DeliveryAttempts.Should().NotBeNull().And.BeEmpty();
+
+        var securityMaster = new NullSecurityMasterQueryService();
+        var workspaceService = new FundOperationsWorkspaceReadService(
+            new InMemoryFundAccountService(),
+            new StrategyRunStore(),
+            new PortfolioReadService(),
+            new NavAttributionService(securityMaster),
+            new ReportGenerationService(securityMaster),
+            reportPackWorkflowService: workflow,
+            reportPackDeliveryService: delivery,
+            reportingScheduleService: schedules,
+            reportPackRunReadService: readService);
+        var groupWorkspace = await workspaceService.GetWorkspaceAsync(
+            new FundOperationsWorkspaceQuery("fund-a", new DateTimeOffset(2026, 3, 21, 10, 0, 0, TimeSpan.Zero), "USD"),
+            new ReportAccessQueryContext("viewer.user", ["ops-control"]));
+        var strangerWorkspace = await workspaceService.GetWorkspaceAsync(
+            new FundOperationsWorkspaceQuery("fund-a", new DateTimeOffset(2026, 3, 21, 10, 0, 0, TimeSpan.Zero), "USD"),
+            new ReportAccessQueryContext("viewer.user"));
+
+        groupWorkspace.Reporting.Schedules.Should().NotBeNull();
+        groupWorkspace.Reporting.Schedules!.Select(static schedule => schedule.ScheduleId).Should().Contain("sched-ops-control");
+        groupWorkspace.Reporting.Schedules.Select(static schedule => schedule.ScheduleId).Should().NotContain("sched-owner-only");
+        groupWorkspace.Reporting.DeliveryAttempts.Should().NotBeNull();
+        groupWorkspace.Reporting.DeliveryAttempts!.Select(static attempt => attempt.AttemptId).Should().Contain(genericRunDeliveryAttemptId);
+        groupWorkspace.Reporting.DeliveryAttempts.Select(static attempt => attempt.AttemptId).Should().NotContain(privateDeliveryAttemptId);
+        groupWorkspace.Reporting.ScheduleDeliveryPlans.Should().NotBeNull();
+        groupWorkspace.Reporting.ScheduleDeliveryPlans!.Select(static plan => plan.ScheduleId).Should().Contain("sched-ops-control");
+        strangerWorkspace.Reporting.Schedules.Should().NotBeNull().And.BeEmpty();
+        strangerWorkspace.Reporting.DeliveryAttempts.Should().NotBeNull().And.BeEmpty();
+        strangerWorkspace.Reporting.ScheduleDeliveryPlans.Should().NotBeNull().And.BeEmpty();
     }
 
     [Fact]

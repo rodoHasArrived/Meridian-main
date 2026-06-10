@@ -279,9 +279,14 @@ authoring state survives host restart. Approved custom templates can carry repor
 definitions; the shared registry validates and renders those grids through `ReportWriterGridEngine`
 instead of returning browser-local or WPF-local calculations. Render requests may include temporary
 grid definitions for live no-code previews; the registry renders that request-scoped layout without
-persisting it back to the approved template. Rendered grid responses carry input/output row counts,
-filtered-input row counts, source fields, metric source mappings, formula dependencies, and saved
-filter lineage so browser and WPF previews can display the same audit trace as retained exports.
+persisting it back to the approved template. Registry normalization preserves the authored
+drag-and-drop order for grids, row fields, column fields, metrics, formulas, and filters while
+trimming duplicates, so preview and approved runs use the same layout an operator saved. Rendered
+grid responses expand pivot column fields into first-observed cross-tab metric columns instead of
+flattening them into extra row groups, while formulas continue to evaluate against each row's
+aggregate metric totals. They also carry input/output row counts, filtered-input row counts, source
+fields, metric source mappings, formula dependencies, and saved filter lineage so browser and WPF
+previews can display the same audit trace as retained exports.
 Browser and WPF clients should render that shared
 template state instead of treating built-in templates as the full authoring workflow.
 Template definitions and report-pack workflow records now carry shared access policies for
@@ -299,10 +304,11 @@ orchestration, so a direct run request cannot bypass the list/render filters for
 restricted report templates. Reporting schedule upserts and manual schedule runs apply the same
 governed template access check, so locked custom templates cannot be scheduled or run from an
 existing schedule by callers outside the owner, user, group, or company policy. Reporting payload
-reads also filter schedule rows, `scheduleDeliveryPlans`, and `DeliveryAttempts` through the visible
-template/workflow set for the current `ReportAccessQueryContext`, so unauthorized users cannot
-infer locked schedule recipients, delivery modes, due dates, package links, or delivery status from
-the read model.
+reads, including the embedded `FundOperationsWorkspaceReadService` reporting summary behind the
+fund workspace view, also filter schedule rows, `scheduleDeliveryPlans`, and `DeliveryAttempts`
+through the visible template/workflow set for the current `ReportAccessQueryContext`, so
+unauthorized users cannot infer locked schedule recipients, delivery modes, due dates, package
+links, or delivery status from the read model.
 Approved custom report-writer templates carry their saved grid definitions into the reporting
 catalog as well. Generic ad-hoc and scheduled runs now retain `report-writer://.../grids/{gridId}`
 artifacts and audit the grid count, so pivot, Top-N, contribution, and custom-formula grids remain

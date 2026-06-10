@@ -204,6 +204,7 @@ public sealed class FundOperationsWorkspaceReadService
     private readonly ReportPackWorkflowService? _reportPackWorkflowService;
     private readonly ReportPackDeliveryService? _reportPackDeliveryService;
     private readonly ReportingScheduleService? _reportingScheduleService;
+    private readonly ReportPackRunReadService? _reportPackRunReadService;
 
     public FundOperationsWorkspaceReadService(
         IFundAccountService fundAccountService,
@@ -220,7 +221,8 @@ public sealed class FundOperationsWorkspaceReadService
         IOperationsContinuityWorkflowService? operationsContinuityWorkflowService = null,
         ReportPackWorkflowService? reportPackWorkflowService = null,
         ReportPackDeliveryService? reportPackDeliveryService = null,
-        ReportingScheduleService? reportingScheduleService = null)
+        ReportingScheduleService? reportingScheduleService = null,
+        ReportPackRunReadService? reportPackRunReadService = null)
     {
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
         _strategyRepository = strategyRepository ?? throw new ArgumentNullException(nameof(strategyRepository));
@@ -237,10 +239,17 @@ public sealed class FundOperationsWorkspaceReadService
         _reportPackWorkflowService = reportPackWorkflowService;
         _reportPackDeliveryService = reportPackDeliveryService;
         _reportingScheduleService = reportingScheduleService;
+        _reportPackRunReadService = reportPackRunReadService;
     }
 
     public async Task<FundOperationsWorkspaceDto> GetWorkspaceAsync(
         FundOperationsWorkspaceQuery query,
+        CancellationToken ct = default) =>
+        await GetWorkspaceAsync(query, accessContext: null, ct).ConfigureAwait(false);
+
+    public async Task<FundOperationsWorkspaceDto> GetWorkspaceAsync(
+        FundOperationsWorkspaceQuery query,
+        ReportAccessQueryContext? accessContext,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(query);
@@ -326,7 +335,8 @@ public sealed class FundOperationsWorkspaceReadService
             nav,
             cashBuild.RunSources,
             crossFundConsolidations,
-            asOf);
+            asOf,
+            accessContext);
         var governance = await BuildGovernanceLifecycleProjectionAsync(
             normalizedFundProfileId,
             accountSummaries,
@@ -363,6 +373,12 @@ public sealed class FundOperationsWorkspaceReadService
 
     public async Task<StructuredReportingExportPayloadDto> GetStructuredReportingExportAsync(
         StructuredReportingExportRequestDto request,
+        CancellationToken ct = default) =>
+        await GetStructuredReportingExportAsync(request, accessContext: null, ct).ConfigureAwait(false);
+
+    public async Task<StructuredReportingExportPayloadDto> GetStructuredReportingExportAsync(
+        StructuredReportingExportRequestDto request,
+        ReportAccessQueryContext? accessContext,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -376,6 +392,7 @@ public sealed class FundOperationsWorkspaceReadService
                 request.FundProfileId,
                 request.AsOf,
                 request.Currency),
+            accessContext,
             ct).ConfigureAwait(false);
 
         var descriptor = workspace.Reporting.StructuredExports?
@@ -2584,7 +2601,8 @@ public sealed class FundOperationsWorkspaceReadService
         FundNavAttributionSummaryDto nav,
         IReadOnlyList<PortfolioReportingRunSource> runSources,
         IReadOnlyList<CrossFundReportingConsolidationDto> crossFundConsolidations,
-        DateTimeOffset asOf)
+        DateTimeOffset asOf,
+        ReportAccessQueryContext? accessContext = null)
     {
         var profiles = ExportProfile.GetBuiltInProfiles()
             .Select(static profile => new FundReportingProfileDto(
@@ -2602,10 +2620,20 @@ public sealed class FundOperationsWorkspaceReadService
             .Where(static profile => profile.Id is "excel" or "python-pandas" or "postgresql" or "arrow-feather")
             .Select(static profile => profile.Id)
             .ToArray();
-        var workflowRecords = BuildReportPackWorkflowRecords(accounts, asOf);
-        var deliveryAttempts = _reportPackDeliveryService?.ListAttempts(500) ?? [];
-        var schedules = _reportingScheduleService?.ListSchedules(100) ?? [];
-        var scheduleDeliveryPlans = ReportPackRunReadService.BuildScheduleDeliveryPlans(schedules, deliveryAttempts);
+        var workflowRecords = FilterReportPackWorkflowRecords(BuildReportPackWorkflowRecords(accounts, asOf), accessContext);
+        var filteredReportingPayload = accessContext is not null
+            ? _reportPackRunReadService?.BuildPayload(accessContext)
+            : null;
+        var deliveryAttempts = filteredReportingPayload?.DeliveryAttempts
+            ?? _reportPackDeliveryService?.ListAttempts(500)
+            ?? [];
+        var schedules = filteredReportingPayload?.Schedules
+            ?? _reportingScheduleService?.ListSchedules(100)
+            ?? [];
+        var scheduleDeliveryPlans = filteredReportingPayload?.ScheduleDeliveryPlans
+            ?? ReportPackRunReadService.BuildScheduleDeliveryPlans(schedules, deliveryAttempts);
+        var distributions = filteredReportingPayload?.ReportPackDistributions
+            ?? ReportPackRunReadService.BuildDistributionRecords(workflowRecords, deliveryAttempts);
         var portfolioCuts = BuildPortfolioReportingCuts(accounts, cashFinancing, nav, runSources, asOf);
         var livePortfolioViews = BuildPortfolioReportingLiveViews(accounts.Count, portfolioCuts, runSources, asOf);
         var pnlSlices = BuildPortfolioReportingPnlSlices(runSources, cashFinancing.Currency, asOf);
@@ -2623,7 +2651,7 @@ public sealed class FundOperationsWorkspaceReadService
         return new FundReportingSummaryDto(
             ProfileCount: profiles.Length,
             RecommendedProfiles: recommended,
-            ReportPackDistributions: ReportPackRunReadService.BuildDistributionRecords(workflowRecords, deliveryAttempts),
+            ReportPackDistributions: distributions,
             Profiles: profiles,
             Summary: $"{profiles.Length} export/reporting profiles are available for Accounting and Reporting workflows.",
             WorkflowRecords: workflowRecords,
@@ -3964,6 +3992,20 @@ public sealed class FundOperationsWorkspaceReadService
             .OrderByDescending(static record => record.UpdatedAt)
             .ThenByDescending(static record => record.Version)
             .Take(8)
+            .ToArray();
+    }
+
+    private static IReadOnlyList<ReportPackWorkflowRecordDto> FilterReportPackWorkflowRecords(
+        IReadOnlyList<ReportPackWorkflowRecordDto> records,
+        ReportAccessQueryContext? accessContext)
+    {
+        if (accessContext is null)
+        {
+            return records;
+        }
+
+        return records
+            .Where(record => ReportAccessPolicyEvaluator.Evaluate(record.AccessPolicy, accessContext).IsAccessible)
             .ToArray();
     }
 

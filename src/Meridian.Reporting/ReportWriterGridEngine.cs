@@ -25,8 +25,10 @@ public static class ReportWriterGridEngine
         IReadOnlyList<IReadOnlyDictionary<string, string>> rows)
     {
         var warnings = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
-        var dimensions = NormalizeFields(grid.RowFields)
-            .Concat(NormalizeFields(grid.ColumnFields))
+        var rowDimensions = NormalizeFields(grid.RowFields);
+        var columnDimensions = NormalizeFields(grid.ColumnFields);
+        var dimensions = rowDimensions
+            .Concat(columnDimensions)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var metrics = NormalizeMetrics(grid.Metrics);
@@ -39,10 +41,22 @@ public static class ReportWriterGridEngine
         }
 
         var filteredRows = ApplyFilters(grid, rows, filters, warnings);
-        var columnList = BuildColumns(dimensions, metrics, formulas, includeContribution: grid.Kind == ReportWriterGridKindDto.Contribution);
-        var renderedRows = grid.Kind == ReportWriterGridKindDto.Detail
-            ? RenderDetailRows(grid, filteredRows, dimensions, metrics, formulas, warnings)
-            : RenderAggregateRows(grid, filteredRows, dimensions, metrics, formulas, warnings);
+        IReadOnlyList<ReportWriterGridColumnDto> columnList;
+        IReadOnlyList<ReportWriterGridRowDto> renderedRows;
+        if (grid.Kind == ReportWriterGridKindDto.Pivot && columnDimensions.Length > 0)
+        {
+            var pivotColumns = BuildPivotColumns(filteredRows, columnDimensions);
+            columnList = BuildPivotRenderColumns(rowDimensions, pivotColumns, metrics, formulas);
+            renderedRows = RenderPivotRows(grid, filteredRows, rowDimensions, columnDimensions, pivotColumns, metrics, formulas, warnings);
+        }
+        else
+        {
+            columnList = BuildColumns(dimensions, metrics, formulas, includeContribution: grid.Kind == ReportWriterGridKindDto.Contribution);
+            renderedRows = grid.Kind == ReportWriterGridKindDto.Detail
+                ? RenderDetailRows(grid, filteredRows, dimensions, metrics, formulas, warnings)
+                : RenderAggregateRows(grid, filteredRows, dimensions, metrics, formulas, warnings);
+        }
+
         var lineage = BuildLineage(rows.Count, filteredRows.Count, renderedRows.Count, dimensions, metrics, formulas, filters);
 
         return new ReportWriterGridRenderDto(
@@ -91,6 +105,49 @@ public static class ReportWriterGridEngine
         ApplyFormulas(output, formulas, fieldTotals, warnings);
         return output
             .Select((row, index) => new ReportWriterGridRowDto(BuildRowKey(row.Values, dimensions, index), row.Values))
+            .ToArray();
+    }
+
+    private static IReadOnlyList<ReportWriterGridRowDto> RenderPivotRows(
+        ReportWriterGridDefinitionDto grid,
+        IReadOnlyList<IReadOnlyDictionary<string, string>> rows,
+        IReadOnlyList<string> rowDimensions,
+        IReadOnlyList<string> columnDimensions,
+        IReadOnlyList<PivotColumn> pivotColumns,
+        IReadOnlyList<ReportWriterMetricDefinitionDto> metrics,
+        IReadOnlyList<ReportWriterFormulaDefinitionDto> formulas,
+        ISet<string> warnings)
+    {
+        var groups = new Dictionary<string, PivotAggregateGroup>(StringComparer.Ordinal);
+        foreach (var row in rows)
+        {
+            var rowValues = rowDimensions
+                .ToDictionary(dimension => dimension, dimension => GetValue(row, dimension), StringComparer.OrdinalIgnoreCase);
+            var groupKey = BuildGroupKey(rowValues, rowDimensions);
+            if (!groups.TryGetValue(groupKey, out var group))
+            {
+                group = new PivotAggregateGroup(rowValues, metrics);
+                groups[groupKey] = group;
+            }
+
+            var pivotValues = columnDimensions
+                .ToDictionary(dimension => dimension, dimension => GetValue(row, dimension), StringComparer.OrdinalIgnoreCase);
+            var pivotKey = BuildGroupKey(pivotValues, columnDimensions);
+            foreach (var metric in metrics)
+            {
+                group.Add(metric, pivotKey, row, warnings);
+            }
+        }
+
+        var workingRows = groups.Values
+            .Select(group => group.ToWorkingRow(metrics, pivotColumns))
+            .ToList();
+        var metricTotals = BuildMetricTotals(workingRows);
+        ApplyFormulas(workingRows, formulas, metricTotals, warnings);
+        var sorted = SortRows(workingRows, grid, metrics);
+
+        return sorted
+            .Select((row, index) => new ReportWriterGridRowDto(BuildRowKey(row.Values, rowDimensions, index), row.Values))
             .ToArray();
     }
 
@@ -158,6 +215,68 @@ public static class ReportWriterGridEngine
         columns.AddRange(formulas.Select(formula => new ReportWriterGridColumnDto(formula.Name, formula.Label ?? formula.Name, "formula")));
         return columns;
     }
+
+    private static IReadOnlyList<ReportWriterGridColumnDto> BuildPivotRenderColumns(
+        IReadOnlyList<string> rowDimensions,
+        IReadOnlyList<PivotColumn> pivotColumns,
+        IReadOnlyList<ReportWriterMetricDefinitionDto> metrics,
+        IReadOnlyList<ReportWriterFormulaDefinitionDto> formulas)
+    {
+        var columns = new List<ReportWriterGridColumnDto>(rowDimensions.Count + (pivotColumns.Count * metrics.Count) + formulas.Count);
+        columns.AddRange(rowDimensions.Select(field => new ReportWriterGridColumnDto(field, field, "dimension")));
+        foreach (var pivotColumn in pivotColumns)
+        {
+            columns.AddRange(metrics.Select(metric =>
+            {
+                var key = BuildPivotMetricKey(pivotColumn.Key, metric.Name);
+                var metricLabel = metric.Label ?? metric.Name;
+                return new ReportWriterGridColumnDto(key, $"{pivotColumn.Label} {metricLabel}", "metric");
+            }));
+        }
+
+        columns.AddRange(formulas.Select(formula => new ReportWriterGridColumnDto(formula.Name, formula.Label ?? formula.Name, "formula")));
+        return columns;
+    }
+
+    private static IReadOnlyList<PivotColumn> BuildPivotColumns(
+        IReadOnlyList<IReadOnlyDictionary<string, string>> rows,
+        IReadOnlyList<string> columnDimensions)
+    {
+        var columns = new List<PivotColumn>();
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var row in rows)
+        {
+            var values = columnDimensions
+                .ToDictionary(dimension => dimension, dimension => GetValue(row, dimension), StringComparer.OrdinalIgnoreCase);
+            var key = BuildGroupKey(values, columnDimensions);
+            if (!seen.Add(key))
+            {
+                continue;
+            }
+
+            columns.Add(new PivotColumn(key, BuildPivotLabel(values, columnDimensions)));
+        }
+
+        return columns;
+    }
+
+    private static string BuildPivotMetricKey(string pivotKey, string metricName) =>
+        $"{NormalizePivotKeySegment(pivotKey)}:{metricName}";
+
+    private static string BuildPivotLabel(
+        IReadOnlyDictionary<string, string> values,
+        IEnumerable<string> columnDimensions)
+    {
+        var label = string.Join(" / ", columnDimensions.Select(dimension =>
+        {
+            var value = values.TryGetValue(dimension, out var fieldValue) ? fieldValue : string.Empty;
+            return string.IsNullOrWhiteSpace(value) ? "(blank)" : value;
+        }));
+        return string.IsNullOrWhiteSpace(label) ? "(blank)" : label;
+    }
+
+    private static string NormalizePivotKeySegment(string pivotKey) =>
+        string.IsNullOrWhiteSpace(pivotKey) ? "(blank)" : pivotKey;
 
     private static ReportWriterGridLineageDto BuildLineage(
         int inputRowCount,
@@ -550,6 +669,87 @@ public static class ReportWriterGridEngine
             return new WorkingRow(values, numericValues);
         }
     }
+
+    private sealed class PivotAggregateGroup
+    {
+        private readonly Dictionary<string, MetricAccumulator> _rowMetrics;
+        private readonly Dictionary<string, Dictionary<string, MetricAccumulator>> _pivotMetrics = new(StringComparer.Ordinal);
+
+        public PivotAggregateGroup(
+            IReadOnlyDictionary<string, string> dimensionValues,
+            IEnumerable<ReportWriterMetricDefinitionDto> metrics)
+        {
+            DimensionValues = new Dictionary<string, string>(dimensionValues, StringComparer.OrdinalIgnoreCase);
+            _rowMetrics = metrics.ToDictionary(
+                metric => metric.Name,
+                metric => new MetricAccumulator(metric.Function),
+                StringComparer.OrdinalIgnoreCase);
+        }
+
+        private IReadOnlyDictionary<string, string> DimensionValues { get; }
+
+        public void Add(
+            ReportWriterMetricDefinitionDto metric,
+            string pivotKey,
+            IReadOnlyDictionary<string, string> row,
+            ISet<string> warnings)
+        {
+            var value = TryGetDecimal(row, metric.SourceField, warnings);
+            if (_rowMetrics.TryGetValue(metric.Name, out var rowAccumulator))
+            {
+                rowAccumulator.Add(value, metric.SourceField);
+            }
+
+            if (!_pivotMetrics.TryGetValue(pivotKey, out var pivotMetricAccumulators))
+            {
+                pivotMetricAccumulators = new Dictionary<string, MetricAccumulator>(StringComparer.OrdinalIgnoreCase);
+                _pivotMetrics[pivotKey] = pivotMetricAccumulators;
+            }
+
+            if (!pivotMetricAccumulators.TryGetValue(metric.Name, out var pivotAccumulator))
+            {
+                pivotAccumulator = new MetricAccumulator(metric.Function);
+                pivotMetricAccumulators[metric.Name] = pivotAccumulator;
+            }
+
+            pivotAccumulator.Add(value, metric.SourceField);
+        }
+
+        public WorkingRow ToWorkingRow(
+            IReadOnlyList<ReportWriterMetricDefinitionDto> metrics,
+            IReadOnlyList<PivotColumn> pivotColumns)
+        {
+            var values = new Dictionary<string, string>(DimensionValues, StringComparer.OrdinalIgnoreCase);
+            var numericValues = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+            foreach (var metric in metrics)
+            {
+                var value = _rowMetrics[metric.Name].Result;
+                values[metric.Name] = FormatDecimal(value);
+                numericValues[metric.Name] = value;
+            }
+
+            foreach (var pivotColumn in pivotColumns)
+            {
+                _pivotMetrics.TryGetValue(pivotColumn.Key, out var pivotMetricAccumulators);
+                foreach (var metric in metrics)
+                {
+                    var key = BuildPivotMetricKey(pivotColumn.Key, metric.Name);
+                    var value = pivotMetricAccumulators is not null &&
+                                pivotMetricAccumulators.TryGetValue(metric.Name, out var accumulator)
+                        ? accumulator.Result
+                        : 0m;
+                    values[key] = FormatDecimal(value);
+                    numericValues[key] = value;
+                }
+            }
+
+            return new WorkingRow(values, numericValues);
+        }
+    }
+
+    private sealed record PivotColumn(
+        string Key,
+        string Label);
 
     private sealed class MetricAccumulator
     {

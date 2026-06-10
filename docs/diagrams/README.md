@@ -2,11 +2,11 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-04-21
+**Reviewed:** 2026-06-10
 
-This folder contains architecture diagrams for the Meridian system, updated to reflect the current monolithic runtime, shared workstation delivery, security-master productization, and fund-operations workflows. It is the single home for all visual assets:
+This folder contains committed DOT, PlantUML, PNG, and SVG diagram assets for the Meridian system, updated to reflect the current monolithic runtime, shared workstation delivery, security-master productization, and fund-operations workflows. Registered Mermaid architecture sources live separately in [`docs/architecture/diagrams/`](../architecture/diagrams/) and are indexed through [`docs/source/data/diagram-index.yml`](../source/data/diagram-index.yml).
 
-- **Graphviz DOT diagrams** — C4 context/container/component, data flow, provider and storage architecture (files in this directory)
+- **Graphviz DOT diagrams** — C4 context/container/component, data flow, provider, storage, UI, operations, and reference views
 - **UML diagrams** — Sequence, state, activity, timing, and communication diagrams in [`uml/`](uml/README.md)
 
 ---
@@ -51,9 +51,9 @@ The index below keeps basename references for readability; use the folders above
 | **Fund Ops & Reconciliation** | Accounting workspace review loop across reconciliation services, F# rules, and persisted break queues | `fund-ops-reconciliation.dot` |
 | **UI Navigation Map** | Auto-generated WPF sidebar/workspace navigation map from source code without hand-maintained drift | `ui-navigation-map.dot` |
 | **UI Implementation Flow** | Auto-generated WPF shell/DI/navigation flow from source code without hand-maintained drift | `ui-implementation-flow.dot` |
-| **Backtesting Engine** | Tick-level backtest replay: universe discovery, fill models, portfolio simulation, and metrics | `backtesting-engine.dot` |
-| **Strategy Lifecycle** | Strategy state machine, registration, promotion from backtest to paper to live | `strategy-lifecycle.dot` |
-| **Execution Layer** | Paper trading gateway, order lifecycle state machine, and position tracking | `execution-layer.dot` |
+| **Backtesting Engine** | Tick-level backtest replay evidence: universe discovery, fill models, portfolio simulation, metrics, and paper-readiness handoff | `backtesting-engine.dot` |
+| **Strategy Lifecycle** | Strategy state machine, registration, paper-first promotion evidence, and gated W7 live-readiness | `strategy-lifecycle.dot` |
+| **Execution Layer** | Paper trading gateway, paper-first order lifecycle state machine, and position tracking | `execution-layer.dot` |
 | **Domain Event Model** | MarketEvent hierarchy: all payload types, event type enum, and tier classification | `domain-event-model.dot` |
 | **F# Domain Library** | Railway-oriented validation, type-safe calculations, and C# interop layer | `fsharp-domain.dot` |
 | **Data Quality & Monitoring** | Quality scoring, SLA enforcement, outlier detection, and observability stack | `data-quality-monitoring.dot` |
@@ -280,11 +280,11 @@ Details the tick-level strategy backtesting system:
 Shows the full strategy lifecycle management:
 
 - **SDK** — IStrategyLifecycle interface with Initialize/OnBar.../Finalize callbacks and IBacktestContext injection
-- **Run Types** — RunType enum: Backtest, Paper, Live
+- **Run Types** — RunType enum: Backtest, Paper, and gated Live records; W7 live-readiness remains planned and governance-bound
 - **State Machine** — StrategyStatus: Initialized → Running → Paused → Stopped | Error, with valid transition edges
 - **Lifecycle Manager** — StrategyLifecycleManager: thread-safe registration, activation, pause, stop, error isolation
 - **Portfolio Tracking** — PortfolioReadService, LedgerReadService, StrategyRunReadService, EOD snapshots
-- **Promotion Path** — BacktestToLivePromoter with risk validation gate (Sharpe, drawdown, trade count thresholds)
+- **Promotion Path** — BacktestToLivePromoter gates backtest-to-paper and paper-to-W7-readiness evidence with approval, source-evidence, and governed-reporting requirements; it is not direct live-execution productization
 
 ### Execution Layer
 
@@ -401,7 +401,7 @@ Shows how the WPF desktop host wires the UI together:
 
 ### Prerequisites
 
-The repository can regenerate diagrams with the committed Node-based renderer (recommended) or Graphviz. The Node path also refreshes the auto-generated WPF UI diagrams from source code without hand-maintained drift before rendering.
+The repository can regenerate the auto-generated WPF UI diagrams with the committed Node-based renderer, and it can render other DOT sources with Graphviz or another deterministic DOT renderer. The package script refreshes UI DOT sources from WPF source code before rendering, which keeps the UI diagrams from becoming hand-maintained copies.
 
 Install Node dependencies:
 
@@ -422,7 +422,7 @@ brew install graphviz
 choco install graphviz
 ```
 
-### Generate SVG Images (recommended)
+### Generate UI SVG Images
 
 ```bash
 # From the repository root
@@ -432,12 +432,20 @@ npm run generate-diagrams
 This command:
 
 - refreshes `ui-navigation-map.dot` and `ui-implementation-flow.dot` from the current WPF source files
-- renders the auto-generated UI diagrams to committed `.svg` artifacts
+- renders the auto-generated root UI diagrams to committed `.svg` artifacts
 
-To render every DOT file through the Node pipeline instead, run:
+To render every top-level DOT file in `docs/diagrams/` through the Node UI pipeline, run:
 
 ```bash
 npm run generate-diagrams -- --all
+```
+
+This is currently a top-level UI compatibility pass. It does not recurse into `architecture/`, `workflows/`, `operations/`, `reference/`, `analytics/`, or `uml/`.
+
+Use the existing Node renderer when the top-level UI PNG compatibility artifacts also need to be refreshed:
+
+```bash
+node build/node/generate-diagrams.mjs
 ```
 
 ### Generate with Graphviz manually
@@ -445,7 +453,7 @@ npm run generate-diagrams -- --all
 ```bash
 cd docs/diagrams
 
-# Generate all SVGs
+# Generate top-level SVGs
 for f in *.dot; do
   dot -Tsvg "$f" -o "${f%.dot}.svg"
 done
@@ -541,6 +549,6 @@ See [uml/README.md](uml/README.md) for the full inventory and rendering instruct
 
 ---
 
-_Graphviz diagrams generated with DOT language. UML diagrams generated with PlantUML._
+_Graphviz diagrams generated with DOT language. UML diagrams generated with PlantUML. Registered Mermaid sources live under `docs/architecture/diagrams/`._
 
-_Last Updated: 2026-04-21_
+_Last Updated: 2026-06-10_

@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -976,6 +977,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const resolveDialog = useReconciliationResolveDialogViewModel(reconciliation.resolveBreak);
   const selectedReconciliation = reconciliation.selectedReconciliation;
   const selectedReconciliationDetail = reconciliation.detailView;
+  const selectedReconciliationOpenBreakLabel = `${selectedReconciliation?.openBreakCount ?? 0} open break${selectedReconciliation?.openBreakCount === 1 ? "" : "s"}`;
+  const selectedReconciliationOpenBreakTone = (selectedReconciliation?.openBreakCount ?? 0) === 0 ? "success" : "warning";
   const cashFlow = useAccountingCashFlowViewModel(data?.cashFlow ?? null, pathname, workstream);
   const reporting = useAccountingReportingViewModel(data?.reporting ?? null);
   const configuration = useAccountingConfigurationViewModel();
@@ -1705,7 +1708,62 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
       ) : null}
 
       {workstream === "ledger" && selectedReconciliation ? (
-        <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+        <FinancialRecordExplorerShell
+          explorerLabel="Financial Record Explorer"
+          title="Ledger Explorer"
+          titleId="accounting-ledger-explorer-title"
+          description="Filter accounting ledger records, inspect dense trial-balance rows, and drill into journals, ledger lines, source documents, approvals, reconciliations, report usage, and audit history without leaving the Accounting workspace."
+          scopeItems={[
+            { id: "workspace", label: "Workspace", value: "Accounting" },
+            { id: "record-set", label: "Record set", value: "Journal entries and ledger detail" },
+            { id: "run", label: "Reconciliation run", value: selectedReconciliation.strategyName },
+            { id: "run-id", label: "Run ID", value: selectedReconciliation.runId }
+          ]}
+          savedViews={[
+            {
+              id: "controller-review",
+              label: "Controller review",
+              detail: "Default ledger explorer view for trial balance, proof drawer, approvals, and report usage.",
+              active: true
+            },
+            {
+              id: "exceptions",
+              label: "Exceptions",
+              detail: "Focuses the ledger grid on unreconciled accounts, blockers, and missing evidence."
+            },
+            {
+              id: "report-usage",
+              label: "Report usage",
+              detail: "Keeps journal, ledger line, and report export proof paths visible together."
+            }
+          ]}
+          summaryItems={[
+            { id: "rows", label: "Rows", value: reconciliation.trialBalanceView.filteredRowCountLabel },
+            { id: "basis", label: "Basis", value: reconciliation.trialBalanceView.basisOptions.find((option) => option.isSelected)?.label ?? "Primary" },
+            { id: "breaks", label: "Open breaks", value: selectedReconciliationOpenBreakLabel, tone: selectedReconciliationOpenBreakTone },
+            { id: "reconciliation", label: "Reconciliation", value: selectedReconciliation.reconciliationStatus, tone: selectedReconciliationOpenBreakTone }
+          ]}
+          appliedFilters={[
+            { id: "account", label: "GL account", value: reconciliation.trialBalanceView.accountFilterValue.trim() || "All accounts" },
+            { id: "basis-filter", label: "Accounting basis", value: reconciliation.trialBalanceView.basisOptions.find((option) => option.isSelected)?.label ?? "Primary" },
+            { id: "run-filter", label: "Run", value: selectedReconciliation.runId }
+          ]}
+          actions={[
+            {
+              id: "evidence",
+              label: reconciliation.detailActions?.evidencePacketLabel ?? "Open evidence packet",
+              href: reconciliation.detailActions?.evidencePacketHref,
+              ariaLabel: reconciliation.detailActions?.evidencePacketAriaLabel
+            },
+            {
+              id: "audit",
+              label: reconciliation.detailActions?.auditPacketLabel ?? "Review audit packet",
+              href: reconciliation.detailActions?.auditPacketHref,
+              ariaLabel: reconciliation.detailActions?.auditPacketAriaLabel
+            }
+          ]}
+        >
+        <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
           <Card aria-labelledby="trial-balance-title" aria-describedby="trial-balance-description" className="panel-surface">
             <CardHeader>
               <CardTitle id="trial-balance-title">{reconciliation.trialBalanceView.title}</CardTitle>
@@ -2087,7 +2145,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
               ) : null}
             </CardContent>
           </Card>
-        </section>
+        </div>
+        </FinancialRecordExplorerShell>
       ) : null}
 
       <section id="accounting-reporting" className={cn("grid gap-4", workstream === "reconciliation" ? "xl:grid-cols-1" : "xl:grid-cols-[1.15fr_0.85fr]")}>
@@ -2195,6 +2254,68 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
 
       {/* --- Security Master panel (shown when security-master workstream is active) --- */}
       {workstream === "security-master" && (
+        <FinancialRecordExplorerShell
+          explorerLabel="Financial Record Explorer"
+          title="Security & Instrument Explorer"
+          titleId="accounting-security-master-explorer-title"
+          description="Search Security Master instruments, inspect selected identity detail, and keep identifier conflicts, schedules, open lots, trading controls, and proof drill-through actions attached to the active record."
+          scopeItems={[
+            { id: "workspace", label: "Workspace", value: "Accounting" },
+            { id: "record-set", label: "Record set", value: "Security Master instruments" },
+            { id: "selected", label: "Selected instrument", value: securityMaster.pageView.detailSubtitle },
+            { id: "status", label: "Record status", value: securityMaster.pageView.detailStatusLabel }
+          ]}
+          savedViews={[
+            {
+              id: "instrument-proof",
+              label: "Instrument proof",
+              detail: "Default Security Master explorer view for search, identity evidence, conflicts, schedules, lots, and controls.",
+              active: true
+            },
+            {
+              id: "identifier-conflicts",
+              label: "Identifier conflicts",
+              detail: "Focuses operator review on provider identifier conflicts and resolution proof."
+            },
+            {
+              id: "lot-schedule-review",
+              label: "Lots & schedules",
+              detail: "Keeps cash-flow schedules, open lots, trading controls, and audit cues visible for the selected instrument."
+            }
+          ]}
+          summaryItems={securityMaster.pageView.metrics.map((metric) => ({
+            id: metric.id,
+            label: metric.label,
+            value: metric.value,
+            tone: metric.tone
+          }))}
+          appliedFilters={[
+            { id: "query", label: "Search", value: securityMaster.query.trim() || "No query" },
+            { id: "selection", label: "Security ID", value: securityMaster.selectedSecurityId ?? "No selection" },
+            { id: "conflicts", label: "Conflicts", value: securityMaster.conflictsLoading ? "Loading" : securityMaster.conflictCountLabel },
+            { id: "detail", label: "Detail coverage", value: securityMaster.pageView.detailSections.map((section) => `${section.label}: ${section.value}`).join(" | ") }
+          ]}
+          actions={[
+            {
+              id: "search",
+              label: "Open search",
+              href: "#security-master-search",
+              ariaLabel: "Open Security Master search"
+            },
+            {
+              id: "identity",
+              label: identity ? "Open identity proof" : "Identity proof pending",
+              href: identity ? `#${identity.panelId}` : null,
+              ariaLabel: identity ? "Open selected security identity proof" : undefined
+            },
+            {
+              id: "detail",
+              label: securityMaster.selectedSecurityId ? "Open selected record" : "Select a record",
+              href: securityMaster.selectedSecurityId ? "#security-detail-page-title" : null,
+              ariaLabel: securityMaster.selectedSecurityId ? "Open selected Security Master record detail" : undefined
+            }
+          ]}
+        >
         <section className="space-y-6">
           <section className="panel-surface-strong space-y-4 p-5" aria-label={securityMaster.pageView.ariaLabel}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -2571,6 +2692,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
             </>
           )}
         </section>
+        </FinancialRecordExplorerShell>
       )}
 
       {(workstream === "reconciliation" || workstream === "exceptions") && (

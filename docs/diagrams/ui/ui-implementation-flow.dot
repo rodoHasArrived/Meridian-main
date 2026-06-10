@@ -18,7 +18,7 @@ digraph UiImplementationFlow {
   node [fontname="Segoe UI", shape=box, style="rounded,filled", color="#475569", fontcolor="#e2e8f0", fillcolor="#1e293b"];
   edge [fontname="Segoe UI", color="#94a3b8", penwidth=1.3, arrowsize=0.8];
 
-  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: 351e1b552a97\nTransient pages in App.xaml.cs: 33\nNavigation tags: 0"];
+  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: d662b59af088\nTransient pages in App.xaml.cs: 33\nNavigation tags: 0"];
   app [shape=component, fillcolor="#0f766e", color="#2dd4bf", label="App.xaml.cs\nHost + DI composition"];
   window [shape=component, fillcolor="#2563eb", color="#93c5fd", label="MainWindow.xaml(.cs)\nRoot frame + global shortcuts"];
   page [shape=component, fillcolor="#7c3aed", color="#c4b5fd", label="MainPage.xaml(.cs)\nSidebar shell + command palette"];
@@ -31,8 +31,8 @@ digraph UiImplementationFlow {
   nav -> frame [label="Frame.Navigate(page)"];
   nav -> views [label="page type lookup"];
 
-  main_window_services [fillcolor="#172554", color="#93c5fd", label="MainWindow dependencies\nMainWindowViewModel\\nNavigationService\\nKeyboardShortcutService\\nNotificationService\\nOnboardingTourService\\nAlertService\\nWorkspaceService\\nFundContextService\\nWorkstationOperatingContextService\\nDispatcherTimer"];
-  main_page_services [fillcolor="#3b0764", color="#d8b4fe", label="MainPage dependencies\nWpfNavigationService\\nMainPageViewModel"];
+  main_window_services [fillcolor="#172554", color="#93c5fd", label="MainWindow dependencies\nMainWindowViewModel\\nNavigationService\\nKeyboardShortcutService\\nNotificationService\\nOnboardingTourService\\nAlertService\\nFundContextService\\nWorkstationOperatingContextService\\nDesktopShellCoordinator\\nDesktopShellSessionService\\nDesktopLaunchRouter\\nFileDropRouter\\nIWindowStateStore\\nDispatcherTimer"];
+  main_page_services [fillcolor="#3b0764", color="#d8b4fe", label="MainPage dependencies\nWpfNavigationService\\nIShellNavigationCoordinator\\nMainPageViewModel"];
   window -> main_window_services [label="constructor injection"];
   page -> main_page_services [label="constructor injection"];
 
@@ -316,16 +316,6 @@ digraph UiImplementationFlow {
     views -> section_19;
     section_19_PluginManagementPage [label="Plugin Management\nPluginManagementPage\nDI transient", fillcolor="#111827"];
     section_19 -> section_19_PluginManagementPage;
-  }
-
-  subgraph cluster_section_20 {
-    label="AI Agent page";
-    color="#334155";
-    style="rounded";
-    section_20 [shape=folder, fillcolor="#0f172a", color="#64748b", label="AI Agent page\n1 page classes\n1 transient registrations"];
-    views -> section_20;
-    section_20_AgentPage [label="Agent\nAgentPage\nDI transient", fillcolor="#111827"];
-    section_20 -> section_20_AgentPage;
   }
 
   { rank=min; generated; app; }

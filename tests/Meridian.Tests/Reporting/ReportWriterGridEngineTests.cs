@@ -86,6 +86,62 @@ public sealed class ReportWriterGridEngineTests
     }
 
     [Fact]
+    public void RenderGrids_PivotWithColumnFieldsBuildsCrosstabMetricColumns()
+    {
+        var rows = new[]
+        {
+            Row(("sector", "Technology"), ("region", "US"), ("marketValue", "100"), ("pnl", "10")),
+            Row(("sector", "Technology"), ("region", "EU"), ("marketValue", "50"), ("pnl", "5")),
+            Row(("sector", "Rates"), ("region", "US"), ("marketValue", "40"), ("pnl", "-2"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "sector-region-pivot",
+                "Sector Region Pivot",
+                ReportWriterGridKindDto.Pivot,
+                RowFields: ["sector"],
+                ColumnFields: ["region"],
+                Metrics:
+                [
+                    new ReportWriterMetricDefinitionDto("marketValue", "marketValue"),
+                    new ReportWriterMetricDefinitionDto("pnl", "pnl")
+                ],
+                Formulas:
+                [
+                    new ReportWriterFormulaDefinitionDto("returnPct", "{pnl} / {marketValue} * 100")
+                ])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        rendered.Columns.Select(column => column.Key).Should().Equal(
+            "sector",
+            "US:marketValue",
+            "US:pnl",
+            "EU:marketValue",
+            "EU:pnl",
+            "returnPct");
+        rendered.Rows.Should().HaveCount(2);
+        rendered.Rows.Should().Contain(row =>
+            row.Values["sector"] == "Technology" &&
+            row.Values["US:marketValue"] == "100" &&
+            row.Values["US:pnl"] == "10" &&
+            row.Values["EU:marketValue"] == "50" &&
+            row.Values["EU:pnl"] == "5" &&
+            row.Values["returnPct"] == "10");
+        rendered.Rows.Should().Contain(row =>
+            row.Values["sector"] == "Rates" &&
+            row.Values["US:marketValue"] == "40" &&
+            row.Values["US:pnl"] == "-2" &&
+            row.Values["EU:marketValue"] == "0" &&
+            row.Values["EU:pnl"] == "0" &&
+            row.Values["returnPct"] == "-5");
+        rendered.Lineage.Should().NotBeNull();
+        rendered.Lineage!.SourceFields.Should().Equal("marketValue", "pnl", "region", "sector");
+    }
+
+    [Fact]
     public void RenderGrids_ReportsFormulaAndNumericWarningsWithoutThrowing()
     {
         var rows = new[]

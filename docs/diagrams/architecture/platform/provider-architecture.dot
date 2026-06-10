@@ -1,289 +1,135 @@
 // Provider Architecture Diagram
-// Meridian current project state
-// Last Updated: 2026-05-28
+// Meridian current project stance
+// Last Updated: 2026-06-10
 //
-// This diagram shows the provider abstraction layer and all implemented
-// data providers for streaming, historical backfill, and symbol search.
-//
-// Generate: dot -Tpng provider-architecture.dot -o provider-architecture.png
-//           dot -Tsvg provider-architecture.dot -o provider-architecture.svg
+// This diagram shows provider integrations as source-evidence inputs to the
+// W1-W5 operational record baseline. Providers do not own ledger truth.
 
 digraph ProviderArchitecture {
-  rankdir=TB;
+  rankdir=LR;
   graph [fontname="Helvetica", fontsize=12, bgcolor="white", compound=true, pad=0.5];
   node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled"];
   edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
 
-  // Title
   labelloc="t";
-  label="Meridian - Provider Architecture\nUnified Data Source Abstraction";
+  label="Meridian - Provider Architecture\nSource evidence for operational records";
 
-  // Provider Interfaces
-  subgraph cluster_interfaces {
-    label="Provider Abstractions (Infrastructure/DataSources/)";
+  subgraph cluster_operator {
+    label="Operator setup and governance";
     color="#805ad5";
     style="rounded";
     bgcolor="#faf5ff";
 
-    subgraph cluster_core_interfaces {
-      label="Core Interfaces";
-      style="dashed";
-      color="#6b21a8";
-
-      I_DATASOURCE [shape=ellipse, fillcolor="#ddd6fe",
-                    label="IDataSource\n[Base Interface]\n\nCommon provider contract\nCapabilities discovery"];
-      I_REALTIME [shape=ellipse, fillcolor="#ddd6fe",
-                  label="IRealtimeDataSource\n[Interface]\n\nTrades, Quotes, Depth\nStreaming subscription"];
-      I_HISTORICAL [shape=ellipse, fillcolor="#ddd6fe",
-                    label="IHistoricalDataSource\n[Interface]\n\nBars, Dividends, Splits\nDate range queries"];
-    }
-
-    subgraph cluster_legacy_interfaces {
-      label="Legacy Interfaces (Compatibility)";
-      style="dashed";
-      color="#6b21a8";
-
-      I_MARKET [shape=ellipse, fillcolor="#e9d5ff",
-                label="IMarketDataClient\n[Interface]\n\nConnect, Subscribe\nGetEventsAsync"];
-      I_HIST_PROVIDER [shape=ellipse, fillcolor="#e9d5ff",
-                       label="IHistoricalDataProvider\n[Interface]\n\nGetHistoricalBarsAsync\nStreamHistoricalBarsAsync"];
-    }
-
-    CAPABILITIES [shape=note, fillcolor="#f3e8ff",
-                  label="DataSourceCapabilities\n\n• SupportsRealtime\n• SupportsHistorical\n• SupportsLevel2\n• SupportedTimeframes"];
-    REGISTRY [shape=note, fillcolor="#f3e8ff",
-              label="DataSourceRegistry\n\n[DataSource] attribute\nAutomatic discovery\nDI registration"];
+    SETTINGS [fillcolor="#c4b5fd",
+      label="Provider setup surfaces\nBrowser Settings + WPF setup\nmetadata-driven fields"];
+    CREDENTIALS [fillcolor="#ddd6fe",
+      label="Credential handling\nlocal encrypted store,\nread-only env fallback,\nno tracked secrets"];
+    HEALTH [fillcolor="#ddd6fe",
+      label="Provider readiness\nhealth, degradation,\nfallback, operator recovery"];
   }
 
-  // Streaming Providers
-  subgraph cluster_streaming {
-    label="Real-Time Streaming Providers (5 Production)";
+  subgraph cluster_contracts {
+    label="Provider contracts";
+    color="#6b46c1";
+    style="rounded";
+    bgcolor="#f3e8ff";
+
+    MARKET [shape=ellipse, fillcolor="#ddd6fe",
+      label="IMarketDataClient\nstreaming market events"];
+    HIST [shape=ellipse, fillcolor="#ddd6fe",
+      label="IHistoricalDataProvider\nprovider-backed backfill"];
+    SEARCH [shape=ellipse, fillcolor="#ddd6fe",
+      label="ISymbolSearchProvider\nsymbol and identifier search"];
+    CATALOG [fillcolor="#e9d5ff",
+      label="Provider catalog metadata\nfields, capabilities,\nsource posture, setup evidence"];
+  }
+
+  subgraph cluster_sources {
+    label="Implemented evidence sources";
     color="#2b6cb0";
     style="rounded";
     bgcolor="#dbeafe";
 
-    subgraph cluster_production_streaming {
-      label="Implemented";
-      style="dashed";
-      color="#1e40af";
-
-      IB_CLIENT [fillcolor="#bfdbfe",
-                 label="IBMarketDataClient\n[Production]\n\nIB TWS/Gateway API\nTrades, Quotes, L2 Depth\nMarket Scanner, News\nFree equity data support"];
-      ALP_CLIENT [fillcolor="#bfdbfe",
-                  label="AlpacaMarketDataClient\n[Production]\n\nWebSocket streaming\nIEX/SIP feeds\nTrades + Quotes"];
-      NYSE_CLIENT [fillcolor="#bfdbfe",
-                   label="NYSEDataSource\n[Production]\n\nExchange-direct feed\nUS Equities\nReal-time + Historical"];
-      SS_CLIENT [fillcolor="#bfdbfe",
-                 label="StockSharpConnector\n[Production]\n\nMulti-exchange adapter\nGlobal markets\n90+ connectors"];
-    }
-
-    subgraph cluster_polygon_streaming {
-      label="Additional Providers";
-      style="dashed";
-      color="#1e40af";
-
-      POL_CLIENT [fillcolor="#bfdbfe",
-                  label="PolygonMarketDataClient\n[Production]\n\nPolygon.io streaming\nTrades, quotes, websocket"];
-
-      SYNTH_CLIENT [fillcolor="#e0e7ff",
-                    label="SyntheticMarketDataClient\n[Development]\n\nDeterministic fake data\nOffline development\nSymbol search support\nReproducible test data"];
-    }
+    MARKET_PROVIDERS [fillcolor="#93c5fd",
+      label="Market and broker adapters\nInteractive Brokers, Alpaca,\nPolygon, NYSE, StockSharp,\nsynthetic/dev sources"];
+    HIST_PROVIDERS [fillcolor="#93c5fd",
+      label="Historical providers\nAlpaca, Yahoo, Stooq, Polygon,\nTiingo, Finnhub, Alpha Vantage,\nNasdaq Data Link, Twelve Data, FRED"];
+    BANK_CUSTODY [fillcolor="#bfdbfe",
+      label="Bank, custodian, and fund-admin inputs\nstatement files, external ledgers,\naccount activity evidence"];
+    SYMBOL_PROVIDERS [fillcolor="#bfdbfe",
+      label="Symbol and identifier services\nOpenFIGI, Alpaca, Finnhub,\nPolygon, StockSharp"];
   }
 
-  // Historical Providers
-  subgraph cluster_historical {
-    label="Historical Data Providers (12 Production + 1 Development)";
-    color="#2c7a7b";
-    style="rounded";
-    bgcolor="#d1fae5";
-
-    subgraph cluster_hist_tier1 {
-      label="Tier 1 - Primary (Priority 5)";
-      style="dashed";
-      color="#047857";
-
-      ALPACA_HIST [fillcolor="#a7f3d0", label="Alpaca Historical\n[Priority 5]\n\nOHLCV, Trades, Auctions\nAdjusted prices\n1min to 1day bars"];
-      IB_HIST [fillcolor="#a7f3d0", label="Interactive Brokers\n[Priority 5]\n\nAll timeframes\nIB pacing rules\nFull historical data"];
-    }
-
-    subgraph cluster_hist_tier2 {
-      label="Tier 2 - Secondary (Priority 10-20)";
-      style="dashed";
-      color="#047857";
-
-      YAHOO_HIST [fillcolor="#6ee7b7", label="Yahoo Finance\n[Priority 10]\n\n50K+ global securities\nFree, no API key\nDividends, Splits"];
-      STOOQ_HIST [fillcolor="#6ee7b7", label="Stooq\n[Priority 20]\n\nGlobal equities\nEOD data\nNo rate limits"];
-      POLYGON_HIST [fillcolor="#6ee7b7", label="Polygon.io\n[Priority 15]\n\nHistorical bars\nMinute/Day\nTrades, Quotes"];
-    }
-
-    subgraph cluster_hist_tier3 {
-      label="Tier 3 - Fallback (Priority 25+)";
-      style="dashed";
-      color="#047857";
-
-      NASDAQ_HIST [fillcolor="#bbf7d0", label="Nasdaq Data Link\n[Priority 30]\n\nQuandl API\nAlternative datasets"];
-      TIINGO_HIST [fillcolor="#bbf7d0", label="Tiingo\n[Priority 25]\n\nDividend-adjusted\nFundamentals, News"];
-      FINNHUB_HIST [fillcolor="#bbf7d0", label="Finnhub\n[Priority 35]\n\nFundamentals\nEarnings, News"];
-      AV_HIST [fillcolor="#bbf7d0", label="Alpha Vantage\n[Priority 40]\n\nIntraday data\n5min to monthly"];
-      SS_HIST [fillcolor="#bbf7d0", label="StockSharp\n[Priority 35]\n\nMulti-exchange\nGlobal markets"];
-      TWELVE_HIST [fillcolor="#bbf7d0", label="Twelve Data\n[Priority 38]\n\nGlobal equities\n80+ exchanges\nForex, ETFs, crypto"];
-      FRED_HIST [fillcolor="#bbf7d0", label="FRED (St Louis Fed)\n[Priority 45]\n\nEconomic time series\nMapped to synthetic bars\nFree, no limits"];
-      SYNTH_HIST [fillcolor="#e0e7ff", label="SyntheticHistoricalDataProvider\n[Development]\n\nDeterministic OHLCV bars\nQuotes, trades, auctions\nCorporate action events\nNo API key required"];
-    }
-
-    // Composite Orchestrator
-    COMPOSITE [fillcolor="#fef3c7",
-               label="CompositeHistoricalDataProvider\n[Orchestrator]\n\nAutomatic provider failover\nRate-limit rotation\nPriority-based selection\nHealth monitoring\nCircuit breaker per provider"];
-  }
-
-  // Resilience Layer
   subgraph cluster_resilience {
-    label="Resilience & Connection Management";
+    label="Evidence acquisition controls";
     color="#c53030";
     style="rounded";
     bgcolor="#fee2e2";
 
-    subgraph cluster_connection {
-      label="Connection Management";
-      style="dashed";
-      color="#991b1b";
-
-      CONN_MGR [fillcolor="#fecaca", label="EnhancedIBConnectionManager\n\nAutomatic reconnection\nHeartbeat monitoring\nState machine\nGraceful degradation"];
-      WS_RESILIENCE [fillcolor="#fecaca", label="WebSocketResiliencePolicy\n\nPolly retry policies\nCircuit breaker\nExponential backoff\nJitter randomization"];
-    }
-
-    subgraph cluster_failover {
-      label="Failover & Load Balancing";
-      style="dashed";
-      color="#991b1b";
-
-      CIRCUIT [fillcolor="#fecaca", label="CircuitBreaker\n\nOpen/Closed/HalfOpen\nFailure counting\nAuto recovery"];
-      RATE_LIMIT [fillcolor="#fecaca", label="RateLimiter\n\nPer-provider limits\nToken bucket\nRequest queuing"];
-    }
+    RATE [fillcolor="#fecaca",
+      label="Rate limits and retries\nper-provider pacing,\nbackoff, circuit breaker"];
+    FAILOVER [fillcolor="#fecaca",
+      label="Provider fallback\npriority order,\nhealth exclusion,\noperator-visible degradation"];
+    FAIL_CLOSED [fillcolor="#fecaca",
+      label="Fail-closed posture\nmissing or stale source evidence\nblocks trusted records"];
   }
 
-  // Symbol Search Providers
-  subgraph cluster_symbol_search {
-    label="Symbol Search Providers (5 Implemented)";
-    color="#ed8936";
+  subgraph cluster_record {
+    label="Operational record consumers";
+    color="#2c7a7b";
     style="rounded";
-    bgcolor="#fffaf0";
+    bgcolor="#e6fffa";
 
-    I_SYMBOL_SEARCH [shape=ellipse, fillcolor="#fbd38d",
-                     label="ISymbolSearchProvider\n[Interface]\n\nSearchAsync(query, ct)\nReturns: SymbolSearchResult[]"];
-
-    ALP_SEARCH [fillcolor="#feebc8", label="AlpacaSymbolSearchProvider\n[Production]\n\nUS equities + ETFs\nReal-time status\nAsset class filter"];
-    FINNHUB_SEARCH [fillcolor="#feebc8", label="FinnhubSymbolSearchProvider\n[Production]\n\nGlobal stocks\nExchange filter\nType filter"];
-    POL_SEARCH [fillcolor="#feebc8", label="PolygonSymbolSearchProvider\n[Production]\n\nUS + global tickers\nFull text search\nMarket type filter"];
-    SS_SEARCH [fillcolor="#feebc8", label="StockSharpSymbolSearchProvider\n[Production]\n\n90+ exchange symbols\nMulti-exchange search\nGlobal coverage"];
-    FIGI_SEARCH [fillcolor="#feebc8", label="OpenFigiClient\n[Production]\n\nGlobal FIGI resolution\nFIGI → ticker mapping\nCUSIP/SEDOL/ISIN lookup\nCross-market identification"];
+    RAW_EVIDENCE [shape=cylinder, fillcolor="#9ae6b4",
+      label="Raw source evidence\npayloads retained exactly\nas received"];
+    NORMALIZED [fillcolor="#a7f3d0",
+      label="Normalized operational records\ntransactions, positions,\nprices, cash, terms"];
+    SECURITY_MASTER [fillcolor="#a7f3d0",
+      label="Security Master\ncanonical identifiers,\nasset profiles, conflicts"];
+    RECON [fillcolor="#38a169", fontcolor="white",
+      label="Reconciliation and approvals\ncase queues, materiality,\nreview evidence"];
+    LEDGER [fillcolor="#2c7a7b", fontcolor="white",
+      label="Meridian-owned ledger truth\njournals, adjustments,\ncapital accounts"];
+    REPORTING [fillcolor="#fbd38d",
+      label="Governed reports\nreport-pack lineage,\nexports, audit packages"];
   }
 
-  // Symbol Resolution
-  subgraph cluster_symbols {
-    label="Symbol Resolution & Mapping";
-    color="#38a169";
-    style="rounded";
-    bgcolor="#c6f6d5";
-
-    MAPPER [fillcolor="#9ae6b4", label="SymbolMapper\n\nProvider-specific formats\nExchange suffixes\nCUSIP/SEDOL/ISIN normalization"];
-    CONTRACT [fillcolor="#9ae6b4", label="ContractFactory\n\nIB contract resolution\nSymbol to contract\nMultiple exchange support"];
-  }
-
-  // Interface implementations
-  I_DATASOURCE -> I_REALTIME [style=dashed, label="extends"];
-  I_DATASOURCE -> I_HISTORICAL [style=dashed, label="extends"];
-  I_MARKET -> IB_CLIENT [style=dashed];
-  I_MARKET -> ALP_CLIENT [style=dashed];
-  I_MARKET -> NYSE_CLIENT [style=dashed];
-  I_MARKET -> SS_CLIENT [style=dashed];
-  I_MARKET -> POL_CLIENT [style=dashed];
-  I_MARKET -> SYNTH_CLIENT [style=dashed];
-
-  I_HIST_PROVIDER -> ALPACA_HIST [style=dashed];
-  I_HIST_PROVIDER -> YAHOO_HIST [style=dashed];
-  I_HIST_PROVIDER -> STOOQ_HIST [style=dashed];
-  I_HIST_PROVIDER -> POLYGON_HIST [style=dashed];
-  I_HIST_PROVIDER -> NASDAQ_HIST [style=dashed];
-  I_HIST_PROVIDER -> TIINGO_HIST [style=dashed];
-  I_HIST_PROVIDER -> FINNHUB_HIST [style=dashed];
-  I_HIST_PROVIDER -> AV_HIST [style=dashed];
-  I_HIST_PROVIDER -> IB_HIST [style=dashed];
-  I_HIST_PROVIDER -> SS_HIST [style=dashed];
-  I_HIST_PROVIDER -> TWELVE_HIST [style=dashed];
-  I_HIST_PROVIDER -> FRED_HIST [style=dashed];
-  I_HIST_PROVIDER -> SYNTH_HIST [style=dashed];
-
-  // Symbol search implementations
-  I_SYMBOL_SEARCH -> ALP_SEARCH [style=dashed];
-  I_SYMBOL_SEARCH -> FINNHUB_SEARCH [style=dashed];
-  I_SYMBOL_SEARCH -> POL_SEARCH [style=dashed];
-  I_SYMBOL_SEARCH -> SS_SEARCH [style=dashed];
-  I_SYMBOL_SEARCH -> FIGI_SEARCH [style=dashed];
-
-  // Composite orchestration
-  COMPOSITE -> ALPACA_HIST [label="priority 5"];
-  COMPOSITE -> IB_HIST [label="priority 5"];
-  COMPOSITE -> YAHOO_HIST [label="priority 10"];
-  COMPOSITE -> POLYGON_HIST [label="priority 15"];
-  COMPOSITE -> STOOQ_HIST [label="priority 20"];
-  COMPOSITE -> TIINGO_HIST [label="priority 25"];
-  COMPOSITE -> NASDAQ_HIST [label="priority 30"];
-  COMPOSITE -> SS_HIST [label="priority 35"];
-  COMPOSITE -> FINNHUB_HIST [label="priority 35"];
-  COMPOSITE -> TWELVE_HIST [label="priority 38"];
-  COMPOSITE -> AV_HIST [label="priority 40"];
-  COMPOSITE -> FRED_HIST [label="priority 45"];
-  COMPOSITE -> SYNTH_HIST [label="priority 99\n(dev only)", style=dashed];
-
-  // Resilience connections
-  IB_CLIENT -> CONN_MGR [color="#c53030"];
-  ALP_CLIENT -> WS_RESILIENCE [color="#c53030"];
-  NYSE_CLIENT -> WS_RESILIENCE [color="#c53030"];
-  POL_CLIENT -> WS_RESILIENCE [color="#c53030"];
-
-  CIRCUIT -> COMPOSITE [style=dashed, color="#c53030"];
-  RATE_LIMIT -> COMPOSITE [style=dashed, color="#c53030"];
-
-  // Symbol resolution
-  FIGI_SEARCH -> MAPPER [color="#38a169"];
-  MAPPER -> COMPOSITE [color="#38a169"];
-  MAPPER -> IB_CLIENT [color="#38a169"];
-  CONTRACT -> IB_CLIENT [color="#38a169"];
-
-  // Capabilities/Registry
-  CAPABILITIES -> REGISTRY [style=dashed];
-  REGISTRY -> I_DATASOURCE [style=dashed];
-
-  // FailoverAwareMarketDataClient wraps streaming providers
-  subgraph cluster_streaming_failover {
-    label="Streaming Failover Wrapper";
-    color="#c53030";
+  subgraph cluster_deferred {
+    label="Gated use";
+    color="#718096";
     style="dashed";
-    bgcolor="#fff5f5";
+    bgcolor="#edf2f7";
 
-    FAILOVER_WRAP [fillcolor="#fecaca",
-                   label="FailoverAwareMarketDataClient\n\nWraps multiple streaming clients\nAutomatic failover on disconnect\nPrimary/secondary priority\nHealth-based selection"];
+    RESEARCH [fillcolor="#e2e8f0",
+      label="Backtesting and live-readiness\nconsume provider data only when\nlinked to retained evidence,\npaper validation, or approvals"];
   }
 
-  FAILOVER_WRAP -> IB_CLIENT [style=dashed, color="#c53030", label="primary"];
-  FAILOVER_WRAP -> ALP_CLIENT [style=dashed, color="#c53030", label="secondary"];
-  FAILOVER_WRAP -> POL_CLIENT [style=dashed, color="#c53030", label="tertiary"];
+  SETTINGS -> CATALOG;
+  SETTINGS -> CREDENTIALS;
+  CREDENTIALS -> HEALTH;
+  HEALTH -> FAILOVER;
 
-  // Legend
-  subgraph cluster_legend {
-    label="Legend";
-    color="#666666";
-    style="rounded";
-    bgcolor="#fafafa";
+  CATALOG -> MARKET;
+  CATALOG -> HIST;
+  CATALOG -> SEARCH;
 
-    L1 [shape=box, fillcolor="#bfdbfe", label="Production Streaming"];
-    L2 [shape=box, fillcolor="#a7f3d0", label="Tier 1 Historical"];
-    L3 [shape=box, fillcolor="#6ee7b7", label="Tier 2 Historical"];
-    L4 [shape=box, fillcolor="#bbf7d0", label="Tier 3 Historical"];
-    L5 [shape=box, fillcolor="#fef3c7", label="Orchestrator"];
-    L6 [shape=box, fillcolor="#fecaca", label="Resilience/Failover"];
-    L7 [shape=box, fillcolor="#e0e7ff", label="Development/Synthetic"];
-    L8 [shape=box, fillcolor="#feebc8", label="Symbol Search"];
-  }
+  MARKET -> MARKET_PROVIDERS;
+  HIST -> HIST_PROVIDERS;
+  SEARCH -> SYMBOL_PROVIDERS;
+  BANK_CUSTODY -> RAW_EVIDENCE;
+  MARKET_PROVIDERS -> RATE;
+  HIST_PROVIDERS -> RATE;
+  RATE -> FAILOVER;
+  FAILOVER -> RAW_EVIDENCE;
+  FAIL_CLOSED -> RECON [style=dashed, label="blocks trust"];
+
+  SYMBOL_PROVIDERS -> SECURITY_MASTER;
+  RAW_EVIDENCE -> NORMALIZED;
+  NORMALIZED -> SECURITY_MASTER;
+  NORMALIZED -> RECON;
+  SECURITY_MASTER -> RECON;
+  RECON -> LEDGER;
+  LEDGER -> REPORTING;
+  RAW_EVIDENCE -> REPORTING [style=dashed, label="lineage"];
+  RESEARCH -> RAW_EVIDENCE [style=dashed, label="evidence-linked only"];
 }

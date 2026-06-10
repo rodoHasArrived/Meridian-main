@@ -357,16 +357,33 @@ public sealed class ReportTemplateRegistryService
                 SortBy = string.IsNullOrWhiteSpace(grid.SortBy) ? null : grid.SortBy.Trim(),
                 Filters = NormalizeGridFilters(grid.Filters)
             })
-            .OrderBy(static grid => grid.GridId, StringComparer.OrdinalIgnoreCase)
             .ToArray() ?? [];
 
-    private static IReadOnlyList<string> NormalizeStringList(IReadOnlyList<string>? values) =>
-        values?
-            .Where(static value => !string.IsNullOrWhiteSpace(value))
-            .Select(static value => value.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
-            .ToArray() ?? [];
+    private static IReadOnlyList<string> NormalizeStringList(IReadOnlyList<string>? values)
+    {
+        if (values is null || values.Count == 0)
+        {
+            return [];
+        }
+
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var normalized = new List<string>(values.Count);
+        foreach (var value in values)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                continue;
+            }
+
+            var trimmed = value.Trim();
+            if (seen.Add(trimmed))
+            {
+                normalized.Add(trimmed);
+            }
+        }
+
+        return normalized;
+    }
 
     private static string? NormalizeOptional(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
@@ -382,7 +399,6 @@ public sealed class ReportTemplateRegistryService
             })
             .GroupBy(static metric => metric.Name, StringComparer.OrdinalIgnoreCase)
             .Select(static group => group.First())
-            .OrderBy(static metric => metric.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray() ?? [];
 
     private static IReadOnlyList<ReportWriterFormulaDefinitionDto> NormalizeGridFormulas(IReadOnlyList<ReportWriterFormulaDefinitionDto>? formulas) =>
@@ -396,7 +412,6 @@ public sealed class ReportTemplateRegistryService
             })
             .GroupBy(static formula => formula.Name, StringComparer.OrdinalIgnoreCase)
             .Select(static group => group.First())
-            .OrderBy(static formula => formula.Name, StringComparer.OrdinalIgnoreCase)
             .ToArray() ?? [];
 
     private static IReadOnlyList<ReportWriterFilterDefinitionDto> NormalizeGridFilters(IReadOnlyList<ReportWriterFilterDefinitionDto>? filters) =>
@@ -410,8 +425,6 @@ public sealed class ReportTemplateRegistryService
             })
             .GroupBy(static filter => $"{filter.Field}:{filter.Operator}:{filter.Value}", StringComparer.OrdinalIgnoreCase)
             .Select(static group => group.First())
-            .OrderBy(static filter => filter.Field, StringComparer.OrdinalIgnoreCase)
-            .ThenBy(static filter => filter.Operator)
             .ToArray() ?? [];
 
     private static IReadOnlyList<string> ValidateDefinition(ReportTemplateDefinitionDto definition)

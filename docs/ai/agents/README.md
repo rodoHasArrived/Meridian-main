@@ -85,6 +85,42 @@ in user-level Codex config.
 | `shared-component-extraction.toml` | Extract repeated desktop patterns into reusable components |
 | `workstation-screen-composition.toml` | Compose desktop screens from shared workstation primitives |
 
+### Persona Matrix user-testing profiles
+
+The `meridian-user-testing-*` Codex profiles simulate one role at a time from the Persona Matrix in
+[`../../product/meridian-design-document.md`](../../product/meridian-design-document.md). Use them
+for focused single-persona user testing, and use `meridian-simulated-user-panel` for multi-persona
+panels. Each profile carries the persona's matrix facts plus domain experience, familiar programs,
+preferences, and testing pressure points.
+
+| Profile | Persona category |
+| ------ | --------- |
+| `meridian-user-testing-financial-operations-professional.toml` | Primary Operator |
+| `meridian-user-testing-investment-accountant.toml` | Primary Operator |
+| `meridian-user-testing-reconciliation-analyst.toml` | Primary Operator |
+| `meridian-user-testing-fund-accountant.toml` | Primary Operator |
+| `meridian-user-testing-operations-manager.toml` | Primary Operator / Manager |
+| `meridian-user-testing-data-operations-analyst.toml` | Primary Operator |
+| `meridian-user-testing-treasury-operations-specialist.toml` | Primary Operator |
+| `meridian-user-testing-reporting-analyst.toml` | Primary Operator |
+| `meridian-user-testing-portfolio-manager.toml` | Investment User |
+| `meridian-user-testing-investment-analyst.toml` | Investment User |
+| `meridian-user-testing-quantitative-researcher.toml` | Investment User |
+| `meridian-user-testing-trader.toml` | Investment User |
+| `meridian-user-testing-risk-manager.toml` | Governance / Investment User |
+| `meridian-user-testing-cfo.toml` | Executive |
+| `meridian-user-testing-cio.toml` | Executive |
+| `meridian-user-testing-controller.toml` | Governance |
+| `meridian-user-testing-compliance-officer.toml` | Governance |
+| `meridian-user-testing-fund-investor-lp.toml` | Stakeholder |
+| `meridian-user-testing-ria-client.toml` | Stakeholder |
+| `meridian-user-testing-family-beneficiary.toml` | Stakeholder |
+| `meridian-user-testing-trustee.toml` | Stakeholder |
+| `meridian-user-testing-auditor.toml` | External / Governance |
+| `meridian-user-testing-system-administrator.toml` | Administration |
+| `meridian-user-testing-security-administrator.toml` | Administration |
+| `meridian-user-testing-integration-administrator.toml` | Administration |
+
 ---
 
 ## GitHub Copilot Agents (`.github/agents/`)
@@ -201,4 +237,4 @@ handoff so downstream agents do not repeat discovery or validation without cause
 
 ---
 
-_Last Updated: 2026-06-09_
+_Last Updated: 2026-06-10_

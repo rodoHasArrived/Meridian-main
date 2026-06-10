@@ -1,6 +1,6 @@
 // Security Master Lifecycle Diagram
-// Meridian current project state
-// Last Updated: 2026-05-28
+// Meridian current project stance
+// Last Updated: 2026-06-10
 //
 // This diagram shows the current Security Master flow across import, ingest
 // status, conflict triage, projections, cache warmup, and workstation/query

@@ -1,9 +1,9 @@
 // MCP Server Architecture Diagram
-// Meridian current project state
-// Last Updated: 2026-05-28
+// Meridian current project stance
+// Last Updated: 2026-06-10
 //
 // This diagram reflects the active src/Meridian.Mcp host.
-// Render with: npm run generate-diagrams -- --all or Graphviz dot.
+// Render with the recursive DOT renderer or Graphviz dot.
 
 digraph McpServer {
   rankdir=LR;
@@ -12,7 +12,7 @@ digraph McpServer {
   edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
 
   labelloc="t";
-  label="Meridian - MCP Server Architecture\nsrc/Meridian.Mcp developer co-pilot host";
+  label="Meridian - MCP Server Architecture\nsrc/Meridian.Mcp repo-scoped developer co-pilot host";
 
   subgraph cluster_clients {
     label="MCP Clients";
@@ -34,7 +34,7 @@ digraph McpServer {
     bgcolor="#faf5ff";
 
     MCP_HOST [fillcolor="#ddd6fe",
-              label="mdc-mcp executable\nHost.CreateApplicationBuilder\nstdio transport\nJSON-RPC MCP protocol"];
+              label="mdc-mcp executable\nAddMcpServer()\nWithStdioServerTransport()\nJSON-RPC MCP protocol"];
 
     DISCOVERY [fillcolor="#e9d5ff",
                label="Assembly discovery\nWithToolsFromAssembly()\nWithPromptsFromAssembly()\nWithResourcesFromAssembly()"];

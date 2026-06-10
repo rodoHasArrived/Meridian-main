@@ -2,38 +2,38 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-03-15
+**Reviewed:** 2026-06-10
 
 This directory contains PlantUML source files (`.puml`) and committed PNG artifacts (`.png`) for architecture and workflow documentation.
 
-> **📁 New Location:** These UML diagrams have been moved from `docs/uml/` to `docs/diagrams/uml/` to consolidate all visual assets under a single `docs/diagrams/` home.
+> **Location note:** These UML diagrams were moved from `docs/uml/` to `docs/diagrams/uml/`. Current registered Mermaid architecture sources live under `docs/architecture/diagrams/`.
 
 ---
 
 ## Diagram Inventory
 
-| Diagram Type | Source (`.puml`) | Artifact (`.png`, `.svg`) | Description |
+| Diagram Type | Source (`.puml`) | Committed artifacts | Description |
 |---|---|---|---|
-| Use Case | `use-case-diagram.puml` | `use-case-diagram.{png,svg}` | System actors and high-level use cases |
-| Sequence | `sequence-diagram.puml` | `sequence-diagram.{png,svg}` | Real-time data collection flow |
-| Sequence | `sequence-diagram-backfill.puml` | `sequence-diagram-backfill.{png,svg}` | Historical backfill with provider fallback |
-| Activity | `activity-diagram.puml` | `activity-diagram.{png,svg}` | Main data collection process |
-| Activity | `activity-diagram-backfill.puml` | `activity-diagram-backfill.{png,svg}` | CLI/scheduled/gap-repair backfill process |
-| State | `state-diagram.puml` | `state-diagram.{png,svg}` | Provider connection lifecycle |
-| State | `state-diagram-orderbook.puml` | `state-diagram-orderbook.{png,svg}` | Order book freshness lifecycle |
-| State | `state-diagram-trade-sequence.puml` | `state-diagram-trade-sequence.{png,svg}` | Trade sequence validation lifecycle |
-| State | `state-diagram-backfill.puml` | `state-diagram-backfill.{png,svg}` | Backfill request lifecycle |
-| Communication | `communication-diagram.puml` | `communication-diagram.{png,svg}` | Component-level message exchange |
-| Interaction Overview | `interaction-overview-diagram.puml` | `interaction-overview-diagram.{png,svg}` | High-level workflow orchestration |
-| Timing | `timing-diagram.puml` | `timing-diagram.{png,svg}` | Real-time event timing |
-| Timing | `timing-diagram-backfill.puml` | `timing-diagram-backfill.{png,svg}` | Backfill operation timing |
-| Sequence | `sequence-diagram-backtesting.puml` | `sequence-diagram-backtesting.{png,svg}` | BacktestEngine replay loop, fill models, portfolio, and metrics |
-| Sequence | `sequence-diagram-strategy-promotion.puml` | `sequence-diagram-strategy-promotion.{png,svg}` | Strategy lifecycle: backtest → paper trading → live promotion |
-| Class | `class-diagram-wpf-mvvm.puml` | `class-diagram-wpf-mvvm.{png,svg}` | WPF MVVM hierarchy: BindableBase, ViewModels, Views, and Services |
-| Sequence | `sequence-diagram-wal-durability.puml` | `sequence-diagram-wal-durability.{png,svg}` | WAL + AtomicFileWriter crash-safe write path (ADR-007) |
-| Sequence | `sequence-diagram-paper-trading.puml` | `sequence-diagram-paper-trading.{png,svg}` | PaperTradingGateway order submission, synthetic fill, and risk validation (ADR-015) |
+| Use Case | `use-case-diagram.puml` | `Use Case Diagram - Meridian.{png,svg}`, `use-case-diagram.png` | System actors and high-level use cases |
+| Sequence | `sequence-diagram.puml` | `Sequence Diagram - Real-Time Data Collection Flow.{png,svg}`, `sequence-diagram.png` | Real-time data collection flow |
+| Sequence | `sequence-diagram-backfill.puml` | `Sequence Diagram - Historical Backfill Flow.{png,svg}`, `sequence-diagram-backfill.png` | Historical backfill with provider fallback |
+| Activity | `activity-diagram.puml` | `Activity Diagram - Data Collection Process Flow.{png,svg}`, `activity-diagram.png` | Main data collection process |
+| Activity | `activity-diagram-backfill.puml` | `Activity Diagram - Historical Backfill Process.{png,svg}`, `activity-diagram-backfill.png` | CLI/scheduled/gap-repair backfill process |
+| State | `state-diagram.puml` | `State Diagram - Provider Connection States.{png,svg}`, `state-diagram.png` | Provider connection lifecycle |
+| State | `state-diagram-orderbook.puml` | `State Diagram - Order Book Stream States.{png,svg}`, `state-diagram-orderbook.png` | Order book freshness lifecycle |
+| State | `state-diagram-trade-sequence.puml` | `State Diagram - Trade Sequence Validation States.{png,svg}`, `state-diagram-trade-sequence.png` | Trade sequence validation lifecycle |
+| State | `state-diagram-backfill.puml` | `State Diagram - Backfill Request States.{png,svg}`, `state-diagram-backfill.png` | Backfill request lifecycle |
+| Communication | `communication-diagram.puml` | `Communication Diagram - Component Message Exchange.{png,svg}`, `communication-diagram.png` | Component-level message exchange |
+| Interaction Overview | `interaction-overview-diagram.puml` | `Interaction Overview Diagram - System Workflow.{png,svg}`, `interaction-overview-diagram.png` | High-level workflow orchestration |
+| Timing | `timing-diagram.puml` | `Timing Diagram - Event Processing Timeline.{png,svg}`, `timing-diagram.png` | Real-time event timing |
+| Timing | `timing-diagram-backfill.puml` | `Timing Diagram - Backfill Operation Timeline.{png,svg}`, `timing-diagram-backfill.png` | Backfill operation timing |
+| Sequence | `sequence-diagram-backtesting.puml` | `Sequence Diagram - Backtesting Engine.{png,svg}` | BacktestEngine replay loop, fill models, portfolio, and metrics |
+| Sequence | `sequence-diagram-strategy-promotion.puml` | `Sequence Diagram - Strategy Promotion Lifecycle.{png,svg}` | Strategy lifecycle: backtest -> paper validation -> live-readiness governance |
+| Class | `class-diagram-wpf-mvvm.puml` | `Class Diagram - WPF MVVM Architecture.{png,svg}` | WPF MVVM hierarchy: BindableBase, ViewModels, Views, and Services |
+| Sequence | `sequence-diagram-wal-durability.puml` | `Sequence Diagram - WAL Durability and Crash-Safe Writes.{png,svg}` | WAL + AtomicFileWriter crash-safe write path (ADR-007) |
+| Sequence | `sequence-diagram-paper-trading.puml` | `Sequence Diagram - Paper Trading Order Execution.{png,svg}` | PaperTradingGateway order submission, synthetic fill, and risk validation (ADR-015) |
 
-**Totals:** 18 PlantUML sources. PNG and SVG artifacts are generated by CI on each source change; 13 artifact pairs are currently committed and 5 will be added on the next workflow run (`sequence-diagram-backtesting`, `sequence-diagram-strategy-promotion`, `class-diagram-wpf-mvvm`, `sequence-diagram-wal-durability`, `sequence-diagram-paper-trading`).
+**Totals:** 18 PlantUML sources, 18 titled SVG artifacts, 18 titled PNG artifacts, and 13 legacy direct-name PNG aliases for older diagrams.
 
 ---
 
@@ -106,8 +106,8 @@ When editing UML docs:
 
 - [Architecture Overview](../../architecture/overview.md)
 - [Domain Contracts](../../architecture/domains.md)
-- [Diagrams Index](https://github.com/rodoHasArrived/Meridian-main/blob/main/docs/diagrams/README.md) — Graphviz DOT diagrams (C4, data flow, etc.)
+- [Diagrams Index](../README.md) — Graphviz DOT diagrams (C4, data flow, etc.)
 
 ---
 
-*Last Updated: 2026-03-27*
+*Last Updated: 2026-06-10*

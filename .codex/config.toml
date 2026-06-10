@@ -141,6 +141,81 @@ config_file = "agents/meridian-simulated-user-panel.toml"
 [agents."meridian-test-writer"]
 config_file = "agents/meridian-test-writer.toml"
 
+[agents."meridian-user-testing-financial-operations-professional"]
+config_file = "agents/meridian-user-testing-financial-operations-professional.toml"
+
+[agents."meridian-user-testing-investment-accountant"]
+config_file = "agents/meridian-user-testing-investment-accountant.toml"
+
+[agents."meridian-user-testing-reconciliation-analyst"]
+config_file = "agents/meridian-user-testing-reconciliation-analyst.toml"
+
+[agents."meridian-user-testing-fund-accountant"]
+config_file = "agents/meridian-user-testing-fund-accountant.toml"
+
+[agents."meridian-user-testing-operations-manager"]
+config_file = "agents/meridian-user-testing-operations-manager.toml"
+
+[agents."meridian-user-testing-data-operations-analyst"]
+config_file = "agents/meridian-user-testing-data-operations-analyst.toml"
+
+[agents."meridian-user-testing-treasury-operations-specialist"]
+config_file = "agents/meridian-user-testing-treasury-operations-specialist.toml"
+
+[agents."meridian-user-testing-reporting-analyst"]
+config_file = "agents/meridian-user-testing-reporting-analyst.toml"
+
+[agents."meridian-user-testing-portfolio-manager"]
+config_file = "agents/meridian-user-testing-portfolio-manager.toml"
+
+[agents."meridian-user-testing-investment-analyst"]
+config_file = "agents/meridian-user-testing-investment-analyst.toml"
+
+[agents."meridian-user-testing-quantitative-researcher"]
+config_file = "agents/meridian-user-testing-quantitative-researcher.toml"
+
+[agents."meridian-user-testing-trader"]
+config_file = "agents/meridian-user-testing-trader.toml"
+
+[agents."meridian-user-testing-risk-manager"]
+config_file = "agents/meridian-user-testing-risk-manager.toml"
+
+[agents."meridian-user-testing-cfo"]
+config_file = "agents/meridian-user-testing-cfo.toml"
+
+[agents."meridian-user-testing-cio"]
+config_file = "agents/meridian-user-testing-cio.toml"
+
+[agents."meridian-user-testing-controller"]
+config_file = "agents/meridian-user-testing-controller.toml"
+
+[agents."meridian-user-testing-compliance-officer"]
+config_file = "agents/meridian-user-testing-compliance-officer.toml"
+
+[agents."meridian-user-testing-fund-investor-lp"]
+config_file = "agents/meridian-user-testing-fund-investor-lp.toml"
+
+[agents."meridian-user-testing-ria-client"]
+config_file = "agents/meridian-user-testing-ria-client.toml"
+
+[agents."meridian-user-testing-family-beneficiary"]
+config_file = "agents/meridian-user-testing-family-beneficiary.toml"
+
+[agents."meridian-user-testing-trustee"]
+config_file = "agents/meridian-user-testing-trustee.toml"
+
+[agents."meridian-user-testing-auditor"]
+config_file = "agents/meridian-user-testing-auditor.toml"
+
+[agents."meridian-user-testing-system-administrator"]
+config_file = "agents/meridian-user-testing-system-administrator.toml"
+
+[agents."meridian-user-testing-security-administrator"]
+config_file = "agents/meridian-user-testing-security-administrator.toml"
+
+[agents."meridian-user-testing-integration-administrator"]
+config_file = "agents/meridian-user-testing-integration-administrator.toml"
+
 [agents."modular-desktop-mvvm"]
 config_file = "agents/modular-desktop-mvvm.toml"
 

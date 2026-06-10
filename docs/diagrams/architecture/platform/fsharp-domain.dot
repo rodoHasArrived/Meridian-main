@@ -1,9 +1,9 @@
 // F# Domain Library Diagram
-// Meridian current project state
-// Last Updated: 2026-05-28
+// Meridian current project stance
+// Last Updated: 2026-06-10
 //
-// This diagram shows the F# domain library: railway-oriented validation,
-// discriminated unions, type-safe calculations, and C# interop.
+// This diagram shows the F# domain library as validation and calculation
+// support for trusted operational records.
 //
 // Generate: dot -Tpng fsharp-domain.dot -o fsharp-domain.png
 //           dot -Tsvg fsharp-domain.dot -o fsharp-domain.svg
@@ -16,7 +16,7 @@ digraph FSharpDomain {
 
   // Title
   labelloc="t";
-  label="Meridian - F# Domain Library\nRailway-Oriented Validation & Type-Safe Calculations";
+  label="Meridian - F# Domain Library\nValidation and ledger calculations for operational records";
 
   // Input from C# Layer
   subgraph cluster_csharp_input {

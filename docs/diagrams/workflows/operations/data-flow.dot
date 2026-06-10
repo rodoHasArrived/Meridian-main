@@ -1,240 +1,99 @@
-// Data Flow Diagram
-// Meridian current project state
-// Last Updated: 2026-05-28
+// Operational Record Data Flow Diagram
+// Meridian current project stance
+// Last Updated: 2026-06-10
 //
-// This diagram shows the end-to-end data flow through the system,
-// from ingestion to storage and export.
-//
-// Generate: dot -Tpng data-flow.dot -o data-flow.png
-//           dot -Tsvg data-flow.dot -o data-flow.svg
+// This diagram shows the W1-W5 flow from source evidence to governed reports.
 
 digraph DataFlow {
   rankdir=LR;
-  graph [fontname="Helvetica", fontsize=12, bgcolor="white", splines=polyline, pad=0.5];
+  graph [fontname="Helvetica", fontsize=12, bgcolor="white", compound=true, pad=0.5];
   node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled"];
-  edge  [fontname="Helvetica", fontsize=9];
+  edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
 
-  // Title
   labelloc="t";
-  label="Meridian - Data Flow Diagram\nEnd-to-End Event Processing";
+  label="Meridian - Operational Record Data Flow\nImport -> Validate -> Reconcile -> Investigate -> Approve -> Report";
 
-  // Onboarding Flow (First-Time Setup)
-  subgraph cluster_onboarding {
-    label="First-Time Setup Flow (Optional)";
-    color="#ed8936";
-    style="dashed";
-    bgcolor="#fffaf0";
-
-    FIRST_RUN [fillcolor="#fbd38d", label="First-Run Detection\n\nDetect new install\nDisplay welcome"];
-    WIZARD [fillcolor="#fbd38d", label="Configuration Wizard\n[8 Steps]\n\nInteractive setup\nProvider selection"];
-    AUTO_CONFIG [fillcolor="#fbd38d", label="Auto-Configuration\n\nEnv var detection\nGenerate config"];
-    VALIDATE [fillcolor="#fbd38d", label="Validation\n\n--validate-credentials\n--test-connectivity"];
-    CONFIG_FILE [shape=note, fillcolor="#feebc8", label="appsettings.json\n\nGenerated config\nReady to run"];
-  }
-
-  // Data Sources - Streaming
-  subgraph cluster_streaming_sources {
-    label="Real-Time Streaming Sources (5 Providers)";
-    color="#2b6cb0";
-    style="rounded";
-    bgcolor="#f0f8ff";
-
-    IB [fillcolor="#4a90d9", fontcolor="white", label="IB TWS/Gateway\n[WebSocket]\n\nTrades, Quotes\nL2 Depth, Scanner"];
-    ALP [fillcolor="#4a90d9", fontcolor="white", label="Alpaca\n[WebSocket]\n\nTrades, Quotes\nIEX/SIP Feeds"];
-    NYSE [fillcolor="#4a90d9", fontcolor="white", label="NYSE Direct\n[Exchange Feed]\n\nUS Equities\nReal-time"];
-    POL_STREAM [fillcolor="#4a90d9", fontcolor="white", label="Polygon.io\n[WebSocket]\n\nTrades, Quotes\nUS + Global"];
-    SS [fillcolor="#4a90d9", fontcolor="white", label="StockSharp\n[Multi-Exchange]\n\nGlobal Markets\n90+ Connectors"];
-  }
-
-  // Data Sources - Historical
-  subgraph cluster_historical_sources {
-    label="Historical Data Sources (13 Providers)";
-    color="#2c7a7b";
-    style="rounded";
-    bgcolor="#e6fffa";
-
-    YAHOO [fillcolor="#38a169", fontcolor="white", label="Yahoo Finance\n[REST]\n\n50K+ securities\nFree OHLCV"];
-    TIINGO [fillcolor="#38a169", fontcolor="white", label="Tiingo\n[REST]\n\nDividend-adjusted\nFundamentals"];
-    FINNHUB [fillcolor="#38a169", fontcolor="white", label="Finnhub\n[REST]\n\nHistorical\nNews, Fundamentals"];
-    OTHERS [fillcolor="#38a169", fontcolor="white", label="Polygon, Stooq, Nasdaq\nAlpha V., IB, StockSharp\nTwelve Data, FRED\n\nEOD/Intraday/Economic"];
-  }
-
-  // Ingestion Layer
-  subgraph cluster_ingest {
-    label="Ingestion Layer";
+  subgraph cluster_sources {
+    label="Source evidence";
     color="#2b6cb0";
     style="rounded";
     bgcolor="#dbeafe";
 
-    STREAM_INGEST [fillcolor="#bfdbfe", label="Streaming Ingestion\n[Real-time]\n\nWebSocket handling\nZero-copy parsing\nConnection resilience"];
-    HIST_INGEST [fillcolor="#bfdbfe", label="Historical Backfill\n[Batch]\n\nPriority queue\nRate limiting\nGap detection"];
-    FAILOVER [fillcolor="#fef3c7", label="Failover Manager\n\nAutomatic provider\nswitching"];
+    PROVIDERS [fillcolor="#93c5fd",
+      label="Provider feeds\ncustodian, broker, bank,\nmarket data, fund admin"];
+    DOCUMENTS [fillcolor="#bfdbfe",
+      label="Documents and uploads\nstatements, contracts,\nPDFs, source manifests"];
+    ACCOUNTING [fillcolor="#bfdbfe",
+      label="External GL/accounting systems\nread-only evidence and\nreconciliation signals"];
   }
 
-  // Processing Layer
-  subgraph cluster_process {
-    label="Domain Processing Layer";
-    color="#2c7a7b";
-    style="rounded";
-    bgcolor="#d1fae5";
-
-    subgraph cluster_collectors {
-      label="Domain Collectors";
-      style="dashed";
-      color="#047857";
-
-      TRADE_COLL [fillcolor="#a7f3d0", label="TradeDataCollector\n\nTick processing\nSequence validation\nOrder flow stats"];
-      QUOTE_COLL [fillcolor="#a7f3d0", label="QuoteCollector\n\nBBO caching\nSpread calculation\nCrossed detection"];
-      DEPTH_COLL [fillcolor="#a7f3d0", label="DepthCollector\n\nL2 book state\nIntegrity checks"];
-    }
-
-    VALIDATION [fillcolor="#6ee7b7", label="F# Validation\n[Railway-Oriented]\n\nType-safe validation\nError accumulation"];
-    INDICATORS [fillcolor="#a7f3d0", label="Technical Indicators\n[200+ indicators]\n\nVWAP, TWAP\nImbalance, Microprice"];
-  }
-
-  // Event Pipeline
-  subgraph cluster_pipeline {
-    label="Event Pipeline (System.Threading.Channels)";
+  subgraph cluster_acquisition {
+    label="Acquisition and retention";
     color="#805ad5";
     style="rounded";
-    bgcolor="#ede9fe";
+    bgcolor="#faf5ff";
 
-    CHANNEL [fillcolor="#ddd6fe", label="Bounded Channel\n[100K capacity]\n\nDropOldest policy\nBackpressure handling\nAsync producer-consumer"];
-    PUBLISHER [fillcolor="#ddd6fe", label="Composite Publisher\n\nFanout to sinks\nLocal + distributed"];
+    IMPORT_RUN [fillcolor="#ddd6fe",
+      label="Provider-backed import run\nconnection, dataset,\noperator evidence"];
+    RAW_EVIDENCE [shape=cylinder, fillcolor="#c4b5fd",
+      label="Raw source evidence\npreserved exactly as received"];
+    LINEAGE [fillcolor="#e9d5ff",
+      label="Lineage manifest\nsource payload, checksum,\noperator, time, route"];
   }
 
-  // Storage Layer
-  subgraph cluster_storage {
-    label="Storage Layer (Archival-First)";
+  subgraph cluster_validation {
+    label="Trust and review gates";
+    color="#2c7a7b";
+    style="rounded";
+    bgcolor="#e6fffa";
+
+    NORMALIZE [fillcolor="#a7f3d0",
+      label="Normalize records\ntransactions, positions,\ncash, prices, terms"];
+    CONFIDENCE [fillcolor="#9ae6b4",
+      label="Data confidence\nfreshness, completeness,\nvalidity, mapping"];
+    BLOCKED [fillcolor="#fecaca",
+      label="Review-required state\nmissing, stale, unsupported,\nor conflicting evidence"];
+    RECON [fillcolor="#38a169", fontcolor="white",
+      label="Reconciliation cases\nsource-to-source,\nexpected-to-actual,\ninternal-to-official"];
+    APPROVAL [fillcolor="#38a169", fontcolor="white",
+      label="Approval workflow\nmateriality, sign-off,\noverride evidence"];
+  }
+
+  subgraph cluster_records {
+    label="Approved operational record";
     color="#c53030";
     style="rounded";
-    bgcolor="#fee2e2";
-
-    WAL [fillcolor="#fc8181", fontcolor="white", label="Write-Ahead Log\n[Durability]\n\nCrash-safe journal\nSHA256 checksums\nTransaction semantics"];
-    JSONL [fillcolor="#feb2b2", label="JSONL Files\n[Hot Storage]\n\nAppend-only\nLZ4 compression\nDaily partitions"];
-    COMPRESS [fillcolor="#fecaca", label="Compression\n\nLZ4 (real-time)\nZSTD (archive)\nGzip (portable)"];
-    PARQUET [fillcolor="#fecaca", label="Parquet Files\n[Archive Storage]\n\nColumnar format\n10-20x compression"];
-    TIERED [fillcolor="#fecaca", label="Tiered Storage\n\nHot (SSD) 0-7d\nWarm (HDD) 7-30d\nCold (S3) 30d+"];
-  }
-
-  // Export Layer
-  subgraph cluster_export {
-    label="Export & Analysis";
-    color="#38a169";
-    style="rounded";
-    bgcolor="#c6f6d5";
-
-    EXPORT_SVC [fillcolor="#9ae6b4", label="Export Service\n[Multi-format]"];
-    QUALITY [fillcolor="#9ae6b4", label="Quality Report\n\nCompleteness\nOutlier detection\nA+ to F grading"];
-
-    subgraph cluster_formats {
-      label="Export Formats";
-      style="dashed";
-
-      PYTHON_EXP [fillcolor="#68d391", label="Python\nParquet + datetime64"];
-      R_EXP [fillcolor="#68d391", label="R Statistics\nCSV + NA handling"];
-      LEAN_EXP [fillcolor="#68d391", label="QuantConnect\nLean format + ZIP"];
-      EXCEL_EXP [fillcolor="#68d391", label="Excel\nXLSX multi-sheet"];
-      PG_EXP [fillcolor="#68d391", label="PostgreSQL\nCSV + DDL + COPY"];
-    }
-  }
-
-  // Messaging Layer (Optional)
-  subgraph cluster_messaging {
-    label="Distributed Messaging (Optional)";
-    color="#e53e3e";
-    style="dashed";
     bgcolor="#fff5f5";
 
-    RABBITMQ [fillcolor="#fc8181", fontcolor="white", label="RabbitMQ / Azure SB\n[MassTransit]\n\nTrade/Quote/Depth\nexchanges"];
-
-    subgraph cluster_consumers {
-      label="Microservice Consumers";
-      style="dashed";
-
-      TRADE_SVC [fillcolor="#feb2b2", label="Trade Service\n:5001"];
-      QUOTE_SVC [fillcolor="#feb2b2", label="Quote Service\n:5003"];
-      ORDERBOOK_SVC [fillcolor="#feb2b2", label="OrderBook Svc\n:5002"];
-      VAL_SVC [fillcolor="#feb2b2", label="Validation Svc\n:5005"];
-    }
+    SYSTEM_RECORD [shape=cylinder, fillcolor="#e53e3e", fontcolor="white",
+      label="Approved Meridian system of record\nvalidated business records,\nledger truth, lineage"];
+    LEDGER [fillcolor="#fecaca",
+      label="Accounting records\njournals, close support,\nadjustments, capital accounts"];
+    REPORTS [fillcolor="#fbd38d",
+      label="Governed report packs\nfrozen snapshots, exports,\nrestatement lineage"];
+    AUDIT [shape=cylinder, fillcolor="#fc8181",
+      label="Audit trail\nsource -> record -> case -> ledger -> report"];
   }
 
-  // Data Flow Edges - Streaming Sources
-  IB -> STREAM_INGEST [color="#2b6cb0", penwidth=2, label="L1/L2\nstreaming"];
-  ALP -> STREAM_INGEST [color="#2b6cb0", penwidth=2, label="trades\nquotes"];
-  NYSE -> STREAM_INGEST [color="#2b6cb0", penwidth=2, label="exchange\nfeed"];
-  POL_STREAM -> STREAM_INGEST [color="#2b6cb0", penwidth=2, label="websocket\nfeed"];
-  SS -> STREAM_INGEST [color="#2b6cb0", penwidth=2];
+  PROVIDERS -> IMPORT_RUN;
+  DOCUMENTS -> IMPORT_RUN;
+  ACCOUNTING -> IMPORT_RUN;
+  IMPORT_RUN -> RAW_EVIDENCE;
+  RAW_EVIDENCE -> LINEAGE;
+  RAW_EVIDENCE -> NORMALIZE;
+  NORMALIZE -> CONFIDENCE;
+  CONFIDENCE -> RECON [label="trusted"];
+  CONFIDENCE -> BLOCKED [label="not trusted"];
+  BLOCKED -> RECON [label="resolved with evidence"];
+  RECON -> APPROVAL;
+  APPROVAL -> SYSTEM_RECORD;
+  SYSTEM_RECORD -> LEDGER;
+  SYSTEM_RECORD -> REPORTS;
 
-  // Data Flow Edges - Historical Sources
-  YAHOO -> HIST_INGEST [color="#2c7a7b", label="daily bars"];
-  TIINGO -> HIST_INGEST [color="#2c7a7b", label="adjusted"];
-  FINNHUB -> HIST_INGEST [color="#2c7a7b", label="historical"];
-  OTHERS -> HIST_INGEST [color="#2c7a7b"];
-
-  // Ingestion -> Processing
-  STREAM_INGEST -> TRADE_COLL [color="#2c7a7b", penwidth=2];
-  STREAM_INGEST -> QUOTE_COLL [color="#2c7a7b", penwidth=2];
-  STREAM_INGEST -> DEPTH_COLL [color="#2c7a7b", penwidth=2];
-  HIST_INGEST -> TRADE_COLL [color="#2c7a7b"];
-  FAILOVER -> STREAM_INGEST [style=dashed];
-  FAILOVER -> HIST_INGEST [style=dashed];
-
-  // Processing internal
-  TRADE_COLL -> VALIDATION [color="#2c7a7b"];
-  QUOTE_COLL -> VALIDATION [color="#2c7a7b"];
-  DEPTH_COLL -> VALIDATION [color="#2c7a7b"];
-  VALIDATION -> INDICATORS [color="#2c7a7b", style=dashed];
-
-  // Processing -> Pipeline
-  VALIDATION -> CHANNEL [color="#805ad5", penwidth=2];
-  CHANNEL -> PUBLISHER [color="#805ad5", penwidth=2];
-
-  // Pipeline -> Storage
-  PUBLISHER -> WAL [color="#c53030", penwidth=2, label="1. journal"];
-  WAL -> JSONL [color="#c53030", penwidth=2, label="2. persist"];
-  JSONL -> COMPRESS [color="#c53030", label="3. compress"];
-  COMPRESS -> PARQUET [color="#c53030", label="4. archive"];
-  PARQUET -> TIERED [color="#c53030"];
-
-  // Pipeline -> Messaging
-  PUBLISHER -> RABBITMQ [color="#e53e3e", style=dashed, penwidth=1.5, label="distribute"];
-  RABBITMQ -> TRADE_SVC [color="#e53e3e", style=dashed];
-  RABBITMQ -> QUOTE_SVC [color="#e53e3e", style=dashed];
-  RABBITMQ -> ORDERBOOK_SVC [color="#e53e3e", style=dashed];
-  RABBITMQ -> VAL_SVC [color="#e53e3e", style=dashed];
-
-  // Storage -> Export
-  PARQUET -> EXPORT_SVC [color="#38a169"];
-  JSONL -> EXPORT_SVC [color="#38a169"];
-  EXPORT_SVC -> QUALITY [color="#38a169"];
-
-  EXPORT_SVC -> PYTHON_EXP [color="#38a169"];
-  EXPORT_SVC -> R_EXP [color="#38a169"];
-  EXPORT_SVC -> LEAN_EXP [color="#38a169"];
-  EXPORT_SVC -> EXCEL_EXP [color="#38a169"];
-  EXPORT_SVC -> PG_EXP [color="#38a169"];
-
-  // Onboarding Flow Edges
-  FIRST_RUN -> WIZARD [color="#ed8936", label="--wizard"];
-  FIRST_RUN -> AUTO_CONFIG [color="#ed8936", label="--auto-config"];
-  WIZARD -> AUTO_CONFIG [color="#ed8936"];
-  AUTO_CONFIG -> CONFIG_FILE [color="#ed8936", label="generates"];
-  AUTO_CONFIG -> VALIDATE [color="#ed8936", label="optional"];
-  VALIDATE -> CONFIG_FILE [color="#ed8936", style=dashed, label="validates"];
-  CONFIG_FILE -> STREAM_INGEST [color="#ed8936", style=dashed, label="enables"];
-  CONFIG_FILE -> HIST_INGEST [color="#ed8936", style=dashed, label="enables"];
-
-  // Legend
-  subgraph cluster_legend {
-    label="Legend";
-    style="rounded";
-    color="#666666";
-    bgcolor="#fafafa";
-
-    LEG1 [shape=plaintext, label="━━━ Primary data flow (real-time)"];
-    LEG2 [shape=plaintext, label="─ ─ Secondary/Optional flow"];
-    LEG3 [shape=plaintext, label="━ Thick lines = high throughput path"];
-    LEG4 [shape=plaintext, label="━ Orange = Onboarding/Setup flow"];
-  }
+  LINEAGE -> AUDIT [style=dashed];
+  CONFIDENCE -> AUDIT [style=dashed];
+  RECON -> AUDIT [style=dashed];
+  APPROVAL -> AUDIT [style=dashed];
+  LEDGER -> AUDIT [style=dashed];
+  REPORTS -> AUDIT [style=dashed];
 }

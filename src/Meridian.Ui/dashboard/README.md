@@ -180,7 +180,9 @@ It also renders shared `structuredExports` rows for regulatory, warehouse, and i
 outputs. The browser displays readiness, format, row/field/source counts, schema version, retained
 path, version stamp, and direct backend links from the contract. Each ready export exposes JSON,
 CSV, and XLSX download actions by normalizing the shared retained route's `format` query instead of
-building browser-local export payloads.
+building browser-local export payloads. Blocked exports stay visible with validation copy, but the
+browser renders disabled download controls without anchor `href` values until the backend marks the
+descriptor ready.
 It does this instead of deriving export inventory from report-profile labels.
 The Reporting workspace also renders shared `brandingThemes` rows with firm identity, built-in or
 custom posture, color swatches, logo URI, footer text, and disclaimer copy. When the payload carries
@@ -335,6 +337,11 @@ attached ledger-line support when the shared payload includes journal references
 review packets, source events, journal references, and approval evidence without moving posting
 logic into React. Missing journal, source-event, or approval references remain explicit empty states
 instead of browser-derived support rows.
+The same `/accounting/ledger` route is the first browser implementation of the shared Financial
+Record Explorer pattern from the design document. It wraps the existing shared trial-balance,
+ledger-line, reconciliation, evidence-packet, audit-packet, and report-usage read models with
+explorer scope, saved-view labels, filter chips, summary signals, and proof drill-through actions
+without creating a separate browser ledger state or adding new root navigation.
 The Accounting journal-entry workstream at `/accounting/journal-entries` is a thin browser surface
 over the shared manual journal entry workbench endpoints. React renders draft headers, GL account
 selection, selected-line Security Master search/picker results, line validation badges, typed source

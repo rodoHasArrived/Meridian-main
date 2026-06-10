@@ -1145,6 +1145,12 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen();
 
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Ledger Explorer" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Accounting");
+    expect(screen.getByLabelText("Explorer scope")).toHaveTextContent("Journal entries and ledger detail");
+    expect(screen.getByLabelText("Saved explorer views")).toHaveTextContent("Controller review");
+    expect(screen.getByLabelText("Applied explorer filters")).toHaveTextContent("All accounts");
+    expect(screen.getByLabelText("Ledger Explorer proof actions")).toHaveTextContent("Evidence packet");
     expect(screen.getByText("Reconciliation queue")).toBeInTheDocument();
     const workflow = screen.getByRole("region", { name: "Accounting workflow launch paths" });
     expect(within(workflow).getByRole("link", { name: "Review ledger: Ledger authority, current Accounting workstream" })).toHaveAttribute(
@@ -1176,7 +1182,7 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("region", { name: "Cash-flow evidence for Ledger context at /accounting" })).toBeInTheDocument();
     expect(screen.getByLabelText("Cash-flow status Variance review. Net variance $500.")).toHaveTextContent("Variance review");
     expect(screen.getByLabelText("Runs with variance: 1")).toHaveTextContent("1");
-    expect(screen.getByText("Paper Index Mean Reversion")).toBeInTheDocument();
+    expect(screen.getAllByText("Paper Index Mean Reversion").length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders the manual journal entry workbench with GL and Security Master line fields", async () => {
@@ -1502,7 +1508,7 @@ describe("AccountingScreen", () => {
     expect(cashRow).toHaveAttribute("aria-controls", "trial-balance-account-detail");
     expect(screen.getByRole("region", { name: "Trial-balance detail for Cash" })).toHaveTextContent("$120,500");
     expect(screen.getByLabelText("Filter by General Ledger account")).toHaveValue("");
-    expect(screen.getByText("2 GL account rows")).toBeInTheDocument();
+    expect(screen.getAllByText("2 GL account rows").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("list", { name: "Ledger lines for selected account" })).toHaveTextContent("je-cash-1");
     expect(screen.getByRole("link", { name: "Open source event evt-cash-1 for Cash" })).toHaveAttribute(
       "href",
@@ -1521,7 +1527,7 @@ describe("AccountingScreen", () => {
 
     await user.type(screen.getByLabelText("Filter by General Ledger account"), "financing");
 
-    expect(screen.getByText("1 of 2 GL account rows")).toBeInTheDocument();
+    expect(screen.getAllByText("1 of 2 GL account rows").length).toBeGreaterThanOrEqual(1);
     expect(screen.queryByRole("row", { name: "Inspect trial-balance account Cash for Asset" })).not.toBeInTheDocument();
     const filteredFinancingRow = screen.getByRole("row", { name: "Inspect trial-balance account Financing payable for Liability" });
     expect(filteredFinancingRow).toHaveAttribute("aria-selected", "true");

@@ -25,6 +25,7 @@ agent orchestration, prompt routing, repository navigation artifacts, or AI-main
 | Validate only AI-doc lifecycle metadata without repo-wide docs noise | `build/scripts/docs/validate-docs-structure.py` | `python build/scripts/docs/validate-docs-structure.py --top-level ai --summary` |
 | Apply deterministic scoped text edits | `build/scripts/ai/ai-edit-tool.py` | Preview with `plan`, then apply the saved plan |
 | Build token-capped orientation packs | `build/scripts/ai/context-budget.py` | `python build/scripts/ai/context-budget.py --task "<task>" --target-file <path> --summary` |
+| Generate read-only Promptfoo eval artifacts | `build/scripts/ai/promptfoo-adapter.py` | `python build/scripts/ai/promptfoo-adapter.py --eval-id 1 --summary` |
 | Run broader AI maintenance audits | `build/scripts/ai-repo-updater.py`, `make/ai.mk`, `scripts/ai/*.sh` | Pick the narrowest `audit`, `verify`, or maintenance lane |
 | Run Codex-specific desktop quality scans | `tools/codex/*.ps1` | Use the nearest focused PowerShell tool, then report exact command/results |
 
@@ -80,6 +81,12 @@ Use these for multi-agent, parallel, or route-aware work:
   - Preview-first text rewrite tool for deterministic, reviewable repository edits.
 - `build/scripts/ai/context-budget.py`
   - Generates subsystem-aware, token-capped context packs from task text and touched files.
+- `build/scripts/ai/promptfoo-adapter.py`
+  - Converts selected canonical skill `evals.json` cases into a read-only Promptfoo
+    `promptfooconfig.yaml`, `trace_output_provider.py`, `trace_outputs.json`, and
+    `adapter_result.json` under `artifacts/ai/promptfoo/`.
+  - Keeps `.codex/skills/*/scripts/run_evals.py` as the canonical harness. Use `--run` only after
+    trace outputs exist for every selected case; the default mode never executes live Codex.
 - `build/scripts/ai-repo-updater.py`
   - Broader repository audit and maintenance helper.
 - `scripts/ai/setup.sh`, `scripts/ai/setup-ai-agent.sh`
