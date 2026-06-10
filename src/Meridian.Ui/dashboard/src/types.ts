@@ -37,7 +37,7 @@ export interface FeatureCapabilityToggleRequest {
   isEnabled: boolean;
 }
 
-export type FinancialRecordExplorerId = "ledger" | "portfolio" | "security-instrument";
+export type FinancialRecordExplorerId = "ledger" | "portfolio" | "security-instrument" | "report-line-provenance";
 
 export type FinancialRecordExplorerTone = "Default" | "Success" | "Warning" | "Danger" | "Info";
 
@@ -1239,9 +1239,11 @@ export interface EvidenceCompleteness {
   assuranceScore?: MeridianAssuranceScore;
 }
 
+export type EvidenceValidationSeverity = "Info" | "Warning" | "Critical";
+
 export interface EvidenceValidationIssue {
   code: string;
-  severity: "Info" | "Warning" | "Critical";
+  severity: EvidenceValidationSeverity;
   message: string;
   evidenceId?: string | null;
   evidenceKind?: string | null;
@@ -1386,6 +1388,7 @@ export interface EvidenceVaultIdentity {
   schemaVersion: number;
   storageKind: string;
   artifacts: EvidenceVaultArtifact[];
+  supportRequests: EvidenceSupportRequest[];
 }
 
 export interface EvidenceVaultArtifact {
@@ -1399,6 +1402,19 @@ export interface EvidenceVaultArtifact {
   sourceRoute: string | null;
   canonicalSubjectKind: string | null;
   canonicalSubjectId: string | null;
+}
+
+export interface EvidenceSupportRequest {
+  requestId: string;
+  requestKind: string;
+  evidenceId: string;
+  evidenceKind: string | null;
+  severity: EvidenceValidationSeverity;
+  status: string;
+  summary: string;
+  sourceSystem: string | null;
+  workItemId: string | null;
+  blockedOutput: string | null;
 }
 
 export interface EvidenceLifecycleMetadata {
@@ -1415,6 +1431,8 @@ export interface EvidenceSubjectLinkage {
   reportPackId?: string | null;
   reconciliationCaseId?: string | null;
   accountingRecordId?: string | null;
+  reportPackDeliveryAttemptId?: string | null;
+  reportPackDeliveryPackageId?: string | null;
 }
 
 export interface EvidenceVaultLookupRequest {
@@ -1424,6 +1442,8 @@ export interface EvidenceVaultLookupRequest {
   reportPackId?: string | null;
   reconciliationCaseId?: string | null;
   accountingRecordId?: string | null;
+  reportPackDeliveryAttemptId?: string | null;
+  reportPackDeliveryPackageId?: string | null;
 }
 
 export type ChiefOfStaffIntentKind =
@@ -3133,6 +3153,7 @@ export interface ReportingRunStatusProjection {
   family: string;
   status: string;
   trigger: string;
+  asOfDate: string;
   attemptCount: number;
   sectionCount: number;
   lineageLinkedSections: number;
@@ -3324,7 +3345,18 @@ export interface ReportPackDeliveryPackage {
   reportingRunId?: string | null;
   reportingTemplateId?: string | null;
   reportingScheduleId?: string | null;
+  reportingRunAsOfDate?: string | null;
+  reportingRunStatus?: string | null;
+  reportingRunTrigger?: string | null;
+  reportingRunAttemptCount?: number | null;
+  reportingRunSectionCount?: number | null;
+  reportingRunLineageLinkedSections?: number | null;
+  deliveryAccessSummary?: string | null;
+  deliveryChannelSummary?: string | null;
+  downloadSummary?: string | null;
+  accessExpiresAtUtc?: string | null;
   sourceArtifacts?: string[] | null;
+  lineProvenance?: ReportingWorkflowLineProvenance[] | null;
   deliveryEvidencePacket?: ReportPackDeliveryEvidencePacket | null;
   brandingTheme?: ReportBrandingTheme | null;
 }
@@ -3423,6 +3455,7 @@ export interface StructuredReportingExport {
   evidenceRoute: string | null;
   versionStamp: string | null;
   tags: string[] | null;
+  readinessBlockers?: string[] | null;
 }
 
 export interface StructuredReportingExportColumn {
@@ -3537,6 +3570,13 @@ export interface ReportingWorkflowLineProvenance {
   reportValue: string | null;
   sourceSessionId: string | null;
   reconciliationRunId: string | null;
+  providerEventId?: string | null;
+  securityMasterId?: string | null;
+  securityDefinitionId?: string | null;
+  reconciliationOutcome?: string | null;
+  approvalId?: string | null;
+  financialRecordExplorerId?: string | null;
+  financialRecordHref?: string | null;
 }
 
 export interface ReportingWorkflowPublication {
@@ -3587,6 +3627,7 @@ export interface AccountingReportingSummary {
   crossFundConsolidations?: CrossFundReportingConsolidation[];
   pnlSlices?: PortfolioReportingPnlSlice[];
   analyticsRows?: PortfolioReportingAnalyticsRow[];
+  reportLineProvenanceExplorer?: FinancialRecordExplorerDto | null;
 }
 
 export type GovernanceCashFlowSummary = AccountingCashFlowSummary;
@@ -4009,6 +4050,20 @@ export type PrivateCapitalFundEventLedgerReadiness =
   | "ReportReview"
   | "Ready"
   | "Published";
+export type PaymentIntentCashDirection = "Neutral" | "Inflow" | "Outflow";
+export type PaymentIntentWorkflowStatus =
+  | "EvidenceMissing"
+  | "ApprovalPending"
+  | "BankEvidencePending"
+  | "BankReturned"
+  | "ReconciliationPending"
+  | "ExecutionDeferred"
+  | "Blocked";
+export type PrivateCapitalPaymentIntentEvidenceStatus =
+  | "MissingIntent"
+  | "CashEvidenceMissing"
+  | "IntentCaptured"
+  | "SettlementMatched";
 export type ManualJournalEntryType =
   | "General"
   | "AccruedBalance"
@@ -4307,6 +4362,100 @@ export interface PrivateCapitalEvidenceCategory {
   requiredEvidence?: string[] | null;
 }
 
+export interface PrivateCapitalPaymentIntentEvidence {
+  paymentIntentId?: string | null;
+  settlementReference?: string | null;
+  status: PrivateCapitalPaymentIntentEvidenceStatus | PaymentIntentWorkflowStatus;
+  isReady: boolean;
+  direction: PaymentIntentCashDirection;
+  amount: number;
+  currency: string;
+  effectiveDate: string;
+  summary: string;
+  cashEvidenceLinkCount: number;
+  cashEvidenceLinks: string[];
+  requiredEvidence?: string[] | null;
+  evidenceRoute?: string | null;
+}
+
+export interface PaymentIntentExpectedCashMovement {
+  paymentIntentId: string;
+  direction: PaymentIntentCashDirection;
+  amount: number;
+  currency: string;
+  effectiveDate: string;
+  settlementReference?: string | null;
+  fundEventId?: string | null;
+  fundEventType?: string | null;
+  capitalAccountId?: string | null;
+  investorId?: string | null;
+  purpose: string;
+}
+
+export interface PaymentIntentApprovalStep {
+  sequence: number;
+  role: string;
+  actor: string;
+  status: string;
+  decidedAtUtc?: string | null;
+  evidenceRoute?: string | null;
+}
+
+export interface PaymentIntentBankEvidence {
+  evidenceId: string;
+  evidenceKind: string;
+  status: string;
+  summary: string;
+  bankTransactionId?: string | null;
+  transactionType?: string | null;
+  amount?: number | null;
+  currency?: string | null;
+  effectiveDate?: string | null;
+  recordedAtUtc?: string | null;
+  externalRef?: string | null;
+  evidenceRoute?: string | null;
+}
+
+export interface PaymentIntentReconciliationLink {
+  linkId: string;
+  status: string;
+  summary: string;
+  evidenceRoute?: string | null;
+  reconciliationCaseId?: string | null;
+  reconciliationRunId?: string | null;
+}
+
+export interface PaymentIntentAuditEvent {
+  auditEventId: string;
+  recordedAtUtc: string;
+  actor: string;
+  action: string;
+  summary: string;
+  evidenceLinks: string[];
+}
+
+export interface PaymentIntentWorkflow {
+  paymentIntentId: string;
+  settlementReference?: string | null;
+  fundProfileId: string;
+  ledgerBookId?: string | null;
+  fundEventId: string;
+  journalEntryId: string;
+  requester: string;
+  requestedAtUtc: string;
+  status: PaymentIntentWorkflowStatus;
+  statusLabel: string;
+  readinessReason: string;
+  executionDeferredReason: string;
+  expectedCashMovement: PaymentIntentExpectedCashMovement;
+  evidenceRoute: string;
+  workbenchRoute: string;
+  approvalChain: PaymentIntentApprovalStep[];
+  bankEvidence: PaymentIntentBankEvidence[];
+  reconciliationLinks: PaymentIntentReconciliationLink[];
+  auditHistory: PaymentIntentAuditEvent[];
+}
+
 export interface PrivateCapitalReportOutput {
   reportOutputId: string;
   reportOutputType: string;
@@ -4393,6 +4542,7 @@ export interface PrivateCapitalFundEventLedgerRecord {
   ledgerImpacts: PrivateCapitalLedgerImpact[];
   reportOutputs: PrivateCapitalReportOutput[];
   validationIssues: AccountingConfigurationValidationIssue[];
+  paymentIntentEvidence?: PrivateCapitalPaymentIntentEvidence | null;
 }
 
 export interface PrivateCapitalCapitalAccountSubledger {
@@ -4428,6 +4578,7 @@ export interface PrivateCapitalCapitalAccountSubledger {
   nextActionRoute?: string | null;
   evidenceLinks: string[];
   evidenceCategories?: PrivateCapitalEvidenceCategory[] | null;
+  paymentIntentEvidence?: PrivateCapitalPaymentIntentEvidence | null;
   capitalAccount?: PrivateCapitalCapitalAccountActivity | null;
   fundEventRecords: PrivateCapitalFundEventLedgerRecord[];
   subledgerEntries: PrivateCapitalCapitalAccountSubledgerEntry[];
@@ -4455,7 +4606,128 @@ export interface PrivateCapitalActivityProjection {
   reportOutputs: PrivateCapitalReportOutput[];
   fundEventRecords: PrivateCapitalFundEventLedgerRecord[];
   capitalAccountSubledgers?: PrivateCapitalCapitalAccountSubledger[] | null;
+  paymentIntents?: PaymentIntentWorkflow[] | null;
   validationIssues: AccountingConfigurationValidationIssue[];
+}
+
+export interface CapitalAccountWorkbenchInvestorAccount {
+  accountKey: string;
+  capitalAccountId: string;
+  investorId?: string | null;
+  currency: string;
+  activityRoute: string;
+  readiness: PrivateCapitalFundEventLedgerReadiness;
+  readinessLabel: string;
+  readinessReason: string;
+  nextAction: string;
+  nextActionRoute?: string | null;
+  openingNetActivity: number;
+  endingNetActivity: number;
+  netCapitalActivity: number;
+  contributions: number;
+  distributions: number;
+  subscriptions: number;
+  redemptions: number;
+  managementFees: number;
+  fundEventCount: number;
+  postedFundEventCount: number;
+  approvalQueueCount: number;
+  publishedReportOutputCount: number;
+  evidenceLinkCount: number;
+  validationIssueCount: number;
+  evidenceCategorySummary: string;
+  evidenceLinks: string[];
+  evidenceCategories: PrivateCapitalEvidenceCategory[];
+  fundEventRecords: PrivateCapitalFundEventLedgerRecord[];
+  subledgerEntries: PrivateCapitalCapitalAccountSubledgerEntry[];
+  ledgerImpacts: PrivateCapitalLedgerImpact[];
+  reportOutputs: PrivateCapitalReportOutput[];
+  validationIssues: AccountingConfigurationValidationIssue[];
+  paymentIntentEvidence?: PrivateCapitalPaymentIntentEvidence | null;
+}
+
+export interface CapitalAccountWorkbenchAllocationRule {
+  ruleId: string;
+  capitalAccountId: string;
+  investorId?: string | null;
+  categoryId: string;
+  label: string;
+  basis: string;
+  isSatisfied: boolean;
+  reason: string;
+  route?: string | null;
+  evidenceLinkCount: number;
+  evidenceLinks: string[];
+  requiredEvidence: string[];
+}
+
+export interface CapitalAccountWorkbenchStatementLineage {
+  lineageId: string;
+  capitalAccountId: string;
+  investorId?: string | null;
+  reportOutputId: string;
+  reportOutputType: string;
+  displayName: string;
+  reportRoute: string;
+  reportPackId?: string | null;
+  reportWorkflowState?: string | null;
+  isPublished: boolean;
+  isReportReady: boolean;
+  publicationManifestId?: string | null;
+  retainedManifestPath?: string | null;
+  publicationEvidenceHash?: string | null;
+  publishedAtUtc?: string | null;
+  publishedBy?: string | null;
+  reportLineProvenanceCount: number;
+  hasRestatementLineage: boolean;
+  restatementStatus: string;
+  restatementReasonCode?: string | null;
+  restatementPriorVersionReportId?: string | null;
+  restatementApprover?: string | null;
+  restatementChangedLineCount: number;
+  restatementEvidenceLinkCount: number;
+  reportOutputRoute?: string | null;
+  evidenceRoute?: string | null;
+  capitalAccountSubledgerRoute?: string | null;
+  evidenceLinks: string[];
+  restatementEvidenceLinks: string[];
+}
+
+export interface CapitalAccountWorkbenchAuditDrillThrough {
+  drillThroughId: string;
+  kind: string;
+  label: string;
+  summary: string;
+  route?: string | null;
+  isAvailable: boolean;
+  evidenceLinkCount: number;
+  evidenceLinks: string[];
+  relatedIds: string[];
+}
+
+export interface CapitalAccountWorkbench {
+  fundProfileId: string;
+  ledgerBookId?: string | null;
+  projectedAtUtc: string;
+  capitalAccountId?: string | null;
+  investorId?: string | null;
+  currency: string;
+  workbenchRoute: string;
+  statusLabel: string;
+  statusReason: string;
+  investorAccountCount: number;
+  fundEventCount: number;
+  statementCount: number;
+  restatementLineageCount: number;
+  auditDrillThroughCount: number;
+  netCapitalActivity: number;
+  investorAccounts: CapitalAccountWorkbenchInvestorAccount[];
+  allocationRules: CapitalAccountWorkbenchAllocationRule[];
+  statementLineage: CapitalAccountWorkbenchStatementLineage[];
+  auditDrillThroughs: CapitalAccountWorkbenchAuditDrillThrough[];
+  validationIssues: AccountingConfigurationValidationIssue[];
+  liveCapabilities: string[];
+  plannedCapabilities: string[];
 }
 
 export interface ManualJournalEntryWorkbench {

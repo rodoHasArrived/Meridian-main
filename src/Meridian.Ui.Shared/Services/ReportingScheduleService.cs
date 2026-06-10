@@ -312,6 +312,7 @@ public sealed class ReportingScheduleService
             ResolveFamily(manifest.TemplateId),
             manifest.Status.ToString(),
             manifest.Trigger.ToString(),
+            manifest.AsOfDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
             manifest.AttemptCount,
             manifest.Sections.Length,
             manifest.Sections.Count(static section => section.Lineage is not null),

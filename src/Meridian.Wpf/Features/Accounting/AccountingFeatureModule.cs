@@ -54,6 +54,10 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<ReportPackWorkflowService>()));
+        services.TryAddSingleton<ICapitalAccountWorkbenchService>(sp =>
+            new CapitalAccountWorkbenchService(
+                sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
+                sp.GetService<ReportPackWorkflowService>()));
         services.TryAddSingleton<IAccountingPolicyService, AccountingPolicyService>();
         services.TryAddSingleton<IAccountingBasisProjectionService, AccountingBasisProjectionService>();
         services.TryAddSingleton<IAccountingJournalDraftService, AccountingJournalDraftService>();

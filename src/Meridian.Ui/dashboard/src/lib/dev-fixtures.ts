@@ -3176,6 +3176,20 @@ const fixtureAccountingRecordVaultIdentity: EvidenceVaultIdentity = {
       canonicalSubjectKind: "accounting-record",
       canonicalSubjectId: fixtureOperationsWorkflowId
     }
+  ],
+  supportRequests: [
+    {
+      requestId: "support-request:validationissue:accounting-record-report-pack-lineage:report-pack-lineage-required",
+      requestKind: "ValidationIssue",
+      evidenceId: "accounting-record:report-pack-lineage",
+      evidenceKind: "report-pack-lineage",
+      severity: "Warning",
+      status: "Open",
+      summary: "Report-pack lineage cannot close until ledger evidence is retained.",
+      sourceSystem: "operations",
+      workItemId: null,
+      blockedOutput: null
+    }
   ]
 };
 

@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Banking;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
@@ -800,6 +801,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
     private readonly ISecurityMasterQueryService? _securityMasterQueryService;
     private readonly ILedgerJournalStore? _journalStore;
     private readonly ReportPackWorkflowService? _reportPackWorkflowService;
+    private readonly IBankTransactionSource? _bankTransactionSource;
 
     public ManualJournalEntryWorkbenchService(
         IManualJournalEntryDraftStore draftStore,
@@ -807,7 +809,8 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         IAccountingActionAuditStore auditStore,
         ISecurityMasterQueryService? securityMasterQueryService = null,
         ILedgerJournalStore? journalStore = null,
-        ReportPackWorkflowService? reportPackWorkflowService = null)
+        ReportPackWorkflowService? reportPackWorkflowService = null,
+        IBankTransactionSource? bankTransactionSource = null)
     {
         _draftStore = draftStore ?? throw new ArgumentNullException(nameof(draftStore));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
@@ -815,6 +818,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         _securityMasterQueryService = securityMasterQueryService;
         _journalStore = journalStore;
         _reportPackWorkflowService = reportPackWorkflowService;
+        _bankTransactionSource = bankTransactionSource;
     }
 
     public async Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default)
@@ -838,6 +842,18 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             .ToArray();
     }
 
+    private async Task<IReadOnlyList<BankTransactionDto>> ListBankTransactionsAsync(CancellationToken ct)
+    {
+        if (_bankTransactionSource is null)
+        {
+            return [];
+        }
+
+        return await _bankTransactionSource
+            .GetBankTransactionsAsync(entityId: null, ct)
+            .ConfigureAwait(false);
+    }
+
     public async Task<ManualJournalEntryWorkbenchDto> GetWorkbenchAsync(
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
@@ -848,8 +864,15 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var configuration = await _configurationService.GetWorkspaceAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
         var drafts = await _draftStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
         var audit = await _auditStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
+        var bankTransactions = await ListBankTransactionsAsync(ct).ConfigureAwait(false);
         var posted = await BuildPostedPrivateCapitalActivityProjectionAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
-        var privateCapitalActivity = BuildPrivateCapitalActivityProjection(normalizedFundProfileId, ledgerBookId, drafts, posted);
+        var privateCapitalActivity = BuildPrivateCapitalActivityProjection(
+            normalizedFundProfileId,
+            ledgerBookId,
+            drafts,
+            audit,
+            bankTransactions,
+            posted);
 
         return new ManualJournalEntryWorkbenchDto(
             normalizedFundProfileId,
@@ -870,14 +893,24 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         ct.ThrowIfCancellationRequested();
         var normalizedFundProfileId = NormalizeFundProfileId(fundProfileId);
         var drafts = await _draftStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
+        var audit = await _auditStore.ListAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
+        var bankTransactions = await ListBankTransactionsAsync(ct).ConfigureAwait(false);
         var posted = await BuildPostedPrivateCapitalActivityProjectionAsync(normalizedFundProfileId, ledgerBookId, ct).ConfigureAwait(false);
-        return BuildPrivateCapitalActivityProjection(normalizedFundProfileId, ledgerBookId, drafts, posted);
+        return BuildPrivateCapitalActivityProjection(
+            normalizedFundProfileId,
+            ledgerBookId,
+            drafts,
+            audit,
+            bankTransactions,
+            posted);
     }
 
     private PrivateCapitalActivityProjectionDto BuildPrivateCapitalActivityProjection(
         string fundProfileId,
         Guid? ledgerBookId,
         IReadOnlyList<ManualJournalEntryDraftDto> drafts,
+        IReadOnlyList<AccountingActionAuditEventDto> audit,
+        IReadOnlyList<BankTransactionDto> bankTransactions,
         PostedPrivateCapitalActivityProjection? postedProjection)
     {
         var projectedAtUtc = DateTimeOffset.UtcNow;
@@ -1014,6 +1047,13 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             orderedLedgerImpacts,
             reportOutputs,
             projectionIssues);
+        var paymentIntents = BuildPaymentIntentWorkflows(
+            fundProfileId,
+            ledgerBookId,
+            fundEventRecords,
+            drafts,
+            audit,
+            bankTransactions);
 
         return new PrivateCapitalActivityProjectionDto(
             fundProfileId,
@@ -1038,8 +1078,577 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 .ThenBy(issue => issue.TargetId, StringComparer.OrdinalIgnoreCase)
                 .ToArray(),
             fundEventRecords,
-            capitalAccountSubledgers);
+            capitalAccountSubledgers,
+            paymentIntents);
     }
+
+    private static IReadOnlyList<PaymentIntentWorkflowDto> BuildPaymentIntentWorkflows(
+        string fundProfileId,
+        Guid? ledgerBookId,
+        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> fundEventRecords,
+        IReadOnlyList<ManualJournalEntryDraftDto> drafts,
+        IReadOnlyList<AccountingActionAuditEventDto> audit,
+        IReadOnlyList<BankTransactionDto> bankTransactions)
+    {
+        var draftsByJournalEntryId = drafts.ToDictionary(static draft => draft.JournalEntryId);
+        return fundEventRecords
+            .Where(static record => !string.IsNullOrWhiteSpace(record.PaymentIntentId))
+            .GroupBy(static record => record.PaymentIntentId!.Trim(), StringComparer.OrdinalIgnoreCase)
+            .Select(group => BuildPaymentIntentWorkflow(
+                fundProfileId,
+                ledgerBookId,
+                group.Key,
+                group
+                    .OrderByDescending(static record => record.EffectiveDate)
+                    .ThenBy(static record => record.FundEventId, StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
+                draftsByJournalEntryId,
+                audit,
+                bankTransactions))
+            .OrderByDescending(static workflow => workflow.ExpectedCashMovement.EffectiveDate)
+            .ThenBy(static workflow => workflow.PaymentIntentId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static PaymentIntentWorkflowDto BuildPaymentIntentWorkflow(
+        string fundProfileId,
+        Guid? ledgerBookId,
+        string paymentIntentId,
+        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
+        IReadOnlyDictionary<Guid, ManualJournalEntryDraftDto> draftsByJournalEntryId,
+        IReadOnlyList<AccountingActionAuditEventDto> audit,
+        IReadOnlyList<BankTransactionDto> bankTransactions)
+    {
+        var primary = records[0];
+        draftsByJournalEntryId.TryGetValue(primary.JournalEntryId, out var primaryDraft);
+        var settlementReference = NormalizeOptional(primary.SettlementReference)
+            ?? records.Select(static record => NormalizeOptional(record.SettlementReference))
+                .FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value));
+        var allEvidenceLinks = BuildPaymentIntentEvidenceLinks(records, draftsByJournalEntryId, audit, paymentIntentId, settlementReference);
+        var expectedCashMovement = BuildExpectedCashMovement(paymentIntentId, settlementReference, records);
+        var approvalChain = BuildPaymentIntentApprovalChain(records, draftsByJournalEntryId);
+        var bankEvidence = BuildPaymentIntentBankEvidence(paymentIntentId, settlementReference, records, bankTransactions, allEvidenceLinks);
+        var reconciliationLinks = BuildPaymentIntentReconciliationLinks(paymentIntentId, settlementReference, records, allEvidenceLinks);
+        var auditHistory = BuildPaymentIntentAuditHistory(
+            paymentIntentId,
+            settlementReference,
+            records,
+            draftsByJournalEntryId,
+            audit,
+            bankEvidence,
+            reconciliationLinks);
+        var status = ResolvePaymentIntentWorkflowStatus(records, approvalChain, bankEvidence, reconciliationLinks);
+        var evidenceRoute = PrivateCapitalActivityRouteBuilder.BuildPaymentIntentEvidenceRoute(paymentIntentId);
+        var workbenchRoute = PrivateCapitalActivityRouteBuilder.BuildPaymentIntentWorkbenchRoute(fundProfileId, ledgerBookId, paymentIntentId);
+        var requester = NormalizeOptional(primaryDraft?.PreparedBy)
+            ?? NormalizeOptional(primaryDraft?.SubmittedBy)
+            ?? "ledger-posting";
+        var requestedAtUtc = primaryDraft?.CreatedAtUtc ?? primary.FundEvent.UpdatedAtUtc;
+
+        return new PaymentIntentWorkflowDto(
+            paymentIntentId,
+            settlementReference,
+            fundProfileId,
+            ledgerBookId,
+            primary.FundEventId,
+            primary.JournalEntryId,
+            requester,
+            requestedAtUtc,
+            status,
+            FormatPaymentIntentWorkflowStatus(status),
+            BuildPaymentIntentReadinessReason(status, records, bankEvidence, reconciliationLinks),
+            "Full payment execution is explicitly deferred in v0.18; this layer only retains intent, control, cash-evidence, reconciliation, and audit history before any bank-side instruction.",
+            expectedCashMovement,
+            evidenceRoute,
+            workbenchRoute,
+            approvalChain,
+            bankEvidence,
+            reconciliationLinks,
+            auditHistory);
+    }
+
+    private static PaymentIntentExpectedCashMovementDto BuildExpectedCashMovement(
+        string paymentIntentId,
+        string? settlementReference,
+        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records)
+    {
+        var primary = records[0];
+        var netActivity = records.Sum(static record => record.NetCapitalActivity);
+        var amount = records.Count == 1
+            ? Math.Abs(primary.NetCapitalActivity)
+            : records.Sum(static record => Math.Abs(record.NetCapitalActivity));
+        var direction = ResolvePaymentIntentDirection(records, netActivity);
+        var currency = records
+            .Select(static record => NormalizeCurrency(record.Currency))
+            .FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value)) ?? "USD";
+        var purpose = records.Count == 1
+            ? $"{primary.FundEventType} for {primary.CapitalAccountId}"
+            : $"{records.Count} private-capital fund events";
+
+        return new PaymentIntentExpectedCashMovementDto(
+            paymentIntentId,
+            direction,
+            amount,
+            currency,
+            records.Select(static record => record.EffectiveDate).DefaultIfEmpty(DateOnly.MinValue).Max(),
+            settlementReference,
+            primary.FundEventId,
+            primary.FundEventType,
+            primary.CapitalAccountId,
+            primary.InvestorId,
+            purpose);
+    }
+
+    private static PaymentIntentCashDirectionDto ResolvePaymentIntentDirection(
+        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
+        decimal netActivity)
+    {
+        if (records.All(static record => record.FundEvent.EntryType is ManualJournalEntryTypeDto.CapitalCall or ManualJournalEntryTypeDto.Subscription))
+        {
+            return PaymentIntentCashDirectionDto.Inflow;
+        }
+
+        if (records.All(static record => record.FundEvent.EntryType is ManualJournalEntryTypeDto.Distribution or ManualJournalEntryTypeDto.Redemption or ManualJournalEntryTypeDto.ManagementFee))
+        {
+            return PaymentIntentCashDirectionDto.Outflow;
+        }
+
+        return netActivity > 0m
+            ? PaymentIntentCashDirectionDto.Inflow
+            : netActivity < 0m
+                ? PaymentIntentCashDirectionDto.Outflow
+                : PaymentIntentCashDirectionDto.Neutral;
+    }
+
+    private static IReadOnlyList<PaymentIntentApprovalStepDto> BuildPaymentIntentApprovalChain(
+        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
+        IReadOnlyDictionary<Guid, ManualJournalEntryDraftDto> draftsByJournalEntryId)
+    {
+        var steps = new List<PaymentIntentApprovalStepDto>();
+        var sequence = 1;
+        foreach (var record in records.OrderBy(static record => record.EffectiveDate).ThenBy(static record => record.FundEventId, StringComparer.OrdinalIgnoreCase))
+        {
+            draftsByJournalEntryId.TryGetValue(record.JournalEntryId, out var draft);
+            var requester = NormalizeOptional(draft?.PreparedBy) ?? "ledger-posting";
+            steps.Add(new PaymentIntentApprovalStepDto(
+                sequence++,
+                "Requester",
+                requester,
+                "Requested",
+                draft?.CreatedAtUtc,
+                record.ActivityRoute));
+
+            if (draft?.SubmittedAtUtc is not null || !string.IsNullOrWhiteSpace(draft?.SubmittedBy) || !string.IsNullOrWhiteSpace(record.ApprovalId))
+            {
+                steps.Add(new PaymentIntentApprovalStepDto(
+                    sequence++,
+                    "Controller approval",
+                    NormalizeOptional(draft?.SubmittedBy) ?? NormalizeOptional(record.ApprovalId) ?? "controller",
+                    record.ApprovalState.ToString(),
+                    draft?.SubmittedAtUtc ?? record.FundEvent.UpdatedAtUtc,
+                    record.ApprovalRoute));
+            }
+            else
+            {
+                steps.Add(new PaymentIntentApprovalStepDto(
+                    sequence++,
+                    "Controller approval",
+                    "controller",
+                    "Pending",
+                    null,
+                    record.ApprovalRoute));
+            }
+        }
+
+        return steps
+            .GroupBy(step => $"{step.Role}:{step.Actor}:{step.Status}:{step.EvidenceRoute}", StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
+            .Select((step, index) => step with { Sequence = index + 1 })
+            .ToArray();
+    }
+
+    private static IReadOnlyList<PaymentIntentBankEvidenceDto> BuildPaymentIntentBankEvidence(
+        string paymentIntentId,
+        string? settlementReference,
+        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
+        IReadOnlyList<BankTransactionDto> bankTransactions,
+        IReadOnlyList<string> evidenceLinks)
+    {
+        var evidence = new List<PaymentIntentBankEvidenceDto>();
+        var matchedTransactions = bankTransactions
+            .Where(transaction => MatchesPaymentIntentBankTransaction(transaction, paymentIntentId, settlementReference, records))
+            .OrderByDescending(static transaction => transaction.RecordedAt)
+            .ThenBy(static transaction => transaction.BankTransactionId)
+            .ToArray();
+
+        foreach (var transaction in matchedTransactions)
+        {
+            var isReturn = IsReturnBankTransaction(transaction);
+            evidence.Add(new PaymentIntentBankEvidenceDto(
+                $"bank-transaction:{transaction.BankTransactionId:D}",
+                isReturn ? "BankReturn" : "BankConfirmation",
+                isReturn ? "Returned" : "Confirmed",
+                isReturn
+                    ? $"Bank-side transaction {transaction.BankTransactionId:D} indicates a returned, voided, or reversed payment intent."
+                    : $"Bank-side transaction {transaction.BankTransactionId:D} confirms expected cash movement.",
+                transaction.BankTransactionId,
+                transaction.TransactionType,
+                transaction.Amount,
+                NormalizeCurrency(transaction.Currency),
+                transaction.EffectiveDate,
+                transaction.RecordedAt,
+                NormalizeOptional(transaction.ExternalRef),
+                BuildBankTransactionEvidenceRoute(transaction)));
+        }
+
+        foreach (var link in SelectPaymentIntentCashEvidenceLinks(evidenceLinks, paymentIntentId, settlementReference))
+        {
+            evidence.Add(new PaymentIntentBankEvidenceDto(
+                $"retained-cash-evidence:{SanitizePaymentIntentPart(link)}",
+                "RetainedCashEvidence",
+                "Retained",
+                $"Retained cash, bank, treasury, or settlement evidence is linked at {link}.",
+                EvidenceRoute: link));
+        }
+
+        if (evidence.Count == 0)
+        {
+            evidence.Add(new PaymentIntentBankEvidenceDto(
+                $"bank-evidence-missing:{SanitizePaymentIntentPart(paymentIntentId)}",
+                "BankConfirmation",
+                "Missing",
+                "No bank confirmation, return, custodian cash, treasury, or settlement evidence is retained for this payment intent."));
+        }
+
+        return evidence
+            .GroupBy(static item => item.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .ToArray();
+    }
+
+    private static IReadOnlyList<PaymentIntentReconciliationLinkDto> BuildPaymentIntentReconciliationLinks(
+        string paymentIntentId,
+        string? settlementReference,
+        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
+        IReadOnlyList<string> evidenceLinks)
+    {
+        var reconciliationLinks = SelectReconciliationEvidenceLinks(evidenceLinks).ToArray();
+        if (reconciliationLinks.Length == 0)
+        {
+            return
+            [
+                new PaymentIntentReconciliationLinkDto(
+                    $"reconciliation-pending:{SanitizePaymentIntentPart(paymentIntentId)}",
+                    "Pending",
+                    "No reconciliation case, matching run, or break-review evidence is linked to this payment intent.")
+            ];
+        }
+
+        return reconciliationLinks
+            .Select((link, index) => new PaymentIntentReconciliationLinkDto(
+                $"reconciliation-link:{index + 1}:{SanitizePaymentIntentPart(paymentIntentId)}",
+                "Ready",
+                $"Reconciliation evidence links payment intent {paymentIntentId} to retained cash or ledger review.",
+                EvidenceRoute: link,
+                ReconciliationCaseId: TryExtractEvidenceToken(link, "case"),
+                ReconciliationRunId: TryExtractEvidenceToken(link, "run")))
+            .ToArray();
+    }
+
+    private static IReadOnlyList<PaymentIntentAuditEventDto> BuildPaymentIntentAuditHistory(
+        string paymentIntentId,
+        string? settlementReference,
+        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
+        IReadOnlyDictionary<Guid, ManualJournalEntryDraftDto> draftsByJournalEntryId,
+        IReadOnlyList<AccountingActionAuditEventDto> audit,
+        IReadOnlyList<PaymentIntentBankEvidenceDto> bankEvidence,
+        IReadOnlyList<PaymentIntentReconciliationLinkDto> reconciliationLinks)
+    {
+        var events = new List<PaymentIntentAuditEventDto>();
+        foreach (var record in records.OrderBy(static record => record.FundEvent.UpdatedAtUtc).ThenBy(static record => record.FundEventId, StringComparer.OrdinalIgnoreCase))
+        {
+            draftsByJournalEntryId.TryGetValue(record.JournalEntryId, out var draft);
+            events.Add(new PaymentIntentAuditEventDto(
+                $"payment-intent-requested:{record.JournalEntryId:D}",
+                draft?.CreatedAtUtc ?? record.FundEvent.UpdatedAtUtc,
+                NormalizeOptional(draft?.PreparedBy) ?? "ledger-posting",
+                "payment-intent.requested",
+                $"Payment intent {paymentIntentId} was captured from treasury context for {record.FundEventType}.",
+                record.EvidenceLinks));
+
+            if (draft?.SubmittedAtUtc is not null || record.ApprovalState is ManualJournalEntryStatusDto.Submitted or ManualJournalEntryStatusDto.Approved)
+            {
+                events.Add(new PaymentIntentAuditEventDto(
+                    $"payment-intent-approval:{record.JournalEntryId:D}",
+                    draft?.SubmittedAtUtc ?? record.FundEvent.UpdatedAtUtc,
+                    NormalizeOptional(draft?.SubmittedBy) ?? NormalizeOptional(record.ApprovalId) ?? "controller",
+                    "payment-intent.approval-state",
+                    $"Approval chain state is {record.ApprovalState} for payment intent {paymentIntentId}.",
+                    NormalizeOptional(record.ApprovalRoute) is { } approvalRoute
+                        ? [approvalRoute]
+                        : []));
+            }
+        }
+
+        foreach (var auditEvent in audit.Where(auditEvent => MatchesPaymentIntentAuditEvent(auditEvent, paymentIntentId, settlementReference, records)))
+        {
+            events.Add(new PaymentIntentAuditEventDto(
+                auditEvent.AuditEventId.ToString("D"),
+                auditEvent.RecordedAtUtc,
+                auditEvent.Actor,
+                auditEvent.Action,
+                $"Accounting audit event {auditEvent.Action} is linked to payment intent {paymentIntentId}.",
+                auditEvent.EvidenceLinks));
+        }
+
+        events.Add(new PaymentIntentAuditEventDto(
+            $"payment-intent-cash-evidence:{SanitizePaymentIntentPart(paymentIntentId)}",
+            bankEvidence
+                .Where(static evidence => evidence.RecordedAtUtc.HasValue)
+                .Select(static evidence => evidence.RecordedAtUtc!.Value)
+                .DefaultIfEmpty(records.Max(static record => record.FundEvent.UpdatedAtUtc))
+                .Max(),
+            "treasury-control",
+            "payment-intent.cash-evidence-reviewed",
+            $"{bankEvidence.Count} bank confirmation, return, or retained cash evidence item(s) are attached to the payment intent.",
+            bankEvidence
+                .Select(static evidence => evidence.EvidenceRoute)
+                .Where(static route => !string.IsNullOrWhiteSpace(route))
+                .Select(static route => route!)
+                .ToArray()));
+
+        events.Add(new PaymentIntentAuditEventDto(
+            $"payment-intent-reconciliation:{SanitizePaymentIntentPart(paymentIntentId)}",
+            records.Max(static record => record.FundEvent.UpdatedAtUtc),
+            "treasury-control",
+            "payment-intent.reconciliation-reviewed",
+            $"{reconciliationLinks.Count} reconciliation linkage item(s) are attached to the payment intent.",
+            reconciliationLinks
+                .Select(static link => link.EvidenceRoute)
+                .Where(static route => !string.IsNullOrWhiteSpace(route))
+                .Select(static route => route!)
+                .ToArray()));
+
+        events.Add(new PaymentIntentAuditEventDto(
+            $"payment-intent-execution-deferred:{SanitizePaymentIntentPart(paymentIntentId)}",
+            DateTimeOffset.UtcNow,
+            "treasury-control",
+            "payment-intent.execution-deferred",
+            "Full payment execution is deferred; this record is an evidence and control checkpoint only."));
+
+        return events
+            .GroupBy(static item => item.AuditEventId, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .OrderBy(static item => item.RecordedAtUtc)
+            .ThenBy(static item => item.Action, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static PaymentIntentWorkflowStatusDto ResolvePaymentIntentWorkflowStatus(
+        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
+        IReadOnlyList<PaymentIntentApprovalStepDto> approvalChain,
+        IReadOnlyList<PaymentIntentBankEvidenceDto> bankEvidence,
+        IReadOnlyList<PaymentIntentReconciliationLinkDto> reconciliationLinks)
+    {
+        if (records.Any(static record => record.Readiness == PrivateCapitalFundEventLedgerReadinessDto.Blocked) ||
+            approvalChain.Any(static step => step.Status is nameof(ManualJournalEntryStatusDto.Rejected) or nameof(ManualJournalEntryStatusDto.NeedsFix)))
+        {
+            return PaymentIntentWorkflowStatusDto.Blocked;
+        }
+
+        if (bankEvidence.Any(static evidence => string.Equals(evidence.Status, "Returned", StringComparison.OrdinalIgnoreCase)))
+        {
+            return PaymentIntentWorkflowStatusDto.BankReturned;
+        }
+
+        if (records.Any(static record => record.PaymentIntentEvidence is null ||
+                                         record.PaymentIntentEvidence.Status == PrivateCapitalPaymentIntentEvidenceStatusDto.MissingIntent))
+        {
+            return PaymentIntentWorkflowStatusDto.EvidenceMissing;
+        }
+
+        if (approvalChain.Any(static step => step.Status is "Pending" or nameof(ManualJournalEntryStatusDto.Draft) or nameof(ManualJournalEntryStatusDto.Submitted)))
+        {
+            return PaymentIntentWorkflowStatusDto.ApprovalPending;
+        }
+
+        if (records.Any(static record => record.PaymentIntentEvidence.Status == PrivateCapitalPaymentIntentEvidenceStatusDto.CashEvidenceMissing))
+        {
+            return PaymentIntentWorkflowStatusDto.BankEvidencePending;
+        }
+
+        if (!bankEvidence.Any(static evidence =>
+                string.Equals(evidence.Status, "Confirmed", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(evidence.Status, "Retained", StringComparison.OrdinalIgnoreCase)))
+        {
+            return PaymentIntentWorkflowStatusDto.BankEvidencePending;
+        }
+
+        if (!reconciliationLinks.Any(static link => string.Equals(link.Status, "Ready", StringComparison.OrdinalIgnoreCase)))
+        {
+            return PaymentIntentWorkflowStatusDto.ReconciliationPending;
+        }
+
+        return PaymentIntentWorkflowStatusDto.ExecutionDeferred;
+    }
+
+    private static string FormatPaymentIntentWorkflowStatus(PaymentIntentWorkflowStatusDto status)
+        => status switch
+        {
+            PaymentIntentWorkflowStatusDto.EvidenceMissing => "Intent evidence missing",
+            PaymentIntentWorkflowStatusDto.ApprovalPending => "Approval pending",
+            PaymentIntentWorkflowStatusDto.BankEvidencePending => "Bank evidence pending",
+            PaymentIntentWorkflowStatusDto.BankReturned => "Bank return captured",
+            PaymentIntentWorkflowStatusDto.ReconciliationPending => "Reconciliation pending",
+            PaymentIntentWorkflowStatusDto.ExecutionDeferred => "Ready, execution deferred",
+            PaymentIntentWorkflowStatusDto.Blocked => "Blocked",
+            _ => status.ToString()
+        };
+
+    private static string BuildPaymentIntentReadinessReason(
+        PaymentIntentWorkflowStatusDto status,
+        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
+        IReadOnlyList<PaymentIntentBankEvidenceDto> bankEvidence,
+        IReadOnlyList<PaymentIntentReconciliationLinkDto> reconciliationLinks)
+        => status switch
+        {
+            PaymentIntentWorkflowStatusDto.EvidenceMissing =>
+                "A payment intent id or required cash evidence field is missing from the treasury context.",
+            PaymentIntentWorkflowStatusDto.ApprovalPending =>
+                "Requester and expected movement are captured, but controller approval is not complete.",
+            PaymentIntentWorkflowStatusDto.BankEvidencePending =>
+                "Approval evidence is captured, but no retained bank confirmation, return, or cash settlement evidence is linked.",
+            PaymentIntentWorkflowStatusDto.BankReturned =>
+                "A bank-side return, void, rejection, or reversal is attached and blocks execution readiness.",
+            PaymentIntentWorkflowStatusDto.ReconciliationPending =>
+                "Cash evidence is attached, but reconciliation linkage is not retained.",
+            PaymentIntentWorkflowStatusDto.ExecutionDeferred =>
+                $"All pre-execution controls are retained across {records.Count} fund event(s), {bankEvidence.Count} bank evidence item(s), and {reconciliationLinks.Count} reconciliation link(s).",
+            PaymentIntentWorkflowStatusDto.Blocked =>
+                "The linked fund-event readiness or approval state is blocked.",
+            _ => "Payment intent workflow requires review."
+        };
+
+    private static IReadOnlyList<string> BuildPaymentIntentEvidenceLinks(
+        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
+        IReadOnlyDictionary<Guid, ManualJournalEntryDraftDto> draftsByJournalEntryId,
+        IReadOnlyList<AccountingActionAuditEventDto> audit,
+        string paymentIntentId,
+        string? settlementReference)
+    {
+        var links = new List<string>();
+        links.AddRange(records.SelectMany(static record => record.EvidenceLinks));
+        links.AddRange(records.SelectMany(static record => record.PaymentIntentEvidence?.CashEvidenceLinks ?? []));
+        foreach (var record in records)
+        {
+            if (draftsByJournalEntryId.TryGetValue(record.JournalEntryId, out var draft))
+            {
+                links.AddRange(draft.EvidenceLinks);
+                links.AddRange(draft.EvidenceAttachments?.Select(static attachment => attachment.Uri) ?? []);
+            }
+        }
+
+        links.AddRange(audit
+            .Where(auditEvent => MatchesPaymentIntentText(auditEvent.CorrelationId, paymentIntentId, settlementReference) ||
+                auditEvent.EvidenceLinks.Any(link => MatchesPaymentIntentText(link, paymentIntentId, settlementReference)))
+            .SelectMany(static auditEvent => auditEvent.EvidenceLinks));
+
+        return links
+            .Where(static link => !string.IsNullOrWhiteSpace(link))
+            .Select(static link => link.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static bool MatchesPaymentIntentBankTransaction(
+        BankTransactionDto transaction,
+        string paymentIntentId,
+        string? settlementReference,
+        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records)
+    {
+        if (MatchesPaymentIntentText(transaction.ExternalRef, paymentIntentId, settlementReference))
+        {
+            return true;
+        }
+
+        return records.Any(record => transaction.EntityId == record.JournalEntryId);
+    }
+
+    private static bool IsReturnBankTransaction(BankTransactionDto transaction)
+        => transaction.IsVoided ||
+           transaction.TransactionType.Contains("return", StringComparison.OrdinalIgnoreCase) ||
+           transaction.TransactionType.Contains("reject", StringComparison.OrdinalIgnoreCase) ||
+           transaction.TransactionType.Contains("reversal", StringComparison.OrdinalIgnoreCase) ||
+           transaction.TransactionType.Contains("void", StringComparison.OrdinalIgnoreCase) ||
+           transaction.TransactionType.Contains("fail", StringComparison.OrdinalIgnoreCase);
+
+    private static string BuildBankTransactionEvidenceRoute(BankTransactionDto transaction)
+        => $"/api/banking/transactions?entityId={Uri.EscapeDataString(transaction.EntityId.ToString("D"))}&bankTransactionId={Uri.EscapeDataString(transaction.BankTransactionId.ToString("D"))}";
+
+    private static IEnumerable<string> SelectPaymentIntentCashEvidenceLinks(
+        IReadOnlyList<string> links,
+        string paymentIntentId,
+        string? settlementReference)
+        => links.Where(static link => IsPaymentIntentCashEvidenceLink(link));
+
+    private static bool IsPaymentIntentCashEvidenceLink(string link)
+        => link.Contains("bank", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("cash", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("custodian", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("plaid", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("reconciliation", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("settlement", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("treasury", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("wire", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("ach", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("swift", StringComparison.OrdinalIgnoreCase);
+
+    private static IEnumerable<string> SelectReconciliationEvidenceLinks(IReadOnlyList<string> links)
+        => links.Where(static link =>
+            link.Contains("reconciliation", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("reconcile", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("break", StringComparison.OrdinalIgnoreCase) ||
+            link.Contains("match", StringComparison.OrdinalIgnoreCase));
+
+    private static bool MatchesPaymentIntentAuditEvent(
+        AccountingActionAuditEventDto auditEvent,
+        string paymentIntentId,
+        string? settlementReference,
+        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records)
+        => MatchesPaymentIntentText(auditEvent.CorrelationId, paymentIntentId, settlementReference) ||
+           auditEvent.EvidenceLinks.Any(link => MatchesPaymentIntentText(link, paymentIntentId, settlementReference)) ||
+           records.Any(record =>
+               MatchesPaymentIntentText(auditEvent.CorrelationId, record.JournalEntryId.ToString("D"), null) ||
+               auditEvent.EvidenceLinks.Any(link => MatchesPaymentIntentText(link, record.FundEventId, record.SettlementReference)));
+
+    private static bool MatchesPaymentIntentText(string? value, string paymentIntentId, string? settlementReference)
+        => !string.IsNullOrWhiteSpace(value) &&
+           (value.Contains(paymentIntentId, StringComparison.OrdinalIgnoreCase) ||
+            (!string.IsNullOrWhiteSpace(settlementReference) &&
+             value.Contains(settlementReference, StringComparison.OrdinalIgnoreCase)));
+
+    private static string? TryExtractEvidenceToken(string value, string label)
+    {
+        var marker = $"{label}:";
+        var index = value.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+        if (index < 0)
+        {
+            return null;
+        }
+
+        var token = value[(index + marker.Length)..]
+            .Split(['/', '?', '&', '#'], StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault();
+        return NormalizeOptional(token);
+    }
+
+    private static string SanitizePaymentIntentPart(string value)
+        => string.IsNullOrWhiteSpace(value)
+            ? "payment-intent"
+            : string.Join("-", value.Trim().Split(
+                Path.GetInvalidFileNameChars().Concat([':', '/', '\\', '?', '&', '=']).Distinct().ToArray(),
+                StringSplitOptions.RemoveEmptyEntries));
 
     private async Task<PostedPrivateCapitalActivityProjection?> BuildPostedPrivateCapitalActivityProjectionAsync(
         string fundProfileId,

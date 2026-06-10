@@ -271,6 +271,8 @@ export interface EvidenceExportResultViewModel {
   storageKindLabel: string | null;
   artifactSummaryLabel: string | null;
   artifactRows: EvidenceVaultArtifactRowViewModel[];
+  supportRequestSummaryLabel: string | null;
+  supportRequestRows: EvidenceVaultSupportRequestRowViewModel[];
 }
 
 export interface EvidenceVaultArtifactRowViewModel {
@@ -282,6 +284,21 @@ export interface EvidenceVaultArtifactRowViewModel {
   sourceLabel: string;
   canonicalSubjectLabel: string;
   retainedLabel: string;
+  ariaLabel: string;
+}
+
+export interface EvidenceVaultSupportRequestRowViewModel {
+  id: string;
+  requestKindLabel: string;
+  evidenceLabel: string;
+  evidenceKindLabel: string;
+  severityLabel: string;
+  severityTone: EvidenceStatusTone;
+  statusLabel: string;
+  summary: string;
+  sourceLabel: string;
+  workItemLabel: string;
+  blockedOutputLabel: string;
   ariaLabel: string;
 }
 
@@ -1129,17 +1146,24 @@ function buildExportResultViewModel(result: EvidencePacketExportResponse | null)
   const warningLabel = result.warningCount === 1 ? "1 warning" : `${result.warningCount} warnings`;
   const artifactRows = (result.vaultIdentity?.artifacts ?? []).map(buildVaultArtifactRow);
   const artifactLabel = artifactRows.length === 1 ? "1 retained artifact" : `${artifactRows.length} retained artifacts`;
+  const supportRequestRows = (result.vaultIdentity?.supportRequests ?? []).map(buildVaultSupportRequestRow);
+  const supportRequestLabel = supportRequestRows.length === 1 ? "1 support request" : `${supportRequestRows.length} support requests`;
+  const vaultSummaryParts = result.vaultIdentity
+    ? [artifactLabel, ...(supportRequestRows.length > 0 ? [supportRequestLabel] : [])]
+    : [];
   return {
     title: result.retained ? "Manifest retained" : "Manifest generated",
     manifestPath: result.manifestPath,
-    summaryLabel: `${nodeLabel}, ${warningLabel}${result.vaultIdentity ? `, ${artifactLabel}` : ""}`,
+    summaryLabel: `${nodeLabel}, ${warningLabel}${vaultSummaryParts.length > 0 ? `, ${vaultSummaryParts.join(", ")}` : ""}`,
     routeHref,
     routeLabel: routeHref ? "Open manifest" : null,
     routeAriaLabel: routeHref ? `Open retained evidence manifest at ${result.manifestPath}` : null,
     vaultIdLabel: result.vaultIdentity?.vaultId ?? null,
     storageKindLabel: result.vaultIdentity ? formatKind(result.vaultIdentity.storageKind) : null,
     artifactSummaryLabel: result.vaultIdentity ? artifactLabel : null,
-    artifactRows
+    artifactRows,
+    supportRequestSummaryLabel: result.vaultIdentity ? supportRequestLabel : null,
+    supportRequestRows
   };
 }
 
@@ -1157,6 +1181,42 @@ function buildVaultArtifactRow(artifact: NonNullable<EvidencePacketExportRespons
     retainedLabel: `Retained ${formatDate(artifact.retainedAt)}`,
     ariaLabel: `${formatKind(artifact.kind)} retained vault artifact ${artifact.artifactId}, ${formatBytes(artifact.sizeBytes)}, ${canonicalSubjectLabel}`
   };
+}
+
+function buildVaultSupportRequestRow(
+  request: NonNullable<EvidencePacketExportResponse["vaultIdentity"]>["supportRequests"][number]
+): EvidenceVaultSupportRequestRowViewModel {
+  const requestKindLabel = formatKind(request.requestKind);
+  const evidenceKindLabel = request.evidenceKind ? formatKind(request.evidenceKind) : "Unclassified evidence";
+  const severityLabel = formatKind(request.severity.toLowerCase());
+  const sourceLabel = request.sourceSystem ?? "No source system";
+  const workItemLabel = request.workItemId ?? "No work item";
+  const blockedOutputLabel = request.blockedOutput ?? "No blocked output";
+  return {
+    id: request.requestId,
+    requestKindLabel,
+    evidenceLabel: request.evidenceId,
+    evidenceKindLabel,
+    severityLabel,
+    severityTone: mapValidationSeverityTone(request.severity),
+    statusLabel: request.status,
+    summary: request.summary,
+    sourceLabel,
+    workItemLabel,
+    blockedOutputLabel,
+    ariaLabel: `${requestKindLabel} support request for ${request.evidenceId}, ${severityLabel}, ${request.status}. ${request.summary}`
+  };
+}
+
+function mapValidationSeverityTone(severity: "Info" | "Warning" | "Critical"): EvidenceStatusTone {
+  switch (severity) {
+    case "Critical":
+      return "danger";
+    case "Warning":
+      return "warning";
+    default:
+      return "muted";
+  }
 }
 
 function formatCanonicalSubject(kind?: string | null, id?: string | null) {
@@ -1216,7 +1276,9 @@ function mapWorkflowActionTone(tone: string): EvidencePacketActionTone {
 
 function formatKind(kind: string) {
   return kind
-    .split("-")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .split(/[-_\s]+/)
+    .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
 }

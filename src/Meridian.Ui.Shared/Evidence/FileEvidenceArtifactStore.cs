@@ -68,7 +68,9 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         EvidenceSubjectResolver.SecurityMasterConflictKind,
         EvidenceSubjectResolver.ApprovalKind,
         EvidenceSubjectResolver.AccountingRecordKind,
-        EvidenceSubjectResolver.PrivateCapitalFundEventKind
+        EvidenceSubjectResolver.PrivateCapitalFundEventKind,
+        EvidenceSubjectResolver.PaymentIntentKind,
+        EvidenceSubjectResolver.ReportPackDeliveryKind
     };
 
     private readonly string _rootDirectory;
@@ -103,6 +105,7 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         var manifestPath = Path.Combine(directory, fileName);
         var relativePath = Path.Combine("workstation", "evidence", subjectKind, subjectId, fileName);
         var manifestRoute = $"/workstation/evidence/{RouteSegment(subjectKind)}/{RouteSegment(subjectId)}/{RouteSegment(fileName)}";
+        var supportRequests = BuildSupportRequests(packet);
         var manifest = new EvidenceManifestDto(
             SchemaVersion: 1,
             ExportedAt: generatedAt,
@@ -115,6 +118,7 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             Edges: packet.Edges,
             Actions: packet.Actions,
             Warnings: request.IncludeWarnings ? packet.Warnings : [],
+            SupportRequests: supportRequests,
             VaultIdentity: null,
             Lifecycle: request.Lifecycle,
             Linkage: ResolveManifestLinkage(packet, request));
@@ -134,7 +138,8 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             SchemaVersion: 1,
             StorageKind: retainedArtifacts.Count == 0 ? FileManifestStorageKind : FileBundleStorageKind)
         {
-            Artifacts = retainedArtifacts
+            Artifacts = retainedArtifacts,
+            SupportRequests = supportRequests
         };
         manifest = manifest with { VaultIdentity = vaultIdentity };
 
@@ -282,6 +287,18 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             return false;
         }
 
+        if (!string.IsNullOrWhiteSpace(request.ReportPackDeliveryAttemptId) &&
+            !ReportPackDeliveryAttemptIdMatches(request.ReportPackDeliveryAttemptId, linkage, identity))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.ReportPackDeliveryPackageId) &&
+            !string.Equals(request.ReportPackDeliveryPackageId, linkage?.ReportPackDeliveryPackageId, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
         return true;
     }
 
@@ -301,6 +318,27 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
            (string.Equals(identity.SubjectKind, EvidenceSubjectResolver.AccountingRecordKind, StringComparison.OrdinalIgnoreCase) &&
             string.Equals(accountingRecordId, identity.SubjectId, StringComparison.OrdinalIgnoreCase));
 
+    private static bool ReportPackDeliveryAttemptIdMatches(
+        string deliveryAttemptId,
+        EvidenceSubjectLinkageDto? linkage,
+        EvidenceVaultIdentityDto identity)
+        => string.Equals(deliveryAttemptId, linkage?.ReportPackDeliveryAttemptId, StringComparison.OrdinalIgnoreCase) ||
+           (string.Equals(identity.SubjectKind, EvidenceSubjectResolver.ReportPackDeliveryKind, StringComparison.OrdinalIgnoreCase) &&
+            DeliverySubjectIdContainsAttemptId(identity.SubjectId, deliveryAttemptId));
+
+    private static bool DeliverySubjectIdContainsAttemptId(string subjectId, string deliveryAttemptId)
+    {
+        var normalized = deliveryAttemptId.Trim();
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return false;
+        }
+
+        return string.Equals(subjectId, normalized, StringComparison.OrdinalIgnoreCase) ||
+               subjectId.Split(':', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                   .Any(part => string.Equals(part, normalized, StringComparison.OrdinalIgnoreCase));
+    }
+
     private static EvidenceSubjectLinkageDto ResolveManifestLinkage(
         EvidencePacketDto packet,
         EvidencePacketExportRequest request)
@@ -312,7 +350,39 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             null,
             string.Equals(packet.Subject.SubjectKind, EvidenceSubjectResolver.AccountingRecordKind, StringComparison.OrdinalIgnoreCase)
                 ? packet.Subject.SubjectId
-                : null);
+                : null,
+            string.Equals(packet.Subject.SubjectKind, EvidenceSubjectResolver.ReportPackDeliveryKind, StringComparison.OrdinalIgnoreCase)
+                ? ResolveDeliveryAttemptId(packet.Subject.SubjectId)
+                : null,
+            ResolveDeliveryPackageId(packet));
+
+    private static string? ResolveDeliveryAttemptId(string subjectId)
+    {
+        var parts = subjectId.Split(':', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length == 2 ? parts[1] : subjectId;
+    }
+
+    private static string? ResolveDeliveryPackageId(EvidencePacketDto packet)
+        => string.Equals(packet.Subject.SubjectKind, EvidenceSubjectResolver.ReportPackDeliveryKind, StringComparison.OrdinalIgnoreCase)
+            ? packet.Nodes
+                .Select(static node => node.Summary)
+                .Select(TryResolvePackageId)
+                .FirstOrDefault(static packageId => !string.IsNullOrWhiteSpace(packageId))
+            : null;
+
+    private static string? TryResolvePackageId(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var match = System.Text.RegularExpressions.Regex.Match(
+            value,
+            @"pkg-[A-Za-z0-9_.:-]+",
+            System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+        return match.Success ? match.Value : null;
+    }
 
     private async Task<EvidenceSubjectLinkageDto?> TryReadLinkageAsync(string manifestPath, CancellationToken ct)
     {
@@ -320,6 +390,194 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         var manifest = await JsonSerializer.DeserializeAsync<EvidenceManifestDto>(stream, _jsonOptions, ct).ConfigureAwait(false);
         return manifest?.Linkage;
     }
+
+    private static IReadOnlyList<EvidenceSupportRequestDto> BuildSupportRequests(EvidencePacketDto packet)
+    {
+        var nodeById = packet.Nodes
+            .GroupBy(static node => node.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(static group => group.Key, static group => group.First(), StringComparer.OrdinalIgnoreCase);
+        var issues = packet.Completeness.ValidationIssues;
+        var missingIds = new HashSet<string>(packet.Completeness.MissingIds, StringComparer.OrdinalIgnoreCase);
+        var staleIds = new HashSet<string>(packet.Completeness.StaleIds, StringComparer.OrdinalIgnoreCase);
+        var blockerIds = new HashSet<string>(packet.Completeness.BlockingWorkItemIds, StringComparer.OrdinalIgnoreCase);
+        var blockedOutput = $"{packet.Subject.SubjectKind}/{packet.Subject.SubjectId}";
+        var requests = new List<EvidenceSupportRequestDto>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var evidenceId in packet.Completeness.MissingIds)
+        {
+            var issue = FindIssue(issues, evidenceId, "missing-required-evidence");
+            Add(CreateSupportRequest(
+                "MissingEvidence",
+                evidenceId,
+                issue,
+                nodeById,
+                EvidenceValidationSeverityDto.Critical,
+                issue?.Message ?? $"Required evidence '{evidenceId}' is missing.",
+                workItemId: null,
+                blockedOutput,
+                keyQualifier: null,
+                seen));
+        }
+
+        foreach (var evidenceId in packet.Completeness.StaleIds)
+        {
+            var issue = FindIssue(issues, evidenceId, "stale-required-evidence");
+            Add(CreateSupportRequest(
+                "StaleEvidence",
+                evidenceId,
+                issue,
+                nodeById,
+                EvidenceValidationSeverityDto.Warning,
+                issue?.Message ?? $"Required evidence '{evidenceId}' is stale.",
+                workItemId: null,
+                blockedOutput: null,
+                keyQualifier: null,
+                seen));
+        }
+
+        foreach (var workItemId in packet.Completeness.BlockingWorkItemIds)
+        {
+            var node = packet.Nodes.FirstOrDefault(node =>
+                node.RelatedWorkItemIds.Contains(workItemId, StringComparer.OrdinalIgnoreCase));
+            var issue = issues.FirstOrDefault(issue =>
+                string.Equals(issue.RelatedWorkItemId, workItemId, StringComparison.OrdinalIgnoreCase));
+            var evidenceId = !string.IsNullOrWhiteSpace(issue?.EvidenceId)
+                ? issue.EvidenceId!
+                : node?.EvidenceId ?? workItemId;
+
+            Add(CreateSupportRequest(
+                "BlockedWorkItem",
+                evidenceId,
+                issue,
+                nodeById,
+                issue?.Severity ?? EvidenceValidationSeverityDto.Critical,
+                issue?.Message ?? $"Work item '{workItemId}' blocks evidence support.",
+                workItemId,
+                blockedOutput,
+                keyQualifier: workItemId,
+                seen));
+        }
+
+        foreach (var issue in issues)
+        {
+            if (!string.IsNullOrWhiteSpace(issue.EvidenceId))
+            {
+                if (missingIds.Contains(issue.EvidenceId!) &&
+                    string.Equals(issue.Code, "missing-required-evidence", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (staleIds.Contains(issue.EvidenceId!) &&
+                    string.Equals(issue.Code, "stale-required-evidence", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(issue.RelatedWorkItemId) && blockerIds.Contains(issue.RelatedWorkItemId!))
+            {
+                continue;
+            }
+
+            var evidenceId = !string.IsNullOrWhiteSpace(issue.EvidenceId)
+                ? issue.EvidenceId!
+                : issue.RelatedWorkItemId;
+            if (string.IsNullOrWhiteSpace(evidenceId))
+            {
+                continue;
+            }
+
+            var requestKind = string.Equals(issue.Code, "orphan-evidence", StringComparison.OrdinalIgnoreCase)
+                ? "GraphLinkage"
+                : "ValidationIssue";
+            Add(CreateSupportRequest(
+                requestKind,
+                evidenceId!,
+                issue,
+                nodeById,
+                issue.Severity,
+                issue.Message,
+                issue.RelatedWorkItemId,
+                issue.Severity == EvidenceValidationSeverityDto.Critical ? blockedOutput : null,
+                keyQualifier: issue.Code,
+                seen));
+        }
+
+        return requests
+            .OrderBy(static request => SeverityRank(request.Severity))
+            .ThenBy(static request => request.RequestKind, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static request => request.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static request => request.RequestId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        void Add(EvidenceSupportRequestDto? request)
+        {
+            if (request is not null)
+            {
+                requests.Add(request);
+            }
+        }
+    }
+
+    private static EvidenceValidationIssueDto? FindIssue(
+        IEnumerable<EvidenceValidationIssueDto> issues,
+        string evidenceId,
+        string code)
+        => issues.FirstOrDefault(issue =>
+            string.Equals(issue.EvidenceId, evidenceId, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(issue.Code, code, StringComparison.OrdinalIgnoreCase));
+
+    private static EvidenceSupportRequestDto? CreateSupportRequest(
+        string requestKind,
+        string evidenceId,
+        EvidenceValidationIssueDto? issue,
+        IReadOnlyDictionary<string, EvidenceNodeDto> nodeById,
+        EvidenceValidationSeverityDto severity,
+        string summary,
+        string? workItemId,
+        string? blockedOutput,
+        string? keyQualifier,
+        HashSet<string> seen)
+    {
+        if (string.IsNullOrWhiteSpace(evidenceId))
+        {
+            return null;
+        }
+
+        var node = nodeById.GetValueOrDefault(evidenceId);
+        var requestId = $"support-request:{SanitizePathSegment(requestKind)}:{SanitizePathSegment(evidenceId)}";
+        if (!string.IsNullOrWhiteSpace(keyQualifier))
+        {
+            requestId = $"{requestId}:{SanitizePathSegment(keyQualifier)}";
+        }
+
+        if (!seen.Add(requestId))
+        {
+            return null;
+        }
+
+        return new EvidenceSupportRequestDto(
+            RequestId: requestId,
+            RequestKind: requestKind,
+            EvidenceId: evidenceId,
+            EvidenceKind: issue?.EvidenceKind ?? node?.Kind,
+            Severity: severity,
+            Status: "Open",
+            Summary: summary,
+            SourceSystem: issue?.SourceSystem ?? node?.SourceSystem,
+            WorkItemId: workItemId,
+            BlockedOutput: blockedOutput);
+    }
+
+    private static int SeverityRank(EvidenceValidationSeverityDto severity)
+        => severity switch
+        {
+            EvidenceValidationSeverityDto.Critical => 0,
+            EvidenceValidationSeverityDto.Warning => 1,
+            _ => 2
+        };
 
     private static string SanitizePathSegment(string value)
     {
@@ -717,6 +975,7 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         IReadOnlyList<EvidenceEdgeDto> Edges,
         IReadOnlyList<WorkflowActionDto> Actions,
         IReadOnlyList<string> Warnings,
+        IReadOnlyList<EvidenceSupportRequestDto> SupportRequests,
         EvidenceVaultIdentityDto? VaultIdentity,
         EvidenceLifecycleMetadataDto? Lifecycle,
         EvidenceSubjectLinkageDto? Linkage);

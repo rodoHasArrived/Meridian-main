@@ -66,11 +66,15 @@ and manual journal drafts in `workstation/accounting/manual-journal-drafts.json`
 configured workstation data root.
 
 `FinancialRecordExplorerPage` is the generic WPF consumer for the shared Financial Record Explorer
-DTO. `LedgerExplorer`, `PortfolioExplorer`, and `SecurityInstrumentExplorer` page tags resolve
-through the shell registry without adding new root workspaces; the page maps shared columns and rows
-into `WorkstationTableInspectorControl` and projects selected-record proof actions, `Used In`, and
-`Impacts` relationships into the inspector. Empty or blocked source DTOs remain visible as disabled
-action states with server-provided reasons rather than desktop-local placeholder balances.
+DTO. `LedgerExplorer`, `PortfolioExplorer`, `SecurityInstrumentExplorer`, and
+`ReportLineProvenanceExplorer` page tags resolve through the shell registry without adding new root
+workspaces; the page maps shared columns and rows into `WorkstationTableInspectorControl` and
+projects selected-record proof actions, `Used In`, and `Impacts` relationships into the inspector.
+Empty or blocked source DTOs remain visible as disabled action states with server-provided reasons
+rather than desktop-local placeholder balances.
+Proof actions that carry shared Financial Record Explorer API hrefs map back to `LedgerExplorer`,
+`PortfolioExplorer`, `SecurityInstrumentExplorer`, or `ReportLineProvenanceExplorer` page tags so
+report-line drill-throughs stay route-compatible with the browser workstation.
 
 Keep desktop support aligned with shared contracts and governance posture.
 Convention-based view-model wiring is handled by `Services/ViewModelViewResolver.cs`; shell pages
@@ -150,6 +154,10 @@ Accounting Configure also renders account-level capital-account subledger rows f
 opening/ending roll-forward, net activity, contribution/distribution totals, approval queue,
 posted/published counts, validation issues, contract-owned readiness label/reason, next action,
 and evidence-category readiness.
+The Capital Account Workbench tab consumes `ICapitalAccountWorkbenchService` and keeps investor
+capital-account evidence, allocation-rule readiness, statement/restatement lineage, audit-support
+drill-throughs, and live-versus-planned capability rows in the shared DTO shape used by the browser
+workbench.
 That desktop surface remains a reviewer for the unified fund-event ledger and capital-account
 subledger model: evidence-category readiness covers source support, capital-account subledger,
 ledger impact, approval state, and report output, while readiness reason/action copy comes from the

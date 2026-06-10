@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
+using Meridian.Contracts.Api;
 using Meridian.Reporting;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
@@ -1036,6 +1037,10 @@ public sealed class FileReportPackWorkflowRecordStore : IReportPackWorkflowRecor
 
 public sealed class ReportPackWorkflowService
 {
+    private const string LedgerFinancialRecordExplorerId = "ledger";
+    private const string PortfolioFinancialRecordExplorerId = "portfolio";
+    private const string SecurityInstrumentFinancialRecordExplorerId = "security-instrument";
+
     private static readonly IReadOnlyDictionary<ReportPackWorkflowStateDto, ReportPackWorkflowStateDto[]> AllowedTransitions =
         new Dictionary<ReportPackWorkflowStateDto, ReportPackWorkflowStateDto[]>
         {
@@ -1270,25 +1275,103 @@ public sealed class ReportPackWorkflowService
                 !string.IsNullOrWhiteSpace(item.SourceKind) &&
                 !string.IsNullOrWhiteSpace(item.SourceId) &&
                 !string.IsNullOrWhiteSpace(item.EvidenceId))
-            .Select(static item => item with
-            {
-                LineKey = item.LineKey.Trim(),
-                SourceKind = item.SourceKind.Trim(),
-                SourceId = item.SourceId.Trim(),
-                EvidenceId = item.EvidenceId.Trim(),
-                RunId = string.IsNullOrWhiteSpace(item.RunId) ? null : item.RunId.Trim(),
-                LedgerEntryId = string.IsNullOrWhiteSpace(item.LedgerEntryId) ? null : item.LedgerEntryId.Trim(),
-                ReconciliationCaseId = string.IsNullOrWhiteSpace(item.ReconciliationCaseId) ? null : item.ReconciliationCaseId.Trim(),
-                ReportValue = string.IsNullOrWhiteSpace(item.ReportValue) ? null : item.ReportValue.Trim(),
-                SourceSessionId = string.IsNullOrWhiteSpace(item.SourceSessionId) ? null : item.SourceSessionId.Trim(),
-                ReconciliationRunId = string.IsNullOrWhiteSpace(item.ReconciliationRunId) ? null : item.ReconciliationRunId.Trim(),
-                ProviderEventId = string.IsNullOrWhiteSpace(item.ProviderEventId) ? null : item.ProviderEventId.Trim(),
-                SecurityMasterId = string.IsNullOrWhiteSpace(item.SecurityMasterId) ? null : item.SecurityMasterId.Trim(),
-                SecurityDefinitionId = string.IsNullOrWhiteSpace(item.SecurityDefinitionId) ? null : item.SecurityDefinitionId.Trim(),
-                ReconciliationOutcome = string.IsNullOrWhiteSpace(item.ReconciliationOutcome) ? null : item.ReconciliationOutcome.Trim(),
-                ApprovalId = string.IsNullOrWhiteSpace(item.ApprovalId) ? null : item.ApprovalId.Trim()
-            })
+            .Select(NormalizeLineProvenanceItem)
             .ToArray() ?? [];
+
+    private static ReportPackLineProvenanceDto NormalizeLineProvenanceItem(ReportPackLineProvenanceDto item)
+    {
+        var normalized = item with
+        {
+            LineKey = item.LineKey.Trim(),
+            SourceKind = item.SourceKind.Trim(),
+            SourceId = item.SourceId.Trim(),
+            EvidenceId = item.EvidenceId.Trim(),
+            RunId = NormalizeNullable(item.RunId),
+            LedgerEntryId = NormalizeNullable(item.LedgerEntryId),
+            ReconciliationCaseId = NormalizeNullable(item.ReconciliationCaseId),
+            ReportValue = NormalizeNullable(item.ReportValue),
+            SourceSessionId = NormalizeNullable(item.SourceSessionId),
+            ReconciliationRunId = NormalizeNullable(item.ReconciliationRunId),
+            ProviderEventId = NormalizeNullable(item.ProviderEventId),
+            SecurityMasterId = NormalizeNullable(item.SecurityMasterId),
+            SecurityDefinitionId = NormalizeNullable(item.SecurityDefinitionId),
+            ReconciliationOutcome = NormalizeNullable(item.ReconciliationOutcome),
+            ApprovalId = NormalizeNullable(item.ApprovalId),
+            FinancialRecordExplorerId = NormalizeFinancialRecordExplorerId(item.FinancialRecordExplorerId),
+            FinancialRecordHref = NormalizeNullable(item.FinancialRecordHref)
+        };
+
+        var explorerId = normalized.FinancialRecordExplorerId ?? ResolveFinancialRecordExplorerId(normalized);
+        return normalized with
+        {
+            FinancialRecordExplorerId = explorerId,
+            FinancialRecordHref = normalized.FinancialRecordHref ?? BuildFinancialRecordHref(explorerId, normalized)
+        };
+    }
+
+    private static string ResolveFinancialRecordExplorerId(ReportPackLineProvenanceDto item)
+    {
+        if (ContainsToken(item.SourceKind, "portfolio") ||
+            ContainsToken(item.LineKey, "position") ||
+            ContainsToken(item.SourceId, "position"))
+        {
+            return PortfolioFinancialRecordExplorerId;
+        }
+
+        if (ContainsToken(item.SourceKind, "ledger") ||
+            !string.IsNullOrWhiteSpace(item.LedgerEntryId))
+        {
+            return LedgerFinancialRecordExplorerId;
+        }
+
+        if (!string.IsNullOrWhiteSpace(item.SecurityMasterId) ||
+            !string.IsNullOrWhiteSpace(item.SecurityDefinitionId) ||
+            ContainsToken(item.SourceKind, "security"))
+        {
+            return SecurityInstrumentFinancialRecordExplorerId;
+        }
+
+        return LedgerFinancialRecordExplorerId;
+    }
+
+    private static string? NormalizeFinancialRecordExplorerId(string? value)
+    {
+        var normalized = NormalizeNullable(value);
+        if (normalized is null)
+        {
+            return null;
+        }
+
+        return normalized.Equals(PortfolioFinancialRecordExplorerId, StringComparison.OrdinalIgnoreCase)
+            ? PortfolioFinancialRecordExplorerId
+            : normalized.Equals(SecurityInstrumentFinancialRecordExplorerId, StringComparison.OrdinalIgnoreCase)
+                ? SecurityInstrumentFinancialRecordExplorerId
+                : LedgerFinancialRecordExplorerId;
+    }
+
+    private static string BuildFinancialRecordHref(string explorerId, ReportPackLineProvenanceDto line)
+    {
+        var route = UiApiRoutes.WithParam(
+            UiApiRoutes.WorkstationFinancialRecordExplorer,
+            "explorerId",
+            explorerId);
+        var queryParts = new List<string>
+        {
+            $"lineKey={Uri.EscapeDataString(line.LineKey)}",
+            $"sourceId={Uri.EscapeDataString(line.SourceId)}",
+            $"evidenceId={Uri.EscapeDataString(line.EvidenceId)}"
+        };
+        if (!string.IsNullOrWhiteSpace(line.RunId))
+        {
+            queryParts.Add($"runId={Uri.EscapeDataString(line.RunId)}");
+        }
+
+        return UiApiRoutes.WithQuery(route, string.Join("&", queryParts));
+    }
+
+    private static bool ContainsToken(string? value, string token) =>
+        !string.IsNullOrWhiteSpace(value) &&
+        value.Contains(token, StringComparison.OrdinalIgnoreCase);
 
     private static IReadOnlyList<ReportPackEvidenceLinkDto> NormalizeEvidenceLinks(IReadOnlyList<ReportPackEvidenceLinkDto> evidenceLinks) =>
         evidenceLinks

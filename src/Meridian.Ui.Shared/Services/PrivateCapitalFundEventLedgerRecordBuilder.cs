@@ -78,6 +78,10 @@ internal static class PrivateCapitalFundEventLedgerRecordBuilder
             fundProfileId,
             fundEvent.JournalEntryId,
             fundEvent.ApprovalId);
+        var paymentIntentEvidence = PrivateCapitalPaymentIntentEvidenceBuilder.BuildForFundEvent(
+            fundEvent,
+            evidenceLinks,
+            evidenceRoute);
         var isPostingReady = eventLedgerImpacts.Length > 0 && eventLedgerImpacts.All(static item => item.IsPostingReady);
         var isReportReady = eventReportOutputs.Length > 0 && eventReportOutputs.All(static item => item.IsReportReady);
         var isPublished = eventReportOutputs.Any(static item => item.IsPublished);
@@ -99,7 +103,8 @@ internal static class PrivateCapitalFundEventLedgerRecordBuilder
             subledgerEntries,
             eventLedgerImpacts,
             eventReportOutputs,
-            approvalRoute);
+            approvalRoute,
+            paymentIntentEvidence);
 
         return new PrivateCapitalFundEventLedgerRecordDto(
             $"fund-event-ledger-record:{fundEvent.FundEventId}".ToLowerInvariant(),
@@ -149,7 +154,8 @@ internal static class PrivateCapitalFundEventLedgerRecordBuilder
             eventLedgerImpacts,
             eventReportOutputs,
             validationIssues,
-            EvidenceCategories: evidenceCategories);
+            EvidenceCategories: evidenceCategories,
+            PaymentIntentEvidence: paymentIntentEvidence);
     }
 
     private static PrivateCapitalReportOutputDto? SelectPrimaryReportOutput(

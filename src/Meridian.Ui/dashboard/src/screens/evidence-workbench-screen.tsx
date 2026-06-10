@@ -276,6 +276,32 @@ export function EvidenceWorkbenchScreen() {
                           ))}
                         </ul>
                       ) : null}
+                      {vm.exportResultDetail.supportRequestRows.length > 0 ? (
+                        <ul className="mt-3 grid gap-2" aria-label="Evidence vault support requests">
+                          {vm.exportResultDetail.supportRequestRows.map((request) => (
+                            <li
+                              key={request.id}
+                              aria-label={request.ariaLabel}
+                              className="rounded-sm border border-primary/30 bg-background/40 px-2.5 py-2 text-xs"
+                            >
+                              <div className="flex flex-wrap items-center gap-2 font-semibold">
+                                <ListChecks className="h-3.5 w-3.5" aria-hidden="true" />
+                                <span>{request.requestKindLabel}</span>
+                                <Badge variant={badgeVariant[request.severityTone]}>{request.severityLabel}</Badge>
+                                <Badge variant="outline">{request.statusLabel}</Badge>
+                              </div>
+                              <div className="mt-1 break-all font-mono">{request.evidenceLabel}</div>
+                              <p className="mt-1 text-xs leading-5 text-primary/90">{request.summary}</p>
+                              <div className="mt-2 grid gap-1 font-mono text-[0.7rem] sm:grid-cols-2">
+                                <span className="break-all">{request.evidenceKindLabel}</span>
+                                <span className="break-all">{request.sourceLabel}</span>
+                                <span className="break-all">{request.workItemLabel}</span>
+                                <span className="break-all">{request.blockedOutputLabel}</span>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
                     </div>
                   ) : null}
                 </CardContent>

@@ -11,12 +11,14 @@ public sealed class FinancialRecordExplorerReadService
     public const string LedgerExplorerId = "ledger";
     public const string PortfolioExplorerId = "portfolio";
     public const string SecurityInstrumentExplorerId = "security-instrument";
+    public const string ReportLineProvenanceExplorerId = "report-line-provenance";
 
     private static readonly string[] KnownExplorerIds =
     [
         LedgerExplorerId,
         PortfolioExplorerId,
-        SecurityInstrumentExplorerId
+        SecurityInstrumentExplorerId,
+        ReportLineProvenanceExplorerId
     ];
 
     private readonly IServiceProvider _services;
@@ -43,6 +45,7 @@ public sealed class FinancialRecordExplorerReadService
             LedgerExplorerId => await BuildLedgerExplorerAsync(ct).ConfigureAwait(false),
             PortfolioExplorerId => await BuildPortfolioExplorerAsync(ct).ConfigureAwait(false),
             SecurityInstrumentExplorerId => await BuildSecurityInstrumentExplorerAsync(ct).ConfigureAwait(false),
+            ReportLineProvenanceExplorerId => await BuildReportLineProvenanceExplorerAsync(ct).ConfigureAwait(false),
             _ => null
         };
     }
@@ -261,6 +264,86 @@ public sealed class FinancialRecordExplorerReadService
             rows,
             BuildExplorerProofActions(run, UiApiRoutes.WorkstationSecurityMasterSearch),
             ct).ConfigureAwait(false);
+    }
+
+    private async Task<FinancialRecordExplorerDto> BuildReportLineProvenanceExplorerAsync(CancellationToken ct)
+    {
+        var workflowService = _services.GetService<ReportPackWorkflowService>();
+        if (workflowService is null)
+        {
+            return CreateBlockedExplorer(
+                ReportLineProvenanceExplorerId,
+                "Report-Line Provenance Explorer",
+                "Drill from governed report lines into retained source records, reconciliations, journals, approvals, delivery history, and restatement evidence.",
+                "Report pack workflow service is not registered.");
+        }
+
+        var systemViews = BuildSystemViews(
+            ReportLineProvenanceExplorerId,
+            "Report lines",
+            "Governed report lines with retained source provenance.");
+        var savedViews = await LoadSavedViewsAsync(ReportLineProvenanceExplorerId, systemViews, ct).ConfigureAwait(false);
+        var deliveryService = _services.GetService<ReportPackDeliveryService>();
+        return BuildReportLineProvenanceExplorer(
+            workflowService.ListRecords(200),
+            deliveryService?.ListAttempts(500),
+            savedViews);
+    }
+
+    public static FinancialRecordExplorerDto BuildReportLineProvenanceExplorer(
+        IReadOnlyList<ReportPackWorkflowRecordDto> workflowRecords,
+        IReadOnlyList<ReportPackDeliveryAttemptDto>? deliveryAttempts = null,
+        IReadOnlyList<FinancialRecordExplorerSavedViewDto>? savedViews = null)
+    {
+        ArgumentNullException.ThrowIfNull(workflowRecords);
+
+        var records = workflowRecords
+            .Where(static record => record.LineProvenance is { Count: > 0 })
+            .OrderByDescending(static record => record.UpdatedAt)
+            .ThenBy(static record => record.ReportId)
+            .ToArray();
+        var attempts = deliveryAttempts ?? [];
+        var rows = records
+            .SelectMany(record => record.LineProvenance!
+                .Select((line, index) => BuildReportLineProvenanceRow(record, line, attempts, index)))
+            .ToArray();
+        var activeSavedViews = savedViews is { Count: > 0 }
+            ? savedViews
+            : BuildSystemViews(
+                ReportLineProvenanceExplorerId,
+                "Report lines",
+                "Governed report lines with retained source provenance.");
+        var sourceState = rows.Length == 0
+            ? "No governed report-line provenance is available from the report-pack workflow service."
+            : $"{rows.Length} governed report line(s) across {records.Length} report pack(s) retain source, reconciliation, journal, approval, delivery, and restatement drill-through evidence.";
+
+        return new FinancialRecordExplorerDto(
+            ReportLineProvenanceExplorerId,
+            "Report-Line Provenance Explorer",
+            "Drill from governed report lines into retained source records, reconciliations, journals, approvals, delivery history, and restatement evidence.",
+            sourceState,
+            IsBlocked: false,
+            BlockedReason: string.Empty,
+            ScopeItems: BuildReportLineProvenanceScope(records, attempts),
+            SavedViews: activeSavedViews,
+            SummaryItems: BuildReportLineProvenanceSummary(records, attempts, rows.Length),
+            Filters: BuildReportLineProvenanceFilters(records),
+            Columns:
+            [
+                new("lineKey", "Report Line", Width: 200),
+                new("report", "Report Pack", Width: 190),
+                new("value", "Value", "money", 110, IsRightAligned: true),
+                new("source", "Source", Width: 170),
+                new("reconciliation", "Reconciliation", Width: 140),
+                new("journal", "Journal", Width: 120),
+                new("approval", "Approval", Width: 120),
+                new("delivery", "Delivery", Width: 140),
+                new("restatement", "Restatement", Width: 140)
+            ],
+            Rows: rows,
+            SelectedRecord: rows.FirstOrDefault()?.Detail,
+            ProofActions: BuildReportLineProvenanceProofActions(rows.Length),
+            RecordGraph: BuildGraph(rows));
     }
 
     private async Task<StrategyRunDetail?> TryLoadLatestRunDetailAsync(
@@ -647,6 +730,191 @@ public sealed class FinancialRecordExplorerReadService
             selected);
     }
 
+    private static IReadOnlyList<FinancialRecordExplorerScopeItemDto> BuildReportLineProvenanceScope(
+        IReadOnlyList<ReportPackWorkflowRecordDto> records,
+        IReadOnlyList<ReportPackDeliveryAttemptDto> deliveryAttempts)
+    {
+        if (records.Count == 0)
+        {
+            return
+            [
+                new("Source", "No report-line provenance", FinancialRecordExplorerTone.Warning),
+                new("Explorer", ReportLineProvenanceExplorerId, FinancialRecordExplorerTone.Info)
+            ];
+        }
+
+        var latest = records
+            .OrderByDescending(static record => record.UpdatedAt)
+            .First();
+        var reportIds = records.Select(static record => record.ReportId).ToHashSet();
+        var scopedDeliveryCount = deliveryAttempts.Count(attempt => reportIds.Contains(attempt.ReportId));
+        return
+        [
+            new("Report packs", records.Count.ToString(CultureInfo.InvariantCulture), FinancialRecordExplorerTone.Info),
+            new("Latest period", latest.Period),
+            new("Fund", latest.FundProfileId),
+            new("Delivery attempts", scopedDeliveryCount.ToString(CultureInfo.InvariantCulture), scopedDeliveryCount > 0 ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning)
+        ];
+    }
+
+    private static IReadOnlyList<FinancialRecordExplorerSummaryItemDto> BuildReportLineProvenanceSummary(
+        IReadOnlyList<ReportPackWorkflowRecordDto> records,
+        IReadOnlyList<ReportPackDeliveryAttemptDto> deliveryAttempts,
+        int rowCount)
+    {
+        var lines = records.SelectMany(static record => record.LineProvenance ?? []).ToArray();
+        var reportIds = records.Select(static record => record.ReportId).ToHashSet();
+        var scopedDeliveries = deliveryAttempts.Where(attempt => reportIds.Contains(attempt.ReportId)).ToArray();
+        var restatedLineCount = records
+            .SelectMany(static record => (record.Restatement?.ChangedLines ?? [])
+                .Select(line => $"{record.ReportId:D}:{line.LineKey}"))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Count();
+        var approvalCount = DistinctNonEmptyCount(lines.Select(static line => line.ApprovalId))
+            + records.Sum(static record => record.AuditTrail.Count(static audit => audit.ToState == ReportPackWorkflowStateDto.Approved));
+
+        return
+        [
+            new("Report lines", rowCount.ToString(CultureInfo.InvariantCulture), "Governed report lines with retained provenance.", rowCount > 0 ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning),
+            new("Source records", DistinctNonEmptyCount(lines.Select(static line => line.SourceId)).ToString(CultureInfo.InvariantCulture), "Distinct retained source records linked to report lines."),
+            new("Reconciliations", lines.Count(static line => HasText(line.ReconciliationRunId) || HasText(line.ReconciliationCaseId)).ToString(CultureInfo.InvariantCulture), "Lines linked to reconciliation runs or break cases."),
+            new("Journals", lines.Count(static line => HasText(line.LedgerEntryId) || HasText(line.RunId)).ToString(CultureInfo.InvariantCulture), "Lines with ledger or journal drill-through evidence."),
+            new("Approvals", approvalCount.ToString(CultureInfo.InvariantCulture), "Line-level and workflow approval evidence retained by the report-pack workflow."),
+            new("Deliveries", scopedDeliveries.Length.ToString(CultureInfo.InvariantCulture), "Retained report-pack delivery attempts and packages.", scopedDeliveries.Length > 0 ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning),
+            new("Restatements", restatedLineCount.ToString(CultureInfo.InvariantCulture), "Changed report lines with restatement evidence.", restatedLineCount > 0 ? FinancialRecordExplorerTone.Warning : FinancialRecordExplorerTone.Default)
+        ];
+    }
+
+    private static IReadOnlyList<FinancialRecordExplorerFilterDto> BuildReportLineProvenanceFilters(
+        IReadOnlyList<ReportPackWorkflowRecordDto> records)
+    {
+        var filters = new List<FinancialRecordExplorerFilterDto>();
+        filters.AddRange(records
+            .Select(static record => record.State)
+            .Distinct()
+            .OrderBy(static state => state.ToString(), StringComparer.OrdinalIgnoreCase)
+            .Select(state => new FinancialRecordExplorerFilterDto(
+                $"state-{Slugify(state.ToString())}",
+                "Workflow state",
+                state.ToString(),
+                Tone: ToneFromReportPackState(state))));
+        filters.AddRange(records
+            .Select(static record => record.Period)
+            .Where(HasText)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderByDescending(static period => period, StringComparer.OrdinalIgnoreCase)
+            .Take(8)
+            .Select(static period => new FinancialRecordExplorerFilterDto($"period-{Slugify(period)}", "Period", period)));
+        filters.AddRange(records
+            .Select(static record => record.FundProfileId)
+            .Where(HasText)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static fund => fund, StringComparer.OrdinalIgnoreCase)
+            .Take(8)
+            .Select(static fund => new FinancialRecordExplorerFilterDto($"fund-{Slugify(fund)}", "Fund", fund)));
+
+        return filters.ToArray();
+    }
+
+    private static FinancialRecordExplorerRowDto BuildReportLineProvenanceRow(
+        ReportPackWorkflowRecordDto record,
+        ReportPackLineProvenanceDto line,
+        IReadOnlyList<ReportPackDeliveryAttemptDto> deliveryAttempts,
+        int index)
+    {
+        var reportHref = UiApiRoutes.WithParam(
+            UiApiRoutes.ReportingPackWorkflowDeliveries,
+            "reportId",
+            record.ReportId.ToString("D"));
+        var sourceHref = BuildReportLineSourceHref(line);
+        var reconciliationHref = BuildReportLineReconciliationHref(line);
+        var journalHref = BuildReportLineJournalHref(line);
+        var approvalHref = BuildReportLineApprovalHref(line);
+        var deliveries = deliveryAttempts
+            .Where(attempt => attempt.ReportId == record.ReportId)
+            .OrderByDescending(static attempt => attempt.AttemptedAtUtc)
+            .ThenByDescending(static attempt => attempt.AttemptNumber)
+            .ToArray();
+        var latestDelivery = deliveries.FirstOrDefault();
+        var deliveryGraphHref = latestDelivery is null
+            ? string.Empty
+            : BuildReportLineDeliveryGraphHref(record.ReportId, latestDelivery.AttemptId);
+        var changedLines = record.Restatement?.ChangedLines
+            .Where(changedLine => IsSameLineKey(changedLine.LineKey, line.LineKey))
+            .ToArray() ?? [];
+        var restatementHref = BuildReportLineRestatementHref(record, changedLines);
+        var recordId = $"report-line:{record.ReportId:N}:{Slugify(line.LineKey)}:{index}";
+        var reportLabel = $"{record.Period} - {record.TemplateId.Name} v{record.TemplateId.Version}";
+        var deliveryLabel = latestDelivery is null
+            ? "Not delivered"
+            : $"{latestDelivery.State} #{latestDelivery.AttemptNumber}";
+        var restatementLabel = changedLines.Length == 0
+            ? "No change"
+            : $"{changedLines.Length} changed line{Plural(changedLines.Length)}";
+        var status = changedLines.Length > 0
+            ? "Restated"
+            : latestDelivery?.State.ToString() ?? record.State.ToString();
+        var tone = changedLines.Length > 0
+            ? FinancialRecordExplorerTone.Warning
+            : latestDelivery?.State == ReportPackDeliveryStateDto.Delivered
+                ? FinancialRecordExplorerTone.Success
+                : ToneFromReportPackState(record.State);
+
+        var detail = new FinancialRecordExplorerSelectedRecordDto(
+            recordId,
+            "Report line",
+            line.LineKey,
+            reportLabel,
+            "Governed report line with retained source, reconciliation, journal, approval, delivery, and restatement drill-through evidence.",
+            tone,
+            Fields:
+            [
+                new("Report value", EmptyFallback(line.ReportValue, "Not captured")),
+                new("Source record", $"{line.SourceKind}:{line.SourceId}", sourceHref),
+                new("Evidence id", line.EvidenceId),
+                new("Reconciliation", BuildReportLineReconciliationLabel(line), reconciliationHref, HasText(reconciliationHref) ? ToneFromReconciliationOutcome(line.ReconciliationOutcome) : FinancialRecordExplorerTone.Warning),
+                new("Journal", EmptyFallback(line.LedgerEntryId, "No journal link"), journalHref, HasText(journalHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
+                new("Approval", EmptyFallback(line.ApprovalId, "No line approval"), approvalHref, HasText(approvalHref) ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning),
+                new("Delivery history", deliveryLabel, latestDelivery?.DeliveryReference ?? "No retained delivery attempt", latestDelivery is null ? FinancialRecordExplorerTone.Warning : ToneFromDeliveryState(latestDelivery.State)),
+                new("Restatement", restatementLabel, record.Restatement?.ReasonCode ?? "No restatement on this line", changedLines.Length > 0 ? FinancialRecordExplorerTone.Warning : FinancialRecordExplorerTone.Default),
+                new("Updated", record.UpdatedAt.ToString("u", CultureInfo.InvariantCulture))
+            ],
+            ProofActions: BuildReportLineProofActions(
+                sourceHref,
+                reconciliationHref,
+                journalHref,
+                approvalHref,
+                reportHref,
+                deliveryGraphHref,
+                restatementHref,
+                deliveries.Length,
+                changedLines.Length),
+            UsedIn: BuildReportLineUsedIn(record, reportHref, deliveryGraphHref, restatementHref, latestDelivery, changedLines),
+            Impacts: BuildReportLineImpacts(line, sourceHref, reconciliationHref, journalHref, approvalHref, reportHref, deliveryGraphHref, restatementHref, changedLines.Length),
+            FullRecordHref: sourceHref);
+
+        return new FinancialRecordExplorerRowDto(
+            recordId,
+            "report-line",
+            line.LineKey,
+            $"{line.SourceKind}:{line.SourceId}",
+            status,
+            tone,
+            Cells:
+            [
+                new("lineKey", line.LineKey, LinkHref: sourceHref),
+                new("report", reportLabel, LinkHref: reportHref),
+                new("value", EmptyFallback(line.ReportValue, "-")),
+                new("source", $"{line.SourceKind}:{line.SourceId}", LinkHref: sourceHref),
+                new("reconciliation", BuildReportLineReconciliationLabel(line), LinkHref: reconciliationHref, Tone: HasText(reconciliationHref) ? ToneFromReconciliationOutcome(line.ReconciliationOutcome) : FinancialRecordExplorerTone.Warning),
+                new("journal", EmptyFallback(line.LedgerEntryId, "-"), LinkHref: journalHref, Tone: HasText(journalHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
+                new("approval", EmptyFallback(line.ApprovalId, "-"), LinkHref: approvalHref, Tone: HasText(approvalHref) ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning),
+                new("delivery", deliveryLabel, LinkHref: reportHref, Tone: latestDelivery is null ? FinancialRecordExplorerTone.Warning : ToneFromDeliveryState(latestDelivery.State)),
+                new("restatement", restatementLabel, LinkHref: restatementHref, Tone: changedLines.Length > 0 ? FinancialRecordExplorerTone.Warning : FinancialRecordExplorerTone.Default)
+            ],
+            detail);
+    }
+
     private static IReadOnlyList<FinancialRecordExplorerRelationshipDto> BuildSecurityUsedIn(
         StrategyRunDetail detail,
         WorkstationSecurityReference reference,
@@ -670,6 +938,323 @@ public sealed class FinancialRecordExplorerReadService
 
         return relationships;
     }
+
+    private static IReadOnlyList<FinancialRecordExplorerProofActionDto> BuildReportLineProvenanceProofActions(int rowCount)
+        =>
+        [
+            new(
+                "open-report-pack-workflows",
+                "Open report-pack workflows",
+                "Open governed report-pack workflow records.",
+                UiApiRoutes.ReportingPackWorkflows,
+                rowCount > 0,
+                rowCount > 0 ? string.Empty : "No report-line provenance is available.",
+                rowCount > 0 ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
+            new(
+                "open-provenance-evidence-graph",
+                "Open provenance evidence graph",
+                "Open the retained evidence graph for report-line provenance.",
+                BuildEvidenceSubjectRoute(
+                    UiApiRoutes.WorkstationEvidenceSubjectGraph,
+                    "report-line-provenance",
+                    "all"),
+                rowCount > 0,
+                rowCount > 0 ? string.Empty : "No report-line provenance is available.",
+                rowCount > 0 ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning)
+        ];
+
+    private static IReadOnlyList<FinancialRecordExplorerProofActionDto> BuildReportLineProofActions(
+        string sourceHref,
+        string reconciliationHref,
+        string journalHref,
+        string approvalHref,
+        string deliveryHistoryHref,
+        string deliveryGraphHref,
+        string restatementHref,
+        int deliveryCount,
+        int restatementLineCount)
+        =>
+        [
+            new(
+                "open-source-record",
+                "Open source record",
+                "Open the retained source record behind this report line.",
+                sourceHref,
+                HasText(sourceHref),
+                HasText(sourceHref) ? string.Empty : "No source record route was retained.",
+                HasText(sourceHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
+            new(
+                "open-reconciliation",
+                "Open reconciliation",
+                "Open the reconciliation run or break case linked to this report line.",
+                reconciliationHref,
+                HasText(reconciliationHref),
+                HasText(reconciliationHref) ? string.Empty : "No reconciliation run or break case was retained.",
+                HasText(reconciliationHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
+            new(
+                "open-journal",
+                "Open journal",
+                "Open the ledger journal or manual journal workbench evidence for this report line.",
+                journalHref,
+                HasText(journalHref),
+                HasText(journalHref) ? string.Empty : "No journal or ledger entry was retained.",
+                HasText(journalHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
+            new(
+                "open-approval-evidence",
+                "Open approval evidence",
+                "Open retained approval evidence for this report line.",
+                approvalHref,
+                HasText(approvalHref),
+                HasText(approvalHref) ? string.Empty : "No approval reference was retained on this line.",
+                HasText(approvalHref) ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning),
+            new(
+                "open-delivery-history",
+                "Open delivery history",
+                "Open retained report-pack delivery history for this line's report.",
+                deliveryHistoryHref,
+                deliveryCount > 0,
+                deliveryCount > 0 ? string.Empty : "No retained delivery attempts exist for this report pack.",
+                deliveryCount > 0 ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning),
+            new(
+                "open-delivery-evidence-graph",
+                "Open delivery evidence graph",
+                "Open the evidence graph for the latest retained report-pack delivery attempt.",
+                deliveryGraphHref,
+                HasText(deliveryGraphHref),
+                HasText(deliveryGraphHref) ? string.Empty : "No retained delivery attempt has an evidence graph yet.",
+                HasText(deliveryGraphHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning),
+            new(
+                "open-restatement-evidence",
+                "Open restatement evidence",
+                "Open retained evidence for restatement changes on this report line.",
+                restatementHref,
+                restatementLineCount > 0,
+                restatementLineCount > 0 ? string.Empty : "This report line has not been restated.",
+                restatementLineCount > 0 ? FinancialRecordExplorerTone.Warning : FinancialRecordExplorerTone.Default)
+        ];
+
+    private static IReadOnlyList<FinancialRecordExplorerRelationshipDto> BuildReportLineUsedIn(
+        ReportPackWorkflowRecordDto record,
+        string reportHref,
+        string deliveryGraphHref,
+        string restatementHref,
+        ReportPackDeliveryAttemptDto? latestDelivery,
+        IReadOnlyList<ReportPackChangedLineDto> changedLines)
+    {
+        var relationships = new List<FinancialRecordExplorerRelationshipDto>
+        {
+            new(
+                $"report-pack:{record.ReportId:D}",
+                record.Publication is null ? "Report pack workflow" : "Published report pack",
+                $"{record.TemplateId.Name} v{record.TemplateId.Version} for {record.Period} is {record.State}.",
+                reportHref,
+                ToneFromReportPackState(record.State))
+        };
+
+        if (latestDelivery is not null)
+        {
+            relationships.Add(new(
+                $"report-delivery:{latestDelivery.AttemptId:D}",
+                "Delivery history",
+                $"{latestDelivery.Recipient} delivery attempt #{latestDelivery.AttemptNumber} is {latestDelivery.State}.",
+                reportHref,
+                ToneFromDeliveryState(latestDelivery.State)));
+            relationships.Add(new(
+                $"delivery-graph:{latestDelivery.AttemptId:D}",
+                "Delivery evidence graph",
+                "Latest retained report-pack delivery evidence packet.",
+                deliveryGraphHref,
+                FinancialRecordExplorerTone.Info));
+        }
+
+        if (changedLines.Count > 0)
+        {
+            relationships.Add(new(
+                $"report-restatement:{record.ReportId:D}",
+                "Restatement record",
+                $"{record.Restatement?.ReasonCode ?? "Restatement"} changed this report line.",
+                restatementHref,
+                FinancialRecordExplorerTone.Warning));
+        }
+
+        return relationships;
+    }
+
+    private static IReadOnlyList<FinancialRecordExplorerRelationshipDto> BuildReportLineImpacts(
+        ReportPackLineProvenanceDto line,
+        string sourceHref,
+        string reconciliationHref,
+        string journalHref,
+        string approvalHref,
+        string deliveryHistoryHref,
+        string deliveryGraphHref,
+        string restatementHref,
+        int restatementLineCount)
+    {
+        var relationships = new List<FinancialRecordExplorerRelationshipDto>
+        {
+            new("source-record", "Source record", $"{line.SourceKind}:{line.SourceId} supports the report line value.", sourceHref, FinancialRecordExplorerTone.Info)
+        };
+
+        relationships.Add(new(
+            "reconciliation",
+            "Reconciliation",
+            HasText(reconciliationHref)
+                ? $"Reconciliation outcome is {EmptyFallback(line.ReconciliationOutcome, "retained")}."
+                : "No reconciliation run or break case was retained.",
+            reconciliationHref,
+            HasText(reconciliationHref) ? ToneFromReconciliationOutcome(line.ReconciliationOutcome) : FinancialRecordExplorerTone.Warning));
+        relationships.Add(new(
+            "journal",
+            "Journal",
+            HasText(journalHref)
+                ? $"Ledger entry {EmptyFallback(line.LedgerEntryId, line.RunId ?? "retained")} supports this line."
+                : "No ledger journal route was retained.",
+            journalHref,
+            HasText(journalHref) ? FinancialRecordExplorerTone.Info : FinancialRecordExplorerTone.Warning));
+        relationships.Add(new(
+            "approval",
+            "Approval",
+            HasText(approvalHref)
+                ? $"Approval {line.ApprovalId} is retained as line evidence."
+                : "No line approval reference was retained.",
+            approvalHref,
+            HasText(approvalHref) ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning));
+        relationships.Add(new(
+            "delivery-history",
+            "Delivery history",
+            "Report-pack deliveries carry this line's publication and evidence packet history.",
+            deliveryHistoryHref,
+            HasText(deliveryGraphHref) ? FinancialRecordExplorerTone.Success : FinancialRecordExplorerTone.Warning));
+        relationships.Add(new(
+            "restatement-evidence",
+            "Restatement evidence",
+            restatementLineCount > 0
+                ? "Restatement evidence exists for this report line."
+                : "No restatement evidence is retained for this report line.",
+            restatementHref,
+            restatementLineCount > 0 ? FinancialRecordExplorerTone.Warning : FinancialRecordExplorerTone.Default));
+
+        return relationships;
+    }
+
+    private static string BuildReportLineSourceHref(ReportPackLineProvenanceDto line)
+    {
+        if (HasText(line.FinancialRecordHref))
+        {
+            return line.FinancialRecordHref!.Trim();
+        }
+
+        if (HasText(line.FinancialRecordExplorerId))
+        {
+            var route = UiApiRoutes.WithParam(
+                UiApiRoutes.WorkstationFinancialRecordExplorer,
+                "explorerId",
+                line.FinancialRecordExplorerId!);
+            var query = $"lineKey={Uri.EscapeDataString(line.LineKey)}&sourceId={Uri.EscapeDataString(line.SourceId)}&evidenceId={Uri.EscapeDataString(line.EvidenceId)}";
+            return UiApiRoutes.WithQuery(route, query);
+        }
+
+        if (HasText(line.RunId) && HasText(line.LedgerEntryId))
+        {
+            return UiApiRoutes.WithQuery(
+                UiApiRoutes.WithParam(UiApiRoutes.RunsLedgerJournal, "runId", line.RunId!),
+                $"ledgerEntryId={Uri.EscapeDataString(line.LedgerEntryId!)}");
+        }
+
+        if (HasText(line.RunId))
+        {
+            return UiApiRoutes.WithParam(UiApiRoutes.RunsLedger, "runId", line.RunId!);
+        }
+
+        return BuildEvidenceSubjectRoute(
+            UiApiRoutes.WorkstationEvidenceSubjectPacket,
+            "report-line",
+            $"{line.SourceKind}:{line.SourceId}:{line.LineKey}");
+    }
+
+    private static string BuildReportLineReconciliationHref(ReportPackLineProvenanceDto line)
+    {
+        if (HasText(line.ReconciliationRunId))
+        {
+            return UiApiRoutes.WithParam(
+                UiApiRoutes.ReconciliationRunById,
+                "reconciliationRunId",
+                line.ReconciliationRunId!);
+        }
+
+        return HasText(line.ReconciliationCaseId)
+            ? UiApiRoutes.WithParam(
+                UiApiRoutes.ReconciliationBreakQueueById,
+                "breakId",
+                line.ReconciliationCaseId!)
+            : string.Empty;
+    }
+
+    private static string BuildReportLineJournalHref(ReportPackLineProvenanceDto line)
+    {
+        if (HasText(line.RunId))
+        {
+            var route = UiApiRoutes.WithParam(UiApiRoutes.RunsLedgerJournal, "runId", line.RunId!);
+            return HasText(line.LedgerEntryId)
+                ? UiApiRoutes.WithQuery(route, $"ledgerEntryId={Uri.EscapeDataString(line.LedgerEntryId!)}")
+                : route;
+        }
+
+        return HasText(line.LedgerEntryId)
+            ? UiApiRoutes.WithQuery(
+                UiApiRoutes.LedgerManualJournalEntryWorkbench,
+                $"ledgerEntryId={Uri.EscapeDataString(line.LedgerEntryId!)}")
+            : string.Empty;
+    }
+
+    private static string BuildReportLineApprovalHref(ReportPackLineProvenanceDto line)
+        => HasText(line.ApprovalId)
+            ? BuildEvidenceSubjectRoute(
+                UiApiRoutes.WorkstationEvidenceSubjectPacket,
+                "approval",
+                line.ApprovalId!)
+            : string.Empty;
+
+    private static string BuildReportLineDeliveryGraphHref(Guid reportId, Guid attemptId)
+        => BuildEvidenceSubjectRoute(
+            UiApiRoutes.WorkstationEvidenceSubjectGraph,
+            "report-pack-delivery",
+            $"{reportId:D}:{attemptId:D}");
+
+    private static string BuildReportLineRestatementHref(
+        ReportPackWorkflowRecordDto record,
+        IReadOnlyList<ReportPackChangedLineDto> changedLines)
+    {
+        var route = changedLines
+            .SelectMany(static line => line.EvidenceLinks ?? [])
+            .Select(static link => link.Route)
+            .FirstOrDefault(HasText);
+        if (HasText(route))
+        {
+            return route!.Trim();
+        }
+
+        return changedLines.Count > 0
+            ? BuildEvidenceSubjectRoute(
+                UiApiRoutes.WorkstationEvidenceSubjectPacket,
+                "report-pack-restatement",
+                $"{record.ReportId:D}:{changedLines[0].LineKey}")
+            : string.Empty;
+    }
+
+    private static string BuildEvidenceSubjectRoute(string route, string subjectKind, string subjectId)
+        => UiApiRoutes.WithParam(
+            UiApiRoutes.WithParam(route, "subjectKind", subjectKind),
+            "subjectId",
+            subjectId);
+
+    private static string BuildReportLineReconciliationLabel(ReportPackLineProvenanceDto line)
+        => HasText(line.ReconciliationOutcome)
+            ? line.ReconciliationOutcome!.Trim()
+            : HasText(line.ReconciliationRunId)
+                ? line.ReconciliationRunId!.Trim()
+                : EmptyFallback(line.ReconciliationCaseId, "No reconciliation");
 
     private static IReadOnlyList<FinancialRecordExplorerProofActionDto> BuildExplorerProofActions(
         StrategyRunSummary run,
@@ -746,6 +1331,25 @@ public sealed class FinancialRecordExplorerReadService
             && string.Equals(left.PrimaryIdentifier, right.PrimaryIdentifier, StringComparison.OrdinalIgnoreCase);
     }
 
+    private static int DistinctNonEmptyCount(IEnumerable<string?> values)
+        => values
+            .Where(HasText)
+            .Select(static value => value!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Count();
+
+    private static bool IsSameLineKey(string? left, string? right)
+        => HasText(left) && HasText(right) && string.Equals(left!.Trim(), right!.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private static bool HasText(string? value)
+        => !string.IsNullOrWhiteSpace(value);
+
+    private static string EmptyFallback(string? value, string fallback)
+        => string.IsNullOrWhiteSpace(value) ? fallback : value.Trim();
+
+    private static string Plural(int count)
+        => count == 1 ? string.Empty : "s";
+
     private static FinancialRecordExplorerTone ToneFromRunStatus(StrategyRunStatus status)
         => status switch
         {
@@ -768,6 +1372,40 @@ public sealed class FinancialRecordExplorerReadService
             WorkstationSecurityCoverageStatus.Missing or WorkstationSecurityCoverageStatus.Unavailable => FinancialRecordExplorerTone.Danger,
             _ => FinancialRecordExplorerTone.Warning
         };
+
+    private static FinancialRecordExplorerTone ToneFromReportPackState(ReportPackWorkflowStateDto state)
+        => state switch
+        {
+            ReportPackWorkflowStateDto.Published or ReportPackWorkflowStateDto.Archived => FinancialRecordExplorerTone.Success,
+            ReportPackWorkflowStateDto.Restated => FinancialRecordExplorerTone.Warning,
+            ReportPackWorkflowStateDto.Rejected => FinancialRecordExplorerTone.Danger,
+            ReportPackWorkflowStateDto.Approved or ReportPackWorkflowStateDto.PendingApproval => FinancialRecordExplorerTone.Info,
+            ReportPackWorkflowStateDto.InReview or ReportPackWorkflowStateDto.Validated => FinancialRecordExplorerTone.Warning,
+            _ => FinancialRecordExplorerTone.Default
+        };
+
+    private static FinancialRecordExplorerTone ToneFromDeliveryState(ReportPackDeliveryStateDto state)
+        => state switch
+        {
+            ReportPackDeliveryStateDto.Delivered => FinancialRecordExplorerTone.Success,
+            ReportPackDeliveryStateDto.Failed => FinancialRecordExplorerTone.Danger,
+            _ => FinancialRecordExplorerTone.Warning
+        };
+
+    private static FinancialRecordExplorerTone ToneFromReconciliationOutcome(string? outcome)
+    {
+        if (!HasText(outcome))
+        {
+            return FinancialRecordExplorerTone.Warning;
+        }
+
+        var value = outcome!.Trim();
+        return value.Contains("match", StringComparison.OrdinalIgnoreCase) ||
+               value.Contains("cleared", StringComparison.OrdinalIgnoreCase) ||
+               value.Contains("resolved", StringComparison.OrdinalIgnoreCase)
+            ? FinancialRecordExplorerTone.Success
+            : FinancialRecordExplorerTone.Warning;
+    }
 
     private static string FormatCurrency(decimal value)
         => value.ToString("C2", CultureInfo.CurrentCulture);

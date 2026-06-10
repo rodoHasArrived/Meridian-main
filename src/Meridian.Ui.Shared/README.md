@@ -57,11 +57,12 @@ changes, start with focused `MapWorkstationEndpoints_OperationsContinuity` /
 `MapWorkstationEndpoints_Reconciliation` filters before broad workstation endpoint validation.
 Financial Record Explorer endpoints are registered from `WorkstationEndpoints.FinancialRecordExplorers.cs`
 under `/api/workstation/financial-record-explorers/{explorerId}` for `ledger`, `portfolio`, and
-`security-instrument`. `FinancialRecordExplorerReadService` composes source-backed strategy run
-ledger, portfolio, Security Master, evidence, reconciliation, reporting, and audit projections into
-the shared DTO, while `FileFinancialRecordExplorerSavedViewStore` persists operator-created views
-under the workstation data root. Missing projections return empty or blocked DTO state with
-disabled actions and reasons, not synthetic operational balances.
+`security-instrument`, and `report-line-provenance`. `FinancialRecordExplorerReadService` composes
+source-backed strategy run ledger, portfolio, Security Master, report-pack line provenance,
+delivery history, evidence, reconciliation, reporting, and audit projections into the shared DTO,
+while `FileFinancialRecordExplorerSavedViewStore` persists operator-created views under the
+workstation data root. Missing projections return empty or blocked DTO state with disabled actions
+and reasons, not synthetic operational balances.
 Reference-data endpoint groups for bonds, options, equity, futures, FX spot, crypto, deposits,
 certificates of deposit, commodities, swaps, and money-market funds adapt `Meridian.Instruments` services
 to shared browser/WPF routes. Keep those endpoints as permission and HTTP adapters; instrument
@@ -74,6 +75,9 @@ Accounting and Reporting workstation payloads forward `fundProfileId` and `ledge
 into the shared manual-journal workbench when that service is registered, allowing the browser and
 desktop reporting surfaces to render the same private-capital fund-event ledger, capital-account
 subledger, evidence, approval, and report-output projection without a UI-local read model.
+Shared reporting run projections also carry the manifest or workflow as-of date with run id,
+template, status, trigger, retry attempts, section counts, linked lineage, artifacts, and audit
+actions, keeping report-run audit/version cards source-backed across browser and desktop clients.
 Data upload intake endpoints are registered under `/api/workstation/data/uploads/*`. The template
 route serves the contract-owned catalog, and the preview route accepts bounded CSV uploads,
 retains the source file under the resolved workstation upload root, and returns schema issues plus
@@ -151,12 +155,13 @@ Published workflow records can also match through retained publication/restateme
 evidence pointers to the fund-event id, journal id, or ledger-entry id, so an event-level evidence
 packet can keep the report output attached even before line provenance is populated.
 `/api/ledger/private-capital/activity` can also be filtered by `fundEventId`, `capitalAccountId`,
-and `investorId`; the endpoint returns a recomputed slice so report-package drill-throughs retain
-matching events, subledger rows, ledger impacts, report outputs, fund-event ledger records, counts,
-and net activity without leaking unrelated capital-account rows. Account and investor filters retain
-a posted fund event when any child capital-account subledger row, GL impact, or report-output row
-matches, then derive filtered account totals and net activity from the retained subledger rows before
-falling back to event-level rows. Each fund-event ledger record is
+`investorId`, and `paymentIntentId`; the endpoint returns a recomputed slice so report-package and
+payment-intent drill-throughs retain matching events, subledger rows, ledger impacts, report
+outputs, fund-event ledger records, payment-intent workflows, counts, and net activity without
+leaking unrelated capital-account rows. Account, investor, and payment-intent filters retain a
+posted fund event when any child capital-account subledger row, GL impact, report-output row, or
+payment-intent workflow matches, then derive filtered account totals and net activity from the
+retained subledger rows before falling back to event-level rows. Each fund-event ledger record is
 rebuilt server-side through `PrivateCapitalFundEventLedgerRecordBuilder` from the filtered
 projection rows so browser and desktop clients receive a
 single event-level view containing event state, subledger impact, GL impact, evidence, approval,
@@ -171,6 +176,11 @@ records also include classified evidence categories for source support, capital-
 support, ledger impact, approval state, and report output readiness, giving browser and desktop
 clients a single server-owned evidence-coverage model instead of a flat link list that every client
 must reinterpret.
+Payment-intent evidence is also server-owned: fund-event and capital-account projections surface
+payment intent readiness, retained cash evidence, settlement references, and a dedicated
+`payment-intent` evidence packet with requester, approval-chain, expected-cash, bank/cash evidence,
+reconciliation, audit-history, and execution-deferred nodes. This layer documents cash-movement
+intent and proof; live treasury payment execution remains outside the shared UI service boundary.
 Projections expose the event-level record collection as an empty list when
 no fund events qualify, keeping browser and desktop consumers on the same non-null contract.
 Posted private-capital fund events inherit the owning ledger book's base currency through
@@ -201,6 +211,11 @@ or currency subledgers match until the caller also provides `investorId` and `cu
 `reportOutputId`, `reportPackId`, or `fundEventId` with optional capital-account and investor
 filters, returning 404 when no report output matches and 400 when the selector is missing or still
 matches multiple outputs.
+`CapitalAccountWorkbenchService` composes the shared private-capital activity projection with
+retained report-pack workflow records to produce the narrow `/api/ledger/private-capital/capital-account-workbench`
+surface. It exposes investor-level capital-account evidence, allocation-rule coverage,
+statement publication and restatement lineage, and audit-support drill-through rows without
+creating a browser-only or WPF-only read model.
 This private-capital slice is intentionally limited to the unified fund-event ledger,
 capital-account subledger, retained evidence, approval, governed report-output, and readiness
 reason/action projection. Do not expand UI Shared into cap-table administration, broad LP portal,
@@ -405,6 +420,9 @@ rather than accepting delivery-time restyling.
 distribution policies, and delivery attempts so browser and desktop clients can show which scheduled
 packs will deliver by email link, secure portal, evidence vault, or internal route without
 duplicating delivery-policy logic.
+`FundOperationsWorkspaceReadService` emits live portfolio reporting view readiness blockers for
+blocked or stale source snapshots, so clients render the same fail-closed explanation when tick-linked
+reporting cannot prove current source evidence.
 `ReportPackDeliveryService` persists delivery and delivery-failure attempts under the resolved
 workstation data root at `workstation/reporting/report-pack-deliveries.json`; published and
 restated workflow records can therefore show real delivery history, retry attempts, recipient
@@ -413,8 +431,11 @@ also receive deterministic package metadata with default PDF/XLSX/CSV artifacts,
 paths, artifact SHA-256 checksums, artifact version stamps, publication evidence hashes, integrity
 summaries, publication manifest fields, publication evidence links, retained line provenance,
 publication-approved branding metadata, stakeholder delivery evidence packets, secure email-link or
-portal URLs, and delivery-mode inference for portal, vault, and internal-route channels; callers can
-override the mode and requested formats in `ReportPackDeliveryRequestDto`.
+portal URLs, service-owned delivery access/channel/download summaries, and delivery-mode inference
+for portal, vault, and internal-route channels; callers can override the mode and requested formats
+in `ReportPackDeliveryRequestDto`. Token-gated package and artifact retrieval also enforce the
+package `AccessExpiresAtUtc` timestamp when present, keeping email-link and secure-portal delivery
+windows shared-service owned.
 Generated package downloads rebuild CSV, XLSX, HTML, and PDF artifacts from that retained package
 metadata, so recipients receive report-line provenance, publication evidence, selected branding, and
 restatement lineage in the downloaded files instead of package identifiers only. The shared delivery
@@ -469,6 +490,9 @@ source-session, ledger-entry, reconciliation-case, or reconciliation-run pointer
 line must carry ledger, provider-event, Security Master definition, reconciliation-outcome, and
 approval references before publication. That keeps value-level report lineage enforceable in the
 shared service instead of client code.
+The same normalization assigns each retained line a Financial Record Explorer id and
+`/api/workstation/financial-record-explorers/{explorerId}` href so browser and WPF clients can open
+the source-backed ledger, portfolio, or Security & Instrument Explorer without deriving routes.
 Generated governed report packs enrich line-level provenance with display labels,
 source-system tags, related ledger and journal evidence IDs, line amounts, latest evidence
 timestamps, and API routes back to run continuity, ledger trial-balance, reconciliation, and
@@ -526,6 +550,11 @@ subject linkage, lacks an addressable path/route, or uses unsupported subject ki
 statement/report/approval/screenshot artifacts cannot become orphan evidence. This keeps
 packet/report/statement/screenshot/approval evidence retention server-owned instead of
 client-local.
+Manifest export also freezes the vault support request list from packet completeness: missing and
+stale evidence, blocking work items, and unresolved validation issues are written into both the
+retained manifest and `_vault` identity index. This gives close, audit, tax, report-package, and
+operator review workflows a durable request-list surface without rebuilding it in browser or WPF
+clients.
 Retained vault bundles are also first-class Evidence Workbench subjects through the
 `evidence-vault` subject kind: the shared contributor projects the retained manifest and each
 copied artifact into the same packet graph, preserving hashes, source routes, and canonical subject
@@ -685,6 +714,12 @@ record packets.
 The evidence packet validator applies assurance freshness policies to both the accounting-record
 root and category nodes, so stale source-record, reconciliation, ledger, approval, document, export,
 or restatement evidence lowers shared assurance before close approval or publication.
+Report-pack delivery attempts are first-class Evidence Workflow Fabric subjects under
+`report-pack-delivery`. The resolver lists and resolves attempts from `ReportPackDeliveryService`
+or the persisted delivery record store, and the contributor projects recipient, package, artifact,
+delivery-packet, publication manifest, line provenance, approval chain, branding theme, restatement
+lineage, reporting-run source, and audit-history nodes into the same packet, graph, validation,
+vault lookup, and manifest-export endpoints used by the browser and WPF surfaces.
 Statement reconciliation mutation endpoints trust the authenticated workstation session actor for
 statement-run intake and reconcile commands. Client-supplied `ImportedBy` or reconcile actor values
 are treated as untrusted payload hints and are replaced at the shared endpoint boundary before the

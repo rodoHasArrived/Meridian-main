@@ -144,6 +144,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private readonly FundContextService _fundContextService;
     private readonly IAccountingConfigurationService _configurationService;
     private readonly IManualJournalEntryWorkbenchService _manualJournalEntryWorkbenchService;
+    private readonly ICapitalAccountWorkbenchService? _capitalAccountWorkbenchService;
     private readonly IAccountingConfigurationStore? _configurationStore;
     private readonly IManualJournalEntryDraftStore? _manualJournalEntryDraftStore;
     private readonly AccountingSystemIntegrationService? _accountingSystemIntegrationService;
@@ -160,6 +161,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private string _configurationStatusText = "Not loaded";
     private string _configurationDetailText = "Configuration readiness loads from shared accounting DTOs.";
     private string _manualJournalStatusText = "Manual journal workbench has not loaded.";
+    private string _capitalAccountWorkbenchStatusText = "Capital Account Workbench has not loaded.";
     private string _externalGlStatusText = "External GL evidence has not loaded.";
     private string _postingPostureText = "Posting/export posture has not loaded.";
     private string _closeReadinessText = "Close readiness has not loaded.";
@@ -186,11 +188,13 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         IManualJournalEntryDraftStore? manualJournalEntryDraftStore = null,
         AccountingSystemIntegrationService? accountingSystemIntegrationService = null,
         FundOperationsWorkspaceReadService? fundOperationsWorkspaceReadService = null,
-        IAccountingPolicyService? accountingPolicyService = null)
+        IAccountingPolicyService? accountingPolicyService = null,
+        ICapitalAccountWorkbenchService? capitalAccountWorkbenchService = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
         _manualJournalEntryWorkbenchService = manualJournalEntryWorkbenchService ?? throw new ArgumentNullException(nameof(manualJournalEntryWorkbenchService));
+        _capitalAccountWorkbenchService = capitalAccountWorkbenchService;
         _configurationStore = configurationStore;
         _manualJournalEntryDraftStore = manualJournalEntryDraftStore;
         _accountingSystemIntegrationService = accountingSystemIntegrationService;
@@ -239,10 +243,16 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalFundEventLedgerRecordRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalCapitalAccountRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalCapitalAccountSubledgerRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> ManualJournalPaymentIntentRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalFundEventRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalLedgerImpactRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalReportOutputRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalEntryTypeRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> CapitalAccountInvestorRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> CapitalAccountAllocationRuleRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> CapitalAccountStatementLineageRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> CapitalAccountAuditDrillThroughRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> CapitalAccountCapabilityRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> EvidenceRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ReconciliationRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> PolicyRows { get; } = [];
@@ -296,6 +306,12 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     {
         get => _manualJournalStatusText;
         private set => SetProperty(ref _manualJournalStatusText, value);
+    }
+
+    public string CapitalAccountWorkbenchStatusText
+    {
+        get => _capitalAccountWorkbenchStatusText;
+        private set => SetProperty(ref _capitalAccountWorkbenchStatusText, value);
     }
 
     public string ExternalGlStatusText
@@ -776,6 +792,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ConfigurationStatusText = "Locked";
         ConfigurationDetailText = "Select a fund-linked context before configuring chart accounts, templates, rules, or manual journal entries.";
         ManualJournalStatusText = "Locked until a fund context is selected.";
+        CapitalAccountWorkbenchStatusText = "Locked until a fund context is selected.";
         ExternalGlStatusText = "Locked until a fund context is selected.";
         PostingPostureText = "Posting/export remains disabled.";
         CloseReadinessText = "Locked";
@@ -827,9 +844,89 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 $"{draft.ValidationIssues.Count} issue(s) | v{draft.Version}",
                 draft.JournalEntryId.ToString("D"))));
         ApplyPrivateCapitalActivityRows(workbench.PrivateCapitalActivity);
+        await LoadCapitalAccountWorkbenchAsync(ct).ConfigureAwait(false);
         _selectedDraft ??= workbench.Drafts.FirstOrDefault();
         ManualJournalStatusText = BuildManualJournalStatusText(workbench);
         RaisePropertyChanged(nameof(CanSubmitManualJournal));
+    }
+
+    private async Task LoadCapitalAccountWorkbenchAsync(CancellationToken ct)
+    {
+        if (_activeFundProfile is null)
+        {
+            ClearCapitalAccountWorkbenchRows();
+            CapitalAccountWorkbenchStatusText = "Select a fund-linked context before loading the Capital Account Workbench.";
+            return;
+        }
+
+        if (_capitalAccountWorkbenchService is null)
+        {
+            ClearCapitalAccountWorkbenchRows();
+            CapitalAccountWorkbenchStatusText = "Capital Account Workbench service is not registered in this desktop session.";
+            return;
+        }
+
+        var workbench = await _capitalAccountWorkbenchService
+            .GetWorkbenchAsync(_activeFundProfile.FundProfileId, _configuration?.LedgerBookId, ct: ct)
+            .ConfigureAwait(false);
+
+        ApplyCapitalAccountWorkbenchRows(workbench);
+    }
+
+    private void ApplyCapitalAccountWorkbenchRows(CapitalAccountWorkbenchDto workbench)
+    {
+        CapitalAccountInvestorRows.ReplaceWith(workbench.InvestorAccounts.Select(account =>
+        {
+            var payment = account.PaymentIntentEvidence is null
+                ? "payment evidence not included"
+                : $"{account.PaymentIntentEvidence.Status} | {account.PaymentIntentEvidence.Summary}";
+            return new AccountingWorkbenchRow(
+                account.CapitalAccountId,
+                account.ReadinessLabel,
+                $"{FormatSignedCurrencyAmount(account.OpeningNetActivity, account.Currency)} opening -> {FormatSignedCurrencyAmount(account.EndingNetActivity, account.Currency)} ending | {FormatSignedCurrencyAmount(account.NetCapitalActivity, account.Currency)} net",
+                $"{account.FundEventCount} event(s); {account.PostedFundEventCount} posted; {account.PublishedReportOutputCount} published statement(s); {account.EvidenceCategorySummary} | {account.EvidenceLinkCount} evidence | {payment}",
+                account.ActivityRoute);
+        }));
+
+        CapitalAccountAllocationRuleRows.ReplaceWith(workbench.AllocationRules.Select(rule =>
+            new AccountingWorkbenchRow(
+                rule.Label,
+                rule.IsSatisfied ? "Satisfied" : "Needs evidence",
+                $"{rule.CapitalAccountId} | {rule.InvestorId ?? "unassigned investor"} | {rule.Basis}",
+                $"{rule.Reason} | {rule.EvidenceLinkCount} evidence | required: {FormatRequiredEvidence(rule.RequiredEvidence)}",
+                rule.Route ?? string.Empty)));
+
+        CapitalAccountStatementLineageRows.ReplaceWith(workbench.StatementLineage.Select(lineage =>
+        {
+            var published = lineage.PublishedAtUtc is null
+                ? lineage.ReportWorkflowState ?? "not published"
+                : $"{lineage.ReportWorkflowState ?? "Published"} by {lineage.PublishedBy ?? "unknown"} at {lineage.PublishedAtUtc.Value.ToLocalTime():g}";
+            var restatement = lineage.HasRestatementLineage
+                ? $"{lineage.RestatementReasonCode ?? "Restated"} | {lineage.RestatementChangedLineCount} changed line(s) | {lineage.RestatementEvidenceLinkCount} evidence"
+                : lineage.RestatementStatus;
+            return new AccountingWorkbenchRow(
+                lineage.DisplayName,
+                lineage.HasRestatementLineage ? "Restated" : lineage.IsPublished ? "Published" : lineage.IsReportReady ? "Ready" : "Review",
+                $"{lineage.ReportOutputType} | {published} | {lineage.ReportLineProvenanceCount} provenance line(s)",
+                $"{restatement} | manifest {lineage.PublicationManifestId ?? "none"} | retained {lineage.RetainedManifestPath ?? "none"} | hash {lineage.PublicationEvidenceHash ?? "none"}",
+                lineage.ReportOutputRoute ?? lineage.ReportRoute);
+        }));
+
+        CapitalAccountAuditDrillThroughRows.ReplaceWith(workbench.AuditDrillThroughs.Select(drill =>
+            new AccountingWorkbenchRow(
+                drill.Label,
+                drill.IsAvailable ? "Available" : "Missing route",
+                $"{drill.Kind} | {drill.Summary}",
+                $"{drill.EvidenceLinkCount} evidence | related: {FormatRequiredEvidence(drill.RelatedIds)}",
+                drill.Route ?? string.Empty)));
+
+        CapitalAccountCapabilityRows.ReplaceWith(
+            workbench.LiveCapabilities
+                .Select(item => new AccountingWorkbenchRow(item, "Live", "v0.18 Capital Account Workbench slice", "Backed by shared DTO/service/endpoint and browser/WPF rows.", workbench.WorkbenchRoute))
+                .Concat(workbench.PlannedCapabilities.Select(item => new AccountingWorkbenchRow(item, "Planned", "Deferred outside this narrow slice.", "Not represented as live runtime behavior.", string.Empty))));
+
+        CapitalAccountWorkbenchStatusText =
+            $"{workbench.StatusLabel}: {workbench.StatusReason} {workbench.InvestorAccountCount} investor account(s), {workbench.AllocationRules.Count} allocation rule(s), {workbench.StatementCount} statement lineage row(s), {workbench.RestatementLineageCount} restatement row(s), {workbench.AuditDrillThroughCount} audit drill-through(s).";
     }
 
     private async Task LoadOperationsPostureAsync(CancellationToken ct)
@@ -1119,6 +1216,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ManualJournalFundEventLedgerRecordRows.Clear();
             ManualJournalCapitalAccountRows.Clear();
             ManualJournalCapitalAccountSubledgerRows.Clear();
+            ManualJournalPaymentIntentRows.Clear();
             ManualJournalFundEventRows.Clear();
             ManualJournalLedgerImpactRows.Clear();
             ManualJournalReportOutputRows.Clear();
@@ -1160,6 +1258,13 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 $"{FormatSignedCurrencyAmount(subledger.OpeningNetActivity, subledger.Currency)} opening -> {FormatSignedCurrencyAmount(subledger.EndingNetActivity, subledger.Currency)} ending | {FormatSignedCurrencyAmount(subledger.NetCapitalActivity, subledger.Currency)} net | {FormatSubledgerDateRange(subledger)}",
                 $"Calls {FormatCurrencyAmount(subledger.Contributions, subledger.Currency)}; distributions {FormatCurrencyAmount(subledger.Distributions, subledger.Currency)}; subscriptions {FormatCurrencyAmount(subledger.Subscriptions, subledger.Currency)}; redemptions {FormatCurrencyAmount(subledger.Redemptions, subledger.Currency)}; fees {FormatCurrencyAmount(subledger.ManagementFees, subledger.Currency)} | {subledger.FundEventCount} event(s); {subledger.ApprovalQueueCount} approval queue; {subledger.PostedFundEventCount} posted; {subledger.PublishedReportOutputCount} published report(s) | readiness {subledger.ReadinessLabel}: {subledger.ReadinessReason}; next {FormatSubledgerNextAction(subledger)} | {subledger.EvidenceLinkCount} evidence; {BuildEvidenceCategoryReadinessSummary(subledger.EvidenceCategories)} | {subledger.ValidationIssueCount} issue(s)",
                 subledger.ActivityRoute)));
+        ManualJournalPaymentIntentRows.ReplaceWith(activity.PaymentIntents.Select(intent =>
+            new AccountingWorkbenchRow(
+                intent.PaymentIntentId,
+                intent.StatusLabel,
+                $"{intent.ExpectedCashMovement.Direction} {FormatCurrencyAmount(intent.ExpectedCashMovement.Amount, intent.ExpectedCashMovement.Currency)} | {intent.ExpectedCashMovement.EffectiveDate:yyyy-MM-dd} | requester {intent.Requester} | settlement {intent.SettlementReference ?? "not assigned"}",
+                $"{intent.ApprovalChain.Count} approval step(s); {intent.BankEvidence.Count} bank/cash evidence item(s); {intent.ReconciliationLinks.Count} reconciliation link(s); {intent.AuditHistory.Count} audit event(s) | {intent.ReadinessReason} | {intent.ExecutionDeferredReason}",
+                intent.EvidenceRoute)));
         ManualJournalFundEventRows.ReplaceWith(activity.FundEvents.Select(item =>
             new AccountingWorkbenchRow(
                 $"{item.FundEventType} | {item.Memo}",
@@ -1238,6 +1343,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             $"{activity.CapitalAccountCount} capital account(s), ",
             $"{activity.CapitalAccountSubledgers.Count} account subledger(s), ",
             $"{activity.CapitalAccountSubledgerEntries.Count} subledger movement(s), ",
+            $"{activity.PaymentIntents.Count} payment intent(s), ",
             $"{activity.LedgerImpacts.Count} ledger impact(s), ",
             $"{activity.ReportOutputs.Count} report output(s), ",
             $"{activity.PublishedReportOutputCount} published, ",
@@ -1305,6 +1411,9 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         return $"{first} -> {last} | {subledger.LastFundEventType ?? "no last event"}";
     }
 
+    private static string FormatRequiredEvidence(IReadOnlyList<string> values)
+        => values.Count == 0 ? "none" : string.Join("; ", values);
+
     private static string FormatFundEventDate(string? eventType, DateOnly? effectiveDate)
         => effectiveDate is null
             ? eventType ?? "No effective date"
@@ -1330,12 +1439,23 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ManualJournalFundEventLedgerRecordRows.Clear();
         ManualJournalCapitalAccountRows.Clear();
         ManualJournalCapitalAccountSubledgerRows.Clear();
+        ManualJournalPaymentIntentRows.Clear();
         ManualJournalFundEventRows.Clear();
         ManualJournalLedgerImpactRows.Clear();
         ManualJournalReportOutputRows.Clear();
+        ClearCapitalAccountWorkbenchRows();
         EvidenceRows.Clear();
         ReconciliationRows.Clear();
         PolicyRows.Clear();
+    }
+
+    private void ClearCapitalAccountWorkbenchRows()
+    {
+        CapitalAccountInvestorRows.Clear();
+        CapitalAccountAllocationRuleRows.Clear();
+        CapitalAccountStatementLineageRows.Clear();
+        CapitalAccountAuditDrillThroughRows.Clear();
+        CapitalAccountCapabilityRows.Clear();
     }
 
     private static IReadOnlyList<string> NormalizeEvidenceLink(string? value)

@@ -35,12 +35,14 @@ import {
   resolveSecurityScheduleEvents,
   resolveAccountingWorkstream,
   resolveSelectedReconciliation,
+  useCapitalAccountWorkbenchViewModel,
   useManualJournalEntryWorkbenchViewModel,
   useAccountingReconciliationViewModel,
   useSecurityMasterViewModel
 } from "@/screens/accounting-screen.view-model";
 import type {
   AccountingReconciliationServices,
+  CapitalAccountWorkbenchServices,
   ManualJournalEntryWorkbenchServices,
   SecurityCashFlowScheduleEvent,
   SecurityMasterDrillInServices,
@@ -52,6 +54,7 @@ import type {
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
   AccountingWorkspaceResponse,
+  CapitalAccountWorkbench,
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
   LedgerTrialBalanceLine,
@@ -1013,7 +1016,7 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
         effectiveDate: "2026-06-30",
         currency: "USD",
         netCapitalActivity: 100,
-        evidenceLinkCount: 1,
+        evidenceLinkCount: 2,
         evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
         isReportReady: false,
         reportWorkflowState: "Draft",
@@ -1064,7 +1067,7 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
         readinessReason: "Submit the fund-event journal for approval before posting or stakeholder report output.",
         nextAction: "Submit approval",
         nextActionRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
-        evidenceLinkCount: 1,
+        evidenceLinkCount: 2,
         capitalAccountSubledgerEntryCount: 1,
         ledgerImpactCount: 1,
         reportOutputCount: 1,
@@ -1076,15 +1079,21 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
         publicationManifestId: null,
         retainedManifestPath: null,
         reportLineProvenanceCount: 1,
-        evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+        evidenceLinks: [
+          "/api/workstation/evidence/subjects/accounting-record/manual-je-1",
+          "/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-capital-call-manual-je-1/packet"
+        ],
         evidenceCategories: [
           {
             categoryId: "source-support",
             label: "Source support",
             isReady: true,
             summary: "Source documents or retained evidence links support the fund event.",
-            evidenceLinkCount: 1,
-            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            evidenceLinkCount: 2,
+            evidenceLinks: [
+              "/api/workstation/evidence/subjects/accounting-record/manual-je-1",
+              "/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-capital-call-manual-je-1/packet"
+            ],
             requiredEvidence: ["Source document or retained evidence link"]
           },
           {
@@ -1115,6 +1124,27 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
             requiredEvidence: ["Approval reference"]
           },
           {
+            categoryId: "payment-intent",
+            label: "Payment intent",
+            isReady: true,
+            summary: "Payment intent and settlement reference are captured.",
+            evidenceLinkCount: 2,
+            evidenceLinks: [
+              "payment:fund-alpha:capital-call:manual-je-1",
+              "settlement:fund-alpha:capital-call:20260630"
+            ],
+            requiredEvidence: ["Payment intent id", "Settlement reference"]
+          },
+          {
+            categoryId: "cash-evidence",
+            label: "Cash evidence",
+            isReady: true,
+            summary: "Payment intent payment:fund-alpha:capital-call:manual-je-1 and settlement settlement:fund-alpha:capital-call:20260630 have 1 retained cash evidence link(s); live execution remains deferred.",
+            evidenceLinkCount: 1,
+            evidenceLinks: ["/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-capital-call-manual-je-1/packet"],
+            requiredEvidence: []
+          },
+          {
             categoryId: "report-output",
             label: "Report output",
             isReady: false,
@@ -1124,6 +1154,21 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
             requiredEvidence: ["Governed report output"]
           }
         ],
+        paymentIntentEvidence: {
+          paymentIntentId: "payment:fund-alpha:capital-call:manual-je-1",
+          settlementReference: "settlement:fund-alpha:capital-call:20260630",
+          status: "SettlementMatched",
+          isReady: true,
+          direction: "Inflow",
+          amount: 100,
+          currency: "USD",
+          effectiveDate: "2026-06-30",
+          summary: "Payment intent payment:fund-alpha:capital-call:manual-je-1 and settlement settlement:fund-alpha:capital-call:20260630 have 1 retained cash evidence link(s); live execution remains deferred.",
+          cashEvidenceLinkCount: 1,
+          cashEvidenceLinks: ["/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-capital-call-manual-je-1/packet"],
+          requiredEvidence: [],
+          evidenceRoute: "/api/workstation/evidence/subjects/private-capital-fund-event/fund-event%3Afund-alpha%3Acapital-call%3A20260630/packet"
+        },
         fundEvent: {
           fundEventId: "fund-event:fund-alpha:capital-call:20260630",
           fundEventType: "CapitalCall",
@@ -1139,7 +1184,10 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
           memo: "Manual close adjustment",
           paymentIntentId: "payment:fund-alpha:capital-call:manual-je-1",
           settlementReference: "settlement:fund-alpha:capital-call:20260630",
-          evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+          evidenceLinks: [
+            "/api/workstation/evidence/subjects/accounting-record/manual-je-1",
+            "/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-capital-call-manual-je-1/packet"
+          ],
           validationIssues: [],
           updatedAtUtc: "2026-06-30T00:00:00Z"
         },
@@ -1291,7 +1339,7 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
         approvalQueueCount: 0,
         postedFundEventCount: 0,
         publishedReportOutputCount: 0,
-        evidenceLinkCount: 1,
+        evidenceLinkCount: 2,
         validationIssueCount: 2,
         firstEffectiveDate: "2026-06-30",
         lastEffectiveDate: "2026-06-30",
@@ -1301,15 +1349,21 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
         readinessReason: "One or more fund events require approval before the capital-account subledger can be treated as posting ready.",
         nextAction: "Submit or review approval",
         nextActionRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
-        evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+        evidenceLinks: [
+          "/api/workstation/evidence/subjects/accounting-record/manual-je-1",
+          "/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-capital-call-manual-je-1/packet"
+        ],
         evidenceCategories: [
           {
             categoryId: "source-support",
             label: "Source support",
             isReady: true,
             summary: "Source support is retained for this capital account's fund events.",
-            evidenceLinkCount: 1,
-            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
+            evidenceLinkCount: 2,
+            evidenceLinks: [
+              "/api/workstation/evidence/subjects/accounting-record/manual-je-1",
+              "/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-capital-call-manual-je-1/packet"
+            ],
             requiredEvidence: ["Source document or retained evidence link"]
           },
           {
@@ -1340,6 +1394,27 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
             requiredEvidence: ["Approval reference"]
           },
           {
+            categoryId: "payment-intent",
+            label: "Payment intent",
+            isReady: true,
+            summary: "Payment intent and settlement reference are captured.",
+            evidenceLinkCount: 2,
+            evidenceLinks: [
+              "payment:fund-alpha:capital-call:manual-je-1",
+              "settlement:fund-alpha:capital-call:20260630"
+            ],
+            requiredEvidence: ["Payment intent id", "Settlement reference"]
+          },
+          {
+            categoryId: "cash-evidence",
+            label: "Cash evidence",
+            isReady: true,
+            summary: "1 payment intent(s), 1 settlement reference(s), and 1 retained cash evidence link(s) support this subledger; live execution remains deferred.",
+            evidenceLinkCount: 1,
+            evidenceLinks: ["/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-capital-call-manual-je-1/packet"],
+            requiredEvidence: []
+          },
+          {
             categoryId: "report-output",
             label: "Report output",
             isReady: false,
@@ -1349,6 +1424,21 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
             requiredEvidence: ["Governed report output"]
           }
         ],
+        paymentIntentEvidence: {
+          paymentIntentId: "payment:fund-alpha:capital-call:manual-je-1",
+          settlementReference: "settlement:fund-alpha:capital-call:20260630",
+          status: "SettlementMatched",
+          isReady: true,
+          direction: "Inflow",
+          amount: 100,
+          currency: "USD",
+          effectiveDate: "2026-06-30",
+          summary: "1 payment intent(s), 1 settlement reference(s), and 1 retained cash evidence link(s) support this subledger; live execution remains deferred.",
+          cashEvidenceLinkCount: 1,
+          cashEvidenceLinks: ["/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-capital-call-manual-je-1/packet"],
+          requiredEvidence: [],
+          evidenceRoute: "/api/ledger/private-capital/capital-account-subledger?fundProfileId=fund-alpha&ledgerBookId=book-alpha&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1&currency=USD"
+        },
         capitalAccount: null,
         fundEventRecords: [],
         subledgerEntries: [],
@@ -1368,6 +1458,81 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
             message: "Approval is pending.",
             targetId: "fund-event:fund-alpha:capital-call:20260630",
             suggestedAction: "Submit approval."
+          }
+        ]
+      }
+    ],
+    paymentIntents: [
+      {
+        paymentIntentId: "payment:fund-alpha:capital-call:manual-je-1",
+        settlementReference: "settlement:fund-alpha:capital-call:20260630",
+        fundProfileId: "fund-alpha",
+        ledgerBookId: "book-alpha",
+        fundEventId: "fund-event:fund-alpha:capital-call:20260630",
+        journalEntryId: "manual-je-1",
+        requester: "ops-user",
+        requestedAtUtc: "2026-06-30T00:00:00Z",
+        status: "ApprovalPending",
+        statusLabel: "Approval pending",
+        readinessReason: "Requester and expected movement are captured, but controller approval is not complete.",
+        executionDeferredReason: "Full payment execution is explicitly deferred in v0.18; this layer only retains intent, control, cash-evidence, reconciliation, and audit history before any bank-side instruction.",
+        expectedCashMovement: {
+          paymentIntentId: "payment:fund-alpha:capital-call:manual-je-1",
+          direction: "Inflow",
+          amount: 100,
+          currency: "USD",
+          effectiveDate: "2026-06-30",
+          settlementReference: "settlement:fund-alpha:capital-call:20260630",
+          fundEventId: "fund-event:fund-alpha:capital-call:20260630",
+          fundEventType: "CapitalCall",
+          capitalAccountId: "capital-account:fund-alpha:lp-1",
+          investorId: "investor:lp-1",
+          purpose: "Capital call for Fund Alpha LP"
+        },
+        evidenceRoute: "/api/workstation/evidence/subjects/payment-intent/payment%3Afund-alpha%3Acapital-call%3Amanual-je-1/packet",
+        workbenchRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&paymentIntentId=payment%3Afund-alpha%3Acapital-call%3Amanual-je-1",
+        approvalChain: [
+          { sequence: 1, role: "Requester", actor: "ops-user", status: "Requested", decidedAtUtc: "2026-06-30T00:00:00Z", evidenceRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha" },
+          { sequence: 2, role: "Controller approval", actor: "controller", status: "Pending", decidedAtUtc: null, evidenceRoute: null }
+        ],
+        bankEvidence: [
+          {
+            evidenceId: "retained-cash-evidence:capital-call",
+            evidenceKind: "RetainedCashEvidence",
+            status: "Retained",
+            summary: "Retained wire evidence supports the expected cash movement.",
+            amount: 100,
+            currency: "USD",
+            effectiveDate: "2026-06-30",
+            recordedAtUtc: "2026-06-30T00:00:00Z",
+            externalRef: "settlement:fund-alpha:capital-call:20260630",
+            evidenceRoute: "/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-capital-call-manual-je-1/packet"
+          }
+        ],
+        reconciliationLinks: [
+          {
+            linkId: "reconciliation:capital-call",
+            status: "Ready",
+            summary: "Cash evidence is linked to reconciliation review.",
+            evidenceRoute: "/api/reconciliation/runs/capital-call"
+          }
+        ],
+        auditHistory: [
+          {
+            auditEventId: "payment-intent-requested:manual-je-1",
+            recordedAtUtc: "2026-06-30T00:00:00Z",
+            actor: "ops-user",
+            action: "payment-intent.requested",
+            summary: "Payment intent was requested.",
+            evidenceLinks: ["/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-capital-call-manual-je-1/packet"]
+          },
+          {
+            auditEventId: "payment-intent-execution-deferred:manual-je-1",
+            recordedAtUtc: "2026-06-30T00:00:00Z",
+            actor: "system",
+            action: "payment-intent.execution-deferred",
+            summary: "Payment execution remains deferred.",
+            evidenceLinks: []
           }
         ]
       }
@@ -1405,6 +1570,7 @@ describe("accounting-screen view model", () => {
     expect(state.steps.map((step) => step.href)).toEqual([
       "/accounting/configure",
       "/accounting/journal-entries",
+      "/accounting/capital-accounts",
       "/accounting/ledger",
       "/accounting/reconciliation",
       "/accounting/exceptions",
@@ -1441,6 +1607,7 @@ describe("accounting-screen view model", () => {
     expect(resolveAccountingWorkstream("/accounting/reconciliation")).toBe("reconciliation");
     expect(resolveAccountingWorkstream("/accounting/exceptions")).toBe("exceptions");
     expect(resolveAccountingWorkstream("/accounting/approvals")).toBe("approvals");
+    expect(resolveAccountingWorkstream("/accounting/capital-accounts")).toBe("capital-accounts");
     expect(resolveAccountingWorkstream("/accounting")).toBe("ledger");
     expect(resolveAccountingWorkstream("/accounting/ledger")).toBe("ledger");
     expect(resolveAccountingWorkstream("/reporting")).toBe("reporting");
@@ -1451,6 +1618,175 @@ describe("accounting-screen view model", () => {
     expect(resolveSelectedReconciliation(reconciliationQueue, "run-57")?.runId).toBe("run-57");
     expect(resolveSelectedReconciliation(reconciliationQueue, null)?.runId).toBe("run-42");
     expect(resolveSelectedReconciliation([], null)).toBeNull();
+  });
+
+  it("loads the Capital Account Workbench with investor evidence, allocation rules, lineage, and audit drill-through rows", async () => {
+    const workbench: CapitalAccountWorkbench = {
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-alpha",
+      projectedAtUtc: "2026-06-30T17:00:00Z",
+      capitalAccountId: "capital-account:fund-alpha:lp-1",
+      investorId: "investor:lp-1",
+      currency: "USD",
+      workbenchRoute: "/api/ledger/private-capital/capital-account-workbench?capitalAccountId=capital-account%3Afund-alpha%3Alp-1",
+      statusLabel: "Restated lineage",
+      statusReason: "Statement lineage includes retained restatement metadata and audit evidence.",
+      investorAccountCount: 1,
+      fundEventCount: 1,
+      statementCount: 1,
+      restatementLineageCount: 1,
+      auditDrillThroughCount: 2,
+      netCapitalActivity: 125,
+      investorAccounts: [{
+        accountKey: "capital-account:fund-alpha:lp-1|investor:lp-1|USD",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        currency: "USD",
+        activityRoute: "/api/ledger/private-capital/capital-account-subledger?capitalAccountId=capital-account%3Afund-alpha%3Alp-1",
+        readiness: "Ready",
+        readinessLabel: "Ready",
+        readinessReason: "Retained evidence and statement support are available.",
+        nextAction: "Open statement",
+        nextActionRoute: "/api/ledger/private-capital/report-output?reportOutputId=report-output-1",
+        openingNetActivity: 0,
+        endingNetActivity: 125,
+        netCapitalActivity: 125,
+        contributions: 125,
+        distributions: 0,
+        subscriptions: 0,
+        redemptions: 0,
+        managementFees: 0,
+        fundEventCount: 1,
+        postedFundEventCount: 1,
+        approvalQueueCount: 0,
+        publishedReportOutputCount: 1,
+        evidenceLinkCount: 2,
+        validationIssueCount: 0,
+        evidenceCategorySummary: "2/2 allocation evidence categories ready.",
+        evidenceLinks: ["/evidence/source", "/evidence/cash"],
+        evidenceCategories: [],
+        fundEventRecords: [{ effectiveDate: "2026-06-30" } as never],
+        subledgerEntries: [],
+        ledgerImpacts: [],
+        reportOutputs: [],
+        validationIssues: [],
+        paymentIntentEvidence: {
+          paymentIntentId: "payment-1",
+          settlementReference: "settlement-1",
+          status: "SettlementMatched",
+          isReady: true,
+          direction: "Inflow",
+          amount: 125,
+          currency: "USD",
+          effectiveDate: "2026-06-30",
+          summary: "Cash evidence matched.",
+          cashEvidenceLinkCount: 1,
+          cashEvidenceLinks: ["/evidence/cash"],
+          requiredEvidence: [],
+          evidenceRoute: "/evidence/payment-1"
+        }
+      }],
+      allocationRules: [{
+        ruleId: "rule-source",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        categoryId: "source-support",
+        label: "Source support",
+        basis: "Fund event source support must be retained.",
+        isSatisfied: true,
+        reason: "Source support is retained.",
+        route: "/evidence/source",
+        evidenceLinkCount: 2,
+        evidenceLinks: ["/evidence/source"],
+        requiredEvidence: ["Source document"]
+      }],
+      statementLineage: [{
+        lineageId: "lineage-1",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        reportOutputId: "report-output-1",
+        reportOutputType: "CapitalAccountStatement",
+        displayName: "LP 1 Statement",
+        reportRoute: "/reporting/report-packs/lp-1",
+        reportPackId: "report-pack-1",
+        reportWorkflowState: "Restated",
+        isPublished: true,
+        isReportReady: true,
+        publicationManifestId: "manifest-1",
+        retainedManifestPath: "/evidence/manifest.json",
+        publicationEvidenceHash: "hash-1",
+        publishedAtUtc: "2026-06-30T17:00:00Z",
+        publishedBy: "publisher",
+        reportLineProvenanceCount: 3,
+        hasRestatementLineage: true,
+        restatementStatus: "Restatement lineage retained.",
+        restatementReasonCode: "capital-account-correction",
+        restatementPriorVersionReportId: "prior-report",
+        restatementApprover: "audit-partner",
+        restatementChangedLineCount: 1,
+        restatementEvidenceLinkCount: 1,
+        reportOutputRoute: "/api/ledger/private-capital/report-output?reportOutputId=report-output-1",
+        evidenceRoute: "/evidence/restatement",
+        capitalAccountSubledgerRoute: "/api/ledger/private-capital/capital-account-subledger?capitalAccountId=capital-account%3Afund-alpha%3Alp-1",
+        evidenceLinks: ["/evidence/report"],
+        restatementEvidenceLinks: ["/evidence/restatement"]
+      }],
+      auditDrillThroughs: [{
+        drillThroughId: "drill-subledger",
+        kind: "subledger",
+        label: "LP 1 subledger",
+        summary: "Open capital-account subledger.",
+        route: "/api/ledger/private-capital/capital-account-subledger?capitalAccountId=capital-account%3Afund-alpha%3Alp-1",
+        isAvailable: true,
+        evidenceLinkCount: 2,
+        evidenceLinks: ["/evidence/source", "/evidence/cash"],
+        relatedIds: ["fund-event-1"]
+      }],
+      validationIssues: [],
+      liveCapabilities: ["Investor-level capital account evidence", "Statement publication and restatement lineage"],
+      plannedCapabilities: ["Full cap-table administration", "Broad LP portal self-service"]
+    };
+    const services: CapitalAccountWorkbenchServices = {
+      getWorkbench: vi.fn().mockResolvedValue(workbench)
+    };
+
+    const { result } = renderHook(() => useCapitalAccountWorkbenchViewModel(
+      true,
+      "?capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1&currency=USD",
+      services
+    ));
+
+    await waitFor(() => expect(result.current.statusLabel).toBe("Restated lineage"));
+    expect(services.getWorkbench).toHaveBeenCalledWith(expect.objectContaining({
+      capitalAccountId: "capital-account:fund-alpha:lp-1",
+      investorId: "investor:lp-1",
+      currency: "USD"
+    }));
+    expect(result.current.summaryCards).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: "investor-accounts", value: "1" }),
+      expect.objectContaining({ id: "statements", detail: "1 restatement lineage" })
+    ]));
+    expect(result.current.investorAccounts[0]).toMatchObject({
+      title: "capital-account:fund-alpha:lp-1",
+      netActivityLabel: "+$125.00 USD",
+      paymentEvidenceLabel: "Settlement matched / Inflow / $125 USD / 1 cash evidence / settlement linked"
+    });
+    expect(result.current.allocationRules[0]).toMatchObject({
+      label: "Source support",
+      statusLabel: "Satisfied",
+      routeLabel: "/evidence/source"
+    });
+    expect(result.current.statementLineage[0]).toMatchObject({
+      title: "LP 1 Statement",
+      statusLabel: "Restated",
+      restatementLabel: "capital-account-correction / 1 changed line(s) / 1 evidence"
+    });
+    expect(result.current.auditDrillThroughs[0]).toMatchObject({
+      title: "LP 1 subledger",
+      statusLabel: "Available"
+    });
+    expect(result.current.liveCapabilities).toContain("Investor-level capital account evidence");
+    expect(result.current.plannedCapabilities).toContain("Broad LP portal self-service");
   });
 
   it("builds manual journal line badges, Security Master picks, and evidence attachments", async () => {
@@ -1488,7 +1824,8 @@ describe("accounting-screen view model", () => {
       expect.objectContaining({ id: "ledger-impacts", value: "1" }),
       expect.objectContaining({ id: "fund-event-ledger-records", value: "1" }),
       expect.objectContaining({ id: "capital-account-subledger", value: "1" }),
-      expect.objectContaining({ id: "report-outputs", value: "1" })
+      expect.objectContaining({ id: "report-outputs", value: "1" }),
+      expect.objectContaining({ id: "payment-intents", value: "1", detail: "0 execution-deferred / 0 blocked or returned" })
     ]));
     expect(result.current.privateCapitalActivity.capitalAccounts[0]).toMatchObject({
       title: "capital-account:fund-alpha:lp-1",
@@ -1516,8 +1853,11 @@ describe("accounting-screen view model", () => {
       postedEventLabel: "0 posted event(s)",
       publishedReportLabel: "0 published report output(s)",
       dateRangeLabel: "first 2026-06-30 / last 2026-06-30 / CapitalCall",
-      evidenceLabel: "1 evidence",
-      evidenceCategorySummaryLabel: "2/5 evidence categories ready",
+      evidenceLabel: "2 evidence",
+      paymentEvidenceLabel: "Settlement matched / Inflow / $100 USD / 1 cash evidence / settlement linked",
+      paymentEvidenceTone: "success",
+      paymentEvidenceRequiredLabel: "No additional payment evidence required",
+      evidenceCategorySummaryLabel: "4/7 evidence categories ready",
       evidenceCategories: expect.arrayContaining([
         expect.objectContaining({ id: "capital-account-subledger", statusLabel: "Ready" }),
         expect.objectContaining({ id: "approval-state", statusLabel: "Missing" })
@@ -1544,10 +1884,21 @@ describe("accounting-screen view model", () => {
       readinessReasonLabel: "Private-capital report output is not ready because the linked journal entry has not been submitted for approval.",
       nextActionLabel: "Submit or review approval",
       nextActionRouteLabel: "/api/ledger/journal-entry-workbench?fundProfileId=fund-alpha&journalEntryId=manual-je-1",
-      evidenceLabel: "1 evidence",
+      evidenceLabel: "2 evidence",
       workflowLabel: "Draft",
       publicationLabel: "No publication manifest",
       provenanceLabel: "1 provenance line(s)"
+    });
+    expect(result.current.privateCapitalActivity.paymentIntents[0]).toMatchObject({
+      title: "payment:fund-alpha:capital-call:manual-je-1",
+      statusLabel: "Approval pending",
+      statusTone: "warning",
+      expectedCashLabel: "Inflow / $100 USD / 2026-06-30 / settlement:fund-alpha:capital-call:20260630",
+      approvalLabel: "0/2 approved",
+      bankEvidenceLabel: "0 confirmed / 1 retained / 0 returned",
+      reconciliationLabel: "1/1 reconciliation ready",
+      auditLabel: "2 audit event(s)",
+      evidenceRouteLabel: "/api/workstation/evidence/subjects/payment-intent/payment%3Afund-alpha%3Acapital-call%3Amanual-je-1/packet"
     });
     expect(result.current.privateCapitalActivity.fundEventLedgerRecords[0]).toMatchObject({
       title: "CapitalCall",
@@ -1566,20 +1917,23 @@ describe("accounting-screen view model", () => {
       activityRouteLabel: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
       evidenceRouteLabel: "/api/workstation/evidence/subjects/private-capital-fund-event/fund-event%3Afund-alpha%3Acapital-call%3A20260630/packet",
       approvalRouteLabel: "No approval route",
-      evidenceLabel: "1 evidence",
+      evidenceLabel: "2 evidence",
       ledgerImpactLabel: "1 ledger impact(s)",
       subledgerLabel: "1 subledger movement(s)",
       reportOutputLabel: "1 report output(s)",
       reportOutputDetailLabel: "CapitalCallNotice / Draft / 1 provenance",
       reportOutputRouteLabel: "/api/ledger/private-capital/report-output?fundProfileId=fund-alpha&reportOutputId=report-output%3Afund-event%3Afund-alpha%3Acapital-call%3A20260630%3Acapitalcallnotice&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
-      evidenceCategorySummaryLabel: "2/5 evidence categories ready",
+      paymentEvidenceLabel: "Settlement matched / Inflow / $100 USD / 1 cash evidence / settlement linked",
+      paymentEvidenceTone: "success",
+      paymentEvidenceRequiredLabel: "No additional payment evidence required",
+      evidenceCategorySummaryLabel: "4/7 evidence categories ready",
       evidenceCategories: expect.arrayContaining([
         expect.objectContaining({
           id: "source-support",
           label: "Source support",
           statusLabel: "Ready",
           tone: "success",
-          evidenceLabel: "1 evidence",
+          evidenceLabel: "2 evidence",
           requiredEvidenceLabel: "Source document or retained evidence link"
         }),
         expect.objectContaining({

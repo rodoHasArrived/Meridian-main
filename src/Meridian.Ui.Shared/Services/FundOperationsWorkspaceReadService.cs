@@ -2634,6 +2634,8 @@ public sealed class FundOperationsWorkspaceReadService
             ?? ReportPackRunReadService.BuildScheduleDeliveryPlans(schedules, deliveryAttempts);
         var distributions = filteredReportingPayload?.ReportPackDistributions
             ?? ReportPackRunReadService.BuildDistributionRecords(workflowRecords, deliveryAttempts);
+        var reportLineProvenanceExplorer = filteredReportingPayload?.ReportLineProvenanceExplorer
+            ?? FinancialRecordExplorerReadService.BuildReportLineProvenanceExplorer(workflowRecords, deliveryAttempts);
         var portfolioCuts = BuildPortfolioReportingCuts(accounts, cashFinancing, nav, runSources, asOf);
         var livePortfolioViews = BuildPortfolioReportingLiveViews(accounts.Count, portfolioCuts, runSources, asOf);
         var pnlSlices = BuildPortfolioReportingPnlSlices(runSources, cashFinancing.Currency, asOf);
@@ -2665,7 +2667,8 @@ public sealed class FundOperationsWorkspaceReadService
             PnlSlices: pnlSlices,
             AnalyticsRows: analyticsRows,
             FundProfileId: fundProfileId,
-            ScheduleDeliveryPlans: scheduleDeliveryPlans);
+            ScheduleDeliveryPlans: scheduleDeliveryPlans,
+            ReportLineProvenanceExplorer: reportLineProvenanceExplorer);
     }
 
     private async Task<IReadOnlyList<CrossFundReportingConsolidationDto>> BuildCrossFundReportingConsolidationsAsync(
@@ -3080,7 +3083,8 @@ public sealed class FundOperationsWorkspaceReadService
                 : blockedSummary,
             UiApiRoutes.FundReportPacks,
             BuildStructuredExportVersionStamp(asOf, rowCount, sourceCount),
-            tags);
+            tags,
+            isReady ? [] : [blockedSummary]);
     }
 
     private static IReadOnlyList<PortfolioReportingCutDto> BuildPortfolioReportingCuts(
@@ -3248,7 +3252,8 @@ public sealed class FundOperationsWorkspaceReadService
                     TelemetrySummary: BuildLivePortfolioTelemetrySummary(state, sourceAsOf, asOf),
                     Tags: cut.Tags,
                     CashLadderRoute: strategySource.CashLadderRoute,
-                    VersionStamp: cut.VersionStamp);
+                    VersionStamp: cut.VersionStamp,
+                    ReadinessBlockers: BuildLivePortfolioReadinessBlockers(state, sourceAsOf, asOf));
             })
             .OrderBy(static view => view.Kind)
             .ThenBy(static view => view.Label, StringComparer.OrdinalIgnoreCase)
@@ -3705,6 +3710,26 @@ public sealed class FundOperationsWorkspaceReadService
                 ? "Source-backed portfolio telemetry is available through the live portfolio summary route."
                 : $"Source-backed portfolio telemetry is current through {FormatStructuredDateTime(sourceAsOf.Value)}; open the route for latest portfolio-summary telemetry."
         };
+
+    private static IReadOnlyList<string> BuildLivePortfolioReadinessBlockers(
+        PortfolioReportingLiveViewStateDto state,
+        DateTimeOffset? sourceAsOf,
+        DateTimeOffset requestedAsOf)
+    {
+        if (state == PortfolioReportingLiveViewStateDto.Blocked)
+        {
+            return ["No source-backed portfolio records are available for this live reporting view."];
+        }
+
+        if (state == PortfolioReportingLiveViewStateDto.Stale)
+        {
+            return sourceAsOf is null
+                ? ["Latest source snapshot timestamp is missing for this live reporting view."]
+                : [$"Latest source snapshot is older than 24 hours as of {FormatStructuredDateTime(requestedAsOf)}."];
+        }
+
+        return [];
+    }
 
     private static IReadOnlyList<StructuredReportingExportColumnDto> GetStructuredExportColumns(string exportId) =>
         NormalizeStructuredExportId(exportId) switch

@@ -28,6 +28,7 @@ import {
   buildAccountingWorkflowLaunchViewState,
   resolveAccountingWorkstream,
   SECURITY_IDENTITY_DETAIL_PANEL_ID,
+  useCapitalAccountWorkbenchViewModel,
   useAccountingConfigurationViewModel,
   useAccountingCashFlowViewModel,
   useManualJournalEntryWorkbenchViewModel,
@@ -42,6 +43,7 @@ import type {
   CalibrationSummaryViewModel,
   AccountingWorkstream,
   AccountingConfigurationViewModel,
+  CapitalAccountWorkbenchViewModel,
   ManualJournalEntryWorkbenchViewModel,
   CorporateActionsViewState,
   CorporateActionRowViewModel,
@@ -352,6 +354,10 @@ const focusCopy: Record<string, { title: string; description: string }> = {
   "journal-entries": {
     title: "Journal entry workbench",
     description: "Manual journal entry drafts, line-level Security Master attribution, GL account picks, balancing validation, and approval submission stay endpoint-backed."
+  },
+  "capital-accounts": {
+    title: "Capital Account Workbench",
+    description: "Investor-level capital account evidence, allocation rules, statement lineage, restatement support, and audit drill-throughs stay endpoint-backed."
   },
   reconciliation: {
     title: "Reconciliation queue",
@@ -974,7 +980,7 @@ function formatApprovalError(err: unknown, fallback: string): string {
 }
 
 export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenProps) {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const workstream = resolveAccountingWorkstream(pathname);
   const workspace = workspaceForPath(pathname);
   const reconciliation = useAccountingReconciliationViewModel(data, workstream);
@@ -987,6 +993,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const reporting = useAccountingReportingViewModel(data?.reporting ?? null);
   const configuration = useAccountingConfigurationViewModel();
   const journalEntries = useManualJournalEntryWorkbenchViewModel(workstream === "journal-entries");
+  const capitalAccountWorkbench = useCapitalAccountWorkbenchViewModel(workstream === "capital-accounts", search);
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
   const [accountingSystemProviders, setAccountingSystemProviders] = useState<AccountingSystemProvider[]>([]);
   const [accountingSystemImport, setAccountingSystemImport] = useState<AccountingSystemImportDetail | null>(null);
@@ -1390,6 +1397,10 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
 
       {workstream === "journal-entries" ? (
         <ManualJournalEntryWorkbenchPanel view={journalEntries} />
+      ) : null}
+
+      {workstream === "capital-accounts" ? (
+        <CapitalAccountWorkbenchPanel view={capitalAccountWorkbench} />
       ) : null}
 
       {workstream === "approvals" ? (
@@ -3581,6 +3592,7 @@ const accountingWorkflowStepIcons: Record<AccountingWorkflowLaunchViewState["ste
   ledger: Table2,
   configure: Landmark,
   "journal-entries": BookCheck,
+  "capital-accounts": WalletCards,
   reconciliation: Network,
   exceptions: AlertCircle,
   "security-master": ShieldCheck,
@@ -3694,6 +3706,221 @@ function accountingToolingBorderClass(tone: AccountingToolingTone): string {
   return "border-border/70 bg-secondary/20";
 }
 
+function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWorkbenchViewModel }) {
+  return (
+    <Card className="panel-surface" role="region" aria-labelledby="capital-account-workbench-heading">
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="eyebrow-label">Private capital</p>
+            <CardTitle id="capital-account-workbench-heading" className="text-base">{view.title}</CardTitle>
+            <CardDescription>{view.description}</CardDescription>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant={accountingToolingBadgeVariant(view.statusTone)} dot>{view.statusLabel}</Badge>
+            <Button size="sm" variant="outline" disabled={view.loading} busy={view.loading} onClick={() => void view.refresh()}>
+              <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
+              Refresh
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        {view.errorText ? (
+          <div role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+            {view.errorText}
+          </div>
+        ) : null}
+
+        <div className="flex flex-wrap gap-2">
+          <AccountingChip label="Projected" value={view.projectedAtLabel} />
+          <AccountingChip label="Route" value={view.workbenchRouteLabel} />
+        </div>
+        <p className="text-sm leading-6 text-muted-foreground">{view.statusReason}</p>
+
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {view.summaryCards.map((metric) => (
+            <MetricCard
+              key={metric.id}
+              id={metric.id}
+              label={metric.label}
+              value={metric.value}
+              delta={metric.detail}
+              tone={metric.tone}
+            />
+          ))}
+        </div>
+
+        {view.investorAccounts.length === 0 && !view.loading ? (
+          <div role="status" className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3 text-sm text-muted-foreground">
+            {view.emptyText}
+          </div>
+        ) : null}
+
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+          <section className="space-y-2" aria-labelledby="capital-account-investor-heading">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h4 id="capital-account-investor-heading" className="text-sm font-semibold text-foreground">Investor capital accounts</h4>
+              <Badge variant="outline">{view.investorAccounts.length.toLocaleString()} rows</Badge>
+            </div>
+            <div className="overflow-x-auto rounded-md border border-border/70">
+              <table className="w-full min-w-[880px] text-sm">
+                <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
+                  <tr>
+                    <th className="px-3 py-2 text-left">Account</th>
+                    <th className="px-3 py-2 text-left">Readiness</th>
+                    <th className="px-3 py-2 text-right">Net</th>
+                    <th className="px-3 py-2 text-left">Evidence</th>
+                    <th className="px-3 py-2 text-left">Cash support</th>
+                    <th className="px-3 py-2 text-left">Route</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {view.investorAccounts.map((row) => (
+                    <tr key={row.id} className="border-t border-border/60">
+                      <td className="px-3 py-2">
+                        <div className="font-semibold text-foreground">{row.title}</div>
+                        <div className="mt-1 text-xs text-muted-foreground">{row.subtitle}</div>
+                        <div className="mt-1 text-xs text-muted-foreground">{row.eventLabel}</div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+                      </td>
+                      <td className="px-3 py-2 text-right font-mono tabular-nums">
+                        <div className="text-foreground">{row.netActivityLabel}</div>
+                        <div className="mt-1 text-xs text-muted-foreground">{row.rollForwardLabel}</div>
+                        <div className="mt-1 text-xs text-muted-foreground">{row.activityMixLabel}</div>
+                      </td>
+                      <td className="px-3 py-2 text-xs text-muted-foreground">{row.evidenceLabel}</td>
+                      <td className="px-3 py-2 text-xs">
+                        <Badge variant={row.paymentEvidenceTone}>{row.paymentEvidenceLabel}</Badge>
+                        <div className="mt-1 text-muted-foreground">{row.paymentEvidenceSummaryLabel}</div>
+                        <div className="mt-1 text-muted-foreground">{row.paymentEvidenceRequiredLabel}</div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <a href={row.routeLabel} className="break-all font-mono text-[11px] text-primary hover:underline">
+                          {row.routeLabel}
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section className="space-y-2" aria-labelledby="capital-account-allocation-heading">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h4 id="capital-account-allocation-heading" className="text-sm font-semibold text-foreground">Allocation rules</h4>
+              <Badge variant="outline">{view.allocationRules.length.toLocaleString()} checks</Badge>
+            </div>
+            <div className="grid gap-2">
+              {view.allocationRules.map((row) => (
+                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(row.statusTone))}>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-foreground">{row.label}</div>
+                      <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{row.accountLabel}</div>
+                    </div>
+                    <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.reason}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{row.basis}</p>
+                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                    <AccountingChip label="Evidence" value={row.evidenceLabel} />
+                    <AccountingChip label="Required" value={row.requiredLabel} />
+                  </div>
+                  {row.routeLabel !== "No route" ? (
+                    <a href={row.routeLabel} className="mt-2 block break-all font-mono text-[11px] text-primary hover:underline">
+                      {row.routeLabel}
+                    </a>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-2">
+          <section className="space-y-2" aria-labelledby="capital-account-statement-heading">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h4 id="capital-account-statement-heading" className="text-sm font-semibold text-foreground">Statement lineage</h4>
+              <Badge variant="outline">{view.statementLineage.length.toLocaleString()} statements</Badge>
+            </div>
+            <div className="grid gap-2">
+              {view.statementLineage.map((row) => (
+                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(row.statusTone))}>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-foreground">{row.title}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">{row.subtitle}</div>
+                    </div>
+                    <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+                  </div>
+                  <div className="mt-2 grid gap-1 text-xs text-muted-foreground">
+                    <span>{row.publicationLabel}</span>
+                    <span>{row.provenanceLabel}</span>
+                    <span>{row.restatementLabel}</span>
+                    <span className="break-all font-mono text-[11px]">{row.manifestLabel}</span>
+                  </div>
+                  <a href={row.routeLabel} className="mt-2 block break-all font-mono text-[11px] text-primary hover:underline">
+                    {row.routeLabel}
+                  </a>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="space-y-2" aria-labelledby="capital-account-audit-heading">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h4 id="capital-account-audit-heading" className="text-sm font-semibold text-foreground">Audit drill-through</h4>
+              <Badge variant="outline">{view.auditDrillThroughs.length.toLocaleString()} targets</Badge>
+            </div>
+            <div className="grid gap-2">
+              {view.auditDrillThroughs.map((row) => (
+                <div key={row.id} className={cn("rounded-md border px-3 py-2 text-sm", accountingToolingBorderClass(row.statusTone))}>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-foreground">{row.title}</div>
+                      <div className="mt-1 text-xs uppercase text-muted-foreground">{row.kind}</div>
+                    </div>
+                    <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.summary}</p>
+                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                    <AccountingChip label="Evidence" value={row.evidenceLabel} />
+                    <AccountingChip label="Related" value={row.relatedLabel} />
+                  </div>
+                  {row.routeLabel !== "No route" ? (
+                    <a href={row.routeLabel} className="mt-2 block break-all font-mono text-[11px] text-primary hover:underline">
+                      {row.routeLabel}
+                    </a>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="rounded-md border border-success/30 bg-success/10 px-3 py-3">
+            <div className="text-xs font-semibold uppercase text-success">Live in v0.18 slice</div>
+            <ul className="mt-2 grid gap-1 text-sm text-foreground">
+              {view.liveCapabilities.map((item) => <li key={item}>{item}</li>)}
+            </ul>
+          </div>
+          <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
+            <div className="text-xs font-semibold uppercase text-muted-foreground">Still planned</div>
+            <ul className="mt-2 grid gap-1 text-sm text-muted-foreground">
+              {view.plannedCapabilities.map((item) => <li key={item}>{item}</li>)}
+            </ul>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: ManualJournalEntryWorkbenchViewModel["privateCapitalActivity"] }) {
   return (
     <Card className="panel-surface">
@@ -3740,6 +3967,69 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
           </div>
         ) : null}
 
+        {activity.paymentIntents.length > 0 ? (
+          <div className="overflow-x-auto rounded-md border border-border/70">
+            <table className="w-full min-w-[1040px] text-sm" aria-label="Payment intent and cash evidence workflows">
+              <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2 text-left">Payment intent</th>
+                  <th className="px-3 py-2 text-left">Status</th>
+                  <th className="px-3 py-2 text-left">Expected cash</th>
+                  <th className="px-3 py-2 text-left">Approvals</th>
+                  <th className="px-3 py-2 text-left">Cash evidence</th>
+                  <th className="px-3 py-2 text-left">Reconciliation</th>
+                  <th className="px-3 py-2 text-left">Audit</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activity.paymentIntents.map((intent) => (
+                  <tr key={intent.id} className="border-t border-border/60 bg-background/30 align-top">
+                    <td className="px-3 py-2">
+                      <div className="break-all font-mono text-xs text-foreground">{intent.title}</div>
+                      <div className="mt-1 break-all text-[11px] text-muted-foreground">{intent.subtitle}</div>
+                      <div className="mt-1 text-[11px] text-muted-foreground">{intent.requestedLabel}</div>
+                      {intent.workbenchRouteLabel !== "No workbench route" ? (
+                        <a
+                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                          href={intent.workbenchRouteLabel}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Open payment intent workbench route for ${intent.title}`}
+                        >
+                          {intent.workbenchRouteLabel}
+                        </a>
+                      ) : null}
+                    </td>
+                    <td className="px-3 py-2">
+                      <Badge variant={intent.statusTone} dot>{intent.statusLabel}</Badge>
+                      <div className="mt-1 text-xs text-muted-foreground">{intent.readinessReasonLabel}</div>
+                      <div className="mt-1 text-[11px] text-muted-foreground">{intent.executionDeferredLabel}</div>
+                    </td>
+                    <td className="px-3 py-2 font-mono text-xs">{intent.expectedCashLabel}</td>
+                    <td className="px-3 py-2 text-xs">{intent.approvalLabel}</td>
+                    <td className="px-3 py-2 text-xs">
+                      <div>{intent.bankEvidenceLabel}</div>
+                      {intent.evidenceRouteLabel !== "No evidence route" ? (
+                        <a
+                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                          href={intent.evidenceRouteLabel}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Open payment intent evidence packet for ${intent.title}`}
+                        >
+                          {intent.evidenceRouteLabel}
+                        </a>
+                      ) : null}
+                    </td>
+                    <td className="px-3 py-2 text-xs">{intent.reconciliationLabel}</td>
+                    <td className="px-3 py-2 text-xs">{intent.auditLabel}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+
         {activity.fundEventLedgerRecords.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
             <table className="w-full min-w-[980px] text-sm" aria-label="Private-capital fund event ledger records">
@@ -3763,6 +4053,13 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                       <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{record.subtitle}</div>
                       <div className="mt-1 text-xs text-muted-foreground">{record.memoLabel}</div>
                       <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{record.referenceLabel}</div>
+                      <div className="mt-2 rounded border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-1">
+                          <Badge variant={record.paymentEvidenceTone} dot>{record.paymentEvidenceLabel}</Badge>
+                        </div>
+                        <div className="mt-1">{record.paymentEvidenceSummaryLabel}</div>
+                        <div className="mt-1">{record.paymentEvidenceRequiredLabel}</div>
+                      </div>
                       <a
                         className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
                         href={record.activityRouteLabel}
@@ -3954,6 +4251,13 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                     </td>
                     <td className="px-3 py-2 text-xs">
                       <div>{subledger.evidenceLabel}</div>
+                      <div className="mt-2 rounded border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-1">
+                          <Badge variant={subledger.paymentEvidenceTone} dot>{subledger.paymentEvidenceLabel}</Badge>
+                        </div>
+                        <div className="mt-1">{subledger.paymentEvidenceSummaryLabel}</div>
+                        <div className="mt-1">{subledger.paymentEvidenceRequiredLabel}</div>
+                      </div>
                       {subledger.evidenceCategories.length > 0 ? (
                         <div className="mt-2 space-y-1" aria-label={`Subledger evidence readiness categories for ${subledger.title}`}>
                           <div className="text-[11px] font-semibold uppercase text-muted-foreground">

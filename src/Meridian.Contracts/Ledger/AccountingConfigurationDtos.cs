@@ -67,6 +67,35 @@ public enum PrivateCapitalFundEventLedgerReadinessDto
     Published = 6
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<PaymentIntentCashDirectionDto>))]
+public enum PaymentIntentCashDirectionDto
+{
+    Neutral = 0,
+    Inflow = 1,
+    Outflow = 2
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<PaymentIntentWorkflowStatusDto>))]
+public enum PaymentIntentWorkflowStatusDto
+{
+    EvidenceMissing = 0,
+    ApprovalPending = 1,
+    BankEvidencePending = 2,
+    BankReturned = 3,
+    ReconciliationPending = 4,
+    ExecutionDeferred = 5,
+    Blocked = 6
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<PrivateCapitalPaymentIntentEvidenceStatusDto>))]
+public enum PrivateCapitalPaymentIntentEvidenceStatusDto
+{
+    MissingIntent = 0,
+    CashEvidenceMissing = 1,
+    IntentCaptured = 2,
+    SettlementMatched = 3
+}
+
 public sealed record ChartOfAccountsNodeDto(
     string NodeId,
     string Path,
@@ -388,6 +417,114 @@ public sealed record PrivateCapitalEvidenceCategoryDto(
         RequiredEvidence ?? [];
 }
 
+public sealed record PrivateCapitalPaymentIntentEvidenceDto(
+    string? PaymentIntentId,
+    string? SettlementReference,
+    PrivateCapitalPaymentIntentEvidenceStatusDto Status,
+    bool IsReady,
+    PaymentIntentCashDirectionDto Direction,
+    decimal Amount,
+    string Currency,
+    DateOnly EffectiveDate,
+    string Summary,
+    int CashEvidenceLinkCount,
+    IReadOnlyList<string> CashEvidenceLinks,
+    IReadOnlyList<string>? RequiredEvidence = null,
+    string? EvidenceRoute = null)
+{
+    public IReadOnlyList<string> RequiredEvidence { get; init; } =
+        RequiredEvidence ?? [];
+}
+
+public sealed record PaymentIntentExpectedCashMovementDto(
+    string PaymentIntentId,
+    PaymentIntentCashDirectionDto Direction,
+    decimal Amount,
+    string Currency,
+    DateOnly EffectiveDate,
+    string? SettlementReference,
+    string? FundEventId,
+    string? FundEventType,
+    string? CapitalAccountId,
+    string? InvestorId,
+    string Purpose);
+
+public sealed record PaymentIntentApprovalStepDto(
+    int Sequence,
+    string Role,
+    string Actor,
+    string Status,
+    DateTimeOffset? DecidedAtUtc = null,
+    string? EvidenceRoute = null);
+
+public sealed record PaymentIntentBankEvidenceDto(
+    string EvidenceId,
+    string EvidenceKind,
+    string Status,
+    string Summary,
+    Guid? BankTransactionId = null,
+    string? TransactionType = null,
+    decimal? Amount = null,
+    string? Currency = null,
+    DateOnly? EffectiveDate = null,
+    DateTimeOffset? RecordedAtUtc = null,
+    string? ExternalRef = null,
+    string? EvidenceRoute = null);
+
+public sealed record PaymentIntentReconciliationLinkDto(
+    string LinkId,
+    string Status,
+    string Summary,
+    string? EvidenceRoute = null,
+    string? ReconciliationCaseId = null,
+    string? ReconciliationRunId = null);
+
+public sealed record PaymentIntentAuditEventDto(
+    string AuditEventId,
+    DateTimeOffset RecordedAtUtc,
+    string Actor,
+    string Action,
+    string Summary,
+    IReadOnlyList<string>? EvidenceLinks = null)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
+public sealed record PaymentIntentWorkflowDto(
+    string PaymentIntentId,
+    string? SettlementReference,
+    string FundProfileId,
+    Guid? LedgerBookId,
+    string FundEventId,
+    Guid JournalEntryId,
+    string Requester,
+    DateTimeOffset RequestedAtUtc,
+    PaymentIntentWorkflowStatusDto Status,
+    string StatusLabel,
+    string ReadinessReason,
+    string ExecutionDeferredReason,
+    PaymentIntentExpectedCashMovementDto ExpectedCashMovement,
+    string EvidenceRoute,
+    string WorkbenchRoute,
+    IReadOnlyList<PaymentIntentApprovalStepDto>? ApprovalChain = null,
+    IReadOnlyList<PaymentIntentBankEvidenceDto>? BankEvidence = null,
+    IReadOnlyList<PaymentIntentReconciliationLinkDto>? ReconciliationLinks = null,
+    IReadOnlyList<PaymentIntentAuditEventDto>? AuditHistory = null)
+{
+    public IReadOnlyList<PaymentIntentApprovalStepDto> ApprovalChain { get; init; } =
+        ApprovalChain ?? [];
+
+    public IReadOnlyList<PaymentIntentBankEvidenceDto> BankEvidence { get; init; } =
+        BankEvidence ?? [];
+
+    public IReadOnlyList<PaymentIntentReconciliationLinkDto> ReconciliationLinks { get; init; } =
+        ReconciliationLinks ?? [];
+
+    public IReadOnlyList<PaymentIntentAuditEventDto> AuditHistory { get; init; } =
+        AuditHistory ?? [];
+}
+
 public sealed record PrivateCapitalFundEventLedgerRecordDto(
     string FundEventRecordId,
     string FundEventId,
@@ -436,7 +573,8 @@ public sealed record PrivateCapitalFundEventLedgerRecordDto(
     IReadOnlyList<PrivateCapitalLedgerImpactDto> LedgerImpacts,
     IReadOnlyList<PrivateCapitalReportOutputDto> ReportOutputs,
     IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
-    IReadOnlyList<PrivateCapitalEvidenceCategoryDto>? EvidenceCategories = null)
+    IReadOnlyList<PrivateCapitalEvidenceCategoryDto>? EvidenceCategories = null,
+    PrivateCapitalPaymentIntentEvidenceDto? PaymentIntentEvidence = null)
 {
     public IReadOnlyList<PrivateCapitalEvidenceCategoryDto> EvidenceCategories { get; init; } =
         EvidenceCategories ?? [];
@@ -480,7 +618,8 @@ public sealed record PrivateCapitalCapitalAccountSubledgerDto(
     string ReadinessReason = "",
     string NextAction = "",
     string? NextActionRoute = null,
-    IReadOnlyList<PrivateCapitalEvidenceCategoryDto>? EvidenceCategories = null)
+    IReadOnlyList<PrivateCapitalEvidenceCategoryDto>? EvidenceCategories = null,
+    PrivateCapitalPaymentIntentEvidenceDto? PaymentIntentEvidence = null)
 {
     public IReadOnlyList<PrivateCapitalEvidenceCategoryDto> EvidenceCategories { get; init; } =
         EvidenceCategories ?? [];
@@ -505,13 +644,139 @@ public sealed record PrivateCapitalActivityProjectionDto(
     IReadOnlyList<PrivateCapitalReportOutputDto> ReportOutputs,
     IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
     IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto>? FundEventRecords = null,
-    IReadOnlyList<PrivateCapitalCapitalAccountSubledgerDto>? CapitalAccountSubledgers = null)
+    IReadOnlyList<PrivateCapitalCapitalAccountSubledgerDto>? CapitalAccountSubledgers = null,
+    IReadOnlyList<PaymentIntentWorkflowDto>? PaymentIntents = null)
 {
     public IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> FundEventRecords { get; init; } =
         FundEventRecords ?? [];
 
     public IReadOnlyList<PrivateCapitalCapitalAccountSubledgerDto> CapitalAccountSubledgers { get; init; } =
         CapitalAccountSubledgers ?? [];
+
+    public IReadOnlyList<PaymentIntentWorkflowDto> PaymentIntents { get; init; } =
+        PaymentIntents ?? [];
+}
+
+public sealed record CapitalAccountWorkbenchInvestorAccountDto(
+    string AccountKey,
+    string CapitalAccountId,
+    string? InvestorId,
+    string Currency,
+    string ActivityRoute,
+    PrivateCapitalFundEventLedgerReadinessDto Readiness,
+    string ReadinessLabel,
+    string ReadinessReason,
+    string NextAction,
+    string? NextActionRoute,
+    decimal OpeningNetActivity,
+    decimal EndingNetActivity,
+    decimal NetCapitalActivity,
+    decimal Contributions,
+    decimal Distributions,
+    decimal Subscriptions,
+    decimal Redemptions,
+    decimal ManagementFees,
+    int FundEventCount,
+    int PostedFundEventCount,
+    int ApprovalQueueCount,
+    int PublishedReportOutputCount,
+    int EvidenceLinkCount,
+    int ValidationIssueCount,
+    string EvidenceCategorySummary,
+    IReadOnlyList<string> EvidenceLinks,
+    IReadOnlyList<PrivateCapitalEvidenceCategoryDto> EvidenceCategories,
+    IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> FundEventRecords,
+    IReadOnlyList<PrivateCapitalCapitalAccountSubledgerEntryDto> SubledgerEntries,
+    IReadOnlyList<PrivateCapitalLedgerImpactDto> LedgerImpacts,
+    IReadOnlyList<PrivateCapitalReportOutputDto> ReportOutputs,
+    IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
+    PrivateCapitalPaymentIntentEvidenceDto? PaymentIntentEvidence = null);
+
+public sealed record CapitalAccountWorkbenchAllocationRuleDto(
+    string RuleId,
+    string CapitalAccountId,
+    string? InvestorId,
+    string CategoryId,
+    string Label,
+    string Basis,
+    bool IsSatisfied,
+    string Reason,
+    string? Route,
+    int EvidenceLinkCount,
+    IReadOnlyList<string> EvidenceLinks,
+    IReadOnlyList<string> RequiredEvidence);
+
+public sealed record CapitalAccountWorkbenchStatementLineageDto(
+    string LineageId,
+    string CapitalAccountId,
+    string? InvestorId,
+    string ReportOutputId,
+    string ReportOutputType,
+    string DisplayName,
+    string ReportRoute,
+    string? ReportPackId,
+    string? ReportWorkflowState,
+    bool IsPublished,
+    bool IsReportReady,
+    string? PublicationManifestId,
+    string? RetainedManifestPath,
+    string? PublicationEvidenceHash,
+    DateTimeOffset? PublishedAtUtc,
+    string? PublishedBy,
+    int ReportLineProvenanceCount,
+    bool HasRestatementLineage,
+    string RestatementStatus,
+    string? RestatementReasonCode,
+    Guid? RestatementPriorVersionReportId,
+    string? RestatementApprover,
+    int RestatementChangedLineCount,
+    int RestatementEvidenceLinkCount,
+    string? ReportOutputRoute,
+    string? EvidenceRoute,
+    string? CapitalAccountSubledgerRoute,
+    IReadOnlyList<string> EvidenceLinks,
+    IReadOnlyList<string> RestatementEvidenceLinks);
+
+public sealed record CapitalAccountWorkbenchAuditDrillThroughDto(
+    string DrillThroughId,
+    string Kind,
+    string Label,
+    string Summary,
+    string? Route,
+    bool IsAvailable,
+    int EvidenceLinkCount,
+    IReadOnlyList<string> EvidenceLinks,
+    IReadOnlyList<string> RelatedIds);
+
+public sealed record CapitalAccountWorkbenchDto(
+    string FundProfileId,
+    Guid? LedgerBookId,
+    DateTimeOffset ProjectedAtUtc,
+    string? CapitalAccountId,
+    string? InvestorId,
+    string Currency,
+    string WorkbenchRoute,
+    string StatusLabel,
+    string StatusReason,
+    int InvestorAccountCount,
+    int FundEventCount,
+    int StatementCount,
+    int RestatementLineageCount,
+    int AuditDrillThroughCount,
+    decimal NetCapitalActivity,
+    IReadOnlyList<CapitalAccountWorkbenchInvestorAccountDto> InvestorAccounts,
+    IReadOnlyList<CapitalAccountWorkbenchAllocationRuleDto> AllocationRules,
+    IReadOnlyList<CapitalAccountWorkbenchStatementLineageDto> StatementLineage,
+    IReadOnlyList<CapitalAccountWorkbenchAuditDrillThroughDto> AuditDrillThroughs,
+    IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
+    IReadOnlyList<string>? LiveCapabilities = null,
+    IReadOnlyList<string>? PlannedCapabilities = null)
+{
+    public IReadOnlyList<string> LiveCapabilities { get; init; } =
+        LiveCapabilities ?? [];
+
+    public IReadOnlyList<string> PlannedCapabilities { get; init; } =
+        PlannedCapabilities ?? [];
 }
 
 public sealed record ManualJournalEntryWorkbenchDto(
@@ -610,6 +875,18 @@ public interface IManualJournalEntryWorkbenchService
 
     Task<ManualJournalEntryDraftDto> SubmitApprovalAsync(
         SubmitManualJournalEntryApprovalRequest request,
+        CancellationToken ct = default);
+}
+
+public interface ICapitalAccountWorkbenchService
+{
+    Task<CapitalAccountWorkbenchDto> GetWorkbenchAsync(
+        string? fundProfileId = null,
+        Guid? ledgerBookId = null,
+        string? fundEventId = null,
+        string? capitalAccountId = null,
+        string? investorId = null,
+        string? currency = null,
         CancellationToken ct = default);
 }
 

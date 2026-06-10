@@ -3,6 +3,7 @@ import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import {
   activateAccountingConfiguration,
   getAccountingConfiguration,
+  getCapitalAccountWorkbench,
   getManualJournalEntryWorkbench,
   getCorporateActions,
   getReconciliationBreakQueue,
@@ -24,7 +25,8 @@ import {
   reviewReconciliationBreak,
   searchSecurities,
   submitManualJournalEntryApproval,
-  validateManualJournalEntryDraft
+  validateManualJournalEntryDraft,
+  type CapitalAccountWorkbenchQuery
 } from "@/lib/api";
 import {
   evidenceWorkbenchPath,
@@ -83,7 +85,9 @@ import type {
   PrivateCapitalFundEvent,
   PrivateCapitalFundEventLedgerRecord,
   PrivateCapitalLedgerImpact,
+  PrivateCapitalPaymentIntentEvidence,
   PrivateCapitalReportOutput,
+  PaymentIntentWorkflow,
   ResolveReconciliationBreakRequest,
   ReviewReconciliationBreakRequest,
   SaveManualJournalEntryDraftRequest,
@@ -98,7 +102,8 @@ import type {
   StatementRunSummary,
   SubmitManualJournalEntryApprovalRequest,
   TradingParameters,
-  ValidateManualJournalEntryDraftRequest
+  ValidateManualJournalEntryDraftRequest,
+  CapitalAccountWorkbench
 } from "@/types";
 
 export {
@@ -116,7 +121,7 @@ export type {
   CalibrationSummaryViewState
 } from "./accounting-calibration-summary.view-model";
 
-export type AccountingWorkstream = "ledger" | "configure" | "journal-entries" | "reconciliation" | "exceptions" | "security-master" | "approvals" | "reporting";
+export type AccountingWorkstream = "ledger" | "configure" | "journal-entries" | "capital-accounts" | "reconciliation" | "exceptions" | "security-master" | "approvals" | "reporting";
 export type GovernanceWorkstream = AccountingWorkstream;
 export type ReconciliationBreakCommand = "assign" | "resolve" | "dismiss";
 export type ReconciliationBreakResolutionStatus = ResolveReconciliationBreakRequest["status"];
@@ -761,6 +766,10 @@ export interface ManualJournalEntryWorkbenchServices {
   submitApproval: (request: SubmitManualJournalEntryApprovalRequest) => Promise<ManualJournalEntryDraft>;
 }
 
+export interface CapitalAccountWorkbenchServices {
+  getWorkbench: (query?: CapitalAccountWorkbenchQuery) => Promise<CapitalAccountWorkbench>;
+}
+
 export interface ManualJournalLineValidationBadge {
   id: string;
   label: string;
@@ -838,6 +847,10 @@ export interface ManualJournalPrivateCapitalCapitalAccountSubledgerRowViewModel 
   publishedReportLabel: string;
   dateRangeLabel: string;
   evidenceLabel: string;
+  paymentEvidenceLabel: string;
+  paymentEvidenceTone: "success" | "warning";
+  paymentEvidenceSummaryLabel: string;
+  paymentEvidenceRequiredLabel: string;
   evidenceCategorySummaryLabel: string;
   evidenceCategories: ManualJournalPrivateCapitalEvidenceCategoryViewModel[];
   issueLabel: string;
@@ -902,6 +915,24 @@ export interface ManualJournalPrivateCapitalEvidenceCategoryViewModel {
   requiredEvidenceLabel: string;
 }
 
+export interface ManualJournalPaymentIntentWorkflowRowViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  statusLabel: string;
+  statusTone: "outline" | "success" | "warning" | "danger";
+  requestedLabel: string;
+  expectedCashLabel: string;
+  approvalLabel: string;
+  bankEvidenceLabel: string;
+  reconciliationLabel: string;
+  auditLabel: string;
+  readinessReasonLabel: string;
+  executionDeferredLabel: string;
+  evidenceRouteLabel: string;
+  workbenchRouteLabel: string;
+}
+
 export interface ManualJournalPrivateCapitalFundEventLedgerRecordViewModel {
   id: string;
   title: string;
@@ -919,6 +950,10 @@ export interface ManualJournalPrivateCapitalFundEventLedgerRecordViewModel {
   capitalAccountRollForwardLabel: string;
   memoLabel: string;
   referenceLabel: string;
+  paymentEvidenceLabel: string;
+  paymentEvidenceTone: "success" | "warning";
+  paymentEvidenceSummaryLabel: string;
+  paymentEvidenceRequiredLabel: string;
   activityRouteLabel: string;
   evidenceRouteLabel: string;
   approvalRouteLabel: string;
@@ -946,7 +981,94 @@ export interface ManualJournalPrivateCapitalActivityViewModel {
   ledgerImpacts: ManualJournalPrivateCapitalLedgerImpactRowViewModel[];
   reportOutputs: ManualJournalPrivateCapitalReportOutputRowViewModel[];
   fundEventLedgerRecords: ManualJournalPrivateCapitalFundEventLedgerRecordViewModel[];
+  paymentIntents: ManualJournalPaymentIntentWorkflowRowViewModel[];
   validationIssues: AccountingConfigurationIssueViewModel[];
+}
+
+export interface CapitalAccountWorkbenchMetricViewModel {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+  tone: AccountingToolingTone;
+}
+
+export interface CapitalAccountWorkbenchInvestorAccountRowViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  netActivityLabel: string;
+  rollForwardLabel: string;
+  activityMixLabel: string;
+  evidenceLabel: string;
+  eventLabel: string;
+  paymentEvidenceLabel: string;
+  paymentEvidenceTone: "success" | "warning";
+  paymentEvidenceSummaryLabel: string;
+  paymentEvidenceRequiredLabel: string;
+  routeLabel: string;
+}
+
+export interface CapitalAccountWorkbenchAllocationRuleRowViewModel {
+  id: string;
+  accountLabel: string;
+  label: string;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  reason: string;
+  basis: string;
+  evidenceLabel: string;
+  routeLabel: string;
+  requiredLabel: string;
+}
+
+export interface CapitalAccountWorkbenchStatementLineageRowViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  publicationLabel: string;
+  provenanceLabel: string;
+  restatementLabel: string;
+  manifestLabel: string;
+  routeLabel: string;
+}
+
+export interface CapitalAccountWorkbenchAuditDrillThroughRowViewModel {
+  id: string;
+  kind: string;
+  title: string;
+  summary: string;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  evidenceLabel: string;
+  routeLabel: string;
+  relatedLabel: string;
+}
+
+export interface CapitalAccountWorkbenchViewModel {
+  title: string;
+  description: string;
+  loading: boolean;
+  errorText: string | null;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  statusReason: string;
+  projectedAtLabel: string;
+  workbenchRouteLabel: string;
+  emptyText: string;
+  summaryCards: CapitalAccountWorkbenchMetricViewModel[];
+  investorAccounts: CapitalAccountWorkbenchInvestorAccountRowViewModel[];
+  allocationRules: CapitalAccountWorkbenchAllocationRuleRowViewModel[];
+  statementLineage: CapitalAccountWorkbenchStatementLineageRowViewModel[];
+  auditDrillThroughs: CapitalAccountWorkbenchAuditDrillThroughRowViewModel[];
+  validationIssues: AccountingConfigurationIssueViewModel[];
+  liveCapabilities: string[];
+  plannedCapabilities: string[];
+  refresh: () => Promise<void>;
 }
 
 export interface ManualJournalEntryWorkbenchViewModel {
@@ -1493,6 +1615,10 @@ const defaultManualJournalEntryWorkbenchServices: ManualJournalEntryWorkbenchSer
   saveDraft: (request) => saveManualJournalEntryDraft(request),
   validateDraft: (request) => validateManualJournalEntryDraft(request),
   submitApproval: (request) => submitManualJournalEntryApproval(request)
+};
+
+const defaultCapitalAccountWorkbenchServices: CapitalAccountWorkbenchServices = {
+  getWorkbench: (query) => getCapitalAccountWorkbench(query)
 };
 
 const defaultSecurityMasterDrillInServices: SecurityMasterDrillInServices = {
@@ -2894,6 +3020,258 @@ export function useManualJournalEntryWorkbenchViewModel(
   };
 }
 
+export function useCapitalAccountWorkbenchViewModel(
+  active: boolean,
+  search = "",
+  services: CapitalAccountWorkbenchServices = defaultCapitalAccountWorkbenchServices
+): CapitalAccountWorkbenchViewModel {
+  const [workbench, setWorkbench] = useState<CapitalAccountWorkbench | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<ApiErrorDisplay | null>(null);
+  const query = useMemo(() => parseCapitalAccountWorkbenchQuery(search), [search]);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      setWorkbench(await services.getWorkbench(query));
+    } catch (err) {
+      setError(describeApiError(err, "Capital Account Workbench could not load."));
+      setWorkbench(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [query, services]);
+
+  useEffect(() => {
+    if (!active) {
+      return;
+    }
+
+    void refresh();
+  }, [active, refresh]);
+
+  return useMemo(() => ({
+    ...buildCapitalAccountWorkbenchView(workbench),
+    loading,
+    errorText: error?.summary ?? null,
+    refresh
+  }), [error?.summary, loading, refresh, workbench]);
+}
+
+function parseCapitalAccountWorkbenchQuery(search: string): CapitalAccountWorkbenchQuery {
+  const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
+  return {
+    fundProfileId: normalizeQueryValue(params.get("fundProfileId")),
+    ledgerBookId: normalizeQueryValue(params.get("ledgerBookId")),
+    fundEventId: normalizeQueryValue(params.get("fundEventId")),
+    capitalAccountId: normalizeQueryValue(params.get("capitalAccountId")),
+    investorId: normalizeQueryValue(params.get("investorId")),
+    currency: normalizeQueryValue(params.get("currency"))
+  };
+}
+
+function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | null): Omit<CapitalAccountWorkbenchViewModel, "loading" | "errorText" | "refresh"> {
+  if (!workbench) {
+    return {
+      title: "Capital Account Workbench",
+      description: "Investor-level capital account evidence, allocation rules, statement lineage, and audit drill-throughs load from the shared private-capital workbench endpoint.",
+      statusLabel: "Not loaded",
+      statusTone: "default",
+      statusReason: "The shared capital-account workbench endpoint has not returned a projection yet.",
+      projectedAtLabel: "Not loaded",
+      workbenchRouteLabel: "No workbench route",
+      emptyText: "No capital-account workbench projection has loaded yet.",
+      summaryCards: [
+        { id: "investor-accounts", label: "Investor accounts", value: "0", detail: "No investor account rows loaded", tone: "default" },
+        { id: "allocation-rules", label: "Allocation rules", value: "0", detail: "No allocation evidence checks loaded", tone: "default" },
+        { id: "statements", label: "Statements", value: "0", detail: "No statement lineage loaded", tone: "default" },
+        { id: "audit-drill-throughs", label: "Audit drill-throughs", value: "0", detail: "No drill-through targets loaded", tone: "default" }
+      ],
+      investorAccounts: [],
+      allocationRules: [],
+      statementLineage: [],
+      auditDrillThroughs: [],
+      validationIssues: [],
+      liveCapabilities: [],
+      plannedCapabilities: []
+    };
+  }
+
+  return {
+    title: "Capital Account Workbench",
+    description: "Investor-level capital account evidence, allocation rules, statement and restatement lineage, and audit drill-throughs from the shared private-capital workbench endpoint.",
+    statusLabel: workbench.statusLabel,
+    statusTone: capitalAccountWorkbenchStatusTone(workbench.statusLabel),
+    statusReason: workbench.statusReason,
+    projectedAtLabel: `${formatDateTimeLabel(workbench.projectedAtUtc)} / ${workbench.currency}`,
+    workbenchRouteLabel: workbench.workbenchRoute,
+    emptyText: "No investor-level capital accounts matched the selected private-capital filters.",
+    summaryCards: [
+      {
+        id: "investor-accounts",
+        label: "Investor accounts",
+        value: workbench.investorAccountCount.toLocaleString(),
+        detail: `${formatCurrencyWithCode(workbench.netCapitalActivity, workbench.currency, true)} net activity`,
+        tone: workbench.investorAccountCount > 0 ? "success" : "warning"
+      },
+      {
+        id: "allocation-rules",
+        label: "Allocation rules",
+        value: workbench.allocationRules.length.toLocaleString(),
+        detail: `${workbench.allocationRules.filter((item) => item.isSatisfied).length.toLocaleString()} satisfied`,
+        tone: workbench.allocationRules.every((item) => item.isSatisfied) ? "success" : "warning"
+      },
+      {
+        id: "statements",
+        label: "Statements",
+        value: workbench.statementCount.toLocaleString(),
+        detail: `${workbench.restatementLineageCount.toLocaleString()} restatement lineage`,
+        tone: workbench.statementCount > 0 ? "success" : "warning"
+      },
+      {
+        id: "audit-drill-throughs",
+        label: "Audit drill-throughs",
+        value: workbench.auditDrillThroughCount.toLocaleString(),
+        detail: `${workbench.auditDrillThroughs.filter((item) => item.isAvailable).length.toLocaleString()} available`,
+        tone: workbench.auditDrillThroughs.every((item) => item.isAvailable) ? "success" : "warning"
+      }
+    ],
+    investorAccounts: workbench.investorAccounts.map(buildCapitalAccountInvestorAccountRow),
+    allocationRules: workbench.allocationRules.map(buildCapitalAccountAllocationRuleRow),
+    statementLineage: workbench.statementLineage.map(buildCapitalAccountStatementLineageRow),
+    auditDrillThroughs: workbench.auditDrillThroughs.map(buildCapitalAccountAuditDrillThroughRow),
+    validationIssues: workbench.validationIssues.map<AccountingConfigurationIssueViewModel>((issue, index) => ({
+      id: `${issue.code}-${index}`,
+      label: issue.code,
+      message: issue.message,
+      detail: issue.suggestedAction ?? issue.targetId ?? "Review the capital-account workbench.",
+      tone: issue.severity === "Critical" ? "danger" : issue.severity === "Warning" ? "warning" : "default"
+    })),
+    liveCapabilities: workbench.liveCapabilities,
+    plannedCapabilities: workbench.plannedCapabilities
+  };
+}
+
+function buildCapitalAccountInvestorAccountRow(
+  account: CapitalAccountWorkbench["investorAccounts"][number]
+): CapitalAccountWorkbenchInvestorAccountRowViewModel {
+  const paymentEvidence = buildManualJournalPaymentIntentEvidenceView(
+    account.paymentIntentEvidence,
+    account.evidenceLinks,
+    account.currency,
+    account.netCapitalActivity,
+    account.fundEventRecords[0]?.effectiveDate ?? null
+  );
+
+  return {
+    id: account.accountKey,
+    title: account.capitalAccountId,
+    subtitle: `${account.investorId ?? "Unassigned investor"} / ${account.currency}`,
+    statusLabel: account.readinessLabel || account.readiness,
+    statusTone: capitalAccountReadinessTone(account.readiness),
+    netActivityLabel: formatCurrencyWithCode(account.netCapitalActivity, account.currency, true),
+    rollForwardLabel: `${formatCurrencyWithCode(account.openingNetActivity, account.currency, true)} opening -> ${formatCurrencyWithCode(account.endingNetActivity, account.currency, true)} ending`,
+    activityMixLabel: [
+      `Contributions ${formatCurrencyWithCode(account.contributions, account.currency)}`,
+      `Distributions ${formatCurrencyWithCode(account.distributions, account.currency)}`,
+      `Subscriptions ${formatCurrencyWithCode(account.subscriptions, account.currency)}`,
+      `Redemptions ${formatCurrencyWithCode(account.redemptions, account.currency)}`,
+      `Fees ${formatCurrencyWithCode(account.managementFees, account.currency)}`
+    ].join(" / "),
+    evidenceLabel: `${account.evidenceLinkCount.toLocaleString()} evidence / ${account.evidenceCategorySummary}`,
+    eventLabel: `${account.fundEventCount.toLocaleString()} fund event(s) / ${account.postedFundEventCount.toLocaleString()} posted / ${account.publishedReportOutputCount.toLocaleString()} published`,
+    paymentEvidenceLabel: paymentEvidence.label,
+    paymentEvidenceTone: paymentEvidence.tone,
+    paymentEvidenceSummaryLabel: paymentEvidence.summary,
+    paymentEvidenceRequiredLabel: paymentEvidence.required,
+    routeLabel: account.activityRoute
+  };
+}
+
+function buildCapitalAccountAllocationRuleRow(
+  rule: CapitalAccountWorkbench["allocationRules"][number]
+): CapitalAccountWorkbenchAllocationRuleRowViewModel {
+  return {
+    id: rule.ruleId,
+    accountLabel: `${rule.capitalAccountId} / ${rule.investorId ?? "Unassigned investor"}`,
+    label: rule.label,
+    statusLabel: rule.isSatisfied ? "Satisfied" : "Needs evidence",
+    statusTone: rule.isSatisfied ? "success" : "warning",
+    reason: rule.reason,
+    basis: rule.basis,
+    evidenceLabel: `${rule.evidenceLinkCount.toLocaleString()} evidence`,
+    routeLabel: rule.route ?? "No route",
+    requiredLabel: rule.requiredEvidence.length > 0 ? rule.requiredEvidence.join(" / ") : "No explicit evidence requirement"
+  };
+}
+
+function buildCapitalAccountStatementLineageRow(
+  lineage: CapitalAccountWorkbench["statementLineage"][number]
+): CapitalAccountWorkbenchStatementLineageRowViewModel {
+  return {
+    id: lineage.lineageId,
+    title: lineage.displayName,
+    subtitle: `${lineage.reportOutputType} / ${lineage.capitalAccountId} / ${lineage.investorId ?? "Unassigned investor"}`,
+    statusLabel: lineage.hasRestatementLineage ? "Restated" : lineage.isPublished ? "Published" : lineage.isReportReady ? "Ready" : "Review",
+    statusTone: lineage.hasRestatementLineage ? "warning" : lineage.isPublished || lineage.isReportReady ? "success" : "warning",
+    publicationLabel: [
+      lineage.reportWorkflowState ?? "No workflow state",
+      lineage.publishedBy ? `by ${lineage.publishedBy}` : null,
+      lineage.publishedAtUtc ? formatDateTimeLabel(lineage.publishedAtUtc) : null
+    ].filter(Boolean).join(" / "),
+    provenanceLabel: `${lineage.reportLineProvenanceCount.toLocaleString()} provenance line(s)`,
+    restatementLabel: lineage.hasRestatementLineage
+      ? `${lineage.restatementReasonCode ?? "Restated"} / ${lineage.restatementChangedLineCount.toLocaleString()} changed line(s) / ${lineage.restatementEvidenceLinkCount.toLocaleString()} evidence`
+      : lineage.restatementStatus,
+    manifestLabel: [lineage.publicationManifestId, lineage.retainedManifestPath, lineage.publicationEvidenceHash].filter(Boolean).join(" / ") || "No retained manifest metadata",
+    routeLabel: lineage.reportOutputRoute ?? lineage.reportRoute
+  };
+}
+
+function buildCapitalAccountAuditDrillThroughRow(
+  drill: CapitalAccountWorkbench["auditDrillThroughs"][number]
+): CapitalAccountWorkbenchAuditDrillThroughRowViewModel {
+  return {
+    id: drill.drillThroughId,
+    kind: drill.kind,
+    title: drill.label,
+    summary: drill.summary,
+    statusLabel: drill.isAvailable ? "Available" : "Missing route",
+    statusTone: drill.isAvailable ? "success" : "warning",
+    evidenceLabel: `${drill.evidenceLinkCount.toLocaleString()} evidence`,
+    routeLabel: drill.route ?? "No route",
+    relatedLabel: drill.relatedIds.length > 0 ? drill.relatedIds.join(" / ") : "No related ids"
+  };
+}
+
+function capitalAccountWorkbenchStatusTone(statusLabel: string): AccountingToolingTone {
+  const normalized = statusLabel.toLowerCase();
+  if (normalized.includes("blocked")) {
+    return "danger";
+  }
+
+  if (normalized.includes("ready") || normalized.includes("restated")) {
+    return "success";
+  }
+
+  if (normalized.includes("review") || normalized.includes("missing") || normalized.includes("no capital")) {
+    return "warning";
+  }
+
+  return "default";
+}
+
+function capitalAccountReadinessTone(readiness: CapitalAccountWorkbench["investorAccounts"][number]["readiness"]): AccountingToolingTone {
+  const tone = manualJournalPrivateCapitalReadinessTone(readiness);
+  return tone === "outline" ? "default" : tone;
+}
+
+function normalizeQueryValue(value: string | null): string | null {
+  const normalized = value?.trim();
+  return normalized ? normalized : null;
+}
+
 function buildManualJournalPrivateCapitalActivityView(
   activity: PrivateCapitalActivityProjection | null
 ): ManualJournalPrivateCapitalActivityViewModel {
@@ -2908,6 +3286,7 @@ function buildManualJournalPrivateCapitalActivityView(
         { id: "capital-accounts", label: "Capital accounts", value: "0", detail: "No capital-account activity", tone: "default" },
         { id: "ledger-impacts", label: "Ledger impacts", value: "0", detail: "No GL impact rows", tone: "default" },
         { id: "report-outputs", label: "Report outputs", value: "0", detail: "No package candidates", tone: "default" },
+        { id: "payment-intents", label: "Payment intents", value: "0", detail: "No pre-execution cash workflow", tone: "default" },
         { id: "net-activity", label: "Net activity", value: "$0", detail: "No projected balance movement", tone: "default" },
         { id: "projection-issues", label: "Projection issues", value: "0", detail: "No projection warnings", tone: "success" }
       ],
@@ -2918,6 +3297,7 @@ function buildManualJournalPrivateCapitalActivityView(
       ledgerImpacts: [],
       reportOutputs: [],
       fundEventLedgerRecords: [],
+      paymentIntents: [],
       validationIssues: []
     };
   }
@@ -2928,7 +3308,10 @@ function buildManualJournalPrivateCapitalActivityView(
   const ledgerImpacts = activity.ledgerImpacts;
   const reportOutputs = activity.reportOutputs;
   const fundEventLedgerRecords = activity.fundEventRecords;
+  const paymentIntents = activity.paymentIntents ?? [];
   const fundEventLedgerRecordCount = fundEventLedgerRecords.length;
+  const deferredPaymentIntentCount = paymentIntents.filter((item) => item.status === "ExecutionDeferred").length;
+  const blockedPaymentIntentCount = paymentIntents.filter((item) => item.status === "Blocked" || item.status === "BankReturned").length;
   const postedFundEventCount = activity.postedFundEventCount ?? 0;
   const publishedReportOutputCount = activity.publishedReportOutputCount ?? 0;
   const validationIssues = activity.validationIssues.map<AccountingConfigurationIssueViewModel>((issue, index) => ({
@@ -2988,6 +3371,13 @@ function buildManualJournalPrivateCapitalActivityView(
         tone: reportOutputs.some((item) => !item.isReportReady) ? "warning" : reportOutputs.length > 0 ? "success" : "default"
       },
       {
+        id: "payment-intents",
+        label: "Payment intents",
+        value: paymentIntents.length.toLocaleString(),
+        detail: `${deferredPaymentIntentCount.toLocaleString()} execution-deferred / ${blockedPaymentIntentCount.toLocaleString()} blocked or returned`,
+        tone: blockedPaymentIntentCount > 0 ? "danger" : paymentIntents.some((item) => item.status !== "ExecutionDeferred") ? "warning" : paymentIntents.length > 0 ? "success" : "default"
+      },
+      {
         id: "published-report-outputs",
         label: "Published outputs",
         value: publishedReportOutputCount.toLocaleString(),
@@ -3023,6 +3413,7 @@ function buildManualJournalPrivateCapitalActivityView(
     ledgerImpacts: ledgerImpacts.map(buildManualJournalPrivateCapitalLedgerImpactRow),
     reportOutputs: reportOutputs.map(buildManualJournalPrivateCapitalReportOutputRow),
     fundEventLedgerRecords: fundEventLedgerRecords.map(buildManualJournalPrivateCapitalFundEventLedgerRecordRow),
+    paymentIntents: paymentIntents.map(buildManualJournalPaymentIntentWorkflowRow),
     validationIssues
   };
 }
@@ -3032,6 +3423,13 @@ function buildManualJournalPrivateCapitalCapitalAccountSubledgerRow(
 ): ManualJournalPrivateCapitalCapitalAccountSubledgerRowViewModel {
   const evidenceCategories = (subledger.evidenceCategories ?? []).map(buildManualJournalPrivateCapitalEvidenceCategoryRow);
   const readyEvidenceCategoryCount = evidenceCategories.filter((category) => category.statusLabel === "Ready").length;
+  const paymentEvidence = buildManualJournalPaymentIntentEvidenceView(
+    subledger.paymentIntentEvidence,
+    subledger.evidenceLinks,
+    subledger.currency,
+    subledger.endingNetActivity,
+    subledger.lastEffectiveDate ?? null
+  );
   const hasCriticalIssue = subledger.validationIssues.some((issue) => issue.severity === "Critical");
   const hasWarnings = subledger.validationIssues.length > 0 || subledger.approvalQueueCount > 0 || evidenceCategories.some((category) => category.statusLabel !== "Ready");
   const readiness = subledger.readiness ?? (hasCriticalIssue ? "Blocked" : hasWarnings ? "ReportReview" : subledger.fundEventCount > 0 ? "Ready" : "EvidenceMissing");
@@ -3068,6 +3466,10 @@ function buildManualJournalPrivateCapitalCapitalAccountSubledgerRow(
       subledger.lastFundEventType ?? "no last event type"
     ].join(" / "),
     evidenceLabel: `${subledger.evidenceLinkCount.toLocaleString()} evidence`,
+    paymentEvidenceLabel: paymentEvidence.label,
+    paymentEvidenceTone: paymentEvidence.tone,
+    paymentEvidenceSummaryLabel: paymentEvidence.summary,
+    paymentEvidenceRequiredLabel: paymentEvidence.required,
     evidenceCategorySummaryLabel: evidenceCategories.length > 0
       ? `${readyEvidenceCategoryCount.toLocaleString()}/${evidenceCategories.length.toLocaleString()} evidence categories ready`
       : "No evidence categories",
@@ -3083,6 +3485,13 @@ function buildManualJournalPrivateCapitalFundEventLedgerRecordRow(
 ): ManualJournalPrivateCapitalFundEventLedgerRecordViewModel {
   const evidenceCategories = (record.evidenceCategories ?? []).map(buildManualJournalPrivateCapitalEvidenceCategoryRow);
   const readyEvidenceCategoryCount = evidenceCategories.filter((category) => category.statusLabel === "Ready").length;
+  const paymentEvidence = buildManualJournalPaymentIntentEvidenceView(
+    record.paymentIntentEvidence,
+    record.evidenceLinks,
+    record.currency,
+    record.netCapitalActivity,
+    record.effectiveDate
+  );
   return {
     id: record.fundEventRecordId,
     title: record.fundEventType || record.fundEventId,
@@ -3106,6 +3515,10 @@ function buildManualJournalPrivateCapitalFundEventLedgerRecordRow(
     capitalAccountRollForwardLabel: `${formatCurrencyWithCode(record.capitalAccountOpeningNetActivity, record.currency, true)} opening -> ${formatCurrencyWithCode(record.capitalAccountEndingNetActivity, record.currency, true)} ending`,
     memoLabel: record.memo || record.journalEntryId,
     referenceLabel: [record.paymentIntentId, record.settlementReference].filter((value): value is string => Boolean(value)).join(" / ") || record.journalEntryId,
+    paymentEvidenceLabel: paymentEvidence.label,
+    paymentEvidenceTone: paymentEvidence.tone,
+    paymentEvidenceSummaryLabel: paymentEvidence.summary,
+    paymentEvidenceRequiredLabel: paymentEvidence.required,
     activityRouteLabel: record.activityRoute || "No activity route",
     evidenceRouteLabel: record.evidenceRoute || "No evidence route",
     approvalRouteLabel: record.approvalRoute ?? (record.approvalId ? `/accounting/approvals?approvalId=${encodeURIComponent(record.approvalId)}` : "No approval route"),
@@ -3129,6 +3542,40 @@ function buildManualJournalPrivateCapitalFundEventLedgerRecordRow(
   };
 }
 
+function buildManualJournalPaymentIntentWorkflowRow(
+  workflow: PaymentIntentWorkflow
+): ManualJournalPaymentIntentWorkflowRowViewModel {
+  const movement = workflow.expectedCashMovement;
+  const approvedCount = workflow.approvalChain.filter((step) => step.status === "Approved").length;
+  const bankConfirmedCount = workflow.bankEvidence.filter((item) => item.status === "Confirmed").length;
+  const bankRetainedCount = workflow.bankEvidence.filter((item) => item.status === "Retained").length;
+  const bankReturnedCount = workflow.bankEvidence.filter((item) => item.status === "Returned").length;
+  const reconciliationReadyCount = workflow.reconciliationLinks.filter((item) => item.status === "Ready").length;
+
+  return {
+    id: workflow.paymentIntentId,
+    title: workflow.paymentIntentId,
+    subtitle: [workflow.fundEventId, movement.capitalAccountId, movement.investorId].filter(Boolean).join(" / ") || workflow.journalEntryId,
+    statusLabel: workflow.statusLabel || formatPaymentIntentWorkflowStatus(workflow.status),
+    statusTone: paymentIntentWorkflowTone(workflow.status),
+    requestedLabel: `${workflow.requester} / ${formatDateTimeLabel(workflow.requestedAtUtc)}`,
+    expectedCashLabel: [
+      movement.direction,
+      formatCurrencyWithCode(Math.abs(movement.amount), movement.currency),
+      movement.effectiveDate,
+      movement.settlementReference ?? "no settlement"
+    ].join(" / "),
+    approvalLabel: `${approvedCount.toLocaleString()}/${workflow.approvalChain.length.toLocaleString()} approved`,
+    bankEvidenceLabel: `${bankConfirmedCount.toLocaleString()} confirmed / ${bankRetainedCount.toLocaleString()} retained / ${bankReturnedCount.toLocaleString()} returned`,
+    reconciliationLabel: `${reconciliationReadyCount.toLocaleString()}/${workflow.reconciliationLinks.length.toLocaleString()} reconciliation ready`,
+    auditLabel: `${workflow.auditHistory.length.toLocaleString()} audit event(s)`,
+    readinessReasonLabel: workflow.readinessReason || "Payment intent readiness requires review.",
+    executionDeferredLabel: workflow.executionDeferredReason || "Full payment execution is deferred.",
+    evidenceRouteLabel: workflow.evidenceRoute || "No evidence route",
+    workbenchRouteLabel: workflow.workbenchRoute || "No workbench route"
+  };
+}
+
 function buildManualJournalPrivateCapitalEvidenceCategoryRow(
   category: PrivateCapitalEvidenceCategory
 ): ManualJournalPrivateCapitalEvidenceCategoryViewModel {
@@ -3141,6 +3588,68 @@ function buildManualJournalPrivateCapitalEvidenceCategoryRow(
     evidenceLabel: `${category.evidenceLinkCount.toLocaleString()} evidence`,
     requiredEvidenceLabel: (category.requiredEvidence ?? []).filter(Boolean).join(" / ") || "No required evidence listed"
   };
+}
+
+function buildManualJournalPaymentIntentEvidenceView(
+  evidence: PrivateCapitalPaymentIntentEvidence | null | undefined,
+  fallbackEvidenceLinks: string[],
+  currency: string,
+  amount: number,
+  effectiveDate: string | null
+): { label: string; tone: "success" | "warning"; summary: string; required: string } {
+  if (!evidence) {
+    return {
+      label: `Missing intent / ${formatCurrencyWithCode(Math.abs(amount), currency)} / ${effectiveDate ?? "no effective date"}`,
+      tone: "warning",
+      summary: "Payment intent evidence is not included in the shared accounting payload.",
+      required: "Payment intent id / Retained bank, cash, or settlement evidence"
+    };
+  }
+
+  const required = (evidence.requiredEvidence ?? []).filter(Boolean);
+  const fallbackCashCount = fallbackEvidenceLinks.filter((link) => /bank|cash|custodian|payment|plaid|settlement|treasury|wire/i.test(link)).length;
+  const cashEvidenceCount = evidence.cashEvidenceLinkCount ?? fallbackCashCount;
+  const labelParts = [
+    formatPaymentIntentEvidenceStatus(evidence),
+    evidence.direction,
+    formatCurrencyWithCode(Math.abs(evidence.amount), evidence.currency),
+    `${cashEvidenceCount.toLocaleString()} cash evidence`,
+    evidence.settlementReference ? "settlement linked" : "no settlement"
+  ].filter(Boolean);
+
+  return {
+    label: labelParts.join(" / "),
+    tone: evidence.isReady ? "success" : "warning",
+    summary: evidence.summary || "No payment intent evidence summary.",
+    required: required.length > 0 ? required.join(" / ") : "No additional payment evidence required"
+  };
+}
+
+function formatPaymentIntentEvidenceStatus(evidence: PrivateCapitalPaymentIntentEvidence): string {
+  const status = evidence.status;
+  if (status === "SettlementMatched") return "Settlement matched";
+  if (status === "IntentCaptured") return "Cash evidence retained";
+  if (status === "CashEvidenceMissing") return "Cash evidence missing";
+  if (evidence.isReady && evidence.settlementReference) return "Settlement matched";
+  if (evidence.isReady) return "Cash evidence retained";
+  return "Payment intent missing";
+}
+
+function formatPaymentIntentWorkflowStatus(status: PaymentIntentWorkflow["status"]): string {
+  if (status === "ExecutionDeferred") return "Ready, execution deferred";
+  if (status === "ReconciliationPending") return "Reconciliation pending";
+  if (status === "BankEvidencePending") return "Bank evidence pending";
+  if (status === "BankReturned") return "Bank return captured";
+  if (status === "ApprovalPending") return "Approval pending";
+  if (status === "Blocked") return "Blocked";
+  return "Intent evidence missing";
+}
+
+function paymentIntentWorkflowTone(status: PaymentIntentWorkflow["status"]): ManualJournalPaymentIntentWorkflowRowViewModel["statusTone"] {
+  if (status === "ExecutionDeferred") return "success";
+  if (status === "Blocked" || status === "BankReturned") return "danger";
+  if (status === "EvidenceMissing" || status === "BankEvidencePending" || status === "ReconciliationPending" || status === "ApprovalPending") return "warning";
+  return "outline";
 }
 
 function manualJournalPrivateCapitalReadinessTone(
@@ -3925,6 +4434,10 @@ export function resolveAccountingWorkstream(pathname: string): AccountingWorkstr
 
   if (pathname.includes("/journal-entries")) {
     return "journal-entries";
+  }
+
+  if (pathname.includes("/capital-accounts")) {
+    return "capital-accounts";
   }
 
   if (pathname.includes("/reconciliation")) {
@@ -5127,6 +5640,17 @@ export function buildAccountingWorkflowLaunchViewState({
       workstream
     }),
     buildAccountingWorkflowStep({
+      id: "capital-accounts",
+      label: "Capital accounts",
+      caption: "Investor evidence, allocation rules, statements, and audit support.",
+      href: WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts,
+      metricLabel: "Investor rows",
+      metricValue: data.manualJournalWorkbench?.privateCapitalActivity?.capitalAccountCount.toLocaleString() ?? "0",
+      statusLabel: (data.manualJournalWorkbench?.privateCapitalActivity?.capitalAccountCount ?? 0) > 0 ? "Evidence ready" : "No activity",
+      tone: (data.manualJournalWorkbench?.privateCapitalActivity?.capitalAccountCount ?? 0) > 0 ? "success" : "warning",
+      workstream
+    }),
+    buildAccountingWorkflowStep({
       id: "ledger",
       label: "Review ledger",
       caption: "Meridian-owned trial balance and journal evidence.",
@@ -5283,6 +5807,10 @@ function buildAccountingWorkflowStep({
 function accountingWorkflowStepLabel(workstream: AccountingWorkstream): string {
   if (workstream === "journal-entries") {
     return "Journal entries";
+  }
+
+  if (workstream === "capital-accounts") {
+    return "Capital accounts";
   }
 
   if (workstream === "security-master") {
@@ -6413,6 +6941,10 @@ function cashFlowContextLabel(workstream: AccountingWorkstream): string {
 
   if (workstream === "reconciliation") {
     return "Reconciliation context";
+  }
+
+  if (workstream === "capital-accounts") {
+    return "Capital account context";
   }
 
   if (workstream === "security-master") {

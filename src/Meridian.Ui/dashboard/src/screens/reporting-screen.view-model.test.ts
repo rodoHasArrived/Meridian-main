@@ -181,14 +181,17 @@ const restatedReporting: GovernanceReportingSummary = {
         {
           lineKey: "nav.total",
           sourceKind: "ledger",
-          sourceId: "ledger-entry-1",
-          evidenceId: "ledger-evidence-1",
-          runId: "run-1",
-          ledgerEntryId: "ledger-entry-1",
+          sourceId: "ledger-entry-nav",
+          evidenceId: "evidence-nav-total",
+          runId: "run-restated-1",
+          ledgerEntryId: "ledger-entry-nav",
           reconciliationCaseId: null,
-          reportValue: "1250000",
+          reportValue: "1249500",
           sourceSessionId: null,
-          reconciliationRunId: null
+          reconciliationRunId: null,
+          reconciliationOutcome: "matched",
+          financialRecordExplorerId: "ledger",
+          financialRecordHref: "/api/workstation/financial-record-explorers/ledger?lineKey=nav.total&sourceId=ledger-entry-nav&evidenceId=evidence-nav-total&runId=run-restated-1"
         }
       ],
       publication: {
@@ -199,7 +202,7 @@ const restatedReporting: GovernanceReportingSummary = {
         signedOffAt: "2026-05-28T15:20:00Z",
         evidenceLinks: [
           {
-            evidenceId: "publication-evidence-1",
+            evidenceId: "evidence-nav-total",
             label: "Publication manifest",
             route: "/reporting/manifests/manifest-restated-1",
             source: "reporting",
@@ -693,13 +696,24 @@ describe("useReportingScreenViewModel", () => {
       statusLabel: "Restated",
       statusVariant: "success",
       summaryText: "manifest-restated-1 signed off by reporting-ops at 2026-05-28T15:20:00Z.",
-      evidenceSummary: "1 evidence link"
+      evidenceSummary: "1 evidence link / 1 provenance line",
+      hasLineProvenance: true
     });
     expect(result.current.workflowTaskPanel?.publicationReview.fields).toEqual(expect.arrayContaining([
       expect.objectContaining({ label: "Signed off by", value: "reporting-ops" }),
       expect.objectContaining({ label: "Evidence hash", value: "sha256:restated123" }),
       expect.objectContaining({ label: "Manifest path", value: "vault/report-packs/manifest-restated-1.json" }),
-      expect.objectContaining({ label: "Publication time", value: "2026-05-28T15:20:00Z" })
+      expect.objectContaining({ label: "Publication time", value: "2026-05-28T15:20:00Z" }),
+      expect.objectContaining({ label: "Line provenance", value: "1" })
+    ]));
+    expect(result.current.workflowTaskPanel?.publicationReview.lineProvenanceRows).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        lineKey: "nav.total",
+        sourceLabel: "ledger · ledger-entry-nav · ledger=ledger-entry-nav · recon=matched",
+        valueLabel: "value 1249500",
+        evidenceHref: "/reporting/manifests/manifest-restated-1",
+        financialRecordHref: "/api/workstation/financial-record-explorers/ledger?lineKey=nav.total&sourceId=ledger-entry-nav&evidenceId=evidence-nav-total&runId=run-restated-1"
+      })
     ]));
   });
 

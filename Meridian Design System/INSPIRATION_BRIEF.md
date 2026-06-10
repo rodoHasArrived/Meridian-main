@@ -30,7 +30,7 @@ into Meridian UI.
 
 3. **Favor split workbenches for canonical records.** Security Master, custody positions, and
    report workflows all benefit from a list/detail split: searchable results on the left or top,
-   canonical identifiers and next actions in the detail pane.
+   canonical identifiers, retained evidence, delivery attempts, and next actions in the detail pane.
 
 4. **Make filters and status controls compact.** The institutional references use narrow toolbars,
    segmented tabs, date controls, filter chips, and column controls. Meridian should keep those
@@ -50,6 +50,11 @@ into Meridian UI.
    and audit evidence. Import, export, bulk edit, and delete actions need explicit backing workflow
    state, disabled reasons, or confirmation gates.
 
+8. **Keep Reporting delivery evidence first-class.** Current browser Reporting source projects
+   report-pack workflows, scheduled deliveries, delivery attempts, retained manifests, source
+   artifacts, delivery evidence packets, and private-capital report-output readiness from shared
+   payloads. Design-system handoffs should show those records instead of a local-only packet wizard.
+
 ## Components this brief should influence
 
 - `workstation-frame`: full-page shell with masthead, rail, and content surface.
@@ -62,6 +67,8 @@ into Meridian UI.
   Master, cash-flow/factor schedules, controls, notes, and audit evidence.
 - `entity-summary`: canonical identifier blocks for Security Master, portfolio, custody, and
   reporting records.
+- `status-window`: retained run, report-pack, delivery, queue, and audit status with owner,
+  timestamp, next action, and evidence graph links.
 - `annotation-callout`: documentation-only marker for product guides and screenshot walkthroughs.
 
 ## Copy guidance derived from references
@@ -70,5 +77,7 @@ into Meridian UI.
   `Review exceptions`, `Validate replay`.
 - Status text should say what changed and the current evidence: `4 pending trades`, `473 records`,
   `Last updated 19:19:17`, `Matched`, `Partial`, `Ready for review`.
+- Report-pack text should distinguish `Published`, `report-ready`, retained manifest, and
+  report-line provenance instead of treating publication as evidence completion.
 - Avoid instructional clutter in production surfaces. Product-guide pages may say "Click Send to
   desk"; the application should show a button named `Send to desk` plus a confirmation state.

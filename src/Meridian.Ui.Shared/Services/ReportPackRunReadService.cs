@@ -1,3 +1,4 @@
+using System.Globalization;
 using Meridian.Reporting;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Export;
@@ -62,6 +63,9 @@ public sealed class ReportPackRunReadService
         var distributions = BuildDistributionRecords(workflowRecords, deliveryAttempts);
         var pendingDistributionCount = distributions.Count(static distribution => distribution.PendingItems > 0);
         var selectedFundProfileId = ResolveSelectedFundProfileId(workflowRecords);
+        var reportLineProvenanceExplorer = FinancialRecordExplorerReadService.BuildReportLineProvenanceExplorer(
+            workflowRecords,
+            deliveryAttempts);
 
         return new WorkstationReportingPayload(
             ProfileCount: profiles.Length,
@@ -74,7 +78,8 @@ public sealed class ReportPackRunReadService
             Schedules: schedules,
             DeliveryAttempts: deliveryAttempts,
             SelectedFundProfileId: selectedFundProfileId,
-            ScheduleDeliveryPlans: scheduleDeliveryPlans);
+            ScheduleDeliveryPlans: scheduleDeliveryPlans,
+            ReportLineProvenanceExplorer: reportLineProvenanceExplorer);
     }
 
     public static WorkstationReportingPayload BuildFallbackPayload() =>
@@ -731,6 +736,7 @@ public sealed class ReportPackRunReadService
                 Family: family,
                 Status: manifest.Status.ToString(),
                 Trigger: manifest.Trigger.ToString(),
+                AsOfDate: manifest.AsOfDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 AttemptCount: manifest.AttemptCount,
                 SectionCount: manifest.Sections.Length,
                 LineageLinkedSections: manifest.Sections.Count(static section => section.Lineage is not null),
@@ -769,6 +775,7 @@ public sealed class ReportPackRunReadService
                 Family: "GovernedReportPack",
                 Status: record.State.ToString(),
                 Trigger: "Workflow",
+                AsOfDate: record.Period,
                 AttemptCount: Math.Max(1, record.Version),
                 SectionCount: record.LineProvenance?.Count ?? record.Restatement?.ChangedLines.Count ?? 0,
                 LineageLinkedSections: record.LineProvenance?.Count(static line => !string.IsNullOrWhiteSpace(line.EvidenceId)) ?? 0,

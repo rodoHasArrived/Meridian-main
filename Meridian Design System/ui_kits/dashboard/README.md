@@ -27,7 +27,7 @@ Minimal JSX kit that mirrors the live dashboard components. Load in this order:
 | `WorkstationShell` | Masthead + left rail + content slot for image-inspired operator pages. |
 | `ToolbarStrip` | Compact one-line filter/action strip. |
 | `DenseDataTable` | High-row-count table with sticky headers, mono cells, selected-row support. |
-| `EntitySummary` | Canonical identifier/detail grid for Security Master, portfolio, custody, and reporting records. |
+| `EntitySummary` | Canonical identifier/detail grid for Security Master, portfolio, custody, report-pack, delivery, and reporting records. |
 
 All components are exported to `window` via `Object.assign(window, {...})`.
 
@@ -55,3 +55,8 @@ The uploaded reference images favor a full workstation structure rather than sta
 Use this pattern for operator pages that need global context, compact filters, and selected-record
 evidence. Use the uploaded images as structure and density inspiration only; keep Meridian labels,
 colors, and brand assets.
+
+For Reporting pages, pair `ToolbarStrip`, `DenseDataTable`, `EntitySummary`, and status banners with
+server-owned report-pack workflow state, delivery attempts, retained manifest paths, report-line
+provenance, and Evidence Workbench links. Do not model report-pack delivery or report-ready rules in
+local preview state.

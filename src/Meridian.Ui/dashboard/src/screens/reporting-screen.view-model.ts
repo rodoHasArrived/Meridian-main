@@ -5,7 +5,7 @@ import { describeApiError } from "@/lib/api-errors";
 import { EXPORT_API_ENDPOINTS, exportPreviewEndpoint, reportPackEvidenceBundleEndpoint } from "@/lib/workstation-endpoints";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { getReportPackDistributions } from "@/lib/reporting-distributions";
-import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportWriterAggregateFunction, ReportWriterFilterOperator, ReportingScheduleDeliveryPlan, ReportingScheduleDeliveryTarget, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowRecord } from "@/types";
+import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportWriterAggregateFunction, ReportWriterFilterOperator, ReportingScheduleDeliveryPlan, ReportingScheduleDeliveryTarget, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowEvidenceLink, ReportingWorkflowLineProvenance, ReportingWorkflowRecord } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
 export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
@@ -119,6 +119,7 @@ export interface ReportingPackTargetRow {
   pendingSummary: string;
   ownerLabel: string;
   dueLabel: string;
+  lastSentLabel: string;
   href: string;
   ariaLabel: string;
 }
@@ -148,6 +149,7 @@ export interface ReportingTemplateRow {
   accessMode: string;
   accessSummary: string;
   isAccessible: boolean;
+  accessGovernance: ReportingTemplateAccessGovernanceRow;
   latestApprovedLabel: string;
   versionLineageSummary: string;
   auditTrailSummary: string;
@@ -166,6 +168,15 @@ export interface ReportingTemplateRow {
   writerGrids: ReportingWriterGridRow[];
   hasWriterGrids: boolean;
   writerGridSummary: string;
+}
+
+export interface ReportingTemplateAccessGovernanceRow {
+  modeLabel: string;
+  scopeLabel: string;
+  postureLabel: string;
+  postureVariant: ReportingBadgeVariant;
+  detail: string;
+  ariaLabel: string;
 }
 
 export type ReportingTemplateLifecycleActionKind = "submit" | "approve" | "reject";
@@ -233,6 +244,15 @@ export interface ReportingRunStatusRow {
   family: string;
   status: string;
   trigger: string;
+  runIdLabel: string;
+  templateLabel: string;
+  asOfDateLabel: string;
+  attemptLabel: string;
+  sectionLabel: string;
+  lineageLabel: string;
+  artifactLabel: string;
+  artifactNames: string[];
+  hasArtifacts: boolean;
   lineageSummary: string;
   auditSummary: string;
   failureReason: string | null;
@@ -364,6 +384,27 @@ export interface ReportingRestatementReviewPanel {
   emptyText: string;
 }
 
+export interface ReportingLineProvenanceRow {
+  id: string;
+  lineKey: string;
+  sourceLabel: string;
+  valueLabel: string;
+  evidenceLabel: string;
+  evidenceHref: string | null;
+  financialRecordLabel: string;
+  financialRecordHref: string | null;
+  ariaLabel: string;
+}
+
+export interface ReportingPublicationEvidenceRow {
+  id: string;
+  label: string;
+  sourceLabel: string;
+  capturedLabel: string;
+  href: string | null;
+  ariaLabel: string;
+}
+
 export interface ReportingPublicationReviewPanel {
   regionLabel: string;
   title: string;
@@ -373,6 +414,14 @@ export interface ReportingPublicationReviewPanel {
   summaryText: string;
   fields: ReportingDetailField[];
   evidenceSummary: string;
+  evidenceLinksLabel: string;
+  evidenceLinks: ReportingPublicationEvidenceRow[];
+  hasEvidenceLinks: boolean;
+  evidenceLinksEmptyText: string;
+  lineProvenanceLabel: string;
+  lineProvenanceRows: ReportingLineProvenanceRow[];
+  hasLineProvenance: boolean;
+  lineProvenanceEmptyText: string;
 }
 
 export interface ReportingWorkflowTaskPanel {
@@ -691,6 +740,7 @@ export function useReportingScreenViewModel(
     pendingSummary: distribution.pendingSummary,
     ownerLabel: distribution.owner,
     dueLabel: formatReportPackDistributionDue(distribution.dueAtUtc),
+    lastSentLabel: distribution.lastSentAtUtc ? formatReportPackDistributionDue(distribution.lastSentAtUtc) : "Not sent",
     href: distribution.route,
     ariaLabel: `${distribution.recipient} report-pack distribution: ${distribution.pendingSummary}`
   }));
@@ -813,6 +863,7 @@ export function buildPublicationReviewPanel(records: ReportingWorkflowRecord[] =
     })[0] ?? null;
   const publication = selected?.publication ?? null;
   const evidenceCount = publication?.evidenceLinks?.length ?? 0;
+  const lineProvenance = selected?.lineProvenance ?? [];
   const signedOffBy = publication?.signedOffBy?.trim() || "signer pending";
   const publicationTime = publication?.signedOffAt?.trim() || "Publication time pending";
 
@@ -833,9 +884,29 @@ export function buildPublicationReviewPanel(records: ReportingWorkflowRecord[] =
       buildReportingDetailField("Evidence hash", publication?.evidenceHash ?? "None", publication?.evidenceHash ? "success" : "muted"),
       buildReportingDetailField("Manifest path", publication?.retainedManifestPath ?? "None", publication?.retainedManifestPath ? "default" : "muted"),
       buildReportingDetailField("Publication time", publicationTime, publication ? "default" : "muted"),
-      buildReportingDetailField("Evidence links", String(evidenceCount), evidenceCount > 0 ? "success" : "muted")
+      buildReportingDetailField("Evidence links", String(evidenceCount), evidenceCount > 0 ? "success" : "muted"),
+      buildReportingDetailField("Line provenance", String(lineProvenance.length), lineProvenance.length > 0 ? "success" : "muted")
     ],
-    evidenceSummary: `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`
+    evidenceSummary: `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"} / ${lineProvenance.length} provenance line${lineProvenance.length === 1 ? "" : "s"}`,
+    evidenceLinksLabel: "Publication evidence links",
+    evidenceLinks: (publication?.evidenceLinks ?? []).map(buildPublicationEvidenceRow),
+    hasEvidenceLinks: evidenceCount > 0,
+    evidenceLinksEmptyText: "No retained publication evidence links are attached to the selected publication.",
+    lineProvenanceLabel: "Report-line provenance drill-through",
+    lineProvenanceRows: lineProvenance.map((line, index) => buildLineProvenanceRow(line, publication?.evidenceLinks ?? [], index)),
+    hasLineProvenance: lineProvenance.length > 0,
+    lineProvenanceEmptyText: "No retained report-line provenance is attached to the selected publication."
+  };
+}
+
+function buildPublicationEvidenceRow(link: ReportingWorkflowEvidenceLink): ReportingPublicationEvidenceRow {
+  return {
+    id: link.evidenceId,
+    label: link.label,
+    sourceLabel: `${link.evidenceId} · ${link.source}`,
+    capturedLabel: link.capturedAtUtc ?? "capture time pending",
+    href: link.route ?? null,
+    ariaLabel: `${link.label} publication evidence from ${link.source}`
   };
 }
 
@@ -851,6 +922,45 @@ function buildRestatementChangedLineRow(line: ReportingWorkflowChangedLine, inde
     evidenceHref: firstEvidence?.route ?? null,
     ariaLabel: `${line.lineKey} changed from ${line.previousValue} to ${line.currentValue} with ${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`
   };
+}
+
+function buildLineProvenanceRow(
+  line: ReportingWorkflowLineProvenance,
+  publicationEvidenceLinks: ReportingWorkflowEvidenceLink[],
+  index: number
+): ReportingLineProvenanceRow {
+  const evidence = publicationEvidenceLinks.find((link) => link.evidenceId === line.evidenceId) ?? null;
+  const explorerLabel = formatFinancialRecordExplorerLabel(line.financialRecordExplorerId);
+  const sourceLabel = [
+    line.sourceKind,
+    line.sourceId,
+    line.ledgerEntryId ? `ledger=${line.ledgerEntryId}` : null,
+    line.reconciliationOutcome ? `recon=${line.reconciliationOutcome}` : null
+  ].filter(Boolean).join(" · ");
+
+  return {
+    id: `${line.lineKey || "line"}-${index}`,
+    lineKey: line.lineKey,
+    sourceLabel,
+    valueLabel: line.reportValue ? `value ${line.reportValue}` : "No report value",
+    evidenceLabel: evidence?.label ?? line.evidenceId ?? "No retained evidence",
+    evidenceHref: evidence?.route ?? null,
+    financialRecordLabel: explorerLabel,
+    financialRecordHref: line.financialRecordHref ?? null,
+    ariaLabel: `${line.lineKey} provenance from ${line.sourceKind} with ${explorerLabel}`
+  };
+}
+
+function formatFinancialRecordExplorerLabel(explorerId: string | null | undefined): string {
+  if (explorerId === "portfolio") {
+    return "Open Portfolio Explorer";
+  }
+
+  if (explorerId === "security-instrument") {
+    return "Open Security & Instrument Explorer";
+  }
+
+  return "Open Ledger Explorer";
 }
 
 function countRestatementEvidence(selected: ReportingWorkflowRecord | null, changedLines: ReportingWorkflowChangedLine[]): number {
@@ -897,6 +1007,7 @@ function buildTemplateRows(templates: ReportingTemplateMetadata[]): ReportingTem
       accessMode: template.accessMode ?? "CompanyWide",
       accessSummary: template.accessSummary ?? "Company-wide access",
       isAccessible,
+      accessGovernance: buildTemplateAccessGovernance(template, isAccessible),
       latestApprovedLabel: template.isLatestApproved ? "Latest approved" : "Not latest approved",
       versionLineageSummary: buildTemplateVersionLineageSummary(template),
       auditTrailSummary: `${auditTrail.length} audit event${auditTrail.length === 1 ? "" : "s"}`,
@@ -923,6 +1034,59 @@ function buildTemplateRows(templates: ReportingTemplateMetadata[]): ReportingTem
         : "No report-writer grids"
     };
   });
+}
+
+function buildTemplateAccessGovernance(
+  template: ReportingTemplateMetadata,
+  isAccessible: boolean
+): ReportingTemplateAccessGovernanceRow {
+  const mode = template.accessMode ?? "CompanyWide";
+  const summary = template.accessSummary ?? "Company-wide access";
+  const modeLabel = formatTemplateAccessMode(mode);
+  const scopeLabel = resolveTemplateAccessScopeLabel(mode, summary);
+  const postureLabel = isAccessible ? "Runnable" : "Access blocked";
+  return {
+    modeLabel,
+    scopeLabel,
+    postureLabel,
+    postureVariant: isAccessible ? "success" : "warning",
+    detail: isAccessible
+      ? `${summary}; run and lifecycle actions use the shared access evaluation.`
+      : `${summary}; run and lifecycle actions are disabled by the shared access evaluation.`,
+    ariaLabel: `${template.name} access governance ${modeLabel} ${postureLabel}`
+  };
+}
+
+function formatTemplateAccessMode(mode: string): string {
+  if (mode === "Private") {
+    return "User-locked";
+  }
+
+  if (mode === "Restricted") {
+    return "User/group";
+  }
+
+  return "Company-wide";
+}
+
+function resolveTemplateAccessScopeLabel(mode: string, summary: string): string {
+  if (mode === "Private") {
+    return "Owner";
+  }
+
+  if (mode === "Restricted") {
+    if (/\buser\b/i.test(summary)) {
+      return "User";
+    }
+
+    if (/\bcompany\b/i.test(summary)) {
+      return "Company";
+    }
+
+    return "Group";
+  }
+
+  return "Company";
 }
 
 function buildTemplateVersionLineageSummary(template: ReportingTemplateMetadata): string {
@@ -1326,6 +1490,15 @@ function buildRunStatusRows(runs: ReportingRunStatusProjection[]): ReportingRunS
       family: run.family,
       status: run.status,
       trigger: run.trigger,
+      runIdLabel: run.runId,
+      templateLabel: run.templateId,
+      asOfDateLabel: run.asOfDate?.trim() || "As-of date unavailable",
+      attemptLabel: `${run.attemptCount} attempt${run.attemptCount === 1 ? "" : "s"}`,
+      sectionLabel: `${run.sectionCount} section${run.sectionCount === 1 ? "" : "s"}`,
+      lineageLabel: `${run.lineageLinkedSections}/${run.sectionCount} linked`,
+      artifactLabel: `${run.artifacts.length} artifact${run.artifacts.length === 1 ? "" : "s"}`,
+      artifactNames: run.artifacts,
+      hasArtifacts: run.artifacts.length > 0,
       lineageSummary: `${run.lineageLinkedSections}/${run.sectionCount} sections linked`,
       auditSummary: run.auditActions.length > 0 ? run.auditActions.join(" → ") : "No audit actions",
       failureReason: run.failureReason,

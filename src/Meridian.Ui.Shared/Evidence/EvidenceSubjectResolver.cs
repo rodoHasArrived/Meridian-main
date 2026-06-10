@@ -2,6 +2,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Contracts.Ledger;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Evidence;
@@ -19,6 +20,8 @@ public sealed class EvidenceSubjectResolver
     public const string ApprovalKind = "approval";
     public const string AccountingRecordKind = "accounting-record";
     public const string PrivateCapitalFundEventKind = "private-capital-fund-event";
+    public const string PaymentIntentKind = "payment-intent";
+    public const string ReportPackDeliveryKind = "report-pack-delivery";
     public const string EvidenceVaultKind = "evidence-vault";
 
     private static readonly HashSet<string> SupportedKinds = new(StringComparer.OrdinalIgnoreCase)
@@ -34,6 +37,8 @@ public sealed class EvidenceSubjectResolver
         ApprovalKind,
         AccountingRecordKind,
         PrivateCapitalFundEventKind,
+        PaymentIntentKind,
+        ReportPackDeliveryKind,
         EvidenceVaultKind
     };
 
@@ -161,6 +166,33 @@ public sealed class EvidenceSubjectResolver
                     Workspace: "Accounting",
                     Route: $"/accounting/journal-entries?fundEventId={Uri.EscapeDataString(record.FundEventId)}",
                     PageTag: "AccountingJournalEntries")));
+            subjects.AddRange(privateCapitalActivities
+                .SelectMany(static activity => activity.PaymentIntents)
+                .OrderByDescending(static workflow => workflow.ExpectedCashMovement.EffectiveDate)
+                .ThenBy(static workflow => workflow.PaymentIntentId, StringComparer.OrdinalIgnoreCase)
+                .Take(100)
+                .Select(static workflow => new EvidenceSubjectDto(
+                    SubjectId: workflow.PaymentIntentId,
+                    SubjectKind: PaymentIntentKind,
+                    Label: $"Payment intent {workflow.StatusLabel}",
+                    Workspace: "Accounting",
+                    Route: $"/accounting/journal-entries?paymentIntentId={Uri.EscapeDataString(workflow.PaymentIntentId)}",
+                    PageTag: "AccountingJournalEntries")));
+        }
+
+        var deliveryAttempts = ListReportPackDeliveryAttempts(100);
+        if (deliveryAttempts.Count > 0)
+        {
+            subjects.AddRange(deliveryAttempts
+                .OrderByDescending(static attempt => attempt.AttemptedAtUtc)
+                .ThenBy(static attempt => attempt.Recipient, StringComparer.OrdinalIgnoreCase)
+                .Select(static attempt => new EvidenceSubjectDto(
+                    SubjectId: BuildReportPackDeliverySubjectId(attempt),
+                    SubjectKind: ReportPackDeliveryKind,
+                    Label: $"Report-pack delivery {attempt.Recipient} {attempt.AttemptNumber}",
+                    Workspace: "Reporting",
+                    Route: BuildReportPackDeliveryRoute(attempt),
+                    PageTag: "EvidenceWorkbench")));
         }
 
         return subjects
@@ -202,6 +234,16 @@ public sealed class EvidenceSubjectResolver
         if (string.Equals(subjectKind, PrivateCapitalFundEventKind, StringComparison.OrdinalIgnoreCase))
         {
             return await ResolvePrivateCapitalFundEventSubjectAsync(subjectId, ct).ConfigureAwait(false);
+        }
+
+        if (string.Equals(subjectKind, PaymentIntentKind, StringComparison.OrdinalIgnoreCase))
+        {
+            return await ResolvePaymentIntentSubjectAsync(subjectId, ct).ConfigureAwait(false);
+        }
+
+        if (string.Equals(subjectKind, ReportPackDeliveryKind, StringComparison.OrdinalIgnoreCase))
+        {
+            return ResolveReportPackDeliverySubject(subjectId);
         }
 
         return subjectKind.ToLowerInvariant() switch
@@ -272,6 +314,20 @@ public sealed class EvidenceSubjectResolver
         };
     }
 
+    private EvidenceSubjectDto? ResolveReportPackDeliverySubject(string subjectId)
+    {
+        var attempt = ResolveReportPackDeliveryAttempt(ListReportPackDeliveryAttempts(500), subjectId);
+        return attempt is null
+            ? null
+            : new EvidenceSubjectDto(
+                SubjectId: BuildReportPackDeliverySubjectId(attempt),
+                SubjectKind: ReportPackDeliveryKind,
+                Label: $"Report-pack delivery {attempt.Recipient} {attempt.AttemptNumber}",
+                Workspace: "Reporting",
+                Route: BuildReportPackDeliveryRoute(attempt),
+                PageTag: "EvidenceWorkbench");
+    }
+
     private async Task<EvidenceSubjectDto?> ResolvePrivateCapitalFundEventSubjectAsync(string subjectId, CancellationToken ct)
     {
         var service = _services.GetService<IManualJournalEntryWorkbenchService>();
@@ -295,6 +351,36 @@ public sealed class EvidenceSubjectResolver
             Label: $"Private-capital fund event {record.FundEventType}",
             Workspace: "Accounting",
             Route: $"/accounting/journal-entries?fundEventId={Uri.EscapeDataString(record.FundEventId)}",
+            PageTag: "AccountingJournalEntries");
+    }
+
+    private async Task<EvidenceSubjectDto?> ResolvePaymentIntentSubjectAsync(string subjectId, CancellationToken ct)
+    {
+        var service = _services.GetService<IManualJournalEntryWorkbenchService>();
+        if (service is null)
+        {
+            return null;
+        }
+
+        var fundProfileIds = await service.ListFundProfileIdsAsync(ct).ConfigureAwait(false);
+        var activities = fundProfileIds.Count == 0
+            ? [await service.GetPrivateCapitalActivityAsync(ct: ct).ConfigureAwait(false)]
+            : await Task.WhenAll(fundProfileIds.Select(fundProfileId =>
+                service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId: null, ct))).ConfigureAwait(false);
+        var workflow = activities
+            .SelectMany(static activity => activity.PaymentIntents)
+            .FirstOrDefault(item => string.Equals(item.PaymentIntentId, subjectId, StringComparison.OrdinalIgnoreCase));
+        if (workflow is null)
+        {
+            return null;
+        }
+
+        return new EvidenceSubjectDto(
+            SubjectId: workflow.PaymentIntentId,
+            SubjectKind: PaymentIntentKind,
+            Label: $"Payment intent {workflow.StatusLabel}",
+            Workspace: "Accounting",
+            Route: $"/accounting/journal-entries?paymentIntentId={Uri.EscapeDataString(workflow.PaymentIntentId)}",
             PageTag: "AccountingJournalEntries");
     }
 
@@ -363,6 +449,28 @@ public sealed class EvidenceSubjectResolver
     private static string ResolveWorkspace(StrategyRunMode mode)
         => mode is StrategyRunMode.Paper or StrategyRunMode.Live ? "Trading" : "Strategy";
 
+    private IReadOnlyList<ReportPackDeliveryAttemptDto> ListReportPackDeliveryAttempts(int limit)
+    {
+        var service = _services.GetService<ReportPackDeliveryService>();
+        if (service is not null)
+        {
+            return service.ListAttempts(limit);
+        }
+
+        var store = _services.GetService<IReportPackDeliveryRecordStore>();
+        if (store is null)
+        {
+            return [];
+        }
+
+        return store.Load()
+            .OrderByDescending(static attempt => attempt.AttemptedAtUtc)
+            .ThenBy(static attempt => attempt.ReportId)
+            .ThenBy(static attempt => attempt.DistributionId, StringComparer.OrdinalIgnoreCase)
+            .Take(Math.Clamp(limit, 1, 500))
+            .ToArray();
+    }
+
     private static string? TryResolveFundProfileIdFromFundEventId(string fundEventId)
     {
         if (string.IsNullOrWhiteSpace(fundEventId))
@@ -376,4 +484,35 @@ public sealed class EvidenceSubjectResolver
             ? parts[1]
             : null;
     }
+
+    private static ReportPackDeliveryAttemptDto? ResolveReportPackDeliveryAttempt(
+        IReadOnlyList<ReportPackDeliveryAttemptDto> attempts,
+        string subjectId)
+    {
+        var normalized = subjectId.Trim();
+        var parts = normalized.Split(':', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 2 &&
+            Guid.TryParse(parts[0], out var reportId) &&
+            Guid.TryParse(parts[1], out var attemptId))
+        {
+            return attempts.FirstOrDefault(attempt =>
+                attempt.ReportId == reportId &&
+                attempt.AttemptId == attemptId);
+        }
+
+        if (Guid.TryParse(normalized, out var attemptOnlyId))
+        {
+            return attempts.FirstOrDefault(attempt => attempt.AttemptId == attemptOnlyId);
+        }
+
+        return attempts.FirstOrDefault(attempt =>
+            attempt.Package is not null &&
+            string.Equals(attempt.Package.PackageId, normalized, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string BuildReportPackDeliverySubjectId(ReportPackDeliveryAttemptDto attempt)
+        => $"{attempt.ReportId:D}:{attempt.AttemptId:D}";
+
+    private static string BuildReportPackDeliveryRoute(ReportPackDeliveryAttemptDto attempt)
+        => $"/reporting/report-packs?reportId={Uri.EscapeDataString(attempt.ReportId.ToString("D"))}&deliveryAttemptId={Uri.EscapeDataString(attempt.AttemptId.ToString("D"))}";
 }

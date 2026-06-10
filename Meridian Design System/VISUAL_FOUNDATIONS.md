@@ -15,7 +15,7 @@ The workstation shell uses a dark perimeter, compact masthead, persistent left r
 **This is the only decorative gradient allowed.** Everything else that looks like a gradient is a
 brand mark or a chart encoding.
 
-Institutional Ops rejects hard-offset poster shadows, glow-heavy buttons, animated decoration, and soft marketing cards. Surfaces should look drawn, not lit.
+Institutional Ops rejects large poster shadows, glow-heavy buttons, animated decoration, and soft marketing cards. The live browser workstation uses a small flat offset plus inset highlight so surfaces look drawn, not lit.
 
 ## Reference-derived structure
 
@@ -47,7 +47,7 @@ third-party brand elements.
 | `--panel-soft-bg` | `#162334` | Inline data grids and subtle lift. |
 | `--surface-raise-bg` | `#1B2A3C` | Hover states, selected rows. |
 | `--border-color` | `#1F344C` | Default stroke. |
-| `--border-hi` | `#2A4566` | High-contrast separators, active states, selected frames. |
+| `--border-hi` | `#477089` | High-contrast separators, active states, selected frames. |
 | `--fg` | `#DEE6EF` | Primary text. |
 | `--fg-muted` | `#7C8A9B` | Secondary/supporting text, icons. |
 | `--primary` | `#2AB2D4` | Signal cyan — CTAs, active nav, focus rings. |
@@ -70,8 +70,9 @@ Three families, each with a job:
 | Family | Role | Example |
 |---|---|---|
 | **Space Grotesk** (500, 600, 700) | Display — hero titles, big metrics | `"Trading Workstation"`, `"+$100K"` |
-| **IBM Plex Sans** (400, 500, 600, 700) | UI — body, labels, buttons, descriptions | Everything normal |
-| **IBM Plex Mono** (400, 500, 600) | Data — identifiers, timestamps, prices, code | `ord-a8f2c`, `$1,204.32`, `14:32:07` |
+| **Inter** (400, 500, 600, 700) | UI — body, labels, buttons, descriptions | Everything normal |
+| **JetBrains Mono** (400, 500, 600) | Data — identifiers, timestamps, prices, code | `ord-a8f2c`, `$1,204.32`, `14:32:07` |
+| **IBM Plex Sans / IBM Plex Mono** | Fallbacks retained by the browser workstation | Offline or fallback font loading |
 
 ### Scale
 
@@ -121,16 +122,17 @@ rounded marketing cards.
 ```css
 --shadow-workstation:
   0 1px 0 rgba(255,255,255,0.02) inset,
-  0 1px 2px rgba(0,0,0,0.30);
+  3px 3px 0 rgba(0,0,0,0.72);
 
 --shadow-panel:
   0 1px 0 rgba(255,255,255,0.02) inset,
   0 1px 1px rgba(0,0,0,0.25);
 ```
 
-Every surface pairs an **inner highlight** with a shallow workstation shadow. Floating dialogs may
-use `--shadow-float`; tables, nav, and workbench panels should not look like marketing cards.
-Hard-offset shadows and neon glows are not part of the production workstation language.
+Every primary workstation surface pairs an **inner highlight** with the sanctioned flat offset
+shadow. Floating dialogs may use `--shadow-float`; tables, nav, and workbench panels should not
+look like marketing cards. Large offset shadows and neon glows are not part of the production
+workstation language.
 
 ## Backgrounds & imagery
 
@@ -166,6 +168,8 @@ Meridian is **dense** by consumer‑UI standards but **breathing** by Bloomberg 
 - Selected rows should reveal a detail pane or status window, not just a color highlight.
 - Schedule-heavy tables keep dates, factors, expected values, actual values, source, and status in
   one dense grid so operators can compare events without modal hopping.
+- Reporting delivery tables keep recipient, channel, package mode, manifest, artifact integrity,
+  and evidence graph links visible without rebuilding delivery lineage in the client.
 - Long-running workflows should expose status, owner/action, and last-updated evidence.
 
 ## The cockpit rules

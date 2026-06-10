@@ -105,17 +105,25 @@ internal static class PrivateCapitalCapitalAccountSubledgerBuilder
             .OrderByDescending(static item => item.EffectiveDate)
             .ThenBy(static item => item.FundEventId, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault();
-        var evidenceCategories = PrivateCapitalEvidenceCategoryBuilder.BuildForCapitalAccountSubledger(
-            records,
-            entries,
-            impacts,
-            outputs);
         var activityRoute = PrivateCapitalActivityRouteBuilder.BuildCapitalAccountSubledgerRoute(
             fundProfileId,
             ledgerBookId,
             key.CapitalAccountId,
             key.InvestorId,
             key.Currency);
+        var paymentIntentEvidence = PrivateCapitalPaymentIntentEvidenceBuilder.BuildForSubledger(
+            records,
+            evidenceLinks,
+            key.Currency,
+            lastRecord?.EffectiveDate ?? account?.LastEffectiveDate,
+            account?.NetActivity ?? records.Sum(static item => item.NetCapitalActivity),
+            activityRoute);
+        var evidenceCategories = PrivateCapitalEvidenceCategoryBuilder.BuildForCapitalAccountSubledger(
+            records,
+            entries,
+            impacts,
+            outputs,
+            paymentIntentEvidence);
         var readiness = BuildReadiness(
             records,
             evidenceCategories,
@@ -160,7 +168,8 @@ internal static class PrivateCapitalCapitalAccountSubledgerBuilder
             readiness.Reason,
             readiness.NextAction,
             readiness.NextActionRoute,
-            EvidenceCategories: evidenceCategories);
+            EvidenceCategories: evidenceCategories,
+            PaymentIntentEvidence: paymentIntentEvidence);
     }
 
     private static PrivateCapitalFundEventLedgerReadinessProjection BuildReadiness(

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  getCapitalAccountWorkbench,
   getPrivateCapitalActivity,
   getPrivateCapitalCapitalAccountSubledger,
   getPrivateCapitalFundEventRecord,
@@ -65,6 +66,17 @@ describe("private-capital API wiring", () => {
       },
       { signal: controller.signal }
     );
+    await getCapitalAccountWorkbench(
+      {
+        fundProfileId: "fund alpha",
+        ledgerBookId: "book / 1",
+        fundEventId: "fund-event:fund-alpha:capital-call:20260630",
+        capitalAccountId: "capital-account:fund-alpha:lp-1",
+        investorId: "investor:lp-1",
+        currency: "USD"
+      },
+      { signal: controller.signal }
+    );
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       1,
@@ -84,6 +96,11 @@ describe("private-capital API wiring", () => {
     expect(fetchMock).toHaveBeenNthCalledWith(
       4,
       "/api/ledger/private-capital/report-output?fundProfileId=fund+alpha&ledgerBookId=book+%2F+1&reportOutputId=report-output%3Afund-alpha%3Acapital-call-notice&reportPackId=report-pack+%2F+1&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
+      expect.objectContaining({ signal: controller.signal })
+    );
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      5,
+      "/api/ledger/private-capital/capital-account-workbench?fundProfileId=fund+alpha&ledgerBookId=book+%2F+1&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1&currency=USD",
       expect.objectContaining({ signal: controller.signal })
     );
   });

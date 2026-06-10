@@ -1,3 +1,4 @@
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
@@ -129,6 +130,29 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             && row.Evidence.Contains("1 event(s)", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("evidence categories", StringComparison.OrdinalIgnoreCase)
             && row.Key.Contains("/api/ledger/private-capital/capital-account-subledger", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.CapitalAccountWorkbenchStatusText.Should().Contain("investor account");
+        harness.ViewModel.CapitalAccountInvestorRows.Should().ContainSingle(row =>
+            row.Name == "capital-account:alpha-fund:default"
+            && row.Detail.Contains("+250 USD net", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("evidence categories", StringComparison.OrdinalIgnoreCase)
+            && row.Key.Contains("/api/ledger/private-capital/capital-account-subledger", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.CapitalAccountAllocationRuleRows.Should().Contain(row =>
+            row.Name == "Report output"
+            && row.Status == "Needs evidence"
+            && row.Key.Contains("/api/ledger/private-capital/report-output", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.CapitalAccountStatementLineageRows.Should().ContainSingle(row =>
+            row.Name.Contains("CapitalCallNotice", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("No restatement lineage retained", StringComparison.OrdinalIgnoreCase)
+            && row.Key.Contains("/api/ledger/private-capital/report-output", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.CapitalAccountAuditDrillThroughRows.Should().Contain(row =>
+            row.Name.Contains("subledger", StringComparison.OrdinalIgnoreCase)
+            && row.Key.Contains("/api/ledger/private-capital/capital-account-subledger", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.CapitalAccountCapabilityRows.Should().Contain(row =>
+            row.Status == "Live" &&
+            row.Name == "Investor-level capital account evidence");
+        harness.ViewModel.CapitalAccountCapabilityRows.Should().Contain(row =>
+            row.Status == "Planned" &&
+            row.Name == "Full cap-table administration");
         harness.ViewModel.ManualJournalFundEventRows.Should().ContainSingle(row =>
             row.Name.Contains("CapitalCall", StringComparison.OrdinalIgnoreCase)
             && row.Detail.Contains("+250 USD net", StringComparison.OrdinalIgnoreCase));
@@ -139,7 +163,6 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             && row.Evidence.Contains("2 line", StringComparison.OrdinalIgnoreCase));
         harness.ViewModel.ManualJournalReportOutputRows.Should().ContainSingle(row =>
             row.Name.Contains("CapitalCallNotice", StringComparison.OrdinalIgnoreCase)
-            && row.Status == "Review"
             && row.Evidence.Contains("evidence", StringComparison.OrdinalIgnoreCase));
         harness.ViewModel.ValidationRows.Should().Contain(row => row.Name == "manual-je.book-missing");
         harness.ViewModel.ProviderRows.Should().Contain(row => row.Evidence == "quickbooks-fixture");
@@ -198,11 +221,13 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         var configurationStore = new FileAccountingConfigurationStore(configurationPath);
         var configurationService = new AccountingConfigurationService(configurationStore, configurationStore);
         var projection = CreatePostedPrivateCapitalProjection(profile.FundProfileId);
+        var manualJournalService = new StaticManualJournalEntryWorkbenchService(projection);
         var viewModel = new AccountingConfigureViewModel(
             fundContext,
             configurationService,
-            new StaticManualJournalEntryWorkbenchService(projection),
-            configurationStore);
+            manualJournalService,
+            configurationStore,
+            capitalAccountWorkbenchService: new CapitalAccountWorkbenchService(manualJournalService));
 
         await viewModel.LoadAsync();
 
@@ -213,6 +238,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         viewModel.ManualJournalStatusText.Should().Contain("1 capital account(s)");
         viewModel.ManualJournalStatusText.Should().Contain("1 account subledger(s)");
         viewModel.ManualJournalStatusText.Should().Contain("1 subledger movement(s)");
+        viewModel.ManualJournalStatusText.Should().Contain("1 payment intent(s)");
         viewModel.ManualJournalStatusText.Should().Contain("1 ledger impact(s)");
         viewModel.ManualJournalStatusText.Should().Contain("1 report output(s)");
         viewModel.ManualJournalStatusText.Should().Contain("1 published");
@@ -229,7 +255,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             && row.Evidence.Contains("Published", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("1 provenance", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("readiness Published", StringComparison.OrdinalIgnoreCase)
-            && row.Evidence.Contains("published with retained report evidence", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("linked to retained evidence", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("next Open published report via /api/ledger/private-capital/report-output", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("2 evidence via /api/workstation/evidence/subjects/private-capital-fund-event/", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("approval approval:capital-call-controller via /api/ledger/journal-entry-workbench", StringComparison.OrdinalIgnoreCase)
@@ -253,6 +279,43 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             && row.Evidence.Contains("Report output Ready", StringComparison.OrdinalIgnoreCase)
             && row.Key.Contains("/api/ledger/private-capital/capital-account-subledger", StringComparison.OrdinalIgnoreCase)
             && row.Key.Contains("capitalAccountId=capital-account%3A", StringComparison.OrdinalIgnoreCase));
+        viewModel.CapitalAccountWorkbenchStatusText.Should().Contain("Ready");
+        viewModel.CapitalAccountInvestorRows.Should().ContainSingle(row =>
+            row.Name == "capital-account:alpha-fund:lp-001"
+            && row.Status == "Published"
+            && row.Detail.Contains("+250 USD net", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("1 published statement", StringComparison.OrdinalIgnoreCase)
+            && row.Key.Contains("/api/ledger/private-capital/capital-account-subledger", StringComparison.OrdinalIgnoreCase));
+        viewModel.CapitalAccountAllocationRuleRows.Should().Contain(row =>
+            row.Name == "Report output" &&
+            row.Status == "Satisfied" &&
+            row.Key.Contains("/api/ledger/private-capital/report-output", StringComparison.OrdinalIgnoreCase));
+        viewModel.CapitalAccountStatementLineageRows.Should().ContainSingle(row =>
+            row.Name == "Capital Account Statement"
+            && row.Status == "Published"
+            && row.Detail.Contains("Published", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("No restatement lineage retained", StringComparison.OrdinalIgnoreCase)
+            && row.Key.Contains("/api/ledger/private-capital/report-output", StringComparison.OrdinalIgnoreCase));
+        viewModel.CapitalAccountAuditDrillThroughRows.Should().Contain(row =>
+            row.Status == "Available" &&
+            row.Name.Contains("retained manifest", StringComparison.OrdinalIgnoreCase));
+        viewModel.CapitalAccountCapabilityRows.Should().Contain(row =>
+            row.Status == "Live" &&
+            row.Name == "Statement publication and restatement lineage");
+        viewModel.CapitalAccountCapabilityRows.Should().Contain(row =>
+            row.Status == "Planned" &&
+            row.Name == "Broad LP portal self-service");
+        viewModel.ManualJournalPaymentIntentRows.Should().ContainSingle(row =>
+            row.Name == "payment:alpha-fund:capital-call:20260601"
+            && row.Status == "Ready, execution deferred"
+            && row.Detail.Contains("Inflow 250 USD", StringComparison.OrdinalIgnoreCase)
+            && row.Detail.Contains("requester fund-controller", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("2 approval step", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("1 bank/cash evidence", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("1 reconciliation link", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("2 audit event", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("Full payment execution is explicitly deferred", StringComparison.OrdinalIgnoreCase)
+            && row.Key.Contains("/api/workstation/evidence/subjects/payment-intent/", StringComparison.OrdinalIgnoreCase));
         viewModel.ManualJournalFundEventRows.Should().ContainSingle(row =>
             row.Name.Contains("CapitalCall", StringComparison.OrdinalIgnoreCase)
             && row.Status == "Posted"
@@ -288,6 +351,13 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.ChartRows.Should().BeEmpty();
         harness.ViewModel.ManualJournalDraftRows.Should().BeEmpty();
         harness.ViewModel.ManualJournalCapitalAccountSubledgerRows.Should().BeEmpty();
+        harness.ViewModel.ManualJournalPaymentIntentRows.Should().BeEmpty();
+        harness.ViewModel.CapitalAccountInvestorRows.Should().BeEmpty();
+        harness.ViewModel.CapitalAccountAllocationRuleRows.Should().BeEmpty();
+        harness.ViewModel.CapitalAccountStatementLineageRows.Should().BeEmpty();
+        harness.ViewModel.CapitalAccountAuditDrillThroughRows.Should().BeEmpty();
+        harness.ViewModel.CapitalAccountCapabilityRows.Should().BeEmpty();
+        harness.ViewModel.CapitalAccountWorkbenchStatusText.Should().Contain("Locked");
         harness.ViewModel.ExternalGlRows.Should().BeEmpty();
         harness.ViewModel.PolicyRows.Should().BeEmpty();
         harness.ViewModel.StatusText.ToLowerInvariant().Should().Contain("unlock accounting configure");
@@ -318,6 +388,14 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         xaml.Should().Contain("ManualJournalFundEventLedgerRecordGrid");
         xaml.Should().Contain("ManualJournalCapitalAccountGrid");
         xaml.Should().Contain("ManualJournalCapitalAccountSubledgerGrid");
+        xaml.Should().Contain("ManualJournalPaymentIntentGrid");
+        xaml.Should().Contain("Payment Intent and Cash Evidence");
+        xaml.Should().Contain("Capital Account Workbench");
+        xaml.Should().Contain("CapitalAccountWorkbenchInvestorGrid");
+        xaml.Should().Contain("CapitalAccountWorkbenchAllocationRuleGrid");
+        xaml.Should().Contain("CapitalAccountWorkbenchStatementLineageGrid");
+        xaml.Should().Contain("CapitalAccountWorkbenchAuditDrillThroughGrid");
+        xaml.Should().Contain("CapitalAccountWorkbenchCapabilityGrid");
         xaml.Should().Contain("Subledger Route");
         xaml.Should().Contain("ManualJournalFundEventGrid");
         xaml.Should().Contain("ManualJournalLedgerImpactGrid");
@@ -349,6 +427,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             draftStore,
             configurationService,
             configurationStore);
+        var capitalAccountWorkbenchService = new CapitalAccountWorkbenchService(manualJournalService);
         var accountingSystemIntegrationService = new AccountingSystemIntegrationService(
             [new QuickBooksFixtureAccountingProvider()]);
         var policyService = new AccountingPolicyService();
@@ -360,7 +439,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             draftStore,
             accountingSystemIntegrationService,
             fundOperationsWorkspaceReadService: null,
-            policyService);
+            policyService,
+            capitalAccountWorkbenchService);
 
         return new AccountingConfigureHarness(viewModel, configurationPath, draftsPath);
     }
@@ -643,6 +723,97 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
                     evidenceLinks,
                     ["Governed report output"])
             ]);
+        var paymentIntent = new PaymentIntentWorkflowDto(
+            fundEvent.PaymentIntentId!,
+            fundEvent.SettlementReference,
+            fundProfileId,
+            null,
+            fundEventId,
+            journalEntryId,
+            "fund-controller",
+            updatedAtUtc,
+            PaymentIntentWorkflowStatusDto.ExecutionDeferred,
+            "Ready, execution deferred",
+            "All pre-execution controls are retained before any live payment instruction.",
+            "Full payment execution is explicitly deferred in v0.18; this layer only retains intent, control, cash-evidence, reconciliation, and audit history before any bank-side instruction.",
+            new PaymentIntentExpectedCashMovementDto(
+                fundEvent.PaymentIntentId!,
+                PaymentIntentCashDirectionDto.Inflow,
+                250m,
+                "USD",
+                effectiveDate,
+                fundEvent.SettlementReference,
+                fundEventId,
+                "CapitalCall",
+                capitalAccountId,
+                "investor:lp-001",
+                "Capital call for Alpha Fund LP"),
+            UiApiRoutes.WithParam(
+                UiApiRoutes.WithParam(
+                    UiApiRoutes.WorkstationEvidenceSubjectPacket,
+                    "subjectKind",
+                    "payment-intent"),
+                "subjectId",
+                fundEvent.PaymentIntentId!),
+            UiApiRoutes.WithQuery(
+                UiApiRoutes.LedgerPrivateCapitalActivity,
+                $"fundProfileId={Uri.EscapeDataString(fundProfileId)}&paymentIntentId={Uri.EscapeDataString(fundEvent.PaymentIntentId!)}"),
+            ApprovalChain:
+            [
+                new PaymentIntentApprovalStepDto(
+                    1,
+                    "Requester",
+                    "fund-controller",
+                    "Approved",
+                    updatedAtUtc,
+                    fundEventLedgerRecord.ApprovalRoute),
+                new PaymentIntentApprovalStepDto(
+                    2,
+                    "Controller approval",
+                    "controller",
+                    "Approved",
+                    updatedAtUtc,
+                    fundEventLedgerRecord.ApprovalRoute)
+            ],
+            BankEvidence:
+            [
+                new PaymentIntentBankEvidenceDto(
+                    "bank-evidence:alpha-fund:capital-call:20260601",
+                    "RetainedCashEvidence",
+                    "Retained",
+                    "Wire evidence confirms expected capital-call cash movement.",
+                    Amount: 250m,
+                    Currency: "USD",
+                    EffectiveDate: effectiveDate,
+                    RecordedAtUtc: updatedAtUtc,
+                    ExternalRef: fundEvent.SettlementReference,
+                    EvidenceRoute: evidenceLinks[1])
+            ],
+            ReconciliationLinks:
+            [
+                new PaymentIntentReconciliationLinkDto(
+                    "reconciliation:alpha-fund:capital-call:20260601",
+                    "Ready",
+                    "Wire evidence reconciles to the posted capital-call ledger record.",
+                    EvidenceRoute: evidenceLinks[1])
+            ],
+            AuditHistory:
+            [
+                new PaymentIntentAuditEventDto(
+                    "payment-intent-requested:alpha-fund:capital-call:20260601",
+                    updatedAtUtc,
+                    "fund-controller",
+                    "payment-intent.requested",
+                    "Payment intent was captured from the posted private-capital fund event.",
+                    evidenceLinks),
+                new PaymentIntentAuditEventDto(
+                    "payment-intent-execution-deferred:alpha-fund:capital-call:20260601",
+                    updatedAtUtc,
+                    "system",
+                    "payment-intent.execution-deferred",
+                    "Live treasury execution remains deferred.",
+                    evidenceLinks)
+            ]);
 
         return new PrivateCapitalActivityProjectionDto(
             fundProfileId,
@@ -663,7 +834,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             ReportOutputs: [reportOutput],
             ValidationIssues: [],
             FundEventRecords: [fundEventLedgerRecord],
-            CapitalAccountSubledgers: [capitalAccountSubledger]);
+            CapitalAccountSubledgers: [capitalAccountSubledger],
+            PaymentIntents: [paymentIntent]);
     }
 
     private sealed class StaticManualJournalEntryWorkbenchService(

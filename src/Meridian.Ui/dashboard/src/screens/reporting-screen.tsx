@@ -1,11 +1,12 @@
 import { type DragEvent, type KeyboardEvent, useEffect, useRef, useState } from "react";
-import { CheckCircle2, Eye, FileText, Filter, GripVertical, Landmark, Network, PencilLine, RotateCcw, Send, XCircle } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, Eye, FileText, Filter, GripVertical, Landmark, Network, PencilLine, Plus, RotateCcw, Send, Trash2, XCircle } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
@@ -26,6 +27,7 @@ import {
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
+import { evidenceWorkbenchPath } from "@/lib/workspace";
 import {
   resolveReportPackProfileKeyCommand,
   useReportingScreenViewModel,
@@ -51,6 +53,7 @@ import type {
   ReportAccessMode,
   ReportAccessPrincipalKind,
   ReportBrandingTheme,
+  ReportPackDeliveryPackage,
   ReportPackDeliveryMode,
   ReportTemplateDecisionRequest,
   ReportTemplateDraftRequest,
@@ -80,8 +83,10 @@ interface ReportingCommandStatus {
 
 type ReportWriterDropZone = "rowFields" | "columnFields" | "metrics" | "formulas";
 type ReportWriterDraftState = Partial<Record<ReportWriterDropZone, ReportingWriterToken[]>>;
+type ReportWriterTokenDragOrigin = { gridId: string; zone: ReportWriterDropZone };
+type ReportWriterTokenDragPayload = { token: ReportingWriterToken; origin?: ReportWriterTokenDragOrigin | null };
 type ReportingScheduleArtifactFormat = Extract<GovernanceReportArtifactFormat, "Pdf" | "Xlsx" | "Csv">;
-type ReportWriterPreviewDatasetProfile = "portfolioPositions" | "ledgerFacts" | "cashLadder";
+type ReportWriterPreviewDatasetProfile = "portfolioPositions" | "ledgerFacts" | "cashLadder" | "customRows";
 type ReportWriterDraftSettingsField =
   | "name"
   | "displayName"
@@ -165,6 +170,14 @@ interface ReportingScheduleDraftState {
   deliveryMode: ReportPackDeliveryMode;
   deliveryNote: string;
   formats: Record<ReportingScheduleArtifactFormat, boolean>;
+  deliveryTargets: ReportingScheduleDraftTarget[];
+}
+
+interface ReportingScheduleDraftTarget {
+  distributionId: string;
+  deliveryMode: ReportPackDeliveryMode;
+  deliveryNote: string;
+  formats: Record<ReportingScheduleArtifactFormat, boolean>;
 }
 
 const reportingScheduleArtifactFormats: ReportingScheduleArtifactFormat[] = ["Pdf", "Xlsx", "Csv"];
@@ -177,7 +190,8 @@ const structuredExportDownloadFormats = [
 const reportWriterPreviewDatasetProfiles: { id: ReportWriterPreviewDatasetProfile; label: string }[] = [
   { id: "portfolioPositions", label: "Portfolio positions" },
   { id: "ledgerFacts", label: "Ledger facts" },
-  { id: "cashLadder", label: "Cash ladder" }
+  { id: "cashLadder", label: "Cash ladder" },
+  { id: "customRows", label: "Custom pasted rows" }
 ];
 
 const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
@@ -236,6 +250,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
   const [writerDrafts, setWriterDrafts] = useState<Record<string, ReportWriterDraftState>>({});
   const [writerDraftSettings, setWriterDraftSettings] = useState<Record<string, Partial<ReportWriterDraftSettings>>>({});
   const [writerCustomFormulas, setWriterCustomFormulas] = useState<Record<string, Partial<ReportWriterCustomFormulaDraft>>>({});
+  const [writerCustomDatasetText, setWriterCustomDatasetText] = useState<Record<string, string>>({});
   const [writerDraftStatus, setWriterDraftStatus] = useState<ReportingCommandStatus | null>(null);
   const [writerPreviewStatus, setWriterPreviewStatus] = useState<ReportingCommandStatus | null>(null);
   const [brandingPackStatus, setBrandingPackStatus] = useState<ReportingCommandStatus | null>(null);
@@ -462,9 +477,21 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
     setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
   }
 
-  function handleWriterTokenDragStart(event: DragEvent<HTMLElement>, token: ReportingWriterToken) {
-    event.dataTransfer.effectAllowed = "copy";
-    event.dataTransfer.setData("application/x-meridian-report-writer-token", JSON.stringify(token));
+  function updateWriterCustomDataset(grid: ReportingWriterGridRow, value: string) {
+    setWriterCustomDatasetText((current) => ({
+      ...current,
+      [grid.id]: value
+    }));
+    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+  }
+
+  function handleWriterTokenDragStart(
+    event: DragEvent<HTMLElement>,
+    token: ReportingWriterToken,
+    origin: ReportWriterTokenDragOrigin | null = null
+  ) {
+    event.dataTransfer.effectAllowed = origin ? "move" : "copy";
+    event.dataTransfer.setData("application/x-meridian-report-writer-token", JSON.stringify({ token, origin }));
   }
 
   function handleWriterZoneDrop(event: DragEvent<HTMLElement>, grid: ReportingWriterGridRow, zone: ReportWriterDropZone) {
@@ -474,16 +501,46 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
       return;
     }
 
-    let token: ReportingWriterToken;
+    let dragPayload: ReportWriterTokenDragPayload;
     try {
-      token = JSON.parse(payload) as ReportingWriterToken;
+      dragPayload = parseReportWriterTokenDragPayload(JSON.parse(payload));
     } catch {
       return;
     }
 
     setWriterDrafts((current) => {
+      const { token, origin } = dragPayload;
       const existing = current[grid.id]?.[zone] ?? grid[zone];
-      if (existing.some((item) => item.id === token.id)) {
+      if (origin?.gridId === grid.id && origin.zone === zone) {
+        return current;
+      }
+
+      if (existing.some((item) => item.id === token.id) && origin?.gridId !== grid.id) {
+        return current;
+      }
+
+      const nextGridDraft: ReportWriterDraftState = { ...current[grid.id] };
+      if (origin?.gridId === grid.id) {
+        const originTokens = current[grid.id]?.[origin.zone] ?? grid[origin.zone];
+        nextGridDraft[origin.zone] = originTokens.filter((item) => item.id !== token.id);
+      }
+
+      if (!existing.some((item) => item.id === token.id)) {
+        nextGridDraft[zone] = [...existing, token];
+      }
+
+      return {
+        ...current,
+        [grid.id]: nextGridDraft
+      };
+    });
+    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+  }
+
+  function removeWriterZoneToken(grid: ReportingWriterGridRow, zone: ReportWriterDropZone, tokenId: string) {
+    setWriterDrafts((current) => {
+      const existing = current[grid.id]?.[zone] ?? grid[zone];
+      if (!existing.some((item) => item.id === tokenId)) {
         return current;
       }
 
@@ -491,7 +548,36 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
         ...current,
         [grid.id]: {
           ...current[grid.id],
-          [zone]: [...existing, token]
+          [zone]: existing.filter((item) => item.id !== tokenId)
+        }
+      };
+    });
+    setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
+  }
+
+  function moveWriterZoneToken(
+    grid: ReportingWriterGridRow,
+    zone: ReportWriterDropZone,
+    tokenId: string,
+    direction: -1 | 1
+  ) {
+    setWriterDrafts((current) => {
+      const existing = current[grid.id]?.[zone] ?? grid[zone];
+      const tokenIndex = existing.findIndex((item) => item.id === tokenId);
+      const nextIndex = tokenIndex + direction;
+      if (tokenIndex < 0 || nextIndex < 0 || nextIndex >= existing.length) {
+        return current;
+      }
+
+      const nextTokens = [...existing];
+      const [token] = nextTokens.splice(tokenIndex, 1);
+      nextTokens.splice(nextIndex, 0, token);
+
+      return {
+        ...current,
+        [grid.id]: {
+          ...current[grid.id],
+          [zone]: nextTokens
         }
       };
     });
@@ -519,6 +605,15 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
       return next;
     });
     setWriterDraftSettings((current) => {
+      if (!current[grid.id]) {
+        return current;
+      }
+
+      const next = { ...current };
+      delete next[grid.id];
+      return next;
+    });
+    setWriterCustomDatasetText((current) => {
       if (!current[grid.id]) {
         return current;
       }
@@ -586,7 +681,26 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
       return;
     }
 
-    const request = buildRenderReportTemplateRequest(grid, getWriterCurrentZones(grid), getWriterDraftSettings(grid));
+    const settings = getWriterDraftSettings(grid);
+    const customDataset = settings.previewDataset === "customRows"
+      ? parseReportWriterCustomDatasetRows(writerCustomDatasetText[grid.id] ?? "")
+      : null;
+    if (customDataset?.error) {
+      setWriterPreviewStatus({
+        id: grid.id,
+        label: "Preview report-writer grid",
+        state: "error",
+        message: `${grid.title} custom dataset is invalid.`,
+        details: [customDataset.error]
+      });
+      return;
+    }
+
+    const request = buildRenderReportTemplateRequest(
+      grid,
+      getWriterCurrentZones(grid),
+      settings,
+      customDataset?.rows ?? null);
     setWriterPreviewStatus({
       id: grid.id,
       label: "Preview report-writer grid",
@@ -610,6 +724,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
         details: [
           `Template: ${result.templateId.name}@v${result.templateId.version}`,
           `Rows: ${renderedGrid?.rows.length ?? 0}`,
+          customDataset ? `Dataset rows: ${customDataset.rows.length}` : `Dataset profile: ${settings.previewDataset}`,
           result.missingRequiredParameters.length > 0
             ? `Missing parameters: ${result.missingRequiredParameters.join(", ")}`
             : "Required parameters: satisfied",
@@ -698,6 +813,26 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
     }));
   }
 
+  function stageScheduleDraftDeliveryTarget() {
+    setScheduleDraft((current) => {
+      const target = buildCurrentScheduleDraftTarget(current);
+      return {
+        ...current,
+        deliveryTargets: [
+          ...current.deliveryTargets.filter((item) => item.distributionId !== target.distributionId),
+          target
+        ]
+      };
+    });
+  }
+
+  function removeScheduleDraftDeliveryTarget(distributionId: string) {
+    setScheduleDraft((current) => ({
+      ...current,
+      deliveryTargets: current.deliveryTargets.filter((target) => target.distributionId !== distributionId)
+    }));
+  }
+
   async function saveScheduleDraft() {
     const statusId = "schedule-draft:save";
     if (runningScheduleActionId) {
@@ -705,14 +840,14 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
     }
 
     const request = buildReportingScheduleUpsertRequest(scheduleDraft);
-    const formats = request.deliveryTargets?.[0]?.formats ?? [];
-    if (formats.length === 0) {
+    const targets = request.deliveryTargets ?? [];
+    if (targets.some((target) => (target.formats ?? []).length === 0)) {
       setScheduleActionStatus({
         id: statusId,
         label: "Save reporting schedule",
         state: "error",
-        message: "Select at least one report artifact format before saving the schedule.",
-        details: ["PDF, XLSX, or CSV must be selected for scheduled delivery."]
+        message: "Select at least one report artifact format for every scheduled delivery target.",
+        details: ["PDF, XLSX, or CSV must be selected before a delivery target can be saved."]
       });
       return;
     }
@@ -727,7 +862,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
 
     try {
       const result = await saveReportingSchedule(request);
-      const target = result.deliveryTargets?.[0] ?? request.deliveryTargets?.[0] ?? null;
+      const savedTargets = result.deliveryTargets?.length ? result.deliveryTargets : request.deliveryTargets ?? [];
       setScheduleActionStatus({
         id: statusId,
         label: "Save reporting schedule",
@@ -735,8 +870,10 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
         message: `Reporting schedule ${result.scheduleId} saved.`,
         details: [
           `Template: ${result.templateId}`,
-          target ? `Delivery: ${target.distributionId} via ${target.deliveryMode ?? "SecurePortal"}` : "Delivery: no target",
-          `Formats: ${(target?.formats ?? formats).join(", ")}`
+          savedTargets.length > 0
+            ? `Delivery targets: ${savedTargets.map((target) => `${target.distributionId} via ${target.deliveryMode ?? "SecurePortal"}`).join("; ")}`
+            : "Delivery targets: none",
+          `Formats: ${savedTargets.map((target) => `${target.distributionId}=${(target.formats ?? []).join("/")}`).join("; ")}`
         ]
       });
     } catch (error) {
@@ -959,6 +1096,23 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
         ))}
       </section>
 
+      {data.reporting.reportLineProvenanceExplorer ? (
+        <FinancialRecordExplorerShell
+          className="report-line-provenance-explorer"
+          explorerLabel="Report-line provenance"
+          title="Report-Line Provenance Explorer"
+          titleId="report-line-provenance-explorer-title"
+          description="Drill from governed report lines into retained source records, reconciliations, journals, approvals, delivery history, and restatement evidence."
+          scopeItems={[]}
+          savedViews={[]}
+          summaryItems={[]}
+          appliedFilters={[]}
+          explorer={data.reporting.reportLineProvenanceExplorer}
+        >
+          {null}
+        </FinancialRecordExplorerShell>
+      ) : null}
+
       {(data.reporting.portfolioCuts ?? []).length > 0 ? (
         <section role="region" aria-label="Portfolio reporting cuts">
           <Card className="panel-surface">
@@ -1033,7 +1187,9 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                       <ReportingCutMetric label="Gross" value={formatReportingMoney(view.grossExposure, view.currency)} />
                       <ReportingCutMetric label="Net" value={formatReportingMoney(view.netExposure, view.currency)} />
                       <ReportingCutMetric label="Cash" value={formatReportingMoney(view.totalCash, view.currency)} />
+                      <ReportingCutMetric label="Settlement" value={formatReportingMoney(view.pendingSettlement, view.currency)} />
                       <ReportingCutMetric label="P&L" value={formatReportingMoney(view.totalPnl, view.currency)} />
+                      <ReportingCutMetric label="Shadow NAV" value={formatReportingMoney(view.shadowNav, view.currency)} />
                     </dl>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{view.liquiditySummary}</p>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{view.telemetrySummary}</p>
@@ -1049,6 +1205,9 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                     ) : null}
                     <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">
                       {view.sourceCount} source{view.sourceCount === 1 ? "" : "s"} · {view.sourceAsOfUtc ?? view.asOf}
+                    </p>
+                    <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">
+                      Freshness: {view.state} · cut={view.asOf} · source={view.sourceAsOfUtc ?? "unavailable"}
                     </p>
                     <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                       <span className="text-xs text-muted-foreground">{view.cashLadderSummary}</span>
@@ -1301,7 +1460,22 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">
                       {structuredExport.consumer} · {structuredExport.validationSummary ?? structuredExport.dataset}
                     </p>
-                    <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{structuredExport.retainedPath}</p>
+                    <div className="mt-2 space-y-1 break-all font-mono text-[11px] text-muted-foreground">
+                      <p>Dataset: {structuredExport.dataset}</p>
+                      <p>As of: {structuredExport.asOf}</p>
+                      <p>API route: {structuredExport.route}</p>
+                    </div>
+                    {!structuredExport.isReady && structuredExport.readinessBlockers?.length ? (
+                      <ul
+                        aria-label={`${structuredExport.label} structured export readiness blockers`}
+                        className="mt-2 space-y-1 rounded-md border border-warning/30 bg-warning/10 px-2 py-2 text-xs leading-5 text-warning"
+                      >
+                        {structuredExport.readinessBlockers.map((blocker) => (
+                          <li key={blocker}>{blocker}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">Retained path: {structuredExport.retainedPath}</p>
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {structuredExport.dataDictionaryRoute ? (
                         <a
@@ -1570,12 +1744,16 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                     getZoneTokens={getWriterZoneTokens}
                     onTokenDragStart={handleWriterTokenDragStart}
                     onZoneDrop={handleWriterZoneDrop}
+                    onTokenRemove={removeWriterZoneToken}
+                    onTokenMove={moveWriterZoneToken}
                     onReset={resetWriterGrid}
-                    onSettingsChange={updateWriterDraftSetting}
-                    onCustomFormulaChange={updateWriterCustomFormula}
-                    onPreview={previewWriterGrid}
-                    onSave={saveWriterGridDraft}
-                  />
+                  onSettingsChange={updateWriterDraftSetting}
+                  onCustomFormulaChange={updateWriterCustomFormula}
+                  customDatasetText={writerCustomDatasetText[grid.id] ?? ""}
+                  onCustomDatasetChange={updateWriterCustomDataset}
+                  onPreview={previewWriterGrid}
+                  onSave={saveWriterGridDraft}
+                />
                 ))}
               </div>
               {writerPreviewStatus ? (
@@ -1640,6 +1818,21 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                     <span className="block text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Validation</span>
                     <span className="mt-1 block break-words text-foreground">{template.validationSummary}</span>
                   </span>
+                </div>
+                <div
+                  role="group"
+                  aria-label={template.accessGovernance.ariaLabel}
+                  className="mt-2 rounded-md border border-border/60 bg-background/25 px-2 py-2 text-xs"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="flex flex-wrap items-center gap-1.5">
+                      <Badge variant="outline">{template.accessGovernance.modeLabel}</Badge>
+                      <Badge variant="outline">{template.accessGovernance.scopeLabel}</Badge>
+                      <Badge variant={template.accessGovernance.postureVariant}>{template.accessGovernance.postureLabel}</Badge>
+                    </span>
+                    <span className="break-all font-mono text-[11px] text-muted-foreground">{template.accessMode}</span>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{template.accessGovernance.detail}</p>
                 </div>
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                   <p className="min-w-0 flex-1 text-xs leading-5 text-muted-foreground">
@@ -1711,6 +1904,42 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">
                   {run.family} · {run.trigger} · {run.lineageSummary} · {run.auditSummary}
                 </p>
+                <dl className="mt-2 grid gap-2 text-xs sm:grid-cols-2 xl:grid-cols-3" aria-label={`${run.id} audit metadata`}>
+                  <div>
+                    <dt className="text-[11px] uppercase text-muted-foreground">Run ID</dt>
+                    <dd className="break-all font-mono text-foreground">{run.runIdLabel}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] uppercase text-muted-foreground">Template</dt>
+                    <dd className="break-all font-mono text-foreground">{run.templateLabel}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] uppercase text-muted-foreground">As of</dt>
+                    <dd className="font-mono text-foreground">{run.asOfDateLabel}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] uppercase text-muted-foreground">Trigger</dt>
+                    <dd className="text-foreground">{run.trigger}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] uppercase text-muted-foreground">Attempts</dt>
+                    <dd className="text-foreground">{run.attemptLabel}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] uppercase text-muted-foreground">Sections</dt>
+                    <dd className="text-foreground">{run.sectionLabel}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] uppercase text-muted-foreground">Lineage</dt>
+                    <dd className="text-foreground">{run.lineageLabel}</dd>
+                  </div>
+                  <div className="sm:col-span-2 xl:col-span-3">
+                    <dt className="text-[11px] uppercase text-muted-foreground">Artifacts</dt>
+                    <dd className="break-all font-mono text-foreground">
+                      {run.hasArtifacts ? `${run.artifactLabel}: ${run.artifactNames.join(", ")}` : run.artifactLabel}
+                    </dd>
+                  </div>
+                </dl>
                 {run.failureReason ? <p className="mt-1 text-xs text-warning">{run.failureReason}</p> : null}
                 {run.hasDrilldownLinks ? (
                   <div className="mt-2 flex flex-wrap gap-1.5" aria-label={`${run.id} drilldown links`}>
@@ -1931,6 +2160,17 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                 <Button
                   type="button"
                   size="sm"
+                  variant="outline"
+                  disabled={Boolean(runningScheduleActionId)}
+                  onClick={stageScheduleDraftDeliveryTarget}
+                  aria-label="Stage reporting schedule delivery target"
+                >
+                  <Plus className="h-4 w-4" aria-hidden="true" />
+                  Stage target
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
                   busy={runningScheduleActionId === "schedule-draft:save"}
                   busyLabel="Saving"
                   disabled={Boolean(runningScheduleActionId)}
@@ -1954,6 +2194,39 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                   Run due
                 </Button>
               </div>
+              {scheduleDraft.deliveryTargets.length > 0 ? (
+                <div className="mt-3 rounded-md border border-border/70 bg-background/30 px-3 py-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Staged delivery targets</span>
+                    <Badge variant="outline">{scheduleDraft.deliveryTargets.length}</Badge>
+                  </div>
+                  <ul aria-label="Staged reporting schedule delivery targets" className="mt-2 space-y-1.5">
+                    {scheduleDraft.deliveryTargets.map((target) => (
+                      <li
+                        key={target.distributionId}
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-sm border border-border/70 bg-secondary/20 px-2 py-1.5 text-xs"
+                      >
+                        <span className="min-w-0">
+                          <span className="block break-all font-mono text-foreground">{target.distributionId}</span>
+                          <span className="mt-0.5 block text-muted-foreground">
+                            {target.deliveryMode} · {formatScheduleDraftTargetFormats(target)}
+                          </span>
+                        </span>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          disabled={Boolean(runningScheduleActionId)}
+                          onClick={() => removeScheduleDraftDeliveryTarget(target.distributionId)}
+                          aria-label={`Remove staged delivery target ${target.distributionId}`}
+                        >
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
             </div>
             {vm.hasScheduleRows ? (
               <div role="list" aria-label={vm.scheduleListLabel} className="space-y-2">
@@ -2126,6 +2399,20 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                         <p>
                           {attempt.package.deliveryMode} package · {attempt.package.formats.join(", ")}
                         </p>
+                        {attempt.package.deliveryChannelSummary ? (
+                          <p>{attempt.package.deliveryChannelSummary}</p>
+                        ) : null}
+                        {attempt.package.deliveryAccessSummary ? (
+                          <p>{attempt.package.deliveryAccessSummary}</p>
+                        ) : null}
+                        {attempt.package.downloadSummary ? (
+                          <p>{attempt.package.downloadSummary}</p>
+                        ) : null}
+                        {attempt.package.accessExpiresAtUtc ? (
+                          <p className="break-all font-mono text-[11px]">
+                            Access expires: {attempt.package.accessExpiresAtUtc}
+                          </p>
+                        ) : null}
                         {attempt.package.brandingTheme ? (
                           <p className="break-all text-[11px]">
                             Branding: {attempt.package.brandingTheme.name} · {attempt.package.brandingTheme.firmName} · {attempt.package.brandingTheme.themeId}
@@ -2161,10 +2448,39 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                             Schedule: {attempt.package.reportingScheduleId}
                           </p>
                         ) : null}
+                        {hasReportingRunMetadata(attempt.package) ? (
+                          <p className="break-all font-mono text-[11px]">
+                            Run metadata: {formatReportingRunPackageMetadata(attempt.package)}
+                          </p>
+                        ) : null}
                         {attempt.package.sourceArtifacts?.length ? (
                           <p className="break-all font-mono text-[11px]">
                             Source artifacts: {attempt.package.sourceArtifacts.join(", ")}
                           </p>
+                        ) : null}
+                        {attempt.package.lineProvenance?.length ? (
+                          <div className="rounded-md border border-border/70 bg-background/40 px-2 py-2 text-[11px]">
+                            <p className="font-semibold text-foreground">
+                              Report-line provenance: {attempt.package.lineProvenance.length} line{attempt.package.lineProvenance.length === 1 ? "" : "s"}
+                            </p>
+                            <ul aria-label={`${attempt.recipient} package report-line provenance`} className="mt-1 space-y-1">
+                              {attempt.package.lineProvenance.slice(0, 4).map((line) => (
+                                <li key={`${attempt.attemptId}-${line.lineKey}-${line.evidenceId ?? line.sourceId}`} className="break-all">
+                                  <span className="font-mono text-foreground">{line.lineKey}</span>
+                                  <span> · {line.sourceKind} · {line.reportValue ?? "value pending"}</span>
+                                  {line.financialRecordHref ? (
+                                    <a
+                                      className="ml-2 text-primary underline-offset-2 hover:underline"
+                                      href={line.financialRecordHref}
+                                      aria-label={`Open Financial Record Explorer for ${line.lineKey}`}
+                                    >
+                                      {formatFinancialRecordExplorerName(line.financialRecordExplorerId)}
+                                    </a>
+                                  ) : null}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
                         ) : null}
                         {attempt.package.deliveryEvidencePacket ? (
                           <div className="rounded-md border border-border/70 bg-background/40 px-2 py-2 text-[11px]">
@@ -2177,28 +2493,128 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                             <p className="mt-1">
                               Contents: {attempt.package.deliveryEvidencePacket.packageContents.length} · Support evidence: {attempt.package.deliveryEvidencePacket.supportEvidenceIds.length} · Delivery evidence: {attempt.package.deliveryEvidencePacket.deliveryEvidence.length}
                             </p>
+                            {attempt.package.deliveryEvidencePacket.packageContents.length > 0 ? (
+                              <p className="mt-1 break-all font-mono">
+                                Package contents: {attempt.package.deliveryEvidencePacket.packageContents.join(" | ")}
+                              </p>
+                            ) : null}
+                            {attempt.package.deliveryEvidencePacket.supportEvidenceIds.length > 0 ? (
+                              <p className="mt-1 break-all font-mono">
+                                Support evidence IDs: {attempt.package.deliveryEvidencePacket.supportEvidenceIds.join(" | ")}
+                              </p>
+                            ) : null}
+                            {attempt.package.deliveryEvidencePacket.deliveryEvidence.length > 0 ? (
+                              <ul aria-label={`${attempt.recipient} delivery packet evidence links`} className="mt-1 space-y-1">
+                                {attempt.package.deliveryEvidencePacket.deliveryEvidence.map((evidence) => (
+                                  <li key={`${attempt.attemptId}-${evidence.evidenceId}`} className="break-all font-mono">
+                                    {evidence.route ? (
+                                      <a
+                                        href={evidence.route}
+                                        className="text-primary underline-offset-2 hover:underline"
+                                        aria-label={`Open delivery evidence ${evidence.evidenceId}`}
+                                      >
+                                        {evidence.evidenceId}
+                                      </a>
+                                    ) : (
+                                      <span>{evidence.evidenceId}</span>
+                                    )}
+                                    <span> · {evidence.label} · {evidence.source}{evidence.capturedAtUtc ? ` · ${evidence.capturedAtUtc}` : ""}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : null}
+                            <p className="mt-1 break-all font-mono">
+                              Entitlement: {attempt.package.deliveryEvidencePacket.entitlementScope} · Fund: {attempt.package.deliveryEvidencePacket.fundProfileId} · Account: {attempt.package.deliveryEvidencePacket.fundAccountId} · Period: {attempt.package.deliveryEvidencePacket.period}
+                            </p>
+                            {attempt.package.deliveryEvidencePacket.recipientList.length > 0 ? (
+                              <ul aria-label={`${attempt.recipient} delivery packet recipients`} className="mt-1 space-y-1">
+                                {attempt.package.deliveryEvidencePacket.recipientList.map((recipient) => (
+                                  <li key={`${attempt.attemptId}-${recipient.distributionId}`} className="break-all font-mono">
+                                    {recipient.distributionId}: {recipient.recipient} · {recipient.recipientRole} · {recipient.channel}
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : null}
+                            {attempt.package.deliveryEvidencePacket.approvalChain.length > 0 ? (
+                              <ul aria-label={`${attempt.recipient} delivery packet approval chain`} className="mt-1 space-y-1">
+                                {attempt.package.deliveryEvidencePacket.approvalChain.map((step) => (
+                                  <li key={`${attempt.attemptId}-${step.at}-${step.actor}-${step.action}`} className="break-all font-mono">
+                                    {step.at}: {step.actor} {step.action} {step.fromState} to {step.toState}{step.note ? ` - ${step.note}` : ""}
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : null}
                             {attempt.package.deliveryEvidencePacket.requestHistory.length > 0 ? (
                               <p className="mt-1 break-all font-mono">
                                 Request history: {attempt.package.deliveryEvidencePacket.requestHistory.join(" | ")}
                               </p>
                             ) : null}
+                            {attempt.package.deliveryEvidencePacket.amendmentReason ? (
+                              <p className="mt-1 break-all font-mono">
+                                Amendment: {attempt.package.deliveryEvidencePacket.amendmentReason}
+                              </p>
+                            ) : null}
+                            {attempt.package.deliveryEvidencePacket.restatementLineage ? (
+                              <p className="mt-1 break-all font-mono">
+                                Restatement lineage: {attempt.package.deliveryEvidencePacket.restatementLineage}
+                              </p>
+                            ) : null}
+                            {attempt.package.deliveryEvidencePacket.auditEventReferences?.length ? (
+                              <p className="mt-1 break-all font-mono">
+                                Audit references: {attempt.package.deliveryEvidencePacket.auditEventReferences.join(" | ")}
+                              </p>
+                            ) : null}
+                            {attempt.package.deliveryEvidencePacket.blockedDownstreamOutputs?.length ? (
+                              <p className="mt-1 break-all font-mono text-warning">
+                                Blocked downstream outputs: {attempt.package.deliveryEvidencePacket.blockedDownstreamOutputs.join(" | ")}
+                              </p>
+                            ) : null}
+                            <Link
+                              className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-primary underline-offset-2 hover:underline"
+                              to={reportPackDeliveryEvidencePath(attempt.reportId, attempt.attemptId)}
+                              aria-label={`Open delivery evidence graph for ${attempt.recipient} delivery attempt`}
+                            >
+                              <Network className="h-3 w-3" aria-hidden="true" />
+                              Open delivery evidence graph
+                            </Link>
                           </div>
                         ) : null}
-                        {attempt.package.artifacts.some((artifact) => artifact.downloadRoute) ? (
-                          <ul aria-label={`${attempt.recipient} package artifact downloads`} className="flex flex-wrap gap-2 pt-1">
-                            {attempt.package.artifacts
-                              .filter((artifact) => artifact.downloadRoute)
-                              .map((artifact) => (
-                                <li key={`${attempt.attemptId}-${artifact.artifactName}`}>
-                                  <a
-                                    className="break-all font-mono text-[11px] text-primary underline-offset-2 hover:underline"
-                                    href={artifact.downloadRoute ?? undefined}
-                                    aria-label={`Download ${artifact.artifactName}`}
-                                  >
-                                    {artifact.artifactName}
-                                  </a>
-                                </li>
-                              ))}
+                        {attempt.package.artifacts.length > 0 ? (
+                          <ul aria-label={`${attempt.recipient} package artifact integrity`} className="grid gap-2 pt-1">
+                            {attempt.package.artifacts.map((artifact) => (
+                              <li
+                                key={`${attempt.attemptId}-${artifact.artifactName}`}
+                                className="rounded-md border border-border/70 bg-background/40 px-2 py-2"
+                              >
+                                <div className="flex flex-wrap items-start justify-between gap-2">
+                                  <span className="min-w-0">
+                                    {artifact.downloadRoute ? (
+                                      <a
+                                        className="block break-all font-mono text-[11px] text-primary underline-offset-2 hover:underline"
+                                        href={artifact.downloadRoute}
+                                        aria-label={`Download ${artifact.artifactName}`}
+                                      >
+                                        {artifact.artifactName}
+                                      </a>
+                                    ) : (
+                                      <span className="block break-all font-mono text-[11px] text-foreground">
+                                        {artifact.artifactName}
+                                      </span>
+                                    )}
+                                    <span className="mt-1 block break-all font-mono text-[11px]">
+                                      {artifact.retainedPath}
+                                    </span>
+                                  </span>
+                                  <Badge variant="outline">{artifact.format}</Badge>
+                                </div>
+                                <dl className="mt-2 grid gap-1 text-[11px] sm:grid-cols-2">
+                                  <ReportingScheduleField label="Size" value={`${artifact.byteSize.toLocaleString()} bytes`} />
+                                  <ReportingScheduleField label="Evidence" value={artifact.evidenceId} />
+                                  <ReportingScheduleField label="Checksum" value={artifact.checksumSha256 || "Checksum pending"} />
+                                  <ReportingScheduleField label="Version" value={artifact.versionStamp || "Version pending"} />
+                                </dl>
+                              </li>
+                            ))}
                           </ul>
                         ) : null}
                       </div>
@@ -2278,6 +2694,96 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
               <div className="mt-3">
                 <Badge variant="outline">{vm.workflowTaskPanel.publicationReview.evidenceSummary}</Badge>
               </div>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="eyebrow-label">{vm.workflowTaskPanel.publicationReview.evidenceLinksLabel}</div>
+                <Badge variant="outline">
+                  {vm.workflowTaskPanel.publicationReview.evidenceLinks.length} link{vm.workflowTaskPanel.publicationReview.evidenceLinks.length === 1 ? "" : "s"}
+                </Badge>
+              </div>
+              {vm.workflowTaskPanel.publicationReview.hasEvidenceLinks ? (
+                <div role="list" aria-label={vm.workflowTaskPanel.publicationReview.evidenceLinksLabel} className="mt-2 grid gap-2">
+                  {vm.workflowTaskPanel.publicationReview.evidenceLinks.map((evidence) => (
+                    <div
+                      key={evidence.id}
+                      role="listitem"
+                      aria-label={evidence.ariaLabel}
+                      className="rounded-md border border-border/70 bg-background/40 px-3 py-2"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="break-all font-mono text-xs text-foreground">{evidence.label}</span>
+                        <Badge variant="outline">{evidence.capturedLabel}</Badge>
+                      </div>
+                      <p className="mt-1 break-all text-xs leading-5 text-muted-foreground">{evidence.sourceLabel}</p>
+                      {evidence.href ? (
+                        <a
+                          href={evidence.href}
+                          className="mt-2 inline-flex text-xs text-primary underline-offset-2 hover:underline"
+                          aria-label={`Open ${evidence.label} publication evidence`}
+                        >
+                          {evidence.href}
+                        </a>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p role="status" className="mt-2 rounded-md border border-border/70 bg-background/40 px-3 py-2 text-sm leading-6 text-muted-foreground">
+                  {vm.workflowTaskPanel.publicationReview.evidenceLinksEmptyText}
+                </p>
+              )}
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="eyebrow-label">{vm.workflowTaskPanel.publicationReview.lineProvenanceLabel}</div>
+                <Badge variant="outline">
+                  {vm.workflowTaskPanel.publicationReview.lineProvenanceRows.length} line{vm.workflowTaskPanel.publicationReview.lineProvenanceRows.length === 1 ? "" : "s"}
+                </Badge>
+              </div>
+              {vm.workflowTaskPanel.publicationReview.hasLineProvenance ? (
+                <div role="list" aria-label={vm.workflowTaskPanel.publicationReview.lineProvenanceLabel} className="mt-2 grid gap-2">
+                  {vm.workflowTaskPanel.publicationReview.lineProvenanceRows.map((line) => (
+                    <div
+                      key={line.id}
+                      role="listitem"
+                      aria-label={line.ariaLabel}
+                      className="rounded-md border border-border/70 bg-background/40 px-3 py-2"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="break-all font-mono text-xs text-foreground">{line.lineKey}</span>
+                        <Badge variant="outline">{line.valueLabel}</Badge>
+                      </div>
+                      <p className="mt-1 break-all text-xs leading-5 text-muted-foreground">{line.sourceLabel}</p>
+                      <div className="mt-2 flex flex-wrap gap-3 text-xs">
+                        {line.financialRecordHref ? (
+                          <a
+                            href={line.financialRecordHref}
+                            className="inline-flex items-center gap-1 text-primary underline-offset-2 hover:underline"
+                            aria-label={`${line.financialRecordLabel} for ${line.lineKey}`}
+                          >
+                            <Network className="h-3 w-3" aria-hidden="true" />
+                            {line.financialRecordLabel}
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground">{line.financialRecordLabel} unavailable</span>
+                        )}
+                        {line.evidenceHref ? (
+                          <a
+                            href={line.evidenceHref}
+                            className="text-primary underline-offset-2 hover:underline"
+                            aria-label={`Open retained evidence for ${line.lineKey}`}
+                          >
+                            {line.evidenceLabel}
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground">{line.evidenceLabel}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p role="status" className="mt-2 rounded-md border border-border/70 bg-background/40 px-3 py-2 text-sm leading-6 text-muted-foreground">
+                  {vm.workflowTaskPanel.publicationReview.lineProvenanceEmptyText}
+                </p>
+              )}
             </div>
             <div
               role="region"
@@ -2601,9 +3107,18 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                     </div>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{target.pendingSummary}</p>
                     <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                      <span>State: {target.stateLabel}</span>
                       <span>Owner: {target.ownerLabel}</span>
                       <span>Due: {target.dueLabel}</span>
+                      <span>Last sent: {target.lastSentLabel}</span>
                     </div>
+                    <a
+                      className="mt-2 inline-flex break-all font-mono text-[11px] font-medium text-primary underline-offset-2 hover:underline"
+                      href={target.href}
+                      aria-label={`Open ${target.label} report-pack distribution route`}
+                    >
+                      {target.href}
+                    </a>
                   </div>
                 ))}
               </div>
@@ -2861,15 +3376,19 @@ interface ReportWriterDesignerGridProps {
   grid: ReportingWriterGridRow;
   settings: ReportWriterDraftSettings;
   customFormula: ReportWriterCustomFormulaDraft;
+  customDatasetText: string;
   isSaving: boolean;
   isPreviewing: boolean;
   preview: ReportWriterGridRender | null;
   getZoneTokens: (grid: ReportingWriterGridRow, zone: ReportWriterDropZone) => ReportingWriterToken[];
-  onTokenDragStart: (event: DragEvent<HTMLElement>, token: ReportingWriterToken) => void;
+  onTokenDragStart: (event: DragEvent<HTMLElement>, token: ReportingWriterToken, origin?: ReportWriterTokenDragOrigin | null) => void;
   onZoneDrop: (event: DragEvent<HTMLElement>, grid: ReportingWriterGridRow, zone: ReportWriterDropZone) => void;
+  onTokenRemove: (grid: ReportingWriterGridRow, zone: ReportWriterDropZone, tokenId: string) => void;
+  onTokenMove: (grid: ReportingWriterGridRow, zone: ReportWriterDropZone, tokenId: string, direction: -1 | 1) => void;
   onReset: (grid: ReportingWriterGridRow) => void;
   onSettingsChange: (grid: ReportingWriterGridRow, field: ReportWriterDraftSettingsField, value: string) => void;
   onCustomFormulaChange: (grid: ReportingWriterGridRow, field: ReportWriterCustomFormulaField, value: string) => void;
+  onCustomDatasetChange: (grid: ReportingWriterGridRow, value: string) => void;
   onPreview: (grid: ReportingWriterGridRow) => void | Promise<void>;
   onSave: (grid: ReportingWriterGridRow) => void | Promise<void>;
 }
@@ -2878,15 +3397,19 @@ function ReportWriterDesignerGrid({
   grid,
   settings,
   customFormula,
+  customDatasetText,
   isSaving,
   isPreviewing,
   preview,
   getZoneTokens,
   onTokenDragStart,
   onZoneDrop,
+  onTokenRemove,
+  onTokenMove,
   onReset,
   onSettingsChange,
   onCustomFormulaChange,
+  onCustomDatasetChange,
   onPreview,
   onSave
 }: ReportWriterDesignerGridProps) {
@@ -2896,6 +3419,18 @@ function ReportWriterDesignerGrid({
   const accessPolicySummary = buildReportAccessPolicySummary(settings);
   const topNDisabled = settings.gridKind !== "TopN";
   const topNLabel = buildReportWriterDraftTopNLabel(settings);
+  const rowTokens = getZoneTokens(grid, "rowFields");
+  const columnTokens = getZoneTokens(grid, "columnFields");
+  const metricTokens = getZoneTokens(grid, "metrics");
+  const formulaTokens = getZoneTokens(grid, "formulas");
+  const draftLayoutSummary = buildReportWriterDraftLayoutSummary(
+    settings,
+    rowTokens,
+    columnTokens,
+    metricTokens,
+    formulaTokens,
+    grid.filters.length
+  );
 
   return (
     <div
@@ -2914,6 +3449,13 @@ function ReportWriterDesignerGrid({
         </span>
       </div>
       <p className="mt-2 text-xs leading-5 text-muted-foreground">{grid.summary}</p>
+      <div
+        role="status"
+        aria-label={`${grid.title} current report-writer layout`}
+        className="mt-2 rounded-md border border-border/70 bg-background/30 px-2.5 py-2 text-xs leading-5 text-muted-foreground"
+      >
+        {draftLayoutSummary}
+      </div>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
         <span className="flex flex-wrap items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
           <span>{grid.sortLabel}</span>
@@ -3026,6 +3568,19 @@ function ReportWriterDesignerGrid({
           </label>
         </div>
       </div>
+      {settings.previewDataset === "customRows" ? (
+        <label className="mt-3 block space-y-1">
+          <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Custom dataset rows</span>
+          <textarea
+            value={customDatasetText}
+            onChange={(event) => onCustomDatasetChange(grid, event.target.value)}
+            aria-label={`${grid.title} custom dataset rows`}
+            className="min-h-28 w-full resize-y rounded-md border border-input bg-background px-3 py-2 font-mono text-xs text-foreground shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
+            spellCheck={false}
+            placeholder={'[{"sector":"Technology","strategy":"Core","marketValue":"150","pnl":"15"}]\n\nsector,strategy,marketValue,pnl\nTechnology,Core,150,15'}
+          />
+        </label>
+      ) : null}
       <p className="mt-2 rounded-md border border-border/70 bg-background/30 px-2.5 py-2 text-xs text-muted-foreground">
         {accessPolicySummary}
       </p>
@@ -3107,34 +3662,42 @@ function ReportWriterDesignerGrid({
             grid={grid}
             zone="rowFields"
             label="Rows"
-            tokens={getZoneTokens(grid, "rowFields")}
-            onTokenDragStart={onTokenDragStart}
-            onZoneDrop={onZoneDrop}
-          />
+            tokens={rowTokens}
+          onTokenDragStart={onTokenDragStart}
+          onZoneDrop={onZoneDrop}
+          onTokenRemove={onTokenRemove}
+          onTokenMove={onTokenMove}
+        />
           <ReportWriterDropZoneView
             grid={grid}
             zone="columnFields"
             label="Columns"
-            tokens={getZoneTokens(grid, "columnFields")}
-            onTokenDragStart={onTokenDragStart}
-            onZoneDrop={onZoneDrop}
-          />
+            tokens={columnTokens}
+          onTokenDragStart={onTokenDragStart}
+          onZoneDrop={onZoneDrop}
+          onTokenRemove={onTokenRemove}
+          onTokenMove={onTokenMove}
+        />
           <ReportWriterDropZoneView
             grid={grid}
             zone="metrics"
             label="Metrics"
-            tokens={getZoneTokens(grid, "metrics")}
-            onTokenDragStart={onTokenDragStart}
-            onZoneDrop={onZoneDrop}
-          />
+            tokens={metricTokens}
+          onTokenDragStart={onTokenDragStart}
+          onZoneDrop={onZoneDrop}
+          onTokenRemove={onTokenRemove}
+          onTokenMove={onTokenMove}
+        />
           <ReportWriterDropZoneView
             grid={grid}
             zone="formulas"
             label="Formulas"
-            tokens={getZoneTokens(grid, "formulas")}
-            onTokenDragStart={onTokenDragStart}
-            onZoneDrop={onZoneDrop}
-          />
+            tokens={formulaTokens}
+          onTokenDragStart={onTokenDragStart}
+          onZoneDrop={onZoneDrop}
+          onTokenRemove={onTokenRemove}
+          onTokenMove={onTokenMove}
+        />
         </div>
       </div>
       <div className="mt-3 rounded-md border border-border/70 bg-background/25 px-2.5 py-2">
@@ -3222,6 +3785,9 @@ function ReportWriterPreviewTable({ grid, preview }: { grid: ReportingWriterGrid
               {preview.columns.map((column) => (
                 <th key={column.key} scope="col" className="min-w-28 px-2 py-1.5 font-semibold">
                   <span className="block truncate" title={column.label}>{column.label}</span>
+                  <span className="mt-0.5 block truncate font-mono text-[9px] normal-case tracking-normal" title={column.role}>
+                    {column.role}
+                  </span>
                 </th>
               ))}
             </tr>
@@ -3271,7 +3837,7 @@ function ReportWriterPreviewTable({ grid, preview }: { grid: ReportingWriterGrid
               <dt className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Formulas</dt>
               <dd className="mt-1 break-words font-mono text-foreground">
                 {lineage.formulas.length > 0
-                  ? lineage.formulas.map((formula) => `${formula.name}=[${formula.sourceFields.join(", ")}]`).join(", ")
+                  ? lineage.formulas.map((formula) => `${formula.name}=${formula.expression} [${formula.sourceFields.join(", ")}]`).join(", ")
                   : "None"}
               </dd>
             </div>
@@ -3287,7 +3853,7 @@ function ReportWriterPreviewTable({ grid, preview }: { grid: ReportingWriterGrid
         </div>
       ) : null}
       {preview.warnings.length > 0 ? (
-        <ul className="mt-2 space-y-1 text-xs text-warning">
+        <ul aria-label={`${grid.title} preview warnings`} className="mt-2 space-y-1 text-xs text-warning">
           {preview.warnings.map((warning) => (
             <li key={warning}>{warning}</li>
           ))}
@@ -3302,8 +3868,10 @@ interface ReportWriterDropZoneViewProps {
   zone: ReportWriterDropZone;
   label: string;
   tokens: ReportingWriterToken[];
-  onTokenDragStart: (event: DragEvent<HTMLElement>, token: ReportingWriterToken) => void;
+  onTokenDragStart: (event: DragEvent<HTMLElement>, token: ReportingWriterToken, origin?: ReportWriterTokenDragOrigin | null) => void;
   onZoneDrop: (event: DragEvent<HTMLElement>, grid: ReportingWriterGridRow, zone: ReportWriterDropZone) => void;
+  onTokenRemove: (grid: ReportingWriterGridRow, zone: ReportWriterDropZone, tokenId: string) => void;
+  onTokenMove: (grid: ReportingWriterGridRow, zone: ReportWriterDropZone, tokenId: string, direction: -1 | 1) => void;
 }
 
 function ReportWriterDropZoneView({
@@ -3312,7 +3880,9 @@ function ReportWriterDropZoneView({
   label,
   tokens,
   onTokenDragStart,
-  onZoneDrop
+  onZoneDrop,
+  onTokenRemove,
+  onTokenMove
 }: ReportWriterDropZoneViewProps) {
   return (
     <div
@@ -3324,12 +3894,17 @@ function ReportWriterDropZoneView({
     >
       <div className="mb-2 text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
       <div className="flex flex-wrap gap-1.5">
-        {tokens.length > 0 ? tokens.map((token) => (
+        {tokens.length > 0 ? tokens.map((token, tokenIndex) => (
           <ReportWriterTokenChip
             key={token.id}
             token={token}
             draggable
             onDragStart={onTokenDragStart}
+            dragOrigin={{ gridId: grid.id, zone }}
+            canMovePrevious={tokenIndex > 0}
+            canMoveNext={tokenIndex < tokens.length - 1}
+            onMove={(direction) => onTokenMove(grid, zone, token.id, direction)}
+            onRemove={() => onTokenRemove(grid, zone, token.id)}
           />
         )) : (
           <span className="text-xs text-muted-foreground">No fields</span>
@@ -3342,23 +3917,77 @@ function ReportWriterDropZoneView({
 function ReportWriterTokenChip({
   token,
   draggable,
-  onDragStart
+  onDragStart,
+  dragOrigin,
+  canMovePrevious,
+  canMoveNext,
+  onMove,
+  onRemove
 }: {
   token: ReportingWriterToken;
   draggable?: boolean;
-  onDragStart: (event: DragEvent<HTMLElement>, token: ReportingWriterToken) => void;
+  onDragStart: (event: DragEvent<HTMLElement>, token: ReportingWriterToken, origin?: ReportWriterTokenDragOrigin | null) => void;
+  dragOrigin?: ReportWriterTokenDragOrigin | null;
+  canMovePrevious?: boolean;
+  canMoveNext?: boolean;
+  onMove?: (direction: -1 | 1) => void;
+  onRemove?: () => void;
 }) {
   return (
     <span
       role="listitem"
       draggable={draggable}
-      onDragStart={(event) => onDragStart(event, token)}
+      onDragStart={(event) => onDragStart(event, token, dragOrigin ?? null)}
       className="inline-flex max-w-full items-center gap-1.5 rounded-sm border border-border/70 bg-secondary/35 px-2 py-1 text-[11px] text-foreground"
       title={token.detail}
     >
       <GripVertical className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
       <Badge variant={token.kind === "formula" ? "warning" : token.kind === "metric" ? "success" : "outline"}>{token.kind}</Badge>
       <span className="truncate font-mono">{token.label}</span>
+      {onMove ? (
+        <span className="ml-0.5 inline-flex shrink-0 items-center gap-0.5">
+          <button
+            type="button"
+            className="inline-flex h-4 w-4 items-center justify-center rounded-sm text-muted-foreground hover:bg-background/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-35"
+            aria-label={`Move ${token.label} left`}
+            disabled={!canMovePrevious}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onMove(-1);
+            }}
+          >
+            <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="inline-flex h-4 w-4 items-center justify-center rounded-sm text-muted-foreground hover:bg-background/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-35"
+            aria-label={`Move ${token.label} right`}
+            disabled={!canMoveNext}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              onMove(1);
+            }}
+          >
+            <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </button>
+        </span>
+      ) : null}
+      {onRemove ? (
+        <button
+          type="button"
+          className="ml-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-background/80 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label={`Remove ${token.label}`}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onRemove();
+          }}
+        >
+          <XCircle className="h-3.5 w-3.5" aria-hidden="true" />
+        </button>
+      ) : null}
     </span>
   );
 }
@@ -3374,6 +4003,24 @@ function clearWriterPreview(
   const next = { ...current };
   delete next[gridId];
   return next;
+}
+
+function parseReportWriterTokenDragPayload(value: unknown): ReportWriterTokenDragPayload {
+  if (value && typeof value === "object" && "token" in value) {
+    const payload = value as ReportWriterTokenDragPayload;
+    return {
+      token: payload.token,
+      origin: payload.origin && isReportWriterDropZone(payload.origin.zone)
+        ? { gridId: payload.origin.gridId, zone: payload.origin.zone }
+        : null
+    };
+  }
+
+  return { token: value as ReportingWriterToken, origin: null };
+}
+
+function isReportWriterDropZone(value: string): value is ReportWriterDropZone {
+  return value === "rowFields" || value === "columnFields" || value === "metrics" || value === "formulas";
 }
 
 function buildDefaultReportBrandingDraft(reporting: AccountingWorkspaceResponse["reporting"] | null): ReportBrandingDraftState {
@@ -3466,7 +4113,8 @@ function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceRespon
     distributionId: normalizeIdentifierToken(firstTarget?.distributionId ?? distribution?.distributionId, "board-reporting-committee"),
     deliveryMode: normalizeReportingScheduleDeliveryMode(firstTarget?.deliveryMode),
     deliveryNote: normalizeDraftText(firstTarget?.note ?? distribution?.pendingSummary, ""),
-    formats: buildScheduleFormatSelection(firstTarget?.formats)
+    formats: buildScheduleFormatSelection(firstTarget?.formats),
+    deliveryTargets: (schedule?.deliveryTargets ?? []).map(normalizeScheduleDraftTarget)
   };
 }
 
@@ -3486,15 +4134,57 @@ function buildReportingScheduleUpsertRequest(draft: ReportingScheduleDraftState)
     requestedBy: normalizeDraftText(draft.requestedBy, "browser-workstation"),
     description: normalizeDraftText(draft.description, "Scheduled governed report pack."),
     state: "Active",
-    deliveryTargets: [
-      {
-        distributionId: normalizeIdentifierToken(draft.distributionId, "board-reporting-committee"),
-        deliveryMode: normalizeReportingScheduleDeliveryMode(draft.deliveryMode),
-        formats: reportingScheduleArtifactFormats.filter((format) => draft.formats[format]),
-        note: deliveryNote || null
-      }
-    ]
+    deliveryTargets: buildReportingScheduleDeliveryTargets(draft, deliveryNote)
   };
+}
+
+function buildReportingScheduleDeliveryTargets(
+  draft: ReportingScheduleDraftState,
+  currentDeliveryNote: string
+): ReportingScheduleUpsertRequest["deliveryTargets"] {
+  const targets = new Map<string, NonNullable<ReportingScheduleUpsertRequest["deliveryTargets"]>[number]>();
+  for (const target of [...draft.deliveryTargets, buildCurrentScheduleDraftTarget(draft)]) {
+    const distributionId = normalizeIdentifierToken(target.distributionId, "board-reporting-committee");
+    const note = target.distributionId === draft.distributionId
+      ? currentDeliveryNote
+      : normalizeDraftText(target.deliveryNote, "");
+    targets.set(distributionId, {
+      distributionId,
+      deliveryMode: normalizeReportingScheduleDeliveryMode(target.deliveryMode),
+      formats: reportingScheduleArtifactFormats.filter((format) => target.formats[format]),
+      note: note || null
+    });
+  }
+
+  return Array.from(targets.values());
+}
+
+function buildCurrentScheduleDraftTarget(draft: ReportingScheduleDraftState): ReportingScheduleDraftTarget {
+  return normalizeScheduleDraftTarget({
+    distributionId: draft.distributionId,
+    deliveryMode: draft.deliveryMode,
+    note: draft.deliveryNote,
+    formats: reportingScheduleArtifactFormats.filter((format) => draft.formats[format])
+  });
+}
+
+function normalizeScheduleDraftTarget(target: {
+  distributionId: string;
+  deliveryMode?: ReportPackDeliveryMode | null;
+  note?: string | null;
+  formats?: readonly GovernanceReportArtifactFormat[] | null;
+}): ReportingScheduleDraftTarget {
+  return {
+    distributionId: normalizeIdentifierToken(target.distributionId, "board-reporting-committee"),
+    deliveryMode: normalizeReportingScheduleDeliveryMode(target.deliveryMode),
+    deliveryNote: normalizeDraftText(target.note, ""),
+    formats: buildScheduleFormatSelection(target.formats)
+  };
+}
+
+function formatScheduleDraftTargetFormats(target: ReportingScheduleDraftTarget): string {
+  const formats = reportingScheduleArtifactFormats.filter((format) => target.formats[format]);
+  return formats.length > 0 ? formats.join("/") : "No formats";
 }
 
 function buildScheduleFormatSelection(
@@ -3642,7 +4332,8 @@ function buildReportTemplateDraftRequest(
 function buildRenderReportTemplateRequest(
   grid: ReportingWriterGridRow,
   zones: Record<ReportWriterDropZone, ReportingWriterToken[]>,
-  settings: ReportWriterDraftSettings
+  settings: ReportWriterDraftSettings,
+  customDatasetRows: Record<string, string>[] | null = null
 ): RenderReportTemplateRequest {
   const gridDefinition = buildReportWriterGridDefinition(grid, zones, settings);
   return {
@@ -3656,7 +4347,7 @@ function buildRenderReportTemplateRequest(
       preview: "browser-report-writer",
       previewDataset: settings.previewDataset
     },
-    datasetRows: buildReportWriterPreviewRows(gridDefinition, settings.previewDataset),
+    datasetRows: customDatasetRows ?? buildReportWriterPreviewRows(gridDefinition, settings.previewDataset),
     grids: [gridDefinition]
   };
 }
@@ -3725,6 +4416,113 @@ function buildReportWriterPreviewRows(
 
     return row;
   });
+}
+
+function parseReportWriterCustomDatasetRows(text: string): { rows: Record<string, string>[]; error: null } | { rows: []; error: string } {
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return { rows: [], error: "Custom dataset requires JSON rows or CSV rows with a header." };
+  }
+
+  const parsed = trimmed.startsWith("[") ? parseReportWriterJsonDatasetRows(trimmed) : parseReportWriterCsvDatasetRows(trimmed);
+  if (parsed.error) {
+    return parsed;
+  }
+
+  if (parsed.rows.length === 0) {
+    return { rows: [], error: "Custom dataset requires at least one row." };
+  }
+
+  return { rows: parsed.rows.slice(0, 100), error: null };
+}
+
+function parseReportWriterJsonDatasetRows(text: string): { rows: Record<string, string>[]; error: null } | { rows: []; error: string } {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return { rows: [], error: "Custom JSON dataset must be an array of row objects." };
+  }
+
+  if (!Array.isArray(parsed)) {
+    return { rows: [], error: "Custom JSON dataset must be an array of row objects." };
+  }
+
+  const rows: Record<string, string>[] = [];
+  for (const item of parsed) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) {
+      return { rows: [], error: "Each custom JSON dataset row must be an object." };
+    }
+
+    const row: Record<string, string> = {};
+    for (const [key, value] of Object.entries(item)) {
+      if (!key.trim()) {
+        continue;
+      }
+
+      row[key.trim()] = value == null ? "" : String(value);
+    }
+
+    if (Object.keys(row).length > 0) {
+      rows.push(row);
+    }
+  }
+
+  return { rows, error: null };
+}
+
+function parseReportWriterCsvDatasetRows(text: string): { rows: Record<string, string>[]; error: null } | { rows: []; error: string } {
+  const lines = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (lines.length < 2) {
+    return { rows: [], error: "Custom CSV dataset requires a header row and at least one data row." };
+  }
+
+  const headers = parseReportWriterCsvLine(lines[0]).map((header) => header.trim());
+  if (headers.length === 0 || headers.every((header) => !header)) {
+    return { rows: [], error: "Custom CSV dataset requires at least one header." };
+  }
+
+  const rows = lines.slice(1).map((line) => {
+    const values = parseReportWriterCsvLine(line);
+    const row: Record<string, string> = {};
+    headers.forEach((header, index) => {
+      if (header) {
+        row[header] = values[index] ?? "";
+      }
+    });
+    return row;
+  }).filter((row) => Object.keys(row).length > 0);
+
+  return { rows, error: null };
+}
+
+function parseReportWriterCsvLine(line: string): string[] {
+  const values: string[] = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < line.length; index += 1) {
+    const character = line[index];
+    if (character === '"') {
+      if (inQuotes && line[index + 1] === '"') {
+        current += '"';
+        index += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (character === "," && !inQuotes) {
+      values.push(current);
+      current = "";
+    } else {
+      current += character;
+    }
+  }
+
+  values.push(current);
+  return values;
 }
 
 function buildReportAccessPolicy(settings: ReportWriterDraftSettings): ReportTemplateDraftRequest["accessPolicy"] {
@@ -4061,6 +4859,29 @@ function normalizeReportWriterTopNText(value: string | null | undefined): string
 
 function buildReportWriterDraftTopNLabel(settings: ReportWriterDraftSettings): string {
   return settings.gridKind === "TopN" ? `Top ${parseReportWriterTopN(settings.topN)}` : settings.gridKind;
+}
+
+function buildReportWriterDraftLayoutSummary(
+  settings: ReportWriterDraftSettings,
+  rowTokens: ReportingWriterToken[],
+  columnTokens: ReportingWriterToken[],
+  metricTokens: ReportingWriterToken[],
+  formulaTokens: ReportingWriterToken[],
+  savedFilterCount: number
+): string {
+  const dimensionCount = rowTokens.length + columnTokens.length;
+  const totalFilterCount = settings.filterField ? savedFilterCount + 1 : savedFilterCount;
+  const filterSummary = settings.filterField
+    ? `${totalFilterCount} filter${totalFilterCount === 1 ? "" : "s"} including draft filter`
+    : `${savedFilterCount} saved filter${savedFilterCount === 1 ? "" : "s"}`;
+  return [
+    `${settings.gridKind} draft`,
+    `${dimensionCount} dimension${dimensionCount === 1 ? "" : "s"}`,
+    `${metricTokens.length} metric${metricTokens.length === 1 ? "" : "s"}`,
+    `${formulaTokens.length} formula${formulaTokens.length === 1 ? "" : "s"}`,
+    filterSummary,
+    settings.gridKind === "TopN" ? `Top ${parseReportWriterTopN(settings.topN)}` : null
+  ].filter((part): part is string => Boolean(part)).join(" · ");
 }
 
 function normalizeReportWriterFilterOperator(value: ReportWriterFilterOperator | string | null | undefined): ReportWriterFilterOperator {
@@ -4587,6 +5408,44 @@ function formatReportingDateRange(startDate: string, endDate: string): string {
 
 function formatReportingPercent(value: number): string {
   return `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}%`;
+}
+
+function formatFinancialRecordExplorerName(explorerId: string | null | undefined): string {
+  if (explorerId === "portfolio") {
+    return "Portfolio Explorer";
+  }
+
+  if (explorerId === "security-instrument") {
+    return "Security & Instrument Explorer";
+  }
+
+  return "Ledger Explorer";
+}
+
+function hasReportingRunMetadata(reportPackage: ReportPackDeliveryPackage): boolean {
+  return Boolean(
+    reportPackage.reportingRunAsOfDate ||
+    reportPackage.reportingRunStatus ||
+    reportPackage.reportingRunTrigger ||
+    reportPackage.reportingRunAttemptCount != null ||
+    reportPackage.reportingRunSectionCount != null ||
+    reportPackage.reportingRunLineageLinkedSections != null
+  );
+}
+
+function formatReportingRunPackageMetadata(reportPackage: ReportPackDeliveryPackage): string {
+  return [
+    reportPackage.reportingRunAsOfDate ? `asOf=${reportPackage.reportingRunAsOfDate}` : null,
+    reportPackage.reportingRunStatus ? `status=${reportPackage.reportingRunStatus}` : null,
+    reportPackage.reportingRunTrigger ? `trigger=${reportPackage.reportingRunTrigger}` : null,
+    reportPackage.reportingRunAttemptCount != null ? `attempt=${reportPackage.reportingRunAttemptCount.toLocaleString()}` : null,
+    reportPackage.reportingRunSectionCount != null ? `sections=${reportPackage.reportingRunSectionCount.toLocaleString()}` : null,
+    reportPackage.reportingRunLineageLinkedSections != null ? `lineage=${reportPackage.reportingRunLineageLinkedSections.toLocaleString()}` : null
+  ].filter((part): part is string => Boolean(part)).join(" · ");
+}
+
+function reportPackDeliveryEvidencePath(reportId: string, attemptId: string): string {
+  return evidenceWorkbenchPath("report-pack-delivery", `${reportId}:${attemptId}`);
 }
 
 function formatHeatMapWidth(value: number): string {

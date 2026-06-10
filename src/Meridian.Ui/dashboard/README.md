@@ -111,8 +111,9 @@ Security Master readiness, approvals, and retained evidence packaging without br
 state.
 `FinancialRecordExplorerShell` is the browser presentation for the shared Financial Record Explorer
 DTO. Accounting loads the `ledger` and Accounting-hosted `security-instrument` explorers from
-`/api/workstation/financial-record-explorers/{explorerId}`, Portfolio loads `portfolio`, and Data
-links to the existing Security Master lane instead of restoring the old static Data workbench.
+`/api/workstation/financial-record-explorers/{explorerId}`, Portfolio loads `portfolio`, Reporting
+renders the shared `report-line-provenance` explorer from the reporting payload, and Data links to
+the existing Security Master lane instead of restoring the old static Data workbench.
 Saved views post back through the shared saved-view endpoint only after a material filter/search
 change, and blocked or empty DTOs keep proof actions disabled with the server-provided reason.
 Operations Continuity close-checklist fields mirror the shared workstation DTO, including required
@@ -148,7 +149,10 @@ scope when launched from the command palette.
 Evidence Workbench also renders the shared v0.18 Operational Evidence Graph proof-chain coverage
 for Source, Normalization, Reconciliation, Ledger, Capital accounts, Close, Reporting, Delivery,
 and Audit layers before the existing lineage and node inspectors. Keep this panel driven by the
-packet `proofChain` contract rather than browser-local node classification.
+packet `proofChain` contract rather than browser-local node classification. Manifest export results
+also render the shared vault support request list beside retained artifacts, including missing or
+blocked evidence, severity, source system, work item, and blocked output metadata from the server
+contract instead of rebuilding audit, tax, close, or report-package request lists in React.
 Operator readiness console API source identifiers use the canonical workspace roots
 `strategy`, `data`, `accounting`, and `reporting`; legacy payload type names and retained
 compatibility routes must not reintroduce visible `Research`, `Data Operations`, or `Governance`
@@ -157,6 +161,15 @@ evidence packet distribution labels follow the same canonical root naming.
 The app-shell trading continuity title uses `Trading Controls` so cross-workspace recovery copy
 does not reintroduce `Governance` as a visible workspace label.
 Reporting workspace status rows consume shared template metadata and recent run projections for investor statements, SEC filing packets, and shadow NAV packs; React renders approval status, retry attempts, audit actions, and lineage completeness rather than reimplementing report orchestration rules.
+Report-pack delivery history rows link delivered packages to the shared `report-pack-delivery`
+Evidence Workbench subject using the backend `reportId:attemptId` identity, so React does not build
+delivery evidence packets or audit graph state locally. Publication review and delivery package
+panels render retained line provenance with the server-provided Financial Record Explorer hrefs
+rather than constructing ledger, portfolio, or Security & Instrument routes in React. The delivery
+history also renders backend-owned access, channel, and download summaries for email-link,
+secure-portal, evidence-vault, and internal-route packages instead of deriving recipient-facing
+copy from URL shape. When the shared package includes an access-expiry timestamp, React displays it
+beside the token-gated delivery link so operators can see when email-link or portal access closes.
 The Reporting workspace also renders shared `portfolioCuts` rows for fund, strategy, and tag
 reporting views. The browser shows exposure, cash, P&L, shadow-NAV, variance, source-count, and
 version stamp from the backend payload instead of recomputing those cuts in React.
@@ -168,13 +181,15 @@ Cross-fund consolidation cards follow the same rule: fund/entity counts, gross/n
 P&L, shadow-NAV, variance, source counts, readiness, and drill-through routes are rendered from
 `crossFundConsolidations` without browser-local roll-up math.
 It also renders shared `livePortfolioViews` rows for tick-linked portfolio reporting. React shows
-the backend-owned live/source-backed/stale/blocked state, liquidity and telemetry copy, and links to
+the backend-owned live/source-backed/stale/blocked state, gross/net exposure, cash, pending
+settlement, P&L, shadow NAV, liquidity and telemetry copy, source/cut freshness stamps, and links to
 the portfolio-summary and cash-ladder routes rather than deriving live freshness locally. The
 Reporting route participates in the same portfolio refresh lane as Portfolio so the server-owned
 `livePortfolioViews` payload is refreshed with the source portfolio evidence while preserving
 backend freshness classification.
 `LiveLinked` is rendered only when the shared backend marks the source snapshot inside its freshness
-window; otherwise the browser preserves the emitted `SourceBacked`, `Stale`, or `Blocked` state.
+window; otherwise the browser preserves the emitted `SourceBacked`, `Stale`, or `Blocked` state and
+renders any contract-owned readiness blockers instead of inventing browser-local live-data copy.
 It also renders shared `pnlSlices` rows for daily, weekly, monthly, and yearly P&L. React shows
 date windows, realized/unrealized/current/prior/change values, source-backed or blocked posture,
 readiness text, version stamps, and backend routes from the payload instead of fabricating browser
@@ -195,11 +210,12 @@ React shows source counts, exposure, cash, P&L, readiness, version stamps, and b
 the payload instead of aggregating multi-fund state in the browser.
 It also renders shared `structuredExports` rows for regulatory, warehouse, and investment-decision
 outputs. The browser displays readiness, format, row/field/source counts, schema version, retained
-path, version stamp, and direct backend links from the contract. Each ready export exposes JSON,
-CSV, and XLSX download actions by normalizing the shared retained route's `format` query instead of
-building browser-local export payloads. Blocked exports stay visible with validation copy, but the
-browser renders disabled download controls without anchor `href` values until the backend marks the
-descriptor ready.
+path, dataset id, as-of timestamp, version stamp, exact backend API route, and direct backend links
+from the contract. Each ready export exposes JSON, CSV, and XLSX download actions by normalizing the
+shared retained route's `format` query instead of building browser-local export payloads. Blocked
+exports stay visible with validation copy, but the browser renders contract-owned readiness blockers
+and disabled download controls without anchor `href` values until the backend marks the descriptor
+ready.
 It does this instead of deriving export inventory from report-profile labels.
 The Reporting workspace also renders shared `brandingThemes` rows with firm identity, built-in or
 custom posture, color swatches, logo URI, footer text, and disclaimer copy. When the payload carries
@@ -216,6 +232,10 @@ Those rows render typed drilldown links and next-action references from the shar
 browser-safe evidence routes while executing shared POST actions for approval submission/review,
 publication, archive, and report-pack delivery. Restatements remain guarded by changed-line
 evidence requirements instead of being submitted as a one-click browser action.
+The run cards also surface exact audit metadata from the shared run projection, including run id,
+template id, as-of date, trigger, status, attempt count, section count, linked-lineage count, and
+retained artifact names, so version-control review does not depend on parsing a prose lineage
+summary.
 The Reporting workspace also renders operator-managed schedule rows from the shared schedule
 payload and wires schedule save/upsert, due-run, run-now, pause, and resume controls through the shared
 schedule endpoints. Schedule drafts default from the current schedule, approved template, and
@@ -226,18 +246,23 @@ show the shared package mode, requested artifact formats, secure link, retained 
 publication-approved branding theme, plus token-gated package artifact download links when the backend includes
 `ReportPackDeliveryPackageDto`; app-relative secure links render as anchors so operators can open
 the token-gated email-link or secure-portal package manifest, while artifact `DownloadRoute` values
-render as direct retained PDF/XLSX/CSV links. When a schedule targets a custom report-writer
+render as direct retained PDF/XLSX/CSV links with retained path, byte size, evidence id, SHA-256
+checksum, and version stamp integrity details. When a schedule targets a custom report-writer
 template that has not produced a published report-pack workflow record, those package rows still
 render because the backend now falls back to the generated reporting run and includes its retained
 manifest/report-writer artifact provenance on the delivery package; the browser renders the
 reporting run, template, schedule, source-artifact provenance, and generated-run evidence-packet
-counts/history beside the package links.
+package contents, support evidence IDs, delivery evidence links, access entitlement, recipients,
+approval chain, request history, amendments/restatements, audit references, and blocked downstream
+outputs beside the package links.
 Operators can also save or update schedule records
 from Reporting by choosing a template, cron, as-of date, due timestamp, recipient distribution,
-delivery mode, and PDF/XLSX/CSV formats; the browser posts the shared
-`ReportingScheduleUpsertRequestDto` instead of maintaining local schedule rules. Schedule cards
-also show configured delivery targets and the run-now status reports returned delivery counts or
-warnings from `ReportingScheduleRunResultDto`, keeping generated report runs distinct from packaged
+delivery mode, and PDF/XLSX/CSV formats, then staging multiple delivery targets before save so a
+single governed schedule can distribute secure-portal, email-link, evidence-vault, or internal-route
+packs to separate recipients. The browser posts the shared `ReportingScheduleUpsertRequestDto`
+instead of maintaining local schedule rules. Schedule cards also show configured delivery targets
+and the run-now status reports returned delivery counts or warnings from
+`ReportingScheduleRunResultDto`, keeping generated report runs distinct from packaged
 client/internal distributions. The backend applies the same governed template access policy to
 schedule saves and manual schedule runs as it does to ad-hoc report runs, so browser controls cannot
 schedule or execute user-locked custom templates outside the authorized owner, group, or company.
@@ -258,11 +283,14 @@ path. It stays under the canonical Reporting root and projects the loaded Data p
 Operations Continuity accounting-record evidence, close-package state, and report-pack publication
 metadata into one fail-closed demo path from source data to accounting record to report pack.
 Report-pack distribution UI consumes shared `reportPackDistributions` recipient records, not
-static target strings, so the browser surface shows recipient, channel, owner, pending item count,
-and pending summary for each governed package delivery lane.
+static target strings, so the browser surface shows recipient, channel, shared delivery state,
+owner, pending item count, due/last-sent posture, route, and pending summary for each governed
+package delivery lane.
 The Reporting report-pack task also renders publication metadata from the shared backend workflow
 record, including signed-off-by, evidence hash, retained manifest path, publication time, and
-retained evidence-link count instead of using browser-only publication aliases.
+retained evidence-link count instead of using browser-only publication aliases. Publication evidence
+links render as their own retained list, so sign-off manifests and approval packets remain
+inspectable even when they are not attached to a specific report line.
 The Reporting template panel also renders the shared template authoring lifecycle: built-in versus
 custom source, draft/in-review/approved state, latest-approved posture, approval summary, and the
 server-owned authoring route for drafting or reviewing a version. No-host fixtures include both an
@@ -275,20 +303,24 @@ governance endpoints. When the shared payload marks a template with report-write
 summarizes those grid counts from `reportWriterGrids` and renders a no-code grid designer with
 source fields, row/column zones, metrics, formulas, grid-type and Top-N controls, sort posture, and operator-authored
 custom formula name/label/expression fields plus saved filter controls for field/operator/value
-slicing. Operators can save the current grid layout as a
+slicing. The designer also renders a live layout summary from the current draft zones so operators
+can confirm dimension, metric, formula, filter, and Top-N posture before preview or save. Operators can save the current grid layout as a
 governed template draft through
 `/api/fund-structure/reporting/templates/drafts`, including company-wide, restricted group/company,
-or user-locked access policy metadata. The designer renders the computed draft policy beside the
+or user-locked access policy metadata. Placed row, column, metric, and formula tokens can be
+reordered, moved between zones, or removed individually before preview or save, so operators can
+correct a draft without resetting the whole grid. The designer renders the computed draft policy beside the
 controls and locks private drafts to a user owner before save. The designer Preview action posts the current unsaved layout
 plus an explicit preview dataset profile and bounded sample rows to
 `/api/fund-structure/reporting/templates/render`, then renders the returned grid rows, columns,
-warnings, and audit trace before publication. Operators can switch previews across representative
-portfolio-position, ledger-fact, and cash-ladder row shapes while the shared renderer still owns
+column roles, labelled warnings, and audit trace before publication. Operators can switch previews across representative
+portfolio-position, ledger-fact, cash-ladder, and pasted custom JSON/CSV row shapes while the shared renderer still owns
 pivot, Top-N, contribution, filter, and formula output. That trace displays input/output and
-filtered-input row counts, source fields, metric source mappings, formula dependencies, and filter
-lineage from the shared renderer. Grid calculation, formula evaluation, filter application,
+filtered-input row counts, source fields, metric source mappings, formula expressions/dependencies,
+and filter lineage from the shared renderer. Grid calculation, formula evaluation, filter application,
 approval, and retained template truth remain server/shared-service owned.
-Template cards also show the shared access mode and summary from the reporting payload, and
+Template cards also show a shared access-governance panel with company-wide, user/group, or
+user-locked mode, resolved scope, runnable versus blocked posture, and the backend access summary;
 inaccessible template rows stay disabled instead of allowing browser-local report runs. Template
 cards also render shared audit and version-control metadata: based-on template version,
 latest-approved posture, retained audit-event count and last transition, validation issue count,
@@ -385,9 +417,16 @@ API catalog also exposes `/api/ledger/private-capital/activity`,
 `getPrivateCapitalReportOutput`, and the Settings
 backend-capability diagnostics so operators can verify the first-class private-capital review
 endpoints outside the manual journal editor. The activity API helper accepts fund, ledger-book,
-fund-event, capital-account, and investor filters for report-pack drill-throughs, while the direct
-record helpers resolve one fund event, one capital account, or one report output to the same
-server-owned DTOs the aggregate projection carries. Browser report-output rows prefer the
+fund-event, capital-account, investor, and payment-intent filters for report-pack and cash-evidence
+drill-throughs, while the direct record helpers resolve one fund event, one capital account, or one
+report output to the same server-owned DTOs the aggregate projection carries. Payment-intent rows
+render the shared `/api/ledger/private-capital/activity?paymentIntentId=...` route supplied by the
+backend so operators open the filtered proof-chain projection instead of an ignored manual-journal
+query. `/accounting/capital-accounts` consumes
+`getCapitalAccountWorkbench` from the shared capital-account workbench endpoint so React renders
+investor-level capital-account evidence, allocation-rule coverage, statement/restatement lineage,
+audit drill-through rows, and live-versus-planned capability labels without browser-local
+accounting rules. Browser report-output rows prefer the
 server-built direct report-output route before falling back to the aggregate report route. The React
 view model preserves
 posted-event and published-output labels from the shared DTOs and renders server-owned fund-event

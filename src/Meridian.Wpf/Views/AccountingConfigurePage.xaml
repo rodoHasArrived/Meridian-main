@@ -289,6 +289,16 @@
                                         <DataGridTextColumn Header="Validation" Binding="{Binding Evidence}" Width="*" />
                                     </DataGrid.Columns>
                                 </DataGrid>
+                                <TextBlock Text="Payment Intent and Cash Evidence" Style="{StaticResource CardHeaderStyle}" Margin="0,16,0,0" />
+                                <DataGrid ItemsSource="{Binding ManualJournalPaymentIntentRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="ManualJournalPaymentIntentGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Payment Intent" Binding="{Binding Name}" Width="260" />
+                                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="150" />
+                                        <DataGridTextColumn Header="Expected Cash" Binding="{Binding Detail}" Width="300" />
+                                        <DataGridTextColumn Header="Control Evidence" Binding="{Binding Evidence}" Width="*" />
+                                        <DataGridTextColumn Header="Evidence Route" Binding="{Binding Key}" Width="260" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
                                 <TextBlock Text="Fund Event Ledger Records" Style="{StaticResource CardHeaderStyle}" Margin="0,16,0,0" />
                                 <DataGrid ItemsSource="{Binding ManualJournalFundEventLedgerRecordRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="ManualJournalFundEventLedgerRecordGrid">
                                     <DataGrid.Columns>
@@ -348,6 +358,79 @@
                                 </DataGrid>
                             </StackPanel>
                         </Border>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Capital Account Workbench">
+                    <Grid Margin="0,16,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="Capital Account Workbench" Style="{StaticResource CardHeaderStyle}" />
+                                <TextBlock Text="{Binding CapitalAccountWorkbenchStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,8,0,0" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <StackPanel>
+                                <TextBlock Text="Investor Capital Accounts" Style="{StaticResource CardHeaderStyle}" />
+                                <DataGrid ItemsSource="{Binding CapitalAccountInvestorRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,16" AutomationProperties.AutomationId="CapitalAccountWorkbenchInvestorGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Capital Account" Binding="{Binding Name}" Width="260" />
+                                        <DataGridTextColumn Header="Readiness" Binding="{Binding Status}" Width="130" />
+                                        <DataGridTextColumn Header="Roll-Forward" Binding="{Binding Detail}" Width="300" />
+                                        <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="*" />
+                                        <DataGridTextColumn Header="Route" Binding="{Binding Key}" Width="280" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <TextBlock Text="Allocation Rules" Style="{StaticResource CardHeaderStyle}" />
+                                <DataGrid ItemsSource="{Binding CapitalAccountAllocationRuleRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,16" AutomationProperties.AutomationId="CapitalAccountWorkbenchAllocationRuleGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Rule" Binding="{Binding Name}" Width="220" />
+                                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="130" />
+                                        <DataGridTextColumn Header="Basis" Binding="{Binding Detail}" Width="360" />
+                                        <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="*" />
+                                        <DataGridTextColumn Header="Route" Binding="{Binding Key}" Width="260" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <TextBlock Text="Statement and Restatement Lineage" Style="{StaticResource CardHeaderStyle}" />
+                                <DataGrid ItemsSource="{Binding CapitalAccountStatementLineageRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,16" AutomationProperties.AutomationId="CapitalAccountWorkbenchStatementLineageGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Statement" Binding="{Binding Name}" Width="260" />
+                                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120" />
+                                        <DataGridTextColumn Header="Workflow" Binding="{Binding Detail}" Width="320" />
+                                        <DataGridTextColumn Header="Lineage" Binding="{Binding Evidence}" Width="*" />
+                                        <DataGridTextColumn Header="Route" Binding="{Binding Key}" Width="260" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <TextBlock Text="Audit Drill-Through" Style="{StaticResource CardHeaderStyle}" />
+                                <DataGrid ItemsSource="{Binding CapitalAccountAuditDrillThroughRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,16" AutomationProperties.AutomationId="CapitalAccountWorkbenchAuditDrillThroughGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Target" Binding="{Binding Name}" Width="260" />
+                                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120" />
+                                        <DataGridTextColumn Header="Summary" Binding="{Binding Detail}" Width="360" />
+                                        <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="*" />
+                                        <DataGridTextColumn Header="Route" Binding="{Binding Key}" Width="260" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <TextBlock Text="Live vs Planned" Style="{StaticResource CardHeaderStyle}" />
+                                <DataGrid ItemsSource="{Binding CapitalAccountCapabilityRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="CapitalAccountWorkbenchCapabilityGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Capability" Binding="{Binding Name}" Width="300" />
+                                        <DataGridTextColumn Header="State" Binding="{Binding Status}" Width="100" />
+                                        <DataGridTextColumn Header="Scope" Binding="{Binding Detail}" Width="360" />
+                                        <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="*" />
+                                        <DataGridTextColumn Header="Route" Binding="{Binding Key}" Width="260" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </ScrollViewer>
                     </Grid>
                 </TabItem>
 

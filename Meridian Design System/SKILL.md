@@ -1,6 +1,6 @@
 ---
 name: meridian-design-system
-description: Meridian is a trading, portfolio, accounting, reporting, strategy, data, and settings operator workstation. Institutional Ops aesthetic: quiet dark navy (#08101A), restrained sky-cyan primary (#2AB2D4), amber warning (#D69E38), tight workstation radii, shallow shadows, dense data tables, masthead plus left rail. Three fonts: Space Grotesk (display), IBM Plex Sans (UI), IBM Plex Mono (data). Sentence case, no emoji, monospace for every identifier/number/timestamp. Use `colors_and_type.css`, `VISUAL_FOUNDATIONS.md`, and `ui_kits/dashboard/`.
+description: Meridian is a trading, portfolio, accounting, reporting, strategy, data, and settings operator workstation. Institutional Ops aesthetic: quiet dark navy (#08101A), restrained sky-cyan primary (#2AB2D4), amber warning (#D69E38), tight workstation radii, flat workstation shadows, dense data tables, masthead plus left rail. Fonts: Space Grotesk for display, Inter for primary UI, JetBrains Mono for primary data, with IBM Plex fallbacks. Sentence case, no emoji, monospace for every identifier/number/timestamp. Use `colors_and_type.css`, `VISUAL_FOUNDATIONS.md`, and `ui_kits/dashboard/`.
 ---
 
 # Meridian — skill guide
@@ -27,12 +27,14 @@ workspaces (`Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data
 - Titles use `--font-display` (Space Grotesk), 700, negative letter‑spacing.
 - Numbers are tabular, signed when directional: `+$100K`, `−2.41%`, `0%`.
 - Tight radii: 10 / 8 / 6 / 4 / 3px.
-- Borders precise: `#1F344C` default, `#2A4566` for selected and active frames.
-- Shadows are shallow inset + 1-2px depth only. No hard-offset shadows or glow-heavy buttons.
+- Borders precise: `#1F344C` default, `#477089` for selected and active frames.
+- Shadows use the sanctioned flat workstation offset plus inset highlight. No large poster shadows or glow-heavy buttons.
 - Use masthead + left rail + toolbar strip for workstation pages.
 - Pair KPI cards with chart/table evidence and selected-record details.
 - Security Master and reference-data screens use a command deck, searchable master table,
   persistent selected-security detail, dense schedule tables, controls, notes, and attached audit.
+- Reporting screens must show server-owned report-pack workflow, delivery attempts, retained
+  manifests, report-line provenance, and report-ready state instead of local packet rules.
 - No emoji. No exclamation marks. No marketing copy.
 
 ## Components available

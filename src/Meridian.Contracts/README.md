@@ -85,7 +85,8 @@ reconciliation case history, journal and ledger evidence, approval history, repo
 export evidence, and restatement lineage. Keep these categories shared so browser and WPF
 accounting-record review surfaces do not derive audit readiness or evidence grouping independently.
 Financial Record Explorer DTOs under `Workstation/FinancialRecordExplorerDtos.cs` define the shared
-ledger, portfolio, and Security & Instrument Explorer contract consumed by both browser and WPF.
+ledger, portfolio, Security & Instrument, and report-line provenance explorer contract consumed by
+both browser and WPF.
 The DTO owns scope, saved views, summary, filters, columns, rows, selected-record detail, proof
 actions, record graph, `Used In`, and `Impacts` relationships; clients must render empty or blocked
 states from the contract instead of fabricating totals when source-backed projections are missing.
@@ -93,15 +94,20 @@ Report-pack delivery packages also expose a contract-owned delivery evidence pac
 stakeholder recipient, entitlement scope, approval chain, publication manifest, report-line
 provenance, selected branding theme, delivery artifacts, request history, and restatement lineage
 into one reconstructable proof object.
+Workstation reporting run payloads carry the source as-of date beside run id, template, status,
+trigger, attempts, section counts, linked-lineage counts, artifacts, and audit actions so browser
+and WPF reporting surfaces can render version/audit metadata without inferring it from filenames or
+delivery-package side channels.
 The shared audit-pack readiness model exposes completeness, missing category keys, warnings,
 evidence-category summaries, measured generation seconds, a 60-second SLA target, and SLA pass/fail
 posture. Older report-pack manifests may omit readiness; clients must treat that as unknown or
 incomplete rather than invalid. Each category also carries contract-owned required evidence labels
 so browser and WPF clients can display the source, normalized activity, reconciliation, ledger,
 approval, document, export, and restatement requirements without parsing status prose.
-Evidence workflow linkage and vault lookup DTOs include `AccountingRecordId` so retained
-accounting-record manifests can be indexed and queried as first-class audit records, not only by a
-generic evidence subject string.
+Evidence workflow linkage and vault lookup DTOs include `AccountingRecordId`,
+`ReportPackDeliveryAttemptId`, and `ReportPackDeliveryPackageId` so retained accounting-record
+and report-pack delivery manifests can be indexed and queried as first-class audit records, not only
+by a generic evidence subject string.
 `FundOperationsNavigationContext` also carries optional evidence subject metadata for shared
 evidence routes such as `EvidenceWorkbench:accounting-record/{recordId}`, allowing browser and WPF
 clients to preserve the subject and source target while resolving to their local audit surfaces.
@@ -113,9 +119,16 @@ That private-capital contract now includes `PrivateCapitalFundEventLedgerRecordD
 `PrivateCapitalCapitalAccountSubledgerDto`, `PrivateCapitalReportOutputDto`, and
 `PrivateCapitalEvidenceCategoryDto` so clients receive unified event, ledger-impact,
 capital-account impact, evidence, approval, report-output, readiness reason, next-action, and
-route metadata from the shared DTOs. Keep broader cap-table administration, broad LP portal,
-native live-payment execution, full forecasting, and Backtesting Studio out of these contracts until
-the W1-W5 operational-record slice explicitly reopens those lanes.
+route metadata from the shared DTOs. `CapitalAccountWorkbenchDto` and
+`ICapitalAccountWorkbenchService` extend that same contract-owned model into an investor-level
+capital-account evidence surface with allocation-rule coverage, statement publication and
+restatement lineage, audit-support drill-through rows, and explicit live-versus-planned capability
+lists for browser and WPF consumers. Payment-intent DTOs cover expected cash movement, requester,
+approval chain, bank/cash evidence, reconciliation linkage, audit history, and explicit
+execution-deferred posture for the v0.18 cash evidence layer. Keep broader cap-table
+administration, broad LP portal, native live-payment execution, full forecasting, and Backtesting
+Studio out of these contracts until the W1-W5 operational-record slice explicitly reopens those
+lanes.
 
 Cluster coordination contracts define the shared lease and ownership vocabulary for distributed
 runtime work under `Meridian.Contracts.Coordination`. Keep `IClusterCoordinator`, `ILeaseManager`, `ICoordinationStore`,
@@ -161,7 +174,14 @@ delivery mode, secure link or portal route, retained manifest path, requested PD
 formats, retained artifact metadata, artifact SHA-256 checksums, artifact version stamps, the
 publication evidence hash used for package integrity summaries, optional publication manifest
 metadata, publication evidence links, retained line provenance, and publication-approved branding
-metadata. Keep those package fields shared
+metadata. Generated reporting-run packages also retain run id, template id, schedule id,
+as-of date, trigger, status, attempt count, section count, lineage count, and source-artifact
+metadata so PDF/XLSX/CSV artifact bytes, checksums, and byte sizes can be reconstructed
+consistently after package-store reloads. Delivery packages also carry contract-owned access,
+channel, and download summaries so email-link, secure-portal, evidence-vault, and internal-route
+clients can explain package access and retained outputs without parsing token URLs locally. Token-gated
+email-link and secure-portal packages also carry an access-expiry timestamp so clients can display
+and enforce package availability from the shared contract. Keep those package fields shared
 so email-link, secure portal, evidence-vault, and internal-route distribution clients do not infer
 report package output or integrity from delivery-reference strings. The shared route catalog
 includes both the token-gated package manifest URL under
@@ -172,6 +192,9 @@ also carry token-gated `DownloadRoute` values under
 so clients download retained PDF/XLSX/CSV outputs from the shared package contract instead of
 building artifact URLs locally; downloaded artifacts include package identity, publication manifest
 fields, publication evidence links, and report-line provenance for downstream audit review.
+Delivery attempts are also addressable as shared Evidence Workflow Fabric subjects by combining
+`reportId:attemptId` under `report-pack-delivery`, allowing clients to open the canonical delivery
+evidence graph without inventing browser- or WPF-local delivery identity rules.
 `ReportingScheduleDeliveryPlanDto` also carries contract-owned `ReadinessBlockers` beside
 `IsReady` and `ReadinessSummary`, so clients can fail closed when a scheduled recipient is inactive,
 overdue without a retained package, configured with an incompatible email-link/portal/vault/internal
@@ -193,7 +216,9 @@ freshness state, liquidity summaries, optional run cash-ladder routes, and telem
 must render the `LiveLinked`, `SourceBacked`, `Stale`, or `Blocked` state from the contract instead
 of implying live market ticks when the shared source evidence is missing or stale. `LiveLinked`
 is reserved for source snapshots inside the server-owned live freshness window; older retained
-snapshots remain `SourceBacked` until they cross the stale threshold.
+snapshots remain `SourceBacked` until they cross the stale threshold. Blocked and stale live views
+also carry `ReadinessBlockers`, allowing browser and WPF clients to fail closed with the same
+operator-facing source-evidence gap.
 `PortfolioReportingPnlSliceDto` carries daily, weekly, monthly, and yearly P&L rows derived from
 retained portfolio run timestamps. Rows include current/prior period totals, realized/unrealized
 P&L, change, source counts, readiness text, route, tags, and version stamp so clients can show
@@ -259,7 +284,9 @@ can be distinguished from evidence-vault manifest/export support in serialized a
 Report-line provenance carries the reported value plus run, source-session, ledger-entry,
 provider-event, Security Master definition, reconciliation-case, reconciliation-run,
 reconciliation-outcome, and approval pointers so each retained line can be traced back to the source
-workflow evidence before publication. Generated report-pack lineage pointers also carry optional display labels, source-system
+workflow evidence before publication. It also carries the Financial Record Explorer id and href used
+by browser and WPF clients to open the shared ledger, portfolio, or Security & Instrument Explorer
+for that retained line. Generated report-pack lineage pointers also carry optional display labels, source-system
 tags, related ledger or journal evidence IDs, line amounts, latest evidence timestamps, and API
 routes back to run continuity, ledger trial-balance, reconciliation, and Security Master search
 evidence. Keep these fields shared so browser, WPF, and service tests enforce the same publication,
@@ -327,10 +354,12 @@ Operational scheduler contracts live in `Services/`. Keep `IOperationalScheduler
 trading sessions, and maintenance-window records contract-owned so scheduling behavior can be
 implemented in Platform while tests, future hosts, and operator surfaces consume the same
 scheduler shape.
-Evidence Vault identities also expose retained artifact metadata for file-backed evidence bundles:
-storage kind, artifact id, kind, relative vault path, content hash, retained size, source route, and
-canonical subject linkage. Keep that metadata shared so packet, report, approval, screenshot,
-statement, and validation producers can enforce the same retained-artifact vocabulary.
+Evidence Vault identities also expose retained artifact metadata and support request lists for
+file-backed evidence bundles: storage kind, artifact id, kind, relative vault path, content hash,
+retained size, source route, canonical subject linkage, missing/stale evidence requests, blocking
+work-item references, and validation support issues. Keep that metadata shared so packet, report,
+approval, screenshot, statement, audit, tax, close, and validation producers can enforce the same
+retained-artifact and request-list vocabulary.
 
 Audit Trail Explorer contracts live under `Workstation/AuditTrailExplorerDtos.cs` and normalize
 retained audit records into cross-object timeline rows with object kind, object id, actor,
@@ -585,6 +614,11 @@ without interpreting an empty aggregate or accidentally selecting the wrong inve
 `reportOutputId`, `reportPackId`, or `fundEventId` with optional capital-account and investor
 filters, keeping report-to-ledger navigation on the same shared contract as activity, event-record,
 and capital-account subledger review.
+`UiApiRoutes.LedgerPrivateCapitalCapitalAccountWorkbench` exposes the narrow v0.18 Capital Account
+Workbench slice by fund, ledger-book, fund-event, capital-account, investor, or currency scope. The
+payload keeps investor-level account evidence, allocation rules, statement/restatement lineage, and
+audit drill-throughs on shared DTOs while naming broader cap-table, LP portal, live-payment, and
+forecasting behavior as planned rather than live.
 
 ## Diagrams
 

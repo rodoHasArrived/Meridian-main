@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Banking;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
@@ -463,6 +464,72 @@ public sealed class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public void PrivateCapitalPaymentIntentEvidence_FailsClosedWhenCashEvidenceIsMissing()
+    {
+        var record = BuildPrivateCapitalFundEventLedgerRecord(FindPrivateCapitalFundEventLedgerReadinessCase("approval-pending"));
+
+        record.PaymentIntentEvidence.Should().NotBeNull();
+        record.PaymentIntentEvidence!.Status.Should().Be(PrivateCapitalPaymentIntentEvidenceStatusDto.CashEvidenceMissing);
+        record.PaymentIntentEvidence.IsReady.Should().BeFalse();
+        record.PaymentIntentEvidence.RequiredEvidence.Should().Contain("Retained bank, cash, or settlement evidence");
+        record.EvidenceCategories.Should().Contain(item =>
+            item.CategoryId == "payment-intent" &&
+            item.IsReady &&
+            item.EvidenceLinks.Contains("payment:fund-alpha:capital-call"));
+        record.EvidenceCategories.Should().Contain(item =>
+            item.CategoryId == "cash-evidence" &&
+            !item.IsReady &&
+            item.EvidenceLinkCount == 0);
+    }
+
+    [Fact]
+    public void PrivateCapitalPaymentIntentEvidence_RetainsCashEvidenceWithoutEnablingExecution()
+    {
+        var timestamp = new DateTimeOffset(2026, 6, 30, 17, 0, 0, TimeSpan.Zero);
+        var effectiveDate = new DateOnly(2026, 6, 30);
+        var journalEntryId = Guid.Parse("23232323-2323-2323-2323-232323232323");
+        const string fundEventId = "fund-event:fund-alpha:capital-call:cash-evidence";
+        const string cashEvidenceRoute = "/api/workstation/evidence/subjects/cash-evidence/payment%3Afund-alpha%3Acapital-call%3Acash-evidence/packet";
+        var fundEvent = new PrivateCapitalFundEventDto(
+            fundEventId,
+            "CapitalCall",
+            ManualJournalEntryTypeDto.CapitalCall,
+            ManualJournalEntryStatusDto.Approved,
+            journalEntryId,
+            effectiveDate,
+            "capital-account:fund-alpha:lp-1",
+            "investor:lp-1",
+            "USD",
+            100m,
+            100m,
+            "Fund Alpha capital call with bank evidence",
+            "payment:fund-alpha:capital-call:cash-evidence",
+            "settlement:fund-alpha:capital-call:cash-evidence",
+            [cashEvidenceRoute],
+            [],
+            timestamp,
+            ApprovalId: "approval:cash-evidence");
+
+        var record = PrivateCapitalFundEventLedgerRecordBuilder.Build(
+            "fund-alpha",
+            [fundEvent],
+            [],
+            [],
+            []).Should().ContainSingle().Subject;
+
+        record.PaymentIntentEvidence.Should().NotBeNull();
+        record.PaymentIntentEvidence!.Status.Should().Be(PrivateCapitalPaymentIntentEvidenceStatusDto.SettlementMatched);
+        record.PaymentIntentEvidence.IsReady.Should().BeTrue();
+        record.PaymentIntentEvidence.Direction.Should().Be(PaymentIntentCashDirectionDto.Inflow);
+        record.PaymentIntentEvidence.CashEvidenceLinks.Should().ContainSingle(cashEvidenceRoute);
+        record.PaymentIntentEvidence.Summary.Should().Contain("live execution remains deferred");
+        record.EvidenceCategories.Should().Contain(item =>
+            item.CategoryId == "cash-evidence" &&
+            item.IsReady &&
+            item.EvidenceLinks.Contains(cashEvidenceRoute));
+    }
+
+    [Fact]
     public void PrivateCapitalCapitalAccountSubledger_DerivesReadinessFromReportOutputEvidenceLane()
     {
         var record = BuildPrivateCapitalFundEventLedgerRecord(new PrivateCapitalFundEventLedgerReadinessCase(
@@ -844,6 +911,27 @@ public sealed class AccountingConfigurationServiceTests
             item.SubledgerEntries.Count == 1 &&
             item.LedgerImpacts.Count == 1 &&
             item.ReportOutputs.Count == 1);
+        var paymentIntent = workbench.PrivateCapitalActivity.PaymentIntents.Should().ContainSingle().Subject;
+        paymentIntent.PaymentIntentId.Should().Be("payment:fund-alpha:capital-call:20260630");
+        paymentIntent.SettlementReference.Should().Be("settlement:fund-alpha:capital-call:20260630");
+        paymentIntent.Requester.Should().Be("ops-user");
+        paymentIntent.Status.Should().Be(PaymentIntentWorkflowStatusDto.ApprovalPending);
+        paymentIntent.StatusLabel.Should().Be("Approval pending");
+        paymentIntent.ExpectedCashMovement.Direction.Should().Be(PaymentIntentCashDirectionDto.Inflow);
+        paymentIntent.ExpectedCashMovement.Amount.Should().Be(100m);
+        paymentIntent.ExpectedCashMovement.Currency.Should().Be("USD");
+        paymentIntent.ApprovalChain.Should().Contain(step =>
+            step.Role == "Controller approval" &&
+            step.Status == ManualJournalEntryStatusDto.Submitted.ToString());
+        paymentIntent.BankEvidence.Should().ContainSingle(item =>
+            item.EvidenceKind == "BankConfirmation" &&
+            item.Status == "Missing");
+        paymentIntent.ReconciliationLinks.Should().ContainSingle(item => item.Status == "Pending");
+        paymentIntent.AuditHistory.Should().Contain(item => item.Action == "payment-intent.execution-deferred");
+        paymentIntent.ExecutionDeferredReason.Should().Contain("Full payment execution is explicitly deferred");
+        paymentIntent.EvidenceRoute.Contains(
+            "/api/workstation/evidence/subjects/payment-intent/payment%3Afund-alpha%3Acapital-call%3A20260630/packet",
+            StringComparison.OrdinalIgnoreCase).Should().BeTrue();
         workbench.PrivateCapitalActivity.SubmittedFundEventCount.Should().Be(1);
         workbench.PrivateCapitalActivity.ApprovalQueueCount.Should().Be(1);
         var directActivity = await service.GetPrivateCapitalActivityAsync("fund-alpha");
@@ -866,6 +954,9 @@ public sealed class AccountingConfigurationServiceTests
         directActivity.ReportOutputs.Should().ContainSingle(item =>
             item.ReportOutputType == "CapitalCallNotice" &&
             item.IsReportReady);
+        directActivity.PaymentIntents.Should().ContainSingle(item =>
+            item.PaymentIntentId == "payment:fund-alpha:capital-call:20260630" &&
+            item.Status == PaymentIntentWorkflowStatusDto.ApprovalPending);
         directActivity.FundEventRecords.Should().ContainSingle(item =>
             item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
             item.ApprovalState == ManualJournalEntryStatusDto.Submitted &&
@@ -900,6 +991,77 @@ public sealed class AccountingConfigurationServiceTests
             item.SubledgerEntries.Count == 1 &&
             item.LedgerImpacts.Count == 1 &&
             item.ReportOutputs.Count == 1);
+    }
+
+    [Fact]
+    public async Task Scenario_ManualJournalEntry_PaymentIntentWorkflowCapturesBankConfirmationAndReconciliationWithoutExecution()
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var journalEntryId = Guid.Parse("19191919-1919-1919-1919-191919191919");
+        const string paymentIntentId = "payment:fund-alpha:capital-call:bank-confirmed";
+        const string settlementReference = "settlement:fund-alpha:capital-call:bank-confirmed";
+        var bankSource = new StaticBankTransactionSource(
+            new BankTransactionDto(
+                Guid.Parse("29292929-2929-2929-2929-292929292929"),
+                journalEntryId,
+                "ApprovedPayment",
+                new DateOnly(2026, 6, 30),
+                new DateOnly(2026, 6, 30),
+                new DateOnly(2026, 7, 2),
+                100m,
+                "USD",
+                paymentIntentId,
+                new DateTimeOffset(2026, 7, 2, 13, 0, 0, TimeSpan.Zero),
+                IsVoided: false));
+        var service = CreateManualJournalEntryWorkbenchService(configuration, bankTransactionSource: bankSource);
+        var draft = BalancedManualJournalEntry() with
+        {
+            JournalEntryId = journalEntryId,
+            EntryType = ManualJournalEntryTypeDto.CapitalCall,
+            Memo = "Capital call with bank confirmation",
+            Lines =
+            [
+                new ManualJournalEntryLineDto("debit-cash", AccountingTemplateLineSideDto.Debit, 100m, "USD", "Assets:Cash"),
+                new ManualJournalEntryLineDto("credit-capital", AccountingTemplateLineSideDto.Credit, 100m, "USD", "Equity:Capital Contributions")
+            ],
+            EvidenceLinks =
+            [
+                "/api/reconciliation/runs/run:capital-call-bank-confirmed",
+                "/api/workstation/evidence/subjects/cash-evidence/payment%3Afund-alpha%3Acapital-call%3Abank-confirmed/packet"
+            ],
+            TreasuryContext = new TreasuryLedgerContextDto(
+                EffectiveDate: new DateOnly(2026, 6, 30),
+                IdempotencyKey: "manual-je:fund-alpha:capital-call:bank-confirmed",
+                FundEventId: "fund-event:fund-alpha:capital-call:bank-confirmed",
+                FundEventType: "CapitalCall",
+                CapitalAccountId: "capital-account:fund-alpha:lp-1",
+                InvestorId: "investor:lp-1",
+                PaymentIntentId: paymentIntentId,
+                SettlementReference: settlementReference)
+        };
+
+        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(draft, "ops-user"));
+        await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
+            saved.JournalEntryId,
+            saved.FundProfileId,
+            "controller",
+            saved.Version));
+        var workbench = await service.GetWorkbenchAsync("fund-alpha");
+
+        var paymentIntent = workbench.PrivateCapitalActivity!.PaymentIntents.Should().ContainSingle().Subject;
+        paymentIntent.PaymentIntentId.Should().Be(paymentIntentId);
+        paymentIntent.Status.Should().Be(PaymentIntentWorkflowStatusDto.ApprovalPending);
+        paymentIntent.BankEvidence.Should().Contain(item =>
+            item.EvidenceKind == "BankConfirmation" &&
+            item.Status == "Confirmed" &&
+            item.BankTransactionId == Guid.Parse("29292929-2929-2929-2929-292929292929") &&
+            item.ExternalRef == paymentIntentId);
+        paymentIntent.ReconciliationLinks.Should().Contain(item =>
+            item.Status == "Ready" &&
+            item.EvidenceRoute!.Contains("reconciliation", StringComparison.OrdinalIgnoreCase));
+        paymentIntent.AuditHistory.Select(item => item.Action).Should().Contain("payment-intent.execution-deferred");
+        paymentIntent.ExecutionDeferredReason.Should().Contain("before any bank-side instruction");
     }
 
     [Fact]
@@ -1135,7 +1297,7 @@ public sealed class AccountingConfigurationServiceTests
             item.LedgerImpacts.Count == 1 &&
             item.ReportOutputs.Count == 1);
         var fundEventRecord = activity.FundEventRecords.Single();
-        fundEventRecord.EvidenceCategories.Should().HaveCount(5);
+        fundEventRecord.EvidenceCategories.Should().HaveCount(7);
         fundEventRecord.EvidenceCategories.Should().ContainSingle(item =>
             item.CategoryId == "source-support" &&
             item.IsReady &&
@@ -1216,7 +1378,7 @@ public sealed class AccountingConfigurationServiceTests
             item.ReportPackId == reportPackId.ToString("D") &&
             item.ReportWorkflowState == ReportPackWorkflowStateDto.Published.ToString());
         capitalAccountSubledger.ValidationIssues.Should().BeEmpty();
-        capitalAccountSubledger.EvidenceCategories.Should().HaveCount(5);
+        capitalAccountSubledger.EvidenceCategories.Should().HaveCount(7);
         capitalAccountSubledger.EvidenceCategories.Should().ContainSingle(item =>
             item.CategoryId == "source-support" &&
             item.IsReady &&
@@ -2304,14 +2466,29 @@ public sealed class AccountingConfigurationServiceTests
     private static ManualJournalEntryWorkbenchService CreateManualJournalEntryWorkbenchService(
         IAccountingConfigurationService configurationService,
         ILedgerJournalStore? journalStore = null,
-        ReportPackWorkflowService? reportPackWorkflowService = null)
+        ReportPackWorkflowService? reportPackWorkflowService = null,
+        IBankTransactionSource? bankTransactionSource = null)
     {
         return new ManualJournalEntryWorkbenchService(
             new InMemoryManualJournalEntryDraftStore(),
             configurationService,
             new InMemoryAccountingActionAuditStore(),
             journalStore: journalStore,
-            reportPackWorkflowService: reportPackWorkflowService);
+            reportPackWorkflowService: reportPackWorkflowService,
+            bankTransactionSource: bankTransactionSource);
+    }
+
+    private sealed class StaticBankTransactionSource(params BankTransactionDto[] transactions) : IBankTransactionSource
+    {
+        public Task<IReadOnlyList<BankTransactionDto>> GetBankTransactionsAsync(
+            Guid? entityId = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<BankTransactionDto>>(entityId.HasValue
+                ? transactions.Where(transaction => transaction.EntityId == entityId.Value).ToArray()
+                : transactions);
+        }
     }
 
     private sealed class PostedPrivateCapitalLedgerJournalStore(

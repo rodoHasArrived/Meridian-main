@@ -66,6 +66,7 @@ Avoid:
 | Toolbar status | Count + state + scope | "473 records · Securities · 26 Apr 26" |
 | Selected row detail | Entity + action evidence | "T326117E183 · Pending · Settles 29 Apr 26" |
 | Product-guide callout | Action label + outcome | "Send to desk opens the quote request review." |
+| Delivery evidence | Workflow object + retained proof | "Delivered. Evidence packet: ReportingRunDelivery." |
 
 ## Image-inspired workflow copy
 
@@ -76,6 +77,8 @@ Meridian copy should stay terse:
   "Verify replay", and "Send to desk".
 - Show evidence near each action: row counts, timestamps, session IDs, owner, status, and next
   action.
+- Reporting copy names the server-owned object: report pack, delivery attempt, retained manifest,
+  report-line provenance, report output, and evidence packet.
 - In docs or walkthrough previews, callouts may say "Click Send to desk". In the application,
   the button should simply be named "Send to desk" and the resulting state should explain what
   happened.
@@ -99,3 +102,4 @@ Meridian copy should stay terse:
 - "Paper session", "Live session", "Replay verification"
 - "Ledger", "Security master", "Reconciliation"
 - "Provider readiness", "Wave N delivery"
+- "Report-pack delivery", "Retained manifest", "Report-line provenance", "Report output evidence"

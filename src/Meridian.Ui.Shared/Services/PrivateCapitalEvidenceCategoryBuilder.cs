@@ -9,7 +9,8 @@ internal static class PrivateCapitalEvidenceCategoryBuilder
         IReadOnlyList<PrivateCapitalCapitalAccountSubledgerEntryDto> subledgerEntries,
         IReadOnlyList<PrivateCapitalLedgerImpactDto> ledgerImpacts,
         IReadOnlyList<PrivateCapitalReportOutputDto> reportOutputs,
-        string? approvalRoute)
+        string? approvalRoute,
+        PrivateCapitalPaymentIntentEvidenceDto? paymentIntentEvidence = null)
     {
         var sourceLinks = Normalize(fundEvent.EvidenceLinks);
         var subledgerLinks = Normalize(subledgerEntries.SelectMany(static item => item.EvidenceLinks));
@@ -18,6 +19,10 @@ internal static class PrivateCapitalEvidenceCategoryBuilder
             .Concat(ledgerImpacts.SelectMany(static item => item.Lines.Select(static line => line.EvidenceLink ?? string.Empty))));
         var approvalLinks = Normalize(BuildApprovalLinks(fundEvent.ApprovalId, approvalRoute));
         var reportLinks = Normalize(reportOutputs.SelectMany(static item => item.EvidenceLinks));
+        paymentIntentEvidence ??= PrivateCapitalPaymentIntentEvidenceBuilder.BuildForFundEvent(
+            fundEvent,
+            sourceLinks,
+            null);
 
         return new[]
         {
@@ -57,6 +62,8 @@ internal static class PrivateCapitalEvidenceCategoryBuilder
                     : "Approval reference links the fund event to its review state.",
                 approvalLinks,
                 new[] { "Approval reference" }),
+            BuildPaymentIntentCategory(paymentIntentEvidence),
+            BuildCashEvidenceCategory(paymentIntentEvidence),
             BuildCategory(
                 "report-output",
                 "Report output",
@@ -73,7 +80,8 @@ internal static class PrivateCapitalEvidenceCategoryBuilder
         IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
         IReadOnlyList<PrivateCapitalCapitalAccountSubledgerEntryDto> subledgerEntries,
         IReadOnlyList<PrivateCapitalLedgerImpactDto> ledgerImpacts,
-        IReadOnlyList<PrivateCapitalReportOutputDto> reportOutputs)
+        IReadOnlyList<PrivateCapitalReportOutputDto> reportOutputs,
+        PrivateCapitalPaymentIntentEvidenceDto? paymentIntentEvidence = null)
     {
         var sourceLinks = Normalize(records.SelectMany(static item => item.FundEvent.EvidenceLinks));
         var subledgerLinks = Normalize(subledgerEntries.SelectMany(static item => item.EvidenceLinks));
@@ -82,6 +90,16 @@ internal static class PrivateCapitalEvidenceCategoryBuilder
             .Concat(ledgerImpacts.SelectMany(static item => item.Lines.Select(static line => line.EvidenceLink ?? string.Empty))));
         var approvalLinks = Normalize(records.SelectMany(static item => BuildApprovalLinks(item.ApprovalId, item.ApprovalRoute)));
         var reportLinks = Normalize(reportOutputs.SelectMany(static item => item.EvidenceLinks));
+        paymentIntentEvidence ??= PrivateCapitalPaymentIntentEvidenceBuilder.BuildForSubledger(
+            records,
+            sourceLinks
+                .Concat(subledgerLinks)
+                .Concat(ledgerLinks)
+                .Concat(reportLinks),
+            records.FirstOrDefault()?.Currency ?? "USD",
+            records.Select(static item => (DateOnly?)item.EffectiveDate).DefaultIfEmpty(null).Max(),
+            records.Sum(static item => item.NetCapitalActivity),
+            records.FirstOrDefault()?.EvidenceRoute);
 
         return new[]
         {
@@ -124,6 +142,8 @@ internal static class PrivateCapitalEvidenceCategoryBuilder
                     : "Approval references are missing for this capital account.",
                 approvalLinks,
                 new[] { "Approval reference" }),
+            BuildPaymentIntentCategory(paymentIntentEvidence),
+            BuildCashEvidenceCategory(paymentIntentEvidence),
             BuildCategory(
                 "report-output",
                 "Report output",
@@ -152,6 +172,35 @@ internal static class PrivateCapitalEvidenceCategoryBuilder
             evidenceLinks,
             requiredEvidence);
 
+    private static PrivateCapitalEvidenceCategoryDto BuildPaymentIntentCategory(
+        PrivateCapitalPaymentIntentEvidenceDto paymentIntentEvidence)
+    {
+        var links = Normalize([paymentIntentEvidence.PaymentIntentId, paymentIntentEvidence.SettlementReference]);
+        return BuildCategory(
+            "payment-intent",
+            "Payment intent",
+            paymentIntentEvidence.Status != PrivateCapitalPaymentIntentEvidenceStatusDto.MissingIntent,
+            paymentIntentEvidence.PaymentIntentId is null
+                ? "Payment intent is missing."
+                : paymentIntentEvidence.SettlementReference is null
+                    ? "Payment intent is captured without a settlement reference."
+                    : "Payment intent and settlement reference are captured.",
+            links,
+            new[] { "Payment intent id", "Settlement reference" });
+    }
+
+    private static PrivateCapitalEvidenceCategoryDto BuildCashEvidenceCategory(
+        PrivateCapitalPaymentIntentEvidenceDto paymentIntentEvidence)
+        => BuildCategory(
+            "cash-evidence",
+            "Cash evidence",
+            paymentIntentEvidence.IsReady,
+            paymentIntentEvidence.Summary,
+            paymentIntentEvidence.CashEvidenceLinks,
+            paymentIntentEvidence.RequiredEvidence.Count == 0
+                ? new[] { "Retained bank, cash, or settlement evidence" }
+                : paymentIntentEvidence.RequiredEvidence);
+
     private static bool IsApprovalReady(
         ManualJournalEntryStatusDto approvalState,
         IReadOnlyList<string> approvalLinks)
@@ -177,10 +226,10 @@ internal static class PrivateCapitalEvidenceCategoryBuilder
         }
     }
 
-    private static IReadOnlyList<string> Normalize(IEnumerable<string> evidenceLinks)
+    private static IReadOnlyList<string> Normalize(IEnumerable<string?> evidenceLinks)
         => evidenceLinks
             .Where(static item => !string.IsNullOrWhiteSpace(item))
-            .Select(static item => item.Trim())
+            .Select(static item => item!.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Order(StringComparer.OrdinalIgnoreCase)
             .ToArray();

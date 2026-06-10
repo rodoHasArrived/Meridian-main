@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.IO.Compression;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
@@ -1083,6 +1084,7 @@ public sealed class ReportPackWorkflowServiceTests
         payload.RecentRuns.Select(static run => run.RunId).Should().NotContain("investor-monthly-statement-20260501");
         payload.RecentRuns.Select(static run => run.RunId).Should().NotContain("shadow-nav-daily-pack-20260503");
         var genericRun = payload.RecentRuns.Single(run => run.RunId == manifest.RunId);
+        genericRun.AsOfDate.Should().Be("2026-05-03");
         genericRun.Artifacts.Should().Contain("schedule:sched-shadow");
         genericRun.DrilldownLinks.Should().Contain(link =>
             link.Kind == "schedule" &&
@@ -1094,6 +1096,7 @@ public sealed class ReportPackWorkflowServiceTests
             action.IsEnabled);
         var workflowRun = payload.RecentRuns.Single(run => run.RunId == $"report-pack:{published.ReportId:D}");
         workflowRun.Family.Should().Be("GovernedReportPack");
+        workflowRun.AsOfDate.Should().Be(published.Period);
         workflowRun.Status.Should().Be(ReportPackWorkflowStateDto.Restated.ToString());
         workflowRun.Artifacts.Should().Contain(item => item.Contains("/evidence-bundle", StringComparison.OrdinalIgnoreCase));
         workflowRun.Artifacts.Should().Contain("publication-manifest:manifest-1");
@@ -1206,6 +1209,13 @@ public sealed class ReportPackWorkflowServiceTests
             artifact.Format == GovernanceReportArtifactFormatDto.Csv &&
             artifact.ContentType == "text/csv");
         attempt.Package.SecureLink.Should().Contain("/package?token=");
+        attempt.Package.DeliveryAccessSummary.Should().Contain("Email-link package is available through the token-gated route");
+        attempt.Package.DeliveryAccessSummary.Should().Contain(attempt.Package.SecureLink);
+        attempt.Package.DeliveryChannelSummary.Should().Be("EmailLink delivery to Board reporting committee via Board portal.");
+        attempt.Package.DownloadSummary.Should().Contain("3 artifact(s) retained as Csv/Pdf/Xlsx");
+        attempt.Package.DownloadSummary.Should().Contain(attempt.Package.RetainedManifestPath);
+        attempt.Package.AccessExpiresAtUtc.Should().BeAfter(attempt.Package.CreatedAtUtc);
+        attempt.Package.AccessExpiresAtUtc.Should().BeCloseTo(attempt.Package.CreatedAtUtc.AddDays(14), TimeSpan.FromMinutes(1));
         attempt.Package.PublicationManifestId.Should().Be("manifest-1");
         attempt.Package.PublicationRetainedManifestPath.Should().Be("vault/report-packs/manifest-1.json");
         attempt.Package.PublicationSignedOffBy.Should().Be("controller");
@@ -1263,6 +1273,8 @@ public sealed class ReportPackWorkflowServiceTests
         csv.Should().Contain("lineProvenanceCount,1");
         csv.Should().Contain("lineProvenance[0].lineKey,trial-balance.cash");
         csv.Should().Contain("lineProvenance[0].reportValue,100.00");
+        csv.Should().Contain("lineProvenance[0].financialRecordExplorerId,ledger");
+        csv.Should().Contain("lineProvenance[0].financialRecordHref,/api/workstation/financial-record-explorers/ledger");
         csv.Should().Contain("publicationEvidenceLinks[0].evidenceId,ledger-evidence-1");
         csv.Should().Contain("restatementReasonCode,NAV_CORRECTION");
         csv.Should().Contain("restatementChangedLineCount,1");
@@ -1295,6 +1307,55 @@ public sealed class ReportPackWorkflowServiceTests
             distribution.State == "Delivered" &&
             distribution.PendingItems == 0 &&
             distribution.LastSentAtUtc != null);
+    }
+
+    [Fact]
+    public void ReportPackDeliveryService_RejectsExpiredPackageTokens()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var workflow = new ReportPackWorkflowService();
+        var approved = CreateApprovedPack(
+            workflow,
+            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")]);
+        var published = workflow.Publish(
+            approved.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:abc123",
+            "manifest-1",
+            "vault/report-packs/manifest-1.json",
+            CompleteLineProvenanceEvidenceLinks("ledger-evidence-1"));
+        var store = new FileReportPackDeliveryRecordStore(
+            new ReportPackDeliveryStoreOptions(Path.Combine(root, "report-pack-deliveries.json")),
+            NullLogger<FileReportPackDeliveryRecordStore>.Instance);
+        var service = new ReportPackDeliveryService(workflow, store);
+        var attempt = service.Deliver(
+            published.ReportId,
+            new ReportPackDeliveryRequestDto(
+                "board-reporting-committee",
+                Actor: "fund-controller",
+                DeliveryMode: ReportPackDeliveryModeDto.SecurePortal),
+            fallbackActor: "fallback");
+        var token = attempt.Package!.SecureLink.Split("token=", 2, StringSplitOptions.None)[1];
+
+        var expiredAttempt = attempt with
+        {
+            Package = attempt.Package with { AccessExpiresAtUtc = DateTimeOffset.UtcNow.AddMinutes(-1) }
+        };
+        store.Save([expiredAttempt]);
+        var reloaded = new ReportPackDeliveryService(workflow, store);
+
+        reloaded.Invoking(item => item.GetPackage(published.ReportId, attempt.AttemptId, token))
+            .Should().Throw<UnauthorizedAccessException>()
+            .WithMessage("The package token has expired.");
+        reloaded.Invoking(item => item.GetArtifact(
+                published.ReportId,
+                attempt.AttemptId,
+                attempt.Package.Artifacts[0].ArtifactName,
+                token))
+            .Should().Throw<UnauthorizedAccessException>()
+            .WithMessage("The package token has expired.");
     }
 
     [Fact]
@@ -1373,6 +1434,12 @@ public sealed class ReportPackWorkflowServiceTests
         var csvArtifact = portalPackage.Artifacts.Should()
             .ContainSingle(artifact => artifact.Format == GovernanceReportArtifactFormatDto.Csv)
             .Subject;
+        var pdfArtifact = portalPackage.Artifacts.Should()
+            .ContainSingle(artifact => artifact.Format == GovernanceReportArtifactFormatDto.Pdf)
+            .Subject;
+        var xlsxArtifact = portalPackage.Artifacts.Should()
+            .ContainSingle(artifact => artifact.Format == GovernanceReportArtifactFormatDto.Xlsx)
+            .Subject;
         csvArtifact.DownloadRoute.Should().Contain($"/api/fund-structure/reporting/packs/{published.ReportId:D}/deliveries/{attempt.AttemptId:D}/artifacts/");
 
         emailLinkResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -1390,6 +1457,26 @@ public sealed class ReportPackWorkflowServiceTests
         artifactCsv.Should().Contain("brandingThemeId,allocator-quarterly");
         artifactCsv.Should().Contain("brandingFirmName,Northstar Capital");
         artifactCsv.Should().Contain("brandingDisclaimer,For approved recipients only.");
+        var pdfResponse = await client.GetAsync(pdfArtifact.DownloadRoute);
+        pdfResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        pdfResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/pdf");
+        pdfResponse.Content.Headers.ContentLength.Should().Be(pdfArtifact.ByteSize);
+        var pdfBytes = await pdfResponse.Content.ReadAsByteArrayAsync();
+        System.Text.Encoding.ASCII.GetString(pdfBytes.Take(8).ToArray()).Should().StartWith("%PDF-1.");
+        System.Text.Encoding.ASCII.GetString(pdfBytes).Should().Contain("allocator-quarterly");
+
+        var xlsxResponse = await client.GetAsync(xlsxArtifact.DownloadRoute);
+        xlsxResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        xlsxResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        xlsxResponse.Content.Headers.ContentLength.Should().Be(xlsxArtifact.ByteSize);
+        var xlsxBytes = await xlsxResponse.Content.ReadAsByteArrayAsync();
+        xlsxBytes.Should().StartWith([0x50, 0x4B]);
+        using (var workbook = new ZipArchive(new MemoryStream(xlsxBytes), ZipArchiveMode.Read))
+        {
+            workbook.GetEntry("[Content_Types].xml").Should().NotBeNull();
+            workbook.GetEntry("xl/workbook.xml").Should().NotBeNull();
+            workbook.GetEntry("xl/worksheets/sheet1.xml").Should().NotBeNull();
+        }
         var badArtifactResponse = await client.GetAsync(csvArtifact.DownloadRoute!.Replace(token, "bad-token", StringComparison.Ordinal));
         badTokenResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         badArtifactResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -1763,7 +1850,7 @@ public sealed class ReportPackWorkflowServiceTests
             [
                 new ReportingScheduleDeliveryTargetDto(
                     "investor-relations",
-                    [GovernanceReportArtifactFormatDto.Pdf, GovernanceReportArtifactFormatDto.Csv],
+                    [GovernanceReportArtifactFormatDto.Pdf, GovernanceReportArtifactFormatDto.Xlsx, GovernanceReportArtifactFormatDto.Csv],
                     ReportPackDeliveryModeDto.EmailLink,
                     "Investor email-link package from generated report run.")
             ]));
@@ -1783,11 +1870,14 @@ public sealed class ReportPackWorkflowServiceTests
         attempt.DeliveryReference.Should().Be("schedule:scheduled-report-writer-pack:sched-custom-writer-20260502:investor-relations");
         attempt.Package.Should().NotBeNull();
         attempt.Package!.DeliveryMode.Should().Be(ReportPackDeliveryModeDto.EmailLink);
-        attempt.Package.Formats.Should().Equal(GovernanceReportArtifactFormatDto.Pdf, GovernanceReportArtifactFormatDto.Csv);
-        attempt.Package.Artifacts.Should().HaveCount(2);
+        attempt.Package.Formats.Should().Equal(
+            GovernanceReportArtifactFormatDto.Pdf,
+            GovernanceReportArtifactFormatDto.Xlsx,
+            GovernanceReportArtifactFormatDto.Csv);
+        attempt.Package.Artifacts.Should().HaveCount(3);
         attempt.Package.PortalRoute.Should().Be("/reporting/runs/sched-custom-writer-20260502/packages/" + attempt.Package.PackageId);
         attempt.Package.SecureLink.Should().Contain("/package?token=");
-        attempt.Package.IntegritySummary.Should().Be("2 artifact(s) retained with SHA-256 checksums without a publication evidence hash.");
+        attempt.Package.IntegritySummary.Should().Be("3 artifact(s) retained with SHA-256 checksums without a publication evidence hash.");
         attempt.Package.DeliveryEvidencePacket.Should().NotBeNull();
         var packet = attempt.Package.DeliveryEvidencePacket!;
         packet.PacketKind.Should().Be("ReportingRunDelivery");
@@ -1799,11 +1889,28 @@ public sealed class ReportPackWorkflowServiceTests
             recipient.Recipient == "Investor relations");
         packet.PackageContents.Should().Contain("source-artifact:report-writer://sched-custom-writer-20260502/grids/sector-pivot");
         packet.SupportEvidenceIds.Should().Contain("reporting-run-source:report-writer://sched-custom-writer-20260502/grids/sector-pivot");
-        packet.DeliveryEvidence.Should().HaveCount(2);
+        packet.DeliveryEvidence.Should().HaveCount(3);
         packet.RequestHistory.Should().Contain("delivery-request:investor-relations");
 
         var token = attempt.Package.SecureLink.Split("token=", 2, StringSplitOptions.None)[1];
         delivery.GetPackage(attempt.ReportId, attempt.AttemptId, token).PackageId.Should().Be(attempt.Package.PackageId);
+        var pdfArtifact = attempt.Package.Artifacts.Single(artifact => artifact.Format == GovernanceReportArtifactFormatDto.Pdf);
+        var pdfContent = delivery.GetArtifact(attempt.ReportId, attempt.AttemptId, pdfArtifact.ArtifactName, token);
+        pdfContent.ContentType.Should().Be("application/pdf");
+        pdfContent.Content.LongLength.Should().Be(pdfArtifact.ByteSize);
+        System.Text.Encoding.ASCII.GetString(pdfContent.Content.Take(8).ToArray()).Should().StartWith("%PDF-1.");
+        System.Text.Encoding.ASCII.GetString(pdfContent.Content).Should().Contain("sched-custom-writer-20260502");
+        var xlsxArtifact = attempt.Package.Artifacts.Single(artifact => artifact.Format == GovernanceReportArtifactFormatDto.Xlsx);
+        var xlsxContent = delivery.GetArtifact(attempt.ReportId, attempt.AttemptId, xlsxArtifact.ArtifactName, token);
+        xlsxContent.ContentType.Should().Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        xlsxContent.Content.LongLength.Should().Be(xlsxArtifact.ByteSize);
+        xlsxContent.Content.Should().StartWith([0x50, 0x4B]);
+        using (var workbook = new ZipArchive(new MemoryStream(xlsxContent.Content), ZipArchiveMode.Read))
+        {
+            workbook.GetEntry("[Content_Types].xml").Should().NotBeNull();
+            workbook.GetEntry("xl/workbook.xml").Should().NotBeNull();
+            workbook.GetEntry("xl/worksheets/sheet1.xml").Should().NotBeNull();
+        }
         var csvArtifact = attempt.Package.Artifacts.Single(artifact => artifact.Format == GovernanceReportArtifactFormatDto.Csv);
         var csv = System.Text.Encoding.UTF8.GetString(delivery.GetArtifact(attempt.ReportId, attempt.AttemptId, csvArtifact.ArtifactName, token).Content);
         csv.Should().Contain("reportingRunId,sched-custom-writer-20260502");
@@ -1822,11 +1929,23 @@ public sealed class ReportPackWorkflowServiceTests
         var plan = payload.ScheduleDeliveryPlans.Should().ContainSingle().Subject;
         plan.LastDeliveryState.Should().Be(ReportPackDeliveryStateDto.Delivered);
         plan.LastDeliverySecureLink.Should().Be(attempt.Package.SecureLink);
-        plan.LastDeliveryArtifactCount.Should().Be(2);
-        plan.LastDeliveryIntegritySummary.Should().Be("2 artifact(s) retained with SHA-256 checksums without a publication evidence hash.");
+        plan.LastDeliveryArtifactCount.Should().Be(3);
+        plan.LastDeliveryIntegritySummary.Should().Be("3 artifact(s) retained with SHA-256 checksums without a publication evidence hash.");
         var reloadedAttempt = reloadedDelivery.GetHistory(attempt.ReportId).Should().ContainSingle().Subject;
         reloadedAttempt.Package!.DeliveryEvidencePacket.Should().NotBeNull();
         reloadedAttempt.Package.DeliveryEvidencePacket!.PacketKind.Should().Be("ReportingRunDelivery");
+        reloadedAttempt.Package.ReportingRunAsOfDate.Should().Be("2026-05-02");
+        reloadedAttempt.Package.ReportingRunStatus.Should().Be(ReportingRunStatus.Draft.ToString());
+        reloadedAttempt.Package.ReportingRunTrigger.Should().Be(ReportingRunTrigger.Scheduled.ToString());
+        reloadedAttempt.Package.ReportingRunAttemptCount.Should().Be(1);
+        reloadedAttempt.Package.ReportingRunSectionCount.Should().Be(result.Run.SectionCount);
+        reloadedAttempt.Package.ReportingRunLineageLinkedSections.Should().Be(result.Run.LineageLinkedSections);
+        var reloadedPdf = reloadedDelivery.GetArtifact(attempt.ReportId, attempt.AttemptId, pdfArtifact.ArtifactName, token);
+        reloadedPdf.Content.LongLength.Should().Be(reloadedAttempt.Package.Artifacts.Single(artifact => artifact.Format == GovernanceReportArtifactFormatDto.Pdf).ByteSize);
+        System.Text.Encoding.ASCII.GetString(reloadedPdf.Content).Should().Contain("sched-custom-writer-20260502");
+        var reloadedXlsx = reloadedDelivery.GetArtifact(attempt.ReportId, attempt.AttemptId, xlsxArtifact.ArtifactName, token);
+        reloadedXlsx.Content.LongLength.Should().Be(reloadedAttempt.Package.Artifacts.Single(artifact => artifact.Format == GovernanceReportArtifactFormatDto.Xlsx).ByteSize);
+        reloadedXlsx.Content.Should().StartWith([0x50, 0x4B]);
     }
 
     [Fact]
@@ -1855,6 +1974,7 @@ public sealed class ReportPackWorkflowServiceTests
         result.Run.RunId.Should().Be("adhoc-investor-20260504");
         result.Run.TemplateId.Should().Be("investor-monthly-statement");
         result.Run.Trigger.Should().Be(ReportingRunTrigger.AdHoc.ToString());
+        result.Run.AsOfDate.Should().Be("2026-05-04");
         result.Run.Status.Should().Be(ReportingRunStatus.Draft.ToString());
         result.Run.NextActions.Should().ContainSingle(action =>
             action.Kind == "approval-submit" &&
@@ -2748,7 +2868,9 @@ public sealed class ReportPackWorkflowServiceTests
                 SecurityMasterId: "security-1",
                 SecurityDefinitionId: "definition-1",
                 ReconciliationOutcome: "matched",
-                ApprovalId: "approval-1"));
+                ApprovalId: "approval-1",
+                FinancialRecordExplorerId: "ledger",
+                FinancialRecordHref: "/api/workstation/financial-record-explorers/ledger?lineKey=trial-balance.nav&sourceId=session-1&evidenceId=session-evidence-1&runId=run-1"));
     }
 
     [Fact]

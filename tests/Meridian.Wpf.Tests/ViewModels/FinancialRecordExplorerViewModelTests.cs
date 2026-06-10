@@ -54,9 +54,49 @@ public sealed class FinancialRecordExplorerViewModelTests
     [InlineData("LedgerExplorer", "ledger")]
     [InlineData("PortfolioExplorer", "portfolio")]
     [InlineData("SecurityInstrumentExplorer", "security-instrument")]
+    [InlineData("ReportLineProvenanceExplorer", "report-line-provenance")]
     public void ResolveExplorerId_ShouldMapShellPageTagsToSharedExplorerIds(string pageTag, string explorerId)
     {
         FinancialRecordExplorerViewModel.ResolveExplorerId(pageTag).Should().Be(explorerId);
+    }
+
+    [Theory]
+    [InlineData("/api/workstation/financial-record-explorers/ledger?lineKey=trial-balance.nav&sourceId=ledger-entry-1", "LedgerExplorer")]
+    [InlineData("/api/workstation/financial-record-explorers/portfolio?lineKey=positions.aapl&sourceId=position-aapl", "PortfolioExplorer")]
+    [InlineData("/api/workstation/financial-record-explorers/security-instrument?lineKey=security.aapl&sourceId=security-aapl", "SecurityInstrumentExplorer")]
+    [InlineData("/api/workstation/financial-record-explorers/report-line-provenance?lineKey=trial-balance.cash&sourceId=ledger-entry-1", "ReportLineProvenanceExplorer")]
+    public void ProofActions_ShouldMapSharedFinancialRecordExplorerRoutesToShellPageTags(string href, string expectedPageTag)
+    {
+        var action = FinancialRecordExplorerViewModel.FinancialRecordExplorerActionModel.FromDto(
+            new FinancialRecordExplorerProofActionDto(
+                "open-report-line",
+                "Open report line",
+                "Open retained report-line source.",
+                href));
+
+        action.IsEnabled.Should().BeTrue();
+        action.TargetPageTag.Should().Be(expectedPageTag);
+        action.DisabledReason.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("/api/fund-structure/reporting/packs/09f97410-0e4e-4c39-9db8-d79de196d2db/deliveries", "FundReportPack")]
+    [InlineData("/api/workstation/reconciliation/runs/recon-run-1", "FundReconciliation")]
+    [InlineData("/api/ledger/journal-entry-workbench?ledgerEntryId=ledger-entry-1", "FundAccountingConfigure")]
+    [InlineData("/api/workstation/evidence/subjects/approval/approval-1/packet", "FundAuditTrail")]
+    [InlineData("/api/workstation/evidence/subjects/report-pack-delivery/report%3Aattempt/graph", "FundAuditTrail")]
+    public void ProofActions_ReportLineProvenanceDrillThroughRoutes_ShouldMapToShellPageTags(string href, string expectedPageTag)
+    {
+        var action = FinancialRecordExplorerViewModel.FinancialRecordExplorerActionModel.FromDto(
+            new FinancialRecordExplorerProofActionDto(
+                "open-proof",
+                "Open proof",
+                "Open retained proof.",
+                href));
+
+        action.IsEnabled.Should().BeTrue();
+        action.TargetPageTag.Should().Be(expectedPageTag);
+        action.DisabledReason.Should().BeEmpty();
     }
 
     private static FinancialRecordExplorerDto CreateExplorerDto(

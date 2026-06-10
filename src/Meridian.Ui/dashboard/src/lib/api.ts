@@ -169,6 +169,7 @@ import type {
   UserSessionRevokeResult,
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
+  CapitalAccountWorkbench,
   PrivateCapitalActivityProjection,
   PrivateCapitalCapitalAccountSubledger,
   PrivateCapitalFundEventLedgerRecord,
@@ -1058,6 +1059,33 @@ export function getPrivateCapitalReportOutput(
 
   return getJson<PrivateCapitalReportOutput>(
     `${WORKSTATION_API_ENDPOINTS.privateCapitalReportOutput}?${params.toString()}`,
+    options
+  );
+}
+
+export interface CapitalAccountWorkbenchQuery {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  fundEventId?: string | null;
+  capitalAccountId?: string | null;
+  investorId?: string | null;
+  currency?: string | null;
+}
+
+export function getCapitalAccountWorkbench(
+  query: CapitalAccountWorkbenchQuery = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value) {
+      params.set(key, value);
+    }
+  }
+
+  const suffix = params.toString();
+  return getJson<CapitalAccountWorkbench>(
+    `${WORKSTATION_API_ENDPOINTS.privateCapitalCapitalAccountWorkbench}${suffix ? `?${suffix}` : ""}`,
     options
   );
 }

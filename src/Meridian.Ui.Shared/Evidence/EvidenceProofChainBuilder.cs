@@ -9,7 +9,7 @@ internal static class EvidenceProofChainBuilder
         new(
             EvidenceProofChainLayerKindDto.Source,
             "Source",
-            ["source", "provider", "statement", "custodian", "broker", "retained-evidence", "evidence-link", "security-master", "identity"]),
+            ["source", "provider", "statement", "custodian", "broker", "bank", "cash", "payment-requester", "expected-cash-movement", "retained-evidence", "evidence-link", "security-master", "identity"]),
         new(
             EvidenceProofChainLayerKindDto.Normalization,
             "Normalization",
@@ -17,7 +17,7 @@ internal static class EvidenceProofChainBuilder
         new(
             EvidenceProofChainLayerKindDto.Reconciliation,
             "Reconciliation",
-            ["reconciliation", "break", "casework", "matching", "variance"]),
+            ["reconciliation", "break", "casework", "matching", "variance", "bank-cash-evidence", "payment-intent", "settlement"]),
         new(
             EvidenceProofChainLayerKindDto.CapitalAccounts,
             "Capital accounts",
@@ -41,7 +41,7 @@ internal static class EvidenceProofChainBuilder
         new(
             EvidenceProofChainLayerKindDto.Audit,
             "Audit",
-            ["audit", "vault", "manifest", "artifact", "retention", "hash", "approval-audit"])
+            ["audit", "vault", "manifest", "artifact", "retention", "hash", "approval-audit", "execution-deferred"])
     ];
 
     public static EvidenceProofChainDto Build(

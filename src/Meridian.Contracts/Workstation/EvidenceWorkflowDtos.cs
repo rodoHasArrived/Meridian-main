@@ -161,6 +161,7 @@ public sealed record EvidenceVaultIdentityDto(
     string StorageKind)
 {
     public IReadOnlyList<EvidenceVaultArtifactDto> Artifacts { get; init; } = [];
+    public IReadOnlyList<EvidenceSupportRequestDto> SupportRequests { get; init; } = [];
 }
 
 public sealed record EvidenceVaultArtifactDto(
@@ -175,6 +176,18 @@ public sealed record EvidenceVaultArtifactDto(
     string? CanonicalSubjectKind,
     string? CanonicalSubjectId);
 
+public sealed record EvidenceSupportRequestDto(
+    string RequestId,
+    string RequestKind,
+    string EvidenceId,
+    string? EvidenceKind,
+    EvidenceValidationSeverityDto Severity,
+    string Status,
+    string Summary,
+    string? SourceSystem,
+    string? WorkItemId,
+    string? BlockedOutput);
+
 public sealed record EvidenceLifecycleMetadataDto(
     DateTimeOffset? RetainUntil,
     bool LegalHold,
@@ -187,7 +200,9 @@ public sealed record EvidenceSubjectLinkageDto(
     string? PeriodId,
     string? ReportPackId,
     string? ReconciliationCaseId,
-    string? AccountingRecordId = null);
+    string? AccountingRecordId = null,
+    string? ReportPackDeliveryAttemptId = null,
+    string? ReportPackDeliveryPackageId = null);
 
 public sealed record EvidenceVaultLookupRequestDto(
     string? EvidenceSubject,
@@ -195,7 +210,9 @@ public sealed record EvidenceVaultLookupRequestDto(
     string? PeriodId,
     string? ReportPackId,
     string? ReconciliationCaseId,
-    string? AccountingRecordId = null);
+    string? AccountingRecordId = null,
+    string? ReportPackDeliveryAttemptId = null,
+    string? ReportPackDeliveryPackageId = null);
 
 public sealed record EvidenceEndpointErrorDto(
     string Code,

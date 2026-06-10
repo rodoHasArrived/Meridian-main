@@ -596,6 +596,57 @@ describe("Evidence Workbench view model", () => {
     });
   });
 
+  it("preserves report-pack delivery evidence targets with direct package routes", () => {
+    const deliverySubject: EvidenceSubject = {
+      subjectId: "11111111-1111-1111-1111-111111111111:22222222-2222-2222-2222-222222222222",
+      subjectKind: "report-pack-delivery",
+      label: "Report-pack delivery Board reporting committee 1",
+      workspace: "Reporting",
+      route: "/reporting/report-packs?reportId=11111111-1111-1111-1111-111111111111&deliveryAttemptId=22222222-2222-2222-2222-222222222222",
+      pageTag: "EvidenceWorkbench"
+    };
+    const deliveryPacket: EvidencePacket = {
+      ...packet,
+      subject: deliverySubject,
+      actions: [
+        {
+          actionId: "workflow.evidence.open-packet",
+          label: "Open Delivery Evidence",
+          detail: "Open retained delivery evidence for the selected report-pack package.",
+          targetPageTag: "EvidenceWorkbench",
+          tone: "Primary",
+          workItemKind: null,
+          routePrefixes: ["/api/workstation/evidence/subjects/report-pack-delivery"],
+          routeContains: [],
+          aliases: []
+        }
+      ]
+    };
+
+    const vm = buildEvidenceWorkbenchViewModel({
+      selectedSubjectKind: "report-pack-delivery",
+      selectedSubjectId: deliverySubject.subjectId,
+      loading: false,
+      error: null,
+      subjects: [deliverySubject],
+      packet: deliveryPacket,
+      exportBusy: false,
+      exportResult: null,
+      validateBusy: false,
+      validationResult: null,
+      exportManifest: vi.fn(),
+      validatePacket: vi.fn()
+    });
+
+    const expectedWorkbenchHref = "/reporting/evidence?subjectKind=report-pack-delivery&subjectId=11111111-1111-1111-1111-111111111111%3A22222222-2222-2222-2222-222222222222";
+    expect(vm.sourceWorkflowHref).toBe(deliverySubject.route);
+    expect(vm.openSubjectHref(deliverySubject)).toBe(expectedWorkbenchHref);
+    expect(vm.packetActions[0]).toMatchObject({
+      href: expectedWorkbenchHref,
+      targetLabel: "Evidence Workbench"
+    });
+  });
+
   it("preserves operating scope in source-workflow, subject, and packet-action links", () => {
     const vm = buildEvidenceWorkbenchViewModel({
       selectedSubjectKind: "strategy-run",
@@ -999,6 +1050,32 @@ describe("Evidence Workbench view model", () => {
               canonicalSubjectKind: "report",
               canonicalSubjectId: "report-pack-1"
             }
+          ],
+          supportRequests: [
+            {
+              requestId: "support-request:missingevidence:audit-support",
+              requestKind: "MissingEvidence",
+              evidenceId: "audit-support",
+              evidenceKind: "audit-history",
+              severity: "Critical",
+              status: "Open",
+              summary: "Audit support package is missing.",
+              sourceSystem: "test",
+              workItemId: null,
+              blockedOutput: "report-pack/close-2026-05"
+            },
+            {
+              requestId: "support-request:blockedworkitem:audit-support:audit-request-close-2026-05",
+              requestKind: "BlockedWorkItem",
+              evidenceId: "audit-support",
+              evidenceKind: "audit-history",
+              severity: "Critical",
+              status: "Open",
+              summary: "Work item 'audit-request:close-2026-05' blocks evidence support.",
+              sourceSystem: "test",
+              workItemId: "audit-request:close-2026-05",
+              blockedOutput: "report-pack/close-2026-05"
+            }
           ]
         }
       });
@@ -1008,7 +1085,7 @@ describe("Evidence Workbench view model", () => {
     expect(result.current.exportResultDetail).toMatchObject({
       title: "Manifest retained",
       manifestPath: "fresh-manifest.json",
-      summaryLabel: "3 nodes, 1 warning, 1 retained artifact",
+      summaryLabel: "3 nodes, 1 warning, 1 retained artifact, 2 support requests",
       routeHref: "/workstation/evidence/fresh-manifest.json",
       routeLabel: "Open manifest",
       routeAriaLabel: "Open retained evidence manifest at fresh-manifest.json",
@@ -1025,6 +1102,29 @@ describe("Evidence Workbench view model", () => {
           sourceLabel: "/api/workstation/reconciliation/statement-runs/import-1",
           canonicalSubjectLabel: "Report report-pack-1",
           retainedLabel: "Retained May 9, 12:36 UTC"
+        })
+      ],
+      supportRequestSummaryLabel: "2 support requests",
+      supportRequestRows: [
+        expect.objectContaining({
+          id: "support-request:missingevidence:audit-support",
+          requestKindLabel: "Missing Evidence",
+          evidenceLabel: "audit-support",
+          evidenceKindLabel: "Audit History",
+          severityLabel: "Critical",
+          severityTone: "danger",
+          statusLabel: "Open",
+          summary: "Audit support package is missing.",
+          sourceLabel: "test",
+          workItemLabel: "No work item",
+          blockedOutputLabel: "report-pack/close-2026-05"
+        }),
+        expect.objectContaining({
+          id: "support-request:blockedworkitem:audit-support:audit-request-close-2026-05",
+          requestKindLabel: "Blocked Work Item",
+          evidenceLabel: "audit-support",
+          workItemLabel: "audit-request:close-2026-05",
+          blockedOutputLabel: "report-pack/close-2026-05"
         })
       ]
     });
@@ -1066,6 +1166,20 @@ describe("EvidenceWorkbenchScreen", () => {
             sourceRoute: "/api/workstation/reconciliation/statement-runs/import-1",
             canonicalSubjectKind: "report",
             canonicalSubjectId: "report-pack-1"
+          }
+        ],
+        supportRequests: [
+          {
+            requestId: "support-request:missingevidence:audit-support",
+            requestKind: "MissingEvidence",
+            evidenceId: "audit-support",
+            evidenceKind: "audit-history",
+            severity: "Critical",
+            status: "Open",
+            summary: "Audit support package is missing.",
+            sourceSystem: "test",
+            workItemId: "audit-request:close-2026-05",
+            blockedOutput: "report-pack/close-2026-05"
           }
         ]
       }
@@ -1124,13 +1238,18 @@ describe("EvidenceWorkbenchScreen", () => {
     await user.click(screen.getByRole("button", { name: /export selected evidence manifest for momentum strategy run/i }));
     expect(await screen.findByText("Manifest retained")).toBeInTheDocument();
     expect(screen.getByText("workstation/evidence/strategy-run/run-1/manifest.json")).toBeInTheDocument();
-    expect(screen.getByText("3 nodes, 1 warning, 1 retained artifact")).toBeInTheDocument();
+    expect(screen.getByText("3 nodes, 1 warning, 1 retained artifact, 1 support request")).toBeInTheDocument();
     expect(screen.getByText("ev-abcdefabcdefabcdefabcdef")).toBeInTheDocument();
     expect(screen.getByText("File Bundle")).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Retained vault artifacts" })).toBeInTheDocument();
     expect(screen.getByText("Broker Statement")).toBeInTheDocument();
     expect(screen.getByText("workstation/evidence/_vault/ev-abcdefabcdefabcdefabcdef/artifacts/broker-statement.csv")).toBeInTheDocument();
     expect(screen.getByText("Report report-pack-1")).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Evidence vault support requests" })).toBeInTheDocument();
+    expect(screen.getByText("Missing Evidence")).toBeInTheDocument();
+    expect(screen.getByText("audit-support")).toBeInTheDocument();
+    expect(screen.getByText("Audit support package is missing.")).toBeInTheDocument();
+    expect(screen.getByText("audit-request:close-2026-05")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /open retained evidence manifest/i })).toHaveAttribute(
       "href",
       "/workstation/evidence/strategy-run/run-1/manifest.json"

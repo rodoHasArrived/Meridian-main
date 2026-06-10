@@ -213,7 +213,8 @@ public sealed record PortfolioReportingLiveViewDto(
     string TelemetrySummary,
     IReadOnlyList<string> Tags,
     string? CashLadderRoute = null,
-    string? VersionStamp = null);
+    string? VersionStamp = null,
+    IReadOnlyList<string>? ReadinessBlockers = null);
 
 [JsonConverter(typeof(JsonStringEnumConverter<PortfolioReportingPnlSlicePeriodDto>))]
 public enum PortfolioReportingPnlSlicePeriodDto
@@ -354,7 +355,8 @@ public sealed record StructuredReportingExportDto(
     string? ValidationSummary = null,
     string? EvidenceRoute = null,
     string? VersionStamp = null,
-    IReadOnlyList<string>? Tags = null);
+    IReadOnlyList<string>? Tags = null,
+    IReadOnlyList<string>? ReadinessBlockers = null);
 
 public sealed record StructuredReportingExportColumnDto(
     string Name,
@@ -394,7 +396,8 @@ public sealed record FundReportingSummaryDto(
     IReadOnlyList<PortfolioReportingPnlSliceDto>? PnlSlices = null,
     IReadOnlyList<PortfolioReportingAnalyticsRowDto>? AnalyticsRows = null,
     string? FundProfileId = null,
-    IReadOnlyList<ReportingScheduleDeliveryPlanDto>? ScheduleDeliveryPlans = null);
+    IReadOnlyList<ReportingScheduleDeliveryPlanDto>? ScheduleDeliveryPlans = null,
+    FinancialRecordExplorerDto? ReportLineProvenanceExplorer = null);
 
 /// <summary>
 /// Shared Accounting workspace payload combining ledger, banking, cash, reconciliation,
@@ -860,7 +863,17 @@ public sealed record ReportPackDeliveryPackageDto(
     IReadOnlyList<ReportPackChangedLineDto>? RestatementChangedLines = null,
     IReadOnlyList<ReportPackEvidenceLinkDto>? RestatementEvidenceLinks = null,
     ReportPackDeliveryEvidencePacketDto? DeliveryEvidencePacket = null,
-    ReportBrandingThemeDto? BrandingTheme = null);
+    ReportBrandingThemeDto? BrandingTheme = null,
+    string? ReportingRunAsOfDate = null,
+    string? ReportingRunStatus = null,
+    string? ReportingRunTrigger = null,
+    int? ReportingRunAttemptCount = null,
+    int? ReportingRunSectionCount = null,
+    int? ReportingRunLineageLinkedSections = null,
+    string? DeliveryAccessSummary = null,
+    string? DeliveryChannelSummary = null,
+    string? DownloadSummary = null,
+    DateTimeOffset? AccessExpiresAtUtc = null);
 
 public sealed record ReportPackDeliveryAttemptDto(
     Guid AttemptId,
@@ -1247,7 +1260,9 @@ public sealed record ReportPackLineProvenanceDto(
     string? SecurityMasterId = null,
     string? SecurityDefinitionId = null,
     string? ReconciliationOutcome = null,
-    string? ApprovalId = null);
+    string? ApprovalId = null,
+    string? FinancialRecordExplorerId = null,
+    string? FinancialRecordHref = null);
 public sealed record ReportPackPublicationManifestDto(
     string ManifestId,
     string RetainedManifestPath,

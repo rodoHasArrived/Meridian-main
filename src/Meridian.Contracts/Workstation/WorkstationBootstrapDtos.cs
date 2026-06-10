@@ -345,6 +345,7 @@ public sealed record WorkstationReportingRunPayload(
     string Family,
     string Status,
     string Trigger,
+    string AsOfDate,
     int AttemptCount,
     int SectionCount,
     int LineageLinkedSections,
@@ -384,7 +385,8 @@ public sealed record WorkstationReportingPayload(
     IReadOnlyList<ReportingScheduleRecordDto>? Schedules = null,
     IReadOnlyList<ReportPackDeliveryAttemptDto>? DeliveryAttempts = null,
     string? SelectedFundProfileId = null,
-    IReadOnlyList<ReportingScheduleDeliveryPlanDto>? ScheduleDeliveryPlans = null);
+    IReadOnlyList<ReportingScheduleDeliveryPlanDto>? ScheduleDeliveryPlans = null,
+    FinancialRecordExplorerDto? ReportLineProvenanceExplorer = null);
 
 /// <summary>
 /// Typed payload returned by <c>GET /api/workstation/accounting</c> and

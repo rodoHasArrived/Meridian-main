@@ -607,6 +607,7 @@ public static class LedgerEndpoints
             string? fundEventId,
             string? capitalAccountId,
             string? investorId,
+            string? paymentIntentId,
             HttpContext context) =>
         {
             if (!HasLedgerReadPermission(context))
@@ -622,7 +623,7 @@ public static class LedgerEndpoints
 
             var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(
-                FilterPrivateCapitalActivity(activity, fundEventId, capitalAccountId, investorId),
+                FilterPrivateCapitalActivity(activity, fundEventId, capitalAccountId, investorId, paymentIntentId),
                 jsonOptions);
         })
         .WithName("GetLedgerPrivateCapitalActivity")
@@ -654,7 +655,7 @@ public static class LedgerEndpoints
             }
 
             var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
-            var record = FilterPrivateCapitalActivity(activity, normalizedFundEventId, null, null)
+            var record = FilterPrivateCapitalActivity(activity, normalizedFundEventId, null, null, null)
                 .FundEventRecords
                 .FirstOrDefault(item => string.Equals(item.FundEventId, normalizedFundEventId, StringComparison.OrdinalIgnoreCase));
             if (record is null)
@@ -699,7 +700,7 @@ public static class LedgerEndpoints
             var normalizedInvestorId = NormalizeOptional(investorId);
             var normalizedCurrency = NormalizeOptional(currency);
             var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
-            var filtered = FilterPrivateCapitalActivity(activity, null, normalizedCapitalAccountId, normalizedInvestorId);
+            var filtered = FilterPrivateCapitalActivity(activity, null, normalizedCapitalAccountId, normalizedInvestorId, null);
             var subledgers = filtered.CapitalAccountSubledgers
                 .Where(item =>
                     string.Equals(item.CapitalAccountId, normalizedCapitalAccountId, StringComparison.OrdinalIgnoreCase) &&
@@ -764,7 +765,7 @@ public static class LedgerEndpoints
             }
 
             var activity = await service.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId, context.RequestAborted).ConfigureAwait(false);
-            var filtered = FilterPrivateCapitalActivity(activity, normalizedFundEventId, normalizedCapitalAccountId, normalizedInvestorId);
+            var filtered = FilterPrivateCapitalActivity(activity, normalizedFundEventId, normalizedCapitalAccountId, normalizedInvestorId, null);
             var reportOutputs = filtered.ReportOutputs
                 .Where(item =>
                     (normalizedReportOutputId is null || string.Equals(item.ReportOutputId, normalizedReportOutputId, StringComparison.OrdinalIgnoreCase)) &&
@@ -795,6 +796,52 @@ public static class LedgerEndpoints
         .WithName("GetLedgerPrivateCapitalReportOutput")
         .Produces<PrivateCapitalReportOutputDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        app.MapGet(UiApiRoutes.LedgerPrivateCapitalCapitalAccountWorkbench, async (
+            string? fundProfileId,
+            Guid? ledgerBookId,
+            string? fundEventId,
+            string? capitalAccountId,
+            string? investorId,
+            string? currency,
+            HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveCapitalAccountWorkbenchService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var workbench = await service.GetWorkbenchAsync(
+                    fundProfileId,
+                    ledgerBookId,
+                    fundEventId,
+                    capitalAccountId,
+                    investorId,
+                    currency,
+                    context.RequestAborted)
+                .ConfigureAwait(false);
+            if ((NormalizeOptional(fundEventId) is not null ||
+                 NormalizeOptional(capitalAccountId) is not null ||
+                 NormalizeOptional(investorId) is not null ||
+                 NormalizeOptional(currency) is not null) &&
+                workbench.InvestorAccounts.Count == 0)
+            {
+                return Results.NotFound();
+            }
+
+            return Results.Json(workbench, jsonOptions);
+        })
+        .WithName("GetLedgerPrivateCapitalCapitalAccountWorkbench")
+        .Produces<CapitalAccountWorkbenchDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented);
@@ -939,6 +986,22 @@ public static class LedgerEndpoints
                 auditStore,
                 context.RequestServices.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
                 context.RequestServices.GetService<ILedgerJournalStore>(),
+                context.RequestServices.GetService<ReportPackWorkflowService>());
+    }
+
+    private static ICapitalAccountWorkbenchService? ResolveCapitalAccountWorkbenchService(HttpContext context)
+    {
+        var service = context.RequestServices.GetService<ICapitalAccountWorkbenchService>();
+        if (service is not null)
+        {
+            return service;
+        }
+
+        var manualJournalService = ResolveManualJournalEntryWorkbenchService(context);
+        return manualJournalService is null
+            ? null
+            : new CapitalAccountWorkbenchService(
+                manualJournalService,
                 context.RequestServices.GetService<ReportPackWorkflowService>());
     }
 
@@ -1183,41 +1246,54 @@ public static class LedgerEndpoints
         PrivateCapitalActivityProjectionDto activity,
         string? fundEventId,
         string? capitalAccountId,
-        string? investorId)
+        string? investorId,
+        string? paymentIntentId)
     {
         var normalizedFundEventId = NormalizeOptional(fundEventId);
         var normalizedCapitalAccountId = NormalizeOptional(capitalAccountId);
         var normalizedInvestorId = NormalizeOptional(investorId);
+        var normalizedPaymentIntentId = NormalizeOptional(paymentIntentId);
         if (normalizedFundEventId is null &&
             normalizedCapitalAccountId is null &&
-            normalizedInvestorId is null)
+            normalizedInvestorId is null &&
+            normalizedPaymentIntentId is null)
         {
             return activity;
         }
 
+        var paymentIntentFundEventIds = normalizedPaymentIntentId is null
+            ? null
+            : activity.FundEvents
+                .Where(item => MatchesPrivateCapitalFilter(item.PaymentIntentId, normalizedPaymentIntentId))
+                .Select(static item => item.FundEventId)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
         var matchingFundEvents = activity.FundEvents
             .Where(item =>
                 MatchesPrivateCapitalFilter(item.FundEventId, normalizedFundEventId) &&
                 MatchesPrivateCapitalFilter(item.CapitalAccountId, normalizedCapitalAccountId) &&
-                MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId))
+                MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId) &&
+                MatchesPrivateCapitalFilter(item.PaymentIntentId, normalizedPaymentIntentId))
             .ToArray();
         var matchingSubledgerEntries = activity.CapitalAccountSubledgerEntries
             .Where(item =>
                 MatchesPrivateCapitalFilter(item.FundEventId, normalizedFundEventId) &&
                 MatchesPrivateCapitalFilter(item.CapitalAccountId, normalizedCapitalAccountId) &&
-                MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId))
+                MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId) &&
+                MatchesPrivateCapitalFundEventSet(item.FundEventId, paymentIntentFundEventIds))
             .ToArray();
         var matchingLedgerImpacts = activity.LedgerImpacts
             .Where(item =>
                 MatchesPrivateCapitalFilter(item.FundEventId, normalizedFundEventId) &&
                 MatchesPrivateCapitalFilter(item.CapitalAccountId, normalizedCapitalAccountId) &&
-                MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId))
+                MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId) &&
+                MatchesPrivateCapitalFundEventSet(item.FundEventId, paymentIntentFundEventIds))
             .ToArray();
         var matchingReportOutputs = activity.ReportOutputs
             .Where(item =>
                 MatchesPrivateCapitalFilter(item.FundEventId, normalizedFundEventId) &&
                 MatchesPrivateCapitalFilter(item.CapitalAccountId, normalizedCapitalAccountId) &&
-                MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId))
+                MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId) &&
+                MatchesPrivateCapitalFundEventSet(item.FundEventId, paymentIntentFundEventIds))
             .ToArray();
         var matchedFundEventIds = matchingFundEvents
             .Select(static item => item.FundEventId)
@@ -1231,11 +1307,17 @@ public static class LedgerEndpoints
         var retainedFundEventIds = fundEvents
             .Select(static item => item.FundEventId)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var retainedPaymentIntentIds = fundEvents
+            .Select(static item => item.PaymentIntentId)
+            .Where(static item => !string.IsNullOrWhiteSpace(item))
+            .Select(static item => item!)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
         var capitalAccountSubledgerEntries = activity.CapitalAccountSubledgerEntries
             .Where(item =>
                 MatchesPrivateCapitalFilter(item.FundEventId, normalizedFundEventId) &&
                 MatchesPrivateCapitalFilter(item.CapitalAccountId, normalizedCapitalAccountId) &&
                 MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId) &&
+                MatchesPrivateCapitalFundEventSet(item.FundEventId, paymentIntentFundEventIds) &&
                 retainedFundEventIds.Contains(item.FundEventId))
             .ToArray();
         var ledgerImpacts = activity.LedgerImpacts
@@ -1243,6 +1325,7 @@ public static class LedgerEndpoints
                 MatchesPrivateCapitalFilter(item.FundEventId, normalizedFundEventId) &&
                 MatchesPrivateCapitalFilter(item.CapitalAccountId, normalizedCapitalAccountId) &&
                 MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId) &&
+                MatchesPrivateCapitalFundEventSet(item.FundEventId, paymentIntentFundEventIds) &&
                 retainedFundEventIds.Contains(item.FundEventId))
             .ToArray();
         var reportOutputs = activity.ReportOutputs
@@ -1252,7 +1335,17 @@ public static class LedgerEndpoints
                  MatchesPrivateCapitalFilter(item.InvestorId, normalizedInvestorId) ||
                  ((normalizedCapitalAccountId is not null || normalizedInvestorId is not null) &&
                   capitalAccountSubledgerEntries.Any(entry => string.Equals(entry.FundEventId, item.FundEventId, StringComparison.OrdinalIgnoreCase)))) &&
+                MatchesPrivateCapitalFundEventSet(item.FundEventId, paymentIntentFundEventIds) &&
                 retainedFundEventIds.Contains(item.FundEventId))
+            .ToArray();
+        var paymentIntents = activity.PaymentIntents
+            .Where(item =>
+                MatchesPrivateCapitalFilter(item.PaymentIntentId, normalizedPaymentIntentId) &&
+                (retainedPaymentIntentIds.Contains(item.PaymentIntentId) ||
+                 (!string.IsNullOrWhiteSpace(item.FundEventId) && retainedFundEventIds.Contains(item.FundEventId)) ||
+                 MatchesPrivateCapitalFilter(item.ExpectedCashMovement.CapitalAccountId, normalizedCapitalAccountId) &&
+                 MatchesPrivateCapitalFilter(item.ExpectedCashMovement.InvestorId, normalizedInvestorId) &&
+                 MatchesPrivateCapitalFilter(item.FundEventId, normalizedFundEventId)))
             .ToArray();
         var fundEventRecords = PrivateCapitalFundEventLedgerRecordBuilder.Build(
             activity.FundProfileId,
@@ -1311,7 +1404,8 @@ public static class LedgerEndpoints
             reportOutputs,
             validationIssues,
             fundEventRecords,
-            capitalAccountSubledgers);
+            capitalAccountSubledgers,
+            paymentIntents);
     }
 
     private static IReadOnlyList<PrivateCapitalCapitalAccountActivityDto> BuildFilteredCapitalAccounts(
@@ -1388,6 +1482,11 @@ public static class LedgerEndpoints
 
     private static bool MatchesPrivateCapitalFilter(string? value, string? filter)
         => filter is null || string.Equals(value?.Trim(), filter, StringComparison.OrdinalIgnoreCase);
+
+    private static bool MatchesPrivateCapitalFundEventSet(
+        string fundEventId,
+        IReadOnlySet<string>? fundEventIds)
+        => fundEventIds is null || fundEventIds.Contains(fundEventId);
 
     private static bool MatchesFilteredPrivateCapitalIssue(
         AccountingConfigurationValidationIssueDto issue,

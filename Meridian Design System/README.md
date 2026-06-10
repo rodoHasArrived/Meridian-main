@@ -9,7 +9,7 @@ shallow depth, and dense evidence-first workflows without copying third-party te
 
 Meridian ships two distinct UI surfaces, both represented here:
 
-1. **Browser Workstation** (`src/Meridian.Ui/dashboard/`) —  browser-based operator UI lane. It owns new workstation delivery across `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
+1. **Browser Workstation** (`src/Meridian.Ui/dashboard/`) — browser-based operator UI lane. It owns new workstation delivery across `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
 2. **WPF Desktop App** (`src/Meridian.Wpf/`) — .NET 10 desktop operator shell shares brand assets and icon vocabulary.
 
 ## Sources
@@ -37,7 +37,7 @@ You don't need access to the repo to use this design system — everything is co
 - **`preview/index.html`** — browsable catalogue for all preview review cards
 - **`preview/preview-common.css`** — shared preview navigation, focus, and accessible-heading utilities
 - **`preview/component-state-matrix.html`** — component states across operator state semantics
-- **`preview/screen-recipes.html`** — seven-workspace screen recipes for implementation handoff
+- **`preview/screen-recipes.html`** — seven-workspace screen recipes for implementation handoff, including Reporting report-pack delivery and evidence readiness
 - **`preview/reference-workbench.html`** — Security Master and schedule-heavy reference workbench recipe
 - **`preview/chart-table-standards.html`** — chart, dense-table, status-window, and row-detail standards
 - **`ui_kits/dashboard/`** — React component kit for the web dashboard
@@ -73,12 +73,12 @@ See `VISUAL_FOUNDATIONS.md`. In short:
 - **Accent:** `#D69E38` amber (warning, paper environment, caution).
 - **Semantic:** `#26BF86` success · `#D69E38` warning · `#DE5878` danger · `#60A5FA` paper · `#2AB2D4` live.
 - **Corners:** tight — 10px maximum for major panels, 8px cards, 6px controls, 4px chips, 3px tags.
-- **Borders:** precise — `#1F344C` on navy, `#2A4566` for selected rows, active frames, and high-contrast separators.
-- **Shadows:** 1-2px workstation shadows with inset highlights. Hard-offset shadows, large glow, and elevation theatre are out.
+- **Borders:** precise — `#1F344C` on navy, `#477089` for selected rows, active frames, and high-contrast separators.
+- **Shadows:** flat workstation offset shadows with inset highlights. Large poster shadows, glow, and elevation theatre are out.
 - **Layout:** masthead + left rail + dense content workbench. Uploaded references favor compact filters, selected-row detail panes, KPI-to-evidence flow, and horizontal status windows.
 - **Reference workbench:** Security Master, security detail, and cash-flow/factor schedule surfaces use a command deck, searchable master list, persistent selected detail frame, dense schedules, controls, notes, and audit evidence in one selected-security context.
 - **Motion:** 200ms ease transitions on hover/press. No bouncing. No parallax. Spinners only for async refresh.
-- **Typography:** three families working together — IBM Plex Sans (UI), IBM Plex Mono (data), Space Grotesk (display headings). Numbers, identifiers, timestamps, prices, and row counts are always mono.
+- **Typography:** Inter for primary UI, JetBrains Mono for primary data, Space Grotesk for display headings; IBM Plex Sans and IBM Plex Mono remain fallbacks. Numbers, identifiers, timestamps, prices, and row counts are always mono.
 
 ---
 
@@ -90,7 +90,7 @@ ignored by Git, so distributable HTML must use tracked files under `assets/` and
 contains:
 
 - a target Meridian workstation render with KPI cards, chart/table pairing, and persistent masthead/rail structure;
-- custody, portfolio-reporting, and trade-manager screens that demonstrate table density, filter bars, selected-row details, and status windows;
+- custody, portfolio-reporting, and trade-manager screens that demonstrate table density, filter bars, selected-row details, delivery status, and status windows;
 - Beta One product-guide captures that show annotated task flows for upload, pricing, profiles, and send-to-desk actions;
 - charting and security-master examples that support split workbenches and canonical identifier panels.
 - the cash-flow/factor schedule prototype archive, summarized into the Security Master reference

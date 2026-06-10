@@ -87,6 +87,7 @@ public sealed class FileReportPackDeliveryRecordStore : IReportPackDeliveryRecor
 
 public sealed class ReportPackDeliveryService
 {
+    private static readonly TimeSpan PackageAccessWindow = TimeSpan.FromDays(14);
     private readonly ReportPackWorkflowService _workflowService;
     private readonly IReportPackDeliveryRecordStore? _store;
     private readonly List<ReportPackDeliveryAttemptDto> _attempts;
@@ -376,6 +377,7 @@ public sealed class ReportPackDeliveryService
         var retainedManifestPath = $"workstation/reporting/deliveries/{record.ReportId:N}/{policy.DistributionId}/{attemptNumber}/manifest.json";
         var token = BuildSecureToken(record.ReportId, policy.DistributionId, attemptId);
         var createdAtUtc = DateTimeOffset.UtcNow;
+        var accessExpiresAtUtc = BuildAccessExpiry(createdAtUtc);
         var artifacts = formats
             .Select(format => BuildArtifact(record, policy, packageId, attemptId, token, format))
             .ToArray();
@@ -431,7 +433,11 @@ public sealed class ReportPackDeliveryService
             RestatementChangedLines: record.Restatement?.ChangedLines,
             RestatementEvidenceLinks: record.Restatement?.EvidenceLinks,
             DeliveryEvidencePacket: deliveryEvidencePacket,
-            BrandingTheme: record.Publication?.BrandingTheme);
+            BrandingTheme: record.Publication?.BrandingTheme,
+            DeliveryAccessSummary: BuildDeliveryAccessSummary(mode, secureLink, portalRoute),
+            DeliveryChannelSummary: BuildDeliveryChannelSummary(mode, policy),
+            DownloadSummary: BuildDeliveryDownloadSummary(artifacts, retainedManifestPath),
+            AccessExpiresAtUtc: accessExpiresAtUtc);
     }
 
     private static ReportPackDeliveryPackageDto BuildDeliveryPackage(
@@ -448,11 +454,12 @@ public sealed class ReportPackDeliveryService
         var packageId = $"pkg-{reportId:N}-{policy.DistributionId}-{attemptNumber}";
         var retainedManifestPath = $"workstation/reporting/runs/{Uri.EscapeDataString(manifest.RunId)}/deliveries/{policy.DistributionId}/{attemptNumber}/manifest.json";
         var token = BuildSecureToken(reportId, policy.DistributionId, attemptId);
+        var createdAtUtc = DateTimeOffset.UtcNow;
+        var accessExpiresAtUtc = BuildAccessExpiry(createdAtUtc);
         var artifacts = formats
             .Select(format => BuildArtifact(manifest, policy, reportId, packageId, attemptId, token, format))
             .ToArray();
         var artifactEvidenceLinks = BuildArtifactEvidenceLinks(artifacts, "reporting-run-delivery");
-        var createdAtUtc = DateTimeOffset.UtcNow;
         var deliveryEvidencePacket = BuildReportingRunDeliveryEvidencePacket(
             manifest,
             policy,
@@ -495,7 +502,50 @@ public sealed class ReportPackDeliveryService
             manifest.TemplateId,
             manifest.ScheduleId,
             manifest.Artifacts.ToArray(),
-            DeliveryEvidencePacket: deliveryEvidencePacket);
+            DeliveryEvidencePacket: deliveryEvidencePacket,
+            ReportingRunAsOfDate: manifest.AsOfDate.ToString("yyyy-MM-dd"),
+            ReportingRunStatus: manifest.Status.ToString(),
+            ReportingRunTrigger: manifest.Trigger.ToString(),
+            ReportingRunAttemptCount: manifest.AttemptCount,
+            ReportingRunSectionCount: manifest.Sections.Length,
+            ReportingRunLineageLinkedSections: manifest.Sections.Count(static section => section.Lineage is not null),
+            DeliveryAccessSummary: BuildDeliveryAccessSummary(mode, secureLink, portalRoute),
+            DeliveryChannelSummary: BuildDeliveryChannelSummary(mode, policy),
+            DownloadSummary: BuildDeliveryDownloadSummary(artifacts, retainedManifestPath),
+            AccessExpiresAtUtc: accessExpiresAtUtc);
+    }
+
+    private static DateTimeOffset BuildAccessExpiry(DateTimeOffset createdAtUtc) =>
+        createdAtUtc.Add(PackageAccessWindow);
+
+    private static string BuildDeliveryAccessSummary(
+        ReportPackDeliveryModeDto deliveryMode,
+        string secureLink,
+        string portalRoute) =>
+        deliveryMode switch
+        {
+            ReportPackDeliveryModeDto.EmailLink => $"Email-link package is available through the token-gated route {secureLink}.",
+            ReportPackDeliveryModeDto.SecurePortal => $"Secure-portal package is available through the token-gated portal route {secureLink}.",
+            ReportPackDeliveryModeDto.EvidenceVault => $"Evidence-vault package is retained at {secureLink}.",
+            _ => $"Internal-route package is available at {portalRoute}."
+        };
+
+    private static string BuildDeliveryChannelSummary(
+        ReportPackDeliveryModeDto deliveryMode,
+        ReportPackRunReadService.ReportPackDistributionPolicy policy) =>
+        $"{deliveryMode} delivery to {policy.Recipient} via {policy.Channel}.";
+
+    private static string BuildDeliveryDownloadSummary(
+        IReadOnlyCollection<ReportPackDeliveryArtifactDto> artifacts,
+        string retainedManifestPath)
+    {
+        var formats = artifacts
+            .Select(static artifact => artifact.Format.ToString())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static format => format, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var formatSummary = formats.Length == 0 ? "no retained artifacts" : string.Join("/", formats);
+        return $"{artifacts.Count} artifact(s) retained as {formatSummary}; manifest {retainedManifestPath}.";
     }
 
     private static ReportPackDeliveryEvidencePacketDto BuildReportingRunDeliveryEvidencePacket(
@@ -856,6 +906,12 @@ public sealed class ReportPackDeliveryService
                 package.ReportingTemplateId ?? string.Empty,
                 package.ReportingScheduleId,
                 package.SourceArtifacts ?? [],
+                package.ReportingRunAsOfDate,
+                package.ReportingRunStatus,
+                package.ReportingRunTrigger,
+                package.ReportingRunAttemptCount,
+                package.ReportingRunSectionCount,
+                package.ReportingRunLineageLinkedSections,
                 package.DistributionId,
                 artifact.ArtifactName,
                 artifact.Format,
@@ -967,6 +1023,12 @@ public sealed class ReportPackDeliveryService
         string templateId,
         string? scheduleId,
         IReadOnlyList<string> sourceArtifacts,
+        string? asOfDate,
+        string? status,
+        string? trigger,
+        int? attemptCount,
+        int? sectionCount,
+        int? lineageLinkedSections,
         string distributionId,
         string artifactName,
         GovernanceReportArtifactFormatDto format,
@@ -980,6 +1042,12 @@ public sealed class ReportPackDeliveryService
             templateId,
             scheduleId,
             sourceArtifacts,
+            asOfDate,
+            status,
+            trigger,
+            attemptCount,
+            sectionCount,
+            lineageLinkedSections,
             distributionId,
             artifactName,
             format,
@@ -1088,6 +1156,8 @@ public sealed class ReportPackDeliveryService
             rows.Add(new($"{prefix}.securityDefinitionId", line.SecurityDefinitionId ?? ""));
             rows.Add(new($"{prefix}.reconciliationOutcome", line.ReconciliationOutcome ?? ""));
             rows.Add(new($"{prefix}.approvalId", line.ApprovalId ?? ""));
+            rows.Add(new($"{prefix}.financialRecordExplorerId", line.FinancialRecordExplorerId ?? ""));
+            rows.Add(new($"{prefix}.financialRecordHref", line.FinancialRecordHref ?? ""));
         }
 
         for (var index = 0; index < restatementChangedLines.Count; index++)
@@ -1161,6 +1231,12 @@ public sealed class ReportPackDeliveryService
         string templateId,
         string? scheduleId,
         IReadOnlyList<string> sourceArtifacts,
+        string? asOfDate,
+        string? status,
+        string? trigger,
+        int? attemptCount,
+        int? sectionCount,
+        int? lineageLinkedSections,
         string distributionId,
         string artifactName,
         GovernanceReportArtifactFormatDto format,
@@ -1172,6 +1248,12 @@ public sealed class ReportPackDeliveryService
         new("reportingRunId", reportingRunId),
         new("templateId", templateId),
         new("scheduleId", scheduleId ?? ""),
+        new("asOfDate", asOfDate ?? ""),
+        new("status", status ?? ""),
+        new("trigger", trigger ?? ""),
+        new("attemptCount", attemptCount?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? ""),
+        new("sectionCount", sectionCount?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? ""),
+        new("lineageLinkedSections", lineageLinkedSections?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? ""),
         new("sourceArtifacts", string.Join(";", sourceArtifacts)),
         new("distributionId", distributionId),
         new("artifactName", artifactName),
@@ -1439,6 +1521,12 @@ public sealed class ReportPackDeliveryService
             !CryptographicOperations.FixedTimeEquals(expectedBytes, suppliedBytes))
         {
             throw new UnauthorizedAccessException("A valid package token is required.");
+        }
+
+        if (attempt.Package?.AccessExpiresAtUtc is { } accessExpiresAtUtc
+            && accessExpiresAtUtc <= DateTimeOffset.UtcNow)
+        {
+            throw new UnauthorizedAccessException("The package token has expired.");
         }
     }
 

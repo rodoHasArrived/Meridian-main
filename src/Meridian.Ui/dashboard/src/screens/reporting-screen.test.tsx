@@ -3,7 +3,7 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReportingScreen } from "@/screens/reporting-screen";
 import { renderWithRouter } from "@/test/render";
-import type { AccountingWorkspaceResponse, ReportingTemplateMetadata } from "@/types";
+import type { AccountingWorkspaceResponse, FinancialRecordExplorerDto, ReportingTemplateMetadata } from "@/types";
 
 const accounting: AccountingWorkspaceResponse = {
   metrics: [],
@@ -68,7 +68,7 @@ const accounting: AccountingWorkspaceResponse = {
         pendingSummary: "No governed report pack is queued for Compliance archive.",
         owner: "compliance-reviewer",
         dueAtUtc: null,
-        lastSentAtUtc: null,
+        lastSentAtUtc: "2026-05-02T18:00:00Z",
         route: "/reporting/evidence?subject=report-pack"
       }
     ],
@@ -911,6 +911,148 @@ function reportTemplateGovernanceResponse(options: {
   };
 }
 
+function withReportLineProvenanceExplorer(): AccountingWorkspaceResponse {
+  return {
+    ...accounting,
+    reporting: {
+      ...accounting.reporting,
+      reportLineProvenanceExplorer: createReportLineProvenanceExplorer()
+    }
+  };
+}
+
+function createReportLineProvenanceExplorer(): FinancialRecordExplorerDto {
+  const sourceHref = "/api/workstation/financial-record-explorers/ledger?lineKey=trial-balance.cash&sourceId=ledger-entry-1&evidenceId=ledger-evidence-1&runId=run-1";
+  const reconciliationHref = "/api/workstation/reconciliation/runs/recon-run-1";
+  const journalHref = "/api/workstation/runs/run-1/ledger/journal?ledgerEntryId=ledger-entry-1";
+  const approvalHref = "/api/workstation/evidence/subjects/approval/approval-1/packet";
+  const deliveryHref = "/api/fund-structure/reporting/packs/11111111-1111-1111-1111-111111111111/deliveries";
+  const deliveryGraphHref = "/api/workstation/evidence/subjects/report-pack-delivery/11111111-1111-1111-1111-111111111111%3A22222222-2222-2222-2222-222222222222/graph";
+  const restatementHref = "/evidence/restatement-evidence-1";
+
+  return {
+    explorerId: "report-line-provenance",
+    title: "Report-Line Provenance Explorer",
+    description: "Drill from governed report lines into retained source records, reconciliations, journals, approvals, delivery history, and restatement evidence.",
+    sourceState: "1 governed report line across 1 report pack retains source, reconciliation, journal, approval, delivery, and restatement drill-through evidence.",
+    isBlocked: false,
+    blockedReason: "",
+    scopeItems: [
+      { label: "Report packs", value: "1", tone: "Info" },
+      { label: "Latest period", value: "2026-03", tone: "Default" },
+      { label: "Fund", value: "fund-alpha", tone: "Default" },
+      { label: "Delivery attempts", value: "1", tone: "Success" }
+    ],
+    savedViews: [
+      {
+        viewId: "system-report-line-provenance-default",
+        label: "Report lines",
+        description: "Governed report lines with retained source provenance.",
+        isSystem: true,
+        isActive: true,
+        filters: [],
+        searchText: ""
+      }
+    ],
+    summaryItems: [
+      { label: "Report lines", value: "1", detail: "Governed report lines with retained provenance.", tone: "Success" },
+      { label: "Source records", value: "1", detail: "Distinct retained source records linked to report lines.", tone: "Default" },
+      { label: "Reconciliations", value: "1", detail: "Lines linked to reconciliation runs or break cases.", tone: "Default" },
+      { label: "Journals", value: "1", detail: "Lines with ledger or journal drill-through evidence.", tone: "Default" },
+      { label: "Approvals", value: "1", detail: "Line-level and workflow approval evidence.", tone: "Default" },
+      { label: "Deliveries", value: "1", detail: "Retained report-pack delivery attempts and packages.", tone: "Success" },
+      { label: "Restatements", value: "1", detail: "Changed report lines with restatement evidence.", tone: "Warning" }
+    ],
+    filters: [
+      { filterId: "state-restated", label: "Workflow state", value: "Restated", operator: "equals", tone: "Warning" },
+      { filterId: "period-2026-03", label: "Period", value: "2026-03", operator: "equals", tone: "Default" }
+    ],
+    columns: [
+      { columnId: "lineKey", header: "Report Line", cellKind: "text", width: 200, isRightAligned: false },
+      { columnId: "report", header: "Report Pack", cellKind: "text", width: 190, isRightAligned: false },
+      { columnId: "value", header: "Value", cellKind: "money", width: 110, isRightAligned: true },
+      { columnId: "source", header: "Source", cellKind: "text", width: 170, isRightAligned: false },
+      { columnId: "reconciliation", header: "Reconciliation", cellKind: "text", width: 140, isRightAligned: false },
+      { columnId: "journal", header: "Journal", cellKind: "text", width: 120, isRightAligned: false },
+      { columnId: "approval", header: "Approval", cellKind: "text", width: 120, isRightAligned: false },
+      { columnId: "delivery", header: "Delivery", cellKind: "text", width: 140, isRightAligned: false },
+      { columnId: "restatement", header: "Restatement", cellKind: "text", width: 140, isRightAligned: false }
+    ],
+    rows: [
+      {
+        recordId: "report-line:11111111111111111111111111111111:trial-balance-cash:0",
+        recordType: "report-line",
+        label: "trial-balance.cash",
+        source: "ledger:ledger-entry-1",
+        status: "Restated",
+        tone: "Warning",
+        cells: [
+          { columnId: "lineKey", displayValue: "trial-balance.cash", rawValue: "", tone: "Default", linkHref: sourceHref },
+          { columnId: "report", displayValue: "2026-03 - board-pack v1", rawValue: "", tone: "Default", linkHref: deliveryHref },
+          { columnId: "value", displayValue: "100.00", rawValue: "", tone: "Default", linkHref: "" },
+          { columnId: "source", displayValue: "ledger:ledger-entry-1", rawValue: "", tone: "Default", linkHref: sourceHref },
+          { columnId: "reconciliation", displayValue: "matched", rawValue: "", tone: "Success", linkHref: reconciliationHref },
+          { columnId: "journal", displayValue: "ledger-entry-1", rawValue: "", tone: "Info", linkHref: journalHref },
+          { columnId: "approval", displayValue: "approval-1", rawValue: "", tone: "Success", linkHref: approvalHref },
+          { columnId: "delivery", displayValue: "Delivered #1", rawValue: "", tone: "Success", linkHref: deliveryHref },
+          { columnId: "restatement", displayValue: "1 changed line", rawValue: "", tone: "Warning", linkHref: restatementHref }
+        ],
+        detail: {
+          recordId: "report-line:11111111111111111111111111111111:trial-balance-cash:0",
+          recordType: "Report line",
+          title: "trial-balance.cash",
+          subtitle: "2026-03 - board-pack v1",
+          description: "Governed report line with retained source, reconciliation, journal, approval, delivery, and restatement drill-through evidence.",
+          tone: "Warning",
+          fields: [
+            { label: "Source record", value: "ledger:ledger-entry-1", detail: sourceHref, tone: "Default" },
+            { label: "Reconciliation", value: "matched", detail: reconciliationHref, tone: "Success" },
+            { label: "Journal", value: "ledger-entry-1", detail: journalHref, tone: "Info" },
+            { label: "Approval", value: "approval-1", detail: approvalHref, tone: "Success" },
+            { label: "Delivery history", value: "Delivered #1", detail: "board-delivery-202603", tone: "Success" },
+            { label: "Restatement", value: "1 changed line", detail: "source-correction", tone: "Warning" }
+          ],
+          proofActions: [
+            { actionId: "open-source-record", label: "Open source record", description: "Open retained source record.", href: sourceHref, isEnabled: true, disabledReason: "", tone: "Info" },
+            { actionId: "open-reconciliation", label: "Open reconciliation", description: "Open reconciliation run.", href: reconciliationHref, isEnabled: true, disabledReason: "", tone: "Info" },
+            { actionId: "open-journal", label: "Open journal", description: "Open ledger journal.", href: journalHref, isEnabled: true, disabledReason: "", tone: "Info" },
+            { actionId: "open-approval-evidence", label: "Open approval evidence", description: "Open approval evidence.", href: approvalHref, isEnabled: true, disabledReason: "", tone: "Success" },
+            { actionId: "open-delivery-history", label: "Open delivery history", description: "Open delivery history.", href: deliveryHref, isEnabled: true, disabledReason: "", tone: "Success" },
+            { actionId: "open-delivery-evidence-graph", label: "Open delivery evidence graph", description: "Open delivery evidence graph.", href: deliveryGraphHref, isEnabled: true, disabledReason: "", tone: "Info" },
+            { actionId: "open-restatement-evidence", label: "Open restatement evidence", description: "Open restatement evidence.", href: restatementHref, isEnabled: true, disabledReason: "", tone: "Warning" }
+          ],
+          usedIn: [
+            { relationshipId: "report-pack:11111111-1111-1111-1111-111111111111", label: "Published report pack", description: "board-pack v1 for 2026-03 is Restated.", href: deliveryHref, tone: "Warning" },
+            { relationshipId: "report-delivery:22222222-2222-2222-2222-222222222222", label: "Delivery history", description: "Board delivery attempt #1 is Delivered.", href: deliveryHref, tone: "Success" }
+          ],
+          impacts: [
+            { relationshipId: "source-record", label: "Source record", description: "Source record supports the report line value.", href: sourceHref, tone: "Info" },
+            { relationshipId: "reconciliation", label: "Reconciliation", description: "Reconciliation outcome is matched.", href: reconciliationHref, tone: "Success" },
+            { relationshipId: "journal", label: "Journal", description: "Ledger entry supports this line.", href: journalHref, tone: "Info" },
+            { relationshipId: "approval", label: "Approval", description: "Approval is retained as line evidence.", href: approvalHref, tone: "Success" },
+            { relationshipId: "delivery-history", label: "Delivery history", description: "Delivery evidence carries the line.", href: deliveryGraphHref, tone: "Success" },
+            { relationshipId: "restatement-evidence", label: "Restatement evidence", description: "Restatement evidence exists for this report line.", href: restatementHref, tone: "Warning" }
+          ],
+          fullRecordHref: sourceHref
+        }
+      }
+    ],
+    selectedRecord: null,
+    proofActions: [
+      { actionId: "open-report-pack-workflows", label: "Open report-pack workflows", description: "Open governed workflows.", href: "/api/fund-structure/reporting/packs", isEnabled: true, disabledReason: "", tone: "Info" }
+    ],
+    recordGraph: {
+      nodes: [
+        { nodeId: "report-line:11111111111111111111111111111111:trial-balance-cash:0", label: "trial-balance.cash", nodeType: "report-line", tone: "Warning", href: sourceHref },
+        { nodeId: "rel:report-pack:11111111-1111-1111-1111-111111111111", label: "Published report pack", nodeType: "relationship", tone: "Warning", href: deliveryHref }
+      ],
+      edges: [
+        { sourceNodeId: "report-line:11111111111111111111111111111111:trial-balance-cash:0", targetNodeId: "rel:report-pack:11111111-1111-1111-1111-111111111111", label: "used in", tone: "Warning" }
+      ]
+    }
+  };
+}
+
 describe("ReportingScreen", () => {
   const fetchMock = vi.fn();
 
@@ -996,10 +1138,70 @@ describe("ReportingScreen", () => {
     expect(screen.getByRole("list", { name: "Report-pack distribution recipients" })).toBeInTheDocument();
     expect(screen.getByLabelText(
       "Board reporting committee report-pack distribution: 1 report pack still needs approval before Board reporting committee delivery."
-    )).toBeInTheDocument();
-    expect(screen.getByLabelText(
+    )).toHaveTextContent("State: Pending approval");
+    const boardRow = screen.getByLabelText(
+      "Board reporting committee report-pack distribution: 1 report pack still needs approval before Board reporting committee delivery."
+    );
+    expect(boardRow).toHaveTextContent("Last sent: Not sent");
+    expect(within(boardRow).getByRole("link", { name: "Open Board reporting committee report-pack distribution route" })).toHaveAttribute(
+      "href",
+      "/reporting/report-packs?recipient=board"
+    );
+    const complianceRow = screen.getByLabelText(
       "Compliance archive report-pack distribution: No governed report pack is queued for Compliance archive."
-    )).toBeInTheDocument();
+    );
+    expect(complianceRow).toHaveTextContent("State: No package queued");
+    expect(complianceRow).toHaveTextContent("Last sent:");
+    expect(within(complianceRow).getByRole("link", { name: "Open Compliance archive report-pack distribution route" })).toHaveAttribute(
+      "href",
+      "/reporting/evidence?subject=report-pack"
+    );
+  });
+
+  it("renders report-line provenance explorer drill-through from the shared reporting payload", () => {
+    renderWithRouter(<ReportingScreen data={withReportLineProvenanceExplorer()} />, { initialEntries: ["/reporting"] });
+
+    const explorer = screen.getByRole("region", { name: "Report-Line Provenance Explorer" });
+    expect(within(explorer).getByText("Report-line provenance")).toBeInTheDocument();
+    expect(within(explorer).getByRole("link", { name: "trial-balance.cash" })).toHaveAttribute(
+      "href",
+      "/api/workstation/financial-record-explorers/ledger?lineKey=trial-balance.cash&sourceId=ledger-entry-1&evidenceId=ledger-evidence-1&runId=run-1"
+    );
+    expect(within(explorer).getByText("Source records")).toBeInTheDocument();
+    expect(within(explorer).getByText("Reconciliations")).toBeInTheDocument();
+    expect(within(explorer).getByText("Journals")).toBeInTheDocument();
+    expect(within(explorer).getByText("Approvals")).toBeInTheDocument();
+    expect(within(explorer).getByText("Restatements")).toBeInTheDocument();
+    expect(within(explorer).getAllByText("Published report pack").length).toBeGreaterThan(0);
+    expect(within(explorer).getByText("Restatement evidence")).toBeInTheDocument();
+    expect(within(explorer).getByRole("link", { name: "Open source record" })).toHaveAttribute(
+      "href",
+      expect.stringContaining("/api/workstation/financial-record-explorers/ledger")
+    );
+    expect(within(explorer).getByRole("link", { name: "Open reconciliation" })).toHaveAttribute(
+      "href",
+      "/api/workstation/reconciliation/runs/recon-run-1"
+    );
+    expect(within(explorer).getByRole("link", { name: "Open journal" })).toHaveAttribute(
+      "href",
+      "/api/workstation/runs/run-1/ledger/journal?ledgerEntryId=ledger-entry-1"
+    );
+    expect(within(explorer).getByRole("link", { name: "Open approval evidence" })).toHaveAttribute(
+      "href",
+      "/api/workstation/evidence/subjects/approval/approval-1/packet"
+    );
+    expect(within(explorer).getByRole("link", { name: "Open delivery history" })).toHaveAttribute(
+      "href",
+      "/api/fund-structure/reporting/packs/11111111-1111-1111-1111-111111111111/deliveries"
+    );
+    expect(within(explorer).getByRole("link", { name: "Open delivery evidence graph" })).toHaveAttribute(
+      "href",
+      "/api/workstation/evidence/subjects/report-pack-delivery/11111111-1111-1111-1111-111111111111%3A22222222-2222-2222-2222-222222222222/graph"
+    );
+    expect(within(explorer).getByRole("link", { name: "Open restatement evidence" })).toHaveAttribute(
+      "href",
+      "/evidence/restatement-evidence-1"
+    );
   });
 
   it("renders portfolio reporting cuts from the shared reporting payload", () => {
@@ -1022,6 +1224,11 @@ describe("ReportingScreen", () => {
     expect(screen.getByRole("region", { name: "Live portfolio views" })).toBeInTheDocument();
     const fundView = screen.getByRole("listitem", { name: "Consolidated fund Fund live portfolio view" });
     expect(within(fundView).getByText("LiveLinked")).toBeInTheDocument();
+    expect(fundView).toHaveTextContent("Settlement");
+    expect(fundView).toHaveTextContent("$150.00");
+    expect(fundView).toHaveTextContent("Shadow NAV");
+    expect(fundView).toHaveTextContent("$3,650");
+    expect(fundView).toHaveTextContent("Freshness: LiveLinked · cut=2026-04-11T16:00:00Z · source=2026-04-11T15:58:00Z");
     expect(fundView).toHaveTextContent("3,250.00 USD cash with 150.00 pending settlement");
     expect(fundView).toHaveTextContent("Live-linked portfolio telemetry is current through 2026-04-11T15:58:00.0000000Z");
     expect(within(fundView).getByRole("list", { name: "Consolidated fund readiness blockers" })).toHaveTextContent(
@@ -1117,7 +1324,14 @@ describe("ReportingScreen", () => {
     expect(within(regulatoryRow).getByText("Regulatory")).toBeInTheDocument();
     expect(within(regulatoryRow).getByText("Csv")).toBeInTheDocument();
     expect(within(regulatoryRow).getByText("12")).toBeInTheDocument();
-    expect(within(regulatoryRow).getByText("exports/reporting/fund-alpha/20260411160000/regulatory-trial-balance.csv")).toBeInTheDocument();
+    expect(regulatoryRow).toHaveTextContent("Dataset: fund-trial-balance");
+    expect(regulatoryRow).toHaveTextContent("As of: 2026-04-11T16:00:00Z");
+    expect(regulatoryRow).toHaveTextContent(
+      "API route: /api/fund-structure/reporting/structured-exports/regulatory-trial-balance?fundProfileId=fund-alpha&format=csv"
+    );
+    expect(regulatoryRow).toHaveTextContent(
+      "Retained path: exports/reporting/fund-alpha/20260411160000/regulatory-trial-balance.csv"
+    );
     expect(within(regulatoryRow).getByRole("link", { name: "Open Regulatory trial balance data dictionary" })).toHaveAttribute(
       "href",
       "/api/workstation/reporting"
@@ -1150,6 +1364,10 @@ describe("ReportingScreen", () => {
     expect(within(warehouseRow).getByText("Json")).toBeInTheDocument();
     expect(warehouseRow).toHaveTextContent("Data warehouse and lakehouse ingestion");
     expect(warehouseRow).toHaveTextContent("Exports consolidated ledger snapshot facts for downstream warehouse loading");
+    expect(warehouseRow).toHaveTextContent("Dataset: ledger-reconciliation-facts");
+    expect(warehouseRow).toHaveTextContent(
+      "API route: /api/fund-structure/reporting/structured-exports/warehouse-ledger-facts?fundProfileId=fund-alpha"
+    );
     expect(within(warehouseRow).getByRole("group", { name: "Warehouse ledger facts export tags" })).toHaveTextContent(
       "warehouseledgerreconciliation"
     );
@@ -1205,7 +1423,11 @@ describe("ReportingScreen", () => {
           {
             ...accounting.reporting.structuredExports![0],
             isReady: false,
-            validationSummary: "No normalized trial-balance rows are available for this as-of date."
+            validationSummary: "No normalized trial-balance rows are available for this as-of date.",
+            readinessBlockers: [
+              "No normalized trial-balance rows are available for this as-of date.",
+              "Ledger evidence must be retained before regulatory export download is enabled."
+            ]
           }
         ]
       }
@@ -1215,6 +1437,9 @@ describe("ReportingScreen", () => {
 
     const regulatoryRow = screen.getByRole("listitem", { name: "Regulatory trial balance structured export" });
     expect(within(regulatoryRow).getByText("Blocked")).toBeInTheDocument();
+    expect(within(regulatoryRow).getByRole("list", {
+      name: "Regulatory trial balance structured export readiness blockers"
+    })).toHaveTextContent("Ledger evidence must be retained before regulatory export download is enabled.");
     expect(within(regulatoryRow).queryByRole("link", { name: "Download Regulatory trial balance structured export as CSV" })).not.toBeInTheDocument();
     expect(within(regulatoryRow).getByRole("button", {
       name: "Regulatory trial balance structured export CSV download blocked"
@@ -1451,6 +1676,13 @@ describe("ReportingScreen", () => {
     expect(lineage).toHaveTextContent("ref APP-TPL-INVESTOR-1");
     expect(lineage).toHaveTextContent("Controller approved investor statement baseline.");
     expect(lineage).toHaveTextContent("No validation issues");
+    const accessGovernance = screen.getByRole("group", {
+      name: "Investor Monthly Statement access governance Company-wide Runnable"
+    });
+    expect(accessGovernance).toHaveTextContent("Company-wide");
+    expect(accessGovernance).toHaveTextContent("Company");
+    expect(accessGovernance).toHaveTextContent("Runnable");
+    expect(accessGovernance).toHaveTextContent("Company-wide access; run and lifecycle actions use the shared access evaluation.");
     expect(screen.getByText("Built-in approved template for InvestorStatement.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Draft a revision of Investor Monthly Statement" })).toHaveAttribute(
       "href",
@@ -1525,6 +1757,43 @@ describe("ReportingScreen", () => {
         "Custom Exposure Draft moved to InReview."
       );
     });
+  });
+
+  it("renders blocked access governance for inaccessible report templates", () => {
+    const inaccessibleTemplate = withReportTemplate({
+      templateId: "allocator-private-pack",
+      family: "CustomReport",
+      name: "Allocator Private Pack",
+      version: "4",
+      sections: ["summary"],
+      lifecycleStatus: "Approved",
+      isBuiltIn: false,
+      isLatestApproved: true,
+      approvalSummary: "Approved by allocator.owner.",
+      authoringRoute: "/api/fund-structure/reporting/templates/allocator-private-pack/versions/4",
+      accessMode: "Restricted",
+      accessSummary: "Restricted to group allocator-relations",
+      isAccessible: false,
+      createdBy: "allocator.owner",
+      createdAt: "2026-06-08T10:00:00Z",
+      updatedBy: "allocator.owner",
+      updatedAt: "2026-06-08T10:15:00Z",
+      auditTrail: [],
+      validationIssues: []
+    });
+
+    renderWithRouter(<ReportingScreen data={inaccessibleTemplate} />, { initialEntries: ["/reporting"] });
+
+    const accessGovernance = screen.getByRole("group", {
+      name: "Allocator Private Pack access governance User/group Access blocked"
+    });
+    expect(accessGovernance).toHaveTextContent("User/group");
+    expect(accessGovernance).toHaveTextContent("Group");
+    expect(accessGovernance).toHaveTextContent("Access blocked");
+    expect(accessGovernance).toHaveTextContent(
+      "Restricted to group allocator-relations; run and lifecycle actions are disabled by the shared access evaluation."
+    );
+    expect(screen.getByRole("button", { name: "Run Allocator Private Pack report on demand" })).toBeDisabled();
   });
 
   it("approves and rejects custom report-template versions in review", async () => {
@@ -1608,6 +1877,9 @@ describe("ReportingScreen", () => {
     expect(grid).toHaveTextContent("Pivot grid with 2 dimensions, 2 metrics, 1 formula, and 1 saved filter.");
     expect(grid).toHaveTextContent("Descending by pnl");
     expect(grid).toHaveTextContent("1 saved filter");
+    expect(within(grid).getByRole("status", { name: "Sector Pivot current report-writer layout" })).toHaveTextContent(
+      "Pivot draft · 2 dimensions · 2 metrics · 1 formula · 2 filters including draft filter"
+    );
     expect(within(grid).getByLabelText("Sector Pivot saved filters")).toHaveTextContent("strategy = Core");
     expect(within(grid).getByLabelText("Sector Pivot preview dataset")).toHaveValue("portfolioPositions");
     expect(within(grid).getByLabelText("Sector Pivot preview dataset")).toHaveTextContent("Portfolio positions");
@@ -1636,6 +1908,43 @@ describe("ReportingScreen", () => {
     fireEvent.dragStart(sourceField!, { dataTransfer });
     fireEvent.drop(formulas, { dataTransfer });
 
+    expect(within(formulas).getByText("pnl")).toBeInTheDocument();
+    expect(within(grid).getByRole("status", { name: "Sector Pivot current report-writer layout" })).toHaveTextContent(
+      "Pivot draft · 2 dimensions · 2 metrics · 2 formulas · 2 filters including draft filter"
+    );
+    let formulaTokenLabels = within(formulas).getAllByRole("listitem").map((item) => item.textContent ?? "");
+    expect(formulaTokenLabels[0]).toContain("Return %");
+    expect(formulaTokenLabels[1]).toContain("pnl");
+    await user.click(within(formulas).getByRole("button", { name: "Move pnl left" }));
+    formulaTokenLabels = within(formulas).getAllByRole("listitem").map((item) => item.textContent ?? "");
+    expect(formulaTokenLabels[0]).toContain("pnl");
+    expect(formulaTokenLabels[1]).toContain("Return %");
+    await user.click(within(formulas).getByRole("button", { name: "Move pnl right" }));
+    formulaTokenLabels = within(formulas).getAllByRole("listitem").map((item) => item.textContent ?? "");
+    expect(formulaTokenLabels[0]).toContain("Return %");
+    expect(formulaTokenLabels[1]).toContain("pnl");
+    const movedFormulaToken = within(formulas).getByText("pnl").closest("[role='listitem']");
+    expect(movedFormulaToken).not.toBeNull();
+    const metrics = within(grid).getByRole("list", { name: "Sector Pivot Metrics" });
+    fireEvent.dragStart(movedFormulaToken!, { dataTransfer });
+    fireEvent.drop(metrics, { dataTransfer });
+    expect(within(formulas).queryByText("pnl")).not.toBeInTheDocument();
+    expect(within(metrics).getByText("pnl")).toBeInTheDocument();
+    expect(within(grid).getByRole("status", { name: "Sector Pivot current report-writer layout" })).toHaveTextContent(
+      "Pivot draft · 2 dimensions · 3 metrics · 1 formula · 2 filters including draft filter"
+    );
+    await user.click(within(metrics).getByRole("button", { name: "Remove pnl" }));
+    expect(within(metrics).queryByText("pnl")).not.toBeInTheDocument();
+    expect(within(grid).getByRole("status", { name: "Sector Pivot current report-writer layout" })).toHaveTextContent(
+      "Pivot draft · 2 dimensions · 2 metrics · 1 formula · 2 filters including draft filter"
+    );
+    fireEvent.dragStart(sourceField!, { dataTransfer });
+    fireEvent.drop(formulas, { dataTransfer });
+    expect(within(formulas).getByText("pnl")).toBeInTheDocument();
+    await user.click(within(formulas).getByRole("button", { name: "Remove pnl" }));
+    expect(within(formulas).queryByText("pnl")).not.toBeInTheDocument();
+    fireEvent.dragStart(sourceField!, { dataTransfer });
+    fireEvent.drop(formulas, { dataTransfer });
     expect(within(formulas).getByText("pnl")).toBeInTheDocument();
     await user.click(within(grid).getByRole("button", { name: "Reset Sector Pivot report-writer draft" }));
     expect(within(formulas).queryByText("pnl")).not.toBeInTheDocument();
@@ -1847,7 +2156,7 @@ describe("ReportingScreen", () => {
                 }
               }
             ],
-            warnings: [],
+            warnings: ["Preview capped to 5 displayed rows."],
             lineage: {
               inputRowCount: 4,
               filteredInputRowCount: 2,
@@ -1945,12 +2254,203 @@ describe("ReportingScreen", () => {
     expect(within(preview).getByText("150")).toBeInTheDocument();
     expect(within(preview).getByText("Return %")).toBeInTheDocument();
     expect(within(preview).getByText("Gain/loss ratio")).toBeInTheDocument();
+    expect(within(preview).getAllByText("dimension").length).toBeGreaterThan(0);
+    expect(within(preview).getAllByText("metric").length).toBeGreaterThan(0);
+    expect(within(preview).getAllByText("formula").length).toBeGreaterThan(0);
     const auditTrace = within(preview).getByLabelText("Sector Pivot preview audit trace");
     expect(auditTrace).toHaveTextContent("4 input / 2 filtered / 2 output");
     expect(auditTrace).toHaveTextContent("marketValue, pnl, sector, strategy");
     expect(auditTrace).toHaveTextContent("marketValue=Sum(marketValue)");
-    expect(auditTrace).toHaveTextContent("gainLossRatio=[marketValue, pnl]");
+    expect(auditTrace).toHaveTextContent("gainLossRatio={pnl} / {marketValue} [marketValue, pnl]");
     expect(auditTrace).toHaveTextContent("strategy = Core");
+    expect(within(preview).getByRole("list", { name: "Sector Pivot preview warnings" })).toHaveTextContent(
+      "Preview capped to 5 displayed rows."
+    );
+  });
+
+  it("previews no-code report-writer drafts against custom pasted dataset rows", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify({
+        templateId: { name: "investor-monthly-statement", version: 1 },
+        renderedContent: "template:investor-monthly-statement@v1;grids=sector-pivot:1r",
+        missingRequiredParameters: [],
+        grids: [
+          {
+            gridId: "sector-pivot",
+            title: "Sector Pivot",
+            kind: "Pivot",
+            columns: [
+              { key: "sector", label: "sector", role: "dimension" },
+              { key: "marketValue", label: "Market value", role: "metric" },
+              { key: "pnl", label: "P&L", role: "metric" }
+            ],
+            rows: [
+              {
+                rowKey: "Private Credit",
+                values: {
+                  sector: "Private Credit",
+                  marketValue: "425",
+                  pnl: "37"
+                }
+              }
+            ],
+            warnings: ["Preview capped to 5 displayed rows."],
+            lineage: {
+              inputRowCount: 2,
+              filteredInputRowCount: 1,
+              outputRowCount: 1,
+              sourceFields: ["marketValue", "pnl", "sector", "strategy"],
+              metrics: [
+                { name: "marketValue", sourceField: "marketValue", function: "Sum" },
+                { name: "pnl", sourceField: "pnl", function: "Sum" }
+              ],
+              formulas: [],
+              filters: [
+                { field: "strategy", operator: "Equals", value: "Core", label: "strategy = Core" }
+              ]
+            }
+          }
+        ],
+        warnings: ["Preview capped to 5 displayed rows."]
+      })
+    });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
+
+    const writer = screen.getByRole("region", { name: "No-code report writer" });
+    const grid = within(writer).getByRole("group", {
+      name: "Investor Monthly Statement Sector Pivot Pivot report-writer grid"
+    });
+
+    await user.selectOptions(within(grid).getByLabelText("Sector Pivot preview dataset"), "customRows");
+    fireEvent.change(within(grid).getByLabelText("Sector Pivot custom dataset rows"), {
+      target: {
+        value: JSON.stringify([
+          { sector: "Private Credit", strategy: "Core", marketValue: 425, pnl: 37 },
+          { sector: "Rates", strategy: "Hedge", marketValue: 100, pnl: -4 }
+        ])
+      }
+    });
+    await user.click(within(grid).getByRole("button", { name: "Preview Sector Pivot report-writer grid" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/templates/render",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.any(String)
+      })
+    ));
+    const request = JSON.parse((fetchMock.mock.calls[0]?.[1] as RequestInit).body as string);
+    expect(request.parameters.previewDataset).toBe("customRows");
+    expect(request.datasetRows).toEqual([
+      { sector: "Private Credit", strategy: "Core", marketValue: "425", pnl: "37" },
+      { sector: "Rates", strategy: "Hedge", marketValue: "100", pnl: "-4" }
+    ]);
+    await waitFor(() => {
+      expect(screen.getByRole("status", { name: "Preview report-writer grid status" })).toHaveTextContent(
+        "Dataset rows: 2"
+      );
+    });
+    expect(within(grid).getByLabelText("Sector Pivot live preview")).toHaveTextContent("Private Credit");
+  });
+
+  it("previews no-code report-writer drafts against custom CSV dataset rows", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify({
+        templateId: { name: "investor-monthly-statement", version: 1 },
+        renderedContent: "template:investor-monthly-statement@v1;grids=sector-pivot:1r",
+        missingRequiredParameters: [],
+        grids: [
+          {
+            gridId: "sector-pivot",
+            title: "Sector Pivot",
+            kind: "Pivot",
+            columns: [
+              { key: "sector", label: "sector", role: "dimension" },
+              { key: "marketValue", label: "Market value", role: "metric" }
+            ],
+            rows: [
+              {
+                rowKey: "Private Credit, Direct Lending",
+                values: {
+                  sector: "Private Credit, Direct Lending",
+                  marketValue: "425"
+                }
+              }
+            ],
+            warnings: []
+          }
+        ],
+        warnings: []
+      })
+    });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
+
+    const writer = screen.getByRole("region", { name: "No-code report writer" });
+    const grid = within(writer).getByRole("group", {
+      name: "Investor Monthly Statement Sector Pivot Pivot report-writer grid"
+    });
+
+    await user.selectOptions(within(grid).getByLabelText("Sector Pivot preview dataset"), "customRows");
+    fireEvent.change(within(grid).getByLabelText("Sector Pivot custom dataset rows"), {
+      target: {
+        value: [
+          "sector,strategy,marketValue,pnl",
+          "\"Private Credit, Direct Lending\",Core,425,37",
+          "Rates,Hedge,100,-4"
+        ].join("\n")
+      }
+    });
+    await user.click(within(grid).getByRole("button", { name: "Preview Sector Pivot report-writer grid" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/templates/render",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.any(String)
+      })
+    ));
+    const request = JSON.parse((fetchMock.mock.calls[0]?.[1] as RequestInit).body as string);
+    expect(request.parameters.previewDataset).toBe("customRows");
+    expect(request.datasetRows).toEqual([
+      { sector: "Private Credit, Direct Lending", strategy: "Core", marketValue: "425", pnl: "37" },
+      { sector: "Rates", strategy: "Hedge", marketValue: "100", pnl: "-4" }
+    ]);
+    await waitFor(() => {
+      expect(screen.getByRole("status", { name: "Preview report-writer grid status" })).toHaveTextContent(
+        "Dataset rows: 2"
+      );
+    });
+    expect(within(grid).getByLabelText("Sector Pivot live preview")).toHaveTextContent(
+      "Private Credit, Direct Lending"
+    );
+  });
+
+  it("blocks custom report-writer preview when pasted dataset rows are invalid", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
+
+    const writer = screen.getByRole("region", { name: "No-code report writer" });
+    const grid = within(writer).getByRole("group", {
+      name: "Investor Monthly Statement Sector Pivot Pivot report-writer grid"
+    });
+
+    await user.selectOptions(within(grid).getByLabelText("Sector Pivot preview dataset"), "customRows");
+    fireEvent.change(within(grid).getByLabelText("Sector Pivot custom dataset rows"), {
+      target: { value: "[not-json" }
+    });
+    await user.click(within(grid).getByRole("button", { name: "Preview Sector Pivot report-writer grid" }));
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(screen.getByRole("status", { name: "Preview report-writer grid status" })).toHaveTextContent(
+      "Sector Pivot custom dataset is invalid."
+    );
+    expect(screen.getByRole("status", { name: "Preview report-writer grid status" })).toHaveTextContent(
+      "Custom JSON dataset must be an array of row objects."
+    );
   });
 
   it("runs an approved report template on demand", async () => {
@@ -1964,6 +2464,7 @@ describe("ReportingScreen", () => {
           family: "InvestorStatement",
           status: "Draft",
           trigger: "AdHoc",
+          asOfDate: "2026-06-07",
           attemptCount: 1,
           sectionCount: 2,
           lineageLinkedSections: 2,
@@ -2008,6 +2509,7 @@ describe("ReportingScreen", () => {
           family: "CustomReport",
           status: "Draft",
           trigger: "AdHoc",
+          asOfDate: "2026-06-07",
           attemptCount: 1,
           sectionCount: 1,
           lineageLinkedSections: 1,
@@ -2107,10 +2609,11 @@ describe("ReportingScreen", () => {
             family: "InvestorStatement",
             status: "InReview",
             trigger: "Scheduled",
+            asOfDate: "2026-05-01",
             attemptCount: 1,
             sectionCount: 2,
             lineageLinkedSections: 2,
-            artifacts: ["manifest.json"],
+            artifacts: ["manifest.json", "investor-monthly-statement.pdf"],
             auditActions: ["RunGenerated", "ApprovalTransition"],
             failureReason: null,
             drilldownLinks: [
@@ -2152,6 +2655,24 @@ describe("ReportingScreen", () => {
 
     renderWithRouter(<ReportingScreen data={accountingWithRunLinks} />, { initialEntries: ["/reporting"] });
 
+    expect(screen.getByLabelText("investor-monthly-statement-20260501 audit metadata")).toHaveTextContent(
+      "Run IDinvestor-monthly-statement-20260501"
+    );
+    expect(screen.getByLabelText("investor-monthly-statement-20260501 audit metadata")).toHaveTextContent(
+      "Templateinvestor-monthly-statement"
+    );
+    expect(screen.getByLabelText("investor-monthly-statement-20260501 audit metadata")).toHaveTextContent(
+      "As of2026-05-01"
+    );
+    expect(screen.getByLabelText("investor-monthly-statement-20260501 audit metadata")).toHaveTextContent(
+      "Attempts1 attempt"
+    );
+    expect(screen.getByLabelText("investor-monthly-statement-20260501 audit metadata")).toHaveTextContent(
+      "Lineage2/2 linked"
+    );
+    expect(screen.getByLabelText("investor-monthly-statement-20260501 audit metadata")).toHaveTextContent(
+      "Artifacts2 artifacts: manifest.json, investor-monthly-statement.pdf"
+    );
     expect(screen.getByRole("link", {
       name: "GET /api/fund-structure/report-packs/report-1/evidence-bundle for Evidence bundle"
     })).toHaveAttribute("href", "/api/fund-structure/report-packs/report-1/evidence-bundle");
@@ -2258,7 +2779,97 @@ describe("ReportingScreen", () => {
       "Reporting schedule sched-investor-email saved."
     );
     expect(screen.getByRole("status", { name: "Save reporting schedule status" })).toHaveTextContent(
-      "Delivery: compliance-archive via EmailLink"
+      "Delivery targets: compliance-archive via EmailLink"
+    );
+  });
+
+  it("saves schedules with multiple staged delivery targets", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify({
+        scheduleId: "sched-multi-target",
+        templateId: "investor-monthly-statement",
+        cronExpression: "0 8 1 * *",
+        nextAsOfDate: "2026-06-30",
+        dueAtUtc: "2026-07-01T20:00:00Z",
+        maxRetries: 1,
+        requestedBy: "browser-workstation",
+        state: "Active",
+        createdAtUtc: "2026-06-09T16:00:00Z",
+        updatedAtUtc: "2026-06-09T16:05:00Z",
+        lastRunAtUtc: null,
+        lastRunId: null,
+        runCount: 0,
+        description: "Scheduled governed report pack.",
+        deliveryTargets: [
+          {
+            distributionId: "board-reporting-committee",
+            formats: ["Pdf", "Xlsx", "Csv"],
+            deliveryMode: "SecurePortal",
+            note: "Board portal pack."
+          },
+          {
+            distributionId: "compliance-archive",
+            formats: ["Pdf", "Csv"],
+            deliveryMode: "EmailLink",
+            note: "Email link archive."
+          }
+        ]
+      })
+    });
+
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
+
+    fireEvent.change(screen.getByLabelText("Reporting schedule ID"), {
+      target: { value: "sched-multi-target" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule delivery note"), {
+      target: { value: "Board portal pack." }
+    });
+    await user.click(screen.getByRole("button", { name: "Stage reporting schedule delivery target" }));
+    expect(screen.getByRole("list", { name: "Staged reporting schedule delivery targets" })).toHaveTextContent(
+      "board-reporting-committee"
+    );
+
+    fireEvent.change(screen.getByLabelText("Reporting schedule distribution"), {
+      target: { value: "compliance-archive" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule delivery mode"), {
+      target: { value: "EmailLink" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule delivery note"), {
+      target: { value: "Email link archive." }
+    });
+    fireEvent.click(screen.getByLabelText("Reporting schedule Xlsx format"));
+    await user.click(screen.getByRole("button", { name: "Save reporting schedule" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/schedules",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.any(String)
+      })
+    ));
+    expect(JSON.parse((fetchMock.mock.calls[0]?.[1] as RequestInit).body as string)).toEqual(expect.objectContaining({
+      scheduleId: "sched-multi-target",
+      deliveryTargets: [
+        {
+          distributionId: "board-reporting-committee",
+          deliveryMode: "SecurePortal",
+          formats: ["Pdf", "Xlsx", "Csv"],
+          note: "Board portal pack."
+        },
+        {
+          distributionId: "compliance-archive",
+          deliveryMode: "EmailLink",
+          formats: ["Pdf", "Csv"],
+          note: "Email link archive."
+        }
+      ]
+    }));
+    expect(screen.getByRole("status", { name: "Save reporting schedule status" })).toHaveTextContent(
+      "Delivery targets: board-reporting-committee via SecurePortal; compliance-archive via EmailLink"
     );
   });
 
@@ -2355,7 +2966,7 @@ describe("ReportingScreen", () => {
         ],
         deliveryAttempts: [
           {
-            attemptId: "attempt-1",
+            attemptId: "22222222-2222-2222-2222-222222222222",
             reportId: "11111111-1111-1111-1111-111111111111",
             distributionId: "board-reporting-committee",
             recipient: "Board reporting committee",
@@ -2377,14 +2988,18 @@ describe("ReportingScreen", () => {
               secureLink: "/portal/reporting/packages/pkg-board-1?token=abc123",
               portalRoute: "/reporting/report-packs/11111111-1111-1111-1111-111111111111/packages/pkg-board-1",
               formats: ["Pdf", "Xlsx", "Csv"],
+              deliveryAccessSummary: "Secure-portal package is available through the token-gated portal route /portal/reporting/packages/pkg-board-1?token=abc123.",
+              deliveryChannelSummary: "SecurePortal delivery to Board reporting committee via Board portal.",
+              downloadSummary: "3 artifact(s) retained as Csv/Pdf/Xlsx; manifest workstation/reporting/deliveries/report-1/manifest.json.",
+              accessExpiresAtUtc: "2026-05-17T20:15:00Z",
               artifacts: [
                 {
                   format: "Pdf",
                   artifactName: "board-pack.pdf",
                   contentType: "application/pdf",
-                  retainedPath: "workstation/reporting/deliveries/report-1/board-pack.pdf",
-                  byteSize: 128,
-                  evidenceId: "delivery-artifact:pdf",
+                  retainedPath: "workstation/reporting/deliveries/report-1/board-reporting-committee/pkg-1/board-pack.pdf",
+                  byteSize: 1024,
+                  evidenceId: "delivery-artifact-board-pdf",
                   checksumSha256: "f".repeat(64),
                   versionStamp: "delivery-artifact:11111111111111111111111111111111:board-reporting-committee:1:pdf",
                   downloadRoute: "/api/fund-structure/reporting/packs/11111111-1111-1111-1111-111111111111/deliveries/22222222-2222-2222-2222-222222222222/artifacts/board-pack.pdf?token=abc123"
@@ -2397,7 +3012,34 @@ describe("ReportingScreen", () => {
               reportingRunId: "investor-monthly-statement-20260501",
               reportingTemplateId: "investor-monthly-statement",
               reportingScheduleId: "sched-investor",
+              reportingRunAsOfDate: "2026-05-01",
+              reportingRunStatus: "Draft",
+              reportingRunTrigger: "Scheduled",
+              reportingRunAttemptCount: 1,
+              reportingRunSectionCount: 4,
+              reportingRunLineageLinkedSections: 4,
               sourceArtifacts: ["workstation/reporting/runs/investor-monthly-statement-20260501/manifest.json"],
+              lineProvenance: [
+                {
+                  lineKey: "trial-balance.cash",
+                  sourceKind: "ledger",
+                  sourceId: "ledger-entry-1",
+                  evidenceId: "delivery-artifact:pdf",
+                  runId: "run-1",
+                  ledgerEntryId: "ledger-entry-1",
+                  reconciliationCaseId: "case-1",
+                  reportValue: "100.00",
+                  sourceSessionId: "provider-session-1",
+                  reconciliationRunId: "recon-run-1",
+                  providerEventId: "provider-event-1",
+                  securityMasterId: "security-1",
+                  securityDefinitionId: "definition-1",
+                  reconciliationOutcome: "matched",
+                  approvalId: "approval-1",
+                  financialRecordExplorerId: "ledger",
+                  financialRecordHref: "/api/workstation/financial-record-explorers/ledger?lineKey=trial-balance.cash&sourceId=ledger-entry-1&evidenceId=delivery-artifact%3Apdf&runId=run-1"
+                }
+              ],
               deliveryEvidencePacket: {
                 packetId: "reporting-run-delivery:pkg-board-1",
                 packetKind: "ReportingRunDelivery",
@@ -2411,7 +3053,7 @@ describe("ReportingScreen", () => {
                   "source-artifact:report-writer://investor-monthly-statement-20260501/grids/sector-pivot"
                 ],
                 supportEvidenceIds: [
-                  "delivery-artifact:pdf",
+                  "delivery-artifact-board-pdf",
                   "reporting-run-source:report-writer://investor-monthly-statement-20260501/grids/sector-pivot"
                 ],
                 recipientList: [
@@ -2423,14 +3065,23 @@ describe("ReportingScreen", () => {
                   }
                 ],
                 entitlementScope: "CompanyWide",
-                approvalChain: [],
+                approvalChain: [
+                  {
+                    at: "2026-05-03T19:45:00Z",
+                    actor: "controller",
+                    action: "Approved delivery",
+                    fromState: "PendingApproval",
+                    toState: "Approved",
+                    note: "Board portal package cleared."
+                  }
+                ],
                 datasetVersion: "investor-monthly-statement-20260501",
                 templateVersion: "investor-monthly-statement",
                 deliveryChannel: "SecurePortal via Board portal",
                 deliveredAtUtc: "2026-05-03T20:15:00Z",
                 deliveryEvidence: [
                   {
-                    evidenceId: "delivery-artifact:pdf",
+                    evidenceId: "delivery-artifact-board-pdf",
                     label: "board-pack.pdf",
                     route: "/api/fund-structure/reporting/packs/11111111-1111-1111-1111-111111111111/deliveries/22222222-2222-2222-2222-222222222222/artifacts/board-pack.pdf?token=abc123",
                     source: "reporting-run-delivery",
@@ -2442,8 +3093,10 @@ describe("ReportingScreen", () => {
                   "schedule:sched-investor",
                   "delivery-request:board-reporting-committee"
                 ],
+                amendmentReason: "Allocator requested board watermark refresh.",
+                restatementLineage: "prior-report:00000000-0000-0000-0000-000000000001",
                 auditEventReferences: ["investor-monthly-statement-20260501:1:RunGenerated"],
-                blockedDownstreamOutputs: []
+                blockedDownstreamOutputs: ["warehouse-export:waiting-for-watermark-signoff"]
               },
               brandingTheme: {
                 themeId: "allocator-quarterly",
@@ -2500,6 +3153,14 @@ describe("ReportingScreen", () => {
     expect(boardAttempt).toHaveTextContent(
       "SecurePortal package · Pdf, Xlsx, Csv"
     );
+    expect(boardAttempt).toHaveTextContent("SecurePortal delivery to Board reporting committee via Board portal.");
+    expect(boardAttempt).toHaveTextContent(
+      "Secure-portal package is available through the token-gated portal route /portal/reporting/packages/pkg-board-1?token=abc123."
+    );
+    expect(boardAttempt).toHaveTextContent(
+      "3 artifact(s) retained as Csv/Pdf/Xlsx; manifest workstation/reporting/deliveries/report-1/manifest.json."
+    );
+    expect(boardAttempt).toHaveTextContent("Access expires: 2026-05-17T20:15:00Z");
     expect(boardAttempt).toHaveTextContent(
       "Branding: Allocator Quarterly · Northstar Capital · allocator-quarterly"
     );
@@ -2513,14 +3174,80 @@ describe("ReportingScreen", () => {
     expect(boardAttempt).toHaveTextContent("Reporting run: investor-monthly-statement-20260501");
     expect(boardAttempt).toHaveTextContent("Template: investor-monthly-statement");
     expect(boardAttempt).toHaveTextContent("Schedule: sched-investor");
+    expect(boardAttempt).toHaveTextContent(
+      "Run metadata: asOf=2026-05-01 · status=Draft · trigger=Scheduled · attempt=1 · sections=4 · lineage=4"
+    );
     expect(boardAttempt).toHaveTextContent("Source artifacts: workstation/reporting/runs/investor-monthly-statement-20260501/manifest.json");
+    expect(boardAttempt).toHaveTextContent("Report-line provenance: 1 line");
+    expect(boardAttempt).toHaveTextContent("trial-balance.cash · ledger · 100.00");
+    expect(within(boardAttempt).getByRole("link", { name: "Open Financial Record Explorer for trial-balance.cash" })).toHaveAttribute(
+      "href",
+      "/api/workstation/financial-record-explorers/ledger?lineKey=trial-balance.cash&sourceId=ledger-entry-1&evidenceId=delivery-artifact%3Apdf&runId=run-1"
+    );
     expect(boardAttempt).toHaveTextContent("Evidence packet: ReportingRunDelivery · investor-monthly-statement-20260501");
     expect(boardAttempt).toHaveTextContent("Template: investor-monthly-statement · Channel: SecurePortal via Board portal");
     expect(boardAttempt).toHaveTextContent("Contents: 2 · Support evidence: 2 · Delivery evidence: 1");
     expect(boardAttempt).toHaveTextContent(
+      "Package contents: board-pack.pdf | source-artifact:report-writer://investor-monthly-statement-20260501/grids/sector-pivot"
+    );
+    expect(boardAttempt).toHaveTextContent(
+      "Support evidence IDs: delivery-artifact-board-pdf | reporting-run-source:report-writer://investor-monthly-statement-20260501/grids/sector-pivot"
+    );
+    const packetEvidenceLinks = within(boardAttempt).getByRole("list", {
+      name: "Board reporting committee delivery packet evidence links"
+    });
+    expect(packetEvidenceLinks).toHaveTextContent("delivery-artifact-board-pdf · board-pack.pdf · reporting-run-delivery · 2026-05-03T20:15:00Z");
+    expect(within(packetEvidenceLinks).getByRole("link", { name: "Open delivery evidence delivery-artifact-board-pdf" })).toHaveAttribute(
+      "href",
+      "/api/fund-structure/reporting/packs/11111111-1111-1111-1111-111111111111/deliveries/22222222-2222-2222-2222-222222222222/artifacts/board-pack.pdf?token=abc123"
+    );
+    expect(boardAttempt).toHaveTextContent(
+      "Entitlement: CompanyWide · Fund: reporting-run · Account: investor-monthly-statement · Period: 2026-05-01"
+    );
+    const packetRecipients = within(boardAttempt).getByRole("list", {
+      name: "Board reporting committee delivery packet recipients"
+    });
+    expect(packetRecipients).toHaveTextContent(
+      "board-reporting-committee: Board reporting committee · Board · Board portal"
+    );
+    const packetApprovalChain = within(boardAttempt).getByRole("list", {
+      name: "Board reporting committee delivery packet approval chain"
+    });
+    expect(packetApprovalChain).toHaveTextContent(
+      "2026-05-03T19:45:00Z: controller Approved delivery PendingApproval to Approved - Board portal package cleared."
+    );
+    expect(boardAttempt).toHaveTextContent(
       "Request history: reporting-run:investor-monthly-statement-20260501:Scheduled:Draft | schedule:sched-investor | delivery-request:board-reporting-committee"
     );
-    expect(within(boardAttempt).getByRole("link", { name: "Download board-pack.pdf" })).toHaveAttribute(
+    expect(boardAttempt).toHaveTextContent("Amendment: Allocator requested board watermark refresh.");
+    expect(boardAttempt).toHaveTextContent(
+      "Restatement lineage: prior-report:00000000-0000-0000-0000-000000000001"
+    );
+    expect(boardAttempt).toHaveTextContent(
+      "Audit references: investor-monthly-statement-20260501:1:RunGenerated"
+    );
+    expect(boardAttempt).toHaveTextContent(
+      "Blocked downstream outputs: warehouse-export:waiting-for-watermark-signoff"
+    );
+    expect(within(boardAttempt).getByRole("link", { name: "Open delivery evidence graph for Board reporting committee delivery attempt" })).toHaveAttribute(
+      "href",
+      "/reporting/evidence?subjectKind=report-pack-delivery&subjectId=11111111-1111-1111-1111-111111111111%3A22222222-2222-2222-2222-222222222222"
+    );
+    const artifactIntegrity = within(boardAttempt).getByRole("list", {
+      name: "Board reporting committee package artifact integrity"
+    });
+    expect(artifactIntegrity).toHaveTextContent("board-pack.pdf");
+    expect(artifactIntegrity).toHaveTextContent("Pdf");
+    expect(artifactIntegrity).toHaveTextContent(
+      "workstation/reporting/deliveries/report-1/board-reporting-committee/pkg-1/board-pack.pdf"
+    );
+    expect(artifactIntegrity).toHaveTextContent("1,024 bytes");
+    expect(artifactIntegrity).toHaveTextContent("delivery-artifact-board-pdf");
+    expect(artifactIntegrity).toHaveTextContent("f".repeat(64));
+    expect(artifactIntegrity).toHaveTextContent(
+      "delivery-artifact:11111111111111111111111111111111:board-reporting-committee:1:pdf"
+    );
+    expect(within(artifactIntegrity).getByRole("link", { name: "Download board-pack.pdf" })).toHaveAttribute(
       "href",
       "/api/fund-structure/reporting/packs/11111111-1111-1111-1111-111111111111/deliveries/22222222-2222-2222-2222-222222222222/artifacts/board-pack.pdf?token=abc123"
     );
@@ -2570,6 +3297,7 @@ describe("ReportingScreen", () => {
           family: "InvestorStatement",
           status: "Released",
           trigger: "Scheduled",
+          asOfDate: "2026-06-01",
           attemptCount: 1,
           sectionCount: 4,
           lineageCount: 4,
@@ -2662,6 +3390,7 @@ describe("ReportingScreen", () => {
               family: "InvestorStatement",
               status: "Released",
               trigger: "Scheduled",
+              asOfDate: "2026-06-01",
               attemptCount: 1,
               sectionCount: 4,
               lineageCount: 4,
@@ -2860,7 +3589,27 @@ describe("ReportingScreen", () => {
               ],
               evidenceLinks: null
             },
-            lineProvenance: [],
+            lineProvenance: [
+              {
+                lineKey: "nav.total",
+                sourceKind: "ledger",
+                sourceId: "ledger-entry-nav",
+                evidenceId: "publication-evidence-1",
+                runId: "run-nav-1",
+                ledgerEntryId: "ledger-entry-nav",
+                reconciliationCaseId: "case-nav-1",
+                reportValue: "1249500",
+                sourceSessionId: "source-session-nav",
+                reconciliationRunId: "recon-nav-1",
+                providerEventId: "provider-nav-1",
+                securityMasterId: "security-nav-1",
+                securityDefinitionId: "definition-nav-1",
+                reconciliationOutcome: "matched",
+                approvalId: "approval-nav-1",
+                financialRecordExplorerId: "ledger",
+                financialRecordHref: "/api/workstation/financial-record-explorers/ledger?lineKey=nav.total&sourceId=ledger-entry-nav&evidenceId=publication-evidence-1&runId=run-nav-1"
+              }
+            ],
             publication: {
               manifestId: "manifest-restated-1",
               retainedManifestPath: "vault/report-packs/manifest-restated-1.json",
@@ -2874,6 +3623,13 @@ describe("ReportingScreen", () => {
                   route: "/reporting/manifests/manifest-restated-1",
                   source: "reporting",
                   capturedAtUtc: "2026-05-28T15:20:00Z"
+                },
+                {
+                  evidenceId: "signoff-evidence-1",
+                  label: "Sign-off approval packet",
+                  route: "/reporting/evidence?subject=approval&approvalId=approval-nav-1",
+                  source: "approval",
+                  capturedAtUtc: "2026-05-28T15:19:00Z"
                 }
               ]
             }
@@ -2902,6 +3658,33 @@ describe("ReportingScreen", () => {
     expect(within(publication).getByText("manifest-restated-1 signed off by reporting-ops at 2026-05-28T15:20:00Z.")).toBeInTheDocument();
     expect(within(publication).getByText("sha256:restated123")).toBeInTheDocument();
     expect(within(publication).getByText("vault/report-packs/manifest-restated-1.json")).toBeInTheDocument();
+    const publicationEvidence = within(publication).getByRole("list", { name: "Publication evidence links" });
+    expect(within(publicationEvidence).getByLabelText("Publication manifest publication evidence from reporting")).toHaveTextContent(
+      "publication-evidence-1 · reporting"
+    );
+    expect(within(publicationEvidence).getByRole("link", { name: "Open Publication manifest publication evidence" })).toHaveAttribute(
+      "href",
+      "/reporting/manifests/manifest-restated-1"
+    );
+    expect(within(publicationEvidence).getByLabelText("Sign-off approval packet publication evidence from approval")).toHaveTextContent(
+      "signoff-evidence-1 · approval"
+    );
+    expect(within(publicationEvidence).getByRole("link", { name: "Open Sign-off approval packet publication evidence" })).toHaveAttribute(
+      "href",
+      "/reporting/evidence?subject=approval&approvalId=approval-nav-1"
+    );
+    expect(within(publication).getByRole("list", { name: "Report-line provenance drill-through" })).toBeInTheDocument();
+    expect(within(publication).getByLabelText("nav.total provenance from ledger with Open Ledger Explorer")).toHaveTextContent(
+      "ledger · ledger-entry-nav · ledger=ledger-entry-nav · recon=matched"
+    );
+    expect(within(publication).getByRole("link", { name: "Open Ledger Explorer for nav.total" })).toHaveAttribute(
+      "href",
+      "/api/workstation/financial-record-explorers/ledger?lineKey=nav.total&sourceId=ledger-entry-nav&evidenceId=publication-evidence-1&runId=run-nav-1"
+    );
+    expect(within(publication).getByRole("link", { name: "Open retained evidence for nav.total" })).toHaveAttribute(
+      "href",
+      "/reporting/manifests/manifest-restated-1"
+    );
   });
 
   it("keeps report-pack task and inspector action descriptions uniquely identified", () => {

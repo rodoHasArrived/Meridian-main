@@ -306,6 +306,11 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IAccountingActionAuditStore>(),
                 sp.GetService<ContractSecurityMasterQueryService>(),
                 sp.GetService<ILedgerJournalStore>(),
+                sp.GetService<ReportPackWorkflowService>(),
+                sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>()));
+        services.TryAddSingleton<ICapitalAccountWorkbenchService>(sp =>
+            new CapitalAccountWorkbenchService(
+                sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
                 sp.GetService<ReportPackWorkflowService>()));
         services.TryAddSingleton<IReconciliationBreakQueueRepository>(sp =>
         {

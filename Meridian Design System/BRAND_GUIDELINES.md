@@ -78,8 +78,8 @@ Meridian is a professional .NET trading and fund operations platform. Our brandi
 
 ### Font Stack
 - **Display/Logo**: `'Space Grotesk', 'IBM Plex Sans', system-ui, sans-serif`
-- **Body**: `'IBM Plex Sans', system-ui, sans-serif`
-- **Monospace**: `'IBM Plex Mono', ui-monospace, monospace`
+- **Body/UI**: `'Inter', 'IBM Plex Sans', system-ui, sans-serif`
+- **Monospace/Data**: `'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace`
 
 ### Weight Recommendations
 - **Headings**: 700 (bold)

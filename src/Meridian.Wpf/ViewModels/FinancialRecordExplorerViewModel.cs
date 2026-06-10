@@ -265,9 +265,11 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
         {
             "PortfolioExplorer" => "portfolio",
             "SecurityInstrumentExplorer" => "security-instrument",
+            "ReportLineProvenanceExplorer" => "report-line-provenance",
             "LedgerExplorer" => "ledger",
             "portfolio" => "portfolio",
             "security-instrument" => "security-instrument",
+            "report-line-provenance" => "report-line-provenance",
             _ => "ledger"
         };
 
@@ -467,6 +469,26 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
         }
 
         var normalized = href.Trim();
+        if (normalized.Contains("/financial-record-explorers/report-line-provenance", StringComparison.OrdinalIgnoreCase))
+        {
+            return "ReportLineProvenanceExplorer";
+        }
+
+        if (normalized.Contains("/financial-record-explorers/security-instrument", StringComparison.OrdinalIgnoreCase))
+        {
+            return "SecurityInstrumentExplorer";
+        }
+
+        if (normalized.Contains("/financial-record-explorers/portfolio", StringComparison.OrdinalIgnoreCase))
+        {
+            return "PortfolioExplorer";
+        }
+
+        if (normalized.Contains("/financial-record-explorers/ledger", StringComparison.OrdinalIgnoreCase))
+        {
+            return "LedgerExplorer";
+        }
+
         if (normalized.Contains("/security-master", StringComparison.OrdinalIgnoreCase))
         {
             return "SecurityMaster";
@@ -475,6 +497,26 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
         if (normalized.Contains("/portfolio", StringComparison.OrdinalIgnoreCase))
         {
             return "PortfolioExplorer";
+        }
+
+        if (normalized.Contains("/fund-structure/reporting/packs", StringComparison.OrdinalIgnoreCase))
+        {
+            return "FundReportPack";
+        }
+
+        if (normalized.Contains("/reconciliation/", StringComparison.OrdinalIgnoreCase))
+        {
+            return "FundReconciliation";
+        }
+
+        if (normalized.Contains("/journal-entry", StringComparison.OrdinalIgnoreCase))
+        {
+            return "FundAccountingConfigure";
+        }
+
+        if (normalized.Contains("/approval", StringComparison.OrdinalIgnoreCase))
+        {
+            return "FundAuditTrail";
         }
 
         if (normalized.Contains("/evidence/", StringComparison.OrdinalIgnoreCase))

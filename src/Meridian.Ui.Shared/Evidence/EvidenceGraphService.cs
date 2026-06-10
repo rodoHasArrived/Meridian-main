@@ -186,12 +186,14 @@ public sealed class EvidenceGraphService
             EvidenceSubjectResolver.PaperReadinessKind => "paper-trading-readiness",
             EvidenceSubjectResolver.ReconciliationReviewKind => "accounting-reconciliation-review",
             EvidenceSubjectResolver.ReportPackKind => "portfolio-reporting-output",
+            EvidenceSubjectResolver.ReportPackDeliveryKind => "report-pack-delivery-review",
             EvidenceSubjectResolver.AnalysisExportKind => "portfolio-reporting-output",
             EvidenceSubjectResolver.ProviderTrustKind => "paper-trading-readiness",
             EvidenceSubjectResolver.SecurityMasterConflictKind => "security-master-conflict-review",
             EvidenceSubjectResolver.ApprovalKind => "operations-approval-review",
             EvidenceSubjectResolver.AccountingRecordKind => "accounting-records-evidence-review",
             EvidenceSubjectResolver.PrivateCapitalFundEventKind => "private-capital-fund-event-review",
+            EvidenceSubjectResolver.PaymentIntentKind => "payment-intent-cash-evidence-review",
             _ => string.Empty
         };
 

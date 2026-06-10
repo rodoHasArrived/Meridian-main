@@ -580,6 +580,12 @@ public sealed class EvidenceWorkflowFabricTests
             subject.Label.Contains("CapitalCall", StringComparison.OrdinalIgnoreCase) &&
             subject.Route != null &&
             subject.Route.Contains("fund-event%3Afund-alpha%3Acapital-call%3A20260630", StringComparison.OrdinalIgnoreCase));
+        subjects.Should().Contain(subject =>
+            subject.SubjectKind == EvidenceSubjectResolver.PaymentIntentKind &&
+            subject.SubjectId == "payment:fund-alpha:capital-call:20260630" &&
+            subject.Label.Contains("Ready, execution deferred", StringComparison.OrdinalIgnoreCase) &&
+            subject.Route != null &&
+            subject.Route.Contains("paymentIntentId=payment%3Afund-alpha%3Acapital-call%3A20260630", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -667,7 +673,7 @@ public sealed class EvidenceWorkflowFabricTests
                 new EvidenceArtifactRefDto(
                     "private-capital-retained-artifact:canonical-link",
                     "retained-evidence-link",
-                    Path: "/evidence/fund-alpha/capital-call.pdf",
+                    Path: "/evidence/fund-alpha/bank-cash-capital-call.pdf",
                     Route: null,
                     GeneratedAt: DateTimeOffset.UtcNow,
                     Hash: "sha256:private-capital-fund-event",
@@ -684,6 +690,96 @@ public sealed class EvidenceWorkflowFabricTests
         validation.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
         validation.Completeness.ValidationIssues.Should().NotContain(issue =>
             issue.Code.Contains("canonical-subject", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task MapEvidenceEndpoints_DuringPaymentIntentCashEvidenceReview_ReturnsPacketValidationAndManifest()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-payment-intent", Guid.NewGuid().ToString("N"));
+        var activity = PrivateCapitalActivityProjection();
+        var subjectId = "payment:fund-alpha:capital-call:20260630";
+        var encodedSubjectId = Uri.EscapeDataString(subjectId);
+        await using var app = await CreateEvidenceAppAsync(
+            root,
+            manualJournalService: new StubManualJournalEntryWorkbenchService(activity));
+        var client = app.GetTestClient();
+
+        var templatesResponse = await client.GetAsync("/api/workstation/evidence/templates");
+        templatesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var templates = await templatesResponse.Content.ReadFromJsonAsync<IReadOnlyList<EvidenceTemplateDto>>(ServerJsonOptions);
+        templates.Should().Contain(template =>
+            template.WorkflowId == "payment-intent-cash-evidence-review" &&
+            template.RequiredEvidenceKinds.Contains("bank-cash-evidence") &&
+            template.RequiredEvidenceKinds.Contains("execution-deferred"));
+
+        var subjectsResponse = await client.GetAsync("/api/workstation/evidence/subjects");
+        subjectsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var subjects = await subjectsResponse.Content.ReadFromJsonAsync<IReadOnlyList<EvidenceSubjectDto>>(ServerJsonOptions);
+        subjects.Should().Contain(subject =>
+            subject.SubjectKind == EvidenceSubjectResolver.PaymentIntentKind &&
+            subject.SubjectId == subjectId);
+
+        var packetResponse = await client.GetAsync($"/api/workstation/evidence/subjects/payment-intent/{encodedSubjectId}/packet");
+        packetResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var packet = await packetResponse.Content.ReadFromJsonAsync<EvidencePacketDto>(ServerJsonOptions);
+        packet.Should().NotBeNull();
+        packet!.Subject.SubjectKind.Should().Be(EvidenceSubjectResolver.PaymentIntentKind);
+        packet.Nodes.Select(static node => node.Kind).Should().Contain([
+            "payment-intent",
+            "payment-requester",
+            "approval-chain",
+            "expected-cash-movement",
+            "bank-cash-evidence",
+            "reconciliation-linkage",
+            "audit-history",
+            "execution-deferred",
+            "private-capital-fund-event",
+            "capital-account-subledger",
+            "ledger-impact",
+            "report-output"
+        ]);
+        packet.Nodes.Single(node => node.Kind == "payment-intent").Status.Should().Be(EvidenceStatusDto.Ready);
+        packet.Nodes.Single(node => node.Kind == "execution-deferred")
+            .Summary.Contains("Full payment execution is explicitly deferred", StringComparison.OrdinalIgnoreCase).Should().BeTrue();
+        packet.Nodes.Single(node => node.Kind == "bank-cash-evidence")
+            .ArtifactRefs.Should().Contain(artifact => artifact.Kind == "retained-cash-evidence");
+        packet.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
+        packet.Completeness.ValidationIssues.Should().NotContain(issue => issue.Code == "orphan-evidence");
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Source)
+            .EvidenceKinds.Should().Contain("expected-cash-movement");
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Reconciliation)
+            .EvidenceKinds.Should().Contain("bank-cash-evidence");
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.CapitalAccounts)
+            .EvidenceKinds.Should().Contain("capital-account-subledger");
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Ledger)
+            .EvidenceKinds.Should().Contain("ledger-impact");
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Reporting)
+            .EvidenceKinds.Should().Contain("report-output");
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Audit)
+            .EvidenceKinds.Should().Contain("execution-deferred");
+
+        var validationResponse = await client.PostAsync(
+            $"/api/workstation/evidence/subjects/payment-intent/{encodedSubjectId}/validate",
+            content: null);
+        validationResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var completeness = await validationResponse.Content.ReadFromJsonAsync<EvidenceCompletenessDto>(ServerJsonOptions);
+        completeness!.Status.Should().Be(EvidenceStatusDto.Ready);
+
+        var exportResponse = await client.PostAsJsonAsync(
+            $"/api/workstation/evidence/subjects/payment-intent/{encodedSubjectId}/export-manifest",
+            new EvidencePacketExportRequest("controller", "payment intent cash evidence retention", IncludeWarnings: false),
+            ServerJsonOptions);
+        exportResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var export = await exportResponse.Content.ReadFromJsonAsync<EvidencePacketExportResponse>(ServerJsonOptions);
+        export.Should().NotBeNull();
+        export!.VaultIdentity.Should().NotBeNull();
+        export.VaultIdentity!.SubjectKind.Should().Be(EvidenceSubjectResolver.PaymentIntentKind);
+        export.VaultIdentity.SubjectId.Should().Be(subjectId);
+
+        var manifestJson = await client.GetStringAsync(export.ManifestRoute);
+        manifestJson.Should().Contain("\"subjectKind\": \"payment-intent\"");
+        manifestJson.Should().Contain("\"evidenceSubject\": \"payment-intent/payment:fund-alpha:capital-call:20260630\"");
+        manifestJson.Should().Contain("\"kind\": \"execution-deferred\"");
     }
 
     [Fact]
@@ -784,6 +880,55 @@ public sealed class EvidenceWorkflowFabricTests
     }
 
     [Fact]
+    public async Task ReportPackDeliveryEvidenceContributor_DuringDeliveryReview_BuildsDeliveryAndAuditNodes()
+    {
+        var reportId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var attemptId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var attempt = BuildReportPackDeliveryAttempt(reportId, attemptId, DateTimeOffset.UtcNow);
+        var subjectId = $"{reportId:D}:{attemptId:D}";
+        var subject = Subject(EvidenceSubjectResolver.ReportPackDeliveryKind, subjectId);
+        using var provider = new ServiceCollection()
+            .AddSingleton<IReportPackDeliveryRecordStore>(new InMemoryReportPackDeliveryRecordStore([attempt]))
+            .BuildServiceProvider();
+        var contributor = new ReportPackDeliveryEvidenceContributor(provider);
+
+        var contribution = await contributor.ContributeAsync(new EvidenceContributionContext(subject, CancellationToken.None));
+
+        contribution.Warnings.Should().BeEmpty();
+        contribution.RequiredEvidenceIds.Should().Contain([
+            $"{EvidenceSubjectResolver.ReportPackDeliveryKind}:{subjectId}:delivery-record",
+            $"{EvidenceSubjectResolver.ReportPackDeliveryKind}:{subjectId}:package",
+            $"{EvidenceSubjectResolver.ReportPackDeliveryKind}:{subjectId}:audit-manifest",
+            $"{EvidenceSubjectResolver.ReportPackDeliveryKind}:{subjectId}:line-provenance"
+        ]);
+        contribution.Nodes.Should().Contain(node =>
+            node.Kind == "delivery-record" &&
+            node.Status == EvidenceStatusDto.Ready);
+        contribution.Nodes.Select(static node => node.Kind).Should().Contain(
+        [
+            "publication-manifest",
+            "report-line-provenance",
+            "approval-chain",
+            "branding-theme",
+            "restatement-lineage"
+        ]);
+        contribution.Nodes.Should().Contain(node =>
+            node.Kind == "delivery-artifact" &&
+            node.ArtifactRefs.Any(artifact =>
+                artifact.CanonicalSubjectKind == EvidenceSubjectResolver.ReportPackDeliveryKind &&
+                artifact.CanonicalSubjectId == subjectId &&
+                artifact.Route!.Contains("/artifacts/board-pack.pdf", StringComparison.OrdinalIgnoreCase) &&
+                artifact.Retained));
+        contribution.Nodes.Should().Contain(node =>
+            node.Kind == "audit-history" &&
+            node.Status == EvidenceStatusDto.Ready &&
+            node.RelatedWorkItemIds.Contains("investor-monthly-statement-202606:1:RunGenerated"));
+        contribution.Edges.Should().Contain(edge =>
+            edge.Relationship == "retained-by" &&
+            edge.ToId.EndsWith(":audit-manifest", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task MapEvidenceEndpoints_DuringReportPackReview_ReturnsPacketGraphValidationTemplatesAndManifest()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-workflow", Guid.NewGuid().ToString("N"));
@@ -880,6 +1025,100 @@ public sealed class EvidenceWorkflowFabricTests
         var malformedExportError = await malformedExportResponse.Content.ReadFromJsonAsync<EvidenceEndpointErrorDto>(ServerJsonOptions);
         malformedExportError!.Code.Should().Be("invalid-evidence-export-request");
         malformedExportError.SubjectKind.Should().Be(EvidenceSubjectResolver.ReportPackKind);
+    }
+
+    [Fact]
+    public async Task MapEvidenceEndpoints_DuringReportPackDeliveryReview_ReturnsPacketValidationAndManifest()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-report-pack-delivery", Guid.NewGuid().ToString("N"));
+        var reportId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var attemptId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var attempt = BuildReportPackDeliveryAttempt(reportId, attemptId, DateTimeOffset.UtcNow);
+        var subjectId = $"{reportId:D}:{attemptId:D}";
+        var encodedSubjectId = Uri.EscapeDataString(subjectId);
+        await using var app = await CreateEvidenceAppAsync(
+            root,
+            deliveryRecordStore: new InMemoryReportPackDeliveryRecordStore([attempt]));
+        var client = app.GetTestClient();
+
+        var templatesResponse = await client.GetAsync("/api/workstation/evidence/templates");
+        templatesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var templates = await templatesResponse.Content.ReadFromJsonAsync<IReadOnlyList<EvidenceTemplateDto>>(ServerJsonOptions);
+        templates.Should().Contain(template =>
+            template.WorkflowId == "report-pack-delivery-review" &&
+            template.RequiredEvidenceKinds.Contains("delivery-record") &&
+            template.RequiredEvidenceKinds.Contains("audit-history") &&
+            template.OptionalEvidenceKinds.Contains("report-line-provenance"));
+
+        var subjectsResponse = await client.GetAsync("/api/workstation/evidence/subjects");
+        subjectsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var subjects = await subjectsResponse.Content.ReadFromJsonAsync<IReadOnlyList<EvidenceSubjectDto>>(ServerJsonOptions);
+        subjects.Should().Contain(subject =>
+            subject.SubjectKind == EvidenceSubjectResolver.ReportPackDeliveryKind &&
+            subject.SubjectId == subjectId &&
+            subject.Route!.Contains($"deliveryAttemptId={attemptId:D}", StringComparison.OrdinalIgnoreCase));
+
+        var packetResponse = await client.GetAsync($"/api/workstation/evidence/subjects/report-pack-delivery/{encodedSubjectId}/packet");
+        packetResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var packet = await packetResponse.Content.ReadFromJsonAsync<EvidencePacketDto>(ServerJsonOptions);
+        packet.Should().NotBeNull();
+        packet!.Subject.SubjectKind.Should().Be(EvidenceSubjectResolver.ReportPackDeliveryKind);
+        packet.Nodes.Should().Contain(node => node.Kind == "delivery-package");
+        packet.Nodes.Should().Contain(node => node.Kind == "delivery-evidence-packet");
+        packet.Nodes.Should().Contain(node => node.Kind == "audit-history");
+        packet.Nodes.Should().Contain(node => node.Kind == "publication-manifest");
+        packet.Nodes.Should().Contain(node => node.Kind == "report-line-provenance");
+        packet.Nodes.Should().Contain(node => node.Kind == "branding-theme");
+        packet.Nodes.Should().Contain(node => node.Kind == "restatement-lineage");
+        packet.Completeness.ValidationIssues.Should().NotContain(issue => issue.Code == "orphan-evidence");
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Delivery)
+            .EvidenceKinds.Should().Contain("delivery-evidence-packet");
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Reporting)
+            .EvidenceKinds.Should().Contain("report-line-provenance");
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Audit)
+            .EvidenceKinds.Should().Contain("audit-history");
+
+        var validationResponse = await client.PostAsync(
+            $"/api/workstation/evidence/subjects/report-pack-delivery/{encodedSubjectId}/validate",
+            content: null);
+        validationResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var completeness = await validationResponse.Content.ReadFromJsonAsync<EvidenceCompletenessDto>(ServerJsonOptions);
+        completeness!.Status.Should().Be(EvidenceStatusDto.Ready);
+        completeness.ReadyIds.Should().Contain(id => id.EndsWith(":audit-manifest", StringComparison.OrdinalIgnoreCase));
+
+        var exportResponse = await client.PostAsJsonAsync(
+            $"/api/workstation/evidence/subjects/report-pack-delivery/{encodedSubjectId}/export-manifest",
+            new EvidencePacketExportRequest("controller", "delivery record retention", IncludeWarnings: false),
+            ServerJsonOptions);
+        exportResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var export = await exportResponse.Content.ReadFromJsonAsync<EvidencePacketExportResponse>(ServerJsonOptions);
+        export.Should().NotBeNull();
+        export!.VaultIdentity.Should().NotBeNull();
+        export.VaultIdentity!.SubjectKind.Should().Be(EvidenceSubjectResolver.ReportPackDeliveryKind);
+        export.VaultIdentity.SubjectId.Should().Be(subjectId);
+
+        var manifestJson = await client.GetStringAsync(export.ManifestRoute);
+        manifestJson.Should().Contain("\"subjectKind\": \"report-pack-delivery\"");
+        manifestJson.Should().Contain($"\"evidenceSubject\": \"{EvidenceSubjectResolver.ReportPackDeliveryKind}/{subjectId}\"");
+        manifestJson.Should().Contain($"\"reportPackDeliveryAttemptId\": \"{attemptId:D}\"");
+        manifestJson.Should().Contain("\"reportPackDeliveryPackageId\": \"pkg-board-1\"");
+
+        var vaultSearchResponse = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/search",
+            new EvidenceVaultLookupRequestDto(
+                null,
+                null,
+                null,
+                null,
+                null,
+                ReportPackDeliveryAttemptId: attemptId.ToString("D")),
+            ServerJsonOptions);
+        vaultSearchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var vaultMatches = await vaultSearchResponse.Content.ReadFromJsonAsync<IReadOnlyList<EvidenceVaultIdentityDto>>(ServerJsonOptions);
+        vaultMatches.Should().ContainSingle(match =>
+            match.SubjectKind == EvidenceSubjectResolver.ReportPackDeliveryKind &&
+            match.SubjectId == subjectId &&
+            match.VaultId == export.VaultIdentity.VaultId);
     }
 
     [Fact]
@@ -1034,6 +1273,83 @@ public sealed class EvidenceWorkflowFabricTests
         manifestJson.Should().Contain("\"vaultIdentity\": {");
         manifestJson.Should().Contain("\"code\": \"review-required-evidence\"");
         manifestJson.Should().NotContain("This warning should be excluded.");
+    }
+
+    [Fact]
+    public async Task FileEvidenceArtifactStore_DuringManifestExport_FreezesSupportRequestListForMissingAndBlockedEvidence()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "close-2026-05");
+        var packet = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes:
+            [
+                Node(subject, "source-node", "source-document", EvidenceStatusDto.Ready),
+                Node(
+                    subject,
+                    "audit-support",
+                    "audit-history",
+                    EvidenceStatusDto.Missing,
+                    workItemIds: ["audit-request:close-2026-05"])
+            ],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(
+                50,
+                EvidenceStatusDto.Blocked,
+                ["source-node", "audit-support"],
+                ["source-node"],
+                ["audit-support"],
+                [],
+                ["audit-request:close-2026-05"])
+            {
+                ValidationIssues =
+                [
+                    new EvidenceValidationIssueDto(
+                        Code: "missing-required-evidence",
+                        Severity: EvidenceValidationSeverityDto.Critical,
+                        Message: "Audit support package is missing.",
+                        EvidenceId: "audit-support",
+                        EvidenceKind: "audit-history",
+                        SourceSystem: "test")
+                ]
+            },
+            Actions: [],
+            Warnings: []);
+
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "support package freeze"));
+
+        response.VaultIdentity.Should().NotBeNull();
+        var supportRequests = response.VaultIdentity!.SupportRequests;
+        supportRequests.Should().HaveCount(2);
+        supportRequests.Should().ContainSingle(request =>
+            request.RequestKind == "MissingEvidence" &&
+            request.EvidenceId == "audit-support" &&
+            request.EvidenceKind == "audit-history" &&
+            request.Severity == EvidenceValidationSeverityDto.Critical &&
+            request.Status == "Open" &&
+            request.Summary == "Audit support package is missing." &&
+            request.BlockedOutput == "report-pack/close-2026-05");
+        supportRequests.Should().ContainSingle(request =>
+            request.RequestKind == "BlockedWorkItem" &&
+            request.EvidenceId == "audit-support" &&
+            request.WorkItemId == "audit-request:close-2026-05" &&
+            request.BlockedOutput == "report-pack/close-2026-05");
+
+        var manifestPath = Path.Combine(root, response.ManifestPath.Replace('/', Path.DirectorySeparatorChar));
+        var manifestJson = await File.ReadAllTextAsync(manifestPath);
+        manifestJson.Should().Contain("\"supportRequests\": [");
+        manifestJson.Should().Contain("\"requestKind\": \"MissingEvidence\"");
+        manifestJson.Should().Contain("\"workItemId\": \"audit-request:close-2026-05\"");
+
+        var indexPath = Path.Combine(root, "workstation", "evidence", "_vault", $"{response.VaultIdentity.VaultId}.json");
+        var indexJson = await File.ReadAllTextAsync(indexPath);
+        var indexedIdentity = JsonSerializer.Deserialize<EvidenceVaultIdentityDto>(indexJson, ServerJsonOptions);
+        indexedIdentity.Should().NotBeNull();
+        indexedIdentity!.SupportRequests.Should().BeEquivalentTo(
+            response.VaultIdentity.SupportRequests,
+            options => options.WithStrictOrdering());
     }
 
     [Fact]
@@ -1709,7 +2025,7 @@ public sealed class EvidenceWorkflowFabricTests
             "Capital call for Fund Alpha LP",
             "payment:fund-alpha:capital-call:20260630",
             "settlement:fund-alpha:capital-call:20260630",
-            ["/evidence/fund-alpha/capital-call.pdf"],
+            ["/evidence/fund-alpha/bank-cash-capital-call.pdf"],
             [],
             now,
             ApprovalId: "approval:fund-alpha:capital-call:20260630");
@@ -1728,7 +2044,7 @@ public sealed class EvidenceWorkflowFabricTests
             100m,
             100m,
             "Capital call for Fund Alpha LP",
-            ["/evidence/fund-alpha/capital-call.pdf"],
+            ["/evidence/fund-alpha/bank-cash-capital-call.pdf"],
             [],
             now);
         var ledgerImpact = new PrivateCapitalLedgerImpactDto(
@@ -1747,10 +2063,10 @@ public sealed class EvidenceWorkflowFabricTests
             2,
             IsBalanced: true,
             IsPostingReady: true,
-            ["/evidence/fund-alpha/capital-call.pdf"],
+            ["/evidence/fund-alpha/bank-cash-capital-call.pdf"],
             [
-                new PrivateCapitalLedgerLineImpactDto("line-debit", "Assets:Cash", AccountingTemplateLineSideDto.Debit, 100m, "USD", null, null, null, "/evidence/fund-alpha/capital-call.pdf"),
-                new PrivateCapitalLedgerLineImpactDto("line-credit", "Equity:Capital Contributions", AccountingTemplateLineSideDto.Credit, 100m, "USD", null, null, null, "/evidence/fund-alpha/capital-call.pdf")
+                new PrivateCapitalLedgerLineImpactDto("line-debit", "Assets:Cash", AccountingTemplateLineSideDto.Debit, 100m, "USD", null, null, null, "/evidence/fund-alpha/bank-cash-capital-call.pdf"),
+                new PrivateCapitalLedgerLineImpactDto("line-credit", "Equity:Capital Contributions", AccountingTemplateLineSideDto.Credit, 100m, "USD", null, null, null, "/evidence/fund-alpha/bank-cash-capital-call.pdf")
             ],
             []);
         var reportOutput = new PrivateCapitalReportOutputDto(
@@ -1767,7 +2083,7 @@ public sealed class EvidenceWorkflowFabricTests
             "USD",
             100m,
             1,
-            ["/evidence/fund-alpha/capital-call.pdf"],
+            ["/evidence/fund-alpha/bank-cash-capital-call.pdf"],
             IsReportReady: true,
             [],
             ReportOutputRoute: "/api/ledger/private-capital/report-output?fundProfileId=fund-alpha&reportOutputId=report-output%3Afund-event%3Afund-alpha%3Acapital-call%3A20260630&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1");
@@ -1801,6 +2117,92 @@ public sealed class EvidenceWorkflowFabricTests
             [ledgerImpact],
             [reportOutput],
             []);
+        var record = records.Single();
+        var paymentIntent = new PaymentIntentWorkflowDto(
+            fundEvent.PaymentIntentId!,
+            fundEvent.SettlementReference,
+            "fund-alpha",
+            null,
+            fundEvent.FundEventId,
+            journalEntryId,
+            "fund-controller",
+            now,
+            PaymentIntentWorkflowStatusDto.ExecutionDeferred,
+            "Ready, execution deferred",
+            record.PaymentIntentEvidence!.Summary,
+            "Full payment execution is explicitly deferred in v0.18; this layer only retains intent, control, cash-evidence, reconciliation, and audit history before any bank-side instruction.",
+            new PaymentIntentExpectedCashMovementDto(
+                fundEvent.PaymentIntentId!,
+                PaymentIntentCashDirectionDto.Inflow,
+                100m,
+                "USD",
+                new DateOnly(2026, 6, 30),
+                fundEvent.SettlementReference,
+                fundEvent.FundEventId,
+                fundEvent.FundEventType,
+                fundEvent.CapitalAccountId,
+                fundEvent.InvestorId,
+                "Capital call for Fund Alpha LP"),
+            PrivateCapitalActivityRouteBuilder.BuildPaymentIntentEvidenceRoute(fundEvent.PaymentIntentId!),
+            PrivateCapitalActivityRouteBuilder.BuildPaymentIntentWorkbenchRoute("fund-alpha", null, fundEvent.PaymentIntentId!),
+            ApprovalChain:
+            [
+                new PaymentIntentApprovalStepDto(
+                    1,
+                    "Requester",
+                    "fund-controller",
+                    "Approved",
+                    now,
+                    PrivateCapitalActivityRouteBuilder.BuildApprovalRoute("fund-alpha", journalEntryId, fundEvent.ApprovalId)),
+                new PaymentIntentApprovalStepDto(
+                    2,
+                    "Controller",
+                    "fund-controller",
+                    "Approved",
+                    now,
+                    PrivateCapitalActivityRouteBuilder.BuildApprovalRoute("fund-alpha", journalEntryId, fundEvent.ApprovalId))
+            ],
+            BankEvidence:
+            [
+                new PaymentIntentBankEvidenceDto(
+                    "bank-evidence:fund-alpha:capital-call:20260630",
+                    "retained-cash-evidence",
+                    "Retained",
+                    "Retained cash evidence confirms the expected capital-call inflow.",
+                    Amount: 100m,
+                    Currency: "USD",
+                    EffectiveDate: new DateOnly(2026, 6, 30),
+                    RecordedAtUtc: now,
+                    ExternalRef: fundEvent.SettlementReference,
+                    EvidenceRoute: "/evidence/fund-alpha/bank-cash-capital-call.pdf")
+            ],
+            ReconciliationLinks:
+            [
+                new PaymentIntentReconciliationLinkDto(
+                    "reconciliation:fund-alpha:capital-call:20260630",
+                    "Ready",
+                    "Settlement reference reconciles retained cash evidence to the fund-event ledger record.",
+                    EvidenceRoute: "/evidence/fund-alpha/bank-cash-capital-call.pdf",
+                    ReconciliationCaseId: "reconciliation-case:fund-alpha:capital-call:20260630",
+                    ReconciliationRunId: "reconciliation-run:fund-alpha:20260630")
+            ],
+            AuditHistory:
+            [
+                new PaymentIntentAuditEventDto(
+                    "payment-intent-requested:fund-alpha:capital-call:20260630",
+                    now,
+                    "fund-controller",
+                    "payment-intent.requested",
+                    "Payment intent was requested from the private-capital fund event.",
+                    ["/evidence/fund-alpha/bank-cash-capital-call.pdf"]),
+                new PaymentIntentAuditEventDto(
+                    "payment-intent-execution-deferred:fund-alpha:capital-call:20260630",
+                    now,
+                    "system",
+                    "payment-intent.execution-deferred",
+                    "Live treasury execution remains deferred while retained evidence is reviewed.",
+                    ["/evidence/fund-alpha/bank-cash-capital-call.pdf"])
+            ]);
 
         return new PrivateCapitalActivityProjectionDto(
             "fund-alpha",
@@ -1821,7 +2223,8 @@ public sealed class EvidenceWorkflowFabricTests
             ReportOutputs: [reportOutput],
             ValidationIssues: [],
             FundEventRecords: records,
-            CapitalAccountSubledgers: subledgers);
+            CapitalAccountSubledgers: subledgers,
+            PaymentIntents: [paymentIntent]);
     }
 
     private static OperationsAccountingRecordSummaryDto BuildAccountingRecordSummary(
@@ -1896,7 +2299,9 @@ public sealed class EvidenceWorkflowFabricTests
 
     private static async Task<WebApplication> CreateEvidenceAppAsync(
         string root,
-        IOperationsContinuityWorkflowService? operationsWorkflowService = null)
+        IOperationsContinuityWorkflowService? operationsWorkflowService = null,
+        IReportPackDeliveryRecordStore? deliveryRecordStore = null,
+        IManualJournalEntryWorkbenchService? manualJournalService = null)
     {
         Directory.CreateDirectory(root);
         var configPath = Path.Combine(root, "appsettings.json");
@@ -1912,6 +2317,16 @@ public sealed class EvidenceWorkflowFabricTests
         if (operationsWorkflowService is not null)
         {
             builder.Services.AddSingleton(operationsWorkflowService);
+        }
+
+        if (deliveryRecordStore is not null)
+        {
+            builder.Services.AddSingleton(deliveryRecordStore);
+        }
+
+        if (manualJournalService is not null)
+        {
+            builder.Services.AddSingleton(manualJournalService);
         }
 
         builder.Services.AddEvidenceWorkflowFabric();
@@ -1984,6 +2399,179 @@ public sealed class EvidenceWorkflowFabricTests
         {
             Status = GovernanceReportPackStatusDto.Validated
         };
+    }
+
+    private static ReportPackDeliveryAttemptDto BuildReportPackDeliveryAttempt(
+        Guid reportId,
+        Guid attemptId,
+        DateTimeOffset generatedAt)
+    {
+        var packageRoute = $"/api/fund-structure/reporting/packs/{reportId:D}/deliveries/{attemptId:D}/package?token=test-token";
+        var artifactRoute = $"/api/fund-structure/reporting/packs/{reportId:D}/deliveries/{attemptId:D}/artifacts/board-pack.pdf?token=test-token";
+        var artifact = new ReportPackDeliveryArtifactDto(
+            GovernanceReportArtifactFormatDto.Pdf,
+            "board-pack.pdf",
+            "application/pdf",
+            "workstation/reporting/deliveries/pkg-board-1/board-pack.pdf",
+            2048,
+            "delivery-artifact:pdf",
+            new string('b', 64),
+            "delivery-artifact:report-pack-delivery:pdf",
+            artifactRoute);
+        var deliveryEvidence = new ReportPackEvidenceLinkDto(
+            "delivery-artifact:pdf",
+            "board-pack.pdf",
+            artifactRoute,
+            "report-pack-delivery",
+            generatedAt);
+        var lineEvidence = new ReportPackEvidenceLinkDto(
+            "ledger-evidence-1",
+            "Line evidence",
+            "/evidence/ledger-evidence-1",
+            "reporting",
+            generatedAt.AddMinutes(-5));
+        var restatementEvidence = new ReportPackEvidenceLinkDto(
+            "cash-restatement-1",
+            "Cash restatement",
+            "/evidence/cash-restatement-1",
+            "reporting",
+            generatedAt.AddMinutes(-2));
+        var package = new ReportPackDeliveryPackageDto(
+            PackageId: "pkg-board-1",
+            ReportId: reportId,
+            DistributionId: "board-reporting-committee",
+            DeliveryMode: ReportPackDeliveryModeDto.SecurePortal,
+            SecureLink: packageRoute,
+            PortalRoute: "/portal/reporting/packages/pkg-board-1",
+            Formats: [GovernanceReportArtifactFormatDto.Pdf, GovernanceReportArtifactFormatDto.Xlsx, GovernanceReportArtifactFormatDto.Csv],
+            Artifacts: [artifact],
+            CreatedAtUtc: generatedAt,
+            RetainedManifestPath: "workstation/reporting/deliveries/pkg-board-1/manifest.json",
+            PublicationEvidenceHash: new string('c', 64),
+            IntegritySummary: "1 artifact retained with SHA-256 checksum.",
+            ReportingRunId: "investor-monthly-statement-202606",
+            ReportingTemplateId: "investor-monthly-statement",
+            ReportingScheduleId: "sched-investor",
+            SourceArtifacts: ["/api/workstation/reporting/runs/investor-monthly-statement-202606/manifest"],
+            PublicationManifestId: "pub-board-1",
+            PublicationRetainedManifestPath: "workstation/reporting/publications/pub-board-1/manifest.json",
+            PublicationSignedOffBy: "fund-controller",
+            PublicationSignedOffAtUtc: generatedAt.AddMinutes(-4),
+            PublicationEvidenceLinks:
+            [
+                lineEvidence,
+                new ReportPackEvidenceLinkDto(
+                    "publication-evidence:report-pack",
+                    "Published report pack",
+                    "/api/workstation/evidence/subjects/report-pack/current/packet",
+                    "report-pack-publication",
+                    generatedAt.AddMinutes(-4))
+            ],
+            LineProvenance:
+            [
+                new ReportPackLineProvenanceDto(
+                    "trial-balance.cash",
+                    "ledger",
+                    "ledger-entry-1",
+                    "ledger-evidence-1",
+                    RunId: "run-1",
+                    LedgerEntryId: "ledger-entry-1",
+                    ReconciliationCaseId: "case-1",
+                    ReportValue: "100.00",
+                    SourceSessionId: "provider-session-1",
+                    ReconciliationRunId: "recon-run-1",
+                    ProviderEventId: "provider-event-1",
+                    SecurityMasterId: "security-1",
+                    SecurityDefinitionId: "definition-1",
+                    ReconciliationOutcome: "matched",
+                    ApprovalId: "approval-1")
+            ],
+            RestatementReasonCode: "NAV_CORRECTION",
+            RestatementPriorVersionReportId: reportId,
+            RestatementApprover: "fund-controller",
+            RestatementChangedLines:
+            [
+                new ReportPackChangedLineDto(
+                    "trial-balance.cash",
+                    "100.00",
+                    "101.00",
+                    [restatementEvidence])
+            ],
+            RestatementEvidenceLinks: [restatementEvidence],
+            DeliveryEvidencePacket: new ReportPackDeliveryEvidencePacketDto(
+                PacketId: "reporting-run-delivery:pkg-board-1",
+                PacketKind: "ReportingRunDelivery",
+                PackageId: "pkg-board-1",
+                ReportId: reportId,
+                FundProfileId: "fund-alpha",
+                FundAccountId: "investor-monthly-statement",
+                Period: "2026-06",
+                PackageContents: ["board-pack.pdf"],
+                SupportEvidenceIds: ["delivery-artifact:pdf", "publication-evidence:report-pack"],
+                RecipientList:
+                [
+                    new ReportPackDeliveryRecipientDto(
+                        "board-reporting-committee",
+                        "Board reporting committee",
+                        "Board",
+                        "Board portal")
+                ],
+                EntitlementScope: "CompanyWide",
+                ApprovalChain:
+                [
+                    new ReportPackDeliveryApprovalStepDto(
+                        generatedAt.AddMinutes(-4),
+                        "fund-controller",
+                        "Published",
+                        ReportPackWorkflowStateDto.Approved,
+                        ReportPackWorkflowStateDto.Published,
+                        "Approved package for delivery.")
+                ],
+                DatasetVersion: "investor-monthly-statement-202606",
+                TemplateVersion: "investor-monthly-statement",
+                DeliveryChannel: "SecurePortal via Board portal",
+                DeliveredAtUtc: generatedAt,
+                DeliveryEvidence: [deliveryEvidence],
+                RequestHistory:
+                [
+                    "reporting-run:investor-monthly-statement-202606:Scheduled:Draft",
+                    "schedule:sched-investor",
+                    "delivery-request:board-reporting-committee"
+                ],
+                AmendmentReason: "NAV_CORRECTION",
+                RestatementLineage: "prior-version:11111111-1111-1111-1111-111111111111;changed-lines:trial-balance.cash",
+                AuditEventReferences: ["investor-monthly-statement-202606:1:RunGenerated"],
+                BlockedDownstreamOutputs: []),
+            BrandingTheme: new ReportBrandingThemeDto(
+                "board-theme",
+                "Board Pack",
+                "Meridian Capital",
+                "#0f766e",
+                "#c2410c",
+                "#111827",
+                "#ffffff",
+                LogoUri: "/brand/meridian.svg",
+                FooterText: "Confidential",
+                Disclaimer: "For approved recipients only.",
+                IsBuiltIn: false),
+            ReportingRunSectionCount: 4,
+            ReportingRunLineageLinkedSections: 4);
+
+        return new ReportPackDeliveryAttemptDto(
+            AttemptId: attemptId,
+            ReportId: reportId,
+            DistributionId: "board-reporting-committee",
+            Recipient: "Board reporting committee",
+            RecipientRole: "Board",
+            Channel: "Board portal",
+            State: ReportPackDeliveryStateDto.Delivered,
+            AttemptedAtUtc: generatedAt,
+            Actor: "fund-controller",
+            AttemptNumber: 1,
+            DeliveryReference: "board-portal:packet-1",
+            Note: "Delivered after approval.",
+            EvidenceLinks: [deliveryEvidence],
+            Package: package);
     }
 
     private static bool IsRouteOnlyArtifact(JsonElement artifact, string kind, string route)
@@ -2096,6 +2684,16 @@ public sealed class EvidenceWorkflowFabricTests
             FundReportPackEvidenceBundleDto bundle,
             CancellationToken ct = default)
             => Task.FromResult(bundle);
+    }
+
+    private sealed class InMemoryReportPackDeliveryRecordStore(IReadOnlyList<ReportPackDeliveryAttemptDto> attempts)
+        : IReportPackDeliveryRecordStore
+    {
+        public IReadOnlyList<ReportPackDeliveryAttemptDto> Load() => attempts;
+
+        public void Save(IReadOnlyList<ReportPackDeliveryAttemptDto> attempts)
+        {
+        }
     }
 
     private sealed class StubSecurityMasterConflictService(IReadOnlyList<SecurityMasterConflict> conflicts)

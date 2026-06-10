@@ -270,6 +270,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         fundLiveView.State.Should().Be(PortfolioReportingLiveViewStateDto.SourceBacked);
         fundLiveView.SourceCount.Should().Be(3);
         fundLiveView.SourceAsOfUtc.Should().Be(new DateTimeOffset(2026, 4, 11, 14, 30, 0, TimeSpan.Zero));
+        fundLiveView.ReadinessBlockers.Should().BeEmpty();
         fundLiveView.Route.Should().Be("/api/workstation/portfolio/summary?fundAccountId=all&strategyId=all&entity=portfolio");
         fundLiveView.LiquiditySummary.Should().Contain("pending settlement");
         var strategyLiveView = workspace.Reporting.LivePortfolioViews.Should().ContainSingle(view =>
@@ -436,6 +437,8 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         liveView.SourceCount.Should().Be(0);
         liveView.SourceAsOfUtc.Should().BeNull();
         liveView.TelemetrySummary.Should().Contain("No source-backed portfolio records");
+        liveView.ReadinessBlockers.Should().ContainSingle(blocker =>
+            blocker.Contains("No source-backed portfolio records", StringComparison.Ordinal));
         workspace.Reporting.PnlSlices.Should().NotBeNull();
         workspace.Reporting.PnlSlices!.Should().HaveCount(4);
         workspace.Reporting.PnlSlices.Should().OnlyContain(slice =>
@@ -492,6 +495,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         fundLiveView.State.Should().Be(PortfolioReportingLiveViewStateDto.LiveLinked);
         fundLiveView.SourceAsOfUtc.Should().Be(new DateTimeOffset(2026, 4, 11, 15, 55, 0, TimeSpan.Zero));
         fundLiveView.TelemetrySummary.Should().Contain("Live-linked portfolio telemetry is current through");
+        fundLiveView.ReadinessBlockers.Should().BeEmpty();
 
         var strategyLiveView = workspace.Reporting.LivePortfolioViews.Should().ContainSingle(view =>
                 view.ViewId == "live:strategy:live-1")
