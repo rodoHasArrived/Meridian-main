@@ -109,6 +109,12 @@ The Accounting workspace workflow launch strip is derived from the Accounting vi
 route catalog, covering setup, journal entries, ledger review, reconciliation, exception casework,
 Security Master readiness, approvals, and retained evidence packaging without browser-local close
 state.
+`FinancialRecordExplorerShell` is the browser presentation for the shared Financial Record Explorer
+DTO. Accounting loads the `ledger` and Accounting-hosted `security-instrument` explorers from
+`/api/workstation/financial-record-explorers/{explorerId}`, Portfolio loads `portfolio`, and Data
+links to the existing Security Master lane instead of restoring the old static Data workbench.
+Saved views post back through the shared saved-view endpoint only after a material filter/search
+change, and blocked or empty DTOs keep proof actions disabled with the server-provided reason.
 Operations Continuity close-checklist fields mirror the shared workstation DTO, including required
 approval counts, expiration dates, and close-readiness blockers, so the browser reads the same
 approval gate state enforced by the API and WPF clients. The browser checklist summary is also
@@ -139,6 +145,10 @@ packet actions use the same subject-aware route while displaying the operator ta
 `Evidence Workbench` instead of leaking parameterized page-tag syntax. Saved workflow presets use
 the same route helper, so pinned accounting-record evidence commands preserve subject and operating
 scope when launched from the command palette.
+Evidence Workbench also renders the shared v0.18 Operational Evidence Graph proof-chain coverage
+for Source, Normalization, Reconciliation, Ledger, Capital accounts, Close, Reporting, Delivery,
+and Audit layers before the existing lineage and node inspectors. Keep this panel driven by the
+packet `proofChain` contract rather than browser-local node classification.
 Operator readiness console API source identifiers use the canonical workspace roots
 `strategy`, `data`, `accounting`, and `reporting`; legacy payload type names and retained
 compatibility routes must not reintroduce visible `Research`, `Data Operations`, or `Governance`
@@ -150,6 +160,13 @@ Reporting workspace status rows consume shared template metadata and recent run 
 The Reporting workspace also renders shared `portfolioCuts` rows for fund, strategy, and tag
 reporting views. The browser shows exposure, cash, P&L, shadow-NAV, variance, source-count, and
 version stamp from the backend payload instead of recomputing those cuts in React.
+Structured export cards render regulatory, data-warehouse, and investment-decision rows from the
+shared `structuredExports` payload, including retained paths, schema version, source counts,
+data-dictionary links, evidence links, and classification tags before exposing JSON/CSV/XLSX
+downloads.
+Cross-fund consolidation cards follow the same rule: fund/entity counts, gross/net exposure, cash,
+P&L, shadow-NAV, variance, source counts, readiness, and drill-through routes are rendered from
+`crossFundConsolidations` without browser-local roll-up math.
 It also renders shared `livePortfolioViews` rows for tick-linked portfolio reporting. React shows
 the backend-owned live/source-backed/stale/blocked state, liquidity and telemetry copy, and links to
 the portfolio-summary and cash-ladder routes rather than deriving live freshness locally. The
@@ -206,14 +223,15 @@ distribution payload before posting back to the server. Retained delivery attemp
 shared delivery-history payload, so browser Reporting shows actual
 recipient delivery state and retry history instead of static status chips. Delivered attempts also
 show the shared package mode, requested artifact formats, secure link, retained manifest path, and
-token-gated package artifact download links when the backend includes
+publication-approved branding theme, plus token-gated package artifact download links when the backend includes
 `ReportPackDeliveryPackageDto`; app-relative secure links render as anchors so operators can open
 the token-gated email-link or secure-portal package manifest, while artifact `DownloadRoute` values
 render as direct retained PDF/XLSX/CSV links. When a schedule targets a custom report-writer
 template that has not produced a published report-pack workflow record, those package rows still
 render because the backend now falls back to the generated reporting run and includes its retained
 manifest/report-writer artifact provenance on the delivery package; the browser renders the
-reporting run, template, schedule, and source-artifact provenance beside the package links.
+reporting run, template, schedule, source-artifact provenance, and generated-run evidence-packet
+counts/history beside the package links.
 Operators can also save or update schedule records
 from Reporting by choosing a template, cron, as-of date, due timestamp, recipient distribution,
 delivery mode, and PDF/XLSX/CSV formats; the browser posts the shared
@@ -255,12 +273,13 @@ post submit-for-review decisions to
 rows post approval or rejection decisions to the matching `/approve` and `/reject` shared
 governance endpoints. When the shared payload marks a template with report-writer grids, the browser
 summarizes those grid counts from `reportWriterGrids` and renders a no-code grid designer with
-source fields, row/column zones, metrics, formulas, Top-N, sort posture, and operator-authored
+source fields, row/column zones, metrics, formulas, grid-type and Top-N controls, sort posture, and operator-authored
 custom formula name/label/expression fields plus saved filter controls for field/operator/value
 slicing. Operators can save the current grid layout as a
 governed template draft through
 `/api/fund-structure/reporting/templates/drafts`, including company-wide, restricted group/company,
-or user-locked access policy metadata. The designer Preview action posts the current unsaved layout
+or user-locked access policy metadata. The designer renders the computed draft policy beside the
+controls and locks private drafts to a user owner before save. The designer Preview action posts the current unsaved layout
 plus an explicit preview dataset profile and bounded sample rows to
 `/api/fund-structure/reporting/templates/render`, then renders the returned grid rows, columns,
 warnings, and audit trace before publication. Operators can switch previews across representative

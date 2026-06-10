@@ -129,6 +129,7 @@ public sealed class EvidenceGraphService
             edges,
             requiredIds,
             template?.NoOrphanRule == true);
+        var proofChain = EvidenceProofChainBuilder.Build(nodeList, validation.Completeness);
 
         foreach (var action in ResolveEvidenceActions())
         {
@@ -142,7 +143,10 @@ public sealed class EvidenceGraphService
             Edges: validation.Edges,
             Completeness: validation.Completeness,
             Actions: actions.Values.OrderBy(static action => action.ActionId, StringComparer.OrdinalIgnoreCase).ToArray(),
-            Warnings: warnings.Concat(validation.Warnings).Distinct(StringComparer.OrdinalIgnoreCase).ToArray());
+            Warnings: warnings.Concat(validation.Warnings).Distinct(StringComparer.OrdinalIgnoreCase).ToArray())
+        {
+            ProofChain = proofChain
+        };
     }
 
     public async Task<EvidenceGraphDto?> GetGraphAsync(
@@ -153,7 +157,10 @@ public sealed class EvidenceGraphService
         var packet = await GetPacketAsync(subjectKind, subjectId, ct).ConfigureAwait(false);
         return packet is null
             ? null
-            : new EvidenceGraphDto(packet.Subject, packet.GeneratedAt, packet.Nodes, packet.Edges, packet.Warnings);
+            : new EvidenceGraphDto(packet.Subject, packet.GeneratedAt, packet.Nodes, packet.Edges, packet.Warnings)
+            {
+                ProofChain = packet.ProofChain
+            };
     }
 
     private IReadOnlyList<WorkflowActionDto> ResolveEvidenceActions()

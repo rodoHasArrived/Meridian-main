@@ -104,6 +104,51 @@ public sealed record MeridianAssuranceScoreDto(
     IReadOnlyList<EvidenceAssuranceComponentDto> Components,
     IReadOnlyList<EvidenceSlaAssessmentDto> SlaAssessments);
 
+[JsonConverter(typeof(JsonStringEnumConverter<EvidenceProofChainLayerKindDto>))]
+public enum EvidenceProofChainLayerKindDto
+{
+    Unknown = 0,
+    Source = 1,
+    Normalization = 2,
+    Reconciliation = 3,
+    Ledger = 4,
+    CapitalAccounts = 5,
+    Close = 6,
+    Reporting = 7,
+    Delivery = 8,
+    Audit = 9
+}
+
+public sealed record EvidenceProofChainLayerDto(
+    EvidenceProofChainLayerKindDto Layer,
+    string Label,
+    EvidenceStatusDto Status,
+    int CoveragePercent,
+    IReadOnlyList<string> RequiredEvidenceIds,
+    IReadOnlyList<string> EvidenceIds,
+    IReadOnlyList<string> ReadyEvidenceIds,
+    IReadOnlyList<string> ReviewEvidenceIds,
+    IReadOnlyList<string> MissingEvidenceIds,
+    IReadOnlyList<string> EvidenceKinds,
+    string Summary);
+
+public sealed record EvidenceProofChainDto(
+    int CoveragePercent,
+    EvidenceStatusDto Status,
+    int CoveredLayerCount,
+    int TotalLayerCount,
+    IReadOnlyList<EvidenceProofChainLayerDto> Layers,
+    string Summary)
+{
+    public static EvidenceProofChainDto Empty { get; } = new(
+        CoveragePercent: 0,
+        Status: EvidenceStatusDto.Unknown,
+        CoveredLayerCount: 0,
+        TotalLayerCount: 0,
+        Layers: [],
+        Summary: "Proof-chain coverage was not evaluated.");
+}
+
 public sealed record EvidenceVaultIdentityDto(
     string VaultId,
     string SubjectKind,
@@ -189,14 +234,20 @@ public sealed record EvidencePacketDto(
     IReadOnlyList<EvidenceEdgeDto> Edges,
     EvidenceCompletenessDto Completeness,
     IReadOnlyList<WorkflowActionDto> Actions,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings)
+{
+    public EvidenceProofChainDto ProofChain { get; init; } = EvidenceProofChainDto.Empty;
+}
 
 public sealed record EvidenceGraphDto(
     EvidenceSubjectDto Subject,
     DateTimeOffset GeneratedAt,
     IReadOnlyList<EvidenceNodeDto> Nodes,
     IReadOnlyList<EvidenceEdgeDto> Edges,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings)
+{
+    public EvidenceProofChainDto ProofChain { get; init; } = EvidenceProofChainDto.Empty;
+}
 
 public sealed record EvidenceTemplateExportSettingsDto(
     int SchemaVersion,

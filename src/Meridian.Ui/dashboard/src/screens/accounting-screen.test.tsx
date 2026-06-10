@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
@@ -19,8 +19,103 @@ import type {
 
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
+  const createFinancialRecordExplorer = (explorerId: string) => ({
+    explorerId,
+    title: explorerId === "security-instrument" ? "Security & Instrument Explorer" : "Ledger Explorer",
+    description: "Explore retained financial records and proof links.",
+    sourceState: `Source-backed ${explorerId} projection from run run-42.`,
+    isBlocked: false,
+    blockedReason: "",
+    scopeItems: [
+      { label: "Workstream", value: "Accounting", tone: "Info" },
+      { label: "Source", value: explorerId === "security-instrument" ? "Security Master instruments" : "Journal entries and ledger detail", tone: "Default" }
+    ],
+    savedViews: [
+      {
+        viewId: `system-${explorerId}-default`,
+        label: explorerId === "security-instrument" ? "Instrument proof" : "Controller review",
+        description: "Source-backed system view.",
+        isSystem: true,
+        isActive: true,
+        filters: [],
+        searchText: ""
+      }
+    ],
+    summaryItems: [
+      { label: explorerId === "security-instrument" ? "Security coverage" : "Records", value: "1", detail: "Retained source-backed rows.", tone: "Success" }
+    ],
+    filters: [
+      { filterId: "all-records", label: explorerId === "security-instrument" ? "No selection" : "All accounts", value: explorerId === "security-instrument" ? "No selection" : "All accounts", operator: "equals", tone: "Info" }
+    ],
+    columns: [
+      { columnId: "name", header: explorerId === "security-instrument" ? "Security" : "Account", cellKind: "text", width: 220, isRightAligned: false },
+      { columnId: "status", header: "Status", cellKind: "text", width: 110, isRightAligned: false }
+    ],
+    rows: [
+      {
+        recordId: `${explorerId}:run-42:1`,
+        recordType: explorerId,
+        label: explorerId === "security-instrument" ? "Apple Inc." : "Cash",
+        source: explorerId === "security-instrument" ? "Security Master" : "Trial balance",
+        status: "Ready",
+        tone: "Success",
+        cells: [
+          { columnId: "name", displayValue: explorerId === "security-instrument" ? "Apple Inc." : "Cash", rawValue: "", tone: "Success", linkHref: "" },
+          { columnId: "status", displayValue: "Ready", rawValue: "Ready", tone: "Success", linkHref: "" }
+        ],
+        detail: {
+          recordId: `${explorerId}:run-42:1`,
+          recordType: explorerId === "security-instrument" ? "Security instrument" : "Ledger account",
+          title: explorerId === "security-instrument" ? "Apple Inc." : "Cash",
+          subtitle: "run-42",
+          description: "Source-backed record detail.",
+          tone: "Success",
+          fields: [{ label: "Status", value: "Ready", detail: "Retained source projection.", tone: "Success" }],
+          proofActions: [
+            {
+              actionId: "open-source",
+              label: "Open source record",
+              description: "Open retained source.",
+              href: "/accounting/ledger",
+              isEnabled: true,
+              disabledReason: "",
+              tone: "Info"
+            }
+          ],
+          usedIn: [{ relationshipId: "accounting", label: "Accounting", description: "Used by Accounting close.", href: "/accounting", tone: "Info" }],
+          impacts: [{ relationshipId: "audit", label: "Audit trail", description: "Supports retained proof.", href: "/reporting/evidence", tone: "Info" }],
+          fullRecordHref: "/accounting/ledger"
+        }
+      }
+    ],
+    selectedRecord: null,
+    proofActions: [
+      {
+        actionId: "evidence",
+        label: explorerId === "security-instrument" ? "Open search" : "Evidence packet",
+        description: "Open retained evidence.",
+        href: "/reporting/evidence",
+        isEnabled: true,
+        disabledReason: "",
+        tone: "Info"
+      }
+    ],
+    recordGraph: { nodes: [], edges: [] }
+  });
   return {
     ...actual,
+    getFinancialRecordExplorer: vi.fn((explorerId: string) => Promise.resolve(createFinancialRecordExplorer(explorerId))),
+    saveFinancialRecordExplorerView: vi.fn((_explorerId: string, request: { label: string; description: string; filters: unknown[]; searchText: string }) =>
+      Promise.resolve({
+        viewId: "operator-test-view",
+        label: request.label,
+        description: request.description,
+        isSystem: false,
+        isActive: false,
+        filters: request.filters,
+        searchText: request.searchText
+      })
+    ),
     searchSecurities: vi.fn().mockResolvedValue([
       {
         securityId: "22222222-2222-2222-2222-222222222222",
@@ -1270,8 +1365,10 @@ describe("AccountingScreen", () => {
     await user.click(await screen.findByRole("button", { name: /Apple Inc./ }));
     expect(screen.getByRole("button", { name: /Apple Inc./ })).toBeInTheDocument();
 
-    await user.type(screen.getByLabelText("Label"), "Trade blotter");
-    await user.type(screen.getByLabelText("Route or path"), "/api/workstation/evidence/subjects/accounting-record/trade-blotter");
+    fireEvent.change(screen.getByLabelText("Label"), { target: { value: "Trade blotter" } });
+    fireEvent.change(screen.getByLabelText("Route or path"), {
+      target: { value: "/api/workstation/evidence/subjects/accounting-record/trade-blotter" }
+    });
     await user.click(screen.getByRole("button", { name: "Attach" }));
 
     expect(screen.getByText("Trade blotter")).toBeInTheDocument();

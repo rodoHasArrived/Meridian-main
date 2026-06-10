@@ -84,6 +84,11 @@ contract-owned evidence categories: retained source data, normalized transaction
 reconciliation case history, journal and ledger evidence, approval history, report-pack lineage,
 export evidence, and restatement lineage. Keep these categories shared so browser and WPF
 accounting-record review surfaces do not derive audit readiness or evidence grouping independently.
+Financial Record Explorer DTOs under `Workstation/FinancialRecordExplorerDtos.cs` define the shared
+ledger, portfolio, and Security & Instrument Explorer contract consumed by both browser and WPF.
+The DTO owns scope, saved views, summary, filters, columns, rows, selected-record detail, proof
+actions, record graph, `Used In`, and `Impacts` relationships; clients must render empty or blocked
+states from the contract instead of fabricating totals when source-backed projections are missing.
 Report-pack delivery packages also expose a contract-owned delivery evidence packet that binds the
 stakeholder recipient, entitlement scope, approval chain, publication manifest, report-line
 provenance, selected branding theme, delivery artifacts, request history, and restatement lineage
@@ -293,6 +298,10 @@ Evidence workflow contracts now carry policy-owned SLA/freshness assessments and
 Assurance Score on packet completeness. Keep provider validation, replay checks, reconciliation,
 approval, and report freshness policy output in shared DTOs so browser and WPF clients render the
 same cross-workflow readiness signal without local scoring rules.
+Evidence packets and graph responses also carry the v0.18 proof-chain coverage model for Source,
+Normalization, Reconciliation, Ledger, Capital accounts, Close, Reporting, Delivery, and Audit
+layers. Keep this contract-owned so client workbenches display Operational Evidence Graph coverage
+without reclassifying packet nodes locally.
 The shared `ISecurityValidationGateService` contract lives in `Services/` and returns
 Security Master validation DTOs from `SecurityMaster/`; Backtesting, Execution, Strategies, browser,
 and WPF consumers should depend on this contract rather than the Application-layer implementation.

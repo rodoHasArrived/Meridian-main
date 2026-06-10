@@ -209,6 +209,32 @@ public sealed class ReportingWorkspaceShellViewModel : WorkspaceShellViewModelBa
         },
         new()
         {
+            Title = "Formula grid validation",
+            Detail = $"Check {nameof(ReportWriterGridDefinitionDto.Formulas)}, {nameof(ReportWriterGridDefinitionDto.Metrics)}, {nameof(ReportWriterGridDefinitionDto.RowFields)}, and custom-formula lineage before publishing no-code report writer output.",
+            StatusLabel = "Custom formulas",
+            CountLabel = "Validate",
+            Tone = WorkspaceTone.Info,
+            PrimaryActionId = "FundReportPack",
+            PrimaryActionLabel = "Open Pack",
+            SecondaryActionId = "DataQuality",
+            SecondaryActionLabel = "Quality",
+            AutomationName = "Reporting formula grid validation decision"
+        },
+        new()
+        {
+            Title = "Cross-fund consolidation",
+            Detail = $"Review {nameof(FundReportingSummaryDto.CrossFundConsolidations)}, {nameof(CrossFundReportingConsolidationDto.FundCount)}, {nameof(CrossFundReportingConsolidationDto.EntityCount)}, {nameof(CrossFundReportingConsolidationDto.ShadowNav)}, and drill-through routes before allocator or company-wide delivery.",
+            StatusLabel = "Consolidation",
+            CountLabel = "Roll-up",
+            Tone = WorkspaceTone.Warning,
+            PrimaryActionId = "Dashboard",
+            PrimaryActionLabel = "Open Dashboard",
+            SecondaryActionId = "AnalysisExport",
+            SecondaryActionLabel = "Exports",
+            AutomationName = "Reporting cross-fund consolidation decision"
+        },
+        new()
+        {
             Title = "Export delivery",
             Detail = "Prepare scheduled PDF/XLSX/CSV packages for email-link, secure-portal, regulatory, and warehouse delivery.",
             StatusLabel = "Distribution",

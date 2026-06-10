@@ -60,6 +60,7 @@ Non-trigger examples:
 - Run the narrowest command covering the touched surface: focused `dotnet test`, project build, dashboard test/build, docs checker, or skill checker.
 - For docs-only cleanup, run link/search validation and `git diff --check`.
 - State clearly when validation is skipped because the cleanup is analysis-only.
+
 ## Guardrails
 
 - Preserve behavior unless the user explicitly asks for functional change.

@@ -1,0 +1,348 @@
+<Page x:Class="Meridian.Wpf.Views.FinancialRecordExplorerPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:workstation="clr-namespace:Meridian.Wpf.Workstation.Controls"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      Loaded="OnPageLoaded"
+      Unloaded="OnPageUnloaded"
+      AutomationProperties.Name="{Binding Title}"
+      AutomationProperties.AutomationId="FinancialRecordExplorerPage">
+
+    <Page.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24,16,24,32">
+        <Grid MaxWidth="1320">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Style="{StaticResource WorkspaceContextStripStyle}"
+                    Padding="14,10"
+                    Margin="0,0,0,14"
+                    AutomationProperties.AutomationId="FinancialRecordExplorerActionStrip"
+                    AutomationProperties.Name="{Binding Title}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,18,0">
+                        <TextBlock Text="{Binding Title}"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding Description}"
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   Margin="0,4,0,0"
+                                   TextWrapping="Wrap" />
+                        <WrapPanel Margin="0,10,0,0">
+                            <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                                <TextBlock Text="{Binding SourceState}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           AutomationProperties.AutomationId="FinancialRecordExplorerSourceState" />
+                            </Border>
+                            <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                                <TextBlock Text="{Binding ExplorerId}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                           AutomationProperties.AutomationId="FinancialRecordExplorerRouteScope" />
+                            </Border>
+                        </WrapPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1"
+                                MinWidth="320"
+                                VerticalAlignment="Center"
+                                AutomationProperties.AutomationId="FinancialRecordExplorerActionPosture">
+                        <WrapPanel HorizontalAlignment="Right">
+                            <Button Content="Refresh"
+                                    Command="{Binding RefreshCommand}"
+                                    ToolTip="{Binding RefreshTooltip}"
+                                    ToolTipService.ShowOnDisabled="True"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    AutomationProperties.AutomationId="FinancialRecordExplorerRefreshButton"
+                                    Margin="0,0,8,8" />
+                        </WrapPanel>
+                        <TextBlock Text="{Binding EmptyStateTitle}"
+                                   FontSize="12"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   TextAlignment="Right"
+                                   TextWrapping="Wrap"
+                                   Visibility="{Binding IsEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                   AutomationProperties.AutomationId="FinancialRecordExplorerActionStateTitle" />
+                        <TextBlock Text="{Binding EmptyStateDetail}"
+                                   FontSize="11"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   TextAlignment="Right"
+                                   TextWrapping="Wrap"
+                                   Margin="0,3,0,0"
+                                   Visibility="{Binding IsEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                   AutomationProperties.AutomationId="FinancialRecordExplorerActionStateDetail" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <ItemsControl Grid.Row="1"
+                          ItemsSource="{Binding SummaryItems}"
+                          Margin="0,0,0,14"
+                          AutomationProperties.AutomationId="FinancialRecordExplorerSummaryStrip">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="4" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Style="{StaticResource CardStyle}"
+                                Margin="0,0,10,10">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Label}"
+                                           FontSize="11"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                <TextBlock Text="{Binding Value}"
+                                           Style="{StaticResource CardHeaderStyle}"
+                                           Margin="0,4,0,0"
+                                           TextWrapping="Wrap" />
+                                <TextBlock Text="{Binding Detail}"
+                                           Style="{StaticResource CardDescriptionStyle}"
+                                           Margin="0,6,0,0"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <workstation:WorkstationTableInspectorControl Grid.Row="2"
+                                                          Table="{Binding RecordsTable}"
+                                                          SelectedItem="{Binding SelectedRecord, Mode=TwoWay}"
+                                                          Inspector="{Binding SelectedRecordInspector}"
+                                                          HeaderText="{Binding Title}"
+                                                          DetailText="{Binding SourceState}"
+                                                          ScopeText="{Binding ExplorerId}"
+                                                          GridAutomationId="FinancialRecordExplorerGrid"
+                                                          EmptyAutomationId="FinancialRecordExplorerEmptyState"
+                                                          InspectorAutomationId="FinancialRecordExplorerSelectionInspector"
+                                                          ControlAutomationId="FinancialRecordExplorerWorkbench">
+                <workstation:WorkstationTableInspectorControl.TableHeaderContent>
+                    <StackPanel>
+                        <ItemsControl ItemsSource="{Binding ScopeItems}"
+                                      AutomationProperties.AutomationId="FinancialRecordExplorerScopeStrip">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Label}"
+                                                       FontSize="11"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                            <TextBlock Text=": "
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                            <TextBlock Text="{Binding Value}"
+                                                       FontSize="11"
+                                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <ItemsControl ItemsSource="{Binding FilterItems}"
+                                      Margin="0,8,0,0"
+                                      AutomationProperties.AutomationId="FinancialRecordExplorerFilterStrip">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource WorkstationFilterChipStyle}">
+                                        <TextBlock FontSize="11"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}">
+                                            <Run Text="{Binding Label}" />
+                                            <Run Text=" " />
+                                            <Run Text="{Binding Detail}" />
+                                            <Run Text=" " />
+                                            <Run Text="{Binding Value}" />
+                                        </TextBlock>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </workstation:WorkstationTableInspectorControl.TableHeaderContent>
+
+                <workstation:WorkstationTableInspectorControl.EmptyContent>
+                    <Border MinHeight="300"
+                            Padding="28"
+                            Background="{StaticResource ConsoleBackgroundLightBrush}"
+                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Visibility="{Binding IsEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                            AutomationProperties.AutomationId="FinancialRecordExplorerBlockedEmptyStatePanel"
+                            AutomationProperties.Name="{Binding EmptyStateTitle}">
+                        <StackPanel HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    MaxWidth="520">
+                            <TextBlock Text="{Binding EmptyStateTitle}"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"
+                                       TextAlignment="Center"
+                                       TextWrapping="Wrap"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       AutomationProperties.AutomationId="FinancialRecordExplorerEmptyStateTitle" />
+                            <TextBlock Margin="0,8,0,16"
+                                       Text="{Binding EmptyStateDetail}"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       AutomationProperties.AutomationId="FinancialRecordExplorerEmptyStateDetail" />
+                            <ItemsControl ItemsSource="{Binding ExplorerActions}"
+                                          AutomationProperties.AutomationId="FinancialRecordExplorerEmptyActionList">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel HorizontalAlignment="Center" />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Content="{Binding Label}"
+                                                Command="{Binding DataContext.OpenProofActionCommand, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                                CommandParameter="{Binding}"
+                                                IsEnabled="{Binding IsEnabled}"
+                                                ToolTip="{Binding Tooltip}"
+                                                ToolTipService.ShowOnDisabled="True"
+                                                MinWidth="150"
+                                                AutomationProperties.AutomationId="{Binding ActionId}"
+                                                Margin="0,0,8,8" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </workstation:WorkstationTableInspectorControl.EmptyContent>
+
+                <workstation:WorkstationTableInspectorControl.InspectorHeaderContent>
+                    <Border Style="{StaticResource WorkspaceToneInspectorCardStyle}"
+                            AutomationProperties.AutomationId="FinancialRecordExplorerProofActionsCard">
+                        <StackPanel>
+                            <TextBlock Text="Proof Actions"
+                                       Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="Actions stay disabled when the shared explorer reports a blocked or empty source."
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,6,0,10" />
+                            <ItemsControl ItemsSource="{Binding SelectedRecordActions}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Content="{Binding Label}"
+                                                Command="{Binding DataContext.OpenProofActionCommand, RelativeSource={RelativeSource AncestorType={x:Type Page}}}"
+                                                CommandParameter="{Binding}"
+                                                IsEnabled="{Binding IsEnabled}"
+                                                ToolTip="{Binding Tooltip}"
+                                                ToolTipService.ShowOnDisabled="True"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                AutomationProperties.AutomationId="{Binding ActionId}"
+                                                Margin="0,0,8,8" />
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </workstation:WorkstationTableInspectorControl.InspectorHeaderContent>
+
+                <workstation:WorkstationTableInspectorControl.InspectorContent>
+                    <StackPanel>
+                        <Border Style="{StaticResource WorkspaceToneInspectorCardStyle}"
+                                AutomationProperties.AutomationId="FinancialRecordExplorerUsedInRelationships">
+                            <StackPanel>
+                                <TextBlock Text="Used In" Style="{StaticResource CardHeaderStyle}" />
+                                <ItemsControl ItemsSource="{Binding UsedInRelationships}" Margin="0,10,0,0">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,0,8">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{Binding Description}"
+                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                               TextWrapping="Wrap"
+                                                               Margin="0,4,0,0" />
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource WorkspaceToneInspectorCardStyle}"
+                                AutomationProperties.AutomationId="FinancialRecordExplorerImpactRelationships">
+                            <StackPanel>
+                                <TextBlock Text="Impacts" Style="{StaticResource CardHeaderStyle}" />
+                                <ItemsControl ItemsSource="{Binding ImpactRelationships}" Margin="0,10,0,0">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,0,8">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{Binding Description}"
+                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                               TextWrapping="Wrap"
+                                                               Margin="0,4,0,0" />
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource WorkspaceToneInspectorCardStyle}"
+                                AutomationProperties.AutomationId="FinancialRecordExplorerSavedViews">
+                            <StackPanel>
+                                <TextBlock Text="Saved Views" Style="{StaticResource CardHeaderStyle}" />
+                                <ItemsControl ItemsSource="{Binding SavedViews}" Margin="0,10,0,0">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,0,8">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{Binding Description}"
+                                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                               TextWrapping="Wrap"
+                                                               Margin="0,4,0,0" />
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </workstation:WorkstationTableInspectorControl.InspectorContent>
+            </workstation:WorkstationTableInspectorControl>
+        </Grid>
+    </ScrollViewer>
+</Page>

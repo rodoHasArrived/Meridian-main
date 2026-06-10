@@ -37,6 +37,145 @@ export interface FeatureCapabilityToggleRequest {
   isEnabled: boolean;
 }
 
+export type FinancialRecordExplorerId = "ledger" | "portfolio" | "security-instrument";
+
+export type FinancialRecordExplorerTone = "Default" | "Success" | "Warning" | "Danger" | "Info";
+
+export interface FinancialRecordExplorerDto {
+  explorerId: FinancialRecordExplorerId | string;
+  title: string;
+  description: string;
+  sourceState: string;
+  isBlocked: boolean;
+  blockedReason: string;
+  scopeItems: FinancialRecordExplorerScopeItemDto[];
+  savedViews: FinancialRecordExplorerSavedViewDto[];
+  summaryItems: FinancialRecordExplorerSummaryItemDto[];
+  filters: FinancialRecordExplorerFilterDto[];
+  columns: FinancialRecordExplorerColumnDto[];
+  rows: FinancialRecordExplorerRowDto[];
+  selectedRecord: FinancialRecordExplorerSelectedRecordDto | null;
+  proofActions: FinancialRecordExplorerProofActionDto[];
+  recordGraph: FinancialRecordExplorerRecordGraphDto;
+}
+
+export interface FinancialRecordExplorerScopeItemDto {
+  label: string;
+  value: string;
+  tone: FinancialRecordExplorerTone;
+}
+
+export interface FinancialRecordExplorerSavedViewDto {
+  viewId: string;
+  label: string;
+  description: string;
+  isSystem: boolean;
+  isActive: boolean;
+  filters: FinancialRecordExplorerFilterDto[];
+  searchText: string;
+}
+
+export interface FinancialRecordExplorerSummaryItemDto {
+  label: string;
+  value: string;
+  detail: string;
+  tone: FinancialRecordExplorerTone;
+}
+
+export interface FinancialRecordExplorerFilterDto {
+  filterId: string;
+  label: string;
+  value: string;
+  operator: string;
+  tone: FinancialRecordExplorerTone;
+}
+
+export interface FinancialRecordExplorerColumnDto {
+  columnId: string;
+  header: string;
+  cellKind: string;
+  width: number;
+  isRightAligned: boolean;
+}
+
+export interface FinancialRecordExplorerCellDto {
+  columnId: string;
+  displayValue: string;
+  rawValue: string;
+  tone: FinancialRecordExplorerTone;
+  linkHref: string;
+}
+
+export interface FinancialRecordExplorerRowDto {
+  recordId: string;
+  recordType: string;
+  label: string;
+  source: string;
+  status: string;
+  tone: FinancialRecordExplorerTone;
+  cells: FinancialRecordExplorerCellDto[];
+  detail: FinancialRecordExplorerSelectedRecordDto;
+}
+
+export interface FinancialRecordExplorerSelectedRecordDto {
+  recordId: string;
+  recordType: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  tone: FinancialRecordExplorerTone;
+  fields: FinancialRecordExplorerSummaryItemDto[];
+  proofActions: FinancialRecordExplorerProofActionDto[];
+  usedIn: FinancialRecordExplorerRelationshipDto[];
+  impacts: FinancialRecordExplorerRelationshipDto[];
+  fullRecordHref: string;
+}
+
+export interface FinancialRecordExplorerProofActionDto {
+  actionId: string;
+  label: string;
+  description: string;
+  href: string;
+  isEnabled: boolean;
+  disabledReason: string;
+  tone: FinancialRecordExplorerTone;
+}
+
+export interface FinancialRecordExplorerRecordGraphDto {
+  nodes: FinancialRecordExplorerGraphNodeDto[];
+  edges: FinancialRecordExplorerGraphEdgeDto[];
+}
+
+export interface FinancialRecordExplorerGraphNodeDto {
+  nodeId: string;
+  label: string;
+  nodeType: string;
+  tone: FinancialRecordExplorerTone;
+  href: string;
+}
+
+export interface FinancialRecordExplorerGraphEdgeDto {
+  sourceNodeId: string;
+  targetNodeId: string;
+  label: string;
+  tone: FinancialRecordExplorerTone;
+}
+
+export interface FinancialRecordExplorerRelationshipDto {
+  relationshipId: string;
+  label: string;
+  description: string;
+  href: string;
+  tone: FinancialRecordExplorerTone;
+}
+
+export interface FinancialRecordExplorerSavedViewSaveRequestDto {
+  label: string;
+  description: string;
+  searchText: string;
+  filters: FinancialRecordExplorerFilterDto[];
+}
+
 export type LedgerMappingSource =
   | "AccountAssignment"
   | "InvestmentPortfolioAssignment"
@@ -1147,6 +1286,41 @@ export interface MeridianAssuranceScore {
   slaAssessments: EvidenceSlaAssessment[];
 }
 
+export type EvidenceProofChainLayerKind =
+  | "Unknown"
+  | "Source"
+  | "Normalization"
+  | "Reconciliation"
+  | "Ledger"
+  | "CapitalAccounts"
+  | "Close"
+  | "Reporting"
+  | "Delivery"
+  | "Audit";
+
+export interface EvidenceProofChainLayer {
+  layer: EvidenceProofChainLayerKind;
+  label: string;
+  status: EvidenceStatus;
+  coveragePercent: number;
+  requiredEvidenceIds: string[];
+  evidenceIds: string[];
+  readyEvidenceIds: string[];
+  reviewEvidenceIds: string[];
+  missingEvidenceIds: string[];
+  evidenceKinds: string[];
+  summary: string;
+}
+
+export interface EvidenceProofChain {
+  coveragePercent: number;
+  status: EvidenceStatus;
+  coveredLayerCount: number;
+  totalLayerCount: number;
+  layers: EvidenceProofChainLayer[];
+  summary: string;
+}
+
 export interface EvidencePacket {
   subject: EvidenceSubject;
   generatedAt: string;
@@ -1155,6 +1329,7 @@ export interface EvidencePacket {
   completeness: EvidenceCompleteness;
   actions: WorkflowAction[];
   warnings: string[];
+  proofChain?: EvidenceProofChain;
 }
 
 export interface EvidenceGraph {
@@ -1163,6 +1338,7 @@ export interface EvidenceGraph {
   nodes: EvidenceNode[];
   edges: EvidenceEdge[];
   warnings: string[];
+  proofChain?: EvidenceProofChain;
 }
 
 export interface EvidenceTemplateExportSettings {
@@ -2612,6 +2788,7 @@ export interface PortfolioReportingLiveView {
   tags: string[];
   cashLadderRoute: string | null;
   versionStamp: string | null;
+  readinessBlockers?: string[] | null;
 }
 
 export interface PortfolioReportingPnlSlice {
@@ -3149,6 +3326,7 @@ export interface ReportPackDeliveryPackage {
   reportingScheduleId?: string | null;
   sourceArtifacts?: string[] | null;
   deliveryEvidencePacket?: ReportPackDeliveryEvidencePacket | null;
+  brandingTheme?: ReportBrandingTheme | null;
 }
 
 export interface ReportPackDeliveryAttempt {

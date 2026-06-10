@@ -13,6 +13,9 @@ public sealed class ShellRouteRegistryTests
     [InlineData("OperationsContinuity", "FundLedger", "accounting")]
     [InlineData("OperationsClose", "FundLedger", "accounting")]
     [InlineData("AccountingApprovals", "FundAuditTrail", "accounting")]
+    [InlineData("LedgerExplorer", "LedgerExplorer", "accounting")]
+    [InlineData("PortfolioExplorer", "PortfolioExplorer", "portfolio")]
+    [InlineData("SecurityInstrumentExplorer", "SecurityInstrumentExplorer", "accounting")]
     [InlineData("Blotter", "PositionBlotter", "trading")]
     public void GetRoute_CurrentAndCompatibilityTags_ResolveToCanonicalRoute(
         string requestedTag,

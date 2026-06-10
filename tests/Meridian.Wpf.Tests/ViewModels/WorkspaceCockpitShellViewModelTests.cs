@@ -21,6 +21,7 @@ public sealed class WorkspaceCockpitShellViewModelTests
                 "FundPortfolio",
                 "PortfolioImport",
                 "FundReconciliation",
+                "FundPortfolio",
                 "OperationsClose",
                 "DirectLending");
 
@@ -33,6 +34,7 @@ public sealed class WorkspaceCockpitShellViewModelTests
                 WorkspaceTone.Info,
                 WorkspaceTone.Warning,
                 WorkspaceTone.Warning,
+                WorkspaceTone.Info,
                 WorkspaceTone.Danger,
                 WorkspaceTone.Neutral);
 
@@ -115,15 +117,15 @@ public sealed class WorkspaceCockpitShellViewModelTests
 
         viewModel.CockpitDecisionItems.Select(static item => item.PrimaryActionId)
             .Should()
-            .Equal("FundReportPack", "ReportRunStatus", "Dashboard", "AnalysisExport");
+            .Equal("FundReportPack", "ReportRunStatus", "Dashboard", "FundReportPack", "Dashboard", "AnalysisExport");
 
         viewModel.CockpitDecisionItems.Select(static item => item.Tone)
             .Should()
-            .Equal(WorkspaceTone.Info, WorkspaceTone.Warning, WorkspaceTone.Neutral, WorkspaceTone.Success);
+            .Equal(WorkspaceTone.Info, WorkspaceTone.Warning, WorkspaceTone.Neutral, WorkspaceTone.Info, WorkspaceTone.Warning, WorkspaceTone.Success);
 
         viewModel.CockpitDecisionItems.Select(static item => item.SecondaryActionId)
             .Should()
-            .Equal("ExportPresets", "FundAuditTrail", "DataQuality", "ExportPresets");
+            .Equal("ExportPresets", "FundAuditTrail", "DataQuality", "DataQuality", "AnalysisExport", "ExportPresets");
 
         viewModel.CockpitDecisionItems.Should().OnlyContain(static item =>
             !string.IsNullOrWhiteSpace(item.Title) &&
@@ -143,6 +145,9 @@ public sealed class WorkspaceCockpitShellViewModelTests
         details.Should().ContainEquivalentOf("scheduled runs");
         details.Should().ContainEquivalentOf("Top-N");
         details.Should().ContainEquivalentOf("contribution");
+        details.Should().Contain(nameof(ReportWriterGridDefinitionDto.Formulas));
+        details.Should().Contain(nameof(FundReportingSummaryDto.CrossFundConsolidations));
+        details.Should().Contain(nameof(CrossFundReportingConsolidationDto.ShadowNav));
         details.Should().ContainEquivalentOf("PDF/XLSX/CSV");
         details.Should().ContainEquivalentOf("secure-portal");
         details.Should().ContainEquivalentOf("regulatory");

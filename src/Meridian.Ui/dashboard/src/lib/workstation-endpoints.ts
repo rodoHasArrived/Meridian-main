@@ -12,6 +12,9 @@ export const WORKSTATION_API_ENDPOINTS = {
   portfolioSummary: UI_API_ROUTES.WorkstationPortfolioSummary,
   portfolioMultiAssetCoverage: UI_API_ROUTES.WorkstationPortfolioMultiAssetCoverage,
   assetOperations: "/api/workstation/assets",
+  financialRecordExplorer: UI_API_ROUTES.WorkstationFinancialRecordExplorer,
+  financialRecordExplorerRecord: UI_API_ROUTES.WorkstationFinancialRecordExplorerRecord,
+  financialRecordExplorerSavedViews: UI_API_ROUTES.WorkstationFinancialRecordExplorerSavedViews,
   data: UI_API_ROUTES.WorkstationData,
   dataUploadTemplates: UI_API_ROUTES.WorkstationDataUploadTemplates,
   dataUploadPreview: UI_API_ROUTES.WorkstationDataUploadPreview,
@@ -648,6 +651,22 @@ export function workstationSecurityMasterEntryEndpoint(securityId: string): stri
 
 export function workstationAssetOperationsEndpoint(securityId: string): string {
   return routeWithParam(UI_API_ROUTES.WorkstationAssetOperations, "securityId", securityId);
+}
+
+export function workstationFinancialRecordExplorerEndpoint(explorerId: string): string {
+  return routeWithParam(WORKSTATION_API_ENDPOINTS.financialRecordExplorer, "explorerId", explorerId);
+}
+
+export function workstationFinancialRecordExplorerRecordEndpoint(explorerId: string, recordId: string): string {
+  return routeWithParam(
+    routeWithParam(WORKSTATION_API_ENDPOINTS.financialRecordExplorerRecord, "explorerId", explorerId),
+    "recordId",
+    recordId
+  );
+}
+
+export function workstationFinancialRecordExplorerSavedViewsEndpoint(explorerId: string): string {
+  return routeWithParam(WORKSTATION_API_ENDPOINTS.financialRecordExplorerSavedViews, "explorerId", explorerId);
 }
 
 export function workstationSecurityMasterIdentityEndpoint(securityId: string): string {

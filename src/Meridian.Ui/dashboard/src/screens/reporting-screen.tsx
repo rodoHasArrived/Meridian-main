@@ -85,6 +85,8 @@ type ReportWriterPreviewDatasetProfile = "portfolioPositions" | "ledgerFacts" | 
 type ReportWriterDraftSettingsField =
   | "name"
   | "displayName"
+  | "gridKind"
+  | "topN"
   | "previewDataset"
   | "accessMode"
   | "principalKind"
@@ -120,6 +122,8 @@ type ReportingScheduleDraftField =
 interface ReportWriterDraftSettings {
   name: string;
   displayName: string;
+  gridKind: ReportWriterGridKind;
+  topN: string;
   previewDataset: ReportWriterPreviewDatasetProfile;
   accessMode: ReportAccessMode;
   principalKind: ReportAccessPrincipalKind;
@@ -420,13 +424,26 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
     field: ReportWriterDraftSettingsField,
     value: string
   ) {
-    setWriterDraftSettings((current) => ({
-      ...current,
-      [grid.id]: {
+    setWriterDraftSettings((current) => {
+      const normalizedValue = normalizeWriterDraftSettingValue(field, value);
+      const nextSettings = {
         ...current[grid.id],
-        [field]: field === "previewDataset" ? normalizeReportWriterPreviewDatasetProfile(value) : value
+        [field]: normalizedValue
+      };
+
+      if (field === "accessMode" && normalizedValue === "Private") {
+        nextSettings.principalKind = "User";
       }
-    }));
+
+      if (field === "gridKind" && normalizedValue === "TopN" && !nextSettings.topN) {
+        nextSettings.topN = "10";
+      }
+
+      return {
+        ...current,
+        [grid.id]: nextSettings
+      };
+    });
     setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
   }
 
@@ -1020,6 +1037,16 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                     </dl>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{view.liquiditySummary}</p>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{view.telemetrySummary}</p>
+                    {(view.readinessBlockers ?? []).length > 0 ? (
+                      <ul aria-label={`${view.label} readiness blockers`} className="mt-2 space-y-1 text-xs text-destructive">
+                        {(view.readinessBlockers ?? []).map((blocker) => (
+                          <li key={blocker} className="flex gap-1.5 leading-5">
+                            <XCircle className="mt-0.5 h-3.5 w-3.5 flex-none" aria-hidden="true" />
+                            <span>{blocker}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
                     <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">
                       {view.sourceCount} source{view.sourceCount === 1 ? "" : "s"} · {view.sourceAsOfUtc ?? view.asOf}
                     </p>
@@ -1211,6 +1238,8 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                       <ReportingCutMetric label="Net" value={formatReportingMoney(row.netExposure, row.currency)} />
                       <ReportingCutMetric label="Cash" value={formatReportingMoney(row.totalCash, row.currency)} />
                       <ReportingCutMetric label="P&L" value={formatReportingMoney(row.totalPnl, row.currency)} />
+                      <ReportingCutMetric label="Shadow NAV" value={formatReportingMoney(row.shadowNav, row.currency)} />
+                      <ReportingCutMetric label="Variance" value={formatReportingMoney(row.shadowNavVariance, row.currency)} />
                     </dl>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{row.readinessSummary}</p>
                     <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">
@@ -1273,6 +1302,35 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                       {structuredExport.consumer} · {structuredExport.validationSummary ?? structuredExport.dataset}
                     </p>
                     <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{structuredExport.retainedPath}</p>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {structuredExport.dataDictionaryRoute ? (
+                        <a
+                          className="inline-flex items-center gap-1 rounded-sm border border-border/70 px-2 py-1 text-[11px] font-medium text-primary underline-offset-2 hover:underline"
+                          href={structuredExport.dataDictionaryRoute}
+                          aria-label={`Open ${structuredExport.label} data dictionary`}
+                        >
+                          <FileText className="h-3.5 w-3.5" aria-hidden="true" />
+                          Data dictionary
+                        </a>
+                      ) : null}
+                      {structuredExport.evidenceRoute ? (
+                        <a
+                          className="inline-flex items-center gap-1 rounded-sm border border-border/70 px-2 py-1 text-[11px] font-medium text-primary underline-offset-2 hover:underline"
+                          href={structuredExport.evidenceRoute}
+                          aria-label={`Open ${structuredExport.label} evidence`}
+                        >
+                          <FileText className="h-3.5 w-3.5" aria-hidden="true" />
+                          Evidence
+                        </a>
+                      ) : null}
+                    </div>
+                    {(structuredExport.tags ?? []).length > 0 ? (
+                      <div role="group" className="mt-2 flex flex-wrap gap-1.5" aria-label={`${structuredExport.label} export tags`}>
+                        {(structuredExport.tags ?? []).map((tag) => (
+                          <Badge key={tag} variant="outline">{tag}</Badge>
+                        ))}
+                      </div>
+                    ) : null}
                     <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                       <span className="break-all font-mono text-[11px] text-muted-foreground">
                         {structuredExport.versionStamp ?? structuredExport.asOf}
@@ -2068,6 +2126,11 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                         <p>
                           {attempt.package.deliveryMode} package · {attempt.package.formats.join(", ")}
                         </p>
+                        {attempt.package.brandingTheme ? (
+                          <p className="break-all text-[11px]">
+                            Branding: {attempt.package.brandingTheme.name} · {attempt.package.brandingTheme.firmName} · {attempt.package.brandingTheme.themeId}
+                          </p>
+                        ) : null}
                         {attempt.package.secureLink.startsWith("/") ? (
                           <a
                             className="block break-all font-mono text-[11px] text-primary underline-offset-2 hover:underline"
@@ -2102,6 +2165,24 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                           <p className="break-all font-mono text-[11px]">
                             Source artifacts: {attempt.package.sourceArtifacts.join(", ")}
                           </p>
+                        ) : null}
+                        {attempt.package.deliveryEvidencePacket ? (
+                          <div className="rounded-md border border-border/70 bg-background/40 px-2 py-2 text-[11px]">
+                            <p className="font-semibold text-foreground">
+                              Evidence packet: {attempt.package.deliveryEvidencePacket.packetKind} · {attempt.package.deliveryEvidencePacket.datasetVersion}
+                            </p>
+                            <p className="mt-1 break-all font-mono">
+                              Template: {attempt.package.deliveryEvidencePacket.templateVersion} · Channel: {attempt.package.deliveryEvidencePacket.deliveryChannel}
+                            </p>
+                            <p className="mt-1">
+                              Contents: {attempt.package.deliveryEvidencePacket.packageContents.length} · Support evidence: {attempt.package.deliveryEvidencePacket.supportEvidenceIds.length} · Delivery evidence: {attempt.package.deliveryEvidencePacket.deliveryEvidence.length}
+                            </p>
+                            {attempt.package.deliveryEvidencePacket.requestHistory.length > 0 ? (
+                              <p className="mt-1 break-all font-mono">
+                                Request history: {attempt.package.deliveryEvidencePacket.requestHistory.join(" | ")}
+                              </p>
+                            ) : null}
+                          </div>
                         ) : null}
                         {attempt.package.artifacts.some((artifact) => artifact.downloadRoute) ? (
                           <ul aria-label={`${attempt.recipient} package artifact downloads`} className="flex flex-wrap gap-2 pt-1">
@@ -2809,6 +2890,13 @@ function ReportWriterDesignerGrid({
   onPreview,
   onSave
 }: ReportWriterDesignerGridProps) {
+  const accessPrincipalKindLocked = settings.accessMode !== "Restricted";
+  const accessPrincipalIdDisabled = settings.accessMode === "CompanyWide";
+  const accessPrincipalIdLabel = settings.accessMode === "Private" ? "Owner ID" : "Principal ID";
+  const accessPolicySummary = buildReportAccessPolicySummary(settings);
+  const topNDisabled = settings.gridKind !== "TopN";
+  const topNLabel = buildReportWriterDraftTopNLabel(settings);
+
   return (
     <div
       role="group"
@@ -2821,8 +2909,8 @@ function ReportWriterDesignerGrid({
           <p className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{grid.templateId} · v{grid.templateVersion}</p>
         </div>
         <span className="flex flex-wrap items-center gap-1.5">
-          <Badge variant="outline">{grid.kind}</Badge>
-          <Badge variant="outline">{grid.topNLabel}</Badge>
+          <Badge variant="outline">{settings.gridKind}</Badge>
+          <Badge variant="outline">{topNLabel}</Badge>
         </span>
       </div>
       <p className="mt-2 text-xs leading-5 text-muted-foreground">{grid.summary}</p>
@@ -2873,6 +2961,33 @@ function ReportWriterDesignerGrid({
             ))}
           </Select>
         </label>
+        <div className="grid gap-2 sm:grid-cols-[1fr_0.7fr]">
+          <label className="space-y-1">
+            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Grid type</span>
+            <Select
+              value={settings.gridKind}
+              onChange={(event) => onSettingsChange(grid, "gridKind", event.target.value)}
+              aria-label={`${grid.title} draft grid type`}
+            >
+              <option value="Pivot">Pivot</option>
+              <option value="TopN">Top-N</option>
+              <option value="Contribution">Contribution</option>
+              <option value="Detail">Detail</option>
+            </Select>
+          </label>
+          <label className="space-y-1">
+            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Top N</span>
+            <Input
+              type="number"
+              min={1}
+              max={100}
+              value={settings.topN}
+              onChange={(event) => onSettingsChange(grid, "topN", event.target.value)}
+              aria-label={`${grid.title} draft top-n count`}
+              disabled={topNDisabled}
+            />
+          </label>
+        </div>
         <label className="space-y-1">
           <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Access</span>
           <Select
@@ -2892,7 +3007,7 @@ function ReportWriterDesignerGrid({
               value={settings.principalKind}
               onChange={(event) => onSettingsChange(grid, "principalKind", event.target.value)}
               aria-label={`${grid.title} draft principal kind`}
-              disabled={settings.accessMode === "CompanyWide"}
+              disabled={accessPrincipalKindLocked}
             >
               <option value="User">User</option>
               <option value="Group">Group</option>
@@ -2900,17 +3015,20 @@ function ReportWriterDesignerGrid({
             </Select>
           </label>
           <label className="space-y-1">
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Principal ID</span>
+            <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{accessPrincipalIdLabel}</span>
             <Input
               value={settings.principalId}
               onChange={(event) => onSettingsChange(grid, "principalId", event.target.value)}
               aria-label={`${grid.title} draft principal id`}
               className="font-mono"
-              disabled={settings.accessMode === "CompanyWide"}
+              disabled={accessPrincipalIdDisabled}
             />
           </label>
         </div>
       </div>
+      <p className="mt-2 rounded-md border border-border/70 bg-background/30 px-2.5 py-2 text-xs text-muted-foreground">
+        {accessPolicySummary}
+      </p>
       <div className="mt-3 rounded-md border border-border/70 bg-background/25 px-2.5 py-2">
         <div className="flex items-center gap-1.5">
           <Filter className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
@@ -3414,11 +3532,45 @@ function parseScheduleMaxRetries(value: string): number {
   return Number.isFinite(parsed) ? Math.max(0, parsed) : 1;
 }
 
+function normalizeWriterDraftSettingValue(field: ReportWriterDraftSettingsField, value: string): string {
+  if (field === "previewDataset") {
+    return normalizeReportWriterPreviewDatasetProfile(value);
+  }
+
+  if (field === "gridKind") {
+    return normalizeReportWriterGridKind(value);
+  }
+
+  if (field === "topN") {
+    return normalizeReportWriterTopNText(value);
+  }
+
+  if (field === "accessMode") {
+    return normalizeReportAccessMode(value);
+  }
+
+  if (field === "principalKind") {
+    return normalizeReportAccessPrincipalKind(value);
+  }
+
+  return value;
+}
+
+function normalizeReportAccessMode(value: string): ReportAccessMode {
+  return value === "Restricted" || value === "Private" ? value : "CompanyWide";
+}
+
+function normalizeReportAccessPrincipalKind(value: string): ReportAccessPrincipalKind {
+  return value === "User" || value === "Company" ? value : "Group";
+}
+
 function buildDefaultWriterDraftSettings(grid: ReportingWriterGridRow): ReportWriterDraftSettings {
   const firstFilter = grid.filters[0] ?? null;
   return {
     name: grid.templateId,
     displayName: `${grid.title} Draft`,
+    gridKind: normalizeReportWriterGridKind(grid.kind),
+    topN: normalizeReportWriterTopNText(grid.topN?.toString() ?? "10"),
     previewDataset: "portfolioPositions",
     accessMode: "CompanyWide",
     principalKind: "Group",
@@ -3514,15 +3666,16 @@ function buildReportWriterGridDefinition(
   zones: Record<ReportWriterDropZone, ReportingWriterToken[]>,
   settings: ReportWriterDraftSettings
 ): ReportWriterGridDefinition {
+  const kind = normalizeReportWriterGridKind(settings.gridKind);
   return {
     gridId: grid.gridId,
     title: grid.title,
-    kind: normalizeReportWriterGridKind(grid.kind),
+    kind,
     rowFields: normalizeStringList(zones.rowFields.map(resolveWriterFieldName)),
     columnFields: normalizeStringList(zones.columnFields.map(resolveWriterFieldName)),
     metrics: normalizeWriterMetrics(zones.metrics),
     formulas: normalizeWriterFormulas(zones.formulas),
-    topN: grid.kind === "TopN" ? grid.topN ?? 10 : grid.topN,
+    topN: kind === "TopN" ? parseReportWriterTopN(settings.topN) : null,
     sortBy: grid.sortBy,
     sortDescending: grid.sortDescending,
     filters: buildWriterFilters(settings)
@@ -3596,6 +3749,19 @@ function buildReportAccessPolicy(settings: ReportWriterDraftSettings): ReportTem
     ],
     allowOwnerAccess: true
   };
+}
+
+function buildReportAccessPolicySummary(settings: ReportWriterDraftSettings): string {
+  if (settings.accessMode === "CompanyWide") {
+    return "Access policy: company-wide report with owner access retained.";
+  }
+
+  const principalId = normalizeDraftText(settings.principalId, "browser-workstation");
+  if (settings.accessMode === "Private") {
+    return `Access policy: user-locked to ${principalId}.`;
+  }
+
+  return `Access policy: ${settings.principalKind.toLowerCase()} ${principalId}.`;
 }
 
 function buildWriterFilters(settings: ReportWriterDraftSettings): ReportWriterFilterDefinition[] | null {
@@ -3878,6 +4044,23 @@ function normalizeReportWriterGridKind(kind: string): ReportWriterGridKind {
     default:
       return "Pivot";
   }
+}
+
+function parseReportWriterTopN(value: string | number | null | undefined): number {
+  const parsed = Number.parseInt(value?.toString() ?? "", 10);
+  if (!Number.isFinite(parsed)) {
+    return 10;
+  }
+
+  return Math.min(100, Math.max(1, parsed));
+}
+
+function normalizeReportWriterTopNText(value: string | null | undefined): string {
+  return parseReportWriterTopN(value).toString();
+}
+
+function buildReportWriterDraftTopNLabel(settings: ReportWriterDraftSettings): string {
+  return settings.gridKind === "TopN" ? `Top ${parseReportWriterTopN(settings.topN)}` : settings.gridKind;
 }
 
 function normalizeReportWriterFilterOperator(value: ReportWriterFilterOperator | string | null | undefined): ReportWriterFilterOperator {

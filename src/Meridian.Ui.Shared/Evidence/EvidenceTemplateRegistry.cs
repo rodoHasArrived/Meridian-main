@@ -113,6 +113,23 @@ public sealed class EvidenceTemplateRegistry
             ExportSettings: ManifestOnlyV1),
 
         new EvidenceTemplateDto(
+            WorkflowId: "accounting-records-evidence-review",
+            RequiredEvidenceKinds:
+            [
+                "accounting-record",
+                "accounting-record-category"
+            ],
+            OptionalEvidenceKinds:
+            [
+                "approval",
+                "approval-audit",
+                "close-checklist",
+                "report-pack"
+            ],
+            NoOrphanRule: true,
+            ExportSettings: ManifestOnlyV1),
+
+        new EvidenceTemplateDto(
             WorkflowId: "private-capital-fund-event-review",
             RequiredEvidenceKinds:
             [

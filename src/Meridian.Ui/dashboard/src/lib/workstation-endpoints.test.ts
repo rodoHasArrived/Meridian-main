@@ -95,6 +95,9 @@ import {
   workstationEvidenceGraphEndpoint,
   workstationEvidencePacketEndpoint,
   workstationEvidenceValidateEndpoint,
+  workstationFinancialRecordExplorerEndpoint,
+  workstationFinancialRecordExplorerRecordEndpoint,
+  workstationFinancialRecordExplorerSavedViewsEndpoint,
   workstationChiefOfStaffDecisionEndpoint,
   workstationChiefOfStaffHealthEndpoint,
   workstationChiefOfStaffSessionEndpoint,
@@ -172,6 +175,27 @@ describe("workstation API endpoint catalog", () => {
   it("builds security-id scoped Asset Operations endpoints", () => {
     expect(workstationAssetOperationsEndpoint("security / 1")).toBe(
       "/api/workstation/assets/security%20%2F%201/operations"
+    );
+  });
+
+  it("builds shared financial record explorer endpoints from generated route contracts", () => {
+    expect(WORKSTATION_API_ENDPOINTS.financialRecordExplorer).toBe(
+      "/api/workstation/financial-record-explorers/{explorerId}"
+    );
+    expect(WORKSTATION_API_ENDPOINTS.financialRecordExplorerRecord).toBe(
+      "/api/workstation/financial-record-explorers/{explorerId}/records/{recordId}"
+    );
+    expect(WORKSTATION_API_ENDPOINTS.financialRecordExplorerSavedViews).toBe(
+      "/api/workstation/financial-record-explorers/{explorerId}/saved-views"
+    );
+    expect(workstationFinancialRecordExplorerEndpoint("security-instrument")).toBe(
+      "/api/workstation/financial-record-explorers/security-instrument"
+    );
+    expect(workstationFinancialRecordExplorerRecordEndpoint("portfolio", "account / 1")).toBe(
+      "/api/workstation/financial-record-explorers/portfolio/records/account%20%2F%201"
+    );
+    expect(workstationFinancialRecordExplorerSavedViewsEndpoint("ledger")).toBe(
+      "/api/workstation/financial-record-explorers/ledger/saved-views"
     );
   });
 

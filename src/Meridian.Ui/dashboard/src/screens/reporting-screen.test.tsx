@@ -143,7 +143,8 @@ const accounting: AccountingWorkspaceResponse = {
         telemetrySummary: "Live-linked portfolio telemetry is current through 2026-04-11T15:58:00.0000000Z; open the route for the latest portfolio-summary telemetry.",
         tags: ["fund", "consolidated"],
         cashLadderRoute: null,
-        versionStamp: "portfolio-cut:20260411160000:runs-1:accounts-2"
+        versionStamp: "portfolio-cut:20260411160000:runs-1:accounts-2",
+        readinessBlockers: ["Pending settlement of 150.00 USD requires cash-ladder evidence before treating this live view as fully delivery-ready."]
       },
       {
         viewId: "live:strategy:carry-1",
@@ -166,7 +167,8 @@ const accounting: AccountingWorkspaceResponse = {
         telemetrySummary: "Source-backed portfolio telemetry is current through 2026-04-11T14:30:00.0000000Z; open the route for latest portfolio-summary telemetry.",
         tags: ["run-governance-001"],
         cashLadderRoute: "/api/portfolio/run-governance-001/cash-flows",
-        versionStamp: "portfolio-cut:20260411160000:runs-1:accounts-0"
+        versionStamp: "portfolio-cut:20260411160000:runs-1:accounts-0",
+        readinessBlockers: ["Latest source snapshot is outside the 5-minute live-link window."]
       }
     ],
     pnlSlices: [
@@ -1022,6 +1024,9 @@ describe("ReportingScreen", () => {
     expect(within(fundView).getByText("LiveLinked")).toBeInTheDocument();
     expect(fundView).toHaveTextContent("3,250.00 USD cash with 150.00 pending settlement");
     expect(fundView).toHaveTextContent("Live-linked portfolio telemetry is current through 2026-04-11T15:58:00.0000000Z");
+    expect(within(fundView).getByRole("list", { name: "Consolidated fund readiness blockers" })).toHaveTextContent(
+      "Pending settlement of 150.00 USD requires cash-ladder evidence"
+    );
     expect(within(fundView).getByRole("link", { name: "Open Consolidated fund live portfolio view" })).toHaveAttribute(
       "href",
       "/api/workstation/portfolio/summary?fundAccountId=all&strategyId=all&entity=portfolio"
@@ -1029,6 +1034,9 @@ describe("ReportingScreen", () => {
 
     const strategyView = screen.getByRole("listitem", { name: "Carry Strategy Strategy live portfolio view" });
     expect(strategyView).toHaveTextContent("Run cash-ladder evidence is available for Carry Strategy.");
+    expect(within(strategyView).getByRole("list", { name: "Carry Strategy readiness blockers" })).toHaveTextContent(
+      "Latest source snapshot is outside the 5-minute live-link window."
+    );
     expect(within(strategyView).getByRole("link", { name: "Open Carry Strategy cash ladder" })).toHaveAttribute(
       "href",
       "/api/portfolio/run-governance-001/cash-flows"
@@ -1088,6 +1096,10 @@ describe("ReportingScreen", () => {
     expect(within(companyRow).getByText("Ready")).toBeInTheDocument();
     expect(companyRow).toHaveTextContent("5 source record(s) across 2 fund(s)");
     expect(companyRow).toHaveTextContent("$1,200");
+    expect(companyRow).toHaveTextContent("Shadow NAV");
+    expect(companyRow).toHaveTextContent("$5,950");
+    expect(companyRow).toHaveTextContent("Variance");
+    expect(companyRow).toHaveTextContent("$4,750");
     expect(within(companyRow).getByRole("link", { name: "Open Company-wide consolidation cross-fund consolidation" })).toHaveAttribute(
       "href",
       "/api/workstation/reporting?consolidationId=cross-fund%3Acompany"
@@ -1106,6 +1118,17 @@ describe("ReportingScreen", () => {
     expect(within(regulatoryRow).getByText("Csv")).toBeInTheDocument();
     expect(within(regulatoryRow).getByText("12")).toBeInTheDocument();
     expect(within(regulatoryRow).getByText("exports/reporting/fund-alpha/20260411160000/regulatory-trial-balance.csv")).toBeInTheDocument();
+    expect(within(regulatoryRow).getByRole("link", { name: "Open Regulatory trial balance data dictionary" })).toHaveAttribute(
+      "href",
+      "/api/workstation/reporting"
+    );
+    expect(within(regulatoryRow).getByRole("link", { name: "Open Regulatory trial balance evidence" })).toHaveAttribute(
+      "href",
+      "/api/fund-structure/report-packs"
+    );
+    expect(within(regulatoryRow).getByRole("group", { name: "Regulatory trial balance export tags" })).toHaveTextContent(
+      "regulatorytrial-balanceledger"
+    );
     expect(within(regulatoryRow).getByRole("link", { name: "Download Regulatory trial balance structured export as JSON" })).toHaveAttribute(
       "href",
       "/api/fund-structure/reporting/structured-exports/regulatory-trial-balance?fundProfileId=fund-alpha"
@@ -1127,6 +1150,9 @@ describe("ReportingScreen", () => {
     expect(within(warehouseRow).getByText("Json")).toBeInTheDocument();
     expect(warehouseRow).toHaveTextContent("Data warehouse and lakehouse ingestion");
     expect(warehouseRow).toHaveTextContent("Exports consolidated ledger snapshot facts for downstream warehouse loading");
+    expect(within(warehouseRow).getByRole("group", { name: "Warehouse ledger facts export tags" })).toHaveTextContent(
+      "warehouseledgerreconciliation"
+    );
     expect(within(warehouseRow).getByRole("link", { name: "Download Warehouse ledger facts structured export as JSON" })).toHaveAttribute(
       "href",
       "/api/fund-structure/reporting/structured-exports/warehouse-ledger-facts?fundProfileId=fund-alpha"
@@ -1648,6 +1674,16 @@ describe("ReportingScreen", () => {
     });
 
     await user.selectOptions(within(grid).getByLabelText("Sector Pivot draft access mode"), "Restricted");
+    expect(within(grid).getByLabelText("Sector Pivot draft principal kind")).toBeEnabled();
+    expect(grid).toHaveTextContent("Access policy: group reporting-ops.");
+    expect(within(grid).getByLabelText("Sector Pivot draft top-n count")).toBeDisabled();
+    await user.selectOptions(within(grid).getByLabelText("Sector Pivot draft grid type"), "TopN");
+    const topNInput = within(grid).getByLabelText("Sector Pivot draft top-n count");
+    expect(topNInput).toBeEnabled();
+    fireEvent.change(topNInput, {
+      target: { value: "5" }
+    });
+    expect(grid).toHaveTextContent("Top 5");
     fireEvent.change(within(grid).getByLabelText("Sector Pivot custom formula name"), {
       target: { value: "gainLossRatio" }
     });
@@ -1678,7 +1714,7 @@ describe("ReportingScreen", () => {
         {
           gridId: "sector-pivot",
           title: "Sector Pivot",
-          kind: "Pivot",
+          kind: "TopN",
           rowFields: ["sector"],
           columnFields: ["strategy"],
           metrics: [
@@ -1689,6 +1725,7 @@ describe("ReportingScreen", () => {
             { name: "returnPct", expression: "{pnl} / {marketValue} * 100", label: "Return %" },
             { name: "gainLossRatio", expression: "{pnl} / {marketValue}", label: "Gain/loss ratio" }
           ],
+          topN: 5,
           sortBy: "pnl",
           sortDescending: true,
           filters: [
@@ -1709,6 +1746,62 @@ describe("ReportingScreen", () => {
       expect(screen.getByRole("status", { name: "Save report-writer draft status" })).toHaveTextContent(
         "Sector Pivot Draft draft saved."
       );
+    });
+  });
+
+  it("locks private no-code report-writer drafts to a user owner", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify({
+        definition: {
+          templateId: { name: "investor-monthly-statement", version: 2 },
+          displayName: "Sector Pivot Draft",
+          parameters: [],
+          sections: [],
+          grids: [],
+          accessPolicy: null
+        },
+        status: "Draft",
+        family: "InvestorStatement",
+        isBuiltIn: false,
+        isLatestApproved: false,
+        createdBy: "controller.admin",
+        createdAt: "2026-06-08T00:00:00Z",
+        updatedBy: "controller.admin",
+        updatedAt: "2026-06-08T00:00:00Z",
+        validationIssues: [],
+        auditTrail: []
+      })
+    });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
+
+    const writer = screen.getByRole("region", { name: "No-code report writer" });
+    const grid = within(writer).getByRole("group", {
+      name: "Investor Monthly Statement Sector Pivot Pivot report-writer grid"
+    });
+
+    await user.selectOptions(within(grid).getByLabelText("Sector Pivot draft access mode"), "Private");
+    const principalKind = within(grid).getByLabelText("Sector Pivot draft principal kind");
+    expect(principalKind).toBeDisabled();
+    expect(principalKind).toHaveValue("User");
+    expect(grid).toHaveTextContent("Owner ID");
+
+    fireEvent.change(within(grid).getByLabelText("Sector Pivot draft principal id"), {
+      target: { value: "controller.admin" }
+    });
+    expect(grid).toHaveTextContent("Access policy: user-locked to controller.admin.");
+    await user.click(within(grid).getByRole("button", { name: "Save Sector Pivot as governed report template draft" }));
+
+    const [, request] = fetchMock.mock.calls[0];
+    const body = JSON.parse((request as RequestInit).body as string);
+    expect(body.accessPolicy).toEqual({
+      mode: "Private",
+      ownerPrincipalId: "controller.admin",
+      principals: [
+        { kind: "User", principalId: "controller.admin", displayName: "controller.admin" }
+      ],
+      allowOwnerAccess: true
     });
   });
 
@@ -2102,26 +2195,38 @@ describe("ReportingScreen", () => {
 
     renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
 
-    await user.clear(screen.getByLabelText("Reporting schedule ID"));
-    await user.type(screen.getByLabelText("Reporting schedule ID"), "sched-investor-email");
-    await user.clear(screen.getByLabelText("Reporting schedule cron expression"));
-    await user.type(screen.getByLabelText("Reporting schedule cron expression"), "0 9 * * 1");
-    await user.clear(screen.getByLabelText("Reporting schedule next as-of date"));
-    await user.type(screen.getByLabelText("Reporting schedule next as-of date"), "2026-06-30");
-    await user.clear(screen.getByLabelText("Reporting schedule due at UTC"));
-    await user.type(screen.getByLabelText("Reporting schedule due at UTC"), "2026-07-01T15:00:00Z");
-    await user.clear(screen.getByLabelText("Reporting schedule max retries"));
-    await user.type(screen.getByLabelText("Reporting schedule max retries"), "3");
-    await user.clear(screen.getByLabelText("Reporting schedule requested by"));
-    await user.type(screen.getByLabelText("Reporting schedule requested by"), "fund-controller");
-    await user.selectOptions(screen.getByLabelText("Reporting schedule distribution"), "compliance-archive");
-    await user.selectOptions(screen.getByLabelText("Reporting schedule delivery mode"), "EmailLink");
-    await user.clear(screen.getByLabelText("Reporting schedule description"));
-    await user.type(screen.getByLabelText("Reporting schedule description"), "Weekly client distribution.");
-    await user.clear(screen.getByLabelText("Reporting schedule delivery note"));
-    await user.type(screen.getByLabelText("Reporting schedule delivery note"), "Email link pack.");
-    await user.click(screen.getByLabelText("Reporting schedule Xlsx format"));
-    await user.click(screen.getByRole("button", { name: "Save reporting schedule" }));
+    fireEvent.change(screen.getByLabelText("Reporting schedule ID"), {
+      target: { value: "sched-investor-email" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule cron expression"), {
+      target: { value: "0 9 * * 1" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule next as-of date"), {
+      target: { value: "2026-06-30" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule due at UTC"), {
+      target: { value: "2026-07-01T15:00:00Z" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule max retries"), {
+      target: { value: "3" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule requested by"), {
+      target: { value: "fund-controller" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule distribution"), {
+      target: { value: "compliance-archive" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule delivery mode"), {
+      target: { value: "EmailLink" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule description"), {
+      target: { value: "Weekly client distribution." }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule delivery note"), {
+      target: { value: "Email link pack." }
+    });
+    fireEvent.click(screen.getByLabelText("Reporting schedule Xlsx format"));
+    fireEvent.click(screen.getByRole("button", { name: "Save reporting schedule" }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
       "/api/fund-structure/reporting/schedules",
@@ -2292,7 +2397,67 @@ describe("ReportingScreen", () => {
               reportingRunId: "investor-monthly-statement-20260501",
               reportingTemplateId: "investor-monthly-statement",
               reportingScheduleId: "sched-investor",
-              sourceArtifacts: ["workstation/reporting/runs/investor-monthly-statement-20260501/manifest.json"]
+              sourceArtifacts: ["workstation/reporting/runs/investor-monthly-statement-20260501/manifest.json"],
+              deliveryEvidencePacket: {
+                packetId: "reporting-run-delivery:pkg-board-1",
+                packetKind: "ReportingRunDelivery",
+                packageId: "pkg-board-1",
+                reportId: "11111111-1111-1111-1111-111111111111",
+                fundProfileId: "reporting-run",
+                fundAccountId: "investor-monthly-statement",
+                period: "2026-05-01",
+                packageContents: [
+                  "board-pack.pdf",
+                  "source-artifact:report-writer://investor-monthly-statement-20260501/grids/sector-pivot"
+                ],
+                supportEvidenceIds: [
+                  "delivery-artifact:pdf",
+                  "reporting-run-source:report-writer://investor-monthly-statement-20260501/grids/sector-pivot"
+                ],
+                recipientList: [
+                  {
+                    distributionId: "board-reporting-committee",
+                    recipient: "Board reporting committee",
+                    recipientRole: "Board",
+                    channel: "Board portal"
+                  }
+                ],
+                entitlementScope: "CompanyWide",
+                approvalChain: [],
+                datasetVersion: "investor-monthly-statement-20260501",
+                templateVersion: "investor-monthly-statement",
+                deliveryChannel: "SecurePortal via Board portal",
+                deliveredAtUtc: "2026-05-03T20:15:00Z",
+                deliveryEvidence: [
+                  {
+                    evidenceId: "delivery-artifact:pdf",
+                    label: "board-pack.pdf",
+                    route: "/api/fund-structure/reporting/packs/11111111-1111-1111-1111-111111111111/deliveries/22222222-2222-2222-2222-222222222222/artifacts/board-pack.pdf?token=abc123",
+                    source: "reporting-run-delivery",
+                    capturedAtUtc: "2026-05-03T20:15:00Z"
+                  }
+                ],
+                requestHistory: [
+                  "reporting-run:investor-monthly-statement-20260501:Scheduled:Draft",
+                  "schedule:sched-investor",
+                  "delivery-request:board-reporting-committee"
+                ],
+                auditEventReferences: ["investor-monthly-statement-20260501:1:RunGenerated"],
+                blockedDownstreamOutputs: []
+              },
+              brandingTheme: {
+                themeId: "allocator-quarterly",
+                name: "Allocator Quarterly",
+                firmName: "Northstar Capital",
+                primaryColor: "#123456",
+                accentColor: "#55AA99",
+                textColor: "#111111",
+                backgroundColor: "#FFFFFF",
+                logoUri: "/branding/northstar.svg",
+                footerText: "Northstar Capital confidential",
+                disclaimer: "For approved recipients only.",
+                isBuiltIn: false
+              }
             }
           }
         ]
@@ -2336,6 +2501,9 @@ describe("ReportingScreen", () => {
       "SecurePortal package · Pdf, Xlsx, Csv"
     );
     expect(boardAttempt).toHaveTextContent(
+      "Branding: Allocator Quarterly · Northstar Capital · allocator-quarterly"
+    );
+    expect(boardAttempt).toHaveTextContent(
       "/portal/reporting/packages/pkg-board-1?token=abc123"
     );
     expect(within(boardAttempt).getByRole("link", { name: "/portal/reporting/packages/pkg-board-1?token=abc123" })).toHaveAttribute(
@@ -2346,6 +2514,12 @@ describe("ReportingScreen", () => {
     expect(boardAttempt).toHaveTextContent("Template: investor-monthly-statement");
     expect(boardAttempt).toHaveTextContent("Schedule: sched-investor");
     expect(boardAttempt).toHaveTextContent("Source artifacts: workstation/reporting/runs/investor-monthly-statement-20260501/manifest.json");
+    expect(boardAttempt).toHaveTextContent("Evidence packet: ReportingRunDelivery · investor-monthly-statement-20260501");
+    expect(boardAttempt).toHaveTextContent("Template: investor-monthly-statement · Channel: SecurePortal via Board portal");
+    expect(boardAttempt).toHaveTextContent("Contents: 2 · Support evidence: 2 · Delivery evidence: 1");
+    expect(boardAttempt).toHaveTextContent(
+      "Request history: reporting-run:investor-monthly-statement-20260501:Scheduled:Draft | schedule:sched-investor | delivery-request:board-reporting-committee"
+    );
     expect(within(boardAttempt).getByRole("link", { name: "Download board-pack.pdf" })).toHaveAttribute(
       "href",
       "/api/fund-structure/reporting/packs/11111111-1111-1111-1111-111111111111/deliveries/22222222-2222-2222-2222-222222222222/artifacts/board-pack.pdf?token=abc123"
@@ -2810,9 +2984,10 @@ describe("ReportingScreen", () => {
     const auditRow = within(profileTable).getByRole("row", { name: /select audit pack export profile/i });
     await user.click(auditRow);
 
-    expect(auditRow).toHaveAttribute("aria-selected", "true");
-    expect(auditRow).toHaveAttribute("aria-controls", "reporting-profile-detail");
-    expect(auditRow).toHaveAttribute("aria-expanded", "true");
+    await waitFor(() => expect(within(profileTable).getByRole("row", { name: /select audit pack export profile/i })).toHaveAttribute("aria-selected", "true"));
+    const selectedAuditRow = within(profileTable).getByRole("row", { name: /select audit pack export profile/i });
+    expect(selectedAuditRow).toHaveAttribute("aria-controls", "reporting-profile-detail");
+    expect(selectedAuditRow).toHaveAttribute("aria-expanded", "true");
     expect(within(profileTable).getByRole("row", { name: /select excel export profile/i })).toHaveAttribute("aria-expanded", "false");
     const inspector = screen.getByRole("region", { name: /audit pack selected/i });
     expect(inspector).toBeInTheDocument();

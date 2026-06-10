@@ -37,6 +37,11 @@ import type {
   EvidenceTemplate,
   EvidenceVaultIdentity,
   EvidenceVaultLookupRequest,
+  FinancialRecordExplorerDto,
+  FinancialRecordExplorerId,
+  FinancialRecordExplorerSavedViewDto,
+  FinancialRecordExplorerSavedViewSaveRequestDto,
+  FinancialRecordExplorerSelectedRecordDto,
   ExportAnalysisResult,
   ExecutionControlSnapshot,
   ExecutionAuditEntry,
@@ -290,6 +295,9 @@ import {
   workstationEvidencePacketEndpoint,
   workstationEvidenceValidateEndpoint,
   workstationAssetOperationsEndpoint,
+  workstationFinancialRecordExplorerEndpoint,
+  workstationFinancialRecordExplorerRecordEndpoint,
+  workstationFinancialRecordExplorerSavedViewsEndpoint,
   workstationOperatorInboxEndpoint,
   workstationOperationsContinuityApprovalApproveEndpoint,
   workstationOperationsContinuityApprovalRejectEndpoint,
@@ -913,6 +921,36 @@ export function getDataOperationsWorkspace(options: ApiRequestOptions = {}) {
 
 export function getAccountingWorkspace(options: ApiRequestOptions = {}) {
   return getJson<AccountingWorkspaceResponse>(WORKSTATION_API_ENDPOINTS.accounting, options);
+}
+
+export function getFinancialRecordExplorer(
+  explorerId: FinancialRecordExplorerId,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<FinancialRecordExplorerDto>(workstationFinancialRecordExplorerEndpoint(explorerId), options);
+}
+
+export function getFinancialRecordExplorerRecord(
+  explorerId: FinancialRecordExplorerId,
+  recordId: string,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<FinancialRecordExplorerSelectedRecordDto>(
+    workstationFinancialRecordExplorerRecordEndpoint(explorerId, recordId),
+    options
+  );
+}
+
+export function saveFinancialRecordExplorerView(
+  explorerId: FinancialRecordExplorerId,
+  request: FinancialRecordExplorerSavedViewSaveRequestDto,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<FinancialRecordExplorerSavedViewDto>(
+    workstationFinancialRecordExplorerSavedViewsEndpoint(explorerId),
+    request,
+    options
+  );
 }
 
 export function getAccountingConfiguration(options: ApiRequestOptions = {}) {

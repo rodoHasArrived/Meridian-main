@@ -101,6 +101,54 @@ public sealed class EvidenceWorkflowFabricTests
     }
 
     [Fact]
+    public async Task EvidenceGraphService_DuringOperationalGraphReview_ReportsV018ProofChainLayerCoverage()
+    {
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "current");
+        var source = Node(subject, "source-statement", "broker-statement", EvidenceStatusDto.Ready);
+        var normalized = Node(subject, "normalized-activity", "normalized-activity", EvidenceStatusDto.Ready);
+        var reconciliation = Node(subject, "reconciliation-run", "reconciliation-run", EvidenceStatusDto.Ready);
+        var ledger = Node(subject, "run-ledger", "run-ledger", EvidenceStatusDto.Missing);
+        var audit = Node(subject, "audit-manifest", "evidence-vault-manifest", EvidenceStatusDto.Ready);
+        var contributors = new IEvidenceContributor[]
+        {
+            new StubContributor("proof-chain", static _ => true, _ => new EvidenceContribution(
+                Nodes: [source, normalized, reconciliation, ledger, audit],
+                Edges:
+                [
+                    new EvidenceEdgeDto(source.EvidenceId, normalized.EvidenceId, "normalizes", "Statement evidence is normalized."),
+                    new EvidenceEdgeDto(normalized.EvidenceId, reconciliation.EvidenceId, "reconciles", "Normalized activity reconciles to the close run."),
+                    new EvidenceEdgeDto(reconciliation.EvidenceId, ledger.EvidenceId, "posts-to", "Reconciled activity posts to the ledger."),
+                    new EvidenceEdgeDto(ledger.EvidenceId, audit.EvidenceId, "retained-by", "Audit manifest retains the posting evidence.")
+                ],
+                Actions: [],
+                RequiredEvidenceIds: [source.EvidenceId, normalized.EvidenceId, reconciliation.EvidenceId, ledger.EvidenceId, "delivery-manifest"],
+                Warnings: []))
+        };
+        var service = CreateGraphService(contributors);
+
+        var packet = await service.GetPacketAsync(subject.SubjectKind, subject.SubjectId);
+
+        packet.Should().NotBeNull();
+        packet!.ProofChain.TotalLayerCount.Should().Be(9);
+        packet.ProofChain.CoveredLayerCount.Should().Be(5);
+        packet.ProofChain.CoveragePercent.Should().Be(56);
+        packet.ProofChain.Status.Should().Be(EvidenceStatusDto.Blocked);
+        packet.ProofChain.Summary.Should().Contain("v0.18 proof-chain layers");
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Source)
+            .ReadyEvidenceIds.Should().Contain(source.EvidenceId);
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Normalization)
+            .CoveragePercent.Should().Be(100);
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Reconciliation)
+            .EvidenceKinds.Should().Contain("reconciliation-run");
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Ledger)
+            .Status.Should().Be(EvidenceStatusDto.Blocked);
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Delivery)
+            .MissingEvidenceIds.Should().Contain("delivery-manifest");
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Audit)
+            .EvidenceIds.Should().Contain(audit.EvidenceId);
+    }
+
+    [Fact]
     public void EvidencePacketValidationService_DuringGovernedReportReview_ExplainsReadyMissingStaleAndReviewStates()
     {
         var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "current");
@@ -597,6 +645,17 @@ public sealed class EvidenceWorkflowFabricTests
         packet.Completeness.ReadyIds.Should().Contain(subledgerNode.EvidenceId);
         packet.Completeness.ReadyIds.Should().Contain(reportOutputNode.EvidenceId);
         packet.Completeness.MissingIds.Should().BeEmpty();
+        packet.ProofChain.CoveredLayerCount.Should().BeGreaterThanOrEqualTo(5);
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Source)
+            .EvidenceKinds.Should().Contain("retained-evidence");
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.CapitalAccounts)
+            .EvidenceIds.Should().Contain(subledgerNode.EvidenceId);
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Ledger)
+            .EvidenceKinds.Should().Contain("ledger-impact");
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Reporting)
+            .EvidenceIds.Should().Contain(reportOutputNode.EvidenceId);
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Close)
+            .EvidenceKinds.Should().Contain("approval-state");
 
         var retainedNode = Node(
             packet.Subject,
@@ -739,6 +798,10 @@ public sealed class EvidenceWorkflowFabricTests
             template.WorkflowId == "portfolio-reporting-output" &&
             template.ExportSettings.ManifestOnly &&
             template.ExportSettings.SchemaVersion == 1);
+        templates.Should().Contain(template =>
+            template.WorkflowId == "accounting-records-evidence-review" &&
+            template.NoOrphanRule &&
+            template.RequiredEvidenceKinds.Contains("accounting-record-category"));
 
         var packetResponse = await client.GetAsync("/api/workstation/evidence/subjects/report-pack/current/packet");
         packetResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -746,6 +809,9 @@ public sealed class EvidenceWorkflowFabricTests
         packet.Should().NotBeNull();
         packet!.Subject.SubjectKind.Should().Be(EvidenceSubjectResolver.ReportPackKind);
         packet.Nodes.Should().Contain(node => node.Kind == "analysis-export");
+        packet.ProofChain.TotalLayerCount.Should().Be(9);
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Reporting)
+            .EvidenceKinds.Should().Contain("analysis-export");
         packet.Warnings.Should().Contain(warning => warning.Contains("report-pack repository is not registered", StringComparison.OrdinalIgnoreCase));
         packet.Warnings.Should().NotContain(warning => warning.Contains("Governance report-pack repository", StringComparison.OrdinalIgnoreCase));
 
@@ -753,6 +819,8 @@ public sealed class EvidenceWorkflowFabricTests
         graphResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var graph = await graphResponse.Content.ReadFromJsonAsync<EvidenceGraphDto>(ServerJsonOptions);
         graph!.Nodes.Should().Contain(node => node.EvidenceId == "report-pack:current:analysis-export");
+        graph.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Reporting)
+            .EvidenceIds.Should().Contain("report-pack:current:analysis-export");
 
         var validationResponse = await client.PostAsync("/api/workstation/evidence/subjects/report-pack/current/validate", content: null);
         validationResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -842,6 +910,9 @@ public sealed class EvidenceWorkflowFabricTests
             node.Kind == "accounting-record-category" &&
             node.Summary.Contains("restatement lineage", StringComparison.OrdinalIgnoreCase));
         packet.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
+        packet.Completeness.ValidationIssues.Should().NotContain(issue => issue.Code == "orphan-evidence");
+        packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Delivery)
+            .EvidenceKinds.Should().Contain("accounting-record-category");
 
         var validationResponse = await client.PostAsync(
             $"/api/workstation/evidence/subjects/accounting-record/{subjectId}/validate",

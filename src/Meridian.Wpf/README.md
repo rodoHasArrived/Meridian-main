@@ -65,6 +65,12 @@ desktop fallback stores configuration/audit state in `workstation/accounting/acc
 and manual journal drafts in `workstation/accounting/manual-journal-drafts.json` under the
 configured workstation data root.
 
+`FinancialRecordExplorerPage` is the generic WPF consumer for the shared Financial Record Explorer
+DTO. `LedgerExplorer`, `PortfolioExplorer`, and `SecurityInstrumentExplorer` page tags resolve
+through the shell registry without adding new root workspaces; the page maps shared columns and rows
+into `WorkstationTableInspectorControl` and projects selected-record proof actions, `Used In`, and
+`Impacts` relationships into the inspector. Empty or blocked source DTOs remain visible as disabled
+action states with server-provided reasons rather than desktop-local placeholder balances.
 
 Keep desktop support aligned with shared contracts and governance posture.
 Convention-based view-model wiring is handled by `Services/ViewModelViewResolver.cs`; shell pages
@@ -177,7 +183,8 @@ The same cockpit now advertises the shared Asset Operations detail route
 sections for any Security Master asset instead of rebuilding direct-lending-only drill-ins in WPF.
 The Reporting cockpit keeps the desktop entry point aligned with the shared reporting engine by
 surfacing report writer grids, branded report packs, scheduled PDF/XLSX/CSV delivery, secure-portal
-and email-link distribution, Top-N/contribution analytics, regulatory exports, and audit lineage
+and email-link distribution, Top-N/contribution analytics, custom-formula grid validation,
+cross-fund consolidation roll-ups, regulatory exports, and audit lineage
 through registered WPF targets (`FundReportPack`, `ReportRunStatus`, `Dashboard`, `AnalysisExport`,
 `ExportPresets`, `FundAuditTrail`, and `DataQuality`) rather than desktop-local reporting logic.
 Fund Ledger Report Pack handoff also renders the shared Operations Continuity accounting-record

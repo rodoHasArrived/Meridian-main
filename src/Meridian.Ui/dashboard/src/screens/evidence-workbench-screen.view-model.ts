@@ -24,6 +24,7 @@ import type {
   EvidenceNode,
   EvidencePacket,
   EvidencePacketExportResponse,
+  EvidenceProofChain,
   EvidenceSlaAssessment,
   EvidenceStatus,
   EvidenceSubject,
@@ -201,6 +202,30 @@ export interface EvidenceAssurancePanelViewModel {
   validationIssueLabel: string;
 }
 
+export interface EvidenceProofChainLayerRowViewModel {
+  id: string;
+  label: string;
+  statusLabel: string;
+  statusTone: EvidenceStatusTone;
+  coverageLabel: string;
+  readyLabel: string;
+  reviewLabel: string;
+  missingLabel: string;
+  kindsLabel: string;
+  summary: string;
+  ariaLabel: string;
+}
+
+export interface EvidenceProofChainPanelViewModel {
+  title: string;
+  summaryLabel: string;
+  statusLabel: string;
+  statusTone: EvidenceStatusTone;
+  coverageLabel: string;
+  hasLayers: boolean;
+  rows: EvidenceProofChainLayerRowViewModel[];
+}
+
 export type EvidencePacketActionControl = "link" | "validate" | "export";
 export type EvidencePacketActionTone = "primary" | "success" | "warning" | "danger" | "muted";
 
@@ -289,6 +314,7 @@ export interface EvidenceWorkbenchViewModel {
   statusTone: EvidenceStatusTone;
   generatedLabel: string;
   assurancePanel: EvidenceAssurancePanelViewModel;
+  proofChainPanel: EvidenceProofChainPanelViewModel;
   lineagePanel: EvidenceLineagePanelViewModel;
   nodeGroups: EvidenceNodeGroupViewModel[];
   hasPacketActions: boolean;
@@ -584,6 +610,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
     statusTone: completeness ? mapStatusTone(completeness.status) : "muted",
     generatedLabel: input.packet ? formatDate(input.packet.generatedAt) : "Not generated",
     assurancePanel: buildEvidenceAssurancePanel(completeness),
+    proofChainPanel: buildEvidenceProofChainPanel(input.packet?.proofChain ?? null),
     lineagePanel: buildEvidenceLineagePanel(input.packet?.edges ?? [], input.packet?.subject ?? null),
     nodeGroups: groupNodes(input.packet?.nodes ?? []),
     hasPacketActions: packetActions.length > 0,
@@ -610,6 +637,37 @@ export function buildEvidenceWorkbenchViewModel(input: {
     reloadEvidence: input.reloadEvidence ?? noopReloadEvidence,
     exportManifest: input.exportManifest,
     validatePacket: input.validatePacket
+  };
+}
+
+export function buildEvidenceProofChainPanel(
+  proofChain: EvidenceProofChain | null
+): EvidenceProofChainPanelViewModel {
+  const status = proofChain?.status ?? "Unknown";
+  const rows = (proofChain?.layers ?? []).map((layer) => ({
+    id: layer.layer,
+    label: layer.label,
+    statusLabel: formatStatus(layer.status),
+    statusTone: mapStatusTone(layer.status),
+    coverageLabel: `${layer.coveragePercent}%`,
+    readyLabel: formatCount(layer.readyEvidenceIds.length, "ready node"),
+    reviewLabel: formatCount(layer.reviewEvidenceIds.length, "review node"),
+    missingLabel: formatCount(layer.missingEvidenceIds.length, "missing node"),
+    kindsLabel: layer.evidenceKinds.length > 0 ? layer.evidenceKinds.map(formatKind).join(", ") : "No evidence kinds",
+    summary: layer.summary,
+    ariaLabel: `${layer.label} proof-chain layer, ${layer.coveragePercent}% ${formatStatus(layer.status)}. ${layer.summary}`
+  }));
+
+  return {
+    title: "Operational Evidence Graph",
+    summaryLabel: proofChain?.summary ?? "Proof-chain coverage was not returned by this packet.",
+    statusLabel: formatStatus(status),
+    statusTone: mapStatusTone(status),
+    coverageLabel: proofChain
+      ? `${proofChain.coveredLayerCount}/${proofChain.totalLayerCount} layers, ${proofChain.coveragePercent}% coverage`
+      : "No proof-chain coverage",
+    hasLayers: rows.length > 0,
+    rows
   };
 }
 

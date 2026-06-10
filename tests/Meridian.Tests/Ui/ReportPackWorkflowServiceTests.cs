@@ -621,7 +621,11 @@ public sealed class ReportPackWorkflowServiceTests
                         "Strategy Contribution",
                         ReportWriterGridKindDto.Contribution,
                         RowFields: ["strategy"],
-                        Metrics: [new ReportWriterMetricDefinitionDto("pnl", "pnl")],
+                        Metrics:
+                        [
+                            new ReportWriterMetricDefinitionDto("pnl", "pnl"),
+                            new ReportWriterMetricDefinitionDto("contributionPercent", "contributionPercent")
+                        ],
                         Formulas: [new ReportWriterFormulaDefinitionDto("weightCheck", "{contributionPercent}")])
                 ]),
             "report.author");
@@ -1219,7 +1223,8 @@ public sealed class ReportPackWorkflowServiceTests
             line.CurrentValue == "101.00");
         attempt.Package.RestatementEvidenceLinks.Should().NotBeNull().And.ContainSingle(link =>
             link.EvidenceId == "cash-restatement-1");
-        var packet = attempt.Package.DeliveryEvidencePacket.Should().NotBeNull().Subject;
+        attempt.Package.DeliveryEvidencePacket.Should().NotBeNull();
+        var packet = attempt.Package.DeliveryEvidencePacket!;
         packet.PacketKind.Should().Be("StakeholderDeliveryRestatement");
         packet.PackageId.Should().Be(attempt.Package.PackageId);
         packet.FundProfileId.Should().Be("fund-a");
@@ -1783,6 +1788,19 @@ public sealed class ReportPackWorkflowServiceTests
         attempt.Package.PortalRoute.Should().Be("/reporting/runs/sched-custom-writer-20260502/packages/" + attempt.Package.PackageId);
         attempt.Package.SecureLink.Should().Contain("/package?token=");
         attempt.Package.IntegritySummary.Should().Be("2 artifact(s) retained with SHA-256 checksums without a publication evidence hash.");
+        attempt.Package.DeliveryEvidencePacket.Should().NotBeNull();
+        var packet = attempt.Package.DeliveryEvidencePacket!;
+        packet.PacketKind.Should().Be("ReportingRunDelivery");
+        packet.DatasetVersion.Should().Be("sched-custom-writer-20260502");
+        packet.TemplateVersion.Should().Be("scheduled-report-writer-pack");
+        packet.DeliveryChannel.Should().Be("EmailLink via Investor portal");
+        packet.RecipientList.Should().ContainSingle(recipient =>
+            recipient.DistributionId == "investor-relations" &&
+            recipient.Recipient == "Investor relations");
+        packet.PackageContents.Should().Contain("source-artifact:report-writer://sched-custom-writer-20260502/grids/sector-pivot");
+        packet.SupportEvidenceIds.Should().Contain("reporting-run-source:report-writer://sched-custom-writer-20260502/grids/sector-pivot");
+        packet.DeliveryEvidence.Should().HaveCount(2);
+        packet.RequestHistory.Should().Contain("delivery-request:investor-relations");
 
         var token = attempt.Package.SecureLink.Split("token=", 2, StringSplitOptions.None)[1];
         delivery.GetPackage(attempt.ReportId, attempt.AttemptId, token).PackageId.Should().Be(attempt.Package.PackageId);
@@ -1806,6 +1824,9 @@ public sealed class ReportPackWorkflowServiceTests
         plan.LastDeliverySecureLink.Should().Be(attempt.Package.SecureLink);
         plan.LastDeliveryArtifactCount.Should().Be(2);
         plan.LastDeliveryIntegritySummary.Should().Be("2 artifact(s) retained with SHA-256 checksums without a publication evidence hash.");
+        var reloadedAttempt = reloadedDelivery.GetHistory(attempt.ReportId).Should().ContainSingle().Subject;
+        reloadedAttempt.Package!.DeliveryEvidencePacket.Should().NotBeNull();
+        reloadedAttempt.Package.DeliveryEvidencePacket!.PacketKind.Should().Be("ReportingRunDelivery");
     }
 
     [Fact]
@@ -2551,7 +2572,7 @@ public sealed class ReportPackWorkflowServiceTests
     public async Task Endpoint_CreateDraft_WithSessionCompanyAndRoleProfile_DefaultsTenantAwareAccessPolicy()
     {
         await using var app = await CreateFundStructureAppAsync(
-            UserRole.Analysis,
+            UserRole.TradeDesk,
             "viewer.user",
             roleProfileName: "reporting-ops",
             companyId: "company-alpha");

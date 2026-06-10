@@ -416,6 +416,7 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.FundStructureSetupViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.FundAccountsViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.FundLedgerViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.FinancialRecordExplorerViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.RunMatViewModel>();
         services.AddTransient(sp => new StrategyRunBrowserViewModel(
             sp.GetRequiredService<WpfServices.StrategyRunWorkspaceService>(),

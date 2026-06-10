@@ -479,6 +479,28 @@ public sealed class WorkspaceDeepPageChromeTests
     }
 
     [Fact]
+    public void FinancialRecordExplorerPage_ShouldUseCompactDenseTableInspectorChrome()
+    {
+        var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\FinancialRecordExplorerPage.xaml");
+        var codePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\FinancialRecordExplorerPage.xaml.cs");
+        var xaml = File.ReadAllText(absolutePath);
+        var code = File.ReadAllText(codePath);
+
+        xaml.Should().NotContain("EmbeddedShellHeroCardStyle");
+        xaml.Should().NotContain("<DataGrid");
+        xaml.Should().Contain("FinancialRecordExplorerActionStrip");
+        xaml.Should().Contain("FinancialRecordExplorerSummaryStrip");
+        xaml.Should().Contain("WorkstationTableInspectorControl");
+        xaml.Should().Contain("FinancialRecordExplorerGrid");
+        xaml.Should().Contain("FinancialRecordExplorerSelectionInspector");
+        xaml.Should().Contain("FinancialRecordExplorerProofActionsCard");
+        xaml.Should().Contain("FinancialRecordExplorerUsedInRelationships");
+        xaml.Should().Contain("FinancialRecordExplorerImpactRelationships");
+        xaml.Should().Contain("ToolTipService.ShowOnDisabled=\"True\"");
+        code.Should().Contain("IWorkspaceShellPageContextAware");
+    }
+
+    [Fact]
     public void RunRiskPage_ShouldUseCompactAttributionWorkbenchChrome()
     {
         var absolutePath = RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\RunRiskPage.xaml");

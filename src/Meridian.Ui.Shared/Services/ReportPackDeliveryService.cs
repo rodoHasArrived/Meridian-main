@@ -451,6 +451,17 @@ public sealed class ReportPackDeliveryService
         var artifacts = formats
             .Select(format => BuildArtifact(manifest, policy, reportId, packageId, attemptId, token, format))
             .ToArray();
+        var artifactEvidenceLinks = BuildArtifactEvidenceLinks(artifacts, "reporting-run-delivery");
+        var createdAtUtc = DateTimeOffset.UtcNow;
+        var deliveryEvidencePacket = BuildReportingRunDeliveryEvidencePacket(
+            manifest,
+            policy,
+            reportId,
+            packageId,
+            mode,
+            createdAtUtc,
+            artifacts,
+            artifactEvidenceLinks);
         var secureLink = mode switch
         {
             ReportPackDeliveryModeDto.EmailLink => UiApiRoutes.WithQuery(
@@ -476,14 +487,71 @@ public sealed class ReportPackDeliveryService
             portalRoute,
             formats,
             artifacts,
-            DateTimeOffset.UtcNow,
+            createdAtUtc,
             retainedManifestPath,
             PublicationEvidenceHash: null,
             BuildIntegritySummary(artifacts, publicationEvidenceHash: null),
             manifest.RunId,
             manifest.TemplateId,
             manifest.ScheduleId,
-            manifest.Artifacts.ToArray());
+            manifest.Artifacts.ToArray(),
+            DeliveryEvidencePacket: deliveryEvidencePacket);
+    }
+
+    private static ReportPackDeliveryEvidencePacketDto BuildReportingRunDeliveryEvidencePacket(
+        ReportingOutputManifest manifest,
+        ReportPackRunReadService.ReportPackDistributionPolicy policy,
+        Guid reportId,
+        string packageId,
+        ReportPackDeliveryModeDto deliveryMode,
+        DateTimeOffset deliveredAtUtc,
+        IReadOnlyList<ReportPackDeliveryArtifactDto> artifacts,
+        IReadOnlyList<ReportPackEvidenceLinkDto> artifactEvidenceLinks)
+    {
+        var sourceArtifacts = DistinctValues(manifest.Artifacts);
+        var packageContents = DistinctValues(
+            artifacts.Select(static artifact => artifact.ArtifactName)
+                .Concat(sourceArtifacts.Select(static artifact => $"source-artifact:{artifact}")));
+        var supportEvidenceIds = DistinctValues(
+            artifactEvidenceLinks.Select(static link => link.EvidenceId)
+                .Concat(sourceArtifacts.Select(static artifact => $"reporting-run-source:{artifact}")));
+
+        return new ReportPackDeliveryEvidencePacketDto(
+            PacketId: $"reporting-run-delivery:{packageId}",
+            PacketKind: "ReportingRunDelivery",
+            PackageId: packageId,
+            ReportId: reportId,
+            FundProfileId: "reporting-run",
+            FundAccountId: manifest.TemplateId,
+            Period: manifest.AsOfDate.ToString("yyyy-MM-dd"),
+            PackageContents: packageContents,
+            SupportEvidenceIds: supportEvidenceIds,
+            RecipientList:
+            [
+                new ReportPackDeliveryRecipientDto(
+                    policy.DistributionId,
+                    policy.Recipient,
+                    policy.RecipientRole,
+                    policy.Channel)
+            ],
+            EntitlementScope: ReportAccessModeDto.CompanyWide.ToString(),
+            ApprovalChain: [],
+            DatasetVersion: manifest.RunId,
+            TemplateVersion: manifest.TemplateId,
+            DeliveryChannel: $"{deliveryMode} via {policy.Channel}",
+            DeliveredAtUtc: deliveredAtUtc,
+            DeliveryEvidence: artifactEvidenceLinks,
+            RequestHistory:
+            [
+                $"reporting-run:{manifest.RunId}:{manifest.Trigger}:{manifest.Status}",
+                $"schedule:{manifest.ScheduleId ?? "adhoc"}",
+                $"delivery-request:{policy.DistributionId}"
+            ],
+            AuditEventReferences:
+            [
+                $"{manifest.RunId}:{manifest.AttemptCount}:RunGenerated"
+            ],
+            BlockedDownstreamOutputs: []);
     }
 
     private static ReportPackDeliveryEvidencePacketDto BuildDeliveryEvidencePacket(

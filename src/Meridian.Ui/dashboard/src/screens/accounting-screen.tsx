@@ -13,10 +13,12 @@ import {
   getAccountingSystemProviders,
   getLatestAccountingSystemImport,
   getLatestAccountingSystemReconciliation,
+  getFinancialRecordExplorer,
   getOperationsContinuityWorkflow,
   getOperationsContinuityWorkflows,
   previewAccountingSystemImport,
-  rejectOperationsContinuityWorkflow
+  rejectOperationsContinuityWorkflow,
+  saveFinancialRecordExplorerView
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
@@ -65,6 +67,8 @@ import type {
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
   AccountingWorkspaceResponse,
+  FinancialRecordExplorerDto,
+  FinancialRecordExplorerSavedViewSaveRequestDto,
   MultiAssetCoverageSummary,
   OperationsApproval,
   OperationsApprovalState,
@@ -992,6 +996,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const [closeWorkflow, setCloseWorkflow] = useState<OperationsContinuityWorkflow | null>(null);
   const [closeWorkflowLoading, setCloseWorkflowLoading] = useState(false);
   const [closeWorkflowError, setCloseWorkflowError] = useState<string | null>(null);
+  const [ledgerExplorer, setLedgerExplorer] = useState<FinancialRecordExplorerDto | null>(null);
+  const [securityInstrumentExplorer, setSecurityInstrumentExplorer] = useState<FinancialRecordExplorerDto | null>(null);
   const identity = securityMaster.identityView;
   const selectedSecurityEntry = securityMaster.selectedSecurityId
     ? securityMaster.results?.find((entry) => entry.securityId === securityMaster.selectedSecurityId) ?? null
@@ -1039,6 +1045,44 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
   const activeResolveBreak = resolveDialog.active
     ? reconciliation.rows.find((item) => item.breakId === resolveDialog.active?.breakId) ?? null
     : null;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void Promise.allSettled([
+      getFinancialRecordExplorer("ledger"),
+      getFinancialRecordExplorer("security-instrument")
+    ]).then(([ledgerResult, securityResult]) => {
+      if (cancelled) {
+        return;
+      }
+
+      if (ledgerResult.status === "fulfilled") {
+        setLedgerExplorer(ledgerResult.value);
+      }
+
+      if (securityResult.status === "fulfilled") {
+        setSecurityInstrumentExplorer(securityResult.value);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function saveAccountingExplorerView(
+    explorerId: "ledger" | "security-instrument",
+    request: FinancialRecordExplorerSavedViewSaveRequestDto
+  ) {
+    await saveFinancialRecordExplorerView(explorerId, request);
+    const refreshed = await getFinancialRecordExplorer(explorerId);
+    if (explorerId === "ledger") {
+      setLedgerExplorer(refreshed);
+    } else {
+      setSecurityInstrumentExplorer(refreshed);
+    }
+  }
   const reconciliationBreakTableColumns: DenseDataTableColumn<ReconciliationBreakRowViewModel>[] = [
     ...reconciliationBreakColumns,
     {
@@ -1762,6 +1806,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
               ariaLabel: reconciliation.detailActions?.auditPacketAriaLabel
             }
           ]}
+          explorer={ledgerExplorer}
+          onSaveView={(request) => saveAccountingExplorerView("ledger", request)}
         >
         <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
           <Card aria-labelledby="trial-balance-title" aria-describedby="trial-balance-description" className="panel-surface">
@@ -2315,6 +2361,8 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
               ariaLabel: securityMaster.selectedSecurityId ? "Open selected Security Master record detail" : undefined
             }
           ]}
+          explorer={securityInstrumentExplorer}
+          onSaveView={(request) => saveAccountingExplorerView("security-instrument", request)}
         >
         <section className="space-y-6">
           <section className="panel-surface-strong space-y-4 p-5" aria-label={securityMaster.pageView.ariaLabel}>

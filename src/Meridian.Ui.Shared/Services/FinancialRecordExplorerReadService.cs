@@ -711,9 +711,12 @@ public sealed class FinancialRecordExplorerReadService
 
     private static IReadOnlyList<WorkstationSecurityReference> CollectSecurityReferences(StrategyRunDetail detail)
     {
-        var references = detail.Portfolio?.Positions
-            .Select(static position => position.Security)
-            .Concat(detail.Ledger?.TrialBalance.Select(static line => line.Security) ?? [])
+        var portfolioReferences = detail.Portfolio?.Positions.Select(static position => position.Security)
+            ?? Enumerable.Empty<WorkstationSecurityReference?>();
+        var ledgerReferences = detail.Ledger?.TrialBalance.Select(static line => line.Security)
+            ?? Enumerable.Empty<WorkstationSecurityReference?>();
+        var references = portfolioReferences
+            .Concat(ledgerReferences)
             .Where(static reference => reference is not null)
             .Select(static reference => reference!)
             .GroupBy(static reference => reference.SecurityId == Guid.Empty
@@ -724,7 +727,7 @@ public sealed class FinancialRecordExplorerReadService
             .OrderBy(static reference => reference.DisplayName, StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
-        return references ?? [];
+        return references;
     }
 
     private static bool IsSameSecurity(WorkstationSecurityReference? left, WorkstationSecurityReference right)

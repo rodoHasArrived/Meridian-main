@@ -14,6 +14,7 @@ import {
   buildEvidenceLineageDetail,
   buildEvidenceLineagePanel,
   buildEvidenceNodeDetail,
+  buildEvidenceProofChainPanel,
   buildEvidenceWorkbenchViewModel,
   groupNodes,
   mapStatusTone,
@@ -238,7 +239,68 @@ const packet: EvidencePacket = {
   ],
   completeness,
   actions: evidenceActions,
-  warnings: ["DK1 sample review is pending."]
+  warnings: ["DK1 sample review is pending."],
+  proofChain: {
+    coveragePercent: 44,
+    status: "ReviewRequired",
+    coveredLayerCount: 4,
+    totalLayerCount: 9,
+    summary: "4 of 9 v0.18 proof-chain layers have evidence; 1 blocked or missing, 1 stale, 1 review-required.",
+    layers: [
+      {
+        layer: "Source",
+        label: "Source",
+        status: "Ready",
+        coveragePercent: 100,
+        requiredEvidenceIds: [readyNode.evidenceId],
+        evidenceIds: [readyNode.evidenceId],
+        readyEvidenceIds: [readyNode.evidenceId],
+        reviewEvidenceIds: [],
+        missingEvidenceIds: [],
+        evidenceKinds: [readyNode.kind],
+        summary: "Source has 1 evidence node(s), 1 ready, 0 review-required or blocked, and 0 missing."
+      },
+      {
+        layer: "Normalization",
+        label: "Normalization",
+        status: "Missing",
+        coveragePercent: 0,
+        requiredEvidenceIds: [],
+        evidenceIds: [],
+        readyEvidenceIds: [],
+        reviewEvidenceIds: [],
+        missingEvidenceIds: [],
+        evidenceKinds: [],
+        summary: "No Normalization evidence is present in this packet."
+      },
+      {
+        layer: "Ledger",
+        label: "Ledger",
+        status: "Blocked",
+        coveragePercent: 0,
+        requiredEvidenceIds: ["strategy-run:run-1:ledger"],
+        evidenceIds: [],
+        readyEvidenceIds: [],
+        reviewEvidenceIds: [],
+        missingEvidenceIds: ["strategy-run:run-1:ledger"],
+        evidenceKinds: [],
+        summary: "No Ledger evidence is present in this packet."
+      },
+      {
+        layer: "Close",
+        label: "Close",
+        status: "ReviewRequired",
+        coveragePercent: 0,
+        requiredEvidenceIds: [blockedNode.evidenceId],
+        evidenceIds: [blockedNode.evidenceId],
+        readyEvidenceIds: [],
+        reviewEvidenceIds: [blockedNode.evidenceId],
+        missingEvidenceIds: [],
+        evidenceKinds: [blockedNode.kind],
+        summary: "Close has 1 evidence node(s), 0 ready, 1 review-required or blocked, and 0 missing."
+      }
+    ]
+  }
 };
 
 function createDeferred<T>() {
@@ -300,6 +362,24 @@ describe("Evidence Workbench view model", () => {
       tone: "warning",
       message: "Replay evidence is outside the replay freshness window."
     });
+    expect(vm.proofChainPanel).toMatchObject({
+      title: "Operational Evidence Graph",
+      summaryLabel: "4 of 9 v0.18 proof-chain layers have evidence; 1 blocked or missing, 1 stale, 1 review-required.",
+      statusLabel: "Review Required",
+      statusTone: "warning",
+      coverageLabel: "4/9 layers, 44% coverage",
+      hasLayers: true
+    });
+    expect(vm.proofChainPanel.rows.map((row) => row.id)).toEqual(["Source", "Normalization", "Ledger", "Close"]);
+    expect(vm.proofChainPanel.rows[2]).toMatchObject({
+      label: "Ledger",
+      statusLabel: "Blocked",
+      statusTone: "danger",
+      coverageLabel: "0%",
+      readyLabel: "0 ready nodes",
+      missingLabel: "1 missing node",
+      kindsLabel: "No evidence kinds"
+    });
     expect(vm.generatedLabel).toBe("May 9, 12:30 UTC");
     expect(vm.missingEvidence).toEqual(["strategy-run:run-1:ledger"]);
     expect(vm.staleEvidence).toEqual([staleNode.evidenceId]);
@@ -358,6 +438,20 @@ describe("Evidence Workbench view model", () => {
       relationshipLabel: "Requires",
       ariaLabel: "Requires from strategy-run:run-1:detail to strategy-run:run-1:replay. Replay evidence supports the run.",
       selectAriaLabel: "Inspect lineage edge: Requires from strategy-run:run-1:detail to strategy-run:run-1:replay"
+    });
+  });
+
+  it("keeps older packets usable when proof-chain coverage is absent", () => {
+    const panel = buildEvidenceProofChainPanel(null);
+
+    expect(panel).toMatchObject({
+      title: "Operational Evidence Graph",
+      summaryLabel: "Proof-chain coverage was not returned by this packet.",
+      statusLabel: "Unknown",
+      statusTone: "muted",
+      coverageLabel: "No proof-chain coverage",
+      hasLayers: false,
+      rows: []
     });
   });
 
@@ -986,6 +1080,15 @@ describe("EvidenceWorkbenchScreen", () => {
 
     expect(await screen.findByText("Momentum strategy run")).toBeInTheDocument();
     expect(screen.getByText("Missing evidence")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Operational Evidence Graph" })).toHaveTextContent(
+      "4/9 layers, 44% coverage"
+    );
+    expect(screen.getByRole("list", { name: "Operational evidence proof-chain layers" })).toHaveTextContent(
+      "No Normalization evidence is present in this packet."
+    );
+    expect(screen.getByRole("list", { name: "Operational evidence proof-chain layers" })).toHaveTextContent(
+      "1 missing node"
+    );
     expect(screen.getByRole("region", { name: "Meridian Assurance" })).toHaveTextContent("45% assurance");
     expect(screen.getByRole("region", { name: "Meridian Assurance" })).toHaveTextContent("No-orphan rule breached");
     expect(screen.getByRole("list", { name: "Assurance score components" })).toHaveTextContent("Replay freshness");

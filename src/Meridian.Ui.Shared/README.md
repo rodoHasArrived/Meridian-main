@@ -55,6 +55,13 @@ concurrent branches that both modify the root coordinator or the shared
 `WorkstationEndpointsTests.cs` test body. For operations-continuity and reconciliation endpoint
 changes, start with focused `MapWorkstationEndpoints_OperationsContinuity` /
 `MapWorkstationEndpoints_Reconciliation` filters before broad workstation endpoint validation.
+Financial Record Explorer endpoints are registered from `WorkstationEndpoints.FinancialRecordExplorers.cs`
+under `/api/workstation/financial-record-explorers/{explorerId}` for `ledger`, `portfolio`, and
+`security-instrument`. `FinancialRecordExplorerReadService` composes source-backed strategy run
+ledger, portfolio, Security Master, evidence, reconciliation, reporting, and audit projections into
+the shared DTO, while `FileFinancialRecordExplorerSavedViewStore` persists operator-created views
+under the workstation data root. Missing projections return empty or blocked DTO state with
+disabled actions and reasons, not synthetic operational balances.
 Reference-data endpoint groups for bonds, options, equity, futures, FX spot, crypto, deposits,
 certificates of deposit, commodities, swaps, and money-market funds adapt `Meridian.Instruments` services
 to shared browser/WPF routes. Keep those endpoints as permission and HTTP adapters; instrument
@@ -208,6 +215,14 @@ fund-event state, retained evidence, approval state, capital-account subledger i
 and report output before the event-level evidence graph can be treated as complete. Report-output evidence artifacts prefer the direct
 `/api/ledger/private-capital/report-output` route when the shared row provides it, keeping
 evidence graph drill-through aligned with the endpoint and workstation review surfaces.
+Evidence packets and graph responses also calculate the v0.18 Operational Evidence Graph
+proof-chain layers server-side, mapping packet nodes to Source, Normalization, Reconciliation,
+Ledger, Capital accounts, Close, Reporting, Delivery, and Audit coverage. Browser and WPF clients
+should render that shared coverage instead of deriving their own lifecycle labels.
+Generated reporting-run deliveries also retain a `ReportingRunDelivery` evidence packet with
+recipient scope, source report-writer artifacts, delivery artifact checksums, dataset/template
+version, and request history so scheduled no-code report packs have the same audit-facing delivery
+lineage as published governed report packs.
 The shared workflow library owns close-lane command routing as well: `AccountingReviewOperationsContinuity`
 targets `OperationsContinuity` and `AccountingReviewCloseReadiness` targets `OperationsClose`, with
 route metadata tied to the operations-continuity API. Browser and WPF clients should consume those
