@@ -820,6 +820,11 @@ export interface ManualJournalPrivateCapitalCapitalAccountSubledgerRowViewModel 
   subtitle: string;
   statusLabel: string;
   statusTone: "outline" | "success" | "warning" | "danger";
+  readinessLabel: string;
+  readinessTone: "outline" | "success" | "warning" | "danger";
+  readinessReasonLabel: string;
+  nextActionLabel: string;
+  nextActionRouteLabel: string;
   activityRouteLabel: string;
   netActivityLabel: string;
   openingLabel: string;
@@ -874,6 +879,9 @@ export interface ManualJournalPrivateCapitalReportOutputRowViewModel {
   subtitle: string;
   readinessLabel: string;
   readinessTone: "outline" | "success" | "warning" | "danger";
+  readinessReasonLabel: string;
+  nextActionLabel: string;
+  nextActionRouteLabel: string;
   effectiveDateLabel: string;
   amountLabel: string;
   evidenceLabel: string;
@@ -3026,13 +3034,19 @@ function buildManualJournalPrivateCapitalCapitalAccountSubledgerRow(
   const readyEvidenceCategoryCount = evidenceCategories.filter((category) => category.statusLabel === "Ready").length;
   const hasCriticalIssue = subledger.validationIssues.some((issue) => issue.severity === "Critical");
   const hasWarnings = subledger.validationIssues.length > 0 || subledger.approvalQueueCount > 0 || evidenceCategories.some((category) => category.statusLabel !== "Ready");
+  const readiness = subledger.readiness ?? (hasCriticalIssue ? "Blocked" : hasWarnings ? "ReportReview" : subledger.fundEventCount > 0 ? "Ready" : "EvidenceMissing");
 
   return {
     id: subledger.subledgerId,
     title: subledger.capitalAccountId,
     subtitle: `${subledger.investorId ?? "Investor not assigned"} / ${subledger.currency}`,
-    statusLabel: hasCriticalIssue ? "Blocked" : hasWarnings ? "Review" : subledger.fundEventCount > 0 ? "Ready" : "Empty",
-    statusTone: hasCriticalIssue ? "danger" : hasWarnings ? "warning" : subledger.fundEventCount > 0 ? "success" : "outline",
+    statusLabel: subledger.readinessLabel || (hasCriticalIssue ? "Blocked" : hasWarnings ? "Review" : subledger.fundEventCount > 0 ? "Ready" : "Empty"),
+    statusTone: manualJournalPrivateCapitalReadinessTone(readiness),
+    readinessLabel: subledger.readinessLabel || readiness,
+    readinessTone: manualJournalPrivateCapitalReadinessTone(readiness),
+    readinessReasonLabel: subledger.readinessReason || "No subledger readiness reason",
+    nextActionLabel: subledger.nextAction || "No next action",
+    nextActionRouteLabel: subledger.nextActionRoute || "No next-action route",
     activityRouteLabel: subledger.activityRoute || "No subledger route",
     netActivityLabel: formatCurrencyWithCode(subledger.netCapitalActivity, subledger.currency, true),
     openingLabel: formatCurrencyWithCode(subledger.openingNetActivity, subledger.currency, true),
@@ -3227,8 +3241,11 @@ function buildManualJournalPrivateCapitalReportOutputRow(
     id: output.reportOutputId,
     title: output.displayName || output.reportOutputType,
     subtitle: `${output.capitalAccountId}${output.investorId ? ` / ${output.investorId}` : ""}`,
-    readinessLabel: output.isPublished ? "Published" : output.isReportReady ? "Ready" : "Review",
+    readinessLabel: output.readinessLabel || (output.isPublished ? "Published" : output.isReportReady ? "Ready" : "Review"),
     readinessTone: output.isPublished || output.isReportReady ? "success" : output.validationIssues.some((issue) => issue.severity === "Critical") ? "danger" : "warning",
+    readinessReasonLabel: output.readinessReason || "No report-output readiness reason",
+    nextActionLabel: output.nextAction || "No next action",
+    nextActionRouteLabel: output.nextActionRoute ?? output.reportOutputRoute ?? output.reportRoute,
     effectiveDateLabel: output.effectiveDate,
     amountLabel: formatCurrencyWithCode(output.netCapitalActivity, output.currency, true),
     evidenceLabel: `${output.evidenceLinkCount.toLocaleString()} evidence`,

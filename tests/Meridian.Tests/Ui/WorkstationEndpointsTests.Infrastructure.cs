@@ -56,7 +56,10 @@ public sealed partial class WorkstationEndpointsTests
         Action<IServiceCollection>? configureServices = null,
         bool mapExecutionApi = false,
         bool mapPromotionApi = false,
-        UserPermission currentUserPermissions = UserPermission.ModifySecurityMaster)
+        UserPermission currentUserPermissions = UserPermission.ModifySecurityMaster,
+        UserRole? currentUserRole = null,
+        string? currentUserRoleProfileName = null,
+        string? currentUserCompanyId = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -74,6 +77,21 @@ public sealed partial class WorkstationEndpointsTests
         {
             context.Items[LoginSessionMiddleware.CurrentUserKey] = "ops-user";
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = currentUserPermissions;
+            if (currentUserRole.HasValue)
+            {
+                context.Items[LoginSessionMiddleware.CurrentUserRoleKey] = currentUserRole.Value;
+            }
+
+            if (!string.IsNullOrWhiteSpace(currentUserRoleProfileName))
+            {
+                context.Items[LoginSessionMiddleware.CurrentUserRoleProfileNameKey] = currentUserRoleProfileName.Trim();
+            }
+
+            if (!string.IsNullOrWhiteSpace(currentUserCompanyId))
+            {
+                context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = currentUserCompanyId.Trim();
+            }
+
             await next();
         });
 

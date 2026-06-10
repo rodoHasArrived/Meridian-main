@@ -38,10 +38,11 @@ For documentation work, start from the rebuilt canonical docs model:
 
 ## Current Codex Agent Profiles
 
-`.codex/agents/` now has skill-backed Codex subagent profiles for each current Codex
-specialist lane, plus the existing `meridian-navigation` routing profile and legacy
-`meridian-user-panel` compatibility alias. Use these profiles when a task benefits from a compact
-specialist entrypoint, then keep the matching skill as the canonical workflow definition.
+`.codex/agents/` has skill-backed Codex subagent profiles for the current Codex specialist lanes.
+Use these profiles when a task benefits from a compact specialist entrypoint, then keep the
+matching skill as the canonical workflow definition. The former `meridian-navigation` and
+`meridian-user-panel` compatibility aliases were pruned; use `meridian-repo-navigation` and
+`meridian-simulated-user-panel` instead.
 Each custom agent TOML file must define `name`, `description`, and `developer_instructions`; it may
 also include supported Codex `config.toml` keys such as `model`, `model_reasoning_effort`,
 `sandbox_mode`, `mcp_servers`, and `skills.config` when the specialist lane needs a deliberate
@@ -61,13 +62,11 @@ notifications, telemetry, and personal model preferences in user-level config.
 | `meridian-code-review.toml` | Review changes for bugs, regressions, and architecture drift |
 | `meridian-docs.toml` | Maintain documentation and AI guidance |
 | `meridian-implementation-assurance.toml` | Verify implementation completeness, evidence, docs sync, and guardrails |
-| `meridian-navigation.toml` | Route tasks through Meridian repo-navigation context |
 | `meridian-provider-builder.toml` | Build or extend ProviderSdk-compliant data providers |
 | `meridian-repo-navigation.toml` | Orient large-repo tasks before deeper work |
 | `meridian-roadmap-strategist.toml` | Reconcile roadmap, delivery-plan, and target-state docs |
 | `meridian-simulated-user-panel.toml` | Run structured simulated-user feedback workflows |
 | `meridian-test-writer.toml` | Write scenario-first Meridian tests |
-| `meridian-user-panel.toml` | Legacy simulated-user panel alias for compatibility |
 | `modular-desktop-mvvm.toml` | Implement modular WPF MVVM workstation changes |
 | `performance-resource-review.toml` | Review memory, CPU, I/O, rendering, concurrency, and lifecycle risks |
 | `provider-management-workflow.toml` | Build secure provider setup, health, validation, and recovery workflows |
@@ -87,7 +86,7 @@ notifications, telemetry, and personal model preferences in user-level config.
 | `meridian-cleanup` | Clean up code and docs without behavior changes |
 | `meridian-code-review` | Review changes for bugs, regressions, and architecture drift |
 | `meridian-docs` | Maintain Meridian documentation with repo-grounded evidence |
-| `meridian-implementation-assurance` | Implement and verify changes with strict Codex gates, explicit evidence, and docs sync |
+| `meridian-implementation-assurance` | Implement, certify, and improve changes with scope control, requirement-to-evidence traceability, explicit validation, and docs sync |
 | `meridian-provider-builder` | Build and extend provider integrations |
 | `meridian-repo-navigation` | Orient large-repo tasks before specialist work |
 | `meridian-roadmap-strategist` | Refresh roadmap, delivery-plan, and target-state docs |

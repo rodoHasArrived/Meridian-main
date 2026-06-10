@@ -99,7 +99,9 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 before_hash,
                 after_hash,
                 validation_issues,
-                evidence_links)
+                evidence_links,
+                company_id,
+                report_group_principal_ids)
             values (
                 @audit_event_id,
                 @recorded_at_utc,
@@ -111,7 +113,9 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 @before_hash,
                 @after_hash,
                 @validation_issues,
-                @evidence_links);
+                @evidence_links,
+                @company_id,
+                @report_group_principal_ids);
             """;
         command.Parameters.AddWithValue("audit_event_id", auditEvent.AuditEventId);
         command.Parameters.AddWithValue("recorded_at_utc", auditEvent.RecordedAtUtc.UtcDateTime);
@@ -124,6 +128,8 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         AddTextOrNull(command, "after_hash", auditEvent.AfterHash);
         AddJson(command, "validation_issues", auditEvent.ValidationIssues);
         AddJson(command, "evidence_links", auditEvent.EvidenceLinks);
+        AddTextOrNull(command, "company_id", auditEvent.CompanyId);
+        AddJson(command, "report_group_principal_ids", auditEvent.ReportGroupPrincipalIds ?? []);
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
@@ -147,7 +153,9 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                    before_hash,
                    after_hash,
                    validation_issues,
-                   evidence_links
+                   evidence_links,
+                   company_id,
+                   report_group_principal_ids
             from {Qualified("accounting_action_audit_events")}
             where 1 = 1
             """;
@@ -181,7 +189,9 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
                 reader.GetString(7),
                 reader.GetString(8),
                 Deserialize<IReadOnlyList<AccountingConfigurationValidationIssueDto>>(reader.GetString(9)) ?? [],
-                Deserialize<IReadOnlyList<string>>(reader.GetString(10)) ?? []));
+                Deserialize<IReadOnlyList<string>>(reader.GetString(10)) ?? [],
+                reader.IsDBNull(11) ? null : reader.GetString(11),
+                Deserialize<IReadOnlyList<string>>(reader.GetString(12)) ?? []));
         }
 
         return events;

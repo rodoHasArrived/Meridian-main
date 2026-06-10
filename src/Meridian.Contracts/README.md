@@ -96,6 +96,17 @@ generic evidence subject string.
 `FundOperationsNavigationContext` also carries optional evidence subject metadata for shared
 evidence routes such as `EvidenceWorkbench:accounting-record/{recordId}`, allowing browser and WPF
 clients to preserve the subject and source target while resolving to their local audit surfaces.
+`WorkstationAccountingPayload` can also carry the optional `ManualJournalWorkbench` projection so
+Accounting and Reporting workstation surfaces can review fund events, ledger impact, capital-account
+subledger impact, approval state, retained evidence, and report output from one contract-owned
+private-capital activity model.
+That private-capital contract now includes `PrivateCapitalFundEventLedgerRecordDto`,
+`PrivateCapitalCapitalAccountSubledgerDto`, `PrivateCapitalReportOutputDto`, and
+`PrivateCapitalEvidenceCategoryDto` so clients receive unified event, ledger-impact,
+capital-account impact, evidence, approval, report-output, readiness reason, next-action, and
+route metadata from the shared DTOs. Keep broader cap-table administration, broad LP portal,
+native live-payment execution, full forecasting, and Backtesting Studio out of these contracts until
+the W1-W5 operational-record slice explicitly reopens those lanes.
 
 Cluster coordination contracts define the shared lease and ownership vocabulary for distributed
 runtime work under `Meridian.Contracts.Coordination`. Keep `IClusterCoordinator`, `ILeaseManager`, `ICoordinationStore`,
@@ -216,6 +227,11 @@ instead of maintaining client-local template state. Workstation
 template metadata also carries report-writer row fields, column fields, metrics, formula
 expressions, Top-N, sort settings, and saved filters so operator clients can render no-code writer
 canvases without parsing template JSON or deriving grid composition from count-only summaries.
+Workstation template metadata now projects the same audit/version-control fields used by the
+governance record, including based-on template id, created/updated/submitted/approved/rejected
+actors and timestamps, decision rationale, approval reference, validation issues, and retained
+template audit events. Operator clients should render those fields directly instead of inferring
+version lineage from display strings.
 Template
 definitions and report-pack workflow records also carry `ReportAccessPolicyDto` with private,
 restricted user/group/company, and company-wide modes; workstation template payloads expose access
@@ -484,7 +500,10 @@ retained line provenance when either identifies one capital-account impact; unre
 outputs remain `capital-account:unassigned` so clients do not display one investor's statement on
 another investor's subledger. They also carry canonical report-output, fund-event record,
 capital-account subledger, evidence-packet, and approval routes so report-package clients can drill
-back into the same accounting record without reconstructing endpoint URLs.
+back into the same accounting record without reconstructing endpoint URLs. Report-output rows also
+promote readiness label/reason and next action/route so clients can explain missing evidence,
+pending approval, posting review, publication pending, missing governed packs, ready outputs, and
+published outputs without parsing validation issue codes.
 `PrivateCapitalFundEventLedgerRecordDto` groups each fund event with its
 capital-account subledger movements, GL impacts, retained evidence links, approval state, and
 report outputs so detail and drill-through clients can consume a single event-level accounting
@@ -503,7 +522,9 @@ account's fund-event records, running subledger entries, GL impacts, retained ev
 queue count, posted/published counts, report outputs, and validation issues into one
 capital-account-level accounting record. It carries the same classified evidence categories at the
 capital-account level so report and audit surfaces can compare source, ledger, approval, and report
-coverage for one LP subledger without rebuilding coverage state. It normalizes omitted fund-event ledger records and
+coverage for one LP subledger without rebuilding coverage state. The account-level record also
+promotes readiness, readiness reason, next action, and next-action route from the child fund-event
+ledger records and evidence lanes, so clients do not infer subledger posture from counts. It normalizes omitted fund-event ledger records and
 capital-account subledgers to empty collections
 so clients can treat that event-level model as present even when there are no private-capital
 events yet.
@@ -513,13 +534,22 @@ can distinguish retained ledger truth from unposted authoring state. Fund-event 
 also carry `IsPosted`, while report-output rows carry `IsPublished`, so drill-through clients do
 not have to infer source state from approval labels. `IsPublished` remains a report-workflow fact;
 `IsReportReady` is only true when the same fund event is posting-ready across approval, retained
-evidence, balanced ledger impact, and capital-account impact. Posted private-capital rows inherit
-the owning ledger book's base currency across event, ledger-impact, capital-account subledger, and
-report-output records instead of falling back to a client-local currency default.
+evidence, balanced ledger impact, capital-account impact, and report-specific publication or
+line-provenance evidence. `IsPublished` remains visible even when report-specific evidence is
+missing so clients can show the retained output without treating it as ready. Fund-event and
+capital-account report-output evidence categories require at least one report output, every linked
+report output to be report-ready, and at least one retained report evidence link before marking the
+evidence lane complete. Posted
+private-capital rows inherit the owning ledger book's base currency across event, ledger-impact,
+capital-account subledger, and report-output records instead of falling back to a client-local
+currency default.
+`IManualJournalEntryWorkbenchService.ListFundProfileIdsAsync` exposes retained manual-journal and
+ledger-book fund scopes for evidence discovery without introducing investor portal or cap-table
+surfaces.
 `IManualJournalEntryWorkbenchService.GetPrivateCapitalActivityAsync`
 and `UiApiRoutes.LedgerPrivateCapitalActivity` expose the same projection as a first-class review
-endpoint for reporting, audit, and future LP support surfaces that should not depend on the manual
-journal editor payload. The activity endpoint accepts optional `fundEventId`, `capitalAccountId`,
+endpoint for reporting, audit, and future LP support package consumers, without introducing an
+investor portal or cap-table surface. The activity endpoint accepts optional `fundEventId`, `capitalAccountId`,
 and `investorId` filters, retains posted fund events through matching child subledger, GL-impact,
 or report-output rows, and recomputes account totals and net activity from the retained subledger
 rows so multi-account posted events still drill into the selected capital account.

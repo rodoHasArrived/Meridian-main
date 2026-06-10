@@ -51,6 +51,8 @@ Primary inputs:
 Codex TOML profiles route recurring specialist work to compact, provider-specific entrypoints while
 the shared policy remains in [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md)
 and [`../codex/README.md`](../codex/README.md).
+The former `meridian-navigation` and `meridian-user-panel` compatibility aliases were pruned; use
+`meridian-repo-navigation` and `meridian-simulated-user-panel` for those lanes.
 Each profile must define `name`, `description`, and `developer_instructions`; it can also include
 supported Codex `config.toml` keys such as `model`, `model_reasoning_effort`, `sandbox_mode`,
 `mcp_servers`, and `skills.config` for lane-specific overrides. Keep shared project profiles
@@ -70,13 +72,11 @@ in user-level Codex config.
 | `meridian-code-review.toml` | Review changes for bugs, regressions, and architecture drift |
 | `meridian-docs.toml` | Maintain documentation and AI guidance |
 | `meridian-implementation-assurance.toml` | Verify implementation completeness, evidence, docs sync, and guardrails |
-| `meridian-navigation.toml` | Route tasks through Meridian repo-navigation context |
 | `meridian-provider-builder.toml` | Build or extend ProviderSdk-compliant data providers |
 | `meridian-repo-navigation.toml` | Orient large-repo tasks before deeper work |
 | `meridian-roadmap-strategist.toml` | Reconcile roadmap, delivery-plan, and target-state docs |
 | `meridian-simulated-user-panel.toml` | Run structured simulated-user feedback workflows |
 | `meridian-test-writer.toml` | Write scenario-first Meridian tests |
-| `meridian-user-panel.toml` | Legacy simulated-user panel alias for compatibility |
 | `modular-desktop-mvvm.toml` | Implement modular WPF MVVM workstation changes |
 | `performance-resource-review.toml` | Review memory, CPU, I/O, rendering, concurrency, and lifecycle risks |
 | `provider-management-workflow.toml` | Build secure provider setup, health, validation, and recovery workflows |

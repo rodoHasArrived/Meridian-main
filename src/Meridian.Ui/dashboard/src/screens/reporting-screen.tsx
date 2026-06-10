@@ -18,6 +18,7 @@ import {
   rejectReportTemplateDraft,
   renderReportTemplate,
   resumeReportingSchedule,
+  runDueReportingSchedules,
   runReportingNow,
   runReportingScheduleNow,
   saveReportingSchedule,
@@ -40,6 +41,13 @@ import {
 import type {
   AccountingWorkspaceResponse,
   GovernanceReportArtifactFormat,
+  ManualJournalEntryStatus,
+  PrivateCapitalActivityProjection,
+  PrivateCapitalCapitalAccountSubledger,
+  PrivateCapitalEvidenceCategory,
+  PrivateCapitalFundEventLedgerRecord,
+  PrivateCapitalLedgerImpact,
+  PrivateCapitalReportOutput,
   ReportAccessMode,
   ReportAccessPrincipalKind,
   ReportBrandingTheme,
@@ -73,9 +81,11 @@ interface ReportingCommandStatus {
 type ReportWriterDropZone = "rowFields" | "columnFields" | "metrics" | "formulas";
 type ReportWriterDraftState = Partial<Record<ReportWriterDropZone, ReportingWriterToken[]>>;
 type ReportingScheduleArtifactFormat = Extract<GovernanceReportArtifactFormat, "Pdf" | "Xlsx" | "Csv">;
+type ReportWriterPreviewDatasetProfile = "portfolioPositions" | "ledgerFacts" | "cashLadder";
 type ReportWriterDraftSettingsField =
   | "name"
   | "displayName"
+  | "previewDataset"
   | "accessMode"
   | "principalKind"
   | "principalId"
@@ -83,6 +93,17 @@ type ReportWriterDraftSettingsField =
   | "filterOperator"
   | "filterValue";
 type ReportWriterCustomFormulaField = "name" | "label" | "expression";
+type ReportBrandingDraftField =
+  | "themeId"
+  | "name"
+  | "firmName"
+  | "primaryColor"
+  | "accentColor"
+  | "textColor"
+  | "backgroundColor"
+  | "logoUri"
+  | "footerText"
+  | "disclaimer";
 type ReportingScheduleDraftField =
   | "scheduleId"
   | "templateId"
@@ -99,6 +120,7 @@ type ReportingScheduleDraftField =
 interface ReportWriterDraftSettings {
   name: string;
   displayName: string;
+  previewDataset: ReportWriterPreviewDatasetProfile;
   accessMode: ReportAccessMode;
   principalKind: ReportAccessPrincipalKind;
   principalId: string;
@@ -111,6 +133,19 @@ interface ReportWriterCustomFormulaDraft {
   name: string;
   label: string;
   expression: string;
+}
+
+interface ReportBrandingDraftState {
+  themeId: string;
+  name: string;
+  firmName: string;
+  primaryColor: string;
+  accentColor: string;
+  textColor: string;
+  backgroundColor: string;
+  logoUri: string;
+  footerText: string;
+  disclaimer: string;
 }
 
 interface ReportingScheduleDraftState {
@@ -130,6 +165,16 @@ interface ReportingScheduleDraftState {
 
 const reportingScheduleArtifactFormats: ReportingScheduleArtifactFormat[] = ["Pdf", "Xlsx", "Csv"];
 const reportingScheduleDeliveryModes: ReportPackDeliveryMode[] = ["SecurePortal", "EmailLink", "EvidenceVault", "InternalRoute"];
+const structuredExportDownloadFormats = [
+  { format: "json", label: "JSON" },
+  { format: "csv", label: "CSV" },
+  { format: "xlsx", label: "XLSX" }
+] as const;
+const reportWriterPreviewDatasetProfiles: { id: ReportWriterPreviewDatasetProfile; label: string }[] = [
+  { id: "portfolioPositions", label: "Portfolio positions" },
+  { id: "ledgerFacts", label: "Ledger facts" },
+  { id: "cashLadder", label: "Cash ladder" }
+];
 
 const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
   {
@@ -190,6 +235,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
   const [writerDraftStatus, setWriterDraftStatus] = useState<ReportingCommandStatus | null>(null);
   const [writerPreviewStatus, setWriterPreviewStatus] = useState<ReportingCommandStatus | null>(null);
   const [brandingPackStatus, setBrandingPackStatus] = useState<ReportingCommandStatus | null>(null);
+  const [brandingDraft, setBrandingDraft] = useState<ReportBrandingDraftState>(() => buildDefaultReportBrandingDraft(data?.reporting ?? null));
   const [writerPreviewByGridId, setWriterPreviewByGridId] = useState<Record<string, ReportWriterGridRender | null>>({});
   const runningRunActionId = runActionStatus?.state === "running" ? runActionStatus.id : null;
   const runningTemplateRunId = templateRunStatus?.state === "running" ? templateRunStatus.id : null;
@@ -201,6 +247,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
   const reportingFundProfileId = resolveReportingFundProfileId(data?.reporting ?? null);
   const writerGrids = vm.templateRows.flatMap((template) => template.writerGrids);
   const scheduleDistributionOptions = data?.reporting.reportPackDistributions ?? [];
+  const privateCapitalActivity = resolveReportingPrivateCapitalActivity(data);
 
   useEffect(() => {
     if (!shouldFocusReportPackProfile.current) {
@@ -377,7 +424,7 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
       ...current,
       [grid.id]: {
         ...current[grid.id],
-        [field]: value
+        [field]: field === "previewDataset" ? normalizeReportWriterPreviewDatasetProfile(value) : value
       }
     }));
     setWriterPreviewByGridId((current) => clearWriterPreview(current, grid.id));
@@ -687,6 +734,47 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
     }
   }
 
+  async function handleRunDueSchedules() {
+    const statusId = "schedule-due:run";
+    if (runningScheduleActionId) {
+      return;
+    }
+
+    setScheduleActionStatus({
+      id: statusId,
+      label: "Run due reporting schedules",
+      state: "running",
+      message: "Due reporting schedules are running.",
+      details: []
+    });
+
+    try {
+      const result = await runDueReportingSchedules();
+      const deliveryCount = result.runs.reduce((total, run) => total + (run.deliveryAttempts?.length ?? 0), 0);
+      const warningDetails = result.runs.flatMap((run) => run.deliveryWarnings ?? []);
+      setScheduleActionStatus({
+        id: statusId,
+        label: "Run due reporting schedules",
+        state: "success",
+        message: `Due schedule run completed for ${result.runs.length} schedule${result.runs.length === 1 ? "" : "s"}.`,
+        details: [
+          `Evaluated: ${result.evaluatedAtUtc}`,
+          `Deliveries: ${deliveryCount}`,
+          ...warningDetails.map((warning) => `Delivery warning: ${warning}`)
+        ]
+      });
+    } catch (error) {
+      const display = describeApiError(error, "Run due reporting schedules failed.");
+      setScheduleActionStatus({
+        id: statusId,
+        label: "Run due reporting schedules",
+        state: "error",
+        message: display.summary,
+        details: display.details
+      });
+    }
+  }
+
   async function handleGenerateBrandedPack(theme: ReportBrandingTheme) {
     if (!reportingFundProfileId || runningBrandingThemeId) {
       return;
@@ -726,6 +814,61 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
       setBrandingPackStatus({
         id: theme.themeId,
         label: "Generate branded report pack",
+        state: "error",
+        message: display.summary,
+        details: display.details
+      });
+    }
+  }
+
+  function updateBrandingDraft(field: ReportBrandingDraftField, value: string) {
+    setBrandingDraft((current) => ({
+      ...current,
+      [field]: value
+    }));
+  }
+
+  async function handleGenerateCustomBrandedPack() {
+    const statusId = "custom-branding-override";
+    if (!reportingFundProfileId || runningBrandingThemeId) {
+      return;
+    }
+
+    const theme = buildReportBrandingOverride(brandingDraft);
+    setBrandingPackStatus({
+      id: statusId,
+      label: "Generate custom branded report pack",
+      state: "running",
+      message: `${theme.name} report pack is generating.`,
+      details: []
+    });
+
+    try {
+      const result = await generateReportPack({
+        fundProfileId: reportingFundProfileId,
+        auditActor: "browser.reporting",
+        reportKind: "BoardPacket",
+        formats: ["Pdf", "Xlsx", "Csv"],
+        brandingThemeOverride: theme,
+        decisionRationale: `Generated from custom Reporting branding override ${theme.name}.`
+      });
+
+      setBrandingPackStatus({
+        id: statusId,
+        label: "Generate custom branded report pack",
+        state: "success",
+        message: `${theme.name} report pack generated.`,
+        details: [
+          `Report ID: ${result.reportId}`,
+          `Artifacts: ${result.artifacts.length}`,
+          `Theme: ${result.brandingTheme?.name ?? theme.name}`
+        ]
+      });
+    } catch (error) {
+      const display = describeApiError(error, `${theme.name} report pack generation failed.`);
+      setBrandingPackStatus({
+        id: statusId,
+        label: "Generate custom branded report pack",
         state: "error",
         message: display.summary,
         details: display.details
@@ -1134,12 +1277,21 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                       <span className="break-all font-mono text-[11px] text-muted-foreground">
                         {structuredExport.versionStamp ?? structuredExport.asOf}
                       </span>
-                      <Button asChild variant="outline" size="sm" disabled={!structuredExport.isReady}>
-                        <a href={structuredExport.route} target="_blank" rel="noreferrer" aria-label={`Open ${structuredExport.label} structured export`}>
-                          <FileText className="h-4 w-4" aria-hidden="true" />
-                          Open
-                        </a>
-                      </Button>
+                      <span className="flex flex-wrap justify-end gap-1.5">
+                        {structuredExportDownloadFormats.map((download) => (
+                          <Button asChild key={download.format} variant="outline" size="sm" disabled={!structuredExport.isReady}>
+                            <a
+                              href={buildStructuredExportDownloadHref(structuredExport.route, download.format)}
+                              target="_blank"
+                              rel="noreferrer"
+                              aria-label={`Download ${structuredExport.label} structured export as ${download.label}`}
+                            >
+                              <FileText className="h-4 w-4" aria-hidden="true" />
+                              {download.label}
+                            </a>
+                          </Button>
+                        ))}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -1211,6 +1363,109 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                     </div>
                   </div>
                 ))}
+              </div>
+              <div role="group" aria-label="Custom report branding override" className="mt-3 rounded-md border border-border/70 bg-background/30 px-3 py-3">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h4 className="text-sm font-semibold text-foreground">Custom styling override</h4>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                      Generate this report pack with firm-specific colors, logo, footer, and disclaimer metadata.
+                    </p>
+                  </div>
+                  <Badge variant="outline">Override</Badge>
+                </div>
+                <div className="mt-3 grid gap-2 md:grid-cols-3">
+                  <label className="space-y-1">
+                    <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Theme ID</span>
+                    <Input
+                      value={brandingDraft.themeId}
+                      onChange={(event) => updateBrandingDraft("themeId", event.target.value)}
+                      aria-label="Custom branding theme ID"
+                      className="font-mono"
+                    />
+                  </label>
+                  <label className="space-y-1">
+                    <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Theme name</span>
+                    <Input
+                      value={brandingDraft.name}
+                      onChange={(event) => updateBrandingDraft("name", event.target.value)}
+                      aria-label="Custom branding theme name"
+                    />
+                  </label>
+                  <label className="space-y-1">
+                    <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Firm</span>
+                    <Input
+                      value={brandingDraft.firmName}
+                      onChange={(event) => updateBrandingDraft("firmName", event.target.value)}
+                      aria-label="Custom branding firm name"
+                    />
+                  </label>
+                  {([
+                    ["primaryColor", "Primary", brandingDraft.primaryColor],
+                    ["accentColor", "Accent", brandingDraft.accentColor],
+                    ["textColor", "Text", brandingDraft.textColor],
+                    ["backgroundColor", "Background", brandingDraft.backgroundColor]
+                  ] as const).map(([field, label, value]) => (
+                    <label key={field} className="space-y-1">
+                      <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</span>
+                      <span className="flex items-center gap-2">
+                        <span
+                          aria-hidden="true"
+                          className="h-6 w-6 shrink-0 rounded-sm border border-border"
+                          style={{ backgroundColor: normalizeBrandingColor(value, "#FFFFFF") }}
+                        />
+                        <Input
+                          value={value}
+                          onChange={(event) => updateBrandingDraft(field, event.target.value)}
+                          aria-label={`Custom branding ${label.toLowerCase()} color`}
+                          className="font-mono"
+                        />
+                      </span>
+                    </label>
+                  ))}
+                  <label className="space-y-1 md:col-span-2">
+                    <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Logo URI</span>
+                    <Input
+                      value={brandingDraft.logoUri}
+                      onChange={(event) => updateBrandingDraft("logoUri", event.target.value)}
+                      aria-label="Custom branding logo URI"
+                    />
+                  </label>
+                </div>
+                <div className="mt-2 grid gap-2 md:grid-cols-2">
+                  <label className="space-y-1">
+                    <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Footer</span>
+                    <Input
+                      value={brandingDraft.footerText}
+                      onChange={(event) => updateBrandingDraft("footerText", event.target.value)}
+                      aria-label="Custom branding footer text"
+                    />
+                  </label>
+                  <label className="space-y-1">
+                    <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Disclaimer</span>
+                    <Input
+                      value={brandingDraft.disclaimer}
+                      onChange={(event) => updateBrandingDraft("disclaimer", event.target.value)}
+                      aria-label="Custom branding disclaimer"
+                    />
+                  </label>
+                </div>
+                <div className="mt-3 flex justify-end">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    busy={runningBrandingThemeId === "custom-branding-override"}
+                    busyLabel="Generating"
+                    disabled={!reportingFundProfileId || Boolean(runningBrandingThemeId)}
+                    disabledReason={reportingFundProfileId ? null : "A fund profile is required before generating a governed report pack."}
+                    onClick={() => void handleGenerateCustomBrandedPack()}
+                    aria-label="Generate custom branded report pack"
+                  >
+                    <FileText className="h-4 w-4" aria-hidden="true" />
+                    Generate custom
+                  </Button>
+                </div>
               </div>
               {brandingPackStatus ? (
                 <div className="mt-3">
@@ -1289,6 +1544,32 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                 <p className="mt-1 text-xs text-muted-foreground">
                   {template.version} · {template.sectionSummary} · <span className="font-mono">{template.id}</span>
                 </p>
+                <div
+                  role="group"
+                  aria-label={`${template.name} template audit and version lineage`}
+                  className="mt-2 grid gap-2 rounded-md border border-border/60 bg-background/25 px-2 py-2 text-xs md:grid-cols-2"
+                >
+                  <span className="min-w-0">
+                    <span className="block text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Version</span>
+                    <span className="mt-1 block break-words text-foreground">{template.versionLineageSummary}</span>
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Audit</span>
+                    <span className="mt-1 block break-words text-foreground">
+                      {template.auditTrailSummary} · {template.lastAuditSummary}
+                    </span>
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Approval</span>
+                    <span className="mt-1 block break-words text-foreground">
+                      {template.latestApprovedLabel} · {template.decisionSummary}
+                    </span>
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Validation</span>
+                    <span className="mt-1 block break-words text-foreground">{template.validationSummary}</span>
+                  </span>
+                </div>
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                   <p className="min-w-0 flex-1 text-xs leading-5 text-muted-foreground">
                     <span className="block">{template.approvalSummary}</span>
@@ -1425,6 +1706,8 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
           </CardContent>
         </Card>
       </section>
+
+      <ReportingPrivateCapitalReadinessPanel activity={privateCapitalActivity} />
 
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
         <Card className="panel-surface">
@@ -1585,6 +1868,19 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                 >
                   <Send className="h-4 w-4" aria-hidden="true" />
                   Save schedule
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  busy={runningScheduleActionId === "schedule-due:run"}
+                  busyLabel="Running"
+                  disabled={Boolean(runningScheduleActionId)}
+                  onClick={() => void handleRunDueSchedules()}
+                  aria-label="Run due reporting schedules"
+                >
+                  <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                  Run due
                 </Button>
               </div>
             </div>
@@ -2533,6 +2829,18 @@ function ReportWriterDesignerGrid({
           />
         </label>
         <label className="space-y-1">
+          <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Preview dataset</span>
+          <Select
+            value={settings.previewDataset}
+            onChange={(event) => onSettingsChange(grid, "previewDataset", event.target.value)}
+            aria-label={`${grid.title} preview dataset`}
+          >
+            {reportWriterPreviewDatasetProfiles.map((profile) => (
+              <option key={profile.id} value={profile.id}>{profile.label}</option>
+            ))}
+          </Select>
+        </label>
+        <label className="space-y-1">
           <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Access</span>
           <Select
             value={settings.accessMode}
@@ -2917,11 +3225,168 @@ function clearWriterPreview(
   return next;
 }
 
+function buildDefaultReportBrandingDraft(reporting: AccountingWorkspaceResponse["reporting"] | null): ReportBrandingDraftState {
+  const theme = reporting?.brandingThemes?.find((item) => !item.isBuiltIn)
+    ?? reporting?.brandingThemes?.[0]
+    ?? null;
+
+  return {
+    themeId: normalizeIdentifierToken(theme?.themeId, "custom-report-branding"),
+    name: normalizeDraftText(theme?.name, "Custom Report Theme"),
+    firmName: normalizeDraftText(theme?.firmName, "Meridian Reporting"),
+    primaryColor: normalizeBrandingColor(theme?.primaryColor, "#195E63"),
+    accentColor: normalizeBrandingColor(theme?.accentColor, "#C99700"),
+    textColor: normalizeBrandingColor(theme?.textColor, "#111827"),
+    backgroundColor: normalizeBrandingColor(theme?.backgroundColor, "#FFFFFF"),
+    logoUri: normalizeDraftText(theme?.logoUri, ""),
+    footerText: normalizeDraftText(theme?.footerText, "Confidential report pack."),
+    disclaimer: normalizeDraftText(theme?.disclaimer, "Prepared for authorized investor review.")
+  };
+}
+
+function buildStructuredExportDownloadHref(
+  route: string,
+  format: (typeof structuredExportDownloadFormats)[number]["format"]
+): string {
+  const [path, query = ""] = route.split("?", 2);
+  const params = new URLSearchParams(query);
+  if (format === "json") {
+    params.delete("format");
+  } else {
+    params.set("format", format);
+  }
+
+  const queryString = params.toString();
+  return queryString ? `${path}?${queryString}` : path;
+}
+
+function buildReportBrandingOverride(draft: ReportBrandingDraftState): ReportBrandingTheme {
+  const themeId = normalizeIdentifierToken(draft.themeId, "custom-report-branding");
+  const name = normalizeDraftText(draft.name, "Custom Report Theme");
+  const logoUri = normalizeDraftText(draft.logoUri, "");
+  const footerText = normalizeDraftText(draft.footerText, "");
+  const disclaimer = normalizeDraftText(draft.disclaimer, "");
+
+  return {
+    themeId,
+    name,
+    firmName: normalizeDraftText(draft.firmName, "Meridian Reporting"),
+    primaryColor: normalizeBrandingColor(draft.primaryColor, "#195E63"),
+    accentColor: normalizeBrandingColor(draft.accentColor, "#C99700"),
+    textColor: normalizeBrandingColor(draft.textColor, "#111827"),
+    backgroundColor: normalizeBrandingColor(draft.backgroundColor, "#FFFFFF"),
+    logoUri: logoUri || null,
+    footerText: footerText || null,
+    disclaimer: disclaimer || null,
+    isBuiltIn: false
+  };
+}
+
+function normalizeBrandingColor(value: string | null | undefined, fallback: string): string {
+  const normalized = normalizeDraftText(value, fallback).replace(/^#?([0-9A-Fa-f]{6})$/, "#$1");
+  return /^#[0-9A-Fa-f]{6}$/.test(normalized)
+    ? normalized.toUpperCase()
+    : fallback;
+}
+
+function buildDefaultReportingScheduleDraft(reporting: AccountingWorkspaceResponse["reporting"] | null): ReportingScheduleDraftState {
+  const schedule = reporting?.schedules?.[0] ?? null;
+  const firstTarget = schedule?.deliveryTargets?.[0] ?? null;
+  const template = reporting?.templates?.find((item) => item.isLatestApproved || item.lifecycleStatus === "Approved" || item.isBuiltIn)
+    ?? reporting?.templates?.[0]
+    ?? null;
+  const distribution = reporting?.reportPackDistributions?.find((item) => item.distributionId === firstTarget?.distributionId)
+    ?? reporting?.reportPackDistributions?.[0]
+    ?? null;
+  const templateId = normalizeIdentifierToken(schedule?.templateId ?? template?.templateId, "investor-monthly-statement");
+  const scheduleId = normalizeIdentifierToken(schedule?.scheduleId, `sched-${templateId}`);
+  const nextAsOfDate = normalizeDraftText(schedule?.nextAsOfDate, new Date().toISOString().slice(0, 10));
+  const dueAtUtc = normalizeDraftText(schedule?.dueAtUtc, `${nextAsOfDate}T20:00:00Z`);
+
+  return {
+    scheduleId,
+    templateId,
+    cronExpression: normalizeDraftText(schedule?.cronExpression, "0 8 1 * *"),
+    nextAsOfDate,
+    dueAtUtc,
+    maxRetries: String(Math.max(0, schedule?.maxRetries ?? 1)),
+    requestedBy: normalizeDraftText(schedule?.requestedBy ?? distribution?.owner, "browser-workstation"),
+    description: normalizeDraftText(schedule?.description, "Scheduled governed report pack."),
+    distributionId: normalizeIdentifierToken(firstTarget?.distributionId ?? distribution?.distributionId, "board-reporting-committee"),
+    deliveryMode: normalizeReportingScheduleDeliveryMode(firstTarget?.deliveryMode),
+    deliveryNote: normalizeDraftText(firstTarget?.note ?? distribution?.pendingSummary, ""),
+    formats: buildScheduleFormatSelection(firstTarget?.formats)
+  };
+}
+
+function buildReportingScheduleUpsertRequest(draft: ReportingScheduleDraftState): ReportingScheduleUpsertRequest {
+  const scheduleId = normalizeIdentifierToken(draft.scheduleId, "sched-reporting-pack");
+  const templateId = normalizeIdentifierToken(draft.templateId, "investor-monthly-statement");
+  const nextAsOfDate = normalizeDraftText(draft.nextAsOfDate, new Date().toISOString().slice(0, 10));
+  const deliveryNote = normalizeDraftText(draft.deliveryNote, "");
+
+  return {
+    scheduleId,
+    templateId,
+    cronExpression: normalizeDraftText(draft.cronExpression, "0 8 1 * *"),
+    nextAsOfDate,
+    dueAtUtc: normalizeDraftText(draft.dueAtUtc, `${nextAsOfDate}T20:00:00Z`),
+    maxRetries: parseScheduleMaxRetries(draft.maxRetries),
+    requestedBy: normalizeDraftText(draft.requestedBy, "browser-workstation"),
+    description: normalizeDraftText(draft.description, "Scheduled governed report pack."),
+    state: "Active",
+    deliveryTargets: [
+      {
+        distributionId: normalizeIdentifierToken(draft.distributionId, "board-reporting-committee"),
+        deliveryMode: normalizeReportingScheduleDeliveryMode(draft.deliveryMode),
+        formats: reportingScheduleArtifactFormats.filter((format) => draft.formats[format]),
+        note: deliveryNote || null
+      }
+    ]
+  };
+}
+
+function buildScheduleFormatSelection(
+  formats: readonly GovernanceReportArtifactFormat[] | null | undefined
+): ReportingScheduleDraftState["formats"] {
+  const selected = formats
+    ?.filter(isReportingScheduleArtifactFormat)
+    ?? reportingScheduleArtifactFormats;
+
+  return {
+    Pdf: selected.includes("Pdf"),
+    Xlsx: selected.includes("Xlsx"),
+    Csv: selected.includes("Csv")
+  };
+}
+
+function isReportingScheduleArtifactFormat(format: GovernanceReportArtifactFormat): format is ReportingScheduleArtifactFormat {
+  return reportingScheduleArtifactFormats.includes(format as ReportingScheduleArtifactFormat);
+}
+
+function normalizeReportingScheduleDeliveryMode(value: string | null | undefined): ReportPackDeliveryMode {
+  return reportingScheduleDeliveryModes.includes(value as ReportPackDeliveryMode)
+    ? value as ReportPackDeliveryMode
+    : "SecurePortal";
+}
+
+function normalizeReportWriterPreviewDatasetProfile(value: string | null | undefined): ReportWriterPreviewDatasetProfile {
+  return reportWriterPreviewDatasetProfiles.some((profile) => profile.id === value)
+    ? value as ReportWriterPreviewDatasetProfile
+    : "portfolioPositions";
+}
+
+function parseScheduleMaxRetries(value: string): number {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) ? Math.max(0, parsed) : 1;
+}
+
 function buildDefaultWriterDraftSettings(grid: ReportingWriterGridRow): ReportWriterDraftSettings {
   const firstFilter = grid.filters[0] ?? null;
   return {
     name: grid.templateId,
     displayName: `${grid.title} Draft`,
+    previewDataset: "portfolioPositions",
     accessMode: "CompanyWide",
     principalKind: "Group",
     principalId: "reporting-ops",
@@ -3003,9 +3468,10 @@ function buildRenderReportTemplateRequest(
     parameters: {
       period: "preview-period",
       asOfDate: "preview-as-of",
-      preview: "browser-report-writer"
+      preview: "browser-report-writer",
+      previewDataset: settings.previewDataset
     },
-    datasetRows: buildReportWriterPreviewRows(gridDefinition),
+    datasetRows: buildReportWriterPreviewRows(gridDefinition, settings.previewDataset),
     grids: [gridDefinition]
   };
 }
@@ -3030,7 +3496,10 @@ function buildReportWriterGridDefinition(
   };
 }
 
-function buildReportWriterPreviewRows(grid: ReportWriterGridDefinition): Record<string, string>[] {
+function buildReportWriterPreviewRows(
+  grid: ReportWriterGridDefinition,
+  profile: ReportWriterPreviewDatasetProfile
+): Record<string, string>[] {
   const dimensionFields = normalizeStringList([
     ...(grid.rowFields ?? []),
     ...(grid.columnFields ?? [])
@@ -3047,17 +3516,17 @@ function buildReportWriterPreviewRows(grid: ReportWriterGridDefinition): Record<
   const filterFields = normalizeStringList(filters.map((filter) => filter.field));
 
   if (fields.length === 0 && filterFields.length === 0) {
-    return [{ previewRow: "1" }, { previewRow: "2" }];
+    return [{ previewDataset: profile, previewRow: "1" }, { previewDataset: profile, previewRow: "2" }];
   }
 
   return Array.from({ length: 4 }, (_, index) => {
-    const row: Record<string, string> = {};
+    const row: Record<string, string> = { previewDataset: profile };
     for (const field of dimensionFields) {
-      row[field] = previewDimensionValue(field, index);
+      row[field] = previewDimensionValue(field, index, profile);
     }
 
     for (const field of numericFields) {
-      row[field] = previewNumericValue(field, index);
+      row[field] = previewNumericValue(field, index, profile);
     }
 
     for (const filter of filters) {
@@ -3065,7 +3534,7 @@ function buildReportWriterPreviewRows(grid: ReportWriterGridDefinition): Record<
         continue;
       }
 
-      row[filter.field] = previewFilterValue(filter, index);
+      row[filter.field] = previewFilterValue(filter, index, profile);
     }
 
     return row;
@@ -3084,7 +3553,7 @@ function buildReportAccessPolicy(settings: ReportWriterDraftSettings): ReportTem
   const principalKind = settings.accessMode === "Private" ? "User" : settings.principalKind;
   return {
     mode: settings.accessMode,
-    ownerPrincipalId: settings.accessMode === "Private" ? principalId : "browser-workstation",
+    ownerPrincipalId: settings.accessMode === "Private" ? principalId : null,
     principals: [
       {
         kind: principalKind,
@@ -3201,8 +3670,44 @@ function extractReportWriterFormulaFields(expression: string | null | undefined)
   return Array.from(expression.matchAll(/\{([^}]+)\}/g), (match) => match[1]?.trim() ?? "").filter(Boolean);
 }
 
-function previewDimensionValue(field: string, index: number): string {
+function previewDimensionValue(field: string, index: number, profile: ReportWriterPreviewDatasetProfile): string {
   const normalized = field.toLowerCase();
+  if (profile === "ledgerFacts") {
+    if (normalized.includes("sector")) {
+      return ["Operating expense", "Capital activity", "Financing", "Revenue"][index] ?? "Ledger";
+    }
+
+    if (normalized.includes("strategy")) {
+      return ["Close accrual", "Investor activity", "Cash financing", "Management fee"][index] ?? "Ledger";
+    }
+
+    if (normalized.includes("fund")) {
+      return ["Fund Alpha", "Fund Alpha", "Fund Beta", "Fund Beta"][index] ?? "Fund Alpha";
+    }
+
+    if (normalized.includes("security") || normalized.includes("asset")) {
+      return ["GL-6000", "GL-3100", "GL-2100", "GL-4100"][index] ?? "Ledger line";
+    }
+  }
+
+  if (profile === "cashLadder") {
+    if (normalized.includes("sector")) {
+      return ["Cash", "Settlement", "Financing", "Reserve"][index] ?? "Cash";
+    }
+
+    if (normalized.includes("strategy")) {
+      return ["T+0 liquidity", "T+1 settlement", "Credit facility", "Operating reserve"][index] ?? "Cash ladder";
+    }
+
+    if (normalized.includes("fund")) {
+      return ["Fund Alpha", "Fund Alpha", "Fund Alpha", "Fund Beta"][index] ?? "Fund Alpha";
+    }
+
+    if (normalized.includes("security") || normalized.includes("asset")) {
+      return ["USD sweep", "Broker receivable", "Credit draw", "Reserve cash"][index] ?? "Cash bucket";
+    }
+  }
+
   if (normalized.includes("sector")) {
     return ["Technology", "Technology", "Rates", "Credit"][index] ?? "Other";
   }
@@ -3226,8 +3731,36 @@ function previewDimensionValue(field: string, index: number): string {
   return `${formatPreviewFieldLabel(field)} ${(index % 2) + 1}`;
 }
 
-function previewNumericValue(field: string, index: number): string {
+function previewNumericValue(field: string, index: number, profile: ReportWriterPreviewDatasetProfile): string {
   const normalized = field.toLowerCase();
+  if (profile === "ledgerFacts") {
+    if (normalized.includes("pnl") || normalized.includes("p&l")) {
+      return ["25", "-7", "4", "12"][index] ?? "0";
+    }
+
+    if (normalized.includes("cash") || normalized.includes("liquidity")) {
+      return ["350", "150", "500", "225"][index] ?? "0";
+    }
+
+    if (normalized.includes("nav") || normalized.includes("value") || normalized.includes("exposure")) {
+      return ["250", "125", "80", "60"][index] ?? "0";
+    }
+  }
+
+  if (profile === "cashLadder") {
+    if (normalized.includes("pnl") || normalized.includes("p&l")) {
+      return ["1", "0", "-1", "0"][index] ?? "0";
+    }
+
+    if (normalized.includes("cash") || normalized.includes("liquidity")) {
+      return ["1250", "900", "650", "300"][index] ?? "0";
+    }
+
+    if (normalized.includes("nav") || normalized.includes("value") || normalized.includes("exposure")) {
+      return ["1200", "875", "600", "275"][index] ?? "0";
+    }
+  }
+
   if (normalized.includes("pnl") || normalized.includes("p&l")) {
     return ["10", "5", "-2", "4"][index] ?? "0";
   }
@@ -3247,15 +3780,19 @@ function previewNumericValue(field: string, index: number): string {
   return String((index + 1) * 10);
 }
 
-function previewFilterValue(filter: ReportWriterFilterDefinition, index: number): string {
+function previewFilterValue(
+  filter: ReportWriterFilterDefinition,
+  index: number,
+  profile: ReportWriterPreviewDatasetProfile
+): string {
   const operator = normalizeReportWriterFilterOperator(filter.operator);
   const value = filter.value ?? "";
   if (operator === "IsBlank") {
-    return index === 0 ? "" : previewDimensionValue(filter.field, index);
+    return index === 0 ? "" : previewDimensionValue(filter.field, index, profile);
   }
 
   if (operator === "IsNotBlank") {
-    return index === 0 ? previewDimensionValue(filter.field, index) : "";
+    return index === 0 ? previewDimensionValue(filter.field, index, profile) : "";
   }
 
   if (["GreaterThan", "GreaterThanOrEqual", "LessThan", "LessThanOrEqual"].includes(operator)) {
@@ -3281,7 +3818,7 @@ function previewFilterValue(filter: ReportWriterFilterDefinition, index: number)
     return index < 2 ? `${value}-alternate-${index + 1}` : value;
   }
 
-  return index < 2 ? value : previewDimensionValue(filter.field, index);
+  return index < 2 ? value : previewDimensionValue(filter.field, index, profile);
 }
 
 function formatPreviewFieldLabel(field: string): string {
@@ -3427,6 +3964,384 @@ function dedupeBy<T>(items: T[], keySelector: (item: T) => string): T[] {
   }
 
   return output;
+}
+
+function ReportingPrivateCapitalReadinessPanel({ activity }: { activity: PrivateCapitalActivityProjection | null }) {
+  const fundEventRecords = activity?.fundEventRecords ?? [];
+  const subledgers = activity?.capitalAccountSubledgers ?? [];
+  const ledgerImpacts = activity?.ledgerImpacts ?? [];
+  const reportOutputs = activity?.reportOutputs ?? [];
+
+  return (
+    <section role="region" aria-label="Private-capital report readiness">
+      <Card className="panel-surface">
+        <CardHeader>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="eyebrow-label">Private capital</div>
+              <CardTitle>Fund event ledger and capital account subledger</CardTitle>
+              <CardDescription>
+                Read-only report readiness from the Accounting manual journal workbench private-capital activity projection.
+              </CardDescription>
+            </div>
+            <Badge variant={activity ? fundEventRecords.length > 0 ? "success" : "outline" : "warning"} dot>
+              {activity ? "Source projection" : "Not loaded"}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {activity ? (
+            <>
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+                <ReportingPrivateCapitalMetric
+                  label="Fund events"
+                  value={activity.fundEventCount.toLocaleString()}
+                  detail={`${activity.postedFundEventCount.toLocaleString()} posted / ${activity.submittedFundEventCount.toLocaleString()} submitted`}
+                />
+                <ReportingPrivateCapitalMetric
+                  label="Capital accounts"
+                  value={activity.capitalAccountCount.toLocaleString()}
+                  detail={`${activity.approvalQueueCount.toLocaleString()} approval queue`}
+                />
+                <ReportingPrivateCapitalMetric
+                  label="Ledger impacts"
+                  value={ledgerImpacts.length.toLocaleString()}
+                  detail={`${ledgerImpacts.filter((impact) => impact.isPostingReady).length.toLocaleString()} posting-ready`}
+                />
+                <ReportingPrivateCapitalMetric
+                  label="Report outputs"
+                  value={reportOutputs.length.toLocaleString()}
+                  detail={`${reportOutputs.filter((output) => output.isReportReady).length.toLocaleString()} report-ready / ${activity.publishedReportOutputCount.toLocaleString()} published`}
+                />
+                <ReportingPrivateCapitalMetric
+                  label="Net activity"
+                  value={formatReportingMoney(activity.netCapitalActivity, activity.currency)}
+                  detail={`Projected ${activity.projectedAtUtc}`}
+                />
+              </div>
+
+              {activity.validationIssues.length > 0 ? (
+                <div role="status" aria-label="Private-capital projection warnings" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+                  <p>{activity.validationIssues.length.toLocaleString()} projection issue{activity.validationIssues.length === 1 ? "" : "s"} retained with the shared activity payload.</p>
+                  <ul className="mt-2 space-y-1 text-xs">
+                    {activity.validationIssues.slice(0, 3).map((issue, index) => (
+                      <li key={`${issue.code}-${index}`}>{issue.code}: {issue.message}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+
+              {fundEventRecords.length > 0 ? (
+                <div className="overflow-x-auto rounded-md border border-border/70">
+                  <table className="w-full min-w-[1120px] text-sm" aria-label="Private-capital report-ready fund event records">
+                    <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
+                      <tr>
+                        <th className="px-3 py-2 text-left">Fund event</th>
+                        <th className="px-3 py-2 text-left">Approval and readiness</th>
+                        <th className="px-3 py-2 text-left">Report state</th>
+                        <th className="px-3 py-2 text-left">Evidence categories</th>
+                        <th className="px-3 py-2 text-left">Ledger impact</th>
+                        <th className="px-3 py-2 text-left">Capital account</th>
+                        <th className="px-3 py-2 text-left">Routes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fundEventRecords.map((record) => (
+                        <ReportingPrivateCapitalFundEventRecordRow key={record.fundEventRecordId} record={record} />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+                  No private-capital fund event ledger records were included in the shared workbench projection.
+                </p>
+              )}
+
+              <div className="grid gap-4 xl:grid-cols-[1fr_0.9fr]">
+                <div className="overflow-x-auto rounded-md border border-border/70">
+                  <table className="w-full min-w-[760px] text-sm" aria-label="Private-capital capital account subledger references">
+                    <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
+                      <tr>
+                        <th className="px-3 py-2 text-left">Subledger</th>
+                        <th className="px-3 py-2 text-left">Roll-forward</th>
+                        <th className="px-3 py-2 text-left">Event counts</th>
+                        <th className="px-3 py-2 text-left">Evidence</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {subledgers.length > 0 ? subledgers.map((subledger) => (
+                        <ReportingPrivateCapitalSubledgerRow key={subledger.subledgerId} subledger={subledger} />
+                      )) : (
+                        <tr>
+                          <td colSpan={4} className="px-3 py-3 text-sm text-muted-foreground">
+                            No account-level capital-account subledger references were included.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="space-y-3">
+                  <ReportingPrivateCapitalLedgerImpactList impacts={ledgerImpacts} />
+                  <ReportingPrivateCapitalReportOutputList outputs={reportOutputs} />
+                </div>
+              </div>
+            </>
+          ) : (
+            <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
+              The loaded Reporting workspace payload does not include manualJournalWorkbench.privateCapitalActivity, so private-capital report readiness is not shown from local fallback data.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    </section>
+  );
+}
+
+function ReportingPrivateCapitalFundEventRecordRow({ record }: { record: PrivateCapitalFundEventLedgerRecord }) {
+  return (
+    <tr className="border-t border-border/60 bg-background/30 align-top">
+      <td className="px-3 py-2">
+        <div className="font-semibold text-foreground">{record.fundEventType || record.fundEventId}</div>
+        <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{record.fundEventRecordId}</div>
+        <div className="mt-1 text-xs text-muted-foreground">{record.memo || record.journalEntryId}</div>
+        <div className="mt-1 font-mono text-[11px] text-muted-foreground">{record.effectiveDate}</div>
+      </td>
+      <td className="px-3 py-2">
+        <div className="flex flex-wrap gap-1.5">
+          <Badge variant={privateCapitalApprovalVariant(record.approvalState)} dot>{record.approvalState}</Badge>
+          <Badge variant={privateCapitalReadinessVariant(record.readiness)} dot>{record.readinessLabel || record.readiness}</Badge>
+          {record.isPosted ? <Badge variant="success">Posted</Badge> : <Badge variant="outline">Unposted</Badge>}
+        </div>
+        <p className="mt-2 text-xs leading-5 text-muted-foreground">{record.readinessReason || "No readiness reason retained."}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{record.nextAction || "No next action retained."}</p>
+      </td>
+      <td className="px-3 py-2">
+        <div className="flex flex-wrap gap-1.5">
+          <Badge variant={record.isReportReady ? "success" : "warning"}>{record.isReportReady ? "Report-ready" : "Not report-ready"}</Badge>
+          <Badge variant={record.isPublished ? "success" : "outline"}>{record.isPublished ? "Published" : "Not published"}</Badge>
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          {record.reportOutputCount.toLocaleString()} output{record.reportOutputCount === 1 ? "" : "s"} / {record.reportLineProvenanceCount.toLocaleString()} provenance line{record.reportLineProvenanceCount === 1 ? "" : "s"}
+        </p>
+        <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">
+          {record.primaryReportOutputType ?? record.reportWorkflowState ?? record.publicationManifestId ?? "No primary report output"}
+        </p>
+      </td>
+      <td className="px-3 py-2">
+        <div className="text-xs text-muted-foreground">{record.evidenceLinkCount.toLocaleString()} retained evidence link{record.evidenceLinkCount === 1 ? "" : "s"}</div>
+        <ReportingPrivateCapitalEvidenceCategories categories={record.evidenceCategories ?? []} />
+      </td>
+      <td className="px-3 py-2 text-xs">
+        <div>{record.ledgerImpactCount.toLocaleString()} ledger impact{record.ledgerImpactCount === 1 ? "" : "s"}</div>
+        <div className="mt-1">{record.isPostingReady ? "Posting-ready" : "Posting review"}</div>
+        <div className="mt-1 font-mono text-muted-foreground">{formatReportingMoney(record.grossAmount, record.currency)} gross</div>
+      </td>
+      <td className="px-3 py-2 text-xs">
+        <div className="break-all font-mono text-foreground">{record.capitalAccountId}</div>
+        <div className="mt-1 break-all text-muted-foreground">{record.investorId ?? "Investor not assigned"}</div>
+        <div className="mt-1 font-mono text-muted-foreground">
+          {formatReportingMoney(record.capitalAccountOpeningNetActivity, record.currency)} to {formatReportingMoney(record.capitalAccountEndingNetActivity, record.currency)}
+        </div>
+        <div className="mt-1">{record.capitalAccountSubledgerEntryCount.toLocaleString()} subledger movement{record.capitalAccountSubledgerEntryCount === 1 ? "" : "s"}</div>
+      </td>
+      <td className="px-3 py-2 text-[11px]">
+        <ReportingPrivateCapitalRouteLink label="Activity" href={record.activityRoute} />
+        <ReportingPrivateCapitalRouteLink label="Evidence" href={record.evidenceRoute} />
+        <ReportingPrivateCapitalRouteLink label="Approval" href={record.approvalRoute ?? null} />
+        <ReportingPrivateCapitalRouteLink label="Report" href={record.primaryReportRoute ?? record.retainedManifestPath ?? null} />
+      </td>
+    </tr>
+  );
+}
+
+function ReportingPrivateCapitalSubledgerRow({ subledger }: { subledger: PrivateCapitalCapitalAccountSubledger }) {
+  return (
+    <tr className="border-t border-border/60 bg-background/30 align-top">
+      <td className="px-3 py-2">
+        <div className="break-all font-mono text-xs text-foreground">{subledger.capitalAccountId}</div>
+        <div className="mt-1 break-all text-[11px] text-muted-foreground">{subledger.investorId ?? "Investor not assigned"}</div>
+        <ReportingPrivateCapitalRouteLink label="Subledger" href={subledger.activityRoute} />
+      </td>
+      <td className="px-3 py-2 font-mono text-xs">
+        <div>{formatReportingMoney(subledger.openingNetActivity, subledger.currency)} opening</div>
+        <div className="mt-1">{formatReportingMoney(subledger.netCapitalActivity, subledger.currency)} net</div>
+        <div className="mt-1">{formatReportingMoney(subledger.endingNetActivity, subledger.currency)} ending</div>
+      </td>
+      <td className="px-3 py-2 text-xs">
+        <div>{subledger.fundEventCount.toLocaleString()} fund event{subledger.fundEventCount === 1 ? "" : "s"}</div>
+        <div className="mt-1">{subledger.postedFundEventCount.toLocaleString()} posted</div>
+        <div className="mt-1">{subledger.approvalQueueCount.toLocaleString()} approval queue</div>
+        <div className="mt-1">{subledger.publishedReportOutputCount.toLocaleString()} published report output{subledger.publishedReportOutputCount === 1 ? "" : "s"}</div>
+      </td>
+      <td className="px-3 py-2 text-xs">
+        <Badge variant={privateCapitalReadinessVariant(subledger.readiness ?? "EvidenceMissing")} dot>
+          {subledger.readinessLabel || subledger.readiness || "Evidence missing"}
+        </Badge>
+        <div className="mt-1 text-[11px] text-muted-foreground">{subledger.readinessReason || "No subledger readiness reason"}</div>
+        <ReportingPrivateCapitalRouteLink label={subledger.nextAction || "Next action"} href={subledger.nextActionRoute ?? subledger.activityRoute} />
+        <div>{subledger.evidenceLinkCount.toLocaleString()} retained evidence link{subledger.evidenceLinkCount === 1 ? "" : "s"}</div>
+        <div className="mt-1">{subledger.validationIssueCount.toLocaleString()} validation issue{subledger.validationIssueCount === 1 ? "" : "s"}</div>
+        <ReportingPrivateCapitalEvidenceCategories categories={subledger.evidenceCategories ?? []} />
+      </td>
+    </tr>
+  );
+}
+
+function ReportingPrivateCapitalLedgerImpactList({ impacts }: { impacts: PrivateCapitalLedgerImpact[] }) {
+  return (
+    <div className="rounded-md border border-border/70 bg-background/30 px-3 py-3">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <h4 className="text-sm font-semibold text-foreground">Ledger impacts</h4>
+        <Badge variant="outline">{impacts.length.toLocaleString()}</Badge>
+      </div>
+      {impacts.length > 0 ? (
+        <div role="list" aria-label="Private-capital ledger impacts" className="mt-3 space-y-2">
+          {impacts.slice(0, 4).map((impact) => (
+            <div key={impact.ledgerImpactId} role="listitem" className="rounded border border-border/60 bg-secondary/20 px-2.5 py-2 text-xs">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <span className="min-w-0">
+                  <span className="block font-semibold text-foreground">{impact.fundEventType || impact.fundEventId}</span>
+                  <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{impact.journalEntryId}</span>
+                </span>
+                <Badge variant={impact.isPostingReady ? "success" : impact.isBalanced ? "warning" : "danger"} dot>
+                  {impact.isPostingReady ? "Posting-ready" : impact.isBalanced ? "Balanced review" : "Unbalanced"}
+                </Badge>
+              </div>
+              <div className="mt-2 grid grid-cols-2 gap-2 font-mono text-[11px] text-muted-foreground">
+                <span>Debits {formatReportingMoney(impact.totalDebits, impact.currency)}</span>
+                <span>Credits {formatReportingMoney(impact.totalCredits, impact.currency)}</span>
+                <span>Imbalance {formatReportingMoney(impact.imbalance, impact.currency)}</span>
+                <span>{impact.lineCount.toLocaleString()} GL lines</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p role="status" className="mt-3 text-sm text-muted-foreground">No retained ledger-impact rows were included.</p>
+      )}
+    </div>
+  );
+}
+
+function ReportingPrivateCapitalReportOutputList({ outputs }: { outputs: PrivateCapitalReportOutput[] }) {
+  return (
+    <div className="rounded-md border border-border/70 bg-background/30 px-3 py-3">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <h4 className="text-sm font-semibold text-foreground">Report outputs</h4>
+        <Badge variant="outline">{outputs.length.toLocaleString()}</Badge>
+      </div>
+      {outputs.length > 0 ? (
+        <div role="list" aria-label="Private-capital report outputs" className="mt-3 space-y-2">
+          {outputs.slice(0, 4).map((output) => (
+            <div key={output.reportOutputId} role="listitem" className="rounded border border-border/60 bg-secondary/20 px-2.5 py-2 text-xs">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <span className="min-w-0">
+                  <span className="block font-semibold text-foreground">{output.displayName || output.reportOutputType}</span>
+                  <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{output.reportOutputId}</span>
+                </span>
+                <span className="flex flex-wrap justify-end gap-1.5">
+                  <Badge variant={output.isReportReady ? "success" : "warning"}>{output.readinessLabel || (output.isReportReady ? "Report-ready" : "Review")}</Badge>
+                  <Badge variant={output.isPublished ? "success" : "outline"}>{output.isPublished ? "Published" : "Unpublished"}</Badge>
+                </span>
+              </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">{output.readinessReason || "No report-output readiness reason"}</p>
+              <p className="mt-2 font-mono text-[11px] text-muted-foreground">
+                {formatReportingMoney(output.netCapitalActivity, output.currency)} / {output.approvalState} / {output.reportWorkflowState ?? "No workflow state"}
+              </p>
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                {output.evidenceLinkCount.toLocaleString()} evidence link{output.evidenceLinkCount === 1 ? "" : "s"} / {(output.reportLineProvenanceCount ?? 0).toLocaleString()} provenance line{output.reportLineProvenanceCount === 1 ? "" : "s"}
+              </p>
+              <ReportingPrivateCapitalRouteLink label={output.nextAction || "Output"} href={output.nextActionRoute ?? output.reportOutputRoute ?? output.reportRoute} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p role="status" className="mt-3 text-sm text-muted-foreground">No report-output rows were included.</p>
+      )}
+    </div>
+  );
+}
+
+function ReportingPrivateCapitalEvidenceCategories({ categories }: { categories: PrivateCapitalEvidenceCategory[] }) {
+  if (categories.length === 0) {
+    return <div className="mt-2 text-[11px] text-muted-foreground">No evidence categories retained.</div>;
+  }
+
+  return (
+    <div className="mt-2 space-y-1" aria-label="Private-capital retained evidence categories">
+      {categories.map((category) => (
+        <div key={category.categoryId} className="rounded-sm border border-border/60 bg-secondary/20 px-2 py-1">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Badge variant={category.isReady ? "success" : "warning"} dot>{category.label || category.categoryId}</Badge>
+            <span className="font-mono text-[11px] text-muted-foreground">{category.evidenceLinkCount.toLocaleString()} evidence</span>
+          </div>
+          <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{category.summary || "No evidence summary retained."}</p>
+          {(category.requiredEvidence ?? []).length > 0 ? (
+            <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+              Required: {(category.requiredEvidence ?? []).join(", ")}
+            </p>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ReportingPrivateCapitalMetric({ label, value, detail }: { label: string; value: string; detail: string }) {
+  return (
+    <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-2">
+      <div className="text-[11px] font-semibold uppercase text-muted-foreground">{label}</div>
+      <div className="mt-1 font-mono text-base text-foreground">{value}</div>
+      <div className="mt-1 text-xs leading-5 text-muted-foreground">{detail}</div>
+    </div>
+  );
+}
+
+function ReportingPrivateCapitalRouteLink({ label, href }: { label: string; href: string | null | undefined }) {
+  if (!href) {
+    return <div className="mt-1 text-[11px] text-muted-foreground">{label}: none retained</div>;
+  }
+
+  return (
+    <a className="mt-1 block break-all font-mono text-primary underline-offset-2 hover:underline" href={href}>
+      {label}: {href}
+    </a>
+  );
+}
+
+function privateCapitalApprovalVariant(status: ManualJournalEntryStatus): "outline" | "success" | "warning" | "danger" {
+  if (status === "Approved") {
+    return "success";
+  }
+
+  if (status === "Submitted") {
+    return "warning";
+  }
+
+  if (status === "NeedsFix" || status === "Rejected") {
+    return "danger";
+  }
+
+  return "outline";
+}
+
+function privateCapitalReadinessVariant(readiness: PrivateCapitalFundEventLedgerRecord["readiness"]): "outline" | "success" | "warning" | "danger" {
+  if (readiness === "Published" || readiness === "Ready") {
+    return "success";
+  }
+
+  if (readiness === "Blocked") {
+    return "danger";
+  }
+
+  return readiness ? "warning" : "outline";
+}
+
+function resolveReportingPrivateCapitalActivity(data: AccountingWorkspaceResponse | null): PrivateCapitalActivityProjection | null {
+  return data?.manualJournalWorkbench?.privateCapitalActivity ?? null;
 }
 
 function ReportingScheduleField({ label, value }: { label: string; value: string }) {

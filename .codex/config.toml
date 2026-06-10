@@ -87,10 +87,9 @@ context_size = "medium"
 ################################################################################
 
 # Keep project-local subagent orchestration bounded. Specialist profiles live
-# in .codex/agents/ and inherit these conservative defaults unless an operator
-# overrides them in a user profile.
+# in .codex/agents/. The multi-agent v2 concurrency cap is configured above
+# under [features.multi_agent_v2]; do not set legacy agents.max_threads here.
 [agents]
-max_threads = 6
 max_depth = 1
 job_max_runtime_seconds = 3600
 
@@ -127,9 +126,6 @@ config_file = "agents/meridian-docs.toml"
 [agents."meridian-implementation-assurance"]
 config_file = "agents/meridian-implementation-assurance.toml"
 
-[agents."meridian-navigation"]
-config_file = "agents/meridian-navigation.toml"
-
 [agents."meridian-provider-builder"]
 config_file = "agents/meridian-provider-builder.toml"
 
@@ -144,9 +140,6 @@ config_file = "agents/meridian-simulated-user-panel.toml"
 
 [agents."meridian-test-writer"]
 config_file = "agents/meridian-test-writer.toml"
-
-[agents."meridian-user-panel"]
-config_file = "agents/meridian-user-panel.toml"
 
 [agents."modular-desktop-mvvm"]
 config_file = "agents/modular-desktop-mvvm.toml"

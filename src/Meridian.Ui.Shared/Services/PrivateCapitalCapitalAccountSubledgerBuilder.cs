@@ -110,6 +110,17 @@ internal static class PrivateCapitalCapitalAccountSubledgerBuilder
             entries,
             impacts,
             outputs);
+        var activityRoute = PrivateCapitalActivityRouteBuilder.BuildCapitalAccountSubledgerRoute(
+            fundProfileId,
+            ledgerBookId,
+            key.CapitalAccountId,
+            key.InvestorId,
+            key.Currency);
+        var readiness = BuildReadiness(
+            records,
+            evidenceCategories,
+            validationIssues,
+            activityRoute);
 
         return new PrivateCapitalCapitalAccountSubledgerDto(
             $"capital-account-subledger:{key.CapitalAccountId}:{key.InvestorId ?? "unassigned"}:{key.Currency}".ToLowerInvariant(),
@@ -119,12 +130,7 @@ internal static class PrivateCapitalCapitalAccountSubledgerBuilder
             key.CapitalAccountId,
             key.InvestorId,
             key.Currency,
-            PrivateCapitalActivityRouteBuilder.BuildCapitalAccountSubledgerRoute(
-                fundProfileId,
-                ledgerBookId,
-                key.CapitalAccountId,
-                key.InvestorId,
-                key.Currency),
+            activityRoute,
             account?.Contributions ?? SumByType(records, ManualJournalEntryTypeDto.CapitalCall),
             account?.Distributions ?? SumByType(records, ManualJournalEntryTypeDto.Distribution),
             account?.Subscriptions ?? SumByType(records, ManualJournalEntryTypeDto.Subscription),
@@ -149,7 +155,112 @@ internal static class PrivateCapitalCapitalAccountSubledgerBuilder
             impacts,
             outputs,
             validationIssues,
+            readiness.Readiness,
+            readiness.Label,
+            readiness.Reason,
+            readiness.NextAction,
+            readiness.NextActionRoute,
             EvidenceCategories: evidenceCategories);
+    }
+
+    private static PrivateCapitalFundEventLedgerReadinessProjection BuildReadiness(
+        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
+        IReadOnlyList<PrivateCapitalEvidenceCategoryDto> evidenceCategories,
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> validationIssues,
+        string activityRoute)
+    {
+        if (validationIssues.Any(static item => item.Severity == AccountingConfigurationValidationSeverityDto.Critical) ||
+            records.Any(static item => item.Readiness == PrivateCapitalFundEventLedgerReadinessDto.Blocked))
+        {
+            var blockedRecord = records.FirstOrDefault(static item => item.Readiness == PrivateCapitalFundEventLedgerReadinessDto.Blocked);
+            return new(
+                PrivateCapitalFundEventLedgerReadinessDto.Blocked,
+                "Blocked",
+                "A critical validation issue or blocked fund event prevents capital-account subledger reliance.",
+                "Repair capital-account subledger",
+                blockedRecord?.NextActionRoute ?? activityRoute);
+        }
+
+        if (records.Count == 0 ||
+            evidenceCategories.Any(static item =>
+                !item.IsReady &&
+                string.Equals(item.CategoryId, "source-support", StringComparison.OrdinalIgnoreCase)))
+        {
+            var evidenceRecord = records.FirstOrDefault(static item => item.Readiness == PrivateCapitalFundEventLedgerReadinessDto.EvidenceMissing);
+            return new(
+                PrivateCapitalFundEventLedgerReadinessDto.EvidenceMissing,
+                records.Count == 0 ? "No fund events" : "Evidence missing",
+                records.Count == 0
+                    ? "No fund-event ledger records are linked to this capital-account subledger."
+                    : "Retained source evidence is missing for one or more fund events in this capital-account subledger.",
+                records.Count == 0 ? "Add fund event" : "Attach retained evidence",
+                evidenceRecord?.NextActionRoute ?? activityRoute);
+        }
+
+        if (records.Any(static item => item.Readiness == PrivateCapitalFundEventLedgerReadinessDto.ApprovalPending))
+        {
+            var approvalRecord = records.First(static item => item.Readiness == PrivateCapitalFundEventLedgerReadinessDto.ApprovalPending);
+            return new(
+                PrivateCapitalFundEventLedgerReadinessDto.ApprovalPending,
+                "Approval pending",
+                "One or more fund events require approval before the capital-account subledger can be treated as posting ready.",
+                "Submit or review approval",
+                approvalRecord.NextActionRoute ?? activityRoute);
+        }
+
+        if (records.Any(static item => item.Readiness == PrivateCapitalFundEventLedgerReadinessDto.PostingReview))
+        {
+            var postingRecord = records.First(static item => item.Readiness == PrivateCapitalFundEventLedgerReadinessDto.PostingReview);
+            return new(
+                PrivateCapitalFundEventLedgerReadinessDto.PostingReview,
+                "Posting review",
+                "One or more fund events have approval and evidence but are not posting ready in the ledger.",
+                "Review ledger impact",
+                postingRecord.NextActionRoute ?? activityRoute);
+        }
+
+        if (records.Any(static item => item.Readiness == PrivateCapitalFundEventLedgerReadinessDto.ReportReview))
+        {
+            var reportRecord = records.First(static item => item.Readiness == PrivateCapitalFundEventLedgerReadinessDto.ReportReview);
+            return new(
+                PrivateCapitalFundEventLedgerReadinessDto.ReportReview,
+                "Report review",
+                "Ledger impact is ready, but one or more retained report outputs are not ready for stakeholder use.",
+                "Prepare report output",
+                reportRecord.NextActionRoute ?? activityRoute);
+        }
+
+        if (evidenceCategories.Any(static item =>
+                !item.IsReady &&
+                string.Equals(item.CategoryId, "report-output", StringComparison.OrdinalIgnoreCase)))
+        {
+            var reportRecord = records.FirstOrDefault(static item => !string.IsNullOrWhiteSpace(item.PrimaryReportRoute));
+            return new(
+                PrivateCapitalFundEventLedgerReadinessDto.ReportReview,
+                "Report review",
+                "Ledger impact is ready, but capital-account report-output evidence is not complete.",
+                "Prepare report output",
+                reportRecord?.PrimaryReportRoute ?? reportRecord?.NextActionRoute ?? activityRoute);
+        }
+
+        if (records.All(static item => item.Readiness == PrivateCapitalFundEventLedgerReadinessDto.Published))
+        {
+            var publishedRecord = records.First();
+            return new(
+                PrivateCapitalFundEventLedgerReadinessDto.Published,
+                "Published",
+                "All fund events in this capital-account subledger have retained evidence, posting-ready ledger impact, capital-account movement, and published report output.",
+                "Open published report",
+                publishedRecord.NextActionRoute ?? activityRoute);
+        }
+
+        var readyRecord = records.FirstOrDefault(static item => item.Readiness == PrivateCapitalFundEventLedgerReadinessDto.Ready) ?? records.First();
+        return new(
+            PrivateCapitalFundEventLedgerReadinessDto.Ready,
+            "Ready",
+            "The capital-account subledger has retained evidence, posting-ready ledger impact, capital-account movement, and report output ready for publication.",
+            "Review report output",
+            readyRecord.NextActionRoute ?? activityRoute);
     }
 
     private static IReadOnlyList<CapitalAccountSubledgerKey> BuildKeys(

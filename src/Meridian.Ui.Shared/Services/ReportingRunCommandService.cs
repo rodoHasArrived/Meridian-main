@@ -7,18 +7,28 @@ public sealed class ReportingRunCommandService
 {
     private readonly IReportingOrchestrationService _orchestrationService;
     private readonly IReportingTemplateCatalog _templateCatalog;
+    private readonly GovernedReportingTemplateCatalog? _governedTemplateCatalog;
 
     public ReportingRunCommandService(
         IReportingOrchestrationService orchestrationService,
-        IReportingTemplateCatalog templateCatalog)
+        IReportingTemplateCatalog templateCatalog,
+        GovernedReportingTemplateCatalog? governedTemplateCatalog = null)
     {
         _orchestrationService = orchestrationService ?? throw new ArgumentNullException(nameof(orchestrationService));
         _templateCatalog = templateCatalog ?? throw new ArgumentNullException(nameof(templateCatalog));
+        _governedTemplateCatalog = governedTemplateCatalog;
     }
 
     public async Task<ReportingRunResultDto> RunAsync(
         ReportingRunRequestDto request,
         string fallbackActor,
+        CancellationToken cancellationToken = default) =>
+        await RunAsync(request, fallbackActor, accessContext: null, cancellationToken).ConfigureAwait(false);
+
+    public async Task<ReportingRunResultDto> RunAsync(
+        ReportingRunRequestDto request,
+        string fallbackActor,
+        ReportAccessQueryContext? accessContext,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -31,6 +41,13 @@ public sealed class ReportingRunCommandService
 
         var requestedAtUtc = DateTimeOffset.UtcNow;
         var templateId = request.TemplateId.Trim();
+        var accessEvaluation = _governedTemplateCatalog?.EvaluateAccess(templateId, accessContext)
+            ?? ReportAccessPolicyEvaluator.Evaluate(null, accessContext);
+        if (!accessEvaluation.IsAccessible)
+        {
+            throw new UnauthorizedAccessException(accessEvaluation.Reason);
+        }
+
         var template = _templateCatalog.Get(templateId);
         var asOfDate = request.AsOfDate ?? DateOnly.FromDateTime(requestedAtUtc.UtcDateTime);
         var actor = string.IsNullOrWhiteSpace(request.RequestedBy) ? fallbackActor.Trim() : request.RequestedBy.Trim();

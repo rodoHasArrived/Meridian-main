@@ -1,4 +1,5 @@
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.Ledger;
 
 namespace Meridian.Contracts.Workstation;
 
@@ -299,7 +300,22 @@ public sealed record WorkstationReportingTemplatePayload(
     IReadOnlyList<WorkstationReportWriterGridPayload>? ReportWriterGrids = null,
     string AccessMode = "CompanyWide",
     string AccessSummary = "Company-wide access",
-    bool IsAccessible = true);
+    bool IsAccessible = true,
+    string? CreatedBy = null,
+    DateTimeOffset? CreatedAt = null,
+    string? UpdatedBy = null,
+    DateTimeOffset? UpdatedAt = null,
+    string? SubmittedBy = null,
+    DateTimeOffset? SubmittedAt = null,
+    string? ApprovedBy = null,
+    DateTimeOffset? ApprovedAt = null,
+    string? RejectedBy = null,
+    DateTimeOffset? RejectedAt = null,
+    string? DecisionRationale = null,
+    string? ApprovalReference = null,
+    VersionedReportTemplateIdDto? BasedOnTemplateId = null,
+    IReadOnlyList<ReportTemplateAuditEventDto>? AuditTrail = null,
+    IReadOnlyList<string>? ValidationIssues = null);
 
 /// <summary>
 /// Lightweight reporting run status with lineage and approval posture for operator surfaces.
@@ -385,7 +401,8 @@ public sealed record WorkstationAccountingPayload(
     object CashFlow,
     WorkstationReportingPayload Reporting,
     object ControlCenter,
-    object KernelObservability);
+    object KernelObservability,
+    ManualJournalEntryWorkbenchDto? ManualJournalWorkbench = null);
 
 // ---------------------------------------------------------------------------
 // /api/workstation/portfolio

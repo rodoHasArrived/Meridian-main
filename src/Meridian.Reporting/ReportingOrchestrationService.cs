@@ -80,6 +80,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                 var sections = template.Sections
                     .Select(section => renderer.RenderSection(runId, contract, template, section, attempt))
                     .ToImmutableArray();
+                var gridArtifacts = BuildReportWriterGridArtifacts(runId, template);
 
                 var manifest = new ReportingOutputManifest(
                     runId,
@@ -87,16 +88,23 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                     contract.AsOfDate,
                     ReportingRunStatus.Draft,
                     sections,
-                    [
+                    new[]
+                    {
                         $"{runId}.manifest.json",
                         $"{runId}.pdf"
-                    ],
+                    }
+                    .Concat(gridArtifacts)
+                    .ToImmutableArray(),
                     attempt,
                     contract.Trigger,
                     contract.ScheduleId);
 
                 manifests[runId] = manifest;
-                AppendAudit(runId, "RunGenerated", contract.RequestedBy, $"trigger={contract.Trigger}; attempt={attempt}; lineageSections={sections.Length}");
+                AppendAudit(
+                    runId,
+                    "RunGenerated",
+                    contract.RequestedBy,
+                    $"trigger={contract.Trigger}; attempt={attempt}; lineageSections={sections.Length}; reportWriterGrids={gridArtifacts.Length}");
                 await PersistAsync(manifest, cancellationToken).ConfigureAwait(false);
                 return manifest;
             }
@@ -227,6 +235,15 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         => runStore is null
             ? Task.CompletedTask
             : runStore.SaveAsync(manifest, GetAudit(manifest.RunId), cancellationToken);
+
+    private static string[] BuildReportWriterGridArtifacts(string runId, ReportingTemplateMetadata template) =>
+        (template.ReportWriterGrids ?? [])
+            .Where(static grid => !string.IsNullOrWhiteSpace(grid.GridId))
+            .Select(static grid => grid.GridId.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static gridId => gridId, StringComparer.OrdinalIgnoreCase)
+            .Select(gridId => $"report-writer://{runId}/grids/{gridId}")
+            .ToArray();
 
     private static string BuildRunId(ReportingJobContract contract)
         => $"{contract.JobId}-{contract.AsOfDate:yyyyMMdd}";

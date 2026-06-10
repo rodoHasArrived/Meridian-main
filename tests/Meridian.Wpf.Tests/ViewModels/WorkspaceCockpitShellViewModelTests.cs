@@ -121,9 +121,42 @@ public sealed class WorkspaceCockpitShellViewModelTests
             .Should()
             .Equal(WorkspaceTone.Info, WorkspaceTone.Warning, WorkspaceTone.Neutral, WorkspaceTone.Success);
 
+        viewModel.CockpitDecisionItems.Select(static item => item.SecondaryActionId)
+            .Should()
+            .Equal("ExportPresets", "FundAuditTrail", "DataQuality", "ExportPresets");
+
         viewModel.CockpitDecisionItems.Should().OnlyContain(static item =>
             !string.IsNullOrWhiteSpace(item.Title) &&
             !string.IsNullOrWhiteSpace(item.StatusLabel) &&
             !string.IsNullOrWhiteSpace(item.AutomationName));
+    }
+
+    [Fact]
+    public void ReportingCockpitDecisionItems_ShouldExposeImplementedReportingCapabilities()
+    {
+        var viewModel = new ReportingWorkspaceShellViewModel();
+
+        var details = string.Join(" ", viewModel.CockpitDecisionItems.Select(static item => item.Detail));
+
+        details.Should().ContainEquivalentOf("no-code report grids");
+        details.Should().ContainEquivalentOf("branded pack output");
+        details.Should().ContainEquivalentOf("scheduled runs");
+        details.Should().ContainEquivalentOf("Top-N");
+        details.Should().ContainEquivalentOf("contribution");
+        details.Should().ContainEquivalentOf("PDF/XLSX/CSV");
+        details.Should().ContainEquivalentOf("secure-portal");
+        details.Should().ContainEquivalentOf("regulatory");
+    }
+
+    [Fact]
+    public void ReportingCockpitDecisionItems_ShouldUseRegisteredDrillThroughTargets()
+    {
+        var viewModel = new ReportingWorkspaceShellViewModel();
+
+        var actionIds = viewModel.CockpitDecisionItems
+            .SelectMany(static item => new[] { item.PrimaryActionId, item.SecondaryActionId })
+            .Where(static actionId => !string.IsNullOrWhiteSpace(actionId));
+
+        actionIds.Should().OnlyContain(static actionId => ShellNavigationCatalog.GetPage(actionId) != null);
     }
 }

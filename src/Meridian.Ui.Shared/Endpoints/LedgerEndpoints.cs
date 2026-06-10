@@ -423,7 +423,7 @@ public static class LedgerEndpoints
 
             try
             {
-                var result = await service.UpsertChartNodeAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted).ConfigureAwait(false);
+                var result = await service.UpsertChartNodeAsync(WithAccessContext(request, context), context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (ArgumentException ex)
@@ -453,7 +453,7 @@ public static class LedgerEndpoints
 
             try
             {
-                var result = await service.UpsertTemplateAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted).ConfigureAwait(false);
+                var result = await service.UpsertTemplateAsync(WithAccessContext(request, context), context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (ArgumentException ex)
@@ -483,7 +483,7 @@ public static class LedgerEndpoints
 
             try
             {
-                var result = await service.UpsertPostingRuleAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted).ConfigureAwait(false);
+                var result = await service.UpsertPostingRuleAsync(WithAccessContext(request, context), context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (ArgumentException ex)
@@ -534,7 +534,7 @@ public static class LedgerEndpoints
 
             try
             {
-                var result = await service.ActivateAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted).ConfigureAwait(false);
+                var result = await service.ActivateAsync(WithAccessContext(request, context), context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (InvalidOperationException ex)
@@ -967,6 +967,46 @@ public static class LedgerEndpoints
         => EndpointAuthorization.TryResolveActor(context, out var actor) && !string.IsNullOrWhiteSpace(actor)
             ? actor
             : suppliedActor;
+
+    private static UpsertChartOfAccountsNodeRequest WithAccessContext(
+        UpsertChartOfAccountsNodeRequest request,
+        HttpContext context)
+        => request with
+        {
+            Actor = ResolveMutationActor(context, request.Actor),
+            CompanyId = EndpointAuthorization.ResolveCompanyId(context),
+            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
+        };
+
+    private static UpsertJournalEntryTemplateRequest WithAccessContext(
+        UpsertJournalEntryTemplateRequest request,
+        HttpContext context)
+        => request with
+        {
+            Actor = ResolveMutationActor(context, request.Actor),
+            CompanyId = EndpointAuthorization.ResolveCompanyId(context),
+            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
+        };
+
+    private static UpsertPostingRuleRequest WithAccessContext(
+        UpsertPostingRuleRequest request,
+        HttpContext context)
+        => request with
+        {
+            Actor = ResolveMutationActor(context, request.Actor),
+            CompanyId = EndpointAuthorization.ResolveCompanyId(context),
+            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
+        };
+
+    private static ActivateAccountingConfigurationRequest WithAccessContext(
+        ActivateAccountingConfigurationRequest request,
+        HttpContext context)
+        => request with
+        {
+            Actor = ResolveMutationActor(context, request.Actor),
+            CompanyId = EndpointAuthorization.ResolveCompanyId(context),
+            ReportGroupPrincipalIds = EndpointAuthorization.ResolveReportGroupPrincipalIds(context)
+        };
 
     private static IResult MapServiceException(LedgerBookServiceException exception)
         => exception switch

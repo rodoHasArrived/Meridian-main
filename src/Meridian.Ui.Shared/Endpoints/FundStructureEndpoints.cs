@@ -981,7 +981,14 @@ public static class FundStructureEndpoints
 
             try
             {
-                return Results.Json(registry.CreateDraft(request, actor), jsonOptions, statusCode: StatusCodes.Status201Created);
+                return Results.Json(
+                    registry.CreateDraft(
+                        request,
+                        actor,
+                        EndpointAuthorization.ResolveCompanyId(context),
+                        EndpointAuthorization.ResolveReportGroupPrincipalIds(context)),
+                    jsonOptions,
+                    statusCode: StatusCodes.Status201Created);
             }
             catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
             {
@@ -1543,9 +1550,13 @@ public static class FundStructureEndpoints
             try
             {
                 return Results.Json(
-                    await svc.RunAsync(request with { RequestedBy = actor }, actor, context.RequestAborted).ConfigureAwait(false),
+                    await svc.RunAsync(request with { RequestedBy = actor }, actor, BuildReportAccessQueryContext(context), context.RequestAborted).ConfigureAwait(false),
                     jsonOptions,
                     statusCode: StatusCodes.Status201Created);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status403Forbidden);
             }
             catch (Exception ex) when (ex is ArgumentException or ArgumentOutOfRangeException or InvalidOperationException or KeyNotFoundException)
             {
@@ -1593,7 +1604,14 @@ public static class FundStructureEndpoints
 
             try
             {
-                return Results.Json(svc.Upsert(request with { RequestedBy = actor }), jsonOptions, statusCode: StatusCodes.Status201Created);
+                return Results.Json(
+                    svc.Upsert(request with { RequestedBy = actor }, BuildReportAccessQueryContext(context)),
+                    jsonOptions,
+                    statusCode: StatusCodes.Status201Created);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status403Forbidden);
             }
             catch (Exception ex) when (ex is ArgumentException or ArgumentOutOfRangeException)
             {
@@ -1633,7 +1651,13 @@ public static class FundStructureEndpoints
 
             try
             {
-                return Results.Json(await svc.RunNowAsync(scheduleId, actor, context.RequestAborted).ConfigureAwait(false), jsonOptions);
+                return Results.Json(
+                    await svc.RunNowAsync(scheduleId, actor, BuildReportAccessQueryContext(context), context.RequestAborted).ConfigureAwait(false),
+                    jsonOptions);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status403Forbidden);
             }
             catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or KeyNotFoundException)
             {

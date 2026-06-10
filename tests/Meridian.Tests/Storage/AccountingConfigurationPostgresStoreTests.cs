@@ -80,7 +80,9 @@ public sealed class AccountingConfigurationPostgresStoreTests
             BeforeHash: "before",
             AfterHash: "after",
             ValidationIssues: [],
-            EvidenceLinks: ["wpf://accounting/configure"]);
+            EvidenceLinks: ["wpf://accounting/configure"],
+            CompanyId: "company-alpha",
+            ReportGroupPrincipalIds: ["Accounting", "reporting-ops"]);
 
         await database.AccountingConfigurationStore.AppendAsync(auditEvent);
 
@@ -90,5 +92,7 @@ public sealed class AccountingConfigurationPostgresStoreTests
         loaded[0].Actor.Should().Be("ops-user");
         loaded[0].CorrelationId.Should().Be("postgres-audit-test");
         loaded[0].EvidenceLinks.Should().Contain("wpf://accounting/configure");
+        loaded[0].CompanyId.Should().Be("company-alpha");
+        loaded[0].ReportGroupPrincipalIds.Should().BeEquivalentTo(["Accounting", "reporting-ops"]);
     }
 }

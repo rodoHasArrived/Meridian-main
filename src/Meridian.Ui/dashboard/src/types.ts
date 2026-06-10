@@ -2698,6 +2698,21 @@ export interface ReportingTemplateMetadata {
   accessMode?: string;
   accessSummary?: string;
   isAccessible?: boolean;
+  createdBy?: string | null;
+  createdAt?: string | null;
+  updatedBy?: string | null;
+  updatedAt?: string | null;
+  submittedBy?: string | null;
+  submittedAt?: string | null;
+  approvedBy?: string | null;
+  approvedAt?: string | null;
+  rejectedBy?: string | null;
+  rejectedAt?: string | null;
+  decisionRationale?: string | null;
+  approvalReference?: string | null;
+  basedOnTemplateId?: VersionedReportTemplateId | null;
+  auditTrail?: ReportTemplateAuditEvent[] | null;
+  validationIssues?: string[] | null;
 }
 
 export interface ReportingTemplateGridMetadata {
@@ -3360,6 +3375,7 @@ export interface AccountingWorkspaceResponse {
   breakQueue: ReconciliationBreakQueueItem[];
   cashFlow: AccountingCashFlowSummary;
   reporting: AccountingReportingSummary;
+  manualJournalWorkbench?: ManualJournalEntryWorkbench | null;
   controlCenter?: {
     closeReadiness: string;
     portfolioFilterOptions: string[];
@@ -3860,6 +3876,8 @@ export interface AccountingActionAuditEvent {
   afterHash: string;
   validationIssues: AccountingConfigurationValidationIssue[];
   evidenceLinks: string[];
+  companyId?: string | null;
+  reportGroupPrincipalIds?: string[] | null;
 }
 
 export interface AccountingConfigurationWorkspace {
@@ -4096,6 +4114,10 @@ export interface PrivateCapitalReportOutput {
   capitalAccountSubledgerRoute?: string | null;
   evidenceRoute?: string | null;
   approvalRoute?: string | null;
+  readinessLabel?: string | null;
+  readinessReason?: string | null;
+  nextAction?: string | null;
+  nextActionRoute?: string | null;
 }
 
 export interface PrivateCapitalFundEventLedgerRecord {
@@ -4175,6 +4197,11 @@ export interface PrivateCapitalCapitalAccountSubledger {
   firstEffectiveDate?: string | null;
   lastEffectiveDate?: string | null;
   lastFundEventType?: string | null;
+  readiness?: PrivateCapitalFundEventLedgerReadiness;
+  readinessLabel?: string | null;
+  readinessReason?: string | null;
+  nextAction?: string | null;
+  nextActionRoute?: string | null;
   evidenceLinks: string[];
   evidenceCategories?: PrivateCapitalEvidenceCategory[] | null;
   capitalAccount?: PrivateCapitalCapitalAccountActivity | null;
@@ -4223,6 +4250,8 @@ export interface SaveManualJournalEntryDraftRequest {
   actor: string;
   correlationId?: string | null;
   evidenceLinks?: string[] | null;
+  companyId?: string | null;
+  reportGroupPrincipalIds?: string[] | null;
 }
 
 export interface ValidateManualJournalEntryDraftRequest {
@@ -4255,6 +4284,8 @@ export interface UpsertChartOfAccountsNodeRequest {
   actor: string;
   correlationId?: string | null;
   evidenceLinks?: string[] | null;
+  companyId?: string | null;
+  reportGroupPrincipalIds?: string[] | null;
 }
 
 export interface UpsertJournalEntryTemplateRequest {
@@ -4263,6 +4294,8 @@ export interface UpsertJournalEntryTemplateRequest {
   actor: string;
   correlationId?: string | null;
   evidenceLinks?: string[] | null;
+  companyId?: string | null;
+  reportGroupPrincipalIds?: string[] | null;
 }
 
 export interface UpsertPostingRuleRequest {
@@ -4279,6 +4312,8 @@ export interface ActivateAccountingConfigurationRequest {
   ledgerBookId?: string | null;
   correlationId?: string | null;
   evidenceLinks?: string[] | null;
+  companyId?: string | null;
+  reportGroupPrincipalIds?: string[] | null;
 }
 
 export interface LedgerTrialBalanceLine {

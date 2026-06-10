@@ -182,7 +182,22 @@ public sealed class ReportPackRunReadService
             ReportWriterGrids: ProjectReportWriterGrids(definition),
             AccessMode: accessPolicy.Mode.ToString(),
             AccessSummary: ReportAccessPolicyEvaluator.BuildSummary(accessPolicy),
-            IsAccessible: accessEvaluation.IsAccessible);
+            IsAccessible: accessEvaluation.IsAccessible,
+            CreatedBy: record.CreatedBy,
+            CreatedAt: record.CreatedAt,
+            UpdatedBy: record.UpdatedBy,
+            UpdatedAt: record.UpdatedAt,
+            SubmittedBy: record.SubmittedBy,
+            SubmittedAt: record.SubmittedAt,
+            ApprovedBy: record.ApprovedBy,
+            ApprovedAt: record.ApprovedAt,
+            RejectedBy: record.RejectedBy,
+            RejectedAt: record.RejectedAt,
+            DecisionRationale: record.DecisionRationale,
+            ApprovalReference: record.ApprovalReference,
+            BasedOnTemplateId: record.BasedOnTemplateId,
+            AuditTrail: record.AuditTrail,
+            ValidationIssues: record.ValidationIssues);
     }
 
     private static ReportAccessEvaluationDto EvaluateForProjection(

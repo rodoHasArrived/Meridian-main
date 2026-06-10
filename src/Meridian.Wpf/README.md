@@ -136,10 +136,19 @@ fields plus capital-account opening/ending net activity, the canonical activity 
 evidence-packet route, approval id/route, the direct private-capital report-output route,
 primary report-output workflow/provenance, readiness reason, and next action from that record
 without introducing WPF-local accounting aggregation.
+Report-output rows also consume the shared report-output readiness label, reason, next action, and
+next-action route, so the desktop grid explains missing evidence, approval, posting, publication,
+and published states without parsing validation issue codes.
 Accounting Configure also renders account-level capital-account subledger rows from
 `PrivateCapitalCapitalAccountSubledgerDto`, including the shared subledger route,
 opening/ending roll-forward, net activity, contribution/distribution totals, approval queue,
-posted/published counts, validation issues, and evidence-category readiness.
+posted/published counts, validation issues, contract-owned readiness label/reason, next action,
+and evidence-category readiness.
+That desktop surface remains a reviewer for the unified fund-event ledger and capital-account
+subledger model: evidence-category readiness covers source support, capital-account subledger,
+ledger impact, approval state, and report output, while readiness reason/action copy comes from the
+shared DTOs. Do not add WPF-only cap-table administration, broad LP portal, native live-payment
+execution, full forecasting, or Backtesting Studio behavior to this slice.
 The desktop diagnostics surface reads colocation profile state through
 `Meridian.Platform.Performance.ICoLocationProfileActivator`, keeping runtime-performance ownership
 in Platform while WPF remains a presentation surface.
@@ -166,6 +175,11 @@ The same cockpit now advertises the shared Asset Operations detail route
 `/api/workstation/assets/{securityId:guid}/operations`, pointing operators to the contract-owned
 `AssetOperationsDetailDto` subject, projected-cash-flow, reconciliation-result, and ledger-projection
 sections for any Security Master asset instead of rebuilding direct-lending-only drill-ins in WPF.
+The Reporting cockpit keeps the desktop entry point aligned with the shared reporting engine by
+surfacing report writer grids, branded report packs, scheduled PDF/XLSX/CSV delivery, secure-portal
+and email-link distribution, Top-N/contribution analytics, regulatory exports, and audit lineage
+through registered WPF targets (`FundReportPack`, `ReportRunStatus`, `Dashboard`, `AnalysisExport`,
+`ExportPresets`, `FundAuditTrail`, and `DataQuality`) rather than desktop-local reporting logic.
 Fund Ledger Report Pack handoff also renders the shared Operations Continuity accounting-record
 summary, including retained source records, normalized activity, reconciliation history, ledger
 evidence, approvals, report-pack lineage, export evidence, restatement lineage, measured
@@ -205,6 +219,11 @@ rendering owner labels, while retained API payloads may still carry legacy works
 compatibility.
 The two-pane workstation layout keeps the retained `ResearchData` compatibility identifier but
 renders the operator-facing label as `Strategy + Data`.
+`WorkspaceLayoutManager` is the shared bridge from `WorkspaceShellDefinition` and preset pane
+definitions into both the split-pane model and the AvalonDock host. `FloatWindow` opens detachable
+pane windows inside the same single desktop shell, records floating-pane metadata in
+`WorkstationLayoutState`, and docks the pane back when reopened with a dock action instead of
+creating separate top-level workspace applications.
 WPF icon resources and SVG source filenames keep retained identifiers such as `IconResearch`,
 `IconDataOps`, `IconGovernance`, `research.svg`, `data-operations.svg`, and `governance.svg`, but
 the icon asset documentation maps those compatibility names to canonical Strategy, Data,

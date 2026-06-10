@@ -63,6 +63,10 @@ The root workstation bootstrap endpoints return canonical `WorkstationDataPayloa
 `WorkstationAccountingPayload` contract types for Data and Accounting. Retained
 `/api/workstation/data-operations` and `/api/workstation/governance` routes remain compatibility
 aliases only and must not drive new contract type names.
+Accounting and Reporting workstation payloads forward `fundProfileId` and `ledgerBookId` query scope
+into the shared manual-journal workbench when that service is registered, allowing the browser and
+desktop reporting surfaces to render the same private-capital fund-event ledger, capital-account
+subledger, evidence, approval, and report-output projection without a UI-local read model.
 Data upload intake endpoints are registered under `/api/workstation/data/uploads/*`. The template
 route serves the contract-owned catalog, and the preview route accepts bounded CSV uploads,
 retains the source file under the resolved workstation upload root, and returns schema issues plus
@@ -133,6 +137,9 @@ the event-level fallback account. Report-output rows also carry server-built rep
 fund-event record, capital-account subledger, evidence-packet, and approval routes, so reporting, browser, and WPF
 clients can move from a statement line back to the same fund-event ledger record without rebuilding
 private-capital URLs locally.
+Report-output rows also emit server-owned readiness label, reason, next action, and next-action
+route from the same validation and publication state that drives `IsReportReady`, so clients can
+explain report-output posture without inspecting issue codes.
 Published workflow records can also match through retained publication/restatement/rejection
 evidence pointers to the fund-event id, journal id, or ledger-entry id, so an event-level evidence
 packet can keep the report output attached even before line provenance is populated.
@@ -164,13 +171,22 @@ fund-event rows, ledger impacts, capital-account subledgers, and report outputs 
 fund books do not appear as USD-only activity after posting.
 Report-output rows keep `IsPublished` separate from `IsReportReady`: a retained publication can
 remain visible for audit, but readiness stays false until the linked fund event is posting-ready
-across approval, retained evidence, GL impact, and capital-account impact.
+across approval, retained evidence, GL impact, capital-account impact, and report-specific
+publication or line-provenance evidence. Fund-event source evidence remains visible on the row for
+audit context, but it does not satisfy report-output readiness by itself. Fund-event and
+capital-account report-output evidence categories require at least one report output, every linked
+report output to be report-ready, and at least one retained report evidence link before the
+evidence lane is complete.
 `/api/ledger/private-capital/fund-event-record` returns one of those shared event-level records
 directly by `fundEventId`, including child rows and readiness posture, and returns 404 when the
 fund-event id is absent instead of sending clients an empty aggregate to interpret.
 `PrivateCapitalCapitalAccountSubledgerBuilder` also groups those event-level records with the
 running capital-account subledger, ledger impacts, report outputs, retained evidence, approval
 queue, posted/published counts, and validation issues into a capital-account-level record.
+The subledger builder now emits the same readiness enum, label, reason, next action, and
+next-action route shape used by fund-event ledger records, rolling up blocked, evidence-missing,
+approval-pending, posting-review, report-review, ready, and published states without client-side
+recalculation.
 `/api/ledger/private-capital/capital-account-subledger` returns that grouped subledger directly by
 `capitalAccountId`, returning 404 when the capital account is absent and 400 when multiple investor
 or currency subledgers match until the caller also provides `investorId` and `currency`.
@@ -178,11 +194,18 @@ or currency subledgers match until the caller also provides `investorId` and `cu
 `reportOutputId`, `reportPackId`, or `fundEventId` with optional capital-account and investor
 filters, returning 404 when no report output matches and 400 when the selector is missing or still
 matches multiple outputs.
+This private-capital slice is intentionally limited to the unified fund-event ledger,
+capital-account subledger, retained evidence, approval, governed report-output, and readiness
+reason/action projection. Do not expand UI Shared into cap-table administration, broad LP portal,
+native live-payment execution, full forecasting, or Backtesting Studio behavior unless a later
+roadmap item reopens those lanes.
 The evidence fabric also resolves `private-capital-fund-event` subjects from the shared manual
-journal entry workbench projection. Its packet uses the `private-capital-fund-event-review`
-template to require linked fund-event state, retained evidence, approval state, capital-account
-subledger impact, GL impact, and report output before the event-level evidence graph can be
-treated as complete. Report-output evidence artifacts prefer the direct
+journal entry workbench projection. Subject discovery enumerates retained workbench draft scopes
+and posted ledger-book fund scopes first, then loads each fund-scoped projection so non-default
+funds such as `fund-alpha` appear in the evidence subject list instead of only resolving by direct
+event id. Its packet uses the `private-capital-fund-event-review` template to require linked
+fund-event state, retained evidence, approval state, capital-account subledger impact, GL impact,
+and report output before the event-level evidence graph can be treated as complete. Report-output evidence artifacts prefer the direct
 `/api/ledger/private-capital/report-output` route when the shared row provides it, keeping
 evidence graph drill-through aligned with the endpoint and workstation review surfaces.
 The shared workflow library owns close-lane command routing as well: `AccountingReviewOperationsContinuity`
@@ -268,12 +291,29 @@ guards template reads/renders with the session actor, role, role-profile group, 
 admin override, report-pack lifecycle and delivery-history/attempt endpoints enforce the same policy
 before mutating or exposing package state, and the workstation Reporting payload filters restricted
 template and report-pack rows before distribution and recent-run aggregates are projected.
+`GovernedReportingTemplateCatalog` adapts the latest approved registry template versions into
+`IReportingTemplateCatalog`, allowing ad-hoc runs and due-schedule orchestration to execute approved
+custom report-writer templates through the same run-store path as built-in reports. The
+`/api/fund-structure/reporting/runs` command also evaluates the template access policy before
+orchestration, so a direct run request cannot bypass the list/render filters for private or
+restricted report templates. Reporting schedule upserts and manual schedule runs apply the same
+governed template access check, so locked custom templates cannot be scheduled or run from an
+existing schedule by callers outside the owner, user, group, or company policy.
+Approved custom report-writer templates carry their saved grid definitions into the reporting
+catalog as well. Generic ad-hoc and scheduled runs now retain `report-writer://.../grids/{gridId}`
+artifacts and audit the grid count, so pivot, Top-N, contribution, and custom-formula grids remain
+visible in run evidence after publication or schedule execution instead of existing only in the
+template preview response.
 `ReportPackRunReadService` uses the same registry list when it is registered, so Reporting payloads
 include custom template drafts, in-review records, approvals, latest-approved status, and
 report-writer grid metadata alongside built-in templates. For custom templates, that projection
 keeps row fields, column fields, metrics, formula expressions, Top-N, sort settings, and saved
 filters in the shared payload so browser and WPF surfaces can render no-code report-writer canvases
 without client-local template parsing or recalculation.
+The template projection also carries registry-owned audit and version-control metadata, including
+based-on version, created/updated/submitted/approved/rejected actors and timestamps, decision
+rationale, approval reference, validation issues, and retained template audit events, so clients do
+not reconstruct governance lineage from display labels.
 Generic Reporting orchestration runs and governed report-pack workflow records also share one
 operator read model here. `FileReportingRunStore` persists `ReportingOutputManifest` plus audit
 trail snapshots for scheduled/ad-hoc Reporting runs, `FileReportPackWorkflowRecordStore` persists
@@ -354,8 +394,12 @@ delivery file routes. `ReportingScheduleService`
 persists operator-managed schedule records at `workstation/reporting/reporting-schedules.json`,
 normalizes configured distribution targets, runs due schedules through `IReportingOrchestrationService`,
 advances next due/as-of dates, and asks `ReportPackDeliveryService` to package the latest published or
-restated report pack for each target. Schedule run results return delivery attempts and warnings so
-operators can distinguish generated reports from actually packaged email-link or portal deliveries.
+restated report pack for each target. If no published report-pack workflow exists for the scheduled
+template, the delivery service packages the generated reporting run itself with token-gated
+PDF/XLSX/CSV artifacts, a deterministic reporting-run package id, retained source artifact
+provenance, and `ReportingRunId`/template/schedule metadata on `ReportPackDeliveryPackageDto`.
+Schedule run results return delivery attempts and warnings so operators can distinguish generated
+reports from actually packaged email-link or portal deliveries.
 `ReportingRunCommandService` also runs approved built-in templates on demand through the same orchestration and run-store seam,
 returning `WorkstationReportingRunPayload` rows with ad-hoc trigger metadata and review next
 actions. The fund-structure

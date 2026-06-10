@@ -1158,7 +1158,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 subledger.CapitalAccountId,
                 BuildCapitalAccountSubledgerStatus(subledger),
                 $"{FormatSignedCurrencyAmount(subledger.OpeningNetActivity, subledger.Currency)} opening -> {FormatSignedCurrencyAmount(subledger.EndingNetActivity, subledger.Currency)} ending | {FormatSignedCurrencyAmount(subledger.NetCapitalActivity, subledger.Currency)} net | {FormatSubledgerDateRange(subledger)}",
-                $"Calls {FormatCurrencyAmount(subledger.Contributions, subledger.Currency)}; distributions {FormatCurrencyAmount(subledger.Distributions, subledger.Currency)}; subscriptions {FormatCurrencyAmount(subledger.Subscriptions, subledger.Currency)}; redemptions {FormatCurrencyAmount(subledger.Redemptions, subledger.Currency)}; fees {FormatCurrencyAmount(subledger.ManagementFees, subledger.Currency)} | {subledger.FundEventCount} event(s); {subledger.ApprovalQueueCount} approval queue; {subledger.PostedFundEventCount} posted; {subledger.PublishedReportOutputCount} published report(s) | {subledger.EvidenceLinkCount} evidence; {BuildEvidenceCategoryReadinessSummary(subledger.EvidenceCategories)} | {subledger.ValidationIssueCount} issue(s)",
+                $"Calls {FormatCurrencyAmount(subledger.Contributions, subledger.Currency)}; distributions {FormatCurrencyAmount(subledger.Distributions, subledger.Currency)}; subscriptions {FormatCurrencyAmount(subledger.Subscriptions, subledger.Currency)}; redemptions {FormatCurrencyAmount(subledger.Redemptions, subledger.Currency)}; fees {FormatCurrencyAmount(subledger.ManagementFees, subledger.Currency)} | {subledger.FundEventCount} event(s); {subledger.ApprovalQueueCount} approval queue; {subledger.PostedFundEventCount} posted; {subledger.PublishedReportOutputCount} published report(s) | readiness {subledger.ReadinessLabel}: {subledger.ReadinessReason}; next {FormatSubledgerNextAction(subledger)} | {subledger.EvidenceLinkCount} evidence; {BuildEvidenceCategoryReadinessSummary(subledger.EvidenceCategories)} | {subledger.ValidationIssueCount} issue(s)",
                 subledger.ActivityRoute)));
         ManualJournalFundEventRows.ReplaceWith(activity.FundEvents.Select(item =>
             new AccountingWorkbenchRow(
@@ -1188,13 +1188,25 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             var reportOutputRoute = string.IsNullOrWhiteSpace(output.ReportOutputRoute)
                 ? output.ReportRoute
                 : output.ReportOutputRoute;
+            var nextActionRoute = string.IsNullOrWhiteSpace(output.NextActionRoute)
+                ? reportOutputRoute
+                : output.NextActionRoute;
+            var nextAction = string.IsNullOrWhiteSpace(output.NextAction)
+                ? "Open report output"
+                : output.NextAction;
+            var readinessLabel = string.IsNullOrWhiteSpace(output.ReadinessLabel)
+                ? output.IsPublished ? "Published" : output.IsReportReady ? "Ready" : "Review"
+                : output.ReadinessLabel;
+            var readinessReason = string.IsNullOrWhiteSpace(output.ReadinessReason)
+                ? "No report-output readiness reason"
+                : output.ReadinessReason;
 
             return new AccountingWorkbenchRow(
                 output.DisplayName,
-                output.IsPublished ? "Published" : output.IsReportReady ? "Ready" : "Review",
+                readinessLabel,
                 $"{FormatSignedCurrencyAmount(output.NetCapitalActivity, output.Currency)} | {output.EffectiveDate:yyyy-MM-dd} | {reportPack}",
-                $"{output.EvidenceLinkCount} evidence | {output.ValidationIssues.Count} issue(s) | {output.ReportLineProvenanceCount} provenance | {publication}",
-                reportOutputRoute);
+                $"{output.EvidenceLinkCount} evidence | {output.ValidationIssues.Count} issue(s) | {output.ReportLineProvenanceCount} provenance | {publication} | readiness {readinessLabel}: {readinessReason} | next {nextAction} via {nextActionRoute}",
+                nextActionRoute);
         }));
     }
 
@@ -1247,6 +1259,11 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
 
     private static string BuildCapitalAccountSubledgerStatus(PrivateCapitalCapitalAccountSubledgerDto subledger)
     {
+        if (!string.IsNullOrWhiteSpace(subledger.ReadinessLabel))
+        {
+            return subledger.ReadinessLabel;
+        }
+
         if (subledger.ValidationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical))
         {
             return "Blocked";
@@ -1261,6 +1278,11 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
 
         return subledger.FundEventCount > 0 ? "Ready" : "Empty";
     }
+
+    private static string FormatSubledgerNextAction(PrivateCapitalCapitalAccountSubledgerDto subledger)
+        => string.IsNullOrWhiteSpace(subledger.NextActionRoute)
+            ? subledger.NextAction
+            : $"{subledger.NextAction} via {subledger.NextActionRoute}";
 
     private static string BuildEvidenceCategoryReadinessSummary(IReadOnlyList<PrivateCapitalEvidenceCategoryDto> categories)
     {

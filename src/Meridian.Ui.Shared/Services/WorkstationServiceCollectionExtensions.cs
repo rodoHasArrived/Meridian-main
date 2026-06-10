@@ -182,7 +182,6 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ReportGenerationService>();
         services.TryAddSingleton<InvestmentAccountingTransactionLabService>();
         services.TryAddSingleton<ReportPackValidationService>();
-        services.TryAddSingleton<IReportingTemplateCatalog, DefaultReportingTemplateCatalog>();
         services.TryAddSingleton<ReportingRunStoreOptions>(sp =>
             new ReportingRunStoreOptions(Path.Combine(ResolveWorkstationDataDirectory(sp), "reporting", "runs")));
         services.TryAddSingleton<IReportingRunStore>(sp =>
@@ -208,6 +207,13 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ReportTemplateGovernanceStoreOptions>(),
                 sp.GetRequiredService<ILogger<FileReportTemplateGovernanceStore>>()));
         services.TryAddSingleton<ReportTemplateRegistryService>();
+        services.TryAddSingleton<DefaultReportingTemplateCatalog>();
+        services.TryAddSingleton(sp =>
+            new GovernedReportingTemplateCatalog(
+                sp.GetRequiredService<DefaultReportingTemplateCatalog>(),
+                sp.GetRequiredService<ReportTemplateRegistryService>()));
+        services.TryAddSingleton<IReportingTemplateCatalog>(sp =>
+            sp.GetRequiredService<GovernedReportingTemplateCatalog>());
         services.TryAddSingleton<ReportPackWorkflowService>();
         services.TryAddSingleton<ReportPackDeliveryService>();
         services.TryAddSingleton<IReportingOrchestrationService>(sp =>
@@ -223,7 +229,12 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ReportingScheduleStoreOptions>(),
                 sp.GetRequiredService<ILogger<FileReportingScheduleStore>>()));
         services.TryAddSingleton<ReportingRunCommandService>();
-        services.TryAddSingleton<ReportingScheduleService>();
+        services.TryAddSingleton(sp =>
+            new ReportingScheduleService(
+                sp.GetRequiredService<IReportingOrchestrationService>(),
+                sp.GetService<IReportingScheduleStore>(),
+                sp.GetService<ReportPackDeliveryService>(),
+                sp.GetService<GovernedReportingTemplateCatalog>()));
         services.TryAddSingleton<ReportPackRunReadService>();
         services.TryAddSingleton<W4AcceptanceFilter>();
         services.TryAddSingleton<IGovernanceReportPackRepository>(sp =>

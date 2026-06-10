@@ -12,6 +12,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.StrategyEngine;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
@@ -4699,9 +4700,10 @@ public static partial class WorkstationEndpoints
     {
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         var kernelObservability = context.RequestServices.GetService<KernelObservabilityService>()?.GetSnapshot();
+        var manualJournalWorkbench = await BuildManualJournalWorkbenchPayloadAsync(context).ConfigureAwait(false);
         if (readService is null)
         {
-            return BuildAccountingFallbackPayload(kernelObservability);
+            return BuildAccountingFallbackPayload(kernelObservability, manualJournalWorkbench);
         }
 
         var allRuns = (await readService.GetRunsAsync(ct: context.RequestAborted).ConfigureAwait(false)).ToArray();
@@ -4725,7 +4727,8 @@ public static partial class WorkstationEndpoints
                 CashFlow: BuildAccountingWorkspaceCashFlowSummary(Array.Empty<StrategyRunDetail?>()),
                 Reporting: reporting,
                 ControlCenter: BuildAccountingControlCenterPayload(Array.Empty<ReconciliationBreakQueueItem>(), reporting),
-                KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
+                KernelObservability: BuildKernelObservabilityPayload(kernelObservability),
+                ManualJournalWorkbench: manualJournalWorkbench);
         }
 
         var reconciliationService = context.RequestServices.GetService<IReconciliationRunService>();
@@ -4774,11 +4777,33 @@ public static partial class WorkstationEndpoints
             CashFlow: BuildAccountingWorkspaceCashFlowSummary(details),
             Reporting: reportingPayload,
             ControlCenter: BuildAccountingControlCenterPayload(breakQueueItems, reportingPayload),
-            KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
+            KernelObservability: BuildKernelObservabilityPayload(kernelObservability),
+            ManualJournalWorkbench: manualJournalWorkbench);
+    }
+
+    private static async Task<ManualJournalEntryWorkbenchDto?> BuildManualJournalWorkbenchPayloadAsync(HttpContext context)
+    {
+        var service = context.RequestServices.GetService<IManualJournalEntryWorkbenchService>();
+        if (service is null)
+        {
+            return null;
+        }
+
+        var query = context.Request.Query;
+        var fundProfileId = query["fundProfileId"].FirstOrDefault();
+        var ledgerBookId = Guid.TryParse(query["ledgerBookId"].FirstOrDefault(), out var parsedLedgerBookId)
+            ? parsedLedgerBookId
+            : (Guid?)null;
+
+        return await service
+            .GetWorkbenchAsync(fundProfileId, ledgerBookId, context.RequestAborted)
+            .ConfigureAwait(false);
     }
 
     // PR-03: returns typed DTO
-    private static WorkstationAccountingPayload BuildAccountingFallbackPayload(KernelObservabilitySnapshot? kernelObservability = null)
+    private static WorkstationAccountingPayload BuildAccountingFallbackPayload(
+        KernelObservabilitySnapshot? kernelObservability = null,
+        ManualJournalEntryWorkbenchDto? manualJournalWorkbench = null)
     {
         var metricsCards = new WorkstationMetricCard[]
         {
@@ -4961,7 +4986,8 @@ public static partial class WorkstationEndpoints
             },
             Reporting: reporting,
             ControlCenter: BuildAccountingControlCenterPayload(breakQueue.Cast<ReconciliationBreakQueueItem>().ToArray(), reporting),
-            KernelObservability: BuildKernelObservabilityPayload(kernelObservability));
+            KernelObservability: BuildKernelObservabilityPayload(kernelObservability),
+            ManualJournalWorkbench: manualJournalWorkbench);
     }
 
     // PR-03: returns typed DTO

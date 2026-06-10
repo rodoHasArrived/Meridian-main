@@ -90,11 +90,12 @@ approval metadata, reconstruction issues, and report-output links so downstream 
 and browser surfaces can consume one ledger-owned model instead of rebuilding private-capital
 event state locally. Published report-pack links remain publication facts, but the projector only
 marks a fund event report-ready when the event is also posting-ready across approval, evidence,
-balanced ledger impact, and capital-account impact. If journal entries grouped under one fund-event
-id disagree on event type, capital account, investor, effective date, approval state, idempotency
-key, payment intent, or settlement reference, the projector emits critical reconstruction issues
-and keeps the event out of posting-ready status instead of silently merging incompatible
-capital-account subledger rows. Capital-account impact rows preserve each journal entry's
+balanced ledger impact, capital-account impact, and at least one published report output with
+retained report evidence. If journal entries grouped under one fund-event id disagree on event type,
+capital account, investor, effective date, approval state, idempotency key, payment intent, or
+settlement reference, the projector emits critical reconstruction issues and keeps the event out of
+posting-ready status instead of silently merging incompatible capital-account subledger rows.
+Capital-account impact rows preserve each journal entry's
 capital-account and investor metadata before falling back to the event-level identity, so blocked
 conflicts remain auditable without making them report-ready.
 

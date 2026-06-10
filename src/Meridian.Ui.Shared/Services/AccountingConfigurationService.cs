@@ -259,7 +259,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
 
-        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "chart.upsert", null, request.CorrelationId, request.EvidenceLinks, ct).ConfigureAwait(false);
+        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "chart.upsert", null, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingConfigurationWorkspaceDto> UpsertTemplateAsync(
@@ -286,7 +286,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
 
-        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "template.upsert", null, request.CorrelationId, request.EvidenceLinks, ct).ConfigureAwait(false);
+        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "template.upsert", null, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingConfigurationWorkspaceDto> UpsertPostingRuleAsync(
@@ -314,7 +314,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
 
-        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "posting-rule.upsert", null, request.CorrelationId, request.EvidenceLinks, ct).ConfigureAwait(false);
+        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "posting-rule.upsert", null, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
     }
 
     public async Task<AccountingJournalTemplatePreviewDto> PreviewTemplateAsync(
@@ -393,7 +393,7 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             UpdatedAtUtc = DateTimeOffset.UtcNow
         };
 
-        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "configuration.activate", request.LedgerBookId, request.CorrelationId, request.EvidenceLinks, ct).ConfigureAwait(false);
+        return await SaveWithAuditAsync(workspace, beforeHash, request.Actor, "configuration.activate", request.LedgerBookId, request.CorrelationId, request.EvidenceLinks, request.CompanyId, request.ReportGroupPrincipalIds, ct).ConfigureAwait(false);
     }
 
     public Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAuditAsync(
@@ -410,6 +410,8 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         Guid? ledgerBookId,
         string? correlationId,
         IReadOnlyList<string>? evidenceLinks,
+        string? companyId,
+        IReadOnlyList<string>? reportGroupPrincipalIds,
         CancellationToken ct)
     {
         var validation = Validate(workspace);
@@ -428,7 +430,9 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
                 beforeHash,
                 afterHash,
                 validation,
-                evidenceLinks ?? []),
+                evidenceLinks ?? [],
+                NormalizeOptional(companyId),
+                NormalizePrincipalIds(reportGroupPrincipalIds)),
             ct).ConfigureAwait(false);
 
         return await GetWorkspaceAsync(finalWorkspace.FundProfileId, ledgerBookId ?? finalWorkspace.LedgerBookId, ct).ConfigureAwait(false);
@@ -572,11 +576,32 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
 
     private static string? NormalizeOptional(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static IReadOnlyList<string> NormalizePrincipalIds(IReadOnlyList<string>? values)
+        => values?
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
+            .ToArray()
+        ?? [];
 }
 
 public sealed class InMemoryManualJournalEntryDraftStore : IManualJournalEntryDraftStore
 {
     private readonly Dictionary<string, ManualJournalEntryDraftDto> _drafts = new(StringComparer.OrdinalIgnoreCase);
+
+    public Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        var fundProfileIds = _drafts.Values
+            .Select(static item => NormalizeFundProfileId(item.FundProfileId))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static item => item, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return Task.FromResult<IReadOnlyList<string>>(fundProfileIds);
+    }
 
     public Task<IReadOnlyList<ManualJournalEntryDraftDto>> ListAsync(
         string fundProfileId,
@@ -635,6 +660,16 @@ public sealed class FileManualJournalEntryDraftStore : IManualJournalEntryDraftS
         _snapshotPath = string.IsNullOrWhiteSpace(snapshotPath)
             ? throw new ArgumentException("Manual journal entry draft snapshot path is required.", nameof(snapshotPath))
             : snapshotPath;
+    }
+
+    public async Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default)
+    {
+        var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
+        return snapshot.Drafts
+            .Select(static item => NormalizeFundProfileId(item.FundProfileId))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static item => item, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     public async Task<IReadOnlyList<ManualJournalEntryDraftDto>> ListAsync(
@@ -753,6 +788,12 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         string? InvestorId,
         decimal NetCapitalActivity);
 
+    private sealed record PrivateCapitalReportOutputReadinessProjection(
+        string Label,
+        string Reason,
+        string NextAction,
+        string? NextActionRoute);
+
     private readonly IManualJournalEntryDraftStore _draftStore;
     private readonly IAccountingConfigurationService _configurationService;
     private readonly IAccountingActionAuditStore _auditStore;
@@ -774,6 +815,27 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         _securityMasterQueryService = securityMasterQueryService;
         _journalStore = journalStore;
         _reportPackWorkflowService = reportPackWorkflowService;
+    }
+
+    public async Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        var fundProfileIds = new List<string>();
+        fundProfileIds.AddRange(await _draftStore.ListFundProfileIdsAsync(ct).ConfigureAwait(false));
+
+        if (_journalStore is not null)
+        {
+            var ledgerBooks = await _journalStore
+                .ListLedgerBooksAsync(fundProfileId: null, fundStructureNodeId: null, fundStructureNodeKind: null, ct)
+                .ConfigureAwait(false);
+            fundProfileIds.AddRange(ledgerBooks.Select(static book => NormalizeFundProfileId(book.FundProfileId)));
+        }
+
+        return fundProfileIds
+            .Where(static fundProfileId => !string.IsNullOrWhiteSpace(fundProfileId))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static fundProfileId => fundProfileId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     public async Task<ManualJournalEntryWorkbenchDto> GetWorkbenchAsync(
@@ -1468,6 +1530,20 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var isReportReady = fundEvent.IsPostingReady && IsReadyReportPack(record) && reportEvidenceLinks.Count > 0;
         var approvalRoute = BuildPostedReportOutputApprovalRoute(fundProfileId, fundEvent);
         var reportOutputId = $"report-output:{fundEvent.FundEventId}:{record.ReportId:D}".ToLowerInvariant();
+        var reportOutputRoute = PrivateCapitalActivityRouteBuilder.BuildReportOutputRoute(
+            fundProfileId,
+            ledgerBookId,
+            reportOutputId,
+            fundEvent.FundEventId,
+            accountScope.CapitalAccountId,
+            accountScope.InvestorId);
+        var readiness = BuildReportOutputReadiness(
+            isReportReady,
+            IsPublishedReportPack(record) && record.Publication is not null,
+            validationIssues,
+            reportOutputRoute,
+            PrivateCapitalActivityRouteBuilder.BuildEvidenceRoute(fundEvent.FundEventId),
+            approvalRoute);
         return new PrivateCapitalReportOutputDto(
             reportOutputId,
             "GovernedReportPack",
@@ -1497,13 +1573,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             PublishedAtUtc: record.Publication?.SignedOffAt,
             PublishedBy: NormalizeOptional(record.Publication?.SignedOffBy),
             ReportLineProvenanceCount: matchedProvenance.Length,
-            ReportOutputRoute: PrivateCapitalActivityRouteBuilder.BuildReportOutputRoute(
-                fundProfileId,
-                ledgerBookId,
-                reportOutputId,
-                fundEvent.FundEventId,
-                accountScope.CapitalAccountId,
-                accountScope.InvestorId),
+            ReportOutputRoute: reportOutputRoute,
             FundEventRecordRoute: PrivateCapitalActivityRouteBuilder.BuildFundEventRecordRoute(
                 fundProfileId,
                 ledgerBookId,
@@ -1515,7 +1585,11 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 accountScope.InvestorId,
                 currency),
             EvidenceRoute: PrivateCapitalActivityRouteBuilder.BuildEvidenceRoute(fundEvent.FundEventId),
-            ApprovalRoute: approvalRoute);
+            ApprovalRoute: approvalRoute,
+            ReadinessLabel: readiness.Label,
+            ReadinessReason: readiness.Reason,
+            NextAction: readiness.NextAction,
+            NextActionRoute: readiness.NextActionRoute);
     }
 
     private static PrivateCapitalReportOutputDto BuildMissingPostedReportOutput(
@@ -1533,6 +1607,31 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             .Order(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var reportOutputId = $"report-output:{fundEvent.FundEventId}:governed-report-pack-pending".ToLowerInvariant();
+        var reportOutputRoute = PrivateCapitalActivityRouteBuilder.BuildReportOutputRoute(
+            fundProfileId,
+            ledgerBookId,
+            reportOutputId,
+            fundEvent.FundEventId,
+            accountScope.CapitalAccountId,
+            accountScope.InvestorId);
+        var evidenceRoute = PrivateCapitalActivityRouteBuilder.BuildEvidenceRoute(fundEvent.FundEventId);
+        var approvalRoute = BuildPostedReportOutputApprovalRoute(fundProfileId, fundEvent);
+        var validationIssues = new[]
+        {
+            Issue(
+                "private-capital.report-output-missing",
+                AccountingConfigurationValidationSeverityDto.Warning,
+                "Posted private-capital fund event is not linked to a governed report-pack workflow.",
+                fundEvent.FundEventId,
+                "Generate or attach the governed report pack before stakeholder package delivery.")
+        };
+        var readiness = BuildReportOutputReadiness(
+            isReportReady: false,
+            isPublished: false,
+            validationIssues,
+            reportOutputRoute,
+            evidenceRoute,
+            approvalRoute);
         return new PrivateCapitalReportOutputDto(
             reportOutputId,
             "GovernedReportPack",
@@ -1553,22 +1652,9 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             evidenceLinks.Length,
             evidenceLinks,
             false,
-            [
-                Issue(
-                    "private-capital.report-output-missing",
-                    AccountingConfigurationValidationSeverityDto.Warning,
-                    "Posted private-capital fund event is not linked to a governed report-pack workflow.",
-                    fundEvent.FundEventId,
-                    "Generate or attach the governed report pack before stakeholder package delivery.")
-            ],
+            validationIssues,
             ReportWorkflowState: "Missing",
-            ReportOutputRoute: PrivateCapitalActivityRouteBuilder.BuildReportOutputRoute(
-                fundProfileId,
-                ledgerBookId,
-                reportOutputId,
-                fundEvent.FundEventId,
-                accountScope.CapitalAccountId,
-                accountScope.InvestorId),
+            ReportOutputRoute: reportOutputRoute,
             FundEventRecordRoute: PrivateCapitalActivityRouteBuilder.BuildFundEventRecordRoute(
                 fundProfileId,
                 ledgerBookId,
@@ -1579,8 +1665,12 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 accountScope.CapitalAccountId,
                 accountScope.InvestorId,
                 currency),
-            EvidenceRoute: PrivateCapitalActivityRouteBuilder.BuildEvidenceRoute(fundEvent.FundEventId),
-            ApprovalRoute: BuildPostedReportOutputApprovalRoute(fundProfileId, fundEvent));
+            EvidenceRoute: evidenceRoute,
+            ApprovalRoute: approvalRoute,
+            ReadinessLabel: readiness.Label,
+            ReadinessReason: readiness.Reason,
+            NextAction: readiness.NextAction,
+            NextActionRoute: readiness.NextActionRoute);
     }
 
     private static string? BuildPostedReportOutputApprovalRoute(
@@ -1596,6 +1686,74 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             fundProfileId,
             fundEvent.JournalEntryIds[0],
             NormalizeOptional(fundEvent.ApprovalId));
+    }
+
+    private static PrivateCapitalReportOutputReadinessProjection BuildReportOutputReadiness(
+        bool isReportReady,
+        bool isPublished,
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> validationIssues,
+        string reportOutputRoute,
+        string evidenceRoute,
+        string? approvalRoute)
+    {
+        if (isPublished && isReportReady)
+        {
+            return new(
+                "Published",
+                "The report output is published with retained report evidence and linked posting-ready fund-event impact.",
+                "Open published report",
+                reportOutputRoute);
+        }
+
+        if (isReportReady)
+        {
+            return new(
+                "Ready",
+                "The report output has retained evidence and linked posting-ready fund-event impact.",
+                "Review report output",
+                reportOutputRoute);
+        }
+
+        var issue = validationIssues
+            .OrderByDescending(static item => item.Severity)
+            .ThenBy(static item => item.Code, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+
+        return issue?.Code switch
+        {
+            "manual-je.private-capital-report-evidence-missing" or
+            "private-capital.report-output-evidence-missing" => new(
+                "Evidence missing",
+                issue.Message,
+                "Attach retained evidence",
+                evidenceRoute),
+            "manual-je.private-capital-report-approval-pending" => new(
+                "Approval pending",
+                issue.Message,
+                "Submit or review approval",
+                approvalRoute ?? reportOutputRoute),
+            "manual-je.private-capital-report-ledger-impact-not-ready" or
+            "private-capital.report-output-posting-not-ready" => new(
+                "Posting review",
+                issue.Message,
+                "Review ledger impact",
+                reportOutputRoute),
+            "private-capital.report-output-publication-pending" => new(
+                "Publication pending",
+                issue.Message,
+                "Approve and publish report pack",
+                reportOutputRoute),
+            "private-capital.report-output-missing" => new(
+                "Report output missing",
+                issue.Message,
+                "Generate governed report pack",
+                reportOutputRoute),
+            _ => new(
+                "Report review",
+                issue?.Message ?? "Report output readiness has not been satisfied.",
+                "Prepare report output",
+                reportOutputRoute)
+        };
     }
 
     private static PrivateCapitalReportOutputAccountScope ResolvePostedReportOutputAccountScope(
@@ -2047,6 +2205,29 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             fundEvent.FundEventId,
             fundEvent.CapitalAccountId,
             fundEvent.InvestorId);
+        var reportOutputRoute = PrivateCapitalActivityRouteBuilder.BuildReportOutputRoute(
+            fundProfileId,
+            ledgerBookId,
+            reportOutputId,
+            fundEvent.FundEventId,
+            fundEvent.CapitalAccountId,
+            fundEvent.InvestorId);
+        var evidenceRoute = PrivateCapitalActivityRouteBuilder.BuildEvidenceRoute(fundEvent.FundEventId);
+        var approvalRoute = PrivateCapitalActivityRouteBuilder.BuildApprovalRoute(
+            fundProfileId,
+            fundEvent.JournalEntryId,
+            fundEvent.ApprovalId);
+        var orderedIssues = issues
+            .OrderByDescending(issue => issue.Severity)
+            .ThenBy(issue => issue.Code, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var readiness = BuildReportOutputReadiness(
+            isReportReady,
+            isPublished: false,
+            orderedIssues,
+            reportOutputRoute,
+            evidenceRoute,
+            approvalRoute);
         return new PrivateCapitalReportOutputDto(
             reportOutputId,
             reportOutputType,
@@ -2063,19 +2244,10 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             fundEvent.EvidenceLinks.Count,
             fundEvent.EvidenceLinks,
             isReportReady,
-            issues
-                .OrderByDescending(issue => issue.Severity)
-                .ThenBy(issue => issue.Code, StringComparer.OrdinalIgnoreCase)
-                .ToArray(),
+            orderedIssues,
             IsPublished: false,
             ReportWorkflowState: fundEvent.JournalStatus.ToString(),
-            ReportOutputRoute: PrivateCapitalActivityRouteBuilder.BuildReportOutputRoute(
-                fundProfileId,
-                ledgerBookId,
-                reportOutputId,
-                fundEvent.FundEventId,
-                fundEvent.CapitalAccountId,
-                fundEvent.InvestorId),
+            ReportOutputRoute: reportOutputRoute,
             FundEventRecordRoute: PrivateCapitalActivityRouteBuilder.BuildFundEventRecordRoute(
                 fundProfileId,
                 ledgerBookId,
@@ -2086,11 +2258,12 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 fundEvent.CapitalAccountId,
                 fundEvent.InvestorId,
                 fundEvent.Currency),
-            EvidenceRoute: PrivateCapitalActivityRouteBuilder.BuildEvidenceRoute(fundEvent.FundEventId),
-            ApprovalRoute: PrivateCapitalActivityRouteBuilder.BuildApprovalRoute(
-                fundProfileId,
-                fundEvent.JournalEntryId,
-                fundEvent.ApprovalId));
+            EvidenceRoute: evidenceRoute,
+            ApprovalRoute: approvalRoute,
+            ReadinessLabel: readiness.Label,
+            ReadinessReason: readiness.Reason,
+            NextAction: readiness.NextAction,
+            NextActionRoute: readiness.NextActionRoute);
     }
 
     public async Task<ManualJournalEntryDraftDto> SaveDraftAsync(

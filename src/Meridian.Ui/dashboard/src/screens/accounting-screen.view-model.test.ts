@@ -1018,6 +1018,10 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
         isReportReady: false,
         reportWorkflowState: "Draft",
         reportLineProvenanceCount: 1,
+        readinessLabel: "Approval pending",
+        readinessReason: "Private-capital report output is not ready because the linked journal entry has not been submitted for approval.",
+        nextAction: "Submit or review approval",
+        nextActionRoute: "/api/ledger/journal-entry-workbench?fundProfileId=fund-alpha&journalEntryId=manual-je-1",
         validationIssues: [
           {
             code: "manual-je.private-capital-report-approval-pending",
@@ -1232,6 +1236,10 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
             isReportReady: false,
             reportWorkflowState: "Draft",
             reportLineProvenanceCount: 1,
+            readinessLabel: "Approval pending",
+            readinessReason: "Private-capital report output is not ready because the linked journal entry has not been submitted for approval.",
+            nextAction: "Submit or review approval",
+            nextActionRoute: "/api/ledger/journal-entry-workbench?fundProfileId=fund-alpha&journalEntryId=manual-je-1",
             validationIssues: [
               {
                 code: "manual-je.private-capital-report-approval-pending",
@@ -1288,6 +1296,11 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
         firstEffectiveDate: "2026-06-30",
         lastEffectiveDate: "2026-06-30",
         lastFundEventType: "CapitalCall",
+        readiness: "ApprovalPending",
+        readinessLabel: "Approval pending",
+        readinessReason: "One or more fund events require approval before the capital-account subledger can be treated as posting ready.",
+        nextAction: "Submit or review approval",
+        nextActionRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
         evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/manual-je-1"],
         evidenceCategories: [
           {
@@ -1485,8 +1498,13 @@ describe("accounting-screen view model", () => {
     expect(result.current.privateCapitalActivity.capitalAccountSubledgers[0]).toMatchObject({
       title: "capital-account:fund-alpha:lp-1",
       subtitle: "investor:lp-1 / USD",
-      statusLabel: "Review",
+      statusLabel: "Approval pending",
       statusTone: "warning",
+      readinessLabel: "Approval pending",
+      readinessTone: "warning",
+      readinessReasonLabel: "One or more fund events require approval before the capital-account subledger can be treated as posting ready.",
+      nextActionLabel: "Submit or review approval",
+      nextActionRouteLabel: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
       activityRouteLabel: "/api/ledger/private-capital/capital-account-subledger?fundProfileId=fund-alpha&ledgerBookId=book-alpha&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1&currency=USD",
       netActivityLabel: "+$100.00 USD",
       openingLabel: "$0 USD",
@@ -1522,7 +1540,10 @@ describe("accounting-screen view model", () => {
     });
     expect(result.current.privateCapitalActivity.reportOutputs[0]).toMatchObject({
       title: "CapitalCallNotice for CapitalCall",
-      readinessLabel: "Review",
+      readinessLabel: "Approval pending",
+      readinessReasonLabel: "Private-capital report output is not ready because the linked journal entry has not been submitted for approval.",
+      nextActionLabel: "Submit or review approval",
+      nextActionRouteLabel: "/api/ledger/journal-entry-workbench?fundProfileId=fund-alpha&journalEntryId=manual-je-1",
       evidenceLabel: "1 evidence",
       workflowLabel: "Draft",
       publicationLabel: "No publication manifest",

@@ -693,6 +693,7 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(api.getPortfolioMultiAssetCoverage).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(api.getBrokerageHouseholdPortfolio).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(api.getReportingWorkspace).toHaveBeenCalledTimes(2));
 
     await act(async () => {
       rejectRequest("portfolio", 1, new Error("Portfolio refresh failed."));
@@ -702,11 +703,13 @@ describe("useWorkstationData", () => {
         { marker: "refreshed portfolio coverage" } as unknown as MultiAssetCoverageSummary
       );
       rejectRequest("brokeragePortfolio", 1, new Error("Brokerage portfolio refresh failed."));
+      resolveRequest<ReportingWorkspaceResponse>("reporting", 1, { marker: "refreshed reporting" } as unknown as ReportingWorkspaceResponse);
       await portfolioRefresh;
     });
 
     expect(result.current.portfolio).toEqual({ marker: "initial portfolio" });
     expect(result.current.brokeragePortfolio).toEqual({ marker: "initial brokerage" });
+    expect(result.current.reporting).toEqual({ marker: "refreshed reporting" });
     expect(result.current.workspaceErrors.portfolio).toBe(
       "Portfolio refresh failed.; Brokerage portfolio refresh failed."
     );
@@ -730,6 +733,7 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(api.getPortfolioMultiAssetCoverage).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(api.getBrokerageHouseholdPortfolio).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(api.getReportingWorkspace).toHaveBeenCalledTimes(2));
     await act(async () => {
       rejectRequest("portfolio", 1, new Error("Portfolio refresh failed."));
       resolveRequest<MultiAssetCoverageSummary>(
@@ -738,6 +742,7 @@ describe("useWorkstationData", () => {
         { marker: "failed-refresh portfolio coverage" } as unknown as MultiAssetCoverageSummary
       );
       rejectRequest("brokeragePortfolio", 1, new Error("Brokerage portfolio refresh failed."));
+      rejectRequest("reporting", 1, new Error("Reporting refresh failed."));
       await failedRefresh;
     });
 
@@ -748,6 +753,7 @@ describe("useWorkstationData", () => {
     await waitFor(() => expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(3));
     await waitFor(() => expect(api.getPortfolioMultiAssetCoverage).toHaveBeenCalledTimes(3));
     await waitFor(() => expect(api.getBrokerageHouseholdPortfolio).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(api.getReportingWorkspace).toHaveBeenCalledTimes(3));
     await act(async () => {
       resolveRequest<PortfolioWorkspaceResponse>("portfolio", 2, { marker: "recovered portfolio" } as unknown as PortfolioWorkspaceResponse);
       resolveRequest<MultiAssetCoverageSummary>(
@@ -756,13 +762,50 @@ describe("useWorkstationData", () => {
         { marker: "recovered portfolio coverage" } as unknown as MultiAssetCoverageSummary
       );
       resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", 2, { marker: "recovered brokerage" } as unknown as BrokerageHouseholdPortfolio);
+      resolveRequest<ReportingWorkspaceResponse>("reporting", 2, { marker: "recovered reporting" } as unknown as ReportingWorkspaceResponse);
       await recoveryRefresh;
     });
 
     expect(result.current.portfolio).toEqual({ marker: "recovered portfolio" });
     expect(result.current.brokeragePortfolio).toEqual({ marker: "recovered brokerage" });
+    expect(result.current.reporting).toEqual({ marker: "recovered reporting" });
     expect(result.current.workspaceErrors.portfolio).toBeUndefined();
+    expect(result.current.workspaceErrors.reporting).toBeUndefined();
     expect(result.current.error).toBeNull();
+  });
+
+  it("refreshes reporting live-view payloads with the portfolio refresh lane", async () => {
+    const { result } = renderHook(() => useWorkstationData({ activeWorkspace: "reporting" }));
+
+    await waitFor(() => expect(api.getSession).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveRefreshBatch(0, "initial");
+      await flushAsync();
+    });
+
+    let portfolioRefresh!: Promise<void>;
+    act(() => {
+      portfolioRefresh = result.current.refreshPortfolio();
+    });
+    await waitFor(() => expect(api.getPortfolioWorkspace).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(api.getReportingWorkspace).toHaveBeenCalledTimes(2));
+
+    await act(async () => {
+      resolveRequest<PortfolioWorkspaceResponse>("portfolio", 1, { marker: "live portfolio" } as unknown as PortfolioWorkspaceResponse);
+      resolveRequest<MultiAssetCoverageSummary>(
+        "portfolioMultiAssetCoverage",
+        1,
+        { marker: "live portfolio coverage" } as unknown as MultiAssetCoverageSummary
+      );
+      resolveRequest<BrokerageHouseholdPortfolio>("brokeragePortfolio", 1, { marker: "live brokerage" } as unknown as BrokerageHouseholdPortfolio);
+      resolveRequest<ReportingWorkspaceResponse>("reporting", 1, { marker: "live reporting views" } as unknown as ReportingWorkspaceResponse);
+      await portfolioRefresh;
+    });
+
+    expect(result.current.portfolio).toEqual({ marker: "live portfolio" });
+    expect(result.current.reporting).toEqual({ marker: "live reporting views" });
+    expect(result.current.workspaceErrors.reporting).toBeUndefined();
   });
 });
 

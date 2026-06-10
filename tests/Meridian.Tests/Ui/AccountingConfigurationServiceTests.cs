@@ -55,6 +55,295 @@ public sealed class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public void PrivateCapitalEvidenceCategories_RequireAllLinkedReportOutputsReady()
+    {
+        var timestamp = new DateTimeOffset(2026, 6, 30, 17, 0, 0, TimeSpan.Zero);
+        var effectiveDate = new DateOnly(2026, 6, 30);
+        var journalEntryId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        const string fundEventId = "fund-event:fund-alpha:capital-call:mixed-report-output";
+        var fundEvent = new PrivateCapitalFundEventDto(
+            fundEventId,
+            "CapitalCall",
+            ManualJournalEntryTypeDto.CapitalCall,
+            ManualJournalEntryStatusDto.Submitted,
+            journalEntryId,
+            effectiveDate,
+            "capital-account:fund-alpha:lp-1",
+            "investor:lp-1",
+            "USD",
+            100m,
+            100m,
+            "Fund Alpha capital call",
+            "payment:fund-alpha:capital-call",
+            "settlement:fund-alpha:capital-call",
+            ["/evidence/source.pdf"],
+            [],
+            timestamp,
+            ApprovalId: "approval:mixed-report-output");
+        var subledgerEntry = new PrivateCapitalCapitalAccountSubledgerEntryDto(
+            "subledger:mixed-report-output",
+            fundEvent.CapitalAccountId,
+            fundEvent.InvestorId,
+            "USD",
+            fundEventId,
+            fundEvent.FundEventType,
+            fundEvent.EntryType,
+            fundEvent.JournalStatus,
+            journalEntryId,
+            effectiveDate,
+            100m,
+            100m,
+            100m,
+            fundEvent.Memo,
+            ["/evidence/subledger.pdf"],
+            [],
+            timestamp);
+        var ledgerImpact = new PrivateCapitalLedgerImpactDto(
+            "ledger-impact:mixed-report-output",
+            journalEntryId,
+            fundEventId,
+            fundEvent.FundEventType,
+            fundEvent.CapitalAccountId,
+            fundEvent.InvestorId,
+            fundEvent.JournalStatus,
+            effectiveDate,
+            "USD",
+            100m,
+            100m,
+            0m,
+            2,
+            IsBalanced: true,
+            IsPostingReady: true,
+            ["/evidence/ledger.pdf"],
+            [
+                new PrivateCapitalLedgerLineImpactDto("debit-cash", "Assets:Cash", AccountingTemplateLineSideDto.Debit, 100m, "USD", null, null, null, "/evidence/ledger-line-debit.pdf"),
+                new PrivateCapitalLedgerLineImpactDto("credit-capital", "Equity:Capital Contributions", AccountingTemplateLineSideDto.Credit, 100m, "USD", null, null, null, "/evidence/ledger-line-credit.pdf")
+            ],
+            []);
+        var reportOutputs = new[]
+        {
+            new PrivateCapitalReportOutputDto(
+                "report-output:mixed-report-output:ready",
+                "CapitalCallNotice",
+                "Ready capital call notice",
+                "/api/fund-structure/report-packs/ready",
+                fundEventId,
+                fundEvent.FundEventType,
+                fundEvent.CapitalAccountId,
+                fundEvent.InvestorId,
+                fundEvent.JournalStatus,
+                effectiveDate,
+                "USD",
+                100m,
+                1,
+                ["/evidence/report-ready.pdf"],
+                IsReportReady: true,
+                []),
+            new PrivateCapitalReportOutputDto(
+                "report-output:mixed-report-output:review",
+                "DistributionNotice",
+                "Report output under review",
+                "/api/fund-structure/report-packs/review",
+                fundEventId,
+                fundEvent.FundEventType,
+                fundEvent.CapitalAccountId,
+                fundEvent.InvestorId,
+                fundEvent.JournalStatus,
+                effectiveDate,
+                "USD",
+                100m,
+                1,
+                ["/evidence/report-review.pdf"],
+                IsReportReady: false,
+                [])
+        };
+
+        var records = PrivateCapitalFundEventLedgerRecordBuilder.Build(
+            "fund-alpha",
+            [fundEvent],
+            [subledgerEntry],
+            [ledgerImpact],
+            reportOutputs);
+        var record = records.Should().ContainSingle().Subject;
+        var capitalAccount = new PrivateCapitalCapitalAccountActivityDto(
+            fundEvent.CapitalAccountId,
+            fundEvent.InvestorId,
+            "USD",
+            Contributions: 100m,
+            Distributions: 0m,
+            Subscriptions: 0m,
+            Redemptions: 0m,
+            ManagementFees: 0m,
+            NetActivity: 100m,
+            FundEventCount: 1,
+            LastEffectiveDate: effectiveDate,
+            LastFundEventType: fundEvent.FundEventType,
+            FundEventIds: [fundEventId]);
+        var subledger = PrivateCapitalCapitalAccountSubledgerBuilder.Build(
+            "fund-alpha",
+            ledgerBookId: null,
+            timestamp,
+            [capitalAccount],
+            records,
+            [subledgerEntry],
+            [ledgerImpact],
+            reportOutputs,
+            []);
+
+        record.IsReportReady.Should().BeFalse();
+        record.EvidenceCategories.Should().ContainSingle(item =>
+            item.CategoryId == "report-output" &&
+            !item.IsReady &&
+            item.EvidenceLinkCount == 2);
+        subledger.Should().ContainSingle().Subject.EvidenceCategories.Should().ContainSingle(item =>
+            item.CategoryId == "report-output" &&
+            !item.IsReady &&
+            item.EvidenceLinkCount == 2);
+    }
+
+    [Fact]
+    public void PrivateCapitalEvidenceCategories_RequireEachReportOutputToRetainEvidence()
+    {
+        var timestamp = new DateTimeOffset(2026, 6, 30, 17, 0, 0, TimeSpan.Zero);
+        var effectiveDate = new DateOnly(2026, 6, 30);
+        var journalEntryId = Guid.Parse("12121212-1212-1212-1212-121212121212");
+        const string fundEventId = "fund-event:fund-alpha:capital-call:partial-report-evidence";
+        var fundEvent = new PrivateCapitalFundEventDto(
+            fundEventId,
+            "CapitalCall",
+            ManualJournalEntryTypeDto.CapitalCall,
+            ManualJournalEntryStatusDto.Submitted,
+            journalEntryId,
+            effectiveDate,
+            "capital-account:fund-alpha:lp-1",
+            "investor:lp-1",
+            "USD",
+            100m,
+            100m,
+            "Fund Alpha capital call",
+            "payment:fund-alpha:capital-call",
+            "settlement:fund-alpha:capital-call",
+            ["/evidence/source.pdf"],
+            [],
+            timestamp,
+            ApprovalId: "approval:partial-report-evidence");
+        var reportOutputs = new[]
+        {
+            new PrivateCapitalReportOutputDto(
+                "report-output:partial-report-evidence:ready-linked",
+                "CapitalCallNotice",
+                "Ready linked capital call notice",
+                "/api/fund-structure/report-packs/ready-linked",
+                fundEventId,
+                fundEvent.FundEventType,
+                fundEvent.CapitalAccountId,
+                fundEvent.InvestorId,
+                fundEvent.JournalStatus,
+                effectiveDate,
+                "USD",
+                100m,
+                1,
+                ["/evidence/report-ready.pdf"],
+                IsReportReady: true,
+                []),
+            new PrivateCapitalReportOutputDto(
+                "report-output:partial-report-evidence:ready-unlinked",
+                "DistributionNotice",
+                "Ready distribution notice without retained evidence",
+                "/api/fund-structure/report-packs/ready-unlinked",
+                fundEventId,
+                fundEvent.FundEventType,
+                fundEvent.CapitalAccountId,
+                fundEvent.InvestorId,
+                fundEvent.JournalStatus,
+                effectiveDate,
+                "USD",
+                100m,
+                1,
+                [],
+                IsReportReady: true,
+                [])
+        };
+
+        var fundEventCategories = PrivateCapitalEvidenceCategoryBuilder.BuildForFundEvent(
+            fundEvent,
+            [],
+            [],
+            reportOutputs,
+            "/api/approvals/partial-report-evidence");
+        var subledgerCategories = PrivateCapitalEvidenceCategoryBuilder.BuildForCapitalAccountSubledger(
+            [],
+            [],
+            [],
+            reportOutputs);
+
+        fundEventCategories.Should().ContainSingle(item =>
+            item.CategoryId == "report-output" &&
+            !item.IsReady &&
+            item.EvidenceLinkCount == 1);
+        subledgerCategories.Should().ContainSingle(item =>
+            item.CategoryId == "report-output" &&
+            !item.IsReady &&
+            item.EvidenceLinkCount == 1);
+    }
+
+    [Fact]
+    public void PrivateCapitalCapitalAccountSubledger_DerivesReadinessFromReportOutputEvidenceLane()
+    {
+        var record = BuildPrivateCapitalFundEventLedgerRecord(new PrivateCapitalFundEventLedgerReadinessCase(
+            Suffix: "subledger-report-evidence-missing",
+            ApprovalState: ManualJournalEntryStatusDto.Submitted,
+            IncludeFundEventEvidence: true,
+            IncludeLedgerImpact: true,
+            LedgerPostingReady: true,
+            IncludeReportOutput: true,
+            ReportReady: true,
+            ReportPublished: false,
+            HasCriticalIssue: false,
+            ExpectedReadiness: PrivateCapitalFundEventLedgerReadinessDto.Ready,
+            ExpectedLabel: "Ready",
+            ExpectedNextAction: "Review report output",
+            ExpectedNextActionRouteFragment: "/api/fund-structure/report-packs/subledger-report-evidence-missing",
+            ExpectedEvidenceCount: 1,
+            ExpectedValidationIssueCount: 0));
+        var capitalAccount = new PrivateCapitalCapitalAccountActivityDto(
+            record.CapitalAccountId,
+            record.InvestorId,
+            record.Currency,
+            Contributions: 100m,
+            Distributions: 0m,
+            Subscriptions: 0m,
+            Redemptions: 0m,
+            ManagementFees: 0m,
+            NetActivity: 100m,
+            FundEventCount: 1,
+            LastEffectiveDate: record.EffectiveDate,
+            LastFundEventType: record.FundEventType,
+            FundEventIds: [record.FundEventId]);
+
+        var subledger = PrivateCapitalCapitalAccountSubledgerBuilder.Build(
+            "fund-alpha",
+            ledgerBookId: null,
+            new DateTimeOffset(2026, 6, 30, 17, 0, 0, TimeSpan.Zero),
+            [capitalAccount],
+            [record],
+            record.CapitalAccountSubledgerEntries,
+            record.LedgerImpacts,
+            record.ReportOutputs,
+            []).Should().ContainSingle().Subject;
+
+        subledger.Readiness.Should().Be(PrivateCapitalFundEventLedgerReadinessDto.ReportReview);
+        subledger.ReadinessLabel.Should().Be("Report review");
+        subledger.ReadinessReason.Should().Contain("report-output evidence is not complete");
+        subledger.NextAction.Should().Be("Prepare report output");
+        subledger.NextActionRoute.Should().Contain("/api/fund-structure/report-packs/subledger-report-evidence-missing");
+        subledger.EvidenceCategories.Should().ContainSingle(item =>
+            item.CategoryId == "report-output" &&
+            !item.IsReady &&
+            item.EvidenceLinkCount == 0);
+    }
+
+    [Fact]
     public async Task Scenario_MonthEndSetup_ConfigurationMutationsWriteAuditTrail()
     {
         var service = CreateService();
@@ -136,6 +425,59 @@ public sealed class AccountingConfigurationServiceTests
         var workbench = await service.GetWorkbenchAsync("fund-alpha");
         workbench.Drafts.Should().ContainSingle(item => item.JournalEntryId == submitted.JournalEntryId && item.Status == ManualJournalEntryStatusDto.Submitted);
         workbench.AuditTrail.Select(item => item.Action).Should().Contain(new[] { "manual-je.save-draft", "manual-je.submit-approval" });
+    }
+
+    [Fact]
+    public async Task ManualJournalEntryWorkbenchService_ListFundProfileIds_ReturnsRetainedDraftScopes()
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var service = CreateManualJournalEntryWorkbenchService(configuration);
+
+        await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(BalancedManualJournalEntry(), "ops-user"));
+        await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
+            BalancedManualJournalEntry() with { FundProfileId = "fund-beta" },
+            "ops-user"));
+
+        var fundProfileIds = await service.ListFundProfileIdsAsync();
+
+        fundProfileIds.Should().ContainInOrder("fund-alpha", "fund-beta");
+    }
+
+    [Fact]
+    public async Task ManualJournalEntryWorkbenchService_ListFundProfileIds_IncludesLedgerBookScopesWithoutDrafts()
+    {
+        var configuration = CreateService();
+        var ledgerBookId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var periodId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var journalStore = new PostedPrivateCapitalLedgerJournalStore(
+            new LedgerBookRecord(
+                ledgerBookId,
+                "fund-beta",
+                Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc"),
+                FundStructureNodeKindDto.Fund,
+                "Fund Beta GAAP",
+                "USD",
+                DateTimeOffset.UtcNow,
+                DateTimeOffset.UtcNow,
+                AccountingBasis: AccountingBasisKindDto.Gaap),
+            new LedgerAccountingPeriod(
+                periodId,
+                ledgerBookId,
+                FiscalYear: 2026,
+                PeriodNo: 6,
+                Label: "2026-06",
+                StartDate: new DateOnly(2026, 6, 1),
+                EndDate: new DateOnly(2026, 6, 30),
+                Status: "Open",
+                OpenedAt: DateTimeOffset.UtcNow,
+                ClosedAt: null,
+                Version: 1));
+        var service = CreateManualJournalEntryWorkbenchService(configuration, journalStore);
+
+        var fundProfileIds = await service.ListFundProfileIdsAsync();
+
+        fundProfileIds.Should().ContainSingle("fund-beta");
     }
 
     [Fact]
@@ -264,7 +606,11 @@ public sealed class AccountingConfigurationServiceTests
             item.CapitalAccountId == "capital-account:fund-alpha:lp-1" &&
             item.ApprovalState == ManualJournalEntryStatusDto.Submitted &&
             item.EvidenceLinkCount == 1 &&
-            item.IsReportReady);
+            item.IsReportReady &&
+            item.ReadinessLabel == "Ready" &&
+            item.ReadinessReason == "The report output has retained evidence and linked posting-ready fund-event impact." &&
+            item.NextAction == "Review report output" &&
+            item.NextActionRoute == item.ReportOutputRoute);
         workbench.PrivateCapitalActivity.FundEventRecords.Should().ContainSingle(item =>
             item.FundEventId == "fund-event:fund-alpha:capital-call:20260630" &&
             item.JournalEntryId == submitted.JournalEntryId &&
@@ -851,6 +1197,150 @@ public sealed class AccountingConfigurationServiceTests
             item.ValidationIssues.Any(issue => issue.Code == "private-capital.capital-account-impact-missing") &&
             item.ReportOutputs.Single().ValidationIssues.Any(issue => issue.Code == "private-capital.report-output-posting-not-ready"));
         activity.PublishedReportOutputCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Scenario_PrivateCapitalActivityProjection_DoesNotMarkPublishedReportReadyWhenReportEvidenceMissing()
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var timestamp = new DateTimeOffset(2026, 6, 30, 17, 0, 0, 0, TimeSpan.Zero);
+        var journalEntryId = Guid.NewGuid();
+        var cashLedgerEntryId = Guid.NewGuid();
+        var capitalLedgerEntryId = Guid.NewGuid();
+        var reportPackId = Guid.NewGuid();
+        const string fundEventId = "fund-event:fund-alpha:capital-call:missing-report-evidence";
+        var encodedFundEventId = Uri.EscapeDataString(fundEventId);
+        const string sourceEvidence = "source:missing-report-evidence-capital-call";
+        var journal = new JournalEntry(
+            journalEntryId,
+            timestamp,
+            "Report-evidence-missing Fund Alpha capital call",
+            [
+                new LedgerEntry(
+                    cashLedgerEntryId,
+                    journalEntryId,
+                    timestamp,
+                    new LedgerAccount("Cash", LedgerAccountType.Asset, FinancialAccountId: "entity-master"),
+                    175000m,
+                    0m,
+                    "Report-evidence-missing Fund Alpha capital call"),
+                new LedgerEntry(
+                    capitalLedgerEntryId,
+                    journalEntryId,
+                    timestamp,
+                    new LedgerAccount("Capital Contributions", LedgerAccountType.Equity, FinancialAccountId: "capital-account:fund-alpha:lp-1"),
+                    0m,
+                    175000m,
+                    "Report-evidence-missing Fund Alpha capital call")
+            ],
+            new JournalEntryMetadata(
+                ActivityType: "CapitalCall",
+                EffectiveDate: new DateOnly(2026, 6, 30),
+                IdempotencyKey: "posted:fund-alpha:capital-call:missing-report-evidence",
+                FundEventId: fundEventId,
+                FundEventType: "CapitalCall",
+                CapitalAccountId: "capital-account:fund-alpha:lp-1",
+                InvestorId: "investor:lp-1",
+                Tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["evidenceLinks"] = sourceEvidence,
+                    ["automatedJournalStatus"] = "Posted",
+                    ["automatedJournalApprovalId"] = "approval:missing-report-evidence-capital-call",
+                    ["approvedBy"] = "controller"
+                }));
+        var journalStore = new PostedPrivateCapitalLedgerJournalStore(
+            new LedgerBookRecord(
+                ledgerBookId,
+                "fund-alpha",
+                Guid.NewGuid(),
+                FundStructureNodeKindDto.Fund,
+                "Fund Alpha GAAP book",
+                "USD",
+                timestamp,
+                timestamp),
+            new LedgerAccountingPeriod(
+                periodId,
+                ledgerBookId,
+                2026,
+                6,
+                "2026-06",
+                new DateOnly(2026, 6, 1),
+                new DateOnly(2026, 6, 30),
+                "Closed",
+                timestamp,
+                timestamp,
+                1),
+            new LedgerJournalEntryRecord(
+                journal,
+                Guid.NewGuid(),
+                periodId,
+                CommandId: null,
+                CorrelationId: null,
+                GlobalSequence: 1,
+                CreatedAt: timestamp));
+        var workflowService = new ReportPackWorkflowService(new StaticReportPackWorkflowRecordStore(
+            new ReportPackWorkflowRecordDto(
+                reportPackId,
+                "fund-alpha",
+                "capital-account:fund-alpha:lp-1",
+                "2026-06",
+                new VersionedReportTemplateIdDto("CapitalAccountStatement", 1),
+                ReportPackWorkflowStateDto.Published,
+                3,
+                timestamp,
+                "controller",
+                timestamp,
+                [new ReportPackAuditEventDto(timestamp, "controller", "publish", ReportPackWorkflowStateDto.Approved, ReportPackWorkflowStateDto.Published)],
+                null,
+                LineProvenance: [],
+                Publication: new ReportPackPublicationManifestDto(
+                    $"manifest:{fundEventId}",
+                    $"/retained/report-packs/{encodedFundEventId}.json",
+                    "sha256:missing-report-evidence",
+                    "controller",
+                    timestamp,
+                    []))));
+        var service = CreateManualJournalEntryWorkbenchService(configuration, journalStore, workflowService);
+
+        var activity = await service.GetPrivateCapitalActivityAsync("fund-alpha", ledgerBookId);
+
+        activity.PublishedReportOutputCount.Should().Be(1);
+        var reportOutput = activity.ReportOutputs.Should().ContainSingle(item => item.FundEventId == fundEventId).Subject;
+        reportOutput.IsPublished.Should().BeTrue();
+        reportOutput.IsReportReady.Should().BeFalse();
+        reportOutput.ReadinessLabel.Should().Be("Evidence missing");
+        reportOutput.ReadinessReason.Should().Be("Posted private-capital report output is missing retained report evidence links.");
+        reportOutput.NextAction.Should().Be("Attach retained evidence");
+        reportOutput.NextActionRoute.Should().Be(reportOutput.EvidenceRoute);
+        reportOutput.ReportLineProvenanceCount.Should().Be(0);
+        reportOutput.EvidenceLinks.Should().Contain(sourceEvidence);
+        reportOutput.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "private-capital.report-output-evidence-missing" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Warning);
+
+        var record = activity.FundEventRecords.Should().ContainSingle(item => item.FundEventId == fundEventId).Subject;
+        record.IsPostingReady.Should().BeTrue();
+        record.IsPublished.Should().BeTrue();
+        record.IsReportReady.Should().BeFalse();
+        record.Readiness.Should().Be(PrivateCapitalFundEventLedgerReadinessDto.ReportReview);
+        record.ReadinessLabel.Should().Be("Report review");
+        record.ReportOutputs.Single().ValidationIssues.Should().Contain(issue =>
+            issue.Code == "private-capital.report-output-evidence-missing");
+        record.EvidenceCategories.Should().ContainSingle(item =>
+            item.CategoryId == "report-output" &&
+            !item.IsReady &&
+            item.EvidenceLinks.Contains(sourceEvidence));
+
+        var subledger = activity.CapitalAccountSubledgers.Should().ContainSingle(item =>
+            item.CapitalAccountId == "capital-account:fund-alpha:lp-1").Subject;
+        subledger.PublishedReportOutputCount.Should().Be(1);
+        subledger.EvidenceCategories.Should().ContainSingle(item =>
+            item.CategoryId == "report-output" &&
+            !item.IsReady &&
+            item.EvidenceLinks.Contains(sourceEvidence));
     }
 
     [Fact]

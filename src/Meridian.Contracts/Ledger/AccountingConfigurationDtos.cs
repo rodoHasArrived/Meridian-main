@@ -120,7 +120,9 @@ public sealed record AccountingActionAuditEventDto(
     string BeforeHash,
     string AfterHash,
     IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
-    IReadOnlyList<string> EvidenceLinks);
+    IReadOnlyList<string> EvidenceLinks,
+    string? CompanyId = null,
+    IReadOnlyList<string>? ReportGroupPrincipalIds = null);
 
 public sealed record AccountingConfigurationWorkspaceDto(
     string FundProfileId,
@@ -140,21 +142,27 @@ public sealed record UpsertChartOfAccountsNodeRequest(
     ChartOfAccountsNodeDto Node,
     string Actor,
     string? CorrelationId = null,
-    IReadOnlyList<string>? EvidenceLinks = null);
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? CompanyId = null,
+    IReadOnlyList<string>? ReportGroupPrincipalIds = null);
 
 public sealed record UpsertJournalEntryTemplateRequest(
     string FundProfileId,
     JournalEntryTemplateDto Template,
     string Actor,
     string? CorrelationId = null,
-    IReadOnlyList<string>? EvidenceLinks = null);
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? CompanyId = null,
+    IReadOnlyList<string>? ReportGroupPrincipalIds = null);
 
 public sealed record UpsertPostingRuleRequest(
     string FundProfileId,
     PostingRuleDto Rule,
     string Actor,
     string? CorrelationId = null,
-    IReadOnlyList<string>? EvidenceLinks = null);
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? CompanyId = null,
+    IReadOnlyList<string>? ReportGroupPrincipalIds = null);
 
 public sealed record PreviewJournalTemplateRequest(
     string FundProfileId,
@@ -361,7 +369,11 @@ public sealed record PrivateCapitalReportOutputDto(
     string? FundEventRecordRoute = null,
     string? CapitalAccountSubledgerRoute = null,
     string? EvidenceRoute = null,
-    string? ApprovalRoute = null);
+    string? ApprovalRoute = null,
+    string? ReadinessLabel = null,
+    string? ReadinessReason = null,
+    string? NextAction = null,
+    string? NextActionRoute = null);
 
 public sealed record PrivateCapitalEvidenceCategoryDto(
     string CategoryId,
@@ -463,6 +475,11 @@ public sealed record PrivateCapitalCapitalAccountSubledgerDto(
     IReadOnlyList<PrivateCapitalLedgerImpactDto> LedgerImpacts,
     IReadOnlyList<PrivateCapitalReportOutputDto> ReportOutputs,
     IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
+    PrivateCapitalFundEventLedgerReadinessDto Readiness = PrivateCapitalFundEventLedgerReadinessDto.EvidenceMissing,
+    string ReadinessLabel = "",
+    string ReadinessReason = "",
+    string NextAction = "",
+    string? NextActionRoute = null,
     IReadOnlyList<PrivateCapitalEvidenceCategoryDto>? EvidenceCategories = null)
 {
     public IReadOnlyList<PrivateCapitalEvidenceCategoryDto> EvidenceCategories { get; init; } =
@@ -532,7 +549,9 @@ public sealed record ActivateAccountingConfigurationRequest(
     string Actor,
     Guid? LedgerBookId = null,
     string? CorrelationId = null,
-    IReadOnlyList<string>? EvidenceLinks = null);
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? CompanyId = null,
+    IReadOnlyList<string>? ReportGroupPrincipalIds = null);
 
 public interface IAccountingConfigurationService
 {
@@ -569,6 +588,8 @@ public interface IAccountingConfigurationService
 
 public interface IManualJournalEntryWorkbenchService
 {
+    Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default);
+
     Task<ManualJournalEntryWorkbenchDto> GetWorkbenchAsync(
         string? fundProfileId = null,
         Guid? ledgerBookId = null,
@@ -594,6 +615,8 @@ public interface IManualJournalEntryWorkbenchService
 
 public interface IManualJournalEntryDraftStore
 {
+    Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default);
+
     Task<IReadOnlyList<ManualJournalEntryDraftDto>> ListAsync(
         string fundProfileId,
         Guid? ledgerBookId = null,

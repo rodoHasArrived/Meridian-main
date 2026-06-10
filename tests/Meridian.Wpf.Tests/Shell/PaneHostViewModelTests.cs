@@ -39,6 +39,21 @@ public sealed class PaneHostViewModelTests
     }
 
     [Fact]
+    public void AssignPageToPane_BeyondSupportedPaneCount_ShouldClampToLastVisiblePane()
+    {
+        var paneHost = new PaneHostViewModel(new ShellRouteRegistry());
+
+        paneHost.AssignPageToPane("TradingShell", 0);
+        paneHost.AssignPageToPane("OrderBook", 1);
+        paneHost.AssignPageToPane("PositionBlotter", 2);
+        paneHost.AssignPageToPane("RunRisk", 3);
+
+        paneHost.SelectedLayout.PaneCount.Should().Be(3);
+        paneHost.ActivePaneIndex.Should().Be(2);
+        paneHost.GetAssignedPageTag(2).Should().Be("RunRisk");
+    }
+
+    [Fact]
     public void GetVisibleContentStates_IgnoresEmptyOrUnknownPaneAssignments()
     {
         var paneHost = new PaneHostViewModel(new ShellRouteRegistry());

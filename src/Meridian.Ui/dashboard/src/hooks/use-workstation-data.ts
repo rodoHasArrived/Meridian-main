@@ -208,8 +208,8 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
   });
   const portfolioRefreshLifecycle = useRequestLifecycle({
     operation: "portfolio refresh",
-    runningMessage: "Refreshing portfolio positions and brokerage household.",
-    successMessage: "Portfolio evidence refreshed.",
+    runningMessage: "Refreshing portfolio positions, brokerage household, and reporting live views.",
+    successMessage: "Portfolio and reporting evidence refreshed.",
     failureMessage: "Portfolio refresh failed.",
     staleMessage: "Older portfolio response discarded.",
     maxRetries: 2
@@ -465,17 +465,18 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
     providerRoutingRefreshLifecycle.succeed
   ]);
 
-  // Keep portfolio positions in sync with strategy execution.
+  // Keep portfolio and reporting live-view projections in sync with strategy execution.
   const refreshPortfolio = useCallback(async () => {
     if (refreshingPortfolio.current) return;
     const token = portfolioRefreshLifecycle.start({ busyMode: "drop" });
     if (!token) return;
     refreshingPortfolio.current = true;
     try {
-      const [portfolio, portfolioMultiAssetCoverage, brokeragePortfolio] = await Promise.allSettled([
+      const [portfolio, portfolioMultiAssetCoverage, brokeragePortfolio, reporting] = await Promise.allSettled([
         getPortfolioWorkspace({ signal: token.signal }),
         getPortfolioMultiAssetCoverage({ signal: token.signal }),
-        getBrokerageHouseholdPortfolio("alpaca", { signal: token.signal })
+        getBrokerageHouseholdPortfolio("alpaca", { signal: token.signal }),
+        getReportingWorkspace({ signal: token.signal })
       ]);
       if (!token.isCurrent()) {
         portfolioRefreshLifecycle.markStale(token.version);
@@ -484,7 +485,9 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
       token.safeSetState(setState, (current) => {
         let next = { ...current };
         const previousPortfolioError = current.workspaceErrors.portfolio;
+        const previousReportingError = current.workspaceErrors.reporting;
         const refreshErrors: string[] = [];
+        const reportingRefreshErrors: string[] = [];
         if (portfolio.status === "fulfilled") {
           next = { ...next, portfolio: portfolio.value };
         } else {
@@ -500,16 +503,27 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
         } else {
           refreshErrors.push(formatRequestError(brokeragePortfolio.reason, "Brokerage household portfolio refresh failed"));
         }
+        if (reporting.status === "fulfilled") {
+          next = { ...next, reporting: reporting.value };
+        } else {
+          reportingRefreshErrors.push(formatRequestError(reporting.reason, "Reporting live portfolio refresh failed"));
+        }
 
         const refreshError = refreshErrors.length > 0 ? refreshErrors.join("; ") : null;
-        const workspaceErrors = refreshError
+        const reportingRefreshError = reportingRefreshErrors.length > 0 ? reportingRefreshErrors.join("; ") : null;
+        let workspaceErrors = refreshError
           ? { ...current.workspaceErrors, portfolio: refreshError }
           : withoutWorkspaceError(current.workspaceErrors, "portfolio");
-        const error = refreshError
-          ? current.error === null || current.error === previousPortfolioError
-            ? refreshError
+        workspaceErrors = reportingRefreshError
+          ? { ...workspaceErrors, reporting: reportingRefreshError }
+          : withoutWorkspaceError(workspaceErrors, "reporting");
+        const primaryRefreshError = refreshError ?? reportingRefreshError;
+        const previousPrimaryError = refreshError ? previousPortfolioError : previousReportingError;
+        const error = primaryRefreshError
+          ? current.error === null || current.error === previousPrimaryError
+            ? primaryRefreshError
             : current.error
-          : current.error === previousPortfolioError
+          : current.error === previousPortfolioError || current.error === previousReportingError
             ? firstWorkspaceError(workspaceErrors) ?? null
             : current.error;
 

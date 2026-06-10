@@ -171,45 +171,53 @@ public sealed class ReportingWorkspaceShellViewModel : WorkspaceShellViewModelBa
         new()
         {
             Title = "Pack assembly",
-            Detail = "Preview the packet and downstream handoff readiness.",
-            StatusLabel = "Fund report pack",
+            Detail = "Review no-code report grids, branded pack output, shadow-NAV evidence, and downstream handoff readiness.",
+            StatusLabel = "Report writer",
             CountLabel = "Draft",
             Tone = WorkspaceTone.Info,
             PrimaryActionId = "FundReportPack",
             PrimaryActionLabel = "Open",
+            SecondaryActionId = "ExportPresets",
+            SecondaryActionLabel = "Presets",
             AutomationName = "Reporting pack assembly decision"
         },
         new()
         {
             Title = "Approval gates",
-            Detail = "Review manifests, retries, and approval blockers.",
-            StatusLabel = "Run status",
+            Detail = "Review scheduled runs, approval blockers, retry manifests, and immutable audit lineage.",
+            StatusLabel = "Schedule controls",
             CountLabel = "Gate",
             Tone = WorkspaceTone.Warning,
             PrimaryActionId = "ReportRunStatus",
             PrimaryActionLabel = "Open",
+            SecondaryActionId = "FundAuditTrail",
+            SecondaryActionLabel = "Audit",
             AutomationName = "Reporting approval gates decision"
         },
         new()
         {
             Title = "Dashboard exceptions",
-            Detail = "Inspect holdings, maturity, and quality exception signals.",
-            StatusLabel = "Reporting dashboard",
+            Detail = "Inspect live exposure, cash, P&L, liquidity, Top-N, contribution, and data-quality signals.",
+            StatusLabel = "Portfolio views",
             CountLabel = "Review",
             Tone = WorkspaceTone.Neutral,
             PrimaryActionId = "Dashboard",
             PrimaryActionLabel = "Open",
+            SecondaryActionId = "DataQuality",
+            SecondaryActionLabel = "Quality",
             AutomationName = "Reporting dashboard exceptions decision"
         },
         new()
         {
             Title = "Export delivery",
-            Detail = "Configure package delivery and reusable presets.",
-            StatusLabel = "Analysis exports",
+            Detail = "Prepare scheduled PDF/XLSX/CSV packages for email-link, secure-portal, regulatory, and warehouse delivery.",
+            StatusLabel = "Distribution",
             CountLabel = "Ready",
             Tone = WorkspaceTone.Success,
             PrimaryActionId = "AnalysisExport",
             PrimaryActionLabel = "Open",
+            SecondaryActionId = "ExportPresets",
+            SecondaryActionLabel = "Presets",
             AutomationName = "Reporting export delivery decision"
         }
     ];

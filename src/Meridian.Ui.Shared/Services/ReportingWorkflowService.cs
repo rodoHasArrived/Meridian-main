@@ -93,7 +93,11 @@ public sealed class ReportTemplateRegistryService
             .ThenByDescending(record => record.Definition.TemplateId.Version)
             .ToArray();
 
-    public ReportTemplateGovernanceRecordDto CreateDraft(ReportTemplateDraftRequestDto request, string actor)
+    public ReportTemplateGovernanceRecordDto CreateDraft(
+        ReportTemplateDraftRequestDto request,
+        string actor,
+        string? companyId = null,
+        IReadOnlyList<string>? reportGroupPrincipalIds = null)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(actor);
@@ -117,7 +121,9 @@ public sealed class ReportTemplateRegistryService
             request.Sections,
             request.Grids,
             request.AccessPolicy),
-            actor);
+            actor,
+            companyId,
+            reportGroupPrincipalIds);
         var now = DateTimeOffset.UtcNow;
         var record = new ReportTemplateGovernanceRecordDto(
             definition,
@@ -259,7 +265,11 @@ public sealed class ReportTemplateRegistryService
         return value.Trim().ToLowerInvariant();
     }
 
-    private static ReportTemplateDefinitionDto NormalizeDefinition(ReportTemplateDefinitionDto definition, string? defaultOwnerPrincipalId = null)
+    private static ReportTemplateDefinitionDto NormalizeDefinition(
+        ReportTemplateDefinitionDto definition,
+        string? defaultOwnerPrincipalId = null,
+        string? defaultCompanyId = null,
+        IReadOnlyList<string>? defaultReportGroupPrincipalIds = null)
     {
         var id = new VersionedReportTemplateIdDto(
             NormalizeIdentifier(definition.TemplateId.Name),
@@ -291,8 +301,46 @@ public sealed class ReportTemplateRegistryService
             Parameters = parameters,
             Sections = sections,
             Grids = grids,
-            AccessPolicy = ReportAccessPolicyEvaluator.Normalize(definition.AccessPolicy, defaultOwnerPrincipalId)
+            AccessPolicy = NormalizeAccessPolicyForCaller(
+                definition.AccessPolicy,
+                defaultOwnerPrincipalId,
+                defaultCompanyId,
+                defaultReportGroupPrincipalIds)
         };
+    }
+
+    private static ReportAccessPolicyDto NormalizeAccessPolicyForCaller(
+        ReportAccessPolicyDto? policy,
+        string? defaultOwnerPrincipalId,
+        string? defaultCompanyId,
+        IReadOnlyList<string>? defaultReportGroupPrincipalIds)
+    {
+        var normalized = ReportAccessPolicyEvaluator.Normalize(policy, defaultOwnerPrincipalId);
+        var companyId = string.IsNullOrWhiteSpace(normalized.CompanyId)
+            ? NormalizeOptional(defaultCompanyId)
+            : normalized.CompanyId;
+
+        if (normalized.Mode == ReportAccessModeDto.Restricted
+            && (normalized.Principals is null || normalized.Principals.Count == 0))
+        {
+            var groupPrincipals = NormalizeStringList(defaultReportGroupPrincipalIds)
+                .Select(static group => new ReportAccessPrincipalDto(
+                    ReportAccessPrincipalKindDto.Group,
+                    group,
+                    group))
+                .ToArray();
+
+            if (groupPrincipals.Length > 0)
+            {
+                return ReportAccessPolicyEvaluator.Normalize(normalized with
+                {
+                    CompanyId = companyId,
+                    Principals = groupPrincipals
+                }, defaultOwnerPrincipalId);
+            }
+        }
+
+        return normalized with { CompanyId = companyId };
     }
 
     private static IReadOnlyList<ReportWriterGridDefinitionDto> NormalizeGrids(IReadOnlyList<ReportWriterGridDefinitionDto>? grids) =>
@@ -319,6 +367,9 @@ public sealed class ReportTemplateRegistryService
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
             .ToArray() ?? [];
+
+    private static string? NormalizeOptional(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static IReadOnlyList<ReportWriterMetricDefinitionDto> NormalizeGridMetrics(IReadOnlyList<ReportWriterMetricDefinitionDto>? metrics) =>
         metrics?

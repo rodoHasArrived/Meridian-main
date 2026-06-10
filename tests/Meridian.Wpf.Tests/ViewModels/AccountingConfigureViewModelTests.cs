@@ -229,6 +229,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             && row.Evidence.Contains("Published", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("1 provenance", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("readiness Published", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("published with retained report evidence", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("next Open published report via /api/ledger/private-capital/report-output", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("2 evidence via /api/workstation/evidence/subjects/private-capital-fund-event/", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("approval approval:capital-call-controller via /api/ledger/journal-entry-workbench", StringComparison.OrdinalIgnoreCase)
@@ -236,7 +237,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             && row.Key.Contains("capitalAccountId=capital-account%3A", StringComparison.OrdinalIgnoreCase));
         viewModel.ManualJournalCapitalAccountSubledgerRows.Should().ContainSingle(row =>
             row.Name == "capital-account:alpha-fund:lp-001"
-            && row.Status == "Ready"
+            && row.Status == "Published"
             && row.Detail.Contains("0 USD opening", StringComparison.OrdinalIgnoreCase)
             && row.Detail.Contains("+250 USD net", StringComparison.OrdinalIgnoreCase)
             && row.Detail.Contains("+250 USD ending", StringComparison.OrdinalIgnoreCase)
@@ -244,6 +245,10 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             && row.Evidence.Contains("0 approval queue", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("1 posted", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("1 published report", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("readiness Published", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("retained evidence", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("posting-ready ledger impact", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("next Open published report via /api/ledger/private-capital/report-output", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("5/5 evidence categories ready", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("Report output Ready", StringComparison.OrdinalIgnoreCase)
             && row.Key.Contains("/api/ledger/private-capital/capital-account-subledger", StringComparison.OrdinalIgnoreCase)
@@ -263,6 +268,9 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             && row.Evidence.Contains("evidence", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("1 provenance", StringComparison.OrdinalIgnoreCase)
             && row.Evidence.Contains("manifest-capital-account-statement", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("readiness Published", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("published with retained report evidence", StringComparison.OrdinalIgnoreCase)
+            && row.Evidence.Contains("next Open published report via /api/ledger/private-capital/report-output", StringComparison.OrdinalIgnoreCase)
             && row.Key.Contains("/api/ledger/private-capital/report-output", StringComparison.OrdinalIgnoreCase)
             && row.Key.Contains("reportOutputId=report-output%3Afund-event%3A", StringComparison.OrdinalIgnoreCase));
     }
@@ -497,7 +505,11 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             PublishedAtUtc: updatedAtUtc,
             PublishedBy: "controller",
             ReportLineProvenanceCount: 1,
-            ReportOutputRoute: reportOutputRoute);
+            ReportOutputRoute: reportOutputRoute,
+            ReadinessLabel: "Published",
+            ReadinessReason: "The report output is published with retained report evidence and linked posting-ready fund-event impact.",
+            NextAction: "Open published report",
+            NextActionRoute: reportOutputRoute);
         var fundEventLedgerRecord = new PrivateCapitalFundEventLedgerRecordDto(
             $"fund-event-ledger-record:{fundEventId}",
             fundEventId,
@@ -579,6 +591,11 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             LedgerImpacts: [ledgerImpact],
             ReportOutputs: [reportOutput],
             ValidationIssues: [],
+            Readiness: PrivateCapitalFundEventLedgerReadinessDto.Published,
+            ReadinessLabel: "Published",
+            ReadinessReason: "All fund events in this capital-account subledger have retained evidence, posting-ready ledger impact, capital-account movement, and published report output.",
+            NextAction: "Open published report",
+            NextActionRoute: reportOutput.ReportOutputRoute,
             EvidenceCategories:
             [
                 new PrivateCapitalEvidenceCategoryDto(
@@ -652,6 +669,12 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
     private sealed class StaticManualJournalEntryWorkbenchService(
         PrivateCapitalActivityProjectionDto privateCapitalActivity) : IManualJournalEntryWorkbenchService
     {
+        public Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<string>>([privateCapitalActivity.FundProfileId]);
+        }
+
         public Task<ManualJournalEntryWorkbenchDto> GetWorkbenchAsync(
             string? fundProfileId = null,
             Guid? ledgerBookId = null,

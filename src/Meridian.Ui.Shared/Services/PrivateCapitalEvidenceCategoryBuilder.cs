@@ -60,9 +60,9 @@ internal static class PrivateCapitalEvidenceCategoryBuilder
             BuildCategory(
                 "report-output",
                 "Report output",
-                reportOutputs.Count > 0 && reportOutputs.Any(static item => item.IsReportReady) && reportLinks.Count > 0,
+                reportOutputs.Count > 0 && reportOutputs.All(static item => IsReportOutputEvidenceReady(item)) && reportLinks.Count > 0,
                 reportOutputs.Count > 0
-                    ? "Governed report output is linked to the fund event."
+                    ? "Governed report outputs are linked to the fund event."
                     : "Governed report output is missing for the fund event.",
                 reportLinks,
                 new[] { "Governed report output" })
@@ -127,7 +127,7 @@ internal static class PrivateCapitalEvidenceCategoryBuilder
             BuildCategory(
                 "report-output",
                 "Report output",
-                reportOutputs.Count > 0 && reportOutputs.Any(static item => item.IsReportReady) && reportLinks.Count > 0,
+                reportOutputs.Count > 0 && reportOutputs.All(static item => IsReportOutputEvidenceReady(item)) && reportLinks.Count > 0,
                 reportOutputs.Count > 0
                     ? "Governed report outputs are linked to this capital account."
                     : "Governed report output is missing for this capital account.",
@@ -158,6 +158,9 @@ internal static class PrivateCapitalEvidenceCategoryBuilder
         => approvalLinks.Count > 0 &&
            (approvalState == ManualJournalEntryStatusDto.Submitted ||
             approvalState == ManualJournalEntryStatusDto.Approved);
+
+    private static bool IsReportOutputEvidenceReady(PrivateCapitalReportOutputDto reportOutput)
+        => reportOutput.IsReportReady && Normalize(reportOutput.EvidenceLinks).Count > 0;
 
     private static IEnumerable<string> BuildApprovalLinks(
         string? approvalId,

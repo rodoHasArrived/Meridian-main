@@ -79,6 +79,7 @@ public sealed class ReportingScheduleService
 {
     private readonly IReportingOrchestrationService _orchestrationService;
     private readonly ReportPackDeliveryService? _deliveryService;
+    private readonly GovernedReportingTemplateCatalog? _governedTemplateCatalog;
     private readonly IReportingScheduleStore? _store;
     private readonly Dictionary<string, ReportingScheduleRecordDto> _schedules = new(StringComparer.OrdinalIgnoreCase);
     private readonly object _gate = new();
@@ -86,10 +87,12 @@ public sealed class ReportingScheduleService
     public ReportingScheduleService(
         IReportingOrchestrationService orchestrationService,
         IReportingScheduleStore? store = null,
-        ReportPackDeliveryService? deliveryService = null)
+        ReportPackDeliveryService? deliveryService = null,
+        GovernedReportingTemplateCatalog? governedTemplateCatalog = null)
     {
         _orchestrationService = orchestrationService ?? throw new ArgumentNullException(nameof(orchestrationService));
         _deliveryService = deliveryService;
+        _governedTemplateCatalog = governedTemplateCatalog;
         _store = store;
         foreach (var schedule in _store?.Load() ?? [])
         {
@@ -112,6 +115,14 @@ public sealed class ReportingScheduleService
     public ReportingScheduleRecordDto Upsert(ReportingScheduleUpsertRequestDto request)
     {
         ArgumentNullException.ThrowIfNull(request);
+        return Upsert(request, new ReportAccessQueryContext(request.RequestedBy));
+    }
+
+    public ReportingScheduleRecordDto Upsert(
+        ReportingScheduleUpsertRequestDto request,
+        ReportAccessQueryContext? accessContext)
+    {
+        ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ScheduleId);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.TemplateId);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.CronExpression);
@@ -120,6 +131,8 @@ public sealed class ReportingScheduleService
         {
             throw new ArgumentOutOfRangeException(nameof(request), "maxRetries must be zero or greater.");
         }
+
+        EnsureTemplateAccess(request.TemplateId, accessContext);
 
         lock (_gate)
         {
@@ -172,7 +185,18 @@ public sealed class ReportingScheduleService
         }
     }
 
-    public async Task<ReportingScheduleRunResultDto> RunNowAsync(string scheduleId, string? requestedBy, CancellationToken ct = default)
+    public Task<ReportingScheduleRunResultDto> RunNowAsync(string scheduleId, string? requestedBy, CancellationToken ct = default) =>
+        RunNowAsync(
+            scheduleId,
+            requestedBy,
+            string.IsNullOrWhiteSpace(requestedBy) ? null : new ReportAccessQueryContext(requestedBy),
+            ct);
+
+    public async Task<ReportingScheduleRunResultDto> RunNowAsync(
+        string scheduleId,
+        string? requestedBy,
+        ReportAccessQueryContext? accessContext,
+        CancellationToken ct = default)
     {
         ReportingScheduleRecordDto schedule;
         lock (_gate)
@@ -183,6 +207,7 @@ public sealed class ReportingScheduleService
             }
         }
 
+        EnsureTemplateAccess(schedule.TemplateId, accessContext);
         return await RunScheduleAsync(schedule, requestedBy, ct).ConfigureAwait(false);
     }
 
@@ -233,7 +258,7 @@ public sealed class ReportingScheduleService
         var manifest = await _orchestrationService.ExecuteAsync(contract, ct).ConfigureAwait(false);
         var run = ProjectRun(manifest, _orchestrationService.GetAudit(manifest.RunId));
         var advanced = AdvanceSchedule(schedule, manifest);
-        var delivery = DeliverScheduledPackages(schedule, actor);
+        var delivery = DeliverScheduledPackages(schedule, manifest, actor);
         lock (_gate)
         {
             _schedules[advanced.ScheduleId] = advanced;
@@ -245,6 +270,7 @@ public sealed class ReportingScheduleService
 
     private (IReadOnlyList<ReportPackDeliveryAttemptDto> Attempts, IReadOnlyList<string> Warnings) DeliverScheduledPackages(
         ReportingScheduleRecordDto schedule,
+        ReportingOutputManifest manifest,
         string actor)
     {
         var targets = schedule.DeliveryTargets ?? [];
@@ -264,15 +290,9 @@ public sealed class ReportingScheduleService
         {
             try
             {
-                var attempt = _deliveryService.DeliverLatestForTemplate(schedule.TemplateId, target, actor);
-                if (attempt is null)
-                {
-                    warnings.Add($"No published or restated report pack is available for template '{schedule.TemplateId}' and distribution '{target.DistributionId}'.");
-                }
-                else
-                {
-                    attempts.Add(attempt);
-                }
+                var attempt = _deliveryService.DeliverLatestForTemplate(schedule.TemplateId, target, actor)
+                    ?? _deliveryService.DeliverReportingRun(manifest, target, actor);
+                attempts.Add(attempt);
             }
             catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or KeyNotFoundException)
             {
@@ -400,6 +420,16 @@ public sealed class ReportingScheduleService
         return formats
             .Distinct()
             .ToArray();
+    }
+
+    private void EnsureTemplateAccess(string templateId, ReportAccessQueryContext? accessContext)
+    {
+        var accessEvaluation = _governedTemplateCatalog?.EvaluateAccess(templateId, accessContext)
+            ?? ReportAccessPolicyEvaluator.Evaluate(null, accessContext);
+        if (!accessEvaluation.IsAccessible)
+        {
+            throw new UnauthorizedAccessException(accessEvaluation.Reason);
+        }
     }
 
     private void PersistSchedules()

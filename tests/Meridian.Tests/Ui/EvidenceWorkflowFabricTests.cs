@@ -516,6 +516,25 @@ public sealed class EvidenceWorkflowFabricTests
     }
 
     [Fact]
+    public async Task EvidenceSubjectResolver_DuringPrivateCapitalFundEventReview_ListsFundScopedSubjects()
+    {
+        var activity = PrivateCapitalActivityProjection();
+        var provider = new ServiceCollection()
+            .AddSingleton<IManualJournalEntryWorkbenchService>(new StubManualJournalEntryWorkbenchService(activity))
+            .BuildServiceProvider();
+        var resolver = new EvidenceSubjectResolver(provider);
+
+        var subjects = await resolver.ListAsync();
+
+        subjects.Should().Contain(subject =>
+            subject.SubjectKind == EvidenceSubjectResolver.PrivateCapitalFundEventKind &&
+            subject.SubjectId == "fund-event:fund-alpha:capital-call:20260630" &&
+            subject.Label.Contains("CapitalCall", StringComparison.OrdinalIgnoreCase) &&
+            subject.Route != null &&
+            subject.Route.Contains("fund-event%3Afund-alpha%3Acapital-call%3A20260630", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task EvidenceGraphService_DuringPrivateCapitalFundEventReview_ProjectsUnifiedLedgerEvidence()
     {
         var activity = PrivateCapitalActivityProjection();
@@ -543,6 +562,9 @@ public sealed class EvidenceWorkflowFabricTests
             "ledger-impact",
             "report-output"
         ]);
+        var subledgerNode = packet.Nodes.Single(node => node.Kind == "capital-account-subledger");
+        var reportOutputNode = packet.Nodes.Single(node => node.Kind == "report-output");
+
         packet.Nodes.Should().Contain(node =>
             node.Kind == "private-capital-fund-event" &&
             node.Status == EvidenceStatusDto.Ready &&
@@ -553,21 +575,27 @@ public sealed class EvidenceWorkflowFabricTests
             node.Kind == "retained-evidence" &&
             node.Status == EvidenceStatusDto.Ready &&
             node.ArtifactRefs.Any(artifact => artifact.Retained));
-        packet.Nodes.Should().Contain(node =>
-            node.Kind == "capital-account-subledger" &&
-            node.Status == EvidenceStatusDto.Ready &&
-            node.ArtifactRefs.Any(artifact =>
-                artifact.Kind == "capital-account-subledger-route" &&
-                artifact.Route!.Contains("/api/ledger/private-capital/capital-account-subledger", StringComparison.OrdinalIgnoreCase)));
+        subledgerNode.Status.Should().Be(EvidenceStatusDto.Ready);
+        subledgerNode.Summary.Should().Contain("1 capital-account subledger entry");
+        subledgerNode.Summary.Should().Contain("move net activity from 0 to 100 USD");
+        subledgerNode.ArtifactRefs.Should().Contain(artifact =>
+            artifact.Kind == "capital-account-subledger-route" &&
+            artifact.Route!.Contains("/api/ledger/private-capital/capital-account-subledger", StringComparison.OrdinalIgnoreCase) &&
+            artifact.Route.Contains("capitalAccountId=capital-account%3Afund-alpha%3Alp-1", StringComparison.OrdinalIgnoreCase));
         packet.Nodes.Should().Contain(node => node.Kind == "ledger-impact" && node.Status == EvidenceStatusDto.Ready);
-        packet.Nodes.Should().Contain(node =>
-            node.Kind == "report-output" &&
-            node.Status == EvidenceStatusDto.Ready &&
-            node.ArtifactRefs.Any(artifact =>
-                artifact.Kind == "report-output-route" &&
-                artifact.Route!.Contains("/api/ledger/private-capital/report-output", StringComparison.OrdinalIgnoreCase) &&
-                artifact.Route.Contains("reportOutputId=report-output%3Afund-event%3Afund-alpha%3Acapital-call%3A20260630", StringComparison.OrdinalIgnoreCase)));
+        reportOutputNode.Status.Should().Be(EvidenceStatusDto.Ready);
+        reportOutputNode.Summary.Should().Contain("report readiness is True");
+        reportOutputNode.Summary.Should().Contain("publication is False");
+        reportOutputNode.ArtifactRefs.Should().Contain(artifact =>
+            artifact.Kind == "report-output-route" &&
+            artifact.Retained == false &&
+            artifact.Route!.Contains("/api/ledger/private-capital/report-output", StringComparison.OrdinalIgnoreCase) &&
+            artifact.Route.Contains("reportOutputId=report-output%3Afund-event%3Afund-alpha%3Acapital-call%3A20260630", StringComparison.OrdinalIgnoreCase));
         packet.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
+        packet.Completeness.RequiredIds.Should().Contain(subledgerNode.EvidenceId);
+        packet.Completeness.RequiredIds.Should().Contain(reportOutputNode.EvidenceId);
+        packet.Completeness.ReadyIds.Should().Contain(subledgerNode.EvidenceId);
+        packet.Completeness.ReadyIds.Should().Contain(reportOutputNode.EvidenceId);
         packet.Completeness.MissingIds.Should().BeEmpty();
 
         var retainedNode = Node(
@@ -1902,6 +1930,12 @@ public sealed class EvidenceWorkflowFabricTests
         public StubManualJournalEntryWorkbenchService(PrivateCapitalActivityProjectionDto activity)
         {
             _activity = activity;
+        }
+
+        public Task<IReadOnlyList<string>> ListFundProfileIdsAsync(CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<string>>([_activity.FundProfileId]);
         }
 
         public Task<ManualJournalEntryWorkbenchDto> GetWorkbenchAsync(

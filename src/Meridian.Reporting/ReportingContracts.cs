@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using Meridian.Contracts.Workstation;
 
 namespace Meridian.Reporting;
 
@@ -44,7 +45,8 @@ public sealed record ReportingTemplateMetadata(
     string Name,
     string Version,
     ImmutableArray<string> Sections,
-    ImmutableDictionary<string, string> Tags);
+    ImmutableDictionary<string, string> Tags,
+    IReadOnlyList<ReportWriterGridDefinitionDto>? ReportWriterGrids = null);
 
 public sealed record ReportingLineageReference(
     string SectionId,

@@ -144,8 +144,13 @@ public sealed class EvidenceSubjectResolver
         var manualJournalService = _services.GetService<IManualJournalEntryWorkbenchService>();
         if (manualJournalService is not null)
         {
-            var activity = await manualJournalService.GetPrivateCapitalActivityAsync(ct: ct).ConfigureAwait(false);
-            subjects.AddRange(activity.FundEventRecords
+            var fundProfileIds = await manualJournalService.ListFundProfileIdsAsync(ct).ConfigureAwait(false);
+            var privateCapitalActivities = fundProfileIds.Count == 0
+                ? [await manualJournalService.GetPrivateCapitalActivityAsync(ct: ct).ConfigureAwait(false)]
+                : await Task.WhenAll(fundProfileIds.Select(fundProfileId =>
+                    manualJournalService.GetPrivateCapitalActivityAsync(fundProfileId, ledgerBookId: null, ct))).ConfigureAwait(false);
+            subjects.AddRange(privateCapitalActivities
+                .SelectMany(static activity => activity.FundEventRecords)
                 .OrderByDescending(static record => record.EffectiveDate)
                 .ThenBy(static record => record.FundEventId, StringComparer.OrdinalIgnoreCase)
                 .Take(100)

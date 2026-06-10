@@ -148,6 +148,12 @@ export interface ReportingTemplateRow {
   accessMode: string;
   accessSummary: string;
   isAccessible: boolean;
+  latestApprovedLabel: string;
+  versionLineageSummary: string;
+  auditTrailSummary: string;
+  lastAuditSummary: string;
+  decisionSummary: string;
+  validationSummary: string;
   authoringHref: string;
   actionLabel: string;
   actionAriaLabel: string;
@@ -869,6 +875,8 @@ function buildTemplateRows(templates: ReportingTemplateMetadata[]): ReportingTem
     const versionNumber = parseTemplateVersionNumber(template.version);
     const runDisabledReason = resolveTemplateRunDisabledReason(template, isAccessible, lifecycleStatus);
     const lifecycleActions = buildTemplateLifecycleActions(template, isAccessible, lifecycleStatus);
+    const auditTrail = template.auditTrail ?? [];
+    const validationIssues = template.validationIssues ?? [];
 
     return {
       id: `${template.templateId}:${template.version}`,
@@ -889,12 +897,20 @@ function buildTemplateRows(templates: ReportingTemplateMetadata[]): ReportingTem
       accessMode: template.accessMode ?? "CompanyWide",
       accessSummary: template.accessSummary ?? "Company-wide access",
       isAccessible,
+      latestApprovedLabel: template.isLatestApproved ? "Latest approved" : "Not latest approved",
+      versionLineageSummary: buildTemplateVersionLineageSummary(template),
+      auditTrailSummary: `${auditTrail.length} audit event${auditTrail.length === 1 ? "" : "s"}`,
+      lastAuditSummary: buildTemplateLastAuditSummary(template),
+      decisionSummary: buildTemplateDecisionSummary(template),
+      validationSummary: validationIssues.length > 0
+        ? `${validationIssues.length} validation issue${validationIssues.length === 1 ? "" : "s"}`
+        : "No validation issues",
       authoringHref: template.authoringRoute ?? `/api/fund-structure/reporting/templates/${template.templateId}/versions/${template.version}`,
       actionLabel: template.isBuiltIn === false ? "Review version" : "Draft revision",
       actionAriaLabel: template.isBuiltIn === false
         ? `Review ${template.name} template version`
         : `Draft a revision of ${template.name}`,
-      canRunOnDemand: isAccessible && (template.isBuiltIn !== false) && lifecycleStatus === "Approved",
+      canRunOnDemand: isAccessible && lifecycleStatus === "Approved",
       runActionLabel: "Run report",
       runActionAriaLabel: `Run ${template.name} report on demand`,
       runDisabledReason,
@@ -907,6 +923,47 @@ function buildTemplateRows(templates: ReportingTemplateMetadata[]): ReportingTem
         : "No report-writer grids"
     };
   });
+}
+
+function buildTemplateVersionLineageSummary(template: ReportingTemplateMetadata): string {
+  const basedOn = template.basedOnTemplateId
+    ? `based on ${template.basedOnTemplateId.name}@v${template.basedOnTemplateId.version}`
+    : "no prior template";
+  const updatedBy = template.updatedBy?.trim() || template.createdBy?.trim() || "unknown actor";
+  const updatedAt = template.updatedAt ?? template.createdAt;
+  const updated = updatedAt ? `updated ${formatTimestamp(updatedAt)} by ${updatedBy}` : `updated by ${updatedBy}`;
+  return `${template.templateId}@v${template.version} ${basedOn}; ${updated}`;
+}
+
+function buildTemplateLastAuditSummary(template: ReportingTemplateMetadata): string {
+  const auditTrail = template.auditTrail ?? [];
+  const last = auditTrail[auditTrail.length - 1];
+  if (!last) {
+    return "No template audit events retained in payload";
+  }
+
+  return `${last.action} ${last.fromStatus}->${last.toStatus} by ${last.actor} at ${formatTimestamp(last.at)}`;
+}
+
+function buildTemplateDecisionSummary(template: ReportingTemplateMetadata): string {
+  const decision = template.decisionRationale?.trim();
+  const approvalReference = template.approvalReference?.trim();
+  const approvedBy = template.approvedBy?.trim();
+  const rejectedBy = template.rejectedBy?.trim();
+  const submittedBy = template.submittedBy?.trim();
+  const reviewer = approvedBy
+    ? `approved by ${approvedBy}`
+    : rejectedBy
+      ? `rejected by ${rejectedBy}`
+      : submittedBy
+        ? `submitted by ${submittedBy}`
+        : null;
+
+  return [
+    reviewer,
+    approvalReference ? `ref ${approvalReference}` : null,
+    decision
+  ].filter(Boolean).join("; ") || "No review decision recorded";
 }
 
 function buildTemplateLifecycleActions(
@@ -1239,10 +1296,6 @@ function resolveTemplateRunDisabledReason(
 ): string | null {
   if (!isAccessible) {
     return "Current user does not have access to this report template.";
-  }
-
-  if (template.isBuiltIn === false) {
-    return "Custom template rendering uses the template render endpoint; on-demand runs still use approved built-in orchestration templates.";
   }
 
   return lifecycleStatus === "Approved"

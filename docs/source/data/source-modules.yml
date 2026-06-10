@@ -844,7 +844,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-06-09
 
   - id: SRC-UI-SERVICES
     path: src/Meridian.Ui.Services

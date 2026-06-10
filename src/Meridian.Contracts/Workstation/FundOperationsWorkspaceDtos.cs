@@ -805,7 +805,11 @@ public sealed record ReportPackDeliveryPackageDto(
     DateTimeOffset CreatedAtUtc,
     string RetainedManifestPath,
     string? PublicationEvidenceHash = null,
-    string? IntegritySummary = null);
+    string? IntegritySummary = null,
+    string? ReportingRunId = null,
+    string? ReportingTemplateId = null,
+    string? ReportingScheduleId = null,
+    IReadOnlyList<string>? SourceArtifacts = null);
 
 public sealed record ReportPackDeliveryAttemptDto(
     Guid AttemptId,

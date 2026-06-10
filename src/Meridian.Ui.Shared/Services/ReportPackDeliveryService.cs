@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
+using Meridian.Reporting;
 using Meridian.Storage.Export;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
@@ -227,6 +228,57 @@ public sealed class ReportPackDeliveryService
             fallbackActor);
     }
 
+    public ReportPackDeliveryAttemptDto DeliverReportingRun(
+        ReportingOutputManifest manifest,
+        ReportingScheduleDeliveryTargetDto target,
+        string fallbackActor)
+    {
+        ArgumentNullException.ThrowIfNull(manifest);
+        ArgumentNullException.ThrowIfNull(target);
+        ArgumentException.ThrowIfNullOrWhiteSpace(target.DistributionId);
+
+        var actor = ResolveActor(null, fallbackActor);
+        var policy = ReportPackRunReadService.ResolveDistributionPolicy(target.DistributionId);
+        lock (_gate)
+        {
+            var reportId = BuildReportingRunReportId(manifest.RunId);
+            var normalizedDistributionId = policy.DistributionId;
+            var attemptNumber = _attempts.Count(attempt =>
+                string.Equals(attempt.DeliveryReference, BuildReportingRunDeliveryReference(manifest, normalizedDistributionId), StringComparison.OrdinalIgnoreCase)
+                || (attempt.ReportId == reportId
+                    && string.Equals(attempt.DistributionId, normalizedDistributionId, StringComparison.OrdinalIgnoreCase))) + 1;
+            var attemptId = Guid.NewGuid();
+            var reference = BuildReportingRunDeliveryReference(manifest, normalizedDistributionId);
+            var package = BuildDeliveryPackage(manifest, policy, reportId, attemptId, attemptNumber, target.Formats, target.DeliveryMode);
+            var packageEvidenceLinks = package.Artifacts
+                .Select(static artifact => new ReportPackEvidenceLinkDto(
+                    artifact.EvidenceId,
+                    artifact.ArtifactName,
+                    artifact.RetainedPath,
+                    "reporting-run-delivery"))
+                .ToArray();
+            var attempt = new ReportPackDeliveryAttemptDto(
+                attemptId,
+                reportId,
+                normalizedDistributionId,
+                policy.Recipient,
+                policy.RecipientRole,
+                policy.Channel,
+                ReportPackDeliveryStateDto.Delivered,
+                DateTimeOffset.UtcNow,
+                actor,
+                attemptNumber,
+                reference,
+                NormalizeNullable(target.Note) ?? $"Scheduled reporting-run delivery for {manifest.TemplateId}.",
+                FailureReason: null,
+                EvidenceLinks: packageEvidenceLinks,
+                Package: package);
+            _attempts.Add(attempt);
+            _store?.Save(_attempts);
+            return attempt;
+        }
+    }
+
     public ReportPackDeliveryAttemptDto RecordFailure(Guid reportId, ReportPackDeliveryFailureRequestDto request, string fallbackActor)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -365,6 +417,58 @@ public sealed class ReportPackDeliveryService
             BuildIntegritySummary(artifacts, record.Publication?.EvidenceHash));
     }
 
+    private static ReportPackDeliveryPackageDto BuildDeliveryPackage(
+        ReportingOutputManifest manifest,
+        ReportPackRunReadService.ReportPackDistributionPolicy policy,
+        Guid reportId,
+        Guid attemptId,
+        int attemptNumber,
+        IReadOnlyList<GovernanceReportArtifactFormatDto>? requestedFormats,
+        ReportPackDeliveryModeDto? requestedMode)
+    {
+        var formats = NormalizeFormats(requestedFormats);
+        var mode = requestedMode ?? InferDeliveryMode(policy.Channel);
+        var packageId = $"pkg-{reportId:N}-{policy.DistributionId}-{attemptNumber}";
+        var retainedManifestPath = $"workstation/reporting/runs/{Uri.EscapeDataString(manifest.RunId)}/deliveries/{policy.DistributionId}/{attemptNumber}/manifest.json";
+        var token = BuildSecureToken(reportId, policy.DistributionId, attemptId);
+        var artifacts = formats
+            .Select(format => BuildArtifact(manifest, policy, reportId, packageId, attemptId, token, format))
+            .ToArray();
+        var secureLink = mode switch
+        {
+            ReportPackDeliveryModeDto.EmailLink => UiApiRoutes.WithQuery(
+                UiApiRoutes.WithParam(
+                    UiApiRoutes.WithParam(UiApiRoutes.ReportingPackWorkflowDeliveryPackage, "reportId", reportId.ToString("D")),
+                    "attemptId",
+                    attemptId.ToString("D")),
+                $"token={Uri.EscapeDataString(token)}"),
+            ReportPackDeliveryModeDto.SecurePortal => UiApiRoutes.WithQuery(
+                UiApiRoutes.WithParam(UiApiRoutes.ReportingPackDeliveryPortalPackage, "packageId", packageId),
+                $"token={Uri.EscapeDataString(token)}"),
+            ReportPackDeliveryModeDto.EvidenceVault => retainedManifestPath,
+            _ => $"/reporting/runs/{Uri.EscapeDataString(manifest.RunId)}/packages/{packageId}"
+        };
+        var portalRoute = $"/reporting/runs/{Uri.EscapeDataString(manifest.RunId)}/packages/{packageId}";
+
+        return new ReportPackDeliveryPackageDto(
+            packageId,
+            reportId,
+            policy.DistributionId,
+            mode,
+            secureLink,
+            portalRoute,
+            formats,
+            artifacts,
+            DateTimeOffset.UtcNow,
+            retainedManifestPath,
+            PublicationEvidenceHash: null,
+            BuildIntegritySummary(artifacts, publicationEvidenceHash: null),
+            manifest.RunId,
+            manifest.TemplateId,
+            manifest.ScheduleId,
+            manifest.Artifacts.ToArray());
+    }
+
     private static ReportPackDeliveryArtifactDto BuildArtifact(
         ReportPackWorkflowRecordDto record,
         ReportPackRunReadService.ReportPackDistributionPolicy policy,
@@ -389,6 +493,46 @@ public sealed class ReportPackDeliveryService
             contentType,
             retainedPath,
             record.Publication?.EvidenceHash,
+            versionStamp);
+        var byteSize = content.LongLength;
+        var checksum = ComputeSha256Hex(content);
+        return new ReportPackDeliveryArtifactDto(
+            format,
+            artifactName,
+            contentType,
+            retainedPath,
+            byteSize,
+            evidenceId,
+            checksum,
+            versionStamp,
+            downloadRoute);
+    }
+
+    private static ReportPackDeliveryArtifactDto BuildArtifact(
+        ReportingOutputManifest manifest,
+        ReportPackRunReadService.ReportPackDistributionPolicy policy,
+        Guid reportId,
+        string packageId,
+        Guid attemptId,
+        string token,
+        GovernanceReportArtifactFormatDto format)
+    {
+        var extension = ResolveExtension(format);
+        var safeRunId = SanitizeArtifactName(manifest.RunId);
+        var artifactName = $"{safeRunId}-{policy.DistributionId}.{extension}";
+        var retainedPath = $"workstation/reporting/runs/{Uri.EscapeDataString(manifest.RunId)}/deliveries/{policy.DistributionId}/{packageId}/{artifactName}";
+        var evidenceId = $"reporting-run-delivery:{safeRunId}:{policy.DistributionId}:{format.ToString().ToLowerInvariant()}";
+        var versionStamp = $"reporting-run-delivery:{safeRunId}:{policy.DistributionId}:{manifest.AttemptCount}:{format.ToString().ToLowerInvariant()}";
+        var contentType = ResolveContentType(format);
+        var downloadRoute = BuildArtifactDownloadRoute(reportId, attemptId, artifactName, token);
+        var content = BuildReportingRunDeliveryArtifactContent(
+            packageId,
+            manifest,
+            policy.DistributionId,
+            artifactName,
+            format,
+            contentType,
+            retainedPath,
             versionStamp);
         var byteSize = content.LongLength;
         var checksum = ComputeSha256Hex(content);
@@ -436,16 +580,29 @@ public sealed class ReportPackDeliveryService
     private static byte[] BuildDeliveryArtifactContent(
         ReportPackDeliveryPackageDto package,
         ReportPackDeliveryArtifactDto artifact) =>
-        BuildDeliveryArtifactContent(
-            package.PackageId,
-            package.ReportId,
-            package.DistributionId,
-            artifact.ArtifactName,
-            artifact.Format,
-            artifact.ContentType,
-            artifact.RetainedPath,
-            package.PublicationEvidenceHash,
-            artifact.VersionStamp);
+        string.IsNullOrWhiteSpace(package.ReportingRunId)
+            ? BuildDeliveryArtifactContent(
+                package.PackageId,
+                package.ReportId,
+                package.DistributionId,
+                artifact.ArtifactName,
+                artifact.Format,
+                artifact.ContentType,
+                artifact.RetainedPath,
+                package.PublicationEvidenceHash,
+                artifact.VersionStamp)
+            : BuildReportingRunDeliveryArtifactContent(
+                package.PackageId,
+                package.ReportingRunId!,
+                package.ReportingTemplateId ?? string.Empty,
+                package.ReportingScheduleId,
+                package.SourceArtifacts ?? [],
+                package.DistributionId,
+                artifact.ArtifactName,
+                artifact.Format,
+                artifact.ContentType,
+                artifact.RetainedPath,
+                artifact.VersionStamp);
 
     private static byte[] BuildDeliveryArtifactContent(
         string packageId,
@@ -485,6 +642,84 @@ public sealed class ReportPackDeliveryService
         };
     }
 
+    private static byte[] BuildReportingRunDeliveryArtifactContent(
+        string packageId,
+        ReportingOutputManifest manifest,
+        string distributionId,
+        string artifactName,
+        GovernanceReportArtifactFormatDto format,
+        string contentType,
+        string retainedPath,
+        string versionStamp)
+    {
+        var rows = BuildReportingRunDeliveryArtifactRows(
+            packageId,
+            manifest,
+            distributionId,
+            artifactName,
+            format,
+            contentType,
+            retainedPath,
+            versionStamp);
+
+        return format switch
+        {
+            GovernanceReportArtifactFormatDto.Csv => BuildDeliveryArtifactCsv(rows),
+            GovernanceReportArtifactFormatDto.Xlsx => XlsxWorkbookWriter.CreateWorkbook(
+            [
+                new XlsxWorksheet(
+                    "ReportingRun",
+                    ["Field", "Value"],
+                    rows.Select(static row => (IReadOnlyList<object?>)[row.Key, row.Value]).ToArray())
+            ]),
+            GovernanceReportArtifactFormatDto.Html => BuildDeliveryArtifactHtml(rows),
+            GovernanceReportArtifactFormatDto.Pdf => BuildDeliveryArtifactPdf(rows),
+            _ => JsonSerializer.SerializeToUtf8Bytes(rows.ToDictionary(static row => row.Key, static row => row.Value))
+        };
+    }
+
+    private static byte[] BuildReportingRunDeliveryArtifactContent(
+        string packageId,
+        string reportingRunId,
+        string templateId,
+        string? scheduleId,
+        IReadOnlyList<string> sourceArtifacts,
+        string distributionId,
+        string artifactName,
+        GovernanceReportArtifactFormatDto format,
+        string contentType,
+        string retainedPath,
+        string versionStamp)
+    {
+        var rows = BuildReportingRunDeliveryArtifactRows(
+            packageId,
+            reportingRunId,
+            templateId,
+            scheduleId,
+            sourceArtifacts,
+            distributionId,
+            artifactName,
+            format,
+            contentType,
+            retainedPath,
+            versionStamp);
+
+        return format switch
+        {
+            GovernanceReportArtifactFormatDto.Csv => BuildDeliveryArtifactCsv(rows),
+            GovernanceReportArtifactFormatDto.Xlsx => XlsxWorkbookWriter.CreateWorkbook(
+            [
+                new XlsxWorksheet(
+                    "ReportingRun",
+                    ["Field", "Value"],
+                    rows.Select(static row => (IReadOnlyList<object?>)[row.Key, row.Value]).ToArray())
+            ]),
+            GovernanceReportArtifactFormatDto.Html => BuildDeliveryArtifactHtml(rows),
+            GovernanceReportArtifactFormatDto.Pdf => BuildDeliveryArtifactPdf(rows),
+            _ => JsonSerializer.SerializeToUtf8Bytes(rows.ToDictionary(static row => row.Key, static row => row.Value))
+        };
+    }
+
     private static IReadOnlyList<KeyValuePair<string, string>> BuildDeliveryArtifactRows(
         string packageId,
         Guid reportId,
@@ -504,6 +739,61 @@ public sealed class ReportPackDeliveryService
         new("contentType", contentType),
         new("retainedPath", retainedPath),
         new("publicationEvidenceHash", string.IsNullOrWhiteSpace(publicationEvidenceHash) ? "" : publicationEvidenceHash.Trim()),
+        new("versionStamp", versionStamp)
+    ];
+
+    private static IReadOnlyList<KeyValuePair<string, string>> BuildReportingRunDeliveryArtifactRows(
+        string packageId,
+        ReportingOutputManifest manifest,
+        string distributionId,
+        string artifactName,
+        GovernanceReportArtifactFormatDto format,
+        string contentType,
+        string retainedPath,
+        string versionStamp) =>
+    [
+        new("packageId", packageId),
+        new("reportingRunId", manifest.RunId),
+        new("templateId", manifest.TemplateId),
+        new("scheduleId", manifest.ScheduleId ?? ""),
+        new("asOfDate", manifest.AsOfDate.ToString("yyyy-MM-dd")),
+        new("status", manifest.Status.ToString()),
+        new("trigger", manifest.Trigger.ToString()),
+        new("attemptCount", manifest.AttemptCount.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+        new("sectionCount", manifest.Sections.Length.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+        new("lineageLinkedSections", manifest.Sections.Count(static section => section.Lineage is not null).ToString(System.Globalization.CultureInfo.InvariantCulture)),
+        new("sourceArtifacts", string.Join(";", manifest.Artifacts)),
+        new("distributionId", distributionId),
+        new("artifactName", artifactName),
+        new("format", format.ToString()),
+        new("contentType", contentType),
+        new("retainedPath", retainedPath),
+        new("versionStamp", versionStamp)
+    ];
+
+    private static IReadOnlyList<KeyValuePair<string, string>> BuildReportingRunDeliveryArtifactRows(
+        string packageId,
+        string reportingRunId,
+        string templateId,
+        string? scheduleId,
+        IReadOnlyList<string> sourceArtifacts,
+        string distributionId,
+        string artifactName,
+        GovernanceReportArtifactFormatDto format,
+        string contentType,
+        string retainedPath,
+        string versionStamp) =>
+    [
+        new("packageId", packageId),
+        new("reportingRunId", reportingRunId),
+        new("templateId", templateId),
+        new("scheduleId", scheduleId ?? ""),
+        new("sourceArtifacts", string.Join(";", sourceArtifacts)),
+        new("distributionId", distributionId),
+        new("artifactName", artifactName),
+        new("format", format.ToString()),
+        new("contentType", contentType),
+        new("retainedPath", retainedPath),
         new("versionStamp", versionStamp)
     ];
 
@@ -648,6 +938,11 @@ public sealed class ReportPackDeliveryService
         var normalized = new List<GovernanceReportArtifactFormatDto>(formats.Count);
         foreach (var format in formats)
         {
+            if (!Enum.IsDefined(format))
+            {
+                throw new ArgumentException($"Unsupported report-pack artifact format '{format}'.", nameof(requestedFormats));
+            }
+
             if (seen.Add(format))
             {
                 normalized.Add(format);
@@ -700,6 +995,26 @@ public sealed class ReportPackDeliveryService
     private static string BuildSecureToken(Guid reportId, string distributionId, Guid attemptId)
     {
         return ComputeSha256Hex($"{reportId:D}:{distributionId}:{attemptId:D}:report-pack-delivery")[..24];
+    }
+
+    private static Guid BuildReportingRunReportId(string runId)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(runId));
+        return new Guid(bytes.AsSpan(0, 16));
+    }
+
+    private static string BuildReportingRunDeliveryReference(ReportingOutputManifest manifest, string distributionId) =>
+        $"schedule:{manifest.TemplateId}:{manifest.RunId}:{distributionId}";
+
+    private static string SanitizeArtifactName(string value)
+    {
+        var builder = new StringBuilder(value.Length);
+        foreach (var ch in value)
+        {
+            builder.Append(char.IsLetterOrDigit(ch) || ch is '-' or '_' ? ch : '-');
+        }
+
+        return builder.Length == 0 ? "reporting-run" : builder.ToString();
     }
 
     private static string ComputeSha256Hex(string value)
