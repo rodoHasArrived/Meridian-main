@@ -18,6 +18,9 @@ repeating the same facts in every `SKILL.md`.
   confidence, retained source evidence, reconciliation, approvals, accounting records, multi-asset
   operational coverage, and governed reports across `Trading`, `Portfolio`, `Accounting`,
   `Reporting`, `Strategy`, `Data`, and `Settings`.
+- The active W5X productization targets are the shared Financial Record Explorers and the Financial
+  Operations control center for reconciliation, exception management, close support, workflow
+  control, and audit evidence.
 - Defer Backtesting Studio, live-readiness beyond paper-first governance, full treasury payment
   execution, full alternative asset operations, forecasting/scenario engines, enterprise risk,
   client portal, no-code workflow design, mobile, and other broad expansion lanes unless the work

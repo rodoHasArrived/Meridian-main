@@ -1764,10 +1764,121 @@ public sealed class ReportPackWorkflowServiceTests
         plan.IsReady.Should().BeFalse();
         plan.ReadinessBlockers.Should().NotBeNull();
         plan.ReadinessBlockers!.Should().Contain("Delivery mode EvidenceVault is not compatible with Board portal for Board reporting committee.");
+        plan.ReadinessBlockers.Should().Contain(blocker =>
+            blocker.Contains("Latest delivery package for Board reporting committee is incomplete:", StringComparison.Ordinal) &&
+            blocker.Contains("Artifact package-1.pdf requires a version stamp.", StringComparison.Ordinal) &&
+            blocker.Contains("Delivery evidence packet is required.", StringComparison.Ordinal));
         plan.ReadinessBlockers.Should().Contain("Latest delivery package for Board reporting committee is missing requested artifact format(s): Csv.");
         plan.ReadinessSummary.Should().Contain("Delivery mode EvidenceVault is not compatible with Board portal");
         plan.LastDeliveryArtifactCount.Should().Be(1);
         plan.LastDeliveryIntegritySummary.Should().Be("1 artifact retained.");
+    }
+
+    [Fact]
+    public void ReportingPayload_SourceBackedPortfolioCuts_SurfaceExposureCashPnlAndShadowNav()
+    {
+        var workflow = new ReportPackWorkflowService();
+        var created = workflow.Create(
+            "fund-alpha",
+            "acct-main",
+            "2026-05",
+            new VersionedReportTemplateIdDto("shadow-nav-pack", 1),
+            "report.author",
+            [
+                PortfolioReportingLine("portfolio.gross-exposure", "evidence-gross", "2500000", "/evidence/gross"),
+                PortfolioReportingLine("portfolio.net-exposure", "evidence-net", "1800000"),
+                PortfolioReportingLine("portfolio.long-market-value", "evidence-long", "2200000"),
+                PortfolioReportingLine("portfolio.short-market-value", "evidence-short", "-400000"),
+                PortfolioReportingLine("portfolio.cash", "evidence-cash", "375000"),
+                PortfolioReportingLine("portfolio.pending-settlement", "evidence-settlement", "12500"),
+                PortfolioReportingLine("portfolio.realized-pnl", "evidence-realized", "42000"),
+                PortfolioReportingLine("portfolio.unrealized-pnl", "evidence-unrealized", "18000"),
+                PortfolioReportingLine("portfolio.shadow-nav", "evidence-shadow-nav", "2935000"),
+                PortfolioReportingLine("portfolio.reported-nav", "evidence-reported-nav", "2920000")
+            ]);
+        workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
+        workflow.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
+        workflow.Publish(
+            created.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:portfolio-cut",
+            "manifest-portfolio",
+            "vault/report-packs/manifest-portfolio.json",
+            CompleteLineProvenanceEvidenceLinks(
+                "evidence-gross",
+                "evidence-net",
+                "evidence-long",
+                "evidence-short",
+                "evidence-cash",
+                "evidence-settlement",
+                "evidence-realized",
+                "evidence-unrealized",
+                "evidence-shadow-nav",
+                "evidence-reported-nav"));
+
+        var payload = new ReportPackRunReadService(
+            new DefaultReportingTemplateCatalog(),
+            workflowService: workflow).BuildPayload();
+
+        payload.PortfolioCuts.Should().NotBeNull().And.ContainSingle();
+        var cut = payload.PortfolioCuts!.Single();
+        cut.CutId.Should().Be("reporting-portfolio-cut:fund-alpha");
+        cut.GrossExposure.Should().Be(2_500_000m);
+        cut.NetExposure.Should().Be(1_800_000m);
+        cut.LongMarketValue.Should().Be(2_200_000m);
+        cut.ShortMarketValue.Should().Be(-400_000m);
+        cut.TotalCash.Should().Be(375_000m);
+        cut.PendingSettlement.Should().Be(12_500m);
+        cut.RealizedPnl.Should().Be(42_000m);
+        cut.UnrealizedPnl.Should().Be(18_000m);
+        cut.TotalPnl.Should().Be(60_000m);
+        cut.ShadowNav.Should().Be(2_935_000m);
+        cut.ShadowNavVariance.Should().Be(15_000m);
+        cut.SourceCount.Should().Be(10);
+        cut.EvidenceRoute.Should().Be("/evidence/gross");
+        cut.Tags.Should().Contain("fund:fund-alpha");
+        cut.Tags.Should().Contain("template:shadow-nav-pack");
+
+        payload.LivePortfolioViews.Should().NotBeNull().And.ContainSingle();
+        payload.LivePortfolioViews!.Single().State.Should().Be(PortfolioReportingLiveViewStateDto.SourceBacked);
+        payload.LivePortfolioViews.Single().TotalCash.Should().Be(375_000m);
+        payload.LivePortfolioViews.Single().ShadowNav.Should().Be(2_935_000m);
+
+        payload.CrossFundConsolidations.Should().NotBeNull().And.ContainSingle();
+        payload.CrossFundConsolidations!.Single().FundCount.Should().Be(1);
+        payload.CrossFundConsolidations.Single().TotalPnl.Should().Be(60_000m);
+
+        payload.PnlSlices.Should().NotBeNull().And.HaveCount(4);
+        payload.PnlSlices!.Should().Contain(slice =>
+            slice.Period == PortfolioReportingPnlSlicePeriodDto.Daily &&
+            slice.RealizedPnl == 42_000m &&
+            slice.UnrealizedPnl == 18_000m &&
+            slice.TotalPnl == 60_000m);
+
+        static ReportPackLineProvenanceDto PortfolioReportingLine(
+            string lineKey,
+            string evidenceId,
+            string reportValue,
+            string? href = null) =>
+            new(
+                lineKey,
+                "portfolio",
+                "run-1",
+                evidenceId,
+                RunId: "run-1",
+                LedgerEntryId: $"ledger-{evidenceId}",
+                ReconciliationCaseId: $"case-{evidenceId}",
+                ReportValue: reportValue,
+                SourceSessionId: "provider-session-1",
+                ReconciliationRunId: "recon-run-1",
+                ProviderEventId: $"provider-{evidenceId}",
+                SecurityMasterId: "security-1",
+                SecurityDefinitionId: "definition-1",
+                ReconciliationOutcome: "matched",
+                ApprovalId: "approval-1",
+                FinancialRecordHref: href);
     }
 
     [Fact]
@@ -2874,6 +2985,33 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public void Create_RoutesSecurityOnlyLineProvenanceToSecurityInstrumentExplorer()
+    {
+        var svc = new ReportPackWorkflowService();
+
+        var created = svc.Create(
+            "fund-a",
+            "acct-1",
+            "2026-03",
+            new VersionedReportTemplateIdDto("board-pack", 1),
+            "author",
+            [
+                new ReportPackLineProvenanceDto(
+                    "security-master.bdc-alpha",
+                    "security-master",
+                    "security-1",
+                    "security-evidence-1",
+                    SecurityMasterId: "security-1",
+                    SecurityDefinitionId: "definition-1")
+            ]);
+
+        var line = created.LineProvenance.Should().ContainSingle().Which;
+        line.FinancialRecordExplorerId.Should().Be("security-instrument");
+        line.FinancialRecordHref.Should().Be(
+            "/api/workstation/financial-record-explorers/security-instrument?lineKey=security-master.bdc-alpha&sourceId=security-1&evidenceId=security-evidence-1");
+    }
+
+    [Fact]
     public void Transition_RejectsInvalidRole()
     {
         var svc = new ReportPackWorkflowService();
@@ -3122,19 +3260,25 @@ public sealed class ReportPackWorkflowServiceTests
             "vault/report-packs/manifest-1.json",
             [new ReportPackEvidenceLinkDto(evidenceId, "Line evidence", $"/evidence/{evidenceId}", "reporting")]);
 
-    private static IReadOnlyList<ReportPackEvidenceLinkDto> CompleteLineProvenanceEvidenceLinks(string evidenceId) =>
-    [
-        new ReportPackEvidenceLinkDto(evidenceId, "Line evidence", $"/evidence/{evidenceId}", "reporting"),
-        new ReportPackEvidenceLinkDto("ledger-entry-1", "Ledger entry", "/evidence/ledger-entry-1", "ledger"),
-        new ReportPackEvidenceLinkDto("provider-event-1", "Provider event", "/evidence/provider-event-1", "provider"),
-        new ReportPackEvidenceLinkDto("security-1", "Security Master identity", "/evidence/security-1", "security-master"),
-        new ReportPackEvidenceLinkDto("definition-1", "Security definition", "/evidence/definition-1", "security-master"),
-        new ReportPackEvidenceLinkDto("case-1", "Reconciliation case", "/evidence/case-1", "reconciliation"),
-        new ReportPackEvidenceLinkDto("recon-run-1", "Reconciliation run", "/evidence/recon-run-1", "reconciliation"),
-        new ReportPackEvidenceLinkDto("approval-1", "Approval", "/evidence/approval-1", "approval"),
-        new ReportPackEvidenceLinkDto("run-1", "Strategy run", "/evidence/run-1", "strategy"),
-        new ReportPackEvidenceLinkDto("provider-session-1", "Provider source session", "/evidence/provider-session-1", "provider")
-    ];
+    private static IReadOnlyList<ReportPackEvidenceLinkDto> CompleteLineProvenanceEvidenceLinks(params string[] evidenceIds) =>
+        evidenceIds
+            .DefaultIfEmpty("line-evidence-1")
+            .Select(static evidenceId => new ReportPackEvidenceLinkDto(evidenceId, "Line evidence", $"/evidence/{evidenceId}", "reporting"))
+            .Concat(
+            [
+                new ReportPackEvidenceLinkDto("ledger-entry-1", "Ledger entry", "/evidence/ledger-entry-1", "ledger"),
+                new ReportPackEvidenceLinkDto("provider-event-1", "Provider event", "/evidence/provider-event-1", "provider"),
+                new ReportPackEvidenceLinkDto("security-1", "Security Master identity", "/evidence/security-1", "security-master"),
+                new ReportPackEvidenceLinkDto("definition-1", "Security definition", "/evidence/definition-1", "security-master"),
+                new ReportPackEvidenceLinkDto("case-1", "Reconciliation case", "/evidence/case-1", "reconciliation"),
+                new ReportPackEvidenceLinkDto("recon-run-1", "Reconciliation run", "/evidence/recon-run-1", "reconciliation"),
+                new ReportPackEvidenceLinkDto("approval-1", "Approval", "/evidence/approval-1", "approval"),
+                new ReportPackEvidenceLinkDto("run-1", "Strategy run", "/evidence/run-1", "strategy"),
+                new ReportPackEvidenceLinkDto("provider-session-1", "Provider source session", "/evidence/provider-session-1", "provider")
+            ])
+            .GroupBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .ToArray();
 
     private static ReportPackLineProvenanceDto CompleteLineProvenance(string lineKey, string evidenceId) =>
         new(

@@ -386,7 +386,11 @@ public sealed record WorkstationReportingPayload(
     IReadOnlyList<ReportPackDeliveryAttemptDto>? DeliveryAttempts = null,
     string? SelectedFundProfileId = null,
     IReadOnlyList<ReportingScheduleDeliveryPlanDto>? ScheduleDeliveryPlans = null,
-    FinancialRecordExplorerDto? ReportLineProvenanceExplorer = null);
+    FinancialRecordExplorerDto? ReportLineProvenanceExplorer = null,
+    IReadOnlyList<PortfolioReportingCutDto>? PortfolioCuts = null,
+    IReadOnlyList<PortfolioReportingLiveViewDto>? LivePortfolioViews = null,
+    IReadOnlyList<CrossFundReportingConsolidationDto>? CrossFundConsolidations = null,
+    IReadOnlyList<PortfolioReportingPnlSliceDto>? PnlSlices = null);
 
 /// <summary>
 /// Typed payload returned by <c>GET /api/workstation/accounting</c> and

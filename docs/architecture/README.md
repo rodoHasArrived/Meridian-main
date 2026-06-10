@@ -55,6 +55,7 @@ This directory contains documentation about the system's design, architectural d
 | [Environment Designer Runtime Projection and WPF Admin Surface](environment-designer-runtime-projection-and-wpf-admin-surface.md) | Draft/publish/rollback architecture for company umbrella environment design |
 | [WPF Shell MVVM](wpf-shell-mvvm.md) | Shell composition and MVVM direction for the desktop client |
 | [WPF Workstation Shell UX](wpf-workstation-shell-ux.md) | WPF workstation shell UX pattern and guidance for WPF workspace shells |
+| [Core Extensibility Model](core-extensibility-model.md) | Stable financial operations core objects, configurable tenant layers, governed foundations, and current contract/service seams |
 | [Workflow Library](workflow-library.md) | Reusable workstation workflow and action registry architecture |
 | [Evidence Workflow Fabric](evidence-workflow-fabric.md) | Cross-workflow evidence packets, lineage, validation, and manifest-only export architecture |
 | [Stakeholder Product Charter](../product/meridian-design-document.md) | Product-facing strategy and capability model used for current direction framing |

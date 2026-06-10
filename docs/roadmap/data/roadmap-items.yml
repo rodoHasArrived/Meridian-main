@@ -7,7 +7,7 @@ registry:
   id: roadmap-items
   title: Meridian Roadmap Items
   owner: Core Team
-  snapshot_date: 2026-06-04
+  snapshot_date: 2026-06-10
 
 items:
   - id: W1-DATA-001
@@ -317,6 +317,45 @@ items:
       - DIA-ASSURANCE-LOOP
       - DIA-BROWSER-WORKSTATION
     last_reviewed: 2026-06-09
+
+  - id: W5X-FINOPS-001
+    title: Financial operations control center
+    wave: W5X
+    stage_gates:
+      - AccountingRecords
+      - PortfolioLedgerReview
+      - GovernedReportPack
+    workspace:
+      - Accounting
+      - Reporting
+      - Portfolio
+      - Data
+    owner_lane: Accounting and Ledger
+    status: planned
+    health: green
+    priority: high
+    evidence_posture: planned_evidence
+    current_summary: Planned productization slice that makes Financial Operations the operator control center for reconciliation queues, exception casework, accounting close support, workflow controls, and audit evidence packet readiness. It builds on the closed W1-W5 operational-record baseline and should consume the same shared contracts/read models as the Financial Record Explorers rather than creating browser- or WPF-local business rules.
+    exit_criteria:
+      - Accounting workspace exposes a financial operations command surface that groups reconciliation posture, exception aging, close checklist state, approval/workflow control, and audit evidence readiness from shared read models.
+      - Reconciliation cases, breaks, assignments, escalations, approvals, close tasks, and evidence packets can be opened from a unified operator queue with deterministic status, owner, due date, and blocker signals.
+      - Close support shows period state, lock or reopen posture, NAV-support or report-pack dependencies, unresolved exceptions, required approvals, and retained evidence gaps without posting synthetic completion.
+      - Workflow controls expose assignment, escalation, approval, reopen, and evidence-retention actions through shared services so browser and WPF surfaces share the same policy decisions.
+      - Generated roadmap and product docs state this is a planned productization target, not a claim that the complete Financial Operations control center is shipped.
+    source_modules:
+      - SRC-CONTRACTS
+      - SRC-DESIGN-FINANCIAL-OPERATIONS
+      - SRC-DESIGN-WORKFLOW
+      - SRC-DESIGN-AUDIT
+      - SRC-DESIGN-REPORTING
+      - SRC-UI-SERVICES
+      - SRC-UI-SHARED
+      - SRC-UI-DASHBOARD
+      - SRC-WPF
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+      - DIA-BROWSER-WORKSTATION
+    last_reviewed: 2026-06-10
 
   - id: W6-BTSTUDIO-001
     title: Backtesting studio evidence loop

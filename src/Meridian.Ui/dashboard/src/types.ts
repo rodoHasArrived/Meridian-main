@@ -3153,7 +3153,7 @@ export interface ReportingRunStatusProjection {
   family: string;
   status: string;
   trigger: string;
-  asOfDate: string;
+  asOfDate?: string | null;
   attemptCount: number;
   sectionCount: number;
   lineageLinkedSections: number;

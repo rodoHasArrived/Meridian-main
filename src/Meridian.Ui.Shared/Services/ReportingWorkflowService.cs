@@ -1319,7 +1319,11 @@ public sealed class ReportPackWorkflowService
         }
 
         if (ContainsToken(item.SourceKind, "ledger") ||
-            !string.IsNullOrWhiteSpace(item.LedgerEntryId))
+            !string.IsNullOrWhiteSpace(item.LedgerEntryId) ||
+            !string.IsNullOrWhiteSpace(item.RunId) ||
+            !string.IsNullOrWhiteSpace(item.SourceSessionId) ||
+            !string.IsNullOrWhiteSpace(item.ReconciliationRunId) ||
+            !string.IsNullOrWhiteSpace(item.ReconciliationCaseId))
         {
             return LedgerFinancialRecordExplorerId;
         }

@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-08
+last_reviewed: 2026-06-10
 ---
 
 # src/Meridian.FinancialOperations
@@ -95,6 +95,7 @@ transaction state.
 | --- | --- |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
+| `W5X-FINOPS-001` | Financial operations control center |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

@@ -183,6 +183,7 @@ const readyReporting: AccountingReportingSummary = {
       family: "BoardPack",
       status: "Published",
       trigger: "Manual",
+      asOfDate: "2026-05-31",
       attemptCount: 1,
       sectionCount: 1,
       lineageLinkedSections: 1,
@@ -281,11 +282,13 @@ describe("operations record release view model", () => {
     expect(vm.statusLabel).toBe("Release blocked");
     expect(vm.sourcePanel).toMatchObject({
       statusLabel: "Payload pending",
+      tone: "blocked",
       rows: [],
       emptyText: "No source-data evidence is loaded."
     });
     expect(vm.accountingPanel).toMatchObject({
       statusLabel: "Not available",
+      tone: "blocked",
       primaryHref: "/accounting/operations-continuity"
     });
     expect(vm.reportPackPanel).toMatchObject({
@@ -293,12 +296,48 @@ describe("operations record release view model", () => {
       tone: "blocked"
     });
     expect(vm.steps.map((step) => [step.label, step.tone])).toEqual([
-      ["Source data", "neutral"],
+      ["Source data", "blocked"],
       ["Import and normalize", "neutral"],
-      ["Accounting record", "neutral"],
+      ["Accounting record", "blocked"],
       ["Reconcile", "neutral"],
       ["Approve", "neutral"],
       ["Report pack", "blocked"]
+    ]);
+  });
+
+  it("blocks release when source payload is missing even if downstream evidence is ready", () => {
+    const continuity = buildOperationsContinuityScreenViewModel({
+      workflows: [readySummary],
+      selectedWorkflowId: workflowId,
+      detail: readyDetail,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+    const reporting = renderHook(() => useReportingScreenViewModel(readyReporting, undefined, "/reporting/report-packs")).result.current;
+
+    const vm = buildOperationsRecordReleaseViewModel({
+      data: null,
+      continuity,
+      reporting
+    });
+
+    expect(vm.statusLabel).toBe("Release blocked");
+    expect(vm.statusDetail).toBe("1 release step blocked; keep the demo path visible but do not call it closed.");
+    expect(vm.sourcePanel).toMatchObject({
+      statusLabel: "Payload pending",
+      tone: "blocked"
+    });
+    expect(vm.steps.map((step) => [step.id, step.tone])).toEqual([
+      ["source-data", "blocked"],
+      ["broker-intake", "ready"],
+      ["ledger", "ready"],
+      ["reconcile", "ready"],
+      ["approve", "ready"],
+      ["report", "ready"]
     ]);
   });
 });

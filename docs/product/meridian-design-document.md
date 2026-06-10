@@ -458,6 +458,13 @@ Receive Activity
 * Evidence packages
 * Approval history
 
+### Roadmap Productization
+
+`W5X-FINOPS-001` tracks the planned Financial Operations control center that turns
+reconciliation, exception management, accounting operations, close support, workflow control, and
+audit evidence into a shared Accounting/Reporting operator surface. This is planned productization,
+not a completion claim; W1-W5 remain the closed evidence baseline.
+
 ---
 
 ## 5.3 Treasury & Payments
@@ -1482,6 +1489,10 @@ or close packages:
 
 Meridian should have a stable financial operations core with configurable workflows, rules, data mappings, reports, permissions, and domain extensions layered around it.
 
+Engineering boundaries for this strategy are captured in
+[`docs/architecture/core-extensibility-model.md`](../architecture/core-extensibility-model.md).
+The shared contract seam is `src/Meridian.Contracts/Extensibility/`.
+
 ### Core Extensibility Model
 
 ```text
@@ -2415,6 +2426,10 @@ The implementation sequence should stay conservative:
 This is a planned productization target, not a completion claim. The roadmap item
 `W5X-FREX-001` tracks the delivery slice that turns the existing accounting-record and
 multi-asset coverage evidence into these shared explorers.
+
+The companion planned roadmap item `W5X-FINOPS-001` turns Financial Operations into the operator
+control center for reconciliation queues, exception casework, close checklists, workflow controls,
+and audit evidence packet readiness over the same W1-W5 evidence baseline.
 
 ### v0.18 Product Direction Addendum: Operational Proof Layer
 

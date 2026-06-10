@@ -66,6 +66,10 @@ public sealed class ReportPackRunReadService
         var reportLineProvenanceExplorer = FinancialRecordExplorerReadService.BuildReportLineProvenanceExplorer(
             workflowRecords,
             deliveryAttempts);
+        var portfolioCuts = BuildPortfolioReportingCuts(workflowRecords);
+        var livePortfolioViews = BuildPortfolioReportingLiveViews(portfolioCuts);
+        var crossFundConsolidations = BuildCrossFundConsolidations(portfolioCuts);
+        var pnlSlices = BuildPortfolioReportingPnlSlices(portfolioCuts);
 
         return new WorkstationReportingPayload(
             ProfileCount: profiles.Length,
@@ -79,7 +83,11 @@ public sealed class ReportPackRunReadService
             DeliveryAttempts: deliveryAttempts,
             SelectedFundProfileId: selectedFundProfileId,
             ScheduleDeliveryPlans: scheduleDeliveryPlans,
-            ReportLineProvenanceExplorer: reportLineProvenanceExplorer);
+            ReportLineProvenanceExplorer: reportLineProvenanceExplorer,
+            PortfolioCuts: portfolioCuts,
+            LivePortfolioViews: livePortfolioViews,
+            CrossFundConsolidations: crossFundConsolidations,
+            PnlSlices: pnlSlices);
     }
 
     public static WorkstationReportingPayload BuildFallbackPayload() =>
@@ -112,6 +120,261 @@ public sealed class ReportPackRunReadService
             .OrderByDescending(static record => record.UpdatedAt)
             .Select(static record => record.FundProfileId.Trim())
             .FirstOrDefault();
+
+    private static IReadOnlyList<PortfolioReportingCutDto> BuildPortfolioReportingCuts(
+        IReadOnlyList<ReportPackWorkflowRecordDto> workflowRecords)
+    {
+        var cuts = new List<PortfolioReportingCutDto>();
+        foreach (var group in workflowRecords
+                     .Where(static record => record.LineProvenance is { Count: > 0 })
+                     .GroupBy(static record => string.IsNullOrWhiteSpace(record.FundProfileId) ? "unknown-fund" : record.FundProfileId.Trim(), StringComparer.OrdinalIgnoreCase)
+                     .OrderBy(static group => group.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            var records = group
+                .OrderByDescending(static record => record.UpdatedAt)
+                .ThenBy(static record => record.ReportId)
+                .ToArray();
+            var latest = records[0];
+            var sources = records
+                .SelectMany(static record => record.LineProvenance ?? [])
+                .Select(TryClassifyPortfolioLine)
+                .Where(static source => source is not null)
+                .Select(static source => source!)
+                .ToArray();
+            if (sources.Length == 0)
+            {
+                continue;
+            }
+
+            var grossExposure = SumSources(sources, PortfolioLineMetric.GrossExposure);
+            var longMarketValue = SumSources(sources, PortfolioLineMetric.LongMarketValue);
+            var shortMarketValue = SumSources(sources, PortfolioLineMetric.ShortMarketValue);
+            var netExposure = SumSources(sources, PortfolioLineMetric.NetExposure);
+            var cash = SumSources(sources, PortfolioLineMetric.Cash);
+            var pendingSettlement = SumSources(sources, PortfolioLineMetric.PendingSettlement);
+            var realizedPnl = SumSources(sources, PortfolioLineMetric.RealizedPnl);
+            var unrealizedPnl = SumSources(sources, PortfolioLineMetric.UnrealizedPnl);
+            var totalPnl = SumSources(sources, PortfolioLineMetric.TotalPnl);
+            if (totalPnl == 0m)
+            {
+                totalPnl = realizedPnl + unrealizedPnl;
+            }
+
+            var shadowNav = SumSources(sources, PortfolioLineMetric.ShadowNav);
+            var reportedNav = SumSources(sources, PortfolioLineMetric.ReportedNav);
+            var shadowNavVariance = reportedNav == 0m ? 0m : shadowNav - reportedNav;
+            var asOf = records.Max(static record => record.UpdatedAt);
+            var evidenceRoute = sources
+                .Select(static source => source.Line.FinancialRecordHref)
+                .FirstOrDefault(static route => !string.IsNullOrWhiteSpace(route));
+
+            cuts.Add(new PortfolioReportingCutDto(
+                CutId: $"reporting-portfolio-cut:{group.Key}",
+                Label: $"{group.Key} retained portfolio reporting cut",
+                Kind: PortfolioReportingCutKindDto.Fund,
+                Currency: "USD",
+                GrossExposure: grossExposure,
+                NetExposure: netExposure,
+                LongMarketValue: longMarketValue,
+                ShortMarketValue: shortMarketValue,
+                TotalCash: cash,
+                PendingSettlement: pendingSettlement,
+                RealizedPnl: realizedPnl,
+                UnrealizedPnl: unrealizedPnl,
+                TotalPnl: totalPnl,
+                ShadowNav: shadowNav,
+                ShadowNavVariance: shadowNavVariance,
+                SourceCount: sources.Length,
+                Tags: BuildPortfolioCutTags(records, sources),
+                AsOf: asOf,
+                EvidenceRoute: evidenceRoute,
+                ShadowNavNote: shadowNav == 0m ? "No retained shadow-NAV line was present." : "Shadow NAV is retained from report-pack line provenance.",
+                VersionStamp: $"portfolio-cut:{group.Key}:{latest.Version}:{asOf.UtcDateTime:yyyyMMddHHmmss}"));
+        }
+
+        return cuts;
+    }
+
+    private static IReadOnlyList<PortfolioReportingLiveViewDto> BuildPortfolioReportingLiveViews(
+        IReadOnlyList<PortfolioReportingCutDto> portfolioCuts) =>
+        portfolioCuts
+            .Select(cut => new PortfolioReportingLiveViewDto(
+                ViewId: $"reporting-live-view:{cut.CutId}",
+                Label: cut.Label,
+                Kind: cut.Kind,
+                State: cut.SourceCount > 0 ? PortfolioReportingLiveViewStateDto.SourceBacked : PortfolioReportingLiveViewStateDto.Blocked,
+                Currency: cut.Currency,
+                GrossExposure: cut.GrossExposure,
+                NetExposure: cut.NetExposure,
+                TotalCash: cut.TotalCash,
+                PendingSettlement: cut.PendingSettlement,
+                TotalPnl: cut.TotalPnl,
+                ShadowNav: cut.ShadowNav,
+                AsOf: cut.AsOf,
+                SourceAsOfUtc: cut.AsOf,
+                SourceCount: cut.SourceCount,
+                Route: cut.EvidenceRoute ?? "/api/workstation/reporting",
+                LiquiditySummary: $"Cash {FormatCurrency(cut.TotalCash, cut.Currency)}; pending settlement {FormatCurrency(cut.PendingSettlement, cut.Currency)}.",
+                CashLadderSummary: cut.TotalCash == 0m ? "No retained cash ladder source is present." : "Cash ladder is source-backed by retained report-pack provenance.",
+                TelemetrySummary: $"Retained exposure {FormatCurrency(cut.GrossExposure, cut.Currency)} and P&L {FormatCurrency(cut.TotalPnl, cut.Currency)}.",
+                Tags: cut.Tags,
+                VersionStamp: $"live-view:{cut.VersionStamp}",
+                ReadinessBlockers: cut.SourceCount == 0 ? ["No retained portfolio reporting provenance is available."] : []))
+            .ToArray();
+
+    private static IReadOnlyList<CrossFundReportingConsolidationDto> BuildCrossFundConsolidations(
+        IReadOnlyList<PortfolioReportingCutDto> portfolioCuts)
+    {
+        if (portfolioCuts.Count == 0)
+        {
+            return [];
+        }
+
+        var asOf = portfolioCuts.Max(static cut => cut.AsOf);
+        return
+        [
+            new CrossFundReportingConsolidationDto(
+                ConsolidationId: "reporting-cross-fund:company",
+                Label: "Company retained reporting consolidation",
+                Scope: CrossFundReportingConsolidationScopeDto.Company,
+                Currency: portfolioCuts[0].Currency,
+                IsReady: portfolioCuts.All(static cut => cut.SourceCount > 0),
+                FundCount: portfolioCuts.Count,
+                EntityCount: portfolioCuts.Count,
+                AccountCount: portfolioCuts.Count,
+                RunCount: portfolioCuts.Sum(static cut => cut.SourceCount),
+                GrossExposure: portfolioCuts.Sum(static cut => cut.GrossExposure),
+                NetExposure: portfolioCuts.Sum(static cut => cut.NetExposure),
+                LongMarketValue: portfolioCuts.Sum(static cut => cut.LongMarketValue),
+                ShortMarketValue: portfolioCuts.Sum(static cut => cut.ShortMarketValue),
+                TotalCash: portfolioCuts.Sum(static cut => cut.TotalCash),
+                PendingSettlement: portfolioCuts.Sum(static cut => cut.PendingSettlement),
+                TotalPnl: portfolioCuts.Sum(static cut => cut.TotalPnl),
+                ShadowNav: portfolioCuts.Sum(static cut => cut.ShadowNav),
+                ShadowNavVariance: portfolioCuts.Sum(static cut => cut.ShadowNavVariance),
+                SourceCount: portfolioCuts.Sum(static cut => cut.SourceCount),
+                AsOf: asOf,
+                Route: "/api/workstation/reporting",
+                ReadinessSummary: "Cross-fund consolidation is derived from retained report-pack portfolio cuts.",
+                Tags: portfolioCuts.SelectMany(static cut => cut.Tags).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
+                VersionStamp: $"cross-fund:company:{asOf.UtcDateTime:yyyyMMddHHmmss}")
+        ];
+    }
+
+    private static IReadOnlyList<PortfolioReportingPnlSliceDto> BuildPortfolioReportingPnlSlices(
+        IReadOnlyList<PortfolioReportingCutDto> portfolioCuts)
+    {
+        if (portfolioCuts.Count == 0)
+        {
+            return [];
+        }
+
+        var asOf = portfolioCuts.Max(static cut => cut.AsOf);
+        var endDate = DateOnly.FromDateTime(asOf.UtcDateTime);
+        var totalPnl = portfolioCuts.Sum(static cut => cut.TotalPnl);
+        var realizedPnl = portfolioCuts.Sum(static cut => cut.RealizedPnl);
+        var unrealizedPnl = portfolioCuts.Sum(static cut => cut.UnrealizedPnl);
+        var sourceCount = portfolioCuts.Sum(static cut => cut.SourceCount);
+        return
+        [
+            BuildPortfolioReportingPnlSlice(PortfolioReportingPnlSlicePeriodDto.Daily, endDate, endDate, realizedPnl, unrealizedPnl, totalPnl, sourceCount, asOf),
+            BuildPortfolioReportingPnlSlice(PortfolioReportingPnlSlicePeriodDto.Weekly, endDate.AddDays(-6), endDate, realizedPnl, unrealizedPnl, totalPnl, sourceCount, asOf),
+            BuildPortfolioReportingPnlSlice(PortfolioReportingPnlSlicePeriodDto.Monthly, new DateOnly(endDate.Year, endDate.Month, 1), endDate, realizedPnl, unrealizedPnl, totalPnl, sourceCount, asOf),
+            BuildPortfolioReportingPnlSlice(PortfolioReportingPnlSlicePeriodDto.Yearly, new DateOnly(endDate.Year, 1, 1), endDate, realizedPnl, unrealizedPnl, totalPnl, sourceCount, asOf)
+        ];
+    }
+
+    private static PortfolioReportingPnlSliceDto BuildPortfolioReportingPnlSlice(
+        PortfolioReportingPnlSlicePeriodDto period,
+        DateOnly startDate,
+        DateOnly endDate,
+        decimal realizedPnl,
+        decimal unrealizedPnl,
+        decimal totalPnl,
+        int sourceCount,
+        DateTimeOffset asOf) =>
+        new(
+            SliceId: $"reporting-pnl:{period.ToString().ToLowerInvariant()}:{endDate:yyyyMMdd}",
+            Period: period,
+            Label: $"{period} retained P&L",
+            Currency: "USD",
+            StartDate: startDate,
+            EndDate: endDate,
+            RealizedPnl: realizedPnl,
+            UnrealizedPnl: unrealizedPnl,
+            TotalPnl: totalPnl,
+            PriorTotalPnl: 0m,
+            PnlChange: totalPnl,
+            SourceCount: sourceCount,
+            AsOf: asOf,
+            Route: "/api/workstation/reporting",
+            ReadinessSummary: $"Retained {period} P&L slice is derived from {sourceCount} report-pack portfolio provenance line(s).",
+            Tags: ["retained-report-pack", "portfolio-reporting", period.ToString()],
+            VersionStamp: $"pnl-slice:{period}:{asOf.UtcDateTime:yyyyMMddHHmmss}");
+
+    private static IReadOnlyList<string> BuildPortfolioCutTags(
+        IReadOnlyList<ReportPackWorkflowRecordDto> records,
+        IReadOnlyList<PortfolioLineSource> sources) =>
+        records.Select(static record => $"fund:{record.FundProfileId}")
+            .Concat(records.Select(static record => $"account:{record.FundAccountId}"))
+            .Concat(records.Select(static record => $"template:{record.TemplateId.Name}"))
+            .Concat(sources.Select(static source => $"metric:{source.Metric}"))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+    private static decimal SumSources(IReadOnlyList<PortfolioLineSource> sources, PortfolioLineMetric metric) =>
+        sources.Where(source => source.Metric == metric).Sum(static source => source.Value);
+
+    private static PortfolioLineSource? TryClassifyPortfolioLine(ReportPackLineProvenanceDto line)
+    {
+        if (string.IsNullOrWhiteSpace(line.ReportValue) ||
+            !decimal.TryParse(line.ReportValue.Trim(), NumberStyles.Number, CultureInfo.InvariantCulture, out var value))
+        {
+            return null;
+        }
+
+        var key = line.LineKey.ToLowerInvariant();
+        var metric = key switch
+        {
+            _ when key.Contains("gross", StringComparison.Ordinal) && key.Contains("exposure", StringComparison.Ordinal) => PortfolioLineMetric.GrossExposure,
+            _ when key.Contains("net", StringComparison.Ordinal) && key.Contains("exposure", StringComparison.Ordinal) => PortfolioLineMetric.NetExposure,
+            _ when key.Contains("long", StringComparison.Ordinal) && (key.Contains("market", StringComparison.Ordinal) || key.Contains("exposure", StringComparison.Ordinal)) => PortfolioLineMetric.LongMarketValue,
+            _ when key.Contains("short", StringComparison.Ordinal) && (key.Contains("market", StringComparison.Ordinal) || key.Contains("exposure", StringComparison.Ordinal)) => PortfolioLineMetric.ShortMarketValue,
+            _ when key.Contains("pending", StringComparison.Ordinal) && key.Contains("settlement", StringComparison.Ordinal) => PortfolioLineMetric.PendingSettlement,
+            _ when key.Contains("cash", StringComparison.Ordinal) => PortfolioLineMetric.Cash,
+            _ when key.Contains("realized", StringComparison.Ordinal) && key.Contains("pnl", StringComparison.Ordinal) => PortfolioLineMetric.RealizedPnl,
+            _ when key.Contains("unrealized", StringComparison.Ordinal) && key.Contains("pnl", StringComparison.Ordinal) => PortfolioLineMetric.UnrealizedPnl,
+            _ when key.Contains("total", StringComparison.Ordinal) && key.Contains("pnl", StringComparison.Ordinal) => PortfolioLineMetric.TotalPnl,
+            _ when key.Contains("shadow", StringComparison.Ordinal) && key.Contains("nav", StringComparison.Ordinal) => PortfolioLineMetric.ShadowNav,
+            _ when key.Contains("reported", StringComparison.Ordinal) && key.Contains("nav", StringComparison.Ordinal) => PortfolioLineMetric.ReportedNav,
+            _ => (PortfolioLineMetric?)null
+        };
+
+        return metric is null ? null : new PortfolioLineSource(metric.Value, value, line);
+    }
+
+    private static string FormatCurrency(decimal value, string currency) =>
+        $"{currency} {value:N2}";
+
+    private enum PortfolioLineMetric
+    {
+        GrossExposure,
+        NetExposure,
+        LongMarketValue,
+        ShortMarketValue,
+        Cash,
+        PendingSettlement,
+        RealizedPnl,
+        UnrealizedPnl,
+        TotalPnl,
+        ShadowNav,
+        ReportedNav
+    }
+
+    private sealed record PortfolioLineSource(
+        PortfolioLineMetric Metric,
+        decimal Value,
+        ReportPackLineProvenanceDto Line);
 
     private WorkstationReportingTemplatePayload[] BuildTemplates(ReportAccessQueryContext? accessContext)
     {
@@ -532,6 +795,15 @@ public sealed class ReportPackRunReadService
             blockers.Add($"Schedule '{schedule.ScheduleId}' is due and has no successful retained delivery package for {policy.Recipient}.");
         }
 
+        if (latestAttempt?.State == ReportPackDeliveryStateDto.Delivered)
+        {
+            var packageIssues = ReportPackDeliveryService.ValidateDeliverablePackage(latestAttempt);
+            if (packageIssues.Count > 0)
+            {
+                blockers.Add($"Latest delivery package for {policy.Recipient} is incomplete: {string.Join(" ", packageIssues)}");
+            }
+        }
+
         var missingFormats = FindMissingDeliveryFormats(formats, latestAttempt);
         if (missingFormats.Length > 0)
         {
@@ -631,7 +903,7 @@ public sealed class ReportPackRunReadService
         var latestDelivery = deliveryAttempts
             .Where(attempt =>
                 string.Equals(attempt.DistributionId, policy.DistributionId, StringComparison.OrdinalIgnoreCase)
-                && attempt.State == ReportPackDeliveryStateDto.Delivered)
+                && ReportPackDeliveryService.ValidateDeliverablePackage(attempt).Count == 0)
             .OrderByDescending(static attempt => attempt.AttemptedAtUtc)
             .FirstOrDefault();
         var (state, pendingItems, pendingSummary, dueAtUtc) = ResolveDistributionState(

@@ -41,6 +41,8 @@ or provider implementations.
 - `Etl/` - shared ETL DTOs, the job-definition store contract, and the SFTP publisher port used by
   Application orchestration, Data Integration ETL services, Infrastructure adapters, and
   Storage-backed persistence.
+- `Extensibility/` - stable financial operations core object, configurable layer, governed
+  foundation, configuration envelope, tenant template, and extensibility catalog DTOs.
 - `Monitoring/` - shared event-pipeline metrics contracts, snapshot payloads, and monitoring
   webhook sink contracts consumed by Application, Platform tracing/monitoring, diagnostics
   endpoints, WPF, and browser workstation services.
@@ -157,6 +159,13 @@ posting/export workflow is enabled.
 Provider connection and readiness DTOs also carry optional non-sensitive credential field and
 environment metadata so browser and WPF provider setup surfaces can render from shared catalog
 truth without receiving stored secrets or environment variable contents.
+
+Core extensibility contracts define Meridian's stable financial operations object vocabulary,
+configurable tenant layers, governed foundations, configuration envelopes, tenant templates, and
+catalog registrations. Keep tenant-specific workflows, rules, mappings, reports, permissions,
+custom fields, source priority, ledger controls, notifications, and domain-extension descriptors
+attached to these shared DTOs instead of creating browser-only, WPF-only, or provider-local
+extension vocabularies.
 
 Report-pack workflow contracts carry the W4 governed lifecycle states `Draft`, `InReview`,
 `Approved`, and `Published` plus governed publication metadata: sign-off actor, evidence hash,

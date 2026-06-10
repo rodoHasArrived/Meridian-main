@@ -133,6 +133,7 @@ public sealed class ReportPackDeliveryService
         var attempt = GetDeliveredAttempt(reportId, attemptId)
             ?? throw new KeyNotFoundException("delivery package not found");
         EnsureValidPackageToken(attempt, token);
+        EnsureDeliverablePackage(attempt.Package!);
         return attempt.Package!;
     }
 
@@ -153,6 +154,7 @@ public sealed class ReportPackDeliveryService
         }
 
         EnsureValidPackageToken(attempt, token);
+        EnsureDeliverablePackage(attempt.Package!);
         return attempt.Package!;
     }
 
@@ -163,6 +165,7 @@ public sealed class ReportPackDeliveryService
             ?? throw new KeyNotFoundException("delivery package not found");
         EnsureValidPackageToken(attempt, token);
         var package = attempt.Package!;
+        EnsureDeliverablePackage(package);
         var artifact = package.Artifacts.FirstOrDefault(item =>
             string.Equals(item.ArtifactName, artifactName.Trim(), StringComparison.OrdinalIgnoreCase));
         if (artifact is null)
@@ -291,6 +294,23 @@ public sealed class ReportPackDeliveryService
             request.EvidenceLinks,
             formats: null,
             deliveryMode: null);
+    }
+
+    public static IReadOnlyList<string> ValidateDeliverablePackage(ReportPackDeliveryAttemptDto? attempt)
+    {
+        if (attempt is null)
+        {
+            return ["No delivery attempt is available."];
+        }
+
+        if (attempt.State != ReportPackDeliveryStateDto.Delivered)
+        {
+            return [$"Delivery attempt is {attempt.State}; only delivered attempts have retained packages."];
+        }
+
+        return attempt.Package is null
+            ? ["Delivered attempt does not include a retained package."]
+            : ValidateDeliverablePackage(attempt.Package);
     }
 
     private ReportPackDeliveryAttemptDto AppendAttempt(
@@ -853,6 +873,161 @@ public sealed class ReportPackDeliveryService
             ? "without a publication evidence hash"
             : $"against publication evidence hash {publicationEvidenceHash.Trim()}";
         return $"{artifacts.Count} artifact(s) retained with SHA-256 checksums {hashSummary}.";
+    }
+
+    private static void EnsureDeliverablePackage(ReportPackDeliveryPackageDto package)
+    {
+        var issues = ValidateDeliverablePackage(package);
+        if (issues.Count > 0)
+        {
+            throw new InvalidOperationException($"Report-pack delivery package is incomplete: {string.Join(" ", issues)}");
+        }
+    }
+
+    private static IReadOnlyList<string> ValidateDeliverablePackage(ReportPackDeliveryPackageDto package)
+    {
+        var issues = new List<string>();
+        if (string.IsNullOrWhiteSpace(package.PackageId))
+        {
+            issues.Add("Package id is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(package.DistributionId))
+        {
+            issues.Add("Distribution id is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(package.SecureLink))
+        {
+            issues.Add("Secure link or retained vault route is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(package.PortalRoute))
+        {
+            issues.Add("Portal route is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(package.RetainedManifestPath))
+        {
+            issues.Add("Retained manifest path is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(package.IntegritySummary))
+        {
+            issues.Add("Integrity summary is required.");
+        }
+
+        if (package.DeliveryMode is ReportPackDeliveryModeDto.EmailLink or ReportPackDeliveryModeDto.SecurePortal)
+        {
+            if (package.AccessExpiresAtUtc is null)
+            {
+                issues.Add($"{package.DeliveryMode} packages require an access expiration.");
+            }
+            else if (package.AccessExpiresAtUtc <= package.CreatedAtUtc)
+            {
+                issues.Add("Access expiration must be after package creation.");
+            }
+        }
+
+        var formats = package.Formats?.Distinct().ToArray() ?? [];
+        if (formats.Length == 0)
+        {
+            issues.Add("At least one delivery format is required.");
+        }
+
+        var artifacts = package.Artifacts ?? [];
+        if (artifacts.Count == 0)
+        {
+            issues.Add("At least one retained delivery artifact is required.");
+        }
+
+        var artifactFormats = artifacts.Select(static artifact => artifact.Format).ToHashSet();
+        var missingFormats = formats.Where(format => !artifactFormats.Contains(format)).OrderBy(static format => format).ToArray();
+        if (missingFormats.Length > 0)
+        {
+            issues.Add($"Retained artifacts are missing requested format(s): {string.Join("/", missingFormats.Select(static format => format.ToString()))}.");
+        }
+
+        foreach (var artifact in artifacts)
+        {
+            var label = string.IsNullOrWhiteSpace(artifact.ArtifactName) ? artifact.Format.ToString() : artifact.ArtifactName.Trim();
+            if (string.IsNullOrWhiteSpace(artifact.ArtifactName))
+            {
+                issues.Add($"Artifact {label} requires a name.");
+            }
+
+            if (string.IsNullOrWhiteSpace(artifact.ContentType))
+            {
+                issues.Add($"Artifact {label} requires a content type.");
+            }
+
+            if (string.IsNullOrWhiteSpace(artifact.RetainedPath))
+            {
+                issues.Add($"Artifact {label} requires a retained path.");
+            }
+
+            if (artifact.ByteSize <= 0)
+            {
+                issues.Add($"Artifact {label} requires a positive byte size.");
+            }
+
+            if (string.IsNullOrWhiteSpace(artifact.EvidenceId))
+            {
+                issues.Add($"Artifact {label} requires an evidence id.");
+            }
+
+            if (string.IsNullOrWhiteSpace(artifact.ChecksumSha256))
+            {
+                issues.Add($"Artifact {label} requires a SHA-256 checksum.");
+            }
+
+            if (string.IsNullOrWhiteSpace(artifact.VersionStamp))
+            {
+                issues.Add($"Artifact {label} requires a version stamp.");
+            }
+        }
+
+        var packet = package.DeliveryEvidencePacket;
+        if (packet is null)
+        {
+            issues.Add("Delivery evidence packet is required.");
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(packet.PacketId))
+            {
+                issues.Add("Delivery evidence packet id is required.");
+            }
+
+            if (!string.Equals(packet.PackageId, package.PackageId, StringComparison.OrdinalIgnoreCase))
+            {
+                issues.Add("Delivery evidence packet package id must match the package.");
+            }
+
+            if ((packet.PackageContents?.Count ?? 0) == 0)
+            {
+                issues.Add("Delivery evidence packet requires package contents.");
+            }
+
+            if ((packet.SupportEvidenceIds?.Count ?? 0) == 0)
+            {
+                issues.Add("Delivery evidence packet requires support evidence ids.");
+            }
+
+            if ((packet.RecipientList?.Count ?? 0) == 0)
+            {
+                issues.Add("Delivery evidence packet requires a recipient list.");
+            }
+
+            if ((packet.DeliveryEvidence?.Count ?? 0) == 0)
+            {
+                issues.Add("Delivery evidence packet requires retained artifact evidence links.");
+            }
+        }
+
+        return issues
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     private static string BuildArtifactDownloadRoute(

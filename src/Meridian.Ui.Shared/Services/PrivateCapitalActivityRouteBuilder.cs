@@ -160,6 +160,25 @@ internal static class PrivateCapitalActivityRouteBuilder
         return UiApiRoutes.WithQuery(UiApiRoutes.LedgerPrivateCapitalFundEventRecord, string.Join("&", query));
     }
 
+    public static string BuildFundEventCommandCenterRoute(
+        string fundProfileId,
+        Guid? ledgerBookId,
+        string fundEventId)
+    {
+        var query = new List<string>
+        {
+            $"fundProfileId={Uri.EscapeDataString(fundProfileId.Trim())}",
+            $"fundEventId={Uri.EscapeDataString(fundEventId.Trim())}"
+        };
+
+        if (ledgerBookId.HasValue)
+        {
+            query.Add($"ledgerBookId={Uri.EscapeDataString(ledgerBookId.Value.ToString("D"))}");
+        }
+
+        return UiApiRoutes.WithQuery(UiApiRoutes.LedgerPrivateCapitalFundEventCommandCenter, string.Join("&", query));
+    }
+
     public static string BuildEvidenceRoute(string fundEventId)
         => UiApiRoutes.WithParam(
             UiApiRoutes.WithParam(

@@ -36,6 +36,7 @@ using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Evidence;
+using Meridian.Ui.Shared.Extensibility;
 using Meridian.Ui.Shared.Services.Acceptance;
 using Meridian.Ui.Shared.Services.CoveredCall;
 using Meridian.Ui.Shared.Workflows;
@@ -331,6 +332,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<CollateralExposureService>();
 
         services.AddWorkflowLibrary();
+        services.AddExtensibilityCatalog();
         services.AddEvidenceWorkflowFabric();
         services.TryAddSingleton<WorkstationWorkflowSummaryService>();
         services.TryAddSingleton<Meridian.Ui.Shared.Contracts.Integrations.IOmsIntegrationApiHandler, OmsIntegrationService>();

@@ -27,6 +27,8 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 - `Endpoints/` - shared workstation endpoint mapping and projection helpers, including
   fund-structure ownership lifecycle, portable packaging, archive-maintenance, and data-quality
   monitoring routes.
+- `Extensibility/` - shared extensibility catalog service and provider adapters that expose
+  configurable workflow registrations through `Meridian.Contracts.Extensibility`.
 - Shared read models - DTOs and compatibility shims consumed by browser and desktop clients.
 - Project metadata - UI shared dependencies and build settings.
 
@@ -246,6 +248,13 @@ The same shared library also exposes the design-document `Primary Operator Workf
 `Import`, `Validate`, `Reconcile`, `Investigate`, `Approve`, and `Report`. Keep that sequence in
 `BuiltInWorkflowDefinitionProvider` aligned with browser shell continuity and WPF launch targets so
 client shells do not maintain separate primary workflow catalogs.
+`ExtensibilityCatalogService` aggregates shared extensibility registrations. Built-in providers
+adapt workstation workflows and actions, governed reporting templates, Identity role/permission
+profiles, accounting configuration, posting-rule mappings, provider connection lifecycle, and draft
+tenant-template/domain-extension seams into `ExtensibilityRegistrationDto` records. Browser and WPF
+clients should consume that catalog instead of inventing local extension vocabularies; registrations
+configure routing, review sequence, evidence expectations, scoped authority, templates, mappings,
+and ledger controls without owning domain writes.
 The built-in `accounting-records-evidence-review` workflow owns the v0.15 accounting-records
 review path across retained source records, normalized activity, reconciliation cases, ledger
 evidence, approvals, document attachments, export manifests, and report-pack/restatement lineage.
@@ -525,6 +534,10 @@ client surfaces consume the same readiness posture instead of recalculating it l
 The workflow-summary endpoint also projects a cross-workflow Meridian Assurance Score from the
 shared workspace postures, giving browser and WPF shells the same readiness indicator for Trading,
 Portfolio, Accounting, Reporting, Strategy, Data, and Settings instead of client-local scoring.
+When the active summary request carries a fund-account id, the Accounting workspace also projects
+Operations Continuity financial-operations state from `IOperationsContinuityWorkflowService`:
+receive-activity start, reconciliation exceptions, approval history, close readiness, and retained
+evidence package posture remain server-derived.
 Shared workstation fallback payloads keep retained `Research*` and `Governance*` contract names for
 route and DTO compatibility, but visible session roles, strategy summaries, reconciliation
 sign-off roles, and calibration summaries use canonical Strategy and Accounting wording.

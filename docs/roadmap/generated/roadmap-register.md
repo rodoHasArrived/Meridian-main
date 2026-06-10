@@ -17,7 +17,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-06-09
+Snapshot date: 2026-06-10
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |
@@ -244,6 +244,41 @@ Completed the first shared multi-asset operations proof lane by exposing Securit
 
 - `SRC-APP`
 - `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
+- `SRC-WPF`
+
+## W5X-FINOPS-001 - Financial operations control center
+| Field | Value |
+| --- | --- |
+| Wave | W5X |
+| Status | planned |
+| Health | green |
+| Priority | high |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-06-10 |
+
+### Current Summary
+
+Planned productization slice that makes Financial Operations the operator control center for reconciliation queues, exception casework, accounting close support, workflow controls, and audit evidence packet readiness. It builds on the closed W1-W5 operational-record baseline and should consume the same shared contracts/read models as the Financial Record Explorers rather than creating browser- or WPF-local business rules.
+
+### Exit Criteria
+
+- Accounting workspace exposes a financial operations command surface that groups reconciliation posture, exception aging, close checklist state, approval/workflow control, and audit evidence readiness from shared read models.
+- Reconciliation cases, breaks, assignments, escalations, approvals, close tasks, and evidence packets can be opened from a unified operator queue with deterministic status, owner, due date, and blocker signals.
+- Close support shows period state, lock or reopen posture, NAV-support or report-pack dependencies, unresolved exceptions, required approvals, and retained evidence gaps without posting synthetic completion.
+- Workflow controls expose assignment, escalation, approval, reopen, and evidence-retention actions through shared services so browser and WPF surfaces share the same policy decisions.
+- Generated roadmap and product docs state this is a planned productization target, not a claim that the complete Financial Operations control center is shipped.
+
+### Source Modules
+
+- `SRC-CONTRACTS`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-DESIGN-WORKFLOW`
+- `SRC-DESIGN-AUDIT`
+- `SRC-DESIGN-REPORTING`
+- `SRC-UI-SERVICES`
 - `SRC-UI-SHARED`
 - `SRC-UI-DASHBOARD`
 - `SRC-WPF`

@@ -44,6 +44,7 @@ do_not_edit: true
 | `SRC-DESIGN-ENTITIES` | Meridian Entities design module | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W5-ACCT-001` | Accounting records and operational evidence |
+| `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W5X-FINOPS-001` | Financial operations control center |
 | `SRC-DESIGN-IDENTITY` | Meridian Identity design module | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-DESIGN-INSTRUMENTS` | Meridian Instruments design module | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-DESIGN-INSTRUMENTS` | Meridian Instruments design module | `W5-MULTIASSET-001` | - |

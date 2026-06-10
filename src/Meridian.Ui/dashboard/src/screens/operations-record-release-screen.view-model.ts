@@ -192,8 +192,8 @@ function buildSourcePanel(data: DataWorkspaceResponse | null): OperationsRecordR
       title: "Source data",
       description: "Source data payload is unavailable; the release path must fail closed until provider posture loads.",
       statusLabel: "Payload pending",
-      tone: "neutral",
-      badgeVariant: "outline",
+      tone: "blocked",
+      badgeVariant: "danger",
       primaryHref: WORKSTATION_ROUTE_CATALOG.dataProviders,
       primaryLabel: "Open Data providers",
       primaryAriaLabel: "Open Data providers for source data posture",
@@ -264,6 +264,7 @@ function buildAccountingPanel(continuity: OperationsContinuityScreenViewModel): 
   const href = recordId
     ? evidenceWorkbenchPath("accounting-record", recordId)
     : WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity;
+  const accountingTone = accountingSummaryTone(summary.statusTone, recordId, summary.statusLabel);
   const rows: OperationsRecordReleaseEvidenceRow[] = continuity.accountingRecordEvidence.map((row) => ({
     id: row.id,
     label: row.label,
@@ -280,8 +281,8 @@ function buildAccountingPanel(continuity: OperationsContinuityScreenViewModel): 
     title: "Accounting record",
     description: summary.summaryLabel,
     statusLabel: summary.statusLabel,
-    tone: continuityToneToReleaseTone(summary.statusTone),
-    badgeVariant: toneToBadgeVariant(continuityToneToReleaseTone(summary.statusTone)),
+    tone: accountingTone,
+    badgeVariant: toneToBadgeVariant(accountingTone),
     primaryHref: href,
     primaryLabel: recordId ? "Open record evidence" : "Open continuity",
     primaryAriaLabel: recordId
@@ -530,6 +531,18 @@ function combineTones(tones: OperationsRecordReleaseTone[]): OperationsRecordRel
 
 function continuityToneToReleaseTone(tone: OperationsContinuityTone): OperationsRecordReleaseTone {
   return tone;
+}
+
+function accountingSummaryTone(
+  tone: OperationsContinuityTone,
+  recordId: string | null,
+  statusLabel: string
+): OperationsRecordReleaseTone {
+  if (recordId || statusLabel.trim().toLowerCase() === "loading") {
+    return continuityToneToReleaseTone(tone);
+  }
+
+  return "blocked";
 }
 
 function toneToBadgeVariant(tone: OperationsRecordReleaseTone): OperationsRecordReleaseBadgeVariant {

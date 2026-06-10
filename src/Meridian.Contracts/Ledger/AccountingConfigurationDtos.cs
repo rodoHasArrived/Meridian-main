@@ -580,6 +580,54 @@ public sealed record PrivateCapitalFundEventLedgerRecordDto(
         EvidenceCategories ?? [];
 }
 
+public sealed record PrivateCapitalFundEventCommandCenterLaneDto(
+    string LaneId,
+    string Label,
+    string Status,
+    bool IsReady,
+    string Summary,
+    string? Route,
+    int EvidenceLinkCount,
+    IReadOnlyList<string> EvidenceLinks,
+    IReadOnlyList<string>? RequiredActions = null)
+{
+    public IReadOnlyList<string> RequiredActions { get; init; } =
+        RequiredActions ?? [];
+}
+
+public sealed record PrivateCapitalFundEventCommandCenterSupportPackageDto(
+    string PackageId,
+    string Label,
+    string Status,
+    string? Route,
+    int EvidenceLinkCount,
+    IReadOnlyList<string> EvidenceLinks,
+    IReadOnlyList<string>? RequiredActions = null)
+{
+    public IReadOnlyList<string> RequiredActions { get; init; } =
+        RequiredActions ?? [];
+}
+
+public sealed record PrivateCapitalFundEventCommandCenterDto(
+    string FundEventId,
+    string FundEventType,
+    string FundProfileId,
+    Guid? LedgerBookId,
+    DateTimeOffset ProjectedAtUtc,
+    string CommandCenterRoute,
+    PrivateCapitalFundEventLedgerReadinessDto Readiness,
+    string ReadinessLabel,
+    string ReadinessReason,
+    string NextAction,
+    string? NextActionRoute,
+    int ReadyLaneCount,
+    int BlockedLaneCount,
+    PrivateCapitalFundEventLedgerRecordDto FundEventRecord,
+    IReadOnlyList<PrivateCapitalFundEventCommandCenterLaneDto> Lanes,
+    IReadOnlyList<PrivateCapitalFundEventCommandCenterSupportPackageDto> SupportPackages,
+    IReadOnlyList<string> LiveCapabilities,
+    IReadOnlyList<string> PlannedCapabilities);
+
 public sealed record PrivateCapitalCapitalAccountSubledgerDto(
     string SubledgerId,
     string FundProfileId,
@@ -887,6 +935,15 @@ public interface ICapitalAccountWorkbenchService
         string? capitalAccountId = null,
         string? investorId = null,
         string? currency = null,
+        CancellationToken ct = default);
+}
+
+public interface IPrivateCapitalFundEventCommandCenterService
+{
+    Task<PrivateCapitalFundEventCommandCenterDto?> GetCommandCenterAsync(
+        string? fundProfileId,
+        Guid? ledgerBookId,
+        string fundEventId,
         CancellationToken ct = default);
 }
 
