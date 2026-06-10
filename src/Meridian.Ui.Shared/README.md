@@ -383,6 +383,9 @@ and hex colors, persists the selected theme on generated report-pack snapshots a
 applies the same theme to generated HTML, PDF text, and the XLSX `Branding` worksheet. That keeps
 logos, colors, footer copy, disclaimers, and firm identity attached to the retained package artifact
 instead of the browser view.
+`ReportPackWorkflowService` can also retain that selected `ReportBrandingThemeDto` on the
+publication manifest, so downstream delivery packages use publication-approved branding metadata
+rather than accepting delivery-time restyling.
 `ReportPackRunReadService` derives `scheduleDeliveryPlans` from retained reporting schedules,
 distribution policies, and delivery attempts so browser and desktop clients can show which scheduled
 packs will deliver by email link, secure portal, evidence vault, or internal route without
@@ -394,14 +397,15 @@ state, and last-sent timestamps instead of static distribution placeholders. Del
 also receive deterministic package metadata with default PDF/XLSX/CSV artifacts, retained-package
 paths, artifact SHA-256 checksums, artifact version stamps, publication evidence hashes, integrity
 summaries, publication manifest fields, publication evidence links, retained line provenance,
-stakeholder delivery evidence packets, secure email-link or portal URLs, and delivery-mode inference
-for portal, vault, and internal-route channels; callers can override the mode and requested formats
-in `ReportPackDeliveryRequestDto`.
+publication-approved branding metadata, stakeholder delivery evidence packets, secure email-link or
+portal URLs, and delivery-mode inference for portal, vault, and internal-route channels; callers can
+override the mode and requested formats in `ReportPackDeliveryRequestDto`.
 Generated package downloads rebuild CSV, XLSX, HTML, and PDF artifacts from that retained package
-metadata, so recipients receive report-line provenance and publication evidence in the downloaded
-files instead of package identifiers only. The shared delivery evidence packet carries recipient and
-entitlement scope, approval chain, request history, publication manifest, report-line provenance,
-retained delivery evidence, and restatement lineage for the Version 0.18 operational proof layer.
+metadata, so recipients receive report-line provenance, publication evidence, selected branding, and
+restatement lineage in the downloaded files instead of package identifiers only. The shared delivery
+evidence packet carries recipient and entitlement scope, approval chain, request history,
+publication manifest, report-line provenance, retained delivery evidence, branding-theme package
+contents, and restatement lineage for the Version 0.18 operational proof layer.
 Schedule delivery plan rows project explicit readiness
 blockers, the latest retained package artifact count, and the integrity summary, so clients can
 show recipient/package readiness without fetching package manifests or inferring failure reasons

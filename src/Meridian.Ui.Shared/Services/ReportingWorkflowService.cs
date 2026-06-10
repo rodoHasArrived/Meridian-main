@@ -1186,7 +1186,8 @@ public sealed class ReportPackWorkflowService
         string manifestId,
         string retainedManifestPath,
         IReadOnlyList<ReportPackEvidenceLinkDto> evidenceLinks,
-        string? note = null)
+        string? note = null,
+        ReportBrandingThemeDto? brandingTheme = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(signedOffBy);
         ArgumentException.ThrowIfNullOrWhiteSpace(evidenceHash);
@@ -1214,7 +1215,8 @@ public sealed class ReportPackWorkflowService
                 evidenceHash.Trim(),
                 signedOffBy.Trim(),
                 DateTimeOffset.UtcNow,
-                NormalizeEvidenceLinks(evidenceLinks))
+                NormalizeEvidenceLinks(evidenceLinks),
+                NormalizePublicationBrandingTheme(brandingTheme))
         };
         _records[reportId] = next;
         PersistRecords();
@@ -1304,6 +1306,36 @@ public sealed class ReportPackWorkflowService
                 };
             })
             .ToArray();
+
+    private static ReportBrandingThemeDto? NormalizePublicationBrandingTheme(ReportBrandingThemeDto? theme)
+    {
+        if (theme is null)
+        {
+            return null;
+        }
+
+        return new ReportBrandingThemeDto(
+            NormalizeRequired(theme.ThemeId, nameof(theme.ThemeId)),
+            NormalizeRequired(theme.Name, nameof(theme.Name)),
+            NormalizeRequired(theme.FirmName, nameof(theme.FirmName)),
+            NormalizeRequired(theme.PrimaryColor, nameof(theme.PrimaryColor)),
+            NormalizeRequired(theme.AccentColor, nameof(theme.AccentColor)),
+            NormalizeRequired(theme.TextColor, nameof(theme.TextColor)),
+            NormalizeRequired(theme.BackgroundColor, nameof(theme.BackgroundColor)),
+            NormalizeNullable(theme.LogoUri),
+            NormalizeNullable(theme.FooterText),
+            NormalizeNullable(theme.Disclaimer),
+            theme.IsBuiltIn);
+    }
+
+    private static string NormalizeRequired(string value, string parameterName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(value, parameterName);
+        return value.Trim();
+    }
+
+    private static string? NormalizeNullable(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static void EnsureLineProvenanceTraceable(IReadOnlyList<ReportPackLineProvenanceDto> lineProvenance)
     {

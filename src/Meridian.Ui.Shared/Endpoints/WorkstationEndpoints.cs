@@ -91,6 +91,7 @@ public static partial class WorkstationEndpoints
         MapStrategyDesignerEndpoints(group, jsonOptions);
         MapStrategyEngineEndpoints(group, jsonOptions);
         MapFeatureCapabilityEndpoints(group, jsonOptions);
+        MapFinancialRecordExplorerEndpoints(group, jsonOptions);
         MapFamilyOfficeEndpoints(group);
         MapDataUploadEndpoints(group, jsonOptions);
 

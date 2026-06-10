@@ -101,7 +101,9 @@ for Claude-compatible hosts. Keep both mirrors aligned when shared skill behavio
 | `meridian-blueprint` | [`SKILL.md`](../../../.claude/skills/meridian-blueprint/SKILL.md) | Turn one idea into an implementation-ready technical blueprint |
 | `meridian-brainstorm` | [`SKILL.md`](../../../.claude/skills/meridian-brainstorm/SKILL.md) | Generate high-value product and architecture ideas |
 | `meridian-browser-workstation` | [`SKILL.md`](../../../.claude/skills/meridian-browser-workstation/SKILL.md) | Route and implement browser workstation TypeScript/React work |
+| `meridian-cleanup` | [`SKILL.md`](../../../.claude/skills/meridian-cleanup/SKILL.md) | Clean up code and docs without changing observable behavior |
 | `meridian-code-review` | [`SKILL.md`](../../../.claude/skills/meridian-code-review/SKILL.md) | Apply Meridian’s 7-lens review framework |
+| `meridian-docs` | [`SKILL.md`](../../../.claude/skills/meridian-docs/SKILL.md) | Maintain documentation accurately and conservatively |
 | `meridian-implementation-assurance` | [`SKILL.md`](../../../.claude/skills/meridian-implementation-assurance/SKILL.md) | Validate completed work against requirements and evidence |
 | `meridian-provider-builder` | [`SKILL.md`](../../../.claude/skills/meridian-provider-builder/SKILL.md) | Scaffold and extend providers with the right contracts and resilience patterns |
 | `meridian-repo-navigation` | [`SKILL.md`](../../../.claude/skills/meridian-repo-navigation/SKILL.md) | Route large-repo tasks before deeper work |

@@ -27,8 +27,7 @@ and keep promotion evidence tied to the owning skill or agent profile.
 
 **Copilot file:** [`.github/agents/repo-navigation-agent.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/agents/repo-navigation-agent.md)
 
-**Claude files:** [`.claude/agents/meridian-navigation.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/agents/meridian-navigation.md),
-[`.claude/agents/meridian-repo-navigation.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/agents/meridian-repo-navigation.md)
+**Claude file:** [`.claude/agents/meridian-repo-navigation.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/agents/meridian-repo-navigation.md)
 
 Routes large-repo work to the right subsystem, docs, entrypoints, and downstream specialist agents before implementation starts. It owns four roles:
 
@@ -146,16 +145,25 @@ preferences, and testing pressure points.
 
 ## Claude Code Agents (`.claude/agents/`)
 
+Each agent is a lightweight entrypoint that routes to its portable skill package in
+`.claude/skills/`. The set mirrors the meridian-* Codex profiles in `.codex/agents/`;
+the former `meridian-navigation` and `meridian-user-panel` aliases were pruned here too.
+
 | Agent | Purpose |
 | ------ | --------- |
 | [`meridian-archive-organizer.md`](../../../.claude/agents/meridian-archive-organizer.md) | Archive stale files and keep repository structure tidy |
 | [`meridian-blueprint.md`](../../../.claude/agents/meridian-blueprint.md) | Blueprint and design specialist |
+| [`meridian-brainstorm.md`](../../../.claude/agents/meridian-brainstorm.md) | Generate Meridian-native product and architecture ideas |
+| [`meridian-browser-workstation.md`](../../../.claude/agents/meridian-browser-workstation.md) | Route and implement browser workstation TypeScript/React tasks |
 | [`meridian-cleanup.md`](../../../.claude/agents/meridian-cleanup.md) | Cleanup specialist |
+| [`meridian-code-review.md`](../../../.claude/agents/meridian-code-review.md) | Review changes for bugs, regressions, and architecture drift |
 | [`meridian-docs.md`](../../../.claude/agents/meridian-docs.md) | Documentation specialist |
-| [`meridian-navigation.md`](../../../.claude/agents/meridian-navigation.md) | Repo navigation and routing specialist |
+| [`meridian-implementation-assurance.md`](../../../.claude/agents/meridian-implementation-assurance.md) | Verify implementation completeness, evidence, docs sync, and guardrails |
+| [`meridian-provider-builder.md`](../../../.claude/agents/meridian-provider-builder.md) | Build or extend ProviderSdk-compliant data providers |
 | [`meridian-repo-navigation.md`](../../../.claude/agents/meridian-repo-navigation.md) | Generated-map-based repo navigation specialist |
 | [`meridian-roadmap-strategist.md`](../../../.claude/agents/meridian-roadmap-strategist.md) | Roadmap, delivery-plan, and target-state specialist |
-| [`meridian-user-panel.md`](../../../.claude/agents/meridian-user-panel.md) | Manifest-driven user-panel specialist for design-partner, release-gate, and usability-lab reviews |
+| [`meridian-simulated-user-panel.md`](../../../.claude/agents/meridian-simulated-user-panel.md) | Manifest-driven user-panel specialist for design-partner, release-gate, and usability-lab reviews |
+| [`meridian-test-writer.md`](../../../.claude/agents/meridian-test-writer.md) | Write scenario-first Meridian tests |
 
 ---
 

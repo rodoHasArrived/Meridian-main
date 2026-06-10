@@ -581,6 +581,9 @@ public static class UiApiRoutes
     public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";
     public const string WorkstationFeatureCapabilities = "/api/workstation/settings/feature-capabilities";
     public const string WorkstationFeatureCapabilityByKey = "/api/workstation/settings/feature-capabilities/{capabilityKey}";
+    public const string WorkstationFinancialRecordExplorer = "/api/workstation/financial-record-explorers/{explorerId}";
+    public const string WorkstationFinancialRecordExplorerRecord = "/api/workstation/financial-record-explorers/{explorerId}/records/{recordId}";
+    public const string WorkstationFinancialRecordExplorerSavedViews = "/api/workstation/financial-record-explorers/{explorerId}/saved-views";
     public const string WorkstationTradingReadiness = "/api/workstation/trading/readiness";
     public const string WorkstationOperatorInbox = "/api/workstation/operator/inbox";
     public const string WorkstationEvidenceSubjects = "/api/workstation/evidence/subjects";

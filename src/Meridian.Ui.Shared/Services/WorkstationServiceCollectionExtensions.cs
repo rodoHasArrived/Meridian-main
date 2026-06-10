@@ -136,6 +136,11 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<StrategyRunReadService>();
         services.TryAddSingleton<StrategyRunComparisonService>();
         services.TryAddSingleton<AuditTrailExplorerService>();
+        services.TryAddSingleton<IFinancialRecordExplorerSavedViewStore>(sp =>
+            new FileFinancialRecordExplorerSavedViewStore(
+                ResolveWorkstationDataDirectory(sp),
+                sp.GetRequiredService<ILogger<FileFinancialRecordExplorerSavedViewStore>>()));
+        services.TryAddSingleton<FinancialRecordExplorerReadService>();
         services.TryAddSingleton<CashFlowProjectionService>();
         services.TryAddSingleton<StrategyRunContinuityService>();
         services.TryAddSingleton<IBacktestPreflightService, BacktestPreflightService>();

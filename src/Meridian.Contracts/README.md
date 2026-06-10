@@ -86,8 +86,8 @@ export evidence, and restatement lineage. Keep these categories shared so browse
 accounting-record review surfaces do not derive audit readiness or evidence grouping independently.
 Report-pack delivery packages also expose a contract-owned delivery evidence packet that binds the
 stakeholder recipient, entitlement scope, approval chain, publication manifest, report-line
-provenance, delivery artifacts, request history, and restatement lineage into one reconstructable
-proof object.
+provenance, selected branding theme, delivery artifacts, request history, and restatement lineage
+into one reconstructable proof object.
 The shared audit-pack readiness model exposes completeness, missing category keys, warnings,
 evidence-category summaries, measured generation seconds, a 60-second SLA target, and SLA pass/fail
 posture. Older report-pack manifests may omit readiness; clients must treat that as unknown or
@@ -155,7 +155,8 @@ Delivered report-pack attempts can also carry `ReportPackDeliveryPackageDto`, in
 delivery mode, secure link or portal route, retained manifest path, requested PDF/XLSX/CSV
 formats, retained artifact metadata, artifact SHA-256 checksums, artifact version stamps, the
 publication evidence hash used for package integrity summaries, optional publication manifest
-metadata, publication evidence links, and retained line provenance. Keep those package fields shared
+metadata, publication evidence links, retained line provenance, and publication-approved branding
+metadata. Keep those package fields shared
 so email-link, secure portal, evidence-vault, and internal-route distribution clients do not infer
 report package output or integrity from delivery-reference strings. The shared route catalog
 includes both the token-gated package manifest URL under
@@ -219,8 +220,10 @@ format sets, email-link or secure-portal mode, readiness text, due/as-of posture
 delivery attempt metadata, latest package artifact counts, checksum integrity summaries, and
 version stamps.
 `FundReportPackGenerateRequestDto` accepts either a `BrandingThemeId` or validated
-`BrandingThemeOverride`, so browser, WPF, distribution, and retained-artifact readers consume the
-same branding contract instead of inventing presentation metadata locally.
+`BrandingThemeOverride`, and `ReportPackPublishRequestDto` can retain that selected
+`ReportBrandingThemeDto` on the publication manifest for downstream packages. Browser, WPF,
+distribution, and retained-artifact readers therefore consume the same branding contract instead of
+inventing presentation metadata locally.
 Report template contracts now also carry the governed authoring lifecycle for built-in and custom
 template versions: draft requests, review submission, approval/rejection decisions, immutable
 built-in markers, latest-approved posture, validation issues, approval references, and audit events.
