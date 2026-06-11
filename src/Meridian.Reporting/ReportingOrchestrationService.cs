@@ -81,6 +81,9 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                     .Select(section => renderer.RenderSection(runId, contract, template, section, attempt))
                     .ToImmutableArray();
                 var gridArtifacts = BuildReportWriterGridArtifacts(runId, template);
+                var renderedReportWriterGrids = ReportWriterGridEngine
+                    .RenderGrids(template.ReportWriterGrids, contract.DatasetRows)
+                    .ToImmutableArray();
 
                 var manifest = new ReportingOutputManifest(
                     runId,
@@ -97,14 +100,16 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                     .ToImmutableArray(),
                     attempt,
                     contract.Trigger,
-                    contract.ScheduleId);
+                    contract.ScheduleId,
+                    ReportWriterGrids: BuildReportWriterGridArtifactMetadata(runId, template).ToImmutableArray(),
+                    RenderedReportWriterGrids: renderedReportWriterGrids);
 
                 manifests[runId] = manifest;
                 AppendAudit(
                     runId,
                     "RunGenerated",
                     contract.RequestedBy,
-                    $"trigger={contract.Trigger}; attempt={attempt}; lineageSections={sections.Length}; reportWriterGrids={gridArtifacts.Length}");
+                    $"trigger={contract.Trigger}; attempt={attempt}; lineageSections={sections.Length}; reportWriterGrids={gridArtifacts.Length}; renderedReportWriterRows={renderedReportWriterGrids.Sum(static grid => grid.Rows.Count)}");
                 await PersistAsync(manifest, cancellationToken).ConfigureAwait(false);
                 return manifest;
             }
@@ -244,6 +249,27 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
             .OrderBy(static gridId => gridId, StringComparer.OrdinalIgnoreCase)
             .Select(gridId => $"report-writer://{runId}/grids/{gridId}")
             .ToArray();
+
+    private static IEnumerable<ReportingRunReportWriterGridArtifact> BuildReportWriterGridArtifactMetadata(
+        string runId,
+        ReportingTemplateMetadata template) =>
+        (template.ReportWriterGrids ?? [])
+            .Where(static grid => !string.IsNullOrWhiteSpace(grid.GridId))
+            .GroupBy(static grid => grid.GridId.Trim(), StringComparer.OrdinalIgnoreCase)
+            .Select(static group => group.First())
+            .OrderBy(static grid => grid.GridId, StringComparer.OrdinalIgnoreCase)
+            .Select(grid =>
+            {
+                var gridId = grid.GridId.Trim();
+                return new ReportingRunReportWriterGridArtifact(
+                    gridId,
+                    string.IsNullOrWhiteSpace(grid.Title) ? gridId : grid.Title.Trim(),
+                    grid.Kind.ToString(),
+                    $"report-writer://{runId}/grids/{gridId}",
+                    (grid.RowFields?.Count ?? 0) + (grid.ColumnFields?.Count ?? 0),
+                    grid.Metrics?.Count ?? 0,
+                    grid.Formulas?.Count ?? 0);
+            });
 
     private static string BuildRunId(ReportingJobContract contract)
         => $"{contract.JobId}-{contract.AsOfDate:yyyyMMdd}";

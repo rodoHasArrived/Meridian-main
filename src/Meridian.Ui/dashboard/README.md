@@ -69,6 +69,10 @@ approval/rollback lineage actions through the shared Security Master endpoints, 
 profile-backed `CustomAsset` records pinned to the approved profile version. React should keep this
 as a thin orchestration surface over shared DTOs and API validation; do not add browser-local
 scripted validation rules.
+Settings also renders the scoped-access assignment console over the shared Auth API. The browser
+lists active or revoked assignments, grants principal authority with role, optional profile, scope,
+permission names, effective dates, rationale, and correlation metadata, and revokes assignments with
+the current assignment version so optimistic-concurrency and audit evidence remain server-owned.
 
 No-host browser previews must keep fixture data visibly labeled as demo data. The shell banner
 routes operators through the typed demo evidence path: watchlist, live quote evidence, trading
@@ -121,13 +125,51 @@ approval counts, expiration dates, and close-readiness blockers, so the browser 
 approval gate state enforced by the API and WPF clients. The browser checklist summary is also
 derived from those shared task fields: ready, blocked, acknowledged, approval, evidence-pointer,
 and next-due counts are display projections only and must not become client-local close state.
+Operations Continuity break assignment and escalation rows likewise render owner, due date,
+SLA state/due time, materiality, root cause, approval posture, blocked downstream outputs,
+escalation, variance, suggested action, and retained evidence from the shared workflow payload, with
+assignment/escalation mutations routed through the shared operations-continuity API instead of
+browser-local break state.
+The Operations Continuity screen also renders the shared Financial Operations operational
+dashboard. Receive Activity, Match Records, Resolve Exceptions, Approve Results, Produce Evidence,
+and Close Support metric state, retained evidence, route hints, and required actions come from the
+workflow detail payload, so the browser dashboard is a display projection rather than a local
+workflow engine.
+It also renders the shared evidence-package table from the workflow detail payload: accounting
+record evidence, report-pack evidence, close-package manifest, and audit-support package rows show
+server-owned readiness, category completeness, retained evidence counts, local routes, and required
+actions instead of stitching package state together in React.
 The Accounting approvals workstream at `/accounting/approvals` reads the same operations-continuity
 workflow list/detail payload and posts approve/reject decisions through the shared approval
 endpoints, keeping signer, report-pack, blocker, and audit-trail evidence server-owned.
+The bootstrap hook also fetches the shared workflow-summary endpoint and passes the active
+`fundAccountId` from route or stored shell scope when that account scope is present, allowing the
+Accounting Closeout strip to project source-backed Operations Continuity exceptions, approval
+history, close readiness, and evidence package posture instead of overloading profile identifiers.
+The app shell consumes the shared Financial Operations `Reviewed automation` evidence badge as an
+operator-focus item only when the badge requires review. React may route the operator back to the
+source-backed workflow step, but it must not approve, post, publish, release payments, erase
+evidence, or invent autonomous automation state outside the shared summary.
 The close-package panel is likewise a read-only projection of the shared operations-continuity
 publication metadata: signer, sign-off rationale, retained manifest route, evidence hash, report
 pack id, retained evidence links, and checklist control approvals come from the server workflow
 payload rather than browser-local publication state.
+The browser API client also exposes `getPrivateCapitalCloseCockpit` for the shared v0.18
+private-capital close cockpit endpoint, keeping fund/book/period/entity close lanes server-owned
+instead of rebuilding close readiness, delivery, report, or period-lock posture in React.
+The Operations Continuity screen renders that private-capital cockpit as a compact read-only lane
+and scoped-workflow panel, including shared readiness, blockers, fund-event counts, report-output
+delivery, capability labels, server-routed next action state, and a Financial Operations proof-lane
+summary for partner capital tie-outs, expense/fee allocation review, NAV support, evidence packages,
+and period-lock evidence. It also renders shared approval history from workflow approval decisions
+and checklist-control approvals plus NAV support package rows for positions, cash, pricing, shadow
+NAV, and retained evidence links so approval and NAV-support evidence are visible without
+browser-local timeline or report-output reconstruction.
+The period lock and reopen evidence panel stays read-only as well: locked/open/reopened posture,
+close audit hash, close package hash, reopen incident correlation, rationale, and retained reopen
+evidence are derived from the shared workflow status and timeline. Browser close/reopen command
+helpers call the shared operations-continuity endpoints and must not duplicate close-lock or
+governed-admin reopen rules in component state.
 The Operations Continuity detail view also renders the shared accounting-record summary from the
 workflow payload. Retained source records, normalized activity, reconciliation case history, ledger
 evidence, approvals, and report-pack lineage are displayed as server-owned evidence categories, not
@@ -136,6 +178,10 @@ labels, including document attachments, export manifests, and restatement lineag
 evidence. Browser evidence clients also carry the shared vault lookup and export linkage contract,
 including `accountingRecordId`, so retained accounting-record manifests can be rediscovered through
 the same API shape used by WPF and host endpoints.
+The same detail view renders contract-owned reconciliation lane coverage for cash, position, trade,
+income, MBS factor, bank, and GL support. Lane readiness, break counts, retained evidence links,
+route hints, and required actions come from the Operations Continuity payload rather than
+browser-local reconciliation heuristics.
 No-host browser previews include the same accounting-record evidence subject, packet, validation,
 manifest export, and vault-search fixture path so operators can inspect the evidence workbench demo
 without a live Meridian API host.
@@ -150,9 +196,10 @@ Evidence Workbench also renders the shared v0.18 Operational Evidence Graph proo
 for Source, Normalization, Reconciliation, Ledger, Capital accounts, Close, Reporting, Delivery,
 and Audit layers before the existing lineage and node inspectors. Keep this panel driven by the
 packet `proofChain` contract rather than browser-local node classification. Manifest export results
-also render the shared vault support request list beside retained artifacts, including missing or
-blocked evidence, severity, source system, work item, and blocked output metadata from the server
-contract instead of rebuilding audit, tax, close, or report-package request lists in React.
+also render the shared vault request-list groups and support request rows beside retained artifacts,
+including target kind, target id, highest severity, evidence kinds, missing or blocked evidence,
+source system, work item, and blocked output metadata from the server contract instead of rebuilding
+audit, tax, close, or report-package request lists in React.
 Operator readiness console API source identifiers use the canonical workspace roots
 `strategy`, `data`, `accounting`, and `reporting`; legacy payload type names and retained
 compatibility routes must not reintroduce visible `Research`, `Data Operations`, or `Governance`
@@ -183,7 +230,10 @@ P&L, shadow-NAV, variance, source counts, readiness, and drill-through routes ar
 It also renders shared `livePortfolioViews` rows for tick-linked portfolio reporting. React shows
 the backend-owned live/source-backed/stale/blocked state, gross/net exposure, cash, pending
 settlement, P&L, shadow NAV, liquidity and telemetry copy, source/cut freshness stamps, and links to
-the portfolio-summary and cash-ladder routes rather than deriving live freshness locally. The
+the portfolio-summary and cash-ladder routes rather than deriving live freshness locally. The rows
+also render contract-owned market tick timestamp, tick age, safe tick sequence, provider label,
+tick freshness summary, and live-link flag so operators can distinguish true live-linked portfolio
+telemetry from retained source-backed snapshots. The
 Reporting route participates in the same portfolio refresh lane as Portfolio so the server-owned
 `livePortfolioViews` payload is refreshed with the source portfolio evidence while preserving
 backend freshness classification.
@@ -247,7 +297,10 @@ publication-approved branding theme, plus token-gated package artifact download 
 `ReportPackDeliveryPackageDto`; app-relative secure links render as anchors so operators can open
 the token-gated email-link or secure-portal package manifest, while artifact `DownloadRoute` values
 render as direct retained PDF/XLSX/CSV links with retained path, byte size, evidence id, SHA-256
-checksum, and version stamp integrity details. When a schedule targets a custom report-writer
+checksum, and version stamp integrity details. When the package or schedule plan carries
+`accessLinks`, the browser renders labelled access chips for secure portal/email package access,
+operator routes, retained manifests, and token-gated artifact downloads instead of exposing only
+raw secure-link strings. When a schedule targets a custom report-writer
 template that has not produced a published report-pack workflow record, those package rows still
 render because the backend now falls back to the generated reporting run and includes its retained
 manifest/report-writer artifact provenance on the delivery package; the browser renders the
@@ -255,12 +308,19 @@ reporting run, template, schedule, source-artifact provenance, and generated-run
 package contents, support evidence IDs, delivery evidence links, access entitlement, recipients,
 approval chain, request history, amendments/restatements, audit references, and blocked downstream
 outputs beside the package links.
+When the package carries generated report-writer grid metadata, the delivery panel also shows the
+grid title, kind, and dimension/metric/formula counts from the shared package manifest instead of
+parsing source-artifact strings. If the package also carries rendered report-writer grids, the same
+panel shows rendered row/column counts, retained data-dictionary fields, generated-field counts, and
+backend validation checks so operators can distinguish descriptor-only packages from source-backed
+pivot, Top-N, contribution, and formula output delivered by the backend.
 Operators can also save or update schedule records
 from Reporting by choosing a template, cron, as-of date, due timestamp, recipient distribution,
 delivery mode, and PDF/XLSX/CSV formats, then staging multiple delivery targets before save so a
 single governed schedule can distribute secure-portal, email-link, evidence-vault, or internal-route
 packs to separate recipients. The browser posts the shared `ReportingScheduleUpsertRequestDto`
-instead of maintaining local schedule rules. Schedule cards also show configured delivery targets
+instead of maintaining local schedule rules, including optional governed dataset rows when the
+backend has supplied them for report-writer grids. Schedule cards also show configured delivery targets
 and the run-now status reports returned delivery counts or warnings from
 `ReportingScheduleRunResultDto`, keeping generated report runs distinct from packaged
 client/internal distributions. The backend applies the same governed template access policy to
@@ -277,7 +337,9 @@ this command so browser Reporting cannot bypass shared template approval and acc
 When the backend generates an approved custom no-code template, retained
 `report-writer://.../grids/{gridId}` artifacts flow back through recent-run rows so browser
 Reporting can show that pivot, Top-N, contribution, and custom-formula grids were part of the
-actual run evidence, not just a preview-only authoring state.
+actual run evidence, not just a preview-only authoring state. Recent-run cards and delivery
+package metadata expose JSON, CSV, and XLSX links for each retained grid through the shared
+`reportingRunReportWriterGridEndpoint` helper, keeping grid download URLs contract-derived.
 The Reporting workspace also exposes `/reporting/operations-record` as the polished W1-W5 release
 path. It stays under the canonical Reporting root and projects the loaded Data provider posture,
 Operations Continuity accounting-record evidence, close-package state, and report-pack publication
@@ -303,7 +365,9 @@ governance endpoints. When the shared payload marks a template with report-write
 summarizes those grid counts from `reportWriterGrids` and renders a no-code grid designer with
 source fields, row/column zones, metrics, formulas, grid-type and Top-N controls, sort posture, and operator-authored
 custom formula name/label/expression fields plus saved filter controls for field/operator/value
-slicing. The designer also renders a live layout summary from the current draft zones so operators
+slicing. Source fields come from the shared report-writer field catalog when present, so the browser
+palette can include source-backed portfolio, analytics, consolidation, and generated contribution
+fields even when a saved grid has not already placed those fields. The designer also renders a live layout summary from the current draft zones so operators
 can confirm dimension, metric, formula, filter, and Top-N posture before preview or save. Operators can save the current grid layout as a
 governed template draft through
 `/api/fund-structure/reporting/templates/drafts`, including company-wide, restricted group/company,
@@ -315,7 +379,10 @@ plus an explicit preview dataset profile and bounded sample rows to
 `/api/fund-structure/reporting/templates/render`, then renders the returned grid rows, columns,
 column roles, labelled warnings, and audit trace before publication. Operators can switch previews across representative
 portfolio-position, ledger-fact, cash-ladder, and pasted custom JSON/CSV row shapes while the shared renderer still owns
-pivot, Top-N, contribution, filter, and formula output. That trace displays input/output and
+pivot, Top-N, contribution, filter, and formula output. When an operator changes a draft to a
+Contribution grid, the browser preview request prefers the P&L metric as the contribution base,
+sorts by `contributionAbsPercent`, and omits generated contribution fields from sample rows so the
+shared renderer remains the source of truth for signed and absolute contribution percentages. That trace displays input/output and
 filtered-input row counts, source fields, metric source mappings, formula expressions/dependencies,
 and filter lineage from the shared renderer. Grid calculation, formula evaluation, filter application,
 approval, and retained template truth remain server/shared-service owned.
@@ -324,7 +391,10 @@ user-locked mode, resolved scope, runnable versus blocked posture, and the backe
 inaccessible template rows stay disabled instead of allowing browser-local report runs. Template
 cards also render shared audit and version-control metadata: based-on template version,
 latest-approved posture, retained audit-event count and last transition, validation issue count,
-reviewer, decision rationale, and approval reference all come from the Reporting payload.
+reviewer, decision rationale, and approval reference all come from the Reporting payload. Recent
+generic Reporting run cards use the shared audit drilldown route
+`/api/fund-structure/reporting/runs/{runId}/audit` for browser-navigable audit links, so operators
+can inspect retained actor/timestamp/action/notes rows directly from the run card.
 Portfolio run drill-ins consume the shared attribution, equity-curve, cash-flow, and fill payloads
 and project browser view state for run comparison, realized/unrealized P&L bridge rows, and recent
 trade evidence. Keep those projections in the Portfolio view model so the React screen renders
@@ -411,22 +481,28 @@ and projection warnings rather than deriving capital-account, GL-impact, or stak
 state in React. The browser
 API catalog also exposes `/api/ledger/private-capital/activity`,
 `/api/ledger/private-capital/fund-event-record`,
+`/api/ledger/private-capital/fund-event-command-center`,
 `/api/ledger/private-capital/capital-account-subledger`,
 `/api/ledger/private-capital/report-output`, `getPrivateCapitalActivity`,
-`getPrivateCapitalFundEventRecord`, `getPrivateCapitalCapitalAccountSubledger`,
-`getPrivateCapitalReportOutput`, and the Settings
+`getPrivateCapitalFundEventRecord`, `getPrivateCapitalFundEventCommandCenter`,
+`getPrivateCapitalCapitalAccountSubledger`, `getPrivateCapitalReportOutput`, and the Settings
 backend-capability diagnostics so operators can verify the first-class private-capital review
-endpoints outside the manual journal editor. The activity API helper accepts fund, ledger-book,
+endpoints outside the manual journal editor. Accounting fund-event ledger rows and Reporting
+private-capital readiness rows expose the shared fund-event command-center route so operators can
+reconstruct evidence, workflow, ledger, capital-account, treasury, reconciliation, report,
+delivery, tax, and audit support from either workspace. The activity API helper accepts fund, ledger-book,
 fund-event, capital-account, investor, and payment-intent filters for report-pack and cash-evidence
 drill-throughs, while the direct record helpers resolve one fund event, one capital account, or one
 report output to the same server-owned DTOs the aggregate projection carries. Payment-intent rows
 render the shared `/api/ledger/private-capital/activity?paymentIntentId=...` route supplied by the
 backend so operators open the filtered proof-chain projection instead of an ignored manual-journal
-query. `/accounting/capital-accounts` consumes
+query. They also render the shared approval chain, retained bank/cash evidence, reconciliation
+links, and audit events as a read-only cash-evidence drilldown while preserving the v0.18
+execution-deferred posture. `/accounting/capital-accounts` consumes
 `getCapitalAccountWorkbench` from the shared capital-account workbench endpoint so React renders
-investor-level capital-account evidence, allocation-rule coverage, statement/restatement lineage,
-audit drill-through rows, and live-versus-planned capability labels without browser-local
-accounting rules. Browser report-output rows prefer the
+investor-level capital-account evidence, governed allocation policy traces, approval and replay
+inputs, statement/restatement changed-line lineage, audit drill-through rows, and
+live-versus-planned capability labels without browser-local accounting rules. Browser report-output rows prefer the
 server-built direct report-output route before falling back to the aggregate report route. The React
 view model preserves
 posted-event and published-output labels from the shared DTOs and renders server-owned fund-event
@@ -517,6 +593,8 @@ endpoint contracts for behavior also consumed by WPF or host workflows.
 - `docs/source/generated/source-module-index.md`
 
 Browser reconciliation route helpers include the shared Accounting casework family for assignment, lifecycle transitions, comments, taxonomy, sign-off, reopen, audit, bulk triage, and bulk status/result lookup; keep these helpers aligned with `UiApiRoutes` and WPF consumers.
+
+Browser extensibility route helpers expose the shared core extensibility catalog plus tenant-template activation-readiness, activation, and activation-history endpoints; keep `src/types.ts` aligned with `Meridian.Contracts.Extensibility` instead of adding UI-local workflow or rule shapes.
 
 ## Accounting close browser surface
 

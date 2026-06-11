@@ -305,6 +305,111 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public void TemplateRegistry_ReportWriterContributionValidation_ReservesGeneratedContributionFields()
+    {
+        var svc = new ReportTemplateRegistryService();
+        var draft = svc.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "invalid-contribution-grid",
+                "Invalid Contribution Grid",
+                [],
+                [],
+                Family: "CustomReport",
+                Rationale: "Validate generated contribution fields",
+                Grids:
+                [
+                    new ReportWriterGridDefinitionDto(
+                        "strategy-contribution",
+                        "Strategy Contribution",
+                        ReportWriterGridKindDto.Contribution,
+                        RowFields: ["strategy"],
+                        Metrics:
+                        [
+                            new ReportWriterMetricDefinitionDto("pnl", "pnl"),
+                            new ReportWriterMetricDefinitionDto("contributionPercent", "pnl")
+                        ],
+                        Formulas:
+                        [
+                            new ReportWriterFormulaDefinitionDto("contributionAbsPercent", "{pnl}")
+                        ])
+                ]),
+            "report.author");
+
+        Action act = () => svc.Submit(draft.Definition.TemplateId, "report.author", "ready");
+
+        draft.ValidationIssues.Should().Contain("Report writer grid 'strategy-contribution' metric 'contributionPercent' uses reserved contribution field 'contributionPercent'.");
+        draft.ValidationIssues.Should().Contain("Report writer grid 'strategy-contribution' formula 'contributionAbsPercent' uses reserved contribution field 'contributionAbsPercent'.");
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Template invalid-contribution-grid@v1 is not ready for review: Report writer grid 'strategy-contribution' metric 'contributionPercent' uses reserved contribution field 'contributionPercent'.*");
+    }
+
+    [Fact]
+    public void TemplateRegistry_RenderContributionGridWithOffsettingPnl_ReturnsSignedAndAbsoluteBreakdown()
+    {
+        var svc = new ReportTemplateRegistryService();
+        var draft = svc.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "offsetting-contribution-grid",
+                "Offsetting Contribution Grid",
+                [],
+                [],
+                Family: "CustomReport",
+                Rationale: "Render signed and absolute percentage-of-P&L breakdowns",
+                Grids:
+                [
+                    new ReportWriterGridDefinitionDto(
+                        "strategy-contribution",
+                        "Strategy Contribution",
+                        ReportWriterGridKindDto.Contribution,
+                        RowFields: ["strategy"],
+                        Metrics: [new ReportWriterMetricDefinitionDto("pnl", "pnl")],
+                        Formulas:
+                        [
+                            new ReportWriterFormulaDefinitionDto("signedCheck", "{contributionPercent}"),
+                            new ReportWriterFormulaDefinitionDto("absCheck", "{contributionAbsPercent}")
+                        ])
+                ]),
+            "report.author");
+
+        draft.ValidationIssues.Should().BeEmpty();
+        svc.Submit(draft.Definition.TemplateId, "report.author", "ready");
+        svc.Approve(
+            draft.Definition.TemplateId,
+            new ReportTemplateDecisionRequestDto("Controller approved offsetting contribution grid", "APP-CONTRIB-1"),
+            "controller.admin");
+
+        var rendered = svc.Render(new RenderReportTemplateRequestDto(
+            draft.Definition.TemplateId,
+            new Dictionary<string, string>(),
+            [
+                new Dictionary<string, string> { ["strategy"] = "Core", ["pnl"] = "150" },
+                new Dictionary<string, string> { ["strategy"] = "Credit", ["pnl"] = "-50" },
+                new Dictionary<string, string> { ["strategy"] = "Macro", ["pnl"] = "0" }
+            ]));
+
+        var grid = rendered.Grids.Should().ContainSingle().Subject;
+        grid.Columns.Select(static column => column.Key).Should().ContainInOrder(
+            "strategy",
+            "pnl",
+            "contributionPercent",
+            "contributionAbsPercent",
+            "signedCheck",
+            "absCheck");
+        grid.Rows.Select(static row => row.Values["strategy"]).Should().Equal("Core", "Credit", "Macro");
+        grid.Rows[0].Values["contributionPercent"].Should().Be("75");
+        grid.Rows[0].Values["contributionAbsPercent"].Should().Be("75");
+        grid.Rows[0].Values["signedCheck"].Should().Be("75");
+        grid.Rows[0].Values["absCheck"].Should().Be("75");
+        grid.Rows[1].Values["contributionPercent"].Should().Be("-25");
+        grid.Rows[1].Values["contributionAbsPercent"].Should().Be("25");
+        grid.Rows[1].Values["signedCheck"].Should().Be("-25");
+        grid.Rows[1].Values["absCheck"].Should().Be("25");
+        grid.Lineage.Should().NotBeNull();
+        grid.Lineage!.FilteredInputRowCount.Should().Be(3);
+        grid.Warnings.Should().BeEmpty();
+    }
+
+    [Fact]
     public void TemplateRegistry_RenderApprovedReportWriterGridTemplate_ReturnsStructuredGridResults()
     {
         var svc = new ReportTemplateRegistryService();
@@ -622,12 +727,12 @@ public sealed class ReportPackWorkflowServiceTests
                         "Strategy Contribution",
                         ReportWriterGridKindDto.Contribution,
                         RowFields: ["strategy"],
-                        Metrics:
+                        Metrics: [new ReportWriterMetricDefinitionDto("pnl", "pnl")],
+                        Formulas:
                         [
-                            new ReportWriterMetricDefinitionDto("pnl", "pnl"),
-                            new ReportWriterMetricDefinitionDto("contributionPercent", "contributionPercent")
-                        ],
-                        Formulas: [new ReportWriterFormulaDefinitionDto("weightCheck", "{contributionPercent}")])
+                            new ReportWriterFormulaDefinitionDto("weightCheck", "{contributionPercent}"),
+                            new ReportWriterFormulaDefinitionDto("absWeightCheck", "{contributionAbsPercent}")
+                        ])
                 ]),
             "report.author");
         registry.Submit(draft.Definition.TemplateId, "report.author", "ready");
@@ -1090,6 +1195,10 @@ public sealed class ReportPackWorkflowServiceTests
             link.Kind == "schedule" &&
             link.Href == "schedule:sched-shadow" &&
             !link.IsBrowserNavigable);
+        genericRun.DrilldownLinks.Should().Contain(link =>
+            link.Kind == "audit" &&
+            link.Href == $"/api/fund-structure/reporting/runs/{manifest.RunId}/audit" &&
+            link.IsBrowserNavigable);
         genericRun.NextActions.Should().Contain(action =>
             action.Kind == "approval-submit" &&
             action.Method == "POST" &&
@@ -1209,6 +1318,18 @@ public sealed class ReportPackWorkflowServiceTests
             artifact.Format == GovernanceReportArtifactFormatDto.Csv &&
             artifact.ContentType == "text/csv");
         attempt.Package.SecureLink.Should().Contain("/package?token=");
+        attempt.Package.AccessLinks.Should().NotBeNull();
+        attempt.Package.AccessLinks!.Should().Contain(link =>
+            link.Kind == "email-link" &&
+            link.Label == "Email link package" &&
+            link.Href == attempt.Package.SecureLink &&
+            link.RequiresToken &&
+            link.ExpiresAtUtc == attempt.Package.AccessExpiresAtUtc);
+        attempt.Package.AccessLinks.Should().Contain(link =>
+            link.Kind == "manifest" &&
+            link.Href == attempt.Package.RetainedManifestPath &&
+            !link.RequiresToken);
+        attempt.Package.AccessLinks.Count(link => link.Kind.StartsWith("artifact-", StringComparison.Ordinal)).Should().Be(3);
         attempt.Package.DeliveryAccessSummary.Should().Contain("Email-link package is available through the token-gated route");
         attempt.Package.DeliveryAccessSummary.Should().Contain(attempt.Package.SecureLink);
         attempt.Package.DeliveryChannelSummary.Should().Be("EmailLink delivery to Board reporting committee via Board portal.");
@@ -1419,6 +1540,16 @@ public sealed class ReportPackWorkflowServiceTests
         portalPackage.BrandingTheme.Should().NotBeNull();
         portalPackage.BrandingTheme!.ThemeId.Should().Be("allocator-quarterly");
         portalPackage.BrandingTheme.FirmName.Should().Be("Northstar Capital");
+        portalPackage.AccessLinks.Should().NotBeNull();
+        portalPackage.AccessLinks!.Should().Contain(link =>
+            link.Kind == "secure-portal" &&
+            link.Href == attempt.Package.SecureLink &&
+            link.RequiresToken);
+        portalPackage.AccessLinks.Should().Contain(link =>
+            link.Kind == "operator-route" &&
+            link.Href == attempt.Package.PortalRoute &&
+            !link.RequiresToken);
+        portalPackage.AccessLinks.Count(link => link.Kind.StartsWith("artifact-", StringComparison.Ordinal)).Should().Be(3);
         portalPackage.DeliveryEvidencePacket.Should().NotBeNull();
         portalPackage.DeliveryEvidencePacket!.RecipientList.Should().ContainSingle(recipient =>
             recipient.DistributionId == "board-reporting-committee" &&
@@ -1474,8 +1605,22 @@ public sealed class ReportPackWorkflowServiceTests
         using (var workbook = new ZipArchive(new MemoryStream(xlsxBytes), ZipArchiveMode.Read))
         {
             workbook.GetEntry("[Content_Types].xml").Should().NotBeNull();
-            workbook.GetEntry("xl/workbook.xml").Should().NotBeNull();
+            var workbookXmlEntry = workbook.GetEntry("xl/workbook.xml");
+            workbookXmlEntry.Should().NotBeNull();
             workbook.GetEntry("xl/worksheets/sheet1.xml").Should().NotBeNull();
+            workbook.GetEntry("xl/worksheets/sheet2.xml").Should().NotBeNull();
+            using var workbookXmlReader = new StreamReader(workbookXmlEntry!.Open());
+            var workbookXml = workbookXmlReader.ReadToEnd();
+            workbookXml.Should().Contain("Branding");
+            var sharedStringsEntry = workbook.GetEntry("xl/sharedStrings.xml");
+            sharedStringsEntry.Should().NotBeNull();
+            using var sharedStringsReader = new StreamReader(sharedStringsEntry!.Open());
+            var sharedStringsXml = sharedStringsReader.ReadToEnd();
+            sharedStringsXml.Should().Contain("allocator-quarterly");
+            sharedStringsXml.Should().Contain("Allocator Quarterly");
+            sharedStringsXml.Should().Contain("Northstar Capital");
+            sharedStringsXml.Should().Contain("/branding/northstar.svg");
+            sharedStringsXml.Should().Contain("For approved recipients only.");
         }
         var badArtifactResponse = await client.GetAsync(csvArtifact.DownloadRoute!.Replace(token, "bad-token", StringComparison.Ordinal));
         badTokenResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -1508,12 +1653,34 @@ public sealed class ReportPackWorkflowServiceTests
         var workbook = await xlsxResponse.Content.ReadAsByteArrayAsync();
         workbook.Should().StartWith([0x50, 0x4B]);
         workbook.Length.Should().BeGreaterThan(1000);
+        using (var structuredWorkbook = new ZipArchive(new MemoryStream(workbook), ZipArchiveMode.Read))
+        {
+            structuredWorkbook.GetEntry("xl/worksheets/sheet1.xml").Should().NotBeNull();
+            structuredWorkbook.GetEntry("xl/worksheets/sheet2.xml").Should().NotBeNull();
+            structuredWorkbook.GetEntry("xl/worksheets/sheet3.xml").Should().NotBeNull();
+            structuredWorkbook.GetEntry("xl/worksheets/sheet4.xml").Should().NotBeNull();
+            using var workbookXmlReader = new StreamReader(structuredWorkbook.GetEntry("xl/workbook.xml")!.Open());
+            var workbookXml = workbookXmlReader.ReadToEnd();
+            workbookXml.Should().Contain("portfolio-reporting-cuts");
+            workbookXml.Should().Contain("Metadata");
+            workbookXml.Should().Contain("DataDictionary");
+            workbookXml.Should().Contain("Validation");
+        }
         warehouseJsonResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         warehouseJsonResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
         var warehousePayload = await warehouseJsonResponse.Content.ReadFromJsonAsync<StructuredReportingExportPayloadDto>(ServerJsonOptions);
         warehousePayload.Should().NotBeNull();
         warehousePayload!.Export.ExportId.Should().Be("warehouse-ledger-facts");
         warehousePayload.Export.Purpose.Should().Be(StructuredReportingExportPurposeDto.DataWarehouse);
+        warehousePayload.DataDictionary.Should().NotBeNull();
+        warehousePayload.DataDictionary!.Should().Contain(field =>
+            field.Name == "ledgerEntryCount" &&
+            field.DataType == "integer" &&
+            field.Ordinal == 8);
+        warehousePayload.ValidationChecks.Should().NotBeNull();
+        warehousePayload.ValidationChecks!.Should().Contain(check =>
+            check.CheckId == "source-count" &&
+            check.Status == "Warning");
         warehousePayload.Columns.Select(static column => column.Name).Should().ContainInOrder(
             "scope",
             "accountName",
@@ -1694,6 +1861,11 @@ public sealed class ReportPackWorkflowServiceTests
         boardPlan.LastDeliveryState.Should().Be(ReportPackDeliveryStateDto.Delivered);
         boardPlan.LastDeliveryAttemptId.Should().NotBeNull();
         boardPlan.LastDeliverySecureLink.Should().NotBeNullOrWhiteSpace();
+        boardPlan.LastDeliveryAccessLinks.Should().NotBeNull();
+        boardPlan.LastDeliveryAccessLinks!.Should().Contain(link =>
+            link.Kind == "secure-portal" &&
+            link.Href == boardPlan.LastDeliverySecureLink &&
+            link.RequiresToken);
         boardPlan.LastDeliveryArtifactCount.Should().Be(3);
         boardPlan.LastDeliveryIntegritySummary.Should().Be("3 artifact(s) retained with SHA-256 checksums against publication evidence hash sha256:scheduled-pack.");
         boardPlan.VersionStamp.Should().StartWith("schedule-delivery-plan:sched-board-distribution:board-reporting-committee:");
@@ -1842,9 +2014,16 @@ public sealed class ReportPackWorkflowServiceTests
         cut.Tags.Should().Contain("template:shadow-nav-pack");
 
         payload.LivePortfolioViews.Should().NotBeNull().And.ContainSingle();
-        payload.LivePortfolioViews!.Single().State.Should().Be(PortfolioReportingLiveViewStateDto.SourceBacked);
-        payload.LivePortfolioViews.Single().TotalCash.Should().Be(375_000m);
-        payload.LivePortfolioViews.Single().ShadowNav.Should().Be(2_935_000m);
+        var liveView = payload.LivePortfolioViews!.Single();
+        liveView.State.Should().Be(PortfolioReportingLiveViewStateDto.SourceBacked);
+        liveView.TotalCash.Should().Be(375_000m);
+        liveView.ShadowNav.Should().Be(2_935_000m);
+        liveView.IsMarketTickLinked.Should().BeFalse();
+        liveView.MarketDataProvider.Should().Be("retained-portfolio-snapshot");
+        liveView.MarketTickAsOfUtc.Should().NotBeNull();
+        liveView.MarketTickSequence.Should().Be(liveView.MarketTickAsOfUtc!.Value.ToUnixTimeMilliseconds());
+        liveView.MarketTickAgeSeconds.Should().BeGreaterThanOrEqualTo(0);
+        liveView.TickFreshnessSummary.Should().Contain("Source-backed tick snapshot");
 
         payload.CrossFundConsolidations.Should().NotBeNull().And.ContainSingle();
         payload.CrossFundConsolidations!.Single().FundCount.Should().Be(1);
@@ -1857,6 +2036,36 @@ public sealed class ReportPackWorkflowServiceTests
             slice.UnrealizedPnl == 18_000m &&
             slice.TotalPnl == 60_000m);
 
+        payload.AnalyticsRows.Should().NotBeNull();
+        payload.AnalyticsRows!.Should().Contain(row =>
+            row.Kind == PortfolioReportingAnalyticsKindDto.TopWinner &&
+            row.Scope == PortfolioReportingAnalyticsScopeDto.Strategy &&
+            row.TotalPnl == 60_000m &&
+            row.ContributionPercent == 100m);
+        payload.AnalyticsRows.Should().Contain(row =>
+            row.Kind == PortfolioReportingAnalyticsKindDto.Contribution &&
+            row.HeatMapIntensity == 100m &&
+            row.Tags.Contains("analytics:Contribution"));
+
+        payload.BrandingThemes.Should().NotBeNull();
+        payload.BrandingThemes!.Select(static theme => theme.ThemeId).Should().Contain("meridian-standard");
+        payload.StructuredExports.Should().NotBeNull();
+        payload.StructuredExports!.Should().Contain(export =>
+            export.ExportId == "investment-portfolio-cuts" &&
+            export.Purpose == StructuredReportingExportPurposeDto.InvestmentDecision &&
+            export.RowCount == 1 &&
+            export.SourceCount == 10 &&
+            export.IsReady &&
+            export.Route.Contains("/api/workstation/reporting/structured-exports/investment-portfolio-cuts", StringComparison.Ordinal));
+        payload.StructuredExports.Should().Contain(export =>
+            export.ExportId == "investment-topn-contribution-analytics" &&
+            export.RowCount == payload.AnalyticsRows.Count &&
+            export.Tags!.Contains("top-n"));
+        payload.StructuredExports.Should().Contain(export =>
+            export.ExportId == "regulatory-trial-balance" &&
+            export.Purpose == StructuredReportingExportPurposeDto.Regulatory &&
+            export.IsReady);
+
         static ReportPackLineProvenanceDto PortfolioReportingLine(
             string lineKey,
             string evidenceId,
@@ -1868,12 +2077,12 @@ public sealed class ReportPackWorkflowServiceTests
                 "run-1",
                 evidenceId,
                 RunId: "run-1",
-                LedgerEntryId: $"ledger-{evidenceId}",
-                ReconciliationCaseId: $"case-{evidenceId}",
+                LedgerEntryId: "ledger-entry-1",
+                ReconciliationCaseId: "case-1",
                 ReportValue: reportValue,
                 SourceSessionId: "provider-session-1",
                 ReconciliationRunId: "recon-run-1",
-                ProviderEventId: $"provider-{evidenceId}",
+                ProviderEventId: "provider-event-1",
                 SecurityMasterId: "security-1",
                 SecurityDefinitionId: "definition-1",
                 ReconciliationOutcome: "matched",
@@ -1964,6 +2173,30 @@ public sealed class ReportPackWorkflowServiceTests
                     [GovernanceReportArtifactFormatDto.Pdf, GovernanceReportArtifactFormatDto.Xlsx, GovernanceReportArtifactFormatDto.Csv],
                     ReportPackDeliveryModeDto.EmailLink,
                     "Investor email-link package from generated report run.")
+            ],
+            DatasetRows:
+            [
+                new Dictionary<string, string>
+                {
+                    ["sector"] = "Credit",
+                    ["security"] = "ABC Loan",
+                    ["marketValue"] = "150",
+                    ["totalPnl"] = "-5"
+                },
+                new Dictionary<string, string>
+                {
+                    ["sector"] = "Equity",
+                    ["security"] = "XYZ Equity",
+                    ["marketValue"] = "50",
+                    ["totalPnl"] = "12"
+                },
+                new Dictionary<string, string>
+                {
+                    ["sector"] = "Credit",
+                    ["security"] = "DEF Loan",
+                    ["marketValue"] = "50",
+                    ["totalPnl"] = "-9"
+                }
             ]));
 
         var due = await schedules.RunDueAsync(new DateTimeOffset(2026, 5, 2, 8, 1, 0, TimeSpan.Zero));
@@ -1973,6 +2206,36 @@ public sealed class ReportPackWorkflowServiceTests
         result.Run.RunId.Should().Be("sched-custom-writer-20260502");
         result.Run.Artifacts.Should().Contain("report-writer://sched-custom-writer-20260502/grids/sector-pivot");
         result.Run.Artifacts.Should().Contain("report-writer://sched-custom-writer-20260502/grids/top-laggards");
+        result.Run.GeneratedReportWriterGrids.Should().NotBeNull();
+        result.Run.GeneratedReportWriterGrids!.Should().Contain(grid =>
+            grid.GridId == "sector-pivot" &&
+            grid.Title == "Sector Pivot" &&
+            grid.Kind == ReportWriterGridKindDto.Pivot.ToString() &&
+            grid.Artifact == "report-writer://sched-custom-writer-20260502/grids/sector-pivot" &&
+            grid.DimensionCount == 1 &&
+            grid.MetricCount == 1 &&
+            grid.FormulaCount == 1);
+        var manifest = runStore.GetManifest(result.Run.RunId);
+        manifest.Should().NotBeNull();
+        var renderedSectorPivot = manifest!.RenderedReportWriterGrids.FirstOrDefault(static grid =>
+            grid.GridId == "sector-pivot");
+        renderedSectorPivot.Should().NotBeNull();
+        renderedSectorPivot!.Lineage.Should().NotBeNull();
+        renderedSectorPivot.Lineage!.InputRowCount.Should().Be(3);
+        renderedSectorPivot.Rows.Any(static row =>
+            row.Values.TryGetValue("sector", out var sector) &&
+            sector == "Credit" &&
+            row.Values.TryGetValue("marketValue", out var marketValue) &&
+            marketValue == "200").Should().BeTrue();
+
+        var renderedTopLaggards = manifest.RenderedReportWriterGrids.FirstOrDefault(static grid =>
+            grid.GridId == "top-laggards");
+        renderedTopLaggards.Should().NotBeNull();
+        renderedTopLaggards!.Rows.Any(static row =>
+            row.Values.TryGetValue("security", out var security) &&
+            security == "DEF Loan" &&
+            row.Values.TryGetValue("totalPnl", out var totalPnl) &&
+            totalPnl == "-9").Should().BeTrue();
         result.DeliveryWarnings.Should().NotBeNull().And.BeEmpty();
         result.DeliveryAttempts.Should().NotBeNull().And.ContainSingle();
         var attempt = result.DeliveryAttempts!.Single();
@@ -1981,6 +2244,29 @@ public sealed class ReportPackWorkflowServiceTests
         attempt.DeliveryReference.Should().Be("schedule:scheduled-report-writer-pack:sched-custom-writer-20260502:investor-relations");
         attempt.Package.Should().NotBeNull();
         attempt.Package!.DeliveryMode.Should().Be(ReportPackDeliveryModeDto.EmailLink);
+        attempt.Package.GeneratedReportWriterGrids.Should().NotBeNull();
+        attempt.Package.GeneratedReportWriterGrids!.Should().Contain(grid =>
+            grid.GridId == "sector-pivot" &&
+            grid.Artifact == "report-writer://sched-custom-writer-20260502/grids/sector-pivot" &&
+            grid.FormulaCount == 1);
+        attempt.Package.RenderedReportWriterGrids.Should().NotBeNull();
+        var packageSectorPivot = attempt.Package.RenderedReportWriterGrids!.Should().Contain(grid =>
+            grid.GridId == "sector-pivot" &&
+            grid.Rows.Count == 2 &&
+            grid.Warnings.Count == 0).Subject;
+        packageSectorPivot.DataDictionary.Should().NotBeNull();
+        packageSectorPivot.DataDictionary!.Should().Contain(field =>
+            field.Key == "marketValue" &&
+            field.SourceField == "marketValue" &&
+            field.DataType == "decimal" &&
+            !field.IsGenerated);
+        packageSectorPivot.DataDictionary.Should().Contain(field =>
+            field.Key == "weightPct" &&
+            field.IsGenerated);
+        packageSectorPivot.ValidationChecks.Should().NotBeNull();
+        packageSectorPivot.ValidationChecks!.Should().Contain(check =>
+            check.CheckId == "source-field-lineage" &&
+            check.Status == "Passed");
         attempt.Package.Formats.Should().Equal(
             GovernanceReportArtifactFormatDto.Pdf,
             GovernanceReportArtifactFormatDto.Xlsx,
@@ -2021,12 +2307,36 @@ public sealed class ReportPackWorkflowServiceTests
             workbook.GetEntry("[Content_Types].xml").Should().NotBeNull();
             workbook.GetEntry("xl/workbook.xml").Should().NotBeNull();
             workbook.GetEntry("xl/worksheets/sheet1.xml").Should().NotBeNull();
+            workbook.GetEntry("xl/worksheets/sheet2.xml").Should().NotBeNull();
+            workbook.GetEntry("xl/worksheets/sheet3.xml").Should().NotBeNull();
+            workbook.GetEntry("xl/worksheets/sheet4.xml").Should().NotBeNull();
+            workbook.GetEntry("xl/worksheets/sheet5.xml").Should().NotBeNull();
+            var workbookXmlEntry = workbook.GetEntry("xl/workbook.xml");
+            using var workbookXmlReader = new StreamReader(workbookXmlEntry!.Open());
+            var workbookXml = workbookXmlReader.ReadToEnd();
+            workbookXml.Should().Contain("ReportWriterGrids");
+            workbookXml.Should().Contain("ReportWriterGridRows");
+            workbookXml.Should().Contain("ReportWriterDictionary");
+            workbookXml.Should().Contain("ReportWriterValidation");
         }
         var csvArtifact = attempt.Package.Artifacts.Single(artifact => artifact.Format == GovernanceReportArtifactFormatDto.Csv);
         var csv = System.Text.Encoding.UTF8.GetString(delivery.GetArtifact(attempt.ReportId, attempt.AttemptId, csvArtifact.ArtifactName, token).Content);
         csv.Should().Contain("reportingRunId,sched-custom-writer-20260502");
         csv.Should().Contain("sourceArtifacts");
         csv.Should().Contain("report-writer://sched-custom-writer-20260502/grids/sector-pivot");
+        csv.Should().Contain("generatedReportWriterGridCount,2");
+        csv.Should().Contain("generatedReportWriterGrids[0].gridId,sector-pivot");
+        csv.Should().Contain("generatedReportWriterGrids[0].formulaCount,1");
+        csv.Should().Contain("renderedReportWriterGridCount,2");
+        csv.Should().Contain("renderedReportWriterGrids[0].lineage.inputRowCount,3");
+        csv.Should().Contain("renderedReportWriterGrids[0].rowCount,2");
+        csv.Should().Contain("renderedReportWriterGrids[0].rows[0].values.marketValue,200");
+        csv.Should().Contain("renderedReportWriterGrids[1].rows[0].values.security,DEF Loan");
+        csv.Should().Contain("renderedReportWriterGrids[0].dataDictionary.fieldCount,3");
+        csv.Should().Contain("renderedReportWriterGrids[0].dataDictionary[1].sourceField,marketValue");
+        csv.Should().Contain("renderedReportWriterGrids[0].dataDictionary[2].isGenerated,true");
+        csv.Should().Contain("renderedReportWriterGrids[0].validationChecks.checkCount,4");
+        csv.Should().Contain("renderedReportWriterGrids[0].validationChecks[2].checkId,source-field-lineage");
 
         var reloadedDelivery = new ReportPackDeliveryService(workflow, deliveryStore);
         var reloadedSchedules = new ReportingScheduleService(orchestration, scheduleStore, reloadedDelivery, catalog);
@@ -2037,14 +2347,42 @@ public sealed class ReportPackWorkflowServiceTests
             templateRegistry: registry,
             deliveryService: reloadedDelivery,
             scheduleService: reloadedSchedules).BuildPayload(new ReportAccessQueryContext("report-owner"));
+        payload.RecentRuns.Should().Contain(run =>
+            run.RunId == "sched-custom-writer-20260502" &&
+            run.GeneratedReportWriterGrids != null &&
+            run.GeneratedReportWriterGrids.Any(grid =>
+                grid.GridId == "top-laggards" &&
+                grid.Title == "Top Laggards" &&
+                grid.Kind == ReportWriterGridKindDto.TopN.ToString() &&
+                grid.Artifact == "report-writer://sched-custom-writer-20260502/grids/top-laggards" &&
+                grid.DimensionCount == 1 &&
+                grid.MetricCount == 1 &&
+                grid.FormulaCount == 0));
         var plan = payload.ScheduleDeliveryPlans.Should().ContainSingle().Subject;
         plan.LastDeliveryState.Should().Be(ReportPackDeliveryStateDto.Delivered);
         plan.LastDeliverySecureLink.Should().Be(attempt.Package.SecureLink);
+        plan.LastDeliveryAccessLinks.Should().NotBeNull();
+        plan.LastDeliveryAccessLinks!.Should().Contain(link =>
+            link.Kind == "email-link" &&
+            link.Href == attempt.Package.SecureLink &&
+            link.RequiresToken);
         plan.LastDeliveryArtifactCount.Should().Be(3);
         plan.LastDeliveryIntegritySummary.Should().Be("3 artifact(s) retained with SHA-256 checksums without a publication evidence hash.");
         var reloadedAttempt = reloadedDelivery.GetHistory(attempt.ReportId).Should().ContainSingle().Subject;
         reloadedAttempt.Package!.DeliveryEvidencePacket.Should().NotBeNull();
         reloadedAttempt.Package.DeliveryEvidencePacket!.PacketKind.Should().Be("ReportingRunDelivery");
+        reloadedAttempt.Package.RenderedReportWriterGrids.Should().NotBeNull();
+        reloadedAttempt.Package.RenderedReportWriterGrids!.Any(static grid =>
+            grid.GridId == "top-laggards" &&
+            grid.Rows.Any(row =>
+                row.Values.TryGetValue("security", out var security) &&
+                security == "DEF Loan")).Should().BeTrue();
+        reloadedAttempt.Package.RenderedReportWriterGrids!.Should().Contain(grid =>
+            grid.GridId == "sector-pivot" &&
+            grid.DataDictionary != null &&
+            grid.DataDictionary.Any(field => field.Key == "weightPct" && field.IsGenerated) &&
+            grid.ValidationChecks != null &&
+            grid.ValidationChecks.Any(check => check.CheckId == "column-dictionary" && check.Status == "Passed"));
         reloadedAttempt.Package.ReportingRunAsOfDate.Should().Be("2026-05-02");
         reloadedAttempt.Package.ReportingRunStatus.Should().Be(ReportingRunStatus.Draft.ToString());
         reloadedAttempt.Package.ReportingRunTrigger.Should().Be(ReportingRunTrigger.Scheduled.ToString());
@@ -2093,6 +2431,239 @@ public sealed class ReportPackWorkflowServiceTests
             action.IsEnabled);
         runStore.GetManifest(result.Run.RunId)!.Trigger.Should().Be(ReportingRunTrigger.AdHoc);
         runStore.GetAudit(result.Run.RunId).Select(static audit => audit.Action).Should().Contain("RunGenerated");
+    }
+
+    [Fact]
+    public async Task ReportingRunCommandService_ResolvesSourceBackedDatasetRowsForReportWriterRuns()
+    {
+        var workflow = new ReportPackWorkflowService();
+        var published = workflow.Create(
+            "fund-alpha",
+            "acct-main",
+            "2026-05",
+            new VersionedReportTemplateIdDto("shadow-nav-pack", 1),
+            "report.author",
+            [
+                SourcePortfolioReportingLine("portfolio.gross-exposure", "evidence-gross", "2500000", "/evidence/gross"),
+                SourcePortfolioReportingLine("portfolio.net-exposure", "evidence-net", "1800000"),
+                SourcePortfolioReportingLine("portfolio.cash", "evidence-cash", "375000"),
+                SourcePortfolioReportingLine("portfolio.realized-pnl", "evidence-realized", "42000"),
+                SourcePortfolioReportingLine("portfolio.unrealized-pnl", "evidence-unrealized", "18000"),
+                SourcePortfolioReportingLine("portfolio.shadow-nav", "evidence-shadow-nav", "2935000"),
+                SourcePortfolioReportingLine("portfolio.reported-nav", "evidence-reported-nav", "2920000")
+            ]);
+        workflow.Transition(published.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
+        workflow.Transition(published.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
+        workflow.Publish(
+            published.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:source-backed",
+            "manifest-source-backed",
+            "vault/report-packs/manifest-source-backed.json",
+            CompleteLineProvenanceEvidenceLinks(
+                "evidence-gross",
+                "evidence-net",
+                "evidence-cash",
+                "evidence-realized",
+                "evidence-unrealized",
+                "evidence-shadow-nav",
+                "evidence-reported-nav"));
+
+        var registry = new ReportTemplateRegistryService();
+        var draft = registry.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "source-backed-portfolio-grid",
+                "Source-backed Portfolio Grid",
+                Sections: [],
+                Parameters: [],
+                Family: ReportingTemplateFamily.CustomReport.ToString(),
+                Rationale: "Render retained portfolio reporting rows without pasted data.",
+                Grids:
+                [
+                    new ReportWriterGridDefinitionDto(
+                        "portfolio-source-grid",
+                        "Portfolio Source Grid",
+                        ReportWriterGridKindDto.Pivot,
+                        RowFields: ["kind"],
+                        Metrics:
+                        [
+                            new ReportWriterMetricDefinitionDto("grossExposure", "grossExposure", ReportWriterAggregateFunctionDto.Sum, "Gross exposure"),
+                            new ReportWriterMetricDefinitionDto("totalPnl", "totalPnl", ReportWriterAggregateFunctionDto.Sum, "Total P&L"),
+                            new ReportWriterMetricDefinitionDto("shadowNav", "shadowNav", ReportWriterAggregateFunctionDto.Sum, "Shadow NAV")
+                        ],
+                        Formulas:
+                        [
+                            new ReportWriterFormulaDefinitionDto("pnlOnGrossPct", "{totalPnl} / total(grossExposure) * 100", "P&L / gross %")
+                        ],
+                        Filters:
+                        [
+                            new ReportWriterFilterDefinitionDto("dataset", ReportWriterFilterOperatorDto.Equals, "portfolio-cut", "Portfolio cuts only")
+                        ])
+                ]),
+            "report.author");
+        registry.Submit(draft.Definition.TemplateId, "report.author", "Ready for source-backed run.");
+        registry.Approve(
+            draft.Definition.TemplateId,
+            new ReportTemplateDecisionRequestDto("Approved for retained portfolio reporting rows.", "approval:source-backed-grid"),
+            "ops-lead");
+
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var catalog = new GovernedReportingTemplateCatalog(new DefaultReportingTemplateCatalog(), registry);
+        var runStore = new FileReportingRunStore(
+            new ReportingRunStoreOptions(Path.Combine(root, "reporting-runs")),
+            NullLogger<FileReportingRunStore>.Instance);
+        var orchestration = new ReportingOrchestrationService(
+            catalog,
+            new DeterministicReportingSectionRenderer(),
+            () => new DateTimeOffset(2026, 5, 6, 12, 0, 0, TimeSpan.Zero),
+            runStore);
+        var datasetSource = new ReportWriterDatasetSourceService(workflow);
+        var commandService = new ReportingRunCommandService(orchestration, catalog, catalog, datasetSource);
+
+        var result = await commandService.RunAsync(
+            new ReportingRunRequestDto(
+                "source-backed-portfolio-grid",
+                new DateOnly(2026, 5, 6),
+                JobId: "adhoc-source-backed"),
+            "report.author",
+            CancellationToken.None);
+
+        result.Run.RunId.Should().Be("adhoc-source-backed-20260506");
+        var manifest = runStore.GetManifest(result.Run.RunId);
+        manifest.Should().NotBeNull();
+        var renderedGrid = manifest!.RenderedReportWriterGrids.Should().ContainSingle().Subject;
+        renderedGrid.GridId.Should().Be("portfolio-source-grid");
+        renderedGrid.Lineage.Should().NotBeNull();
+        renderedGrid.Lineage!.FilteredInputRowCount.Should().Be(1);
+        renderedGrid.Lineage.InputRowCount.Should().BeGreaterThan(1);
+        renderedGrid.Warnings.Should().NotContain(warning => warning.Contains("no dataset rows", StringComparison.OrdinalIgnoreCase));
+        var renderedRow = renderedGrid.Rows.Should().ContainSingle().Subject;
+        renderedRow.Values["kind"].Should().Be(PortfolioReportingCutKindDto.Fund.ToString());
+        renderedRow.Values["grossExposure"].Should().Be("2500000");
+        renderedRow.Values["totalPnl"].Should().Be("60000");
+        renderedRow.Values["shadowNav"].Should().Be("2935000");
+        renderedRow.Values["pnlOnGrossPct"].Should().Be("2.4");
+    }
+
+    [Fact]
+    public async Task ReportingScheduleService_ResolvesSourceBackedDatasetRowsForReportWriterRuns()
+    {
+        var workflow = new ReportPackWorkflowService();
+        var published = workflow.Create(
+            "fund-alpha",
+            "acct-main",
+            "2026-05",
+            new VersionedReportTemplateIdDto("shadow-nav-pack", 1),
+            "report.author",
+            [
+                SourcePortfolioReportingLine("portfolio.gross-exposure", "evidence-gross", "1250000", "/evidence/gross"),
+                SourcePortfolioReportingLine("portfolio.realized-pnl", "evidence-realized", "15000"),
+                SourcePortfolioReportingLine("portfolio.unrealized-pnl", "evidence-unrealized", "10000"),
+                SourcePortfolioReportingLine("portfolio.shadow-nav", "evidence-shadow-nav", "1260000"),
+                SourcePortfolioReportingLine("portfolio.reported-nav", "evidence-reported-nav", "1250000")
+            ]);
+        workflow.Transition(published.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
+        workflow.Transition(published.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
+        workflow.Publish(
+            published.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:scheduled-source-backed",
+            "manifest-scheduled-source-backed",
+            "vault/report-packs/manifest-scheduled-source-backed.json",
+            CompleteLineProvenanceEvidenceLinks(
+                "evidence-gross",
+                "evidence-realized",
+                "evidence-unrealized",
+                "evidence-shadow-nav",
+                "evidence-reported-nav"));
+
+        var registry = new ReportTemplateRegistryService();
+        var draft = registry.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "scheduled-source-backed-grid",
+                "Scheduled Source-backed Grid",
+                Sections: [],
+                Parameters: [],
+                Family: ReportingTemplateFamily.CustomReport.ToString(),
+                Rationale: "Render scheduled retained portfolio rows without a stored dataset payload.",
+                Grids:
+                [
+                    new ReportWriterGridDefinitionDto(
+                        "scheduled-portfolio-grid",
+                        "Scheduled Portfolio Grid",
+                        ReportWriterGridKindDto.TopN,
+                        RowFields: ["kind"],
+                        Metrics:
+                        [
+                            new ReportWriterMetricDefinitionDto("grossExposure", "grossExposure", ReportWriterAggregateFunctionDto.Sum, "Gross exposure"),
+                            new ReportWriterMetricDefinitionDto("totalPnl", "totalPnl", ReportWriterAggregateFunctionDto.Sum, "Total P&L"),
+                            new ReportWriterMetricDefinitionDto("shadowNav", "shadowNav", ReportWriterAggregateFunctionDto.Sum, "Shadow NAV")
+                        ],
+                        TopN: 3,
+                        SortBy: "grossExposure",
+                        Filters:
+                        [
+                            new ReportWriterFilterDefinitionDto("dataset", ReportWriterFilterOperatorDto.Equals, "portfolio-cut", "Portfolio cuts only")
+                        ])
+                ]),
+            "report.author");
+        registry.Submit(draft.Definition.TemplateId, "report.author", "Ready for scheduled source-backed run.");
+        registry.Approve(
+            draft.Definition.TemplateId,
+            new ReportTemplateDecisionRequestDto("Approved for retained scheduled portfolio rows.", "approval:scheduled-source-grid"),
+            "ops-lead");
+
+        var root = Path.Combine(Path.GetTempPath(), "Meridian.Tests", Guid.NewGuid().ToString("N"));
+        var catalog = new GovernedReportingTemplateCatalog(new DefaultReportingTemplateCatalog(), registry);
+        var runStore = new FileReportingRunStore(
+            new ReportingRunStoreOptions(Path.Combine(root, "reporting-runs")),
+            NullLogger<FileReportingRunStore>.Instance);
+        var orchestration = new ReportingOrchestrationService(
+            catalog,
+            new DeterministicReportingSectionRenderer(),
+            () => new DateTimeOffset(2026, 5, 7, 8, 0, 0, TimeSpan.Zero),
+            runStore);
+        var scheduleStore = new FileReportingScheduleStore(
+            new ReportingScheduleStoreOptions(Path.Combine(root, "reporting-schedules.json")),
+            NullLogger<FileReportingScheduleStore>.Instance);
+        var schedules = new ReportingScheduleService(
+            orchestration,
+            scheduleStore,
+            deliveryService: null,
+            governedTemplateCatalog: catalog,
+            datasetSourceService: new ReportWriterDatasetSourceService(workflow));
+
+        schedules.Upsert(new ReportingScheduleUpsertRequestDto(
+            "sched-source-backed",
+            "scheduled-source-backed-grid",
+            "0 8 1 * *",
+            new DateOnly(2026, 5, 7),
+            new DateTimeOffset(2026, 5, 7, 8, 0, 0, TimeSpan.Zero),
+            0,
+            "report.author",
+            "Scheduled source-backed report-writer run."));
+
+        var due = await schedules.RunDueAsync(new DateTimeOffset(2026, 5, 7, 8, 1, 0, TimeSpan.Zero));
+
+        due.Runs.Should().ContainSingle();
+        var run = due.Runs.Single().Run;
+        run.RunId.Should().Be("sched-source-backed-20260507");
+        var manifest = runStore.GetManifest(run.RunId);
+        manifest.Should().NotBeNull();
+        var renderedGrid = manifest!.RenderedReportWriterGrids.Should().ContainSingle().Subject;
+        renderedGrid.GridId.Should().Be("scheduled-portfolio-grid");
+        renderedGrid.Lineage.Should().NotBeNull();
+        renderedGrid.Lineage!.FilteredInputRowCount.Should().Be(1);
+        renderedGrid.Warnings.Should().NotContain(warning => warning.Contains("no dataset rows", StringComparison.OrdinalIgnoreCase));
+        var renderedRow = renderedGrid.Rows.Should().ContainSingle().Subject;
+        renderedRow.Values["kind"].Should().Be(PortfolioReportingCutKindDto.Fund.ToString());
+        renderedRow.Values["grossExposure"].Should().Be("1250000");
+        renderedRow.Values["totalPnl"].Should().Be("25000");
+        renderedRow.Values["shadowNav"].Should().Be("1260000");
     }
 
     [Fact]
@@ -2162,6 +2733,36 @@ public sealed class ReportPackWorkflowServiceTests
     [Fact]
     public void ReportPackRunReadService_ProjectsReportWriterGridMetadataForCustomTemplates()
     {
+        var workflow = new ReportPackWorkflowService();
+        var sourceBackedPack = workflow.Create(
+            "fund-alpha",
+            "acct-main",
+            "2026-05",
+            new VersionedReportTemplateIdDto("shadow-nav-pack", 1),
+            "report.author",
+            [
+                SourcePortfolioReportingLine("portfolio.gross-exposure", "evidence-gross", "2500000", "/evidence/gross"),
+                SourcePortfolioReportingLine("portfolio.realized-pnl", "evidence-realized", "42000"),
+                SourcePortfolioReportingLine("portfolio.unrealized-pnl", "evidence-unrealized", "18000"),
+                SourcePortfolioReportingLine("portfolio.shadow-nav", "evidence-shadow-nav", "2935000"),
+                SourcePortfolioReportingLine("portfolio.reported-nav", "evidence-reported-nav", "2920000")
+            ]);
+        workflow.Transition(sourceBackedPack.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
+        workflow.Transition(sourceBackedPack.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
+        workflow.Publish(
+            sourceBackedPack.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:source-backed",
+            "manifest-source-backed",
+            "vault/report-packs/manifest-source-backed.json",
+            CompleteLineProvenanceEvidenceLinks(
+                "evidence-gross",
+                "evidence-realized",
+                "evidence-unrealized",
+                "evidence-shadow-nav",
+                "evidence-reported-nav"));
         var registry = new ReportTemplateRegistryService();
         var draft = registry.CreateDraft(
             new ReportTemplateDraftRequestDto(
@@ -2194,6 +2795,7 @@ public sealed class ReportPackWorkflowServiceTests
 
         var payload = new ReportPackRunReadService(
             new DefaultReportingTemplateCatalog(),
+            workflowService: workflow,
             templateRegistry: registry).BuildPayload();
 
         var template = payload.Templates.Single(template => template.TemplateId == draft.Definition.TemplateId.Name);
@@ -2217,6 +2819,25 @@ public sealed class ReportPackWorkflowServiceTests
             filter.Operator == ReportWriterFilterOperatorDto.Equals.ToString() &&
             filter.Value == "Core" &&
             filter.Label == "Core strategy");
+        template.ReportWriterGrids[0].SourceFields.Should().NotBeNull();
+        template.ReportWriterGrids[0].SourceFields!.Should().Contain(field =>
+            field.Name == "grossExposure" &&
+            field.Label == "Gross exposure" &&
+            field.Role == "metric" &&
+            field.DataType == "decimal" &&
+            field.Dataset == "Portfolio cuts");
+        template.ReportWriterGrids[0].SourceFields.Should().Contain(field =>
+            field.Name == "totalPnl" &&
+            field.Role == "metric" &&
+            field.DataType == "decimal");
+        template.ReportWriterGrids[0].SourceFields.Should().Contain(field =>
+            field.Name == "shadowNav" &&
+            field.Role == "metric" &&
+            field.DataType == "decimal");
+        template.ReportWriterGrids[0].SourceFields.Should().Contain(field =>
+            field.Name == "contributionPercent" &&
+            field.Role == "generated" &&
+            field.DataType == "decimal");
     }
 
     [Fact]
@@ -2417,6 +3038,28 @@ public sealed class ReportPackWorkflowServiceTests
         groupPayload.DeliveryAttempts.Select(static attempt => attempt.AttemptId).Should().Contain(genericRunDeliveryAttemptId);
         groupPayload.DeliveryAttempts.Select(static attempt => attempt.AttemptId).Should().NotContain(privateDeliveryAttemptId);
         groupPayload.ScheduleDeliveryPlans.Single(plan => plan.ScheduleId == "sched-ops-control").LastDeliveryAttemptId.Should().Be(genericRunDeliveryAttemptId);
+        groupPayload.AccessAudit.Should().NotBeNull();
+        groupPayload.AccessAudit!.EvaluationScope.Should().Be("CallerScoped");
+        groupPayload.AccessAudit.PrincipalScopes.Should().Contain("user:viewer.user");
+        groupPayload.AccessAudit.PrincipalScopes.Should().Contain("group:ops-control");
+        groupPayload.AccessAudit.VisibleTemplateCount.Should().Be(groupPayload.Templates.Count);
+        groupPayload.AccessAudit.HiddenTemplateCount.Should().Be(1);
+        groupPayload.AccessAudit.VisibleReportPackCount.Should().Be(1);
+        groupPayload.AccessAudit.HiddenReportPackCount.Should().Be(1);
+        groupPayload.AccessAudit.VisibleScheduleCount.Should().Be(1);
+        groupPayload.AccessAudit.HiddenScheduleCount.Should().Be(1);
+        groupPayload.AccessAudit.VisibleDeliveryAttemptCount.Should().Be(2);
+        groupPayload.AccessAudit.HiddenDeliveryAttemptCount.Should().Be(1);
+        groupPayload.AccessAudit.DenialReasons.Should().Contain(reason =>
+            reason.Contains("report templates", StringComparison.OrdinalIgnoreCase));
+        groupPayload.StructuredExports.Should().NotBeNull();
+        groupPayload.StructuredExports!.Should().Contain(export =>
+            export.ExportId == "regulatory-trial-balance" &&
+            export.IsReady &&
+            export.Route.Contains("/api/workstation/reporting/structured-exports/regulatory-trial-balance", StringComparison.Ordinal));
+        groupPayload.StructuredExports.Should().Contain(export =>
+            export.ExportId == "warehouse-ledger-facts" &&
+            export.IsReady);
 
         strangerPayload.Templates.Select(static template => template.TemplateId).Should().NotContain(groupTemplate.Definition.TemplateId.Name);
         strangerPayload.Templates.Select(static template => template.TemplateId).Should().NotContain(privateTemplate.Definition.TemplateId.Name);
@@ -2425,6 +3068,18 @@ public sealed class ReportPackWorkflowServiceTests
         strangerPayload.Schedules.Should().NotBeNull().And.BeEmpty();
         strangerPayload.ScheduleDeliveryPlans.Should().NotBeNull().And.BeEmpty();
         strangerPayload.DeliveryAttempts.Should().NotBeNull().And.BeEmpty();
+        strangerPayload.StructuredExports.Should().NotBeNull().And.BeEmpty();
+        strangerPayload.AccessAudit.Should().NotBeNull();
+        strangerPayload.AccessAudit!.VisibleTemplateCount.Should().Be(strangerPayload.Templates.Count);
+        strangerPayload.AccessAudit.HiddenTemplateCount.Should().Be(2);
+        strangerPayload.AccessAudit.VisibleReportPackCount.Should().Be(0);
+        strangerPayload.AccessAudit.HiddenReportPackCount.Should().Be(2);
+        strangerPayload.AccessAudit.VisibleScheduleCount.Should().Be(0);
+        strangerPayload.AccessAudit.HiddenScheduleCount.Should().Be(2);
+        strangerPayload.AccessAudit.VisibleDeliveryAttemptCount.Should().Be(0);
+        strangerPayload.AccessAudit.HiddenDeliveryAttemptCount.Should().Be(3);
+        strangerPayload.AccessAudit.VisibleStructuredExportCount.Should().Be(0);
+        strangerPayload.AccessAudit.HiddenStructuredExportCount.Should().BeGreaterThan(0);
 
         var securityMaster = new NullSecurityMasterQueryService();
         var workspaceService = new FundOperationsWorkspaceReadService(
@@ -2452,9 +3107,16 @@ public sealed class ReportPackWorkflowServiceTests
         groupWorkspace.Reporting.DeliveryAttempts.Select(static attempt => attempt.AttemptId).Should().NotContain(privateDeliveryAttemptId);
         groupWorkspace.Reporting.ScheduleDeliveryPlans.Should().NotBeNull();
         groupWorkspace.Reporting.ScheduleDeliveryPlans!.Select(static plan => plan.ScheduleId).Should().Contain("sched-ops-control");
+        groupWorkspace.Reporting.AccessAudit.Should().NotBeNull();
+        groupWorkspace.Reporting.AccessAudit!.VisibleTemplateCount.Should().Be(groupPayload.AccessAudit.VisibleTemplateCount);
+        groupWorkspace.Reporting.AccessAudit.HiddenTemplateCount.Should().Be(1);
+        groupWorkspace.Reporting.AccessAudit.HiddenDeliveryAttemptCount.Should().Be(1);
         strangerWorkspace.Reporting.Schedules.Should().NotBeNull().And.BeEmpty();
         strangerWorkspace.Reporting.DeliveryAttempts.Should().NotBeNull().And.BeEmpty();
         strangerWorkspace.Reporting.ScheduleDeliveryPlans.Should().NotBeNull().And.BeEmpty();
+        strangerWorkspace.Reporting.AccessAudit.Should().NotBeNull();
+        strangerWorkspace.Reporting.AccessAudit!.VisibleTemplateCount.Should().Be(strangerPayload.AccessAudit.VisibleTemplateCount);
+        strangerWorkspace.Reporting.AccessAudit.HiddenTemplateCount.Should().Be(2);
     }
 
     [Fact]
@@ -2656,6 +3318,261 @@ public sealed class ReportPackWorkflowServiceTests
         result.Run.Trigger.Should().Be(ReportingRunTrigger.AdHoc.ToString());
         result.Run.SectionCount.Should().BeGreaterThan(0);
         result.Run.LineageLinkedSections.Should().Be(result.Run.SectionCount);
+    }
+
+    [Fact]
+    public async Task Endpoint_ReportingRunAuditTrail_ReturnsRetainedActorTimestampAndNotesForAccessibleRun()
+    {
+        await using var app = await CreateFundStructureAppAsync(UserRole.Admin);
+        var registry = app.Services.GetRequiredService<ReportTemplateRegistryService>();
+        var draft = registry.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "audit-visible-template",
+                "Audit Visible Template",
+                ["summary"],
+                [],
+                Family: "CustomReport",
+                Rationale: "Expose retained run audit trail details"),
+            "report.author");
+        registry.Submit(draft.Definition.TemplateId, "report.author", "ready");
+        registry.Approve(draft.Definition.TemplateId, new ReportTemplateDecisionRequestDto("approved", "APP-RUN-AUDIT-1"), "controller.admin");
+        var client = app.GetTestClient();
+
+        var runResponse = await client.PostAsJsonAsync(
+            "/api/fund-structure/reporting/runs",
+            new ReportingRunRequestDto(
+                draft.Definition.TemplateId.Name,
+                new DateOnly(2026, 5, 5),
+                JobId: "audit-visible-run"),
+            ServerJsonOptions);
+
+        runResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var run = await runResponse.Content.ReadFromJsonAsync<ReportingRunResultDto>(ServerJsonOptions);
+        run.Should().NotBeNull();
+        run!.Run.DrilldownLinks.Should().Contain(link =>
+            link.Kind == "audit" &&
+            link.Href == "/api/fund-structure/reporting/runs/audit-visible-run-20260505/audit" &&
+            link.IsBrowserNavigable);
+
+        var auditResponse = await client.GetAsync($"/api/fund-structure/reporting/runs/{run.Run.RunId}/audit");
+
+        auditResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var audit = await auditResponse.Content.ReadFromJsonAsync<ReportingRunAuditTrailDto>(ServerJsonOptions);
+        audit.Should().NotBeNull();
+        audit!.RunId.Should().Be("audit-visible-run-20260505");
+        audit.TemplateId.Should().Be(draft.Definition.TemplateId.Name);
+        audit.AsOfDate.Should().Be("2026-05-05");
+        audit.Status.Should().Be(ReportingRunStatus.Draft.ToString());
+        audit.Trigger.Should().Be(ReportingRunTrigger.AdHoc.ToString());
+        audit.AttemptCount.Should().Be(1);
+        audit.Entries.Should().ContainSingle(entry =>
+            entry.RunId == audit.RunId &&
+            entry.Action == "RunGenerated" &&
+            entry.Actor == "controller.admin" &&
+            entry.TimestampUtc == new DateTimeOffset(2026, 5, 5, 9, 0, 0, TimeSpan.Zero) &&
+            entry.Notes.Contains("trigger=AdHoc", StringComparison.Ordinal) &&
+            entry.Notes.Contains("lineageSections=", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Endpoint_ReportingRunAuditTrail_WhenCallerCannotAccessTemplate_ReturnsForbidden()
+    {
+        await using var app = await CreateFundStructureAppAsync(UserRole.TradeDesk, "viewer.user");
+        var registry = app.Services.GetRequiredService<ReportTemplateRegistryService>();
+        var draft = registry.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "private-audit-run-template",
+                "Private Audit Run Template",
+                ["summary"],
+                [],
+                Family: "CustomReport",
+                Rationale: "Retained run audit trails must inherit template access policy",
+                AccessPolicy: new ReportAccessPolicyDto(ReportAccessModeDto.Private, OwnerPrincipalId: "owner.user")),
+            "owner.user");
+        registry.Submit(draft.Definition.TemplateId, "owner.user", "ready");
+        registry.Approve(draft.Definition.TemplateId, new ReportTemplateDecisionRequestDto("approved", "APP-RUN-AUDIT-PRIVATE-1"), "controller.admin");
+
+        var orchestration = app.Services.GetRequiredService<IReportingOrchestrationService>();
+        var manifest = await orchestration.ExecuteAsync(
+            new ReportingJobContract(
+                "private-audit-run",
+                draft.Definition.TemplateId.Name,
+                new DateOnly(2026, 5, 5),
+                ReportingRunTrigger.AdHoc,
+                0,
+                "owner.user",
+                new DateTimeOffset(2026, 5, 5, 9, 0, 0, TimeSpan.Zero)),
+            CancellationToken.None);
+        var client = app.GetTestClient();
+
+        var auditResponse = await client.GetAsync($"/api/fund-structure/reporting/runs/{manifest.RunId}/audit");
+
+        auditResponse.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Endpoint_ReportWriterGridArtifact_ReturnsJsonCsvAndXlsxForRetainedRunGrid()
+    {
+        await using var app = await CreateFundStructureAppAsync(UserRole.Admin);
+        var registry = app.Services.GetRequiredService<ReportTemplateRegistryService>();
+        var draft = registry.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "retained-grid-artifact-template",
+                "Retained Grid Artifact Template",
+                ["summary"],
+                [],
+                Family: "CustomReport",
+                Rationale: "Expose retained no-code grid artifacts",
+                Grids:
+                [
+                    new ReportWriterGridDefinitionDto(
+                        "sector-pnl",
+                        "Sector P&L",
+                        ReportWriterGridKindDto.Pivot,
+                        RowFields: ["sector"],
+                        Metrics:
+                        [
+                            new ReportWriterMetricDefinitionDto("pnl", "pnl"),
+                            new ReportWriterMetricDefinitionDto("marketValue", "marketValue")
+                        ],
+                        Formulas: [new ReportWriterFormulaDefinitionDto("returnPct", "{pnl} / {marketValue} * 100")])
+                ]),
+            "report.author");
+        registry.Submit(draft.Definition.TemplateId, "report.author", "ready");
+        registry.Approve(draft.Definition.TemplateId, new ReportTemplateDecisionRequestDto("approved", "APP-GRID-ARTIFACT-1"), "controller.admin");
+        var client = app.GetTestClient();
+
+        var runResponse = await client.PostAsJsonAsync(
+            "/api/fund-structure/reporting/runs",
+            new ReportingRunRequestDto(
+                draft.Definition.TemplateId.Name,
+                new DateOnly(2026, 5, 5),
+                JobId: "retained-grid",
+                DatasetRows:
+                [
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        ["sector"] = "Technology",
+                        ["pnl"] = "250",
+                        ["marketValue"] = "10000"
+                    },
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        ["sector"] = "Credit",
+                        ["pnl"] = "-25",
+                        ["marketValue"] = "5000"
+                    }
+                ]),
+            ServerJsonOptions);
+
+        runResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var run = await runResponse.Content.ReadFromJsonAsync<ReportingRunResultDto>(ServerJsonOptions);
+        run.Should().NotBeNull();
+        run!.Run.GeneratedReportWriterGrids.Should().ContainSingle(grid => grid.GridId == "sector-pnl");
+
+        var jsonResponse = await client.GetAsync($"/api/fund-structure/reporting/runs/{run.Run.RunId}/report-writer-grids/sector-pnl");
+        var csvResponse = await client.GetAsync($"/api/fund-structure/reporting/runs/{run.Run.RunId}/report-writer-grids/sector-pnl?format=csv");
+        var xlsxResponse = await client.GetAsync($"/api/fund-structure/reporting/runs/{run.Run.RunId}/report-writer-grids/sector-pnl?format=xlsx");
+
+        jsonResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        jsonResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
+        var grid = await jsonResponse.Content.ReadFromJsonAsync<ReportWriterGridRenderDto>(ServerJsonOptions);
+        grid.Should().NotBeNull();
+        grid!.GridId.Should().Be("sector-pnl");
+        grid.Rows.Should().Contain(row =>
+            row.Values["sector"] == "Technology"
+            && row.Values["pnl"] == "250"
+            && row.Values["returnPct"] == "2.5");
+        grid.DataDictionary.Should().NotBeNull();
+        grid.DataDictionary!.Should().Contain(field =>
+            field.Key == "pnl"
+            && field.SourceField == "pnl"
+            && field.DataType == "decimal"
+            && !field.IsGenerated);
+        grid.DataDictionary.Should().Contain(field =>
+            field.Key == "returnPct"
+            && field.Role == "formula"
+            && field.IsGenerated);
+        grid.ValidationChecks.Should().NotBeNull();
+        grid.ValidationChecks!.Should().Contain(check =>
+            check.CheckId == "row-count"
+            && check.Status == "Passed");
+        grid.ValidationChecks.Should().Contain(check =>
+            check.CheckId == "source-field-lineage"
+            && check.Status == "Passed");
+
+        csvResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        csvResponse.Content.Headers.ContentType?.MediaType.Should().Be("text/csv");
+        csvResponse.Content.Headers.ContentDisposition?.FileName.Should().Be("retained-grid-20260505-sector-pnl.csv");
+        var csv = await csvResponse.Content.ReadAsStringAsync();
+        csv.Should().StartWith("sector,pnl,marketValue,returnPct");
+        csv.Should().Contain("Technology,250,10000,2.5");
+
+        xlsxResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        xlsxResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        xlsxResponse.Content.Headers.ContentDisposition?.FileName.Should().Be("retained-grid-20260505-sector-pnl.xlsx");
+        var workbook = await xlsxResponse.Content.ReadAsByteArrayAsync();
+        workbook.Should().StartWith([0x50, 0x4B]);
+        workbook.Length.Should().BeGreaterThan(1000);
+        using var archive = new ZipArchive(new MemoryStream(workbook), ZipArchiveMode.Read);
+        using var workbookReader = new StreamReader(archive.GetEntry("xl/workbook.xml")!.Open());
+        var workbookXml = await workbookReader.ReadToEndAsync();
+        workbookXml.Should().Contain("DataDictionary");
+        workbookXml.Should().Contain("Validation");
+    }
+
+    [Fact]
+    public async Task Endpoint_ReportWriterGridArtifact_WhenCallerCannotAccessTemplate_ReturnsForbidden()
+    {
+        await using var app = await CreateFundStructureAppAsync(UserRole.TradeDesk, "viewer.user");
+        var registry = app.Services.GetRequiredService<ReportTemplateRegistryService>();
+        var draft = registry.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "private-retained-grid-template",
+                "Private Retained Grid Template",
+                ["summary"],
+                [],
+                Family: "CustomReport",
+                Rationale: "Retained grid artifacts must inherit template access policy",
+                Grids:
+                [
+                    new ReportWriterGridDefinitionDto(
+                        "private-sector-pnl",
+                        "Private Sector P&L",
+                        ReportWriterGridKindDto.Pivot,
+                        RowFields: ["sector"],
+                        Metrics: [new ReportWriterMetricDefinitionDto("pnl", "pnl")])
+                ],
+                AccessPolicy: new ReportAccessPolicyDto(ReportAccessModeDto.Private, OwnerPrincipalId: "owner.user")),
+            "owner.user");
+        registry.Submit(draft.Definition.TemplateId, "owner.user", "ready");
+        registry.Approve(draft.Definition.TemplateId, new ReportTemplateDecisionRequestDto("approved", "APP-GRID-PRIVATE-1"), "controller.admin");
+
+        var orchestration = app.Services.GetRequiredService<IReportingOrchestrationService>();
+        var manifest = await orchestration.ExecuteAsync(
+            new ReportingJobContract(
+                "private-retained-grid",
+                draft.Definition.TemplateId.Name,
+                new DateOnly(2026, 5, 5),
+                ReportingRunTrigger.AdHoc,
+                0,
+                "owner.user",
+                new DateTimeOffset(2026, 5, 5, 9, 0, 0, TimeSpan.Zero),
+                DatasetRows:
+                [
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        ["sector"] = "Technology",
+                        ["pnl"] = "250"
+                    }
+                ]),
+            CancellationToken.None);
+        manifest.RenderedReportWriterGrids.Should().ContainSingle(grid => grid.GridId == "private-sector-pnl");
+        var client = app.GetTestClient();
+
+        var response = await client.GetAsync($"/api/fund-structure/reporting/runs/{manifest.RunId}/report-writer-grids/private-sector-pnl");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -3298,6 +4215,29 @@ public sealed class ReportPackWorkflowServiceTests
             ReconciliationOutcome: "matched",
             ApprovalId: "approval-1");
 
+    private static ReportPackLineProvenanceDto SourcePortfolioReportingLine(
+        string lineKey,
+        string evidenceId,
+        string reportValue,
+        string? href = null) =>
+        new(
+            lineKey,
+            "ledger",
+            "ledger-entry-1",
+            evidenceId,
+            RunId: "run-1",
+            LedgerEntryId: "ledger-entry-1",
+            ReconciliationCaseId: "case-1",
+            ReportValue: reportValue,
+            SourceSessionId: "provider-session-1",
+            ReconciliationRunId: "recon-run-1",
+            ProviderEventId: "provider-event-1",
+            SecurityMasterId: "security-1",
+            SecurityDefinitionId: "definition-1",
+            ReconciliationOutcome: "matched",
+            ApprovalId: "approval-1",
+            FinancialRecordHref: href);
+
     private static readonly JsonSerializerOptions ServerJsonOptions = new(JsonSerializerDefaults.Web)
     {
         Converters = { new JsonStringEnumConverter() }
@@ -3328,10 +4268,13 @@ public sealed class ReportPackWorkflowServiceTests
                 sp.GetRequiredService<IReportingTemplateCatalog>(),
                 new DeterministicReportingSectionRenderer(),
                 () => new DateTimeOffset(2026, 5, 5, 9, 0, 0, TimeSpan.Zero)));
+        builder.Services.AddSingleton<ReportWriterDatasetSourceService>();
+        builder.Services.AddSingleton<ReportWriterGridArtifactService>();
         builder.Services.AddSingleton<ReportingRunCommandService>();
         builder.Services.AddSingleton(sp =>
             new ReportingScheduleService(
                 sp.GetRequiredService<IReportingOrchestrationService>(),
+                datasetSourceService: sp.GetRequiredService<ReportWriterDatasetSourceService>(),
                 governedTemplateCatalog: sp.GetRequiredService<GovernedReportingTemplateCatalog>()));
         builder.Services.AddSingleton<ReportPackWorkflowService>();
         builder.Services.AddSingleton<ReportPackDeliveryService>();

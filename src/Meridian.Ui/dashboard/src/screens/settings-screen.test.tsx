@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api-errors";
@@ -17,7 +17,8 @@ import type {
   RolePermissionCatalog,
   SecurityAssetProfileDefinition,
   SessionInfo,
-  SystemOverviewResponse
+  SystemOverviewResponse,
+  UserAccessAssignment
 } from "@/types";
 
 const apiMocks = vi.hoisted(() => ({
@@ -25,8 +26,11 @@ const apiMocks = vi.hoisted(() => ({
   assignLedgerMapping: vi.fn(),
   createSecurityMasterEntry: vi.fn(),
   createRolePermissionProfile: vi.fn(),
+  createScopedAccessAssignment: vi.fn(),
   draftSecurityAssetProfile: vi.fn(),
   getSecurityAssetProfileLineage: vi.fn(),
+  listScopedAccessAssignments: vi.fn(),
+  revokeScopedAccessAssignment: vi.fn(),
   rollbackSecurityAssetProfile: vi.fn(),
   upsertOperationsApprovalPolicyRule: vi.fn(),
   upsertOperationsCloseCalendarItem: vi.fn(),
@@ -44,8 +48,11 @@ vi.mock("@/lib/api", async (importActual) => ({
   assignLedgerMapping: apiMocks.assignLedgerMapping,
   createSecurityMasterEntry: apiMocks.createSecurityMasterEntry,
   createRolePermissionProfile: apiMocks.createRolePermissionProfile,
+  createScopedAccessAssignment: apiMocks.createScopedAccessAssignment,
   draftSecurityAssetProfile: apiMocks.draftSecurityAssetProfile,
   getSecurityAssetProfileLineage: apiMocks.getSecurityAssetProfileLineage,
+  listScopedAccessAssignments: apiMocks.listScopedAccessAssignments,
+  revokeScopedAccessAssignment: apiMocks.revokeScopedAccessAssignment,
   rollbackSecurityAssetProfile: apiMocks.rollbackSecurityAssetProfile,
   upsertOperationsApprovalPolicyRule: apiMocks.upsertOperationsApprovalPolicyRule,
   upsertOperationsCloseCalendarItem: apiMocks.upsertOperationsCloseCalendarItem,
@@ -436,6 +443,10 @@ describe("SettingsScreen", () => {
     apiMocks.getSecurityAssetProfileLineage.mockReset();
     apiMocks.assignLedgerMapping.mockReset();
     apiMocks.createRolePermissionProfile.mockReset();
+    apiMocks.createScopedAccessAssignment.mockReset();
+    apiMocks.listScopedAccessAssignments.mockReset();
+    apiMocks.revokeScopedAccessAssignment.mockReset();
+    apiMocks.listScopedAccessAssignments.mockImplementation(() => new Promise(() => undefined));
     apiMocks.rollbackSecurityAssetProfile.mockReset();
     apiMocks.upsertOperationsApprovalPolicyRule.mockReset();
     apiMocks.upsertOperationsCloseCalendarItem.mockReset();
@@ -741,6 +752,139 @@ describe("SettingsScreen", () => {
     expect(onRefresh).toHaveBeenCalledOnce();
     expect(await within(form).findByText("Role profile saved for Close Reviewer.")).toBeInTheDocument();
     expect(within(form).getByText("Audit role-audit-1")).toBeInTheDocument();
+  });
+
+  it("grants and revokes scoped access assignments with audit evidence", async () => {
+    const user = userEvent.setup();
+    const assignment: UserAccessAssignment = {
+      assignmentId: "access-assignment-1",
+      principalId: "fund-controller",
+      principalKind: "User",
+      scopeKind: "Fund",
+      scopeId: "fund-2026",
+      role: "Accounting",
+      roleProfileName: "Close Reviewer",
+      permissionNames: ["ManageDirectLending"],
+      permissionMask: 2,
+      effectiveFrom: "2026-06-01T00:00:00Z",
+      effectiveTo: null,
+      grantedBy: "Ops Lead",
+      rationale: "Month-end close control",
+      correlationId: "access-correlation-1",
+      version: 3,
+      createdAtUtc: "2026-06-01T00:00:00Z",
+      updatedAtUtc: "2026-06-01T00:00:00Z",
+      revokedBy: null,
+      revokedAtUtc: null,
+      revocationReason: null,
+      lastAuditId: "access-audit-1"
+    };
+    const createdAssignment: UserAccessAssignment = {
+      ...assignment,
+      assignmentId: "access-assignment-2",
+      principalId: "fund-reviewer",
+      scopeId: "fund-review",
+      roleProfileName: null,
+      permissionNames: ["ViewTrades", "ManageDirectLending"],
+      permissionMask: 3,
+      rationale: "Grant fund close authority",
+      correlationId: "access-correlation-2",
+      version: 1,
+      lastAuditId: "access-audit-2"
+    };
+    const revokedAssignment: UserAccessAssignment = {
+      ...assignment,
+      version: 4,
+      revokedBy: "Ops Lead",
+      revokedAtUtc: "2026-06-02T00:00:00Z",
+      revocationReason: "Revoke scoped authority for fund-controller.",
+      lastAuditId: "access-audit-3"
+    };
+    apiMocks.listScopedAccessAssignments.mockResolvedValue([assignment]);
+    apiMocks.createScopedAccessAssignment.mockResolvedValue({
+      assignment: createdAssignment,
+      auditEvent: {
+        auditId: "access-audit-2",
+        eventType: "scoped-access-granted",
+        occurredAtUtc: "2026-06-02T00:00:00Z",
+        actor: "Ops Lead",
+        rationale: "Grant fund close authority",
+        correlationId: "access-correlation-2",
+        assignmentId: createdAssignment.assignmentId,
+        principalId: createdAssignment.principalId,
+        scopeKind: createdAssignment.scopeKind,
+        scopeId: createdAssignment.scopeId,
+        permissionNames: createdAssignment.permissionNames,
+        permissionMask: createdAssignment.permissionMask,
+        version: createdAssignment.version
+      }
+    });
+    apiMocks.revokeScopedAccessAssignment.mockResolvedValue({
+      assignment: revokedAssignment,
+      auditEvent: {
+        auditId: "access-audit-3",
+        eventType: "scoped-access-revoked",
+        occurredAtUtc: "2026-06-02T00:00:00Z",
+        actor: "Ops Lead",
+        rationale: "Revoke scoped authority for fund-controller.",
+        correlationId: "access-correlation-3",
+        assignmentId: revokedAssignment.assignmentId,
+        principalId: revokedAssignment.principalId,
+        scopeKind: revokedAssignment.scopeKind,
+        scopeId: revokedAssignment.scopeId,
+        permissionNames: revokedAssignment.permissionNames,
+        permissionMask: revokedAssignment.permissionMask,
+        version: revokedAssignment.version
+      }
+    });
+    const onRefresh = vi.fn();
+
+    renderWithRouter(
+      <SettingsScreen
+        session={{ ...session, role: "Accounting", displayName: "Ops Lead" }}
+        overview={overview}
+        rolePermissionCatalog={rolePermissionCatalog}
+        onRefresh={onRefresh}
+      />
+    );
+
+    const consoleRegion = await screen.findByRole("region", { name: "Scoped access assignment console" });
+    expect(within(consoleRegion).getByText("fund-controller")).toBeInTheDocument();
+    expect(within(consoleRegion).getByText("access-audit-1")).toBeInTheDocument();
+
+    const form = screen.getByRole("form", { name: "Grant scoped access assignment" });
+    await waitFor(() => expect(within(form).getByLabelText("Role")).toHaveValue("Accounting"));
+    await user.type(within(form).getByLabelText("Scoped access principal id"), "fund-reviewer");
+    await user.type(within(form).getByLabelText("Scoped access scope id"), "fund-review");
+    await user.clear(within(form).getByLabelText("Scoped access rationale"));
+    await user.type(within(form).getByLabelText("Scoped access rationale"), "Grant fund close authority");
+    await user.click(within(form).getByRole("button", { name: /Grant access/i }));
+
+    expect(apiMocks.createScopedAccessAssignment).toHaveBeenCalledWith(expect.objectContaining({
+      principalId: "fund-reviewer",
+      principalKind: "User",
+      scopeKind: "Fund",
+      scopeId: "fund-review",
+      role: "Accounting",
+      roleProfileName: null,
+      permissionNames: ["ViewTrades", "ManageDirectLending"],
+      requestedBy: "Ops Lead",
+      rationale: "Grant fund close authority"
+    }));
+    expect(await within(form).findByText("Scoped access granted for fund-reviewer.")).toBeInTheDocument();
+    expect(within(form).getByText("Audit access-audit-2")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Revoke scoped access for fund-controller" }));
+
+    expect(apiMocks.revokeScopedAccessAssignment).toHaveBeenCalledWith(expect.objectContaining({
+      assignmentId: "access-assignment-1",
+      expectedVersion: 3,
+      requestedBy: "Ops Lead",
+      rationale: "Revoke scoped authority for fund-controller."
+    }));
+    expect(await within(form).findByText("Scoped access revoked for fund-controller.")).toBeInTheDocument();
+    expect(onRefresh).toHaveBeenCalledTimes(2);
+    expect(screen.queryByText("fund-controller")).toBeNull();
   });
 
   it("updates approval policy rules with reviewer and evidence controls", async () => {

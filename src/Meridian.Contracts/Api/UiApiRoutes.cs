@@ -573,9 +573,16 @@ public static class UiApiRoutes
     public const string WorkstationGovernance = "/api/workstation/governance";
     public const string WorkstationAccounting = "/api/workstation/accounting";
     public const string WorkstationReporting = "/api/workstation/reporting";
+    public const string WorkstationReportingStructuredExport = "/api/workstation/reporting/structured-exports/{exportId}";
     public const string WorkstationPortfolio = "/api/workstation/portfolio";
     public const string WorkstationPortfolioSummary = "/api/workstation/portfolio/summary";
     public const string WorkstationPortfolioMultiAssetCoverage = "/api/workstation/portfolio/multi-asset-coverage";
+    public const string WorkstationExtensibilityCatalog = "/api/workstation/extensibility/catalog";
+    public const string WorkstationExtensibilityTenantTemplates = "/api/workstation/extensibility/tenant-templates";
+    public const string WorkstationExtensibilityTenantTemplateById = "/api/workstation/extensibility/tenant-templates/{tenantTemplateId}";
+    public const string WorkstationExtensibilityTenantTemplateActivate = "/api/workstation/extensibility/tenant-templates/{tenantTemplateId}/activate";
+    public const string WorkstationExtensibilityTenantTemplateActivations = "/api/workstation/extensibility/tenant-templates/{tenantTemplateId}/activations";
+    public const string WorkstationExtensibilityTenantTemplateReadiness = "/api/workstation/extensibility/tenant-templates/{tenantTemplateId}/readiness";
 
     // Strategy run comparison and diff endpoints
     public const string WorkstationWorkflowSummary = "/api/workstation/workflow-summary";
@@ -601,6 +608,7 @@ public static class UiApiRoutes
     public const string OperationsContinuityChecklist = "/api/workstation/operations/continuity/{workflowId:guid}/checklist";
     public const string OperationsContinuityChecklistAcknowledge = "/api/workstation/operations/continuity/{workflowId:guid}/checklist/{taskId}/acknowledge";
     public const string OperationsContinuityCloseCalendar = "/api/workstation/operations/continuity/close-calendar";
+    public const string OperationsPrivateCapitalCloseCockpit = "/api/workstation/operations/private-capital-close-cockpit";
     public const string OperationsContinuityBrokerImport = "/api/workstation/operations/continuity/{workflowId:guid}/broker/import";
     public const string OperationsContinuityBrokerNormalize = "/api/workstation/operations/continuity/{workflowId:guid}/broker/normalize";
     public const string OperationsContinuityPostureRefresh = "/api/workstation/operations/continuity/{workflowId:guid}/posture/refresh";
@@ -610,6 +618,7 @@ public static class UiApiRoutes
     public const string OperationsContinuityLedgerValidate = "/api/workstation/operations/continuity/{workflowId:guid}/ledger/validate";
     public const string OperationsContinuityLedgerPost = "/api/workstation/operations/continuity/{workflowId:guid}/ledger/post";
     public const string OperationsContinuityReconciliationRun = "/api/workstation/operations/continuity/{workflowId:guid}/reconciliation/run";
+    public const string OperationsContinuityReconciliationBreakAssign = "/api/workstation/operations/continuity/{workflowId:guid}/reconciliation/breaks/{breakId}/assign";
     public const string OperationsContinuityReconciliationBreakResolve = "/api/workstation/operations/continuity/{workflowId:guid}/reconciliation/breaks/{breakId}/resolve";
     public const string OperationsContinuityApprovalPolicyMatrix = "/api/workstation/operations/continuity/approval-policy-matrix";
     public const string OperationsContinuityApprovalPolicyRules = "/api/workstation/operations/continuity/approval-policy-rules";
@@ -718,6 +727,8 @@ public static class UiApiRoutes
     public const string ReportingPackDeliveryPortalPackage = "/portal/reporting/packages/{packageId}";
     public const string ReportingStructuredExport = "/api/fund-structure/reporting/structured-exports/{exportId}";
     public const string ReportingRuns = "/api/fund-structure/reporting/runs";
+    public const string ReportingRunAuditTrail = "/api/fund-structure/reporting/runs/{runId}/audit";
+    public const string ReportingRunReportWriterGrid = "/api/fund-structure/reporting/runs/{runId}/report-writer-grids/{gridId}";
     public const string ReportingSchedules = "/api/fund-structure/reporting/schedules";
     public const string ReportingScheduleRunDue = "/api/fund-structure/reporting/schedules/run-due";
     public const string ReportingSchedulePause = "/api/fund-structure/reporting/schedules/{scheduleId}/pause";

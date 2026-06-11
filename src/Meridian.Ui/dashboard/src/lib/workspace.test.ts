@@ -135,6 +135,7 @@ describe("workspace metadata", () => {
       "Backfill",
       "Backtest",
       "BrokerageSync",
+      "CapitalAccountWorkbench",
       "DataOperationsShell",
       "DataShell",
       "EvidenceWorkbench",

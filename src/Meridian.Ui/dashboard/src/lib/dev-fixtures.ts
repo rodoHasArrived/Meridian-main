@@ -26,6 +26,7 @@ import type {
   OperationsCloseCalendar,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
+  PrivateCapitalCloseCockpit,
   LedgerTrialBalanceLine,
   LedgerMappingWorkbench,
   OperatorOverridesDto,
@@ -1278,7 +1279,7 @@ const fixtureAccountingWorkspace: AccountingWorkspaceResponse = {
         asOf: "2026-05-03T20:00:00Z",
         isReady: true,
         retainedPath: "exports/reporting/default-fund/20260503200000/investment-topn-contribution-analytics.csv",
-        route: "/api/fund-structure/reporting/structured-exports/investment-topn-contribution-analytics?fundProfileId=default-fund",
+        route: "/api/workstation/reporting/structured-exports/investment-topn-contribution-analytics",
         dataDictionaryRoute: "/api/workstation/reporting",
         validationSummary: "Exports source-backed Top-N winners, laggards, and contribution rows with P&L percentages and heat-map intensities. 3 row(s), 18 field(s), and 8 source record(s) are ready.",
         evidenceRoute: "/api/fund-structure/report-packs",
@@ -2978,6 +2979,101 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
     }
   ],
   breakCases: [],
+  reconciliationLanes: [
+    {
+      laneId: "cash-reconciliation",
+      label: "Cash reconciliation",
+      status: "Ready",
+      isReady: true,
+      breakCount: 0,
+      summary: "Cash reconciliation is covered by retained bank and custodian cash evidence.",
+      routeHint: "/workstation/accounting/reconciliation",
+      evidenceLinks: [
+        {
+          evidenceId: "fixture-cash-reconciliation-evidence",
+          label: "Fixture cash reconciliation evidence",
+          route: "/workstation/accounting/reconciliation/cash",
+          source: "development-fixture",
+          capturedAtUtc: "2026-05-08T15:35:00Z"
+        }
+      ],
+      requiredActions: []
+    },
+    {
+      laneId: "position-reconciliation",
+      label: "Position reconciliation",
+      status: "Ready",
+      isReady: true,
+      breakCount: 0,
+      summary: "Position reconciliation has matched portfolio and custodian positions.",
+      routeHint: "/workstation/accounting/reconciliation",
+      evidenceLinks: [],
+      requiredActions: []
+    },
+    {
+      laneId: "trade-reconciliation",
+      label: "Trade reconciliation",
+      status: "Ready",
+      isReady: true,
+      breakCount: 0,
+      summary: "Trade reconciliation matched fills, orders, and execution activity.",
+      routeHint: "/workstation/accounting/reconciliation",
+      evidenceLinks: [],
+      requiredActions: []
+    },
+    {
+      laneId: "income-reconciliation",
+      label: "Income reconciliation",
+      status: "Ready",
+      isReady: true,
+      breakCount: 0,
+      summary: "Income reconciliation retained expected dividend, interest, and accrual evidence.",
+      routeHint: "/workstation/accounting/reconciliation",
+      evidenceLinks: [],
+      requiredActions: []
+    },
+    {
+      laneId: "mbs-factor-reconciliation",
+      label: "MBS factor reconciliation",
+      status: "ReviewRequired",
+      isReady: false,
+      breakCount: 1,
+      summary: "MBS factor reconciliation has 1 open break requiring controller review.",
+      routeHint: "/workstation/accounting/reconciliation",
+      evidenceLinks: [
+        {
+          evidenceId: "fixture-factor-break-evidence",
+          label: "Fixture factor variance evidence",
+          route: "/workstation/accounting/reconciliation/recon-break-factor-1",
+          source: "development-fixture",
+          capturedAtUtc: "2026-05-08T15:36:00Z"
+        }
+      ],
+      requiredActions: ["Resolve or assign MBS factor reconciliation breaks and retain evidence."]
+    },
+    {
+      laneId: "bank-reconciliation",
+      label: "Bank reconciliation",
+      status: "Ready",
+      isReady: true,
+      breakCount: 0,
+      summary: "Bank reconciliation retained normalized bank transaction evidence.",
+      routeHint: "/workstation/accounting/reconciliation",
+      evidenceLinks: [],
+      requiredActions: []
+    },
+    {
+      laneId: "gl-reconciliation",
+      label: "GL reconciliation support",
+      status: "Ready",
+      isReady: true,
+      breakCount: 0,
+      summary: "GL reconciliation support has expected journal preview evidence.",
+      routeHint: "/workstation/accounting/ledger",
+      evidenceLinks: [],
+      requiredActions: []
+    }
+  ],
   ledgerPreview: {
     previewId: "ledger-preview-dev",
     status: "Drafted",
@@ -3031,6 +3127,136 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
   ],
   closeReadiness: null,
   closePackage: null,
+  dashboardSummary: {
+    dashboardId: "operations-dashboard:fixture:2026-05",
+    stage: "Resolve Exceptions",
+    status: "Blocked",
+    isReady: false,
+    readyMetricCount: 2,
+    totalMetricCount: 6,
+    summary: "Financial Operations dashboard is in Resolve Exceptions with 4 metrics requiring review.",
+    metrics: [
+      {
+        metricId: "receive-activity",
+        label: "Receive Activity",
+        value: "Complete",
+        status: "Ready",
+        detail: "Broker activity has been received and normalized for this account-period workflow.",
+        routeHint: "/workstation/accounting",
+        evidenceLinks: [],
+        requiredActions: []
+      },
+      {
+        metricId: "match-records",
+        label: "Match Records",
+        value: "6/7 lanes ready",
+        status: "ReviewRequired",
+        detail: "Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.",
+        routeHint: "/workstation/accounting/reconciliation",
+        evidenceLinks: [],
+        requiredActions: ["Complete source-backed reconciliation lanes before approval."]
+      },
+      {
+        metricId: "resolve-exceptions",
+        label: "Resolve Exceptions",
+        value: "1 open",
+        status: "Blocked",
+        detail: "1 reconciliation break requires assignment, escalation, or resolution evidence.",
+        routeHint: "/workstation/accounting/reconciliation",
+        evidenceLinks: [],
+        requiredActions: ["Assign, escalate, or resolve open exceptions and retain resolution evidence."]
+      },
+      {
+        metricId: "approve-results",
+        label: "Approve Results",
+        value: "Pending",
+        status: "ReviewRequired",
+        detail: "Approval history is not complete for this workflow.",
+        routeHint: "/workstation/accounting/approvals",
+        evidenceLinks: [],
+        requiredActions: ["Complete workflow approval and checklist-control approvals."]
+      },
+      {
+        metricId: "produce-evidence",
+        label: "Produce Evidence",
+        value: "Evidence package pending",
+        status: "Missing",
+        detail: "Close workflow has unresolved ledger blockers.",
+        routeHint: "/workstation/reporting/report-packs",
+        evidenceLinks: [],
+        requiredActions: ["Publish and retain the evidence package before period close."]
+      },
+      {
+        metricId: "close-support",
+        label: "Close Support",
+        value: "Close readiness pending",
+        status: "Missing",
+        detail: "Close checklist, period lock, and reopen evidence are governed by the shared workflow.",
+        routeHint: "/workstation/accounting/operations-continuity",
+        evidenceLinks: [],
+        requiredActions: ["Clear close readiness blockers and retain period-lock or reopen evidence."]
+      }
+    ],
+    evidenceLinks: [],
+    requiredActions: [
+      "Assign, escalate, or resolve open exceptions and retain resolution evidence.",
+      "Publish and retain the evidence package before period close."
+    ]
+  },
+  evidencePackages: [
+    {
+      packageId: fixtureAccountingRecordId,
+      label: "Accounting record evidence",
+      status: "ReviewRequired",
+      isReady: false,
+      summary: "Demo accounting record is partially retained; approvals, case history, report pack, exports, and restatement lineage still require review.",
+      routeHint: "/workstation/accounting/operations-continuity",
+      completeCategoryCount: 3,
+      requiredCategoryCount: 8,
+      evidenceLinkCount: fixtureAccountingRecordEvidenceLinks.length,
+      evidenceLinks: fixtureAccountingRecordEvidenceLinks,
+      requiredActions: ["Complete all accounting-record evidence categories before publishing the evidence package."]
+    },
+    {
+      packageId: "report-pack:fixture:2026-05",
+      label: "Report pack evidence",
+      status: "Missing",
+      isReady: false,
+      summary: "Close workflow has unresolved ledger blockers.",
+      routeHint: "/workstation/reporting/report-packs",
+      completeCategoryCount: 0,
+      requiredCategoryCount: 1,
+      evidenceLinkCount: 0,
+      evidenceLinks: [],
+      requiredActions: ["Link ready report-pack evidence before close publication."]
+    },
+    {
+      packageId: "close-package:fixture:2026-05",
+      label: "Close package manifest",
+      status: "Missing",
+      isReady: false,
+      summary: "Close package manifest and retained evidence hash have not been published.",
+      routeHint: "/workstation/accounting/operations-continuity",
+      completeCategoryCount: 0,
+      requiredCategoryCount: 1,
+      evidenceLinkCount: 0,
+      evidenceLinks: [],
+      requiredActions: ["Publish the close package manifest and retain the evidence hash."]
+    },
+    {
+      packageId: "audit-support:fixture:2026-05",
+      label: "Audit support package",
+      status: "ReviewRequired",
+      isReady: false,
+      summary: "5 audit evidence categories are missing.",
+      routeHint: "/workstation/reporting/evidence",
+      completeCategoryCount: 3,
+      requiredCategoryCount: 8,
+      evidenceLinkCount: fixtureAccountingRecordEvidenceLinks.length,
+      evidenceLinks: fixtureAccountingRecordEvidenceLinks,
+      requiredActions: ["Complete missing audit evidence categories before releasing the package."]
+    }
+  ],
   evidenceLinks: [],
   blockers: [
     {
@@ -3370,6 +3596,234 @@ const fixtureOperationsCloseCalendar: OperationsCloseCalendar = {
   ]
 };
 
+const fixturePrivateCapitalCloseCockpit: PrivateCapitalCloseCockpit = {
+  fundProfileId: "default-fund",
+  ledgerBookId: null,
+  fundAccountId: fixtureOperationsContinuityWorkflow.fundAccountId,
+  periodId: fixtureOperationsContinuityWorkflow.periodId,
+  entityId: "entity-master",
+  projectedAtUtc: "2026-05-28T00:00:00Z",
+  cockpitRoute: "/accounting/operations-continuity",
+  overallStatus: "ReviewRequired",
+  isReadyToClose: false,
+  readinessScore: 68,
+  workflowCount: 1,
+  fundEventCount: 3,
+  capitalAccountCount: 4,
+  reportOutputCount: 2,
+  deliveredReportOutputCount: 1,
+  readyLaneCount: 3,
+  blockedLaneCount: 2,
+  lanes: [
+    {
+      laneId: "fund-event-evidence",
+      label: "Fund event evidence",
+      status: "Ready",
+      isReady: true,
+      summary: "Capital activity events retain source, ledger, and approval evidence.",
+      route: "/workstation/accounting/private-capital/fund-events",
+      evidenceLinkCount: 2,
+      evidenceLinks: fixtureAccountingRecordEvidenceLinks,
+      requiredActions: []
+    },
+    {
+      laneId: "partner-capital-tie-outs",
+      label: "Partner capital account tie-outs",
+      status: "Ready",
+      isReady: true,
+      summary: "Partner capital subledger, ledger, and investor statement evidence tie out.",
+      route: "/workstation/accounting/private-capital/capital-account-subledger",
+      evidenceLinkCount: 2,
+      evidenceLinks: fixtureAccountingRecordEvidenceLinks.slice(0, 2),
+      requiredActions: []
+    },
+    {
+      laneId: "expense-fee-allocation",
+      label: "Expense, fee, and allocation review",
+      status: "Ready",
+      isReady: true,
+      summary: "Management fee, expense, and allocation evidence is retained for controller review.",
+      route: "/workstation/accounting/private-capital/fund-events/management-fee",
+      evidenceLinkCount: 2,
+      evidenceLinks: fixtureAccountingRecordEvidenceLinks.slice(0, 2),
+      requiredActions: []
+    },
+    {
+      laneId: "ledger-reconciliation",
+      label: "Ledger and reconciliation",
+      status: "Blocked",
+      isReady: false,
+      summary: "Ledger posting is blocked until the controller validates the close journal draft.",
+      route: "/workstation/accounting/ledger",
+      evidenceLinkCount: 0,
+      evidenceLinks: [],
+      requiredActions: ["Validate ledger draft", "Resolve reconciliation blocker"]
+    },
+    {
+      laneId: "nav-support",
+      label: "NAV support",
+      status: "ReviewRequired",
+      isReady: false,
+      summary: "Shadow NAV support package still needs retained position, cash, and pricing evidence.",
+      route: "/workstation/portfolio/nav",
+      evidenceLinkCount: 1,
+      evidenceLinks: fixtureAccountingRecordEvidenceLinks.slice(0, 1),
+      requiredActions: ["Retain NAV support for positions, cash, and pricing"]
+    },
+    {
+      laneId: "close-package",
+      label: "Evidence package",
+      status: "Blocked",
+      isReady: false,
+      summary: "Close evidence package publication is blocked until the manifest is retained.",
+      route: "/workstation/accounting/operations-continuity",
+      evidenceLinkCount: 0,
+      evidenceLinks: [],
+      requiredActions: ["Publish the close package manifest"]
+    },
+    {
+      laneId: "period-lock",
+      label: "Period lock evidence",
+      status: "ReviewRequired",
+      isReady: false,
+      summary: "The selected period remains open until close package publication succeeds.",
+      route: "/workstation/accounting/operations-continuity",
+      evidenceLinkCount: 0,
+      evidenceLinks: [],
+      requiredActions: ["Close the workflow and retain period-lock evidence"]
+    }
+  ],
+  workflows: [
+    {
+      workflowId: fixtureOperationsContinuityWorkflow.workflowId,
+      fundAccountId: fixtureOperationsContinuityWorkflow.fundAccountId,
+      periodId: fixtureOperationsContinuityWorkflow.periodId,
+      status: fixtureOperationsContinuityWorkflow.status,
+      closeReadinessScore: 68,
+      isReadyToClose: false,
+      workflowRoute: "/workstation/accounting/operations-continuity",
+      closePackageId: null,
+      closePackageRoute: null,
+      blockerCount: 1,
+      openChecklistCount: 2,
+      updatedAtUtc: fixtureOperationsContinuityWorkflow.updatedAtUtc
+    }
+  ],
+  approvalHistory: [
+    {
+      approvalId: "approval-close-fixture-2026-05",
+      workflowId: fixtureOperationsContinuityWorkflow.workflowId,
+      fundAccountId: fixtureOperationsContinuityWorkflow.fundAccountId,
+      periodId: fixtureOperationsContinuityWorkflow.periodId,
+      status: "ReviewerAssigned",
+      operator: "ops-user",
+      reviewer: "fund-controller",
+      rationale: "Pending final ledger validation before close sign-off.",
+      submittedAtUtc: "2026-05-08T15:05:00Z",
+      decidedAtUtc: null,
+      workflowRoute: "/workstation/accounting/operations-continuity",
+      evidenceLinkCount: 1,
+      evidenceLinks: [
+        {
+          evidenceId: "fixture-approval-evidence",
+          label: "Fixture approval assignment",
+          route: "/workstation/accounting/approvals",
+          source: "development-fixture",
+          capturedAtUtc: "2026-05-08T15:05:00Z"
+        }
+      ]
+    }
+  ],
+  navSupportPackages: [
+    {
+      packageId: "nav-support:fixture:2026-05",
+      label: "NAV support package",
+      status: "ReviewRequired",
+      isReady: false,
+      summary: "NAV support package has retained cash and position evidence but still needs pricing and shadow NAV evidence.",
+      route: "/workstation/portfolio/nav",
+      shadowNav: 1250000,
+      currency: "USD",
+      evidenceLinkCount: 1,
+      evidenceLinks: [
+        {
+          evidenceId: "fixture-nav-support-evidence",
+          label: "Fixture NAV support evidence",
+          route: "/workstation/portfolio/nav/support-package",
+          source: "development-fixture",
+          capturedAtUtc: "2026-05-10T18:10:00Z"
+        }
+      ],
+      components: [
+        {
+          componentId: "positions",
+          label: "Positions",
+          status: "Ready",
+          isReady: true,
+          summary: "Position support retained.",
+          route: "/workstation/portfolio",
+          score: 100
+        },
+        {
+          componentId: "cash",
+          label: "Cash",
+          status: "Ready",
+          isReady: true,
+          summary: "Cash support retained.",
+          route: "/workstation/accounting/cash",
+          score: 100
+        },
+        {
+          componentId: "pricing",
+          label: "Pricing",
+          status: "ReviewRequired",
+          isReady: false,
+          summary: "Pricing support still needs retained evidence.",
+          route: "/workstation/data/pricing",
+          score: 60
+        },
+        {
+          componentId: "shadow-nav",
+          label: "Shadow NAV",
+          status: "ReviewRequired",
+          isReady: false,
+          summary: "Shadow NAV report output evidence is pending.",
+          route: "/workstation/reporting/shadow-nav-pack",
+          score: 50
+        }
+      ],
+      requiredActions: ["Retain NAV support package for positions, cash, pricing, and shadow NAV evidence."]
+    }
+  ],
+  blockers: [
+    {
+      code: "LEDGER_VALIDATION_REQUIRED",
+      category: "Ledger",
+      severity: "Critical",
+      message: "Ledger posting requires a balanced and validated journal draft.",
+      gate: "LedgerPosting",
+      routeHint: "/workstation/accounting/ledger"
+    }
+  ],
+  nextActions: [
+    {
+      code: "RESOLVE_LEDGERPOSTING_BLOCKERS",
+      label: "Resolve Ledger Posting blockers",
+      route: "/workstation/accounting/ledger",
+      gate: "LedgerPosting"
+    }
+  ],
+  liveCapabilities: [
+    "workflow-readiness",
+    "partner-tie-out-evidence",
+    "allocation-review",
+    "nav-support-lineage",
+    "close-package-evidence",
+    "period-lock-evidence"
+  ],
+  plannedCapabilities: ["tax-support-drilldown", "delivery-recipient-entitlement"]
+};
+
 const fixtureLedgerTrialBalance: LedgerTrialBalanceLine[] = [
   {
     accountName: "Cash",
@@ -3413,6 +3867,7 @@ const fixtures = {
   [WORKSTATION_API_ENDPOINTS.operationsContinuity]: fixtureOperationsContinuityWorkflows,
   [WORKSTATION_API_ENDPOINTS.operationsContinuityApprovalPolicyMatrix]: fixtureOperationsApprovalPolicyMatrix,
   [WORKSTATION_API_ENDPOINTS.operationsContinuityCloseCalendar]: fixtureOperationsCloseCalendar,
+  [WORKSTATION_API_ENDPOINTS.operationsPrivateCapitalCloseCockpit]: fixturePrivateCapitalCloseCockpit,
   [WORKSTATION_API_ENDPOINTS.evidenceSubjects]: [fixtureAccountingRecordEvidenceSubject],
   [WORKSTATION_API_ENDPOINTS.evidenceVaultSearch]: [fixtureAccountingRecordVaultIdentity],
   [AUTH_API_ENDPOINTS.roles]: fixtureRolePermissionCatalog,

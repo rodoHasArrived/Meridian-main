@@ -1476,6 +1476,28 @@ describe("AccountingScreen", () => {
       "href",
       "/api/workstation/evidence/subjects/payment-intent/payment%3Afund-alpha%3Adistribution%3Amanual-je-1/packet"
     );
+    const paymentIntentDrilldown = screen.getByRole("region", {
+      name: "Cash evidence drilldown for payment:fund-alpha:distribution:manual-je-1"
+    });
+    expect(paymentIntentDrilldown).toHaveTextContent("Approval chain");
+    expect(paymentIntentDrilldown).toHaveTextContent("Controller approval / controller");
+    expect(paymentIntentDrilldown).toHaveTextContent("Decision pending");
+    expect(paymentIntentDrilldown).toHaveTextContent("Bank evidence");
+    expect(paymentIntentDrilldown).toHaveTextContent("Retained wire evidence supports the expected distribution cash movement.");
+    expect(paymentIntentDrilldown).toHaveTextContent("$100 USD / 2026-06-30");
+    expect(paymentIntentDrilldown).toHaveTextContent("Reconciliation");
+    expect(paymentIntentDrilldown).toHaveTextContent("Cash evidence is linked to reconciliation review.");
+    expect(paymentIntentDrilldown).toHaveTextContent("Audit trail");
+    expect(paymentIntentDrilldown).toHaveTextContent("payment-intent.execution-deferred");
+    expect(screen.getByRole("link", {
+      name: "Open bank evidence for payment:fund-alpha:distribution:manual-je-1 RetainedCashEvidence"
+    })).toHaveAttribute(
+      "href",
+      "/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-distribution-manual-je-1/packet"
+    );
+    expect(screen.getByRole("link", {
+      name: "Open reconciliation evidence for payment:fund-alpha:distribution:manual-je-1 reconciliation:distribution"
+    })).toHaveAttribute("href", "/api/reconciliation/runs/distribution");
     expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("Settlement matched / Outflow / $100 USD / 1 cash evidence / settlement linked");
     expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("live execution remains deferred");
     expect(screen.getByRole("table", { name: "Private-capital fund event ledger records" })).toHaveTextContent("4/7 evidence categories ready");
@@ -1486,6 +1508,10 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("link", { name: "Open private-capital activity record for Distribution" })).toHaveAttribute(
       "href",
       "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Adistribution%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1"
+    );
+    expect(screen.getByRole("link", { name: "Open fund event command center for Distribution" })).toHaveAttribute(
+      "href",
+      "/api/ledger/private-capital/fund-event-command-center?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Adistribution%3A20260630"
     );
     expect(screen.getByRole("link", { name: "Open next action for Distribution" })).toHaveAttribute(
       "href",
@@ -1532,12 +1558,12 @@ describe("AccountingScreen", () => {
       investorId: "investor:lp-1",
       currency: "USD",
       workbenchRoute: "/api/ledger/private-capital/capital-account-workbench?capitalAccountId=capital-account%3Afund-alpha%3Alp-1",
-      statusLabel: "Ready",
-      statusReason: "Investor capital-account evidence, allocation rules, statement lineage, and audit drill-throughs are available.",
+      statusLabel: "Restated lineage",
+      statusReason: "Statement lineage includes retained restatement metadata and audit evidence.",
       investorAccountCount: 1,
       fundEventCount: 1,
       statementCount: 1,
-      restatementLineageCount: 0,
+      restatementLineageCount: 1,
       auditDrillThroughCount: 1,
       netCapitalActivity: 100,
       investorAccounts: [{
@@ -1601,7 +1627,25 @@ describe("AccountingScreen", () => {
         route: "/evidence/source",
         evidenceLinkCount: 1,
         evidenceLinks: ["/evidence/source"],
-        requiredEvidence: ["Source document"]
+        requiredEvidence: ["Source document"],
+        ruleVersion: "source-support:projection:1.1.1.1",
+        effectiveFrom: "2026-06-30",
+        effectiveTo: "2026-06-30",
+        formula: "fund_event.source_evidence_count > 0",
+        approvalState: "Approved",
+        approvalReference: "approval-lp-1 / /accounting/approvals?approvalId=approval-lp-1",
+        replayTrace: "Trace uses 1 fund event(s), 1 subledger entry(ies), 1 ledger impact(s), 1 report output(s), and 1 allocation input(s).",
+        inputs: [{
+          inputId: "allocation-input:fund-event:fund-event:fund-alpha:capital-call",
+          kind: "fund-event",
+          sourceId: "fund-event:fund-alpha:capital-call",
+          label: "CapitalCall / Capital call",
+          amount: 100,
+          currency: "USD",
+          effectiveDate: "2026-06-30",
+          evidenceRoute: "/evidence/source"
+        }],
+        relatedFundEventIds: ["fund-event:fund-alpha:capital-call"]
       }],
       statementLineage: [{
         lineageId: "lineage-1",
@@ -1612,7 +1656,7 @@ describe("AccountingScreen", () => {
         displayName: "LP 1 Statement",
         reportRoute: "/reporting/report-packs/lp-1",
         reportPackId: "report-pack-1",
-        reportWorkflowState: "Published",
+        reportWorkflowState: "Restated",
         isPublished: true,
         isReportReady: true,
         publicationManifestId: "manifest-1",
@@ -1621,18 +1665,25 @@ describe("AccountingScreen", () => {
         publishedAtUtc: "2026-06-30T17:00:00Z",
         publishedBy: "publisher",
         reportLineProvenanceCount: 2,
-        hasRestatementLineage: false,
-        restatementStatus: "No restatement lineage retained.",
-        restatementReasonCode: null,
-        restatementPriorVersionReportId: null,
-        restatementApprover: null,
-        restatementChangedLineCount: 0,
-        restatementEvidenceLinkCount: 0,
+        hasRestatementLineage: true,
+        restatementStatus: "Restatement lineage retained.",
+        restatementReasonCode: "capital-account-correction",
+        restatementPriorVersionReportId: "prior-report",
+        restatementApprover: "audit-partner",
+        restatementChangedLineCount: 1,
+        restatementEvidenceLinkCount: 1,
         reportOutputRoute: "/api/ledger/private-capital/report-output?reportOutputId=report-output-1",
         evidenceRoute: "/evidence/report",
         capitalAccountSubledgerRoute: "/api/ledger/private-capital/capital-account-subledger?capitalAccountId=capital-account%3Afund-alpha%3Alp-1",
         evidenceLinks: ["/evidence/report"],
-        restatementEvidenceLinks: []
+        restatementEvidenceLinks: ["/evidence/restatement"],
+        restatementChangedLines: [{
+          lineKey: "capital-account-ending",
+          previousValue: "100.00",
+          currentValue: "125.00",
+          evidenceLinkCount: 1,
+          evidenceLinks: ["/evidence/restatement"]
+        }]
       }],
       auditDrillThroughs: [{
         drillThroughId: "drill-subledger",
@@ -1660,7 +1711,13 @@ describe("AccountingScreen", () => {
     const region = screen.getByRole("region", { name: "Capital Account Workbench" });
     expect(region).toHaveTextContent("Investor capital accounts");
     expect(region).toHaveTextContent("Source support");
+    expect(region).toHaveTextContent("source-support:projection:1.1.1.1");
+    expect(region).toHaveTextContent("fund_event.source_evidence_count > 0");
+    expect(region).toHaveTextContent("Trace uses 1 fund event(s)");
     expect(region).toHaveTextContent("Statement lineage");
+    expect(region).toHaveTextContent("capital-account-ending");
+    expect(region).toHaveTextContent("100.00 -> 125.00");
+    expect(region).toHaveTextContent("1 changed-line evidence");
     expect(region).toHaveTextContent("Audit drill-through");
     expect(region).toHaveTextContent("Live in v0.18 slice");
     expect(region).toHaveTextContent("Still planned");

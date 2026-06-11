@@ -22,6 +22,7 @@ import {
   getStrategyWorkspace,
   getSystemStatus,
   getTradingWorkspace,
+  getWorkstationWorkflowSummary,
   getWorkflowLibrary,
   getWorkflowPresets,
   getFeatureCapabilities,
@@ -40,6 +41,7 @@ import type {
   LedgerMappingWorkbench,
   OperationsApprovalPolicyMatrix,
   OperationsCloseCalendar,
+  OperatorWorkflowHomeSummary,
   MultiAssetCoverageSummary,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
@@ -83,6 +85,7 @@ type RefreshDataKey =
   | "operationsApprovalPolicyMatrix"
   | "operationsCloseCalendar"
   | "brokeragePortfolio"
+  | "workflowSummary"
   | "workflowLibrary"
   | "workflowPresets"
   | "featureCapabilities";
@@ -101,6 +104,13 @@ interface SettledRefreshEntry {
 
 export interface UseWorkstationDataOptions {
   activeWorkspace?: WorkspaceKey;
+  workflowSummaryScope?: {
+    hasOperatingContext?: boolean;
+    operatingContext?: string | null;
+    fundProfileId?: string | null;
+    fundAccountId?: string | null;
+    fundDisplayName?: string | null;
+  };
 }
 
 interface WorkstationDataState {
@@ -128,6 +138,7 @@ interface WorkstationDataState {
   brokeragePortfolio: BrokerageHouseholdPortfolio | null;
   workflowLibrary: WorkflowLibrary | null;
   workflowPresets: WorkflowPresetLibrary | null;
+  workflowSummary: OperatorWorkflowHomeSummary | null;
   featureCapabilities: FeatureCapabilitySettingsResponse | null;
   workflowError: string | null;
   usingDevelopmentFixtures: boolean;
@@ -165,6 +176,7 @@ const initialState: WorkstationDataState = {
   brokeragePortfolio: null,
   workflowLibrary: null,
   workflowPresets: null,
+  workflowSummary: null,
   featureCapabilities: null,
   workflowError: null,
   usingDevelopmentFixtures: false,
@@ -179,6 +191,11 @@ const initialState: WorkstationDataState = {
 
 export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
   const activeWorkspace = options.activeWorkspace ?? "trading";
+  const workflowSummaryHasOperatingContext = options.workflowSummaryScope?.hasOperatingContext ?? false;
+  const workflowSummaryOperatingContext = options.workflowSummaryScope?.operatingContext ?? null;
+  const workflowSummaryFundProfileId = options.workflowSummaryScope?.fundProfileId ?? null;
+  const workflowSummaryFundAccountId = options.workflowSummaryScope?.fundAccountId ?? null;
+  const workflowSummaryFundDisplayName = options.workflowSummaryScope?.fundDisplayName ?? null;
   const activeWorkspaceRef = useRef<WorkspaceKey>(activeWorkspace);
   const hasPublishedBootstrapRef = useRef(false);
   const documentVisible = useDocumentVisible();
@@ -263,7 +280,13 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
       providerRoutingRefreshing: false
     }));
 
-    const entries = createRefreshEntries(requestOptions);
+    const entries = createRefreshEntries(requestOptions, {
+      hasOperatingContext: workflowSummaryHasOperatingContext,
+      operatingContext: workflowSummaryOperatingContext,
+      fundProfileId: workflowSummaryFundProfileId,
+      fundAccountId: workflowSummaryFundAccountId,
+      fundDisplayName: workflowSummaryFundDisplayName
+    });
     const primaryEntries = selectPrimaryRefreshEntries(entries, activeWorkspace);
     const allSettled = settleRefreshEntries(entries);
     const primarySettled = primaryEntries.length === entries.length
@@ -304,7 +327,12 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
     fullRefreshLifecycle.succeed,
     portfolioRefreshLifecycle.invalidate,
     providerRoutingRefreshLifecycle.invalidate,
-    tradingRefreshLifecycle.invalidate
+    tradingRefreshLifecycle.invalidate,
+    workflowSummaryFundAccountId,
+    workflowSummaryFundDisplayName,
+    workflowSummaryFundProfileId,
+    workflowSummaryHasOperatingContext,
+    workflowSummaryOperatingContext
   ]);
 
   useEffect(() => {
@@ -577,7 +605,16 @@ export function useWorkstationData(options: UseWorkstationDataOptions = {}) {
   return { ...state, refresh, refreshTrading, refreshPortfolio, refreshProviderRouting, updateFeatureCapability, upsertWorkflowPreset };
 }
 
-function createRefreshEntries(requestOptions: { signal: AbortSignal }): RefreshEntry[] {
+function createRefreshEntries(
+  requestOptions: { signal: AbortSignal },
+  workflowSummaryScope: {
+    hasOperatingContext?: boolean;
+    operatingContext?: string | null;
+    fundProfileId?: string | null;
+    fundAccountId?: string | null;
+    fundDisplayName?: string | null;
+  } = {}
+): RefreshEntry[] {
   return [
     { key: "session", category: "bootstrap", promise: getSession(requestOptions) },
     { key: "overview", category: "bootstrap", promise: getSystemStatus(requestOptions) },
@@ -610,6 +647,18 @@ function createRefreshEntries(requestOptions: { signal: AbortSignal }): RefreshE
     { key: "operationsApprovalPolicyMatrix", category: "workspace", workspaceKeys: ["settings"], promise: getOperationsApprovalPolicyMatrix(requestOptions) },
     { key: "operationsCloseCalendar", category: "workspace", workspaceKeys: ["settings"], promise: getOperationsCloseCalendar({}, requestOptions) },
     { key: "brokeragePortfolio", category: "workspace", workspaceKeys: ["portfolio"], promise: getBrokerageHouseholdPortfolio("alpaca", requestOptions) },
+    {
+      key: "workflowSummary",
+      category: "workflow",
+      promise: getWorkstationWorkflowSummary({
+        hasOperatingContext: workflowSummaryScope.hasOperatingContext,
+        operatingContext: workflowSummaryScope.operatingContext ?? undefined,
+        fundProfileId: workflowSummaryScope.fundProfileId ?? undefined,
+        fundAccountId: workflowSummaryScope.fundAccountId ?? undefined,
+        fundDisplayName: workflowSummaryScope.fundDisplayName ?? undefined,
+        signal: requestOptions.signal
+      })
+    },
     { key: "workflowLibrary", category: "workflow", promise: getWorkflowLibrary(requestOptions) },
     { key: "workflowPresets", category: "workflow", promise: getWorkflowPresets(requestOptions) },
     { key: "featureCapabilities", category: "workspace", workspaceKeys: ["settings"], promise: getFeatureCapabilities(requestOptions) }
@@ -617,7 +666,7 @@ function createRefreshEntries(requestOptions: { signal: AbortSignal }): RefreshE
 }
 
 function selectPrimaryRefreshEntries(entries: RefreshEntry[], activeWorkspace: WorkspaceKey): RefreshEntry[] {
-  const primaryKeys = new Set<RefreshDataKey>(["session", "overview", "workflowLibrary", "workflowPresets"]);
+  const primaryKeys = new Set<RefreshDataKey>(["session", "overview", "workflowSummary", "workflowLibrary", "workflowPresets"]);
   for (const key of getActiveWorkspaceRefreshKeys(activeWorkspace)) {
     primaryKeys.add(key);
   }
@@ -776,6 +825,9 @@ function assignRefreshValue(state: WorkstationDataState, key: RefreshDataKey, va
       break;
     case "workflowPresets":
       state.workflowPresets = value as WorkflowPresetLibrary;
+      break;
+    case "workflowSummary":
+      state.workflowSummary = value as OperatorWorkflowHomeSummary;
       break;
     case "featureCapabilities":
       state.featureCapabilities = value as FeatureCapabilitySettingsResponse;

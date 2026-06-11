@@ -97,6 +97,21 @@ public sealed class CapitalAccountWorkbenchServiceTests
 
         var workbench = await service.GetWorkbenchAsync("fund-alpha");
 
+        var allocationRule = workbench.AllocationRules.Should().ContainSingle(item => item.CategoryId == "report-output").Subject;
+        allocationRule.RuleVersion.Should().Be("report-output:projection:1.1.1.1");
+        allocationRule.EffectiveFrom.Should().Be(new DateOnly(2026, 6, 30));
+        allocationRule.EffectiveTo.Should().Be(new DateOnly(2026, 6, 30));
+        allocationRule.Formula.Should().Be("all(report_output.is_report_ready) and report_evidence_link_count > 0");
+        allocationRule.ApprovalState.Should().Be(ManualJournalEntryStatusDto.Approved.ToString());
+        allocationRule.ApprovalReference.Should().Contain("approval-lp-1");
+        allocationRule.ReplayTrace.Should().Contain("1 fund event(s)");
+        allocationRule.Inputs.Should().ContainSingle(input =>
+            input.Kind == "report-output" &&
+            input.SourceId == reportOutput.ReportOutputId &&
+            input.Amount == 125m &&
+            input.Currency == "USD" &&
+            input.EffectiveDate == new DateOnly(2026, 6, 30));
+        allocationRule.RelatedFundEventIds.Should().ContainSingle().Which.Should().Be("fund-event:fund-alpha:capital-call");
         workbench.StatementLineage.Should().ContainSingle(item =>
             item.ReportOutputId == reportOutput.ReportOutputId &&
             item.HasRestatementLineage &&
@@ -104,12 +119,17 @@ public sealed class CapitalAccountWorkbenchServiceTests
             item.RestatementApprover == "audit-partner" &&
             item.RestatementChangedLineCount == 1 &&
             item.RestatementEvidenceLinkCount == 1 &&
-            item.RestatementEvidenceLinks.Contains("/evidence/report-pack/restatement"));
+            item.RestatementEvidenceLinks.Contains("/evidence/report-pack/restatement") &&
+            item.RestatementChangedLines.Count == 1 &&
+            item.RestatementChangedLines[0].LineKey == "capital-account-ending" &&
+            item.RestatementChangedLines[0].PreviousValue == "100.00" &&
+            item.RestatementChangedLines[0].CurrentValue == "125.00" &&
+            item.RestatementChangedLines[0].EvidenceLinks.Contains("/evidence/report-pack/restatement"));
         workbench.AuditDrillThroughs.Should().Contain(item =>
             item.Kind == "restatement" &&
             item.Route == reportOutput.EvidenceRoute &&
             item.EvidenceLinks.Contains("/evidence/report-pack/restatement"));
-        workbench.LiveCapabilities.Should().Contain("Statement publication and restatement lineage");
+        workbench.LiveCapabilities.Should().Contain(item => item.Contains("restatement changed-line detail", StringComparison.OrdinalIgnoreCase));
         workbench.PlannedCapabilities.Should().Contain("Broad LP portal self-service");
     }
 

@@ -225,6 +225,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
                     hasOperatingContext: _operatingContextService?.CurrentContext is not null || _fundContextService.CurrentFundProfile is not null,
                     operatingContextDisplayName: _operatingContextService?.CurrentContext?.DisplayName,
                     fundProfileId: _fundContextService.CurrentFundProfile?.FundProfileId,
+                    fundAccountId: WorkstationOperatingContextScopeResolver.ResolveFundAccountIdString(_operatingContextService?.CurrentContext),
                     fundDisplayName: _fundContextService.CurrentFundProfile?.DisplayName)
                 .ConfigureAwait(true);
 
@@ -365,6 +366,10 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
             unreadAlerts);
         FinancialOperationsWorkflowCheckpoint.DataContext =
             AccountingWorkspacePresentationService.ResolveCurrentFinancialOperationsWorkflowStep(steps);
+        FinancialOperationsEvidenceBadgesList.ItemsSource = workflow?.Evidence ?? Array.Empty<WorkflowEvidenceBadge>();
+        FinancialOperationsPrimaryBlockerText.Text = workflow is null
+            ? "No source-backed Financial Operations workflow summary is loaded for this context."
+            : $"{workflow.PrimaryBlocker.Label}: {workflow.PrimaryBlocker.Detail}";
     }
 
     private void ApplyAccountingLaneSummaries(

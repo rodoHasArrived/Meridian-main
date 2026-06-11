@@ -2,10 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { runAnalysisExport } from "@/lib/api";
 import type { ApiRequestOptions } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
-import { EXPORT_API_ENDPOINTS, exportPreviewEndpoint, reportPackEvidenceBundleEndpoint } from "@/lib/workstation-endpoints";
+import {
+  EXPORT_API_ENDPOINTS,
+  exportPreviewEndpoint,
+  reportPackEvidenceBundleEndpoint,
+  reportingRunReportWriterGridEndpoint
+} from "@/lib/workstation-endpoints";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { getReportPackDistributions } from "@/lib/reporting-distributions";
-import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportWriterAggregateFunction, ReportWriterFilterOperator, ReportingScheduleDeliveryPlan, ReportingScheduleDeliveryTarget, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowEvidenceLink, ReportingWorkflowLineProvenance, ReportingWorkflowRecord } from "@/types";
+import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportPackDeliveryAccessLink, ReportWriterAggregateFunction, ReportWriterFilterOperator, ReportingScheduleDeliveryPlan, ReportingScheduleDeliveryTarget, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowEvidenceLink, ReportingWorkflowLineProvenance, ReportingWorkflowRecord } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
 export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
@@ -203,6 +208,9 @@ export interface ReportingWriterToken {
   function?: ReportWriterAggregateFunction | null;
   expression?: string | null;
   name?: string | null;
+  dataType?: string | null;
+  dataset?: string | null;
+  role?: string | null;
 }
 
 export interface ReportingWriterFilterRow {
@@ -253,6 +261,10 @@ export interface ReportingRunStatusRow {
   artifactLabel: string;
   artifactNames: string[];
   hasArtifacts: boolean;
+  generatedGridLabel: string;
+  generatedGridNames: string[];
+  generatedGridArtifacts: ReportingGeneratedGridArtifactRow[];
+  hasGeneratedGrids: boolean;
   lineageSummary: string;
   auditSummary: string;
   failureReason: string | null;
@@ -260,6 +272,14 @@ export interface ReportingRunStatusRow {
   nextActions: ReportingRunActionRow[];
   hasDrilldownLinks: boolean;
   hasNextActions: boolean;
+}
+
+export interface ReportingGeneratedGridArtifactRow {
+  id: string;
+  label: string;
+  jsonHref: string;
+  csvHref: string;
+  xlsxHref: string;
 }
 
 export interface ReportingRunLinkRow {
@@ -322,9 +342,21 @@ export interface ReportingScheduleDeliveryPlanRow {
   note: string | null;
   lastDeliveryLabel: string;
   lastDeliveryHref: string | null;
+  lastDeliveryLinks: ReportingDeliveryAccessLinkRow[];
   integrityLabel: string;
   integritySummary: string | null;
   versionStamp: string | null;
+  ariaLabel: string;
+}
+
+export interface ReportingDeliveryAccessLinkRow {
+  id: string;
+  kind: string;
+  label: string;
+  href: string;
+  tokenLabel: string;
+  expiresLabel: string | null;
+  description: string | null;
   ariaLabel: string;
 }
 
@@ -1314,6 +1346,23 @@ function buildSourceFieldTokens(
   metrics: ReportingWriterToken[],
   formulas: ReportingWriterToken[]
 ): ReportingWriterToken[] {
+  if (grid.sourceFields && grid.sourceFields.length > 0) {
+    return grid.sourceFields.map((field) => ({
+      id: `source:${field.name}`,
+      label: field.label || field.name,
+      detail: `${field.dataset} · ${field.role} · ${field.dataType}${field.description ? ` · ${field.description}` : ""}`,
+      kind: field.role?.toLowerCase() === "generated" ? "formula" : field.role?.toLowerCase() === "metric" ? "metric" : "field",
+      fieldName: field.name,
+      sourceField: field.name,
+      name: field.name,
+      function: field.role?.toLowerCase() === "metric" ? "Sum" : null,
+      expression: field.role?.toLowerCase() === "generated" ? `{${field.name}}` : null,
+      dataType: field.dataType,
+      dataset: field.dataset,
+      role: field.role
+    }));
+  }
+
   const names = new Set<string>();
   for (const token of [...rowFields, ...columnFields]) {
     if (!token.label.startsWith("Field ")) {
@@ -1499,6 +1548,10 @@ function buildRunStatusRows(runs: ReportingRunStatusProjection[]): ReportingRunS
       artifactLabel: `${run.artifacts.length} artifact${run.artifacts.length === 1 ? "" : "s"}`,
       artifactNames: run.artifacts,
       hasArtifacts: run.artifacts.length > 0,
+      generatedGridLabel: buildGeneratedGridLabel(run),
+      generatedGridNames: buildGeneratedGridNames(run),
+      generatedGridArtifacts: buildGeneratedGridArtifactRows(run),
+      hasGeneratedGrids: (run.generatedReportWriterGrids?.length ?? 0) > 0,
       lineageSummary: `${run.lineageLinkedSections}/${run.sectionCount} sections linked`,
       auditSummary: run.auditActions.length > 0 ? run.auditActions.join(" → ") : "No audit actions",
       failureReason: run.failureReason,
@@ -1506,6 +1559,42 @@ function buildRunStatusRows(runs: ReportingRunStatusProjection[]): ReportingRunS
       nextActions,
       hasDrilldownLinks: drilldownLinks.length > 0,
       hasNextActions: nextActions.length > 0
+    };
+  });
+}
+
+function buildGeneratedGridLabel(run: ReportingRunStatusProjection): string {
+  const grids = run.generatedReportWriterGrids ?? [];
+  if (grids.length === 0) {
+    return "No generated report-writer grids";
+  }
+
+  const formulaCount = grids.reduce((total, grid) => total + Math.max(0, grid.formulaCount), 0);
+  return `${grids.length} generated grid${grids.length === 1 ? "" : "s"} with ${formulaCount} formula${formulaCount === 1 ? "" : "s"}`;
+}
+
+function buildGeneratedGridNames(run: ReportingRunStatusProjection): string[] {
+  return (run.generatedReportWriterGrids ?? []).map((grid) => {
+    const title = grid.title?.trim() || grid.gridId;
+    const counts = [
+      `${grid.dimensionCount}d`,
+      `${grid.metricCount}m`,
+      `${grid.formulaCount}f`
+    ].join("/");
+    return `${title} (${grid.kind}, ${counts})`;
+  });
+}
+
+function buildGeneratedGridArtifactRows(run: ReportingRunStatusProjection): ReportingGeneratedGridArtifactRow[] {
+  return (run.generatedReportWriterGrids ?? []).map((grid) => {
+    const title = grid.title?.trim() || grid.gridId;
+    const label = `${title} (${grid.kind})`;
+    return {
+      id: `${run.runId}-${grid.gridId}`,
+      label,
+      jsonHref: reportingRunReportWriterGridEndpoint(run.runId, grid.gridId),
+      csvHref: reportingRunReportWriterGridEndpoint(run.runId, grid.gridId, "csv"),
+      xlsxHref: reportingRunReportWriterGridEndpoint(run.runId, grid.gridId, "xlsx")
     };
   });
 }
@@ -1607,11 +1696,35 @@ function buildScheduleDeliveryPlanRows(plans: ReportingScheduleDeliveryPlan[]): 
     note: plan.note,
     lastDeliveryLabel: formatSchedulePlanLastDelivery(plan),
     lastDeliveryHref: plan.lastDeliverySecureLink ?? plan.lastDeliveryPackageRoute,
+    lastDeliveryLinks: buildDeliveryAccessLinkRows(plan.lastDeliveryAccessLinks, `${plan.planId}-delivery-link`),
     integrityLabel: formatSchedulePlanIntegrity(plan),
     integritySummary: plan.lastDeliveryIntegritySummary ?? null,
     versionStamp: plan.versionStamp,
     ariaLabel: `${plan.recipient} ${plan.deliveryMode} scheduled delivery plan for ${plan.scheduleId}`
   }));
+}
+
+function buildDeliveryAccessLinkRows(
+  links: ReportPackDeliveryAccessLink[] | null | undefined,
+  idPrefix: string
+): ReportingDeliveryAccessLinkRow[] {
+  return (links ?? [])
+    .filter((link) => link.href?.trim())
+    .map((link, index) => {
+      const label = link.label?.trim() || link.kind || "Delivery link";
+      const href = link.href.trim();
+      const expiresLabel = link.expiresAtUtc ? `Expires ${formatTimestamp(link.expiresAtUtc)}` : null;
+      return {
+        id: `${idPrefix}-${index + 1}`,
+        kind: link.kind?.trim() || "delivery-link",
+        label,
+        href,
+        tokenLabel: link.requiresToken ? "Token gated" : "Internal",
+        expiresLabel,
+        description: link.description?.trim() || null,
+        ariaLabel: `${label} ${link.requiresToken ? "token gated" : "internal route"} ${href}`
+      };
+    });
 }
 
 function buildScheduleDeliveryPlanSummary(plans: ReportingScheduleDeliveryPlanRow[]): string {

@@ -28,6 +28,7 @@ import {
 import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 import { evidenceWorkbenchPath } from "@/lib/workspace";
+import { WORKSTATION_API_ENDPOINTS, reportingRunReportWriterGridEndpoint } from "@/lib/workstation-endpoints";
 import {
   resolveReportPackProfileKeyCommand,
   useReportingScreenViewModel,
@@ -1193,6 +1194,9 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                     </dl>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{view.liquiditySummary}</p>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">{view.telemetrySummary}</p>
+                    {view.tickFreshnessSummary ? (
+                      <p className="mt-2 text-xs leading-5 text-muted-foreground">{view.tickFreshnessSummary}</p>
+                    ) : null}
                     {(view.readinessBlockers ?? []).length > 0 ? (
                       <ul aria-label={`${view.label} readiness blockers`} className="mt-2 space-y-1 text-xs text-destructive">
                         {(view.readinessBlockers ?? []).map((blocker) => (
@@ -1208,6 +1212,9 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                     </p>
                     <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">
                       Freshness: {view.state} · cut={view.asOf} · source={view.sourceAsOfUtc ?? "unavailable"}
+                    </p>
+                    <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">
+                      Market tick: {view.isMarketTickLinked ? "linked" : "snapshot"} · provider={view.marketDataProvider ?? "unavailable"} · age={view.marketTickAgeSeconds ?? "n/a"}s · seq={view.marketTickSequence ?? "n/a"} · tick={view.marketTickAsOfUtc ?? view.sourceAsOfUtc ?? "unavailable"}
                     </p>
                     <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                       <span className="text-xs text-muted-foreground">{view.cashLadderSummary}</span>
@@ -1939,6 +1946,33 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                       {run.hasArtifacts ? `${run.artifactLabel}: ${run.artifactNames.join(", ")}` : run.artifactLabel}
                     </dd>
                   </div>
+                  <div className="sm:col-span-2 xl:col-span-3">
+                    <dt className="text-[11px] uppercase text-muted-foreground">Generated grids</dt>
+                    <dd className="break-all font-mono text-foreground">
+                      {run.hasGeneratedGrids ? `${run.generatedGridLabel}: ${run.generatedGridNames.join(", ")}` : run.generatedGridLabel}
+                    </dd>
+                    {run.generatedGridArtifacts.length > 0 ? (
+                      <div className="mt-1 flex flex-wrap gap-1.5" aria-label={`${run.id} report-writer grid exports`}>
+                        {run.generatedGridArtifacts.map((grid) => (
+                          <span
+                            key={grid.id}
+                            className="inline-flex min-w-0 items-center gap-1.5 rounded-sm border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground"
+                          >
+                            <span className="max-w-[16rem] truncate text-foreground">{grid.label}</span>
+                            <a className="text-primary underline-offset-2 hover:underline" href={grid.jsonHref} target="_blank" rel="noreferrer">
+                              JSON
+                            </a>
+                            <a className="text-primary underline-offset-2 hover:underline" href={grid.csvHref} target="_blank" rel="noreferrer">
+                              CSV
+                            </a>
+                            <a className="text-primary underline-offset-2 hover:underline" href={grid.xlsxHref} target="_blank" rel="noreferrer">
+                              XLSX
+                            </a>
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
                 </dl>
                 {run.failureReason ? <p className="mt-1 text-xs text-warning">{run.failureReason}</p> : null}
                 {run.hasDrilldownLinks ? (
@@ -2346,12 +2380,29 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                         <a className="break-all font-mono text-primary underline-offset-2 hover:underline" href={plan.route}>
                           {plan.route}
                         </a>
-                        {plan.lastDeliveryHref ? (
+                      </div>
+                      {plan.lastDeliveryLinks.length > 0 ? (
+                        <div className="mt-2 flex flex-wrap gap-1.5" aria-label={`${plan.id} retained delivery access links`}>
+                          {plan.lastDeliveryLinks.map((link) => (
+                            <a
+                              key={link.id}
+                              href={link.href}
+                              aria-label={link.ariaLabel}
+                              className="inline-flex min-w-0 items-center gap-1.5 rounded-sm border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                            >
+                              <span className="max-w-[12rem] truncate text-foreground">{link.label}</span>
+                              <Badge variant="outline">{link.tokenLabel}</Badge>
+                              {link.expiresLabel ? <span>{link.expiresLabel}</span> : null}
+                            </a>
+                          ))}
+                        </div>
+                      ) : plan.lastDeliveryHref ? (
+                        <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
                           <a className="break-all font-mono text-primary underline-offset-2 hover:underline" href={plan.lastDeliveryHref}>
                             {plan.lastDeliveryHref}
                           </a>
-                        ) : null}
-                      </div>
+                        </div>
+                      ) : null}
                       {plan.versionStamp ? (
                         <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{plan.versionStamp}</p>
                       ) : null}
@@ -2418,7 +2469,22 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                             Branding: {attempt.package.brandingTheme.name} · {attempt.package.brandingTheme.firmName} · {attempt.package.brandingTheme.themeId}
                           </p>
                         ) : null}
-                        {attempt.package.secureLink.startsWith("/") ? (
+                        {attempt.package.accessLinks?.length ? (
+                          <div className="flex flex-wrap gap-1.5" aria-label={`${attempt.attemptId} package access links`}>
+                            {attempt.package.accessLinks.map((link) => (
+                              <a
+                                key={`${attempt.attemptId}-${link.kind}-${link.href}`}
+                                className="inline-flex min-w-0 items-center gap-1.5 rounded-sm border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground hover:bg-secondary/45 focus:outline-none focus:ring-2 focus:ring-primary/40"
+                                href={link.href}
+                                aria-label={`${link.label} ${link.requiresToken ? "token gated" : "internal route"} ${link.href}`}
+                              >
+                                <span className="max-w-[12rem] truncate text-foreground">{link.label}</span>
+                                <Badge variant="outline">{link.requiresToken ? "Token gated" : "Internal"}</Badge>
+                                {link.expiresAtUtc ? <span>Expires {link.expiresAtUtc}</span> : null}
+                              </a>
+                            ))}
+                          </div>
+                        ) : attempt.package.secureLink.startsWith("/") ? (
                           <a
                             className="block break-all font-mono text-[11px] text-primary underline-offset-2 hover:underline"
                             href={attempt.package.secureLink}
@@ -2457,6 +2523,91 @@ export function ReportingScreen({ data }: ReportingScreenProps) {
                           <p className="break-all font-mono text-[11px]">
                             Source artifacts: {attempt.package.sourceArtifacts.join(", ")}
                           </p>
+                        ) : null}
+                        {attempt.package.generatedReportWriterGrids?.length ? (
+                          <div className="break-all font-mono text-[11px]">
+                            <p>
+                              Generated grids: {attempt.package.generatedReportWriterGrids.map((grid) => `${grid.title || grid.gridId} (${grid.kind}, ${grid.dimensionCount}d/${grid.metricCount}m/${grid.formulaCount}f)`).join(", ")}
+                            </p>
+                            {attempt.package.reportingRunId ? (
+                              <div className="mt-1 flex flex-wrap gap-1.5" aria-label={`${attempt.attemptId} package report-writer grid exports`}>
+                                {attempt.package.generatedReportWriterGrids.map((grid) => {
+                                  const title = grid.title || grid.gridId;
+                                  return (
+                                    <span
+                                      key={`${attempt.attemptId}-${grid.gridId}`}
+                                      className="inline-flex min-w-0 items-center gap-1.5 rounded-sm border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground"
+                                    >
+                                      <span className="max-w-[16rem] truncate text-foreground">{title}</span>
+                                      <a
+                                        className="text-primary underline-offset-2 hover:underline"
+                                        href={reportingRunReportWriterGridEndpoint(attempt.package.reportingRunId!, grid.gridId)}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                      >
+                                        JSON
+                                      </a>
+                                      <a
+                                        className="text-primary underline-offset-2 hover:underline"
+                                        href={reportingRunReportWriterGridEndpoint(attempt.package.reportingRunId!, grid.gridId, "csv")}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                      >
+                                        CSV
+                                      </a>
+                                      <a
+                                        className="text-primary underline-offset-2 hover:underline"
+                                        href={reportingRunReportWriterGridEndpoint(attempt.package.reportingRunId!, grid.gridId, "xlsx")}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                      >
+                                        XLSX
+                                      </a>
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            ) : null}
+                          </div>
+                        ) : null}
+                        {attempt.package.renderedReportWriterGrids?.length ? (
+                          <div className="rounded-md border border-border/70 bg-background/40 px-2 py-2 text-[11px]">
+                            <p className="break-all font-mono">
+                              Rendered grid rows: {attempt.package.renderedReportWriterGrids.map((grid) => `${grid.title || grid.gridId} (${grid.rows.length}r/${grid.columns.length}c)`).join(", ")}
+                            </p>
+                            <ul aria-label={`${attempt.recipient} rendered report-writer grid evidence`} className="mt-1 space-y-1">
+                              {attempt.package.renderedReportWriterGrids.map((grid) => {
+                                const title = grid.title || grid.gridId;
+                                const dictionary = grid.dataDictionary ?? [];
+                                const validationChecks = grid.validationChecks ?? [];
+                                const generatedFieldCount = dictionary.filter((field) => field.isGenerated).length;
+                                const passedCheckCount = validationChecks.filter((check) => check.status.toLowerCase() === "passed").length;
+                                const issueCheckCount = validationChecks.length - passedCheckCount;
+                                return (
+                                  <li key={`${attempt.attemptId}-${grid.gridId}-evidence`} className="break-all">
+                                    <p className="font-semibold text-foreground">
+                                      {title} dictionary: {dictionary.length} field{dictionary.length === 1 ? "" : "s"}, {generatedFieldCount} generated
+                                    </p>
+                                    {dictionary.length ? (
+                                      <p className="font-mono">
+                                        {dictionary.slice(0, 4).map((field) => `${field.label || field.key}:${field.sourceField || "generated"}:${field.dataType}${field.isGenerated ? ":generated" : ""}`).join(" | ")}
+                                      </p>
+                                    ) : null}
+                                    {validationChecks.length ? (
+                                      <>
+                                        <p className="mt-1 font-semibold text-foreground">
+                                          {title} validation: {passedCheckCount} passed / {validationChecks.length} checks{issueCheckCount > 0 ? `, ${issueCheckCount} review` : ""}
+                                        </p>
+                                        <p className="font-mono">
+                                          {validationChecks.slice(0, 4).map((check) => `${check.checkId}:${check.status}:${check.detail}`).join(" | ")}
+                                        </p>
+                                      </>
+                                    ) : null}
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </div>
                         ) : null}
                         {attempt.package.lineProvenance?.length ? (
                           <div className="rounded-md border border-border/70 bg-background/40 px-2 py-2 text-[11px]">
@@ -4358,16 +4509,17 @@ function buildReportWriterGridDefinition(
   settings: ReportWriterDraftSettings
 ): ReportWriterGridDefinition {
   const kind = normalizeReportWriterGridKind(settings.gridKind);
+  const metrics = normalizeWriterMetrics(zones.metrics, kind);
   return {
     gridId: grid.gridId,
     title: grid.title,
     kind,
     rowFields: normalizeStringList(zones.rowFields.map(resolveWriterFieldName)),
     columnFields: normalizeStringList(zones.columnFields.map(resolveWriterFieldName)),
-    metrics: normalizeWriterMetrics(zones.metrics),
+    metrics,
     formulas: normalizeWriterFormulas(zones.formulas),
     topN: kind === "TopN" ? parseReportWriterTopN(settings.topN) : null,
-    sortBy: grid.sortBy,
+    sortBy: kind === "Contribution" ? "contributionAbsPercent" : grid.sortBy,
     sortDescending: grid.sortDescending,
     filters: buildWriterFilters(settings)
   };
@@ -4382,12 +4534,15 @@ function buildReportWriterPreviewRows(
     ...(grid.columnFields ?? [])
   ]);
   const metricSourceFields = normalizeStringList((grid.metrics ?? []).map((metric) => metric.sourceField));
-  const formulaFields = normalizeStringList((grid.formulas ?? []).flatMap((formula) => extractReportWriterFormulaFields(formula.expression)));
+  const formulaFields = normalizeStringList((grid.formulas ?? []).flatMap((formula) => extractReportWriterFormulaFields(formula.expression)))
+    .filter((field) => grid.kind !== "Contribution" || !isGeneratedContributionField(field));
   const numericFields = normalizeStringList([
     ...metricSourceFields,
     ...formulaFields,
     ...(grid.sortBy ? [grid.sortBy] : [])
-  ]).filter((field) => !dimensionFields.some((dimension) => dimension.toLowerCase() === field.toLowerCase()));
+  ]).filter((field) =>
+    !dimensionFields.some((dimension) => dimension.toLowerCase() === field.toLowerCase())
+    && (grid.kind !== "Contribution" || !isGeneratedContributionField(field)));
   const fields = normalizeStringList([...dimensionFields, ...numericFields]);
   const filters = grid.filters ?? [];
   const filterFields = normalizeStringList(filters.map((filter) => filter.field));
@@ -4403,7 +4558,9 @@ function buildReportWriterPreviewRows(
     }
 
     for (const field of numericFields) {
-      row[field] = previewNumericValue(field, index, profile);
+      row[field] = grid.kind === "Contribution" && isPnlLikeField(field)
+        ? previewContributionPnlValue(index, profile)
+        : previewNumericValue(field, index, profile);
     }
 
     for (const filter of filters) {
@@ -4588,11 +4745,15 @@ function buildWriterFilters(settings: ReportWriterDraftSettings): ReportWriterFi
   ];
 }
 
-function normalizeWriterMetrics(tokens: ReportingWriterToken[]): ReportWriterMetricDefinition[] {
+function normalizeWriterMetrics(
+  tokens: ReportingWriterToken[],
+  gridKind: ReportWriterGridKind | null = null
+): ReportWriterMetricDefinition[] {
   const metrics = tokens
     .map(tokenToMetricDefinition)
     .filter((metric): metric is ReportWriterMetricDefinition => Boolean(metric));
-  return dedupeBy(metrics, (metric) => metric.name.toLowerCase());
+  const deduped = dedupeBy(metrics, (metric) => metric.name.toLowerCase());
+  return gridKind === "Contribution" ? preferContributionMetric(deduped) : deduped;
 }
 
 function tokenToMetricDefinition(token: ReportingWriterToken): ReportWriterMetricDefinition | null {
@@ -4612,6 +4773,21 @@ function tokenToMetricDefinition(token: ReportingWriterToken): ReportWriterMetri
     function: normalizeAggregateFunction(token.function),
     label: token.kind === "metric" ? token.label : sourceField
   };
+}
+
+function preferContributionMetric(metrics: ReportWriterMetricDefinition[]): ReportWriterMetricDefinition[] {
+  const contributionIndex = metrics.findIndex((metric) =>
+    isPnlLikeField(metric.name)
+    || isPnlLikeField(metric.sourceField)
+    || isPnlLikeField(metric.label));
+  if (contributionIndex <= 0) {
+    return metrics;
+  }
+
+  const next = [...metrics];
+  const [contributionMetric] = next.splice(contributionIndex, 1);
+  next.unshift(contributionMetric);
+  return next;
 }
 
 function normalizeWriterFormulas(tokens: ReportingWriterToken[]) {
@@ -4665,6 +4841,16 @@ function extractReportWriterFormulaFields(expression: string | null | undefined)
   }
 
   return Array.from(expression.matchAll(/\{([^}]+)\}/g), (match) => match[1]?.trim() ?? "").filter(Boolean);
+}
+
+function isGeneratedContributionField(field: string | null | undefined): boolean {
+  const normalized = normalizeIdentifierToken(field ?? "", "").toLowerCase();
+  return normalized === "contributionpercent" || normalized === "contributionabspercent";
+}
+
+function isPnlLikeField(field: string | null | undefined): boolean {
+  const normalized = (field ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+  return normalized.includes("pnl") || normalized.includes("profitloss");
 }
 
 function previewDimensionValue(field: string, index: number, profile: ReportWriterPreviewDatasetProfile): string {
@@ -4775,6 +4961,18 @@ function previewNumericValue(field: string, index: number, profile: ReportWriter
   }
 
   return String((index + 1) * 10);
+}
+
+function previewContributionPnlValue(index: number, profile: ReportWriterPreviewDatasetProfile): string {
+  if (profile === "ledgerFacts") {
+    return ["150", "-50", "0", "25"][index] ?? "0";
+  }
+
+  if (profile === "cashLadder") {
+    return ["12", "-4", "0", "2"][index] ?? "0";
+  }
+
+  return ["150", "-50", "0", "25"][index] ?? "0";
 }
 
 function previewFilterValue(
@@ -5084,7 +5282,7 @@ function ReportingPrivateCapitalReadinessPanel({ activity }: { activity: Private
                     </thead>
                     <tbody>
                       {fundEventRecords.map((record) => (
-                        <ReportingPrivateCapitalFundEventRecordRow key={record.fundEventRecordId} record={record} />
+                        <ReportingPrivateCapitalFundEventRecordRow key={record.fundEventRecordId} activity={activity} record={record} />
                       ))}
                     </tbody>
                   </table>
@@ -5137,7 +5335,15 @@ function ReportingPrivateCapitalReadinessPanel({ activity }: { activity: Private
   );
 }
 
-function ReportingPrivateCapitalFundEventRecordRow({ record }: { record: PrivateCapitalFundEventLedgerRecord }) {
+function ReportingPrivateCapitalFundEventRecordRow({
+  activity,
+  record
+}: {
+  activity: PrivateCapitalActivityProjection;
+  record: PrivateCapitalFundEventLedgerRecord;
+}) {
+  const commandCenterRoute = buildReportingFundEventCommandCenterRoute(activity, record);
+
   return (
     <tr className="border-t border-border/60 bg-background/30 align-top">
       <td className="px-3 py-2">
@@ -5185,6 +5391,7 @@ function ReportingPrivateCapitalFundEventRecordRow({ record }: { record: Private
         <div className="mt-1">{record.capitalAccountSubledgerEntryCount.toLocaleString()} subledger movement{record.capitalAccountSubledgerEntryCount === 1 ? "" : "s"}</div>
       </td>
       <td className="px-3 py-2 text-[11px]">
+        <ReportingPrivateCapitalRouteLink label="Command center" href={commandCenterRoute} />
         <ReportingPrivateCapitalRouteLink label="Activity" href={record.activityRoute} />
         <ReportingPrivateCapitalRouteLink label="Evidence" href={record.evidenceRoute} />
         <ReportingPrivateCapitalRouteLink label="Approval" href={record.approvalRoute ?? null} />
@@ -5192,6 +5399,27 @@ function ReportingPrivateCapitalFundEventRecordRow({ record }: { record: Private
       </td>
     </tr>
   );
+}
+
+function buildReportingFundEventCommandCenterRoute(
+  activity: PrivateCapitalActivityProjection,
+  record: PrivateCapitalFundEventLedgerRecord
+): string {
+  const params = new URLSearchParams();
+  if (activity.fundProfileId?.trim()) {
+    params.set("fundProfileId", activity.fundProfileId.trim());
+  }
+
+  if (activity.ledgerBookId?.trim() && isGuid(activity.ledgerBookId.trim())) {
+    params.set("ledgerBookId", activity.ledgerBookId.trim());
+  }
+
+  params.set("fundEventId", record.fundEventId);
+  return `${WORKSTATION_API_ENDPOINTS.privateCapitalFundEventCommandCenter}?${params.toString()}`;
+}
+
+function isGuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
 
 function ReportingPrivateCapitalSubledgerRow({ subledger }: { subledger: PrivateCapitalCapitalAccountSubledger }) {

@@ -413,7 +413,9 @@ public sealed class FundOperationsWorkspaceReadService
             columns,
             rows,
             warnings,
-            DateTimeOffset.UtcNow);
+            DateTimeOffset.UtcNow,
+            BuildStructuredExportDataDictionary(columns),
+            BuildStructuredExportValidationChecks(descriptor, columns, rows));
     }
 
     public async Task<FundReportPackPreviewDto> PreviewReportPackAsync(
@@ -2668,7 +2670,8 @@ public sealed class FundOperationsWorkspaceReadService
             AnalyticsRows: analyticsRows,
             FundProfileId: fundProfileId,
             ScheduleDeliveryPlans: scheduleDeliveryPlans,
-            ReportLineProvenanceExplorer: reportLineProvenanceExplorer);
+            ReportLineProvenanceExplorer: reportLineProvenanceExplorer,
+            AccessAudit: filteredReportingPayload?.AccessAudit);
     }
 
     private async Task<IReadOnlyList<CrossFundReportingConsolidationDto>> BuildCrossFundReportingConsolidationsAsync(
@@ -3230,6 +3233,7 @@ public sealed class FundOperationsWorkspaceReadService
                 };
                 var state = ResolveLivePortfolioViewState(actualSourceCount, sourceAsOf, asOf);
                 var route = BuildLivePortfolioViewRoute(cut, strategySource.StrategyId);
+                var marketTickAgeSeconds = CalculateLivePortfolioTickAgeSeconds(sourceAsOf, asOf);
 
                 return new PortfolioReportingLiveViewDto(
                     ViewId: $"live:{cut.CutId}",
@@ -3253,7 +3257,13 @@ public sealed class FundOperationsWorkspaceReadService
                     Tags: cut.Tags,
                     CashLadderRoute: strategySource.CashLadderRoute,
                     VersionStamp: cut.VersionStamp,
-                    ReadinessBlockers: BuildLivePortfolioReadinessBlockers(state, sourceAsOf, asOf));
+                    ReadinessBlockers: BuildLivePortfolioReadinessBlockers(state, sourceAsOf, asOf),
+                    MarketTickAsOfUtc: sourceAsOf,
+                    MarketTickAgeSeconds: marketTickAgeSeconds,
+                    MarketTickSequence: sourceAsOf?.ToUnixTimeMilliseconds(),
+                    MarketDataProvider: BuildLivePortfolioMarketDataProvider(state, cut.Kind),
+                    TickFreshnessSummary: BuildLivePortfolioTickFreshnessSummary(state, sourceAsOf, asOf, marketTickAgeSeconds),
+                    IsMarketTickLinked: state == PortfolioReportingLiveViewStateDto.LiveLinked);
             })
             .OrderBy(static view => view.Kind)
             .ThenBy(static view => view.Label, StringComparer.OrdinalIgnoreCase)
@@ -3711,6 +3721,54 @@ public sealed class FundOperationsWorkspaceReadService
                 : $"Source-backed portfolio telemetry is current through {FormatStructuredDateTime(sourceAsOf.Value)}; open the route for latest portfolio-summary telemetry."
         };
 
+    private static int? CalculateLivePortfolioTickAgeSeconds(DateTimeOffset? sourceAsOf, DateTimeOffset requestedAsOf)
+    {
+        if (sourceAsOf is null)
+        {
+            return null;
+        }
+
+        var age = requestedAsOf - sourceAsOf.Value;
+        if (age < TimeSpan.Zero)
+        {
+            age = TimeSpan.Zero;
+        }
+
+        return (int)Math.Min(int.MaxValue, Math.Round(age.TotalSeconds, MidpointRounding.AwayFromZero));
+    }
+
+    private static string BuildLivePortfolioMarketDataProvider(
+        PortfolioReportingLiveViewStateDto state,
+        PortfolioReportingCutKindDto kind)
+        => state switch
+        {
+            PortfolioReportingLiveViewStateDto.LiveLinked => kind == PortfolioReportingCutKindDto.Strategy
+                ? "portfolio-summary-live-strategy"
+                : "portfolio-summary-live",
+            PortfolioReportingLiveViewStateDto.SourceBacked => "retained-portfolio-snapshot",
+            PortfolioReportingLiveViewStateDto.Stale => "stale-portfolio-snapshot",
+            _ => "unavailable"
+        };
+
+    private static string BuildLivePortfolioTickFreshnessSummary(
+        PortfolioReportingLiveViewStateDto state,
+        DateTimeOffset? sourceAsOf,
+        DateTimeOffset requestedAsOf,
+        int? marketTickAgeSeconds)
+        => state switch
+        {
+            PortfolioReportingLiveViewStateDto.Blocked => "No market tick snapshot is available for this reporting live view.",
+            PortfolioReportingLiveViewStateDto.LiveLinked => marketTickAgeSeconds is null
+                ? "Market tick snapshot is live-linked, but its source timestamp is unavailable."
+                : $"Market tick snapshot is {marketTickAgeSeconds} second(s) old and inside the 5-minute live-link window.",
+            PortfolioReportingLiveViewStateDto.Stale => sourceAsOf is null
+                ? "Market tick snapshot timestamp is missing and cannot satisfy the 24-hour freshness window."
+                : $"Market tick snapshot from {FormatStructuredDateTime(sourceAsOf.Value)} is outside the 24-hour freshness window as of {FormatStructuredDateTime(requestedAsOf)}.",
+            _ => marketTickAgeSeconds is null
+                ? "Source-backed tick snapshot timestamp is unavailable."
+                : $"Source-backed tick snapshot is {marketTickAgeSeconds} second(s) old; refresh the live portfolio route for current ticks."
+        };
+
     private static IReadOnlyList<string> BuildLivePortfolioReadinessBlockers(
         PortfolioReportingLiveViewStateDto state,
         DateTimeOffset? sourceAsOf,
@@ -3915,6 +3973,43 @@ public sealed class FundOperationsWorkspaceReadService
 
         return row;
     }
+
+    private static IReadOnlyList<StructuredReportingExportDataDictionaryFieldDto> BuildStructuredExportDataDictionary(
+        IReadOnlyList<StructuredReportingExportColumnDto> columns) =>
+        columns
+            .Select((column, index) => new StructuredReportingExportDataDictionaryFieldDto(
+                column.Name,
+                column.DataType,
+                column.Description,
+                index + 1))
+            .ToArray();
+
+    private static IReadOnlyList<StructuredReportingExportValidationCheckDto> BuildStructuredExportValidationChecks(
+        StructuredReportingExportDto descriptor,
+        IReadOnlyList<StructuredReportingExportColumnDto> columns,
+        IReadOnlyList<IReadOnlyDictionary<string, string?>> rows) =>
+    [
+        new StructuredReportingExportValidationCheckDto(
+            "readiness",
+            descriptor.IsReady ? "Passed" : "Warning",
+            descriptor.ValidationSummary ?? (descriptor.IsReady
+                ? "Structured export is ready."
+                : "Structured export readiness is blocked.")),
+        new StructuredReportingExportValidationCheckDto(
+            "column-count",
+            descriptor.FieldCount == columns.Count ? "Passed" : "Failed",
+            $"Descriptor declares {descriptor.FieldCount.ToString(CultureInfo.InvariantCulture)} field(s); payload contains {columns.Count.ToString(CultureInfo.InvariantCulture)} column(s)."),
+        new StructuredReportingExportValidationCheckDto(
+            "row-count",
+            descriptor.RowCount == rows.Count ? "Passed" : descriptor.IsReady ? "Failed" : "Warning",
+            $"Descriptor declares {descriptor.RowCount.ToString(CultureInfo.InvariantCulture)} row(s); payload contains {rows.Count.ToString(CultureInfo.InvariantCulture)} row(s)."),
+        new StructuredReportingExportValidationCheckDto(
+            "source-count",
+            descriptor.SourceCount > 0 ? "Passed" : "Warning",
+            descriptor.SourceCount > 0
+                ? $"Structured export is backed by {descriptor.SourceCount.ToString(CultureInfo.InvariantCulture)} source record(s)."
+                : "No source records are linked to this structured export.")
+    ];
 
     private static string BuildStructuredExportRoute(
         string fundProfileId,

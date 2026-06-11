@@ -1301,24 +1301,10 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     }
 
     private Guid? ResolveOperatorInboxFundAccountId()
-    {
-        var context = _operatingContextService?.CurrentContext ?? SelectedOperatingContext;
-        if (context is null)
-        {
-            return null;
-        }
+        => ResolveActiveFundAccountId();
 
-        var accountId = context.AccountId;
-        if (string.IsNullOrWhiteSpace(accountId) &&
-            context.ScopeKind == OperatingContextScopeKind.Account)
-        {
-            accountId = context.ScopeId;
-        }
-
-        return Guid.TryParse(accountId, out var parsed)
-            ? parsed
-            : null;
-    }
+    private Guid? ResolveActiveFundAccountId()
+        => WorkstationOperatingContextScopeResolver.ResolveFundAccountId(_operatingContextService?.CurrentContext ?? SelectedOperatingContext);
 
     private void ApplyOperatorInbox(OperatorInboxDto? inbox, string? error)
     {
@@ -1485,9 +1471,11 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
         try
         {
-            var hasOperatingContext = _operatingContextService?.CurrentContext is not null || _fundContextService.CurrentFundProfile is not null;
-            var operatingContextLabel = _operatingContextService?.CurrentContext?.DisplayName;
+            var operatingContext = _operatingContextService?.CurrentContext ?? SelectedOperatingContext;
+            var hasOperatingContext = operatingContext is not null || _fundContextService.CurrentFundProfile is not null;
+            var operatingContextLabel = operatingContext?.DisplayName;
             var fundProfileId = _fundContextService.CurrentFundProfile?.FundProfileId;
+            var fundAccountId = WorkstationOperatingContextScopeResolver.ResolveFundAccountIdString(operatingContext);
             var fundDisplayName = _fundContextService.CurrentFundProfile?.DisplayName;
 
             var summary = await _workflowSummaryService
@@ -1495,6 +1483,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
                     hasOperatingContext: hasOperatingContext,
                     operatingContextDisplayName: operatingContextLabel,
                     fundProfileId: fundProfileId,
+                    fundAccountId: fundAccountId,
                     fundDisplayName: fundDisplayName,
                     ct: ct)
                 .ConfigureAwait(false);

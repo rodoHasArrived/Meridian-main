@@ -1695,6 +1695,108 @@
                                 </StackPanel>
                             </Border>
 
+                            <Border Style="{StaticResource SectionCardStyle}"
+                                    Margin="0,0,0,16"
+                                    AutomationProperties.AutomationId="FundPrivateCapitalCloseCockpitPanel"
+                                    AutomationProperties.Name="Private Capital Close Cockpit">
+                                <StackPanel>
+                                    <TextBlock Text="Private-Capital Close Cockpit" Style="{StaticResource CardHeaderStyle}" />
+                                    <TextBlock Text="{Binding PrivateCapitalCloseSummaryText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               Margin="0,6,0,0"
+                                               TextWrapping="Wrap" />
+                                    <workstationControls:WorkstationStatePanelControl
+                                        State="{Binding PrivateCapitalCloseReadinessState}"
+                                        Margin="0,14,0,14"
+                                        AutomationProperties.AutomationId="FundPrivateCapitalCloseReadinessSignifier" />
+                                    <UniformGrid Columns="2" Margin="0,0,0,12">
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}" Margin="0,0,12,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Close Status" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding PrivateCapitalCloseStatusText}" Style="{StaticResource MetricValueStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Style="{StaticResource WorkbenchMetricCardStyle}">
+                                            <StackPanel>
+                                                <TextBlock Text="Evidence" Style="{StaticResource MetricLabelStyle}" />
+                                                <TextBlock Text="{Binding PrivateCapitalCloseEvidenceText}" Style="{StaticResource MetricValueMonoStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </UniformGrid>
+                                    <Border Padding="10"
+                                            CornerRadius="10"
+                                            Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}"
+                                            BorderBrush="{StaticResource BorderSubtleBrush}"
+                                            BorderThickness="1">
+                                        <TextBlock Text="{Binding PrivateCapitalCloseBlockerText}"
+                                                   Style="{StaticResource CardDescriptionStyle}"
+                                                   TextWrapping="Wrap" />
+                                    </Border>
+                                    <TabControl Margin="0,12,0,0"
+                                                AutomationProperties.AutomationId="FundPrivateCapitalCloseCockpitTabs">
+                                        <TabItem Header="Lanes">
+                                            <DataGrid ItemsSource="{Binding PrivateCapitalCloseLanes}"
+                                                      AutoGenerateColumns="False"
+                                                      IsReadOnly="True"
+                                                      HeadersVisibility="Column"
+                                                      BorderThickness="0"
+                                                      MaxHeight="190"
+                                                      EnableRowVirtualization="True"
+                                                      Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                      AutomationProperties.AutomationId="FundPrivateCapitalCloseLaneGrid">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="Lane" Binding="{Binding Label}" Width="150" />
+                                                    <DataGridTextColumn Header="Status" Binding="{Binding StatusLabel}" Width="112" />
+                                                    <DataGridTextColumn Header="Evidence" Binding="{Binding EvidenceLabel}" Width="128" />
+                                                    <DataGridTextColumn Header="Required Action" Binding="{Binding RequiredActionsLabel}" Width="220" />
+                                                    <DataGridTextColumn Header="Source" Binding="{Binding SourceTarget}" Width="120" />
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </TabItem>
+                                        <TabItem Header="NAV Support">
+                                            <DataGrid ItemsSource="{Binding PrivateCapitalNavSupportPackages}"
+                                                      AutoGenerateColumns="False"
+                                                      IsReadOnly="True"
+                                                      HeadersVisibility="Column"
+                                                      BorderThickness="0"
+                                                      MaxHeight="190"
+                                                      EnableRowVirtualization="True"
+                                                      Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                      AutomationProperties.AutomationId="FundPrivateCapitalNavSupportGrid">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="Package" Binding="{Binding Label}" Width="150" />
+                                                    <DataGridTextColumn Header="Status" Binding="{Binding StatusLabel}" Width="112" />
+                                                    <DataGridTextColumn Header="Shadow NAV" Binding="{Binding ShadowNavLabel}" Width="120" />
+                                                    <DataGridTextColumn Header="Components" Binding="{Binding ComponentLabel}" Width="220" />
+                                                    <DataGridTextColumn Header="Evidence" Binding="{Binding EvidenceLabel}" Width="128" />
+                                                    <DataGridTextColumn Header="Source" Binding="{Binding SourceTarget}" Width="120" />
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </TabItem>
+                                        <TabItem Header="Approvals">
+                                            <DataGrid ItemsSource="{Binding PrivateCapitalCloseApprovals}"
+                                                      AutoGenerateColumns="False"
+                                                      IsReadOnly="True"
+                                                      HeadersVisibility="Column"
+                                                      BorderThickness="0"
+                                                      MaxHeight="190"
+                                                      EnableRowVirtualization="True"
+                                                      Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                      AutomationProperties.AutomationId="FundPrivateCapitalCloseApprovalGrid">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="Approval" Binding="{Binding ApprovalId}" Width="170" />
+                                                    <DataGridTextColumn Header="Status" Binding="{Binding StatusLabel}" Width="100" />
+                                                    <DataGridTextColumn Header="Reviewer" Binding="{Binding ReviewerLabel}" Width="125" />
+                                                    <DataGridTextColumn Header="Operator" Binding="{Binding OperatorLabel}" Width="125" />
+                                                    <DataGridTextColumn Header="Evidence" Binding="{Binding EvidenceLabel}" Width="125" />
+                                                    <DataGridTextColumn Header="Decision" Binding="{Binding DecidedAtLabel}" Width="130" />
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </TabItem>
+                                    </TabControl>
+                                </StackPanel>
+                            </Border>
+
                             <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
                                 <StackPanel>
                                     <TextBlock Text="Handoff Readiness" Style="{StaticResource CardHeaderStyle}" />

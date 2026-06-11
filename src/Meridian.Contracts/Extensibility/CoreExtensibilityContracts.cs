@@ -171,6 +171,21 @@ public sealed record ExtensibilityActivationReadinessDto(
     IReadOnlyList<ExtensibilityValidationIssueDto> Issues,
     IReadOnlyList<GovernedFoundationKindDto> RequiredFoundationChecks);
 
+public sealed record TenantTemplateActivationRequestDto(
+    string ChangeReason,
+    string? LinkedAuditEventId = null);
+
+public sealed record TenantTemplateActivationResultDto(
+    string TenantTemplateId,
+    bool IsActivated,
+    ExtensibilityConfigurationStatusDto ResultingStatus,
+    DateTimeOffset EvaluatedAt,
+    string EvaluatedBy,
+    string ChangeReason,
+    string? LinkedAuditEventId,
+    ExtensibilityActivationReadinessDto Readiness,
+    TenantTemplateConfigurationBundleDto? TenantTemplate);
+
 public sealed record ExtensibilityRegistrationDto(
     string RegistrationId,
     ExtensibilityConfigurationAreaDto Area,

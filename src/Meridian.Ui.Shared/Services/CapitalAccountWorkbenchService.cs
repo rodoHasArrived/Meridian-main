@@ -8,8 +8,8 @@ public sealed class CapitalAccountWorkbenchService : ICapitalAccountWorkbenchSer
     private static readonly IReadOnlyList<string> LiveCapabilities =
     [
         "Investor-level capital account evidence",
-        "Allocation-rule readiness from retained evidence categories",
-        "Statement publication and restatement lineage",
+        "Governed allocation policy trace from fund-event, subledger, ledger, approval, payment, and report-output evidence",
+        "Statement publication, restatement changed-line detail, and restatement evidence lineage",
         "Audit-support drill-through to subledger, evidence, approvals, and report outputs"
     ];
 
@@ -169,19 +169,36 @@ public sealed class CapitalAccountWorkbenchService : ICapitalAccountWorkbenchSer
         PrivateCapitalCapitalAccountSubledgerDto subledger)
         => subledger.EvidenceCategories
             .OrderBy(static item => item.CategoryId, StringComparer.OrdinalIgnoreCase)
-            .Select(category => new CapitalAccountWorkbenchAllocationRuleDto(
-                $"allocation-rule:{BuildAccountKey(subledger)}:{category.CategoryId}".ToLowerInvariant(),
-                subledger.CapitalAccountId,
-                subledger.InvestorId,
-                category.CategoryId,
-                category.Label,
-                BuildAllocationBasis(category.CategoryId),
-                category.IsReady,
-                category.Summary,
-                ResolveAllocationRoute(subledger, category),
-                category.EvidenceLinkCount,
-                category.EvidenceLinks,
-                category.RequiredEvidence));
+            .Select(category =>
+            {
+                var inputs = BuildAllocationInputs(subledger, category.CategoryId);
+                var relatedFundEventIds = Normalize(subledger.FundEventRecords.Select(static item => item.FundEventId));
+
+                return new CapitalAccountWorkbenchAllocationRuleDto(
+                    $"allocation-rule:{BuildAccountKey(subledger)}:{category.CategoryId}".ToLowerInvariant(),
+                    subledger.CapitalAccountId,
+                    subledger.InvestorId,
+                    category.CategoryId,
+                    category.Label,
+                    BuildAllocationBasis(category.CategoryId),
+                    category.IsReady,
+                    category.Summary,
+                    ResolveAllocationRoute(subledger, category),
+                    category.EvidenceLinkCount,
+                    category.EvidenceLinks,
+                    category.RequiredEvidence)
+                {
+                    RuleVersion = BuildAllocationRuleVersion(subledger, category),
+                    EffectiveFrom = subledger.FirstEffectiveDate,
+                    EffectiveTo = subledger.LastEffectiveDate,
+                    Formula = BuildAllocationFormula(category.CategoryId),
+                    ApprovalState = BuildAllocationApprovalState(subledger),
+                    ApprovalReference = BuildAllocationApprovalReference(subledger),
+                    ReplayTrace = BuildAllocationReplayTrace(subledger, inputs.Count),
+                    Inputs = inputs,
+                    RelatedFundEventIds = relatedFundEventIds
+                };
+            });
 
     private IEnumerable<CapitalAccountWorkbenchStatementLineageDto> BuildStatementLineage(
         PrivateCapitalCapitalAccountSubledgerDto subledger)
@@ -195,6 +212,7 @@ public sealed class CapitalAccountWorkbenchService : ICapitalAccountWorkbenchSer
                 var workflow = ResolveReportPackRecord(output.ReportPackId);
                 var restatement = workflow?.Restatement;
                 var restatementEvidenceLinks = NormalizeRestatementEvidence(restatement);
+                var restatementChangedLines = BuildRestatementChangedLines(restatement);
                 var hasRestatementLineage = restatement is not null || restatementEvidenceLinks.Count > 0;
 
                 return new CapitalAccountWorkbenchStatementLineageDto(
@@ -228,7 +246,10 @@ public sealed class CapitalAccountWorkbenchService : ICapitalAccountWorkbenchSer
                     output.EvidenceRoute,
                     output.CapitalAccountSubledgerRoute,
                     output.EvidenceLinks,
-                    restatementEvidenceLinks);
+                    restatementEvidenceLinks)
+                {
+                    RestatementChangedLines = restatementChangedLines
+                };
             });
 
     private IReadOnlyList<CapitalAccountWorkbenchAuditDrillThroughDto> BuildAuditDrillThroughs(
@@ -413,6 +434,125 @@ public sealed class CapitalAccountWorkbenchService : ICapitalAccountWorkbenchSer
             _ => "Private-capital allocation support must retain evidence for this category."
         };
 
+    private static string BuildAllocationRuleVersion(
+        PrivateCapitalCapitalAccountSubledgerDto subledger,
+        PrivateCapitalEvidenceCategoryDto category)
+        => $"{category.CategoryId}:projection:{subledger.FundEventCount}.{subledger.SubledgerEntries.Count}.{subledger.LedgerImpacts.Count}.{subledger.ReportOutputs.Count}";
+
+    private static string BuildAllocationFormula(string categoryId)
+        => categoryId switch
+        {
+            "source-support" => "fund_event.source_evidence_count > 0",
+            "capital-account-subledger" => "capital_account_subledger.entry_count > 0 and subledger_evidence_count > 0",
+            "ledger-impact" => "ledger_impact.is_balanced and ledger_impact.is_posting_ready and ledger_line_evidence_count > 0",
+            "approval-state" => "all(fund_event.approval_state in approved_states) and approval_reference_count > 0",
+            "payment-intent" => "payment_intent_id exists when cash movement is expected",
+            "cash-evidence" => "cash_evidence_link_count > 0 and settlement_reference is retained",
+            "report-output" => "all(report_output.is_report_ready) and report_evidence_link_count > 0",
+            _ => "required_evidence_count == retained_evidence_count"
+        };
+
+    private static string BuildAllocationApprovalState(PrivateCapitalCapitalAccountSubledgerDto subledger)
+    {
+        if (subledger.FundEventRecords.Count == 0)
+        {
+            return "No fund-event approvals";
+        }
+
+        var states = subledger.FundEventRecords
+            .Select(static item => item.ApprovalState.ToString())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        return states.Length == 1 ? states[0] : string.Join(" / ", states);
+    }
+
+    private static string? BuildAllocationApprovalReference(PrivateCapitalCapitalAccountSubledgerDto subledger)
+    {
+        var references = Normalize(subledger.FundEventRecords
+            .SelectMany(static item => new[] { item.ApprovalId ?? string.Empty, item.ApprovalRoute ?? string.Empty }));
+        return references.Count == 0 ? null : string.Join(" / ", references);
+    }
+
+    private static string BuildAllocationReplayTrace(
+        PrivateCapitalCapitalAccountSubledgerDto subledger,
+        int inputCount)
+        => $"Trace uses {subledger.FundEventRecords.Count} fund event(s), {subledger.SubledgerEntries.Count} subledger entry(ies), {subledger.LedgerImpacts.Count} ledger impact(s), {subledger.ReportOutputs.Count} report output(s), and {inputCount} allocation input(s).";
+
+    private static IReadOnlyList<CapitalAccountWorkbenchAllocationInputDto> BuildAllocationInputs(
+        PrivateCapitalCapitalAccountSubledgerDto subledger,
+        string categoryId)
+        => categoryId switch
+        {
+            "capital-account-subledger" => subledger.SubledgerEntries
+                .Select(static item => new CapitalAccountWorkbenchAllocationInputDto(
+                    $"allocation-input:subledger:{item.SubledgerEntryId}".ToLowerInvariant(),
+                    "subledger-entry",
+                    item.SubledgerEntryId,
+                    $"{item.FundEventType} / {item.Memo}",
+                    item.NetCapitalActivity,
+                    item.Currency,
+                    item.EffectiveDate,
+                    item.EvidenceLinks.FirstOrDefault()))
+                .ToArray(),
+            "ledger-impact" => subledger.LedgerImpacts
+                .Select(static item => new CapitalAccountWorkbenchAllocationInputDto(
+                    $"allocation-input:ledger:{item.LedgerImpactId}".ToLowerInvariant(),
+                    "ledger-impact",
+                    item.LedgerImpactId,
+                    $"{item.FundEventType} / {item.LineCount} line(s)",
+                    item.TotalCredits - item.TotalDebits,
+                    item.Currency,
+                    item.EffectiveDate,
+                    item.EvidenceLinks.FirstOrDefault() ??
+                    item.Lines.Select(static line => line.EvidenceLink).FirstOrDefault(static link => !string.IsNullOrWhiteSpace(link))))
+                .ToArray(),
+            "approval-state" => subledger.FundEventRecords
+                .Select(static item => new CapitalAccountWorkbenchAllocationInputDto(
+                    $"allocation-input:approval:{item.FundEventId}".ToLowerInvariant(),
+                    "approval",
+                    item.ApprovalId ?? item.FundEventId,
+                    $"{item.FundEventType} / {item.ApprovalState}",
+                    item.NetCapitalActivity,
+                    item.Currency,
+                    item.EffectiveDate,
+                    item.ApprovalRoute ?? item.EvidenceRoute))
+                .ToArray(),
+            "payment-intent" or "cash-evidence" => subledger.PaymentIntentEvidence is { } paymentIntent
+                ? [new CapitalAccountWorkbenchAllocationInputDto(
+                    $"allocation-input:payment:{paymentIntent.PaymentIntentId ?? paymentIntent.SettlementReference ?? BuildAccountKey(subledger)}".ToLowerInvariant(),
+                    "payment-intent",
+                    paymentIntent.PaymentIntentId ?? paymentIntent.SettlementReference ?? BuildAccountKey(subledger),
+                    paymentIntent.Summary,
+                    paymentIntent.Amount,
+                    paymentIntent.Currency,
+                    paymentIntent.EffectiveDate,
+                    paymentIntent.EvidenceRoute)]
+                : [],
+            "report-output" => subledger.ReportOutputs
+                .Select(static item => new CapitalAccountWorkbenchAllocationInputDto(
+                    $"allocation-input:report:{item.ReportOutputId}".ToLowerInvariant(),
+                    "report-output",
+                    item.ReportOutputId,
+                    $"{item.ReportOutputType} / {item.DisplayName}",
+                    item.NetCapitalActivity,
+                    item.Currency,
+                    item.EffectiveDate,
+                    item.ReportOutputRoute ?? item.ReportRoute))
+                .ToArray(),
+            _ => subledger.FundEventRecords
+                .Select(static item => new CapitalAccountWorkbenchAllocationInputDto(
+                    $"allocation-input:fund-event:{item.FundEventId}".ToLowerInvariant(),
+                    "fund-event",
+                    item.FundEventId,
+                    $"{item.FundEventType} / {item.Memo}",
+                    item.NetCapitalActivity,
+                    item.Currency,
+                    item.EffectiveDate,
+                    item.EvidenceRoute))
+                .ToArray()
+        };
+
     private static string? ResolveAllocationRoute(
         PrivateCapitalCapitalAccountSubledgerDto subledger,
         PrivateCapitalEvidenceCategoryDto category)
@@ -437,6 +577,22 @@ public sealed class CapitalAccountWorkbenchService : ICapitalAccountWorkbenchSer
             .Concat((restatement?.ChangedLines ?? [])
                 .SelectMany(static line => line.EvidenceLinks ?? [])
                 .Select(static link => link.Route ?? link.EvidenceId)));
+
+    private static IReadOnlyList<CapitalAccountWorkbenchRestatementChangedLineDto> BuildRestatementChangedLines(
+        ReportPackRestatementMetadataDto? restatement)
+        => (restatement?.ChangedLines ?? [])
+            .OrderBy(static line => line.LineKey, StringComparer.OrdinalIgnoreCase)
+            .Select(static line =>
+            {
+                var evidenceLinks = Normalize((line.EvidenceLinks ?? []).Select(static link => link.Route ?? link.EvidenceId));
+                return new CapitalAccountWorkbenchRestatementChangedLineDto(
+                    line.LineKey,
+                    line.PreviousValue,
+                    line.CurrentValue,
+                    evidenceLinks.Count,
+                    evidenceLinks);
+            })
+            .ToArray();
 
     private static string BuildAccountKey(PrivateCapitalCapitalAccountSubledgerDto subledger)
         => $"{subledger.CapitalAccountId}|{subledger.InvestorId ?? "unassigned"}|{subledger.Currency}";

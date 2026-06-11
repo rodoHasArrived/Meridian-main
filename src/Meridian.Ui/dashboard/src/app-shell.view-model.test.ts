@@ -20,7 +20,8 @@ const emptyPayload: AppShellWorkspacePayload = {
   portfolio: null,
   data: null,
   accounting: null,
-  reporting: null
+  reporting: null,
+  workflowSummary: null
 };
 
 const sessionPayload: AppShellWorkspacePayload = {
@@ -783,6 +784,134 @@ describe("app shell view model", () => {
     ]);
     expect(state.workflowContinuity.steps.find((step) => step.id === "match-records")?.ariaLabel)
       .toBe("Match Records, current workflow step, 2 breaks");
+  });
+
+  it("uses source-backed financial operations summary for accounting closeout steps", () => {
+    const state = buildAppShellViewState({
+      pathname: "/accounting/reconciliation",
+      search: "?fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: {
+        ...sessionPayload,
+        accounting: {
+          breakQueue: [],
+          reconciliationQueue: []
+        },
+        workflowSummary: {
+          generatedAt: "2026-06-01T12:00:00Z",
+          hasOperatingContext: true,
+          operatingContextLabel: "Northwind Income",
+          fundDisplayName: "Northwind Income",
+          workspaces: [
+            {
+              workspaceId: "accounting",
+              workspaceTitle: "Accounting",
+              statusLabel: "Financial operations exceptions require review",
+              statusDetail: "Period 2026-05 has 1 unresolved exception before approval and evidence production can complete.",
+              statusTone: "Warning",
+              nextAction: {
+                label: "Resolve Exceptions",
+                detail: "Open reconciliation casework, assign breaks, and retain resolution evidence.",
+                targetPageTag: "FundReconciliation",
+                tone: "Primary"
+              },
+              primaryBlocker: {
+                code: "financial-operations-exceptions",
+                label: "1 unresolved exception",
+                detail: "Approval and close evidence remain blocked until every break is matched, resolved, or explicitly closed.",
+                tone: "Warning",
+                isBlocking: true
+              },
+              evidence: [
+                { label: "Core flow", value: "Resolve Exceptions", tone: "Warning" },
+                { label: "Workflows", value: "1", tone: "Neutral" },
+                { label: "Breaks", value: "1", tone: "Warning" },
+                { label: "Approval", value: "Pending", tone: "Warning" },
+                { label: "Evidence", value: "2", tone: "Success" }
+              ]
+            }
+          ]
+        }
+      } as unknown as AppShellWorkspacePayload
+    });
+
+    expect(state.workflowContinuity.steps.map((step) => [step.id, step.statusLabel, step.statusTone])).toEqual([
+      ["receive-activity", "Complete", "ready"],
+      ["match-records", "Current / Complete", "ready"],
+      ["resolve-exceptions", "Next / 1 breaks", "review"],
+      ["approve-results", "Waiting", "pending"],
+      ["produce-evidence", "Waiting", "pending"]
+    ]);
+    expect(state.workflowContinuity.operatorFocusItems[0]).toMatchObject({
+      label: "1 unresolved exception",
+      route: "/accounting/reconciliation?fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+      actionLabel: "Resolve Exceptions",
+      tone: "review"
+    });
+  });
+
+  it("surfaces reviewed automation guardrails from the financial operations summary", () => {
+    const state = buildAppShellViewState({
+      pathname: "/accounting/reconciliation",
+      search: "?fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload: {
+        ...sessionPayload,
+        accounting: {
+          breakQueue: [],
+          reconciliationQueue: []
+        },
+        workflowSummary: {
+          generatedAt: "2026-06-01T12:00:00Z",
+          hasOperatingContext: true,
+          operatingContextLabel: "Northwind Income",
+          fundDisplayName: "Northwind Income",
+          workspaces: [
+            {
+              workspaceId: "accounting",
+              workspaceTitle: "Accounting",
+              statusLabel: "Financial operations control flow active",
+              statusDetail: "Period 2026-05 is in the Match Records stage with source-backed workflow gates, checklist, and audit trail.",
+              statusTone: "Info",
+              nextAction: {
+                label: "Match Records",
+                detail: "Open the governed operations continuity workflow and continue the next source-backed control step.",
+                targetPageTag: "OperationsContinuity",
+                tone: "Primary"
+              },
+              primaryBlocker: {
+                code: "financial-operations-in-progress",
+                label: "Financial operations flow in progress",
+                detail: "Continue the source-backed receive, match, resolve, approve, and evidence workflow before close.",
+                tone: "Info",
+                isBlocking: false
+              },
+              evidence: [
+                { label: "Core flow", value: "Match Records", tone: "Info" },
+                { label: "Workflows", value: "1", tone: "Neutral" },
+                { label: "Breaks", value: "0", tone: "Success" },
+                { label: "Approval", value: "Pending", tone: "Warning" },
+                { label: "Evidence", value: "2", tone: "Success" },
+                { label: "Close", value: "Pending", tone: "Info" },
+                { label: "Reviewed automation", value: "Suggested matches require review", tone: "Warning" }
+              ]
+            }
+          ]
+        }
+      } as unknown as AppShellWorkspacePayload
+    });
+
+    expect(state.workflowContinuity.operatorFocusItems[0]).toMatchObject({
+      label: "Reviewed automation requires operator review",
+      detail: "Suggested matches require review; automation can suggest, classify, extract, match, summarize, draft, and flag, but cannot approve, post, publish, release payments, or erase evidence.",
+      route: "/accounting/operations-continuity?fundAccountId=53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+      actionLabel: "Match Records",
+      tone: "review"
+    });
   });
 
   it("ranks cross-workspace operator focus items for the shell continuity dock", () => {

@@ -10,6 +10,7 @@ import type {
   DataWorkspaceResponse,
   AccountingWorkspaceResponse,
   MultiAssetCoverageSummary,
+  OperatorWorkflowHomeSummary,
   ReportingWorkspaceResponse,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
@@ -50,6 +51,7 @@ vi.mock("@/lib/api", () => ({
   getStrategyWorkspace: vi.fn(),
   getSystemStatus: vi.fn(),
   getTradingWorkspace: vi.fn(),
+  getWorkstationWorkflowSummary: vi.fn(),
   getWorkflowLibrary: vi.fn(),
   getWorkflowPresets: vi.fn(),
   getFeatureCapabilities: vi.fn(),
@@ -116,6 +118,7 @@ describe("useWorkstationData", () => {
     vi.mocked(api.getOperationsApprovalPolicyMatrix).mockResolvedValue({ generatedAt: "2026-01-01T00:00:00Z" } as never);
     vi.mocked(api.getOperationsCloseCalendar).mockResolvedValue({ generatedAt: "2026-01-01T00:00:00Z" } as never);
     vi.mocked(api.getBrokerageHouseholdPortfolio).mockImplementation(() => track<BrokerageHouseholdPortfolio>("brokeragePortfolio"));
+    vi.mocked(api.getWorkstationWorkflowSummary).mockResolvedValue(buildWorkflowSummary("default"));
     vi.mocked(api.getWorkflowLibrary).mockImplementation(() => track<WorkflowLibrary>("workflowLibrary"));
     vi.mocked(api.getWorkflowPresets).mockImplementation(() => track<WorkflowPresetLibrary>("workflowPresets"));
     vi.mocked(api.getFeatureCapabilities).mockResolvedValue({
@@ -298,6 +301,32 @@ describe("useWorkstationData", () => {
     expect(result.current.strategy).toEqual({ marker: "secondary strategy" });
     expect(result.current.trading).toEqual({ marker: "secondary trading" });
     expect(result.current.refreshStatus.inFlight).toBe(false);
+  });
+
+  it("passes account scope into the shared workflow summary request", async () => {
+    const scopedSummary = buildWorkflowSummary("scoped");
+    vi.mocked(api.getWorkstationWorkflowSummary).mockResolvedValue(scopedSummary);
+    const { result } = renderHook(() => useWorkstationData({
+      activeWorkspace: "accounting",
+      workflowSummaryScope: {
+        hasOperatingContext: true,
+        fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749"
+      }
+    }));
+
+    await waitFor(() => expect(api.getWorkstationWorkflowSummary).toHaveBeenCalledTimes(1));
+
+    await act(async () => {
+      resolveRefreshBatch(0, "scoped");
+      await flushAsync();
+    });
+
+    expect(api.getWorkstationWorkflowSummary).toHaveBeenCalledWith(expect.objectContaining({
+      hasOperatingContext: true,
+      fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749",
+      signal: expect.any(AbortSignal)
+    }));
+    expect(result.current.workflowSummary).toBe(scopedSummary);
   });
 
   it("polls only the visible route-relevant refresh lanes", async () => {
@@ -828,6 +857,43 @@ function createDeferred<T>(): Deferred<T> {
   });
 
   return { promise, resolve, reject };
+}
+
+function buildWorkflowSummary(marker: string): OperatorWorkflowHomeSummary {
+  return {
+    generatedAt: "2026-01-01T00:00:00Z",
+    hasOperatingContext: true,
+    operatingContextLabel: `${marker} context`,
+    fundDisplayName: `${marker} fund`,
+    workspaces: [
+      {
+        workspaceId: "accounting",
+        workspaceTitle: "Accounting",
+        statusLabel: "Financial operations exceptions require review",
+        statusDetail: `${marker} financial operations detail`,
+        statusTone: "Warning",
+        nextAction: {
+          label: "Resolve Exceptions",
+          detail: "Open reconciliation casework.",
+          targetPageTag: "FundReconciliation",
+          tone: "Primary"
+        },
+        primaryBlocker: {
+          code: "financial-operations-exceptions",
+          label: "1 unresolved exception",
+          detail: "Resolve the retained exception before close.",
+          tone: "Warning",
+          isBlocking: true
+        },
+        evidence: [
+          { label: "Core flow", value: "Resolve Exceptions", tone: "Warning" },
+          { label: "Breaks", value: "1", tone: "Warning" },
+          { label: "Approval", value: "Pending", tone: "Warning" },
+          { label: "Evidence", value: "1", tone: "Success" }
+        ]
+      }
+    ]
+  };
 }
 
 function resolveRefreshBatch(index: number, marker: string) {

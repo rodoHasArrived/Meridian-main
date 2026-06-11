@@ -27,6 +27,8 @@ namespace Meridian.Contracts.Extensibility;
 [JsonSerializable(typeof(IReadOnlyList<DomainExtensionDescriptorDto>))]
 [JsonSerializable(typeof(TenantTemplateConfigurationBundleDto))]
 [JsonSerializable(typeof(ExtensibilityActivationReadinessDto))]
+[JsonSerializable(typeof(TenantTemplateActivationRequestDto))]
+[JsonSerializable(typeof(TenantTemplateActivationResultDto))]
 [JsonSerializable(typeof(ExtensibilityRegistrationDto))]
 [JsonSerializable(typeof(IReadOnlyList<ExtensibilityRegistrationDto>))]
 [JsonSerializable(typeof(ExtensibilityCatalogDto))]

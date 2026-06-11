@@ -582,6 +582,39 @@ public static partial class WorkstationEndpoints
         })
         .WithName("RunOperationsContinuityReconciliation");
 
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityReconciliationBreakAssign), async (
+            Guid workflowId,
+            string breakId,
+            OperationsAssignBreakCaseRequestDto? request,
+            HttpContext context,
+            [FromServices] IOperationsContinuityWorkflowService? service) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "A reconciliation break assignment request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.AssignBreakCaseAsync(workflowId, breakId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("AssignOperationsContinuityReconciliationBreak");
+
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityReconciliationBreakResolve), async (
             Guid workflowId,
             string breakId,

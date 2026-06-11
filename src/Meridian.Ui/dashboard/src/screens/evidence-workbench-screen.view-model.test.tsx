@@ -1051,6 +1051,24 @@ describe("Evidence Workbench view model", () => {
               canonicalSubjectId: "report-pack-1"
             }
           ],
+          requestLists: [
+            {
+              requestListId: "request-list:auditrequestlist:audit:close-2026-05",
+              requestListKind: "AuditRequestList",
+              targetKind: "audit",
+              targetId: "close-2026-05",
+              highestSeverity: "Critical",
+              status: "Open",
+              requestCount: 2,
+              requestIds: [
+                "support-request:missingevidence:audit-support",
+                "support-request:blockedworkitem:audit-support:audit-request-close-2026-05"
+              ],
+              evidenceKinds: ["audit-history"],
+              blockedOutputs: ["report-pack/close-2026-05"],
+              summary: "audit/close-2026-05 has 2 frozen requests; 2 open requests remain."
+            }
+          ],
           supportRequests: [
             {
               requestId: "support-request:missingevidence:audit-support",
@@ -1085,7 +1103,7 @@ describe("Evidence Workbench view model", () => {
     expect(result.current.exportResultDetail).toMatchObject({
       title: "Manifest retained",
       manifestPath: "fresh-manifest.json",
-      summaryLabel: "3 nodes, 1 warning, 1 retained artifact, 2 support requests",
+      summaryLabel: "3 nodes, 1 warning, 1 retained artifact, 1 request list, 2 support requests",
       routeHref: "/workstation/evidence/fresh-manifest.json",
       routeLabel: "Open manifest",
       routeAriaLabel: "Open retained evidence manifest at fresh-manifest.json",
@@ -1102,6 +1120,21 @@ describe("Evidence Workbench view model", () => {
           sourceLabel: "/api/workstation/reconciliation/statement-runs/import-1",
           canonicalSubjectLabel: "Report report-pack-1",
           retainedLabel: "Retained May 9, 12:36 UTC"
+        })
+      ],
+      requestListSummaryLabel: "1 request list",
+      requestListRows: [
+        expect.objectContaining({
+          id: "request-list:auditrequestlist:audit:close-2026-05",
+          requestListKindLabel: "Audit Request List",
+          targetLabel: "Audit close-2026-05",
+          highestSeverityLabel: "Critical",
+          highestSeverityTone: "danger",
+          statusLabel: "Open",
+          requestCountLabel: "2 support requests",
+          evidenceKindsLabel: "Audit History",
+          blockedOutputsLabel: "report-pack/close-2026-05",
+          summary: "audit/close-2026-05 has 2 frozen requests; 2 open requests remain."
         })
       ],
       supportRequestSummaryLabel: "2 support requests",
@@ -1166,6 +1199,21 @@ describe("EvidenceWorkbenchScreen", () => {
             sourceRoute: "/api/workstation/reconciliation/statement-runs/import-1",
             canonicalSubjectKind: "report",
             canonicalSubjectId: "report-pack-1"
+          }
+        ],
+        requestLists: [
+          {
+            requestListId: "request-list:auditrequestlist:audit:close-2026-05",
+            requestListKind: "AuditRequestList",
+            targetKind: "audit",
+            targetId: "close-2026-05",
+            highestSeverity: "Critical",
+            status: "Open",
+            requestCount: 1,
+            requestIds: ["support-request:missingevidence:audit-support"],
+            evidenceKinds: ["audit-history"],
+            blockedOutputs: ["report-pack/close-2026-05"],
+            summary: "audit/close-2026-05 has 1 frozen request; 1 open request remains."
           }
         ],
         supportRequests: [
@@ -1238,13 +1286,18 @@ describe("EvidenceWorkbenchScreen", () => {
     await user.click(screen.getByRole("button", { name: /export selected evidence manifest for momentum strategy run/i }));
     expect(await screen.findByText("Manifest retained")).toBeInTheDocument();
     expect(screen.getByText("workstation/evidence/strategy-run/run-1/manifest.json")).toBeInTheDocument();
-    expect(screen.getByText("3 nodes, 1 warning, 1 retained artifact, 1 support request")).toBeInTheDocument();
+    expect(screen.getByText("3 nodes, 1 warning, 1 retained artifact, 1 request list, 1 support request")).toBeInTheDocument();
     expect(screen.getByText("ev-abcdefabcdefabcdefabcdef")).toBeInTheDocument();
     expect(screen.getByText("File Bundle")).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Retained vault artifacts" })).toBeInTheDocument();
     expect(screen.getByText("Broker Statement")).toBeInTheDocument();
     expect(screen.getByText("workstation/evidence/_vault/ev-abcdefabcdefabcdefabcdef/artifacts/broker-statement.csv")).toBeInTheDocument();
     expect(screen.getByText("Report report-pack-1")).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Evidence vault request lists" })).toBeInTheDocument();
+    expect(screen.getByText("Audit Request List")).toBeInTheDocument();
+    expect(screen.getByText("Audit close-2026-05")).toBeInTheDocument();
+    expect(screen.getByText("audit/close-2026-05 has 1 frozen request; 1 open request remains.")).toBeInTheDocument();
+    expect(screen.getAllByText("Audit History").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("list", { name: "Evidence vault support requests" })).toBeInTheDocument();
     expect(screen.getByText("Missing Evidence")).toBeInTheDocument();
     expect(screen.getByText("audit-support")).toBeInTheDocument();

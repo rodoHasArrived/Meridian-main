@@ -37,6 +37,8 @@ import type {
   EvidenceTemplate,
   EvidenceVaultIdentity,
   EvidenceVaultLookupRequest,
+  ExtensibilityActivationReadiness,
+  ExtensibilityCatalog,
   FinancialRecordExplorerDto,
   FinancialRecordExplorerId,
   FinancialRecordExplorerSavedViewDto,
@@ -60,6 +62,8 @@ import type {
   OperatorInbox,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
+  OperationsAssignBreakCaseRequest,
+  OperatorWorkflowHomeSummary,
   OrderResult,
   OrderSubmitRequest,
   PaperSessionSummary,
@@ -91,6 +95,9 @@ import type {
   ResolveReconciliationBreakRequest,
   ResolveConflictRequest,
   ReviewReconciliationBreakRequest,
+  TenantTemplateActivationRequest,
+  TenantTemplateActivationResult,
+  TenantTemplateConfigurationBundle,
   StrategyBriefingResponse,
   StrategyRunSummaryApiRecord,
   StrategyWorkspaceResponse,
@@ -149,6 +156,8 @@ import type {
   OperationsCloseCalendar,
   OperationsCloseCalendarItemUpsertRequest,
   OperationsCloseCalendarItemUpsertResult,
+  OperationsCloseWorkflowRequest,
+  OperationsReopenWorkflowRequest,
   OperationsRejectWorkflowRequest,
   OperationsTransitionResult,
   PlaidLinkTokenRequest,
@@ -164,6 +173,11 @@ import type {
   UserAccountDisableRequest,
   UserAccountMutationResult,
   UserAccountUpsertRequest,
+  UserAccessAssignment,
+  UserAccessAssignmentCreateRequest,
+  UserAccessAssignmentMutationResult,
+  UserAccessAssignmentQuery,
+  UserAccessAssignmentRevokeRequest,
   UserPasswordResetRequest,
   UserSessionRevokeRequest,
   UserSessionRevokeResult,
@@ -172,6 +186,8 @@ import type {
   CapitalAccountWorkbench,
   PrivateCapitalActivityProjection,
   PrivateCapitalCapitalAccountSubledger,
+  PrivateCapitalCloseCockpit,
+  PrivateCapitalFundEventCommandCenter,
   PrivateCapitalFundEventLedgerRecord,
   PrivateCapitalReportOutput,
   FundReportPackGenerateRequest,
@@ -295,6 +311,10 @@ import {
   workstationEvidenceGraphEndpoint,
   workstationEvidencePacketEndpoint,
   workstationEvidenceValidateEndpoint,
+  workstationExtensibilityTenantTemplateActivateEndpoint,
+  workstationExtensibilityTenantTemplateActivationsEndpoint,
+  workstationExtensibilityTenantTemplateEndpoint,
+  workstationExtensibilityTenantTemplateReadinessEndpoint,
   workstationAssetOperationsEndpoint,
   workstationFinancialRecordExplorerEndpoint,
   workstationFinancialRecordExplorerRecordEndpoint,
@@ -302,9 +322,13 @@ import {
   workstationOperatorInboxEndpoint,
   workstationOperationsContinuityApprovalApproveEndpoint,
   workstationOperationsContinuityApprovalRejectEndpoint,
+  workstationOperationsContinuityBreakAssignEndpoint,
+  workstationOperationsContinuityCloseEndpoint,
   workstationOperationsContinuityDetailEndpoint,
   workstationOperationsContinuityEndpoint,
   workstationOperationsContinuityCloseCalendarEndpoint,
+  workstationOperationsPrivateCapitalCloseCockpitEndpoint,
+  workstationOperationsContinuityReopenEndpoint,
   workstationChiefOfStaffDecisionEndpoint,
   workstationChiefOfStaffHealthEndpoint,
   workstationChiefOfStaffSessionEndpoint,
@@ -621,13 +645,15 @@ export function getOperatorInbox(fundAccountId?: string, options: ApiRequestOpti
   return getJson<OperatorInbox>(workstationOperatorInboxEndpoint(fundAccountId), options);
 }
 
-export function getWorkstationWorkflowSummary(options: {
+export function getWorkstationWorkflowSummary(options: ApiRequestOptions & {
   hasOperatingContext?: boolean;
   operatingContext?: string;
   fundProfileId?: string;
+  fundAccountId?: string;
   fundDisplayName?: string;
 } = {}) {
-  return getJson<unknown>(workstationWorkflowSummaryEndpoint(options));
+  const { signal, ...queryOptions } = options;
+  return getJson<OperatorWorkflowHomeSummary>(workstationWorkflowSummaryEndpoint(queryOptions), { signal });
 }
 
 export function getWorkflowLibrary(options: ApiRequestOptions = {}) {
@@ -640,6 +666,51 @@ export function getWorkflowPresets(options: ApiRequestOptions = {}) {
 
 export function getFeatureCapabilities(options: ApiRequestOptions = {}) {
   return getJson<FeatureCapabilitySettingsResponse>(WORKSTATION_API_ENDPOINTS.featureCapabilities, options);
+}
+
+export function getExtensibilityCatalog(options: ApiRequestOptions = {}) {
+  return getJson<ExtensibilityCatalog>(WORKSTATION_API_ENDPOINTS.extensibilityCatalog, options);
+}
+
+export function listExtensibilityTenantTemplates(options: ApiRequestOptions = {}) {
+  return getJson<TenantTemplateConfigurationBundle[]>(WORKSTATION_API_ENDPOINTS.extensibilityTenantTemplates, options);
+}
+
+export function saveExtensibilityTenantTemplate(
+  tenantTemplate: TenantTemplateConfigurationBundle,
+  options: ApiRequestOptions = {}
+) {
+  return putJson<TenantTemplateConfigurationBundle>(
+    workstationExtensibilityTenantTemplateEndpoint(tenantTemplate.tenantTemplateId),
+    tenantTemplate,
+    options
+  );
+}
+
+export function activateExtensibilityTenantTemplate(
+  tenantTemplateId: string,
+  request: TenantTemplateActivationRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<TenantTemplateActivationResult>(
+    workstationExtensibilityTenantTemplateActivateEndpoint(tenantTemplateId),
+    request,
+    options
+  );
+}
+
+export function listExtensibilityTenantTemplateActivations(tenantTemplateId: string, options: ApiRequestOptions = {}) {
+  return getJson<TenantTemplateActivationResult[]>(
+    workstationExtensibilityTenantTemplateActivationsEndpoint(tenantTemplateId),
+    options
+  );
+}
+
+export function getExtensibilityTenantTemplateReadiness(tenantTemplateId: string, options: ApiRequestOptions = {}) {
+  return getJson<ExtensibilityActivationReadiness>(
+    workstationExtensibilityTenantTemplateReadinessEndpoint(tenantTemplateId),
+    options
+  );
 }
 
 export function getRolePermissionCatalog(options: ApiRequestOptions = {}) {
@@ -677,6 +748,52 @@ export function getUserAccountAudit(options: ApiRequestOptions = {}) {
   return getJson<UserAccountAuditEvent[]>(AUTH_API_ENDPOINTS.audit, options);
 }
 
+export function listScopedAccessAssignments(
+  query: UserAccessAssignmentQuery = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.principalId) {
+    params.set("principalId", query.principalId);
+  }
+
+  if (query.scopeKind) {
+    params.set("scopeKind", query.scopeKind);
+  }
+
+  if (query.scopeId) {
+    params.set("scopeId", query.scopeId);
+  }
+
+  if (query.includeRevoked) {
+    params.set("includeRevoked", "true");
+  }
+
+  const suffix = params.toString();
+  return getJson<UserAccessAssignment[]>(
+    suffix ? `${AUTH_API_ENDPOINTS.accessAssignments}?${suffix}` : AUTH_API_ENDPOINTS.accessAssignments,
+    options
+  );
+}
+
+export function createScopedAccessAssignment(
+  request: UserAccessAssignmentCreateRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<UserAccessAssignmentMutationResult>(AUTH_API_ENDPOINTS.accessAssignments, request, options);
+}
+
+export function revokeScopedAccessAssignment(
+  request: UserAccessAssignmentRevokeRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<UserAccessAssignmentMutationResult>(
+    authAccessAssignmentRevokeEndpoint(request.assignmentId),
+    request,
+    options
+  );
+}
+
 function authAccountEndpoint(username: string) {
   return AUTH_API_ENDPOINTS.accountByUsername.replace("{username}", encodeURIComponent(username));
 }
@@ -687,6 +804,10 @@ function authAccountPasswordResetEndpoint(username: string) {
 
 function authAccountDisableEndpoint(username: string) {
   return AUTH_API_ENDPOINTS.accountDisable.replace("{username}", encodeURIComponent(username));
+}
+
+function authAccessAssignmentRevokeEndpoint(assignmentId: string) {
+  return AUTH_API_ENDPOINTS.accessAssignmentRevoke.replace("{assignmentId}", encodeURIComponent(assignmentId));
 }
 
 export function getSecurityAssetProfiles(options: ApiRequestOptions = {}) {
@@ -760,6 +881,19 @@ export function getOperationsContinuityWorkflow(workflowId: string, options: Api
   return getJson<OperationsContinuityWorkflow>(workstationOperationsContinuityDetailEndpoint(workflowId), options);
 }
 
+export function assignOperationsContinuityBreakCase(
+  workflowId: string,
+  breakId: string,
+  request: OperationsAssignBreakCaseRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityBreakAssignEndpoint(workflowId, breakId),
+    request,
+    options
+  );
+}
+
 export function approveOperationsContinuityWorkflow(
   workflowId: string,
   request: OperationsApprovalDecisionRequest,
@@ -779,6 +913,30 @@ export function rejectOperationsContinuityWorkflow(
 ) {
   return postJson<OperationsTransitionResult>(
     workstationOperationsContinuityApprovalRejectEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function closeOperationsContinuityWorkflow(
+  workflowId: string,
+  request: OperationsCloseWorkflowRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityCloseEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function reopenOperationsContinuityWorkflow(
+  workflowId: string,
+  request: OperationsReopenWorkflowRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityReopenEndpoint(workflowId),
     request,
     options
   );
@@ -804,6 +962,30 @@ export function getOperationsCloseCalendar(
   options: ApiRequestOptions = {}
 ) {
   return getJson<OperationsCloseCalendar>(workstationOperationsContinuityCloseCalendarEndpoint(filters), options);
+}
+
+export interface PrivateCapitalCloseCockpitQuery {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  fundAccountId?: string | null;
+  periodId?: string | null;
+  entityId?: string | null;
+}
+
+export function getPrivateCapitalCloseCockpit(
+  query: PrivateCapitalCloseCockpitQuery = {},
+  options: ApiRequestOptions = {}
+) {
+  return getJson<PrivateCapitalCloseCockpit>(
+    workstationOperationsPrivateCapitalCloseCockpitEndpoint({
+      fundProfileId: query.fundProfileId ?? undefined,
+      ledgerBookId: query.ledgerBookId ?? undefined,
+      fundAccountId: query.fundAccountId ?? undefined,
+      periodId: query.periodId ?? undefined,
+      entityId: query.entityId ?? undefined
+    }),
+    options
+  );
 }
 
 export function upsertOperationsCloseCalendarItem(
@@ -1007,6 +1189,29 @@ export function getPrivateCapitalFundEventRecord(
 
   return getJson<PrivateCapitalFundEventLedgerRecord>(
     `${WORKSTATION_API_ENDPOINTS.privateCapitalFundEventRecord}?${params.toString()}`,
+    options
+  );
+}
+
+export interface PrivateCapitalFundEventCommandCenterQuery {
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  fundEventId: string;
+}
+
+export function getPrivateCapitalFundEventCommandCenter(
+  query: PrivateCapitalFundEventCommandCenterQuery,
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value) {
+      params.set(key, value);
+    }
+  }
+
+  return getJson<PrivateCapitalFundEventCommandCenter>(
+    `${WORKSTATION_API_ENDPOINTS.privateCapitalFundEventCommandCenter}?${params.toString()}`,
     options
   );
 }

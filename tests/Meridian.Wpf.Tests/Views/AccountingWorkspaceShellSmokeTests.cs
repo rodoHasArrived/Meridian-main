@@ -52,6 +52,9 @@ public sealed class AccountingWorkspaceShellSmokeTests
         xaml.Should().Contain("FinancialOperationsWorkflowDetailText");
         xaml.Should().Contain("FinancialOperationsWorkflowActionButton");
         xaml.Should().Contain("Financial Operations Checkpoint");
+        xaml.Should().Contain("AutomationProperties.AutomationId=\"FinancialOperationsEvidenceBadges\"");
+        xaml.Should().Contain("FinancialOperationsEvidenceBadgesList");
+        xaml.Should().Contain("FinancialOperationsPrimaryBlockerText");
         xaml.Should().NotContain("FinancialOperationsWorkflowStepsList");
         xaml.Should().NotContain("FinancialOperationsWorkflowStepTemplate");
         xaml.Should().NotContain("Receive Activity -> Match Records -> Resolve Exceptions -> Approve Results -> Produce Evidence");
@@ -91,6 +94,7 @@ public sealed class AccountingWorkspaceShellSmokeTests
             .BeGreaterThan(xaml.IndexOf("AutomationProperties.Name=\"Accounting Dock Manager\"", StringComparison.Ordinal));
 
         code.Should().Contain("GetAccountingWorkflowSummaryAsync");
+        code.Should().Contain("fundAccountId: WorkstationOperatingContextScopeResolver.ResolveFundAccountIdString");
         code.Should().Contain("AccountingWorkspaceShellStateProvider");
         code.Should().Contain("AccountingWorkspaceShellViewModel");
         code.Should().NotContain("GovernanceWorkspaceShellStateProvider");
@@ -101,6 +105,9 @@ public sealed class AccountingWorkspaceShellSmokeTests
         code.Should().Contain("BuildFinancialOperationsWorkflowSteps(");
         code.Should().Contain("ApplyFinancialOperationsWorkflowCheckpoint(");
         code.Should().Contain("ResolveCurrentFinancialOperationsWorkflowStep(steps)");
+        code.Should().Contain("FinancialOperationsEvidenceBadgesList.ItemsSource = workflow?.Evidence");
+        code.Should().Contain("FinancialOperationsPrimaryBlockerText.Text = workflow is null");
+        code.Should().Contain("workflow.PrimaryBlocker.Label");
         code.Should().Contain("SetLaneSummary(AccountingLaneSummaryText");
         code.Should().Contain("Switch context to unlock accounting queues");
         code.Should().Contain("Accounting Scope");

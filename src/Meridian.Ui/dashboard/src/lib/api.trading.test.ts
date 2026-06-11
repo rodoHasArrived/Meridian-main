@@ -23,6 +23,8 @@ import {
   getPortfolioAggregate,
   getPortfolioExposure,
   getPortfolioSymbolExposure,
+  getPrivateCapitalCloseCockpit,
+  getPrivateCapitalFundEventCommandCenter,
   getProviderRoutingBindings,
   getProviderRoutingConnections,
   getProviderRoutingTrustSnapshots,
@@ -249,6 +251,44 @@ describe("trading endpoint wiring", () => {
     expect(hasDevelopmentFixtureUsage()).toBe(true);
   });
 
+  it("wires private-capital fund-event command-center drill-throughs", async () => {
+    const controller = new AbortController();
+
+    await getPrivateCapitalFundEventCommandCenter(
+      {
+        fundProfileId: "fund-alpha",
+        ledgerBookId: "11111111-1111-1111-1111-111111111111",
+        fundEventId: "fund-event:fund-alpha:capital-call"
+      },
+      { signal: controller.signal }
+    );
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/ledger/private-capital/fund-event-command-center?fundProfileId=fund-alpha&ledgerBookId=11111111-1111-1111-1111-111111111111&fundEventId=fund-event%3Afund-alpha%3Acapital-call",
+      expect.objectContaining({ signal: controller.signal })
+    );
+  });
+
+  it("wires private-capital close cockpit drill-throughs", async () => {
+    const controller = new AbortController();
+
+    await getPrivateCapitalCloseCockpit(
+      {
+        fundProfileId: "fund-alpha",
+        ledgerBookId: "11111111-1111-1111-1111-111111111111",
+        fundAccountId: "fund-account:lp-1",
+        periodId: "2026-06",
+        entityId: "entity-master"
+      },
+      { signal: controller.signal }
+    );
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/operations/private-capital-close-cockpit?fundProfileId=fund-alpha&ledgerBookId=11111111-1111-1111-1111-111111111111&fundAccountId=fund-account%3Alp-1&periodId=2026-06&entityId=entity-master",
+      expect.objectContaining({ signal: controller.signal })
+    );
+  });
+
   it("normalizes the host status endpoint into the overview dashboard contract", async () => {
     fetchMock.mockResolvedValue({
       ok: true,
@@ -463,7 +503,8 @@ describe("trading endpoint wiring", () => {
   it("wires workstation workflow library and preset endpoints", async () => {
     await getWorkstationWorkflowSummary({
       hasOperatingContext: true,
-      fundProfileId: "fund-1"
+      fundProfileId: "fund-1",
+      fundAccountId: "account-1"
     });
     await getWorkflowLibrary();
     await getWorkflowPresets();
@@ -489,7 +530,7 @@ describe("trading endpoint wiring", () => {
     await deleteWorkflowPreset("preset-1");
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/workstation/workflow-summary?hasOperatingContext=true&fundProfileId=fund-1",
+      "/api/workstation/workflow-summary?hasOperatingContext=true&fundProfileId=fund-1&fundAccountId=account-1",
       expect.anything()
     );
     expect(fetchMock).toHaveBeenCalledWith("/api/workstation/workflows", expect.anything());

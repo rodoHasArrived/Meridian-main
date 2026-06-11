@@ -54,7 +54,7 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
         var paymentIntent = activity.PaymentIntents
             .FirstOrDefault(item => Matches(item.FundEventId, record.FundEventId) ||
                                     Matches(item.PaymentIntentId, record.PaymentIntentId));
-        var lanes = BuildLanes(record, paymentIntent);
+        var lanes = BuildLanes(activity.FundProfileId, activity.LedgerBookId, record, paymentIntent);
         var supportPackages = BuildSupportPackages(record, paymentIntent);
 
         return new PrivateCapitalFundEventCommandCenterDto(
@@ -79,6 +79,8 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
     }
 
     private static IReadOnlyList<PrivateCapitalFundEventCommandCenterLaneDto> BuildLanes(
+        string fundProfileId,
+        Guid? ledgerBookId,
         PrivateCapitalFundEventLedgerRecordDto record,
         PaymentIntentWorkflowDto? paymentIntent)
     {
@@ -87,7 +89,7 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
             BuildEvidenceLane(record),
             BuildWorkflowLane(record),
             BuildLedgerImpactLane(record),
-            BuildCapitalAccountLane(record),
+            BuildCapitalAccountLane(fundProfileId, ledgerBookId, record),
             BuildTreasuryLane(record, paymentIntent),
             BuildReconciliationLane(record, paymentIntent),
             BuildReportUsageLane(record),
@@ -115,7 +117,7 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
 
     private static PrivateCapitalFundEventCommandCenterLaneDto BuildWorkflowLane(PrivateCapitalFundEventLedgerRecordDto record)
     {
-        var isReady = record.ApprovalState is ManualJournalEntryStatusDto.Approved or ManualJournalEntryStatusDto.Posted;
+        var isReady = record.IsPosted || record.ApprovalState is ManualJournalEntryStatusDto.Approved;
         return Lane(
             "workflow",
             "Workflow",
@@ -143,7 +145,10 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
             "Resolve ledger impact and posting readiness");
     }
 
-    private static PrivateCapitalFundEventCommandCenterLaneDto BuildCapitalAccountLane(PrivateCapitalFundEventLedgerRecordDto record)
+    private static PrivateCapitalFundEventCommandCenterLaneDto BuildCapitalAccountLane(
+        string fundProfileId,
+        Guid? ledgerBookId,
+        PrivateCapitalFundEventLedgerRecordDto record)
     {
         var isReady = record.CapitalAccountSubledgerEntryCount > 0;
         return Lane(
@@ -154,8 +159,8 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
                 ? $"{record.CapitalAccountSubledgerEntryCount} capital-account subledger row(s) are linked."
                 : "No capital-account subledger movement is linked to this fund event.",
             PrivateCapitalActivityRouteBuilder.BuildCapitalAccountSubledgerRoute(
-                record.FundEvent.FundEventId.Split(':').Length > 1 ? record.FundEvent.FundEventId.Split(':')[1] : "default-fund",
-                null,
+                fundProfileId,
+                ledgerBookId,
                 record.CapitalAccountId,
                 record.InvestorId,
                 record.Currency),
@@ -327,6 +332,7 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
             isReady,
             summary,
             Normalize(route),
+            evidenceLinks.Count,
             evidenceLinks,
             isReady ? [] : [requiredAction]);
 

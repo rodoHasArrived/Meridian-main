@@ -161,6 +161,7 @@ public sealed record EvidenceVaultIdentityDto(
     string StorageKind)
 {
     public IReadOnlyList<EvidenceVaultArtifactDto> Artifacts { get; init; } = [];
+    public IReadOnlyList<EvidenceRequestListDto> RequestLists { get; init; } = [];
     public IReadOnlyList<EvidenceSupportRequestDto> SupportRequests { get; init; } = [];
 }
 
@@ -187,6 +188,19 @@ public sealed record EvidenceSupportRequestDto(
     string? SourceSystem,
     string? WorkItemId,
     string? BlockedOutput);
+
+public sealed record EvidenceRequestListDto(
+    string RequestListId,
+    string RequestListKind,
+    string TargetKind,
+    string TargetId,
+    EvidenceValidationSeverityDto HighestSeverity,
+    string Status,
+    int RequestCount,
+    IReadOnlyList<string> RequestIds,
+    IReadOnlyList<string> EvidenceKinds,
+    IReadOnlyList<string> BlockedOutputs,
+    string Summary);
 
 public sealed record EvidenceLifecycleMetadataDto(
     DateTimeOffset? RetainUntil,

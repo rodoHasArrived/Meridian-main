@@ -3829,7 +3829,14 @@ function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWorkbenchV
                   <div className="mt-2 flex flex-wrap gap-2 text-xs">
                     <AccountingChip label="Evidence" value={row.evidenceLabel} />
                     <AccountingChip label="Required" value={row.requiredLabel} />
+                    <AccountingChip label="Policy" value={row.policyLabel} />
+                    <AccountingChip label="Effective" value={row.effectiveWindowLabel} />
+                    <AccountingChip label="Approval" value={row.approvalLabel} />
+                    <AccountingChip label="Inputs" value={row.inputSummaryLabel} />
+                    <AccountingChip label="Fund events" value={row.relatedFundEventLabel} />
                   </div>
+                  <p className="mt-2 break-all font-mono text-[11px] text-muted-foreground">{row.formulaLabel}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{row.traceLabel}</p>
                   {row.routeLabel !== "No route" ? (
                     <a href={row.routeLabel} className="mt-2 block break-all font-mono text-[11px] text-primary hover:underline">
                       {row.routeLabel}
@@ -3863,6 +3870,17 @@ function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWorkbenchV
                     <span>{row.restatementLabel}</span>
                     <span className="break-all font-mono text-[11px]">{row.manifestLabel}</span>
                   </div>
+                  {row.changedLineRows.length > 0 ? (
+                    <ul className="mt-2 grid gap-1 text-xs text-muted-foreground" aria-label={`${row.title} restatement changed lines`}>
+                      {row.changedLineRows.map((line) => (
+                        <li key={line.id} className="rounded-sm border border-border/60 px-2 py-1">
+                          <span className="break-all font-mono text-[11px]">{line.lineKey}</span>
+                          <span className="mx-2">{line.valueLabel}</span>
+                          <span>{line.evidenceLabel}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                   <a href={row.routeLabel} className="mt-2 block break-all font-mono text-[11px] text-primary hover:underline">
                     {row.routeLabel}
                   </a>
@@ -3968,66 +3986,212 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
         ) : null}
 
         {activity.paymentIntents.length > 0 ? (
-          <div className="overflow-x-auto rounded-md border border-border/70">
-            <table className="w-full min-w-[1040px] text-sm" aria-label="Payment intent and cash evidence workflows">
-              <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 text-left">Payment intent</th>
-                  <th className="px-3 py-2 text-left">Status</th>
-                  <th className="px-3 py-2 text-left">Expected cash</th>
-                  <th className="px-3 py-2 text-left">Approvals</th>
-                  <th className="px-3 py-2 text-left">Cash evidence</th>
-                  <th className="px-3 py-2 text-left">Reconciliation</th>
-                  <th className="px-3 py-2 text-left">Audit</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activity.paymentIntents.map((intent) => (
-                  <tr key={intent.id} className="border-t border-border/60 bg-background/30 align-top">
-                    <td className="px-3 py-2">
-                      <div className="break-all font-mono text-xs text-foreground">{intent.title}</div>
-                      <div className="mt-1 break-all text-[11px] text-muted-foreground">{intent.subtitle}</div>
-                      <div className="mt-1 text-[11px] text-muted-foreground">{intent.requestedLabel}</div>
-                      {intent.workbenchRouteLabel !== "No workbench route" ? (
-                        <a
-                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
-                          href={intent.workbenchRouteLabel}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`Open payment intent workbench route for ${intent.title}`}
-                        >
-                          {intent.workbenchRouteLabel}
-                        </a>
-                      ) : null}
-                    </td>
-                    <td className="px-3 py-2">
-                      <Badge variant={intent.statusTone} dot>{intent.statusLabel}</Badge>
-                      <div className="mt-1 text-xs text-muted-foreground">{intent.readinessReasonLabel}</div>
-                      <div className="mt-1 text-[11px] text-muted-foreground">{intent.executionDeferredLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs">{intent.expectedCashLabel}</td>
-                    <td className="px-3 py-2 text-xs">{intent.approvalLabel}</td>
-                    <td className="px-3 py-2 text-xs">
-                      <div>{intent.bankEvidenceLabel}</div>
-                      {intent.evidenceRouteLabel !== "No evidence route" ? (
-                        <a
-                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
-                          href={intent.evidenceRouteLabel}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`Open payment intent evidence packet for ${intent.title}`}
-                        >
-                          {intent.evidenceRouteLabel}
-                        </a>
-                      ) : null}
-                    </td>
-                    <td className="px-3 py-2 text-xs">{intent.reconciliationLabel}</td>
-                    <td className="px-3 py-2 text-xs">{intent.auditLabel}</td>
+          <>
+            <div className="overflow-x-auto rounded-md border border-border/70">
+              <table className="w-full min-w-[1040px] text-sm" aria-label="Payment intent and cash evidence workflows">
+                <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
+                  <tr>
+                    <th className="px-3 py-2 text-left">Payment intent</th>
+                    <th className="px-3 py-2 text-left">Status</th>
+                    <th className="px-3 py-2 text-left">Expected cash</th>
+                    <th className="px-3 py-2 text-left">Approvals</th>
+                    <th className="px-3 py-2 text-left">Cash evidence</th>
+                    <th className="px-3 py-2 text-left">Reconciliation</th>
+                    <th className="px-3 py-2 text-left">Audit</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {activity.paymentIntents.map((intent) => (
+                    <tr key={intent.id} className="border-t border-border/60 bg-background/30 align-top">
+                      <td className="px-3 py-2">
+                        <div className="break-all font-mono text-xs text-foreground">{intent.title}</div>
+                        <div className="mt-1 break-all text-[11px] text-muted-foreground">{intent.subtitle}</div>
+                        <div className="mt-1 text-[11px] text-muted-foreground">{intent.requestedLabel}</div>
+                        {intent.workbenchRouteLabel !== "No workbench route" ? (
+                          <a
+                            className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                            href={intent.workbenchRouteLabel}
+                            target="_blank"
+                            rel="noreferrer"
+                            aria-label={`Open payment intent workbench route for ${intent.title}`}
+                          >
+                            {intent.workbenchRouteLabel}
+                          </a>
+                        ) : null}
+                      </td>
+                      <td className="px-3 py-2">
+                        <Badge variant={intent.statusTone} dot>{intent.statusLabel}</Badge>
+                        <div className="mt-1 text-xs text-muted-foreground">{intent.readinessReasonLabel}</div>
+                        <div className="mt-1 text-[11px] text-muted-foreground">{intent.executionDeferredLabel}</div>
+                      </td>
+                      <td className="px-3 py-2 font-mono text-xs">{intent.expectedCashLabel}</td>
+                      <td className="px-3 py-2 text-xs">{intent.approvalLabel}</td>
+                      <td className="px-3 py-2 text-xs">
+                        <div>{intent.bankEvidenceLabel}</div>
+                        {intent.evidenceRouteLabel !== "No evidence route" ? (
+                          <a
+                            className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                            href={intent.evidenceRouteLabel}
+                            target="_blank"
+                            rel="noreferrer"
+                            aria-label={`Open payment intent evidence packet for ${intent.title}`}
+                          >
+                            {intent.evidenceRouteLabel}
+                          </a>
+                        ) : null}
+                      </td>
+                      <td className="px-3 py-2 text-xs">{intent.reconciliationLabel}</td>
+                      <td className="px-3 py-2 text-xs">{intent.auditLabel}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <section className="space-y-3" aria-label="Payment intent cash evidence drilldowns">
+              {activity.paymentIntents.map((intent) => (
+                <section
+                  key={`${intent.id}-cash-evidence-drilldown`}
+                  className="rounded-md border border-border/70 bg-background/30 px-3 py-3"
+                  aria-label={`Cash evidence drilldown for ${intent.title}`}
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <div className="break-all font-mono text-xs text-foreground">{intent.title}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">{intent.expectedCashLabel}</div>
+                    </div>
+                    <Badge variant={intent.statusTone} dot>{intent.statusLabel}</Badge>
+                  </div>
+                  <div className="mt-3 grid gap-3 lg:grid-cols-4">
+                    <div>
+                      <div className="text-[11px] font-semibold uppercase text-muted-foreground">Approval chain</div>
+                      {intent.approvalSteps.length > 0 ? (
+                        <ol className="mt-2 space-y-2">
+                          {intent.approvalSteps.map((step) => (
+                            <li key={step.id} className="text-xs">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="font-semibold text-foreground">{step.sequenceLabel}</span>
+                                <Badge variant="outline">{step.statusLabel}</Badge>
+                              </div>
+                              <div className="mt-1 text-muted-foreground">{step.roleLabel} / {step.actorLabel}</div>
+                              <div className="mt-1 text-[11px] text-muted-foreground">{step.decidedLabel}</div>
+                              {step.evidenceRouteLabel !== "No approval evidence route" ? (
+                                <a
+                                  className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                                  href={step.evidenceRouteLabel}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  aria-label={`Open approval evidence for ${intent.title} ${step.sequenceLabel}`}
+                                >
+                                  {step.evidenceRouteLabel}
+                                </a>
+                              ) : null}
+                            </li>
+                          ))}
+                        </ol>
+                      ) : (
+                        <div className="mt-2 text-xs text-muted-foreground">No approval chain</div>
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="text-[11px] font-semibold uppercase text-muted-foreground">Bank evidence</div>
+                      {intent.bankEvidence.length > 0 ? (
+                        <div className="mt-2 space-y-2">
+                          {intent.bankEvidence.map((item) => (
+                            <div key={item.id} className="text-xs">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="font-semibold text-foreground">{item.title}</span>
+                                <Badge variant="outline">{item.statusLabel}</Badge>
+                              </div>
+                              <div className="mt-1 text-muted-foreground">{item.summaryLabel}</div>
+                              <div className="mt-1 font-mono text-[11px] text-muted-foreground">{item.amountLabel} / {item.effectiveDateLabel}</div>
+                              <div className="mt-1 text-[11px] text-muted-foreground">{item.referenceLabel}</div>
+                              <div className="mt-1 text-[11px] text-muted-foreground">{item.recordedLabel}</div>
+                              {item.evidenceRouteLabel !== "No bank evidence route" ? (
+                                <a
+                                  className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                                  href={item.evidenceRouteLabel}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  aria-label={`Open bank evidence for ${intent.title} ${item.title}`}
+                                >
+                                  {item.evidenceRouteLabel}
+                                </a>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="mt-2 text-xs text-muted-foreground">No bank evidence</div>
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="text-[11px] font-semibold uppercase text-muted-foreground">Reconciliation</div>
+                      {intent.reconciliationLinks.length > 0 ? (
+                        <div className="mt-2 space-y-2">
+                          {intent.reconciliationLinks.map((link) => (
+                            <div key={link.id} className="text-xs">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="break-all font-mono text-[11px] text-foreground">{link.id}</span>
+                                <Badge variant="outline">{link.statusLabel}</Badge>
+                              </div>
+                              <div className="mt-1 text-muted-foreground">{link.summaryLabel}</div>
+                              <div className="mt-1 text-[11px] text-muted-foreground">{link.caseLabel}</div>
+                              {link.routeLabel !== "No reconciliation evidence route" ? (
+                                <a
+                                  className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                                  href={link.routeLabel}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  aria-label={`Open reconciliation evidence for ${intent.title} ${link.id}`}
+                                >
+                                  {link.routeLabel}
+                                </a>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="mt-2 text-xs text-muted-foreground">No reconciliation link</div>
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="text-[11px] font-semibold uppercase text-muted-foreground">Audit trail</div>
+                      {intent.auditEvents.length > 0 ? (
+                        <div className="mt-2 space-y-2">
+                          {intent.auditEvents.map((event) => (
+                            <div key={event.id} className="text-xs">
+                              <div className="font-semibold text-foreground">{event.actionLabel}</div>
+                              <div className="mt-1 text-muted-foreground">{event.summaryLabel}</div>
+                              <div className="mt-1 text-[11px] text-muted-foreground">{event.actorLabel} / {event.recordedLabel}</div>
+                              <div className="mt-1 text-[11px] text-muted-foreground">{event.evidenceLabel}</div>
+                              {event.evidenceRouteLabels.map((route, index) => (
+                                <a
+                                  key={`${event.id}-${route}`}
+                                  className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                                  href={route}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  aria-label={`Open audit evidence ${index + 1} for ${intent.title} ${event.actionLabel}`}
+                                >
+                                  {route}
+                                </a>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="mt-2 text-xs text-muted-foreground">No audit trail</div>
+                      )}
+                    </div>
+                  </div>
+                </section>
+              ))}
+            </section>
+          </>
         ) : null}
 
         {activity.fundEventLedgerRecords.length > 0 ? (
@@ -4068,6 +4232,15 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                         aria-label={`Open private-capital activity record for ${record.title}`}
                       >
                         {record.activityRouteLabel}
+                      </a>
+                      <a
+                        className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                        href={record.commandCenterRouteLabel}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`Open fund event command center for ${record.title}`}
+                      >
+                        {record.commandCenterRouteLabel}
                       </a>
                     </td>
                     <td className="px-3 py-2">

@@ -19,7 +19,8 @@ public sealed class WorkstationWorkflowSummaryFinancialOperationsTests
         var summary = await service.GetAsync(
             hasOperatingContext: true,
             operatingContextDisplayName: "Northwind Income",
-            fundProfileId: fundAccountId.ToString("D"),
+            fundProfileId: "northwind-income",
+            fundAccountId: fundAccountId.ToString("D"),
             fundDisplayName: "Northwind Income");
 
         var accounting = GetAccounting(summary);
@@ -31,6 +32,10 @@ public sealed class WorkstationWorkflowSummaryFinancialOperationsTests
         accounting.Evidence.Should().Contain(badge =>
             badge.Label == "Core flow" &&
             badge.Value == "Receive Activity" &&
+            badge.Tone == "Warning");
+        accounting.Evidence.Should().Contain(badge =>
+            badge.Label == "Reviewed automation" &&
+            badge.Value == "No suggestions without intake" &&
             badge.Tone == "Warning");
     }
 
@@ -68,7 +73,8 @@ public sealed class WorkstationWorkflowSummaryFinancialOperationsTests
         var summary = await service.GetAsync(
             hasOperatingContext: true,
             operatingContextDisplayName: "Northwind Income",
-            fundProfileId: fundAccountId.ToString("D"),
+            fundProfileId: "northwind-income",
+            fundAccountId: fundAccountId.ToString("D"),
             fundDisplayName: "Northwind Income");
 
         var accounting = GetAccounting(summary);
@@ -83,6 +89,33 @@ public sealed class WorkstationWorkflowSummaryFinancialOperationsTests
         summary.AssuranceScore.Components.Should().Contain(component =>
             component.ComponentId == "accounting" &&
             component.Status == EvidenceStatusDto.ReviewRequired);
+    }
+
+    [Fact]
+    public async Task GetAsync_WithAutoMatchedOperationsWorkflow_ShouldExposeReviewedAutomationGuardrail()
+    {
+        var fundAccountId = Guid.Parse("E9D6C256-1F68-49A0-989A-14A11190F0B3");
+        var workflow = CreateWorkflow(
+            fundAccountId,
+            OperationsWorkflowStatusDto.ReconciliationActive,
+            OperationsReconciliationStateDto.AutoMatched,
+            OperationsApprovalStateDto.Pending,
+            breaks: []);
+        var service = CreateSummaryService(new StubOperationsContinuityWorkflowService([workflow]));
+
+        var summary = await service.GetAsync(
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Northwind Income",
+            fundProfileId: "northwind-income",
+            fundAccountId: fundAccountId.ToString("D"),
+            fundDisplayName: "Northwind Income");
+
+        var accounting = GetAccounting(summary);
+        accounting.StatusLabel.Should().Be("Financial operations control flow active");
+        accounting.Evidence.Should().Contain(badge =>
+            badge.Label == "Reviewed automation" &&
+            badge.Value == "Suggested matches require review" &&
+            badge.Tone == "Warning");
     }
 
     private static WorkstationWorkflowSummaryService CreateSummaryService(
@@ -239,6 +272,7 @@ public sealed class WorkstationWorkflowSummaryFinancialOperationsTests
         public Task<OperationsTransitionResultDto> PostLedgerEntriesAsync(Guid workflowId, OperationsLedgerPostRequestDto request, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<OperationsTransitionResultDto> RunReconciliationAsync(Guid workflowId, OperationsReconciliationRunRequestDto request, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<OperationsTransitionResultDto> ResolveBreakCaseAsync(Guid workflowId, string breakId, OperationsResolveBreakCaseRequestDto request, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<OperationsTransitionResultDto> AssignBreakCaseAsync(Guid workflowId, string breakId, OperationsAssignBreakCaseRequestDto request, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<OperationsTransitionResultDto> SubmitForApprovalAsync(Guid workflowId, OperationsSubmitApprovalRequestDto request, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<OperationsTransitionResultDto> ApproveWorkflowAsync(Guid workflowId, OperationsApprovalDecisionRequestDto request, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<OperationsTransitionResultDto> RejectWorkflowAsync(Guid workflowId, OperationsRejectWorkflowRequestDto request, CancellationToken ct = default) => throw new NotSupportedException();

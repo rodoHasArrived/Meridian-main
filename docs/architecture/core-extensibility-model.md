@@ -61,6 +61,11 @@ tenant configuration from bypassing those controls.
   generated JSON context for browser, WPF, service, and retained-manifest consumers.
 - `src/Meridian.Ui.Shared/Extensibility/ExtensibilityCatalogService.cs` aggregates registrations
   from provider adapters into a shared `ExtensibilityCatalogDto`.
+- `src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs` stores
+  tenant-template configuration bundles, evaluates activation readiness, and fails closed when a
+  template or domain extension attempts to override core object identity, audit trail, or financial
+  calculation integrity, or when bundled configuration envelopes lack approved status and retained
+  approval actor/timestamp evidence.
 - `src/Meridian.Ui.Shared/Extensibility/WorkflowExtensibilityCatalogProvider.cs` adapts the shared
   workflow library so built-in workstation workflows and actions appear as configurable workflow
   registrations without becoming domain write authority.
@@ -73,6 +78,16 @@ tenant configuration from bypassing those controls.
 - `src/Meridian.Ui.Shared/Extensibility/OperationalConfigurationExtensibilityCatalogProvider.cs`
   advertises the active ledger-control, accounting-validation, posting-rule mapping, and provider
   integration seams plus draft notification, tenant-template, and domain-extension contract seams.
+- `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Extensibility.cs` exposes the shared
+  catalog at `/api/workstation/extensibility/catalog` so browser and WPF workstation clients can
+  consume the same stable-core and configurable-layer registry. The same endpoint partial also
+  exposes tenant-template bundle listing, save, activation-readiness, activation, and
+  activation-history routes under
+  `/api/workstation/extensibility/tenant-templates`.
+- `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` registers the
+  workstation file-backed configuration store at
+  `workstation/extensibility/configuration-bundles.json`; stronger hosts may replace the store, but
+  activation must still preserve the governed-foundation checks.
 
 Future providers should plug into `IExtensibilityCatalogProvider` for report templates, rules,
 integration mappings, scoped permissions, ledger controls, notifications, and domain-extension

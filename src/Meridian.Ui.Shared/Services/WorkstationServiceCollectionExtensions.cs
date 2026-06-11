@@ -19,6 +19,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Infrastructure.Adapters.Plaid;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Identity;
@@ -222,6 +223,8 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<GovernedReportingTemplateCatalog>());
         services.TryAddSingleton<ReportPackWorkflowService>();
         services.TryAddSingleton<ReportPackDeliveryService>();
+        services.TryAddSingleton<ReportWriterDatasetSourceService>();
+        services.TryAddSingleton<ReportWriterGridArtifactService>();
         services.TryAddSingleton<IReportingOrchestrationService>(sp =>
             new ReportingOrchestrationService(
                 sp.GetRequiredService<IReportingTemplateCatalog>(),
@@ -240,7 +243,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<IReportingOrchestrationService>(),
                 sp.GetService<IReportingScheduleStore>(),
                 sp.GetService<ReportPackDeliveryService>(),
-                sp.GetService<GovernedReportingTemplateCatalog>()));
+                sp.GetService<GovernedReportingTemplateCatalog>(),
+                sp.GetService<ReportWriterDatasetSourceService>()));
         services.TryAddSingleton<ReportPackRunReadService>();
         services.TryAddSingleton<W4AcceptanceFilter>();
         services.TryAddSingleton<IGovernanceReportPackRepository>(sp =>
@@ -313,6 +317,13 @@ public static class WorkstationServiceCollectionExtensions
             new CapitalAccountWorkbenchService(
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
                 sp.GetService<ReportPackWorkflowService>()));
+        services.TryAddSingleton<IPrivateCapitalFundEventCommandCenterService>(sp =>
+            new PrivateCapitalFundEventCommandCenterService(
+                sp.GetRequiredService<IManualJournalEntryWorkbenchService>()));
+        services.TryAddSingleton<IPrivateCapitalCloseCockpitService>(sp =>
+            new PrivateCapitalCloseCockpitService(
+                sp.GetService<IManualJournalEntryWorkbenchService>(),
+                sp.GetService<IOperationsContinuityWorkflowService>()));
         services.TryAddSingleton<IReconciliationBreakQueueRepository>(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<FileReconciliationBreakQueueRepository>>();
@@ -327,11 +338,16 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
             new OperationsContinuityReconciliationBridge(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
-                sp.GetService<IReconciliationRunService>()));
+                sp.GetService<IReconciliationRunService>(),
+                sp.GetService<IReconciliationBreakQueueRepository>()));
         services.TryAddSingleton<CollateralIngestionBuffer>();
         services.TryAddSingleton<CollateralExposureService>();
 
         services.AddWorkflowLibrary();
+        services.TryAddSingleton<IExtensibilityConfigurationStore>(sp =>
+            new FileExtensibilityConfigurationStore(
+                ResolveWorkstationDataDirectory(sp),
+                sp.GetRequiredService<ILogger<FileExtensibilityConfigurationStore>>()));
         services.AddExtensibilityCatalog();
         services.AddEvidenceWorkflowFabric();
         services.TryAddSingleton<WorkstationWorkflowSummaryService>();

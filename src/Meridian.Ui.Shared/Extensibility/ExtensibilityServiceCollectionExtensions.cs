@@ -12,6 +12,8 @@ public static class ExtensibilityServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IExtensibilityCatalogProvider, PermissionExtensibilityCatalogProvider>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IExtensibilityCatalogProvider, OperationalConfigurationExtensibilityCatalogProvider>());
         services.TryAddSingleton<ExtensibilityCatalogService>();
+        services.TryAddSingleton<IExtensibilityConfigurationStore, InMemoryExtensibilityConfigurationStore>();
+        services.TryAddSingleton<ExtensibilityConfigurationService>();
         return services;
     }
 }

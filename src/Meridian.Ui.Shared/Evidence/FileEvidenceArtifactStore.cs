@@ -106,6 +106,7 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         var relativePath = Path.Combine("workstation", "evidence", subjectKind, subjectId, fileName);
         var manifestRoute = $"/workstation/evidence/{RouteSegment(subjectKind)}/{RouteSegment(subjectId)}/{RouteSegment(fileName)}";
         var supportRequests = BuildSupportRequests(packet);
+        var requestLists = BuildRequestLists(packet.Subject, supportRequests);
         var manifest = new EvidenceManifestDto(
             SchemaVersion: 1,
             ExportedAt: generatedAt,
@@ -118,6 +119,7 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             Edges: packet.Edges,
             Actions: packet.Actions,
             Warnings: request.IncludeWarnings ? packet.Warnings : [],
+            RequestLists: requestLists,
             SupportRequests: supportRequests,
             VaultIdentity: null,
             Lifecycle: request.Lifecycle,
@@ -139,6 +141,7 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             StorageKind: retainedArtifacts.Count == 0 ? FileManifestStorageKind : FileBundleStorageKind)
         {
             Artifacts = retainedArtifacts,
+            RequestLists = requestLists,
             SupportRequests = supportRequests
         };
         manifest = manifest with { VaultIdentity = vaultIdentity };
@@ -520,6 +523,167 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
             }
         }
     }
+
+    private static IReadOnlyList<EvidenceRequestListDto> BuildRequestLists(
+        EvidenceSubjectDto subject,
+        IReadOnlyList<EvidenceSupportRequestDto> requests)
+    {
+        if (requests.Count == 0)
+        {
+            return [];
+        }
+
+        return requests
+            .GroupBy(request => ResolveRequestListTarget(subject, request))
+            .Select(group =>
+            {
+                var orderedRequests = group
+                    .OrderBy(static request => SeverityRank(request.Severity))
+                    .ThenBy(static request => request.EvidenceId, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(static request => request.RequestId, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+                var requestIds = orderedRequests
+                    .Select(static request => request.RequestId)
+                    .ToArray();
+                var evidenceKinds = orderedRequests
+                    .Select(static request => request.EvidenceKind)
+                    .Where(static value => !string.IsNullOrWhiteSpace(value))
+                    .Select(static value => value!)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+                var blockedOutputs = orderedRequests
+                    .Select(static request => request.BlockedOutput)
+                    .Where(static value => !string.IsNullOrWhiteSpace(value))
+                    .Select(static value => value!)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+                var highestSeverity = orderedRequests
+                    .Select(static request => request.Severity)
+                    .OrderBy(static severity => SeverityRank(severity))
+                    .FirstOrDefault();
+                var openCount = orderedRequests.Count(static request =>
+                    !string.Equals(request.Status, "Closed", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(request.Status, "Resolved", StringComparison.OrdinalIgnoreCase));
+                var status = openCount == 0 ? "Resolved" : "Open";
+                var target = group.Key;
+
+                return new EvidenceRequestListDto(
+                    RequestListId: $"request-list:{SanitizePathSegment(target.RequestListKind)}:{SanitizePathSegment(target.TargetKind)}:{SanitizePathSegment(target.TargetId)}",
+                    RequestListKind: target.RequestListKind,
+                    TargetKind: target.TargetKind,
+                    TargetId: target.TargetId,
+                    HighestSeverity: highestSeverity,
+                    Status: status,
+                    RequestCount: orderedRequests.Length,
+                    RequestIds: requestIds,
+                    EvidenceKinds: evidenceKinds,
+                    BlockedOutputs: blockedOutputs,
+                    Summary: BuildRequestListSummary(target, orderedRequests.Length, openCount));
+            })
+            .OrderBy(static list => RequestListKindRank(list.TargetKind))
+            .ThenBy(static list => list.TargetId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static list => list.RequestListId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static EvidenceRequestListTarget ResolveRequestListTarget(
+        EvidenceSubjectDto subject,
+        EvidenceSupportRequestDto request)
+    {
+        var targetId = ResolveRequestListTargetId(subject, request);
+        var corpus = string.Join(
+            " ",
+            new[]
+            {
+                subject.SubjectKind,
+                subject.SubjectId,
+                request.RequestKind,
+                request.EvidenceId,
+                request.EvidenceKind ?? string.Empty,
+                request.Summary,
+                request.SourceSystem ?? string.Empty,
+                request.WorkItemId ?? string.Empty,
+                request.BlockedOutput ?? string.Empty
+            });
+
+        if (ContainsAny(corpus, "tax", "k-1", "k1"))
+        {
+            return new EvidenceRequestListTarget("TaxRequestList", "tax", targetId);
+        }
+
+        if (ContainsAny(corpus, "audit", "auditor"))
+        {
+            return new EvidenceRequestListTarget("AuditRequestList", "audit", targetId);
+        }
+
+        if (ContainsAny(corpus, "close", "nav-support", "period-lock"))
+        {
+            return new EvidenceRequestListTarget("CloseRequestList", "close", targetId);
+        }
+
+        if (ContainsAny(corpus, "fund-event", "capital-call", "distribution", "subscription", "redemption"))
+        {
+            return new EvidenceRequestListTarget("EventRequestList", "event", targetId);
+        }
+
+        if (ContainsAny(corpus, "report-pack", "report-package", "reporting", "delivery"))
+        {
+            return new EvidenceRequestListTarget("ReportPackageRequestList", "report-package", targetId);
+        }
+
+        return new EvidenceRequestListTarget("EvidenceRequestList", subject.SubjectKind, targetId);
+    }
+
+    private static string ResolveRequestListTargetId(EvidenceSubjectDto subject, EvidenceSupportRequestDto request)
+    {
+        var blockedOutput = request.BlockedOutput?.Trim();
+        if (!string.IsNullOrWhiteSpace(blockedOutput))
+        {
+            var separator = blockedOutput.IndexOf('/');
+            if (separator >= 0 && separator < blockedOutput.Length - 1)
+            {
+                return blockedOutput[(separator + 1)..];
+            }
+
+            return blockedOutput;
+        }
+
+        return subject.SubjectId;
+    }
+
+    private static bool ContainsAny(string value, params string[] tokens)
+    {
+        foreach (var token in tokens)
+        {
+            if (value.Contains(token, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static string BuildRequestListSummary(EvidenceRequestListTarget target, int requestCount, int openCount)
+    {
+        var requestLabel = requestCount == 1 ? "request" : "requests";
+        var openLabel = openCount == 1 ? "1 open request" : $"{openCount} open requests";
+        var verb = openCount == 1 ? "remains" : "remain";
+        return $"{target.TargetKind}/{target.TargetId} has {requestCount} frozen {requestLabel}; {openLabel} {verb}.";
+    }
+
+    private static int RequestListKindRank(string targetKind)
+        => targetKind switch
+        {
+            "event" => 0,
+            "close" => 1,
+            "audit" => 2,
+            "tax" => 3,
+            "report-package" => 4,
+            _ => 5
+        };
 
     private static EvidenceValidationIssueDto? FindIssue(
         IEnumerable<EvidenceValidationIssueDto> issues,
@@ -975,8 +1139,14 @@ public sealed class FileEvidenceArtifactStore : IEvidenceArtifactStore
         IReadOnlyList<EvidenceEdgeDto> Edges,
         IReadOnlyList<WorkflowActionDto> Actions,
         IReadOnlyList<string> Warnings,
+        IReadOnlyList<EvidenceRequestListDto> RequestLists,
         IReadOnlyList<EvidenceSupportRequestDto> SupportRequests,
         EvidenceVaultIdentityDto? VaultIdentity,
         EvidenceLifecycleMetadataDto? Lifecycle,
         EvidenceSubjectLinkageDto? Linkage);
+
+    private sealed record EvidenceRequestListTarget(
+        string RequestListKind,
+        string TargetKind,
+        string TargetId);
 }

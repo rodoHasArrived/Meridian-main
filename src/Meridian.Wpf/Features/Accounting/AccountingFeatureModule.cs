@@ -3,8 +3,11 @@ using System.IO;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.Ledger;
+using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Ui.Shared.Services;
@@ -58,6 +61,10 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
             new CapitalAccountWorkbenchService(
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),
                 sp.GetService<ReportPackWorkflowService>()));
+        services.TryAddSingleton<IPrivateCapitalCloseCockpitService>(sp =>
+            new PrivateCapitalCloseCockpitService(
+                sp.GetService<IManualJournalEntryWorkbenchService>(),
+                sp.GetService<IOperationsContinuityWorkflowService>()));
         services.TryAddSingleton<IAccountingPolicyService, AccountingPolicyService>();
         services.TryAddSingleton<IAccountingBasisProjectionService, AccountingBasisProjectionService>();
         services.TryAddSingleton<IAccountingJournalDraftService, AccountingJournalDraftService>();

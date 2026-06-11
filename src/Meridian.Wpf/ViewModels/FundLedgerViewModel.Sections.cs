@@ -25,6 +25,9 @@ internal sealed class FundLedgerCollectionsSectionViewModel
     public ObservableCollection<FundAuditEntry> AuditTrail { get; } = [];
     public ObservableCollection<FundReportAssetClassSectionDto> ReportPackAssetSections { get; } = [];
     public ObservableCollection<FundAccountingRecordEvidenceCategoryRow> AccountingRecordEvidenceCategories { get; } = [];
+    public ObservableCollection<FundPrivateCapitalCloseLaneRow> PrivateCapitalCloseLanes { get; } = [];
+    public ObservableCollection<FundPrivateCapitalNavSupportPackageRow> PrivateCapitalNavSupportPackages { get; } = [];
+    public ObservableCollection<FundPrivateCapitalCloseApprovalRow> PrivateCapitalCloseApprovals { get; } = [];
 }
 
 internal sealed class FundLedgerWorkbenchSectionViewModel : BindableBase
@@ -42,6 +45,10 @@ internal sealed class FundLedgerWorkbenchSectionViewModel : BindableBase
     private string _accountingRecordStatusText = "Accounting-record evidence is waiting for fund context.";
     private string _accountingRecordSummaryText = "Load Operations Continuity detail to inspect retained source records, normalized activity, reconciliation cases, ledger evidence, approvals, and report-pack lineage.";
     private string _accountingRecordEvidenceText = "0/8 evidence categories complete; 60 sec target not measured";
+    private string _privateCapitalCloseStatusText = "Private-capital close cockpit is waiting for fund context.";
+    private string _privateCapitalCloseSummaryText = "Load the close cockpit to inspect partner capital tie-outs, NAV support, approval history, close-package evidence, and period-lock readiness.";
+    private string _privateCapitalCloseEvidenceText = "0 evidence links";
+    private string _privateCapitalCloseBlockerText = "No source-backed close cockpit has been loaded.";
     private WorkstationStateModel _reportPackReadinessState = WorkstationStateModel.Empty(
         "Report pack waiting for fund context",
         "Select a fund profile and refresh the preview before distributing reporting artifacts.",
@@ -52,6 +59,11 @@ internal sealed class FundLedgerWorkbenchSectionViewModel : BindableBase
         "Select a fund profile to inspect retained source, normalized activity, reconciliation, ledger, approval, and report-pack evidence.",
         "Open Operations Continuity",
         "OperationsContinuity");
+    private WorkstationStateModel _privateCapitalCloseReadinessState = WorkstationStateModel.Empty(
+        "Close cockpit waiting for fund context",
+        "Select a fund profile to inspect source-backed private-capital close lanes, NAV support packages, approval history, and period-lock readiness.",
+        "Open Operations Close",
+        "OperationsClose");
     private bool _isReportPackLoading;
     private int _selectedTabIndex;
 
@@ -68,8 +80,13 @@ internal sealed class FundLedgerWorkbenchSectionViewModel : BindableBase
     public string AccountingRecordStatusText { get => _accountingRecordStatusText; set => SetProperty(ref _accountingRecordStatusText, value); }
     public string AccountingRecordSummaryText { get => _accountingRecordSummaryText; set => SetProperty(ref _accountingRecordSummaryText, value); }
     public string AccountingRecordEvidenceText { get => _accountingRecordEvidenceText; set => SetProperty(ref _accountingRecordEvidenceText, value); }
+    public string PrivateCapitalCloseStatusText { get => _privateCapitalCloseStatusText; set => SetProperty(ref _privateCapitalCloseStatusText, value); }
+    public string PrivateCapitalCloseSummaryText { get => _privateCapitalCloseSummaryText; set => SetProperty(ref _privateCapitalCloseSummaryText, value); }
+    public string PrivateCapitalCloseEvidenceText { get => _privateCapitalCloseEvidenceText; set => SetProperty(ref _privateCapitalCloseEvidenceText, value); }
+    public string PrivateCapitalCloseBlockerText { get => _privateCapitalCloseBlockerText; set => SetProperty(ref _privateCapitalCloseBlockerText, value); }
     public WorkstationStateModel ReportPackReadinessState { get => _reportPackReadinessState; set => SetProperty(ref _reportPackReadinessState, value); }
     public WorkstationStateModel AccountingRecordReadinessState { get => _accountingRecordReadinessState; set => SetProperty(ref _accountingRecordReadinessState, value); }
+    public WorkstationStateModel PrivateCapitalCloseReadinessState { get => _privateCapitalCloseReadinessState; set => SetProperty(ref _privateCapitalCloseReadinessState, value); }
     public bool IsReportPackLoading { get => _isReportPackLoading; set => SetProperty(ref _isReportPackLoading, value); }
     public int SelectedTabIndex { get => _selectedTabIndex; set => SetProperty(ref _selectedTabIndex, value); }
 }

@@ -65,6 +65,12 @@ public interface IOperationsContinuityWorkflowService
         OperationsResolveBreakCaseRequestDto request,
         CancellationToken ct = default);
 
+    Task<OperationsTransitionResultDto> AssignBreakCaseAsync(
+        Guid workflowId,
+        string breakId,
+        OperationsAssignBreakCaseRequestDto request,
+        CancellationToken ct = default);
+
     Task<OperationsTransitionResultDto> SubmitForApprovalAsync(
         Guid workflowId,
         OperationsSubmitApprovalRequestDto request,
@@ -754,6 +760,33 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             ct: ct).ConfigureAwait(false);
     }
 
+    public async Task<OperationsTransitionResultDto> AssignBreakCaseAsync(
+        Guid workflowId,
+        string breakId,
+        OperationsAssignBreakCaseRequestDto request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return await ApplyCommandAsync(
+            workflowId,
+            request.ExpectedVersion,
+            request.Actor,
+            request.Rationale,
+            request.CorrelationId,
+            request.EvidenceLinks,
+            eventType: string.IsNullOrWhiteSpace(request.EscalationLevel)
+                ? "reconciliation-break-assigned"
+                : "reconciliation-break-escalated",
+            gate: OperationsGateKeyDto.Reconciliation,
+            precondition: null,
+            command: (workflow, evidence, now) =>
+            {
+                var blocker = workflow.AssignBreakCase(breakId, request, evidence, now);
+                return blocker is null ? null : blocker;
+            },
+            ct: ct).ConfigureAwait(false);
+    }
+
     public async Task<OperationsTransitionResultDto> SubmitForApprovalAsync(
         Guid workflowId,
         OperationsSubmitApprovalRequestDto request,
@@ -1057,6 +1090,15 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         var evidenceLinks = timeline.SelectMany(static entry => entry.References)
             .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        var closeReadiness = EvaluateCloseReadiness(workflow);
+        var accountingRecordSummary = BuildAccountingRecordSummary(workflow, timeline, evidenceLinks);
+        var dashboardSummary = BuildDashboardSummary(
+            workflow,
+            timeline,
+            closeReadiness,
+            accountingRecordSummary,
+            evidenceLinks);
+        var evidencePackages = BuildEvidencePackages(workflow, accountingRecordSummary, evidenceLinks);
 
         return new OperationsContinuityWorkflowDto(
             workflow.WorkflowId,
@@ -1083,10 +1125,369 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             evidenceLinks,
             blockers,
             nextActions,
-            EvaluateCloseReadiness(workflow),
+            closeReadiness,
             workflow.ClosePackage,
-            BuildAccountingRecordSummary(workflow, timeline, evidenceLinks));
+            accountingRecordSummary,
+            workflow.ReconciliationLanes,
+            dashboardSummary,
+            evidencePackages);
     }
+
+    private static IReadOnlyList<OperationsEvidencePackageSummaryDto> BuildEvidencePackages(
+        OperationsContinuityWorkflow workflow,
+        OperationsAccountingRecordSummaryDto accountingRecordSummary,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks)
+    {
+        var accountingEvidence = accountingRecordSummary.EvidenceCategories
+            .SelectMany(static category => category.EvidenceLinks)
+            .Concat(accountingRecordSummary.EvidenceLinks)
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var reportEvidence = workflow.ReportPackReadiness.EvidenceLinks
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var closeEvidence = (workflow.ClosePackage?.EvidenceLinks ?? [])
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var auditEvidence = accountingEvidence
+            .Concat(reportEvidence)
+            .Concat(closeEvidence)
+            .Concat(evidenceLinks)
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var auditPack = accountingRecordSummary.AuditPackReadiness;
+
+        return
+        [
+            new OperationsEvidencePackageSummaryDto(
+                accountingRecordSummary.RecordId,
+                "Accounting record evidence",
+                accountingRecordSummary.IsAuditReady
+                    ? EvidenceStatusDto.Ready
+                    : accountingRecordSummary.CompleteCategoryCount == 0
+                        ? EvidenceStatusDto.Missing
+                        : EvidenceStatusDto.ReviewRequired,
+                accountingRecordSummary.IsAuditReady,
+                accountingRecordSummary.Summary,
+                "/workstation/accounting/operations-continuity",
+                accountingRecordSummary.CompleteCategoryCount,
+                accountingRecordSummary.RequiredCategoryCount,
+                accountingEvidence.Length,
+                accountingEvidence,
+                accountingRecordSummary.IsAuditReady
+                    ? []
+                    : ["Complete all accounting-record evidence categories before publishing the evidence package."]),
+            new OperationsEvidencePackageSummaryDto(
+                string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId)
+                    ? $"report-pack:{workflow.FundAccountId:D}:{workflow.PeriodId}"
+                    : workflow.ReportPackReadiness.ReportPackId,
+                "Report pack evidence",
+                workflow.ReportPackReadiness.IsReady &&
+                !string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId)
+                    ? EvidenceStatusDto.Ready
+                    : string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId)
+                        ? EvidenceStatusDto.Missing
+                        : EvidenceStatusDto.ReviewRequired,
+                workflow.ReportPackReadiness.IsReady &&
+                !string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId),
+                string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId)
+                    ? workflow.ReportPackReadiness.BlockingReason ?? "Report-pack evidence has not been linked."
+                    : $"Report pack {workflow.ReportPackReadiness.ReportPackId} is linked for retained close evidence.",
+                "/workstation/reporting/report-packs",
+                workflow.ReportPackReadiness.IsReady ? 1 : 0,
+                1,
+                reportEvidence.Length,
+                reportEvidence,
+                workflow.ReportPackReadiness.IsReady &&
+                !string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId)
+                    ? []
+                    : ["Link ready report-pack evidence before close publication."]),
+            new OperationsEvidencePackageSummaryDto(
+                workflow.ClosePackage?.ClosePackageId ?? $"close-package:{workflow.FundAccountId:D}:{workflow.PeriodId}",
+                "Close package manifest",
+                workflow.ClosePackage is not null
+                    ? EvidenceStatusDto.Ready
+                    : workflow.ReportPackReadiness.IsReady
+                        ? EvidenceStatusDto.ReviewRequired
+                        : EvidenceStatusDto.Missing,
+                workflow.ClosePackage is not null,
+                workflow.ClosePackage is null
+                    ? "Close package manifest and retained evidence hash have not been published."
+                    : $"Close package {workflow.ClosePackage.ClosePackageId} retained manifest {workflow.ClosePackage.RetainedManifestId} and evidence hash.",
+                workflow.ClosePackage?.RetainedManifestRoute ?? "/workstation/accounting/operations-continuity",
+                workflow.ClosePackage is null ? 0 : 1,
+                1,
+                closeEvidence.Length,
+                closeEvidence,
+                workflow.ClosePackage is not null
+                    ? []
+                    : ["Publish the close package manifest and retain the evidence hash."]),
+            new OperationsEvidencePackageSummaryDto(
+                $"audit-support:{workflow.FundAccountId:D}:{workflow.PeriodId}",
+                "Audit support package",
+                auditPack?.IsComplete == true
+                    ? EvidenceStatusDto.Ready
+                    : auditPack is null || accountingRecordSummary.CompleteCategoryCount == 0
+                        ? EvidenceStatusDto.Missing
+                        : EvidenceStatusDto.ReviewRequired,
+                auditPack?.IsComplete == true,
+                auditPack?.IsComplete == true
+                    ? "Audit support package includes all required accounting-record evidence categories."
+                    : auditPack is null
+                        ? "Audit support package readiness has not been calculated."
+                        : $"{auditPack.MissingEvidenceCategories.Count} audit evidence categor{(auditPack.MissingEvidenceCategories.Count == 1 ? "y is" : "ies are")} missing.",
+                "/workstation/reporting/evidence",
+                auditPack?.EvidenceCategorySummaries.Count(static category => category.IsComplete) ?? 0,
+                auditPack?.EvidenceCategorySummaries.Count ?? accountingRecordSummary.RequiredCategoryCount,
+                auditEvidence.Length,
+                auditEvidence,
+                auditPack?.IsComplete == true
+                    ? []
+                    : ["Complete missing audit evidence categories before releasing the package."])
+        ];
+    }
+
+    private static OperationsDashboardSummaryDto BuildDashboardSummary(
+        OperationsContinuityWorkflow workflow,
+        IReadOnlyList<OperationsTimelineEntryDto> timeline,
+        OperationsCloseReadinessDto? closeReadiness,
+        OperationsAccountingRecordSummaryDto? accountingRecordSummary,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks)
+    {
+        var unresolvedBreaks = workflow.BreakCases
+            .Where(static breakCase => !IsClosedBreakStatus(breakCase.Status))
+            .ToArray();
+        var criticalBreaks = unresolvedBreaks.Count(static breakCase =>
+            string.Equals(breakCase.Severity, "Critical", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(breakCase.Severity, "High", StringComparison.OrdinalIgnoreCase));
+        var readyLaneCount = workflow.ReconciliationLanes.Count(static lane => lane.IsReady);
+        var reconciliationEvidence = workflow.ReconciliationLanes
+            .SelectMany(static lane => lane.EvidenceLinks)
+            .Concat(workflow.BreakCases.SelectMany(static breakCase => breakCase.EvidenceLinks))
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var approvalEvidence = workflow.Approvals
+            .SelectMany(static approval => approval.EvidenceLinks)
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var packageEvidence = workflow.ReportPackReadiness.EvidenceLinks
+            .Concat(workflow.ClosePackage?.EvidenceLinks ?? [])
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        var metrics = new[]
+        {
+            new OperationsDashboardMetricDto(
+                "receive-activity",
+                "Receive Activity",
+                workflow.BrokerIntakeState.ToString(),
+                workflow.BrokerIntakeState == OperationsBrokerIntakeStateDto.Complete
+                    ? EvidenceStatusDto.Ready
+                    : EvidenceStatusDto.ReviewRequired,
+                workflow.BrokerIntakeState == OperationsBrokerIntakeStateDto.Complete
+                    ? "Broker, custodian, or bank activity has been received and normalized for this account-period workflow."
+                    : "Activity intake is still pending before matching and accounting controls can finish.",
+                "/workstation/accounting",
+                EvidenceForGate(timeline, OperationsGateKeyDto.BrokerIngest),
+                workflow.BrokerIntakeState == OperationsBrokerIntakeStateDto.Complete
+                    ? []
+                    : ["Receive and normalize account activity before matching records."]),
+            new OperationsDashboardMetricDto(
+                "match-records",
+                "Match Records",
+                $"{readyLaneCount}/{workflow.ReconciliationLanes.Count} lanes ready",
+                ResolveLaneMetricStatus(workflow.ReconciliationLanes),
+                workflow.ReconciliationLanes.Count == 0
+                    ? "No reconciliation lane coverage has been projected for this workflow."
+                    : "Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.",
+                "/workstation/accounting/reconciliation",
+                reconciliationEvidence,
+                readyLaneCount == workflow.ReconciliationLanes.Count && workflow.ReconciliationLanes.Count > 0
+                    ? []
+                    : ["Complete source-backed reconciliation lanes before approval."]),
+            new OperationsDashboardMetricDto(
+                "resolve-exceptions",
+                "Resolve Exceptions",
+                $"{unresolvedBreaks.Length} open",
+                unresolvedBreaks.Length == 0
+                    ? EvidenceStatusDto.Ready
+                    : criticalBreaks > 0
+                        ? EvidenceStatusDto.Blocked
+                        : EvidenceStatusDto.ReviewRequired,
+                unresolvedBreaks.Length == 0
+                    ? "No unresolved reconciliation breaks remain for this workflow."
+                    : $"{unresolvedBreaks.Length} reconciliation break(s) require assignment, escalation, or resolution evidence.",
+                "/workstation/accounting/reconciliation",
+                workflow.BreakCases.SelectMany(static breakCase => breakCase.EvidenceLinks)
+                    .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+                    .ToArray(),
+                unresolvedBreaks.Length == 0
+                    ? []
+                    : ["Assign, escalate, or resolve open exceptions and retain resolution evidence."]),
+            new OperationsDashboardMetricDto(
+                "approve-results",
+                "Approve Results",
+                workflow.ApprovalState.ToString(),
+                workflow.ApprovalState == OperationsApprovalStateDto.Approved
+                    ? EvidenceStatusDto.Ready
+                    : EvidenceStatusDto.ReviewRequired,
+                workflow.ApprovalState == OperationsApprovalStateDto.Approved
+                    ? "Approval history is complete for this workflow."
+                    : "Approval history is not complete for this workflow.",
+                "/workstation/accounting/approvals",
+                approvalEvidence,
+                workflow.ApprovalState == OperationsApprovalStateDto.Approved
+                    ? []
+                    : ["Complete workflow approval and checklist-control approvals."]),
+            new OperationsDashboardMetricDto(
+                "produce-evidence",
+                "Produce Evidence",
+                workflow.ClosePackage is not null
+                    ? "Close package retained"
+                    : workflow.ReportPackReadiness.IsReady
+                        ? "Report pack ready"
+                        : "Evidence package pending",
+                workflow.ClosePackage is not null
+                    ? EvidenceStatusDto.Ready
+                    : workflow.ReportPackReadiness.IsReady
+                        ? EvidenceStatusDto.ReviewRequired
+                        : EvidenceStatusDto.Missing,
+                workflow.ClosePackage is not null
+                    ? $"Close package {workflow.ClosePackage.ClosePackageId} retained manifest {workflow.ClosePackage.RetainedManifestId}."
+                    : workflow.ReportPackReadiness.BlockingReason ?? "Report-pack and close-package evidence still need publication.",
+                "/workstation/reporting/report-packs",
+                packageEvidence,
+                workflow.ClosePackage is not null
+                    ? []
+                    : ["Publish and retain the evidence package before period close."]),
+            new OperationsDashboardMetricDto(
+                "close-support",
+                "Close Support",
+                closeReadiness is null
+                    ? "Close readiness pending"
+                    : closeReadiness.IsReadyToClose
+                        ? "Ready to close"
+                        : $"{closeReadiness.Score}% ready",
+                ResolveCloseSupportMetricStatus(closeReadiness, workflow.ClosePackage),
+                closeReadiness?.Blockers.FirstOrDefault()?.Message ??
+                    "Close checklist, period lock, and reopen evidence are governed by the shared workflow.",
+                "/workstation/accounting/operations-continuity",
+                workflow.ClosePackage?.EvidenceLinks ?? evidenceLinks,
+                closeReadiness is { IsReadyToClose: true } || workflow.ClosePackage is not null
+                    ? []
+                    : ["Clear close readiness blockers and retain period-lock or reopen evidence."])
+        };
+        var status = ResolveDashboardStatus(metrics);
+        var readyCount = metrics.Count(static metric => metric.Status == EvidenceStatusDto.Ready);
+        var stage = ResolveDashboardStage(workflow, unresolvedBreaks.Length);
+        var dashboardEvidence = evidenceLinks
+            .Concat(metrics.SelectMany(static metric => metric.EvidenceLinks))
+            .Concat(accountingRecordSummary?.EvidenceLinks ?? [])
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return new OperationsDashboardSummaryDto(
+            $"operations-dashboard:{workflow.FundAccountId:D}:{workflow.PeriodId}",
+            stage,
+            status,
+            status == EvidenceStatusDto.Ready,
+            readyCount,
+            metrics.Length,
+            status == EvidenceStatusDto.Ready
+                ? $"Financial Operations dashboard is ready to produce evidence for period {workflow.PeriodId}."
+                : $"Financial Operations dashboard is in {stage} with {metrics.Length - readyCount} metric(s) requiring review.",
+            metrics,
+            dashboardEvidence,
+            metrics.SelectMany(static metric => metric.RequiredActions)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray());
+    }
+
+    private static EvidenceStatusDto ResolveLaneMetricStatus(IReadOnlyList<OperationsReconciliationLaneSummaryDto> lanes)
+    {
+        if (lanes.Count == 0)
+        {
+            return EvidenceStatusDto.Missing;
+        }
+
+        if (lanes.Any(static lane => lane.Status == OperationsReconciliationLaneStatusDto.Blocked))
+        {
+            return EvidenceStatusDto.Blocked;
+        }
+
+        return lanes.All(static lane => lane.IsReady)
+            ? EvidenceStatusDto.Ready
+            : EvidenceStatusDto.ReviewRequired;
+    }
+
+    private static EvidenceStatusDto ResolveCloseSupportMetricStatus(
+        OperationsCloseReadinessDto? closeReadiness,
+        OperationsClosePackagePublicationDto? closePackage)
+    {
+        if (closePackage is not null || closeReadiness is { IsReadyToClose: true })
+        {
+            return EvidenceStatusDto.Ready;
+        }
+
+        if (closeReadiness is null)
+        {
+            return EvidenceStatusDto.Missing;
+        }
+
+        return string.Equals(closeReadiness.Severity, "Critical", StringComparison.OrdinalIgnoreCase) ||
+               closeReadiness.Blockers.Any(static blocker =>
+                   string.Equals(blocker.Severity, "Critical", StringComparison.OrdinalIgnoreCase))
+            ? EvidenceStatusDto.Blocked
+            : EvidenceStatusDto.ReviewRequired;
+    }
+
+    private static EvidenceStatusDto ResolveDashboardStatus(IReadOnlyList<OperationsDashboardMetricDto> metrics)
+    {
+        if (metrics.Any(static metric => metric.Status == EvidenceStatusDto.Blocked))
+        {
+            return EvidenceStatusDto.Blocked;
+        }
+
+        if (metrics.Any(static metric => metric.Status == EvidenceStatusDto.Missing))
+        {
+            return EvidenceStatusDto.Missing;
+        }
+
+        return metrics.All(static metric => metric.Status == EvidenceStatusDto.Ready)
+            ? EvidenceStatusDto.Ready
+            : EvidenceStatusDto.ReviewRequired;
+    }
+
+    private static string ResolveDashboardStage(OperationsContinuityWorkflow workflow, int unresolvedBreakCount)
+    {
+        if (workflow.BrokerIntakeState is OperationsBrokerIntakeStateDto.Pending or OperationsBrokerIntakeStateDto.Imported or OperationsBrokerIntakeStateDto.Normalized)
+        {
+            return "Receive Activity";
+        }
+
+        if (workflow.ReconciliationState is OperationsReconciliationStateDto.Pending or OperationsReconciliationStateDto.AutoMatched)
+        {
+            return "Match Records";
+        }
+
+        if (unresolvedBreakCount > 0 ||
+            workflow.ReconciliationState is OperationsReconciliationStateDto.ExceptionsOpen or OperationsReconciliationStateDto.InReview)
+        {
+            return "Resolve Exceptions";
+        }
+
+        if (workflow.ApprovalState != OperationsApprovalStateDto.Approved)
+        {
+            return "Approve Results";
+        }
+
+        return "Produce Evidence";
+    }
+
+    private static bool IsClosedBreakStatus(string? status)
+        => string.Equals(status, "closed", StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(status, "resolved", StringComparison.OrdinalIgnoreCase) ||
+           string.Equals(status, "matched", StringComparison.OrdinalIgnoreCase);
 
     private static OperationsAccountingRecordSummaryDto BuildAccountingRecordSummary(
         OperationsContinuityWorkflow workflow,

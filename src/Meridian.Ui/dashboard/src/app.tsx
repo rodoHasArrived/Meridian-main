@@ -112,6 +112,7 @@ function AppShell() {
     brokeragePortfolio,
     workflowLibrary,
     workflowPresets,
+    workflowSummary,
     featureCapabilities,
     workflowError,
     usingDevelopmentFixtures,
@@ -123,7 +124,13 @@ function AppShell() {
     refreshProviderRouting,
     updateFeatureCapability,
     upsertWorkflowPreset
-  } = useWorkstationData({ activeWorkspace });
+  } = useWorkstationData({
+    activeWorkspace,
+    workflowSummaryScope: {
+      hasOperatingContext: hasOperatingScopeValues(operatingScopeInput),
+      fundAccountId: operatingScopeInput.fundAccountId
+    }
+  });
   const handleWorkflowPresetUsed = (presetId: string) =>
     markWorkflowPresetUsed(presetId).then((preset) => {
       upsertWorkflowPreset(preset);
@@ -201,7 +208,8 @@ function AppShell() {
       portfolio,
       data,
       accounting,
-      reporting
+      reporting,
+      workflowSummary
     },
     operatingContextScope: operatingScopeInput
   });

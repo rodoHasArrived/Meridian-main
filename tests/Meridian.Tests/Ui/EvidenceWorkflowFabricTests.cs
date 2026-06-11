@@ -1321,6 +1321,23 @@ public sealed class EvidenceWorkflowFabricTests
         var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("operator", "support package freeze"));
 
         response.VaultIdentity.Should().NotBeNull();
+        var requestLists = response.VaultIdentity!.RequestLists;
+        requestLists.Should().ContainSingle(list =>
+            list.RequestListKind == "AuditRequestList" &&
+            list.TargetKind == "audit" &&
+            list.TargetId == "close-2026-05" &&
+            list.HighestSeverity == EvidenceValidationSeverityDto.Critical &&
+            list.Status == "Open" &&
+            list.RequestCount == 2 &&
+            list.RequestIds.SequenceEqual(
+                new[]
+                {
+                    "support-request:blockedworkitem:audit-support:audit-request-close-2026-05",
+                    "support-request:missingevidence:audit-support"
+                }) &&
+            list.EvidenceKinds.SequenceEqual(new[] { "audit-history" }) &&
+            list.BlockedOutputs.SequenceEqual(new[] { "report-pack/close-2026-05" }) &&
+            list.Summary == "audit/close-2026-05 has 2 frozen requests; 2 open requests remain.");
         var supportRequests = response.VaultIdentity!.SupportRequests;
         supportRequests.Should().HaveCount(2);
         supportRequests.Should().ContainSingle(request =>
@@ -1339,6 +1356,8 @@ public sealed class EvidenceWorkflowFabricTests
 
         var manifestPath = Path.Combine(root, response.ManifestPath.Replace('/', Path.DirectorySeparatorChar));
         var manifestJson = await File.ReadAllTextAsync(manifestPath);
+        manifestJson.Should().Contain("\"requestLists\": [");
+        manifestJson.Should().Contain("\"requestListKind\": \"AuditRequestList\"");
         manifestJson.Should().Contain("\"supportRequests\": [");
         manifestJson.Should().Contain("\"requestKind\": \"MissingEvidence\"");
         manifestJson.Should().Contain("\"workItemId\": \"audit-request:close-2026-05\"");
@@ -1347,6 +1366,9 @@ public sealed class EvidenceWorkflowFabricTests
         var indexJson = await File.ReadAllTextAsync(indexPath);
         var indexedIdentity = JsonSerializer.Deserialize<EvidenceVaultIdentityDto>(indexJson, ServerJsonOptions);
         indexedIdentity.Should().NotBeNull();
+        indexedIdentity!.RequestLists.Should().BeEquivalentTo(
+            response.VaultIdentity.RequestLists,
+            options => options.WithStrictOrdering());
         indexedIdentity!.SupportRequests.Should().BeEquivalentTo(
             response.VaultIdentity.SupportRequests,
             options => options.WithStrictOrdering());
@@ -2766,6 +2788,9 @@ public sealed class EvidenceWorkflowFabricTests
             => throw new NotSupportedException();
 
         public Task<OperationsTransitionResultDto> ResolveBreakCaseAsync(Guid workflowId, string breakId, OperationsResolveBreakCaseRequestDto request, CancellationToken ct = default)
+            => throw new NotSupportedException();
+
+        public Task<OperationsTransitionResultDto> AssignBreakCaseAsync(Guid workflowId, string breakId, OperationsAssignBreakCaseRequestDto request, CancellationToken ct = default)
             => throw new NotSupportedException();
 
         public Task<OperationsTransitionResultDto> SubmitForApprovalAsync(Guid workflowId, OperationsSubmitApprovalRequestDto request, CancellationToken ct = default)

@@ -19,6 +19,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private readonly FundOperationsWorkspaceReadService _fundOperationsWorkspaceReadService;
     private readonly StrategyRunWorkspaceService _runWorkspaceService;
     private readonly IStatementReconciliationWorkbenchService _statementReconciliationWorkbenchService;
+    private readonly IPrivateCapitalCloseCockpitService? _privateCapitalCloseCockpitService;
     private readonly FundLedgerCollectionsSectionViewModel _collectionsSection = new();
     private readonly FundLedgerWorkbenchSectionViewModel _workbenchSection = new();
 
@@ -91,7 +92,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         IFundReconciliationWorkbenchService fundReconciliationWorkbenchService,
         FundOperationsWorkspaceReadService fundOperationsWorkspaceReadService,
         StrategyRunWorkspaceService runWorkspaceService,
-        IStatementReconciliationWorkbenchService? statementReconciliationWorkbenchService = null)
+        IStatementReconciliationWorkbenchService? statementReconciliationWorkbenchService = null,
+        IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null)
     {
         _fundLedgerReadService = fundLedgerReadService ?? throw new ArgumentNullException(nameof(fundLedgerReadService));
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
@@ -102,6 +104,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         _fundOperationsWorkspaceReadService = fundOperationsWorkspaceReadService ?? throw new ArgumentNullException(nameof(fundOperationsWorkspaceReadService));
         _runWorkspaceService = runWorkspaceService ?? throw new ArgumentNullException(nameof(runWorkspaceService));
         _statementReconciliationWorkbenchService = statementReconciliationWorkbenchService ?? new NullStatementReconciliationWorkbenchService();
+        _privateCapitalCloseCockpitService = privateCapitalCloseCockpitService;
 
         AccountQueueTable = new WorkstationTableModel<FundAccountSummary>(
             Accounts,
@@ -188,6 +191,12 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     public ObservableCollection<FundReportAssetClassSectionDto> ReportPackAssetSections => _collectionsSection.ReportPackAssetSections;
 
     public ObservableCollection<FundAccountingRecordEvidenceCategoryRow> AccountingRecordEvidenceCategories => _collectionsSection.AccountingRecordEvidenceCategories;
+
+    public ObservableCollection<FundPrivateCapitalCloseLaneRow> PrivateCapitalCloseLanes => _collectionsSection.PrivateCapitalCloseLanes;
+
+    public ObservableCollection<FundPrivateCapitalNavSupportPackageRow> PrivateCapitalNavSupportPackages => _collectionsSection.PrivateCapitalNavSupportPackages;
+
+    public ObservableCollection<FundPrivateCapitalCloseApprovalRow> PrivateCapitalCloseApprovals => _collectionsSection.PrivateCapitalCloseApprovals;
 
     internal FundLedgerCollectionsSectionViewModel CollectionsSection => _collectionsSection;
 
@@ -601,6 +610,30 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         private set => SetFundLedgerSectionProperty(WorkbenchSection.AccountingRecordEvidenceText, text => WorkbenchSection.AccountingRecordEvidenceText = text, value);
     }
 
+    public string PrivateCapitalCloseStatusText
+    {
+        get => WorkbenchSection.PrivateCapitalCloseStatusText;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.PrivateCapitalCloseStatusText, text => WorkbenchSection.PrivateCapitalCloseStatusText = text, value);
+    }
+
+    public string PrivateCapitalCloseSummaryText
+    {
+        get => WorkbenchSection.PrivateCapitalCloseSummaryText;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.PrivateCapitalCloseSummaryText, text => WorkbenchSection.PrivateCapitalCloseSummaryText = text, value);
+    }
+
+    public string PrivateCapitalCloseEvidenceText
+    {
+        get => WorkbenchSection.PrivateCapitalCloseEvidenceText;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.PrivateCapitalCloseEvidenceText, text => WorkbenchSection.PrivateCapitalCloseEvidenceText = text, value);
+    }
+
+    public string PrivateCapitalCloseBlockerText
+    {
+        get => WorkbenchSection.PrivateCapitalCloseBlockerText;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.PrivateCapitalCloseBlockerText, text => WorkbenchSection.PrivateCapitalCloseBlockerText = text, value);
+    }
+
     public WorkstationStateModel ReportPackReadinessState
     {
         get => WorkbenchSection.ReportPackReadinessState;
@@ -611,6 +644,12 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     {
         get => WorkbenchSection.AccountingRecordReadinessState;
         private set => SetFundLedgerSectionProperty(WorkbenchSection.AccountingRecordReadinessState, state => WorkbenchSection.AccountingRecordReadinessState = state, value);
+    }
+
+    public WorkstationStateModel PrivateCapitalCloseReadinessState
+    {
+        get => WorkbenchSection.PrivateCapitalCloseReadinessState;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.PrivateCapitalCloseReadinessState, state => WorkbenchSection.PrivateCapitalCloseReadinessState = state, value);
     }
 
     public bool IsReportPackLoading
@@ -773,8 +812,9 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         var accountingWorkspaceTask = _fundOperationsWorkspaceReadService.GetWorkspaceAsync(new FundOperationsWorkspaceQuery(
             FundProfileId: activeFund.FundProfileId,
             Currency: activeFund.BaseCurrency), ct);
+        var privateCapitalCloseTask = LoadPrivateCapitalCloseCockpitAsync(activeFund, ct);
 
-        await Task.WhenAll(ledgerTask, accountsTask, bankSnapshotsTask, cashTask, reconciliationTask, portfolioTask, accountingWorkspaceTask);
+        await Task.WhenAll(ledgerTask, accountsTask, bankSnapshotsTask, cashTask, reconciliationTask, portfolioTask, accountingWorkspaceTask, privateCapitalCloseTask);
 
         var ledger = await ledgerTask;
         var accounts = await accountsTask;
@@ -783,6 +823,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         var reconciliationSnapshot = await reconciliationTask;
         var portfolioPositions = await portfolioTask;
         var accountingWorkspace = await accountingWorkspaceTask;
+        var privateCapitalCloseCockpit = await privateCapitalCloseTask;
         _accountingLifecycle = accountingWorkspace.Governance;
 
         var dispatcher = System.Windows.Application.Current?.Dispatcher;
@@ -809,6 +850,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                 UpdateReconciliationWorkbenchPresentation();
                 UpdateAccountingRecordWorkbenchPresentation();
                 UpdateReportPackWorkbenchPresentation();
+                ApplyPrivateCapitalCloseCockpit(privateCapitalCloseCockpit);
             });
         }
         else
@@ -832,7 +874,22 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             UpdateReconciliationWorkbenchPresentation();
             UpdateAccountingRecordWorkbenchPresentation();
             UpdateReportPackWorkbenchPresentation();
+            ApplyPrivateCapitalCloseCockpit(privateCapitalCloseCockpit);
         }
+    }
+
+    private async Task<PrivateCapitalCloseCockpitDto?> LoadPrivateCapitalCloseCockpitAsync(
+        FundProfileDetail activeFund,
+        CancellationToken ct)
+    {
+        if (_privateCapitalCloseCockpitService is null)
+        {
+            return null;
+        }
+
+        return await _privateCapitalCloseCockpitService
+            .GetCockpitAsync(fundProfileId: activeFund.FundProfileId, ct: ct)
+            .ConfigureAwait(false);
     }
 
     public void Dispose()
@@ -918,6 +975,9 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         AuditTrail.Clear();
         ReportPackAssetSections.Clear();
         AccountingRecordEvidenceCategories.Clear();
+        PrivateCapitalCloseLanes.Clear();
+        PrivateCapitalNavSupportPackages.Clear();
+        PrivateCapitalCloseApprovals.Clear();
         _reportPackPreview = null;
         _accountingLifecycle = null;
         AccountingRecordStatusText = "Accounting-record evidence is waiting for fund context.";
@@ -928,6 +988,15 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             "Select a fund profile to inspect retained source, normalized activity, reconciliation, ledger, approval, and report-pack evidence.",
             "Open Operations Continuity",
             "OperationsContinuity");
+        PrivateCapitalCloseStatusText = "Private-capital close cockpit is waiting for fund context.";
+        PrivateCapitalCloseSummaryText = "Load the close cockpit to inspect partner capital tie-outs, NAV support, approval history, close-package evidence, and period-lock readiness.";
+        PrivateCapitalCloseEvidenceText = "0 evidence links";
+        PrivateCapitalCloseBlockerText = "No source-backed close cockpit has been loaded.";
+        PrivateCapitalCloseReadinessState = WorkstationStateModel.Empty(
+            "Close cockpit waiting for fund context",
+            "Select a fund profile to inspect source-backed private-capital close lanes, NAV support packages, approval history, and period-lock readiness.",
+            "Open Operations Close",
+            "OperationsClose");
         ReportPackStatusText = "Accounting report-pack preview is waiting for a fund context.";
         ReportPackReadinessState = WorkstationStateModel.Empty(
             "Report pack waiting for fund context",
@@ -1763,6 +1832,296 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             : summary.Summary;
         AccountingRecordEvidenceText = BuildAccountingRecordEvidenceText(summary);
         AccountingRecordReadinessState = BuildAccountingRecordReadinessState(summary);
+    }
+
+    private void ApplyPrivateCapitalCloseCockpit(PrivateCapitalCloseCockpitDto? cockpit)
+    {
+        PrivateCapitalCloseLanes.Clear();
+        PrivateCapitalNavSupportPackages.Clear();
+        PrivateCapitalCloseApprovals.Clear();
+
+        if (cockpit is null)
+        {
+            PrivateCapitalCloseStatusText = "Close cockpit unavailable";
+            PrivateCapitalCloseSummaryText = "The shared private-capital close cockpit service is not registered for this desktop context.";
+            PrivateCapitalCloseEvidenceText = "0 evidence links";
+            PrivateCapitalCloseBlockerText = "Register the Financial Operations close cockpit service before using this WPF close view.";
+            PrivateCapitalCloseReadinessState = WorkstationStateModel.Empty(
+                "Close cockpit unavailable",
+                PrivateCapitalCloseSummaryText,
+                "Open Operations Close",
+                "OperationsClose");
+            return;
+        }
+
+        foreach (var lane in cockpit.Lanes)
+        {
+            PrivateCapitalCloseLanes.Add(new FundPrivateCapitalCloseLaneRow(
+                LaneId: lane.LaneId,
+                Label: lane.Label,
+                StatusLabel: FormatEvidenceStatusLabel(lane.Status),
+                Summary: lane.Summary,
+                EvidenceLabel: FormatEvidenceCount(CountEvidenceLinks(lane)),
+                RequiredActionsLabel: FormatRequiredActions(lane.RequiredActions),
+                SourceTarget: MapPrivateCapitalCloseRouteTarget(lane.Route),
+                IsReady: lane.IsReady));
+        }
+
+        foreach (var package in cockpit.NavSupportPackages)
+        {
+            PrivateCapitalNavSupportPackages.Add(new FundPrivateCapitalNavSupportPackageRow(
+                PackageId: package.PackageId,
+                Label: package.Label,
+                StatusLabel: FormatEvidenceStatusLabel(package.Status),
+                Summary: package.Summary,
+                ShadowNavLabel: FormatShadowNavLabel(package.ShadowNav, package.Currency),
+                EvidenceLabel: FormatEvidenceCount(CountEvidenceLinks(package)),
+                ComponentLabel: FormatNavSupportComponentLabel(package.Components),
+                SourceTarget: MapPrivateCapitalCloseRouteTarget(package.Route),
+                IsReady: package.IsReady));
+        }
+
+        foreach (var approval in cockpit.ApprovalHistory
+            .OrderByDescending(static approval => approval.DecidedAtUtc ?? approval.SubmittedAtUtc ?? DateTimeOffset.MinValue))
+        {
+            PrivateCapitalCloseApprovals.Add(new FundPrivateCapitalCloseApprovalRow(
+                ApprovalId: approval.ApprovalId,
+                StatusLabel: approval.Status.ToString(),
+                OperatorLabel: string.IsNullOrWhiteSpace(approval.Operator) ? "Operator not recorded" : approval.Operator!,
+                ReviewerLabel: string.IsNullOrWhiteSpace(approval.Reviewer) ? "Reviewer not recorded" : approval.Reviewer!,
+                Rationale: string.IsNullOrWhiteSpace(approval.Rationale) ? "No rationale recorded" : approval.Rationale!,
+                DecidedAtLabel: FormatCloseTimestamp(approval.DecidedAtUtc ?? approval.SubmittedAtUtc),
+                EvidenceLabel: FormatEvidenceCount(CountEvidenceLinks(approval)),
+                SourceTarget: MapPrivateCapitalCloseRouteTarget(approval.WorkflowRoute)));
+        }
+
+        PrivateCapitalCloseStatusText = cockpit.IsReadyToClose
+            ? "Ready to close"
+            : FormatEvidenceStatusLabel(cockpit.OverallStatus);
+        PrivateCapitalCloseSummaryText =
+            $"{cockpit.ReadyLaneCount}/{cockpit.Lanes.Count} close lanes ready; {cockpit.BlockedLaneCount} blocked or missing; {cockpit.WorkflowCount} workflow(s), {cockpit.FundEventCount} fund event(s), {cockpit.CapitalAccountCount} capital account(s), {cockpit.ReportOutputCount} report output(s).";
+        PrivateCapitalCloseEvidenceText = FormatEvidenceCount(CountCloseEvidenceLinks(cockpit));
+        PrivateCapitalCloseBlockerText = BuildPrivateCapitalCloseBlockerText(cockpit);
+        PrivateCapitalCloseReadinessState = BuildPrivateCapitalCloseReadinessState(cockpit);
+    }
+
+    private static WorkstationStateModel BuildPrivateCapitalCloseReadinessState(PrivateCapitalCloseCockpitDto cockpit)
+    {
+        var statusLabel = FormatEvidenceStatusLabel(cockpit.OverallStatus);
+        var isReady = cockpit.IsReadyToClose;
+        var kind = cockpit.OverallStatus switch
+        {
+            EvidenceStatusDto.Ready => WorkstationStateKind.Ready,
+            EvidenceStatusDto.Stale => WorkstationStateKind.Stale,
+            EvidenceStatusDto.Unknown => WorkstationStateKind.Empty,
+            EvidenceStatusDto.Missing => WorkstationStateKind.Blocked,
+            _ => WorkstationStateKind.Blocked
+        };
+        var readinessTone = cockpit.OverallStatus switch
+        {
+            EvidenceStatusDto.Ready => WorkstationReadinessTone.EvidenceLinked,
+            EvidenceStatusDto.ReviewRequired => WorkstationReadinessTone.SignoffRequired,
+            EvidenceStatusDto.Stale => WorkstationReadinessTone.Stale,
+            EvidenceStatusDto.Blocked or EvidenceStatusDto.Missing => WorkstationReadinessTone.Blocked,
+            _ => WorkstationReadinessTone.Neutral
+        };
+        var tone = cockpit.OverallStatus switch
+        {
+            EvidenceStatusDto.Ready => WorkspaceTone.Success,
+            EvidenceStatusDto.ReviewRequired or EvidenceStatusDto.Stale => WorkspaceTone.Warning,
+            EvidenceStatusDto.Blocked or EvidenceStatusDto.Missing => WorkspaceTone.Danger,
+            _ => WorkspaceTone.Neutral
+        };
+        var evidenceCount = CountCloseEvidenceLinks(cockpit);
+        var actionPosture = new WorkstationActionPostureModel(
+            isReady ? "Review close package" : "Resolve close blockers",
+            isReady
+                ? "Inspect the retained close-package, NAV support, and approval evidence before final sign-off."
+                : "Open Operations Close to resolve partner capital, NAV, approval, close-package, or period-lock blockers.",
+            "OperationsClose",
+            "Accounting operator",
+            readinessTone,
+            tone);
+        var evidenceLinks = cockpit.Lanes
+            .Where(static lane => CountEvidenceLinks(lane) > 0)
+            .Select(lane => new WorkstationEvidenceLinkModel(
+                lane.Label,
+                MapPrivateCapitalCloseRouteTarget(lane.Route),
+                lane.LaneId,
+                lane.Summary))
+            .Concat(cockpit.NavSupportPackages
+                .Where(static package => CountEvidenceLinks(package) > 0)
+                .Select(package => new WorkstationEvidenceLinkModel(
+                    package.Label,
+                    MapPrivateCapitalCloseRouteTarget(package.Route),
+                    package.PackageId,
+                    package.Summary)))
+            .Concat(cockpit.ApprovalHistory
+                .Where(static approval => CountEvidenceLinks(approval) > 0)
+                .Select(approval => new WorkstationEvidenceLinkModel(
+                    "Approval history",
+                    MapPrivateCapitalCloseRouteTarget(approval.WorkflowRoute),
+                    approval.ApprovalId,
+                    string.IsNullOrWhiteSpace(approval.Rationale) ? approval.Status.ToString() : approval.Rationale!)))
+            .Take(6)
+            .ToArray();
+        var recoveryActions = cockpit.NextActions
+            .Take(3)
+            .Select(action => new WorkstationRecoveryActionModel(
+                action.Label,
+                string.IsNullOrWhiteSpace(action.Code) ? "Close action" : action.Code,
+                MapPrivateCapitalCloseRouteTarget(action.RouteHint ?? action.Route)))
+            .ToArray();
+        if (recoveryActions.Length == 0)
+        {
+            recoveryActions = cockpit.Lanes
+                .Where(static lane => !lane.IsReady)
+                .SelectMany(static lane => lane.RequiredActions.Select(action => new WorkstationRecoveryActionModel(
+                    string.IsNullOrWhiteSpace(action) ? $"Review {lane.Label}" : action,
+                    lane.Summary,
+                    MapPrivateCapitalCloseRouteTarget(lane.Route))))
+                .Take(3)
+                .ToArray();
+        }
+
+        if (recoveryActions.Length == 0)
+        {
+            recoveryActions =
+            [
+                new WorkstationRecoveryActionModel(
+                    "Open close cockpit",
+                    "Review the shared private-capital close cockpit before sign-off.",
+                    "OperationsClose")
+            ];
+        }
+
+        return new WorkstationStateModel(
+            kind,
+            isReady ? "Private-capital close ready" : $"Private-capital close {statusLabel.ToLowerInvariant()}",
+            $"{cockpit.ReadyLaneCount}/{cockpit.Lanes.Count} close lanes ready; {cockpit.BlockedLaneCount} blocked or missing; {cockpit.NavSupportPackages.Count} NAV support package(s); {cockpit.ApprovalHistory.Count} approval event(s).",
+            actionPosture.Label,
+            actionPosture.Target,
+            FormatEvidenceCount(evidenceCount),
+            "\uE9D9",
+            tone,
+            readinessTone,
+            actionPosture,
+            evidenceLinks,
+            recoveryActions,
+            new WorkstationSignoffRequirementModel(
+                "Accounting operator",
+                isReady ? "Close evidence ready for sign-off" : "Close evidence requires review",
+                "Sign-off should cite partner capital tie-outs, NAV support packages, approval history, close-package evidence, and period-lock readiness.",
+                isReady ? WorkspaceTone.Success : WorkspaceTone.Warning));
+    }
+
+    private static string BuildPrivateCapitalCloseBlockerText(PrivateCapitalCloseCockpitDto cockpit)
+    {
+        var blocker = cockpit.Blockers.FirstOrDefault();
+        if (blocker is not null)
+        {
+            return $"{blocker.Severity}: {blocker.Message}";
+        }
+
+        var nextAction = cockpit.NextActions.FirstOrDefault();
+        if (nextAction is not null)
+        {
+            return $"Next action: {nextAction.Label}";
+        }
+
+        return cockpit.IsReadyToClose
+            ? "No blockers reported by the shared close cockpit."
+            : "No blockers were returned, but at least one close lane is not ready.";
+    }
+
+    private static string FormatEvidenceStatusLabel(EvidenceStatusDto status)
+        => status switch
+        {
+            EvidenceStatusDto.ReviewRequired => "Review Required",
+            _ => status.ToString()
+        };
+
+    private static string FormatEvidenceCount(int count)
+        => $"{count:N0} evidence link{(count == 1 ? string.Empty : "s")}";
+
+    private static int CountCloseEvidenceLinks(PrivateCapitalCloseCockpitDto cockpit)
+        => cockpit.Lanes.Sum(static lane => CountEvidenceLinks(lane)) +
+            cockpit.NavSupportPackages.Sum(static package => CountEvidenceLinks(package)) +
+            cockpit.ApprovalHistory.Sum(static approval => CountEvidenceLinks(approval));
+
+    private static int CountEvidenceLinks(PrivateCapitalCloseCockpitLaneDto lane)
+        => Math.Max(lane.EvidenceLinkCount, lane.EvidenceLinks.Count);
+
+    private static int CountEvidenceLinks(PrivateCapitalNavSupportPackageDto package)
+        => Math.Max(package.EvidenceLinkCount, package.EvidenceLinks.Count);
+
+    private static int CountEvidenceLinks(PrivateCapitalCloseCockpitApprovalDto approval)
+        => Math.Max(approval.EvidenceLinkCount, approval.EvidenceLinks.Count);
+
+    private static string FormatRequiredActions(IReadOnlyList<string> requiredActions)
+    {
+        var actions = requiredActions
+            .Where(static action => !string.IsNullOrWhiteSpace(action))
+            .ToArray();
+        return actions.Length == 0
+            ? "No required actions"
+            : string.Join("; ", actions);
+    }
+
+    private static string FormatNavSupportComponentLabel(IReadOnlyList<PrivateCapitalNavSupportComponentDto> components)
+    {
+        var readyCount = components.Count(static component => component.IsReady);
+        var reviewComponents = components
+            .Where(static component => !component.IsReady)
+            .Select(static component => string.IsNullOrWhiteSpace(component.Label) ? component.ComponentId : component.Label)
+            .Where(static label => !string.IsNullOrWhiteSpace(label))
+            .ToArray();
+
+        return reviewComponents.Length == 0
+            ? $"{readyCount}/{components.Count} components ready"
+            : $"{readyCount}/{components.Count} components ready; review {string.Join(", ", reviewComponents)}";
+    }
+
+    private static string FormatShadowNavLabel(decimal? shadowNav, string? currency)
+    {
+        if (!shadowNav.HasValue)
+        {
+            return "-";
+        }
+
+        return string.IsNullOrWhiteSpace(currency)
+            ? shadowNav.Value.ToString("N2")
+            : $"{shadowNav.Value:N2} {currency}";
+    }
+
+    private static string FormatCloseTimestamp(DateTimeOffset? timestamp)
+        => timestamp.HasValue ? timestamp.Value.LocalDateTime.ToString("g") : "Not decided";
+
+    private static string MapPrivateCapitalCloseRouteTarget(string? route)
+    {
+        if (string.IsNullOrWhiteSpace(route))
+        {
+            return "OperationsClose";
+        }
+
+        var normalized = route.Trim();
+        if (normalized.Contains("report", StringComparison.OrdinalIgnoreCase))
+        {
+            return "FundReportPack";
+        }
+
+        if (normalized.Contains("evidence", StringComparison.OrdinalIgnoreCase))
+        {
+            return "EvidenceWorkbench";
+        }
+
+        if (normalized.Contains("operations", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Contains("close", StringComparison.OrdinalIgnoreCase))
+        {
+            return "OperationsClose";
+        }
+
+        return normalized;
     }
 
     private static string BuildAccountingRecordEvidenceText(OperationsAccountingRecordSummaryDto summary)

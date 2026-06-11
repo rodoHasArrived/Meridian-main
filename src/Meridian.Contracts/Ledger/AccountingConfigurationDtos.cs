@@ -752,7 +752,28 @@ public sealed record CapitalAccountWorkbenchAllocationRuleDto(
     string? Route,
     int EvidenceLinkCount,
     IReadOnlyList<string> EvidenceLinks,
-    IReadOnlyList<string> RequiredEvidence);
+    IReadOnlyList<string> RequiredEvidence)
+{
+    public string RuleVersion { get; init; } = "";
+    public DateOnly? EffectiveFrom { get; init; }
+    public DateOnly? EffectiveTo { get; init; }
+    public string Formula { get; init; } = "";
+    public string ApprovalState { get; init; } = "";
+    public string? ApprovalReference { get; init; }
+    public string ReplayTrace { get; init; } = "";
+    public IReadOnlyList<CapitalAccountWorkbenchAllocationInputDto> Inputs { get; init; } = [];
+    public IReadOnlyList<string> RelatedFundEventIds { get; init; } = [];
+}
+
+public sealed record CapitalAccountWorkbenchAllocationInputDto(
+    string InputId,
+    string Kind,
+    string SourceId,
+    string Label,
+    decimal? Amount,
+    string? Currency,
+    DateOnly? EffectiveDate,
+    string? EvidenceRoute);
 
 public sealed record CapitalAccountWorkbenchStatementLineageDto(
     string LineageId,
@@ -783,7 +804,17 @@ public sealed record CapitalAccountWorkbenchStatementLineageDto(
     string? EvidenceRoute,
     string? CapitalAccountSubledgerRoute,
     IReadOnlyList<string> EvidenceLinks,
-    IReadOnlyList<string> RestatementEvidenceLinks);
+    IReadOnlyList<string> RestatementEvidenceLinks)
+{
+    public IReadOnlyList<CapitalAccountWorkbenchRestatementChangedLineDto> RestatementChangedLines { get; init; } = [];
+}
+
+public sealed record CapitalAccountWorkbenchRestatementChangedLineDto(
+    string LineKey,
+    string PreviousValue,
+    string CurrentValue,
+    int EvidenceLinkCount,
+    IReadOnlyList<string> EvidenceLinks);
 
 public sealed record CapitalAccountWorkbenchAuditDrillThroughDto(
     string DrillThroughId,

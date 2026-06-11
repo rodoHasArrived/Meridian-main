@@ -309,11 +309,16 @@
                         BorderThickness="1"
                         AutomationProperties.AutomationId="FinancialOperationsWorkflowCheckpoint">
                     <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0">
+                        <StackPanel Grid.Row="0"
+                                    Grid.Column="0">
                             <TextBlock Text="Financial Operations Checkpoint"
                                        Style="{StaticResource ShellSectionLabelStyle}" />
                             <TextBlock x:Name="FinancialOperationsWorkflowStatusText"
@@ -329,7 +334,8 @@
                                        TextWrapping="Wrap"
                                        Text="{Binding Description}" />
                         </StackPanel>
-                        <StackPanel Grid.Column="1"
+                        <StackPanel Grid.Row="0"
+                                    Grid.Column="1"
                                     Orientation="Horizontal"
                                     VerticalAlignment="Top"
                                     Margin="16,0,0,0">
@@ -348,6 +354,46 @@
                                     Style="{StaticResource GhostButtonStyle}"
                                     AutomationProperties.AutomationId="FinancialOperationsWorkflowActionButton"
                                     AutomationProperties.Name="{Binding AutomationName}" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="1"
+                                    Grid.ColumnSpan="2"
+                                    Margin="0,12,0,0">
+                            <TextBlock Text="Evidence"
+                                       Style="{StaticResource ShellSectionLabelStyle}" />
+                            <ItemsControl x:Name="FinancialOperationsEvidenceBadgesList"
+                                          Margin="0,8,0,0"
+                                          AutomationProperties.AutomationId="FinancialOperationsEvidenceBadges">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource WorkspaceToneBadgeStyle}"
+                                                Margin="0,0,8,8">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding Label}"
+                                                           FontSize="10"
+                                                           Style="{StaticResource WorkspaceToneBadgeTextStyle}" />
+                                                <TextBlock Text=": "
+                                                           FontSize="10"
+                                                           Style="{StaticResource WorkspaceToneBadgeTextStyle}" />
+                                                <TextBlock Text="{Binding Value}"
+                                                           FontSize="10"
+                                                           FontWeight="SemiBold"
+                                                           Style="{StaticResource WorkspaceToneBadgeTextStyle}" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock x:Name="FinancialOperationsPrimaryBlockerText"
+                                       Margin="0,2,0,0"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Text="No Financial Operations blocker is loaded." />
                         </StackPanel>
                     </Grid>
                 </Border>

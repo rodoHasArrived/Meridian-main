@@ -33,6 +33,8 @@ import {
   reportPackDeliveryPackageEndpoint,
   reportPackDeliveryPortalPackageEndpoint,
   reportPackEvidenceBundleEndpoint,
+  reportingRunAuditTrailEndpoint,
+  reportingRunReportWriterGridEndpoint,
   executionAuditEndpoint,
   executionManualOverrideClearEndpoint,
   executionOrderCancelEndpoint,
@@ -95,6 +97,10 @@ import {
   workstationEvidenceGraphEndpoint,
   workstationEvidencePacketEndpoint,
   workstationEvidenceValidateEndpoint,
+  workstationExtensibilityTenantTemplateActivateEndpoint,
+  workstationExtensibilityTenantTemplateActivationsEndpoint,
+  workstationExtensibilityTenantTemplateEndpoint,
+  workstationExtensibilityTenantTemplateReadinessEndpoint,
   workstationFinancialRecordExplorerEndpoint,
   workstationFinancialRecordExplorerRecordEndpoint,
   workstationFinancialRecordExplorerSavedViewsEndpoint,
@@ -105,11 +111,15 @@ import {
   workstationChiefOfStaffTraceExportEndpoint,
   workstationOperatorInboxEndpoint,
   workstationAssetOperationsEndpoint,
+  workstationOperationsContinuityBreakAssignEndpoint,
   workstationOperationsContinuityBreaksEndpoint,
+  workstationOperationsContinuityCloseEndpoint,
   workstationOperationsContinuityDetailEndpoint,
   workstationOperationsContinuityEndpoint,
   workstationOperationsContinuityCloseCalendarEndpoint,
   workstationOperationsContinuityLedgerPreviewEndpoint,
+  workstationOperationsPrivateCapitalCloseCockpitEndpoint,
+  workstationOperationsContinuityReopenEndpoint,
   workstationOperationsContinuityTimelineEndpoint,
   workstationRunAttributionEndpoint,
   workstationRunCompareEndpoint,
@@ -153,10 +163,17 @@ describe("workstation API endpoint catalog", () => {
       accounting: "/api/workstation/accounting",
       privateCapitalActivity: "/api/ledger/private-capital/activity",
       privateCapitalFundEventRecord: "/api/ledger/private-capital/fund-event-record",
+      privateCapitalFundEventCommandCenter: "/api/ledger/private-capital/fund-event-command-center",
       privateCapitalCapitalAccountSubledger: "/api/ledger/private-capital/capital-account-subledger",
       privateCapitalReportOutput: "/api/ledger/private-capital/report-output",
       reporting: "/api/workstation/reporting",
       workflowSummary: "/api/workstation/workflow-summary",
+      extensibilityCatalog: "/api/workstation/extensibility/catalog",
+      extensibilityTenantTemplates: "/api/workstation/extensibility/tenant-templates",
+      extensibilityTenantTemplate: "/api/workstation/extensibility/tenant-templates/{tenantTemplateId}",
+      extensibilityTenantTemplateActivate: "/api/workstation/extensibility/tenant-templates/{tenantTemplateId}/activate",
+      extensibilityTenantTemplateActivations: "/api/workstation/extensibility/tenant-templates/{tenantTemplateId}/activations",
+      extensibilityTenantTemplateReadiness: "/api/workstation/extensibility/tenant-templates/{tenantTemplateId}/readiness",
       operationsContinuity: "/api/workstation/operations/continuity",
       operationsContinuityApprovalPolicyMatrix: "/api/workstation/operations/continuity/approval-policy-matrix",
       operationsContinuityApprovalPolicyRules: "/api/workstation/operations/continuity/approval-policy-rules",
@@ -199,6 +216,37 @@ describe("workstation API endpoint catalog", () => {
     );
   });
 
+  it("builds core extensibility tenant template endpoints from generated route contracts", () => {
+    expect(WORKSTATION_API_ENDPOINTS.extensibilityCatalog).toBe("/api/workstation/extensibility/catalog");
+    expect(WORKSTATION_API_ENDPOINTS.extensibilityTenantTemplates).toBe(
+      "/api/workstation/extensibility/tenant-templates"
+    );
+    expect(WORKSTATION_API_ENDPOINTS.extensibilityTenantTemplate).toBe(
+      "/api/workstation/extensibility/tenant-templates/{tenantTemplateId}"
+    );
+    expect(WORKSTATION_API_ENDPOINTS.extensibilityTenantTemplateActivate).toBe(
+      "/api/workstation/extensibility/tenant-templates/{tenantTemplateId}/activate"
+    );
+    expect(WORKSTATION_API_ENDPOINTS.extensibilityTenantTemplateActivations).toBe(
+      "/api/workstation/extensibility/tenant-templates/{tenantTemplateId}/activations"
+    );
+    expect(WORKSTATION_API_ENDPOINTS.extensibilityTenantTemplateReadiness).toBe(
+      "/api/workstation/extensibility/tenant-templates/{tenantTemplateId}/readiness"
+    );
+    expect(workstationExtensibilityTenantTemplateEndpoint("fund admin / v1")).toBe(
+      "/api/workstation/extensibility/tenant-templates/fund%20admin%20%2F%20v1"
+    );
+    expect(workstationExtensibilityTenantTemplateActivateEndpoint("fund admin / v1")).toBe(
+      "/api/workstation/extensibility/tenant-templates/fund%20admin%20%2F%20v1/activate"
+    );
+    expect(workstationExtensibilityTenantTemplateActivationsEndpoint("fund admin / v1")).toBe(
+      "/api/workstation/extensibility/tenant-templates/fund%20admin%20%2F%20v1/activations"
+    );
+    expect(workstationExtensibilityTenantTemplateReadinessEndpoint("fund admin / v1")).toBe(
+      "/api/workstation/extensibility/tenant-templates/fund%20admin%20%2F%20v1/readiness"
+    );
+  });
+
   it("builds account-scoped operator inbox endpoints without changing the base contract", () => {
     expect(workstationOperatorInboxEndpoint()).toBe("/api/workstation/operator/inbox");
     expect(workstationOperatorInboxEndpoint("fund account/1")).toBe(
@@ -216,9 +264,10 @@ describe("workstation API endpoint catalog", () => {
       hasOperatingContext: true,
       operatingContext: "portfolio/review",
       fundProfileId: "fund / 1",
+      fundAccountId: "account / 1",
       fundDisplayName: "Core Fund"
     })).toBe(
-      "/api/workstation/workflow-summary?hasOperatingContext=true&operatingContext=portfolio%2Freview&fundProfileId=fund+%2F+1&fundDisplayName=Core+Fund"
+      "/api/workstation/workflow-summary?hasOperatingContext=true&operatingContext=portfolio%2Freview&fundProfileId=fund+%2F+1&fundAccountId=account+%2F+1&fundDisplayName=Core+Fund"
     );
     expect(workstationWorkflowPresetEndpoint()).toBe("/api/workstation/workflows/presets");
     expect(workstationWorkflowPresetEndpoint("preset / 1")).toBe("/api/workstation/workflows/presets/preset%20%2F%201");
@@ -244,8 +293,17 @@ describe("workstation API endpoint catalog", () => {
     expect(workstationOperationsContinuityBreaksEndpoint("workflow / 1")).toBe(
       "/api/workstation/operations/continuity/workflow%20%2F%201/breaks"
     );
+    expect(workstationOperationsContinuityBreakAssignEndpoint("workflow / 1", "break / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/reconciliation/breaks/break%20%2F%201/assign"
+    );
     expect(workstationOperationsContinuityLedgerPreviewEndpoint("workflow / 1")).toBe(
       "/api/workstation/operations/continuity/workflow%20%2F%201/ledger-preview"
+    );
+    expect(workstationOperationsContinuityCloseEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/close"
+    );
+    expect(workstationOperationsContinuityReopenEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/reopen"
     );
     expect(workstationOperationsContinuityCloseCalendarEndpoint()).toBe(
       "/api/workstation/operations/continuity/close-calendar"
@@ -255,6 +313,15 @@ describe("workstation API endpoint catalog", () => {
       periodId: "2026-05"
     })).toBe(
       "/api/workstation/operations/continuity/close-calendar?fundAccountId=fund+%2F+1&periodId=2026-05"
+    );
+    expect(workstationOperationsPrivateCapitalCloseCockpitEndpoint({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "11111111-1111-1111-1111-111111111111",
+      fundAccountId: "fund / 1",
+      periodId: "2026-05",
+      entityId: "entity-master"
+    })).toBe(
+      "/api/workstation/operations/private-capital-close-cockpit?fundProfileId=fund-alpha&ledgerBookId=11111111-1111-1111-1111-111111111111&fundAccountId=fund+%2F+1&periodId=2026-05&entityId=entity-master"
     );
     expect(AUTH_API_ENDPOINTS.roles).toBe("/api/auth/roles");
     expect(AUTH_API_ENDPOINTS.roleProfiles).toBe("/api/auth/role-profiles");
@@ -272,7 +339,21 @@ describe("workstation API endpoint catalog", () => {
       "/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/package"
     );
     expect(FUND_STRUCTURE_API_ENDPOINTS.reportPackDeliveryPortalPackage).toBe("/portal/reporting/packages/{packageId}");
+    expect(WORKSTATION_API_ENDPOINTS.reportingStructuredExport).toBe("/api/workstation/reporting/structured-exports/{exportId}");
     expect(FUND_STRUCTURE_API_ENDPOINTS.reportingStructuredExport).toBe("/api/fund-structure/reporting/structured-exports/{exportId}");
+    expect(FUND_STRUCTURE_API_ENDPOINTS.reportingRunAuditTrail).toBe("/api/fund-structure/reporting/runs/{runId}/audit");
+    expect(reportingRunAuditTrailEndpoint("run / 1")).toBe(
+      "/api/fund-structure/reporting/runs/run%20%2F%201/audit"
+    );
+    expect(FUND_STRUCTURE_API_ENDPOINTS.reportingRunReportWriterGrid).toBe(
+      "/api/fund-structure/reporting/runs/{runId}/report-writer-grids/{gridId}"
+    );
+    expect(reportingRunReportWriterGridEndpoint("run / 1", "grid / 1")).toBe(
+      "/api/fund-structure/reporting/runs/run%20%2F%201/report-writer-grids/grid%20%2F%201"
+    );
+    expect(reportingRunReportWriterGridEndpoint("run / 1", "grid / 1", "csv")).toBe(
+      "/api/fund-structure/reporting/runs/run%20%2F%201/report-writer-grids/grid%20%2F%201?format=csv"
+    );
     expect(reportPackDeliveryPackageEndpoint("report / 1", "attempt / 1", "tok / 1")).toBe(
       "/api/fund-structure/reporting/packs/report%20%2F%201/deliveries/attempt%20%2F%201/package?token=tok+%2F+1"
     );

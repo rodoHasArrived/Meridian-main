@@ -29,6 +29,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   manualJournalEntryWorkbench: UI_API_ROUTES.LedgerManualJournalEntryWorkbench,
   privateCapitalActivity: UI_API_ROUTES.LedgerPrivateCapitalActivity,
   privateCapitalFundEventRecord: UI_API_ROUTES.LedgerPrivateCapitalFundEventRecord,
+  privateCapitalFundEventCommandCenter: UI_API_ROUTES.LedgerPrivateCapitalFundEventCommandCenter,
   privateCapitalCapitalAccountSubledger: UI_API_ROUTES.LedgerPrivateCapitalCapitalAccountSubledger,
   privateCapitalReportOutput: UI_API_ROUTES.LedgerPrivateCapitalReportOutput,
   privateCapitalCapitalAccountWorkbench: UI_API_ROUTES.LedgerPrivateCapitalCapitalAccountWorkbench,
@@ -36,8 +37,15 @@ export const WORKSTATION_API_ENDPOINTS = {
   manualJournalEntryValidate: UI_API_ROUTES.LedgerManualJournalEntryValidate,
   manualJournalEntrySubmitApproval: UI_API_ROUTES.LedgerManualJournalEntrySubmitApproval,
   reporting: UI_API_ROUTES.WorkstationReporting,
+  reportingStructuredExport: UI_API_ROUTES.WorkstationReportingStructuredExport,
   workflowSummary: UI_API_ROUTES.WorkstationWorkflowSummary,
   featureCapabilities: UI_API_ROUTES.WorkstationFeatureCapabilities,
+  extensibilityCatalog: UI_API_ROUTES.WorkstationExtensibilityCatalog,
+  extensibilityTenantTemplates: UI_API_ROUTES.WorkstationExtensibilityTenantTemplates,
+  extensibilityTenantTemplate: UI_API_ROUTES.WorkstationExtensibilityTenantTemplateById,
+  extensibilityTenantTemplateActivate: UI_API_ROUTES.WorkstationExtensibilityTenantTemplateActivate,
+  extensibilityTenantTemplateActivations: UI_API_ROUTES.WorkstationExtensibilityTenantTemplateActivations,
+  extensibilityTenantTemplateReadiness: UI_API_ROUTES.WorkstationExtensibilityTenantTemplateReadiness,
   workflowLibrary: "/api/workstation/workflows",
   workflowPresets: "/api/workstation/workflows/presets",
   operationsContinuity: UI_API_ROUTES.OperationsContinuity,
@@ -45,6 +53,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   operationsContinuityApprovalPolicyRules: UI_API_ROUTES.OperationsContinuityApprovalPolicyRules,
   operationsContinuityCloseCalendar: UI_API_ROUTES.OperationsContinuityCloseCalendar,
   operationsContinuityCloseCalendarItems: UI_API_ROUTES.OperationsContinuityCloseCalendarItems,
+  operationsPrivateCapitalCloseCockpit: UI_API_ROUTES.OperationsPrivateCapitalCloseCockpit,
   chiefOfStaff: "/api/workstation/chief-of-staff",
   runHistory: UI_API_ROUTES.RunHistory,
   runTimeline: "/api/workstation/runs/timeline",
@@ -62,7 +71,9 @@ export const AUTH_API_ENDPOINTS = {
   accountPasswordReset: UI_API_ROUTES.AuthApiAccountPasswordReset,
   accountDisable: UI_API_ROUTES.AuthApiAccountDisable,
   sessionsRevoke: UI_API_ROUTES.AuthApiSessionsRevoke,
-  audit: UI_API_ROUTES.AuthApiAudit
+  audit: UI_API_ROUTES.AuthApiAudit,
+  accessAssignments: UI_API_ROUTES.AuthApiAccessAssignments,
+  accessAssignmentRevoke: UI_API_ROUTES.AuthApiAccessAssignmentRevoke
 } as const;
 
 export const FUND_STRUCTURE_API_ENDPOINTS = {
@@ -81,6 +92,8 @@ export const FUND_STRUCTURE_API_ENDPOINTS = {
   reportingTemplateDrafts: "/api/fund-structure/reporting/templates/drafts",
   reportingTemplateRender: "/api/fund-structure/reporting/templates/render",
   reportingRuns: UI_API_ROUTES.ReportingRuns,
+  reportingRunAuditTrail: UI_API_ROUTES.ReportingRunAuditTrail,
+  reportingRunReportWriterGrid: UI_API_ROUTES.ReportingRunReportWriterGrid,
   reportingSchedules: UI_API_ROUTES.ReportingSchedules,
   reportingScheduleRunDue: UI_API_ROUTES.ReportingScheduleRunDue,
   reportingSchedulePause: UI_API_ROUTES.ReportingSchedulePause,
@@ -305,6 +318,7 @@ export function workstationWorkflowSummaryEndpoint(options: {
   hasOperatingContext?: boolean;
   operatingContext?: string;
   fundProfileId?: string;
+  fundAccountId?: string;
   fundDisplayName?: string;
 } = {}): string {
   return `${WORKSTATION_API_ENDPOINTS.workflowSummary}${queryString(options)}`;
@@ -322,6 +336,34 @@ export function workstationWorkflowPresetPinEndpoint(presetId: string): string {
 
 export function workstationWorkflowPresetUsedEndpoint(presetId: string): string {
   return `${workstationWorkflowPresetEndpoint(presetId)}/used`;
+}
+
+export function workstationExtensibilityTenantTemplateEndpoint(tenantTemplateId: string): string {
+  return routeWithParam(WORKSTATION_API_ENDPOINTS.extensibilityTenantTemplate, "tenantTemplateId", tenantTemplateId);
+}
+
+export function workstationExtensibilityTenantTemplateActivateEndpoint(tenantTemplateId: string): string {
+  return routeWithParam(
+    WORKSTATION_API_ENDPOINTS.extensibilityTenantTemplateActivate,
+    "tenantTemplateId",
+    tenantTemplateId
+  );
+}
+
+export function workstationExtensibilityTenantTemplateActivationsEndpoint(tenantTemplateId: string): string {
+  return routeWithParam(
+    WORKSTATION_API_ENDPOINTS.extensibilityTenantTemplateActivations,
+    "tenantTemplateId",
+    tenantTemplateId
+  );
+}
+
+export function workstationExtensibilityTenantTemplateReadinessEndpoint(tenantTemplateId: string): string {
+  return routeWithParam(
+    WORKSTATION_API_ENDPOINTS.extensibilityTenantTemplateReadiness,
+    "tenantTemplateId",
+    tenantTemplateId
+  );
 }
 
 export function workstationOperationsContinuityEndpoint(options: {
@@ -368,12 +410,28 @@ export function workstationOperationsContinuityApprovalRejectEndpoint(workflowId
   return routeWithParam(UI_API_ROUTES.OperationsContinuityApprovalReject, "workflowId", workflowId);
 }
 
+export function workstationOperationsContinuityCloseEndpoint(workflowId: string): string {
+  return routeWithParam(UI_API_ROUTES.OperationsContinuityClose, "workflowId", workflowId);
+}
+
+export function workstationOperationsContinuityReopenEndpoint(workflowId: string): string {
+  return routeWithParam(UI_API_ROUTES.OperationsContinuityReopen, "workflowId", workflowId);
+}
+
 export function workstationOperationsContinuityTimelineEndpoint(workflowId: string): string {
   return routeWithParam(UI_API_ROUTES.OperationsContinuityTimeline, "workflowId", workflowId);
 }
 
 export function workstationOperationsContinuityBreaksEndpoint(workflowId: string): string {
   return routeWithParam(UI_API_ROUTES.OperationsContinuityBreaks, "workflowId", workflowId);
+}
+
+export function workstationOperationsContinuityBreakAssignEndpoint(workflowId: string, breakId: string): string {
+  return routeWithParam(
+    routeWithParam(UI_API_ROUTES.OperationsContinuityReconciliationBreakAssign, "workflowId", workflowId),
+    "breakId",
+    breakId
+  );
 }
 
 export function workstationOperationsContinuityLedgerPreviewEndpoint(workflowId: string): string {
@@ -385,6 +443,16 @@ export function workstationOperationsContinuityCloseCalendarEndpoint(options: {
   periodId?: string;
 } = {}): string {
   return `${WORKSTATION_API_ENDPOINTS.operationsContinuityCloseCalendar}${queryString(options)}`;
+}
+
+export function workstationOperationsPrivateCapitalCloseCockpitEndpoint(options: {
+  fundProfileId?: string;
+  ledgerBookId?: string;
+  fundAccountId?: string;
+  periodId?: string;
+  entityId?: string;
+} = {}): string {
+  return `${WORKSTATION_API_ENDPOINTS.operationsPrivateCapitalCloseCockpit}${queryString(options)}`;
 }
 
 export function workstationChiefOfStaffSessionsEndpoint(options: {
@@ -571,6 +639,23 @@ export function reportingPackDeliveriesEndpoint(reportId: string): string {
 
 export function reportingPackDeliveryFailuresEndpoint(reportId: string): string {
   return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportPackWorkflowDeliveryFailures, "reportId", reportId);
+}
+
+export function reportingRunAuditTrailEndpoint(runId: string): string {
+  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingRunAuditTrail, "runId", runId);
+}
+
+export function reportingRunReportWriterGridEndpoint(
+  runId: string,
+  gridId: string,
+  format?: "json" | "csv" | "xlsx"
+): string {
+  const route = routeWithParam(
+    routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingRunReportWriterGrid, "runId", runId),
+    "gridId",
+    gridId
+  );
+  return format && format !== "json" ? `${route}${queryString({ format })}` : route;
 }
 
 export function reportingSchedulePauseEndpoint(scheduleId: string): string {

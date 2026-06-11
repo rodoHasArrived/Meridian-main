@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowRight, GitBranch, ListChecks, RefreshCcw, Workflow } from "lucide-react";
+import { AlertTriangle, ArrowRight, Gauge, GitBranch, ListChecks, Lock, RefreshCcw, Workflow } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,9 +8,17 @@ import { cn } from "@/lib/utils";
 import {
   useOperationsContinuityScreenViewModel,
   type OperationsAccountingRecordEvidenceRow,
+  type OperationsContinuityCloseCockpitApprovalRow,
+  type OperationsContinuityCloseCockpitLaneRow,
+  type OperationsContinuityCloseCockpitWorkflowRow,
+  type OperationsContinuityBreakCaseRow,
   type OperationsContinuityBlockerRow,
   type OperationsContinuityChecklistRow,
+  type OperationsContinuityDashboardMetricRow,
+  type OperationsContinuityEvidencePackageRow,
   type OperationsContinuityGateRow,
+  type OperationsContinuityNavSupportPackageRow,
+  type OperationsContinuityReconciliationLaneRow,
   type OperationsContinuityTimelineRow,
   type OperationsContinuityTone,
   type OperationsContinuityWorkflowRow
@@ -124,6 +132,162 @@ const blockerColumns: DenseDataTableColumn<OperationsContinuityBlockerRow>[] = [
   }
 ];
 
+const operationalDashboardColumns: DenseDataTableColumn<OperationsContinuityDashboardMetricRow>[] = [
+  {
+    id: "metric",
+    label: "Metric",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.label}</span>
+        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.detail}</span>
+      </span>
+    )
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
+        <span className="mt-1 block font-mono text-foreground">{row.valueLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "evidence",
+    label: "Evidence",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-foreground">{row.evidenceLabel}</span>
+        <span className="block text-muted-foreground">{row.requiredActionsLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "route",
+    label: "Route",
+    render: (row) => row.routeHref ? (
+      <Link className="text-xs" to={row.routeHref} aria-label={`Open operational dashboard metric ${row.label}`}>
+        {row.routeLabel}
+      </Link>
+    ) : (
+      <span className="text-xs text-muted-foreground">{row.routeLabel}</span>
+    )
+  }
+];
+
+const evidencePackageColumns: DenseDataTableColumn<OperationsContinuityEvidencePackageRow>[] = [
+  {
+    id: "package",
+    label: "Package",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.label}</span>
+        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.summary}</span>
+      </span>
+    )
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
+        <span className="mt-1 block text-muted-foreground">{row.readinessLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "evidence",
+    label: "Evidence",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-foreground">{row.evidenceLabel}</span>
+        <span className="block text-muted-foreground">{row.requiredActionsLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "route",
+    label: "Route",
+    render: (row) => row.routeHref ? (
+      <Link className="text-xs" to={row.routeHref} aria-label={`Open evidence package ${row.label}`}>
+        {row.routeLabel}
+      </Link>
+    ) : (
+      <span className="text-xs text-muted-foreground">{row.routeLabel}</span>
+    )
+  }
+];
+
+const breakCaseColumns: DenseDataTableColumn<OperationsContinuityBreakCaseRow>[] = [
+  {
+    id: "case",
+    label: "Break",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block break-words font-mono text-xs font-semibold text-foreground">{row.caseLabel}</span>
+        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.categoryLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
+        <span className="mt-1 block text-muted-foreground">{row.severityLabel}</span>
+        <span className="block text-muted-foreground">{row.materialityLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "owner",
+    label: "Owner",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block font-mono text-foreground/80">{row.ownerLabel}</span>
+        <span className="block text-muted-foreground">{row.dueLabel}</span>
+        <span className="block text-muted-foreground">{row.slaLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "escalation",
+    label: "Escalation",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-foreground">{row.escalationLabel}</span>
+        <span className="block text-muted-foreground">{row.evidenceLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "variance",
+    label: "Variance",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-foreground">{row.varianceLabel}</span>
+        <span className="block text-muted-foreground">{row.sourceLabel}</span>
+        <span className="block text-muted-foreground">{row.rootCauseLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "action",
+    label: "Action",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-foreground">{row.actionLabel}</span>
+        <span className="block text-muted-foreground">{row.approvalLabel}</span>
+        <span className="block text-muted-foreground">{row.blockedOutputsLabel}</span>
+        <span className="block font-mono text-muted-foreground">{row.symbolLabel}</span>
+      </span>
+    )
+  }
+];
+
 const checklistColumns: DenseDataTableColumn<OperationsContinuityChecklistRow>[] = [
   {
     id: "task",
@@ -180,6 +344,237 @@ const checklistColumns: DenseDataTableColumn<OperationsContinuityChecklistRow>[]
     id: "acknowledgement",
     label: "Acknowledgement",
     render: (row) => <span className="text-xs leading-5 text-muted-foreground">{row.acknowledgementLabel}</span>
+  }
+];
+
+const reconciliationLaneColumns: DenseDataTableColumn<OperationsContinuityReconciliationLaneRow>[] = [
+  {
+    id: "lane",
+    label: "Lane",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.label}</span>
+        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.summary}</span>
+      </span>
+    )
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
+        <span className="mt-1 block text-muted-foreground">{row.breakCountLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "evidence",
+    label: "Evidence",
+    render: (row) => <span className="text-xs text-muted-foreground">{row.evidenceLabel}</span>
+  },
+  {
+    id: "actions",
+    label: "Actions",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-foreground">{row.requiredActionsLabel}</span>
+        {row.routeHref ? (
+          <Link className="link-subtle mt-1 inline-flex" to={row.routeHref} aria-label={`Open reconciliation lane: ${row.label}`}>
+            {row.routeLabel}
+          </Link>
+        ) : (
+          <span className="mt-1 block text-muted-foreground">{row.routeLabel}</span>
+        )}
+      </span>
+    )
+  }
+];
+
+const closeCockpitLaneColumns: DenseDataTableColumn<OperationsContinuityCloseCockpitLaneRow>[] = [
+  {
+    id: "lane",
+    label: "Lane",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.label}</span>
+        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.summary}</span>
+      </span>
+    )
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
+  },
+  {
+    id: "evidence",
+    label: "Evidence",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-muted-foreground">{row.evidenceLabel}</span>
+        {row.routeHref ? (
+          <Link to={row.routeHref} aria-label={`Open private-capital close cockpit lane: ${row.label}`}>
+            {row.routeLabel}
+          </Link>
+        ) : (
+          <span className="block text-muted-foreground">{row.routeLabel}</span>
+        )}
+      </span>
+    )
+  },
+  {
+    id: "actions",
+    label: "Required actions",
+    render: (row) => <span className="text-xs leading-5 text-muted-foreground">{row.requiredActionsLabel}</span>
+  }
+];
+
+const closeCockpitWorkflowColumns: DenseDataTableColumn<OperationsContinuityCloseCockpitWorkflowRow>[] = [
+  {
+    id: "workflow",
+    label: "Workflow",
+    render: (row) => (
+      <span className="block min-w-0">
+        {row.workflowHref ? (
+          <Link to={row.workflowHref} aria-label={`Open private-capital close workflow ${row.periodLabel}`}>
+            {row.periodLabel}
+          </Link>
+        ) : (
+          <span className="block font-semibold text-foreground">{row.periodLabel}</span>
+        )}
+        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.id}</span>
+      </span>
+    )
+  },
+  {
+    id: "readiness",
+    label: "Readiness",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <Badge variant={toneBadge[row.readinessTone]}>{row.readinessLabel}</Badge>
+        <span className="mt-1 block text-muted-foreground">{row.statusLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "controls",
+    label: "Controls",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-foreground">{row.blockersLabel}</span>
+        <span className="block text-muted-foreground">{row.checklistLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "package",
+    label: "Close package",
+    render: (row) => row.packageHref ? (
+      <Link to={row.packageHref} aria-label={`Open private-capital close package for ${row.periodLabel}`}>
+        {row.packageLabel}
+      </Link>
+    ) : (
+      <span className="text-xs text-muted-foreground">{row.packageLabel}</span>
+    )
+  }
+];
+
+const closeCockpitApprovalColumns: DenseDataTableColumn<OperationsContinuityCloseCockpitApprovalRow>[] = [
+  {
+    id: "approval",
+    label: "Approval",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.workflowLabel}</span>
+        <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{row.id}</span>
+      </span>
+    )
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
+        <span className="mt-1 block text-muted-foreground">{row.decidedLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "actor",
+    label: "Actor",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-foreground">{row.actorLabel}</span>
+        <span className="block text-muted-foreground">{row.rationale}</span>
+      </span>
+    )
+  },
+  {
+    id: "evidence",
+    label: "Evidence",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-muted-foreground">{row.evidenceLabel}</span>
+        {row.workflowHref ? (
+          <Link to={row.workflowHref} aria-label={`Open private-capital close approval workflow ${row.workflowLabel}`}>
+            {row.routeLabel}
+          </Link>
+        ) : (
+          <span className="block text-muted-foreground">{row.routeLabel}</span>
+        )}
+      </span>
+    )
+  }
+];
+
+const navSupportPackageColumns: DenseDataTableColumn<OperationsContinuityNavSupportPackageRow>[] = [
+  {
+    id: "package",
+    label: "Package",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.label}</span>
+        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.summary}</span>
+      </span>
+    )
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
+        <span className="mt-1 block text-muted-foreground">{row.componentSummaryLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "shadow-nav",
+    label: "Shadow NAV",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-foreground">{row.shadowNavLabel}</span>
+        <span className="block text-muted-foreground">{row.evidenceLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "actions",
+    label: "Actions",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-muted-foreground">{row.requiredActionsLabel}</span>
+        {row.routeHref ? (
+          <Link to={row.routeHref} aria-label={`Open NAV support package ${row.label}`}>
+            {row.routeLabel}
+          </Link>
+        ) : (
+          <span className="block text-muted-foreground">{row.routeLabel}</span>
+        )}
+      </span>
+    )
   }
 ];
 
@@ -410,6 +805,178 @@ export function OperationsContinuityScreen() {
         </section>
       ) : null}
 
+      <section className="grid gap-4">
+        <Card className={cn("border", tonePanel[vm.dashboard.statusTone])}>
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Gauge className="h-5 w-5 text-primary" aria-hidden="true" />
+                  {vm.dashboard.title}
+                </CardTitle>
+                <CardDescription>{vm.dashboard.summaryLabel}</CardDescription>
+              </div>
+              <Badge variant={toneBadge[vm.dashboard.statusTone]}>
+                {vm.dashboard.statusLabel}
+              </Badge>
+            </div>
+            <div
+              role="list"
+              aria-label="Financial Operations dashboard summary"
+              className="grid gap-2 pt-3 text-xs text-muted-foreground sm:grid-cols-2 xl:grid-cols-4"
+            >
+              <span role="listitem">{vm.dashboard.stageLabel}</span>
+              <span role="listitem">{vm.dashboard.metricCountLabel}</span>
+              <span role="listitem">{vm.dashboard.evidenceLabel}</span>
+              <span role="listitem">{vm.dashboard.requiredActionsLabel}</span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <DenseDataTable
+              columns={operationalDashboardColumns}
+              rows={vm.dashboard.metrics}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              emptyText={vm.dashboard.metricsEmptyText}
+              ariaLabel="Financial Operations operational dashboard"
+            />
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-4">
+        <Card className="panel-surface">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
+              {vm.evidencePackagesLabel}
+            </CardTitle>
+            <CardDescription>Shared package posture for accounting records, report packs, close manifests, and audit support.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DenseDataTable
+              columns={evidencePackageColumns}
+              rows={vm.evidencePackages}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              emptyText={vm.evidencePackagesEmptyText}
+              ariaLabel="Operations continuity evidence packages"
+            />
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-4">
+        <Card className={cn("border", tonePanel[vm.closeCockpit.statusTone])}>
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Gauge className="h-5 w-5 text-primary" aria-hidden="true" />
+                  {vm.closeCockpit.title}
+                </CardTitle>
+                <CardDescription>{vm.closeCockpit.summaryLabel}</CardDescription>
+              </div>
+              <Badge variant={toneBadge[vm.closeCockpit.statusTone]}>
+                {vm.closeCockpit.statusLabel}
+              </Badge>
+            </div>
+            <div
+              role="list"
+              aria-label="Private-capital close cockpit summary"
+              className="grid gap-2 pt-3 text-xs text-muted-foreground sm:grid-cols-2 xl:grid-cols-4"
+            >
+              <span role="listitem">{vm.closeCockpit.scopeLabel}</span>
+              <span role="listitem">{vm.closeCockpit.readinessLabel}</span>
+              <span role="listitem">{vm.closeCockpit.laneCountLabel}</span>
+              <span role="listitem">{vm.closeCockpit.proofLaneSummaryLabel}</span>
+              <span role="listitem">{vm.closeCockpit.workflowCountLabel}</span>
+              <span role="listitem">{vm.closeCockpit.blockerCountLabel}</span>
+              <span role="listitem">{vm.closeCockpit.fundEventCountLabel}</span>
+              <span role="listitem">{vm.closeCockpit.reportOutputCountLabel}</span>
+              <span role="listitem">{vm.closeCockpit.freshnessLabel}</span>
+            </div>
+            {vm.closeCockpit.errorText ? (
+              <p role="alert" className="mt-3 inline-flex items-center gap-2 text-sm text-danger">
+                <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+                {vm.closeCockpit.errorText}
+              </p>
+            ) : null}
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/70 bg-background/60 px-3 py-3">
+              <div className="min-w-0 text-xs leading-5 text-muted-foreground">
+                <p className="font-semibold text-foreground">{vm.closeCockpit.nextActionLabel}</p>
+                {vm.closeCockpit.nextActionDisabledReason ? (
+                  <p>{vm.closeCockpit.nextActionDisabledReason}</p>
+                ) : null}
+                <p className="mt-1">Live: {vm.closeCockpit.liveCapabilitiesLabel}</p>
+                <p>Planned: {vm.closeCockpit.plannedCapabilitiesLabel}</p>
+              </div>
+              {vm.closeCockpit.nextActionHref ? (
+                <Button asChild size="sm" disabled={vm.closeCockpit.nextActionDisabled} disabledReason={vm.closeCockpit.nextActionDisabledReason}>
+                  <Link to={vm.closeCockpit.nextActionHref} aria-label={`Open private-capital close cockpit action: ${vm.closeCockpit.nextActionLabel}`}>
+                    Open action
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </Link>
+                </Button>
+              ) : (
+                <Button type="button" size="sm" disabled disabledReason={vm.closeCockpit.nextActionDisabledReason}>
+                  Open action
+                </Button>
+              )}
+            </div>
+
+            <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-foreground">Cockpit lanes</h3>
+                <DenseDataTable
+                  columns={closeCockpitLaneColumns}
+                  rows={vm.closeCockpit.lanes}
+                  getRowId={(row) => row.id}
+                  getRowAriaLabel={(row) => row.ariaLabel}
+                  emptyText={vm.closeCockpit.lanesEmptyText}
+                  ariaLabel="Private-capital close cockpit lanes"
+                />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-foreground">Scoped close workflows</h3>
+                <DenseDataTable
+                  columns={closeCockpitWorkflowColumns}
+                  rows={vm.closeCockpit.workflows}
+                  getRowId={(row) => row.id}
+                  getRowAriaLabel={(row) => row.ariaLabel}
+                  emptyText={vm.closeCockpit.workflowsEmptyText}
+                  ariaLabel="Private-capital close cockpit workflows"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-foreground">NAV support packages</h3>
+              <DenseDataTable
+                columns={navSupportPackageColumns}
+                rows={vm.closeCockpit.navSupportPackages}
+                getRowId={(row) => row.id}
+                getRowAriaLabel={(row) => row.ariaLabel}
+                emptyText={vm.closeCockpit.navSupportPackagesEmptyText}
+                ariaLabel="Private-capital close cockpit NAV support packages"
+              />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-foreground">Approval history</h3>
+              <DenseDataTable
+                columns={closeCockpitApprovalColumns}
+                rows={vm.closeCockpit.approvalHistory}
+                getRowId={(row) => row.id}
+                getRowAriaLabel={(row) => row.ariaLabel}
+                emptyText={vm.closeCockpit.approvalHistoryEmptyText}
+                ariaLabel="Private-capital close cockpit approval history"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
       <section className="grid gap-4 xl:grid-cols-2">
         <Card className="panel-surface">
           <CardHeader>
@@ -427,6 +994,46 @@ export function OperationsContinuityScreen() {
               getRowAriaLabel={(row) => row.ariaLabel}
               emptyText={vm.blockersEmptyText}
               ariaLabel="Operations continuity blockers"
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="panel-surface xl:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
+              {vm.reconciliationLanesLabel}
+            </CardTitle>
+            <CardDescription>Shared reconciliation coverage for cash, position, trade, income, MBS factor, bank, and GL support lanes.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DenseDataTable
+              columns={reconciliationLaneColumns}
+              rows={vm.reconciliationLanes}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              emptyText={vm.reconciliationLanesEmptyText}
+              ariaLabel="Operations continuity reconciliation lane coverage"
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="panel-surface">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-primary" aria-hidden="true" />
+              {vm.breakCasesLabel}
+            </CardTitle>
+            <CardDescription>Source-owned reconciliation breaks with retained owner, due-date, escalation, variance, and evidence posture.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DenseDataTable
+              columns={breakCaseColumns}
+              rows={vm.breakCases}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              emptyText={vm.breakCasesEmptyText}
+              ariaLabel="Operations continuity break assignment and escalation"
             />
           </CardContent>
         </Card>
@@ -506,6 +1113,62 @@ export function OperationsContinuityScreen() {
               emptyText={vm.accountingRecordEmptyText}
               ariaLabel="Operations continuity accounting record evidence"
             />
+          </CardContent>
+        </Card>
+
+        <Card className={cn("border", tonePanel[vm.closeGovernance.statusTone])}>
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Lock className="h-5 w-5 text-primary" aria-hidden="true" />
+                  {vm.closeGovernance.title}
+                </CardTitle>
+                <CardDescription>{vm.closeGovernance.lockDetail}</CardDescription>
+              </div>
+              <Badge variant={toneBadge[vm.closeGovernance.statusTone]}>
+                {vm.closeGovernance.statusLabel}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <dl
+              aria-label="Period close lock and reopen evidence"
+              className="grid gap-3 text-xs leading-5 sm:grid-cols-2 lg:grid-cols-4"
+            >
+              <div>
+                <dt className="eyebrow-label">Lock</dt>
+                <dd className="text-foreground">{vm.closeGovernance.lockLabel}</dd>
+              </div>
+              <div>
+                <dt className="eyebrow-label">Close audit</dt>
+                <dd className="break-words font-mono text-foreground">{vm.closeGovernance.closeAuditLabel}</dd>
+              </div>
+              <div>
+                <dt className="eyebrow-label">Close package</dt>
+                <dd className="break-words font-mono text-foreground">{vm.closeGovernance.closePackageLabel}</dd>
+              </div>
+              <div>
+                <dt className="eyebrow-label">Reopen audit</dt>
+                <dd className="break-words text-foreground">{vm.closeGovernance.reopenAuditLabel}</dd>
+              </div>
+              <div>
+                <dt className="eyebrow-label">Reopen incident</dt>
+                <dd className="break-words font-mono text-foreground">{vm.closeGovernance.reopenIncidentLabel}</dd>
+              </div>
+              <div>
+                <dt className="eyebrow-label">Reopen evidence</dt>
+                <dd className="text-foreground">{vm.closeGovernance.reopenEvidenceLabel}</dd>
+              </div>
+              <div className="sm:col-span-2">
+                <dt className="eyebrow-label">Reopen rationale</dt>
+                <dd className="text-foreground">{vm.closeGovernance.reopenRationaleLabel}</dd>
+              </div>
+              <div className="sm:col-span-2 lg:col-span-4">
+                <dt className="eyebrow-label">Command guard</dt>
+                <dd className="text-foreground">{vm.closeGovernance.commandGuardLabel}</dd>
+              </div>
+            </dl>
           </CardContent>
         </Card>
 

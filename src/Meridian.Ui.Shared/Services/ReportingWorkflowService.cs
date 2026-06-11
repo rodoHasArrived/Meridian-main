@@ -510,6 +510,26 @@ public sealed class ReportTemplateRegistryService
                 issues.Add($"Report writer grid '{grid.GridId}' metric names must be unique: {string.Join(", ", duplicateMetricNames)}.");
             }
 
+            if (grid.Kind == ReportWriterGridKindDto.Contribution)
+            {
+                var reservedContributionFields = ContributionGeneratedFields;
+                foreach (var metric in grid.Metrics ?? [])
+                {
+                    if (!string.IsNullOrWhiteSpace(metric.Name) && reservedContributionFields.Contains(metric.Name.Trim()))
+                    {
+                        issues.Add($"Report writer grid '{grid.GridId}' metric '{metric.Name}' uses reserved contribution field '{metric.Name.Trim()}'.");
+                    }
+                }
+
+                foreach (var formula in grid.Formulas ?? [])
+                {
+                    if (!string.IsNullOrWhiteSpace(formula.Name) && reservedContributionFields.Contains(formula.Name.Trim()))
+                    {
+                        issues.Add($"Report writer grid '{grid.GridId}' formula '{formula.Name}' uses reserved contribution field '{formula.Name.Trim()}'.");
+                    }
+                }
+            }
+
             foreach (var metric in grid.Metrics ?? [])
             {
                 if (string.IsNullOrWhiteSpace(metric.Name))
@@ -583,7 +603,12 @@ public sealed class ReportTemplateRegistryService
             .ToDictionary(static item => item.Name.Trim(), static item => item.Index, StringComparer.OrdinalIgnoreCase);
         var availableRowReferences = metricNames
             .Concat(formulaIndexes.Keys)
+            .Concat(ResolveGeneratedFormulaReferences(grid))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var generatedField in ResolveGeneratedFormulaReferences(grid))
+        {
+            totalFields.Add(generatedField);
+        }
         var dependencies = formulas.ToDictionary(
             static formula => formula.Name.Trim(),
             static _ => new HashSet<string>(StringComparer.OrdinalIgnoreCase),
@@ -633,6 +658,13 @@ public sealed class ReportTemplateRegistryService
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
     }
+
+    private static readonly IReadOnlySet<string> ContributionGeneratedFields = new HashSet<string>(
+        ["contributionPercent", "contributionAbsPercent"],
+        StringComparer.OrdinalIgnoreCase);
+
+    private static IEnumerable<string> ResolveGeneratedFormulaReferences(ReportWriterGridDefinitionDto grid) =>
+        grid.Kind == ReportWriterGridKindDto.Contribution ? ContributionGeneratedFields : [];
 
     private static FormulaReferenceSet ExtractFormulaReferences(string expression)
     {

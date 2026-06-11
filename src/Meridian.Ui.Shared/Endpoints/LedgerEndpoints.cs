@@ -672,6 +672,46 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented);
 
+        app.MapGet(UiApiRoutes.LedgerPrivateCapitalFundEventCommandCenter, async (
+            string? fundProfileId,
+            Guid? ledgerBookId,
+            string? fundEventId,
+            HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var normalizedFundEventId = NormalizeOptional(fundEventId);
+            if (normalizedFundEventId is null)
+            {
+                return Results.BadRequest(new { error = "fundEventId is required." });
+            }
+
+            var service = ResolvePrivateCapitalFundEventCommandCenterService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var commandCenter = await service
+                .GetCommandCenterAsync(fundProfileId, ledgerBookId, normalizedFundEventId, context.RequestAborted)
+                .ConfigureAwait(false);
+            if (commandCenter is null)
+            {
+                return Results.NotFound();
+            }
+
+            return Results.Json(commandCenter, jsonOptions);
+        })
+        .WithName("GetLedgerPrivateCapitalFundEventCommandCenter")
+        .Produces<PrivateCapitalFundEventCommandCenterDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented);
+
         app.MapGet(UiApiRoutes.LedgerPrivateCapitalCapitalAccountSubledger, async (
             string? fundProfileId,
             Guid? ledgerBookId,
@@ -1003,6 +1043,20 @@ public static class LedgerEndpoints
             : new CapitalAccountWorkbenchService(
                 manualJournalService,
                 context.RequestServices.GetService<ReportPackWorkflowService>());
+    }
+
+    private static IPrivateCapitalFundEventCommandCenterService? ResolvePrivateCapitalFundEventCommandCenterService(HttpContext context)
+    {
+        var service = context.RequestServices.GetService<IPrivateCapitalFundEventCommandCenterService>();
+        if (service is not null)
+        {
+            return service;
+        }
+
+        var manualJournalService = ResolveManualJournalEntryWorkbenchService(context);
+        return manualJournalService is null
+            ? null
+            : new PrivateCapitalFundEventCommandCenterService(manualJournalService);
     }
 
     private static IResult ServiceUnavailable()

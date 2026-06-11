@@ -65,7 +65,18 @@ public sealed record ReportingOutputManifest(
     int AttemptCount,
     ReportingRunTrigger Trigger,
     string? ScheduleId = null,
-    string? FailureReason = null);
+    string? FailureReason = null,
+    ImmutableArray<ReportingRunReportWriterGridArtifact> ReportWriterGrids = default,
+    ImmutableArray<ReportWriterGridRenderDto> RenderedReportWriterGrids = default);
+
+public sealed record ReportingRunReportWriterGridArtifact(
+    string GridId,
+    string Title,
+    string Kind,
+    string Artifact,
+    int DimensionCount,
+    int MetricCount,
+    int FormulaCount);
 
 public sealed record ReportingSectionManifest(
     string SectionId,
@@ -83,7 +94,8 @@ public sealed record ReportingJobContract(
     string RequestedBy,
     DateTimeOffset RequestedAtUtc,
     string? CronExpression = null,
-    string? ScheduleId = null);
+    string? ScheduleId = null,
+    IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null);
 
 public sealed record ReportingScheduleContract(
     string ScheduleId,

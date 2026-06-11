@@ -209,6 +209,12 @@ internal static class EvidenceProofChainBuilder
     private static EvidenceProofChainLayerKindDto? ResolveLayer(EvidenceNodeDto node)
     {
         var evidenceIdSuffix = node.EvidenceId.Split(':', StringSplitOptions.RemoveEmptyEntries).LastOrDefault() ?? node.EvidenceId;
+        var exactLayer = ResolveLayerByExactKeyword(node.Kind) ?? ResolveLayerByExactKeyword(evidenceIdSuffix);
+        if (exactLayer is not null)
+        {
+            return exactLayer;
+        }
+
         var primaryLayer = ResolveLayerFromText($"{node.Kind} {evidenceIdSuffix}");
         if (primaryLayer is not null)
         {
@@ -218,6 +224,19 @@ internal static class EvidenceProofChainBuilder
         var artifactText = string.Join(' ', node.ArtifactRefs.Select(static artifact =>
             $"{artifact.Kind} {artifact.ArtifactId} {artifact.Path} {artifact.Route} {artifact.CanonicalSubjectKind}"));
         return ResolveLayerFromText($"{node.SourceSystem} {node.Summary} {artifactText}");
+    }
+
+    private static EvidenceProofChainLayerKindDto? ResolveLayerByExactKeyword(string value)
+    {
+        foreach (var definition in LayerDefinitions)
+        {
+            if (definition.Keywords.Any(keyword => string.Equals(value, keyword, StringComparison.OrdinalIgnoreCase)))
+            {
+                return definition.Layer;
+            }
+        }
+
+        return null;
     }
 
     private static EvidenceProofChainLayerKindDto? ResolveLayerFromText(string value)

@@ -158,6 +158,19 @@ The Capital Account Workbench tab consumes `ICapitalAccountWorkbenchService` and
 capital-account evidence, allocation-rule readiness, statement/restatement lineage, audit-support
 drill-throughs, and live-versus-planned capability rows in the shared DTO shape used by the browser
 workbench.
+The Accounting feature module also registers the Financial Operations-owned
+`IPrivateCapitalCloseCockpitService`, so desktop composition can resolve the same private-capital
+close proof projection for partner capital tie-outs, NAV support packages, approval history,
+close-package evidence, and period-lock readiness without introducing WPF-local rules.
+Fund Ledger now consumes that shared close cockpit in its Report Pack side rail, projecting close
+lanes, NAV support packages, approval history, blocker text, retained evidence counts, and
+readiness sign-off posture into read-only WPF rows that stay source-backed by the Financial
+Operations service.
+The Accounting shell's Financial Operations checkpoint now also renders the shared workflow
+evidence badges and primary blocker detail from `WorkstationWorkflowSummaryService`, giving desktop
+operators a source-backed compact view of core-flow stage, break pressure, approval posture,
+retained evidence, and close-package state before they open the deeper Operations Continuity or
+Fund Audit Trail surfaces.
 That desktop surface remains a reviewer for the unified fund-event ledger and capital-account
 subledger model: evidence-category readiness covers source support, capital-account subledger,
 ledger impact, approval state, and report output, while readiness reason/action copy comes from the
@@ -250,7 +263,10 @@ legacy research aliases for restored workflow summaries.
 Workspace shell copy and automation names use canonical Strategy/Data shell constants instead of
 legacy Research/Data Operations constant names.
 Accounting shell workflow summary selection prefers the canonical `accounting` workspace id while
-retaining `governance` as an inbound compatibility alias.
+retaining `governance` as an inbound compatibility alias. Desktop workflow-summary calls forward the
+active account-scoped operating context as `fundAccountId`, so the shared Financial Operations
+summary can load source-backed reconciliation, approval, close, and evidence posture even when the
+fund profile id is a human-readable desktop profile key.
 Accounting shell visible copy, accessibility names, queue summaries, and presentation-service
 handoff text use canonical `Accounting` wording. The shared presentation service now uses an
 `Accounting*` name, and Accounting shell page types, state providers, view models, page bases, and

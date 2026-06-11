@@ -30,6 +30,7 @@ public sealed class OperationsContinuityWorkflow
         new(false, null, "Report pack evidence has not been linked.", []);
     public OperationsClosePackagePublicationDto? ClosePackage { get; set; }
     public List<OperationsBreakCaseDto> BreakCases { get; set; } = [];
+    public List<OperationsReconciliationLaneSummaryDto> ReconciliationLanes { get; set; } = [];
     public List<OperationsApprovalDto> Approvals { get; set; } = [];
 
     public OperationsGateState BrokerIngestGate { get; set; } =
@@ -50,6 +51,45 @@ public sealed class OperationsContinuityWorkflow
         LedgerPostingGate,
         ReconciliationGate,
         ApprovalGate
+    ];
+
+    private static readonly ReconciliationLaneDefinition[] ReconciliationLaneDefinitions =
+    [
+        new(
+            "cash-reconciliation",
+            "Cash reconciliation",
+            "/workstation/accounting/reconciliation",
+            breakCase => BreakContains(breakCase, "cash", "cash-balance", "missingcashcoverage", "cashmismatch")),
+        new(
+            "position-reconciliation",
+            "Position reconciliation",
+            "/workstation/accounting/reconciliation",
+            breakCase => BreakContains(breakCase, "position", "portfolio", "securities", "security-master-coverage")),
+        new(
+            "trade-reconciliation",
+            "Trade reconciliation",
+            "/workstation/accounting/reconciliation",
+            breakCase => BreakContains(breakCase, "trade", "fill", "order", "execution")),
+        new(
+            "income-reconciliation",
+            "Income reconciliation",
+            "/workstation/accounting/reconciliation",
+            breakCase => BreakContains(breakCase, "income", "dividend", "interest", "coupon", "accrual")),
+        new(
+            "mbs-factor-reconciliation",
+            "MBS factor reconciliation",
+            "/workstation/accounting/reconciliation",
+            breakCase => BreakContains(breakCase, "factor", "paydown", "principal", "schedule")),
+        new(
+            "bank-reconciliation",
+            "Bank reconciliation",
+            "/workstation/accounting/reconciliation",
+            breakCase => BreakContains(breakCase, "bank", "externalstatement", "external statement")),
+        new(
+            "gl-reconciliation",
+            "GL reconciliation support",
+            "/workstation/accounting/ledger",
+            breakCase => BreakContains(breakCase, "ledger", "journal", "gl", "general ledger", "missingledgercoverage"))
     ];
 
     public static OperationsContinuityWorkflow Start(
@@ -713,6 +753,7 @@ public sealed class OperationsContinuityWorkflow
 
         BreakCases = request.BreakCases?.ToList() ?? [];
         EnsureBreakCaseLineage(BreakCases);
+        ReconciliationLanes = BuildReconciliationLanes(request.ReconciliationLanes, BreakCases, evidenceLinks).ToList();
         var openCriticalBreaks = BreakCases.Count(static item =>
             !IsClosedBreakStatus(item.Status) &&
             string.Equals(item.Severity, "Critical", StringComparison.OrdinalIgnoreCase));
@@ -793,6 +834,85 @@ public sealed class OperationsContinuityWorkflow
             !IsClosedBreakStatus(item.Status) &&
             !string.Equals(item.Severity, "Critical", StringComparison.OrdinalIgnoreCase));
         ApplyReconciliationPosture(openCriticalBreaks, openNonCriticalBreaks, evidenceLinks, now, request.Actor);
+        return null;
+    }
+
+    public OperationsWorkflowBlockerDto? AssignBreakCase(
+        string breakId,
+        OperationsAssignBreakCaseRequestDto request,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
+        DateTimeOffset now)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(breakId);
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(evidenceLinks);
+        EnsureUtc(now);
+
+        var index = BreakCases.FindIndex(item => string.Equals(item.BreakId, breakId, StringComparison.OrdinalIgnoreCase));
+        if (index < 0)
+        {
+            return new OperationsWorkflowBlockerDto(
+                "RECONCILIATION_BREAK_NOT_FOUND",
+                $"Reconciliation break '{breakId}' was not found.",
+                OperationsGateKeyDto.Reconciliation,
+                "Error",
+                []);
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Owner))
+        {
+            return new OperationsWorkflowBlockerDto(
+                "RECONCILIATION_BREAK_OWNER_REQUIRED",
+                "Assigning a reconciliation break requires an owner.",
+                OperationsGateKeyDto.Reconciliation,
+                "Error",
+                []);
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Rationale))
+        {
+            return new OperationsWorkflowBlockerDto(
+                "RECONCILIATION_BREAK_ASSIGNMENT_RATIONALE_REQUIRED",
+                "Assigning or escalating a reconciliation break requires operator rationale.",
+                OperationsGateKeyDto.Reconciliation,
+                "Error",
+                []);
+        }
+
+        var existing = BreakCases[index];
+        if (IsClosedBreakStatus(existing.Status))
+        {
+            return new OperationsWorkflowBlockerDto(
+                "RECONCILIATION_BREAK_ALREADY_CLOSED",
+                "Closed reconciliation breaks cannot be reassigned or escalated.",
+                OperationsGateKeyDto.Reconciliation,
+                "Error",
+                []);
+        }
+
+        var escalationLevel = string.IsNullOrWhiteSpace(request.EscalationLevel)
+            ? existing.EscalationLevel
+            : request.EscalationLevel.Trim();
+        var escalationReason = string.IsNullOrWhiteSpace(request.EscalationReason)
+            ? existing.EscalationReason
+            : request.EscalationReason.Trim();
+        var escalatedAt = string.IsNullOrWhiteSpace(request.EscalationLevel)
+            ? existing.EscalatedAtUtc
+            : now;
+
+        BreakCases[index] = existing with
+        {
+            Owner = request.Owner.Trim(),
+            DueDate = request.DueDate ?? existing.DueDate,
+            Status = string.IsNullOrWhiteSpace(existing.Status) || string.Equals(existing.Status, "Open", StringComparison.OrdinalIgnoreCase)
+                ? "InReview"
+                : existing.Status,
+            EvidenceLinks = existing.EvidenceLinks.Concat(evidenceLinks).ToArray(),
+            EscalationLevel = escalationLevel,
+            EscalationReason = escalationReason,
+            EscalatedAtUtc = escalatedAt
+        };
+
         return null;
     }
 
@@ -1451,6 +1571,124 @@ public sealed class OperationsContinuityWorkflow
             }
         }
     }
+
+    private static IReadOnlyList<OperationsReconciliationLaneSummaryDto> BuildReconciliationLanes(
+        IReadOnlyList<OperationsReconciliationLaneSummaryDto>? requestedLanes,
+        IReadOnlyList<OperationsBreakCaseDto> breakCases,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks)
+    {
+        var requestedById = (requestedLanes ?? [])
+            .Where(static lane => !string.IsNullOrWhiteSpace(lane.LaneId))
+            .GroupBy(static lane => lane.LaneId.Trim(), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(static group => group.Key, static group => group.First(), StringComparer.OrdinalIgnoreCase);
+
+        return ReconciliationLaneDefinitions
+            .Select(definition => BuildReconciliationLane(definition, requestedById, breakCases, evidenceLinks))
+            .ToArray();
+    }
+
+    private static OperationsReconciliationLaneSummaryDto BuildReconciliationLane(
+        ReconciliationLaneDefinition definition,
+        IReadOnlyDictionary<string, OperationsReconciliationLaneSummaryDto> requestedById,
+        IReadOnlyList<OperationsBreakCaseDto> breakCases,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks)
+    {
+        requestedById.TryGetValue(definition.LaneId, out var requested);
+        var laneBreaks = breakCases
+            .Where(definition.Matches)
+            .ToArray();
+        var openBreaks = laneBreaks
+            .Where(static item => !IsClosedBreakStatus(item.Status))
+            .ToArray();
+        var hasCriticalBreak = openBreaks.Any(static item =>
+            string.Equals(item.Severity, "Critical", StringComparison.OrdinalIgnoreCase));
+        var inferredStatus = hasCriticalBreak
+            ? OperationsReconciliationLaneStatusDto.Blocked
+            : openBreaks.Length > 0
+                ? OperationsReconciliationLaneStatusDto.ReviewRequired
+                : OperationsReconciliationLaneStatusDto.Ready;
+        var status = requested?.Status ?? inferredStatus;
+        if (hasCriticalBreak)
+        {
+            status = OperationsReconciliationLaneStatusDto.Blocked;
+        }
+        else if (openBreaks.Length > 0 && status == OperationsReconciliationLaneStatusDto.Ready)
+        {
+            status = OperationsReconciliationLaneStatusDto.ReviewRequired;
+        }
+
+        var retainedEvidence = (requested?.EvidenceLinks ?? [])
+            .Concat(laneBreaks.SelectMany(static breakCase => breakCase.EvidenceLinks))
+            .Concat(status == OperationsReconciliationLaneStatusDto.Ready ? evidenceLinks : [])
+            .Where(static link => !string.IsNullOrWhiteSpace(link.EvidenceId))
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var breakCount = Math.Max(requested?.BreakCount ?? 0, openBreaks.Length);
+        var isReady = status == OperationsReconciliationLaneStatusDto.Ready && breakCount == 0;
+
+        return new OperationsReconciliationLaneSummaryDto(
+            definition.LaneId,
+            string.IsNullOrWhiteSpace(requested?.Label) ? definition.Label : requested.Label.Trim(),
+            status,
+            isReady,
+            breakCount,
+            string.IsNullOrWhiteSpace(requested?.Summary)
+                ? BuildReconciliationLaneSummary(definition.Label, status, breakCount)
+                : requested.Summary.Trim(),
+            string.IsNullOrWhiteSpace(requested?.RouteHint) ? definition.RouteHint : requested.RouteHint.Trim(),
+            retainedEvidence,
+            BuildReconciliationLaneActions(definition.Label, status, requested?.RequiredActions));
+    }
+
+    private static string BuildReconciliationLaneSummary(
+        string label,
+        OperationsReconciliationLaneStatusDto status,
+        int breakCount) =>
+        status switch
+        {
+            OperationsReconciliationLaneStatusDto.Ready => $"{label} is covered by the retained reconciliation run.",
+            OperationsReconciliationLaneStatusDto.Blocked => $"{label} has {breakCount} open critical break(s).",
+            OperationsReconciliationLaneStatusDto.ReviewRequired => $"{label} has {breakCount} open break(s) requiring controller review.",
+            _ => $"{label} evidence was not returned by the reconciliation run."
+        };
+
+    private static IReadOnlyList<string> BuildReconciliationLaneActions(
+        string label,
+        OperationsReconciliationLaneStatusDto status,
+        IReadOnlyList<string>? requestedActions)
+    {
+        var actions = (requestedActions ?? [])
+            .Select(static action => action.Trim())
+            .Where(static action => action.Length > 0)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (actions.Length > 0 || status == OperationsReconciliationLaneStatusDto.Ready)
+        {
+            return actions;
+        }
+
+        return [$"Resolve or assign {label.ToLowerInvariant()} breaks and retain evidence."];
+    }
+
+    private static bool BreakContains(OperationsBreakCaseDto breakCase, params string[] terms)
+    {
+        var searchable = string.Join(
+            ' ',
+            breakCase.BreakId,
+            breakCase.CheckId,
+            breakCase.Category,
+            breakCase.ExpectedSource,
+            breakCase.ActualSource,
+            breakCase.Symbol,
+            breakCase.SuggestedAction);
+        return terms.Any(term => searchable.Contains(term, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private sealed record ReconciliationLaneDefinition(
+        string LaneId,
+        string Label,
+        string RouteHint,
+        Func<OperationsBreakCaseDto, bool> Matches);
 
     private static string[] NormalizeProviderCapabilityGaps(IReadOnlyList<string>? gaps)
     {

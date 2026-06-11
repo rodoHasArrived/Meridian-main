@@ -457,7 +457,8 @@ public sealed class ReportPackDeliveryService
             DeliveryAccessSummary: BuildDeliveryAccessSummary(mode, secureLink, portalRoute),
             DeliveryChannelSummary: BuildDeliveryChannelSummary(mode, policy),
             DownloadSummary: BuildDeliveryDownloadSummary(artifacts, retainedManifestPath),
-            AccessExpiresAtUtc: accessExpiresAtUtc);
+            AccessExpiresAtUtc: accessExpiresAtUtc,
+            AccessLinks: BuildDeliveryAccessLinks(mode, secureLink, portalRoute, retainedManifestPath, accessExpiresAtUtc, artifacts));
     }
 
     private static ReportPackDeliveryPackageDto BuildDeliveryPackage(
@@ -532,7 +533,14 @@ public sealed class ReportPackDeliveryService
             DeliveryAccessSummary: BuildDeliveryAccessSummary(mode, secureLink, portalRoute),
             DeliveryChannelSummary: BuildDeliveryChannelSummary(mode, policy),
             DownloadSummary: BuildDeliveryDownloadSummary(artifacts, retainedManifestPath),
-            AccessExpiresAtUtc: accessExpiresAtUtc);
+            AccessExpiresAtUtc: accessExpiresAtUtc,
+            AccessLinks: BuildDeliveryAccessLinks(mode, secureLink, portalRoute, retainedManifestPath, accessExpiresAtUtc, artifacts),
+            GeneratedReportWriterGrids: ProjectGeneratedReportWriterGrids(manifest.ReportWriterGrids),
+            RenderedReportWriterGrids: manifest.RenderedReportWriterGrids.IsDefaultOrEmpty
+                ? []
+                : manifest.RenderedReportWriterGrids
+                    .Select(EnrichReportWriterGridRender)
+                    .ToArray());
     }
 
     private static DateTimeOffset BuildAccessExpiry(DateTimeOffset createdAtUtc) =>
@@ -566,6 +574,65 @@ public sealed class ReportPackDeliveryService
             .ToArray();
         var formatSummary = formats.Length == 0 ? "no retained artifacts" : string.Join("/", formats);
         return $"{artifacts.Count} artifact(s) retained as {formatSummary}; manifest {retainedManifestPath}.";
+    }
+
+    private static IReadOnlyList<ReportPackDeliveryAccessLinkDto> BuildDeliveryAccessLinks(
+        ReportPackDeliveryModeDto deliveryMode,
+        string secureLink,
+        string portalRoute,
+        string retainedManifestPath,
+        DateTimeOffset accessExpiresAtUtc,
+        IReadOnlyList<ReportPackDeliveryArtifactDto> artifacts)
+    {
+        var links = new List<ReportPackDeliveryAccessLinkDto>
+        {
+            new(
+                deliveryMode switch
+                {
+                    ReportPackDeliveryModeDto.EmailLink => "email-link",
+                    ReportPackDeliveryModeDto.SecurePortal => "secure-portal",
+                    ReportPackDeliveryModeDto.EvidenceVault => "evidence-vault",
+                    _ => "internal-route"
+                },
+                deliveryMode switch
+                {
+                    ReportPackDeliveryModeDto.EmailLink => "Email link package",
+                    ReportPackDeliveryModeDto.SecurePortal => "Secure portal package",
+                    ReportPackDeliveryModeDto.EvidenceVault => "Evidence vault manifest",
+                    _ => "Internal package route"
+                },
+                string.IsNullOrWhiteSpace(secureLink) ? portalRoute : secureLink,
+                RequiresToken: deliveryMode is ReportPackDeliveryModeDto.EmailLink or ReportPackDeliveryModeDto.SecurePortal,
+                ExpiresAtUtc: deliveryMode is ReportPackDeliveryModeDto.EmailLink or ReportPackDeliveryModeDto.SecurePortal
+                    ? accessExpiresAtUtc
+                    : null,
+                Description: BuildDeliveryAccessSummary(deliveryMode, secureLink, portalRoute)),
+            new(
+                "operator-route",
+                "Operator package route",
+                portalRoute,
+                RequiresToken: false,
+                Description: "Internal operator route for inspecting the retained package metadata."),
+            new(
+                "manifest",
+                "Retained manifest",
+                retainedManifestPath,
+                RequiresToken: false,
+                Description: "Retained manifest path for audit and evidence review.")
+        };
+
+        foreach (var artifact in artifacts.Where(static item => !string.IsNullOrWhiteSpace(item.DownloadRoute)))
+        {
+            links.Add(new ReportPackDeliveryAccessLinkDto(
+                $"artifact-{artifact.Format.ToString().ToLowerInvariant()}",
+                $"{artifact.Format} download",
+                artifact.DownloadRoute!,
+                RequiresToken: true,
+                ExpiresAtUtc: accessExpiresAtUtc,
+                Description: $"{artifact.ArtifactName} retained as {artifact.ContentType} with SHA-256 checksum {artifact.ChecksumSha256}."));
+        }
+
+        return links;
     }
 
     private static ReportPackDeliveryEvidencePacketDto BuildReportingRunDeliveryEvidencePacket(
@@ -1087,6 +1154,8 @@ public sealed class ReportPackDeliveryService
                 package.ReportingRunAttemptCount,
                 package.ReportingRunSectionCount,
                 package.ReportingRunLineageLinkedSections,
+                package.GeneratedReportWriterGrids ?? [],
+                package.RenderedReportWriterGrids ?? [],
                 package.DistributionId,
                 artifact.ArtifactName,
                 artifact.Format,
@@ -1143,18 +1212,47 @@ public sealed class ReportPackDeliveryService
         return format switch
         {
             GovernanceReportArtifactFormatDto.Csv => BuildDeliveryArtifactCsv(rows),
-            GovernanceReportArtifactFormatDto.Xlsx => XlsxWorkbookWriter.CreateWorkbook(
-            [
-                new XlsxWorksheet(
-                    "Delivery",
-                    ["Field", "Value"],
-                    rows.Select(static row => (IReadOnlyList<object?>)[row.Key, row.Value]).ToArray())
-            ]),
+            GovernanceReportArtifactFormatDto.Xlsx => XlsxWorkbookWriter.CreateWorkbook(BuildDeliveryArtifactWorksheets(rows, brandingTheme)),
             GovernanceReportArtifactFormatDto.Html => BuildDeliveryArtifactHtml(rows),
             GovernanceReportArtifactFormatDto.Pdf => BuildDeliveryArtifactPdf(rows),
             _ => JsonSerializer.SerializeToUtf8Bytes(rows.ToDictionary(static row => row.Key, static row => row.Value))
         };
     }
+
+    private static IReadOnlyList<XlsxWorksheet> BuildDeliveryArtifactWorksheets(
+        IReadOnlyList<KeyValuePair<string, string>> rows,
+        ReportBrandingThemeDto? brandingTheme)
+    {
+        var worksheets = new List<XlsxWorksheet>
+        {
+            new(
+                "Delivery",
+                ["Field", "Value"],
+                rows.Select(static row => (IReadOnlyList<object?>)[row.Key, row.Value]).ToArray())
+        };
+
+        if (brandingTheme is not null)
+        {
+            worksheets.Add(new XlsxWorksheet("Branding", ["Field", "Value"], BuildBrandingWorksheetRows(brandingTheme)));
+        }
+
+        return worksheets;
+    }
+
+    private static IReadOnlyList<IReadOnlyList<object?>> BuildBrandingWorksheetRows(ReportBrandingThemeDto theme) =>
+    [
+        ["Theme ID", theme.ThemeId],
+        ["Theme name", theme.Name],
+        ["Firm name", theme.FirmName],
+        ["Primary color", theme.PrimaryColor],
+        ["Accent color", theme.AccentColor],
+        ["Text color", theme.TextColor],
+        ["Background color", theme.BackgroundColor],
+        ["Logo URI", theme.LogoUri],
+        ["Footer text", theme.FooterText],
+        ["Disclaimer", theme.Disclaimer],
+        ["Built in", theme.IsBuiltIn]
+    ];
 
     private static byte[] BuildReportingRunDeliveryArtifactContent(
         string packageId,
@@ -1176,19 +1274,46 @@ public sealed class ReportPackDeliveryService
             retainedPath,
             versionStamp);
 
+        var gridRows = BuildReportingRunGridArtifactRows(manifest.ReportWriterGrids);
+        var renderedGridRows = BuildReportingRunRenderedGridArtifactRows(manifest.RenderedReportWriterGrids);
+        var renderedGridDictionaryRows = BuildReportingRunGridDataDictionaryArtifactRows(manifest.RenderedReportWriterGrids);
+        var renderedGridValidationRows = BuildReportingRunGridValidationArtifactRows(manifest.RenderedReportWriterGrids);
+        var allRows = rows
+            .Concat(gridRows)
+            .Concat(renderedGridRows)
+            .Concat(renderedGridDictionaryRows)
+            .Concat(renderedGridValidationRows)
+            .ToArray();
+
         return format switch
         {
-            GovernanceReportArtifactFormatDto.Csv => BuildDeliveryArtifactCsv(rows),
+            GovernanceReportArtifactFormatDto.Csv => BuildDeliveryArtifactCsv(allRows),
             GovernanceReportArtifactFormatDto.Xlsx => XlsxWorkbookWriter.CreateWorkbook(
             [
                 new XlsxWorksheet(
                     "ReportingRun",
                     ["Field", "Value"],
-                    rows.Select(static row => (IReadOnlyList<object?>)[row.Key, row.Value]).ToArray())
+                    rows.Select(static row => (IReadOnlyList<object?>)[row.Key, row.Value]).ToArray()),
+                new XlsxWorksheet(
+                    "ReportWriterGrids",
+                    ["Grid ID", "Title", "Kind", "Artifact", "Dimensions", "Metrics", "Formulas"],
+                    BuildReportingRunGridWorksheetRows(manifest.ReportWriterGrids)),
+                new XlsxWorksheet(
+                    "ReportWriterGridRows",
+                    ["Kind", "Grid ID", "Row Key", "Field", "Value"],
+                    BuildReportingRunRenderedGridWorksheetRows(manifest.RenderedReportWriterGrids)),
+                new XlsxWorksheet(
+                    "ReportWriterDictionary",
+                    ["Grid ID", "Key", "Label", "Role", "Source field", "Data type", "Generated", "Description"],
+                    BuildReportingRunGridDataDictionaryWorksheetRows(manifest.RenderedReportWriterGrids)),
+                new XlsxWorksheet(
+                    "ReportWriterValidation",
+                    ["Grid ID", "Check", "Status", "Detail"],
+                    BuildReportingRunGridValidationWorksheetRows(manifest.RenderedReportWriterGrids))
             ]),
-            GovernanceReportArtifactFormatDto.Html => BuildDeliveryArtifactHtml(rows),
-            GovernanceReportArtifactFormatDto.Pdf => BuildDeliveryArtifactPdf(rows),
-            _ => JsonSerializer.SerializeToUtf8Bytes(rows.ToDictionary(static row => row.Key, static row => row.Value))
+            GovernanceReportArtifactFormatDto.Html => BuildDeliveryArtifactHtml(allRows),
+            GovernanceReportArtifactFormatDto.Pdf => BuildDeliveryArtifactPdf(allRows),
+            _ => JsonSerializer.SerializeToUtf8Bytes(allRows.ToDictionary(static row => row.Key, static row => row.Value))
         };
     }
 
@@ -1204,6 +1329,8 @@ public sealed class ReportPackDeliveryService
         int? attemptCount,
         int? sectionCount,
         int? lineageLinkedSections,
+        IReadOnlyList<WorkstationGeneratedReportWriterGridPayload> generatedReportWriterGrids,
+        IReadOnlyList<ReportWriterGridRenderDto> renderedReportWriterGrids,
         string distributionId,
         string artifactName,
         GovernanceReportArtifactFormatDto format,
@@ -1230,19 +1357,46 @@ public sealed class ReportPackDeliveryService
             retainedPath,
             versionStamp);
 
+        var gridRows = BuildReportingRunGridArtifactRows(generatedReportWriterGrids);
+        var renderedGridRows = BuildReportingRunRenderedGridArtifactRows(renderedReportWriterGrids);
+        var renderedGridDictionaryRows = BuildReportingRunGridDataDictionaryArtifactRows(renderedReportWriterGrids);
+        var renderedGridValidationRows = BuildReportingRunGridValidationArtifactRows(renderedReportWriterGrids);
+        var allRows = rows
+            .Concat(gridRows)
+            .Concat(renderedGridRows)
+            .Concat(renderedGridDictionaryRows)
+            .Concat(renderedGridValidationRows)
+            .ToArray();
+
         return format switch
         {
-            GovernanceReportArtifactFormatDto.Csv => BuildDeliveryArtifactCsv(rows),
+            GovernanceReportArtifactFormatDto.Csv => BuildDeliveryArtifactCsv(allRows),
             GovernanceReportArtifactFormatDto.Xlsx => XlsxWorkbookWriter.CreateWorkbook(
             [
                 new XlsxWorksheet(
                     "ReportingRun",
                     ["Field", "Value"],
-                    rows.Select(static row => (IReadOnlyList<object?>)[row.Key, row.Value]).ToArray())
+                    rows.Select(static row => (IReadOnlyList<object?>)[row.Key, row.Value]).ToArray()),
+                new XlsxWorksheet(
+                    "ReportWriterGrids",
+                    ["Grid ID", "Title", "Kind", "Artifact", "Dimensions", "Metrics", "Formulas"],
+                    BuildReportingRunGridWorksheetRows(generatedReportWriterGrids)),
+                new XlsxWorksheet(
+                    "ReportWriterGridRows",
+                    ["Kind", "Grid ID", "Row Key", "Field", "Value"],
+                    BuildReportingRunRenderedGridWorksheetRows(renderedReportWriterGrids)),
+                new XlsxWorksheet(
+                    "ReportWriterDictionary",
+                    ["Grid ID", "Key", "Label", "Role", "Source field", "Data type", "Generated", "Description"],
+                    BuildReportingRunGridDataDictionaryWorksheetRows(renderedReportWriterGrids)),
+                new XlsxWorksheet(
+                    "ReportWriterValidation",
+                    ["Grid ID", "Check", "Status", "Detail"],
+                    BuildReportingRunGridValidationWorksheetRows(renderedReportWriterGrids))
             ]),
-            GovernanceReportArtifactFormatDto.Html => BuildDeliveryArtifactHtml(rows),
-            GovernanceReportArtifactFormatDto.Pdf => BuildDeliveryArtifactPdf(rows),
-            _ => JsonSerializer.SerializeToUtf8Bytes(rows.ToDictionary(static row => row.Key, static row => row.Value))
+            GovernanceReportArtifactFormatDto.Html => BuildDeliveryArtifactHtml(allRows),
+            GovernanceReportArtifactFormatDto.Pdf => BuildDeliveryArtifactPdf(allRows),
+            _ => JsonSerializer.SerializeToUtf8Bytes(allRows.ToDictionary(static row => row.Key, static row => row.Value))
         };
     }
 
@@ -1399,6 +1553,511 @@ public sealed class ReportPackDeliveryService
         new("retainedPath", retainedPath),
         new("versionStamp", versionStamp)
     ];
+
+    private static IReadOnlyList<KeyValuePair<string, string>> BuildReportingRunGridArtifactRows(
+        System.Collections.Immutable.ImmutableArray<ReportingRunReportWriterGridArtifact> grids)
+    {
+        if (grids.IsDefaultOrEmpty)
+        {
+            return [];
+        }
+
+        var rows = new List<KeyValuePair<string, string>>(grids.Length * 7 + 1)
+        {
+            new("generatedReportWriterGridCount", grids.Length.ToString(System.Globalization.CultureInfo.InvariantCulture))
+        };
+        for (var index = 0; index < grids.Length; index++)
+        {
+            var grid = grids[index];
+            var prefix = $"generatedReportWriterGrids[{index}]";
+            rows.Add(new($"{prefix}.gridId", grid.GridId));
+            rows.Add(new($"{prefix}.title", grid.Title));
+            rows.Add(new($"{prefix}.kind", grid.Kind));
+            rows.Add(new($"{prefix}.artifact", grid.Artifact));
+            rows.Add(new($"{prefix}.dimensionCount", grid.DimensionCount.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            rows.Add(new($"{prefix}.metricCount", grid.MetricCount.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            rows.Add(new($"{prefix}.formulaCount", grid.FormulaCount.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<KeyValuePair<string, string>> BuildReportingRunGridArtifactRows(
+        IReadOnlyList<WorkstationGeneratedReportWriterGridPayload> grids)
+    {
+        if (grids.Count == 0)
+        {
+            return [];
+        }
+
+        var rows = new List<KeyValuePair<string, string>>(grids.Count * 7 + 1)
+        {
+            new("generatedReportWriterGridCount", grids.Count.ToString(System.Globalization.CultureInfo.InvariantCulture))
+        };
+        for (var index = 0; index < grids.Count; index++)
+        {
+            var grid = grids[index];
+            var prefix = $"generatedReportWriterGrids[{index}]";
+            rows.Add(new($"{prefix}.gridId", grid.GridId));
+            rows.Add(new($"{prefix}.title", grid.Title));
+            rows.Add(new($"{prefix}.kind", grid.Kind));
+            rows.Add(new($"{prefix}.artifact", grid.Artifact));
+            rows.Add(new($"{prefix}.dimensionCount", grid.DimensionCount.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            rows.Add(new($"{prefix}.metricCount", grid.MetricCount.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            rows.Add(new($"{prefix}.formulaCount", grid.FormulaCount.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<KeyValuePair<string, string>> BuildReportingRunRenderedGridArtifactRows(
+        System.Collections.Immutable.ImmutableArray<ReportWriterGridRenderDto> grids)
+    {
+        if (grids.IsDefaultOrEmpty)
+        {
+            return [];
+        }
+
+        return BuildReportingRunRenderedGridArtifactRows(grids.AsEnumerable().ToArray());
+    }
+
+    private static IReadOnlyList<KeyValuePair<string, string>> BuildReportingRunRenderedGridArtifactRows(
+        IReadOnlyList<ReportWriterGridRenderDto> grids)
+    {
+        if (grids.Count == 0)
+        {
+            return [];
+        }
+
+        var rows = new List<KeyValuePair<string, string>>
+        {
+            new("renderedReportWriterGridCount", grids.Count.ToString(System.Globalization.CultureInfo.InvariantCulture))
+        };
+
+        for (var gridIndex = 0; gridIndex < grids.Count; gridIndex++)
+        {
+            var grid = grids[gridIndex];
+            var prefix = $"renderedReportWriterGrids[{gridIndex}]";
+            rows.Add(new($"{prefix}.gridId", grid.GridId));
+            rows.Add(new($"{prefix}.title", grid.Title));
+            rows.Add(new($"{prefix}.kind", grid.Kind.ToString()));
+            rows.Add(new($"{prefix}.columnCount", grid.Columns.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            rows.Add(new($"{prefix}.rowCount", grid.Rows.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            rows.Add(new($"{prefix}.warningCount", grid.Warnings.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+
+            if (grid.Lineage is not null)
+            {
+                rows.Add(new($"{prefix}.lineage.inputRowCount", grid.Lineage.InputRowCount.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+                rows.Add(new($"{prefix}.lineage.filteredInputRowCount", grid.Lineage.FilteredInputRowCount?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? ""));
+                rows.Add(new($"{prefix}.lineage.outputRowCount", grid.Lineage.OutputRowCount.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+                rows.Add(new($"{prefix}.lineage.sourceFields", string.Join(";", grid.Lineage.SourceFields)));
+            }
+
+            for (var columnIndex = 0; columnIndex < grid.Columns.Count; columnIndex++)
+            {
+                var column = grid.Columns[columnIndex];
+                var columnPrefix = $"{prefix}.columns[{columnIndex}]";
+                rows.Add(new($"{columnPrefix}.key", column.Key));
+                rows.Add(new($"{columnPrefix}.label", column.Label));
+                rows.Add(new($"{columnPrefix}.role", column.Role));
+            }
+
+            for (var warningIndex = 0; warningIndex < grid.Warnings.Count; warningIndex++)
+            {
+                rows.Add(new($"{prefix}.warnings[{warningIndex}]", grid.Warnings[warningIndex]));
+            }
+
+            for (var rowIndex = 0; rowIndex < grid.Rows.Count; rowIndex++)
+            {
+                var renderedRow = grid.Rows[rowIndex];
+                var rowPrefix = $"{prefix}.rows[{rowIndex}]";
+                rows.Add(new($"{rowPrefix}.rowKey", renderedRow.RowKey));
+                foreach (var value in renderedRow.Values.OrderBy(static value => value.Key, StringComparer.OrdinalIgnoreCase))
+                {
+                    rows.Add(new($"{rowPrefix}.values.{value.Key}", value.Value));
+                }
+            }
+        }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<IReadOnlyList<object?>> BuildReportingRunGridWorksheetRows(
+        System.Collections.Immutable.ImmutableArray<ReportingRunReportWriterGridArtifact> grids)
+    {
+        if (grids.IsDefaultOrEmpty)
+        {
+            return [];
+        }
+
+        return grids
+            .Select(static grid => (IReadOnlyList<object?>)
+            [
+                grid.GridId,
+                grid.Title,
+                grid.Kind,
+                grid.Artifact,
+                grid.DimensionCount,
+                grid.MetricCount,
+                grid.FormulaCount
+            ])
+            .ToArray();
+    }
+
+    private static IReadOnlyList<IReadOnlyList<object?>> BuildReportingRunGridWorksheetRows(
+        IReadOnlyList<WorkstationGeneratedReportWriterGridPayload> grids)
+    {
+        if (grids.Count == 0)
+        {
+            return [];
+        }
+
+        return grids
+            .Select(static grid => (IReadOnlyList<object?>)
+            [
+                grid.GridId,
+                grid.Title,
+                grid.Kind,
+                grid.Artifact,
+                grid.DimensionCount,
+                grid.MetricCount,
+                grid.FormulaCount
+            ])
+            .ToArray();
+    }
+
+    private static IReadOnlyList<IReadOnlyList<object?>> BuildReportingRunRenderedGridWorksheetRows(
+        System.Collections.Immutable.ImmutableArray<ReportWriterGridRenderDto> grids)
+    {
+        if (grids.IsDefaultOrEmpty)
+        {
+            return [];
+        }
+
+        return BuildReportingRunRenderedGridWorksheetRows(grids.AsEnumerable().ToArray());
+    }
+
+    private static IReadOnlyList<IReadOnlyList<object?>> BuildReportingRunRenderedGridWorksheetRows(
+        IReadOnlyList<ReportWriterGridRenderDto> grids)
+    {
+        if (grids.Count == 0)
+        {
+            return [];
+        }
+
+        var rows = new List<IReadOnlyList<object?>>();
+        foreach (var grid in grids)
+        {
+            rows.Add(["grid", grid.GridId, "", "title", grid.Title]);
+            rows.Add(["grid", grid.GridId, "", "kind", grid.Kind.ToString()]);
+            if (grid.Lineage is not null)
+            {
+                rows.Add(["lineage", grid.GridId, "", "inputRowCount", grid.Lineage.InputRowCount]);
+                rows.Add(["lineage", grid.GridId, "", "filteredInputRowCount", grid.Lineage.FilteredInputRowCount]);
+                rows.Add(["lineage", grid.GridId, "", "outputRowCount", grid.Lineage.OutputRowCount]);
+                rows.Add(["lineage", grid.GridId, "", "sourceFields", string.Join(";", grid.Lineage.SourceFields)]);
+            }
+
+            foreach (var column in grid.Columns)
+            {
+                rows.Add(["column", grid.GridId, "", column.Key, $"{column.Label} ({column.Role})"]);
+            }
+
+            foreach (var warning in grid.Warnings)
+            {
+                rows.Add(["warning", grid.GridId, "", "warning", warning]);
+            }
+
+            foreach (var renderedRow in grid.Rows)
+            {
+                foreach (var value in renderedRow.Values.OrderBy(static value => value.Key, StringComparer.OrdinalIgnoreCase))
+                {
+                    rows.Add(["row", grid.GridId, renderedRow.RowKey, value.Key, value.Value]);
+                }
+            }
+        }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<KeyValuePair<string, string>> BuildReportingRunGridDataDictionaryArtifactRows(
+        System.Collections.Immutable.ImmutableArray<ReportWriterGridRenderDto> grids)
+    {
+        if (grids.IsDefaultOrEmpty)
+        {
+            return [];
+        }
+
+        return BuildReportingRunGridDataDictionaryArtifactRows(grids.AsEnumerable().ToArray());
+    }
+
+    private static IReadOnlyList<KeyValuePair<string, string>> BuildReportingRunGridDataDictionaryArtifactRows(
+        IReadOnlyList<ReportWriterGridRenderDto> grids)
+    {
+        if (grids.Count == 0)
+        {
+            return [];
+        }
+
+        var rows = new List<KeyValuePair<string, string>>();
+        for (var gridIndex = 0; gridIndex < grids.Count; gridIndex++)
+        {
+            var grid = grids[gridIndex];
+            var dictionary = ResolveReportWriterGridDataDictionary(grid);
+            var prefix = $"renderedReportWriterGrids[{gridIndex}].dataDictionary";
+            rows.Add(new($"{prefix}.fieldCount", dictionary.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+
+            for (var fieldIndex = 0; fieldIndex < dictionary.Count; fieldIndex++)
+            {
+                var field = dictionary[fieldIndex];
+                var fieldPrefix = $"{prefix}[{fieldIndex}]";
+                rows.Add(new($"{fieldPrefix}.gridId", grid.GridId));
+                rows.Add(new($"{fieldPrefix}.key", field.Key));
+                rows.Add(new($"{fieldPrefix}.label", field.Label));
+                rows.Add(new($"{fieldPrefix}.role", field.Role));
+                rows.Add(new($"{fieldPrefix}.sourceField", field.SourceField));
+                rows.Add(new($"{fieldPrefix}.dataType", field.DataType));
+                rows.Add(new($"{fieldPrefix}.isGenerated", field.IsGenerated ? "true" : "false"));
+                rows.Add(new($"{fieldPrefix}.description", field.Description));
+            }
+        }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<KeyValuePair<string, string>> BuildReportingRunGridValidationArtifactRows(
+        System.Collections.Immutable.ImmutableArray<ReportWriterGridRenderDto> grids)
+    {
+        if (grids.IsDefaultOrEmpty)
+        {
+            return [];
+        }
+
+        return BuildReportingRunGridValidationArtifactRows(grids.AsEnumerable().ToArray());
+    }
+
+    private static IReadOnlyList<KeyValuePair<string, string>> BuildReportingRunGridValidationArtifactRows(
+        IReadOnlyList<ReportWriterGridRenderDto> grids)
+    {
+        if (grids.Count == 0)
+        {
+            return [];
+        }
+
+        var rows = new List<KeyValuePair<string, string>>();
+        for (var gridIndex = 0; gridIndex < grids.Count; gridIndex++)
+        {
+            var grid = grids[gridIndex];
+            var checks = ResolveReportWriterGridValidationChecks(grid);
+            var prefix = $"renderedReportWriterGrids[{gridIndex}].validationChecks";
+            rows.Add(new($"{prefix}.checkCount", checks.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+
+            for (var checkIndex = 0; checkIndex < checks.Count; checkIndex++)
+            {
+                var check = checks[checkIndex];
+                var checkPrefix = $"{prefix}[{checkIndex}]";
+                rows.Add(new($"{checkPrefix}.gridId", grid.GridId));
+                rows.Add(new($"{checkPrefix}.checkId", check.CheckId));
+                rows.Add(new($"{checkPrefix}.status", check.Status));
+                rows.Add(new($"{checkPrefix}.detail", check.Detail));
+            }
+        }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<IReadOnlyList<object?>> BuildReportingRunGridDataDictionaryWorksheetRows(
+        System.Collections.Immutable.ImmutableArray<ReportWriterGridRenderDto> grids)
+    {
+        if (grids.IsDefaultOrEmpty)
+        {
+            return [];
+        }
+
+        return BuildReportingRunGridDataDictionaryWorksheetRows(grids.AsEnumerable().ToArray());
+    }
+
+    private static IReadOnlyList<IReadOnlyList<object?>> BuildReportingRunGridDataDictionaryWorksheetRows(
+        IReadOnlyList<ReportWriterGridRenderDto> grids)
+    {
+        var rows = new List<IReadOnlyList<object?>>();
+        foreach (var grid in grids)
+        {
+            foreach (var field in ResolveReportWriterGridDataDictionary(grid))
+            {
+                rows.Add([
+                    grid.GridId,
+                    field.Key,
+                    field.Label,
+                    field.Role,
+                    field.SourceField,
+                    field.DataType,
+                    field.IsGenerated ? "true" : "false",
+                    field.Description
+                ]);
+            }
+        }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<IReadOnlyList<object?>> BuildReportingRunGridValidationWorksheetRows(
+        System.Collections.Immutable.ImmutableArray<ReportWriterGridRenderDto> grids)
+    {
+        if (grids.IsDefaultOrEmpty)
+        {
+            return [];
+        }
+
+        return BuildReportingRunGridValidationWorksheetRows(grids.AsEnumerable().ToArray());
+    }
+
+    private static IReadOnlyList<IReadOnlyList<object?>> BuildReportingRunGridValidationWorksheetRows(
+        IReadOnlyList<ReportWriterGridRenderDto> grids)
+    {
+        var rows = new List<IReadOnlyList<object?>>();
+        foreach (var grid in grids)
+        {
+            foreach (var check in ResolveReportWriterGridValidationChecks(grid))
+            {
+                rows.Add([
+                    grid.GridId,
+                    check.CheckId,
+                    check.Status,
+                    check.Detail
+                ]);
+            }
+        }
+
+        return rows;
+    }
+
+    private static IReadOnlyList<ReportWriterGridDataDictionaryFieldDto> ResolveReportWriterGridDataDictionary(
+        ReportWriterGridRenderDto grid) =>
+        grid.DataDictionary is { Count: > 0 }
+            ? grid.DataDictionary
+            : grid.Columns.Select(column => BuildReportWriterGridDataDictionaryField(grid, column)).ToArray();
+
+    private static ReportWriterGridRenderDto EnrichReportWriterGridRender(ReportWriterGridRenderDto grid) =>
+        grid with
+        {
+            DataDictionary = ResolveReportWriterGridDataDictionary(grid),
+            ValidationChecks = ResolveReportWriterGridValidationChecks(grid)
+        };
+
+    private static ReportWriterGridDataDictionaryFieldDto BuildReportWriterGridDataDictionaryField(
+        ReportWriterGridRenderDto grid,
+        ReportWriterGridColumnDto column)
+    {
+        var sourceFields = grid.Lineage?.SourceFields ?? [];
+        var sourceField = ResolveReportWriterGridSourceField(grid, column);
+        var isFormula = string.Equals(column.Role, "formula", StringComparison.OrdinalIgnoreCase);
+        var isGenerated = isFormula
+            || string.IsNullOrWhiteSpace(sourceField)
+            || !sourceFields.Contains(sourceField, StringComparer.OrdinalIgnoreCase);
+        var dataType = InferReportWriterGridDataType(grid, column.Key);
+        return new ReportWriterGridDataDictionaryFieldDto(
+            column.Key,
+            column.Label,
+            column.Role,
+            isGenerated ? "" : sourceField,
+            dataType,
+            isGenerated,
+            isGenerated
+                ? $"{column.Label} is generated by the retained report-writer grid as a {column.Role} column."
+                : $"{column.Label} maps to source field {sourceField} and exports as {dataType}.");
+    }
+
+    private static string ResolveReportWriterGridSourceField(
+        ReportWriterGridRenderDto grid,
+        ReportWriterGridColumnDto column)
+    {
+        if (grid.Lineage?.Metrics.FirstOrDefault(metric =>
+                string.Equals(metric.Name, column.Key, StringComparison.OrdinalIgnoreCase)) is { } metric)
+        {
+            return metric.SourceField;
+        }
+
+        if (grid.Lineage?.Formulas.FirstOrDefault(formula =>
+                string.Equals(formula.Name, column.Key, StringComparison.OrdinalIgnoreCase)) is { } formula)
+        {
+            return string.Join(";", formula.SourceFields);
+        }
+
+        return grid.Lineage?.SourceFields.FirstOrDefault(field =>
+            string.Equals(field, column.Key, StringComparison.OrdinalIgnoreCase)) ?? column.Key;
+    }
+
+    private static string InferReportWriterGridDataType(ReportWriterGridRenderDto grid, string columnKey)
+    {
+        var values = grid.Rows
+            .Select(row => row.Values.TryGetValue(columnKey, out var value) ? value : null)
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Take(25)
+            .ToArray();
+
+        return values.Length > 0 && values.All(static value =>
+            decimal.TryParse(value, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out _))
+                ? "decimal"
+                : "string";
+    }
+
+    private static IReadOnlyList<ReportWriterGridValidationCheckDto> ResolveReportWriterGridValidationChecks(
+        ReportWriterGridRenderDto grid) =>
+        grid.ValidationChecks is { Count: > 0 }
+            ? grid.ValidationChecks
+            : BuildReportWriterGridValidationChecks(grid);
+
+    private static IReadOnlyList<ReportWriterGridValidationCheckDto> BuildReportWriterGridValidationChecks(
+        ReportWriterGridRenderDto grid)
+    {
+        var dictionary = ResolveReportWriterGridDataDictionary(grid);
+        return
+        [
+            new ReportWriterGridValidationCheckDto(
+                "row-count",
+                grid.Lineage is null || grid.Lineage.OutputRowCount == grid.Rows.Count ? "Passed" : "Failed",
+                grid.Lineage is null
+                    ? $"Rendered {grid.Rows.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} row(s); no lineage row count was retained."
+                    : $"Rendered {grid.Rows.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} row(s); lineage expected {grid.Lineage.OutputRowCount.ToString(System.Globalization.CultureInfo.InvariantCulture)}."),
+            new ReportWriterGridValidationCheckDto(
+                "column-dictionary",
+                grid.Columns.Count == dictionary.Count ? "Passed" : "Failed",
+                $"Dictionary covers {dictionary.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} of {grid.Columns.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} rendered column(s)."),
+            new ReportWriterGridValidationCheckDto(
+                "source-field-lineage",
+                grid.Lineage is { SourceFields.Count: > 0 } ? "Passed" : "Warning",
+                grid.Lineage is { SourceFields.Count: > 0 }
+                    ? $"Lineage retains {grid.Lineage.SourceFields.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} source field(s)."
+                    : "No source field lineage was retained with this grid."),
+            new ReportWriterGridValidationCheckDto(
+                "warnings",
+                grid.Warnings.Count == 0 ? "Passed" : "Warning",
+                grid.Warnings.Count == 0
+                    ? "No render warnings were retained."
+                    : $"{grid.Warnings.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} render warning(s) retained: {string.Join("; ", grid.Warnings)}")
+        ];
+    }
+
+    private static IReadOnlyList<WorkstationGeneratedReportWriterGridPayload> ProjectGeneratedReportWriterGrids(
+        System.Collections.Immutable.ImmutableArray<ReportingRunReportWriterGridArtifact> grids)
+    {
+        if (grids.IsDefaultOrEmpty)
+        {
+            return [];
+        }
+
+        return grids
+            .Select(static grid => new WorkstationGeneratedReportWriterGridPayload(
+                grid.GridId,
+                grid.Title,
+                grid.Kind,
+                grid.Artifact,
+                grid.DimensionCount,
+                grid.MetricCount,
+                grid.FormulaCount))
+            .ToArray();
+    }
 
     private static IReadOnlyList<KeyValuePair<string, string>> BuildReportingRunDeliveryArtifactRows(
         string packageId,

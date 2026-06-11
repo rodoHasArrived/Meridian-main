@@ -34,7 +34,7 @@ import {
   WORKSTATION_ROUTE_CATALOG,
   workflowTargetPath
 } from "@/lib/workspace";
-import { EXPORT_API_ENDPOINTS } from "@/lib/workstation-endpoints";
+import { EXPORT_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import { formatReportPackRecipientList, getReportPackDistributions } from "@/lib/reporting-distributions";
 import {
   buildCalibrationSummaryViewState,
@@ -931,6 +931,50 @@ export interface ManualJournalPaymentIntentWorkflowRowViewModel {
   executionDeferredLabel: string;
   evidenceRouteLabel: string;
   workbenchRouteLabel: string;
+  approvalSteps: ManualJournalPaymentIntentApprovalStepViewModel[];
+  bankEvidence: ManualJournalPaymentIntentBankEvidenceViewModel[];
+  reconciliationLinks: ManualJournalPaymentIntentReconciliationLinkViewModel[];
+  auditEvents: ManualJournalPaymentIntentAuditEventViewModel[];
+}
+
+export interface ManualJournalPaymentIntentApprovalStepViewModel {
+  id: string;
+  sequenceLabel: string;
+  roleLabel: string;
+  actorLabel: string;
+  statusLabel: string;
+  decidedLabel: string;
+  evidenceRouteLabel: string;
+}
+
+export interface ManualJournalPaymentIntentBankEvidenceViewModel {
+  id: string;
+  title: string;
+  statusLabel: string;
+  summaryLabel: string;
+  amountLabel: string;
+  effectiveDateLabel: string;
+  recordedLabel: string;
+  referenceLabel: string;
+  evidenceRouteLabel: string;
+}
+
+export interface ManualJournalPaymentIntentReconciliationLinkViewModel {
+  id: string;
+  statusLabel: string;
+  summaryLabel: string;
+  routeLabel: string;
+  caseLabel: string;
+}
+
+export interface ManualJournalPaymentIntentAuditEventViewModel {
+  id: string;
+  actionLabel: string;
+  actorLabel: string;
+  recordedLabel: string;
+  summaryLabel: string;
+  evidenceLabel: string;
+  evidenceRouteLabels: string[];
 }
 
 export interface ManualJournalPrivateCapitalFundEventLedgerRecordViewModel {
@@ -955,6 +999,7 @@ export interface ManualJournalPrivateCapitalFundEventLedgerRecordViewModel {
   paymentEvidenceSummaryLabel: string;
   paymentEvidenceRequiredLabel: string;
   activityRouteLabel: string;
+  commandCenterRouteLabel: string;
   evidenceRouteLabel: string;
   approvalRouteLabel: string;
   evidenceLabel: string;
@@ -1022,6 +1067,20 @@ export interface CapitalAccountWorkbenchAllocationRuleRowViewModel {
   evidenceLabel: string;
   routeLabel: string;
   requiredLabel: string;
+  policyLabel: string;
+  effectiveWindowLabel: string;
+  formulaLabel: string;
+  approvalLabel: string;
+  traceLabel: string;
+  inputSummaryLabel: string;
+  relatedFundEventLabel: string;
+}
+
+export interface CapitalAccountWorkbenchRestatementChangedLineRowViewModel {
+  id: string;
+  lineKey: string;
+  valueLabel: string;
+  evidenceLabel: string;
 }
 
 export interface CapitalAccountWorkbenchStatementLineageRowViewModel {
@@ -1035,6 +1094,7 @@ export interface CapitalAccountWorkbenchStatementLineageRowViewModel {
   restatementLabel: string;
   manifestLabel: string;
   routeLabel: string;
+  changedLineRows: CapitalAccountWorkbenchRestatementChangedLineRowViewModel[];
 }
 
 export interface CapitalAccountWorkbenchAuditDrillThroughRowViewModel {
@@ -3192,6 +3252,8 @@ function buildCapitalAccountInvestorAccountRow(
 function buildCapitalAccountAllocationRuleRow(
   rule: CapitalAccountWorkbench["allocationRules"][number]
 ): CapitalAccountWorkbenchAllocationRuleRowViewModel {
+  const inputs = rule.inputs ?? [];
+  const relatedFundEventIds = rule.relatedFundEventIds ?? [];
   return {
     id: rule.ruleId,
     accountLabel: `${rule.capitalAccountId} / ${rule.investorId ?? "Unassigned investor"}`,
@@ -3202,13 +3264,24 @@ function buildCapitalAccountAllocationRuleRow(
     basis: rule.basis,
     evidenceLabel: `${rule.evidenceLinkCount.toLocaleString()} evidence`,
     routeLabel: rule.route ?? "No route",
-    requiredLabel: rule.requiredEvidence.length > 0 ? rule.requiredEvidence.join(" / ") : "No explicit evidence requirement"
+    requiredLabel: rule.requiredEvidence.length > 0 ? rule.requiredEvidence.join(" / ") : "No explicit evidence requirement",
+    policyLabel: rule.ruleVersion ?? "No policy version",
+    effectiveWindowLabel: formatCapitalAccountEffectiveWindow(rule.effectiveFrom, rule.effectiveTo),
+    formulaLabel: rule.formula ?? "No allocation formula",
+    approvalLabel: [
+      rule.approvalState ?? "No approval state",
+      rule.approvalReference ?? null
+    ].filter(Boolean).join(" / "),
+    traceLabel: rule.replayTrace ?? "No allocation replay trace",
+    inputSummaryLabel: formatAllocationInputSummary(inputs),
+    relatedFundEventLabel: relatedFundEventIds.length > 0 ? relatedFundEventIds.join(" / ") : "No related fund events"
   };
 }
 
 function buildCapitalAccountStatementLineageRow(
   lineage: CapitalAccountWorkbench["statementLineage"][number]
 ): CapitalAccountWorkbenchStatementLineageRowViewModel {
+  const changedLineRows = (lineage.restatementChangedLines ?? []).map(buildCapitalAccountRestatementChangedLineRow);
   return {
     id: lineage.lineageId,
     title: lineage.displayName,
@@ -3225,8 +3298,55 @@ function buildCapitalAccountStatementLineageRow(
       ? `${lineage.restatementReasonCode ?? "Restated"} / ${lineage.restatementChangedLineCount.toLocaleString()} changed line(s) / ${lineage.restatementEvidenceLinkCount.toLocaleString()} evidence`
       : lineage.restatementStatus,
     manifestLabel: [lineage.publicationManifestId, lineage.retainedManifestPath, lineage.publicationEvidenceHash].filter(Boolean).join(" / ") || "No retained manifest metadata",
-    routeLabel: lineage.reportOutputRoute ?? lineage.reportRoute
+    routeLabel: lineage.reportOutputRoute ?? lineage.reportRoute,
+    changedLineRows
   };
+}
+
+function buildCapitalAccountRestatementChangedLineRow(
+  line: NonNullable<CapitalAccountWorkbench["statementLineage"][number]["restatementChangedLines"]>[number]
+): CapitalAccountWorkbenchRestatementChangedLineRowViewModel {
+  return {
+    id: line.lineKey,
+    lineKey: line.lineKey,
+    valueLabel: `${line.previousValue} -> ${line.currentValue}`,
+    evidenceLabel: `${line.evidenceLinkCount.toLocaleString()} changed-line evidence`
+  };
+}
+
+function formatCapitalAccountEffectiveWindow(from?: string | null, to?: string | null): string {
+  if (from && to) {
+    return `${from} -> ${to}`;
+  }
+
+  if (from) {
+    return `From ${from}`;
+  }
+
+  if (to) {
+    return `Through ${to}`;
+  }
+
+  return "No effective window";
+}
+
+function formatAllocationInputSummary(
+  inputs: NonNullable<CapitalAccountWorkbench["allocationRules"][number]["inputs"]>
+): string {
+  if (inputs.length === 0) {
+    return "No allocation inputs";
+  }
+
+  const preview = inputs.slice(0, 3).map((input) => {
+    const amount = input.amount == null
+      ? "no amount"
+      : formatCurrencyWithCode(input.amount, input.currency ?? "USD", true);
+    return `${input.kind} ${input.sourceId} ${amount}`;
+  });
+  const remaining = inputs.length > preview.length
+    ? ` + ${inputs.length - preview.length} more`
+    : "";
+  return `${inputs.length.toLocaleString()} input(s): ${preview.join(" / ")}${remaining}`;
 }
 
 function buildCapitalAccountAuditDrillThroughRow(
@@ -3412,7 +3532,9 @@ function buildManualJournalPrivateCapitalActivityView(
     capitalAccountSubledgerEntries: capitalAccountSubledgerEntries.map(buildManualJournalPrivateCapitalSubledgerEntryRow),
     ledgerImpacts: ledgerImpacts.map(buildManualJournalPrivateCapitalLedgerImpactRow),
     reportOutputs: reportOutputs.map(buildManualJournalPrivateCapitalReportOutputRow),
-    fundEventLedgerRecords: fundEventLedgerRecords.map(buildManualJournalPrivateCapitalFundEventLedgerRecordRow),
+    fundEventLedgerRecords: fundEventLedgerRecords.map((record) =>
+      buildManualJournalPrivateCapitalFundEventLedgerRecordRow(record, activity.fundProfileId, activity.ledgerBookId)
+    ),
     paymentIntents: paymentIntents.map(buildManualJournalPaymentIntentWorkflowRow),
     validationIssues
   };
@@ -3481,7 +3603,9 @@ function buildManualJournalPrivateCapitalCapitalAccountSubledgerRow(
 }
 
 function buildManualJournalPrivateCapitalFundEventLedgerRecordRow(
-  record: PrivateCapitalFundEventLedgerRecord
+  record: PrivateCapitalFundEventLedgerRecord,
+  fundProfileId: string | null | undefined,
+  ledgerBookId: string | null | undefined
 ): ManualJournalPrivateCapitalFundEventLedgerRecordViewModel {
   const evidenceCategories = (record.evidenceCategories ?? []).map(buildManualJournalPrivateCapitalEvidenceCategoryRow);
   const readyEvidenceCategoryCount = evidenceCategories.filter((category) => category.statusLabel === "Ready").length;
@@ -3520,6 +3644,7 @@ function buildManualJournalPrivateCapitalFundEventLedgerRecordRow(
     paymentEvidenceSummaryLabel: paymentEvidence.summary,
     paymentEvidenceRequiredLabel: paymentEvidence.required,
     activityRouteLabel: record.activityRoute || "No activity route",
+    commandCenterRouteLabel: buildPrivateCapitalFundEventCommandCenterRoute(fundProfileId, ledgerBookId, record.fundEventId),
     evidenceRouteLabel: record.evidenceRoute || "No evidence route",
     approvalRouteLabel: record.approvalRoute ?? (record.approvalId ? `/accounting/approvals?approvalId=${encodeURIComponent(record.approvalId)}` : "No approval route"),
     evidenceLabel: `${record.evidenceLinkCount.toLocaleString()} evidence`,
@@ -3540,6 +3665,35 @@ function buildManualJournalPrivateCapitalFundEventLedgerRecordRow(
       ? `${record.validationIssueCount.toLocaleString()} record issue(s)`
       : "No record issues"
   };
+}
+
+function buildPrivateCapitalFundEventCommandCenterRoute(
+  fundProfileId: string | null | undefined,
+  ledgerBookId: string | null | undefined,
+  fundEventId: string
+): string {
+  const params = new URLSearchParams();
+  const normalizedFundProfileId = normalizePrivateCapitalRouteId(fundProfileId);
+  const normalizedLedgerBookId = normalizePrivateCapitalRouteId(ledgerBookId);
+  if (normalizedFundProfileId) {
+    params.set("fundProfileId", normalizedFundProfileId);
+  }
+
+  if (normalizedLedgerBookId && isGuid(normalizedLedgerBookId)) {
+    params.set("ledgerBookId", normalizedLedgerBookId);
+  }
+
+  params.set("fundEventId", fundEventId);
+  return `${WORKSTATION_API_ENDPOINTS.privateCapitalFundEventCommandCenter}?${params.toString()}`;
+}
+
+function normalizePrivateCapitalRouteId(value: string | null | undefined): string | null {
+  const normalized = value?.trim();
+  return normalized ? normalized : null;
+}
+
+function isGuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
 
 function buildManualJournalPaymentIntentWorkflowRow(
@@ -3572,7 +3726,52 @@ function buildManualJournalPaymentIntentWorkflowRow(
     readinessReasonLabel: workflow.readinessReason || "Payment intent readiness requires review.",
     executionDeferredLabel: workflow.executionDeferredReason || "Full payment execution is deferred.",
     evidenceRouteLabel: workflow.evidenceRoute || "No evidence route",
-    workbenchRouteLabel: workflow.workbenchRoute || "No workbench route"
+    workbenchRouteLabel: workflow.workbenchRoute || "No workbench route",
+    approvalSteps: workflow.approvalChain.map((step) => ({
+      id: `${workflow.paymentIntentId}-approval-${step.sequence}-${step.role}`,
+      sequenceLabel: `Step ${step.sequence.toLocaleString()}`,
+      roleLabel: step.role || "Approval",
+      actorLabel: step.actor || "No actor assigned",
+      statusLabel: step.status || "No status",
+      decidedLabel: step.decidedAtUtc ? formatDateTimeLabel(step.decidedAtUtc) : "Decision pending",
+      evidenceRouteLabel: step.evidenceRoute || "No approval evidence route"
+    })),
+    bankEvidence: workflow.bankEvidence.map((item) => ({
+      id: item.evidenceId,
+      title: item.evidenceKind || item.evidenceId,
+      statusLabel: item.status || "No status",
+      summaryLabel: item.summary || "No cash evidence summary",
+      amountLabel: item.amount !== null && item.amount !== undefined && item.currency
+        ? formatCurrencyWithCode(Math.abs(item.amount), item.currency)
+        : "No amount",
+      effectiveDateLabel: item.effectiveDate ?? "No effective date",
+      recordedLabel: item.recordedAtUtc ? formatDateTimeLabel(item.recordedAtUtc) : "No recorded timestamp",
+      referenceLabel: [
+        item.bankTransactionId ? `bank ${item.bankTransactionId}` : null,
+        item.transactionType ?? null,
+        item.externalRef ?? null
+      ].filter((value): value is string => Boolean(value)).join(" / ") || "No external reference",
+      evidenceRouteLabel: item.evidenceRoute || "No bank evidence route"
+    })),
+    reconciliationLinks: workflow.reconciliationLinks.map((link) => ({
+      id: link.linkId,
+      statusLabel: link.status || "No status",
+      summaryLabel: link.summary || "No reconciliation summary",
+      routeLabel: link.evidenceRoute || "No reconciliation evidence route",
+      caseLabel: [
+        link.reconciliationCaseId ? `case ${link.reconciliationCaseId}` : null,
+        link.reconciliationRunId ? `run ${link.reconciliationRunId}` : null
+      ].filter((value): value is string => Boolean(value)).join(" / ") || "No reconciliation case"
+    })),
+    auditEvents: workflow.auditHistory.map((event) => ({
+      id: event.auditEventId,
+      actionLabel: event.action || "No action",
+      actorLabel: event.actor || "No actor",
+      recordedLabel: formatDateTimeLabel(event.recordedAtUtc),
+      summaryLabel: event.summary || "No audit summary",
+      evidenceLabel: `${event.evidenceLinks.length.toLocaleString()} evidence link(s)`,
+      evidenceRouteLabels: event.evidenceLinks
+    }))
   };
 }
 

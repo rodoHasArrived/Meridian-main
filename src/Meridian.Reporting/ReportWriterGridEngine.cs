@@ -210,6 +210,7 @@ public static class ReportWriterGridEngine
         if (includeContribution)
         {
             columns.Add(new ReportWriterGridColumnDto("contributionPercent", "Contribution %", "formula"));
+            columns.Add(new ReportWriterGridColumnDto("contributionAbsPercent", "Abs Contribution %", "formula"));
         }
 
         columns.AddRange(formulas.Select(formula => new ReportWriterGridColumnDto(formula.Name, formula.Label ?? formula.Name, "formula")));
@@ -366,13 +367,16 @@ public static class ReportWriterGridEngine
 
     private static void ApplyContribution(IReadOnlyList<WorkingRow> rows, string metricName)
     {
-        var total = rows.Sum(row => row.NumericValues.TryGetValue(metricName, out var value) ? value : 0m);
+        var total = rows.Sum(row => row.NumericValues.TryGetValue(metricName, out var value) ? Math.Abs(value) : 0m);
         foreach (var row in rows)
         {
             var value = row.NumericValues.TryGetValue(metricName, out var metricValue) ? metricValue : 0m;
             var contribution = total == 0m ? 0m : value / total * 100m;
+            var absoluteContribution = Math.Abs(contribution);
             row.NumericValues["contributionPercent"] = contribution;
+            row.NumericValues["contributionAbsPercent"] = absoluteContribution;
             row.Values["contributionPercent"] = FormatDecimal(contribution);
+            row.Values["contributionAbsPercent"] = FormatDecimal(absoluteContribution);
         }
     }
 
@@ -412,7 +416,7 @@ public static class ReportWriterGridEngine
     {
         var sortBy = string.IsNullOrWhiteSpace(grid.SortBy)
             ? grid.Kind == ReportWriterGridKindDto.Contribution
-                ? "contributionPercent"
+                ? "contributionAbsPercent"
                 : metrics.FirstOrDefault()?.Name
             : grid.SortBy.Trim();
         if (string.IsNullOrWhiteSpace(sortBy))

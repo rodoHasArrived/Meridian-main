@@ -25,6 +25,7 @@ import type {
   EvidencePacket,
   EvidencePacketExportResponse,
   EvidenceProofChain,
+  EvidenceRequestList,
   EvidenceSlaAssessment,
   EvidenceStatus,
   EvidenceSubject,
@@ -271,6 +272,8 @@ export interface EvidenceExportResultViewModel {
   storageKindLabel: string | null;
   artifactSummaryLabel: string | null;
   artifactRows: EvidenceVaultArtifactRowViewModel[];
+  requestListSummaryLabel: string | null;
+  requestListRows: EvidenceVaultRequestListRowViewModel[];
   supportRequestSummaryLabel: string | null;
   supportRequestRows: EvidenceVaultSupportRequestRowViewModel[];
 }
@@ -284,6 +287,20 @@ export interface EvidenceVaultArtifactRowViewModel {
   sourceLabel: string;
   canonicalSubjectLabel: string;
   retainedLabel: string;
+  ariaLabel: string;
+}
+
+export interface EvidenceVaultRequestListRowViewModel {
+  id: string;
+  requestListKindLabel: string;
+  targetLabel: string;
+  highestSeverityLabel: string;
+  highestSeverityTone: EvidenceStatusTone;
+  statusLabel: string;
+  requestCountLabel: string;
+  evidenceKindsLabel: string;
+  blockedOutputsLabel: string;
+  summary: string;
   ariaLabel: string;
 }
 
@@ -1146,10 +1163,16 @@ function buildExportResultViewModel(result: EvidencePacketExportResponse | null)
   const warningLabel = result.warningCount === 1 ? "1 warning" : `${result.warningCount} warnings`;
   const artifactRows = (result.vaultIdentity?.artifacts ?? []).map(buildVaultArtifactRow);
   const artifactLabel = artifactRows.length === 1 ? "1 retained artifact" : `${artifactRows.length} retained artifacts`;
+  const requestListRows = (result.vaultIdentity?.requestLists ?? []).map(buildVaultRequestListRow);
+  const requestListLabel = requestListRows.length === 1 ? "1 request list" : `${requestListRows.length} request lists`;
   const supportRequestRows = (result.vaultIdentity?.supportRequests ?? []).map(buildVaultSupportRequestRow);
   const supportRequestLabel = supportRequestRows.length === 1 ? "1 support request" : `${supportRequestRows.length} support requests`;
   const vaultSummaryParts = result.vaultIdentity
-    ? [artifactLabel, ...(supportRequestRows.length > 0 ? [supportRequestLabel] : [])]
+    ? [
+        artifactLabel,
+        ...(requestListRows.length > 0 ? [requestListLabel] : []),
+        ...(supportRequestRows.length > 0 ? [supportRequestLabel] : [])
+      ]
     : [];
   return {
     title: result.retained ? "Manifest retained" : "Manifest generated",
@@ -1162,6 +1185,8 @@ function buildExportResultViewModel(result: EvidencePacketExportResponse | null)
     storageKindLabel: result.vaultIdentity ? formatKind(result.vaultIdentity.storageKind) : null,
     artifactSummaryLabel: result.vaultIdentity ? artifactLabel : null,
     artifactRows,
+    requestListSummaryLabel: result.vaultIdentity ? requestListLabel : null,
+    requestListRows,
     supportRequestSummaryLabel: result.vaultIdentity ? supportRequestLabel : null,
     supportRequestRows
   };
@@ -1180,6 +1205,32 @@ function buildVaultArtifactRow(artifact: NonNullable<EvidencePacketExportRespons
     canonicalSubjectLabel,
     retainedLabel: `Retained ${formatDate(artifact.retainedAt)}`,
     ariaLabel: `${formatKind(artifact.kind)} retained vault artifact ${artifact.artifactId}, ${formatBytes(artifact.sizeBytes)}, ${canonicalSubjectLabel}`
+  };
+}
+
+function buildVaultRequestListRow(requestList: EvidenceRequestList): EvidenceVaultRequestListRowViewModel {
+  const requestListKindLabel = formatKind(requestList.requestListKind);
+  const targetLabel = `${formatKind(requestList.targetKind)} ${requestList.targetId}`;
+  const highestSeverityLabel = formatKind(requestList.highestSeverity.toLowerCase());
+  const requestCountLabel = requestList.requestCount === 1 ? "1 support request" : `${requestList.requestCount} support requests`;
+  const evidenceKindsLabel = requestList.evidenceKinds.length > 0
+    ? requestList.evidenceKinds.map(formatKind).join(", ")
+    : "No evidence kinds";
+  const blockedOutputsLabel = requestList.blockedOutputs.length > 0
+    ? requestList.blockedOutputs.join(", ")
+    : "No blocked outputs";
+  return {
+    id: requestList.requestListId,
+    requestListKindLabel,
+    targetLabel,
+    highestSeverityLabel,
+    highestSeverityTone: mapValidationSeverityTone(requestList.highestSeverity),
+    statusLabel: requestList.status,
+    requestCountLabel,
+    evidenceKindsLabel,
+    blockedOutputsLabel,
+    summary: requestList.summary,
+    ariaLabel: `${requestListKindLabel} for ${targetLabel}, ${highestSeverityLabel}, ${requestList.status}. ${requestList.summary}`
   };
 }
 

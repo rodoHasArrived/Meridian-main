@@ -1698,7 +1698,25 @@ describe("accounting-screen view model", () => {
         route: "/evidence/source",
         evidenceLinkCount: 2,
         evidenceLinks: ["/evidence/source"],
-        requiredEvidence: ["Source document"]
+        requiredEvidence: ["Source document"],
+        ruleVersion: "source-support:projection:1.1.1.1",
+        effectiveFrom: "2026-06-30",
+        effectiveTo: "2026-06-30",
+        formula: "fund_event.source_evidence_count > 0",
+        approvalState: "Approved",
+        approvalReference: "approval-lp-1 / /accounting/approvals?approvalId=approval-lp-1",
+        replayTrace: "Trace uses 1 fund event(s), 1 subledger entry(ies), 1 ledger impact(s), 1 report output(s), and 1 allocation input(s).",
+        inputs: [{
+          inputId: "allocation-input:fund-event:fund-event:fund-alpha:capital-call",
+          kind: "fund-event",
+          sourceId: "fund-event:fund-alpha:capital-call",
+          label: "CapitalCall / Capital call",
+          amount: 125,
+          currency: "USD",
+          effectiveDate: "2026-06-30",
+          evidenceRoute: "/evidence/source"
+        }],
+        relatedFundEventIds: ["fund-event:fund-alpha:capital-call"]
       }],
       statementLineage: [{
         lineageId: "lineage-1",
@@ -1729,7 +1747,14 @@ describe("accounting-screen view model", () => {
         evidenceRoute: "/evidence/restatement",
         capitalAccountSubledgerRoute: "/api/ledger/private-capital/capital-account-subledger?capitalAccountId=capital-account%3Afund-alpha%3Alp-1",
         evidenceLinks: ["/evidence/report"],
-        restatementEvidenceLinks: ["/evidence/restatement"]
+        restatementEvidenceLinks: ["/evidence/restatement"],
+        restatementChangedLines: [{
+          lineKey: "capital-account-ending",
+          previousValue: "100.00",
+          currentValue: "125.00",
+          evidenceLinkCount: 1,
+          evidenceLinks: ["/evidence/restatement"]
+        }]
       }],
       auditDrillThroughs: [{
         drillThroughId: "drill-subledger",
@@ -1774,12 +1799,25 @@ describe("accounting-screen view model", () => {
     expect(result.current.allocationRules[0]).toMatchObject({
       label: "Source support",
       statusLabel: "Satisfied",
-      routeLabel: "/evidence/source"
+      routeLabel: "/evidence/source",
+      policyLabel: "source-support:projection:1.1.1.1",
+      effectiveWindowLabel: "2026-06-30 -> 2026-06-30",
+      formulaLabel: "fund_event.source_evidence_count > 0",
+      approvalLabel: "Approved / approval-lp-1 / /accounting/approvals?approvalId=approval-lp-1",
+      inputSummaryLabel: "1 input(s): fund-event fund-event:fund-alpha:capital-call +$125.00 USD",
+      relatedFundEventLabel: "fund-event:fund-alpha:capital-call"
     });
     expect(result.current.statementLineage[0]).toMatchObject({
       title: "LP 1 Statement",
       statusLabel: "Restated",
-      restatementLabel: "capital-account-correction / 1 changed line(s) / 1 evidence"
+      restatementLabel: "capital-account-correction / 1 changed line(s) / 1 evidence",
+      changedLineRows: [
+        expect.objectContaining({
+          lineKey: "capital-account-ending",
+          valueLabel: "100.00 -> 125.00",
+          evidenceLabel: "1 changed-line evidence"
+        })
+      ]
     });
     expect(result.current.auditDrillThroughs[0]).toMatchObject({
       title: "LP 1 subledger",
@@ -1898,7 +1936,51 @@ describe("accounting-screen view model", () => {
       bankEvidenceLabel: "0 confirmed / 1 retained / 0 returned",
       reconciliationLabel: "1/1 reconciliation ready",
       auditLabel: "2 audit event(s)",
-      evidenceRouteLabel: "/api/workstation/evidence/subjects/payment-intent/payment%3Afund-alpha%3Acapital-call%3Amanual-je-1/packet"
+      evidenceRouteLabel: "/api/workstation/evidence/subjects/payment-intent/payment%3Afund-alpha%3Acapital-call%3Amanual-je-1/packet",
+      approvalSteps: [
+        {
+          sequenceLabel: "Step 1",
+          roleLabel: "Requester",
+          actorLabel: "ops-user",
+          statusLabel: "Requested",
+          decidedLabel: "Jun 30, 00:00 UTC"
+        },
+        {
+          sequenceLabel: "Step 2",
+          roleLabel: "Controller approval",
+          actorLabel: "controller",
+          statusLabel: "Pending",
+          decidedLabel: "Decision pending"
+        }
+      ],
+      bankEvidence: [
+        {
+          title: "RetainedCashEvidence",
+          statusLabel: "Retained",
+          amountLabel: "$100 USD",
+          effectiveDateLabel: "2026-06-30",
+          referenceLabel: "settlement:fund-alpha:capital-call:20260630"
+        }
+      ],
+      reconciliationLinks: [
+        {
+          id: "reconciliation:capital-call",
+          statusLabel: "Ready",
+          routeLabel: "/api/reconciliation/runs/capital-call"
+        }
+      ],
+      auditEvents: [
+        {
+          actionLabel: "payment-intent.requested",
+          actorLabel: "ops-user",
+          evidenceLabel: "1 evidence link(s)"
+        },
+        {
+          actionLabel: "payment-intent.execution-deferred",
+          actorLabel: "system",
+          evidenceLabel: "0 evidence link(s)"
+        }
+      ]
     });
     expect(result.current.privateCapitalActivity.fundEventLedgerRecords[0]).toMatchObject({
       title: "CapitalCall",
@@ -1915,6 +1997,7 @@ describe("accounting-screen view model", () => {
       memoLabel: "Manual close adjustment",
       referenceLabel: "payment:fund-alpha:capital-call:manual-je-1 / settlement:fund-alpha:capital-call:20260630",
       activityRouteLabel: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630&capitalAccountId=capital-account%3Afund-alpha%3Alp-1&investorId=investor%3Alp-1",
+      commandCenterRouteLabel: "/api/ledger/private-capital/fund-event-command-center?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630",
       evidenceRouteLabel: "/api/workstation/evidence/subjects/private-capital-fund-event/fund-event%3Afund-alpha%3Acapital-call%3A20260630/packet",
       approvalRouteLabel: "No approval route",
       evidenceLabel: "2 evidence",

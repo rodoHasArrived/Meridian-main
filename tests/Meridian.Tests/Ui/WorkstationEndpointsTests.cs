@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -136,6 +137,7 @@ public sealed partial class WorkstationEndpointsTests
         UiApiRoutes.WorkstationData.Should().Be("/api/workstation/data");
         UiApiRoutes.WorkstationAccounting.Should().Be("/api/workstation/accounting");
         UiApiRoutes.WorkstationReporting.Should().Be("/api/workstation/reporting");
+        UiApiRoutes.WorkstationReportingStructuredExport.Should().Be("/api/workstation/reporting/structured-exports/{exportId}");
         UiApiRoutes.WorkstationTrading.Should().Be("/api/workstation/trading");
 
         using var strategy = await ReadJsonAsync(client, UiApiRoutes.WorkstationStrategy);
@@ -441,6 +443,78 @@ public sealed partial class WorkstationEndpointsTests
 
         using var timeline = await ReadJsonAsync(client, $"/api/workstation/operations/continuity/{workflowId}/timeline");
         timeline.RootElement[0].GetProperty("actor").GetString().Should().Be("ops-user");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperationsContinuityBreakAssign_ShouldTrustSessionActorAndRetainEscalation()
+    {
+        await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
+        var client = app.GetTestClient();
+
+        var start = await PostTransitionAsync(client, "/api/workstation/operations/continuity", new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            "spoofed-user"));
+        var workflowId = start.Workflow!.WorkflowId;
+        var import = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/import",
+            new OperationsTransitionRequestDto(start.Workflow.Version, "spoofed-user"));
+        var normalized = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/normalize",
+            new OperationsTransitionRequestDto(import.Workflow!.Version, "spoofed-user"));
+        var security = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/security-master/resolve",
+            new OperationsSecurityMasterResolveRequestDto(normalized.Workflow!.Version, "spoofed-user"));
+        var draft = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/draft",
+            new OperationsLedgerDraftRequestDto(security.Workflow!.Version, "spoofed-user", "ledger-preview-1", true));
+        var validated = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/validate",
+            new OperationsLedgerValidationRequestDto(draft.Workflow!.Version, "spoofed-user", true, true));
+        var posted = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/post",
+            new OperationsLedgerPostRequestDto(
+                validated.Workflow!.Version,
+                "spoofed-user",
+                "ledger-batch-1",
+                "period-close",
+                true,
+                JournalCandidate: CreateOperationsLedgerJournalCandidate(start.Workflow.FundAccountId)));
+        var reconciled = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/reconciliation/run",
+            new OperationsReconciliationRunRequestDto(
+                posted.Workflow!.Version,
+                "spoofed-user",
+                BreakCases: [CreateOperationsContinuityOpenBreak(start.Workflow.FundAccountId, "break-http-assign")]));
+
+        var assignRoute = UiApiRoutes.WithParam(
+            UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityReconciliationBreakAssign, "workflowId", workflowId.ToString("D")),
+            "breakId",
+            "break-http-assign");
+        var assigned = await PostTransitionAsync(client, assignRoute, new OperationsAssignBreakCaseRequestDto(
+            reconciled.Workflow!.Version,
+            "spoofed-user",
+            Owner: "fund-controller",
+            Rationale: "Escalate aged cash exception",
+            EscalationLevel: "Level 2",
+            EscalationReason: "Aged past SLA",
+            DueDate: new DateOnly(2026, 6, 3),
+            EvidenceLinks:
+            [
+                new OperationsEvidenceLinkDto(
+                    "break-assignment-evidence",
+                    "Break assignment evidence",
+                    "/api/workstation/evidence/break-assignment-evidence",
+                    "operator-note",
+                    new DateTimeOffset(2026, 5, 31, 13, 30, 0, TimeSpan.Zero))
+            ]));
+
+        var breakCase = assigned.Workflow!.BreakCases.Single(item => item.BreakId == "break-http-assign");
+        breakCase.Owner.Should().Be("fund-controller");
+        breakCase.Status.Should().Be("InReview");
+        breakCase.DueDate.Should().Be(new DateOnly(2026, 6, 3));
+        breakCase.EscalationLevel.Should().Be("Level 2");
+        breakCase.EscalationReason.Should().Be("Aged past SLA");
+        breakCase.EvidenceLinks.Should().Contain(link => link.EvidenceId == "break-assignment-evidence");
+        assigned.Workflow.Timeline.Should().Contain(entry =>
+            entry.EventType == "reconciliation-break-escalated" &&
+            entry.Actor == "ops-user" &&
+            entry.CorrelationId == null);
     }
 
     [Fact]
@@ -5723,6 +5797,120 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_ReportingStructuredExport_ShouldReturnJsonAndCsvFromRetainedReportingPayload()
+    {
+        var workflow = new ReportPackWorkflowService();
+        workflow.Create(
+            "fund-alpha",
+            "acct-main",
+            "2026-05",
+            new VersionedReportTemplateIdDto("shadow-nav-pack", 1),
+            "report.author",
+            [
+                PortfolioReportingLine("portfolio.gross-exposure", "evidence-gross", "2500000"),
+                PortfolioReportingLine("portfolio.net-exposure", "evidence-net", "1800000"),
+                PortfolioReportingLine("portfolio.cash", "evidence-cash", "375000"),
+                PortfolioReportingLine("portfolio.realized-pnl", "evidence-realized", "42000"),
+                PortfolioReportingLine("portfolio.unrealized-pnl", "evidence-unrealized", "18000"),
+                PortfolioReportingLine("portfolio.shadow-nav", "evidence-shadow-nav", "2935000"),
+                PortfolioReportingLine("portfolio.reported-nav", "evidence-reported-nav", "2920000")
+            ],
+            accessPolicy: new ReportAccessPolicyDto(
+                ReportAccessModeDto.Restricted,
+                Principals: [new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Group, "ops-control")]));
+
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(new ReportPackRunReadService(
+                new DefaultReportingTemplateCatalog(),
+                workflowService: workflow));
+        }, currentUserRoleProfileName: "ops-control");
+        var client = app.GetTestClient();
+
+        var jsonResponse = await client.GetAsync("/api/workstation/reporting/structured-exports/investment-portfolio-cuts");
+        var csvResponse = await client.GetAsync("/api/workstation/reporting/structured-exports/investment-portfolio-cuts?format=csv");
+        var xlsxResponse = await client.GetAsync("/api/workstation/reporting/structured-exports/investment-portfolio-cuts?format=xlsx");
+
+        jsonResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        jsonResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
+        var payload = await jsonResponse.Content.ReadFromJsonAsync<StructuredReportingExportPayloadDto>(ServerJsonOptions);
+        payload.Should().NotBeNull();
+        payload!.Export.ExportId.Should().Be("investment-portfolio-cuts");
+        payload.Export.Route.Should().Contain("/api/workstation/reporting/structured-exports/investment-portfolio-cuts");
+        payload.Columns.Select(static column => column.Name).Should().ContainInOrder(
+            "cutId",
+            "label",
+            "kind",
+            "currency",
+            "grossExposure",
+            "netExposure",
+            "totalCash",
+            "pendingSettlement",
+            "totalPnl",
+            "shadowNav",
+            "shadowNavVariance",
+            "sourceCount",
+            "versionStamp");
+        payload.DataDictionary.Should().NotBeNull();
+        payload.DataDictionary!.Should().Contain(field =>
+            field.Name == "shadowNav" &&
+            field.DataType == "decimal");
+        payload.ValidationChecks.Should().NotBeNull();
+        payload.ValidationChecks!.Should().Contain(check =>
+            check.CheckId == "readiness" &&
+            check.Status == "Passed");
+        payload.Rows.Should().Contain(row =>
+            row["cutId"] == "reporting-portfolio-cut:fund-alpha" &&
+            row["grossExposure"] == "2500000" &&
+            row["totalPnl"] == "60000" &&
+            row["shadowNav"] == "2935000");
+
+        csvResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        csvResponse.Content.Headers.ContentType?.MediaType.Should().Be("text/csv");
+        csvResponse.Content.Headers.ContentDisposition?.FileName.Should().EndWith(".csv");
+        var csv = await csvResponse.Content.ReadAsStringAsync();
+        csv.Should().StartWith("cutId,label,kind,currency,grossExposure,netExposure,totalCash,pendingSettlement,totalPnl,shadowNav,shadowNavVariance,sourceCount,versionStamp");
+        csv.Should().Contain("reporting-portfolio-cut:fund-alpha");
+        xlsxResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        xlsxResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        using (var workbook = new ZipArchive(new MemoryStream(await xlsxResponse.Content.ReadAsByteArrayAsync()), ZipArchiveMode.Read))
+        {
+            workbook.GetEntry("xl/worksheets/sheet1.xml").Should().NotBeNull();
+            workbook.GetEntry("xl/worksheets/sheet2.xml").Should().NotBeNull();
+            workbook.GetEntry("xl/worksheets/sheet3.xml").Should().NotBeNull();
+            workbook.GetEntry("xl/worksheets/sheet4.xml").Should().NotBeNull();
+            using var workbookXmlReader = new StreamReader(workbook.GetEntry("xl/workbook.xml")!.Open());
+            var workbookXml = workbookXmlReader.ReadToEnd();
+            workbookXml.Should().Contain("portfolio-reporting-cuts");
+            workbookXml.Should().Contain("Metadata");
+            workbookXml.Should().Contain("DataDictionary");
+            workbookXml.Should().Contain("Validation");
+        }
+
+        await using var strangerApp = await CreateAppAsync(services =>
+        {
+            services.AddSingleton(new ReportPackRunReadService(
+                new DefaultReportingTemplateCatalog(),
+                workflowService: workflow));
+        });
+        var strangerClient = strangerApp.GetTestClient();
+        var strangerResponse = await strangerClient.GetAsync("/api/workstation/reporting/structured-exports/investment-portfolio-cuts");
+        strangerResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        static ReportPackLineProvenanceDto PortfolioReportingLine(
+            string lineKey,
+            string evidenceId,
+            string reportValue) =>
+            new(
+                lineKey,
+                "portfolio",
+                "run-1",
+                evidenceId,
+                RunId: "run-1",
+                ReportValue: reportValue);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_TradingPayload_WithLiveQuote_ReplacesPlaceholderMarkAndComputesUnrealizedPnl()
     {
         var publisher = new Meridian.Tests.TestHelpers.TestMarketEventPublisher();
@@ -6453,6 +6641,30 @@ public sealed partial class WorkstationEndpointsTests
         new("close-gate-approval", "controller", new DateTimeOffset(2026, 5, 31, 12, 4, 0, TimeSpan.Zero)),
         new("close-gate-approval", "fund-admin", new DateTimeOffset(2026, 5, 31, 12, 5, 0, TimeSpan.Zero))
     ];
+
+    private static OperationsBreakCaseDto CreateOperationsContinuityOpenBreak(Guid fundAccountId, string breakId) =>
+        new(
+            breakId,
+            "cash-position-match",
+            "Cash",
+            "Critical",
+            "Open",
+            null,
+            null,
+            "Ledger cash",
+            "Custodian cash",
+            100m,
+            null,
+            100m,
+            null,
+            "CASH",
+            "Assign an accountable owner",
+            [],
+            new OperationsContinuityCorrelationKeysDto(
+                RunId: $"run-{breakId}",
+                FundAccountId: fundAccountId,
+                LedgerBatchId: "ledger-batch-1",
+                ReconciliationCaseId: breakId));
 
     private static async Task<T> ReadAsync<T>(HttpResponseMessage response)
     {

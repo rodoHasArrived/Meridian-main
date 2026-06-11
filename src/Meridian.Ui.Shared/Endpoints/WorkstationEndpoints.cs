@@ -48,6 +48,7 @@ public static partial class WorkstationEndpoints
     private const int MaxRunComparisonRequestIds = 10;
     private const int SecurityCoveragePreviewLimit = 5;
     private const int MaxOperatorInboxTokenLength = 256;
+    private const string WorkstationStructuredXlsxContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     private const string WorkstationApiRoutePrefix = "/api/workstation";
 
     public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
@@ -91,6 +92,7 @@ public static partial class WorkstationEndpoints
         MapStrategyDesignerEndpoints(group, jsonOptions);
         MapStrategyEngineEndpoints(group, jsonOptions);
         MapFeatureCapabilityEndpoints(group, jsonOptions);
+        MapExtensibilityEndpoints(group, jsonOptions);
         MapFinancialRecordExplorerEndpoints(group, jsonOptions);
         MapFamilyOfficeEndpoints(group);
         MapDataUploadEndpoints(group, jsonOptions);
@@ -99,6 +101,7 @@ public static partial class WorkstationEndpoints
             bool? hasOperatingContext,
             string? operatingContext,
             string? fundProfileId,
+            string? fundAccountId,
             string? fundDisplayName,
             HttpContext context) =>
         {
@@ -113,6 +116,7 @@ public static partial class WorkstationEndpoints
                     hasOperatingContext: hasOperatingContext ?? false,
                     operatingContextDisplayName: operatingContext,
                     fundProfileId: fundProfileId,
+                    fundAccountId: fundAccountId,
                     fundDisplayName: fundDisplayName,
                     ct: context.RequestAborted)
                 .ConfigureAwait(false);
@@ -388,6 +392,65 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetWorkstationReporting");
 
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationReportingStructuredExport), (
+            string exportId,
+            string? format,
+            HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<ReportPackRunReadService>()
+                ?? new ReportPackRunReadService(new DefaultReportingTemplateCatalog());
+            try
+            {
+                var payload = service.GetStructuredReportingExport(
+                    exportId,
+                    BuildReportAccessQueryContext(context));
+
+                if (IsWorkstationStructuredCsvRequest(format))
+                {
+                    var fileName = $"{payload.Export.ExportId}-{payload.Export.AsOf.UtcDateTime:yyyyMMddHHmmss}.csv";
+                    return Results.File(
+                        BuildWorkstationStructuredExportCsv(payload),
+                        "text/csv",
+                        fileName);
+                }
+
+                if (IsWorkstationStructuredXlsxRequest(format))
+                {
+                    var fileName = $"{payload.Export.ExportId}-{payload.Export.AsOf.UtcDateTime:yyyyMMddHHmmss}.xlsx";
+                    return Results.File(
+                        BuildWorkstationStructuredExportXlsx(payload),
+                        WorkstationStructuredXlsxContentType,
+                        fileName);
+                }
+
+                if (IsWorkstationStructuredJsonRequest(format))
+                {
+                    var fileName = $"{payload.Export.ExportId}-{payload.Export.AsOf.UtcDateTime:yyyyMMddHHmmss}.json";
+                    return Results.File(
+                        JsonSerializer.SerializeToUtf8Bytes(payload, jsonOptions),
+                        "application/json",
+                        fileName);
+                }
+
+                return Results.Json(payload, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status404NotFound);
+            }
+        })
+        .WithName("GetWorkstationStructuredReportingExport")
+        .Produces<StructuredReportingExportPayloadDto>(200)
+        .Produces(200, contentType: "application/json")
+        .Produces(200, contentType: "text/csv")
+        .Produces(200, contentType: WorkstationStructuredXlsxContentType)
+        .Produces(400)
+        .Produces(404);
+
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationPortfolio), async (HttpContext context) =>
         {
             var payload = await BuildPortfolioPayloadAsync(context).ConfigureAwait(false);
@@ -539,6 +602,34 @@ public static partial class WorkstationEndpoints
         })
         .WithName("GetOperationsContinuityCloseCalendar")
         .Produces<OperationsCloseCalendarDto>(200)
+        .Produces(403);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.OperationsPrivateCapitalCloseCockpit), async (
+            string? fundProfileId,
+            Guid? ledgerBookId,
+            Guid? fundAccountId,
+            string? periodId,
+            string? entityId,
+            HttpContext context) =>
+        {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<IPrivateCapitalCloseCockpitService>();
+            if (service is null)
+            {
+                return Results.Problem("Private-capital close cockpit service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var cockpit = await service
+                .GetCockpitAsync(fundProfileId, ledgerBookId, fundAccountId, periodId, entityId, context.RequestAborted)
+                .ConfigureAwait(false);
+            return Results.Json(cockpit, jsonOptions);
+        })
+        .WithName("GetOperationsPrivateCapitalCloseCockpit")
+        .Produces<PrivateCapitalCloseCockpitDto>(200)
         .Produces(403);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityCloseCalendarItems), async (
@@ -995,6 +1086,39 @@ public static partial class WorkstationEndpoints
             return OperationsTransitionResult(result, jsonOptions);
         })
         .WithName("RunOperationsContinuityReconciliation");
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityReconciliationBreakAssign), async (
+            Guid workflowId,
+            string breakId,
+            OperationsAssignBreakCaseRequestDto? request,
+            HttpContext context) =>
+        {
+            if (!HasReconciliationMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (request is null)
+            {
+                return MissingOperationsPayload("request", "A reconciliation break assignment request is required.");
+            }
+
+            if (!TryResolveCurrentUser(context, out var currentUser))
+            {
+                return Results.Unauthorized();
+            }
+
+            var service = context.RequestServices.GetService<IOperationsContinuityWorkflowService>();
+            if (service is null)
+            {
+                return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var trustedRequest = request with { Actor = currentUser };
+            var result = await service.AssignBreakCaseAsync(workflowId, breakId, trustedRequest, context.RequestAborted).ConfigureAwait(false);
+            return OperationsTransitionResult(result, jsonOptions);
+        })
+        .WithName("AssignOperationsContinuityReconciliationBreak");
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.OperationsContinuityReconciliationBreakResolve), async (
             Guid workflowId,
@@ -7557,6 +7681,147 @@ public static partial class WorkstationEndpoints
                 message = "Build src/Meridian.Ui/dashboard before opening /workstation."
             });
     }
+
+    private static bool IsWorkstationStructuredCsvRequest(string? format) =>
+        string.Equals(format, "csv", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsWorkstationStructuredJsonRequest(string? format) =>
+        string.Equals(format, "json", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsWorkstationStructuredXlsxRequest(string? format) =>
+        string.Equals(format, "xlsx", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(format, "xls", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(format, "excel", StringComparison.OrdinalIgnoreCase);
+
+    private static byte[] BuildWorkstationStructuredExportCsv(StructuredReportingExportPayloadDto payload)
+    {
+        var builder = new StringBuilder();
+        AppendWorkstationStructuredExportCsvRow(builder, payload.Columns.Select(static column => column.Name));
+
+        foreach (var row in payload.Rows)
+        {
+            AppendWorkstationStructuredExportCsvRow(
+                builder,
+                payload.Columns.Select(column =>
+                    row.TryGetValue(column.Name, out var value) ? value : null));
+        }
+
+        return Encoding.UTF8.GetBytes(builder.ToString());
+    }
+
+    private static byte[] BuildWorkstationStructuredExportXlsx(StructuredReportingExportPayloadDto payload)
+    {
+        var headers = payload.Columns.Select(static column => column.Name).ToArray();
+        var rows = payload.Rows
+            .Select(row => headers
+                .Select(header => row.TryGetValue(header, out var value) ? value : null)
+                .Cast<object?>()
+                .ToArray())
+            .Cast<IReadOnlyList<object?>>()
+            .ToArray();
+
+        return XlsxWorkbookWriter.CreateWorkbook(
+        [
+            new XlsxWorksheet(payload.Export.Dataset, headers, rows),
+            new XlsxWorksheet(
+                "Metadata",
+                ["Field", "Value"],
+                BuildWorkstationStructuredExportMetadataRows(payload)),
+            new XlsxWorksheet(
+                "DataDictionary",
+                ["Ordinal", "Name", "Data type", "Required", "Description"],
+                BuildWorkstationStructuredExportDataDictionaryRows(payload)),
+            new XlsxWorksheet(
+                "Validation",
+                ["Check", "Status", "Detail"],
+                BuildWorkstationStructuredExportValidationRows(payload))
+        ]);
+    }
+
+    private static IReadOnlyList<IReadOnlyList<object?>> BuildWorkstationStructuredExportMetadataRows(
+        StructuredReportingExportPayloadDto payload) =>
+    [
+        ["exportId", payload.Export.ExportId],
+        ["label", payload.Export.Label],
+        ["purpose", payload.Export.Purpose.ToString()],
+        ["dataset", payload.Export.Dataset],
+        ["consumer", payload.Export.Consumer],
+        ["schemaVersion", payload.Export.SchemaVersion],
+        ["rowCount", payload.Export.RowCount],
+        ["fieldCount", payload.Export.FieldCount],
+        ["sourceCount", payload.Export.SourceCount],
+        ["currency", payload.Export.Currency],
+        ["asOf", payload.Export.AsOf],
+        ["isReady", payload.Export.IsReady],
+        ["retainedPath", payload.Export.RetainedPath],
+        ["route", payload.Export.Route],
+        ["versionStamp", payload.Export.VersionStamp],
+        ["generatedAtUtc", payload.GeneratedAtUtc]
+    ];
+
+    private static IReadOnlyList<IReadOnlyList<object?>> BuildWorkstationStructuredExportDataDictionaryRows(
+        StructuredReportingExportPayloadDto payload)
+    {
+        var fields = payload.DataDictionary is { Count: > 0 }
+            ? payload.DataDictionary
+            : payload.Columns.Select((column, index) => new StructuredReportingExportDataDictionaryFieldDto(
+                column.Name,
+                column.DataType,
+                column.Description,
+                index + 1)).ToArray();
+
+        return fields
+            .Select(static field => (IReadOnlyList<object?>)
+            [
+                field.Ordinal,
+                field.Name,
+                field.DataType,
+                field.Required ? "true" : "false",
+                field.Description
+            ])
+            .ToArray();
+    }
+
+    private static IReadOnlyList<IReadOnlyList<object?>> BuildWorkstationStructuredExportValidationRows(
+        StructuredReportingExportPayloadDto payload) =>
+        (payload.ValidationChecks ?? [])
+            .Select(static check => (IReadOnlyList<object?>)
+            [
+                check.CheckId,
+                check.Status,
+                check.Detail
+            ])
+            .ToArray();
+
+    private static void AppendWorkstationStructuredExportCsvRow(StringBuilder builder, IEnumerable<string?> values)
+    {
+        var first = true;
+        foreach (var value in values)
+        {
+            if (!first)
+            {
+                builder.Append(',');
+            }
+
+            builder.Append(EscapeWorkstationStructuredExportCsvValue(value));
+            first = false;
+        }
+
+        builder.AppendLine();
+    }
+
+    private static string EscapeWorkstationStructuredExportCsvValue(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return string.Empty;
+        }
+
+        return value.IndexOfAny([',', '"', '\r', '\n']) >= 0
+            ? $"\"{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\""
+            : value;
+    }
+
     private sealed record SecurityCoverageReferencePayload(
         string Source,
         string Symbol,

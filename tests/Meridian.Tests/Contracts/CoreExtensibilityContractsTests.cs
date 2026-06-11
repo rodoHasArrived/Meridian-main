@@ -1,9 +1,12 @@
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Extensibility;
 using Meridian.Reporting;
 using Meridian.Ui.Shared.Extensibility;
 using Meridian.Ui.Shared.Workflows;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Tests.Contracts;
 
@@ -98,6 +101,27 @@ public sealed class CoreExtensibilityContractsTests
     }
 
     [Fact]
+    public void TenantTemplateActivationResult_ShouldSerializeViaGeneratedContext()
+    {
+        var result = new TenantTemplateActivationResultDto(
+            TenantTemplateId: "template-fund-admin",
+            IsActivated: true,
+            ResultingStatus: ExtensibilityConfigurationStatusDto.Active,
+            EvaluatedAt: DateTimeOffset.Parse("2026-02-01T00:00:00Z"),
+            EvaluatedBy: "controller@example.com",
+            ChangeReason: "Activate fund admin operating template",
+            LinkedAuditEventId: "audit-template-activation-1",
+            Readiness: new ExtensibilityActivationReadinessDto(true, [], [GovernedFoundationKindDto.AuditTrail]),
+            TenantTemplate: CreateTenantTemplate("template-fund-admin"));
+
+        var json = JsonSerializer.Serialize(result, CoreExtensibilityContractsJsonContext.Default.TenantTemplateActivationResultDto);
+
+        json.Should().Contain("\"isActivated\":true");
+        json.Should().Contain("\"resultingStatus\":\"Active\"");
+        json.Should().Contain("\"evaluatedBy\":\"controller@example.com\"");
+    }
+
+    [Fact]
     public void WorkflowCatalogProvider_ShouldExposeBuiltInWorkflowsAsExtensibilityRegistrations()
     {
         var service = new ExtensibilityCatalogService(
@@ -165,4 +189,215 @@ public sealed class CoreExtensibilityContractsTests
         domainExtension.Area.Should().Be(ExtensibilityConfigurationAreaDto.DomainExtension);
         domainExtension.Status.Should().Be(ExtensibilityConfigurationStatusDto.Draft);
     }
+
+    [Fact]
+    public void AddExtensibilityCatalog_ShouldRegisterRuntimeCatalogProviders()
+    {
+        var services = new ServiceCollection();
+        services.AddExtensibilityCatalog();
+
+        using var provider = services.BuildServiceProvider();
+        var catalog = provider
+            .GetRequiredService<ExtensibilityCatalogService>()
+            .GetCatalog(DateTimeOffset.Parse("2026-02-01T00:00:00Z"));
+
+        catalog.Registrations.Should().Contain(registration => registration.RegistrationId == "workflow:primary-operator-workflow");
+        catalog.Registrations.Should().Contain(registration => registration.RegistrationId == "report-template:audit-evidence-package");
+        catalog.Registrations.Should().Contain(registration => registration.RegistrationId == "permission:ManageFundStructure");
+        catalog.Registrations.Should().Contain(registration => registration.RegistrationId == "tenant-template:configuration-bundle-contract");
+        provider.GetRequiredService<ExtensibilityConfigurationService>().Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task ExtensibilityConfigurationService_ShouldRejectActivationWhenGovernedFoundationsWouldBeOverridden()
+    {
+        var service = new ExtensibilityConfigurationService(new InMemoryExtensibilityConfigurationStore());
+        var bundle = CreateTenantTemplate(
+            "template-blocked",
+            allowsCoreObjectIdentityOverrides: true,
+            allowsAuditTrailOverrides: true,
+            allowsCalculationOverrides: true,
+            domainExtensions:
+            [
+                new DomainExtensionDescriptorDto(
+                    ExtensionId: "blocked-domain-extension",
+                    DisplayName: "Blocked Domain Extension",
+                    OwningContext: "Accounting",
+                    AppliesToCoreObjects: [CoreFinancialObjectKindDto.JournalEntry],
+                    CustomFieldKeys: ["tenantSpecificLedgerCode"],
+                    ClassificationKeys: [],
+                    RuleIds: [],
+                    CanIntroduceCoreObjectIdentity: true,
+                    CanBypassAuditTrail: true,
+                    CanOverrideFinancialCalculations: true)
+            ]);
+
+        await service.UpsertTenantTemplateAsync(bundle);
+
+        var result = await service.ActivateTenantTemplateAsync(
+            "template-blocked",
+            "admin@example.com",
+            new TenantTemplateActivationRequestDto("Attempt blocked activation"),
+            DateTimeOffset.Parse("2026-02-01T00:00:00Z"));
+
+        result.IsActivated.Should().BeFalse();
+        result.ResultingStatus.Should().Be(ExtensibilityConfigurationStatusDto.Reviewed);
+        result.Readiness.IsReady.Should().BeFalse();
+        result.Readiness.Issues.Should().Contain(issue => issue.BlockedFoundation == GovernedFoundationKindDto.CoreObjectIdentity);
+        result.Readiness.Issues.Should().Contain(issue => issue.BlockedFoundation == GovernedFoundationKindDto.AuditTrail);
+        result.Readiness.Issues.Should().Contain(issue => issue.BlockedFoundation == GovernedFoundationKindDto.FinancialCalculationIntegrity);
+
+        var history = await service.ListActivationHistoryAsync("template-blocked");
+        history.Should().ContainSingle(item => !item.IsActivated && item.EvaluatedBy == "admin@example.com");
+    }
+
+    [Fact]
+    public async Task ExtensibilityConfigurationService_ShouldRejectActivationWhenConfigurationsLackApprovalEvidence()
+    {
+        var service = new ExtensibilityConfigurationService(new InMemoryExtensibilityConfigurationStore());
+        await service.UpsertTenantTemplateAsync(CreateTenantTemplate(
+            "template-draft",
+            configurationStatus: ExtensibilityConfigurationStatusDto.Draft));
+        await service.UpsertTenantTemplateAsync(CreateTenantTemplate(
+            "template-missing-approval",
+            approvedBy: null));
+
+        var draftReadiness = await service.EvaluateTenantTemplateActivationAsync("template-draft");
+        var missingApprovalReadiness = await service.EvaluateTenantTemplateActivationAsync("template-missing-approval");
+        var result = await service.ActivateTenantTemplateAsync(
+            "template-draft",
+            "admin@example.com",
+            new TenantTemplateActivationRequestDto("Attempt draft activation"),
+            DateTimeOffset.Parse("2026-02-01T00:00:00Z"));
+
+        draftReadiness.IsReady.Should().BeFalse();
+        draftReadiness.Issues.Should().Contain(issue =>
+            issue.Code == "configuration.cfg-close-review.approval-state" &&
+            issue.BlockedFoundation == GovernedFoundationKindDto.ApprovalEvidenceModel);
+        missingApprovalReadiness.IsReady.Should().BeFalse();
+        missingApprovalReadiness.Issues.Should().Contain(issue =>
+            issue.Code == "configuration.cfg-close-review.approval-evidence" &&
+            issue.BlockedFoundation == GovernedFoundationKindDto.ApprovalEvidenceModel);
+        result.IsActivated.Should().BeFalse();
+        result.TenantTemplate!.Configurations.Should().ContainSingle(configuration =>
+            configuration.Status == ExtensibilityConfigurationStatusDto.Draft);
+    }
+
+    [Fact]
+    public async Task ExtensibilityConfigurationService_ShouldActivateCleanTenantTemplateAndMarkConfigurationsActive()
+    {
+        var store = new InMemoryExtensibilityConfigurationStore();
+        var service = new ExtensibilityConfigurationService(store);
+        await service.UpsertTenantTemplateAsync(CreateTenantTemplate("template-clean"));
+
+        var result = await service.ActivateTenantTemplateAsync(
+            "template-clean",
+            "controller@example.com",
+            new TenantTemplateActivationRequestDto("Activate clean template", "audit-activation-1"),
+            DateTimeOffset.Parse("2026-02-01T00:00:00Z"));
+
+        result.IsActivated.Should().BeTrue();
+        result.ResultingStatus.Should().Be(ExtensibilityConfigurationStatusDto.Active);
+        result.Readiness.IsReady.Should().BeTrue();
+        result.TenantTemplate!.Configurations.Should().OnlyContain(configuration =>
+            configuration.Status == ExtensibilityConfigurationStatusDto.Active &&
+            configuration.ApprovedBy == "controller@example.com" &&
+            configuration.LinkedAuditEventId == "audit-activation-1");
+
+        var stored = await store.GetTenantTemplateAsync("template-clean");
+        stored!.Configurations.Should().OnlyContain(configuration => configuration.Status == ExtensibilityConfigurationStatusDto.Active);
+    }
+
+    [Fact]
+    public async Task FileExtensibilityConfigurationStore_ShouldPersistTenantTemplatesAndActivationHistory()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"meridian-extensibility-{Guid.NewGuid():N}");
+        try
+        {
+            var firstStore = new FileExtensibilityConfigurationStore(
+                root,
+                NullLogger<FileExtensibilityConfigurationStore>.Instance);
+            var service = new ExtensibilityConfigurationService(firstStore);
+            await service.UpsertTenantTemplateAsync(CreateTenantTemplate("template-persisted"));
+
+            var activation = await service.ActivateTenantTemplateAsync(
+                "template-persisted",
+                "controller@example.com",
+                new TenantTemplateActivationRequestDto("Persist activation"),
+                DateTimeOffset.Parse("2026-02-01T00:00:00Z"));
+
+            activation.IsActivated.Should().BeTrue();
+
+            var secondStore = new FileExtensibilityConfigurationStore(
+                root,
+                NullLogger<FileExtensibilityConfigurationStore>.Instance);
+            var persisted = await secondStore.GetTenantTemplateAsync("template-persisted");
+            var history = await secondStore.ListActivationHistoryAsync("template-persisted");
+
+            persisted.Should().NotBeNull();
+            persisted!.Configurations.Should().OnlyContain(configuration => configuration.Status == ExtensibilityConfigurationStatusDto.Active);
+            history.Should().ContainSingle(item => item.IsActivated && item.EvaluatedBy == "controller@example.com");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+            {
+                Directory.Delete(root, recursive: true);
+            }
+        }
+    }
+
+    [Fact]
+    public void WorkstationExtensibilityRoutes_ShouldUseWorkstationApiRoot()
+    {
+        UiApiRoutes.WorkstationExtensibilityCatalog.Should().Be("/api/workstation/extensibility/catalog");
+        UiApiRoutes.WorkstationExtensibilityTenantTemplates.Should().Be("/api/workstation/extensibility/tenant-templates");
+        UiApiRoutes.WorkstationExtensibilityTenantTemplateById.Should().Be("/api/workstation/extensibility/tenant-templates/{tenantTemplateId}");
+        UiApiRoutes.WorkstationExtensibilityTenantTemplateActivate.Should().Be("/api/workstation/extensibility/tenant-templates/{tenantTemplateId}/activate");
+        UiApiRoutes.WorkstationExtensibilityTenantTemplateActivations.Should().Be("/api/workstation/extensibility/tenant-templates/{tenantTemplateId}/activations");
+        UiApiRoutes.WorkstationExtensibilityTenantTemplateReadiness.Should().Be("/api/workstation/extensibility/tenant-templates/{tenantTemplateId}/readiness");
+    }
+
+    private static TenantTemplateConfigurationBundleDto CreateTenantTemplate(
+        string tenantTemplateId,
+        bool allowsCoreObjectIdentityOverrides = false,
+        bool allowsAuditTrailOverrides = false,
+        bool allowsCalculationOverrides = false,
+        IReadOnlyList<DomainExtensionDescriptorDto>? domainExtensions = null,
+        ExtensibilityConfigurationStatusDto configurationStatus = ExtensibilityConfigurationStatusDto.Approved,
+        string? approvedBy = "cfo@example.com",
+        DateTimeOffset? approvedAt = null)
+        => new(
+            TenantTemplateId: tenantTemplateId,
+            DisplayName: "Fund Administrator Profile",
+            Profile: "Fund Administrator",
+            Configurations: [CreateConfigurationEnvelope(configurationStatus, approvedBy, approvedAt)],
+            DomainExtensions: domainExtensions ?? [],
+            AllowsCoreObjectIdentityOverrides: allowsCoreObjectIdentityOverrides,
+            AllowsAuditTrailOverrides: allowsAuditTrailOverrides,
+            AllowsCalculationOverrides: allowsCalculationOverrides);
+
+    private static ExtensibilityConfigurationEnvelopeDto CreateConfigurationEnvelope(
+        ExtensibilityConfigurationStatusDto status = ExtensibilityConfigurationStatusDto.Approved,
+        string? approvedBy = "cfo@example.com",
+        DateTimeOffset? approvedAt = null)
+        => new(
+            ConfigurationId: "cfg-close-review",
+            Area: ExtensibilityConfigurationAreaDto.Workflow,
+            ConfigurationType: "approval-chain",
+            OwningContext: "Accounting",
+            Scope: new ExtensibilityScopeDto(ExtensibilityScopeKindDto.Tenant, "tenant-alpha", "Tenant Alpha"),
+            Status: status,
+            Version: 1,
+            EffectiveAt: DateTimeOffset.Parse("2026-01-31T00:00:00Z"),
+            ExpiresAt: null,
+            CreatedBy: "ops@example.com",
+            CreatedAt: DateTimeOffset.Parse("2026-01-15T12:00:00Z"),
+            ReviewedBy: "controller@example.com",
+            ApprovedBy: approvedBy,
+            ApprovedAt: approvedAt ?? DateTimeOffset.Parse("2026-01-20T12:00:00Z"),
+            ChangeReason: "Monthly close approval routing",
+            LinkedAuditEventId: "audit-1",
+            RollbackVersion: null,
+            ValidationIssues: []);
 }

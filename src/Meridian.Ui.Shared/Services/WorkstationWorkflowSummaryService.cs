@@ -37,6 +37,7 @@ public sealed class WorkstationWorkflowSummaryService
         bool hasOperatingContext = false,
         string? operatingContextDisplayName = null,
         string? fundProfileId = null,
+        string? fundAccountId = null,
         string? fundDisplayName = null,
         CancellationToken ct = default)
     {
@@ -71,7 +72,7 @@ public sealed class WorkstationWorkflowSummaryService
         var strategyCandidateSnapshotTask = LoadRunSnapshotAsync(candidateForPaper, ct);
         var tradingActiveSnapshotTask = LoadRunSnapshotAsync(activeTradingRun, ct);
         var accountingCandidateSnapshotTask = LoadRunSnapshotAsync(candidateForLive ?? activeTradingRun ?? latestGovernedRun, ct);
-        var financialOperationsSnapshotTask = LoadFinancialOperationsSnapshotAsync(contextSelected, fundProfileId, ct);
+        var financialOperationsSnapshotTask = LoadFinancialOperationsSnapshotAsync(contextSelected, fundAccountId, fundProfileId, ct);
 
         await Task.WhenAll(strategyCandidateSnapshotTask, tradingActiveSnapshotTask, accountingCandidateSnapshotTask, financialOperationsSnapshotTask)
             .ConfigureAwait(false);
@@ -676,7 +677,8 @@ public sealed class WorkstationWorkflowSummaryService
                 [
                     new WorkflowEvidenceBadge("Fund account", "Scoped", "Success"),
                     new WorkflowEvidenceBadge("Workflows", snapshot.WorkflowCount.ToString(), "Warning"),
-                    new WorkflowEvidenceBadge("Core flow", "Receive Activity", "Warning")
+                    new WorkflowEvidenceBadge("Core flow", "Receive Activity", "Warning"),
+                    new WorkflowEvidenceBadge("Reviewed automation", "No suggestions without intake", "Warning")
                 ]);
         }
 
@@ -820,12 +822,44 @@ public sealed class WorkstationWorkflowSummaryService
             new WorkflowEvidenceBadge("Breaks", unresolvedBreakCount.ToString(), unresolvedBreakCount > 0 ? "Warning" : "Success"),
             new WorkflowEvidenceBadge("Approval", workflow.ApprovalState.ToString(), workflow.ApprovalState == OperationsApprovalStateDto.Approved ? "Success" : "Warning"),
             new WorkflowEvidenceBadge("Evidence", evidenceCount.ToString(), evidenceCount > 0 ? "Success" : "Warning"),
-            new WorkflowEvidenceBadge("Close", closeValue, workflow.ClosePackage is not null ? "Success" : "Info")
+            new WorkflowEvidenceBadge("Close", closeValue, workflow.ClosePackage is not null ? "Success" : "Info"),
+            BuildReviewedAutomationEvidence(workflow)
         ];
+    }
+
+    private static WorkflowEvidenceBadge BuildReviewedAutomationEvidence(OperationsContinuityWorkflowDto workflow)
+    {
+        if (workflow.BrokerIntakeState is OperationsBrokerIntakeStateDto.Imported or OperationsBrokerIntakeStateDto.Normalized)
+        {
+            return new WorkflowEvidenceBadge("Reviewed automation", "Extraction review", "Warning");
+        }
+
+        if (workflow.ReconciliationState == OperationsReconciliationStateDto.AutoMatched)
+        {
+            return new WorkflowEvidenceBadge("Reviewed automation", "Suggested matches require review", "Warning");
+        }
+
+        if (workflow.LedgerPostingState is OperationsLedgerPostingStateDto.Drafted or OperationsLedgerPostingStateDto.Validated)
+        {
+            return new WorkflowEvidenceBadge("Reviewed automation", "Journal draft review", "Warning");
+        }
+
+        if (workflow.ApprovalState is OperationsApprovalStateDto.Pending or OperationsApprovalStateDto.Submitted or OperationsApprovalStateDto.ReviewerAssigned)
+        {
+            return new WorkflowEvidenceBadge("Reviewed automation", "Reviewer approval required", "Warning");
+        }
+
+        if (workflow.Status == OperationsWorkflowStatusDto.Closed || workflow.ClosePackage is not null)
+        {
+            return new WorkflowEvidenceBadge("Reviewed automation", "Reviewed evidence retained", "Success");
+        }
+
+        return new WorkflowEvidenceBadge("Reviewed automation", "Suggestions only", "Info");
     }
 
     private async Task<FinancialOperationsControlSnapshot?> LoadFinancialOperationsSnapshotAsync(
         bool hasOperatingContext,
+        string? fundAccountId,
         string? fundProfileId,
         CancellationToken ct)
     {
@@ -834,13 +868,13 @@ public sealed class WorkstationWorkflowSummaryService
             return null;
         }
 
-        if (!Guid.TryParse(fundProfileId, out var fundAccountId))
+        if (!TryResolveFinancialOperationsFundAccountId(fundAccountId, fundProfileId, out var parsedFundAccountId))
         {
             return null;
         }
 
         var workflows = await _operationsContinuityWorkflowService
-            .ListAsync(fundAccountId, periodId: null, status: null, ct)
+            .ListAsync(parsedFundAccountId, periodId: null, status: null, ct)
             .ConfigureAwait(false);
         var active = workflows
             .OrderBy(static workflow => RankFinancialOperationsWorkflow(workflow.Status))
@@ -850,7 +884,20 @@ public sealed class WorkstationWorkflowSummaryService
             ? null
             : await _operationsContinuityWorkflowService.GetAsync(active.WorkflowId, ct).ConfigureAwait(false);
 
-        return new FinancialOperationsControlSnapshot(fundAccountId, workflows.Count, detail);
+        return new FinancialOperationsControlSnapshot(parsedFundAccountId, workflows.Count, detail);
+    }
+
+    private static bool TryResolveFinancialOperationsFundAccountId(
+        string? fundAccountId,
+        string? fundProfileId,
+        out Guid parsedFundAccountId)
+    {
+        if (Guid.TryParse(fundAccountId, out parsedFundAccountId))
+        {
+            return true;
+        }
+
+        return Guid.TryParse(fundProfileId, out parsedFundAccountId);
     }
 
     private static int RankFinancialOperationsWorkflow(OperationsWorkflowStatusDto status) => status switch

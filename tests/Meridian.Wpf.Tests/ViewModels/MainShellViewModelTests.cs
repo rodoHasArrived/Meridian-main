@@ -4,8 +4,13 @@ using System.Windows;
 using System.Windows.Controls;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.Strategies.Services;
+using Meridian.Strategies.Storage;
 using Meridian.Ui.Services.Contracts;
 using Meridian.Ui.Services.Services;
+using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Workflows;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
@@ -26,6 +31,7 @@ public sealed class MainShellViewModelTests
         WorkstationOperatingContextService? operatingContextService = null,
         WorkspaceShellContextService? workspaceShellContextService = null,
         SettingsConfigurationService? settingsConfigurationService = null,
+        WorkstationWorkflowSummaryService? workflowSummaryService = null,
         IWorkstationOperatorInboxApiClient? operatorInboxClient = null)
     {
         var navigationService = NavigationService.Instance;
@@ -44,6 +50,7 @@ public sealed class MainShellViewModelTests
             fundContextService,
             operatingContextService,
             workspaceShellContextService,
+            workflowSummaryService,
             operatorInboxApiClient: operatorInboxClient,
             settingsConfigurationService: settingsConfigurationService);
     }
@@ -940,6 +947,60 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void WorkflowSummaryPresentation_RequestsActiveAccountScopedFinancialOperations()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var accountId = Guid.Parse("6c8e1e09-2fa2-43e7-bdd2-c22c5d4c121a");
+            var gate = new object();
+            var fundAccountCalls = new List<Guid?>();
+            var operationsWorkflowService = Substitute.For<IOperationsContinuityWorkflowService>();
+            operationsWorkflowService
+                .ListAsync(
+                    Arg.Any<Guid?>(),
+                    Arg.Any<string?>(),
+                    Arg.Any<OperationsWorkflowStatusDto?>(),
+                    Arg.Any<CancellationToken>())
+                .Returns(callInfo =>
+                {
+                    lock (gate)
+                    {
+                        fundAccountCalls.Add(callInfo.ArgAt<Guid?>(0));
+                    }
+
+                    return Task.FromResult<IReadOnlyList<OperationsContinuityWorkflowSummaryDto>>(
+                        Array.Empty<OperationsContinuityWorkflowSummaryDto>());
+                });
+            using var vm = CreateMainPageViewModel(
+                workflowSummaryService: CreateWorkflowSummaryService(operationsWorkflowService));
+
+            vm.SelectedOperatingContext = new WorkstationOperatingContext
+            {
+                ScopeKind = OperatingContextScopeKind.Account,
+                ScopeId = accountId.ToString("D"),
+                AccountId = accountId.ToString("D"),
+                DisplayName = "Northwind Income Account",
+                DefaultWorkspaceId = "accounting",
+                DefaultLandingPageTag = "AccountingShell"
+            };
+            vm.RefreshPageCommand.Execute(null);
+
+            await WaitForConditionAsync(() =>
+            {
+                lock (gate)
+                {
+                    return fundAccountCalls.Contains(accountId);
+                }
+            });
+
+            lock (gate)
+            {
+                fundAccountCalls.Should().Contain(accountId);
+            }
+        });
+    }
+
+    [Fact]
     public void PrimaryOperatorWorkflowPresentation_ProjectsDesignDocumentFlow()
     {
         WpfTestThread.Run(() =>
@@ -1337,6 +1398,20 @@ public sealed class MainShellViewModelTests
         await service.LoadAsync();
         await service.SelectContextAsync(service.Contexts[0].ContextKey);
         return service;
+    }
+
+    private static WorkstationWorkflowSummaryService CreateWorkflowSummaryService(
+        IOperationsContinuityWorkflowService operationsWorkflowService)
+    {
+        var readService = new StrategyRunReadService(
+            new StrategyRunStore(),
+            new PortfolioReadService(),
+            new LedgerReadService());
+
+        return new WorkstationWorkflowSummaryService(
+            readService,
+            actionCatalog: WorkflowRegistry.CreateDefault(),
+            operationsContinuityWorkflowService: operationsWorkflowService);
     }
 
     private static async Task WaitForConditionAsync(Func<bool> predicate, int timeoutMs = 5000)

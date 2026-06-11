@@ -1,6 +1,8 @@
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Identity;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Infrastructure.Adapters.Polygon;
@@ -76,6 +78,7 @@ public sealed class AppServiceRegistrationTests
                 .Should().BeOfType<SecurityAssetProfileWorkflowClient>();
             serviceProvider.GetRequiredService<FundOperationsWorkspaceReadService>().Should().NotBeNull();
             serviceProvider.GetRequiredService<IAccountingProjectionQueryService>().Should().BeOfType<AccountingProjectionQueryService>();
+            serviceProvider.GetRequiredService<IPrivateCapitalCloseCockpitService>().Should().BeOfType<PrivateCapitalCloseCockpitService>();
             serviceProvider.GetRequiredService<AccountingCloseViewModel>().Should().NotBeNull();
         });
     }

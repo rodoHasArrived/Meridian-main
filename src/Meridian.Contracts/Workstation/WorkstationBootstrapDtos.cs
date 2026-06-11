@@ -270,6 +270,14 @@ public sealed record WorkstationReportWriterFilterPayload(
     string? Value = null,
     string? Label = null);
 
+public sealed record WorkstationReportWriterFieldPayload(
+    string Name,
+    string Label,
+    string Role,
+    string DataType,
+    string Dataset,
+    string? Description = null);
+
 public sealed record WorkstationReportWriterGridPayload(
     string GridId,
     string Title,
@@ -284,7 +292,8 @@ public sealed record WorkstationReportWriterGridPayload(
     int? TopN = null,
     string? SortBy = null,
     bool SortDescending = true,
-    IReadOnlyList<WorkstationReportWriterFilterPayload>? Filters = null);
+    IReadOnlyList<WorkstationReportWriterFilterPayload>? Filters = null,
+    IReadOnlyList<WorkstationReportWriterFieldPayload>? SourceFields = null);
 
 public sealed record WorkstationReportingTemplatePayload(
     string TemplateId,
@@ -339,6 +348,15 @@ public sealed record WorkstationReportingRunNextActionPayload(
     string? DisabledReason,
     bool IsBrowserNavigable);
 
+public sealed record WorkstationGeneratedReportWriterGridPayload(
+    string GridId,
+    string Title,
+    string Kind,
+    string Artifact,
+    int DimensionCount,
+    int MetricCount,
+    int FormulaCount);
+
 public sealed record WorkstationReportingRunPayload(
     string RunId,
     string TemplateId,
@@ -353,7 +371,8 @@ public sealed record WorkstationReportingRunPayload(
     IReadOnlyList<string> AuditActions,
     string? FailureReason,
     IReadOnlyList<WorkstationReportingRunLinkPayload>? DrilldownLinks = null,
-    IReadOnlyList<WorkstationReportingRunNextActionPayload>? NextActions = null);
+    IReadOnlyList<WorkstationReportingRunNextActionPayload>? NextActions = null,
+    IReadOnlyList<WorkstationGeneratedReportWriterGridPayload>? GeneratedReportWriterGrids = null);
 
 /// <summary>
 /// Recipient-level distribution posture for governed report-pack output.
@@ -370,6 +389,25 @@ public sealed record WorkstationReportPackDistributionPayload(
     DateTimeOffset? DueAtUtc,
     DateTimeOffset? LastSentAtUtc,
     string Route);
+
+/// <summary>
+/// Aggregate access-policy evidence for the reporting payload visible to the current caller.
+/// </summary>
+public sealed record WorkstationReportAccessAuditSummaryDto(
+    string EvaluationScope,
+    string Summary,
+    IReadOnlyList<string> PrincipalScopes,
+    int VisibleTemplateCount,
+    int HiddenTemplateCount,
+    int VisibleReportPackCount,
+    int HiddenReportPackCount,
+    int VisibleScheduleCount,
+    int HiddenScheduleCount,
+    int VisibleDeliveryAttemptCount,
+    int HiddenDeliveryAttemptCount,
+    int VisibleStructuredExportCount,
+    int HiddenStructuredExportCount,
+    IReadOnlyList<string> DenialReasons);
 
 /// <summary>
 /// Typed reporting summary embedded inside <see cref="WorkstationAccountingPayload"/>.
@@ -390,7 +428,11 @@ public sealed record WorkstationReportingPayload(
     IReadOnlyList<PortfolioReportingCutDto>? PortfolioCuts = null,
     IReadOnlyList<PortfolioReportingLiveViewDto>? LivePortfolioViews = null,
     IReadOnlyList<CrossFundReportingConsolidationDto>? CrossFundConsolidations = null,
-    IReadOnlyList<PortfolioReportingPnlSliceDto>? PnlSlices = null);
+    IReadOnlyList<PortfolioReportingPnlSliceDto>? PnlSlices = null,
+    IReadOnlyList<PortfolioReportingAnalyticsRowDto>? AnalyticsRows = null,
+    IReadOnlyList<StructuredReportingExportDto>? StructuredExports = null,
+    IReadOnlyList<ReportBrandingThemeDto>? BrandingThemes = null,
+    WorkstationReportAccessAuditSummaryDto? AccessAudit = null);
 
 /// <summary>
 /// Typed payload returned by <c>GET /api/workstation/accounting</c> and

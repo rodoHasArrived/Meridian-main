@@ -763,6 +763,14 @@ public sealed class FundLedgerViewModelTests
         xaml.Should().NotContain("ReconciliationSection.GovernanceSignifierState");
         xaml.Should().Contain("FundReportPackReadinessSignifier");
         xaml.Should().Contain("ReportPackReadinessState");
+        xaml.Should().Contain("FundPrivateCapitalCloseReadinessSignifier");
+        xaml.Should().Contain("FundPrivateCapitalCloseLaneGrid");
+        xaml.Should().Contain("FundPrivateCapitalNavSupportGrid");
+        xaml.Should().Contain("FundPrivateCapitalCloseApprovalGrid");
+        xaml.Should().Contain("PrivateCapitalCloseReadinessState");
+        xaml.Should().Contain("ItemsSource=\"{Binding PrivateCapitalCloseLanes}\"");
+        xaml.Should().Contain("ItemsSource=\"{Binding PrivateCapitalNavSupportPackages}\"");
+        xaml.Should().Contain("ItemsSource=\"{Binding PrivateCapitalCloseApprovals}\"");
     }
 
     [Fact]
@@ -961,14 +969,23 @@ public sealed class FundLedgerViewModelTests
         sectionSource.Should().Contain("public string ReportPackOwnershipText");
         sectionSource.Should().Contain("public WorkstationStateModel ReportPackReadinessState");
         sectionSource.Should().Contain("public ObservableCollection<FundAccountingRecordEvidenceCategoryRow> AccountingRecordEvidenceCategories");
+        sectionSource.Should().Contain("public ObservableCollection<FundPrivateCapitalCloseLaneRow> PrivateCapitalCloseLanes");
+        sectionSource.Should().Contain("public ObservableCollection<FundPrivateCapitalNavSupportPackageRow> PrivateCapitalNavSupportPackages");
+        sectionSource.Should().Contain("public ObservableCollection<FundPrivateCapitalCloseApprovalRow> PrivateCapitalCloseApprovals");
         sectionSource.Should().Contain("public string AccountingRecordSummaryText");
         sectionSource.Should().Contain("public WorkstationStateModel AccountingRecordReadinessState");
+        sectionSource.Should().Contain("public string PrivateCapitalCloseSummaryText");
+        sectionSource.Should().Contain("public WorkstationStateModel PrivateCapitalCloseReadinessState");
         sectionSource.Should().Contain("public int SelectedTabIndex");
         viewModelSource.Should().Contain("internal FundLedgerWorkbenchSectionViewModel WorkbenchSection");
         viewModelSource.Should().Contain("get => WorkbenchSection.CurrentWorkbenchModeText");
         viewModelSource.Should().Contain("get => WorkbenchSection.RouteBannerTitleText");
         viewModelSource.Should().Contain("get => WorkbenchSection.ReportPackReadinessState");
         viewModelSource.Should().Contain("get => WorkbenchSection.AccountingRecordReadinessState");
+        viewModelSource.Should().Contain("get => WorkbenchSection.PrivateCapitalCloseReadinessState");
+        viewModelSource.Should().Contain("IPrivateCapitalCloseCockpitService?");
+        viewModelSource.Should().Contain("LoadPrivateCapitalCloseCockpitAsync");
+        viewModelSource.Should().Contain("ApplyPrivateCapitalCloseCockpit");
         viewModelSource.Should().Contain("get => WorkbenchSection.SelectedTabIndex");
         viewModelSource.Should().NotContain("private string _currentWorkbenchModeText");
         viewModelSource.Should().NotContain("private string _routeBannerTitleText");
@@ -977,6 +994,7 @@ public sealed class FundLedgerViewModelTests
         viewModelSource.Should().NotContain("private string _reportPackOwnershipText");
         viewModelSource.Should().NotContain("private WorkstationStateModel _reportPackReadinessState");
         viewModelSource.Should().NotContain("private WorkstationStateModel _accountingRecordReadinessState");
+        viewModelSource.Should().NotContain("private WorkstationStateModel _privateCapitalCloseReadinessState");
         viewModelSource.Should().NotContain("private int _selectedTabIndex");
     }
     [Fact]
@@ -1091,6 +1109,7 @@ public sealed class FundLedgerViewModelTests
                     portfolioReadService,
                     strategyReconciliationService,
                     operationsContinuityService);
+                var closeCockpitService = new StubPrivateCapitalCloseCockpitService(BuildPrivateCapitalCloseCockpit());
 
                 using var viewModel = new FundLedgerViewModel(
                     fundLedgerReadService,
@@ -1100,7 +1119,8 @@ public sealed class FundLedgerViewModelTests
                     cashFinancingReadService,
                     workbenchService,
                     fundOperationsWorkspaceReadService,
-                    workspaceService);
+                    workspaceService,
+                    privateCapitalCloseCockpitService: closeCockpitService);
 
                 await viewModel.LoadAsync(new FundOperationsNavigationContext(
                     Tab: FundOperationsTab.ReportPack,
@@ -1163,6 +1183,34 @@ public sealed class FundLedgerViewModelTests
                     link.Label == "Retained source data" &&
                     link.Target == "OperationsContinuity" &&
                     link.Source.StartsWith("accounting-record/accounting-record-", StringComparison.Ordinal));
+                closeCockpitService.RequestedFundProfileId.Should().Be("alpha-fund");
+                viewModel.PrivateCapitalCloseStatusText.Should().Be("Review Required");
+                viewModel.PrivateCapitalCloseSummaryText.Should().Contain("1/2 close lanes ready");
+                viewModel.PrivateCapitalCloseEvidenceText.Should().Contain("4 evidence links");
+                viewModel.PrivateCapitalCloseBlockerText.Should().Contain("Controller approval required");
+                viewModel.PrivateCapitalCloseLanes.Should().Contain(row =>
+                    row.LaneId == "partner-capital-tie-out" &&
+                    row.StatusLabel == "Review Required" &&
+                    row.RequiredActionsLabel.Contains("Approve partner capital tie-out", StringComparison.OrdinalIgnoreCase) &&
+                    row.SourceTarget == "OperationsClose");
+                viewModel.PrivateCapitalNavSupportPackages.Should().ContainSingle(row =>
+                    row.PackageId == "nav-pack-alpha" &&
+                    row.StatusLabel == "Ready" &&
+                    row.ShadowNavLabel.Contains("USD", StringComparison.OrdinalIgnoreCase) &&
+                    row.ComponentLabel == "1/1 components ready");
+                viewModel.PrivateCapitalCloseApprovals.Should().ContainSingle(row =>
+                    row.ApprovalId == "approval-close-alpha" &&
+                    row.StatusLabel == "Approved" &&
+                    row.ReviewerLabel == "controller" &&
+                    row.EvidenceLabel == "1 evidence link");
+                viewModel.PrivateCapitalCloseReadinessState.Title.Should().Be("Private-capital close review required");
+                viewModel.PrivateCapitalCloseReadinessState.ActionPosture!.Target.Should().Be("OperationsClose");
+                viewModel.PrivateCapitalCloseReadinessState.VisibleEvidenceLinks.Should().Contain(link =>
+                    link.Label == "NAV support package" &&
+                    link.Target == "FundReportPack");
+                viewModel.PrivateCapitalCloseReadinessState.RecoveryActions.Should().Contain(action =>
+                    action.Label == "Approve partner capital tie-out" &&
+                    action.Target == "OperationsClose");
             }
             finally
             {
@@ -1348,6 +1396,152 @@ public sealed class FundLedgerViewModelTests
             new InMemoryOperationsContinuityRepository(derivation),
             new InMemoryOperationsWorkflowAuditStore(),
             derivation);
+    }
+
+    private static PrivateCapitalCloseCockpitDto BuildPrivateCapitalCloseCockpit()
+    {
+        var workflowId = Guid.Parse("aaaaaaaa-1111-2222-3333-bbbbbbbbbbbb");
+        var fundAccountId = Guid.Parse("bbbbbbbb-1111-2222-3333-cccccccccccc");
+        var projectedAt = new DateTimeOffset(2026, 6, 30, 21, 0, 0, TimeSpan.Zero);
+        var navEvidence = CloseEvidence("shadow-nav-pack", "Shadow NAV support package", "/evidence/shadow-nav-pack");
+        var approvalEvidence = CloseEvidence("approval-close", "Approval close evidence", "/evidence/approval-close");
+
+        return new PrivateCapitalCloseCockpitDto(
+            FundProfileId: "alpha-fund",
+            LedgerBookId: Guid.Parse("cccccccc-1111-2222-3333-dddddddddddd"),
+            FundAccountId: fundAccountId,
+            PeriodId: "2026-06",
+            EntityId: "entity-alpha",
+            ProjectedAtUtc: projectedAt,
+            CockpitRoute: "/api/workstation/operations/private-capital-close-cockpit?fundProfileId=alpha-fund",
+            OverallStatus: EvidenceStatusDto.ReviewRequired,
+            IsReadyToClose: false,
+            ReadinessScore: 78,
+            WorkflowCount: 1,
+            FundEventCount: 3,
+            CapitalAccountCount: 2,
+            ReportOutputCount: 2,
+            DeliveredReportOutputCount: 1,
+            ReadyLaneCount: 1,
+            BlockedLaneCount: 0,
+            Lanes:
+            [
+                new PrivateCapitalCloseCockpitLaneDto(
+                    "partner-capital-tie-out",
+                    "Partner capital tie-out",
+                    EvidenceStatusDto.ReviewRequired,
+                    false,
+                    "LP capital statement needs controller approval before close sign-off.",
+                    "OperationsClose",
+                    1,
+                    [CloseEvidence("capital-tie-out", "Capital tie-out evidence", "/evidence/capital-tie-out")],
+                    ["Approve partner capital tie-out"]),
+                new PrivateCapitalCloseCockpitLaneDto(
+                    "nav-support",
+                    "NAV support package",
+                    EvidenceStatusDto.Ready,
+                    true,
+                    "Shadow NAV package retained with pricing, cash, and position evidence.",
+                    "FundReportPack",
+                    1,
+                    [navEvidence])
+            ],
+            Workflows:
+            [
+                new PrivateCapitalCloseCockpitWorkflowDto(
+                    workflowId,
+                    fundAccountId,
+                    "2026-06",
+                    OperationsWorkflowStatusDto.ApprovalPending,
+                    78,
+                    false,
+                    "OperationsClose",
+                    "close-package-alpha-2026-06",
+                    "FundReportPack",
+                    1,
+                    1,
+                    projectedAt)
+            ],
+            Blockers:
+            [
+                new OperationsCloseReadinessBlockerDto(
+                    "CAPITAL_TIE_OUT_APPROVAL",
+                    "Approvals",
+                    "warning",
+                    "Controller approval required for partner capital tie-out.",
+                    OperationsGateKeyDto.Approval,
+                    "OperationsClose")
+            ],
+            NextActions:
+            [
+                new OperationsNextActionDto(
+                    "approve-capital-tie-out",
+                    "Approve partner capital tie-out",
+                    "OperationsClose",
+                    OperationsGateKeyDto.Approval)
+            ],
+            LiveCapabilities: ["Approval history", "NAV support packages"],
+            PlannedCapabilities: ["Administrator-versus-Meridian shadow NAV tie-out automation"],
+            ApprovalHistory:
+            [
+                new PrivateCapitalCloseCockpitApprovalDto(
+                    "approval-close-alpha",
+                    workflowId,
+                    fundAccountId,
+                    "2026-06",
+                    OperationsApprovalStateDto.Approved,
+                    "fund-ops",
+                    "controller",
+                    "Close package approved after partner capital review.",
+                    projectedAt.AddMinutes(-30),
+                    projectedAt.AddMinutes(-10),
+                    "OperationsClose",
+                    1,
+                    [approvalEvidence])
+            ],
+            NavSupportPackages:
+            [
+                new PrivateCapitalNavSupportPackageDto(
+                    "nav-pack-alpha",
+                    "NAV support package",
+                    EvidenceStatusDto.Ready,
+                    true,
+                    "Shadow NAV package retained with pricing, cash, and position evidence.",
+                    "FundReportPack",
+                    12_345.67m,
+                    "USD",
+                    1,
+                    [navEvidence],
+                    [new PrivateCapitalNavSupportComponentDto("positions", "Positions", EvidenceStatusDto.Ready, true, "Positions retained.", "OperationsClose", 100)])
+            ]);
+    }
+
+    private static OperationsEvidenceLinkDto CloseEvidence(string evidenceId, string label, string route)
+        => new(evidenceId, label, route, "test", new DateTimeOffset(2026, 6, 30, 21, 0, 0, TimeSpan.Zero));
+
+    private sealed class StubPrivateCapitalCloseCockpitService : IPrivateCapitalCloseCockpitService
+    {
+        private readonly PrivateCapitalCloseCockpitDto _cockpit;
+
+        public StubPrivateCapitalCloseCockpitService(PrivateCapitalCloseCockpitDto cockpit)
+        {
+            _cockpit = cockpit;
+        }
+
+        public string? RequestedFundProfileId { get; private set; }
+
+        public Task<PrivateCapitalCloseCockpitDto> GetCockpitAsync(
+            string? fundProfileId = null,
+            Guid? ledgerBookId = null,
+            Guid? fundAccountId = null,
+            string? periodId = null,
+            string? entityId = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            RequestedFundProfileId = fundProfileId;
+            return Task.FromResult(_cockpit);
+        }
     }
 
     private static async Task WaitForConditionAsync(Func<bool> condition, int attempts = 40)

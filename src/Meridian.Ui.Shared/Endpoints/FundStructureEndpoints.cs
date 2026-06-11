@@ -7,6 +7,7 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
 using Meridian.Entities.FundStructure;
+using Meridian.Reporting;
 using Meridian.Storage.Export;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -1585,6 +1586,108 @@ public static class FundStructureEndpoints
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status403Forbidden);
 
+        group.MapGet("/reporting/runs/{runId}/audit", (
+            string runId,
+            HttpContext context) =>
+        {
+            if (!HasReportingReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var orchestration = context.RequestServices.GetService<IReportingOrchestrationService>();
+            if (orchestration is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            try
+            {
+                var manifest = orchestration.GetManifest(runId.Trim())
+                    ?? throw new KeyNotFoundException($"Reporting run '{runId}' was not found.");
+                var governedCatalog = context.RequestServices.GetService<GovernedReportingTemplateCatalog>();
+                if (governedCatalog is not null)
+                {
+                    var evaluation = governedCatalog.EvaluateAccess(manifest.TemplateId, BuildReportAccessQueryContext(context));
+                    if (!evaluation.IsAccessible)
+                    {
+                        throw new UnauthorizedAccessException(evaluation.Reason);
+                    }
+                }
+
+                return Results.Json(
+                    ProjectReportingRunAuditTrail(manifest, orchestration.GetAudit(manifest.RunId)),
+                    jsonOptions);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status403Forbidden);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status404NotFound);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("GetReportingRunAuditTrail")
+        .Produces<ReportingRunAuditTrailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound);
+
+        group.MapGet("/reporting/runs/{runId}/report-writer-grids/{gridId}", (
+            string runId,
+            string gridId,
+            string? format,
+            HttpContext context) =>
+        {
+            if (!HasReportingReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var svc = context.RequestServices.GetService<ReportWriterGridArtifactService>();
+            if (svc is null)
+            {
+                return WorkspaceServiceUnavailable();
+            }
+
+            try
+            {
+                var artifact = svc.GetArtifact(runId, gridId, format, jsonOptions, BuildReportAccessQueryContext(context));
+                if (string.Equals(artifact.ContentType, "application/json", StringComparison.OrdinalIgnoreCase)
+                    && string.IsNullOrWhiteSpace(format))
+                {
+                    return Results.Json(svc.GetGrid(runId, gridId, BuildReportAccessQueryContext(context)), jsonOptions);
+                }
+
+                return Results.File(artifact.Content, artifact.ContentType, artifact.FileName);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status403Forbidden);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status404NotFound);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("GetReportingRunReportWriterGrid")
+        .Produces<ReportWriterGridRenderDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status200OK, contentType: "application/json")
+        .Produces(StatusCodes.Status200OK, contentType: "text/csv")
+        .Produces(StatusCodes.Status200OK, contentType: StructuredXlsxContentType)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound);
+
         group.MapGet("/reporting/schedules", (HttpContext context) =>
         {
             if (!HasReportingReadPermission(context))
@@ -1934,6 +2037,26 @@ public static class FundStructureEndpoints
             ? null
             : EndpointHelpers.Forbidden();
     }
+
+    private static ReportingRunAuditTrailDto ProjectReportingRunAuditTrail(
+        ReportingOutputManifest manifest,
+        IReadOnlyList<ReportingRunAuditEntry> auditTrail) =>
+        new(
+            manifest.RunId,
+            manifest.TemplateId,
+            manifest.AsOfDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
+            manifest.Status.ToString(),
+            manifest.Trigger.ToString(),
+            manifest.AttemptCount,
+            auditTrail
+                .OrderBy(static entry => entry.TimestampUtc)
+                .Select(static entry => new ReportingRunAuditEntryDto(
+                    entry.RunId,
+                    entry.TimestampUtc,
+                    entry.Action,
+                    entry.Actor,
+                    entry.Notes))
+                .ToArray());
 
     private static ReportAccessQueryContext BuildReportAccessQueryContext(HttpContext context)
     {
@@ -2298,9 +2421,76 @@ public static class FundStructureEndpoints
 
         return XlsxWorkbookWriter.CreateWorkbook(
         [
-            new XlsxWorksheet(payload.Export.Dataset, headers, rows)
+            new XlsxWorksheet(payload.Export.Dataset, headers, rows),
+            new XlsxWorksheet(
+                "Metadata",
+                ["Field", "Value"],
+                BuildStructuredExportMetadataRows(payload)),
+            new XlsxWorksheet(
+                "DataDictionary",
+                ["Ordinal", "Name", "Data type", "Required", "Description"],
+                BuildStructuredExportDataDictionaryRows(payload)),
+            new XlsxWorksheet(
+                "Validation",
+                ["Check", "Status", "Detail"],
+                BuildStructuredExportValidationRows(payload))
         ]);
     }
+
+    private static IReadOnlyList<IReadOnlyList<object?>> BuildStructuredExportMetadataRows(
+        StructuredReportingExportPayloadDto payload) =>
+    [
+        ["exportId", payload.Export.ExportId],
+        ["label", payload.Export.Label],
+        ["purpose", payload.Export.Purpose.ToString()],
+        ["dataset", payload.Export.Dataset],
+        ["consumer", payload.Export.Consumer],
+        ["schemaVersion", payload.Export.SchemaVersion],
+        ["rowCount", payload.Export.RowCount],
+        ["fieldCount", payload.Export.FieldCount],
+        ["sourceCount", payload.Export.SourceCount],
+        ["currency", payload.Export.Currency],
+        ["asOf", payload.Export.AsOf],
+        ["isReady", payload.Export.IsReady],
+        ["retainedPath", payload.Export.RetainedPath],
+        ["route", payload.Export.Route],
+        ["versionStamp", payload.Export.VersionStamp],
+        ["generatedAtUtc", payload.GeneratedAtUtc]
+    ];
+
+    private static IReadOnlyList<IReadOnlyList<object?>> BuildStructuredExportDataDictionaryRows(
+        StructuredReportingExportPayloadDto payload)
+    {
+        var fields = payload.DataDictionary is { Count: > 0 }
+            ? payload.DataDictionary
+            : payload.Columns.Select((column, index) => new StructuredReportingExportDataDictionaryFieldDto(
+                column.Name,
+                column.DataType,
+                column.Description,
+                index + 1)).ToArray();
+
+        return fields
+            .Select(static field => (IReadOnlyList<object?>)
+            [
+                field.Ordinal,
+                field.Name,
+                field.DataType,
+                field.Required ? "true" : "false",
+                field.Description
+            ])
+            .ToArray();
+    }
+
+    private static IReadOnlyList<IReadOnlyList<object?>> BuildStructuredExportValidationRows(
+        StructuredReportingExportPayloadDto payload) =>
+        (payload.ValidationChecks ?? [])
+            .Select(static check => (IReadOnlyList<object?>)
+            [
+                check.CheckId,
+                check.Status,
+                check.Detail
+            ])
+            .ToArray();
 
     private static void AppendStructuredExportCsvRow(StringBuilder builder, IEnumerable<string?> values)
     {

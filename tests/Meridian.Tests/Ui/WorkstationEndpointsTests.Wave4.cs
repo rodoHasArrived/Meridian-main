@@ -6,6 +6,7 @@ using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Workstation;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Tests.Ui;
 
@@ -207,6 +208,52 @@ public sealed partial class WorkstationEndpointsTests
                 "APPROVAL_REQUIRED"
             ]);
         calendarItem.ReadinessNextActions.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task OperationsContinuityEndpoints_PrivateCapitalCloseCockpit_ReturnsSharedCloseAggregate()
+    {
+        var captured = new List<(string? FundProfileId, Guid? LedgerBookId, Guid? FundAccountId, string? PeriodId, string? EntityId)>();
+        var ledgerBookId = Guid.Parse("88888888-8888-8888-8888-888888888888");
+        var fundAccountId = Guid.Parse("99999999-9999-9999-9999-999999999999");
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IPrivateCapitalCloseCockpitService>(
+                new StubPrivateCapitalCloseCockpitService(
+                    BuildPrivateCapitalCloseCockpit(ledgerBookId, fundAccountId),
+                    captured));
+        });
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync(
+            $"{UiApiRoutes.OperationsPrivateCapitalCloseCockpit}?fundProfileId=fund-alpha&ledgerBookId={ledgerBookId:D}&fundAccountId={fundAccountId:D}&periodId=2026-06&entityId=entity-master");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var cockpit = await response.Content.ReadFromJsonAsync<PrivateCapitalCloseCockpitDto>(ServerJsonOptions);
+        cockpit.Should().NotBeNull();
+        cockpit!.OverallStatus.Should().Be(EvidenceStatusDto.Ready);
+        cockpit.Lanes.Should().ContainSingle(lane => lane.LaneId == "period-lock" && lane.IsReady);
+        captured.Should().ContainSingle(call =>
+            call.FundProfileId == "fund-alpha" &&
+            call.LedgerBookId == ledgerBookId &&
+            call.FundAccountId == fundAccountId &&
+            call.PeriodId == "2026-06" &&
+            call.EntityId == "entity-master");
+    }
+
+    [Fact]
+    public async Task OperationsContinuityEndpoints_PrivateCapitalCloseCockpit_WithoutReadPermission_ReturnsForbidden()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IPrivateCapitalCloseCockpitService>(
+                new StubPrivateCapitalCloseCockpitService(BuildPrivateCapitalCloseCockpit(Guid.NewGuid(), Guid.NewGuid())));
+        }, currentUserPermissions: UserPermission.ViewStrategies);
+        var client = app.GetTestClient();
+
+        using var response = await client.GetAsync(UiApiRoutes.OperationsPrivateCapitalCloseCockpit);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -503,5 +550,84 @@ public sealed partial class WorkstationEndpointsTests
             UiApiRoutes.WithParam(UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityChecklistAcknowledge, "workflowId", workflowId.ToString()), "taskId", firstTask.TaskId),
             new OperationsChecklistAcknowledgeRequestDto(start.Workflow.Version, "ops-user", "ack"));
         ackResponse.StatusCode.Should().BeOneOf(HttpStatusCode.BadRequest, HttpStatusCode.Conflict);
+    }
+
+    private static PrivateCapitalCloseCockpitDto BuildPrivateCapitalCloseCockpit(Guid ledgerBookId, Guid fundAccountId)
+        => new(
+            FundProfileId: "fund-alpha",
+            LedgerBookId: ledgerBookId,
+            FundAccountId: fundAccountId,
+            PeriodId: "2026-06",
+            EntityId: "entity-master",
+            ProjectedAtUtc: new DateTimeOffset(2026, 6, 30, 18, 0, 0, TimeSpan.Zero),
+            CockpitRoute: UiApiRoutes.OperationsPrivateCapitalCloseCockpit,
+            OverallStatus: EvidenceStatusDto.Ready,
+            IsReadyToClose: true,
+            ReadinessScore: 100,
+            WorkflowCount: 1,
+            FundEventCount: 1,
+            CapitalAccountCount: 1,
+            ReportOutputCount: 1,
+            DeliveredReportOutputCount: 1,
+            ReadyLaneCount: 1,
+            BlockedLaneCount: 0,
+            Lanes:
+            [
+                new PrivateCapitalCloseCockpitLaneDto(
+                    "period-lock",
+                    "Period lock",
+                    EvidenceStatusDto.Ready,
+                    true,
+                    "Period lock evidence retained.",
+                    "/api/workstation/operations/continuity/22222222-2222-2222-2222-222222222222",
+                    0,
+                    [])
+            ],
+            Workflows:
+            [
+                new PrivateCapitalCloseCockpitWorkflowDto(
+                    Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                    fundAccountId,
+                    "2026-06",
+                    OperationsWorkflowStatusDto.Closed,
+                    100,
+                    true,
+                    "/api/workstation/operations/continuity/22222222-2222-2222-2222-222222222222",
+                    "close-package-fund-alpha-2026-06",
+                    "/operations-continuity/close-package/manifest-fund-alpha-2026-06",
+                    0,
+                    0,
+                    new DateTimeOffset(2026, 6, 30, 18, 0, 0, TimeSpan.Zero))
+            ],
+            Blockers: [],
+            NextActions: [],
+            LiveCapabilities: ["Fund/book/period close lane projection"],
+            PlannedCapabilities: ["Live payment release"]);
+
+    private sealed class StubPrivateCapitalCloseCockpitService : IPrivateCapitalCloseCockpitService
+    {
+        private readonly PrivateCapitalCloseCockpitDto _cockpit;
+        private readonly List<(string? FundProfileId, Guid? LedgerBookId, Guid? FundAccountId, string? PeriodId, string? EntityId)>? _captured;
+
+        public StubPrivateCapitalCloseCockpitService(
+            PrivateCapitalCloseCockpitDto cockpit,
+            List<(string? FundProfileId, Guid? LedgerBookId, Guid? FundAccountId, string? PeriodId, string? EntityId)>? captured = null)
+        {
+            _cockpit = cockpit;
+            _captured = captured;
+        }
+
+        public Task<PrivateCapitalCloseCockpitDto> GetCockpitAsync(
+            string? fundProfileId = null,
+            Guid? ledgerBookId = null,
+            Guid? fundAccountId = null,
+            string? periodId = null,
+            string? entityId = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            _captured?.Add((fundProfileId, ledgerBookId, fundAccountId, periodId, entityId));
+            return Task.FromResult(_cockpit);
+        }
     }
 }

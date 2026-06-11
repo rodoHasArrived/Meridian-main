@@ -276,6 +276,31 @@ export function EvidenceWorkbenchScreen() {
                           ))}
                         </ul>
                       ) : null}
+                      {vm.exportResultDetail.requestListRows.length > 0 ? (
+                        <ul className="mt-3 grid gap-2" aria-label="Evidence vault request lists">
+                          {vm.exportResultDetail.requestListRows.map((requestList) => (
+                            <li
+                              key={requestList.id}
+                              aria-label={requestList.ariaLabel}
+                              className="rounded-sm border border-primary/30 bg-background/40 px-2.5 py-2 text-xs"
+                            >
+                              <div className="flex flex-wrap items-center gap-2 font-semibold">
+                                <ListChecks className="h-3.5 w-3.5" aria-hidden="true" />
+                                <span>{requestList.requestListKindLabel}</span>
+                                <Badge variant={badgeVariant[requestList.highestSeverityTone]}>{requestList.highestSeverityLabel}</Badge>
+                                <Badge variant="outline">{requestList.statusLabel}</Badge>
+                              </div>
+                              <div className="mt-1 break-all font-mono">{requestList.targetLabel}</div>
+                              <p className="mt-1 text-xs leading-5 text-primary/90">{requestList.summary}</p>
+                              <div className="mt-2 grid gap-1 font-mono text-[0.7rem] sm:grid-cols-2">
+                                <span className="break-all">{requestList.requestCountLabel}</span>
+                                <span className="break-all">{requestList.evidenceKindsLabel}</span>
+                                <span className="break-all sm:col-span-2">{requestList.blockedOutputsLabel}</span>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
                       {vm.exportResultDetail.supportRequestRows.length > 0 ? (
                         <ul className="mt-3 grid gap-2" aria-label="Evidence vault support requests">
                           {vm.exportResultDetail.supportRequestRows.map((request) => (

@@ -87,6 +87,17 @@ const reporting: GovernanceReportingSummary = {
       artifacts: ["manifest.json"],
       auditActions: ["RunGenerated", "ApprovalTransition"],
       failureReason: null,
+      generatedReportWriterGrids: [
+        {
+          gridId: "sector-pivot",
+          title: "Sector Pivot",
+          kind: "Pivot",
+          artifact: "report-writer://investor-monthly-statement-20260501/grids/sector-pivot",
+          dimensionCount: 2,
+          metricCount: 2,
+          formulaCount: 1
+        }
+      ],
       drilldownLinks: [
         {
           id: "investor-monthly-statement-20260501:evidence",
@@ -320,6 +331,9 @@ describe("useReportingScreenViewModel", () => {
       id: "investor-monthly-statement-20260501",
       status: "InReview",
       lineageSummary: "2/2 sections linked",
+      generatedGridLabel: "1 generated grid with 1 formula",
+      generatedGridNames: ["Sector Pivot (Pivot, 2d/2m/1f)"],
+      hasGeneratedGrids: true,
       auditSummary: "RunGenerated → ApprovalTransition",
       hasDrilldownLinks: true,
       hasNextActions: true,
