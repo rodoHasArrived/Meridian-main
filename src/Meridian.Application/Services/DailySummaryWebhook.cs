@@ -8,6 +8,7 @@ using Meridian.Application.Monitoring;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
 using Meridian.Infrastructure.Http;
+using Meridian.Infrastructure.Shared;
 using Meridian.Platform.Diagnostics;
 using Meridian.Platform.Scheduling;
 using Serilog;
@@ -496,7 +497,10 @@ public sealed class DailySummaryWebhook : IMonitoringWebhookSink, IAsyncDisposab
         catch { return TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time").Id; }
     }
 
-    private async void ScheduledCallback(object? state)
+    private void ScheduledCallback(object? state) =>
+        ScheduledCallbackAsync(state).ObserveException(operation: "daily summary scheduled callback");
+
+    private async Task ScheduledCallbackAsync(object? state)
     {
         try
         {

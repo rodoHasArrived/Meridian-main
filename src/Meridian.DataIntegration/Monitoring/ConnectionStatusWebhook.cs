@@ -44,7 +44,12 @@ public sealed class ConnectionStatusWebhook : IAsyncDisposable
             _config.MinAlertIntervalSeconds);
     }
 
-    private async void HandleConnectionLost(ConnectionLostEvent evt)
+    private void HandleConnectionLost(ConnectionLostEvent evt) =>
+        HandleConnectionLostAsync(evt).ContinueWith(
+            t => _log.LogError(t.Exception!.InnerException ?? t.Exception, "Unhandled exception in connection-lost webhook handler"),
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
+
+    private async Task HandleConnectionLostAsync(ConnectionLostEvent evt)
     {
         if (_isDisposed || _webhook == null || !_config.NotifyOnConnectionLost)
             return;
@@ -63,11 +68,16 @@ public sealed class ConnectionStatusWebhook : IAsyncDisposable
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
-            _log.LogWarning(ex, "Failed to send connection lost webhook");
+            _log.LogError(ex, "Failed to send connection lost webhook");
         }
     }
 
-    private async void HandleConnectionRecovered(ConnectionRecoveredEvent evt)
+    private void HandleConnectionRecovered(ConnectionRecoveredEvent evt) =>
+        HandleConnectionRecoveredAsync(evt).ContinueWith(
+            t => _log.LogError(t.Exception!.InnerException ?? t.Exception, "Unhandled exception in connection-recovered webhook handler"),
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
+
+    private async Task HandleConnectionRecoveredAsync(ConnectionRecoveredEvent evt)
     {
         if (_isDisposed || _webhook == null || !_config.NotifyOnConnectionRecovered)
             return;
@@ -86,11 +96,16 @@ public sealed class ConnectionStatusWebhook : IAsyncDisposable
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
-            _log.LogWarning(ex, "Failed to send connection recovered webhook");
+            _log.LogError(ex, "Failed to send connection recovered webhook");
         }
     }
 
-    private async void HandleHeartbeatMissed(HeartbeatMissedEvent evt)
+    private void HandleHeartbeatMissed(HeartbeatMissedEvent evt) =>
+        HandleHeartbeatMissedAsync(evt).ContinueWith(
+            t => _log.LogError(t.Exception!.InnerException ?? t.Exception, "Unhandled exception in heartbeat-missed webhook handler"),
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
+
+    private async Task HandleHeartbeatMissedAsync(HeartbeatMissedEvent evt)
     {
         if (_isDisposed || _webhook == null || !_config.NotifyOnHeartbeatMissed)
             return;
@@ -113,11 +128,16 @@ public sealed class ConnectionStatusWebhook : IAsyncDisposable
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
-            _log.LogWarning(ex, "Failed to send heartbeat missed webhook");
+            _log.LogError(ex, "Failed to send heartbeat missed webhook");
         }
     }
 
-    private async void HandleHighLatency(HighLatencyEvent evt)
+    private void HandleHighLatency(HighLatencyEvent evt) =>
+        HandleHighLatencyAsync(evt).ContinueWith(
+            t => _log.LogError(t.Exception!.InnerException ?? t.Exception, "Unhandled exception in high-latency webhook handler"),
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
+
+    private async Task HandleHighLatencyAsync(HighLatencyEvent evt)
     {
         if (_isDisposed || _webhook == null || !_config.NotifyOnHighLatency)
             return;
@@ -140,7 +160,7 @@ public sealed class ConnectionStatusWebhook : IAsyncDisposable
         catch (OperationCanceledException) { }
         catch (Exception ex)
         {
-            _log.LogWarning(ex, "Failed to send high latency webhook");
+            _log.LogError(ex, "Failed to send high latency webhook");
         }
     }
 
@@ -227,7 +247,7 @@ public sealed class ConnectionStatusWebhook : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            _log.LogWarning(ex, "Failed to send status update webhook");
+            _log.LogError(ex, "Failed to send status update webhook");
         }
     }
 
@@ -248,7 +268,7 @@ public sealed class ConnectionStatusWebhook : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            _log.LogWarning(ex, "Failed to send connection summary webhook");
+            _log.LogError(ex, "Failed to send connection summary webhook");
         }
     }
 

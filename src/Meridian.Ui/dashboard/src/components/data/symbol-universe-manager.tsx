@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
+const TICKER_PATTERN = /^[A-Z0-9.\-]{1,12}$/;
+
 interface Symbol {
   symbol: string;
   exchange: string;
@@ -31,24 +33,51 @@ export function SymbolUniverseManager({ symbols, onAdd, onUpdate, onDelete, isLo
   const [isOpen, setIsOpen] = useState(false);
   const [editingSymbol, setEditingSymbol] = useState<Symbol | null>(null);
   const [formData, setFormData] = useState<Partial<Symbol>>({});
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [symbolToDelete, setSymbolToDelete] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const dialogTitleId = "symbol-universe-dialog-title";
   const dialogDescriptionId = "symbol-universe-dialog-description";
 
   const handleOpenNew = () => {
     setEditingSymbol(null);
     setFormData({ exchange: "SMART", currency: "USD", subscribeTrades: true, subscribeDepth: true });
+    setFormErrors({});
     setIsOpen(true);
   };
 
   const handleOpenEdit = (symbol: Symbol) => {
     setEditingSymbol(symbol);
     setFormData(symbol);
+    setFormErrors({});
     setIsOpen(true);
   };
 
+  const validateForm = (): Record<string, string> => {
+    const errors: Record<string, string> = {};
+    const sym = (formData.symbol ?? "").trim();
+    if (!sym) {
+      errors.symbol = "Symbol is required.";
+    } else if (!TICKER_PATTERN.test(sym)) {
+      errors.symbol = "Symbol must be 1–12 uppercase letters, digits, dots, or hyphens.";
+    }
+    if (!(formData.exchange ?? "").trim()) {
+      errors.exchange = "Exchange is required.";
+    }
+    if (!(formData.currency ?? "").trim()) {
+      errors.currency = "Currency is required.";
+    }
+    return errors;
+  };
+
   const handleSave = async () => {
-    if (!formData.symbol) return;
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
 
     setIsSaving(true);
     try {
@@ -59,20 +88,34 @@ export function SymbolUniverseManager({ symbols, onAdd, onUpdate, onDelete, isLo
       }
       setIsOpen(false);
       setFormData({});
+      setFormErrors({});
       setEditingSymbol(null);
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleDelete = async (symbol: string) => {
-    if (confirm(`Remove ${symbol} from trading universe?`)) {
-      try {
-        await onDelete(symbol);
-      } catch (error) {
-        console.error("Failed to delete symbol:", error);
-      }
+  const handleDeleteRequest = (symbol: string) => {
+    setDeleteError(null);
+    setSymbolToDelete(symbol);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!symbolToDelete) return;
+    setIsDeleting(true);
+    try {
+      await onDelete(symbolToDelete);
+      setSymbolToDelete(null);
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : "Failed to remove symbol. Please try again.");
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setSymbolToDelete(null);
+    setDeleteError(null);
   };
 
   return (
@@ -87,15 +130,34 @@ export function SymbolUniverseManager({ symbols, onAdd, onUpdate, onDelete, isLo
               </CardDescription>
             </div>
             <Button onClick={handleOpenNew} size="sm" disabled={isLoading}>
-              <Plus className="h-4 w-4 mr-1.5" />
+              <Plus className="h-4 w-4 mr-1.5" aria-hidden="true" />
               Add Symbol
             </Button>
           </div>
         </CardHeader>
         <CardContent>
+          {deleteError && (
+            <div role="alert" className="mb-3 flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              <AlertCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+              {deleteError}
+            </div>
+          )}
+          {symbolToDelete && (
+            <div role="alertdialog" aria-label={`Confirm removal of ${symbolToDelete}`} className="mb-3 rounded-md border px-3 py-3 text-sm">
+              <p className="font-medium">Remove <span className="font-semibold">{symbolToDelete}</span> from the trading universe?</p>
+              <div className="mt-2 flex gap-2">
+                <Button size="sm" variant="destructive" onClick={handleDeleteConfirm} disabled={isDeleting}>
+                  {isDeleting ? "Removing…" : "Remove"}
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleDeleteCancel} disabled={isDeleting}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
           {symbols.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" />
+              <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" aria-hidden="true" />
               <p className="text-sm text-muted-foreground">No symbols configured yet.</p>
               <p className="text-xs text-muted-foreground mt-1">Add your first symbol to get started.</p>
             </div>
@@ -114,7 +176,7 @@ export function SymbolUniverseManager({ symbols, onAdd, onUpdate, onDelete, isLo
                           {sym.exchange}
                         </Badge>
                         {sym.status === "configured" && (
-                          <CheckCircle2 className="h-4 w-4 text-green-600" aria-label="Configured" />
+                          <CheckCircle2 className="h-4 w-4 text-green-600" aria-hidden="true" />
                         )}
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">
@@ -132,19 +194,19 @@ export function SymbolUniverseManager({ symbols, onAdd, onUpdate, onDelete, isLo
                       variant="ghost"
                       size="sm"
                       onClick={() => handleOpenEdit(sym)}
-                      disabled={isLoading}
+                      disabled={isLoading || symbolToDelete !== null}
                       aria-label={`Edit ${sym.symbol}`}
                     >
-                      <Edit2 className="h-4 w-4" />
+                      <Edit2 className="h-4 w-4" aria-hidden="true" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDelete(sym.symbol)}
-                      disabled={isLoading}
+                      onClick={() => handleDeleteRequest(sym.symbol)}
+                      disabled={isLoading || symbolToDelete !== null}
                       aria-label={`Delete ${sym.symbol}`}
                     >
-                      <Trash2 className="h-4 w-4 text-red-500" />
+                      <Trash2 className="h-4 w-4 text-red-500" aria-hidden="true" />
                     </Button>
                   </div>
                 </div>
@@ -170,31 +232,58 @@ export function SymbolUniverseManager({ symbols, onAdd, onUpdate, onDelete, isLo
                 id="symbol"
                 placeholder="e.g., AAPL"
                 value={formData.symbol || ""}
-                onChange={(e) => setFormData({ ...formData, symbol: e.target.value.toUpperCase() })}
+                onChange={(e) => {
+                  setFormData({ ...formData, symbol: e.target.value.toUpperCase() });
+                  if (formErrors.symbol) setFormErrors({ ...formErrors, symbol: "" });
+                }}
                 disabled={!!editingSymbol || isSaving}
+                aria-required="true"
+                aria-describedby={formErrors.symbol ? "symbol-error" : undefined}
+                aria-invalid={!!formErrors.symbol}
               />
+              {formErrors.symbol && (
+                <p id="symbol-error" role="alert" className="mt-1 text-xs text-destructive">{formErrors.symbol}</p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="exchange">Exchange</Label>
+                <Label htmlFor="exchange">Exchange *</Label>
                 <Input
                   id="exchange"
                   placeholder="e.g., SMART"
                   value={formData.exchange || ""}
-                  onChange={(e) => setFormData({ ...formData, exchange: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, exchange: e.target.value });
+                    if (formErrors.exchange) setFormErrors({ ...formErrors, exchange: "" });
+                  }}
                   disabled={isSaving}
+                  aria-required="true"
+                  aria-describedby={formErrors.exchange ? "exchange-error" : undefined}
+                  aria-invalid={!!formErrors.exchange}
                 />
+                {formErrors.exchange && (
+                  <p id="exchange-error" role="alert" className="mt-1 text-xs text-destructive">{formErrors.exchange}</p>
+                )}
               </div>
               <div>
-                <Label htmlFor="currency">Currency</Label>
+                <Label htmlFor="currency">Currency *</Label>
                 <Input
                   id="currency"
                   placeholder="e.g., USD"
                   value={formData.currency || ""}
-                  onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, currency: e.target.value });
+                    if (formErrors.currency) setFormErrors({ ...formErrors, currency: "" });
+                  }}
                   disabled={isSaving}
+                  aria-required="true"
+                  aria-describedby={formErrors.currency ? "currency-error" : undefined}
+                  aria-invalid={!!formErrors.currency}
                 />
+                {formErrors.currency && (
+                  <p id="currency-error" role="alert" className="mt-1 text-xs text-destructive">{formErrors.currency}</p>
+                )}
               </div>
             </div>
 
@@ -226,7 +315,7 @@ export function SymbolUniverseManager({ symbols, onAdd, onUpdate, onDelete, isLo
             <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isSaving}>
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={!formData.symbol || isSaving}>
+            <Button onClick={handleSave} disabled={isSaving}>
               {isSaving ? "Saving..." : "Save"}
             </Button>
           </div>

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Meridian.Infrastructure.Shared;
 using Timer = System.Timers.Timer;
 
 namespace Meridian.Ui.Services;
@@ -58,19 +59,15 @@ public sealed class ProviderHealthService : IDisposable
         _updateTimer.Stop();
     }
 
-    private async void OnTimerElapsed(object? sender, ElapsedEventArgs e)
+    private void OnTimerElapsed(object? sender, ElapsedEventArgs e) =>
+        OnTimerElapsedAsync().ObserveException(operation: "provider health refresh");
+
+    private async Task OnTimerElapsedAsync()
     {
         if (_disposed)
             return;
 
-        try
-        {
-            await RefreshHealthDataAsync();
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Trace.TraceWarning("ProviderHealthService: unhandled error during health refresh: {0}", ex.Message);
-        }
+        await RefreshHealthDataAsync();
     }
 
     /// <summary>

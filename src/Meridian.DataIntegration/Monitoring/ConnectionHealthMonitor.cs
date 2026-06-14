@@ -338,7 +338,12 @@ public sealed class ConnectionHealthMonitor : IConnectionHealthMonitor, IDisposa
         }
     }
 
-    private async void CheckHeartbeats(object? state)
+    private void CheckHeartbeats(object? state) =>
+        CheckHeartbeatsAsync(state).ContinueWith(
+            t => _log.Error(t.Exception!.InnerException ?? t.Exception, "Unhandled exception in heartbeat check"),
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
+
+    private async Task CheckHeartbeatsAsync(object? state)
     {
         if (_isDisposed)
             return;

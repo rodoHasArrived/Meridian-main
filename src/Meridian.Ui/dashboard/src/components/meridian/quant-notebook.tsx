@@ -534,7 +534,7 @@ function CellOutputPanel({ output }: { output: CellOutput[] }) {
     <div className="border-t border-border/60 px-3 py-2">
       <div className="rounded-md border border-border/60 bg-background/60 px-3 py-2 font-mono text-xs">
         {output.map((line, index) => (
-          <CellOutputLine key={`${line.kind}-${index}`} line={line} />
+          <CellOutputLine key={`${line.kind}-${line.timestamp ?? ''}-${index}`} line={line} />
         ))}
       </div>
     </div>
@@ -635,23 +635,22 @@ function renderInlineMarkdown(text: string): ReactNode {
   const pattern = /(`[^`]+`|\*\*[^*]+\*\*)/g;
   let last = 0;
   let match: RegExpExecArray | null;
-  let keyIndex = 0;
 
   while ((match = pattern.exec(text)) !== null) {
     if (match.index > last) {
-      parts.push(<span key={`t-${(keyIndex++).toString()}`}>{text.slice(last, match.index)}</span>);
+      parts.push(<span key={`t-${last}`}>{text.slice(last, match.index)}</span>);
     }
 
     const token = match[0];
     if (token.startsWith("`")) {
       parts.push(
-        <code key={`c-${(keyIndex++).toString()}`} className="rounded bg-secondary/40 px-1 font-mono text-xs">
+        <code key={`c-${match.index}`} className="rounded bg-secondary/40 px-1 font-mono text-xs">
           {token.slice(1, -1)}
         </code>
       );
     } else {
       parts.push(
-        <strong key={`b-${(keyIndex++).toString()}`} className="font-semibold text-foreground">
+        <strong key={`b-${match.index}`} className="font-semibold text-foreground">
           {token.slice(2, -2)}
         </strong>
       );
@@ -661,7 +660,7 @@ function renderInlineMarkdown(text: string): ReactNode {
   }
 
   if (last < text.length) {
-    parts.push(<span key={`t-${(keyIndex++).toString()}`}>{text.slice(last)}</span>);
+    parts.push(<span key={`t-${last}`}>{text.slice(last)}</span>);
   }
 
   return <>{parts}</>;
