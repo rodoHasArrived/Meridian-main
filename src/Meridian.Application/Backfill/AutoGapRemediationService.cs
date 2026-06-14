@@ -168,10 +168,10 @@ public sealed class AutoGapRemediationService : IDisposable
             ct);
     }
 
-    private void OnQualityGapDetected(QualityDataGap gap)
-    {
-        _ = HandleDataQualityGapAsync(gap);
-    }
+    private void OnQualityGapDetected(QualityDataGap gap) =>
+        HandleDataQualityGapAsync(gap).ContinueWith(
+            t => _log.Error(t.Exception!.InnerException ?? t.Exception, "Unhandled exception in quality gap remediation handler"),
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
 
     private async Task EnqueueRemediationAsync(
         string symbol,

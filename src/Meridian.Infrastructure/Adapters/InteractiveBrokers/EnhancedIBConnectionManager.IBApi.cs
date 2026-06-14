@@ -233,7 +233,9 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     {
         if (EnableAutoReconnect && !_isReconnecting)
         {
-            _ = TriggerReconnectAsync();
+            TriggerReconnectAsync().ContinueWith(
+                t => _log.Error(t.Exception!.InnerException ?? t.Exception, "Unhandled exception in IB heartbeat-triggered reconnect"),
+                TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
         }
     }
 
@@ -299,7 +301,9 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
                 // Connection may have been lost
                 if (EnableAutoReconnect && !_isReconnecting)
                 {
-                    _ = TriggerReconnectAsync();
+                    TriggerReconnectAsync().ContinueWith(
+                        t => _log.Error(t.Exception!.InnerException ?? t.Exception, "Unhandled exception in IB read-loop-triggered reconnect"),
+                        TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
                 }
                 break;
             }

@@ -1719,7 +1719,15 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     private async void OnActiveFundProfileChanged(object? sender, FundProfileChangedEventArgs e)
     {
-        await LoadAsync();
+        try
+        {
+            await LoadAsync();
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            _loggingService.LogError("Failed to reload fund ledger after fund profile change", ex);
+        }
     }
 
     private void UpdateWorkbenchIdentity()

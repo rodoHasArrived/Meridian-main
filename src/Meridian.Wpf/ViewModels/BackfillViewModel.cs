@@ -1028,7 +1028,7 @@ public sealed partial class BackfillViewModel : BindableBase, IPageActivationLif
             }
             catch (Exception ex)
             {
-                _loggingService.LogError($"Gap scan failed for symbol: {sym}", ex);
+                _loggingService.LogError("Gap scan failed for symbol", ex);
             }
         }
 

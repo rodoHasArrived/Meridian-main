@@ -376,7 +376,15 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
 
     private async void OnRefreshTimerTick(object? sender, EventArgs e)
     {
-        await LoadDataAsync();
+        try
+        {
+            await LoadDataAsync();
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex)
+        {
+            _loggingService.LogError("Unhandled exception in system health refresh timer", ex);
+        }
     }
 
     private async Task LoadMetricsAsync()

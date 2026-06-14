@@ -104,7 +104,9 @@ public sealed class GapBackfillService
             evt.DisconnectedAt, evt.ReconnectedAt, evt.GapDuration.TotalSeconds);
 
         // Fire and forget - backfill runs in the background
-        _ = EnqueueGapBackfillAsync(evt, symbols);
+        EnqueueGapBackfillAsync(evt, symbols).ContinueWith(
+            t => _log.Error(t.Exception!.InnerException ?? t.Exception, "Unhandled exception in gap backfill enqueue"),
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
     }
 
     private async Task EnqueueGapBackfillAsync(ReconnectionEvent evt, string[] symbols, CancellationToken ct = default)

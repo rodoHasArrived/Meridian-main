@@ -79,8 +79,9 @@ export function BackfillValidationDashboard({
                 size="sm"
                 onClick={handleRefresh}
                 disabled={isLoading || isRefreshing}
+                aria-label={isRefreshing ? "Refreshing backfill data…" : "Refresh backfill data"}
               >
-                <RefreshCw className={cn("h-4 w-4 mr-1.5", (isLoading || isRefreshing) && "animate-spin")} />
+                <RefreshCw className={cn("h-4 w-4 mr-1.5", (isLoading || isRefreshing) && "animate-spin")} aria-hidden="true" />
                 Refresh
               </Button>
             </div>
@@ -121,7 +122,7 @@ export function BackfillValidationDashboard({
         <CardContent>
           {validations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" />
+              <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" aria-hidden="true" />
               <p className="text-sm text-muted-foreground">
                 No symbols configured yet. Add symbols to monitor backfill completeness.
               </p>
@@ -170,8 +171,8 @@ export function BackfillValidationDashboard({
                         {validation.gaps.length} gap{validation.gaps.length > 1 ? "s" : ""} detected
                       </summary>
                       <ul className="mt-2 space-y-1 text-xs text-muted-foreground list-disc list-inside">
-                        {validation.gaps.slice(0, 3).map((gap, idx) => (
-                          <li key={idx}>{gap}</li>
+                        {validation.gaps.slice(0, 3).map((gap) => (
+                          <li key={gap}>{gap}</li>
                         ))}
                         {validation.gaps.length > 3 && (
                           <li>... and {validation.gaps.length - 3} more</li>
