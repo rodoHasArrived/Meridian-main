@@ -1,4 +1,7 @@
+using System.Collections;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.Reflection;
 using System.IO;
 using System.Windows;
 using System.Windows.Automation;
@@ -259,6 +262,116 @@ public sealed class WorkstationPrimitiveControlsTests
     }
 
     [Fact]
+    public void DenseDataGridControl_ShouldUseNativeCountsForLargeRowCollections()
+    {
+        var helperType = typeof(DenseDataGridControl).Assembly.GetType(
+            "Meridian.Wpf.Workstation.Controls.CollectionSynchronizationHelper", throwOnError: true)!;
+        var hasItems = helperType.GetMethod("HasItems", BindingFlags.Static | BindingFlags.Public)!;
+
+        hasItems.Invoke(null, [new CountingRows(100_000)]).Should().Be(true);
+        hasItems.Invoke(null, [new CountingRows(0)]).Should().Be(false);
+    }
+
+    [Fact]
+    public void DenseDataGridControl_ShouldPreserveMultiSelectionWithoutLowValueMirrorChurn()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var tableRows = new ObservableCollection<RowFixture>
+            {
+                new("Polygon.io", "Healthy"),
+                new("Alpaca", "Degraded"),
+                new("IEX", "Healthy")
+            };
+            var selectedRows = new ObservableCollection<object>();
+            var denseGrid = new DenseDataGridControl
+            {
+                Table = new WorkstationTableModel<RowFixture>(
+                    tableRows,
+                    [new("Provider", nameof(RowFixture.Name), 120), new("Status", nameof(RowFixture.Status), 100)],
+                    "Provider readiness table"),
+                SelectionMode = SelectionMode.Extended,
+                SelectedItems = selectedRows
+            };
+
+            var window = Show(denseGrid);
+            try
+            {
+                var rowsList = denseGrid.FindName("RowsList").Should().BeOfType<ListView>().Subject;
+                rowsList.SelectedItems.Add(tableRows[0]);
+                rowsList.SelectedItems.Add(tableRows[2]);
+                selectedRows.Should().ContainInOrder(tableRows[0], tableRows[2]);
+
+                var resetEvents = 0;
+                var changedEvents = 0;
+                selectedRows.CollectionChanged += (_, args) =>
+                {
+                    changedEvents++;
+                    if (args.Action == NotifyCollectionChangedAction.Reset)
+                    {
+                        resetEvents++;
+                    }
+                };
+
+                tableRows.Add(new RowFixture("Cboe", "Healthy"));
+                tableRows.RemoveAt(1);
+
+                changedEvents.Should().Be(0);
+                resetEvents.Should().Be(0);
+                selectedRows.Should().ContainInOrder(tableRows[0], tableRows[1]);
+
+                tableRows.RemoveAt(1);
+
+                selectedRows.Should().ContainSingle().Which.Should().BeSameAs(tableRows[0]);
+                resetEvents.Should().Be(0);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void DenseDataGridControl_ShouldUpdateEmptyStateFromCollectionCountTransitions()
+    {
+        WpfTestThread.Run(() =>
+        {
+            RunMatUiAutomationFacade.EnsureApplicationResources();
+
+            var tableRows = new ObservableCollection<RowFixture>();
+            var denseGrid = new DenseDataGridControl
+            {
+                Table = new WorkstationTableModel<RowFixture>(
+                    tableRows,
+                    [new("Provider", nameof(RowFixture.Name), 120)],
+                    "Provider readiness table")
+            };
+
+            var window = Show(denseGrid);
+            try
+            {
+                var emptyPanel = denseGrid.FindName("EmptyPanel").Should().BeOfType<Border>().Subject;
+                emptyPanel.Visibility.Should().Be(Visibility.Visible);
+
+                tableRows.Add(new RowFixture("Polygon.io", "Healthy"));
+                denseGrid.UpdateLayout();
+                emptyPanel.Visibility.Should().Be(Visibility.Collapsed);
+
+                tableRows.Clear();
+                denseGrid.UpdateLayout();
+                emptyPanel.Visibility.Should().Be(Visibility.Visible);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
     public void DenseDataGridSource_ShouldUseCompactInstitutionalTableChrome()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
@@ -345,6 +458,17 @@ public sealed class WorkstationPrimitiveControlsTests
         window.UpdateLayout();
         element.UpdateLayout();
         return window;
+    }
+
+    private sealed class CountingRows(int count) : IReadOnlyCollection<object>
+    {
+        public int Count { get; } = count;
+
+        public IEnumerator<object> GetEnumerator()
+            => throw new InvalidOperationException("Native count checks should not enumerate large row collections.");
+
+        IEnumerator IEnumerable.GetEnumerator()
+            => GetEnumerator();
     }
 
     private sealed record RowFixture(string Name, string Status);

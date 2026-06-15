@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Specialized;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -121,6 +120,9 @@ public partial class DenseDataGridControl : UserControl
         }
     }
 
+    private IEnumerable? GetRows()
+        => CollectionSynchronizationHelper.GetRuntimeRows(Table);
+
     private void RebuildColumns()
     {
         var gridView = new GridView
@@ -150,7 +152,7 @@ public partial class DenseDataGridControl : UserControl
     {
         DetachRowsCollection();
 
-        _observedRows = Table?.Rows as INotifyCollectionChanged;
+        _observedRows = GetRows() as INotifyCollectionChanged;
         if (_observedRows is not null)
         {
             _observedRows.CollectionChanged += OnRowsChanged;
@@ -160,7 +162,33 @@ public partial class DenseDataGridControl : UserControl
     private void OnRowsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         UpdateEmptyState();
-        MirrorSelectedRows();
+        if (SelectedRowsMayHaveChanged(e))
+        {
+            MirrorSelectedRows();
+        }
+    }
+
+    private bool SelectedRowsMayHaveChanged(NotifyCollectionChangedEventArgs e)
+    {
+        if (RowsList is null)
+        {
+            return false;
+        }
+
+        if (e.Action is NotifyCollectionChangedAction.Remove or NotifyCollectionChangedAction.Replace)
+        {
+            return CollectionSynchronizationHelper.ContainsAnyByReference(e.OldItems, SelectedItems)
+                || CollectionSynchronizationHelper.ContainsAnyByReference(e.OldItems, RowsList.SelectedItems);
+        }
+
+        if (e.Action is NotifyCollectionChangedAction.Reset)
+        {
+            var rows = GetRows();
+            return CollectionSynchronizationHelper.AnyMissingByReference(rows, RowsList.SelectedItems)
+                || (SelectedItems is not null && CollectionSynchronizationHelper.AnyMissingByReference(rows, SelectedItems));
+        }
+
+        return false;
     }
 
     private void DetachRowsCollection()
@@ -181,7 +209,7 @@ public partial class DenseDataGridControl : UserControl
             return;
         }
 
-        var hasRows = Table?.Rows is IEnumerable rows && rows.Cast<object>().Any();
+        var hasRows = CollectionSynchronizationHelper.HasItems(GetRows());
         EmptyPanel.Visibility = hasRows ? Visibility.Collapsed : Visibility.Visible;
     }
 
@@ -196,10 +224,6 @@ public partial class DenseDataGridControl : UserControl
             return;
         }
 
-        selectedItems.Clear();
-        foreach (var selectedItem in RowsList.SelectedItems.Cast<object>())
-        {
-            selectedItems.Add(selectedItem);
-        }
+        CollectionSynchronizationHelper.SynchronizeByReference(selectedItems, RowsList.SelectedItems);
     }
 }
