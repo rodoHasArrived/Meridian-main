@@ -127,7 +127,9 @@ and UI presentation concerns in their owning layers.
 - `ProviderRouting/` - relationship-aware provider capability routing. Provider-ledger accounting
   workflows use these capability gates to block missing balance/position/reconciliation feeds and
   degrade corporate-action or factor-schedule support when the account's provider route cannot
-  supply the required feed.
+  supply the required feed. Provider setup seeds credential-backed routes disabled by default until
+  required credentials are complete and verified; live routing additionally requires explicit
+  production certification before a live connection mode or active bindings are persisted.
 - `Config/Credentials/` - application-owned credential testing, OAuth refresh, legacy resolver
   compatibility, CLI validation adapters, and composition support. Shared
   configuration JSON options, JSON Schema generation, FluentValidation rules, validation pipeline

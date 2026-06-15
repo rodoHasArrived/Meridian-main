@@ -85,6 +85,151 @@ public sealed class ProviderRoutingEndpointsTests
     }
 
     [Fact]
+    public async Task ConfigureProvider_LiveAlpacaWithUnverifiedCredentials_DoesNotEnableLiveRouting()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+
+        var response = await client.PostAsync(UiApiRoutes.ProviderConfigure, JsonContent(new
+        {
+            kind = "alpaca",
+            displayName = "Alpaca Live Setup",
+            apiKey = $"alpaca-live-key-{Guid.NewGuid():N}",
+            apiSecret = $"alpaca-live-secret-{Guid.NewGuid():N}",
+            environment = "live",
+            capabilities = new[] { "streaming", "backfill" }
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var setup = await ReadAsync<ProviderSetupResult>(response);
+        setup.Success.Should().BeTrue();
+        setup.CredentialState.Should().Be(ProviderCredentialStateDto.Configured);
+        setup.Warnings.Should().Contain(warning => warning.Contains("live provider routing remains disabled", StringComparison.OrdinalIgnoreCase));
+
+        var connectionsResponse = await client.GetAsync(UiApiRoutes.ProviderRoutingConnections);
+        connectionsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var connections = await ReadAsync<ProviderConnectionDto[]>(connectionsResponse);
+        connections.Should().ContainSingle(connection =>
+            connection.ConnectionId == "alpaca" &&
+            !connection.Enabled &&
+            connection.ConnectionMode == nameof(ProviderConnectionMode.ReadOnly));
+
+        var bindingsResponse = await client.GetAsync(UiApiRoutes.ProviderRoutingBindings);
+        bindingsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var bindings = await ReadAsync<ProviderBindingDto[]>(bindingsResponse);
+        bindings.Where(binding => binding.ConnectionId == "alpaca").Should().OnlyContain(binding => !binding.Enabled);
+
+        var previewResponse = await client.PostAsync(
+            UiApiRoutes.ProviderRoutingPreview,
+            JsonContent(new RoutePreviewRequest(Capability: "RealtimeMarketData", Symbol: "AAPL")));
+
+        previewResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var preview = await ReadAsync<RoutePreviewResponse>(previewResponse);
+        preview.IsRoutable.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task ConfigureProvider_MissingOrPartialCredentials_CreatesNoActiveBinding()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+
+        var response = await client.PostAsync(UiApiRoutes.ProviderConfigure, JsonContent(new
+        {
+            kind = "alpaca",
+            displayName = "Alpaca Partial Setup",
+            apiKey = $"alpaca-partial-key-{Guid.NewGuid():N}",
+            environment = "paper",
+            capabilities = new[] { "streaming" }
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var setup = await ReadAsync<ProviderSetupResult>(response);
+        setup.CredentialState.Should().Be(ProviderCredentialStateDto.Partial);
+        setup.Warnings.Should().Contain(warning => warning.Contains("routing remains disabled", StringComparison.OrdinalIgnoreCase));
+
+        var bindingsResponse = await client.GetAsync(UiApiRoutes.ProviderRoutingBindings);
+        bindingsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var bindings = await ReadAsync<ProviderBindingDto[]>(bindingsResponse);
+        bindings.Where(binding => binding.ConnectionId == "alpaca").Should().OnlyContain(binding => !binding.Enabled);
+
+        var connectionsResponse = await client.GetAsync(UiApiRoutes.ProviderRoutingConnections);
+        connectionsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var connections = await ReadAsync<ProviderConnectionDto[]>(connectionsResponse);
+        connections.Should().ContainSingle(connection => connection.ConnectionId == "alpaca" && !connection.Enabled);
+    }
+
+    [Fact]
+    public async Task ConfigureProvider_VerifiedCredentialsWithCertification_EnableIntendedLiveConnectionMode()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+        var credentialStore = app.Services.GetRequiredService<IProviderCredentialStore>();
+        var configStore = app.Services.GetRequiredService<ApplicationConfigStore>();
+
+        await credentialStore.SaveAsync(new ProviderCredentialSaveRequest(
+            "alpaca",
+            new Dictionary<string, string?>
+            {
+                ["KeyId"] = $"alpaca-verified-key-{Guid.NewGuid():N}",
+                ["SecretKey"] = $"alpaca-verified-secret-{Guid.NewGuid():N}"
+            },
+            Environment: "live",
+            Actor: "provider-routing-endpoint-test"));
+        await credentialStore.RecordVerificationAsync(new ProviderCredentialVerificationUpdate(
+            "alpaca",
+            Success: true,
+            ExternalAccountId: "alpaca-live-account",
+            Actor: "provider-routing-endpoint-test"));
+
+        var cfg = configStore.Load();
+        var section = ProviderRoutingConfigExtensions.GetSection(cfg);
+        await configStore.SaveAsync(cfg with
+        {
+            ProviderConnections = section with
+            {
+                Certifications = new[]
+                {
+                    new ProviderCertificationConfig(
+                        ConnectionId: "alpaca",
+                        Status: "Passed",
+                        LastRunAt: DateTimeOffset.UtcNow,
+                        ExpiresAt: DateTimeOffset.UtcNow.AddDays(30),
+                        ProductionReady: true,
+                        Checks: new[] { "Credential verification passed." },
+                        Notes: new[] { "Explicit test certification." })
+                }
+            }
+        });
+
+        var response = await client.PostAsync(UiApiRoutes.ProviderConfigure, JsonContent(new
+        {
+            kind = "alpaca",
+            displayName = "Alpaca Certified Live Setup",
+            environment = "live",
+            capabilities = new[] { "streaming", "backfill" }
+        }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var setup = await ReadAsync<ProviderSetupResult>(response);
+        setup.CredentialState.Should().Be(ProviderCredentialStateDto.Verified);
+        setup.Warnings.Should().NotContain(warning => warning.Contains("routing remains disabled", StringComparison.OrdinalIgnoreCase));
+
+        var connectionsResponse = await client.GetAsync(UiApiRoutes.ProviderRoutingConnections);
+        connectionsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var connections = await ReadAsync<ProviderConnectionDto[]>(connectionsResponse);
+        connections.Should().ContainSingle(connection =>
+            connection.ConnectionId == "alpaca" &&
+            connection.Enabled &&
+            connection.ConnectionMode == nameof(ProviderConnectionMode.Live));
+
+        var bindingsResponse = await client.GetAsync(UiApiRoutes.ProviderRoutingBindings);
+        bindingsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var bindings = await ReadAsync<ProviderBindingDto[]>(bindingsResponse);
+        bindings.Where(binding => binding.ConnectionId == "alpaca").Should().OnlyContain(binding => binding.Enabled);
+    }
+
+    [Fact]
     public async Task ConfigureProvider_WithPolygonCredential_StoresCredentialAndRoutesReferenceData()
     {
         await using var app = await CreateAppAsync();
@@ -116,9 +261,9 @@ public sealed class ProviderRoutingEndpointsTests
 
         previewResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var preview = await ReadAsync<RoutePreviewResponse>(previewResponse);
-        preview.IsRoutable.Should().BeTrue();
-        preview.SelectedConnectionId.Should().Be("polygon");
-        preview.SelectedProviderFamilyId.Should().Be("polygon");
+        preview.IsRoutable.Should().BeFalse("newly saved provider credentials are not routable until verification succeeds");
+        preview.SelectedConnectionId.Should().BeNull();
+        preview.SelectedProviderFamilyId.Should().BeNull();
     }
 
     [Fact]

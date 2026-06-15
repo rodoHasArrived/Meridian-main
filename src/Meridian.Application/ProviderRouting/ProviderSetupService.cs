@@ -123,12 +123,28 @@ public sealed class ProviderSetupService
         var bindings = (section.Bindings ?? Array.Empty<ProviderBindingConfig>()).ToList();
         var providerId = BuildProviderId(descriptor.ProviderId, sources, connections);
         var sourcePriority = sources.Count == 0 ? 10 : Math.Max(10, sources.Count * 10 + 10);
+        var intendedConnectionMode = ResolveConnectionMode(credentialStatus.Environment, normalizedCapabilities);
+        var hasExplicitCertification = HasActiveProductionCertification(section, providerId);
+        var routeEnabled = CanActivateRouting(descriptor, credentialStatus);
+        var liveRoutingBlocked = IsLiveMode(intendedConnectionMode) &&
+                                 (!routeEnabled || !hasExplicitCertification);
+        var connectionEnabled = routeEnabled && !liveRoutingBlocked;
+        var connectionMode = liveRoutingBlocked ? ProviderConnectionMode.ReadOnly : intendedConnectionMode;
+        if (descriptor.RequiresCredentials && !routeEnabled)
+        {
+            warnings.Add("Credentials were saved, but provider routing remains disabled until all required credentials are present and verification succeeds.");
+        }
+
+        if (liveRoutingBlocked)
+        {
+            warnings.Add("Credentials were saved, but live provider routing remains disabled until credentials are verified and an explicit provider certification is recorded.");
+        }
 
         sources.Add(new DataSourceConfig(
             Id: providerId,
             Name: displayName,
             Provider: sourceKind.Value,
-            Enabled: true,
+            Enabled: connectionEnabled,
             Type: sourceType,
             Priority: sourcePriority,
             Alpaca: sourceKind.Value == DataSourceKind.Alpaca
@@ -148,12 +164,12 @@ public sealed class ProviderSetupService
             ProviderFamilyId: descriptor.ProviderId,
             DisplayName: displayName,
             ConnectionType: ProviderConnectionType.DataVendor,
-            ConnectionMode: ResolveConnectionMode(credentialStatus.Environment, normalizedCapabilities),
-            Enabled: true,
+            ConnectionMode: connectionMode,
+            Enabled: connectionEnabled,
             CredentialReference: credentialReference,
             Tags: normalizedCapabilities,
             Description: $"Configured from the provider setup form for {displayName}.",
-            ProductionReady: false);
+            ProductionReady: routeEnabled && hasExplicitCertification);
 
         var existingConnectionIndex = connections.FindIndex(c =>
             string.Equals(c.ConnectionId, providerId, StringComparison.OrdinalIgnoreCase));
@@ -166,7 +182,7 @@ public sealed class ProviderSetupService
             connections.Add(connection);
         }
 
-        var seededBindingIds = SeedBindings(providerId, normalizedCapabilities, sourceType, sourcePriority, bindings);
+        var seededBindingIds = SeedBindings(providerId, normalizedCapabilities, sourceType, sourcePriority, connectionEnabled, bindings);
         var nextDataSources = dataSources with
         {
             Sources = sources.ToArray(),
@@ -333,6 +349,7 @@ public sealed class ProviderSetupService
         IReadOnlyList<string> capabilities,
         DataSourceType sourceType,
         int priority,
+        bool enabled,
         List<ProviderBindingConfig> bindings)
     {
         var capabilityKinds = ResolveCapabilityKinds(capabilities, sourceType);
@@ -346,8 +363,10 @@ public sealed class ProviderSetupService
                 ConnectionId: providerId,
                 Target: new ProviderBindingTarget(),
                 Priority: priority,
-                Enabled: true,
-                Notes: "Seeded by provider setup."));
+                Enabled: enabled,
+                Notes: enabled
+                    ? "Seeded by provider setup."
+                    : "Seeded disabled by provider setup pending credential verification and certification."));
             seeded.Add(bindingId);
         }
 
@@ -464,6 +483,29 @@ public sealed class ProviderSetupService
             ? ProviderConnectionMode.ReadOnly
             : ProviderConnectionMode.Research;
     }
+
+    private static bool CanActivateRouting(
+        ProviderCredentialCatalogEntry descriptor,
+        ProviderCredentialStoreStatus credentialStatus)
+    {
+        if (!descriptor.RequiresCredentials)
+        {
+            return true;
+        }
+
+        return credentialStatus.CredentialState == ProviderCredentialStateDto.Verified &&
+               credentialStatus.VerificationState == ProviderVerificationStateDto.Verified &&
+               credentialStatus.MissingFields.Count == 0;
+    }
+
+    private static bool HasActiveProductionCertification(ProviderConnectionsConfig section, string connectionId)
+        => (section.Certifications ?? Array.Empty<ProviderCertificationConfig>()).Any(certification =>
+            string.Equals(certification.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase) &&
+            certification.ProductionReady &&
+            (certification.ExpiresAt is null || certification.ExpiresAt >= DateTimeOffset.UtcNow));
+
+    private static bool IsLiveMode(ProviderConnectionMode mode)
+        => mode == ProviderConnectionMode.Live;
 
     private static IBOptions BuildInteractiveBrokersOptions(string? endpoint)
     {
