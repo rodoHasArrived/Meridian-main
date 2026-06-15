@@ -9,7 +9,8 @@ import {
   DATA_EXPORT_DETAIL_PANEL_ID,
   DATA_PROVIDER_DETAIL_PANEL_ID
 } from "@/screens/data-screen.view-model";
-import { renderWithRouter } from "@/test/render";
+import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
+import { expectNoAxeViolations } from "@/test/axe";
 import type {
   BackfillProgressResponse,
   BackfillPreviewResult,
@@ -228,6 +229,17 @@ const providerReadiness: ProviderReadinessSummary = {
 };
 
 describe("DataScreen", () => {
+  it("has no basic accessibility violations", async () => {
+    const { container } = renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data"] });
+    await waitForAsyncEffects();
+
+    // Pre-existing debt: grid-based <dl> layout splits dt/dd grouping, and the
+    // shared dense-row detail <aside> nests a complementary landmark.
+    await expectNoAxeViolations(container, {
+      knownIssues: ["definition-list", "landmark-complementary-is-top-level"]
+    });
+  });
+
   it("renders an accessible route-aware loading panel when bootstrap data is unavailable", () => {
     renderWithRouter(<DataScreen data={null} />, { initialEntries: ["/data/backfills"] });
 

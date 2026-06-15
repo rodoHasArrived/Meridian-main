@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api-errors";
 import { SettingsScreen } from "@/screens/settings-screen";
 import { renderWithRouter } from "@/test/render";
+import { expectNoAxeViolations } from "@/test/axe";
 import type {
   BrokerageConnectionStatus,
   LedgerMappingWorkbench,
@@ -455,6 +456,16 @@ describe("SettingsScreen", () => {
     apiMocks.putProviderCredentials.mockReset();
     apiMocks.verifyProviderConnection.mockReset();
     apiMocks.deleteProviderCredentials.mockReset();
+  });
+
+  it("has no basic accessibility violations", async () => {
+    const { container } = renderWithRouter(<SettingsScreen session={session} overview={overview} />);
+
+    // Pre-existing debt: some role="list" panels render non-listitem empty-state
+    // copy, and a few list items use <article role="listitem">.
+    await expectNoAxeViolations(container, {
+      knownIssues: ["aria-required-children", "aria-allowed-role"]
+    });
   });
 
   it("renders recent events as accessible status evidence rows", () => {

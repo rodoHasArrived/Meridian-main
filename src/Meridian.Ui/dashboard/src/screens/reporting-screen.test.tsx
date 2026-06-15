@@ -3,6 +3,7 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReportingScreen } from "@/screens/reporting-screen";
 import { renderWithRouter } from "@/test/render";
+import { expectNoAxeViolations } from "@/test/axe";
 import type { AccountingWorkspaceResponse, FinancialRecordExplorerDto, ReportingTemplateMetadata } from "@/types";
 
 const accounting: AccountingWorkspaceResponse = {
@@ -1106,6 +1107,12 @@ describe("ReportingScreen", () => {
       })
     });
     vi.stubGlobal("fetch", fetchMock);
+  });
+
+  it("has no basic accessibility violations", async () => {
+    const { container } = renderWithRouter(<ReportingScreen data={withPrivateCapitalReportReview()} />, { initialEntries: ["/reporting"] });
+
+    await expectNoAxeViolations(container);
   });
 
   it("renders loading copy when reporting data is unavailable", () => {

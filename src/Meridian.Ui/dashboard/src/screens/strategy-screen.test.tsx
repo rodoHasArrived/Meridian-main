@@ -4,6 +4,7 @@ import { StrategyScreen } from "@/screens/strategy-screen";
 import * as api from "@/lib/api";
 import { afterEach } from "vitest";
 import { renderWithRouter } from "@/test/render";
+import { expectNoAxeViolations } from "@/test/axe";
 import type { PromotionEvaluationResult, PromotionRecord, StrategyWorkspaceResponse, RunComparisonRow, RunDiff } from "@/types";
 
 const twoRuns: StrategyWorkspaceResponse = {
@@ -44,6 +45,14 @@ const twoRuns: StrategyWorkspaceResponse = {
 };
 
 describe("StrategyScreen", () => {
+  it("has no basic accessibility violations", async () => {
+    const { container } = renderWithRouter(<StrategyScreen data={twoRuns} />);
+
+    // Pre-existing debt: the run-comparison table emits an empty <th> for its
+    // row-header column.
+    await expectNoAxeViolations(container, { knownIssues: ["empty-table-header"] });
+  });
+
   afterEach(() => {
     restoreApiSpy(api.compareRuns);
     restoreApiSpy(api.diffRuns);
