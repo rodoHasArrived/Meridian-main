@@ -2396,7 +2396,7 @@ financial record types without relearning scope, proof, status, or action semant
   semantics, proof-ribbon summaries, and audit vocabulary across browser and WPF surfaces.
 * **Standard actions:** inspect proof, open full record, compare versions, export allowed view,
   attach evidence, assign exception, and request approval. Explorer-specific actions can extend this
-  set only after the common actions remain visible and permission-aware.
+  set, provided that the common actions remain visible and permission-aware.
 * **Required subcomponents:** `ExplorerShell`, `ScopeBar`, `SavedViewSelector`, `FilterBar`,
   `ExplorerGrid`, `RecordDrawer`, `ProofRibbon`, `ProofPanel`, `ColumnChooser`, and
   `AuditTimeline`. These components are the minimum reusable contract for a Financial Record
