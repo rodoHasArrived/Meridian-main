@@ -206,6 +206,7 @@ interface ProviderInlineState {
   liveAcknowledged: boolean;
   dirty: boolean;
   busyAction: ProviderInlineBusyAction;
+  clearConfirmPending: boolean;
   statusMessage: string | null;
   statusDetails: string[];
   statusTone: "default" | "success" | "warning" | "danger";
@@ -905,6 +906,24 @@ export function SettingsScreen({
     vm.providerConnectionCenter.groups
   ]);
 
+  const providerSourceCountById = useMemo(
+    () => Object.fromEntries(vm.providerConnectionCenter.groups.map((group) => [group.id, group.rows.length])),
+    [vm.providerConnectionCenter.groups]
+  );
+  const totalProviderCount = allProviderRows.length;
+  const visibleProviderCount = filteredProviderGroups.reduce((sum, group) => sum + group.rows.length, 0);
+  const providerFiltersActive =
+    providerSearch.trim() !== "" ||
+    providerCapabilityFilter !== "all" ||
+    providerHealthFilter !== "all" ||
+    providerVerificationFilter !== "all";
+  const resetProviderFilters = () => {
+    setProviderSearch("");
+    setProviderCapabilityFilter("all");
+    setProviderHealthFilter("all");
+    setProviderVerificationFilter("all");
+  };
+
   const updateProviderInlineState = (providerId: string, updater: (state: ProviderInlineState) => ProviderInlineState) => {
     setProviderInlineState((current) => {
       const previous = current[providerId];
@@ -922,6 +941,7 @@ export function SettingsScreen({
     updateProviderInlineState(providerId, (state) => ({
       ...state,
       editing: !state.editing,
+      clearConfirmPending: false,
       statusMessage: null,
       statusDetails: [],
       statusTone: "default"
@@ -932,6 +952,7 @@ export function SettingsScreen({
     updateProviderInlineState(providerId, (state) => ({
       ...state,
       dirty: true,
+      clearConfirmPending: false,
       values: {
         ...state.values,
         [field]: value
@@ -948,6 +969,7 @@ export function SettingsScreen({
       dirty: true,
       environment: value,
       liveAcknowledged: value === "live" ? state.liveAcknowledged : false,
+      clearConfirmPending: false,
       statusMessage: null,
       statusDetails: [],
       statusTone: "default"
@@ -959,6 +981,7 @@ export function SettingsScreen({
       ...state,
       dirty: true,
       liveAcknowledged: checked,
+      clearConfirmPending: false,
       statusMessage: null,
       statusDetails: [],
       statusTone: "default"
@@ -969,6 +992,7 @@ export function SettingsScreen({
     updateProviderInlineState(providerId, (state) => ({
       ...state,
       busyAction: "test",
+      clearConfirmPending: false,
       statusMessage: null,
       statusDetails: [],
       statusTone: "default"
@@ -1026,6 +1050,7 @@ export function SettingsScreen({
     updateProviderInlineState(row.providerId, (current) => ({
       ...current,
       busyAction: "save",
+      clearConfirmPending: false,
       statusMessage: null,
       statusDetails: [],
       statusTone: "default"
@@ -1069,6 +1094,7 @@ export function SettingsScreen({
     updateProviderInlineState(providerId, (state) => ({
       ...state,
       busyAction: "verify",
+      clearConfirmPending: false,
       statusMessage: null,
       statusDetails: [],
       statusTone: "default"
@@ -1101,10 +1127,35 @@ export function SettingsScreen({
     }
   };
 
-  const clearProviderCredentials = async (providerId: string) => {
+  const cancelProviderClear = (providerId: string) => {
     updateProviderInlineState(providerId, (state) => ({
       ...state,
+      clearConfirmPending: false,
+      statusMessage: null,
+      statusDetails: [],
+      statusTone: "default"
+    }));
+  };
+
+  const clearProviderCredentials = async (providerId: string) => {
+    const state = providerInlineState[providerId];
+    if (state && !state.clearConfirmPending) {
+      updateProviderInlineState(providerId, (current) => ({
+        ...current,
+        clearConfirmPending: true,
+        statusMessage: "Confirm clearing stored credentials.",
+        statusDetails: [
+          "Clearing removes the stored credential reference and blocks provider-backed workflows until a new connection test succeeds."
+        ],
+        statusTone: "warning"
+      }));
+      return;
+    }
+
+    updateProviderInlineState(providerId, (current) => ({
+      ...current,
       busyAction: "clear",
+      clearConfirmPending: false,
       statusMessage: null,
       statusDetails: [],
       statusTone: "default"
@@ -3367,9 +3418,22 @@ export function SettingsScreen({
                 ]}
               />
             </div>
-            <p className="text-xs leading-5 text-muted-foreground">
-              Providers are sorted by risk by default so blocked and warning rows needing attention appear first.
-            </p>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs leading-5 text-muted-foreground" aria-live="polite">
+                Showing {visibleProviderCount} of {totalProviderCount} {totalProviderCount === 1 ? "provider" : "providers"}. Providers are sorted by risk by default so blocked and warning rows needing attention appear first.
+              </p>
+              {providerFiltersActive ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={resetProviderFilters}
+                  aria-label="Clear provider connection filters"
+                >
+                  Clear filters
+                </Button>
+              ) : null}
+            </div>
           </section>
           <div className="grid gap-4 xl:grid-cols-2">
           {filteredProviderGroups.map((group) => (
@@ -3399,6 +3463,7 @@ export function SettingsScreen({
                           onSave={() => void saveProviderDraft(row)}
                           onVerify={() => void runProviderVerification(row.providerId)}
                           onClear={() => void clearProviderCredentials(row.providerId)}
+                          onCancelClear={() => cancelProviderClear(row.providerId)}
                         />
                       ) : null}
                       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -3451,7 +3516,9 @@ export function SettingsScreen({
                 </div>
               ) : (
                 <p className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm text-muted-foreground">
-                  {group.emptyLabel}
+                  {providerFiltersActive && (providerSourceCountById[group.id] ?? 0) > 0
+                    ? "No providers match the current filters."
+                    : group.emptyLabel}
                 </p>
               )}
             </section>
@@ -4630,7 +4697,8 @@ function ProviderInlineActionPanel({
   onTest,
   onSave,
   onVerify,
-  onClear
+  onClear,
+  onCancelClear
 }: {
   row: {
     providerId: string;
@@ -4650,8 +4718,15 @@ function ProviderInlineActionPanel({
   onSave: () => void;
   onVerify: () => void;
   onClear: () => void;
+  onCancelClear: () => void;
 }) {
   const busy = state.busyAction !== null;
+  const liveAcknowledgementMissing = state.environment === "live" && !state.liveAcknowledged;
+  const saveDisabledReason = busy
+    ? "A provider credential request is already running."
+    : liveAcknowledgementMissing
+      ? "Acknowledge live provider routing before saving live credentials."
+      : null;
   const environmentOptions = buildProviderEnvironmentOptions(row.environmentOptions, state.environment);
   return (
     <section className="mb-3 grid gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-3" aria-label={`${row.displayName} inline provider actions`}>
@@ -4683,7 +4758,8 @@ function ProviderInlineActionPanel({
           size="sm"
           onClick={onSave}
           busy={state.busyAction === "save"}
-          disabled={busy || (state.environment === "live" && !state.liveAcknowledged)}
+          disabled={busy || liveAcknowledgementMissing}
+          disabledReason={saveDisabledReason}
           busyLabel="Saving draft"
           aria-label={`Save ${row.displayName} credentials`}
         >
@@ -4704,7 +4780,7 @@ function ProviderInlineActionPanel({
         </Button>
         <Button
           type="button"
-          variant="outline"
+          variant={state.clearConfirmPending ? "destructive" : "outline"}
           size="sm"
           onClick={onClear}
           busy={state.busyAction === "clear"}
@@ -4713,8 +4789,20 @@ function ProviderInlineActionPanel({
           aria-label={`Clear ${row.displayName} credentials`}
         >
           <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-          Clear credentials
+          {state.clearConfirmPending ? "Confirm clear" : "Clear credentials"}
         </Button>
+        {state.clearConfirmPending ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onCancelClear}
+            disabled={busy}
+            aria-label={`Cancel ${row.displayName} credential clear`}
+          >
+            Cancel
+          </Button>
+        ) : null}
       </div>
       {state.editing ? (
         <div className="grid gap-3 md:grid-cols-2">
@@ -4837,6 +4925,7 @@ function createProviderInlineState(row: {
     liveAcknowledged: false,
     dirty: false,
     busyAction: null,
+    clearConfirmPending: false,
     statusMessage: null,
     statusDetails: [],
     statusTone: "default",

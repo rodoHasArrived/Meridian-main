@@ -1064,6 +1064,31 @@ describe("SettingsScreen", () => {
     expect(center).not.toHaveTextContent("vault:polygon/default");
   });
 
+  it("summarizes filter results and clears active provider filters", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        providerConnections={providerConnections}
+        onProviderRoutingRefresh={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText(/Providers are sorted by risk/i)).toHaveTextContent("Showing 2 of 2 providers");
+    expect(screen.queryByRole("button", { name: "Clear provider connection filters" })).not.toBeInTheDocument();
+
+    await user.type(screen.getByLabelText("Search providers in connection center"), "Polygon");
+
+    expect(screen.getByText(/Providers are sorted by risk/i)).toHaveTextContent("Showing 1 of 2 providers");
+    expect(screen.getByText("No providers match the current filters.")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Clear provider connection filters" }));
+
+    expect(screen.getByText(/Providers are sorted by risk/i)).toHaveTextContent("Showing 2 of 2 providers");
+    expect(screen.queryByText("No providers match the current filters.")).not.toBeInTheDocument();
+  });
+
   it("supports inline provider edit, test, save, verify, and clear actions", async () => {
     const user = userEvent.setup();
     const onRefresh = vi.fn();
@@ -1089,6 +1114,10 @@ describe("SettingsScreen", () => {
     await user.click(screen.getByRole("button", { name: "Test Alpaca connection" }));
     await user.click(screen.getByRole("button", { name: "Save Alpaca credentials" }));
     await user.click(screen.getByRole("button", { name: "Re-verify Alpaca connection" }));
+    // Clearing credentials is destructive, so it requires a confirmation click.
+    await user.click(screen.getByRole("button", { name: "Clear Alpaca credentials" }));
+    expect(apiMocks.deleteProviderCredentials).not.toHaveBeenCalled();
+    expect(screen.getByText("Confirm clearing stored credentials.")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Clear Alpaca credentials" }));
 
     expect(apiMocks.testProviderConnection).toHaveBeenCalledWith("alpaca");
