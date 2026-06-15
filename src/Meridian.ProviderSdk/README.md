@@ -38,6 +38,9 @@ keeping reflection-based provider discovery in Application.
 Provider routing capabilities are contract-level workflow gates; `FactorSchedule` is distinct from
 generic `CorporateActions` so accounting workflows can degrade fixed-income, structured-credit,
 amortization, and paydown evidence when a provider cannot route the required factor/coupon feed.
+Provider health and certification results feed shared trust-posture read models that preserve
+retained evidence manifest references, degradation signals, and close-readiness blockers rather
+than exposing provider liveness as a binary ready flag.
 `AccountingSystem/IAccountingSystemProvider.cs` defines the provider-neutral GL import surface for
 chart-of-accounts, journal-entry, trial-balance, and reconciliation-preview evidence. It is
 read-oriented by default; write/posting support must be exposed explicitly by provider capabilities

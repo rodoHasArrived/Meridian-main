@@ -84,7 +84,7 @@ and UI presentation concerns in their owning layers.
   also accepts required and degraded provider capability gaps from the provider routing matrix:
   required balance, position, reconciliation, or account-scoped gaps block broker ingest, while
   quote-history, corporate-action, factor-schedule, or asset-class degradation moves broker ingest
-  to review-required and reduces close readiness until an operator resolves or accepts the gap. The Financial Operations approval
+  to review-required and reduces close readiness until an operator resolves or accepts the gap. Provider trust scoring now projects a shared trust posture with retained evidence manifest refs, degradation reasons, and close-readiness blockers so workstation clients route stale certification, unhealthy providers, disabled connections, and missing packet evidence into operator review states instead of recomputing trust locally. The Financial Operations approval
   policy matrix service projects the
   same server-owned reviewer, permission, report-pack, checklist, and audit-event rules for
   configuration surfaces and accepts governed rule upserts with rationale, actor, correlation, and

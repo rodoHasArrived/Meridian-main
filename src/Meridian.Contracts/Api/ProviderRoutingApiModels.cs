@@ -142,7 +142,29 @@ public sealed record ProviderTrustSnapshotDto(
     bool IsProductionReady,
     bool IsCertificationFresh,
     string[] Signals,
-    DecisionResult<double>? Decision = null);
+    DecisionResult<double>? Decision = null,
+    string TrustPosture = "ReviewRequired",
+    string ReviewState = "operator-review-required",
+    string[]? EvidenceManifestRefs = null,
+    string[]? DegradedCapabilities = null,
+    string[]? CloseReadinessBlockers = null);
+
+/// <summary>
+/// Retained source-evidence manifest reference attached to imported files, API payloads,
+/// normalized records, or provider validation packets.
+/// </summary>
+public sealed record SourceEvidenceManifestDto(
+    string ManifestId,
+    string SourceSystem,
+    string SourceKind,
+    string EvidenceRoute,
+    string ContentHash,
+    DateTimeOffset RetainedAt,
+    string ValidationStatus,
+    string ReviewState,
+    string[] NormalizedRecordIds,
+    string[] ReconciliationKeys,
+    string[]? FailureCodes = null);
 
 /// <summary>
 /// Candidate item in a route preview.

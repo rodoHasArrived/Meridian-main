@@ -160,6 +160,15 @@ public sealed class ProviderTrustScoringService
                         ["providerFamilyId"] = connection.ProviderFamilyId
                     }));
 
+            var evidenceRefs = BuildEvidenceManifestRefs(certification, decision);
+            var degradedCapabilities = BuildDegradedCapabilities(connection, health, certification, isCertificationFresh);
+            var closeReadinessBlockers = BuildCloseReadinessBlockers(connection, health, certification, isCertificationFresh);
+            var trustPosture = closeReadinessBlockers.Length > 0
+                ? "Blocked"
+                : degradedCapabilities.Length > 0 || evidenceRefs.Length == 0
+                    ? "ReviewRequired"
+                    : "Trusted";
+
             snapshots.Add(new ProviderTrustSnapshotDto(
                 ConnectionId: connection.ConnectionId,
                 ProviderFamilyId: connection.ProviderFamilyId,
@@ -169,11 +178,95 @@ public sealed class ProviderTrustScoringService
                 IsProductionReady: connection.ProductionReady,
                 IsCertificationFresh: isCertificationFresh,
                 Signals: decision.Reasons.Select(r => r.HumanExplanation).ToArray(),
-                Decision: decision));
+                Decision: decision,
+                TrustPosture: trustPosture,
+                ReviewState: ToReviewState(trustPosture),
+                EvidenceManifestRefs: evidenceRefs,
+                DegradedCapabilities: degradedCapabilities,
+                CloseReadinessBlockers: closeReadinessBlockers));
         }
 
         return snapshots;
     }
+
+    private static string ToReviewState(string trustPosture)
+        => trustPosture switch
+        {
+            "Trusted" => "evidence-current",
+            "Blocked" => "close-blocked",
+            _ => "operator-review-required"
+        };
+
+    private static string[] BuildEvidenceManifestRefs(
+        ProviderCertificationConfig? certification,
+        DecisionResult<double> decision)
+    {
+        var refs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var evidenceRef in decision.Reasons.SelectMany(static reason => reason.EvidenceRefs))
+        {
+            if (evidenceRef.StartsWith("manifest:", StringComparison.OrdinalIgnoreCase) ||
+                evidenceRef.StartsWith("evidence:", StringComparison.OrdinalIgnoreCase))
+            {
+                refs.Add(evidenceRef);
+            }
+        }
+
+        foreach (var check in certification?.Checks ?? Array.Empty<string>())
+        {
+            if (check.StartsWith("manifest:", StringComparison.OrdinalIgnoreCase) ||
+                check.StartsWith("evidence:", StringComparison.OrdinalIgnoreCase) ||
+                check.StartsWith("packet:", StringComparison.OrdinalIgnoreCase))
+            {
+                refs.Add(check);
+            }
+        }
+
+        return refs.Order(StringComparer.OrdinalIgnoreCase).ToArray();
+    }
+
+    private static string[] BuildDegradedCapabilities(
+        ProviderConnectionConfig connection,
+        ProviderSdk.ProviderConnectionHealthSnapshot health,
+        ProviderCertificationConfig? certification,
+        bool isCertificationFresh)
+    {
+        var degraded = new List<string>();
+
+        if (!health.IsHealthy)
+            degraded.Add($"health:{health.Status}");
+
+        if (!connection.ProductionReady)
+            degraded.Add("production-readiness");
+
+        if (certification is null)
+            degraded.Add("certification-missing");
+        else if (!isCertificationFresh)
+            degraded.Add("certification-expired");
+
+        return degraded.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+    }
+
+    private static string[] BuildCloseReadinessBlockers(
+        ProviderConnectionConfig connection,
+        ProviderSdk.ProviderConnectionHealthSnapshot health,
+        ProviderCertificationConfig? certification,
+        bool isCertificationFresh)
+    {
+        var blockers = new List<string>();
+
+        if (!connection.Enabled)
+            blockers.Add("provider-connection-disabled");
+
+        if (!health.IsHealthy && string.Equals(connection.ConnectionMode.ToString(), "Live", StringComparison.OrdinalIgnoreCase))
+            blockers.Add("live-provider-health-not-current");
+
+        if (connection.ProductionReady && (certification is null || !isCertificationFresh))
+            blockers.Add("production-provider-certification-not-current");
+
+        return blockers.ToArray();
+    }
+
 }
 
 /// <summary>

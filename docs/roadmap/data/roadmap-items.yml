@@ -22,11 +22,13 @@ items:
     health: green
     priority: critical
     evidence_posture: complete
-    current_summary: Provider validation packets and DK1 operator sign-off are the baseline evidence for trusted data operations.
+    current_summary: Provider validation packets, DK1 operator sign-off, retained source-evidence manifests, and shared trust-posture read models are the baseline evidence for trusted data operations.
     exit_criteria:
       - Provider parity packet exists and is linked from reference documentation.
       - Operator sign-off evidence is available for DK1 readiness.
       - Provider validation matrix remains in `docs/reference/provider-validation-matrix.md`.
+      - Imported files and API payloads retain manifests before normalized records are treated as reconciliation-ready.
+      - Provider trust read models expose health, degradation, calibration/certification freshness, retained evidence refs, and operator review or close-blocking posture.
     source_modules:
       - SRC-HOST
       - SRC-APP
@@ -259,10 +261,10 @@ items:
     health: green
     priority: high
     evidence_posture: complete
-    current_summary: Completed the first shared multi-asset operations proof lane by exposing Security Master validation/profile posture, required provider evidence, ledger classification, reconciliation signals, and close-readiness blockers through `/api/workstation/portfolio/multi-asset-coverage`, with browser Portfolio/Accounting and WPF Portfolio cockpit surfaces rendering the shared read model.
+    current_summary: Completed the first shared multi-asset operations proof lane by exposing Security Master validation/profile posture, required retained provider evidence, ledger classification, reconciliation signals, and close-readiness blockers through `/api/workstation/portfolio/multi-asset-coverage`, with browser Portfolio/Accounting and WPF Portfolio cockpit surfaces rendering the shared read model; missing file/API manifests remain review-required rather than fake completeness.
     exit_criteria:
       - Equities, options, futures, FX, fixed income, loans, structured/private `CustomAsset`, and `OtherSecurity` rows declare identifiers, economics, provider evidence, ledger classification, reconciliation signals, and close blockers.
-      - Missing retained provider data remains review-required or blocked evidence rather than fake completeness.
+      - Missing retained provider data, file manifests, or API-payload evidence remains review-required or blocked evidence rather than fake completeness.
       - Browser and WPF surfaces consume the shared DTO without client-local readiness rules.
     source_modules:
       - SRC-APP
@@ -395,10 +397,11 @@ items:
     health: green
     priority: medium
     evidence_posture: planned_evidence
-    current_summary: Live-readiness remains planned and gated by the W1-W5 operational record baseline: trusted data, paper validation, reconciliation, approvals, accounting records, governed reporting evidence, and explicit governance sign-off. Near-term live work stays paper-first and readiness-oriented, not live execution productization.
+    current_summary: Live-readiness remains planned and gated by the W1-W5 operational record baseline: trusted data, retained provider/file/API evidence manifests, paper validation, reconciliation, approvals, accounting records, governed reporting evidence, and explicit governance sign-off. Near-term live work stays paper-first and readiness-oriented, not live execution productization.
     exit_criteria:
       - Live action surfaces remain paper-first until acceptance gates are green.
       - Credential and provider checks stay secret-safe and read-only by default.
+      - Provider health, degradation, calibration/certification freshness, and source-evidence manifest gaps route to operator-visible review or blockers before live-readiness claims.
       - Governance sign-off is linked before any live-readiness claim.
       - Any live-readiness work strengthens operational evidence and approval posture before adding broker execution surface area.
     source_modules:

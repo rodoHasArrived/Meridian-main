@@ -2,10 +2,10 @@
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-05-20
+**Reviewed:** 2026-06-15
 
-**Last Updated:** 2026-05-20
-**Scope:** Active Wave 1 provider confidence, checkpoint resumability, and Parquet Level 2 flush proof
+**Last Updated:** 2026-06-15
+**Scope:** Active Wave 1 provider confidence, retained source-evidence manifests, checkpoint resumability, and Parquet Level 2 flush proof
 
 This matrix is Meridian's active Wave 1 evidence gate. Every row must point to executable repo evidence, with bounded runtime evidence regenerated and attached from the validation run when a provider scenario cannot be closed from checked-in tests. The current signed DK1 evidence is the 2026-04-27 packet set under `artifacts/provider-validation/_automation/2026-04-27/`; future date-stamped packets are current only for the run that produced them and need matching packet-bound sign-off before they can replace that evidence. Deferred providers stay out of the active gate even when they remain in the broader provider strategy.
 
@@ -29,6 +29,24 @@ For the unified per-broker phase/blocker/evidence view, see [`provider-integrati
 | Parquet L2 flush behavior | `ParquetStorageSinkTests`, `ParquetConversionServiceTests` | Not required; the Wave 1 claim is closed in repo tests | ✅ | n/a |
 | Execution/readiness parity slice (IBKR-focused contract stability) | `IBBrokerageGatewayTests.ConnectAsync_AfterReconnect_RehydratesSessionAndAllowsOrderLifecycleToContinue`, `IBBrokerageGatewayTests.GetPositionsAsync_MapsPositionCallbacks`, `TradingOperatorReadinessServiceTests.GetAsync_AfterRestart_ShouldPreserveReplayParityAndExecutionAuditEvidence` | Use run-date replay/session artifacts only when validating with a live broker gateway; CI closes the canonical projection stability contract for auth/session refresh, position snapshots, and replay-readiness reconstruction | ✅ | n/a |
 
+
+## Operational source-evidence expansion lane
+
+Provider and data-ingestion claims are broader than market-data adapter health. Any imported file,
+API payload, broker/custodian statement, reference-data search response, corporate-action feed,
+factor schedule, bank transaction file, or GL support extract that contributes to an operational
+record must retain a source-evidence manifest before normalized records can be marked
+reconciliation-ready. The shared provider trust read model now exposes `trustPosture`,
+`reviewState`, retained `evidenceManifestRefs`, `degradedCapabilities`, and
+`closeReadinessBlockers` so Data, Accounting, Portfolio, and Settings surfaces route missing or
+stale evidence into review states instead of presenting synthetic completeness.
+
+| Evidence workflow | Retained manifest requirement | Validation/review routing | Normalized record handoff | Readiness posture |
+| --- | --- | --- | --- | --- |
+| Broker/custodian statements and activity files | File hash, original filename/path metadata, account/period scope, import timestamp, and statement-run route | Parse/schema failures create statement-run breaks and operator review items | Cash, position, trade, income, fee, and tax rows carry statement-run or break evidence links | Missing or failed manifests block close readiness for the account period |
+| API payload imports for balances, positions, activity, corporate actions, and factor schedules | Payload hash, provider family/connection id, capability, request window, and response-retention route | Unhealthy providers, expired certification, or missing packet refs emit trust review/degradation fields | Canonical rows retain provider connection and manifest refs for reconciliation and ledger matching | Required account-scoped gaps block ingest; degraded market/reference gaps require review |
+| Security Master and identifier mapping feeds (`Edgar`, `OpenFigi`, exchange/security-master seed lanes) | Raw response/file hash plus symbol, identifier, asset-class, and provider metadata | Shape/rate/runtime uncertainty remains review-required until packet evidence is current | Security Master candidates link source responses to approval, conflict, and ledger mapping evidence | Multi-asset rows stay review-required/blocked when retained provider evidence is absent |
+| Bank/treasury and GL support files | File hash, institution/system id, bank account or GL entity scope, and import batch route | Validation failures route to cash/GL support break queues | Bank transactions, trial-balance support, and reconciliation preview records link back to the batch manifest | Close support is blocked when cash or GL support evidence is missing |
 
 ## Readiness/Inbox regression evidence index (provider-impacting changes)
 

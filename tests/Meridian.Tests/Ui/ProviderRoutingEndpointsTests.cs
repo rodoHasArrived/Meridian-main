@@ -213,11 +213,15 @@ public sealed class ProviderRoutingEndpointsTests
         var trustResponse = await client.GetAsync(UiApiRoutes.ProviderRoutingTrustSnapshots);
         trustResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var trust = await ReadAsync<ProviderTrustSnapshotDto[]>(trustResponse);
-        trust.Should().ContainSingle(snapshot =>
+        var yahooTrust = trust.Should().ContainSingle(snapshot =>
             snapshot.ConnectionId == "yahoo" &&
             snapshot.ProviderFamilyId == "yahoo" &&
             snapshot.IsHealthy &&
-            !snapshot.IsProductionReady);
+            !snapshot.IsProductionReady).Subject;
+        yahooTrust.TrustPosture.Should().Be("ReviewRequired");
+        yahooTrust.ReviewState.Should().Be("operator-review-required");
+        yahooTrust.DegradedCapabilities.Should().Contain("production-readiness");
+        yahooTrust.CloseReadinessBlockers.Should().BeEmpty();
     }
 
     [Fact]

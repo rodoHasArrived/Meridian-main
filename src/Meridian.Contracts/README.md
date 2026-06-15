@@ -68,7 +68,12 @@ pricing, reconciliation, corporate-action/factor-schedule, report, and approval 
 clients can render readiness without client-local scoring rules. Gate posture requests can carry
 required provider capability gaps and degraded provider capability gaps from the shared provider
 routing matrix; the server turns those into broker-ingest blocker/review states instead of asking
-clients to infer close readiness from provider metadata. Closed operations workflows also
+clients to infer close readiness from provider metadata. Provider trust snapshots also carry
+contract-owned trust posture, review state, retained evidence manifest references, degraded
+capabilities, and close-readiness blockers so browser and WPF clients do not invent local trust
+semantics. Source-evidence manifest DTOs describe retained file/API payload evidence, validation
+status, normalized record ids, reconciliation keys, and failure codes for imported operational
+records. Closed operations workflows also
 publish `OperationsClosePackagePublicationDto` with close-package id, retained manifest id/route,
 evidence hash, sign-off actor/rationale, report pack id, evidence links, and checklist approvals so
 clients can inspect close-package publication without rebuilding package metadata locally. Ledger
