@@ -110,7 +110,8 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                     ReportWriterDatasetSourceLabel: NormalizeOptional(contract.ReportWriterDatasetSourceLabel),
                     ReportWriterDatasetRowCount: reportWriterDatasetRowCount,
                     BrandingThemeId: NormalizeOptional(contract.BrandingThemeId),
-                    BrandingTheme: contract.BrandingTheme);
+                    BrandingTheme: contract.BrandingTheme,
+                    AccessPolicy: contract.AccessPolicy);
 
                 manifests[runId] = manifest;
                 AppendAudit(
@@ -144,7 +145,8 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                     ReportWriterDatasetSourceLabel: NormalizeOptional(contract.ReportWriterDatasetSourceLabel),
                     ReportWriterDatasetRowCount: contract.DatasetRows?.Count,
                     BrandingThemeId: NormalizeOptional(contract.BrandingThemeId),
-                    BrandingTheme: contract.BrandingTheme);
+                    BrandingTheme: contract.BrandingTheme,
+                    AccessPolicy: contract.AccessPolicy);
                 manifests[runId] = failed;
                 AppendAudit(runId, "RunFailed", contract.RequestedBy, $"attempt={attempt}; error={ex.Message}");
                 await PersistAsync(failed, cancellationToken).ConfigureAwait(false);

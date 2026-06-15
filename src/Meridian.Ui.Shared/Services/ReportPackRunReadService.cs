@@ -1760,7 +1760,8 @@ public sealed class ReportPackRunReadService
                     LastDeliveryArtifactCount: latestAttempt?.Package?.Artifacts.Count ?? 0,
                     LastDeliveryIntegritySummary: latestAttempt?.Package?.IntegritySummary,
                     BrandingThemeId: ResolveScheduleBrandingThemeId(schedule, latestAttempt),
-                    BrandingTheme: latestAttempt?.Package?.BrandingTheme ?? schedule.BrandingThemeOverride);
+                    BrandingTheme: latestAttempt?.Package?.BrandingTheme ?? schedule.BrandingThemeOverride,
+                    LastDeliveryEntitlementScope: ResolveLastDeliveryEntitlementScope(latestAttempt));
             }
 
             if (fallbackPlan is not null)
@@ -1804,8 +1805,15 @@ public sealed class ReportPackRunReadService
                 LastDeliveryIntegritySummary: latestAttempt?.Package?.IntegritySummary,
                 ReadinessBlockers: readiness.Blockers,
                 BrandingThemeId: ResolveScheduleBrandingThemeId(schedule, latestAttempt),
-                BrandingTheme: latestAttempt?.Package?.BrandingTheme ?? schedule.BrandingThemeOverride);
+                BrandingTheme: latestAttempt?.Package?.BrandingTheme ?? schedule.BrandingThemeOverride,
+                LastDeliveryEntitlementScope: ResolveLastDeliveryEntitlementScope(latestAttempt));
         }
+    }
+
+    private static string? ResolveLastDeliveryEntitlementScope(ReportPackDeliveryAttemptDto? latestAttempt)
+    {
+        var entitlementScope = NormalizeOptional(latestAttempt?.Package?.DeliveryEvidencePacket?.EntitlementScope);
+        return string.IsNullOrWhiteSpace(entitlementScope) ? null : entitlementScope;
     }
 
     private static string? ResolveScheduleBrandingThemeId(

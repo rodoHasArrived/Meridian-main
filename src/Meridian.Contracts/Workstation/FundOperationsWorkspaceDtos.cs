@@ -1029,7 +1029,8 @@ public sealed record ReportingScheduleDeliveryPlanDto(
     string? LastDeliveryIntegritySummary = null,
     IReadOnlyList<string>? ReadinessBlockers = null,
     string? BrandingThemeId = null,
-    ReportBrandingThemeDto? BrandingTheme = null);
+    ReportBrandingThemeDto? BrandingTheme = null,
+    string? LastDeliveryEntitlementScope = null);
 
 [JsonConverter(typeof(JsonStringEnumConverter<ReportingScheduleStateDto>))]
 public enum ReportingScheduleStateDto

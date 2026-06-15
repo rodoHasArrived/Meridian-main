@@ -23,6 +23,11 @@ Use the documentation front door and audience paths for current guidance:
 - [Source Documentation Mesh](docs/source/README.md)
 - [AI Guide](docs/ai/README.md)
 - [Documentation Ownership Contract](docs/documentation-ownership.md)
+- [Developer setup](docs/developer/setup.md)
+- [Build/test/run](docs/developer/build-test-run.md)
+- [Standalone publish](docs/developer/publish-standalone-exe.md)
+- [Cleanup and maintenance](docs/operations/cleanup-and-maintenance.md)
+- [Design system usage](docs/design/design-system-usage.md)
 
 ## Current Product Direction
 

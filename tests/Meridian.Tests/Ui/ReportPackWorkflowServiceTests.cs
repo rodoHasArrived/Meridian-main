@@ -2444,6 +2444,7 @@ public sealed class ReportPackWorkflowServiceTests
             link.RequiresToken);
         boardPlan.LastDeliveryArtifactCount.Should().Be(3);
         boardPlan.LastDeliveryIntegritySummary.Should().Be("3 artifact(s) retained with SHA-256 checksums without a publication evidence hash.");
+        boardPlan.LastDeliveryEntitlementScope.Should().Be("CompanyWide");
         boardPlan.VersionStamp.Should().StartWith("schedule-delivery-plan:sched-board-distribution:board-reporting-committee:");
     }
 
@@ -2685,6 +2686,9 @@ public sealed class ReportPackWorkflowServiceTests
                 Parameters: [],
                 Family: ReportingTemplateFamily.CustomReport.ToString(),
                 Rationale: "No-code custom report pack for scheduled investor delivery.",
+                AccessPolicy: new ReportAccessPolicyDto(
+                    ReportAccessModeDto.Restricted,
+                    Principals: [new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Group, "investor-relations")]),
                 Grids:
                 [
                     new ReportWriterGridDefinitionDto(
@@ -2831,6 +2835,11 @@ public sealed class ReportPackWorkflowServiceTests
         var manifest = runStore.GetManifest(result.Run.RunId);
         manifest.Should().NotBeNull();
         manifest!.BrandingThemeId.Should().Be("allocator-quarterly");
+        manifest.AccessPolicy.Should().NotBeNull();
+        manifest.AccessPolicy!.Mode.Should().Be(ReportAccessModeDto.Restricted);
+        manifest.AccessPolicy.Principals.Should().ContainSingle(principal =>
+            principal.Kind == ReportAccessPrincipalKindDto.Group &&
+            principal.PrincipalId == "investor-relations");
         manifest.BrandingTheme.Should().NotBeNull();
         manifest.BrandingTheme!.FirmName.Should().Be("Northstar Capital");
         var renderedSectorPivot = manifest!.RenderedReportWriterGrids.FirstOrDefault(static grid =>
@@ -2905,6 +2914,7 @@ public sealed class ReportPackWorkflowServiceTests
         packet.PacketKind.Should().Be("ReportingRunDelivery");
         packet.DatasetVersion.Should().Be("sched-custom-writer-20260502");
         packet.TemplateVersion.Should().Be("scheduled-report-writer-pack");
+        packet.EntitlementScope.Should().Be("Restricted principals=Group:investor-relations");
         packet.DeliveryChannel.Should().Be("EmailLink via Investor portal");
         packet.RecipientList.Should().ContainSingle(recipient =>
             recipient.DistributionId == "investor-relations" &&
@@ -3000,6 +3010,7 @@ public sealed class ReportPackWorkflowServiceTests
             link.RequiresToken);
         plan.LastDeliveryArtifactCount.Should().Be(3);
         plan.LastDeliveryIntegritySummary.Should().Be("3 artifact(s) retained with SHA-256 checksums without a publication evidence hash.");
+        plan.LastDeliveryEntitlementScope.Should().Be("Restricted principals=Group:investor-relations");
         plan.BrandingThemeId.Should().Be("allocator-quarterly");
         plan.BrandingTheme.Should().NotBeNull();
         plan.BrandingTheme!.FirmName.Should().Be("Northstar Capital");

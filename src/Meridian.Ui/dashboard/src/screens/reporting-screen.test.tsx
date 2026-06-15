@@ -1624,6 +1624,7 @@ describe("ReportingScreen", () => {
       "Manifest: exports/reporting/fund-alpha/20260411160000/warehouse-ledger-facts.manifest.json"
     );
     expect(warehouseRow).toHaveTextContent(`Integrity: 6 row(s), 9 field(s), and 18 source record(s) retained with SHA-256 ${"a".repeat(64)}.`);
+    expect(warehouseRow).toHaveTextContent(`SHA-256: ${"a".repeat(64)}`);
     expect(within(warehouseRow).getByRole("group", { name: "Warehouse ledger facts export tags" })).toHaveTextContent(
       "warehouseledgerreconciliation"
     );
@@ -3770,6 +3771,7 @@ describe("ReportingScreen", () => {
             versionStamp: "schedule-delivery-plan:sched-investor:board-reporting-committee:20260503080000:formats-3",
             lastDeliveryArtifactCount: 3,
             lastDeliveryIntegritySummary: "3 artifact(s) retained with SHA-256 checksums against publication evidence hash sha256:board-pack.",
+            lastDeliveryEntitlementScope: "Restricted principals=Group:investor-relations",
             brandingThemeId: "allocator-quarterly",
             brandingTheme: {
               themeId: "allocator-quarterly",
@@ -4132,6 +4134,7 @@ describe("ReportingScreen", () => {
     expect(boardPlan).toHaveTextContent("Will deliver Pdf/Xlsx/Csv by SecurePortal to Board reporting committee");
     expect(boardPlan).toHaveTextContent("Pdf, Xlsx, Csv");
     expect(boardPlan).toHaveTextContent("3 artifacts with SHA-256");
+    expect(boardPlan).toHaveTextContent("Restricted principals=Group:investor-relations");
     expect(boardPlan).toHaveTextContent("Allocator Quarterly · Northstar Capital · allocator-quarterly");
     expect(boardPlan).toHaveTextContent("3 artifact(s) retained with SHA-256 checksums against publication evidence hash sha256:board-pack.");
     expect(boardPlan).toHaveTextContent("Board package.");
@@ -4153,6 +4156,7 @@ describe("ReportingScreen", () => {
     });
     expect(investorPlan).toHaveTextContent("No retained delivery yet");
     expect(investorPlan).toHaveTextContent("No retained artifact checksums");
+    expect(investorPlan).toHaveTextContent("No retained delivery entitlement");
 
     expect(screen.getByRole("list", { name: "Report-pack delivery attempts" })).toBeInTheDocument();
     const boardAttempt = screen.getByLabelText("Board reporting committee delivery attempt Delivered");

@@ -1998,7 +1998,8 @@ public static class FundStructureEndpoints
         HttpContext context,
         JsonSerializerOptions jsonOptions)
     {
-        if (context.Request.ContentLength is null or 0)
+        if (context.Request.ContentLength == 0 ||
+            (context.Request.ContentLength is null && string.IsNullOrWhiteSpace(context.Request.ContentType)))
         {
             return OperationsActionOriginDto.HumanOperator;
         }

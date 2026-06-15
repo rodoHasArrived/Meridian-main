@@ -756,6 +756,31 @@ public sealed class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_ManualJournalEntry_ReviewedAutomationCannotSubmitApproval()
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var service = CreateManualJournalEntryWorkbenchService(configuration);
+        var draft = BalancedManualJournalEntry();
+
+        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(draft, "ops-user"));
+        var act = async () => await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
+            saved.JournalEntryId,
+            saved.FundProfileId,
+            "assistant",
+            saved.Version,
+            ActionOrigin: OperationsActionOriginDto.AssistantDraft));
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*Reviewed automation cannot submit manual journal entries for approval*");
+        var workbench = await service.GetWorkbenchAsync("fund-alpha");
+        workbench.Drafts.Should().ContainSingle(item =>
+            item.JournalEntryId == saved.JournalEntryId &&
+            item.Status == ManualJournalEntryStatusDto.Draft);
+        workbench.AuditTrail.Select(item => item.Action).Should().NotContain("manual-je.submit-approval");
+    }
+
+    [Fact]
     public async Task ManualJournalEntryWorkbenchService_ListFundProfileIds_ReturnsRetainedDraftScopes()
     {
         var configuration = CreateService();

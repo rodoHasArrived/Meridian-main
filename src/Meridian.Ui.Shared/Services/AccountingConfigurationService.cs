@@ -3049,6 +3049,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
+        EnsureHumanOrigin(request.ActionOrigin, "submit manual journal entries for approval");
         var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
         var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
@@ -3077,6 +3078,15 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         await _draftStore.SaveAsync(submitted, ct).ConfigureAwait(false);
         await AppendAuditAsync(submitted, "manual-je.submit-approval", request.Actor, request.CorrelationId, submitted.EvidenceLinks, ct).ConfigureAwait(false);
         return submitted;
+    }
+
+    private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
+    {
+        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        {
+            throw new InvalidOperationException(
+                $"Reviewed automation cannot {action}; a human operator approval is required.");
+        }
     }
 
     private async Task<ManualJournalEntryDraftDto> NormalizeAndValidateAsync(

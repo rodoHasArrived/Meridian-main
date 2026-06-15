@@ -1810,6 +1810,11 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                         Integrity: {structuredExport.integritySummary}
                       </p>
                     ) : null}
+                    {structuredExport.integrityHashSha256 ? (
+                      <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">
+                        SHA-256: {structuredExport.integrityHashSha256}
+                      </p>
+                    ) : null}
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {structuredExport.dataDictionaryRoute ? (
                         <a
@@ -2763,6 +2768,7 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                         <ReportingScheduleField label="Owner" value={plan.ownerLabel} />
                         <ReportingScheduleField label="Last delivery" value={plan.lastDeliveryLabel} />
                         <ReportingScheduleField label="Artifact integrity" value={plan.integrityLabel} />
+                        <ReportingScheduleField label="Entitlement" value={plan.entitlementLabel} />
                         <ReportingScheduleField label="Branding" value={plan.brandingLabel} />
                         <ReportingScheduleField label="Schedule" value={plan.scheduleId} />
                       </dl>

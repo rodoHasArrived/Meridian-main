@@ -4136,6 +4136,7 @@ export interface ReportingScheduleDeliveryPlan {
   readinessBlockers?: string[] | null;
   brandingThemeId?: string | null;
   brandingTheme?: ReportBrandingTheme | null;
+  lastDeliveryEntitlementScope?: string | null;
 }
 
 export type StructuredReportingExportPurpose = "Regulatory" | "DataWarehouse" | "InvestmentDecision";

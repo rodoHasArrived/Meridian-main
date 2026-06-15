@@ -12,6 +12,8 @@ out/
 # Configuration-specific build outputs
 # Why: Platform/configuration-specific artifacts (Debug/Release, x64/x86)
 # are machine-generated and should be rebuilt from source.
+/.tmp/
+/.buildtmp/
 [Dd]ebug/
 [Rr]elease/
 x64/
@@ -196,7 +198,6 @@ nul
 *_wpftmp.csproj
 *.swp
 *~
-...
 *-scratch.*
 scratch-*
 test-*.ps1

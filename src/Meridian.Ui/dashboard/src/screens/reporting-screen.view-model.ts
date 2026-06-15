@@ -371,6 +371,7 @@ export interface ReportingScheduleDeliveryPlanRow {
   lastDeliveryLinks: ReportingDeliveryAccessLinkRow[];
   integrityLabel: string;
   integritySummary: string | null;
+  entitlementLabel: string;
   brandingLabel: string;
   versionStamp: string | null;
   ariaLabel: string;
@@ -1762,6 +1763,7 @@ function buildScheduleDeliveryPlanRows(plans: ReportingScheduleDeliveryPlan[]): 
     lastDeliveryLinks: buildDeliveryAccessLinkRows(plan.lastDeliveryAccessLinks, `${plan.planId}-delivery-link`),
     integrityLabel: formatSchedulePlanIntegrity(plan),
     integritySummary: plan.lastDeliveryIntegritySummary ?? null,
+    entitlementLabel: plan.lastDeliveryEntitlementScope?.trim() || "No retained delivery entitlement",
     brandingLabel: formatSchedulePlanBranding(plan),
     versionStamp: plan.versionStamp,
     ariaLabel: `${plan.recipient} ${plan.deliveryMode} scheduled delivery plan for ${plan.scheduleId}`

@@ -114,11 +114,12 @@ resolution, approval, close-package publication, and governed reopen commands be
 the operating record. Report-pack-ready workflows can use the
 same review-stage contract to surface report-commentary and audit-request-list drafts as
 evidence-backed review artifacts rather than approved publications.
-Payment approval/rejection, bank-evidence recording, report-pack workflow approval/restatement,
-report-pack publication, and report-pack delivery request contracts also carry the same
-action-origin metadata so assistant or automation-origin calls cannot approve or reject payment
-requests, satisfy cash evidence, approve report packs, restate published report lines, publish
-reports, or create stakeholder delivery packages.
+Payment approval/rejection, bank-evidence recording, manual-journal approval submission,
+report-pack workflow approval/restatement, report-pack publication, and report-pack delivery
+request contracts also carry the same action-origin metadata so assistant or automation-origin
+calls cannot approve or reject payment requests, satisfy cash evidence, submit journal drafts for
+approval, approve report packs, restate published report lines, publish reports, or create
+stakeholder delivery packages.
 Banking contracts keep payment approval separate from bank-side evidence: approved payments remain
 Meridian approval records, while `RecordPaymentBankEvidenceRequest` records retained confirmation,
 return, reversal, or failure evidence under a human-operator origin before downstream cash,
@@ -412,7 +413,10 @@ keeping client-facing packet styling tied to the governed contract rather than b
 `ReportingScheduleDeliveryPlanDto` carries schedule-to-recipient delivery plans with PDF/XLS/CSV
 format sets, email-link or secure-portal mode, readiness text, due/as-of posture, last retained
 delivery attempt metadata, latest package artifact counts, checksum integrity summaries, and
-version stamps plus the schedule or last-package branding theme. Delivery package `accessLinks` may include an `artifact-xls` compatibility link for
+version stamps plus the schedule or last-package branding theme. It also carries the last retained
+delivery entitlement scope from the package evidence packet so clients can show whether the latest
+scheduled package was company-wide, private, or restricted to specific user/group/company
+principals. Delivery package `accessLinks` may include an `artifact-xls` compatibility link for
 retained XLSX workbook artifacts; it is a token-gated `format=xls` route that returns the canonical
 XLSX workbook bytes and MIME type rather than a separate legacy workbook artifact.
 Email-link and secure-portal package links resolve to token-gated HTML views for recipient-facing
@@ -457,6 +461,9 @@ Template
 definitions and report-pack workflow records also carry `ReportAccessPolicyDto` with private,
 restricted user/group/company, and company-wide modes; workstation template payloads expose access
 mode, summary, and accessibility posture so clients do not invent report audience rules locally.
+Generic Reporting run manifests can retain the resolved policy from the approved template, allowing
+scheduled generated-run delivery evidence to preserve restricted user, group, company, or private
+entitlement scope instead of broadening no-code report packages to company-wide access.
 `WorkstationReportAccessAuditSummaryDto` adds aggregate user/group/company access evidence to the
 Reporting payloads, including visible and hidden template, report-pack, schedule, delivery, and
 structured-export counts plus generic denial reasons, so browser and WPF clients can explain
@@ -739,6 +746,9 @@ distributions, subscriptions, redemptions, LP transfers, and management fees. `T
 is the shared audit context for those drafts and carries effective date, idempotency key, fund
 event, capital account, investor, payment intent, and settlement references so browser, WPF,
 Financial Operations, and ledger metadata use the same retry-safe fund-event vocabulary.
+`SubmitManualJournalEntryApprovalRequest` carries action-origin metadata because reviewed
+automation may draft journal content, but cannot submit the durable approval record on behalf of a
+human operator.
 `ManualJournalEntryWorkbenchDto` also carries an optional `PrivateCapitalActivityProjectionDto`
 with server-owned fund-event rows, capital-account activity aggregates, ordered capital-account
 subledger entries with running net activity, ledger-impact rows, report-output readiness candidates,

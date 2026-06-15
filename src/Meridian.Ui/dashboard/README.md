@@ -245,16 +245,20 @@ history also renders backend-owned access, channel, and download summaries for e
 secure-portal, evidence-vault, and internal-route packages instead of deriving recipient-facing
 copy from URL shape. When the shared package includes an access-expiry timestamp, React displays it
 beside the token-gated delivery link so operators can see when email-link or portal access closes.
+Schedule delivery-plan cards render the latest retained delivery entitlement scope from the shared
+plan payload beside artifact integrity, branding, and retained access links, so operators can verify
+private or restricted scheduled packages without opening the package manifest first.
 The Reporting workspace also renders shared `portfolioCuts` rows for fund, strategy, and tag
 reporting views. The browser shows exposure, cash, P&L, shadow-NAV, variance, source-count, and
 version stamp from the backend payload instead of recomputing those cuts in React.
 Structured export cards render regulatory, data-warehouse, and investment-decision rows from the
-shared `structuredExports` payload, including retained paths, schema version, source counts,
-data-dictionary links, evidence links, and classification tags before exposing JSON/CSV/XLSX
-downloads. Operator-facing XLS or Excel requests use the shared route's `format=xls`/`format=excel`
-aliases and receive the same canonical `.xlsx` workbook artifact. The shared download routes stamp
-JSON, CSV, and XLSX responses with export id, generated-at, actor, company, report group, version,
-and integrity headers while keeping browser tables read-only over backend-owned export state.
+shared `structuredExports` payload, including retained paths, retained manifest paths, schema
+version, source counts, integrity summaries, raw SHA-256 hashes, data-dictionary links, evidence
+links, and classification tags before exposing JSON/CSV/XLSX downloads. Operator-facing XLS or
+Excel requests use the shared route's `format=xls`/`format=excel` aliases and receive the same
+canonical `.xlsx` workbook artifact. The shared download routes stamp JSON, CSV, and XLSX responses
+with export id, generated-at, actor, company, report group, version, and integrity headers while
+keeping browser tables read-only over backend-owned export state.
 Cross-fund consolidation cards follow the same rule: fund/entity counts, gross/net exposure, cash,
 P&L, shadow-NAV, variance, source counts, readiness, and drill-through routes are rendered from
 `crossFundConsolidations` without browser-local roll-up math.
@@ -301,9 +305,10 @@ React shows source counts, exposure, cash, P&L, readiness, version stamps, and b
 the payload instead of aggregating multi-fund state in the browser.
 It also renders shared `structuredExports` rows for regulatory, warehouse, and investment-decision
 outputs. The browser displays readiness, format, row/field/source counts, schema version, retained
-path, retained manifest path, SHA-256 integrity summary, dataset id, as-of timestamp, version stamp,
-exact backend API route, and direct backend links from the contract. Each ready export exposes JSON, CSV, and XLSX download actions by normalizing the
-shared retained route's `format` query instead of building browser-local export payloads. Blocked
+path, retained manifest path, SHA-256 integrity summary, raw SHA-256 hash, dataset id, as-of
+timestamp, version stamp, exact backend API route, and direct backend links from the contract. Each
+ready export exposes JSON, CSV, and XLSX download actions by normalizing the shared retained route's
+`format` query instead of building browser-local export payloads. Blocked
 exports stay visible with validation copy, but the browser renders contract-owned readiness blockers
 and disabled download controls without anchor `href` values until the backend marks the descriptor
 ready.

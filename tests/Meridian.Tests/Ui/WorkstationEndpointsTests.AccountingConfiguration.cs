@@ -623,6 +623,65 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task ManualJournalEntryWorkbenchEndpoints_WhenReviewedAutomationSubmitsApproval_ReturnsConflictWithoutSubmission()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterAccountingConfigurationServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest(
+                FundProfileId: "fund-alpha",
+                Node: new ChartOfAccountsNodeDto("cash", "Assets:Cash", "Cash", "Asset"),
+                Actor: "browser-user"),
+            ServerJsonOptions);
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest(
+                FundProfileId: "fund-alpha",
+                Node: new ChartOfAccountsNodeDto("interest-income", "Income:Interest", "Interest Income", "Revenue"),
+                Actor: "browser-user"),
+            ServerJsonOptions);
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest(
+                FundProfileId: "fund-alpha",
+                Node: new ChartOfAccountsNodeDto("capital-contributions", "Equity:Capital Contributions", "Capital Contributions", "Equity"),
+                Actor: "browser-user"),
+            ServerJsonOptions);
+        var draft = ManualJournalEntryDraft();
+
+        using var saveResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryDrafts,
+            new SaveManualJournalEntryDraftRequest(draft, "browser-user", CorrelationId: "manual-je-save"),
+            ServerJsonOptions);
+        var saved = await saveResponse.Content.ReadFromJsonAsync<ManualJournalEntryDraftDto>(ServerJsonOptions);
+        using var submitResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntrySubmitApproval,
+            new SubmitManualJournalEntryApprovalRequest(
+                saved!.JournalEntryId,
+                saved.FundProfileId,
+                "assistant",
+                saved.Version,
+                CorrelationId: "manual-je-submit",
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft),
+            ServerJsonOptions);
+        using var workbenchResponse = await client.GetAsync($"{UiApiRoutes.LedgerManualJournalEntryWorkbench}?fundProfileId=fund-alpha");
+
+        saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        submitResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        workbenchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var workbench = await workbenchResponse.Content.ReadFromJsonAsync<ManualJournalEntryWorkbenchDto>(ServerJsonOptions);
+        workbench.Should().NotBeNull();
+        workbench!.Drafts.Should().ContainSingle(item =>
+            item.JournalEntryId == saved.JournalEntryId &&
+            item.Status == ManualJournalEntryStatusDto.Draft);
+        workbench.AuditTrail.Select(item => item.Action).Should().NotContain("manual-je.submit-approval");
+    }
+
+    [Fact]
     public async Task LedgerPrivateCapitalCapitalAccountSubledger_WhenMultipleInvestorSubledgersMatch_ReturnsBadRequestUntilDisambiguated()
     {
         await using var app = await CreateAppAsync(

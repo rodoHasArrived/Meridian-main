@@ -282,7 +282,10 @@ should render that shared coverage instead of deriving their own lifecycle label
 Generated reporting-run deliveries also retain a `ReportingRunDelivery` evidence packet with
 recipient scope, source report-writer artifacts, delivery artifact checksums, dataset/template
 version, and request history so scheduled no-code report packs have the same audit-facing delivery
-lineage as published governed report packs. Delivery packages expose structured access links for
+lineage as published governed report packs. When the generated run manifest carries a resolved
+`ReportAccessPolicyDto`, the evidence packet uses that policy for its entitlement scope so
+restricted group/company and private scheduled report-writer packs do not lose their audience lock
+at delivery time. Delivery packages expose structured access links for
 the token-gated email link or secure portal route, operator route, retained manifest path, and each
 artifact download; schedule delivery-plan projections carry the latest package links forward so
 operator clients can render the actual retained delivery options without parsing secure-link strings.
@@ -639,6 +642,12 @@ Those schedule records can also persist a selected `BrandingThemeId` or custom
 `BrandingThemeOverride`; scheduled generated-run manifests and delivery packages carry that
 normalized theme forward so recurring no-code report-writer deliveries preserve the same firm
 identity, colors, footer, and disclaimer metadata as one-off branded report-pack generation.
+Generated scheduled-run manifests also carry the approved template access policy resolved through
+the governed catalog, and `ReportPackDeliveryService` stamps that policy into
+`ReportingRunDelivery.EntitlementScope` before storing the email-link or portal package.
+`ReportPackRunReadService` carries the latest retained package entitlement back onto
+`scheduleDeliveryPlans`, letting browser and desktop clients show the delivery audience lock beside
+artifact integrity, branding, and access-link rows without opening the package manifest first.
 Schedule run results return delivery attempts and warnings so operators can distinguish generated
 reports from actually packaged email-link or portal deliveries.
 `ReportingRunCommandService` also runs approved built-in templates on demand through the same orchestration and run-store seam,
@@ -1009,7 +1018,9 @@ validates GL account, balance, currency, Security Master, typed evidence attachm
 treasury context, and version state before save or approval submission. Draft save remains
 permissive for in-progress work, but approval submission requires retained source evidence and, for
 private-capital entry types, retry-safe fund-event/capital-account context so browser and WPF
-clients do not present process-local accounting work as durable ledger evidence. The workbench
+clients do not present process-local accounting work as durable ledger evidence. Approval
+submission also rejects assistant or automation-origin requests before the submitted record and
+audit event are written, preserving reviewed automation as a draft/suggestion lane. The workbench
 response includes the shared private-capital activity projection, which skips incomplete fund-event
 drafts and surfaces ledger-impact, projection, and report-output readiness warnings instead of
 inventing capital-account, GL-impact, or stakeholder-package rows. The read-only

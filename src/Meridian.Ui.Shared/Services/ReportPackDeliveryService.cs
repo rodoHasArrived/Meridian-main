@@ -783,7 +783,7 @@ public sealed class ReportPackDeliveryService
                     policy.RecipientRole,
                     policy.Channel)
             ],
-            EntitlementScope: ReportAccessModeDto.CompanyWide.ToString(),
+            EntitlementScope: BuildEntitlementScope(manifest.AccessPolicy),
             ApprovalChain: [],
             DatasetVersion: manifest.RunId,
             TemplateVersion: manifest.TemplateId,

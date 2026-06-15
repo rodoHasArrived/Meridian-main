@@ -103,7 +103,10 @@ rows, warnings, and lineage so generated run delivery artifacts can carry source
 Top-N, contribution, and formula output instead of only grid descriptors. Scheduled run contracts
 can also carry a selected branding theme id and normalized `ReportBrandingThemeDto`; the resulting
 manifest keeps that theme with generated report-writer packages so recurring PDF/XLSX/CSV
-distribution can prove the firm styling used for the run. Reporting template families now cover
+distribution can prove the firm styling used for the run. Run contracts and manifests can also
+carry the resolved `ReportAccessPolicyDto`, allowing downstream delivery evidence to preserve
+private, restricted group/company, or company-wide report entitlements for generic Reporting runs
+instead of widening generated-run packages to a default audience. Reporting template families now cover
 investor, SEC, shadow NAV, performance, holdings, capital-account, board, audit, certified-dataset,
 and custom report packs; shared UI services layer schedule persistence, delivery history, template
 grid render calls, and rendered HTML/PDF artifacts on top of those module contracts without moving

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Workstation;
 
 namespace Meridian.Contracts.Ledger;
 
@@ -896,7 +897,8 @@ public sealed record SubmitManualJournalEntryApprovalRequest(
     int Version,
     string? Notes = null,
     string? CorrelationId = null,
-    IReadOnlyList<string>? EvidenceLinks = null);
+    IReadOnlyList<string>? EvidenceLinks = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record ActivateAccountingConfigurationRequest(
     string FundProfileId,

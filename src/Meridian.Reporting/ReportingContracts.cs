@@ -46,7 +46,8 @@ public sealed record ReportingTemplateMetadata(
     string Version,
     ImmutableArray<string> Sections,
     ImmutableDictionary<string, string> Tags,
-    IReadOnlyList<ReportWriterGridDefinitionDto>? ReportWriterGrids = null);
+    IReadOnlyList<ReportWriterGridDefinitionDto>? ReportWriterGrids = null,
+    ReportAccessPolicyDto? AccessPolicy = null);
 
 public sealed record ReportingLineageReference(
     string SectionId,
@@ -72,7 +73,8 @@ public sealed record ReportingOutputManifest(
     string? ReportWriterDatasetSourceLabel = null,
     int? ReportWriterDatasetRowCount = null,
     string? BrandingThemeId = null,
-    ReportBrandingThemeDto? BrandingTheme = null);
+    ReportBrandingThemeDto? BrandingTheme = null,
+    ReportAccessPolicyDto? AccessPolicy = null);
 
 public sealed record ReportingRunReportWriterGridArtifact(
     string GridId,
@@ -104,7 +106,8 @@ public sealed record ReportingJobContract(
     string? ReportWriterDatasetSourceId = null,
     string? ReportWriterDatasetSourceLabel = null,
     string? BrandingThemeId = null,
-    ReportBrandingThemeDto? BrandingTheme = null);
+    ReportBrandingThemeDto? BrandingTheme = null,
+    ReportAccessPolicyDto? AccessPolicy = null);
 
 public sealed record ReportingScheduleContract(
     string ScheduleId,

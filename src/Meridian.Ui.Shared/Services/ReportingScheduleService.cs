@@ -266,6 +266,7 @@ public sealed class ReportingScheduleService
         var actor = string.IsNullOrWhiteSpace(requestedBy) ? schedule.RequestedBy : requestedBy.Trim();
         var datasetRows = ResolveDatasetRows(schedule);
         var datasetSourceEvidence = ResolveDatasetSourceEvidence(schedule);
+        var accessPolicy = ResolveTemplateAccessPolicy(schedule.TemplateId);
         var contract = new ReportingJobContract(
             schedule.ScheduleId,
             schedule.TemplateId,
@@ -280,7 +281,8 @@ public sealed class ReportingScheduleService
             datasetSourceEvidence.SourceId,
             datasetSourceEvidence.Label,
             BrandingThemeId: ResolveBrandingThemeId(schedule),
-            BrandingTheme: schedule.BrandingThemeOverride);
+            BrandingTheme: schedule.BrandingThemeOverride,
+            AccessPolicy: accessPolicy);
         var manifest = await _orchestrationService.ExecuteAsync(contract, ct).ConfigureAwait(false);
         var run = ProjectRun(manifest, _orchestrationService.GetAudit(manifest.RunId));
         var advanced = AdvanceSchedule(schedule, manifest);
@@ -609,6 +611,23 @@ public sealed class ReportingScheduleService
 
     private static string? ResolveBrandingThemeId(ReportingScheduleRecordDto schedule) =>
         NormalizeDatasetSourceId(schedule.BrandingThemeOverride?.ThemeId) ?? NormalizeDatasetSourceId(schedule.BrandingThemeId);
+
+    private ReportAccessPolicyDto? ResolveTemplateAccessPolicy(string templateId)
+    {
+        if (_governedTemplateCatalog is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return _governedTemplateCatalog.Get(templateId).AccessPolicy;
+        }
+        catch (KeyNotFoundException)
+        {
+            return null;
+        }
+    }
 
     private static IReadOnlyList<ReportingScheduleDeliveryTargetDto>? NormalizeDeliveryTargets(
         IReadOnlyList<ReportingScheduleDeliveryTargetDto>? targets)
