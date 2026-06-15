@@ -2504,11 +2504,92 @@ posted, reversals approved, recurring journals completed, capital-account roll-f
 valuation support attached, stale marks resolved, shadow NAV tied out, statements approved,
 packages delivered, and period locks or reopen evidence are retained.
 
-The Evidence Vault should not be a passive document store. It should manage request lists by event,
-close, audit, tax, and report package; capture documents through upload, email, API, portal download,
-or SFTP; extract fields with confidence and review state; validate extracted values against expected
-records; link evidence to fund events, journals, reconciliations, and report lines; and freeze
-manifests for downstream support packages.
+### Evidence Vault Product Design
+
+The Evidence Vault should not be a passive document store. It is the governed intake, indexing,
+review, manifest, and support-package layer for the Operational Evidence Graph. Every vault item
+should preserve its source proof, extraction confidence, reviewer state, linked records, retention
+rules, and freeze status so close, audit, tax, reporting, reconciliation, valuation, and capital
+activity support can be reconstructed without searching inboxes, shared drives, or administrator
+portals.
+
+#### Request List Types
+
+Evidence Vault request lists should be typed work objects with explicit required evidence, owners,
+reviewers, deadlines, blocked outputs, and completion criteria:
+
+| Request list type | Primary purpose | Typical completion proof |
+| --- | --- | --- |
+| Close | Gather period-close support for positions, cash, journals, accruals, valuations, capital accounts, NAV readiness, and period-lock evidence. | Frozen close support manifest linked to the close cockpit, journal approvals, reconciliation resolutions, and report readiness. |
+| Audit | Respond to auditor PBC and follow-up requests with source documents, samples, tie-outs, approval evidence, and retained explanations. | Delivered audit support package with reviewer sign-off, frozen manifest, delivery event, and amendment history. |
+| Tax | Collect K-1, allocation, withholding, entity, investor, transaction, and tax-basis support. | Reviewed tax support manifest linked to capital activity, allocations, investor statements, and tax-provider delivery evidence. |
+| Report package | Assemble board, investor, regulatory, management, or stakeholder package support for reported numbers and commentary. | Frozen report support manifest linked to report lines, template version, approvals, recipient scope, and delivery records. |
+| Fund event | Prove event completeness for closings, capital calls, distributions, investments, expenses, fees, valuations, wind-downs, transfers, and amendments. | Event support package tied to event state, workflow approvals, ledger impact, capital-account impact, and stakeholder outputs. |
+| Reconciliation break | Collect bank, custodian, administrator, ledger, trade, position, cash, fee, or data-source evidence needed to explain and resolve a break. | Break-resolution evidence bundle with match rule, root cause, owner, approval, journal or mapping impact, and blocked-output release. |
+| Valuation support | Retain marks, pricing files, model inputs, committee approvals, third-party reports, stale-price explanations, and fair-value memos. | Valuation support package linked to holdings, NAV, report lines, reviewer approvals, and stale/conflict resolution evidence. |
+| Capital activity | Support contributions, distributions, transfers, commitments, capital account roll-forwards, equalizations, and investor notices. | Capital activity evidence packet linked to investor balances, notice packages, cash movement expectations, delivery evidence, and amendments. |
+
+#### Intake Channels
+
+The vault intake model should normalize evidence from multiple channels into one reviewable object
+model while preserving the original channel context:
+
+| Intake channel | Product behavior |
+| --- | --- |
+| Upload | Operator uploads one or more files directly to a request list, record, or support package with required classification and duplicate detection. |
+| Email | Inbound mailbox or forwarded message creates evidence items with message metadata, attachments, sender, recipients, and threading context. |
+| API | External administrators, providers, GLs, portals, or internal services submit documents, payloads, and metadata through authenticated endpoints. |
+| SFTP | Scheduled or ad hoc file drops create intake batches with folder path, source account, receipt timestamp, hash, and schema/file-layout hints. |
+| Portal download | Operator-initiated or connector-assisted download from administrator, bank, custodian, tax, audit, or investor portals retains download source and credentials scope without exposing secrets. |
+| Provider file | Provider-backed imports retain the original file or payload alongside normalized records, validation results, source hash, and mapping version. |
+| Manual attachment | Operator links an existing vault item, note, external reference, or scanned document to a request list or operational record with reason and owner. |
+
+#### Evidence Metadata
+
+Each Evidence Vault item should expose a consistent metadata spine:
+
+| Metadata field | Product expectation |
+| --- | --- |
+| Source | Human-readable and system-readable origin, including provider, portal, mailbox, API client, operator, or external system. |
+| Receipt timestamp | Immutable time the evidence entered Meridian, separate from document date, event date, and downstream review timestamps. |
+| Source hash | Content hash for duplicate detection, tamper evidence, and support-package reconstruction. |
+| Owner | Person, team, or service accountable for classification, remediation, and readiness. |
+| Reviewer | Required reviewer or review group for acceptance, exception approval, freeze, amendment, or delivery. |
+| Confidence | Extraction, classification, mapping, or matching confidence with thresholds that determine whether review is required. |
+| Related records | Links to fund, entity, account, security, transaction, reconciliation case, journal, close lane, report line, delivery record, fund event, and audit event IDs. |
+| Retention category | Policy bucket governing retention period, legal hold eligibility, export rules, deletion eligibility, and audit visibility. |
+| Freeze state | Draft, reviewed, frozen, amended, exported, or delivered state inherited by support-package manifests and downstream evidence packets. |
+
+#### Support Package Manifest Behavior
+
+Support packages should use manifests as durable indexes over evidence items, extracted values,
+review decisions, and downstream records. A manifest is not frozen merely because files exist; it is
+frozen only after required items are present, metadata is complete, confidence or review thresholds
+are satisfied, and blocked-output checks pass.
+
+| Manifest state | Required behavior |
+| --- | --- |
+| Draft | Items may be added, removed, classified, linked, extracted, de-duplicated, and assigned while gaps and blockers remain visible. |
+| Reviewed | Required owner/reviewer checks are complete, confidence exceptions have been resolved or accepted, and the package is ready for freeze approval. |
+| Frozen | Manifest contents, hashes, metadata snapshot, related-record links, reviewer decisions, and package version are immutable except through amendment. |
+| Amended | A frozen package receives a versioned correction, addition, removal, or explanation that preserves original contents, reason, approver, and diff. |
+| Exported | Meridian creates an exportable package with manifest, evidence files or references, hashes, package metadata, and audit trail for external consumption. |
+| Delivered | Delivery target, recipient or system, channel, timestamp, package version, export hash, and delivery evidence are retained and linked back to the manifest. |
+
+#### UI Entry Points
+
+Evidence Vault entry should be contextual rather than isolated. Operators should be able to open,
+attach, review, freeze, export, or deliver evidence from the work surface that created the support
+need:
+
+| UI entry point | Evidence Vault interaction |
+| --- | --- |
+| Data | Open import-run evidence, provider files, source hashes, schema/mapping support, validation artifacts, and certified dataset blockers. |
+| Accounting | Attach or review close support, journal evidence, reconciliation support, capital-account backup, period-lock evidence, and NAV readiness manifests. |
+| Reporting | Build and freeze report-package support, drill from report lines to evidence, export stakeholder/auditor/tax packages, and retain delivery proof. |
+| Fund Event Command Center | View event-scoped request lists, required support, missing evidence, workflow approvals, ledger/capital impacts, amendments, and package readiness. |
+| Operational Evidence Graph | Traverse evidence from source to normalized record, reconciliation, journal, capital account, close, report line, delivery record, and audit event. |
+
 
 The Admin-Neutral Control Plane is a design constraint: external administrators, GLs, custodians,
 banks, tax providers, audit providers, BI tools, and investor portals remain valid external systems,
