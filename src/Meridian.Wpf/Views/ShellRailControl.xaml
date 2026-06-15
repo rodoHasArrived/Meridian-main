@@ -41,6 +41,13 @@
                                 <Setter TargetName="ActiveIndicator" Property="Visibility" Value="Visible" />
                                 <Setter Property="Foreground" Value="{StaticResource NavItemForegroundActiveBrush}" />
                             </Trigger>
+                            <!-- Keyboard focus ring (FocusVisualStyle is suppressed for a clean look). -->
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="ItemContent" Property="Background" Value="{StaticResource SidebarHoverBrush}" />
+                                <Setter TargetName="ItemContent" Property="BorderBrush" Value="{StaticResource SidebarActiveIndicatorBrush}" />
+                                <Setter TargetName="ItemContent" Property="BorderThickness" Value="1" />
+                                <Setter Property="Foreground" Value="{StaticResource NavItemForegroundHoverBrush}" />
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>

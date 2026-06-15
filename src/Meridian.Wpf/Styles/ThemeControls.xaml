@@ -97,6 +97,10 @@
             <Trigger Property="IsPressed" Value="True">
                 <Setter TargetName="border" Property="Background" Value="{StaticResource SidebarActiveBrush}" />
             </Trigger>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource SidebarActiveIndicatorBrush}" />
+                <Setter TargetName="border" Property="BorderThickness" Value="1" />
+            </Trigger>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter Property="Opacity" Value="0.45" />
             </Trigger>
@@ -188,6 +192,11 @@
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
                 <Setter Property="TextBlock.TextDecorations" Value="Underline" />
+            </Trigger>
+            <!-- Keyboard focus affordance for an otherwise chrome-less link button. -->
+            <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter Property="TextBlock.TextDecorations" Value="Underline" />
+                <Setter Property="Foreground" Value="{StaticResource ConsoleBorderFocusBrush}" />
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter Property="Opacity" Value="0.45" />

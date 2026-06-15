@@ -113,6 +113,10 @@
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleBackgroundActiveBrush}" />
                         </Trigger>
+                        <!-- Keyboard focus ring (FocusVisualStyle is suppressed for a clean look). -->
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource ConsoleBorderFocusBrush}" />
+                        </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.5" />
                         </Trigger>
@@ -151,6 +155,11 @@
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleAccentRedAlpha20Brush}" />
                         </Trigger>
+                        <!-- Keyboard focus ring (FocusVisualStyle is suppressed for a clean look). -->
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource ConsoleBorderFocusBrush}" />
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleAccentRedAlpha10Brush}" />
+                        </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.5" />
                         </Trigger>
@@ -185,6 +194,12 @@
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleBackgroundActiveBrush}" />
+                        </Trigger>
+                        <!-- Keyboard focus ring (borderless by default, so draw a 1px ring on focus). -->
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource ConsoleBackgroundHoverBrush}" />
+                            <Setter TargetName="border" Property="BorderThickness" Value="1" />
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource ConsoleBorderFocusBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
