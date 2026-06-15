@@ -77,6 +77,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
     {
         ArgumentNullException.ThrowIfNull(request);
         var descriptor = RequireDescriptor(request.ProviderId);
+        var normalizedCredentials = NormalizeCredentialFields(descriptor, request.Credentials ?? new Dictionary<string, string?>());
         var now = DateTimeOffset.UtcNow;
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
@@ -86,7 +87,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
             vault.Providers.TryGetValue(descriptor.ProviderId, out var existing);
 
             var fields = new Dictionary<string, string>(existing?.Fields ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase);
-            foreach (var (key, value) in request.Credentials)
+            foreach (var (key, value) in normalizedCredentials)
             {
                 if (string.IsNullOrWhiteSpace(key))
                 {
@@ -223,6 +224,42 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
     private static ProviderCredentialCatalogEntry RequireDescriptor(string providerId)
         => ProviderCredentialCatalog.Find(providerId)
            ?? throw new ArgumentException($"Provider '{providerId}' is not in the provider credential catalog.", nameof(providerId));
+
+    private static IReadOnlyDictionary<string, string?> NormalizeCredentialFields(
+        ProviderCredentialCatalogEntry descriptor,
+        IReadOnlyDictionary<string, string?> credentials)
+    {
+        var allowedFields = descriptor.RequiredFields.ToDictionary(
+            static field => field.Name,
+            static field => field.Name,
+            StringComparer.OrdinalIgnoreCase);
+        var normalized = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+        var unknownFields = new SortedSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var (key, value) in credentials)
+        {
+            var trimmedKey = key?.Trim();
+            if (string.IsNullOrWhiteSpace(trimmedKey))
+            {
+                continue;
+            }
+
+            if (!allowedFields.TryGetValue(trimmedKey, out var canonicalName))
+            {
+                unknownFields.Add(trimmedKey);
+                continue;
+            }
+
+            normalized[canonicalName] = value;
+        }
+
+        if (unknownFields.Count > 0)
+        {
+            throw new ProviderCredentialValidationException(descriptor.ProviderId, unknownFields.ToArray());
+        }
+
+        return normalized;
+    }
 
     private static ProviderCredentialStoreStatus BuildStatus(
         ProviderCredentialCatalogEntry descriptor,

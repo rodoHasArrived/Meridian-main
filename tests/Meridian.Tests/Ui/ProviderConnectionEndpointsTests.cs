@@ -76,6 +76,75 @@ public sealed class ProviderConnectionEndpointsTests
     }
 
     [Fact]
+    public async Task PutProviderCredentials_UnknownCredentialFields_ReturnsBadRequestWithoutPersistingValues()
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        var store = (FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        await app.GetTestClient().PutAsync(
+            "/api/providers/alpaca/credentials",
+            JsonContent(new { credentials = new { KeyId = "safe-key", SecretKey = "safe-secret" }, environment = "paper" }));
+
+        var response = await app.GetTestClient().PutAsync(
+            "/api/providers/alpaca/credentials",
+            JsonContent(new { credentials = new { KeyId = "replacement-key", AccessToken = "unknown-secret" }, environment = "paper" }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("AccessToken");
+        var read = await store.ReadForProviderAsync("alpaca");
+        read.Should().NotBeNull();
+        read!.Get("KeyId").Should().Be("safe-key");
+        read.Get("AccessToken").Should().BeNull();
+
+        var vaultText = await File.ReadAllTextAsync(store.VaultPath);
+        var auditText = await File.ReadAllTextAsync(Path.Combine(Path.GetDirectoryName(store.VaultPath)!, "provider-credentials.audit.jsonl"));
+        vaultText.Should().NotContain("unknown-secret");
+        auditText.Should().NotContain("AccessToken");
+        auditText.Should().NotContain("unknown-secret");
+    }
+
+    [Fact]
+    public async Task PutProviderCredentials_KnownCredentialFields_AreCaseInsensitive()
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        var store = (FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+
+        var response = await app.GetTestClient().PutAsync(
+            "/api/providers/alpaca/credentials",
+            JsonContent(new { credentials = new { keyid = "case-key", SECRETKEY = "case-secret" }, environment = "paper" }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var read = await store.ReadForProviderAsync("alpaca");
+        read.Should().NotBeNull();
+        read!.Credentials.Keys.Should().BeEquivalentTo(["KeyId", "SecretKey"]);
+        read.Get("KeyId").Should().Be("case-key");
+        read.Get("SecretKey").Should().Be("case-secret");
+    }
+
+    [Fact]
+    public async Task PutProviderCredentials_BlankKnownCredentialField_RemovesExistingValue()
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        var store = (FileProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        await app.GetTestClient().PutAsync(
+            "/api/providers/alpaca/credentials",
+            JsonContent(new { credentials = new { KeyId = "keep-key", SecretKey = "remove-secret" }, environment = "paper" }));
+
+        var response = await app.GetTestClient().PutAsync(
+            "/api/providers/alpaca/credentials",
+            JsonContent(new { credentials = new { secretkey = "" }, environment = "paper" }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var read = await store.ReadForProviderAsync("alpaca");
+        read.Should().NotBeNull();
+        read!.Get("KeyId").Should().Be("keep-key");
+        read.Get("SecretKey").Should().BeNull();
+        var result = await ReadAsync<ProviderCredentialMutationResultDto>(response);
+        result.CredentialState.Should().Be(ProviderCredentialStateDto.Partial);
+    }
+
+
+    [Fact]
     public async Task PostProviderVerify_UsesStoredAlpacaCredentialsAndRecordsAccount()
     {
         using var env = AlpacaEnvScope.Clear();
