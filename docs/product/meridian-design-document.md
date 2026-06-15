@@ -465,6 +465,57 @@ reconciliation, exception management, accounting operations, close support, work
 audit evidence into a shared Accounting/Reporting operator surface. This is planned productization,
 not a completion claim; W1-W5 remain the closed evidence baseline.
 
+#### W5X-FINOPS Cockpit Design
+
+The Financial Operations cockpit is the Accounting/Reporting command surface for today's close,
+reconciliation, and delivery risk. It should summarize the current operating day across fund,
+book, accounting period, ledger account, and report package so a controller can answer which close
+items are clean, which items are blocked, and which downstream outputs are unsafe to release. The
+summary state should be derived from shared W1-W5 read models rather than from separate browser or
+WPF-only workflow state.
+
+The cockpit's primary status bands are:
+
+* **Close/reconciliation state:** fund, book, period, account, and report-package readiness with
+  clear states for not started, importing, validating, reconciling, awaiting approval, blocked,
+  ready for close, closed, reopened, and delivered.
+* **Exception queues:** breaks, missing evidence, stale valuations, unapproved journals, blocked
+  report lines, failed imports, and late delivery items. Each queue item must expose owner, age,
+  current SLA, materiality, impacted period, impacted report package, blocker reason, and next
+  action.
+* **Priority model:** queue ordering should combine materiality, SLA proximity or breach, period
+  impact, report impact, and approval-blocker state. Material unresolved items that affect a
+  closing period, a package scheduled for delivery, or an approval gate must outrank lower-value
+  informational breaks even when both are assigned to the same operator.
+* **Release safety:** report packages and period-close actions remain unsafe when any material
+  reconciliation break, missing evidence item, stale valuation, unapproved journal, failed import,
+  blocked report line, or late delivery item is still open for the applicable fund, book, period,
+  account, or recipient package.
+
+Drill-through is part of the cockpit contract, not a separate reporting convenience. A queue row or
+status tile should open the relevant proof surface with the same fund/book/period/account/report
+context preserved:
+
+* **Ledger Explorer** for journal detail, account activity, trial-balance impact, reversal chains,
+  approval state, and close-lock effect.
+* **Evidence Vault** for retained source files, request lists, extraction status, missing-support
+  tasks, frozen manifests, and legal-hold or retention signals.
+* **Fund Event Command Center** for capital calls, distributions, fees, expenses, subscriptions,
+  redemptions, transfers, valuation updates, treasury expectations, and event-level completion
+  blockers.
+* **Report-Line Provenance Explorer** for report-line inputs, source records, reconciliations,
+  journals, approvals, template version, delivery package, and restatement lineage.
+
+Browser and WPF experiences should share the same cockpit read-model state while optimizing for
+different work styles. The browser workstation should emphasize role-based triage, lightweight
+queue review, cross-workspace drill-through, comments, assignments, and governed release decisions
+from `src/Meridian.Ui/dashboard/`. The WPF desktop surface should emphasize dense workpaper
+execution: virtualized grids, frozen columns, keyboard-first filtering, account-level tie-out,
+bulk assignment, evidence matching, journal review, and side-by-side reconciliation workpapers in
+`src/Meridian.Wpf/`. Neither surface should own a divergent close state; both should consume shared
+Accounting/Reporting read models from `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` so
+operator actions, approval blockers, and release readiness remain consistent.
+
 ---
 
 ## 5.3 Treasury & Payments
