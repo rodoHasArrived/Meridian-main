@@ -139,6 +139,7 @@ public sealed class ProviderConnectionEndpointsTests
         {
             services.AddSingleton<IAccountingSystemProvider>(sp =>
                 new FakeQuickBooksAccountingVerifier(sp.GetRequiredService<IProviderCredentialStore>()));
+            services.AddSingleton<IProviderCredentialVerifier, QuickBooksCredentialVerifier>();
         });
 
         await app.GetTestClient().PutAsync(
@@ -200,6 +201,74 @@ public sealed class ProviderConnectionEndpointsTests
         rawConnections.Should().NotContain("qbo-refresh-token");
     }
 
+
+
+    [Fact]
+    public async Task PostProviderVerify_WithoutRegisteredVerifier_ReturnsUnavailableWithoutMarkingVerified()
+    {
+        await using var app = await CreateAppAsync(_ => { });
+        await app.GetTestClient().PutAsync(
+            "/api/providers/polygon/credentials",
+            JsonContent(new { credentials = new { ApiKey = "polygon-secret" } }));
+
+        var response = await app.GetTestClient().PostAsync("/api/providers/polygon/verify", JsonContent(new { }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await ReadAsync<ProviderCredentialVerificationResultDto>(response);
+        result.Success.Should().BeFalse();
+        result.VerificationState.Should().Be(ProviderVerificationStateDto.NotVerified);
+        result.LastError.Should().Contain("Verification unavailable");
+        result.Warnings.Should().Contain(warning => warning.Contains("no safe provider-specific verifier", StringComparison.OrdinalIgnoreCase));
+
+        var rows = await ReadAsync<ProviderConnectionRowDto[]>(
+            await app.GetTestClient().GetAsync("/api/providers/connections"));
+        rows.Single(row => row.ProviderId == "polygon").CredentialState.Should().Be(ProviderCredentialStateDto.Configured);
+    }
+
+    [Fact]
+    public async Task PostProviderVerify_FailedAlpacaVerificationRedactsSecrets()
+    {
+        using var env = AlpacaEnvScope.Clear();
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IHttpClientFactory>(_ => new StubHttpClientFactory(new ThrowingSecretHandler("verify-key", "verify-secret")));
+        });
+
+        await app.GetTestClient().PutAsync(
+            "/api/providers/alpaca/credentials",
+            JsonContent(new { credentials = new { KeyId = "verify-key", SecretKey = "verify-secret" }, environment = "paper" }));
+
+        var response = await app.GetTestClient().PostAsync("/api/providers/alpaca/verify", JsonContent(new { }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await ReadAsync<ProviderCredentialVerificationResultDto>(response);
+        result.Success.Should().BeFalse();
+        result.VerificationState.Should().Be(ProviderVerificationStateDto.Failed);
+        result.LastError.Should().NotContain("verify-key");
+        result.LastError.Should().NotContain("verify-secret");
+    }
+
+    [Fact]
+    public async Task VerifyAsync_CancelledVerifier_PropagatesCancellation()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IProviderCredentialVerifier, CancellingPlaidVerifier>();
+        });
+        await app.Services.GetRequiredService<IProviderCredentialStore>().SaveAsync(
+            new ProviderCredentialSaveRequest(
+                "plaid",
+                new Dictionary<string, string?> { ["ClientId"] = "plaid-client", ["Secret"] = "plaid-secret" },
+                "sandbox"));
+
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        var service = app.Services.GetRequiredService<ProviderConnectionLifecycleService>();
+        Func<Task> act = () => service.VerifyAsync("plaid", cts.Token);
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
         UserPermission permissions = UserPermission.ManageCredentials)
@@ -217,7 +286,9 @@ public sealed class ProviderConnectionEndpointsTests
         builder.Services.AddSingleton<IProviderCredentialStore>(_ => new FileProviderCredentialStore(Path.Combine(root, "data")));
         builder.Services.AddSingleton(new ConfigStore(configPath));
         builder.Services.AddSingleton(NullLogger<ProviderConnectionLifecycleService>.Instance);
+        builder.Services.AddSingleton(NullLogger<AlpacaCredentialVerifier>.Instance);
         builder.Services.AddSingleton<ProviderConnectionLifecycleService>();
+        builder.Services.AddSingleton<IProviderCredentialVerifier, AlpacaCredentialVerifier>();
         builder.Services.AddRateLimiter(options =>
         {
             options.AddPolicy(UiEndpoints.MutationRateLimitPolicy, _ =>
@@ -280,6 +351,23 @@ public sealed class ProviderConnectionEndpointsTests
     private sealed class StubHttpClientFactory(HttpMessageHandler handler) : IHttpClientFactory
     {
         public HttpClient CreateClient(string name) => new(handler, disposeHandler: false);
+    }
+
+    private sealed class ThrowingSecretHandler(string keyId, string secretKey) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+            => throw new InvalidOperationException($"upstream echoed {keyId} and {secretKey}");
+    }
+
+    private sealed class CancellingPlaidVerifier : IProviderCredentialVerifier
+    {
+        public string ProviderId => "plaid";
+
+        public Task<ProviderCredentialVerificationResultDto> VerifyAsync(ProviderCredentialReadResult credentials, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            throw new InvalidOperationException("Expected cancellation before verification.");
+        }
     }
 
     private sealed class FakeQuickBooksAccountingVerifier : IAccountingSystemProvider, IAccountingSystemConnectionVerifier

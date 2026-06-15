@@ -1,38 +1,31 @@
-using System.Net.Http.Json;
-using System.Text.Json.Serialization;
 using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
 using Meridian.DataIntegration.Monitoring;
 using Meridian.Contracts.Configuration;
-using Meridian.ProviderSdk.AccountingSystem;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
 
 public sealed class ProviderConnectionLifecycleService
 {
-    private const string AlpacaPaperTradingApiEndpoint = "https://paper-api.alpaca.markets/v2";
-    private const string AlpacaLiveTradingApiEndpoint = "https://api.alpaca.markets/v2";
-
     private readonly IProviderCredentialStore _credentialStore;
     private readonly ConfigStore _configStore;
-    private readonly IHttpClientFactory? _httpClientFactory;
-    private readonly IReadOnlyList<IAccountingSystemProvider> _accountingSystemProviders;
+    private readonly IReadOnlyDictionary<string, IProviderCredentialVerifier> _credentialVerifiers;
     private readonly ILogger<ProviderConnectionLifecycleService> _logger;
 
     public ProviderConnectionLifecycleService(
         IProviderCredentialStore credentialStore,
         ConfigStore configStore,
         ILogger<ProviderConnectionLifecycleService> logger,
-        IHttpClientFactory? httpClientFactory = null,
-        IEnumerable<IAccountingSystemProvider>? accountingSystemProviders = null)
+        IEnumerable<IProviderCredentialVerifier>? credentialVerifiers = null)
     {
         _credentialStore = credentialStore ?? throw new ArgumentNullException(nameof(credentialStore));
         _configStore = configStore ?? throw new ArgumentNullException(nameof(configStore));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _httpClientFactory = httpClientFactory;
-        _accountingSystemProviders = accountingSystemProviders?.ToArray() ?? [];
+        _credentialVerifiers = (credentialVerifiers ?? [])
+            .GroupBy(verifier => ProviderCredentialCatalog.NormalizeProviderId(verifier.ProviderId), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
     }
 
     public async Task<IReadOnlyList<ProviderConnectionRowDto>> GetConnectionsAsync(CancellationToken ct = default)
@@ -105,46 +98,29 @@ public sealed class ProviderConnectionLifecycleService
                 Warnings: ["Add the required credential fields before verification."]);
         }
 
-        if (descriptor.ProviderId.Equals("alpaca", StringComparison.OrdinalIgnoreCase))
+        if (_credentialVerifiers.TryGetValue(descriptor.ProviderId, out var verifier))
         {
-            return await VerifyAlpacaAsync(read, ct).ConfigureAwait(false);
+            var result = await verifier.VerifyAsync(read, ct).ConfigureAwait(false);
+            if (result.Success || result.VerificationState == ProviderVerificationStateDto.Failed)
+            {
+                await _credentialStore.RecordVerificationAsync(
+                    new ProviderCredentialVerificationUpdate(
+                        descriptor.ProviderId,
+                        result.Success,
+                        ErrorMessage: result.LastError,
+                        ExternalAccountId: result.ExternalAccountId,
+                        VerifiedAt: result.LastVerifiedAt ?? DateTimeOffset.UtcNow,
+                        Actor: "browser-workstation"),
+                    ct).ConfigureAwait(false);
+            }
+
+            return result;
         }
 
-        var accountingVerification = _accountingSystemProviders
-            .FirstOrDefault(provider => string.Equals(provider.ProviderId, descriptor.ProviderId, StringComparison.OrdinalIgnoreCase))
-            as IAccountingSystemConnectionVerifier;
-        if (accountingVerification is not null)
-        {
-            var result = await accountingVerification.VerifyConnectionAsync(ct).ConfigureAwait(false);
-            return new ProviderCredentialVerificationResultDto(
-                descriptor.ProviderId,
-                result.Success,
-                result.Success ? ProviderVerificationStateDto.Verified : ProviderVerificationStateDto.Failed,
-                result.Success ? ProviderContinuityHealthDto.Healthy : ProviderContinuityHealthDto.Blocked,
-                result.VerifiedAtUtc,
-                result.LastError,
-                result.ExternalCompanyId,
-                result.Warnings);
-        }
-
-        var verifiedAt = DateTimeOffset.UtcNow;
-        await _credentialStore.RecordVerificationAsync(
-            new ProviderCredentialVerificationUpdate(
-                descriptor.ProviderId,
-                Success: true,
-                VerifiedAt: verifiedAt,
-                Actor: "browser-workstation"),
-            ct).ConfigureAwait(false);
-
-        return new ProviderCredentialVerificationResultDto(
-            descriptor.ProviderId,
-            Success: true,
-            ProviderVerificationStateDto.Verified,
-            ProviderContinuityHealthDto.Healthy,
-            LastVerifiedAt: verifiedAt,
-            LastError: null,
-            ExternalAccountId: null,
-            Warnings: ["Credential presence was verified locally; provider-specific live connectivity checks can be added behind this shared route."]);
+        _logger.LogInformation(
+            "Provider credential verification unavailable for {ProviderId}; credentials were not marked verified.",
+            descriptor.ProviderId);
+        return ProviderCredentialVerifierResults.Unavailable(descriptor.ProviderId);
     }
 
     public async Task<ProviderCredentialMutationResultDto> DeleteCredentialsAsync(
@@ -156,88 +132,6 @@ public sealed class ProviderConnectionLifecycleService
         await _credentialStore.DeleteAsync(descriptor.ProviderId, actor ?? "browser-workstation", ct).ConfigureAwait(false);
         var status = await _credentialStore.GetStatusAsync(descriptor.ProviderId, ct).ConfigureAwait(false);
         return BuildMutationResult(status, BuildDeleteWarnings(status));
-    }
-
-    private async Task<ProviderCredentialVerificationResultDto> VerifyAlpacaAsync(
-        ProviderCredentialReadResult read,
-        CancellationToken ct)
-    {
-        var keyId = read.Get("KeyId");
-        var secretKey = read.Get("SecretKey");
-        var environment = AlpacaCredentialEnvironment.NormalizeTradingEnvironment(read.Environment);
-        if (string.IsNullOrWhiteSpace(keyId) || string.IsNullOrWhiteSpace(secretKey))
-        {
-            return new ProviderCredentialVerificationResultDto(
-                "alpaca",
-                Success: false,
-                ProviderVerificationStateDto.NotVerified,
-                ProviderContinuityHealthDto.Blocked,
-                LastVerifiedAt: null,
-                LastError: "Alpaca key id and secret key are required.",
-                ExternalAccountId: null,
-                Warnings: ["Add Alpaca paper API keys before verification."]);
-        }
-
-        try
-        {
-            using var client = _httpClientFactory?.CreateClient(nameof(ProviderConnectionLifecycleService)) ?? new HttpClient();
-            using var request = new HttpRequestMessage(HttpMethod.Get, $"{AlpacaTradingApiEndpoint(environment)}/account");
-            request.Headers.TryAddWithoutValidation("APCA-API-KEY-ID", keyId);
-            request.Headers.TryAddWithoutValidation("APCA-API-SECRET-KEY", secretKey);
-
-            using var response = await client.SendAsync(request, ct).ConfigureAwait(false);
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new InvalidOperationException($"status {(int)response.StatusCode} ({response.ReasonPhrase ?? response.StatusCode.ToString()})");
-            }
-
-            var account = await response.Content.ReadFromJsonAsync<AlpacaAccountVerificationResponse>(cancellationToken: ct)
-                .ConfigureAwait(false);
-            var accountId = FirstNonBlank(account?.AccountNumber, account?.Id, "unknown");
-            var verifiedAt = DateTimeOffset.UtcNow;
-            await _credentialStore.RecordVerificationAsync(
-                new ProviderCredentialVerificationUpdate(
-                    "alpaca",
-                    Success: true,
-                    ExternalAccountId: accountId,
-                    VerifiedAt: verifiedAt,
-                    Actor: "browser-workstation"),
-                ct).ConfigureAwait(false);
-
-            return new ProviderCredentialVerificationResultDto(
-                "alpaca",
-                Success: true,
-                ProviderVerificationStateDto.Verified,
-                ProviderContinuityHealthDto.Healthy,
-                LastVerifiedAt: verifiedAt,
-                LastError: null,
-                ExternalAccountId: accountId,
-                Warnings: BuildAlpacaWarnings(environment));
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            var message = $"Alpaca /v2/account verification failed: {ex.Message}";
-            _logger.LogWarning(ex, "Provider connection center Alpaca verification failed for {Environment}", environment);
-            var verifiedAt = DateTimeOffset.UtcNow;
-            await _credentialStore.RecordVerificationAsync(
-                new ProviderCredentialVerificationUpdate(
-                    "alpaca",
-                    Success: false,
-                    ErrorMessage: message,
-                    VerifiedAt: verifiedAt,
-                    Actor: "browser-workstation"),
-                ct).ConfigureAwait(false);
-
-            return new ProviderCredentialVerificationResultDto(
-                "alpaca",
-                Success: false,
-                ProviderVerificationStateDto.Failed,
-                ProviderContinuityHealthDto.Blocked,
-                LastVerifiedAt: verifiedAt,
-                LastError: message,
-                ExternalAccountId: read.ExternalAccountId,
-                Warnings: ["Alpaca account verification failed; downstream brokerage sync remains blocked."]);
-        }
     }
 
     private static ProviderConnectionRowDto BuildRow(
@@ -379,20 +273,4 @@ public sealed class ProviderConnectionLifecycleService
         => ProviderCredentialCatalog.Find(providerId)
            ?? throw new ArgumentException($"Provider '{providerId}' is not in the provider credential catalog.", nameof(providerId));
 
-    private static string AlpacaTradingApiEndpoint(string environment)
-        => environment.Equals(AlpacaCredentialEnvironment.LiveEnvironment, StringComparison.OrdinalIgnoreCase)
-            ? AlpacaLiveTradingApiEndpoint
-            : AlpacaPaperTradingApiEndpoint;
-
-    private static IReadOnlyList<string> BuildAlpacaWarnings(string environment)
-        => environment.Equals(AlpacaCredentialEnvironment.LiveEnvironment, StringComparison.OrdinalIgnoreCase)
-            ? ["Live Alpaca endpoint verified. Paper remains the default and live actions remain gated by execution controls."]
-            : [];
-
-    private static string? FirstNonBlank(params string?[] values)
-        => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
-
-    private sealed record AlpacaAccountVerificationResponse(
-        [property: JsonPropertyName("id")] string? Id,
-        [property: JsonPropertyName("account_number")] string? AccountNumber);
 }

@@ -151,6 +151,9 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<BrokerageConnectionService>();
         services.TryAddSingleton<AlpacaBrokerageConnectionService>();
         services.TryAddSingleton<ProviderConnectionLifecycleService>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IProviderCredentialVerifier, AlpacaCredentialVerifier>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IProviderCredentialVerifier, QuickBooksCredentialVerifier>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IProviderCredentialVerifier, PlaidCredentialVerifier>());
         services.TryAddSingleton<ProviderReadinessService>();
         services.TryAddSingleton<IQuickBooksOnlineConnectionStore, QuickBooksOnlineProviderCredentialConnectionStore>();
         services.AddHttpClient<IQuickBooksOnlineClient, QuickBooksOnlineHttpClient>();
