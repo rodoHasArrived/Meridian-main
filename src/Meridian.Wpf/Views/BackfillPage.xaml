@@ -852,7 +852,7 @@
                                   MaxHeight="200">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Background="#1EFFCA28" CornerRadius="4" Padding="12,8" Margin="0,2">
+                                    <Border Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}" CornerRadius="4" Padding="12,8" Margin="0,2">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />

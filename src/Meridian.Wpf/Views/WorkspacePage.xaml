@@ -118,7 +118,7 @@
                             <TextBox Style="{StaticResource FormTextBoxStyle}"
                                      Text="{Binding NewName, UpdateSourceTrigger=PropertyChanged}" />
                             <TextBlock Text="{Binding NewNameError}"
-                                       Foreground="#F85149"
+                                       Foreground="{StaticResource ErrorColorBrush}"
                                        FontSize="11"
                                        Margin="0,4,0,0"
                                        Visibility="{Binding HasNewNameError, Converter={StaticResource BoolToVisibilityConverter}}" />

@@ -23,7 +23,7 @@
                 <TextBlock Text="Operator Workstation"
                            FontFamily="{StaticResource MeridianBodyFontFamily}"
                            FontSize="12"
-                           Foreground="#6B7280"
+                           Foreground="{StaticResource TopBarTextMutedBrush}"
                            VerticalAlignment="Center"
                            Margin="12,0,0,0" />
             </StackPanel>
@@ -42,7 +42,7 @@
                         <TextBlock Text="&#xE8B7;"
                                    FontFamily="{StaticResource SymbolThemeFontFamily}"
                                    FontSize="11"
-                                   Foreground="#F59E0B"
+                                   Foreground="{StaticResource TopBarAccentWarningBrush}"
                                    VerticalAlignment="Center" />
                         <TextBlock Text="{Binding ActiveFundName}"
                                    Margin="6,0,0,0"
@@ -52,7 +52,7 @@
                         <TextBlock Text="{Binding ActiveFundSubtitle}"
                                    Margin="6,0,0,0"
                                    FontSize="11"
-                                   Foreground="#9CA3AF" />
+                                   Foreground="{StaticResource TopBarTextMutedBrush}" />
                     </StackPanel>
                 </Border>
                 <ComboBox Width="220"
@@ -78,7 +78,7 @@
                     <TextBlock Text="&#xE777;"
                                FontFamily="{StaticResource SymbolThemeFontFamily}"
                                FontSize="14"
-                               Foreground="#9CA3AF" />
+                               Foreground="{StaticResource TopBarTextMutedBrush}" />
                 </Button>
                 <ComboBox Width="132"
                           Margin="0,0,8,0"
@@ -97,7 +97,7 @@
                     <TextBlock Text="{Binding CurrentModeName}"
                                FontSize="11"
                                FontWeight="SemiBold"
-                               Foreground="#60A5FA" />
+                               Foreground="{StaticResource TopBarAccentInfoBrush}" />
                 </Border>
                 <Button Style="{StaticResource IconButtonStyle}"
                         Command="{Binding ShowCommandPaletteCommand}"
@@ -110,7 +110,7 @@
                     <TextBlock Text="{StaticResource IconSearch}"
                                FontFamily="{StaticResource SymbolThemeFontFamily}"
                                FontSize="14"
-                               Foreground="#9CA3AF" />
+                               Foreground="{StaticResource TopBarTextMutedBrush}" />
                 </Button>
             </StackPanel>
         </DockPanel>

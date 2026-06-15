@@ -82,8 +82,11 @@
     <!-- Top bar colors: near-black brand bar -->
     <Color x:Key="TopBarBackground">#171A1F</Color>
     <Color x:Key="TopBarText">#F4F6F8</Color>
+    <Color x:Key="TopBarTextMuted">#9CA3AF</Color>
     <Color x:Key="TopBarBorder">#262B31</Color>
     <Color x:Key="TopBarIconAccent">#E8ECEF</Color>
+    <Color x:Key="TopBarAccentWarning">#F59E0B</Color>
+    <Color x:Key="TopBarAccentInfo">#60A5FA</Color>
 
     <!-- ── Solid brushes ── -->
     <SolidColorBrush x:Key="ConsoleBackgroundDarkBrush"    Color="{StaticResource ConsoleBackgroundDark}" />
@@ -117,6 +120,7 @@
     <SolidColorBrush x:Key="AccentCyanBrush"               Color="{StaticResource ConsoleAccentCyan}" />
     <SolidColorBrush x:Key="AccentPurpleBrush"             Color="{StaticResource ConsoleAccentPurple}" />
     <SolidColorBrush x:Key="ConsoleAccentGreenDimBrush"    Color="{StaticResource ConsoleAccentGreenDim}" />
+    <SolidColorBrush x:Key="ConsoleAccentYellowBrush"      Color="{StaticResource ConsoleAccentYellow}" />
     <SolidColorBrush x:Key="ConsoleAccentGreenLightBrush"  Color="{StaticResource ConsoleAccentGreenLight}" />
     <SolidColorBrush x:Key="ConsoleAccentGreenAlpha10Brush"  Color="{StaticResource ConsoleAccentGreenAlpha10}" />
     <SolidColorBrush x:Key="ConsoleAccentGreenAlpha20Brush"  Color="{StaticResource ConsoleAccentGreenAlpha20}" />
@@ -221,8 +225,11 @@
     <!-- Top bar: near-black, Marquee brand bar -->
     <SolidColorBrush x:Key="TopBarBackgroundBrush"      Color="{StaticResource TopBarBackground}" />
     <SolidColorBrush x:Key="TopBarTextBrush"            Color="{StaticResource TopBarText}" />
+    <SolidColorBrush x:Key="TopBarTextMutedBrush"       Color="{StaticResource TopBarTextMuted}" />
     <SolidColorBrush x:Key="TopBarBorderBrush"          Color="{StaticResource TopBarBorder}" />
     <SolidColorBrush x:Key="TopBarIconAccentBrush"      Color="{StaticResource TopBarIconAccent}" />
+    <SolidColorBrush x:Key="TopBarAccentWarningBrush"   Color="{StaticResource TopBarAccentWarning}" />
+    <SolidColorBrush x:Key="TopBarAccentInfoBrush"      Color="{StaticResource TopBarAccentInfo}" />
 
     <!-- HeaderBandBackgroundBrush retained for compatibility; maps to top bar gradient -->
     <SolidColorBrush x:Key="HeaderBandBackgroundBrush"  Color="{StaticResource TopBarBackground}" />

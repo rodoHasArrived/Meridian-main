@@ -110,30 +110,30 @@
                         <Border Margin="0,18,0,0"
                                 Padding="14,12"
                                 CornerRadius="12"
-                                Background="#2D200F"
-                                BorderBrush="#875A24"
+                                Background="{StaticResource ConsoleAccentOrangeAlpha10Brush}"
+                                BorderBrush="{StaticResource WarningColorBrush}"
                                 BorderThickness="1">
                             <StackPanel>
                                 <TextBlock Text="Selected Lane"
                                            FontSize="11"
                                            FontWeight="SemiBold"
-                                           Foreground="#E1B980" />
+                                           Foreground="{StaticResource WarningColorBrush}" />
                                 <TextBlock x:Name="AccountingHeroLaneText"
                                            Margin="0,6,0,0"
                                            FontSize="18"
                                            FontWeight="SemiBold"
-                                           Foreground="White"
+                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                            Text="Operations" />
                                 <TextBlock x:Name="AccountingHeroSummaryText"
                                            Margin="0,4,0,0"
                                            FontSize="12"
-                                           Foreground="#F2DEC0"
+                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                            TextWrapping="Wrap"
                                            Text="Fund operations posture is ready for review." />
                                 <TextBlock x:Name="AccountingHeroDetailText"
                                            Margin="0,8,0,0"
                                            FontSize="12"
-                                           Foreground="#D7C2A4"
+                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
                                            TextWrapping="Wrap"
                                            Text="Keep the selected Accounting lane visible before moving into the queue wall." />
                             </StackPanel>
