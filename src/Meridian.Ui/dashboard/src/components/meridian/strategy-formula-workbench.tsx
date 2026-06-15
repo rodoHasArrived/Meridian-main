@@ -119,20 +119,21 @@ export function StrategyFormulaWorkbench({
             </label>
             <div className="space-y-2" role="list" aria-label="Strategy formula fields">
               {visibleFields.map((field) => (
-                <button
-                  key={field.fieldId}
-                  type="button"
-                  className="w-full rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-left transition-colors hover:border-primary/50 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                  onClick={() => insertText(field.fieldId)}
-                  aria-label={`Insert ${field.fieldId}`}
-                >
-                  <span className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-xs font-semibold text-foreground">{field.fieldId}</span>
-                    <Badge variant={fieldTypeVariant(field.typeName)}>{field.typeName}</Badge>
-                  </span>
-                  <span className="mt-1 block text-xs font-medium text-foreground">{field.label}</span>
-                  <span className="mt-1 block text-xs leading-5 text-muted-foreground">{field.description}</span>
-                </button>
+                <div key={field.fieldId} role="listitem" className="contents">
+                  <button
+                    type="button"
+                    className="w-full rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-left transition-colors hover:border-primary/50 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    onClick={() => insertText(field.fieldId)}
+                    aria-label={`Insert ${field.fieldId}`}
+                  >
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-xs font-semibold text-foreground">{field.fieldId}</span>
+                      <Badge variant={fieldTypeVariant(field.typeName)}>{field.typeName}</Badge>
+                    </span>
+                    <span className="mt-1 block text-xs font-medium text-foreground">{field.label}</span>
+                    <span className="mt-1 block text-xs leading-5 text-muted-foreground">{field.description}</span>
+                  </button>
+                </div>
               ))}
             </div>
           </CardContent>
@@ -156,19 +157,20 @@ export function StrategyFormulaWorkbench({
             />
             <div className="grid gap-2 md:grid-cols-2" role="list" aria-label="Formula suggestions">
               {visibleSuggestions.map((suggestion) => (
-                <button
-                  key={suggestion.suggestionId}
-                  type="button"
-                  className="rounded-md border border-border/70 bg-secondary/20 p-3 text-left transition-colors hover:border-primary/50 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                  onClick={() => insertText(suggestion.expression)}
-                  aria-label={`Insert formula suggestion ${suggestion.expression}`}
-                >
-                  <span className="flex items-center gap-2">
-                    <Badge variant={suggestionToneVariant(suggestion.tone)}>{suggestion.tone}</Badge>
-                    <code className="min-w-0 break-words text-xs text-foreground">{suggestion.expression}</code>
-                  </span>
-                  <span className="mt-2 block text-xs leading-5 text-muted-foreground">{suggestion.description}</span>
-                </button>
+                <div key={suggestion.suggestionId} role="listitem" className="contents">
+                  <button
+                    type="button"
+                    className="rounded-md border border-border/70 bg-secondary/20 p-3 text-left transition-colors hover:border-primary/50 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    onClick={() => insertText(suggestion.expression)}
+                    aria-label={`Insert formula suggestion ${suggestion.expression}`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <Badge variant={suggestionToneVariant(suggestion.tone)}>{suggestion.tone}</Badge>
+                      <code className="min-w-0 break-words text-xs text-foreground">{suggestion.expression}</code>
+                    </span>
+                    <span className="mt-2 block text-xs leading-5 text-muted-foreground">{suggestion.description}</span>
+                  </button>
+                </div>
               ))}
             </div>
           </CardContent>
@@ -185,26 +187,27 @@ export function StrategyFormulaWorkbench({
           <CardContent className="space-y-4">
             <div className="space-y-2" role="list" aria-label="Strategy cells">
               {initialCells.map((cell) => (
-                <button
-                  key={cell.cellId}
-                  type="button"
-                  aria-pressed={cell.cellId === selectedCellId}
-                  onClick={() => setSelectedCellId(cell.cellId)}
-                  className={cn(
-                    "w-full rounded-md border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
-                    cell.cellId === selectedCellId
-                      ? "border-primary/60 bg-primary/10"
-                      : "border-border/70 bg-secondary/20 hover:border-primary/50"
-                  )}
-                >
-                  <span className="flex items-center justify-between gap-2">
-                    <span className="font-medium text-foreground">{cell.label}</span>
-                    <Badge variant={cell.status === "Ready" ? "success" : cell.status === "Review" ? "warning" : "danger"} dot>
-                      {cell.status}
-                    </Badge>
-                  </span>
-                  <span className="mt-1 block font-mono text-xs text-muted-foreground">{cell.cellId} · {cell.mode}</span>
-                </button>
+                <div key={cell.cellId} role="listitem" className="contents">
+                  <button
+                    type="button"
+                    aria-pressed={cell.cellId === selectedCellId}
+                    onClick={() => setSelectedCellId(cell.cellId)}
+                    className={cn(
+                      "w-full rounded-md border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                      cell.cellId === selectedCellId
+                        ? "border-primary/60 bg-primary/10"
+                        : "border-border/70 bg-secondary/20 hover:border-primary/50"
+                    )}
+                  >
+                    <span className="flex items-center justify-between gap-2">
+                      <span className="font-medium text-foreground">{cell.label}</span>
+                      <Badge variant={cell.status === "Ready" ? "success" : cell.status === "Review" ? "warning" : "danger"} dot>
+                        {cell.status}
+                      </Badge>
+                    </span>
+                    <span className="mt-1 block font-mono text-xs text-muted-foreground">{cell.cellId} · {cell.mode}</span>
+                  </button>
+                </div>
               ))}
             </div>
             <div className="row-detail-panel">

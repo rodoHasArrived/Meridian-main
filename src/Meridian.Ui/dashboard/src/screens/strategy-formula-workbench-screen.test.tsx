@@ -1,8 +1,15 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { StrategyFormulaWorkbenchScreen } from "@/screens/strategy-formula-workbench-screen";
+import { expectNoAxeViolations } from "@/test/axe";
 
 describe("StrategyFormulaWorkbenchScreen", () => {
+  it("has no basic accessibility violations", async () => {
+    const { container } = render(<StrategyFormulaWorkbenchScreen />);
+
+    await expectNoAxeViolations(container);
+  });
+
   it("renders the Meridian formula workbench page", () => {
     render(<StrategyFormulaWorkbenchScreen />);
 

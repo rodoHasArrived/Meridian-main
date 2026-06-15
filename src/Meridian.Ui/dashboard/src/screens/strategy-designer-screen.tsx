@@ -307,7 +307,7 @@ function InspectorPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
           <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Validation</h3>
           <div className="mt-2 space-y-2" role="list" aria-label="Strategy Builder validation messages">
             {vm.validationMessages.length === 0 ? (
-              <p className="text-sm text-success">Ready for preview and backtest.</p>
+              <p role="listitem" className="text-sm text-success">Ready for preview and backtest.</p>
             ) : (
               vm.validationMessages.map((message) => (
                 <div key={`${message.code}-${message.targetId}`} role="listitem" className="rounded-md border border-border/70 px-3 py-2">

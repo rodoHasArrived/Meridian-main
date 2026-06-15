@@ -1,8 +1,15 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { StrategyDesignerScreen } from "@/screens/strategy-designer-screen";
+import { expectNoAxeViolations } from "@/test/axe";
 
 describe("StrategyDesignerScreen", () => {
+  it("has no basic accessibility violations", async () => {
+    const { container } = render(<StrategyDesignerScreen />);
+
+    await expectNoAxeViolations(container);
+  });
+
   it("renders GET Strategy Builder endpoints as links and POST endpoints as reference-only backend rows", () => {
     render(<StrategyDesignerScreen />);
 
