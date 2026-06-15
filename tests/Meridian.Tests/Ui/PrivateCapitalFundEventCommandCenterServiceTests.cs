@@ -54,8 +54,73 @@ public sealed class PrivateCapitalFundEventCommandCenterServiceTests
         commandCenter.SupportPackages.Should().ContainSingle(item =>
             item.PackageId == "report-output:report-output:fund-alpha:lp-1:statement" &&
             item.Status == "Ready");
+        commandCenter.SupportPackages.Should().ContainSingle(item =>
+            item.PackageId == $"delivery:{FundEventId}" &&
+            item.Status == "Ready" &&
+            item.EvidenceLinks.Contains("/evidence/report-packs/manifest-from-output.json"));
+        commandCenter.SupportPackages.Should().ContainSingle(item =>
+            item.PackageId == $"tax-support:{FundEventId}" &&
+            item.Status == "Ready" &&
+            item.EvidenceLinks.Contains("/evidence/source") &&
+            item.EvidenceLinks.Contains("/evidence/report-pack/published"));
+        commandCenter.SupportPackages.Should().ContainSingle(item =>
+            item.PackageId == $"audit-support:{FundEventId}" &&
+            item.Status == "Ready" &&
+            item.Route == "/accounting/approvals?approvalId=approval-lp-1" &&
+            item.EvidenceLinks.Contains("/evidence/audit"));
         commandCenter.LiveCapabilities.Should().Contain(item => item.Contains("Event-level evidence", StringComparison.OrdinalIgnoreCase));
         commandCenter.PlannedCapabilities.Should().Contain("Native live treasury payment execution");
+    }
+
+    [Fact]
+    public async Task GetCommandCenterAsync_WhenSupportEvidenceIsIncomplete_FlagsDeliveryTaxAndAuditPackages()
+    {
+        var activity = BuildActivity();
+        var record = activity.FundEventRecords.Should().ContainSingle().Subject;
+        var reportOutput = record.ReportOutputs.Should().ContainSingle().Subject with
+        {
+            IsPublished = false,
+            IsReportReady = false,
+            EvidenceLinkCount = 0,
+            EvidenceLinks = [],
+            RetainedManifestPath = null,
+            PublicationManifestId = null
+        };
+        var incompleteRecord = record with
+        {
+            ApprovalRoute = null,
+            EvidenceLinkCount = 0,
+            EvidenceLinks = [],
+            ReportOutputs = [reportOutput],
+            ReportOutputCount = 1,
+            PaymentIntentEvidence = null
+        };
+        var incompleteActivity = activity with
+        {
+            FundEventRecords = [incompleteRecord],
+            ReportOutputs = [reportOutput],
+            PaymentIntents = []
+        };
+        var service = new PrivateCapitalFundEventCommandCenterService(new StubManualJournalEntryWorkbenchService(incompleteActivity));
+
+        var commandCenter = await service.GetCommandCenterAsync(FundProfileId, null, FundEventId);
+
+        commandCenter.Should().NotBeNull();
+        commandCenter!.SupportPackages.Should().ContainSingle(item =>
+            item.PackageId == $"delivery:{FundEventId}" &&
+            item.Status == "ReviewRequired" &&
+            item.EvidenceLinkCount == 0 &&
+            item.RequiredActions.Contains("Retain delivery package or publication manifest"));
+        commandCenter.SupportPackages.Should().ContainSingle(item =>
+            item.PackageId == $"tax-support:{FundEventId}" &&
+            item.Status == "ReviewRequired" &&
+            item.EvidenceLinkCount == 0 &&
+            item.RequiredActions.Contains("Attach tax support evidence or governed report output"));
+        commandCenter.SupportPackages.Should().ContainSingle(item =>
+            item.PackageId == $"audit-support:{FundEventId}" &&
+            item.Status == "ReviewRequired" &&
+            item.EvidenceLinkCount == 0 &&
+            item.RequiredActions.Contains("Retain approval or audit evidence"));
     }
 
     [Fact]
@@ -208,7 +273,12 @@ public sealed class PrivateCapitalFundEventCommandCenterServiceTests
                 fundEvent.FundEventType,
                 fundEvent.CapitalAccountId,
                 fundEvent.InvestorId,
-                "Capital call receipt"),
+                "Capital call receipt",
+                "fund:fund-alpha",
+                "fund:fund-alpha / capital-account:fund-alpha:lp-1 / investor:lp-1",
+                "Capital call receipt",
+                "Controller approval retained before execution-deferred reliance",
+                ["/evidence/source", "/evidence/bank"]),
             "/evidence/payment-intent",
             "/api/ledger/private-capital/activity?paymentIntentId=payment%3Afund-alpha%3Alp-1",
             ApprovalChain: [new PaymentIntentApprovalStepDto(1, "Controller", "controller", "Approved", now, "/approvals/payment-intent")],

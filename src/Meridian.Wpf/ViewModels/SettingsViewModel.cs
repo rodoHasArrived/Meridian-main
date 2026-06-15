@@ -31,6 +31,7 @@ public sealed partial class SettingsViewModel : BindableBase
     private readonly WpfServices.StatusService _statusService;
     private readonly SettingsConfigurationService _settingsConfigService;
     private readonly WpfServices.ISecurityAssetProfileWorkflowClient? _assetProfileClient;
+    private readonly WpfServices.IOperationsControlCenterClient? _operationsControlClient;
 
     private string _configPath = string.Empty;
     private string _configStatusText = "Valid";
@@ -71,18 +72,22 @@ public sealed partial class SettingsViewModel : BindableBase
         WpfServices.StatusService statusService,
         IFeatureCapabilityGate? capabilityGate = null,
         IEnumerable<FeatureCapabilityDescriptor>? capabilityDescriptors = null,
-        WpfServices.ISecurityAssetProfileWorkflowClient? assetProfileClient = null)
+        WpfServices.ISecurityAssetProfileWorkflowClient? assetProfileClient = null,
+        WpfServices.IOperationsControlCenterClient? operationsControlClient = null)
     {
         _configService = configService;
         _notificationService = notificationService;
         _statusService = statusService;
         _settingsConfigService = SettingsConfigurationService.Instance;
         _assetProfileClient = assetProfileClient;
+        _operationsControlClient = operationsControlClient;
         StoredCredentials = new ObservableCollection<CredentialDisplayInfo>();
         RecentActivity = new ObservableCollection<SettingsActivityItem>();
         AssetProfileRows = new ObservableCollection<SettingsAssetProfileRow>();
         AssetProfileFieldInputs = new ObservableCollection<SettingsAssetProfileFieldInput>();
         AssetProfileLineageEvents = new ObservableCollection<string>();
+        OperationsApprovalPolicyRows = new ObservableCollection<SettingsOperationsApprovalPolicyRow>();
+        OperationsCloseCalendarRows = new ObservableCollection<SettingsOperationsCloseCalendarRow>();
         CapabilityToggles = new ObservableCollection<FeatureCapabilityToggleViewModel>(
             BuildCapabilityToggles(capabilityGate, capabilityDescriptors));
         ShellDensityModes =
@@ -133,6 +138,11 @@ public sealed partial class SettingsViewModel : BindableBase
         LoadAssetProfileLineageCommand = new AsyncRelayCommand(LoadAssetProfileLineageAsync, CanLoadAssetProfileLineage);
         RollbackAssetProfileCommand = new AsyncRelayCommand(RollbackAssetProfileAsync, CanRollbackAssetProfile);
         CreateProfileBackedSecurityCommand = new AsyncRelayCommand(CreateProfileBackedSecurityAsync, CanCreateProfileBackedSecurity);
+        RefreshOperationsControlCommand = new AsyncRelayCommand(RefreshOperationsControlAsync, CanUseOperationsControl);
+        if (_operationsControlClient is null)
+        {
+            SetOperationsControlUnavailableState();
+        }
     }
 
     // ── Collections ───────────────────────────────────────────────────────────
@@ -142,6 +152,8 @@ public sealed partial class SettingsViewModel : BindableBase
     public ObservableCollection<SettingsAssetProfileRow> AssetProfileRows { get; }
     public ObservableCollection<SettingsAssetProfileFieldInput> AssetProfileFieldInputs { get; }
     public ObservableCollection<string> AssetProfileLineageEvents { get; }
+    public ObservableCollection<SettingsOperationsApprovalPolicyRow> OperationsApprovalPolicyRows { get; }
+    public ObservableCollection<SettingsOperationsCloseCalendarRow> OperationsCloseCalendarRows { get; }
     public ObservableCollection<FeatureCapabilityToggleViewModel> CapabilityToggles { get; }
     public IReadOnlyList<ShellDensityMode> ShellDensityModes { get; }
 
@@ -364,6 +376,7 @@ public sealed partial class SettingsViewModel : BindableBase
     public IAsyncRelayCommand LoadAssetProfileLineageCommand { get; }
     public IAsyncRelayCommand RollbackAssetProfileCommand { get; }
     public IAsyncRelayCommand CreateProfileBackedSecurityCommand { get; }
+    public IAsyncRelayCommand RefreshOperationsControlCommand { get; }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -378,6 +391,7 @@ public sealed partial class SettingsViewModel : BindableBase
         RefreshStoragePreview("BySymbol", "gzip");
         RefreshProfiles();
         _ = RefreshAssetProfilesAsync();
+        _ = RefreshOperationsControlAsync();
         LoadRecentActivity();
         UpdateSystemStatus();
     }

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
@@ -21,9 +22,17 @@ public sealed class ReconciliationApiService(
             .ToList();
 
     public async Task<IReadOnlyList<StatementRunSummaryDto>> ListStatementRunsAsync(CancellationToken ct = default)
-        => (await statementRunWorkflowService.ListImportsAsync(ct).ConfigureAwait(false))
-            .Select(ToSummary)
+    {
+        var imports = await statementRunWorkflowService.ListImportsAsync(ct).ConfigureAwait(false);
+        var openBreaks = await statementRunWorkflowService.ListOpenBreaksAsync(ct).ConfigureAwait(false);
+        var openBreakCounts = openBreaks
+            .GroupBy(static item => string.IsNullOrWhiteSpace(item.RunId) ? item.ImportId : item.RunId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(static group => group.Key, static group => group.Count(), StringComparer.OrdinalIgnoreCase);
+
+        return imports
+            .Select(import => ToSummary(import, openBreakCounts))
             .ToList();
+    }
 
     public async Task<StatementRunDto?> CreateStatementRunAsync(StatementRunCreateDto request, CancellationToken ct = default)
     {
@@ -108,27 +117,24 @@ public sealed class ReconciliationApiService(
             .ToList();
 
     public async Task<IReadOnlyList<StatementBreakDto>> ListOpenStatementBreaksAsync(CancellationToken ct = default)
-        => (await statementRunWorkflowService.ListOpenBreaksAsync(ct).ConfigureAwait(false))
-            .Select(static item => new StatementBreakDto(
-                BreakId: item.BreakId,
-                BreakType: MapBreakType(item.BreakCode),
-                Severity: item.ToleranceBreached ? StatementValidationSeverity.Error : StatementValidationSeverity.Warning,
-                MatchTier: WorkstationStatementMatchTier.Manual,
-                StatementReference: item.SourceReference,
-                Description: $"{item.Category} break {item.BreakCode} requires statement reconciliation review.",
-                StatementAmount: item.Delta,
-                BookAmount: null,
-                Delta: item.Delta,
-                Tolerance: item.Tolerance,
-                Currency: null,
-                CreatedAtUtc: item.CreatedAtUtc,
-                Status: item.Status,
-                InternalReference: item.RunId,
-                Owner: null,
-                LastObservedAtUtc: item.CreatedAtUtc,
-                RecommendedAction: "ReviewAndResolve",
-                EvidenceLink: $"/api/workstation/reconciliation/exceptions/{Uri.EscapeDataString(item.BreakId)}"))
+    {
+        var breaks = await statementRunWorkflowService.ListOpenBreaksAsync(ct).ConfigureAwait(false);
+        var casesByBreakId = (await statementRunWorkflowService.ListCasesAsync(ct).ConfigureAwait(false))
+            .SelectMany(static reconciliationCase => ResolveCaseBreakIds(reconciliationCase)
+                .Select(breakId => new KeyValuePair<string, ReconciliationCase>(breakId, reconciliationCase)))
+            .GroupBy(static item => item.Key, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group
+                    .Select(static item => item.Value)
+                    .OrderByDescending(static item => item.LastUpdatedAtUtc)
+                    .First(),
+                StringComparer.OrdinalIgnoreCase);
+
+        return breaks
+            .Select(item => ToStatementBreakDto(item, casesByBreakId))
             .ToList();
+    }
 
     public async Task<IReadOnlyList<ReconciliationCaseSummaryDto>> ListOpenCasesAsync(CancellationToken ct = default)
         => (await statementRunWorkflowService.ListCasesAsync(ct).ConfigureAwait(false))
@@ -139,16 +145,24 @@ public sealed class ReconciliationApiService(
 
     public async Task<IReadOnlyList<ReconciliationQueueAccountStatusDto>> ListQueueStatusAsync(CancellationToken ct = default)
     {
+        var imports = await statementRunWorkflowService.ListImportsAsync(ct).ConfigureAwait(false);
         var breaks = await statementRunWorkflowService.ListOpenBreaksAsync(ct).ConfigureAwait(false);
         var cases = await statementRunWorkflowService.ListCasesAsync(ct).ConfigureAwait(false);
+        var importById = imports.ToDictionary(static item => item.ImportId, StringComparer.OrdinalIgnoreCase);
+
         return breaks
-            .GroupBy(static item => string.IsNullOrWhiteSpace(item.ImportId) ? item.RunId : item.ImportId, StringComparer.OrdinalIgnoreCase)
+            .GroupBy(item => ResolveQueueAccountCode(item, importById), StringComparer.OrdinalIgnoreCase)
             .Select(group =>
             {
-                var relatedCases = cases.Where(c => string.Equals(c.ImportId, group.Key, StringComparison.OrdinalIgnoreCase)).ToArray();
+                var relatedCases = cases
+                    .Where(reconciliationCase => string.Equals(
+                        ResolveCaseAccountCode(reconciliationCase, importById),
+                        group.Key,
+                        StringComparison.OrdinalIgnoreCase))
+                    .ToArray();
                 var criticalCount = group.Count(static item => item.ToleranceBreached);
                 return new ReconciliationQueueAccountStatusDto(
-                    AccountId: Guid.Empty,
+                    AccountId: Guid.TryParse(group.Key, out var accountId) ? accountId : Guid.Empty,
                     AccountCode: group.Key,
                     QueueState: criticalCount > 0 ? "Blocked" : "Review",
                     UnresolvedBreakCount: group.Count(),
@@ -164,17 +178,139 @@ public sealed class ReconciliationApiService(
             .ToList();
     }
 
-    private static StatementRunSummaryDto ToSummary(CanonicalStatementImport import) =>
-        new(
+    private static string ResolveQueueAccountCode(
+        ReconciliationBreakRecord breakRecord,
+        IReadOnlyDictionary<string, CanonicalStatementImport> importById)
+    {
+        var import = TryGetImport(breakRecord, importById);
+        return FirstNonBlank(
+            import?.FundAccountId,
+            import?.ExternalAccountId,
+            breakRecord.ImportId,
+            breakRecord.RunId,
+            "unknown");
+    }
+
+    private static string ResolveCaseAccountCode(
+        ReconciliationCase reconciliationCase,
+        IReadOnlyDictionary<string, CanonicalStatementImport> importById)
+    {
+        return importById.TryGetValue(reconciliationCase.ImportId, out var import)
+            ? FirstNonBlank(import.FundAccountId, import.ExternalAccountId, reconciliationCase.ImportId, "unknown")
+            : FirstNonBlank(reconciliationCase.ImportId, "unknown");
+    }
+
+    private static CanonicalStatementImport? TryGetImport(
+        ReconciliationBreakRecord breakRecord,
+        IReadOnlyDictionary<string, CanonicalStatementImport> importById)
+    {
+        if (!string.IsNullOrWhiteSpace(breakRecord.ImportId) &&
+            importById.TryGetValue(breakRecord.ImportId, out var importByImportId))
+        {
+            return importByImportId;
+        }
+
+        return !string.IsNullOrWhiteSpace(breakRecord.RunId) &&
+            importById.TryGetValue(breakRecord.RunId, out var importByRunId)
+            ? importByRunId
+            : null;
+    }
+
+    private static string FirstNonBlank(params string?[] values)
+    {
+        foreach (var value in values)
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value.Trim();
+            }
+        }
+
+        return string.Empty;
+    }
+
+    private static IEnumerable<string> ResolveCaseBreakIds(ReconciliationCase reconciliationCase)
+    {
+        const string casePrefix = "case:";
+        if (reconciliationCase.CaseId.StartsWith(casePrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            var breakId = reconciliationCase.CaseId[casePrefix.Length..].Trim();
+            if (!string.IsNullOrWhiteSpace(breakId))
+            {
+                yield return breakId;
+            }
+        }
+    }
+
+    private static StatementBreakDto ToStatementBreakDto(
+        ReconciliationBreakRecord item,
+        IReadOnlyDictionary<string, ReconciliationCase> casesByBreakId)
+    {
+        casesByBreakId.TryGetValue(item.BreakId, out var reconciliationCase);
+        var owner = FirstNonBlank(reconciliationCase?.Owner);
+        var escalation = BuildStatementBreakEscalation(item, reconciliationCase, DateTimeOffset.UtcNow);
+        return new StatementBreakDto(
+            BreakId: item.BreakId,
+            BreakType: MapBreakType(item.BreakCode),
+            Severity: item.ToleranceBreached ? StatementValidationSeverity.Error : StatementValidationSeverity.Warning,
+            MatchTier: WorkstationStatementMatchTier.Manual,
+            StatementReference: item.SourceReference,
+            Description: $"{item.Category} break {item.BreakCode} requires statement reconciliation review.",
+            StatementAmount: item.Delta,
+            BookAmount: null,
+            Delta: item.Delta,
+            Tolerance: item.Tolerance,
+            Currency: null,
+            CreatedAtUtc: item.CreatedAtUtc,
+            Status: item.Status,
+            InternalReference: item.RunId,
+            Owner: string.IsNullOrWhiteSpace(owner) ? null : owner,
+            LastObservedAtUtc: reconciliationCase?.LastUpdatedAtUtc ?? item.CreatedAtUtc,
+            RecommendedAction: FirstNonBlank(reconciliationCase?.BreakExplanation?.SuggestedNextAction, "ReviewAndResolve"),
+            EvidenceLink: ResolveStatementBreakEvidenceLink(item, reconciliationCase),
+            SlaDueAtUtc: reconciliationCase?.DueAtUtc,
+            SlaWarningAtUtc: escalation.WarningAtUtc,
+            SlaBreachedAtUtc: escalation.BreachedAtUtc,
+            SlaState: escalation.SlaState,
+            EscalationLabel: escalation.Label,
+            EscalationReason: escalation.Reason);
+    }
+
+    private static string ResolveStatementBreakEvidenceLink(
+        ReconciliationBreakRecord breakRecord,
+        ReconciliationCase? reconciliationCase)
+        => FirstNonBlank(
+            reconciliationCase?.EvidenceReferences.FirstOrDefault(IsStatementRunEvidenceLink),
+            breakRecord.EvidenceLink,
+            $"/api/workstation/reconciliation/exceptions/{Uri.EscapeDataString(breakRecord.BreakId)}");
+
+    private static bool IsStatementRunEvidenceLink(string reference)
+        => reference.StartsWith("/api/workstation/reconciliation/statement-runs/", StringComparison.OrdinalIgnoreCase);
+
+    private static StatementRunSummaryDto ToSummary(
+        CanonicalStatementImport import,
+        IReadOnlyDictionary<string, int> openBreakCounts)
+    {
+        var openExceptionCount = ResolveOpenExceptionCount(import, openBreakCounts);
+        var status = openExceptionCount > 0 ? StatementRunStatus.ReviewRequired : StatementRunStatus.Completed;
+        var matchedItemCount = Math.Max(0, import.NormalizedRowCount - openExceptionCount);
+
+        return new StatementRunSummaryDto(
             import.ImportId,
             import.ImportId,
-            StatementRunStatus.Completed,
+            status,
             import.ImportedAtUtc,
-            import.ImportedAtUtc,
-            import.NormalizedRowCount,
+            status is StatementRunStatus.Completed ? import.ImportedAtUtc : null,
+            matchedItemCount,
             0,
             0,
-            0);
+            openExceptionCount);
+    }
+
+    private static int ResolveOpenExceptionCount(
+        CanonicalStatementImport import,
+        IReadOnlyDictionary<string, int> openBreakCounts)
+        => openBreakCounts.TryGetValue(import.ImportId, out var runCount) ? runCount : 0;
 
     private static StatementRunDto ToRunDto(
         CanonicalStatementImport import,
@@ -183,6 +319,17 @@ public sealed class ReconciliationApiService(
         string? notes = null,
         IReadOnlyList<ReconciliationCase>? cases = null)
     {
+        var casesByBreakId = (cases ?? [])
+            .SelectMany(static reconciliationCase => ResolveCaseBreakIds(reconciliationCase)
+                .Select(breakId => new KeyValuePair<string, ReconciliationCase>(breakId, reconciliationCase)))
+            .GroupBy(static item => item.Key, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group
+                    .Select(static item => item.Value)
+                    .OrderByDescending(static item => item.LastUpdatedAtUtc)
+                    .First(),
+                StringComparer.OrdinalIgnoreCase);
         var source = new StatementSourceDto(
             SourceId: import.ImportId,
             SourceKind: import.Broker,
@@ -224,20 +371,7 @@ public sealed class ReconciliationApiService(
                 PositionBreakCount: breaks.Count(static item => item.BreakType is StatementBreakType.PositionMarketValueMismatch or StatementBreakType.PositionQuantityMismatch),
                 CashBreakCount: breaks.Count(static item => item.BreakType is StatementBreakType.CashBalanceMismatch),
                 TransactionBreakCount: breaks.Count(static item => item.BreakType is StatementBreakType.TransactionAmountMismatch)),
-            Breaks: breaks.Select(static item => new StatementBreakDto(
-                item.BreakId,
-                item.BreakType,
-                item.ToleranceBreached ? StatementValidationSeverity.Error : StatementValidationSeverity.Warning,
-                item.ToleranceBreached ? WorkstationStatementMatchTier.Unmatched : WorkstationStatementMatchTier.WithinTolerance,
-                item.SourceReference,
-                item.Category,
-                item.Delta,
-                null,
-                item.Delta,
-                item.Tolerance,
-                null,
-                item.CreatedAtUtc,
-                item.Status)).ToList(),
+            Breaks: breaks.Select(item => ToStatementBreakDto(item, casesByBreakId)).ToList(),
             Cases: cases?.Select(ToStatementCaseDto).ToList() ?? [],
             ImportId: import.ImportId,
             FundProfileId: import.FundAccountId,
@@ -273,6 +407,157 @@ public sealed class ReconciliationApiService(
             item.ToleranceBreached,
             item.CreatedAtUtc,
             item.Status);
+
+    private static StatementBreakDto ToStatementBreakDto(
+        StatementRunBreakDto item,
+        IReadOnlyDictionary<string, ReconciliationCase> casesByBreakId)
+    {
+        casesByBreakId.TryGetValue(item.BreakId, out var reconciliationCase);
+        var owner = FirstNonBlank(reconciliationCase?.Owner);
+        var escalation = BuildStatementBreakEscalation(item, reconciliationCase, DateTimeOffset.UtcNow);
+        return new StatementBreakDto(
+            BreakId: item.BreakId,
+            BreakType: item.BreakType,
+            Severity: item.ToleranceBreached ? StatementValidationSeverity.Error : StatementValidationSeverity.Warning,
+            MatchTier: item.ToleranceBreached ? WorkstationStatementMatchTier.Unmatched : WorkstationStatementMatchTier.WithinTolerance,
+            StatementReference: item.SourceReference,
+            Description: $"{item.Category} break requires statement reconciliation review.",
+            StatementAmount: item.Delta,
+            BookAmount: null,
+            Delta: item.Delta,
+            Tolerance: item.Tolerance,
+            Currency: null,
+            CreatedAtUtc: item.CreatedAtUtc,
+            Status: item.Status,
+            InternalReference: item.RunId,
+            Owner: string.IsNullOrWhiteSpace(owner) ? null : owner,
+            LastObservedAtUtc: reconciliationCase?.LastUpdatedAtUtc ?? item.CreatedAtUtc,
+            RecommendedAction: FirstNonBlank(reconciliationCase?.BreakExplanation?.SuggestedNextAction, "ReviewAndResolve"),
+            EvidenceLink: ResolveStatementBreakEvidenceLink(item, reconciliationCase),
+            SlaDueAtUtc: reconciliationCase?.DueAtUtc,
+            SlaWarningAtUtc: escalation.WarningAtUtc,
+            SlaBreachedAtUtc: escalation.BreachedAtUtc,
+            SlaState: escalation.SlaState,
+            EscalationLabel: escalation.Label,
+            EscalationReason: escalation.Reason);
+    }
+
+    private static string ResolveStatementBreakEvidenceLink(
+        StatementRunBreakDto breakRecord,
+        ReconciliationCase? reconciliationCase)
+        => FirstNonBlank(
+            reconciliationCase?.EvidenceReferences.FirstOrDefault(IsStatementRunEvidenceLink),
+            $"/api/workstation/reconciliation/exceptions/{Uri.EscapeDataString(breakRecord.BreakId)}");
+
+    private static (DateTimeOffset? WarningAtUtc, DateTimeOffset? BreachedAtUtc, string SlaState, string Label, string Reason)
+        BuildStatementBreakEscalation(
+            ReconciliationBreakRecord breakRecord,
+            ReconciliationCase? reconciliationCase,
+            DateTimeOffset now)
+        => BuildStatementBreakEscalation(
+            breakRecord.ToleranceBreached,
+            breakRecord.Status,
+            breakRecord.CreatedAtUtc,
+            reconciliationCase,
+            now);
+
+    private static (DateTimeOffset? WarningAtUtc, DateTimeOffset? BreachedAtUtc, string SlaState, string Label, string Reason)
+        BuildStatementBreakEscalation(
+            StatementRunBreakDto breakRecord,
+            ReconciliationCase? reconciliationCase,
+            DateTimeOffset now)
+        => BuildStatementBreakEscalation(
+            breakRecord.ToleranceBreached,
+            breakRecord.Status,
+            breakRecord.CreatedAtUtc,
+            reconciliationCase,
+            now);
+
+    private static (DateTimeOffset? WarningAtUtc, DateTimeOffset? BreachedAtUtc, string SlaState, string Label, string Reason)
+        BuildStatementBreakEscalation(
+            bool toleranceBreached,
+            string status,
+            DateTimeOffset createdAtUtc,
+            ReconciliationCase? reconciliationCase,
+            DateTimeOffset now)
+    {
+        if (reconciliationCase is null)
+        {
+            return (
+                null,
+                null,
+                "NotStarted",
+                "Owner pending",
+                toleranceBreached
+                    ? "Tolerance-breached statement break has no retained case assignment; assign an owner and capture resolution evidence."
+                    : "Statement break has no retained case assignment; assign an owner before close sign-off.");
+        }
+
+        var dueAt = reconciliationCase.DueAtUtc;
+        var warningAt = dueAt?.AddHours(-12);
+        var breachedAt = reconciliationCase.SlaBreachedAtUtc ??
+                         (dueAt.HasValue && dueAt.Value <= now ? dueAt : null);
+        var isClosed = status.Contains("resolved", StringComparison.OrdinalIgnoreCase) ||
+                       status.Contains("dismissed", StringComparison.OrdinalIgnoreCase) ||
+                       reconciliationCase.Status.Contains("resolved", StringComparison.OrdinalIgnoreCase);
+        var owner = FirstNonBlank(reconciliationCase.Owner);
+        var ownerLabel = string.IsNullOrWhiteSpace(owner) ? "owner" : owner;
+
+        if (isClosed)
+        {
+            return (
+                warningAt,
+                breachedAt,
+                "Stopped",
+                "Closed",
+                "Statement break case is closed; retain sign-off evidence for audit traceability.");
+        }
+
+        if (string.IsNullOrWhiteSpace(owner) ||
+            string.Equals(owner, "unassigned", StringComparison.OrdinalIgnoreCase))
+        {
+            return (
+                warningAt,
+                breachedAt,
+                breachedAt.HasValue ? "Breached" : "NotStarted",
+                "Owner pending",
+                "Assign an accountable owner before resolving the statement reconciliation break.");
+        }
+
+        if (breachedAt.HasValue)
+        {
+            return (
+                warningAt,
+                breachedAt,
+                "Breached",
+                "Escalate",
+                $"Statement reconciliation break breached SLA at {FormatEscalationTimestamp(breachedAt.Value)}; escalate to the fund operations lead and retain resolution evidence.");
+        }
+
+        if (warningAt.HasValue && warningAt.Value <= now)
+        {
+            return (
+                warningAt,
+                null,
+                "Warning",
+                "SLA warning",
+                dueAt.HasValue
+                    ? $"Statement reconciliation break is assigned to {ownerLabel} and due by {FormatEscalationTimestamp(dueAt.Value)}."
+                    : $"Statement reconciliation break is assigned to {ownerLabel} and requires active follow-up before close sign-off.");
+        }
+
+        return (
+            warningAt,
+            null,
+            "OnTrack",
+            "Assigned",
+            dueAt.HasValue
+                ? $"Statement reconciliation break is assigned to {ownerLabel}; SLA due {FormatEscalationTimestamp(dueAt.Value)}."
+                : $"Statement reconciliation break is assigned to {ownerLabel}; retain resolution evidence before close sign-off.");
+    }
+
+    private static string FormatEscalationTimestamp(DateTimeOffset value)
+        => value.UtcDateTime.ToString("yyyy-MM-dd HH:mm 'UTC'", CultureInfo.InvariantCulture);
 
     private static StatementReconciliationCaseDto ToStatementCaseDto(ReconciliationCase item)
         => new(

@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
@@ -31,7 +33,7 @@ public sealed class AuditTrailExplorerService
         if (_auditTrail is not null)
         {
             var executionEntries = await _auditTrail.GetAllAsync(ct).ConfigureAwait(false);
-            entries.AddRange(executionEntries.Select(MapExecution));
+            entries.AddRange(executionEntries.Select(static (entry, index) => MapExecution(entry, index + 1)));
         }
 
         if (_operationsContinuity is not null)
@@ -41,7 +43,7 @@ public sealed class AuditTrailExplorerService
             {
                 ct.ThrowIfCancellationRequested();
                 var timeline = await _operationsContinuity.GetTimelineAsync(workflow.WorkflowId, ct).ConfigureAwait(false);
-                entries.AddRange(timeline.Select(MapOperations));
+                entries.AddRange(timeline.Select(static (entry, index) => MapOperations(entry, index + 1)));
             }
         }
 
@@ -112,6 +114,10 @@ public sealed class AuditTrailExplorerService
             Contains(entry.Reason, needle) ||
             Contains(entry.Scope, needle) ||
             Contains(entry.EvidenceRoute, needle) ||
+            Contains(entry.ActionLedgerSource, needle) ||
+            Contains(entry.PreviousActionHash, needle) ||
+            Contains(entry.CurrentActionHash, needle) ||
+            Contains(entry.ActionLedgerStatus, needle) ||
             (entry.RelatedObjectIds?.Any(related => Contains(related, needle)) ?? false) ||
             (entry.Metadata?.Any(pair => Contains(pair.Key, needle) || Contains(pair.Value, needle)) ?? false);
     }
@@ -120,7 +126,7 @@ public sealed class AuditTrailExplorerService
         => !string.IsNullOrWhiteSpace(value) &&
            value.Contains(needle, StringComparison.OrdinalIgnoreCase);
 
-    private static AuditTrailTimelineEntryDto MapExecution(ExecutionAuditEntry entry)
+    private static AuditTrailTimelineEntryDto MapExecution(ExecutionAuditEntry entry, int sequence)
     {
         var objectKind = ResolveExecutionObjectKind(entry);
         var objectId = ResolveExecutionObjectId(entry);
@@ -142,10 +148,14 @@ public sealed class AuditTrailExplorerService
             Message: entry.Message,
             Metadata: entry.Metadata,
             RelatedObjectIds: related,
-            EvidenceRoute: BuildEvidenceRoute(entry));
+            EvidenceRoute: BuildEvidenceRoute(entry),
+            ActionLedgerSource: "ExecutionAuditTrail",
+            ActionLedgerSequence: sequence,
+            CurrentActionHash: BuildExecutionActionHash(entry),
+            ActionLedgerStatus: "WalRetained");
     }
 
-    private static AuditTrailTimelineEntryDto MapOperations(OperationsTimelineEntryDto entry)
+    private static AuditTrailTimelineEntryDto MapOperations(OperationsTimelineEntryDto entry, int sequence)
     {
         var objectKind = ResolveOperationsObjectKind(entry);
         var objectId = ResolveOperationsObjectId(entry);
@@ -156,9 +166,11 @@ public sealed class AuditTrailExplorerService
             ["fundAccountId"] = entry.FundAccountId.ToString("D"),
             ["periodId"] = entry.PeriodId,
             ["fromState"] = entry.FromState.ToString(),
-            ["toState"] = entry.ToState.ToString(),
-            ["currentHash"] = entry.CurrentHash
+            ["toState"] = entry.ToState.ToString()
         };
+
+        AddIfPresent(metadata, "previousHash", entry.PreviousHash);
+        AddIfPresent(metadata, "currentHash", entry.CurrentHash);
 
         if (entry.Gate.HasValue)
         {
@@ -190,7 +202,12 @@ public sealed class AuditTrailExplorerService
             Message: BuildOperationsMessage(entry),
             Metadata: metadata,
             RelatedObjectIds: related,
-            EvidenceRoute: evidenceRoute);
+            EvidenceRoute: evidenceRoute,
+            ActionLedgerSource: "OperationsContinuityTimeline",
+            ActionLedgerSequence: sequence,
+            PreviousActionHash: entry.PreviousHash,
+            CurrentActionHash: entry.CurrentHash,
+            ActionLedgerStatus: string.IsNullOrWhiteSpace(entry.CurrentHash) ? "AppendOnly" : "HashChained");
     }
 
     private static string ResolveExecutionObjectKind(ExecutionAuditEntry entry)
@@ -329,4 +346,37 @@ public sealed class AuditTrailExplorerService
 
     private static string? FirstNonBlank(params string?[] values)
         => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
+
+    private static string BuildExecutionActionHash(ExecutionAuditEntry entry)
+    {
+        var builder = new StringBuilder();
+        AppendHashField(builder, "auditId", entry.AuditId);
+        AppendHashField(builder, "occurredAt", entry.OccurredAt.ToUniversalTime().ToString("O"));
+        AppendHashField(builder, "category", entry.Category);
+        AppendHashField(builder, "action", entry.Action);
+        AppendHashField(builder, "outcome", entry.Outcome);
+        AppendHashField(builder, "actor", entry.Actor);
+        AppendHashField(builder, "brokerName", entry.BrokerName);
+        AppendHashField(builder, "orderId", entry.OrderId);
+        AppendHashField(builder, "runId", entry.RunId);
+        AppendHashField(builder, "symbol", entry.Symbol);
+        AppendHashField(builder, "correlationId", entry.CorrelationId);
+        AppendHashField(builder, "message", entry.Message);
+        AppendHashField(builder, "reason", entry.Reason);
+        AppendHashField(builder, "scope", entry.Scope);
+
+        if (entry.Metadata is not null)
+        {
+            foreach (var pair in entry.Metadata.OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase))
+            {
+                AppendHashField(builder, $"metadata.{pair.Key}", pair.Value);
+            }
+        }
+
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString())))
+            .ToLowerInvariant();
+    }
+
+    private static void AppendHashField(StringBuilder builder, string key, string? value)
+        => builder.Append(key).Append('=').Append(value ?? string.Empty).Append('\n');
 }

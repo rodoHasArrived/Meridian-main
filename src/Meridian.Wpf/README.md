@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-08
+last_reviewed: 2026-06-11
 ---
 
 # src/Meridian.Wpf
@@ -55,9 +55,10 @@ surfaces chart accounts, templates, posting rules, validation, and audit rows, s
 entry drafts through the shared workbench service, offers type-specific draft presets for accrued
 balances, accrued expenses, prepaid expenses, expenses, amortization, deferrals, reclassifications,
 reversals, capital calls, distributions, subscriptions, redemptions, LP transfers, and management
-fees, shows read-only external GL evidence, projects close/evidence/reconciliation posture from
-shared operations continuity when available, and creates fund-scoped accounting-basis policy
-records through the Financial Operations policy service. Private-capital presets attach the shared
+fees, shows read-only external GL evidence and retained package readiness, projects
+close/evidence/reconciliation posture from shared operations continuity when available, and creates
+fund-scoped accounting-basis policy records through the Financial Operations policy service.
+Private-capital presets attach the shared
 treasury ledger context expected by the approval service, including effective date, idempotency,
 fund-event, capital-account, investor, payment, and settlement references.
 Registration stays feature-owned in `Features/Accounting/AccountingFeatureModule.cs`; the
@@ -90,6 +91,11 @@ approves profile variants through the shared governance endpoints, loads lineage
 and creates profile-backed `CustomAsset` records with `customProfileId`, `profileVersion`, typed
 `profileFields`, and approval metadata. WPF stays thin here: profile governance, mutation
 permissions, and custom-asset validation remain owned by the shared Security Master API.
+Settings also includes a read-only Operations Control tab backed by the shared Operations Continuity
+approval-policy matrix and close-calendar routes. The tab gives desktop operators visibility into
+approval thresholds, evidence requirements, independent-review controls, close due dates, blockers,
+checklist posture, and approval counts while leaving policy and calendar mutations owned by the
+shared Operations Continuity endpoints and browser control-center workflow.
 Run Cash Flow consumes `StrategyRunContinuityService` when the desktop shell provides it, so the
 cash-flow drill-in presents the same run, portfolio, ledger, cash-flow, reconciliation, and warning
 posture used by shared workstation continuity endpoints.
@@ -105,7 +111,9 @@ queue from the shared break read model after review/resolve/dismiss, and keep th
 note, audit event, pending close sign-off posture, and contract-owned "Explain the Break" summary
 visible in the retained detail panel. The WPF queue projection carries the same source systems,
 probable cause, ledger impact, suggested next action, and evidence links as the browser Accounting
-detail so desktop operators do not rebuild reconciliation narratives locally.
+detail so desktop operators do not rebuild reconciliation narratives locally. Statement-originated
+break rows also render the retained case SLA label and escalation posture from the shared
+`StatementBreakDto`, keeping desktop exception triage aligned with source-backed case ownership.
 The retained reconciliation detail also exposes a Match Items tab with side-by-side selectable
 ledger-entry and source-data grids; the desktop view model keeps those checkbox selections as
 presentation state and submits matched items through the same shared resolve endpoint with an
@@ -158,14 +166,18 @@ The Capital Account Workbench tab consumes `ICapitalAccountWorkbenchService` and
 capital-account evidence, allocation-rule readiness, statement/restatement lineage, audit-support
 drill-throughs, and live-versus-planned capability rows in the shared DTO shape used by the browser
 workbench.
+Manual Journal payment-intent rows now surface the shared payee, account scope, business purpose,
+approval policy, and retained source-evidence count beside approval-chain, bank/cash evidence,
+retaining-operator attribution, reconciliation, audit-history, and execution-deferred posture,
+keeping the desktop cash-evidence view source-backed instead of deriving request metadata in WPF.
 The Accounting feature module also registers the Financial Operations-owned
 `IPrivateCapitalCloseCockpitService`, so desktop composition can resolve the same private-capital
 close proof projection for partner capital tie-outs, NAV support packages, approval history,
 close-package evidence, and period-lock readiness without introducing WPF-local rules.
 Fund Ledger now consumes that shared close cockpit in its Report Pack side rail, projecting close
-lanes, NAV support packages, approval history, blocker text, retained evidence counts, and
-readiness sign-off posture into read-only WPF rows that stay source-backed by the Financial
-Operations service.
+lanes, evidence package rows, NAV support packages, approval history, blocker text, retained
+evidence counts, and readiness sign-off posture into read-only WPF rows that stay source-backed by
+the Financial Operations service.
 The Accounting shell's Financial Operations checkpoint now also renders the shared workflow
 evidence badges and primary blocker detail from `WorkstationWorkflowSummaryService`, giving desktop
 operators a source-backed compact view of core-flow stage, break pressure, approval posture,
@@ -214,7 +226,15 @@ evidence, approvals, report-pack lineage, export evidence, restatement lineage, 
 audit-pack timing, and 60-second target status. The WPF view model maps contract-owned category
 status, required evidence labels, evidence links, route hints, readiness warnings, and timing into
 desktop rows and readiness state instead of deriving audit readiness in XAML or desktop-only
-services. Each accounting-record
+services. It also renders the shared Financial Operations reconciliation lane coverage for cash,
+position, trade, income, MBS factor, bank, and GL support, preserving lane status, break counts,
+required actions, route targets, and retained evidence subjects from the active Operations
+Continuity workflow. The same side rail now renders a source-backed Financial Operations operator
+queue from shared Operations Continuity break cases, close-checklist tasks, approvals, evidence
+packages, reconciliation lanes, and private-capital close blockers, keeping exception management,
+close support, and approval history visible without WPF-local workflow rules. It also surfaces the
+shared reviewed-automation posture, allowed/prohibited automation guardrails, retained evidence, and
+human-review requirement as a read-only WPF signifier before the queue. Each accounting-record
 evidence row now carries both the desktop shell target and canonical `accounting-record/{recordId}`
 subject target so WPF operators can reconcile the row with the same Evidence Workbench subject used
 by the browser and shared evidence endpoints.

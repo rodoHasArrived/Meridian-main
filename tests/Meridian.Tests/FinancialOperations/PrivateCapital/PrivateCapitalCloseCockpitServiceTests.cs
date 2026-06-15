@@ -44,7 +44,7 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
         cockpit.CapitalAccountCount.Should().Be(1);
         cockpit.ReportOutputCount.Should().Be(3);
         cockpit.DeliveredReportOutputCount.Should().Be(3);
-        cockpit.ReadyLaneCount.Should().Be(13);
+        cockpit.ReadyLaneCount.Should().Be(14);
         cockpit.BlockedLaneCount.Should().Be(0);
         cockpit.Lanes.Select(static lane => lane.LaneId).Should().Equal(
             "data-receipt",
@@ -58,6 +58,7 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
             "valuation-evidence",
             "reporting",
             "delivery",
+            "close-controls",
             "close-package",
             "period-lock");
         cockpit.Lanes.Should().ContainSingle(lane =>
@@ -84,12 +85,20 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
             lane.EvidenceLinks.Any(link => link.Route == "/evidence/reimbursement-support"));
         cockpit.Lanes.Should().ContainSingle(lane =>
             lane.LaneId == "period-lock" &&
-            lane.Route == UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityById, "workflowId", workflow.WorkflowId.ToString("D")));
+            lane.Route == UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityById, "workflowId", workflow.WorkflowId.ToString("D")) &&
+            lane.EvidenceLinks.Any(link => link.Route == "/evidence/period-lock"));
+        cockpit.Lanes.Should().ContainSingle(lane =>
+            lane.LaneId == "close-controls" &&
+            lane.IsReady &&
+            lane.EvidenceLinks.Any(link => link.Route == "/evidence/reversal-approval") &&
+            lane.EvidenceLinks.Any(link => link.Route == "/evidence/recurring-journals") &&
+            lane.EvidenceLinks.Any(link => link.Route == "/evidence/stale-marks") &&
+            lane.EvidenceLinks.Any(link => link.Route == "/evidence/period-lock"));
         cockpit.Workflows.Should().ContainSingle(row =>
             row.WorkflowId == workflow.WorkflowId &&
             row.ClosePackageId == "close-package-fund-alpha-2026-06" &&
             row.IsReadyToClose);
-        cockpit.ApprovalHistory.Should().HaveCount(2);
+        cockpit.ApprovalHistory.Should().HaveCount(11);
         cockpit.ApprovalHistory.Should().ContainSingle(row =>
             row.ApprovalId == "approval-close-fund-alpha-2026-06" &&
             row.WorkflowId == workflow.WorkflowId &&
@@ -103,6 +112,58 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
             row.Status == OperationsApprovalStateDto.Approved &&
             row.Reviewer == "controller" &&
             row.Rationale == "Checklist control approval retained for close-gate-approval.");
+        cockpit.ApprovalHistory.Should().ContainSingle(row =>
+            row.ApprovalId.Contains("close-control-reversal-approval", StringComparison.OrdinalIgnoreCase) &&
+            row.WorkflowId == workflow.WorkflowId &&
+            row.Status == OperationsApprovalStateDto.Approved &&
+            row.Reviewer == "controller" &&
+            row.Rationale == "Checklist control approval retained for close-control-reversal-approval.");
+        cockpit.ApprovalHistory.Should().ContainSingle(row =>
+            row.ApprovalId == "approval:fund-alpha:capital-call" &&
+            row.WorkflowId == workflow.WorkflowId &&
+            row.Status == OperationsApprovalStateDto.Approved &&
+            row.Rationale == "Fund-event approval retained for CapitalCall." &&
+            row.WorkflowRoute == "/workstation/approvals/approval:fund-alpha:capital-call" &&
+            row.EvidenceLinks.Any(link => link.Route == "/evidence/source"));
+        cockpit.ApprovalHistory.Should().ContainSingle(row =>
+            row.ApprovalId == "report-output-approval:report-output:fund-alpha:lp-1:statement" &&
+            row.WorkflowId == workflow.WorkflowId &&
+            row.Status == OperationsApprovalStateDto.Approved &&
+            row.Reviewer == "controller" &&
+            row.Rationale == "Report output publication retained for LP 1 statement." &&
+            row.EvidenceLinks.Any(link => link.Route == "/evidence/report-pack/published"));
+        cockpit.ApprovalHistory.Should().ContainSingle(row =>
+            row.ApprovalId == "report-output-approval:report-output:fund-alpha:administrator-nav:20260630" &&
+            row.WorkflowId == workflow.WorkflowId &&
+            row.Status == OperationsApprovalStateDto.Approved &&
+            row.Reviewer == "administrator" &&
+            row.Rationale == "Report output publication retained for Administrator NAV statement." &&
+            row.EvidenceLinks.Any(link => link.Route == "/evidence/administrator-nav"));
+        cockpit.EvidencePackages.Should().HaveCount(5);
+        cockpit.EvidencePackages.Should().OnlyContain(package => package.Status == EvidenceStatusDto.Ready && package.IsReady);
+        cockpit.EvidencePackages.Should().ContainSingle(package =>
+            package.PackageId == "private-capital:fund-event-accounting" &&
+            package.CompleteCategoryCount == 4 &&
+            package.RequiredCategoryCount == 4 &&
+            package.EvidenceLinks.Any(link => link.Route == "/evidence/allocation-policy"));
+        cockpit.EvidencePackages.Should().ContainSingle(package =>
+            package.PackageId == "private-capital:nav-support" &&
+            package.CompleteCategoryCount == 3 &&
+            package.RequiredCategoryCount == 3 &&
+            package.EvidenceLinks.Any(link => link.Route == "/evidence/shadow-nav-pack") &&
+            package.EvidenceLinks.Any(link => link.Route == "/evidence/administrator-nav"));
+        cockpit.EvidencePackages.Should().ContainSingle(package =>
+            package.PackageId == "private-capital:close-approval-audit" &&
+            package.CompleteCategoryCount == 4 &&
+            package.RequiredCategoryCount == 4 &&
+            package.EvidenceLinks.Any(link => link.Route == "/evidence/approval-close") &&
+            package.EvidenceLinks.Any(link => link.Route == "/evidence/reversal-approval") &&
+            package.EvidenceLinks.Any(link => link.Route == "/operations-continuity/close-package/manifest-fund-alpha-2026-06"));
+        cockpit.EvidencePackages.Should().ContainSingle(package =>
+            package.PackageId == $"period-lock-reopen:{workflow.FundAccountId:D}:2026-06" &&
+            package.CompleteCategoryCount == 2 &&
+            package.RequiredCategoryCount == 2 &&
+            package.EvidenceLinks.Any(link => link.Route == "/evidence/period-lock"));
         var navPackage = cockpit.NavSupportPackages.Should().ContainSingle(package =>
             package.PackageId == $"nav-support:{workflow.FundAccountId:D}:2026-06" &&
             package.Status == EvidenceStatusDto.Ready &&
@@ -124,6 +185,8 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
         cockpit.NextActions.Should().BeEmpty();
         cockpit.LiveCapabilities.Should().Contain(item => item.Contains("Fund/book/period", StringComparison.OrdinalIgnoreCase));
         cockpit.LiveCapabilities.Should().Contain(item => item.Contains("Approval history", StringComparison.OrdinalIgnoreCase));
+        cockpit.LiveCapabilities.Should().Contain(item => item.Contains("Close-control checklist", StringComparison.OrdinalIgnoreCase));
+        cockpit.LiveCapabilities.Should().Contain(item => item.Contains("evidence package rollups", StringComparison.OrdinalIgnoreCase));
         cockpit.LiveCapabilities.Should().Contain(item => item.Contains("administrator-versus-Meridian", StringComparison.OrdinalIgnoreCase));
         cockpit.LiveCapabilities.Should().Contain(item => item.Contains("Management-company operating records", StringComparison.OrdinalIgnoreCase));
         cockpit.PlannedCapabilities.Should().NotContain(item => item.Contains("Administrator-versus-Meridian", StringComparison.OrdinalIgnoreCase));
@@ -146,6 +209,178 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
             lane.LaneId == "data-receipt" &&
             lane.Status == EvidenceStatusDto.Missing &&
             lane.RequiredActions.Contains("Retain source intake evidence for the close scope"));
+        cockpit.EvidencePackages.Should().HaveCount(4);
+        cockpit.EvidencePackages.Should().OnlyContain(package =>
+            package.Status == EvidenceStatusDto.Missing &&
+            !package.IsReady &&
+            package.EvidenceLinkCount == 0);
+    }
+
+    [Fact]
+    public async Task GetCockpitAsync_WhenPeriodLockReopenPackageNeedsRemediation_KeepsPeriodLockLaneInReview()
+    {
+        var activity = BuildActivity();
+        var workflow = BuildClosedWorkflow(periodLockPackageReady: false);
+        var service = new PrivateCapitalCloseCockpitService(
+            new StubManualJournalEntryWorkbenchService(activity),
+            new StubOperationsContinuityWorkflowService([workflow]));
+
+        var cockpit = await service.GetCockpitAsync(
+            FundProfileId,
+            activity.LedgerBookId,
+            FundAccountId,
+            PeriodId,
+            EntityId);
+
+        cockpit.OverallStatus.Should().Be(EvidenceStatusDto.ReviewRequired);
+        cockpit.IsReadyToClose.Should().BeFalse();
+        cockpit.ReadyLaneCount.Should().Be(13);
+        cockpit.BlockedLaneCount.Should().Be(0);
+        cockpit.Lanes.Should().ContainSingle(lane =>
+            lane.LaneId == "period-lock" &&
+            lane.Status == EvidenceStatusDto.ReviewRequired &&
+            !lane.IsReady &&
+            lane.Summary.Contains("reopened after close package", StringComparison.OrdinalIgnoreCase) &&
+            lane.RequiredActions.Contains("Complete reopened incident remediation and close the period again with retained evidence."));
+        cockpit.EvidencePackages.Should().ContainSingle(package =>
+            package.PackageId == $"period-lock-reopen:{workflow.FundAccountId:D}:2026-06" &&
+            package.Status == EvidenceStatusDto.ReviewRequired &&
+            !package.IsReady &&
+            package.CompleteCategoryCount == 1 &&
+            package.RequiredCategoryCount == 2 &&
+            package.RequiredActions.Contains("Complete reopened incident remediation and close the period again with retained evidence."));
+        cockpit.EvidencePackages.Should().ContainSingle(package =>
+            package.PackageId == "private-capital:close-approval-audit" &&
+            package.Status == EvidenceStatusDto.ReviewRequired &&
+            !package.IsReady &&
+            package.RequiredActions.Contains("Complete reopened incident remediation and close the period again with retained evidence."));
+    }
+
+    [Fact]
+    public async Task GetCockpitAsync_WhenCloseControlEvidencePointersAreMissing_KeepsCloseAuditPackageInReview()
+    {
+        var activity = BuildActivity();
+        var workflow = BuildClosedWorkflow(includeCloseControlEvidence: false);
+        var service = new PrivateCapitalCloseCockpitService(
+            new StubManualJournalEntryWorkbenchService(activity),
+            new StubOperationsContinuityWorkflowService([workflow]));
+
+        var cockpit = await service.GetCockpitAsync(
+            FundProfileId,
+            activity.LedgerBookId,
+            FundAccountId,
+            PeriodId,
+            EntityId);
+
+        cockpit.OverallStatus.Should().Be(EvidenceStatusDto.ReviewRequired);
+        cockpit.IsReadyToClose.Should().BeFalse();
+        cockpit.ReadyLaneCount.Should().Be(13);
+        cockpit.BlockedLaneCount.Should().Be(0);
+        cockpit.Lanes.Should().ContainSingle(lane =>
+            lane.LaneId == "close-controls" &&
+            lane.Status == EvidenceStatusDto.ReviewRequired &&
+            !lane.IsReady &&
+            lane.Summary.Contains("retained evidence or approval", StringComparison.OrdinalIgnoreCase) &&
+            lane.RequiredActions.Contains("Retain approved reversal support before close sign-off."));
+        cockpit.EvidencePackages.Should().ContainSingle(package =>
+            package.PackageId == "private-capital:close-approval-audit" &&
+            package.Status == EvidenceStatusDto.ReviewRequired &&
+            !package.IsReady &&
+            package.CompleteCategoryCount == 3 &&
+            package.RequiredCategoryCount == 4 &&
+            package.RequiredActions.Contains("Retain approved reversal support before close sign-off."));
+    }
+
+    [Fact]
+    public async Task GetCockpitAsync_WhenFundEventJournalPostingIsIncomplete_KeepsJournalLaneInReview()
+    {
+        var activity = BuildActivity(includeIncompleteJournal: true);
+        var workflow = BuildClosedWorkflow();
+        var service = new PrivateCapitalCloseCockpitService(
+            new StubManualJournalEntryWorkbenchService(activity),
+            new StubOperationsContinuityWorkflowService([workflow]));
+
+        var cockpit = await service.GetCockpitAsync(
+            FundProfileId,
+            activity.LedgerBookId,
+            FundAccountId,
+            PeriodId,
+            EntityId);
+
+        cockpit.OverallStatus.Should().Be(EvidenceStatusDto.ReviewRequired);
+        cockpit.IsReadyToClose.Should().BeFalse();
+        cockpit.ReadyLaneCount.Should().Be(11);
+        cockpit.BlockedLaneCount.Should().Be(0);
+        cockpit.Lanes.Should().ContainSingle(lane =>
+            lane.LaneId == "journal-posting" &&
+            lane.Status == EvidenceStatusDto.ReviewRequired &&
+            !lane.IsReady &&
+            lane.Summary.Contains("1 private-capital fund event", StringComparison.OrdinalIgnoreCase) &&
+            lane.RequiredActions.Contains("Post or validate close journals"));
+        cockpit.EvidencePackages.Should().ContainSingle(package =>
+            package.PackageId == "private-capital:fund-event-accounting" &&
+            package.Status == EvidenceStatusDto.ReviewRequired &&
+            !package.IsReady &&
+            package.RequiredActions.Contains("Post or validate close journals"));
+    }
+
+    [Fact]
+    public async Task GetCockpitAsync_WhenInvestorStatementIsUnapproved_KeepsReportingDeliveryAndTieOutInReview()
+    {
+        var activity = BuildActivity(includeUnapprovedStatement: true);
+        activity.ReportOutputs.Should().ContainSingle(output =>
+            output.ReportOutputId == "report-output:fund-alpha:lp-1:statement" &&
+            output.ApprovalState == ManualJournalEntryStatusDto.Submitted);
+        var workflow = BuildClosedWorkflow();
+        var service = new PrivateCapitalCloseCockpitService(
+            new StubManualJournalEntryWorkbenchService(activity),
+            new StubOperationsContinuityWorkflowService([workflow]));
+
+        var cockpit = await service.GetCockpitAsync(
+            FundProfileId,
+            activity.LedgerBookId,
+            FundAccountId,
+            PeriodId,
+            EntityId);
+
+        cockpit.OverallStatus.Should().Be(EvidenceStatusDto.ReviewRequired);
+        cockpit.IsReadyToClose.Should().BeFalse();
+        cockpit.DeliveredReportOutputCount.Should().Be(2);
+        cockpit.ReadyLaneCount.Should().Be(11);
+        cockpit.BlockedLaneCount.Should().Be(0);
+        cockpit.Lanes.Should().ContainSingle(lane =>
+            lane.LaneId == "reporting" &&
+            lane.Status == EvidenceStatusDto.ReviewRequired &&
+            !lane.IsReady &&
+            lane.Summary.Contains("approval", StringComparison.OrdinalIgnoreCase) &&
+            lane.RequiredActions.Contains("Generate and approve close report outputs"));
+        cockpit.Lanes.Should().ContainSingle(lane =>
+            lane.LaneId == "delivery" &&
+            lane.Status == EvidenceStatusDto.ReviewRequired &&
+            !lane.IsReady &&
+            lane.Summary.Contains("approved output", StringComparison.OrdinalIgnoreCase) &&
+            lane.RequiredActions.Contains("Retain report-package delivery evidence"));
+        cockpit.Lanes.Should().ContainSingle(lane =>
+            lane.LaneId == "partner-capital-tie-outs" &&
+            lane.Status == EvidenceStatusDto.ReviewRequired &&
+            !lane.IsReady &&
+            lane.RequiredActions.Contains("Retain partner capital tie-out evidence across subledger, ledger, and statement output"));
+        cockpit.EvidencePackages.Should().ContainSingle(package =>
+            package.PackageId == "private-capital:partner-capital-tie-out" &&
+            package.Status == EvidenceStatusDto.ReviewRequired &&
+            !package.IsReady &&
+            package.CompleteCategoryCount == 0 &&
+            package.RequiredCategoryCount == 3);
+        cockpit.ApprovalHistory.Should().ContainSingle(row =>
+            row.ApprovalId == "report-output-approval:report-output:fund-alpha:lp-1:statement" &&
+            row.Status == OperationsApprovalStateDto.Submitted &&
+            row.DecidedAtUtc == null &&
+            row.Rationale == "Report output publication retained for LP 1 statement.");
+        cockpit.EvidencePackages.Should().ContainSingle(package =>
+            package.PackageId == "private-capital:close-approval-audit" &&
+            package.Status == EvidenceStatusDto.ReviewRequired &&
+            !package.IsReady &&
+            package.RequiredActions.Contains("Retain approved close approval history before audit package release."));
     }
 
     [Fact]
@@ -166,7 +401,7 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
 
         cockpit.OverallStatus.Should().Be(EvidenceStatusDto.ReviewRequired);
         cockpit.IsReadyToClose.Should().BeFalse();
-        cockpit.ReadyLaneCount.Should().Be(11);
+        cockpit.ReadyLaneCount.Should().Be(12);
         cockpit.BlockedLaneCount.Should().Be(0);
         cockpit.Lanes.Should().ContainSingle(lane =>
             lane.LaneId == "expense-fee-allocation" &&
@@ -199,7 +434,7 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
 
         cockpit.OverallStatus.Should().Be(EvidenceStatusDto.ReviewRequired);
         cockpit.IsReadyToClose.Should().BeFalse();
-        cockpit.ReadyLaneCount.Should().Be(12);
+        cockpit.ReadyLaneCount.Should().Be(13);
         cockpit.BlockedLaneCount.Should().Be(0);
         cockpit.Lanes.Should().ContainSingle(lane =>
             lane.LaneId == "nav-support" &&
@@ -215,6 +450,13 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
         navPackage.Subject.ShadowNavTieOut.IsReady.Should().BeFalse();
         navPackage.Subject.ShadowNavTieOut.MeridianShadowNav.Should().Be(235m);
         navPackage.Subject.ShadowNavTieOut.AdministratorNav.Should().BeNull();
+        cockpit.EvidencePackages.Should().ContainSingle(package =>
+            package.PackageId == "private-capital:nav-support" &&
+            package.Status == EvidenceStatusDto.ReviewRequired &&
+            !package.IsReady &&
+            package.CompleteCategoryCount == 1 &&
+            package.RequiredCategoryCount == 3 &&
+            package.RequiredActions.Contains("Retain administrator NAV support evidence before close sign-off."));
     }
 
     [Fact]
@@ -235,7 +477,7 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
 
         cockpit.OverallStatus.Should().Be(EvidenceStatusDto.Blocked);
         cockpit.IsReadyToClose.Should().BeFalse();
-        cockpit.ReadyLaneCount.Should().Be(12);
+        cockpit.ReadyLaneCount.Should().Be(13);
         cockpit.BlockedLaneCount.Should().Be(1);
         cockpit.Lanes.Should().ContainSingle(lane =>
             lane.LaneId == "nav-support" &&
@@ -272,16 +514,23 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
 
         cockpit.OverallStatus.Should().Be(EvidenceStatusDto.Blocked);
         cockpit.IsReadyToClose.Should().BeFalse();
-        cockpit.ReadyLaneCount.Should().Be(12);
+        cockpit.ReadyLaneCount.Should().Be(13);
         cockpit.BlockedLaneCount.Should().Be(1);
         cockpit.Lanes.Should().ContainSingle(lane =>
             lane.LaneId == "partner-capital-tie-outs" &&
             lane.Status == EvidenceStatusDto.Blocked &&
             !lane.IsReady &&
             lane.RequiredActions.Contains("Retain partner capital tie-out evidence across subledger, ledger, and statement output"));
+        cockpit.EvidencePackages.Should().ContainSingle(package =>
+            package.PackageId == "private-capital:partner-capital-tie-out" &&
+            package.Status == EvidenceStatusDto.Blocked &&
+            !package.IsReady &&
+            package.RequiredActions.Contains("Retain partner capital tie-out evidence across subledger, ledger, and statement output"));
     }
 
-    private static OperationsContinuityWorkflowDto BuildClosedWorkflow()
+    private static OperationsContinuityWorkflowDto BuildClosedWorkflow(
+        bool includeCloseControlEvidence = true,
+        bool periodLockPackageReady = true)
     {
         var workflowId = Guid.Parse("22222222-2222-2222-2222-222222222222");
         var now = new DateTimeOffset(2026, 6, 30, 18, 0, 0, TimeSpan.Zero);
@@ -346,7 +595,7 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
                 "report-pack-fund-alpha-2026-06",
                 null,
                 [Evidence("report-pack-fund-alpha-2026-06", "Report pack evidence", "/evidence/report-pack/published")]),
-            CloseChecklist: [],
+            CloseChecklist: CloseControlChecklist(now, includeCloseControlEvidence),
             EvidenceLinks: [Evidence("close-source", "Close source evidence", "/evidence/source")],
             Blockers: [],
             NextActions: [],
@@ -361,14 +610,123 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
                 "controller",
                 "Close package approved.",
                 [Evidence("close-package", "Close package", "/operations-continuity/close-package/manifest-fund-alpha-2026-06")],
-                [new OperationsChecklistControlApprovalDto("close-gate-approval", "controller", now.AddMinutes(-5))]));
+                CloseControlApprovals(now)),
+            EvidencePackages: [PeriodLockReopenPackage(workflowId, periodLockPackageReady)]);
     }
+
+    private static OperationsEvidencePackageSummaryDto PeriodLockReopenPackage(
+        Guid workflowId,
+        bool isReady)
+        => new(
+            $"period-lock-reopen:{FundAccountId:D}:{PeriodId}",
+            "Period lock and reopen evidence",
+            isReady ? EvidenceStatusDto.Ready : EvidenceStatusDto.ReviewRequired,
+            isReady,
+            isReady
+                ? $"Period {PeriodId} is locked by close package close-package-fund-alpha-2026-06; no governed reopen incident is active."
+                : $"Workflow was reopened after close package close-package-fund-alpha-2026-06; 1 incident evidence link is retained and the period must be locked again after remediation.",
+            UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityById, "workflowId", workflowId.ToString("D")),
+            isReady ? 2 : 1,
+            2,
+            isReady ? 1 : 2,
+            isReady
+                ? [Evidence("period-lock-evidence", "Period lock evidence", "/evidence/period-lock")]
+                :
+                [
+                    Evidence("reopen-incident", "Governed reopen incident", "/evidence/reopen-incident"),
+                    Evidence("close-package", "Close package", "/operations-continuity/close-package/manifest-fund-alpha-2026-06")
+                ],
+            isReady ? [] : ["Complete reopened incident remediation and close the period again with retained evidence."]);
+
+    private static IReadOnlyList<OperationsCloseChecklistTaskDto> CloseControlChecklist(
+        DateTimeOffset now,
+        bool includeEvidence)
+    {
+        var dueDate = new DateOnly(2026, 6, 30);
+        return
+        [
+            CloseControlTask(
+                "close-control-reversal-approval",
+                "Reversal approval close control",
+                "Approved reversal journal support",
+                "reversal-approval-evidence",
+                "/evidence/reversal-approval",
+                now,
+                dueDate,
+                includeEvidence),
+            CloseControlTask(
+                "close-control-recurring-journals",
+                "Recurring journal completion close control",
+                "Recurring journal and accrual completion evidence",
+                "recurring-journals-evidence",
+                "/evidence/recurring-journals",
+                now,
+                dueDate,
+                includeEvidence),
+            CloseControlTask(
+                "close-control-stale-marks",
+                "Stale mark resolution close control",
+                "Stale mark and pricing freshness resolution evidence",
+                "stale-marks-evidence",
+                "/evidence/stale-marks",
+                now,
+                dueDate,
+                includeEvidence),
+            CloseControlTask(
+                "close-control-period-lock",
+                "Period lock and reopen close control",
+                "Period lock or governed reopen evidence",
+                "period-lock-evidence",
+                "/evidence/period-lock",
+                now,
+                dueDate,
+                includeEvidence)
+        ];
+    }
+
+    private static OperationsCloseChecklistTaskDto CloseControlTask(
+        string taskId,
+        string label,
+        string requiredEvidence,
+        string evidencePointer,
+        string route,
+        DateTimeOffset now,
+        DateOnly dueDate,
+        bool includeEvidence)
+        => new(
+            taskId,
+            OperationsGateKeyDto.Approval,
+            label,
+            "controller",
+            requiredEvidence,
+            RequiredApprovalCount: 1,
+            ExpiresOn: dueDate.AddDays(2),
+            DueDate: dueDate,
+            Status: "Complete",
+            BlockingReason: null,
+            EvidencePointer: includeEvidence ? evidencePointer : null,
+            RemediationRoute: route,
+            CanAcknowledge: false,
+            AcknowledgedAtUtc: now.AddMinutes(-20),
+            AcknowledgedBy: "controller");
+
+    private static IReadOnlyList<OperationsChecklistControlApprovalDto> CloseControlApprovals(DateTimeOffset now)
+        =>
+        [
+            new("close-gate-approval", "controller", now.AddMinutes(-5)),
+            new("close-control-reversal-approval", "controller", now.AddMinutes(-4)),
+            new("close-control-recurring-journals", "controller", now.AddMinutes(-3)),
+            new("close-control-stale-marks", "controller", now.AddMinutes(-2)),
+            new("close-control-period-lock", "controller", now.AddMinutes(-1))
+        ];
 
     private static PrivateCapitalActivityProjectionDto BuildActivity(
         bool includeExpenseFeeAllocationEvidence = true,
         decimal? partnerTieOutEndingNetActivity = null,
         bool includeAdministratorNavEvidence = true,
-        decimal? administratorNav = null)
+        decimal? administratorNav = null,
+        bool includeIncompleteJournal = false,
+        bool includeUnapprovedStatement = false)
     {
         var ledgerBookId = Guid.Parse("33333333-3333-3333-3333-333333333333");
         var now = new DateTimeOffset(2026, 6, 30, 17, 0, 0, TimeSpan.Zero);
@@ -617,7 +975,7 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
             fundEvent.FundEventType,
             fundEvent.CapitalAccountId,
             fundEvent.InvestorId,
-            ManualJournalEntryStatusDto.Approved,
+            includeUnapprovedStatement ? ManualJournalEntryStatusDto.Submitted : ManualJournalEntryStatusDto.Approved,
             fundEvent.EffectiveDate,
             fundEvent.Currency,
             250m,
@@ -765,20 +1123,22 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
             "/api/workstation/evidence/subjects/private-capital-fund-event/fund-event%3Afund-alpha%3Amanagement-fee%3A20260630/packet",
             managementFeeEvent.ApprovalId,
             "/workstation/approvals/approval:fund-alpha:management-fee",
-            true,
-            true,
+            !includeIncompleteJournal,
+            !includeIncompleteJournal,
             false,
             false,
             PrivateCapitalFundEventLedgerReadinessDto.Ready,
-            "Ready",
-            includeExpenseFeeAllocationEvidence
+            includeIncompleteJournal ? "Review required" : "Ready",
+            includeIncompleteJournal
+                ? "Management fee journal still needs posted ledger impact."
+                : includeExpenseFeeAllocationEvidence
                 ? "Management fee allocation support retained."
                 : "Management fee allocation support is missing.",
             "Open management fee evidence",
             includeExpenseFeeAllocationEvidence ? "/evidence/management-fee" : null,
             feeEvidenceLinks.Count,
             1,
-            1,
+            includeIncompleteJournal ? 0 : 1,
             0,
             0,
             null,

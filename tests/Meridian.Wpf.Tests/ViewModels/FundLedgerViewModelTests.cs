@@ -10,10 +10,12 @@ using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Reporting;
+using Meridian.Storage.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
@@ -764,11 +766,23 @@ public sealed class FundLedgerViewModelTests
         xaml.Should().Contain("FundReportPackReadinessSignifier");
         xaml.Should().Contain("ReportPackReadinessState");
         xaml.Should().Contain("FundPrivateCapitalCloseReadinessSignifier");
+        xaml.Should().Contain("FundReviewedAutomationSignifier");
+        xaml.Should().Contain("FundFinancialOperationsOperatorQueueGrid");
+        xaml.Should().Contain("FundOperationsEvidencePackageGrid");
+        xaml.Should().Contain("FundOperationsReconciliationLaneGrid");
         xaml.Should().Contain("FundPrivateCapitalCloseLaneGrid");
+        xaml.Should().Contain("FundPrivateCapitalEvidencePackageGrid");
         xaml.Should().Contain("FundPrivateCapitalNavSupportGrid");
         xaml.Should().Contain("FundPrivateCapitalCloseApprovalGrid");
         xaml.Should().Contain("PrivateCapitalCloseReadinessState");
+        xaml.Should().Contain("ReviewedAutomationState");
+        xaml.Should().Contain("Financial Operations Operator Queue");
+        xaml.Should().Contain("Text=\"{Binding FinancialOperationsQueueSummaryText}\"");
+        xaml.Should().Contain("ItemsSource=\"{Binding FinancialOperationsQueueItems}\"");
+        xaml.Should().Contain("ItemsSource=\"{Binding OperationsEvidencePackages}\"");
+        xaml.Should().Contain("ItemsSource=\"{Binding OperationsReconciliationLanes}\"");
         xaml.Should().Contain("ItemsSource=\"{Binding PrivateCapitalCloseLanes}\"");
+        xaml.Should().Contain("ItemsSource=\"{Binding PrivateCapitalEvidencePackages}\"");
         xaml.Should().Contain("ItemsSource=\"{Binding PrivateCapitalNavSupportPackages}\"");
         xaml.Should().Contain("ItemsSource=\"{Binding PrivateCapitalCloseApprovals}\"");
     }
@@ -923,6 +937,8 @@ public sealed class FundLedgerViewModelTests
         xaml.Should().Contain("StatementRuns");
         xaml.Should().Contain("StatementValidationIssues");
         xaml.Should().Contain("StatementUnresolvedBreaks");
+        xaml.Should().Contain("Header=\"SLA\"");
+        xaml.Should().Contain("Binding=\"{Binding SlaLabel}\"");
         xaml.Should().Contain("StatementCaseActions");
         xaml.Should().Contain("SelectedStatementRun");
         xaml.Should().Contain("SelectedStatementBreak");
@@ -937,6 +953,7 @@ public sealed class FundLedgerViewModelTests
         var sectionSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.Sections.cs"));
         var viewModelSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\ViewModels\FundLedgerViewModel.StatementReconciliation.cs"));
         var serviceSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Services\StatementReconciliationWorkbenchService.cs"));
+        var modelSource = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Models\StatementReconciliationWorkbenchModels.cs"));
 
         sectionSource.Should().Contain("public ObservableCollection<StatementRunWorkbenchRow> StatementRuns");
         sectionSource.Should().Contain("public ObservableCollection<StatementValidationIssueRow> StatementValidationIssues");
@@ -948,6 +965,11 @@ public sealed class FundLedgerViewModelTests
         viewModelSource.Should().Contain("RefreshStatementReconciliationCommand");
         viewModelSource.Should().Contain("BuildCaseActionRows");
         viewModelSource.Should().Contain("BuildStatementBreakSignifier");
+        viewModelSource.Should().Contain("BuildStatementBreakSlaLabel");
+        viewModelSource.Should().Contain("Statement break escalation");
+        modelSource.Should().Contain("string SlaLabel");
+        modelSource.Should().Contain("string EscalationLabel");
+        modelSource.Should().Contain("string EscalationReason");
         serviceSource.Should().Contain("GetStatementRunsAsync");
         serviceSource.Should().Contain("GetStatementExceptionsAsync");
         serviceSource.Should().Contain("GetOpenStatementBreaksAsync");
@@ -969,11 +991,17 @@ public sealed class FundLedgerViewModelTests
         sectionSource.Should().Contain("public string ReportPackOwnershipText");
         sectionSource.Should().Contain("public WorkstationStateModel ReportPackReadinessState");
         sectionSource.Should().Contain("public ObservableCollection<FundAccountingRecordEvidenceCategoryRow> AccountingRecordEvidenceCategories");
+        sectionSource.Should().Contain("public ObservableCollection<FundOperationsEvidencePackageRow> OperationsEvidencePackages");
+        sectionSource.Should().Contain("public ObservableCollection<FundOperationsReconciliationLaneRow> OperationsReconciliationLanes");
+        sectionSource.Should().Contain("public ObservableCollection<FundFinancialOperationsQueueRow> FinancialOperationsQueueItems");
         sectionSource.Should().Contain("public ObservableCollection<FundPrivateCapitalCloseLaneRow> PrivateCapitalCloseLanes");
+        sectionSource.Should().Contain("public ObservableCollection<FundPrivateCapitalEvidencePackageRow> PrivateCapitalEvidencePackages");
         sectionSource.Should().Contain("public ObservableCollection<FundPrivateCapitalNavSupportPackageRow> PrivateCapitalNavSupportPackages");
         sectionSource.Should().Contain("public ObservableCollection<FundPrivateCapitalCloseApprovalRow> PrivateCapitalCloseApprovals");
         sectionSource.Should().Contain("public string AccountingRecordSummaryText");
+        sectionSource.Should().Contain("public string FinancialOperationsQueueSummaryText");
         sectionSource.Should().Contain("public WorkstationStateModel AccountingRecordReadinessState");
+        sectionSource.Should().Contain("public WorkstationStateModel ReviewedAutomationState");
         sectionSource.Should().Contain("public string PrivateCapitalCloseSummaryText");
         sectionSource.Should().Contain("public WorkstationStateModel PrivateCapitalCloseReadinessState");
         sectionSource.Should().Contain("public int SelectedTabIndex");
@@ -982,10 +1010,14 @@ public sealed class FundLedgerViewModelTests
         viewModelSource.Should().Contain("get => WorkbenchSection.RouteBannerTitleText");
         viewModelSource.Should().Contain("get => WorkbenchSection.ReportPackReadinessState");
         viewModelSource.Should().Contain("get => WorkbenchSection.AccountingRecordReadinessState");
+        viewModelSource.Should().Contain("get => WorkbenchSection.ReviewedAutomationState");
+        viewModelSource.Should().Contain("get => WorkbenchSection.FinancialOperationsQueueSummaryText");
         viewModelSource.Should().Contain("get => WorkbenchSection.PrivateCapitalCloseReadinessState");
         viewModelSource.Should().Contain("IPrivateCapitalCloseCockpitService?");
         viewModelSource.Should().Contain("LoadPrivateCapitalCloseCockpitAsync");
         viewModelSource.Should().Contain("ApplyPrivateCapitalCloseCockpit");
+        viewModelSource.Should().Contain("BuildReviewedAutomationState");
+        viewModelSource.Should().Contain("UpdateFinancialOperationsQueuePresentation");
         viewModelSource.Should().Contain("get => WorkbenchSection.SelectedTabIndex");
         viewModelSource.Should().NotContain("private string _currentWorkbenchModeText");
         viewModelSource.Should().NotContain("private string _routeBannerTitleText");
@@ -994,6 +1026,7 @@ public sealed class FundLedgerViewModelTests
         viewModelSource.Should().NotContain("private string _reportPackOwnershipText");
         viewModelSource.Should().NotContain("private WorkstationStateModel _reportPackReadinessState");
         viewModelSource.Should().NotContain("private WorkstationStateModel _accountingRecordReadinessState");
+        viewModelSource.Should().NotContain("private WorkstationStateModel _reviewedAutomationState");
         viewModelSource.Should().NotContain("private WorkstationStateModel _privateCapitalCloseReadinessState");
         viewModelSource.Should().NotContain("private int _selectedTabIndex");
     }
@@ -1078,9 +1111,81 @@ public sealed class FundLedgerViewModelTests
                 var imported = await operationsContinuityService.ImportBrokerDataAsync(
                     start.Workflow!.WorkflowId,
                     new OperationsTransitionRequestDto(start.Workflow.Version, "wpf-test", EvidenceLinks: [evidence]));
-                await operationsContinuityService.NormalizeBrokerTransactionsAsync(
+                var normalized = await operationsContinuityService.NormalizeBrokerTransactionsAsync(
                     start.Workflow.WorkflowId,
                     new OperationsTransitionRequestDto(imported.Workflow!.Version, "wpf-test", EvidenceLinks: [evidence]));
+                var security = await operationsContinuityService.ResolveSecurityMasterMappingsAsync(
+                    start.Workflow.WorkflowId,
+                    new OperationsSecurityMasterResolveRequestDto(normalized.Workflow!.Version, "wpf-test", EvidenceLinks: [evidence]));
+                var draft = await operationsContinuityService.BuildLedgerDraftAsync(
+                    start.Workflow.WorkflowId,
+                    new OperationsLedgerDraftRequestDto(
+                        security.Workflow!.Version,
+                        "wpf-test",
+                        PreviewId: "wpf-ledger-preview",
+                        IsBalanced: true,
+                        EvidenceLinks: [evidence]));
+                var validated = await operationsContinuityService.ValidateLedgerDraftAsync(
+                    start.Workflow.WorkflowId,
+                    new OperationsLedgerValidationRequestDto(
+                        draft.Workflow!.Version,
+                        "wpf-test",
+                        IsBalanced: true,
+                        PeriodOpen: true,
+                        EvidenceLinks: [evidence]));
+                var posted = await operationsContinuityService.PostLedgerEntriesAsync(
+                    start.Workflow.WorkflowId,
+                    new OperationsLedgerPostRequestDto(
+                        validated.Workflow!.Version,
+                        "wpf-test",
+                        LedgerBatchId: "wpf-ledger-batch",
+                        PostingKind: "period-close",
+                        PeriodOpen: true,
+                        EvidenceLinks: [evidence],
+                        JournalCandidate: CreateOperationsContinuityJournalCandidate(accountId)));
+                posted.Success.Should().BeTrue();
+                var reconciled = await operationsContinuityService.RunReconciliationAsync(
+                    start.Workflow.WorkflowId,
+                    new OperationsReconciliationRunRequestDto(
+                        posted.Workflow!.Version,
+                        "wpf-test",
+                        "Retained source-backed Financial Operations lane coverage for WPF.",
+                        BreakCases:
+                        [
+                            new OperationsBreakCaseDto(
+                                "break-wpf-mbs-factor",
+                                "mbs-factor-check",
+                                "MbsFactor",
+                                "Warning",
+                                "InReview",
+                                "fund-controller",
+                                new DateOnly(2026, 5, 9),
+                                "custodian",
+                                "ledger",
+                                125_000m,
+                                124_500m,
+                                -500m,
+                                null,
+                                "MBS",
+                                "Resolve factor variance and retain custodian factor evidence.",
+                                [evidence],
+                                new OperationsContinuityCorrelationKeysDto(
+                                    RunId: "run-report-pack",
+                                    FundAccountId: accountId,
+                                    LedgerBatchId: "wpf-ledger-batch",
+                                    ReconciliationCaseId: "case-wpf-mbs-factor"),
+                                EscalationLevel: "Level 2",
+                                EscalationReason: "Aged MBS factor variance",
+                                SlaState: "Warning",
+                                SlaDueAtUtc: new DateTimeOffset(2026, 5, 9, 16, 0, 0, TimeSpan.Zero),
+                                Materiality: 500m,
+                                RootCauseCode: "FactorTiming",
+                                ApprovalState: "ReadyForSignoff",
+                                BlockedOutputs: ["Report-pack release", "Close sign-off"])
+                        ],
+                        EvidenceLinks: [evidence]));
+                reconciled.Success.Should().BeTrue();
+                reconciled.Workflow!.ReconciliationLanes.Should().HaveCount(7);
 
                 var portfolioReadService = new PortfolioReadService();
                 var runReadService = new StrategyRunReadService(store, portfolioReadService, new LedgerReadService());
@@ -1163,10 +1268,17 @@ public sealed class FundLedgerViewModelTests
                 viewModel.AccountingRecordEvidenceCategories.Should().Contain(row =>
                     row.Key == "source-records" &&
                     row.Label == "Retained source data" &&
-                    !row.IsComplete &&
+                    row.IsComplete &&
+                    row.StatusLabel == "Complete" &&
                     row.SourceTarget == "OperationsContinuity" &&
                     row.EvidenceSubject.StartsWith("accounting-record/accounting-record-", StringComparison.Ordinal) &&
                     row.EvidenceSubjectTarget == $"EvidenceWorkbench:{row.EvidenceSubject}");
+                viewModel.AccountingRecordEvidenceCategories.Should().Contain(row =>
+                    row.Key == "ledger-evidence" &&
+                    row.Label == "Journal and ledger evidence" &&
+                    row.IsComplete &&
+                    row.EvidenceLabel == "1 evidence link" &&
+                    row.SourceTarget == "OperationsContinuity");
                 viewModel.AccountingRecordEvidenceCategories.Should().Contain(row =>
                     row.Key == "exports" &&
                     row.StatusLabel == "Review required" &&
@@ -1174,23 +1286,127 @@ public sealed class FundLedgerViewModelTests
                     row.RequiredEvidenceLabel.Contains("retained evidence hash", StringComparison.OrdinalIgnoreCase) &&
                     row.SourceTarget == "FundReportPack");
                 viewModel.AccountingRecordStatusText.Should().Be("Review required");
-                viewModel.AccountingRecordEvidenceText.Should().Contain("0/8 evidence categories complete");
+                viewModel.AccountingRecordEvidenceText.Should().Contain("3/8 evidence categories complete");
                 viewModel.AccountingRecordEvidenceText.Should().Contain("60s target");
                 viewModel.AccountingRecordReadinessState.Title.Should().Be("Accounting record review required");
                 viewModel.AccountingRecordReadinessState.TargetText.Should().Be("OperationsContinuity");
-                viewModel.AccountingRecordReadinessState.Detail.Should().Contain("0 of 8 required evidence categories complete");
+                viewModel.AccountingRecordReadinessState.Detail.Should().Contain("3 of 8 required evidence categories complete");
                 viewModel.AccountingRecordReadinessState.VisibleEvidenceLinks.Should().Contain(link =>
                     link.Label == "Retained source data" &&
                     link.Target == "OperationsContinuity" &&
                     link.Source.StartsWith("accounting-record/accounting-record-", StringComparison.Ordinal));
+                viewModel.ReviewedAutomationState.Title.Should().Contain("Reviewed automation");
+                viewModel.ReviewedAutomationState.TargetText.Should().Be("OperationsContinuity");
+                viewModel.ReviewedAutomationState.Detail.Should().Contain("Allowed:");
+                viewModel.ReviewedAutomationState.Detail.Should().Contain("Prohibited:");
+                viewModel.ReviewedAutomationState.ActionPosture!.Owner.Should().Be("Accounting operator");
+                viewModel.ReviewedAutomationState.SignoffRequirement!.Detail.Should().Contain("human operator origin");
+                viewModel.OperationsReconciliationLanes.Should().HaveCount(7);
+                viewModel.OperationsReconciliationLanes.Select(row => row.LaneId).Should().BeEquivalentTo(
+                    [
+                        "cash-reconciliation",
+                        "position-reconciliation",
+                        "trade-reconciliation",
+                        "income-reconciliation",
+                        "mbs-factor-reconciliation",
+                        "bank-reconciliation",
+                        "gl-reconciliation"
+                    ]);
+                viewModel.OperationsReconciliationLanes.Should().Contain(row =>
+                    row.LaneId == "mbs-factor-reconciliation" &&
+                    row.Label == "MBS factor reconciliation" &&
+                    row.StatusLabel == "Review Required" &&
+                    row.BreaksLabel == "1 open break" &&
+                    row.EvidenceLabel == "1 evidence link" &&
+                    row.RequiredActionsLabel.Contains("Resolve or assign", StringComparison.OrdinalIgnoreCase) &&
+                    row.SourceTarget == "FundReconciliation" &&
+                    row.EvidenceSubject == "operations-reconciliation-lane/mbs-factor-reconciliation" &&
+                    row.EvidenceSubjectTarget == $"EvidenceWorkbench:{row.EvidenceSubject}");
+                viewModel.OperationsReconciliationLanes.Should().Contain(row =>
+                    row.LaneId == "bank-reconciliation" &&
+                    row.Label == "Bank reconciliation" &&
+                    row.StatusLabel == "Ready");
+                viewModel.OperationsReconciliationLanes.Should().Contain(row =>
+                    row.LaneId == "gl-reconciliation" &&
+                    row.Label == "GL reconciliation support" &&
+                    row.SourceTarget == "FundLedger");
+                viewModel.OperationsEvidencePackages.Should().HaveCount(5);
+                viewModel.OperationsEvidencePackages.Should().Contain(row =>
+                    row.PackageId.StartsWith("accounting-record-", StringComparison.Ordinal) &&
+                    row.Label == "Accounting record evidence" &&
+                    row.SourceTarget == "OperationsContinuity" &&
+                    row.EvidenceSubject.StartsWith("operations-evidence-package/accounting-record-", StringComparison.Ordinal) &&
+                    row.EvidenceSubjectTarget == $"EvidenceWorkbench:{row.EvidenceSubject}");
+                viewModel.OperationsEvidencePackages.Should().Contain(row =>
+                    row.PackageId.StartsWith("period-lock-reopen:", StringComparison.Ordinal) &&
+                    row.Label == "Period lock and reopen evidence" &&
+                    row.StatusLabel == "Missing" &&
+                    row.CategoryLabel == "1/2 categories complete" &&
+                    row.RequiredActionsLabel.Contains("Close the workflow", StringComparison.OrdinalIgnoreCase) &&
+                    row.SourceTarget == "OperationsContinuity");
+                viewModel.FinancialOperationsQueueStatusText.Should().Contain("active item");
+                viewModel.FinancialOperationsQueueSummaryText.Should().Contain("blocked");
+                viewModel.FinancialOperationsQueueSummaryText.Should().Contain("private-capital close");
+                viewModel.FinancialOperationsQueueItems.Should().Contain(row =>
+                    row.KindLabel == "Break" &&
+                    row.QueueId == "break:break-wpf-mbs-factor" &&
+                    row.StatusLabel == "In Review" &&
+                    row.OwnerLabel == "fund-controller" &&
+                    row.TimingLabel.Contains("SLA Warning", StringComparison.OrdinalIgnoreCase) &&
+                    row.ActionLabel.Contains("Resolve factor variance", StringComparison.OrdinalIgnoreCase) &&
+                    row.SourceTarget == "OperationsContinuity" &&
+                    row.IsBlocked);
+                viewModel.FinancialOperationsQueueItems.Should().Contain(row =>
+                    row.KindLabel == "Checklist" &&
+                    row.Label.Contains("Reconciliation", StringComparison.OrdinalIgnoreCase) &&
+                    row.ActionLabel.Contains("Complete checklist evidence", StringComparison.OrdinalIgnoreCase) &&
+                    row.SourceTarget == "OperationsContinuity" &&
+                    !row.IsBlocked);
+                viewModel.FinancialOperationsQueueItems.Should().Contain(row =>
+                    row.KindLabel == "Reconciliation" &&
+                    row.Label == "MBS factor reconciliation" &&
+                    row.StatusLabel == "Review Required" &&
+                    row.TimingLabel == "1 open break" &&
+                    row.SourceTarget == "FundReconciliation");
+                viewModel.FinancialOperationsQueueItems.Should().Contain(row =>
+                    row.KindLabel == "Evidence package" &&
+                    row.Label == "Period lock and reopen evidence" &&
+                    row.StatusLabel == "Missing" &&
+                    row.SourceTarget == "OperationsContinuity" &&
+                    row.IsBlocked);
+                viewModel.FinancialOperationsQueueItems.Should().Contain(row =>
+                    row.KindLabel == "Private-capital close" &&
+                    row.Label == "Partner capital tie-out" &&
+                    row.StatusLabel == "Review Required" &&
+                    row.ActionLabel.Contains("Approve partner capital tie-out", StringComparison.OrdinalIgnoreCase) &&
+                    row.SourceTarget == "OperationsClose");
+                viewModel.FinancialOperationsQueueItems.Should().Contain(row =>
+                    row.KindLabel == "Private-capital package" &&
+                    row.Label == "Partner capital tie-out evidence package" &&
+                    row.SourceTarget == "OperationsClose");
+                viewModel.FinancialOperationsQueueItems.Should().Contain(row =>
+                    row.KindLabel == "Private-capital approval" &&
+                    row.Label == "approval-close-alpha-pending" &&
+                    row.StatusLabel == "Reviewer Assigned" &&
+                    row.OwnerLabel == "Reviewer controller" &&
+                    row.ActionLabel.Contains("Complete private-capital approval", StringComparison.OrdinalIgnoreCase) &&
+                    row.SourceTarget == "OperationsClose");
                 closeCockpitService.RequestedFundProfileId.Should().Be("alpha-fund");
                 viewModel.PrivateCapitalCloseStatusText.Should().Be("Review Required");
                 viewModel.PrivateCapitalCloseSummaryText.Should().Contain("1/2 close lanes ready");
-                viewModel.PrivateCapitalCloseEvidenceText.Should().Contain("4 evidence links");
+                viewModel.PrivateCapitalCloseSummaryText.Should().Contain("2 evidence package(s)");
+                viewModel.PrivateCapitalCloseEvidenceText.Should().Contain("7 evidence links");
                 viewModel.PrivateCapitalCloseBlockerText.Should().Contain("Controller approval required");
                 viewModel.PrivateCapitalCloseLanes.Should().Contain(row =>
                     row.LaneId == "partner-capital-tie-out" &&
                     row.StatusLabel == "Review Required" &&
+                    row.RequiredActionsLabel.Contains("Approve partner capital tie-out", StringComparison.OrdinalIgnoreCase) &&
+                    row.SourceTarget == "OperationsClose");
+                viewModel.PrivateCapitalEvidencePackages.Should().Contain(row =>
+                    row.PackageId == "private-capital:partner-capital-tie-out" &&
+                    row.StatusLabel == "Review Required" &&
+                    row.CategoryLabel == "2/3 categories complete" &&
+                    row.EvidenceLabel == "1 evidence link" &&
                     row.RequiredActionsLabel.Contains("Approve partner capital tie-out", StringComparison.OrdinalIgnoreCase) &&
                     row.SourceTarget == "OperationsClose");
                 viewModel.PrivateCapitalNavSupportPackages.Should().ContainSingle(row =>
@@ -1198,13 +1414,22 @@ public sealed class FundLedgerViewModelTests
                     row.StatusLabel == "Ready" &&
                     row.ShadowNavLabel.Contains("USD", StringComparison.OrdinalIgnoreCase) &&
                     row.ComponentLabel == "1/1 components ready");
-                viewModel.PrivateCapitalCloseApprovals.Should().ContainSingle(row =>
+                viewModel.PrivateCapitalCloseApprovals.Should().Contain(row =>
                     row.ApprovalId == "approval-close-alpha" &&
                     row.StatusLabel == "Approved" &&
                     row.ReviewerLabel == "controller" &&
                     row.EvidenceLabel == "1 evidence link");
+                viewModel.PrivateCapitalCloseApprovals.Should().Contain(row =>
+                    row.ApprovalId == "approval-close-alpha-pending" &&
+                    row.StatusLabel == "ReviewerAssigned" &&
+                    row.ReviewerLabel == "controller" &&
+                    row.EvidenceLabel == "1 evidence link");
                 viewModel.PrivateCapitalCloseReadinessState.Title.Should().Be("Private-capital close review required");
                 viewModel.PrivateCapitalCloseReadinessState.ActionPosture!.Target.Should().Be("OperationsClose");
+                viewModel.PrivateCapitalCloseReadinessState.VisibleEvidenceLinks.Should().Contain(link =>
+                    link.Label == "Partner capital tie-out evidence package" &&
+                    link.Target == "OperationsClose" &&
+                    link.Source == "private-capital:partner-capital-tie-out");
                 viewModel.PrivateCapitalCloseReadinessState.VisibleEvidenceLinks.Should().Contain(link =>
                     link.Label == "NAV support package" &&
                     link.Target == "FundReportPack");
@@ -1395,7 +1620,125 @@ public sealed class FundLedgerViewModelTests
         return new OperationsContinuityWorkflowService(
             new InMemoryOperationsContinuityRepository(derivation),
             new InMemoryOperationsWorkflowAuditStore(),
-            derivation);
+            derivation,
+            new RecordingLedgerJournalStore());
+    }
+
+    private static OperationsLedgerJournalCandidateDto CreateOperationsContinuityJournalCandidate(Guid aggregateId)
+    {
+        var securityId = Guid.Parse("27F62228-5183-4C2D-95A3-8619BC93F15E");
+        var idempotencyKey = $"{securityId:N}:fund-close:20260531:AccrueInterestIncome:wpf-test-source-hash";
+        return new OperationsLedgerJournalCandidateDto(
+            JournalEntryId: null,
+            AggregateId: aggregateId,
+            PeriodId: Guid.Parse("55555555-6666-7777-8888-999999999999"),
+            Timestamp: DateTimeOffset.Parse("2026-05-31T21:00:00Z"),
+            Description: "WPF Operations Continuity month-end posting",
+            Lines:
+            [
+                new OperationsLedgerJournalLineDto(
+                    EntryId: null,
+                    AccountName: "Cash",
+                    AccountType: nameof(LedgerAccountType.Asset),
+                    Debit: 100m,
+                    Credit: 0m),
+                new OperationsLedgerJournalLineDto(
+                    EntryId: null,
+                    AccountName: "Interest income",
+                    AccountType: nameof(LedgerAccountType.Revenue),
+                    Debit: 0m,
+                    Credit: 100m)
+            ],
+            CommandId: Guid.NewGuid(),
+            SourceEventId: Guid.NewGuid(),
+            AccountingBasis: AccountingBasisKindDto.Primary,
+            AccountingPolicyId: "legacy-v1",
+            AccountingPolicyVersion: "legacy-v1",
+            RuleId: "operations-continuity-wpf-accrual",
+            RuleVersion: "v1",
+            PostingKind: LedgerPostingKindDto.Originating,
+            Metadata: new OperationsJournalEntryMetadataDto(
+                ActivityType: "operations-continuity",
+                Symbol: "OPS",
+                SecurityId: securityId,
+                LedgerBook: "fund-close"),
+            IdempotencyKey: idempotencyKey,
+            SecurityMasterProvenance: $"security-master:{securityId:N};snapshot:wpf-test-source-hash");
+    }
+
+    private sealed class RecordingLedgerJournalStore : ILedgerJournalStore
+    {
+        public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (!entry.Entry.IsBalanced)
+            {
+                throw new LedgerValidationException("Journal entry must be balanced.");
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>([]);
+        }
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>([]);
+        }
+
+        public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<LedgerAccountingPeriod?>(null);
+        }
+
+        public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
+            Guid? ledgerBookId = null,
+            string? status = null,
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>([]);
+        }
+
+        public Task<LedgerAccountingPeriod> SavePeriodAsync(
+            LedgerAccountingPeriod period,
+            long expectedVersion,
+            PeriodCloseEventRecord? closeEvent = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(period);
+        }
+
+        public Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<LedgerBookRecord?>(null);
+        }
+
+        public Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            FundStructureNodeKindDto? fundStructureNodeKind = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerBookRecord>>([]);
+        }
+
+        public Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(book);
+        }
     }
 
     private static PrivateCapitalCloseCockpitDto BuildPrivateCapitalCloseCockpit()
@@ -1405,6 +1748,9 @@ public sealed class FundLedgerViewModelTests
         var projectedAt = new DateTimeOffset(2026, 6, 30, 21, 0, 0, TimeSpan.Zero);
         var navEvidence = CloseEvidence("shadow-nav-pack", "Shadow NAV support package", "/evidence/shadow-nav-pack");
         var approvalEvidence = CloseEvidence("approval-close", "Approval close evidence", "/evidence/approval-close");
+        var pendingApprovalEvidence = CloseEvidence("approval-close-pending", "Pending approval evidence", "/evidence/approval-close-pending");
+        var fundEventEvidence = CloseEvidence("fund-event-accounting-package", "Fund-event accounting package", "/evidence/fund-event-accounting-package");
+        var partnerCapitalEvidence = CloseEvidence("partner-capital-tie-out-package", "Partner capital tie-out evidence package", "/evidence/partner-capital-tie-out-package");
 
         return new PrivateCapitalCloseCockpitDto(
             FundProfileId: "alpha-fund",
@@ -1497,7 +1843,21 @@ public sealed class FundLedgerViewModelTests
                     projectedAt.AddMinutes(-10),
                     "OperationsClose",
                     1,
-                    [approvalEvidence])
+                    [approvalEvidence]),
+                new PrivateCapitalCloseCockpitApprovalDto(
+                    "approval-close-alpha-pending",
+                    workflowId,
+                    fundAccountId,
+                    "2026-06",
+                    OperationsApprovalStateDto.ReviewerAssigned,
+                    "fund-ops",
+                    "controller",
+                    "Controller review is still pending for the partner capital tie-out.",
+                    projectedAt.AddMinutes(-5),
+                    null,
+                    "OperationsClose",
+                    1,
+                    [pendingApprovalEvidence])
             ],
             NavSupportPackages:
             [
@@ -1513,6 +1873,32 @@ public sealed class FundLedgerViewModelTests
                     1,
                     [navEvidence],
                     [new PrivateCapitalNavSupportComponentDto("positions", "Positions", EvidenceStatusDto.Ready, true, "Positions retained.", "OperationsClose", 100)])
+            ],
+            EvidencePackages:
+            [
+                new OperationsEvidencePackageSummaryDto(
+                    "private-capital:fund-event-accounting",
+                    "Fund-event accounting evidence package",
+                    EvidenceStatusDto.Ready,
+                    true,
+                    "Fund-event accounting entries are retained with source ledger proof.",
+                    "OperationsClose",
+                    3,
+                    3,
+                    1,
+                    [fundEventEvidence]),
+                new OperationsEvidencePackageSummaryDto(
+                    "private-capital:partner-capital-tie-out",
+                    "Partner capital tie-out evidence package",
+                    EvidenceStatusDto.ReviewRequired,
+                    false,
+                    "Partner capital tie-out package needs controller approval before close sign-off.",
+                    "OperationsClose",
+                    2,
+                    3,
+                    1,
+                    [partnerCapitalEvidence],
+                    ["Approve partner capital tie-out"])
             ]);
     }
 

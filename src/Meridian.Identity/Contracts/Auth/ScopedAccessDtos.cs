@@ -41,7 +41,10 @@ public sealed record UserAccessAssignmentDto(
     string? RevokedBy = null,
     DateTimeOffset? RevokedAtUtc = null,
     string? RevocationReason = null,
-    string? LastAuditId = null);
+    string? LastAuditId = null,
+    decimal? ApprovalLimitAmount = null,
+    string? ApprovalLimitCurrency = null,
+    string? SegregationOfDutiesRule = null);
 
 public sealed record UserAccessAssignmentCreateRequestDto(
     string PrincipalId,
@@ -55,6 +58,9 @@ public sealed record UserAccessAssignmentCreateRequestDto(
     DateTimeOffset? EffectiveTo,
     string RequestedBy,
     string Rationale,
+    decimal? ApprovalLimitAmount = null,
+    string? ApprovalLimitCurrency = null,
+    string? SegregationOfDutiesRule = null,
     string? CorrelationId = null);
 
 public sealed record UserAccessAssignmentRevokeRequestDto(
@@ -88,7 +94,10 @@ public sealed record UserAccessAssignmentAuditEventDto(
     Guid? ScopeId,
     IReadOnlyList<string> PermissionNames,
     long PermissionMask,
-    long Version);
+    long Version,
+    decimal? ApprovalLimitAmount = null,
+    string? ApprovalLimitCurrency = null,
+    string? SegregationOfDutiesRule = null);
 
 public sealed record ScopedAuthorizationDecisionDto(
     bool IsAllowed,

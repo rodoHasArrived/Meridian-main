@@ -24,6 +24,11 @@ public static partial class WorkstationEndpoints
             HttpContext context,
             [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -217,6 +222,11 @@ public static partial class WorkstationEndpoints
             HttpContext context,
             [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -257,6 +267,11 @@ public static partial class WorkstationEndpoints
             HttpContext context,
             [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -824,6 +839,11 @@ public static partial class WorkstationEndpoints
             HttpContext context,
             [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
@@ -839,6 +859,11 @@ public static partial class WorkstationEndpoints
             HttpContext context,
             [FromServices] IOperationsContinuityWorkflowService? service) =>
         {
+            if (!HasOperationsContinuityReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
             if (service is null)
             {
                 return Results.Problem("Operations continuity workflow service is not registered.", statusCode: StatusCodes.Status501NotImplemented);

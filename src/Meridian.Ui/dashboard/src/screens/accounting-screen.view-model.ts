@@ -923,6 +923,8 @@ export interface ManualJournalPaymentIntentWorkflowRowViewModel {
   statusTone: "outline" | "success" | "warning" | "danger";
   requestedLabel: string;
   expectedCashLabel: string;
+  requestMetadataLabel: string;
+  sourceEvidenceLabel: string;
   approvalLabel: string;
   bankEvidenceLabel: string;
   reconciliationLabel: string;
@@ -955,6 +957,7 @@ export interface ManualJournalPaymentIntentBankEvidenceViewModel {
   amountLabel: string;
   effectiveDateLabel: string;
   recordedLabel: string;
+  recorderLabel: string;
   referenceLabel: string;
   evidenceRouteLabel: string;
 }
@@ -3719,6 +3722,13 @@ function buildManualJournalPaymentIntentWorkflowRow(
       movement.effectiveDate,
       movement.settlementReference ?? "no settlement"
     ].join(" / "),
+    requestMetadataLabel: [
+      `payee ${movement.payee ?? "not assigned"}`,
+      `scope ${movement.accountScope ?? "not assigned"}`,
+      `purpose ${movement.businessPurpose ?? movement.purpose}`,
+      `policy ${movement.approvalPolicy ?? "not assigned"}`
+    ].join(" / "),
+    sourceEvidenceLabel: `${(movement.sourceEvidenceLinks ?? []).length.toLocaleString()} source evidence link(s)`,
     approvalLabel: `${approvedCount.toLocaleString()}/${workflow.approvalChain.length.toLocaleString()} approved`,
     bankEvidenceLabel: `${bankConfirmedCount.toLocaleString()} confirmed / ${bankRetainedCount.toLocaleString()} retained / ${bankReturnedCount.toLocaleString()} returned`,
     reconciliationLabel: `${reconciliationReadyCount.toLocaleString()}/${workflow.reconciliationLinks.length.toLocaleString()} reconciliation ready`,
@@ -3746,6 +3756,7 @@ function buildManualJournalPaymentIntentWorkflowRow(
         : "No amount",
       effectiveDateLabel: item.effectiveDate ?? "No effective date",
       recordedLabel: item.recordedAtUtc ? formatDateTimeLabel(item.recordedAtUtc) : "No recorded timestamp",
+      recorderLabel: item.recordedBy ? `Recorded by ${item.recordedBy}` : "No retained recorder",
       referenceLabel: [
         item.bankTransactionId ? `bank ${item.bankTransactionId}` : null,
         item.transactionType ?? null,

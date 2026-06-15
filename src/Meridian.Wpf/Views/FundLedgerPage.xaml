@@ -1044,6 +1044,7 @@
                                                         <DataGridTextColumn Header="Break" Binding="{Binding BreakId}" Width="150" />
                                                         <DataGridTextColumn Header="Type" Binding="{Binding BreakTypeLabel}" Width="150" />
                                                         <DataGridTextColumn Header="Owner" Binding="{Binding OwnerLabel}" Width="110" />
+                                                        <DataGridTextColumn Header="SLA" Binding="{Binding SlaLabel}" Width="145" />
                                                         <DataGridTextColumn Header="Delta" Binding="{Binding DeltaText}" Width="90" ElementStyle="{StaticResource RightAlignedCellStyle}" />
                                                         <DataGridTextColumn Header="Recommended Action" Binding="{Binding RecommendedAction}" Width="*" />
                                                     </DataGrid.Columns>
@@ -1671,11 +1672,66 @@
                                         </Border>
                                         <Border Style="{StaticResource WorkbenchMetricCardStyle}">
                                             <StackPanel>
-                                                <TextBlock Text="Evidence" Style="{StaticResource MetricLabelStyle}" />
+                                                 <TextBlock Text="Evidence" Style="{StaticResource MetricLabelStyle}" />
                                                 <TextBlock Text="{Binding AccountingRecordEvidenceText}" Style="{StaticResource MetricValueMonoStyle}" />
                                             </StackPanel>
                                         </Border>
                                     </UniformGrid>
+                                    <workstationControls:WorkstationStatePanelControl
+                                        State="{Binding ReviewedAutomationState}"
+                                        Margin="0,0,0,14"
+                                        AutomationProperties.AutomationId="FundReviewedAutomationSignifier" />
+                                    <TextBlock Text="Financial Operations Operator Queue"
+                                               Style="{StaticResource CardHeaderStyle}"
+                                               Margin="0,0,0,6" />
+                                    <TextBlock Text="{Binding FinancialOperationsQueueSummaryText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               Margin="0,0,0,12"
+                                               TextWrapping="Wrap" />
+                                    <DataGrid ItemsSource="{Binding FinancialOperationsQueueItems}"
+                                              AutoGenerateColumns="False"
+                                              IsReadOnly="True"
+                                              HeadersVisibility="Column"
+                                              BorderThickness="0"
+                                              MaxHeight="220"
+                                              EnableRowVirtualization="True"
+                                              Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                              AutomationProperties.AutomationId="FundFinancialOperationsOperatorQueueGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Kind" Binding="{Binding KindLabel}" Width="132" />
+                                            <DataGridTextColumn Header="Work Item" Binding="{Binding Label}" Width="180" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding StatusLabel}" Width="116" />
+                                            <DataGridTextColumn Header="Owner" Binding="{Binding OwnerLabel}" Width="130" />
+                                            <DataGridTextColumn Header="Due / Scope" Binding="{Binding TimingLabel}" Width="170" />
+                                            <DataGridTextColumn Header="Evidence" Binding="{Binding EvidenceLabel}" Width="130" />
+                                            <DataGridTextColumn Header="Action" Binding="{Binding ActionLabel}" Width="240" />
+                                            <DataGridTextColumn Header="Source" Binding="{Binding SourceTarget}" Width="128" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <TextBlock Text="Reconciliation Lane Coverage"
+                                               Style="{StaticResource CardHeaderStyle}"
+                                               Margin="0,16,0,12" />
+                                    <DataGrid ItemsSource="{Binding OperationsReconciliationLanes}"
+                                              AutoGenerateColumns="False"
+                                              IsReadOnly="True"
+                                              HeadersVisibility="Column"
+                                              BorderThickness="0"
+                                              MaxHeight="190"
+                                              EnableRowVirtualization="True"
+                                              Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                              AutomationProperties.AutomationId="FundOperationsReconciliationLaneGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Lane" Binding="{Binding Label}" Width="150" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding StatusLabel}" Width="112" />
+                                            <DataGridTextColumn Header="Breaks" Binding="{Binding BreaksLabel}" Width="110" />
+                                            <DataGridTextColumn Header="Evidence" Binding="{Binding EvidenceLabel}" Width="128" />
+                                            <DataGridTextColumn Header="Required Action" Binding="{Binding RequiredActionsLabel}" Width="220" />
+                                            <DataGridTextColumn Header="Source" Binding="{Binding SourceTarget}" Width="120" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <TextBlock Text="Evidence Categories"
+                                               Style="{StaticResource CardHeaderStyle}"
+                                               Margin="0,16,0,12" />
                                     <DataGrid ItemsSource="{Binding AccountingRecordEvidenceCategories}"
                                               AutoGenerateColumns="False"
                                               IsReadOnly="True"
@@ -1690,6 +1746,27 @@
                                             <DataGridTextColumn Header="Evidence" Binding="{Binding EvidenceLabel}" Width="130" />
                                             <DataGridTextColumn Header="Source" Binding="{Binding SourceTarget}" Width="120" />
                                             <DataGridTextColumn Header="Subject" Binding="{Binding EvidenceSubject}" Width="180" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                    <TextBlock Text="Evidence Packages"
+                                               Style="{StaticResource CardHeaderStyle}"
+                                               Margin="0,16,0,12" />
+                                    <DataGrid ItemsSource="{Binding OperationsEvidencePackages}"
+                                              AutoGenerateColumns="False"
+                                              IsReadOnly="True"
+                                              HeadersVisibility="Column"
+                                              BorderThickness="0"
+                                              MaxHeight="190"
+                                              EnableRowVirtualization="True"
+                                              Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                              AutomationProperties.AutomationId="FundOperationsEvidencePackageGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Package" Binding="{Binding Label}" Width="160" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding StatusLabel}" Width="112" />
+                                            <DataGridTextColumn Header="Categories" Binding="{Binding CategoryLabel}" Width="150" />
+                                            <DataGridTextColumn Header="Evidence" Binding="{Binding EvidenceLabel}" Width="128" />
+                                            <DataGridTextColumn Header="Required Action" Binding="{Binding RequiredActionsLabel}" Width="220" />
+                                            <DataGridTextColumn Header="Source" Binding="{Binding SourceTarget}" Width="120" />
                                         </DataGrid.Columns>
                                     </DataGrid>
                                 </StackPanel>
@@ -1747,6 +1824,26 @@
                                                 <DataGrid.Columns>
                                                     <DataGridTextColumn Header="Lane" Binding="{Binding Label}" Width="150" />
                                                     <DataGridTextColumn Header="Status" Binding="{Binding StatusLabel}" Width="112" />
+                                                    <DataGridTextColumn Header="Evidence" Binding="{Binding EvidenceLabel}" Width="128" />
+                                                    <DataGridTextColumn Header="Required Action" Binding="{Binding RequiredActionsLabel}" Width="220" />
+                                                    <DataGridTextColumn Header="Source" Binding="{Binding SourceTarget}" Width="120" />
+                                                </DataGrid.Columns>
+                                            </DataGrid>
+                                        </TabItem>
+                                        <TabItem Header="Evidence Packages">
+                                            <DataGrid ItemsSource="{Binding PrivateCapitalEvidencePackages}"
+                                                      AutoGenerateColumns="False"
+                                                      IsReadOnly="True"
+                                                      HeadersVisibility="Column"
+                                                      BorderThickness="0"
+                                                      MaxHeight="190"
+                                                      EnableRowVirtualization="True"
+                                                      Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                      AutomationProperties.AutomationId="FundPrivateCapitalEvidencePackageGrid">
+                                                <DataGrid.Columns>
+                                                    <DataGridTextColumn Header="Package" Binding="{Binding Label}" Width="170" />
+                                                    <DataGridTextColumn Header="Status" Binding="{Binding StatusLabel}" Width="112" />
+                                                    <DataGridTextColumn Header="Categories" Binding="{Binding CategoryLabel}" Width="150" />
                                                     <DataGridTextColumn Header="Evidence" Binding="{Binding EvidenceLabel}" Width="128" />
                                                     <DataGridTextColumn Header="Required Action" Binding="{Binding RequiredActionsLabel}" Width="220" />
                                                     <DataGridTextColumn Header="Source" Binding="{Binding SourceTarget}" Width="120" />

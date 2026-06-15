@@ -101,6 +101,70 @@ public sealed class ScopedAccessServiceTests
     }
 
     [Fact]
+    public async Task CreateAsync_GovernedAuthorityMetadata_RetainsApprovalLimitAndSegregationRule()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(CreateAsync_GovernedAuthorityMetadata_RetainsApprovalLimitAndSegregationRule));
+        var store = new FileScopedAccessAssignmentStore(Path.Combine(artifacts.RootPath, "governance", "user-access-assignments.json"));
+        var service = new ScopedAccessService(store);
+
+        var result = await service.CreateAsync(
+            new UserAccessAssignmentCreateRequestDto(
+                PrincipalId: "payment-approver",
+                PrincipalKind: AccessPrincipalKindDto.User,
+                ScopeKind: AccessScopeKindDto.Global,
+                ScopeId: null,
+                Role: nameof(UserRole.Accounting),
+                RoleProfileName: "Payment Approval",
+                PermissionNames: [nameof(UserPermission.ManageDirectLending)],
+                EffectiveFrom: DateTimeOffset.UtcNow.AddMinutes(-1),
+                EffectiveTo: null,
+                RequestedBy: "admin",
+                Rationale: "Authorize payment requests below treasury policy threshold.",
+                ApprovalLimitAmount: 100_000m,
+                ApprovalLimitCurrency: "usd",
+                SegregationOfDutiesRule: "Requester cannot approve own payment request."),
+            actor: "admin");
+
+        result.Assignment.ApprovalLimitAmount.Should().Be(100_000m);
+        result.Assignment.ApprovalLimitCurrency.Should().Be("USD");
+        result.Assignment.SegregationOfDutiesRule.Should().Be("Requester cannot approve own payment request.");
+        result.AuditEvent.ApprovalLimitAmount.Should().Be(100_000m);
+        result.AuditEvent.ApprovalLimitCurrency.Should().Be("USD");
+        result.AuditEvent.SegregationOfDutiesRule.Should().Be("Requester cannot approve own payment request.");
+
+        var reloaded = await service.QueryAsync(new UserAccessAssignmentQueryDto(PrincipalId: "payment-approver"));
+        reloaded.Should().ContainSingle()
+            .Which.SegregationOfDutiesRule.Should().Be("Requester cannot approve own payment request.");
+    }
+
+    [Fact]
+    public async Task CreateAsync_ApprovalLimitWithoutCurrency_IsRejected()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(CreateAsync_ApprovalLimitWithoutCurrency_IsRejected));
+        var store = new FileScopedAccessAssignmentStore(Path.Combine(artifacts.RootPath, "governance", "user-access-assignments.json"));
+        var service = new ScopedAccessService(store);
+
+        var act = () => service.CreateAsync(
+            new UserAccessAssignmentCreateRequestDto(
+                PrincipalId: "payment-approver",
+                PrincipalKind: AccessPrincipalKindDto.User,
+                ScopeKind: AccessScopeKindDto.Global,
+                ScopeId: null,
+                Role: nameof(UserRole.Accounting),
+                RoleProfileName: null,
+                PermissionNames: [nameof(UserPermission.ManageDirectLending)],
+                EffectiveFrom: DateTimeOffset.UtcNow.AddMinutes(-1),
+                EffectiveTo: null,
+                RequestedBy: "admin",
+                Rationale: "Invalid threshold metadata.",
+                ApprovalLimitAmount: 100_000m),
+            actor: "admin");
+
+        await act.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*ApprovalLimitCurrency is required*");
+    }
+
+    [Fact]
     public async Task QueryAsync_ExpiredAssignment_IsHiddenFromEffectiveLookup()
     {
         using var artifacts = TestArtifactDirectory.Create(nameof(QueryAsync_ExpiredAssignment_IsHiddenFromEffectiveLookup));

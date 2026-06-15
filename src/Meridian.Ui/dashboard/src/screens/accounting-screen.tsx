@@ -66,6 +66,7 @@ import type {
 } from "@/screens/accounting-screen.view-model";
 import type {
   AccountingSystemImportDetail,
+  AccountingSystemReconciliationEvidencePackage,
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
   AccountingWorkspaceResponse,
@@ -389,6 +390,12 @@ const accountingSystemStatusVariant = {
   ReviewRequired: "warning"
 } as const;
 
+const accountingSystemEvidencePackageVariant = {
+  Ready: "success",
+  ReviewRequired: "warning",
+  Missing: "danger"
+} as const;
+
 function AccountingSystemReconciliationPanel({
   providers,
   importDetail,
@@ -412,6 +419,7 @@ function AccountingSystemReconciliationPanel({
   const quickBooksProvider = providers.find((provider) => provider.providerId === "quickbooks");
   const selectedCompanyLabel = activeProvider?.connection?.companyName ?? activeProvider?.connection?.companyId ?? null;
   const rows = reconciliation?.rows.slice(0, 5) ?? [];
+  const evidencePackages = reconciliation?.evidencePackages?.slice(0, 4) ?? [];
 
   return (
     <Card className="panel-surface" role="region" aria-label="External GL reconciliation">
@@ -486,11 +494,19 @@ function AccountingSystemReconciliationPanel({
             <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3 text-sm">
               <div className="font-semibold text-foreground">Posting/export</div>
               <p className="mt-2 text-xs leading-5 text-muted-foreground">{reconciliation.postingDisabledReason}</p>
-              <div className="mt-3 space-y-1">
-                {reconciliation.evidenceReferences.map((evidence) => (
-                  <div key={evidence} className="truncate font-mono text-[11px] text-muted-foreground">{evidence}</div>
-                ))}
-              </div>
+              {evidencePackages.length > 0 ? (
+                <div className="mt-3 space-y-2" aria-label="External GL evidence packages">
+                  {evidencePackages.map((evidencePackage) => (
+                    <AccountingSystemEvidencePackageRow key={evidencePackage.packageId} evidencePackage={evidencePackage} />
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-3 space-y-1" aria-label="External GL evidence references">
+                  {reconciliation.evidenceReferences.map((evidence) => (
+                    <div key={evidence} className="truncate font-mono text-[11px] text-muted-foreground">{evidence}</div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         ) : (
@@ -500,6 +516,35 @@ function AccountingSystemReconciliationPanel({
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function AccountingSystemEvidencePackageRow({
+  evidencePackage
+}: {
+  evidencePackage: AccountingSystemReconciliationEvidencePackage;
+}) {
+  const requiredActions = evidencePackage.requiredActions.slice(0, 2);
+
+  return (
+    <div className="rounded-md border border-border/60 bg-background/40 px-2.5 py-2">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="truncate text-xs font-semibold text-foreground">{evidencePackage.label}</div>
+          <div className="mt-1 text-[11px] text-muted-foreground">{evidencePackage.evidenceReferenceCount} retained evidence ref(s)</div>
+        </div>
+        <Badge variant={accountingSystemEvidencePackageVariant[evidencePackage.status]}>{evidencePackage.status}</Badge>
+      </div>
+      {requiredActions.length > 0 ? (
+        <ul className="mt-2 list-disc space-y-1 pl-4 text-[11px] leading-4 text-muted-foreground">
+          {requiredActions.map((action) => (
+            <li key={action}>{action}</li>
+          ))}
+        </ul>
+      ) : evidencePackage.evidenceReferences[0] ? (
+        <div className="mt-2 truncate font-mono text-[11px] text-muted-foreground">{evidencePackage.evidenceReferences[0]}</div>
+      ) : null}
+    </div>
   );
 }
 
@@ -4024,7 +4069,11 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                         <div className="mt-1 text-xs text-muted-foreground">{intent.readinessReasonLabel}</div>
                         <div className="mt-1 text-[11px] text-muted-foreground">{intent.executionDeferredLabel}</div>
                       </td>
-                      <td className="px-3 py-2 font-mono text-xs">{intent.expectedCashLabel}</td>
+                      <td className="px-3 py-2 text-xs">
+                        <div className="font-mono">{intent.expectedCashLabel}</div>
+                        <div className="mt-1 text-[11px] text-muted-foreground">{intent.requestMetadataLabel}</div>
+                        <div className="mt-1 text-[11px] text-muted-foreground">{intent.sourceEvidenceLabel}</div>
+                      </td>
                       <td className="px-3 py-2 text-xs">{intent.approvalLabel}</td>
                       <td className="px-3 py-2 text-xs">
                         <div>{intent.bankEvidenceLabel}</div>
@@ -4059,6 +4108,8 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                     <div>
                       <div className="break-all font-mono text-xs text-foreground">{intent.title}</div>
                       <div className="mt-1 text-xs text-muted-foreground">{intent.expectedCashLabel}</div>
+                      <div className="mt-1 text-[11px] text-muted-foreground">{intent.requestMetadataLabel}</div>
+                      <div className="mt-1 text-[11px] text-muted-foreground">{intent.sourceEvidenceLabel}</div>
                     </div>
                     <Badge variant={intent.statusTone} dot>{intent.statusLabel}</Badge>
                   </div>
@@ -4108,6 +4159,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                               <div className="mt-1 font-mono text-[11px] text-muted-foreground">{item.amountLabel} / {item.effectiveDateLabel}</div>
                               <div className="mt-1 text-[11px] text-muted-foreground">{item.referenceLabel}</div>
                               <div className="mt-1 text-[11px] text-muted-foreground">{item.recordedLabel}</div>
+                              <div className="mt-1 text-[11px] text-muted-foreground">{item.recorderLabel}</div>
                               {item.evidenceRouteLabel !== "No bank evidence route" ? (
                                 <a
                                   className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"

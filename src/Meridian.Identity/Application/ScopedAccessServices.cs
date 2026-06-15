@@ -105,7 +105,10 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
             Version: 1,
             CreatedAtUtc: now,
             UpdatedAtUtc: now,
-            LastAuditId: auditId);
+            LastAuditId: auditId,
+            ApprovalLimitAmount: normalized.ApprovalLimitAmount,
+            ApprovalLimitCurrency: normalized.ApprovalLimitCurrency,
+            SegregationOfDutiesRule: normalized.SegregationOfDutiesRule);
 
         await _store.CreateAsync(assignment, ct).ConfigureAwait(false);
         return new UserAccessAssignmentMutationResultDto(
@@ -259,13 +262,47 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
             throw new ArgumentException("EffectiveTo must be after EffectiveFrom.", nameof(request));
         }
 
+        var approvalLimit = ValidateApprovalLimit(request.ApprovalLimitAmount, request.ApprovalLimitCurrency);
+
         return new ValidatedCreateRequest(
             principalId,
             role.ToString(),
             string.IsNullOrWhiteSpace(request.RoleProfileName) ? null : request.RoleProfileName.Trim(),
             permissions,
             resolvedActor,
-            rationale);
+            rationale,
+            approvalLimit.Amount,
+            approvalLimit.Currency,
+            string.IsNullOrWhiteSpace(request.SegregationOfDutiesRule) ? null : request.SegregationOfDutiesRule.Trim());
+    }
+
+    private static (decimal? Amount, string? Currency) ValidateApprovalLimit(decimal? amount, string? currency)
+    {
+        var normalizedCurrency = string.IsNullOrWhiteSpace(currency)
+            ? null
+            : currency.Trim().ToUpperInvariant();
+
+        if (amount.HasValue && amount.Value <= 0m)
+        {
+            throw new ArgumentException("ApprovalLimitAmount must be greater than zero.", nameof(amount));
+        }
+
+        if (amount.HasValue && string.IsNullOrWhiteSpace(normalizedCurrency))
+        {
+            throw new ArgumentException("ApprovalLimitCurrency is required when ApprovalLimitAmount is provided.", nameof(currency));
+        }
+
+        if (!amount.HasValue && !string.IsNullOrWhiteSpace(normalizedCurrency))
+        {
+            throw new ArgumentException("ApprovalLimitAmount is required when ApprovalLimitCurrency is provided.", nameof(amount));
+        }
+
+        if (normalizedCurrency is not null && normalizedCurrency.Length != 3)
+        {
+            throw new ArgumentException("ApprovalLimitCurrency must be a three-letter ISO currency code.", nameof(currency));
+        }
+
+        return (amount, normalizedCurrency);
     }
 
     private static Guid? NormalizeScopeId(AccessScopeKindDto scopeKind, Guid? scopeId)
@@ -348,7 +385,10 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
             assignment.ScopeId,
             assignment.PermissionNames,
             assignment.PermissionMask,
-            assignment.Version);
+            assignment.Version,
+            assignment.ApprovalLimitAmount,
+            assignment.ApprovalLimitCurrency,
+            assignment.SegregationOfDutiesRule);
 
     private sealed record ValidatedCreateRequest(
         string PrincipalId,
@@ -356,6 +396,9 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
         string? RoleProfileName,
         UserPermission Permissions,
         string Actor,
-        string Rationale);
+        string Rationale,
+        decimal? ApprovalLimitAmount,
+        string? ApprovalLimitCurrency,
+        string? SegregationOfDutiesRule);
 
 }

@@ -882,10 +882,12 @@ public static class FundStructureEndpoints
 
             try
             {
+                var accessContext = BuildReportAccessQueryContext(context);
                 var result = await service.GetStructuredReportingExportAsync(
                     new StructuredReportingExportRequestDto(fundProfileId, exportId, asOf, currency),
-                    BuildReportAccessQueryContext(context),
+                    accessContext,
                     context.RequestAborted).ConfigureAwait(false);
+                ApplyStructuredExportAuditHeaders(context, result);
                 if (IsStructuredCsvRequest(format))
                 {
                     var fileName = $"{result.Export.ExportId}-{result.Export.AsOf.UtcDateTime:yyyyMMddHHmmss}.csv";
@@ -1275,7 +1277,8 @@ public static class FundStructureEndpoints
                         request.RetainedManifestPath,
                         request.EvidenceLinks,
                         request.Note,
-                        request.BrandingTheme),
+                        request.BrandingTheme,
+                        request.ActionOrigin),
                     jsonOptions);
             }
             catch (Exception ex) when (ex is ArgumentException or UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
@@ -1350,7 +1353,7 @@ public static class FundStructureEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
 
-        group.MapGet("/reporting/packs/{reportId:guid}/deliveries/{attemptId:guid}/package", (Guid reportId, Guid attemptId, string? token, HttpContext context) =>
+        group.MapGet("/reporting/packs/{reportId:guid}/deliveries/{attemptId:guid}/package", (Guid reportId, Guid attemptId, string? token, string? format, HttpContext context) =>
         {
             var svc = context.RequestServices.GetService<ReportPackDeliveryService>();
             if (svc is null)
@@ -1360,7 +1363,10 @@ public static class FundStructureEndpoints
 
             try
             {
-                return Results.Json(svc.GetPackage(reportId, attemptId, token), jsonOptions);
+                var package = svc.GetPackage(reportId, attemptId, token);
+                return IsPortalJsonRequest(format)
+                    ? Results.Json(package, jsonOptions)
+                    : Results.Content(BuildDeliveryPortalHtml(package), "text/html; charset=utf-8");
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -1373,10 +1379,11 @@ public static class FundStructureEndpoints
         })
         .WithName("GetReportingPackDeliveryPackage")
         .Produces<ReportPackDeliveryPackageDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status200OK, contentType: "text/html")
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
 
-        group.MapGet("/reporting/packs/{reportId:guid}/deliveries/{attemptId:guid}/artifacts/{artifactName}", (Guid reportId, Guid attemptId, string artifactName, string? token, HttpContext context) =>
+        group.MapGet("/reporting/packs/{reportId:guid}/deliveries/{attemptId:guid}/artifacts/{artifactName}", (Guid reportId, Guid attemptId, string artifactName, string? token, string? format, HttpContext context) =>
         {
             var svc = context.RequestServices.GetService<ReportPackDeliveryService>();
             if (svc is null)
@@ -1387,6 +1394,7 @@ public static class FundStructureEndpoints
             try
             {
                 var artifact = svc.GetArtifact(reportId, attemptId, artifactName, token);
+                _ = format;
                 return Results.File(artifact.Content, artifact.ContentType, artifact.ArtifactName);
             }
             catch (UnauthorizedAccessException ex)
@@ -1403,7 +1411,7 @@ public static class FundStructureEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
 
-        app.MapGet(UiApiRoutes.ReportingPackDeliveryPortalPackage, (string packageId, string? token, HttpContext context) =>
+        app.MapGet(UiApiRoutes.ReportingPackDeliveryPortalPackage, (string packageId, string? token, string? format, HttpContext context) =>
         {
             var svc = context.RequestServices.GetService<ReportPackDeliveryService>();
             if (svc is null)
@@ -1413,7 +1421,10 @@ public static class FundStructureEndpoints
 
             try
             {
-                return Results.Json(svc.GetPortalPackage(packageId, token), jsonOptions);
+                var package = svc.GetPortalPackage(packageId, token);
+                return IsPortalJsonRequest(format)
+                    ? Results.Json(package, jsonOptions)
+                    : Results.Content(BuildDeliveryPortalHtml(package), "text/html; charset=utf-8");
             }
             catch (Exception ex) when (ex is ArgumentException or UnauthorizedAccessException)
             {
@@ -1426,6 +1437,7 @@ public static class FundStructureEndpoints
         })
         .WithName("GetReportingPortalDeliveryPackage")
         .Produces<ReportPackDeliveryPackageDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status200OK, contentType: "text/html")
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound);
 
@@ -2056,7 +2068,10 @@ public static class FundStructureEndpoints
                     entry.Action,
                     entry.Actor,
                     entry.Notes))
-                .ToArray());
+                .ToArray(),
+            manifest.ReportWriterDatasetSourceId,
+            manifest.ReportWriterDatasetSourceLabel,
+            manifest.ReportWriterDatasetRowCount);
 
     private static ReportAccessQueryContext BuildReportAccessQueryContext(HttpContext context)
     {
@@ -2068,6 +2083,38 @@ public static class FundStructureEndpoints
             GroupPrincipalIds: EndpointAuthorization.ResolveReportGroupPrincipalIds(context),
             CompanyId: EndpointAuthorization.ResolveCompanyId(context),
             HasGlobalOverride: EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance));
+    }
+
+    private static void ApplyStructuredExportAuditHeaders(
+        HttpContext context,
+        StructuredReportingExportPayloadDto payload)
+    {
+        context.Response.Headers["X-Meridian-Export-Id"] = payload.Export.ExportId;
+        context.Response.Headers["X-Meridian-Export-Generated-At"] = payload.GeneratedAtUtc.ToString("O");
+        if (!string.IsNullOrWhiteSpace(payload.GeneratedByPrincipalId))
+        {
+            context.Response.Headers["X-Meridian-Export-Generated-By"] = payload.GeneratedByPrincipalId;
+        }
+
+        if (!string.IsNullOrWhiteSpace(payload.GeneratedForCompanyId))
+        {
+            context.Response.Headers["X-Meridian-Export-Company"] = payload.GeneratedForCompanyId;
+        }
+
+        if (payload.GeneratedForGroupPrincipalIds is { Count: > 0 })
+        {
+            context.Response.Headers["X-Meridian-Export-Groups"] = string.Join(",", payload.GeneratedForGroupPrincipalIds);
+        }
+
+        if (!string.IsNullOrWhiteSpace(payload.Export.VersionStamp))
+        {
+            context.Response.Headers["X-Meridian-Export-Version"] = payload.Export.VersionStamp;
+        }
+
+        if (!string.IsNullOrWhiteSpace(payload.Export.IntegrityHashSha256))
+        {
+            context.Response.Headers["X-Meridian-Export-Sha256"] = payload.Export.IntegrityHashSha256;
+        }
     }
 
     private static bool TryResolveAuthorizedActorAndRole(HttpContext context, out string actor, out string role)
@@ -2382,10 +2429,170 @@ public static class FundStructureEndpoints
     private static bool IsStructuredJsonRequest(string? format) =>
         string.Equals(format, "json", StringComparison.OrdinalIgnoreCase);
 
+    private static bool IsPortalJsonRequest(string? format) =>
+        string.Equals(format, "json", StringComparison.OrdinalIgnoreCase);
+
     private static bool IsStructuredXlsxRequest(string? format) =>
         string.Equals(format, "xlsx", StringComparison.OrdinalIgnoreCase)
         || string.Equals(format, "xls", StringComparison.OrdinalIgnoreCase)
         || string.Equals(format, "excel", StringComparison.OrdinalIgnoreCase);
+
+    private static string BuildDeliveryPortalHtml(ReportPackDeliveryPackageDto package)
+    {
+        var theme = package.BrandingTheme;
+        var primaryColor = NormalizePortalColor(theme?.PrimaryColor, "#1F4E79");
+        var accentColor = NormalizePortalColor(theme?.AccentColor, "#2F9E8F");
+        var textColor = NormalizePortalColor(theme?.TextColor, "#111827");
+        var backgroundColor = NormalizePortalColor(theme?.BackgroundColor, "#FFFFFF");
+        var firmName = string.IsNullOrWhiteSpace(theme?.FirmName)
+            ? "Meridian"
+            : theme.FirmName.Trim();
+        var builder = new StringBuilder();
+        builder.AppendLine("<!doctype html>");
+        builder.Append("<html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">")
+            .Append("<title>")
+            .Append(EscapePortalHtml(firmName))
+            .Append(" Report Package</title><style>");
+        builder.Append("body{margin:0;font-family:Arial,sans-serif;background:")
+            .Append(backgroundColor)
+            .Append(";color:")
+            .Append(textColor)
+            .Append("}.portal-header{border-top:8px solid ")
+            .Append(primaryColor)
+            .Append(";padding:28px 32px 18px}.portal-kicker{color:")
+            .Append(accentColor)
+            .Append(";font-size:12px;text-transform:uppercase;letter-spacing:.12em}.content{padding:0 32px 32px;max-width:980px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.panel{border:1px solid #d0d5dd;border-radius:6px;padding:14px;background:rgba(255,255,255,.72)}a{color:")
+            .Append(primaryColor)
+            .Append("}.artifact{display:flex;gap:8px;align-items:flex-start;justify-content:space-between;border-top:1px solid #eaecf0;padding:10px 0}.badge{border:1px solid ")
+            .Append(accentColor)
+            .Append(";border-radius:999px;padding:2px 8px;font-size:11px;text-transform:uppercase}.footer{border-top:2px solid ")
+            .Append(accentColor)
+            .Append(";margin-top:24px;padding-top:14px;font-size:12px}</style></head><body>");
+        builder.Append("<header class=\"portal-header\"><div class=\"portal-kicker\">")
+            .Append(EscapePortalHtml(firmName))
+            .Append("</div><h1>Secure Report Package</h1><p>")
+            .Append(EscapePortalHtml(package.DeliveryAccessSummary ?? "Token-gated report package."))
+            .Append("</p>");
+        if (!string.IsNullOrWhiteSpace(theme?.LogoUri))
+        {
+            builder.Append("<p>Logo: ")
+                .Append(EscapePortalHtml(theme.LogoUri.Trim()))
+                .Append("</p>");
+        }
+
+        builder.AppendLine("</header><main class=\"content\">");
+        builder.AppendLine("<section class=\"grid\" aria-label=\"Package details\">");
+        AppendPortalSummaryPanel(builder, "Package", package.PackageId, package.DeliveryChannelSummary ?? package.DeliveryMode.ToString());
+        AppendPortalSummaryPanel(builder, "Integrity", package.IntegritySummary ?? "Integrity summary not retained.", package.RetainedManifestPath);
+        AppendPortalSummaryPanel(builder, "Access", package.AccessExpiresAtUtc?.ToString("O") ?? "No expiry retained.", package.PortalRoute);
+        AppendPortalSummaryPanel(builder, "Dataset", FormatPortalDatasetSummary(package), package.ReportingRunId ?? package.PublicationManifestId ?? "Publication package");
+        builder.AppendLine("</section>");
+        builder.AppendLine("<section class=\"panel\" aria-label=\"Package artifacts\"><h2>Downloads</h2>");
+        foreach (var artifact in package.Artifacts ?? [])
+        {
+            builder.Append("<div class=\"artifact\"><span><strong>")
+                .Append(EscapePortalHtml(artifact.ArtifactName))
+                .Append("</strong><br><span>")
+                .Append(EscapePortalHtml(artifact.ContentType))
+                .Append("</span><br><span>SHA-256 ")
+                .Append(EscapePortalHtml(artifact.ChecksumSha256))
+                .Append("</span></span><span><span class=\"badge\">")
+                .Append(EscapePortalHtml(artifact.Format.ToString()))
+                .Append("</span> ");
+            if (!string.IsNullOrWhiteSpace(artifact.DownloadRoute))
+            {
+                builder.Append("<a href=\"")
+                    .Append(EscapePortalAttribute(artifact.DownloadRoute))
+                    .Append("\">Download</a>");
+            }
+
+            builder.AppendLine("</span></div>");
+        }
+
+        builder.AppendLine("</section>");
+        if (package.Notifications is { Count: > 0 })
+        {
+            builder.AppendLine("<section class=\"panel\" aria-label=\"Package notifications\"><h2>Notifications</h2><ul>");
+            foreach (var notification in package.Notifications)
+            {
+                builder.Append("<li><strong>")
+                    .Append(EscapePortalHtml(notification.Subject))
+                    .Append("</strong><br>")
+                    .Append(EscapePortalHtml(notification.Body))
+                    .Append("</li>");
+            }
+
+            builder.AppendLine("</ul></section>");
+        }
+
+        if (theme is not null)
+        {
+            builder.Append("<footer class=\"footer\"><strong>")
+                .Append(EscapePortalHtml(theme.Name))
+                .Append("</strong><br>")
+                .Append(EscapePortalHtml(theme.FooterText ?? string.Empty));
+            if (!string.IsNullOrWhiteSpace(theme.Disclaimer))
+            {
+                builder.Append("<br>")
+                    .Append(EscapePortalHtml(theme.Disclaimer.Trim()));
+            }
+
+            builder.AppendLine("</footer>");
+        }
+
+        builder.AppendLine("</main></body></html>");
+        return builder.ToString();
+    }
+
+    private static void AppendPortalSummaryPanel(
+        StringBuilder builder,
+        string label,
+        string value,
+        string detail)
+    {
+        builder.Append("<article class=\"panel\"><h2>")
+            .Append(EscapePortalHtml(label))
+            .Append("</h2><p><strong>")
+            .Append(EscapePortalHtml(value))
+            .Append("</strong></p><p>")
+            .Append(EscapePortalHtml(detail))
+            .AppendLine("</p></article>");
+    }
+
+    private static string FormatPortalDatasetSummary(ReportPackDeliveryPackageDto package)
+    {
+        var source = package.ReportWriterDatasetSourceLabel
+            ?? package.ReportWriterDatasetSourceId
+            ?? "Report package";
+        return package.ReportWriterDatasetRowCount.HasValue
+            ? $"{source} ({package.ReportWriterDatasetRowCount.Value} rows)"
+            : source;
+    }
+
+    private static string NormalizePortalColor(string? value, string fallback)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return fallback;
+        }
+
+        var normalized = value.Trim();
+        return normalized.Length == 7
+               && normalized[0] == '#'
+               && normalized.Skip(1).All(Uri.IsHexDigit)
+            ? normalized
+            : fallback;
+    }
+
+    private static string EscapePortalHtml(string? value) =>
+        (value ?? string.Empty)
+            .Replace("&", "&amp;", StringComparison.Ordinal)
+            .Replace("<", "&lt;", StringComparison.Ordinal)
+            .Replace(">", "&gt;", StringComparison.Ordinal)
+            .Replace("\"", "&quot;", StringComparison.Ordinal);
+
+    private static string EscapePortalAttribute(string? value) =>
+        EscapePortalHtml(value).Replace("'", "&#39;", StringComparison.Ordinal);
 
     private static byte[] BuildStructuredExportJson(
         StructuredReportingExportPayloadDto payload,
@@ -2433,7 +2640,11 @@ public static class FundStructureEndpoints
             new XlsxWorksheet(
                 "Validation",
                 ["Check", "Status", "Detail"],
-                BuildStructuredExportValidationRows(payload))
+                BuildStructuredExportValidationRows(payload)),
+            new XlsxWorksheet(
+                "RowLineage",
+                ["Row", "Row key", "SHA-256"],
+                BuildStructuredExportRowLineageRows(payload))
         ]);
     }
 
@@ -2455,7 +2666,11 @@ public static class FundStructureEndpoints
         ["retainedPath", payload.Export.RetainedPath],
         ["route", payload.Export.Route],
         ["versionStamp", payload.Export.VersionStamp],
-        ["generatedAtUtc", payload.GeneratedAtUtc]
+        ["generatedAtUtc", payload.GeneratedAtUtc],
+        ["generatedByPrincipalId", payload.GeneratedByPrincipalId],
+        ["generatedForCompanyId", payload.GeneratedForCompanyId],
+        ["generatedForGroups", string.Join(";", payload.GeneratedForGroupPrincipalIds ?? [])],
+        ["rowLineageCount", payload.RowLineage?.Count ?? 0]
     ];
 
     private static IReadOnlyList<IReadOnlyList<object?>> BuildStructuredExportDataDictionaryRows(
@@ -2489,6 +2704,17 @@ public static class FundStructureEndpoints
                 check.CheckId,
                 check.Status,
                 check.Detail
+            ])
+            .ToArray();
+
+    private static IReadOnlyList<IReadOnlyList<object?>> BuildStructuredExportRowLineageRows(
+        StructuredReportingExportPayloadDto payload) =>
+        (payload.RowLineage ?? [])
+            .Select(static row => (IReadOnlyList<object?>)
+            [
+                row.RowNumber,
+                row.RowKey,
+                row.RowHashSha256
             ])
             .ToArray();
 

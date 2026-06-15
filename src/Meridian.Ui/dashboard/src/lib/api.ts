@@ -37,6 +37,8 @@ import type {
   EvidenceTemplate,
   EvidenceVaultIdentity,
   EvidenceVaultLookupRequest,
+  EvidenceVaultRequestListEntry,
+  EvidenceVaultRequestListQuery,
   ExtensibilityActivationReadiness,
   ExtensibilityCatalog,
   FinancialRecordExplorerDto,
@@ -191,6 +193,8 @@ import type {
   PrivateCapitalFundEventLedgerRecord,
   PrivateCapitalReportOutput,
   FundReportPackGenerateRequest,
+  FundReportPackPreview,
+  FundReportPackPreviewRequest,
   FundReportPackSnapshot,
   ReportPackDeliveryAttempt,
   ReportPackDeliveryFailureRequest,
@@ -1056,6 +1060,46 @@ export function searchEvidenceVault(request: EvidenceVaultLookupRequest, options
   return postJson<EvidenceVaultIdentity[]>(WORKSTATION_API_ENDPOINTS.evidenceVaultSearch, request, options);
 }
 
+export function listEvidenceVaultRequestLists(
+  query: EvidenceVaultRequestListQuery = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  if (query.requestListKind) {
+    params.set("requestListKind", query.requestListKind);
+  }
+
+  if (query.targetKind) {
+    params.set("targetKind", query.targetKind);
+  }
+
+  if (query.targetId) {
+    params.set("targetId", query.targetId);
+  }
+
+  if (query.status) {
+    params.set("status", query.status);
+  }
+
+  if (query.subjectKind) {
+    params.set("subjectKind", query.subjectKind);
+  }
+
+  if (query.subjectId) {
+    params.set("subjectId", query.subjectId);
+  }
+
+  if (query.maxResults !== undefined && query.maxResults !== null) {
+    params.set("maxResults", String(query.maxResults));
+  }
+
+  const suffix = params.toString();
+  return getJson<EvidenceVaultRequestListEntry[]>(
+    suffix ? `${WORKSTATION_API_ENDPOINTS.evidenceVaultRequestLists}?${suffix}` : WORKSTATION_API_ENDPOINTS.evidenceVaultRequestLists,
+    options
+  );
+}
+
 export function getEvidenceTemplates(options: ApiRequestOptions = {}) {
   return getJson<EvidenceTemplate[]>(WORKSTATION_API_ENDPOINTS.evidenceTemplates, options);
 }
@@ -1380,6 +1424,10 @@ export function getReportingWorkspace(options: ApiRequestOptions = {}) {
 
 export function runReportingNow(request: ReportingRunRequest, options: ApiRequestOptions = {}) {
   return postJson<ReportingRunResult>(FUND_STRUCTURE_API_ENDPOINTS.reportingRuns, request, options);
+}
+
+export function previewReportPack(request: FundReportPackPreviewRequest, options: ApiRequestOptions = {}) {
+  return postJson<FundReportPackPreview>(FUND_STRUCTURE_API_ENDPOINTS.reportPackPreview, request, options);
 }
 
 export function generateReportPack(request: FundReportPackGenerateRequest, options: ApiRequestOptions = {}) {

@@ -654,6 +654,9 @@ export interface UserAccessAssignment {
   revokedAtUtc?: string | null;
   revocationReason?: string | null;
   lastAuditId?: string | null;
+  approvalLimitAmount?: number | null;
+  approvalLimitCurrency?: string | null;
+  segregationOfDutiesRule?: string | null;
 }
 
 export interface UserAccessAssignmentCreateRequest {
@@ -668,6 +671,9 @@ export interface UserAccessAssignmentCreateRequest {
   effectiveTo?: string | null;
   requestedBy: string;
   rationale: string;
+  approvalLimitAmount?: number | null;
+  approvalLimitCurrency?: string | null;
+  segregationOfDutiesRule?: string | null;
   correlationId?: string | null;
 }
 
@@ -700,6 +706,9 @@ export interface UserAccessAssignmentAuditEvent {
   permissionNames: string[];
   permissionMask: number;
   version: number;
+  approvalLimitAmount?: number | null;
+  approvalLimitCurrency?: string | null;
+  segregationOfDutiesRule?: string | null;
 }
 
 export interface UserAccessAssignmentMutationResult {
@@ -1349,6 +1358,33 @@ export interface OperationsEvidencePackageSummary {
   requiredActions?: string[] | null;
 }
 
+export interface OperationsReviewedAutomationSummary {
+  summaryId: string;
+  stage: string;
+  status: EvidenceStatus;
+  requiresHumanReview: boolean;
+  summary: string;
+  allowedUseCases: string[];
+  prohibitedActions: string[];
+  evidenceLinks: OperationsEvidenceLink[];
+  requiredActions?: string[] | null;
+  artifacts?: OperationsReviewedAutomationArtifact[] | null;
+}
+
+export interface OperationsReviewedAutomationArtifact {
+  artifactId: string;
+  artifactKind: string;
+  title: string;
+  status: EvidenceStatus;
+  requiresHumanReview: boolean;
+  confidencePercent?: number | null;
+  sourceSummary: string;
+  suggestedOperatorAction: string;
+  blockedMaterialAction: string;
+  evidenceLinks: OperationsEvidenceLink[];
+  reviewChecklist?: string[] | null;
+}
+
 export interface OperationsContinuityWorkflow extends OperationsContinuityWorkflowSummary {
   brokerIntakeState: OperationsBrokerIntakeState;
   securityMasterState: OperationsSecurityMasterState;
@@ -1365,11 +1401,18 @@ export interface OperationsContinuityWorkflow extends OperationsContinuityWorkfl
   closePackage: OperationsClosePackagePublication | null;
   dashboardSummary?: OperationsDashboardSummary | null;
   evidencePackages?: OperationsEvidencePackageSummary[] | null;
+  reviewedAutomation?: OperationsReviewedAutomationSummary | null;
   accountingRecordSummary?: OperationsAccountingRecordSummary | null;
   reconciliationLanes?: OperationsReconciliationLaneSummary[] | null;
   evidenceLinks: OperationsEvidenceLink[];
   blockers: OperationsWorkflowBlocker[];
 }
+
+export type OperationsActionOrigin =
+  | "HumanOperator"
+  | "AutomationSuggestion"
+  | "AssistantDraft"
+  | "AutomationAssistant";
 
 export interface OperationsApprovalDecisionRequest {
   expectedVersion: number;
@@ -1380,6 +1423,7 @@ export interface OperationsApprovalDecisionRequest {
   correlationId?: string | null;
   evidenceLinks?: OperationsEvidenceLink[] | null;
   checklistControlApprovals?: OperationsChecklistControlApproval[] | null;
+  actionOrigin?: OperationsActionOrigin | null;
 }
 
 export interface OperationsRejectWorkflowRequest {
@@ -1390,6 +1434,7 @@ export interface OperationsRejectWorkflowRequest {
   reasonCode: string;
   correlationId?: string | null;
   evidenceLinks?: OperationsEvidenceLink[] | null;
+  actionOrigin?: OperationsActionOrigin | null;
 }
 
 export interface OperationsAssignBreakCaseRequest {
@@ -1402,6 +1447,7 @@ export interface OperationsAssignBreakCaseRequest {
   dueDate?: string | null;
   correlationId?: string | null;
   evidenceLinks?: OperationsEvidenceLink[] | null;
+  actionOrigin?: OperationsActionOrigin | null;
 }
 
 export interface OperationsCloseWorkflowRequest {
@@ -1416,6 +1462,7 @@ export interface OperationsCloseWorkflowRequest {
   closePackageManifestId?: string | null;
   closePackageEvidenceHash?: string | null;
   closePackageRetainedManifestRoute?: string | null;
+  actionOrigin?: OperationsActionOrigin | null;
 }
 
 export interface OperationsReopenWorkflowRequest {
@@ -1429,6 +1476,7 @@ export interface OperationsReopenWorkflowRequest {
   impactSummary?: string | null;
   correlationId?: string | null;
   evidenceLinks?: OperationsEvidenceLink[] | null;
+  actionOrigin?: OperationsActionOrigin | null;
 }
 
 export interface OperationsTransitionResult {
@@ -1631,6 +1679,29 @@ export interface EvidenceArtifactRef {
   retained: boolean;
   canonicalSubjectKind?: string | null;
   canonicalSubjectId?: string | null;
+  capture?: EvidenceArtifactCapture | null;
+  extractedFields?: EvidenceArtifactExtractionField[];
+}
+
+export interface EvidenceArtifactCapture {
+  captureChannel: string;
+  sourceSystem: string | null;
+  receivedAt: string | null;
+  receivedBy: string | null;
+  sourceReference: string | null;
+  receiptHash: string | null;
+}
+
+export interface EvidenceArtifactExtractionField {
+  fieldName: string;
+  extractedValue: string | null;
+  expectedValue: string | null;
+  confidenceScore: number | null;
+  reviewState: string;
+  validationStatus: EvidenceStatus;
+  validationMessage: string | null;
+  linkedRecordKind: string | null;
+  linkedRecordId: string | null;
 }
 
 export interface EvidenceNode {
@@ -1643,6 +1714,7 @@ export interface EvidenceNode {
   summary: string;
   artifactRefs: EvidenceArtifactRef[];
   relatedWorkItemIds: string[];
+  metadata?: Record<string, string> | null;
 }
 
 export interface EvidenceEdge {
@@ -1833,6 +1905,8 @@ export interface EvidenceVaultArtifact {
   sourceRoute: string | null;
   canonicalSubjectKind: string | null;
   canonicalSubjectId: string | null;
+  capture?: EvidenceArtifactCapture | null;
+  extractedFields?: EvidenceArtifactExtractionField[];
 }
 
 export interface EvidenceSupportRequest {
@@ -1860,6 +1934,26 @@ export interface EvidenceRequestList {
   evidenceKinds: string[];
   blockedOutputs: string[];
   summary: string;
+}
+
+export interface EvidenceVaultRequestListQuery {
+  requestListKind?: string | null;
+  targetKind?: string | null;
+  targetId?: string | null;
+  status?: string | null;
+  subjectKind?: string | null;
+  subjectId?: string | null;
+  maxResults?: number | null;
+}
+
+export interface EvidenceVaultRequestListEntry extends EvidenceRequestList {
+  openRequestCount: number;
+  vaultId: string;
+  subjectKind: string;
+  subjectId: string;
+  manifestRoute: string;
+  retainedAt: string;
+  supportRequests: EvidenceSupportRequest[];
 }
 
 export interface EvidenceLifecycleMetadata {
@@ -2304,6 +2398,7 @@ export type AccountingSystemReconciliationStatus =
   | "MissingExternal"
   | "MissingMeridian"
   | "ReviewRequired";
+export type AccountingSystemEvidencePackageStatus = "Ready" | "ReviewRequired" | "Missing";
 
 export interface AccountingSystemProvider {
   providerId: string;
@@ -2424,6 +2519,18 @@ export interface AccountingSystemReconciliationRow {
   variance: number;
   detail: string;
   evidenceRef: string | null;
+  externalEvidenceReferences?: string[];
+  meridianEvidenceReferences?: string[];
+  evidenceReferences?: string[];
+}
+
+export interface AccountingSystemReconciliationEvidencePackage {
+  packageId: string;
+  label: string;
+  status: AccountingSystemEvidencePackageStatus;
+  evidenceReferenceCount: number;
+  evidenceReferences: string[];
+  requiredActions: string[];
 }
 
 export interface AccountingSystemReconciliationSummary {
@@ -2444,6 +2551,7 @@ export interface AccountingSystemReconciliationSummary {
   postingDisabledReason: string;
   rows: AccountingSystemReconciliationRow[];
   evidenceReferences: string[];
+  evidencePackages?: AccountingSystemReconciliationEvidencePackage[];
 }
 
 export interface BrokerageHouseholdAccount {
@@ -3231,6 +3339,17 @@ export interface PortfolioReportingCut {
   versionStamp: string | null;
 }
 
+export interface PortfolioReportingLiveViewFreshnessPolicy {
+  policyName: string;
+  evaluatedAtUtc: string;
+  sourceAgeSeconds: number | null;
+  liveLinkWindowSeconds: number;
+  staleWindowSeconds: number;
+  isWithinLiveLinkWindow: boolean;
+  isBeyondStaleWindow: boolean;
+  reason: string;
+}
+
 export interface PortfolioReportingLiveView {
   viewId: string;
   label: string;
@@ -3260,6 +3379,7 @@ export interface PortfolioReportingLiveView {
   marketDataProvider?: string | null;
   tickFreshnessSummary?: string | null;
   isMarketTickLinked?: boolean;
+  freshnessPolicy?: PortfolioReportingLiveViewFreshnessPolicy | null;
 }
 
 export interface PortfolioReportingPnlSlice {
@@ -3388,6 +3508,28 @@ export interface ReportingTemplateGridFieldMetadata {
   dataType: string;
   dataset: string;
   description?: string | null;
+}
+
+export interface ReportWriterDatasetSource {
+  sourceId: string;
+  label: string;
+  description: string;
+  rowCount: number;
+  fields: ReportingTemplateGridFieldMetadata[];
+  rows: Record<string, string>[];
+  tags?: string[] | null;
+  certificationState?: string | null;
+  validationState?: string | null;
+  reconciliationState?: string | null;
+  refreshCadence?: string | null;
+  owner?: string | null;
+  version?: string | null;
+  releaseApproval?: string | null;
+  lineageManifest?: string | null;
+  sourceRunIds?: string[] | null;
+  permittedConsumers?: string[] | null;
+  rowLineageKeyField?: string | null;
+  evidenceIndexField?: string | null;
 }
 
 export interface ReportingTemplateGridMetricMetadata {
@@ -3642,6 +3784,11 @@ export interface ReportingRunStatusProjection {
   drilldownLinks?: ReportingRunDrilldownLink[];
   nextActions?: ReportingRunNextAction[];
   generatedReportWriterGrids?: ReportingGeneratedReportWriterGrid[] | null;
+  reportWriterDatasetSourceId?: string | null;
+  reportWriterDatasetSourceLabel?: string | null;
+  reportWriterDatasetRowCount?: number | null;
+  brandingThemeId?: string | null;
+  brandingTheme?: ReportBrandingTheme | null;
 }
 
 export interface ReportingGeneratedReportWriterGrid {
@@ -3652,6 +3799,10 @@ export interface ReportingGeneratedReportWriterGrid {
   dimensionCount: number;
   metricCount: number;
   formulaCount: number;
+  validationSummary?: string | null;
+  validationPassedCount?: number | null;
+  validationWarningCount?: number | null;
+  validationFailedCount?: number | null;
 }
 
 export interface ReportingRunDrilldownLink {
@@ -3733,6 +3884,35 @@ export interface FundReportPackGenerateRequest {
   brandingThemeOverride?: ReportBrandingTheme | null;
 }
 
+export interface FundReportPackPreviewRequest {
+  fundProfileId: string;
+  reportKind?: GovernanceReportKind;
+  asOf?: string | null;
+  currency?: string | null;
+  brandingThemeId?: string | null;
+  brandingThemeOverride?: ReportBrandingTheme | null;
+}
+
+export interface FundReportAssetClassSection {
+  assetClass: string;
+  total: number;
+}
+
+export interface FundReportPackPreview {
+  reportId: string;
+  fundProfileId: string;
+  displayName: string;
+  reportKind: GovernanceReportKind;
+  currency: string;
+  asOf: string;
+  generatedAt: string;
+  totalNetAssets: number;
+  trialBalanceLineCount: number;
+  assetClassSectionCount: number;
+  assetClassSections: FundReportAssetClassSection[];
+  brandingTheme?: ReportBrandingTheme | null;
+}
+
 export interface FundReportPackArtifact {
   artifactKind: string;
   format: GovernanceReportArtifactFormat;
@@ -3785,6 +3965,21 @@ export interface ReportPackDeliveryAccessLink {
   requiresToken: boolean;
   expiresAtUtc?: string | null;
   description?: string | null;
+}
+
+export interface ReportPackDeliveryNotification {
+  notificationId: string;
+  channel: string;
+  recipient: string;
+  recipientRole: string;
+  deliveryMode: ReportPackDeliveryMode;
+  subject: string;
+  body: string;
+  href: string;
+  requiresToken: boolean;
+  createdAtUtc: string;
+  expiresAtUtc?: string | null;
+  status: string;
 }
 
 export interface ReportPackDeliveryRecipient {
@@ -3855,9 +4050,13 @@ export interface ReportPackDeliveryPackage {
   downloadSummary?: string | null;
   accessExpiresAtUtc?: string | null;
   accessLinks?: ReportPackDeliveryAccessLink[] | null;
+  notifications?: ReportPackDeliveryNotification[] | null;
   sourceArtifacts?: string[] | null;
   generatedReportWriterGrids?: ReportingGeneratedReportWriterGrid[] | null;
   renderedReportWriterGrids?: ReportWriterGridRender[] | null;
+  reportWriterDatasetSourceId?: string | null;
+  reportWriterDatasetSourceLabel?: string | null;
+  reportWriterDatasetRowCount?: number | null;
   lineProvenance?: ReportingWorkflowLineProvenance[] | null;
   deliveryEvidencePacket?: ReportPackDeliveryEvidencePacket | null;
   brandingTheme?: ReportBrandingTheme | null;
@@ -3889,6 +4088,7 @@ export interface ReportPackDeliveryRequest {
   evidenceLinks?: ReportingWorkflowEvidenceLink[] | null;
   formats?: GovernanceReportArtifactFormat[] | null;
   deliveryMode?: ReportPackDeliveryMode | null;
+  actionOrigin?: OperationsActionOrigin | null;
 }
 
 export interface ReportPackDeliveryFailureRequest extends ReportPackDeliveryRequest {
@@ -3933,6 +4133,9 @@ export interface ReportingScheduleDeliveryPlan {
   versionStamp: string | null;
   lastDeliveryArtifactCount?: number;
   lastDeliveryIntegritySummary?: string | null;
+  readinessBlockers?: string[] | null;
+  brandingThemeId?: string | null;
+  brandingTheme?: ReportBrandingTheme | null;
 }
 
 export type StructuredReportingExportPurpose = "Regulatory" | "DataWarehouse" | "InvestmentDecision";
@@ -3959,6 +4162,9 @@ export interface StructuredReportingExport {
   versionStamp: string | null;
   tags: string[] | null;
   readinessBlockers?: string[] | null;
+  retainedManifestPath?: string | null;
+  integrityHashSha256?: string | null;
+  integritySummary?: string | null;
 }
 
 export interface StructuredReportingExportColumn {
@@ -3981,6 +4187,12 @@ export interface StructuredReportingExportValidationCheck {
   detail: string;
 }
 
+export interface StructuredReportingExportRowLineage {
+  rowNumber: number;
+  rowKey: string;
+  rowHashSha256: string;
+}
+
 export interface StructuredReportingExportPayload {
   export: StructuredReportingExport;
   columns: StructuredReportingExportColumn[];
@@ -3989,6 +4201,10 @@ export interface StructuredReportingExportPayload {
   generatedAtUtc: string;
   dataDictionary?: StructuredReportingExportDataDictionaryField[] | null;
   validationChecks?: StructuredReportingExportValidationCheck[] | null;
+  generatedByPrincipalId?: string | null;
+  generatedForCompanyId?: string | null;
+  generatedForGroupPrincipalIds?: string[] | null;
+  rowLineage?: StructuredReportingExportRowLineage[] | null;
 }
 
 export interface ReportingScheduleRecord {
@@ -4008,6 +4224,9 @@ export interface ReportingScheduleRecord {
   description: string | null;
   deliveryTargets?: ReportingScheduleDeliveryTarget[] | null;
   datasetRows?: Record<string, string>[] | null;
+  datasetSourceId?: string | null;
+  brandingThemeId?: string | null;
+  brandingThemeOverride?: ReportBrandingTheme | null;
 }
 
 export interface ReportingScheduleUpsertRequest {
@@ -4022,6 +4241,9 @@ export interface ReportingScheduleUpsertRequest {
   state?: string;
   deliveryTargets?: ReportingScheduleDeliveryTarget[] | null;
   datasetRows?: Record<string, string>[] | null;
+  datasetSourceId?: string | null;
+  brandingThemeId?: string | null;
+  brandingThemeOverride?: ReportBrandingTheme | null;
 }
 
 export interface ReportingScheduleRunResult {
@@ -4043,6 +4265,7 @@ export interface ReportingRunRequest {
   jobId?: string | null;
   requestedBy?: string | null;
   datasetRows?: Record<string, string>[] | null;
+  datasetSourceId?: string | null;
 }
 
 export interface ReportingRunResult {
@@ -4065,6 +4288,9 @@ export interface ReportingRunAuditTrail {
   trigger: string;
   attemptCount: number;
   entries: ReportingRunAuditEntry[];
+  reportWriterDatasetSourceId?: string | null;
+  reportWriterDatasetSourceLabel?: string | null;
+  reportWriterDatasetRowCount?: number | null;
 }
 
 export interface ReportingWorkflowEvidenceLink {
@@ -4180,6 +4406,7 @@ export interface AccountingReportingSummary {
   portfolioCuts?: PortfolioReportingCut[];
   structuredExports?: StructuredReportingExport[];
   brandingThemes?: ReportBrandingTheme[];
+  reportWriterDatasetSources?: ReportWriterDatasetSource[];
   livePortfolioViews?: PortfolioReportingLiveView[];
   crossFundConsolidations?: CrossFundReportingConsolidation[];
   pnlSlices?: PortfolioReportingPnlSlice[];
@@ -4948,6 +5175,11 @@ export interface PaymentIntentExpectedCashMovement {
   capitalAccountId?: string | null;
   investorId?: string | null;
   purpose: string;
+  payee?: string | null;
+  accountScope?: string | null;
+  businessPurpose?: string | null;
+  approvalPolicy?: string | null;
+  sourceEvidenceLinks?: string[] | null;
 }
 
 export interface PaymentIntentApprovalStep {
@@ -4972,6 +5204,7 @@ export interface PaymentIntentBankEvidence {
   recordedAtUtc?: string | null;
   externalRef?: string | null;
   evidenceRoute?: string | null;
+  recordedBy?: string | null;
 }
 
 export interface PaymentIntentReconciliationLink {
@@ -5240,6 +5473,7 @@ export interface PrivateCapitalCloseCockpit {
   plannedCapabilities: string[];
   approvalHistory?: PrivateCapitalCloseCockpitApproval[] | null;
   navSupportPackages?: PrivateCapitalNavSupportPackage[] | null;
+  evidencePackages?: OperationsEvidencePackageSummary[] | null;
 }
 
 export interface PrivateCapitalCapitalAccountSubledger {

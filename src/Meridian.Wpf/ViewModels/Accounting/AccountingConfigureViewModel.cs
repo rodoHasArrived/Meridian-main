@@ -238,6 +238,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public ObservableCollection<AccountingWorkbenchRow> PostingRuleRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> AuditRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ProviderRows { get; } = [];
+    public ObservableCollection<AccountingWorkbenchRow> ExternalGlEvidencePackageRows { get; } = [];
     public ObservableCollection<ExternalGlEvidenceRow> ExternalGlRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalDraftRows { get; } = [];
     public ObservableCollection<AccountingWorkbenchRow> ManualJournalFundEventLedgerRecordRows { get; } = [];
@@ -689,6 +690,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public async Task RefreshExternalGlAsync(CancellationToken ct = default)
     {
         ProviderRows.Clear();
+        ExternalGlEvidencePackageRows.Clear();
         ExternalGlRows.Clear();
         if (_accountingSystemIntegrationService is null)
         {
@@ -719,6 +721,18 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             var reconciliation = await _accountingSystemIntegrationService
                 .ReconcileLatestAsync(fundProfileId: _activeFundProfile.FundProfileId, ledgerBookId: _configuration?.LedgerBookId, ct: ct)
                 .ConfigureAwait(false);
+
+            foreach (var package in reconciliation.EvidencePackages.Take(20))
+            {
+                ExternalGlEvidencePackageRows.Add(new AccountingWorkbenchRow(
+                    package.Label,
+                    package.Status.ToString(),
+                    package.RequiredActions.Count > 0
+                        ? string.Join(" ", package.RequiredActions)
+                        : $"{package.EvidenceReferenceCount} retained evidence reference(s).",
+                    package.EvidenceReferences.FirstOrDefault() ?? package.PackageId,
+                    package.PackageId));
+            }
 
             foreach (var row in reconciliation.Rows.Take(50))
             {
@@ -1258,13 +1272,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
                 $"{FormatSignedCurrencyAmount(subledger.OpeningNetActivity, subledger.Currency)} opening -> {FormatSignedCurrencyAmount(subledger.EndingNetActivity, subledger.Currency)} ending | {FormatSignedCurrencyAmount(subledger.NetCapitalActivity, subledger.Currency)} net | {FormatSubledgerDateRange(subledger)}",
                 $"Calls {FormatCurrencyAmount(subledger.Contributions, subledger.Currency)}; distributions {FormatCurrencyAmount(subledger.Distributions, subledger.Currency)}; subscriptions {FormatCurrencyAmount(subledger.Subscriptions, subledger.Currency)}; redemptions {FormatCurrencyAmount(subledger.Redemptions, subledger.Currency)}; fees {FormatCurrencyAmount(subledger.ManagementFees, subledger.Currency)} | {subledger.FundEventCount} event(s); {subledger.ApprovalQueueCount} approval queue; {subledger.PostedFundEventCount} posted; {subledger.PublishedReportOutputCount} published report(s) | readiness {subledger.ReadinessLabel}: {subledger.ReadinessReason}; next {FormatSubledgerNextAction(subledger)} | {subledger.EvidenceLinkCount} evidence; {BuildEvidenceCategoryReadinessSummary(subledger.EvidenceCategories)} | {subledger.ValidationIssueCount} issue(s)",
                 subledger.ActivityRoute)));
-        ManualJournalPaymentIntentRows.ReplaceWith(activity.PaymentIntents.Select(intent =>
-            new AccountingWorkbenchRow(
-                intent.PaymentIntentId,
-                intent.StatusLabel,
-                $"{intent.ExpectedCashMovement.Direction} {FormatCurrencyAmount(intent.ExpectedCashMovement.Amount, intent.ExpectedCashMovement.Currency)} | {intent.ExpectedCashMovement.EffectiveDate:yyyy-MM-dd} | requester {intent.Requester} | settlement {intent.SettlementReference ?? "not assigned"}",
-                $"{intent.ApprovalChain.Count} approval step(s); {intent.BankEvidence.Count} bank/cash evidence item(s); {intent.ReconciliationLinks.Count} reconciliation link(s); {intent.AuditHistory.Count} audit event(s) | {intent.ReadinessReason} | {intent.ExecutionDeferredReason}",
-                intent.EvidenceRoute)));
+        ManualJournalPaymentIntentRows.ReplaceWith(activity.PaymentIntents.Select(BuildManualJournalPaymentIntentRow));
         ManualJournalFundEventRows.ReplaceWith(activity.FundEvents.Select(item =>
             new AccountingWorkbenchRow(
                 $"{item.FundEventType} | {item.Memo}",
@@ -1351,6 +1359,29 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ".");
     }
 
+    private static AccountingWorkbenchRow BuildManualJournalPaymentIntentRow(PaymentIntentWorkflowDto intent)
+        => new(
+            intent.PaymentIntentId,
+            intent.StatusLabel,
+            $"{intent.ExpectedCashMovement.Direction} {FormatCurrencyAmount(intent.ExpectedCashMovement.Amount, intent.ExpectedCashMovement.Currency)} | {intent.ExpectedCashMovement.EffectiveDate:yyyy-MM-dd} | requester {intent.Requester} | settlement {intent.SettlementReference ?? "not assigned"}",
+            $"payee {intent.ExpectedCashMovement.Payee ?? "not assigned"} | scope {intent.ExpectedCashMovement.AccountScope ?? "not assigned"} | purpose {intent.ExpectedCashMovement.BusinessPurpose ?? intent.ExpectedCashMovement.Purpose} | policy {intent.ExpectedCashMovement.ApprovalPolicy ?? "not assigned"} | {intent.ExpectedCashMovement.SourceEvidenceLinks.Count} source evidence link(s) | {intent.ApprovalChain.Count} approval step(s); {intent.BankEvidence.Count} bank/cash evidence item(s); {BuildPaymentIntentBankEvidenceRecorderText(intent.BankEvidence)} | {intent.ReconciliationLinks.Count} reconciliation link(s); {intent.AuditHistory.Count} audit event(s) | {intent.ReadinessReason} | {intent.ExecutionDeferredReason}",
+            intent.EvidenceRoute);
+
+    private static string BuildPaymentIntentBankEvidenceRecorderText(IReadOnlyList<PaymentIntentBankEvidenceDto> bankEvidence)
+    {
+        var recorders = bankEvidence
+            .Select(static item => item.RecordedBy)
+            .Where(static recorder => !string.IsNullOrWhiteSpace(recorder))
+            .Select(static recorder => recorder!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Take(3)
+            .ToArray();
+
+        return recorders.Length == 0
+            ? "no retained recorder"
+            : $"recorded by {string.Join(", ", recorders)}";
+    }
+
     private static string FormatCurrencyAmount(decimal amount, string currency)
     {
         var code = string.IsNullOrWhiteSpace(currency) ? string.Empty : $" {currency.Trim().ToUpperInvariant()}";
@@ -1434,6 +1465,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         PostingRuleRows.Clear();
         AuditRows.Clear();
         ProviderRows.Clear();
+        ExternalGlEvidencePackageRows.Clear();
         ExternalGlRows.Clear();
         ManualJournalDraftRows.Clear();
         ManualJournalFundEventLedgerRecordRows.Clear();

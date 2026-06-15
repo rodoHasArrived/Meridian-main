@@ -111,10 +111,10 @@ public sealed class PostgresBankingStore : IBankingStore
             INSERT INTO {_options.Schema}.bank_transactions
                 (bank_transaction_id, entity_id, transaction_type, effective_date,
                  transaction_date, settlement_date, amount, currency, external_ref,
-                 recorded_at, is_voided)
+                 recorded_at, is_voided, recorded_by)
             VALUES
                 (@id, @eid, @type, @eff, @tx_date, @settle, @amount, @currency,
-                 @xref, @recorded_at, @is_voided)
+                 @xref, @recorded_at, @is_voided, @recorded_by)
             ON CONFLICT (bank_transaction_id) DO NOTHING;
             """;
 
@@ -129,6 +129,7 @@ public sealed class PostgresBankingStore : IBankingStore
         cmd.Parameters.AddWithValue("xref",        (object?)transaction.ExternalRef ?? DBNull.Value);
         cmd.Parameters.AddWithValue("recorded_at", transaction.RecordedAt);
         cmd.Parameters.AddWithValue("is_voided",   transaction.IsVoided);
+        cmd.Parameters.AddWithValue("recorded_by", (object?)transaction.RecordedBy ?? DBNull.Value);
 
         await cmd.ExecuteNonQueryAsync(ct);
     }
@@ -146,7 +147,7 @@ public sealed class PostgresBankingStore : IBankingStore
             cmd.CommandText = $"""
                 SELECT bank_transaction_id, entity_id, transaction_type, effective_date,
                        transaction_date, settlement_date, amount, currency, external_ref,
-                       recorded_at, is_voided
+                       recorded_at, is_voided, recorded_by
                 FROM {_options.Schema}.bank_transactions
                 WHERE entity_id = @eid
                 ORDER BY effective_date DESC;
@@ -158,7 +159,7 @@ public sealed class PostgresBankingStore : IBankingStore
             cmd.CommandText = $"""
                 SELECT bank_transaction_id, entity_id, transaction_type, effective_date,
                        transaction_date, settlement_date, amount, currency, external_ref,
-                       recorded_at, is_voided
+                       recorded_at, is_voided, recorded_by
                 FROM {_options.Schema}.bank_transactions
                 ORDER BY effective_date DESC;
                 """;
@@ -216,5 +217,6 @@ public sealed class PostgresBankingStore : IBankingStore
             Currency:          r.GetString(7),
             ExternalRef:       r.IsDBNull(8) ? null : r.GetString(8),
             RecordedAt:        r.GetFieldValue<DateTimeOffset>(9),
-            IsVoided:          r.GetBoolean(10));
+            IsVoided:          r.GetBoolean(10),
+            RecordedBy:        r.IsDBNull(11) ? null : r.GetString(11));
 }

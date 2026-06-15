@@ -20,7 +20,8 @@ import {
   type EvidenceNodeRowViewModel,
   type EvidencePacketActionTone,
   type EvidencePacketActionViewModel,
-  type EvidenceStatusTone
+  type EvidenceStatusTone,
+  type EvidenceVaultRequestListIndexPanelViewModel
 } from "@/screens/evidence-workbench-screen.view-model";
 
 const badgeVariant: Record<EvidenceStatusTone, "success" | "warning" | "danger" | "outline"> = {
@@ -167,6 +168,8 @@ export function EvidenceWorkbenchScreen() {
         </Card>
       ) : null}
 
+      <EvidenceVaultRequestListPanel panel={vm.requestListPanel} />
+
       {vm.hasPacket && vm.packet ? (
         <>
           <section className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
@@ -271,6 +274,8 @@ export function EvidenceWorkbenchScreen() {
                                 <span className="break-all">{artifact.canonicalSubjectLabel}</span>
                                 <span className="break-all">{artifact.sourceLabel}</span>
                                 <span>{artifact.retainedLabel}</span>
+                                <span className="break-all">{artifact.captureLabel}</span>
+                                <span>{artifact.extractionLabel}</span>
                               </div>
                             </li>
                           ))}
@@ -716,6 +721,123 @@ function EvidenceNodeDetailPanel({ detail, id }: { detail: EvidenceNodeDetailVie
         </section>
       </div>
     </aside>
+  );
+}
+
+function EvidenceVaultRequestListPanel({ panel }: { panel: EvidenceVaultRequestListIndexPanelViewModel }) {
+  return (
+    <Card className="panel-surface" role="region" aria-label={panel.title}>
+      <CardHeader>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
+              {panel.title}
+            </CardTitle>
+            <CardDescription>{panel.description}</CardDescription>
+          </div>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Badge variant="outline">{panel.scopeLabel}</Badge>
+            <Badge variant={panel.hasRows ? "warning" : "success"}>{panel.summaryLabel}</Badge>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {panel.hasRows ? (
+          <ul className="grid gap-3 xl:grid-cols-2" aria-label="Open Evidence Vault request lists">
+            {panel.rows.map((requestList) => (
+              <li
+                key={requestList.id}
+                aria-label={requestList.ariaLabel}
+                className="rounded-md border border-border/70 bg-secondary/25 px-3 py-3 text-sm"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 font-semibold text-foreground">
+                      <span>{requestList.requestListKindLabel}</span>
+                      <Badge variant={badgeVariant[requestList.highestSeverityTone]}>{requestList.highestSeverityLabel}</Badge>
+                      <Badge variant="outline">{requestList.statusLabel}</Badge>
+                    </div>
+                    <div className="mt-1 break-all font-mono text-xs text-muted-foreground">{requestList.targetLabel}</div>
+                  </div>
+                  {requestList.manifestHref && requestList.manifestLabel && requestList.manifestAriaLabel ? (
+                    <Button asChild variant="outline" size="sm">
+                      <a
+                        href={requestList.manifestHref}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={requestList.manifestAriaLabel}
+                      >
+                        <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                        {requestList.manifestLabel}
+                      </a>
+                    </Button>
+                  ) : null}
+                </div>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{requestList.summary}</p>
+                <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
+                  <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
+                    {requestList.openRequestCountLabel}
+                  </span>
+                  <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
+                    {requestList.requestCountLabel}
+                  </span>
+                  <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
+                    {requestList.evidenceKindsLabel}
+                  </span>
+                  <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
+                    {requestList.blockedOutputsLabel}
+                  </span>
+                  <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
+                    {requestList.subjectLabel}
+                  </span>
+                  <span className="break-all rounded-sm border border-border/60 bg-background/30 px-2 py-1 font-mono">
+                    {requestList.vaultLabel}
+                  </span>
+                </div>
+                {requestList.supportRequestRows.length > 0 ? (
+                  <ul className="mt-3 grid gap-2" aria-label={`${requestList.requestListKindLabel} support requests`}>
+                    {requestList.supportRequestRows.map((request) => (
+                      <li
+                        key={request.id}
+                        aria-label={request.ariaLabel}
+                        className="rounded-sm border border-border/60 bg-background/30 px-2.5 py-2 text-xs"
+                      >
+                        <div className="flex flex-wrap items-center gap-2 font-semibold text-foreground">
+                          <span>{request.requestKindLabel}</span>
+                          <Badge variant={badgeVariant[request.severityTone]}>{request.severityLabel}</Badge>
+                          <Badge variant="outline">{request.statusLabel}</Badge>
+                        </div>
+                        <div className="mt-1 break-all font-mono text-muted-foreground">{request.evidenceLabel}</div>
+                        <p className="mt-1 leading-5 text-muted-foreground">{request.summary}</p>
+                        <div className="mt-2 grid gap-1 font-mono text-[0.7rem] text-muted-foreground sm:grid-cols-2">
+                          <span className="break-all">{request.evidenceKindLabel}</span>
+                          <span className="break-all">{request.workItemLabel}</span>
+                          <span className="break-all sm:col-span-2">{request.blockedOutputLabel}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-3 rounded-sm border border-dashed border-border/70 bg-background/30 px-2.5 py-2 text-xs text-muted-foreground">
+                    {requestList.supportRequestSummaryLabel}
+                  </p>
+                )}
+                <div className="mt-3 text-xs text-muted-foreground">{requestList.retainedLabel}</div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div
+            role="status"
+            className="rounded-md border border-dashed border-border/80 bg-secondary/20 px-4 py-4 text-sm text-muted-foreground"
+          >
+            <div className="font-semibold text-foreground">{panel.emptyTitle}</div>
+            <p className="mt-1 max-w-2xl leading-6">{panel.emptyDetail}</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

@@ -4,11 +4,14 @@ using System.Text.Json;
 using System.Threading.RateLimiting;
 using FluentAssertions;
 using Meridian.Contracts.AccountingSystem;
+using Meridian.Contracts.FundStructure;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.Identity.Auth;
 using Meridian.Identity;
+using Meridian.Ledger;
 using Meridian.ProviderSdk.AccountingSystem;
+using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -51,6 +54,109 @@ public sealed class AccountingSystemIntegrationServiceTests
         summary.Rows.Should().NotBeEmpty();
         summary.Rows.Should().OnlyContain(row => row.Status == AccountingSystemReconciliationStatusDto.MissingMeridian);
         summary.BreakCount.Should().Be(summary.Rows.Count);
+    }
+
+    [Fact]
+    public async Task ReconcileLatestAsync_WithMeridianLedger_ReturnsMatchedRowsAndRetainedEvidencePackages()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var timestamp = new DateTimeOffset(2026, 1, 5, 0, 0, 0, TimeSpan.Zero);
+        var journalEntryId = Guid.NewGuid();
+        var cashLineId = Guid.NewGuid();
+        var incomeLineId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var sourceJournalEntryId = Guid.NewGuid();
+        var journal = new JournalEntry(
+            journalEntryId,
+            timestamp,
+            "Capital contribution",
+            [
+                new LedgerEntry(
+                    cashLineId,
+                    journalEntryId,
+                    timestamp,
+                    new LedgerAccount("Assets:Cash:Operating", LedgerAccountType.Asset),
+                    250_000m,
+                    0m,
+                    "Capital contribution"),
+                new LedgerEntry(
+                    incomeLineId,
+                    journalEntryId,
+                    timestamp,
+                    new LedgerAccount("Income:Investment", LedgerAccountType.Revenue),
+                    0m,
+                    250_000m,
+                    "Capital contribution")
+            ]);
+        var ledgerStore = new StaticLedgerJournalStore(
+            new LedgerBookRecord(
+                ledgerBookId,
+                "default-fund",
+                Guid.NewGuid(),
+                FundStructureNodeKindDto.Fund,
+                "Default fund primary book",
+                "USD",
+                timestamp,
+                timestamp),
+            new LedgerAccountingPeriod(
+                periodId,
+                ledgerBookId,
+                2026,
+                1,
+                "2026-01",
+                new DateOnly(2026, 1, 1),
+                new DateOnly(2026, 1, 31),
+                "Open",
+                timestamp,
+                null,
+                1),
+            [
+                new LedgerJournalEntryRecord(
+                    journal,
+                    Guid.NewGuid(),
+                    periodId,
+                    CommandId: null,
+                    CorrelationId: null,
+                    GlobalSequence: 1,
+                    CreatedAt: timestamp,
+                    SourceEventId: sourceEventId,
+                    SourceJournalEntryId: sourceJournalEntryId)
+            ]);
+        var service = CreateService(
+            ledgerStore,
+            new QuickBooksOnlineAccountingProvider(FakeQuickBooksConnectionStore.Configured(), new FakeQuickBooksClient()));
+
+        await service.ImportAsync(new AccountingSystemImportRequestDto(
+            "quickbooks",
+            "default-fund",
+            ledgerBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31)));
+
+        var summary = await service.ReconcileLatestAsync("quickbooks", "default-fund", ledgerBookId);
+
+        summary.Rows.Should().OnlyContain(row => row.Status == AccountingSystemReconciliationStatusDto.Matched);
+        summary.BreakCount.Should().Be(0);
+        summary.EvidenceReferences.Should().Contain("quickbooks:company:9130359087654321:trial-balance:qbo-1000");
+        summary.EvidenceReferences.Should().Contain($"ledger-entry:{cashLineId:D}");
+        summary.EvidencePackages.Should().ContainSingle(package =>
+            package.PackageId == $"gl-meridian-ledger-evidence:{summary.ImportId}" &&
+            package.Status == AccountingSystemEvidencePackageStatusDto.Ready &&
+            package.EvidenceReferences.Contains($"ledger-journal-entry:{journalEntryId:D}") &&
+            package.RequiredActions.Count == 0);
+        summary.EvidencePackages.Should().ContainSingle(package =>
+            package.PackageId == $"gl-reconciliation-tie-out:{summary.ImportId}" &&
+            package.Status == AccountingSystemEvidencePackageStatusDto.Ready &&
+            package.RequiredActions.Count == 0);
+
+        var cashRow = summary.Rows.Single(row => row.AccountCode == "Assets:Cash:Operating");
+        cashRow.ExternalEvidenceReferences.Should().Contain("quickbooks:company:9130359087654321:trial-balance:qbo-1000");
+        cashRow.MeridianEvidenceReferences.Should().Contain($"ledger-entry:{cashLineId:D}");
+        cashRow.MeridianEvidenceReferences.Should().Contain($"source-event:{sourceEventId:D}");
+        cashRow.MeridianEvidenceReferences.Should().Contain($"source-journal-entry:{sourceJournalEntryId:D}");
+        cashRow.EvidenceReferences.Should().Contain("quickbooks:company:9130359087654321:trial-balance:qbo-1000");
+        cashRow.EvidenceReferences.Should().Contain($"ledger-entry:{cashLineId:D}");
     }
 
     [Fact]
@@ -185,7 +291,12 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     private static AccountingSystemIntegrationService CreateService(params IAccountingSystemProvider[] additionalProviders)
-        => new(new IAccountingSystemProvider[] { new QuickBooksFixtureAccountingProvider() }.Concat(additionalProviders));
+        => CreateService(null, additionalProviders);
+
+    private static AccountingSystemIntegrationService CreateService(
+        ILedgerJournalStore? ledgerJournalStore,
+        params IAccountingSystemProvider[] additionalProviders)
+        => new(new IAccountingSystemProvider[] { new QuickBooksFixtureAccountingProvider() }.Concat(additionalProviders), ledgerJournalStore);
 
     private static async Task<WebApplication> CreateAppAsync(UserPermission permissions)
     {
@@ -230,6 +341,80 @@ public sealed class AccountingSystemIntegrationServiceTests
         });
         result.Should().NotBeNull($"expected {typeof(T).Name}, got {json}");
         return result!;
+    }
+
+    private sealed class StaticLedgerJournalStore(
+        LedgerBookRecord book,
+        LedgerAccountingPeriod period,
+        IReadOnlyList<LedgerJournalEntryRecord> records) : ILedgerJournalStore
+    {
+        public Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
+            => throw new NotSupportedException("Static ledger journal store is read-only.");
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByPeriodAsync(Guid periodId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(periodId == period.PeriodId ? records : []);
+        }
+
+        public Task<IReadOnlyList<LedgerJournalEntryRecord>> GetByAggregateAsync(Guid aggregateId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<IReadOnlyList<LedgerJournalEntryRecord>>(
+                records.Where(record => record.AggregateId == aggregateId).ToArray());
+        }
+
+        public Task<LedgerAccountingPeriod?> GetPeriodAsync(Guid periodId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<LedgerAccountingPeriod?>(periodId == period.PeriodId ? period : null);
+        }
+
+        public Task<IReadOnlyList<LedgerAccountingPeriod>> ListPeriodsAsync(
+            Guid? ledgerBookId = null,
+            string? status = null,
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var matches =
+                (!ledgerBookId.HasValue || ledgerBookId.Value == period.LedgerBookId) &&
+                (string.IsNullOrWhiteSpace(status) || string.Equals(status, period.Status, StringComparison.OrdinalIgnoreCase)) &&
+                (string.IsNullOrWhiteSpace(fundProfileId) || string.Equals(fundProfileId, book.FundProfileId, StringComparison.OrdinalIgnoreCase)) &&
+                (!fundStructureNodeId.HasValue || fundStructureNodeId.Value == book.FundStructureNodeId);
+            return Task.FromResult<IReadOnlyList<LedgerAccountingPeriod>>(matches ? [period] : []);
+        }
+
+        public Task<LedgerAccountingPeriod> SavePeriodAsync(
+            LedgerAccountingPeriod period,
+            long expectedVersion,
+            PeriodCloseEventRecord? closeEvent = null,
+            CancellationToken ct = default)
+            => throw new NotSupportedException("Static ledger journal store is read-only.");
+
+        public Task<LedgerBookRecord?> GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult<LedgerBookRecord?>(ledgerBookId == book.LedgerBookId ? book : null);
+        }
+
+        public Task<IReadOnlyList<LedgerBookRecord>> ListLedgerBooksAsync(
+            string? fundProfileId = null,
+            Guid? fundStructureNodeId = null,
+            FundStructureNodeKindDto? fundStructureNodeKind = null,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            var matches =
+                (string.IsNullOrWhiteSpace(fundProfileId) || string.Equals(fundProfileId, book.FundProfileId, StringComparison.OrdinalIgnoreCase)) &&
+                (!fundStructureNodeId.HasValue || fundStructureNodeId.Value == book.FundStructureNodeId) &&
+                (!fundStructureNodeKind.HasValue || fundStructureNodeKind.Value == book.FundStructureNodeKind);
+            return Task.FromResult<IReadOnlyList<LedgerBookRecord>>(matches ? [book] : []);
+        }
+
+        public Task<LedgerBookRecord> SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default)
+            => throw new NotSupportedException("Static ledger journal store is read-only.");
     }
 
     private sealed class FakeQuickBooksConnectionStore : IQuickBooksOnlineConnectionStore

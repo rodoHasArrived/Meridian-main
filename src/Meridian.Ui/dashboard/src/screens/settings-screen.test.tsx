@@ -777,7 +777,10 @@ describe("SettingsScreen", () => {
       revokedBy: null,
       revokedAtUtc: null,
       revocationReason: null,
-      lastAuditId: "access-audit-1"
+      lastAuditId: "access-audit-1",
+      approvalLimitAmount: 100000,
+      approvalLimitCurrency: "USD",
+      segregationOfDutiesRule: "Requester cannot approve own payment request."
     };
     const createdAssignment: UserAccessAssignment = {
       ...assignment,
@@ -790,7 +793,10 @@ describe("SettingsScreen", () => {
       rationale: "Grant fund close authority",
       correlationId: "access-correlation-2",
       version: 1,
-      lastAuditId: "access-audit-2"
+      lastAuditId: "access-audit-2",
+      approvalLimitAmount: 250000,
+      approvalLimitCurrency: "USD",
+      segregationOfDutiesRule: "Requester cannot approve own payment request."
     };
     const revokedAssignment: UserAccessAssignment = {
       ...assignment,
@@ -816,7 +822,10 @@ describe("SettingsScreen", () => {
         scopeId: createdAssignment.scopeId,
         permissionNames: createdAssignment.permissionNames,
         permissionMask: createdAssignment.permissionMask,
-        version: createdAssignment.version
+        version: createdAssignment.version,
+        approvalLimitAmount: createdAssignment.approvalLimitAmount,
+        approvalLimitCurrency: createdAssignment.approvalLimitCurrency,
+        segregationOfDutiesRule: createdAssignment.segregationOfDutiesRule
       }
     });
     apiMocks.revokeScopedAccessAssignment.mockResolvedValue({
@@ -834,7 +843,10 @@ describe("SettingsScreen", () => {
         scopeId: revokedAssignment.scopeId,
         permissionNames: revokedAssignment.permissionNames,
         permissionMask: revokedAssignment.permissionMask,
-        version: revokedAssignment.version
+        version: revokedAssignment.version,
+        approvalLimitAmount: revokedAssignment.approvalLimitAmount,
+        approvalLimitCurrency: revokedAssignment.approvalLimitCurrency,
+        segregationOfDutiesRule: revokedAssignment.segregationOfDutiesRule
       }
     });
     const onRefresh = vi.fn();
@@ -851,11 +863,17 @@ describe("SettingsScreen", () => {
     const consoleRegion = await screen.findByRole("region", { name: "Scoped access assignment console" });
     expect(within(consoleRegion).getByText("fund-controller")).toBeInTheDocument();
     expect(within(consoleRegion).getByText("access-audit-1")).toBeInTheDocument();
+    expect(within(consoleRegion).getByText("USD 100,000")).toBeInTheDocument();
+    expect(within(consoleRegion).getByText("Requester cannot approve own payment request.")).toBeInTheDocument();
 
     const form = screen.getByRole("form", { name: "Grant scoped access assignment" });
     await waitFor(() => expect(within(form).getByLabelText("Role")).toHaveValue("Accounting"));
     await user.type(within(form).getByLabelText("Scoped access principal id"), "fund-reviewer");
     await user.type(within(form).getByLabelText("Scoped access scope id"), "fund-review");
+    await user.type(within(form).getByLabelText("Scoped access approval limit amount"), "250000");
+    await user.clear(within(form).getByLabelText("Scoped access approval limit currency"));
+    await user.type(within(form).getByLabelText("Scoped access approval limit currency"), "usd");
+    await user.type(within(form).getByLabelText("Scoped access segregation of duties rule"), "Requester cannot approve own payment request.");
     await user.clear(within(form).getByLabelText("Scoped access rationale"));
     await user.type(within(form).getByLabelText("Scoped access rationale"), "Grant fund close authority");
     await user.click(within(form).getByRole("button", { name: /Grant access/i }));
@@ -869,7 +887,10 @@ describe("SettingsScreen", () => {
       roleProfileName: null,
       permissionNames: ["ViewTrades", "ManageDirectLending"],
       requestedBy: "Ops Lead",
-      rationale: "Grant fund close authority"
+      rationale: "Grant fund close authority",
+      approvalLimitAmount: 250000,
+      approvalLimitCurrency: "USD",
+      segregationOfDutiesRule: "Requester cannot approve own payment request."
     }));
     expect(await within(form).findByText("Scoped access granted for fund-reviewer.")).toBeInTheDocument();
     expect(within(form).getByText("Audit access-audit-2")).toBeInTheDocument();

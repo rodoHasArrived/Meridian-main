@@ -15,7 +15,9 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         "Fund/book/period close lane projection from operations continuity workflows",
         "Private-capital journal, capital-account tie-out, report, delivery, and evidence posture",
         "Close-package manifest and period-lock readiness from retained workflow evidence",
+        "Close-control checklist readiness for reversals, recurring journals, stale marks, and period lock or reopen evidence",
         "Approval history from workflow decisions and checklist-control approvals",
+        "Private-capital evidence package rollups for fund-event accounting, partner tie-outs, NAV support, and close audit",
         "NAV support packages with positions, cash, pricing, shadow NAV evidence, and administrator-versus-Meridian tie-out evidence",
         "Management-company operating records for expenses, fees, intercompany, budget, cash-plan, reimbursement, and bank/card evidence"
     ];
@@ -25,6 +27,14 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         "Native external investor portal delivery",
         "Live payment release",
         "Tax filing workflow execution"
+    ];
+
+    private static readonly IReadOnlyList<CloseControlRequirement> CloseControlRequirements =
+    [
+        new("reversal-approval", "reversal approval", "Retain approved reversal support before close sign-off."),
+        new("recurring-journals", "recurring journal completion", "Complete recurring journal and accrual controls before close sign-off."),
+        new("stale-marks", "stale mark resolution", "Retain stale mark or pricing freshness resolution evidence before close sign-off."),
+        new("period-lock-reopen", "period lock or reopen evidence", "Retain period-lock or governed reopen evidence before close sign-off.")
     ];
 
     private readonly IManualJournalEntryWorkbenchService? _manualJournalEntryWorkbenchService;
@@ -67,8 +77,9 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             .DistinctBy(static action => action.Code, StringComparer.OrdinalIgnoreCase)
             .ToArray();
         var lanes = BuildLanes(activity, workflows, records, subledgers, reportOutputs);
-        var approvalHistory = BuildApprovalHistory(workflows);
+        var approvalHistory = BuildApprovalHistory(workflows, records, reportOutputs);
         var navSupportPackages = BuildNavSupportPackages(workflows, records, reportOutputs);
+        var evidencePackages = BuildEvidencePackages(lanes, approvalHistory, navSupportPackages, workflows);
         var overallStatus = ResolveOverallStatus(lanes);
         var readinessScore = ResolveReadinessScore(workflows, lanes);
 
@@ -87,8 +98,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             FundEventCount: records.Count,
             CapitalAccountCount: subledgers.Count,
             ReportOutputCount: reportOutputs.Count,
-            DeliveredReportOutputCount: reportOutputs.Count(static output =>
-                output.IsPublished && !string.IsNullOrWhiteSpace(output.RetainedManifestPath)),
+            DeliveredReportOutputCount: reportOutputs.Count(IsApprovedDeliveredReportOutput),
             ReadyLaneCount: lanes.Count(static lane => lane.IsReady),
             BlockedLaneCount: lanes.Count(static lane => lane.Status is EvidenceStatusDto.Blocked or EvidenceStatusDto.Missing),
             Lanes: lanes,
@@ -98,7 +108,8 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             LiveCapabilities: LiveCapabilities,
             PlannedCapabilities: PlannedCapabilities,
             ApprovalHistory: approvalHistory,
-            NavSupportPackages: navSupportPackages);
+            NavSupportPackages: navSupportPackages,
+            EvidencePackages: evidencePackages);
     }
 
     private async Task<IReadOnlyList<OperationsContinuityWorkflowDto>> LoadWorkflowsAsync(
@@ -150,6 +161,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             BuildValuationEvidenceLane(workflows, records),
             BuildReportingLane(workflows, reportOutputs),
             BuildDeliveryLane(reportOutputs),
+            BuildCloseControlsLane(workflows),
             BuildClosePackageLane(workflows),
             BuildPeriodLockLane(workflows)
         ];
@@ -200,15 +212,22 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records)
     {
         var postedRecords = records.Count(static record => record.IsPosted && record.LedgerImpactCount > 0);
-        var isReady = postedRecords > 0 || HasReadyComponent(workflows, "ledger");
+        var hasSourceRecords = records.Count > 0;
+        var isReady = hasSourceRecords
+            ? postedRecords == records.Count
+            : HasReadyComponent(workflows, "ledger");
         return Lane(
             "journal-posting",
             "Journals",
             ResolveComponentStatus(workflows, "ledger", isReady),
             isReady,
             isReady
-                ? $"{postedRecords} private-capital fund event(s) have posted ledger impact, or the close ledger component is ready."
-                : "Posted journals or the close ledger readiness component are missing.",
+                ? hasSourceRecords
+                    ? $"{postedRecords}/{records.Count} private-capital fund event(s) have posted ledger impact."
+                    : "The close ledger component is ready for this workflow-only close scope."
+                : hasSourceRecords
+                    ? $"{records.Count - postedRecords} private-capital fund event(s) still need posted ledger impact."
+                    : "Posted journals or the close ledger readiness component are missing.",
             records.FirstOrDefault(static record => record.IsPosted)?.ActivityRoute ?? FirstRoute(workflows, "ledger"),
             RecordEvidence(records, "Journal evidence"),
             "Post or validate close journals");
@@ -476,6 +495,156 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         ];
     }
 
+    private static IReadOnlyList<OperationsEvidencePackageSummaryDto> BuildEvidencePackages(
+        IReadOnlyList<PrivateCapitalCloseCockpitLaneDto> lanes,
+        IReadOnlyList<PrivateCapitalCloseCockpitApprovalDto> approvalHistory,
+        IReadOnlyList<PrivateCapitalNavSupportPackageDto> navSupportPackages,
+        IReadOnlyList<OperationsContinuityWorkflowDto> workflows)
+    {
+        var approvalEvidence = approvalHistory
+            .SelectMany(static approval => approval.EvidenceLinks)
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var navSupportEvidence = navSupportPackages
+            .SelectMany(static package => package.EvidenceLinks)
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var navSupportActions = navSupportPackages
+            .SelectMany(static package => package.RequiredActions)
+            .ToArray();
+        var approvalHistoryReady = approvalHistory.Count > 0 &&
+                                   approvalHistory.All(static approval => approval.Status == OperationsApprovalStateDto.Approved);
+        var navPackageReady = navSupportPackages.Any(static package => package.IsReady);
+
+        OperationsEvidencePackageSummaryDto[] packages =
+        [
+            BuildEvidencePackage(
+                "private-capital:fund-event-accounting",
+                "Fund-event accounting evidence",
+                "Retained fund-event accounting package for source activity, journal posting, capital-account roll-forward, and expense/fee allocation review.",
+                lanes,
+                ["data-receipt", "journal-posting", "capital-accounts", "expense-fee-allocation"]),
+            BuildEvidencePackage(
+                "private-capital:partner-capital-tie-out",
+                "Partner capital tie-out evidence",
+                "Retained partner-capital package for statement tie-out, governed reporting, and delivery evidence.",
+                lanes,
+                ["partner-capital-tie-outs", "reporting", "delivery"]),
+            BuildEvidencePackage(
+                "private-capital:nav-support",
+                "NAV support evidence package",
+                "Retained NAV support package for valuation evidence, shadow NAV, and administrator-versus-Meridian tie-out support.",
+                lanes,
+                ["nav-support", "valuation-evidence"],
+                navSupportEvidence,
+                navPackageReady,
+                "Retain complete NAV support package evidence before close sign-off.",
+                navSupportActions),
+            BuildEvidencePackage(
+                "private-capital:close-approval-audit",
+                "Close approval and audit evidence",
+                "Retained close audit package for close controls, close-package publication, period lock, and approval-history evidence.",
+                lanes,
+                ["close-controls", "close-package", "period-lock"],
+                approvalEvidence,
+                approvalHistoryReady,
+                "Retain approved close approval history before audit package release.")
+        ];
+
+        return packages
+            .Concat(PeriodLockReopenPackages(workflows))
+            .DistinctBy(static package => package.PackageId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static OperationsEvidencePackageSummaryDto BuildEvidencePackage(
+        string packageId,
+        string label,
+        string readySummary,
+        IReadOnlyList<PrivateCapitalCloseCockpitLaneDto> lanes,
+        IReadOnlyList<string> laneIds,
+        IReadOnlyList<OperationsEvidenceLinkDto>? extraEvidenceLinks = null,
+        bool extraRequiredCategoryReady = true,
+        string? extraRequiredAction = null,
+        IReadOnlyList<string>? extraRequiredActions = null)
+    {
+        var packageLanes = lanes
+            .Where(lane => laneIds.Any(id => string.Equals(id, lane.LaneId, StringComparison.OrdinalIgnoreCase)))
+            .ToArray();
+        var evidence = packageLanes
+            .SelectMany(static lane => lane.EvidenceLinks)
+            .Concat(extraEvidenceLinks ?? [])
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var requiredCategoryCount = laneIds.Count + (extraRequiredAction is null ? 0 : 1);
+        var completeCategoryCount = packageLanes.Count(static lane => lane.IsReady) +
+                                    (extraRequiredAction is null
+                                        ? 0
+                                        : extraRequiredCategoryReady ? 1 : 0);
+        var status = ResolveEvidencePackageStatus(packageLanes, evidence.Length, completeCategoryCount, requiredCategoryCount);
+        var requiredActions = status == EvidenceStatusDto.Ready
+            ? []
+            : packageLanes
+                .SelectMany(static lane => lane.RequiredActions)
+                .Concat(extraRequiredActions ?? [])
+                .Concat(extraRequiredAction is null || extraRequiredCategoryReady ? [] : [extraRequiredAction])
+                .Where(static action => !string.IsNullOrWhiteSpace(action))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        var route = packageLanes
+            .Select(static lane => lane.Route)
+            .FirstOrDefault(static route => !string.IsNullOrWhiteSpace(route));
+
+        return new OperationsEvidencePackageSummaryDto(
+            packageId,
+            label,
+            status,
+            status == EvidenceStatusDto.Ready,
+            BuildEvidencePackageSummary(label, readySummary, status, completeCategoryCount, requiredCategoryCount, evidence.Length),
+            route,
+            completeCategoryCount,
+            requiredCategoryCount,
+            evidence.Length,
+            evidence,
+            requiredActions);
+    }
+
+    private static EvidenceStatusDto ResolveEvidencePackageStatus(
+        IReadOnlyList<PrivateCapitalCloseCockpitLaneDto> lanes,
+        int evidenceLinkCount,
+        int completeCategoryCount,
+        int requiredCategoryCount)
+    {
+        if (requiredCategoryCount > 0 && completeCategoryCount == requiredCategoryCount)
+        {
+            return EvidenceStatusDto.Ready;
+        }
+
+        if (lanes.Any(static lane => lane.Status == EvidenceStatusDto.Blocked))
+        {
+            return EvidenceStatusDto.Blocked;
+        }
+
+        return evidenceLinkCount == 0 && lanes.All(static lane => lane.Status == EvidenceStatusDto.Missing)
+            ? EvidenceStatusDto.Missing
+            : EvidenceStatusDto.ReviewRequired;
+    }
+
+    private static string BuildEvidencePackageSummary(
+        string label,
+        string readySummary,
+        EvidenceStatusDto status,
+        int completeCategoryCount,
+        int requiredCategoryCount,
+        int evidenceLinkCount)
+        => status switch
+        {
+            EvidenceStatusDto.Ready => readySummary,
+            EvidenceStatusDto.Missing => $"{label} has no retained evidence for this close scope.",
+            EvidenceStatusDto.Blocked => $"{label} has blocked close evidence; {completeCategoryCount}/{requiredCategoryCount} required evidence categor{(requiredCategoryCount == 1 ? "y is" : "ies are")} ready.",
+            _ => $"{label} is incomplete; {completeCategoryCount}/{requiredCategoryCount} required evidence categor{(requiredCategoryCount == 1 ? "y is" : "ies are")} ready across {evidenceLinkCount} retained evidence link(s)."
+        };
+
     private static PrivateCapitalNavSupportComponentDto BuildNavSupportComponent(
         IReadOnlyList<OperationsContinuityWorkflowDto> workflows,
         string key,
@@ -594,17 +763,31 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         IReadOnlyList<OperationsContinuityWorkflowDto> workflows,
         IReadOnlyList<PrivateCapitalReportOutputDto> reportOutputs)
     {
-        var readyOutputs = reportOutputs.Count(static output => output.IsReportReady);
-        var isReady = readyOutputs > 0 || HasReadyComponent(workflows, "reports");
+        var hasSourceOutputs = reportOutputs.Count > 0;
+        var readyOutputs = reportOutputs.Count(IsApprovedReadyReportOutput);
+        var isReady = hasSourceOutputs
+            ? readyOutputs == reportOutputs.Count
+            : HasReadyComponent(workflows, "reports");
+        var status = isReady
+            ? EvidenceStatusDto.Ready
+            : hasSourceOutputs
+                ? reportOutputs.Any(static output => output.ValidationIssues.Count > 0)
+                    ? EvidenceStatusDto.Blocked
+                    : EvidenceStatusDto.ReviewRequired
+                : ResolveComponentStatus(workflows, "reports", isReady);
         return Lane(
             "reporting",
             "Reporting",
-            ResolveComponentStatus(workflows, "reports", isReady),
+            status,
             isReady,
             isReady
-                ? $"{readyOutputs} governed report output(s) are ready, or the close report component is ready."
-                : "Governed report output is missing or still blocked.",
-            reportOutputs.FirstOrDefault(static output => output.IsReportReady)?.ReportOutputRoute ??
+                ? hasSourceOutputs
+                    ? $"{readyOutputs}/{reportOutputs.Count} governed report output(s) are approved and ready."
+                    : "The close report component is ready for this workflow-only close scope."
+                : hasSourceOutputs
+                    ? "Governed report output approval, readiness, or validation evidence is incomplete."
+                    : "Governed report output is missing or still blocked.",
+            reportOutputs.FirstOrDefault(IsApprovedReadyReportOutput)?.ReportOutputRoute ??
                 reportOutputs.FirstOrDefault()?.ReportRoute ??
                 FirstRoute(workflows, "reports"),
             ReportEvidence(reportOutputs),
@@ -614,21 +797,203 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
     private static PrivateCapitalCloseCockpitLaneDto BuildDeliveryLane(IReadOnlyList<PrivateCapitalReportOutputDto> reportOutputs)
     {
         var deliveredOutputs = reportOutputs
-            .Where(static output => output.IsPublished && !string.IsNullOrWhiteSpace(output.RetainedManifestPath))
+            .Where(IsApprovedDeliveredReportOutput)
             .ToArray();
-        var isReady = deliveredOutputs.Length > 0;
+        var isReady = reportOutputs.Count > 0 && deliveredOutputs.Length == reportOutputs.Count;
         return Lane(
             "delivery",
             "Delivery",
-            isReady ? EvidenceStatusDto.Ready : EvidenceStatusDto.Missing,
+            isReady
+                ? EvidenceStatusDto.Ready
+                : reportOutputs.Count == 0
+                    ? EvidenceStatusDto.Missing
+                    : EvidenceStatusDto.ReviewRequired,
             isReady,
             isReady
-                ? $"{deliveredOutputs.Length} published report output(s) retain delivery or manifest evidence."
-                : "No retained delivery package or publication manifest is linked to this close scope.",
+                ? $"{deliveredOutputs.Length}/{reportOutputs.Count} approved report output(s) retain delivery or manifest evidence."
+                : reportOutputs.Count == 0
+                    ? "No retained delivery package or publication manifest is linked to this close scope."
+                    : "Report package delivery still needs approved output, publication, and retained manifest evidence.",
             deliveredOutputs.Select(static output => output.ReportOutputRoute ?? output.ReportRoute).FirstOrDefault(static route => !string.IsNullOrWhiteSpace(route)),
             ReportEvidence(deliveredOutputs),
             "Retain report-package delivery evidence");
     }
+
+    private static PrivateCapitalCloseCockpitLaneDto BuildCloseControlsLane(IReadOnlyList<OperationsContinuityWorkflowDto> workflows)
+    {
+        var evaluations = workflows
+            .SelectMany(workflow => CloseControlRequirements.Select(requirement => BuildCloseControlEvaluation(workflow, requirement)))
+            .ToArray();
+        var isReady = evaluations.Length > 0 && evaluations.All(static evaluation => evaluation.IsReady);
+        var status = isReady
+            ? EvidenceStatusDto.Ready
+            : workflows.Count == 0
+                ? EvidenceStatusDto.Missing
+                : evaluations.Any(static evaluation => evaluation.Status == EvidenceStatusDto.Blocked)
+                    ? EvidenceStatusDto.Blocked
+                    : EvidenceStatusDto.ReviewRequired;
+        var unresolved = evaluations
+            .Where(static evaluation => !evaluation.IsReady)
+            .Select(static evaluation => evaluation.Requirement.Label)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var evidence = WorkflowsEvidence(workflows)
+            .Concat(CloseControlEvidence(evaluations))
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var route = evaluations
+            .SelectMany(static evaluation => evaluation.Tasks.Select(static task => task.RemediationRoute))
+            .FirstOrDefault(static route => !string.IsNullOrWhiteSpace(route)) ??
+            workflows.Select(static workflow => BuildWorkflowRoute(workflow.WorkflowId)).FirstOrDefault();
+        var requiredActions = status == EvidenceStatusDto.Ready
+            ? []
+            : evaluations
+                .Where(static evaluation => !evaluation.IsReady)
+                .Select(static evaluation => evaluation.Requirement.RequiredAction)
+                .DefaultIfEmpty("Complete close-control checklist tasks for reversals, recurring journals, stale marks, and period lock or reopen evidence.")
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+        return new PrivateCapitalCloseCockpitLaneDto(
+            "close-controls",
+            "Close controls",
+            status,
+            isReady,
+            status switch
+            {
+                EvidenceStatusDto.Ready => $"{evaluations.Length} close-control checklist requirement(s) are complete with retained evidence and control approval.",
+                EvidenceStatusDto.Missing => "No close workflow is available to prove close-control checklist readiness.",
+                EvidenceStatusDto.Blocked => $"Close-control checklist has blocked items for {string.Join(", ", unresolved)}.",
+                _ => $"Close-control checklist still needs retained evidence or approval for {string.Join(", ", unresolved)}."
+            },
+            Normalize(route),
+            evidence.Length,
+            evidence,
+            requiredActions);
+    }
+
+    private static CloseControlEvaluation BuildCloseControlEvaluation(
+        OperationsContinuityWorkflowDto workflow,
+        CloseControlRequirement requirement)
+    {
+        var tasks = workflow.CloseChecklist
+            .Where(task => MatchesCloseControlRequirement(task, requirement))
+            .ToArray();
+        if (tasks.Length == 0)
+        {
+            return new CloseControlEvaluation(workflow, requirement, tasks, EvidenceStatusDto.ReviewRequired, false);
+        }
+
+        if (tasks.Any(IsCloseControlTaskBlocked))
+        {
+            return new CloseControlEvaluation(workflow, requirement, tasks, EvidenceStatusDto.Blocked, false);
+        }
+
+        var isReady = tasks.All(task => IsCloseControlTaskReady(workflow, task));
+        return new CloseControlEvaluation(
+            workflow,
+            requirement,
+            tasks,
+            isReady ? EvidenceStatusDto.Ready : EvidenceStatusDto.ReviewRequired,
+            isReady);
+    }
+
+    private static bool MatchesCloseControlRequirement(
+        OperationsCloseChecklistTaskDto task,
+        CloseControlRequirement requirement)
+    {
+        var values = new[]
+        {
+            task.TaskId,
+            task.Label,
+            task.RequiredEvidence,
+            task.EvidencePointer,
+            task.RemediationRoute,
+            task.BlockingReason
+        };
+        var normalizedValues = values
+            .Select(NormalizeSearchToken)
+            .Where(static value => value.Length > 0)
+            .ToArray();
+
+        return requirement.Key switch
+        {
+            "reversal-approval" => normalizedValues.Any(static value =>
+                value.Contains("reversal", StringComparison.OrdinalIgnoreCase) ||
+                value.Contains("reverse", StringComparison.OrdinalIgnoreCase)),
+            "recurring-journals" => normalizedValues.Any(static value =>
+                value.Contains("recurring", StringComparison.OrdinalIgnoreCase) &&
+                (value.Contains("journal", StringComparison.OrdinalIgnoreCase) ||
+                 value.Contains("accrual", StringComparison.OrdinalIgnoreCase))),
+            "stale-marks" => normalizedValues.Any(static value =>
+                value.Contains("stale", StringComparison.OrdinalIgnoreCase) &&
+                (value.Contains("mark", StringComparison.OrdinalIgnoreCase) ||
+                 value.Contains("price", StringComparison.OrdinalIgnoreCase) ||
+                 value.Contains("pricing", StringComparison.OrdinalIgnoreCase))),
+            "period-lock-reopen" => normalizedValues.Any(static value =>
+                value.Contains("periodlock", StringComparison.OrdinalIgnoreCase) ||
+                value.Contains("lockperiod", StringComparison.OrdinalIgnoreCase) ||
+                value.Contains("reopen", StringComparison.OrdinalIgnoreCase)),
+            _ => false
+        };
+    }
+
+    private static bool IsCloseControlTaskReady(OperationsContinuityWorkflowDto workflow, OperationsCloseChecklistTaskDto task)
+        => IsChecklistTaskComplete(task) &&
+           !string.IsNullOrWhiteSpace(task.EvidencePointer) &&
+           HasRequiredChecklistControlApprovals(workflow, task);
+
+    private static bool IsChecklistTaskComplete(OperationsCloseChecklistTaskDto task)
+    {
+        var status = Normalize(task.Status);
+        return string.Equals(status, "Done", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(status, "Complete", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(status, "Completed", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(status, "Acknowledged", StringComparison.OrdinalIgnoreCase) ||
+               task.AcknowledgedAtUtc.HasValue;
+    }
+
+    private static bool IsCloseControlTaskBlocked(OperationsCloseChecklistTaskDto task)
+    {
+        var status = Normalize(task.Status);
+        return string.Equals(status, "Blocked", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(status, "Expired", StringComparison.OrdinalIgnoreCase) ||
+               !string.IsNullOrWhiteSpace(task.BlockingReason);
+    }
+
+    private static bool HasRequiredChecklistControlApprovals(
+        OperationsContinuityWorkflowDto workflow,
+        OperationsCloseChecklistTaskDto task)
+    {
+        if (task.RequiredApprovalCount <= 0)
+        {
+            return true;
+        }
+
+        var approvals = workflow.ClosePackage?.ChecklistControlApprovals ?? [];
+        var approvalCount = approvals
+            .Where(approval => string.Equals(Normalize(approval.TaskId), Normalize(task.TaskId), StringComparison.OrdinalIgnoreCase))
+            .Where(static approval => !string.IsNullOrWhiteSpace(approval.ApprovedBy))
+            .Where(static approval => approval.ApprovedAtUtc != default)
+            .Select(static approval => approval.ApprovedBy.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Count();
+
+        return approvalCount >= task.RequiredApprovalCount;
+    }
+
+    private static IReadOnlyList<OperationsEvidenceLinkDto> CloseControlEvidence(IEnumerable<CloseControlEvaluation> evaluations)
+        => evaluations
+            .SelectMany(static evaluation => evaluation.Tasks.Select(task => (evaluation.Workflow, Task: task)))
+            .Where(static item => !string.IsNullOrWhiteSpace(item.Task.EvidencePointer))
+            .Select(static item => new OperationsEvidenceLinkDto(
+                item.Task.EvidencePointer!.Trim(),
+                item.Task.Label,
+                Normalize(item.Task.RemediationRoute) ?? BuildWorkflowRoute(item.Workflow.WorkflowId),
+                "operations-continuity-close-checklist",
+                item.Task.AcknowledgedAtUtc ?? item.Workflow.UpdatedAtUtc))
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
     private static PrivateCapitalCloseCockpitLaneDto BuildClosePackageLane(IReadOnlyList<OperationsContinuityWorkflowDto> workflows)
     {
@@ -655,6 +1020,40 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
 
     private static PrivateCapitalCloseCockpitLaneDto BuildPeriodLockLane(IReadOnlyList<OperationsContinuityWorkflowDto> workflows)
     {
+        var periodLockPackages = PeriodLockReopenPackages(workflows).ToArray();
+        if (periodLockPackages.Length > 0)
+        {
+            var status = ResolvePeriodLockPackageStatus(periodLockPackages);
+            var periodLockReady = status == EvidenceStatusDto.Ready;
+            var evidence = periodLockPackages
+                .SelectMany(static package => package.EvidenceLinks)
+                .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            var requiredActions = periodLockPackages
+                .SelectMany(static package => package.RequiredActions)
+                .DefaultIfEmpty("Retain period-lock or governed reopen evidence before close sign-off.")
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            var firstIncompletePackage = periodLockPackages.FirstOrDefault(static package =>
+                !package.IsReady || package.Status != EvidenceStatusDto.Ready);
+
+            return new PrivateCapitalCloseCockpitLaneDto(
+                "period-lock",
+                "Period lock",
+                status,
+                periodLockReady,
+                periodLockReady
+                    ? $"{periodLockPackages.Count(static package => package.IsReady)}/{periodLockPackages.Length} period lock/reopen evidence package(s) are complete."
+                    : firstIncompletePackage?.Summary ?? "Period lock or governed reopen evidence needs review before close sign-off.",
+                periodLockPackages
+                    .Select(static package => package.RouteHint)
+                    .FirstOrDefault(static route => !string.IsNullOrWhiteSpace(route)) ??
+                    workflows.Select(static workflow => BuildWorkflowRoute(workflow.WorkflowId)).FirstOrDefault(),
+                evidence.Length,
+                evidence,
+                periodLockReady ? [] : requiredActions);
+        }
+
         var closedWorkflows = workflows
             .Where(static workflow => workflow.Status == OperationsWorkflowStatusDto.Closed)
             .ToArray();
@@ -671,6 +1070,33 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             closedWorkflows.Select(static workflow => BuildWorkflowRoute(workflow.WorkflowId)).FirstOrDefault(),
             WorkflowsEvidence(closedWorkflows),
             "Close the workflow and retain period-lock evidence");
+    }
+
+    private static IEnumerable<OperationsEvidencePackageSummaryDto> PeriodLockReopenPackages(
+        IEnumerable<OperationsContinuityWorkflowDto> workflows)
+        => workflows
+            .SelectMany(static workflow => workflow.EvidencePackages)
+            .Where(IsPeriodLockReopenPackage);
+
+    private static bool IsPeriodLockReopenPackage(OperationsEvidencePackageSummaryDto package)
+        => package.PackageId.StartsWith("period-lock-reopen:", StringComparison.OrdinalIgnoreCase);
+
+    private static EvidenceStatusDto ResolvePeriodLockPackageStatus(
+        IReadOnlyList<OperationsEvidencePackageSummaryDto> packages)
+    {
+        if (packages.All(static package => package.IsReady && package.Status == EvidenceStatusDto.Ready))
+        {
+            return EvidenceStatusDto.Ready;
+        }
+
+        if (packages.Any(static package => package.Status == EvidenceStatusDto.Blocked))
+        {
+            return EvidenceStatusDto.Blocked;
+        }
+
+        return packages.All(static package => package.Status == EvidenceStatusDto.Missing)
+            ? EvidenceStatusDto.Missing
+            : EvidenceStatusDto.ReviewRequired;
     }
 
     private static PrivateCapitalCloseCockpitLaneDto Lane(
@@ -1081,9 +1507,25 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
                impact.ValidationIssues.Count > 0);
 
     private static bool IsPartnerCapitalStatementReady(PrivateCapitalReportOutputDto reportOutput)
-        => reportOutput.IsReportReady &&
+        => IsPartnerCapitalStatementOutput(reportOutput) &&
+           IsApprovedReadyReportOutput(reportOutput) &&
            reportOutput.EvidenceLinkCount > 0 &&
            reportOutput.ReportLineProvenanceCount > 0 &&
+           !string.IsNullOrWhiteSpace(reportOutput.RetainedManifestPath);
+
+    private static bool IsPartnerCapitalStatementOutput(PrivateCapitalReportOutputDto reportOutput)
+        => !IsShadowNavReportOutput(reportOutput) &&
+           !IsAdministratorNavReportOutput(reportOutput) &&
+           (ContainsFinancialOperationToken(reportOutput.ReportOutputType, "statement") ||
+            ContainsFinancialOperationToken(reportOutput.DisplayName, "statement"));
+
+    private static bool IsApprovedReadyReportOutput(PrivateCapitalReportOutputDto reportOutput)
+        => reportOutput.ApprovalState == ManualJournalEntryStatusDto.Approved &&
+           reportOutput.IsReportReady;
+
+    private static bool IsApprovedDeliveredReportOutput(PrivateCapitalReportOutputDto reportOutput)
+        => IsApprovedReadyReportOutput(reportOutput) &&
+           reportOutput.IsPublished &&
            !string.IsNullOrWhiteSpace(reportOutput.RetainedManifestPath);
 
     private static bool AmountsTie(decimal left, decimal right)
@@ -1293,9 +1735,13 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
     }
 
     private static IReadOnlyList<PrivateCapitalCloseCockpitApprovalDto> BuildApprovalHistory(
-        IReadOnlyList<OperationsContinuityWorkflowDto> workflows)
+        IReadOnlyList<OperationsContinuityWorkflowDto> workflows,
+        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
+        IReadOnlyList<PrivateCapitalReportOutputDto> reportOutputs)
         => workflows
             .SelectMany(BuildWorkflowApprovalHistory)
+            .Concat(BuildFundEventApprovalHistory(workflows, records))
+            .Concat(BuildReportOutputApprovalHistory(workflows, reportOutputs))
             .OrderByDescending(static approval =>
                 approval.DecidedAtUtc ??
                 approval.SubmittedAtUtc ??
@@ -1303,6 +1749,116 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
             .ThenBy(static approval => approval.ApprovalId, StringComparer.OrdinalIgnoreCase)
             .DistinctBy(static approval => approval.ApprovalId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+
+    private static IEnumerable<PrivateCapitalCloseCockpitApprovalDto> BuildFundEventApprovalHistory(
+        IReadOnlyList<OperationsContinuityWorkflowDto> workflows,
+        IEnumerable<PrivateCapitalFundEventLedgerRecordDto> records)
+    {
+        foreach (var record in records.Where(static record =>
+                     !string.IsNullOrWhiteSpace(record.ApprovalId) ||
+                     record.ApprovalState != ManualJournalEntryStatusDto.Draft))
+        {
+            var workflow = ResolveApprovalWorkflow(workflows, record.EffectiveDate);
+            if (workflow is null)
+            {
+                continue;
+            }
+
+            var status = MapApprovalState(record.ApprovalState);
+            var evidence = RecordEvidence([record], "Fund-event approval evidence");
+            var submittedAt = SourceApprovalSubmittedAt(status, record.FundEvent.UpdatedAtUtc);
+            var decidedAt = SourceApprovalDecidedAt(status, record.FundEvent.UpdatedAtUtc);
+            yield return new PrivateCapitalCloseCockpitApprovalDto(
+                Normalize(record.ApprovalId) ?? $"fund-event-approval:{record.FundEventId}",
+                workflow.WorkflowId,
+                workflow.FundAccountId,
+                workflow.PeriodId,
+                status,
+                null,
+                null,
+                $"Fund-event approval retained for {record.FundEventType}.",
+                submittedAt,
+                decidedAt,
+                Normalize(record.ApprovalRoute) ?? Normalize(record.ActivityRoute) ?? BuildWorkflowRoute(workflow.WorkflowId),
+                evidence.Count,
+                evidence);
+        }
+    }
+
+    private static IEnumerable<PrivateCapitalCloseCockpitApprovalDto> BuildReportOutputApprovalHistory(
+        IReadOnlyList<OperationsContinuityWorkflowDto> workflows,
+        IEnumerable<PrivateCapitalReportOutputDto> reportOutputs)
+    {
+        foreach (var output in reportOutputs.Where(static output =>
+                     output.ApprovalState != ManualJournalEntryStatusDto.Draft ||
+                     output.IsPublished ||
+                     !string.IsNullOrWhiteSpace(output.ReportPackId)))
+        {
+            var workflow = ResolveApprovalWorkflow(workflows, output.EffectiveDate);
+            if (workflow is null)
+            {
+                continue;
+            }
+
+            var status = MapApprovalState(output.ApprovalState);
+            var evidence = ReportEvidence([output]);
+            var submittedAt = SourceApprovalSubmittedAt(status, output.PublishedAtUtc);
+            var decidedAt = SourceApprovalDecidedAt(status, output.PublishedAtUtc);
+            yield return new PrivateCapitalCloseCockpitApprovalDto(
+                $"report-output-approval:{output.ReportOutputId}",
+                workflow.WorkflowId,
+                workflow.FundAccountId,
+                workflow.PeriodId,
+                status,
+                null,
+                Normalize(output.PublishedBy),
+                output.IsPublished
+                    ? $"Report output publication retained for {output.DisplayName}."
+                    : $"Report output approval retained for {output.DisplayName}.",
+                submittedAt,
+                decidedAt,
+                Normalize(output.ApprovalRoute) ??
+                Normalize(output.ReportOutputRoute) ??
+                Normalize(output.EvidenceRoute) ??
+                Normalize(output.ReportRoute) ??
+                BuildWorkflowRoute(workflow.WorkflowId),
+                evidence.Count,
+                evidence);
+        }
+    }
+
+    private static OperationsContinuityWorkflowDto? ResolveApprovalWorkflow(
+        IReadOnlyList<OperationsContinuityWorkflowDto> workflows,
+        DateOnly effectiveDate)
+    {
+        var periodId = effectiveDate.ToString("yyyy-MM", CultureInfo.InvariantCulture);
+        return workflows.FirstOrDefault(workflow =>
+                   string.Equals(workflow.PeriodId, periodId, StringComparison.OrdinalIgnoreCase)) ??
+               workflows.FirstOrDefault();
+    }
+
+    private static OperationsApprovalStateDto MapApprovalState(ManualJournalEntryStatusDto status)
+        => status switch
+        {
+            ManualJournalEntryStatusDto.Approved => OperationsApprovalStateDto.Approved,
+            ManualJournalEntryStatusDto.Rejected => OperationsApprovalStateDto.Rejected,
+            ManualJournalEntryStatusDto.Submitted => OperationsApprovalStateDto.Submitted,
+            _ => OperationsApprovalStateDto.Pending
+        };
+
+    private static DateTimeOffset? SourceApprovalSubmittedAt(
+        OperationsApprovalStateDto status,
+        DateTimeOffset? timestamp)
+        => status is OperationsApprovalStateDto.Submitted or OperationsApprovalStateDto.Approved or OperationsApprovalStateDto.Rejected
+            ? timestamp
+            : null;
+
+    private static DateTimeOffset? SourceApprovalDecidedAt(
+        OperationsApprovalStateDto status,
+        DateTimeOffset? timestamp)
+        => status is OperationsApprovalStateDto.Approved or OperationsApprovalStateDto.Rejected
+            ? timestamp
+            : null;
 
     private static IEnumerable<PrivateCapitalCloseCockpitApprovalDto> BuildWorkflowApprovalHistory(
         OperationsContinuityWorkflowDto workflow)
@@ -1413,4 +1969,16 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private sealed record ManagementCompanyEvidenceSignal(string Label, bool IsPresent);
+
+    private sealed record CloseControlRequirement(
+        string Key,
+        string Label,
+        string RequiredAction);
+
+    private sealed record CloseControlEvaluation(
+        OperationsContinuityWorkflowDto Workflow,
+        CloseControlRequirement Requirement,
+        IReadOnlyList<OperationsCloseChecklistTaskDto> Tasks,
+        EvidenceStatusDto Status,
+        bool IsReady);
 }

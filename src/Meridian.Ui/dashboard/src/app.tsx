@@ -121,6 +121,7 @@ function AppShell() {
     workspaceErrors,
     refreshStatus,
     refresh,
+    refreshPortfolio,
     refreshProviderRouting,
     updateFeatureCapability,
     upsertWorkflowPreset
@@ -376,7 +377,7 @@ function AppShell() {
                   <Route path="/accounting/*" element={<AccountingScreen data={accounting} multiAssetCoverage={portfolioMultiAssetCoverage} />} />
                   <Route path="/reporting/operations-record" element={<OperationsRecordReleaseScreen data={data} reporting={reporting} />} />
                   <Route path="/reporting/evidence" element={<EvidenceWorkbenchScreen />} />
-                  <Route path="/reporting/*" element={<ReportingScreen data={reporting} />} />
+                  <Route path="/reporting/*" element={<ReportingScreen data={reporting} onRefreshLivePortfolioViews={refreshPortfolio} />} />
                   <Route path="/strategy/covered-call" element={<CoveredCallScreen />} />
                   <Route path="/strategy/designer" element={<StrategyDesignerScreen />} />
                   <Route path="/strategy/formula-workbench" element={<StrategyFormulaWorkbenchScreen />} />

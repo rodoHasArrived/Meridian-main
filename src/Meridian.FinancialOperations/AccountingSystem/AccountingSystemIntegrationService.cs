@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Meridian.Contracts.AccountingSystem;
+using Meridian.Ledger;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Storage.Ledger;
 
@@ -113,16 +114,19 @@ public sealed class AccountingSystemIntegrationService
             meridianTotals.TryGetValue(accountCode, out var meridian);
             var externalDebit = external?.Debit ?? 0m;
             var externalCredit = external?.Credit ?? 0m;
-            var meridianDebit = meridian.Debit;
-            var meridianCredit = meridian.Credit;
+            var meridianDebit = meridian?.Debit ?? 0m;
+            var meridianCredit = meridian?.Credit ?? 0m;
             var variance = (externalDebit - externalCredit) - (meridianDebit - meridianCredit);
-            var status = ResolveStatus(external, meridian.HasValue, variance);
+            var status = ResolveStatus(external, meridian is not null, variance);
+            var rowExternalEvidenceReferences = NormalizeEvidenceReferences([external?.EvidenceRef]);
+            var meridianEvidenceReferences = meridian is null ? [] : NormalizeEvidenceReferences(meridian.EvidenceReferences);
+            var rowEvidenceReferences = NormalizeEvidenceReferences(rowExternalEvidenceReferences.Concat(meridianEvidenceReferences));
 
             rows.Add(new AccountingSystemReconciliationRowDto(
                 $"gl-recon-{SanitizeId(accountCode)}",
                 accountCode,
-                external?.AccountName ?? meridian.AccountName ?? accountCode,
-                external?.Currency ?? meridian.Currency ?? "USD",
+                external?.AccountName ?? meridian?.AccountName ?? accountCode,
+                external?.Currency ?? meridian?.Currency ?? "USD",
                 status,
                 externalDebit,
                 externalCredit,
@@ -130,8 +134,20 @@ public sealed class AccountingSystemIntegrationService
                 meridianCredit,
                 variance,
                 BuildDetail(status, variance),
-                external?.EvidenceRef));
+                external?.EvidenceRef)
+            {
+                ExternalEvidenceReferences = rowExternalEvidenceReferences,
+                MeridianEvidenceReferences = meridianEvidenceReferences,
+                EvidenceReferences = rowEvidenceReferences
+            });
         }
+
+        var externalEvidenceReferences = NormalizeEvidenceReferences(
+            latest.Summary.EvidenceReferences.Concat(latest.TrialBalance.Select(static row => row.EvidenceRef)));
+        var meridianSummaryEvidenceReferences = NormalizeEvidenceReferences(
+            meridianTotals.Values.SelectMany(static total => total.EvidenceReferences));
+        var summaryEvidenceReferences = NormalizeEvidenceReferences(externalEvidenceReferences.Concat(meridianSummaryEvidenceReferences));
+        var breakCount = rows.Count(static row => row.Status != AccountingSystemReconciliationStatusDto.Matched);
 
         return new AccountingSystemReconciliationSummaryDto(
             $"gl-recon-{latest.Summary.ImportId}",
@@ -150,7 +166,16 @@ public sealed class AccountingSystemIntegrationService
             PostingEnabled: false,
             PostingDisabledReason: "Meridian is the source of all ledger truth; external GL posting/export is disabled until an approved adapter publishes Meridian-owned ledger entries.",
             rows,
-            latest.Summary.EvidenceReferences);
+            summaryEvidenceReferences)
+        {
+            EvidencePackages = BuildEvidencePackages(
+                latest,
+                externalEvidenceReferences,
+                meridianSummaryEvidenceReferences,
+                summaryEvidenceReferences,
+                breakCount,
+                rows.Count)
+        };
     }
 
     private async Task<Dictionary<string, MeridianAccountTotal>> LoadMeridianTotalsAsync(
@@ -172,23 +197,110 @@ public sealed class AccountingSystemIntegrationService
         {
             ct.ThrowIfCancellationRequested();
             var entries = await _ledgerJournalStore.GetByPeriodAsync(period.PeriodId, ct).ConfigureAwait(false);
-            foreach (var line in entries.SelectMany(static entry => entry.Entry.Lines))
+            foreach (var record in entries)
             {
-                var accountCode = line.Account.Name;
-                if (!totals.TryGetValue(accountCode, out var total))
+                foreach (var line in record.Entry.Lines)
                 {
-                    total = new MeridianAccountTotal(accountCode, "USD", 0m, 0m, HasValue: true);
-                }
+                    var accountCode = line.Account.Name;
+                    if (!totals.TryGetValue(accountCode, out var total))
+                    {
+                        total = new MeridianAccountTotal(accountCode, "USD");
+                        totals[accountCode] = total;
+                    }
 
-                totals[accountCode] = total with
-                {
-                    Debit = total.Debit + line.Debit,
-                    Credit = total.Credit + line.Credit
-                };
+                    total.Debit += line.Debit;
+                    total.Credit += line.Credit;
+                    foreach (var evidenceReference in BuildMeridianEvidenceReferences(record, line))
+                    {
+                        total.EvidenceReferences.Add(evidenceReference);
+                    }
+                }
             }
         }
 
         return totals;
+    }
+
+    private static IReadOnlyList<AccountingSystemReconciliationEvidencePackageDto> BuildEvidencePackages(
+        AccountingSystemImportDetailDto latest,
+        IReadOnlyList<string> externalEvidenceReferences,
+        IReadOnlyList<string> meridianEvidenceReferences,
+        IReadOnlyList<string> summaryEvidenceReferences,
+        int breakCount,
+        int rowCount)
+    {
+        return
+        [
+            new(
+                $"gl-external-evidence:{latest.Summary.ImportId}",
+                "External GL import evidence",
+                externalEvidenceReferences.Count > 0
+                    ? AccountingSystemEvidencePackageStatusDto.Ready
+                    : AccountingSystemEvidencePackageStatusDto.Missing,
+                externalEvidenceReferences.Count,
+                externalEvidenceReferences,
+                externalEvidenceReferences.Count > 0
+                    ? []
+                    : ["Import external chart, journal, and trial-balance evidence before relying on GL reconciliation."]),
+            new(
+                $"gl-meridian-ledger-evidence:{latest.Summary.ImportId}",
+                "Meridian ledger evidence",
+                meridianEvidenceReferences.Count > 0
+                    ? AccountingSystemEvidencePackageStatusDto.Ready
+                    : AccountingSystemEvidencePackageStatusDto.Missing,
+                meridianEvidenceReferences.Count,
+                meridianEvidenceReferences,
+                meridianEvidenceReferences.Count > 0
+                    ? []
+                    : ["Load Meridian ledger journal evidence for the fund, book, and period before close approval."]),
+            new(
+                $"gl-reconciliation-tie-out:{latest.Summary.ImportId}",
+                "GL reconciliation tie-out",
+                ResolveTieOutPackageStatus(rowCount, breakCount, externalEvidenceReferences.Count, meridianEvidenceReferences.Count),
+                summaryEvidenceReferences.Count,
+                summaryEvidenceReferences,
+                BuildTieOutRequiredActions(breakCount, externalEvidenceReferences.Count, meridianEvidenceReferences.Count))
+        ];
+    }
+
+    private static AccountingSystemEvidencePackageStatusDto ResolveTieOutPackageStatus(
+        int rowCount,
+        int breakCount,
+        int externalEvidenceCount,
+        int meridianEvidenceCount)
+    {
+        if (rowCount == 0 || externalEvidenceCount == 0 || meridianEvidenceCount == 0)
+        {
+            return AccountingSystemEvidencePackageStatusDto.Missing;
+        }
+
+        return breakCount == 0
+            ? AccountingSystemEvidencePackageStatusDto.Ready
+            : AccountingSystemEvidencePackageStatusDto.ReviewRequired;
+    }
+
+    private static IReadOnlyList<string> BuildTieOutRequiredActions(
+        int breakCount,
+        int externalEvidenceCount,
+        int meridianEvidenceCount)
+    {
+        var actions = new List<string>(3);
+        if (externalEvidenceCount == 0)
+        {
+            actions.Add("Import external accounting-system evidence.");
+        }
+
+        if (meridianEvidenceCount == 0)
+        {
+            actions.Add("Load Meridian ledger journal evidence.");
+        }
+
+        if (breakCount > 0)
+        {
+            actions.Add("Resolve GL reconciliation breaks before approving close evidence.");
+        }
+
+        return actions;
     }
 
     private async Task<IAccountingSystemProvider> ResolveProviderAsync(string? providerId, CancellationToken ct)
@@ -281,6 +393,33 @@ public sealed class AccountingSystemIntegrationService
             _ => "Review required before close evidence can rely on this row."
         };
 
+    private static IEnumerable<string> BuildMeridianEvidenceReferences(
+        LedgerJournalEntryRecord record,
+        LedgerEntry line)
+    {
+        yield return $"ledger-entry:{line.EntryId:D}";
+        yield return $"ledger-journal-entry:{record.Entry.JournalEntryId:D}";
+        yield return $"ledger-period:{record.PeriodId:D}";
+
+        if (record.SourceEventId.HasValue)
+        {
+            yield return $"source-event:{record.SourceEventId.Value:D}";
+        }
+
+        if (record.SourceJournalEntryId.HasValue)
+        {
+            yield return $"source-journal-entry:{record.SourceJournalEntryId.Value:D}";
+        }
+    }
+
+    private static IReadOnlyList<string> NormalizeEvidenceReferences(IEnumerable<string?> evidenceReferences)
+        => evidenceReferences
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
     private static string NormalizeProviderId(string? providerId)
         => string.IsNullOrWhiteSpace(providerId)
             ? DefaultProviderId
@@ -295,10 +434,22 @@ public sealed class AccountingSystemIntegrationService
     private static string SanitizeId(string value)
         => string.Concat(value.Select(static ch => char.IsLetterOrDigit(ch) ? char.ToLowerInvariant(ch) : '-'));
 
-    private readonly record struct MeridianAccountTotal(
-        string AccountName,
-        string Currency,
-        decimal Debit,
-        decimal Credit,
-        bool HasValue);
+    private sealed class MeridianAccountTotal
+    {
+        public MeridianAccountTotal(string accountName, string currency)
+        {
+            AccountName = accountName;
+            Currency = currency;
+        }
+
+        public string AccountName { get; }
+
+        public string Currency { get; }
+
+        public decimal Debit { get; set; }
+
+        public decimal Credit { get; set; }
+
+        public HashSet<string> EvidenceReferences { get; } = new(StringComparer.OrdinalIgnoreCase);
+    }
 }

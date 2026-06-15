@@ -26,7 +26,7 @@ public sealed record EvidenceFreshnessDto(
     bool IsStale,
     string? Reason);
 
-public sealed record EvidenceArtifactRefDto(
+public sealed partial record EvidenceArtifactRefDto(
     string ArtifactId,
     string Kind,
     string? Path,
@@ -37,7 +37,32 @@ public sealed record EvidenceArtifactRefDto(
     string? CanonicalSubjectKind = null,
     string? CanonicalSubjectId = null);
 
-public sealed record EvidenceNodeDto(
+public sealed record EvidenceArtifactCaptureDto(
+    string CaptureChannel,
+    string? SourceSystem,
+    DateTimeOffset? ReceivedAt,
+    string? ReceivedBy,
+    string? SourceReference,
+    string? ReceiptHash);
+
+public sealed record EvidenceArtifactExtractionFieldDto(
+    string FieldName,
+    string? ExtractedValue,
+    string? ExpectedValue,
+    decimal? ConfidenceScore,
+    string ReviewState,
+    EvidenceStatusDto ValidationStatus,
+    string? ValidationMessage,
+    string? LinkedRecordKind,
+    string? LinkedRecordId);
+
+public sealed partial record EvidenceArtifactRefDto
+{
+    public EvidenceArtifactCaptureDto? Capture { get; init; }
+    public IReadOnlyList<EvidenceArtifactExtractionFieldDto> ExtractedFields { get; init; } = [];
+}
+
+public sealed partial record EvidenceNodeDto(
     string EvidenceId,
     EvidenceSubjectDto Subject,
     string Kind,
@@ -47,6 +72,11 @@ public sealed record EvidenceNodeDto(
     string Summary,
     IReadOnlyList<EvidenceArtifactRefDto> ArtifactRefs,
     IReadOnlyList<string> RelatedWorkItemIds);
+
+public sealed partial record EvidenceNodeDto
+{
+    public IReadOnlyDictionary<string, string> Metadata { get; init; } = new Dictionary<string, string>();
+}
 
 public sealed record EvidenceEdgeDto(
     string FromId,
@@ -175,7 +205,11 @@ public sealed record EvidenceVaultArtifactDto(
     string? SourcePath,
     string? SourceRoute,
     string? CanonicalSubjectKind,
-    string? CanonicalSubjectId);
+    string? CanonicalSubjectId)
+{
+    public EvidenceArtifactCaptureDto? Capture { get; init; }
+    public IReadOnlyList<EvidenceArtifactExtractionFieldDto> ExtractedFields { get; init; } = [];
+}
 
 public sealed record EvidenceSupportRequestDto(
     string RequestId,
@@ -201,6 +235,64 @@ public sealed record EvidenceRequestListDto(
     IReadOnlyList<string> EvidenceKinds,
     IReadOnlyList<string> BlockedOutputs,
     string Summary);
+
+public sealed record EvidenceVaultRequestListQueryDto(
+    string? RequestListKind = null,
+    string? TargetKind = null,
+    string? TargetId = null,
+    string? Status = null,
+    string? SubjectKind = null,
+    string? SubjectId = null,
+    int? MaxResults = null);
+
+public sealed record EvidenceVaultRequestListEntryDto(
+    string RequestListId,
+    string RequestListKind,
+    string TargetKind,
+    string TargetId,
+    EvidenceValidationSeverityDto HighestSeverity,
+    string Status,
+    int RequestCount,
+    int OpenRequestCount,
+    IReadOnlyList<string> RequestIds,
+    IReadOnlyList<string> EvidenceKinds,
+    IReadOnlyList<string> BlockedOutputs,
+    string Summary,
+    string VaultId,
+    string SubjectKind,
+    string SubjectId,
+    string ManifestRoute,
+    DateTimeOffset RetainedAt,
+    IReadOnlyList<EvidenceSupportRequestDto> SupportRequests);
+
+public sealed record EvidenceVaultIntakeRequestDto(
+    string SubjectKind,
+    string SubjectId,
+    string IntakeChannel,
+    string FileName,
+    string ContentBase64,
+    string? ContentType = null,
+    string? SourceSystem = null,
+    string? SourceReference = null,
+    string? ReceivedBy = null,
+    string? ExpectedContentHashSha256 = null,
+    IReadOnlyList<EvidenceArtifactExtractionFieldDto>? ExtractedFields = null,
+    EvidenceSubjectLinkageDto? Linkage = null,
+    EvidenceLifecycleMetadataDto? Lifecycle = null);
+
+public sealed record EvidenceVaultIntakeResponseDto(
+    string IntakeId,
+    string SubjectKind,
+    string SubjectId,
+    string IntakeChannel,
+    string FileName,
+    string RelativePath,
+    string ContentHashSha256,
+    long SizeBytes,
+    DateTimeOffset CapturedAt,
+    EvidenceArtifactCaptureDto Capture,
+    IReadOnlyList<EvidenceArtifactExtractionFieldDto> ExtractedFields,
+    EvidenceVaultIdentityDto VaultIdentity);
 
 public sealed record EvidenceLifecycleMetadataDto(
     DateTimeOffset? RetainUntil,

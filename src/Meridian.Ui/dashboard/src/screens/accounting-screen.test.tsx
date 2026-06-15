@@ -5,6 +5,9 @@ import * as api from "@/lib/api";
 import { AccountingScreen } from "@/screens/accounting-screen";
 import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import type {
+  AccountingSystemImportDetail,
+  AccountingSystemProvider,
+  AccountingSystemReconciliationSummary,
   CorporateAction,
   AccountingWorkspaceResponse,
   LedgerTrialBalanceLine,
@@ -1299,7 +1302,15 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
           fundEventType: "Distribution",
           capitalAccountId: "capital-account:fund-alpha:lp-1",
           investorId: "investor:lp-1",
-          purpose: "Distribution for Fund Alpha LP"
+          purpose: "Distribution for Fund Alpha LP",
+          payee: "investor:lp-1",
+          accountScope: "fund:fund-alpha / book:book-alpha / capital-account:fund-alpha:lp-1 / investor:lp-1",
+          businessPurpose: "Distribution for Fund Alpha LP",
+          approvalPolicy: "Controller approval pending before execution-deferred reliance",
+          sourceEvidenceLinks: [
+            "/api/workstation/evidence/subjects/accounting-record/manual-je",
+            "/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-distribution-manual-je-1/packet"
+          ]
         },
         evidenceRoute: "/api/workstation/evidence/subjects/payment-intent/payment%3Afund-alpha%3Adistribution%3Amanual-je-1/packet",
         workbenchRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&paymentIntentId=payment%3Afund-alpha%3Adistribution%3Amanual-je-1",
@@ -1318,6 +1329,7 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
             effectiveDate: "2026-06-30",
             recordedAtUtc: "2026-06-30T00:00:00Z",
             externalRef: "settlement:fund-alpha:distribution:20260630",
+            recordedBy: "cash-ops@example.com",
             evidenceRoute: "/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-distribution-manual-je-1/packet"
           }
         ],
@@ -1400,6 +1412,121 @@ describe("AccountingScreen", () => {
     expect(screen.getByText("Reconciliation queue")).toBeInTheDocument();
   });
 
+  it("renders external GL evidence package posture from the reconciliation response", async () => {
+    const provider: AccountingSystemProvider = {
+      providerId: "quickbooks-fixture",
+      displayName: "QuickBooks Fixture",
+      state: "Available",
+      requiresCredentials: false,
+      supportsChartOfAccounts: true,
+      supportsJournalEntries: true,
+      supportsTrialBalance: true,
+      supportsPosting: false,
+      statusLabel: "Ready for read-only import",
+      statusDetail: "Fixture provider ready.",
+      evidenceKinds: ["QuickBooksTrialBalance"]
+    };
+    const importDetail: AccountingSystemImportDetail = {
+      summary: {
+        importId: "qbo-fixture-20260131",
+        providerId: "quickbooks-fixture",
+        providerDisplayName: "QuickBooks Fixture",
+        fundProfileId: "default-fund",
+        ledgerBookId: null,
+        state: "Imported",
+        periodStart: "2026-01-01",
+        periodEnd: "2026-01-31",
+        importedAtUtc: "2026-02-01T00:00:00Z",
+        chartAccountCount: 1,
+        journalEntryCount: 1,
+        trialBalanceLineCount: 1,
+        evidenceReferences: ["quickbooks-fixture:trial-balance"],
+        warnings: []
+      },
+      chartAccounts: [],
+      journalEntries: [],
+      trialBalance: []
+    };
+    const reconciliation: AccountingSystemReconciliationSummary = {
+      reconciliationId: "gl-recon-qbo-fixture-20260131",
+      importId: "qbo-fixture-20260131",
+      providerId: "quickbooks-fixture",
+      fundProfileId: "default-fund",
+      periodStart: "2026-01-01",
+      periodEnd: "2026-01-31",
+      generatedAtUtc: "2026-02-01T00:05:00Z",
+      matchedCount: 0,
+      breakCount: 1,
+      totalExternalDebits: 100,
+      totalExternalCredits: 0,
+      totalMeridianDebits: 0,
+      totalMeridianCredits: 0,
+      postingEnabled: false,
+      postingDisabledReason: "Posting/export remains disabled.",
+      evidenceReferences: ["quickbooks-fixture:trial-balance"],
+      evidencePackages: [
+        {
+          packageId: "gl-external-evidence:qbo-fixture-20260131",
+          label: "External GL import evidence",
+          status: "Ready",
+          evidenceReferenceCount: 1,
+          evidenceReferences: ["quickbooks-fixture:trial-balance"],
+          requiredActions: []
+        },
+        {
+          packageId: "gl-meridian-ledger-evidence:qbo-fixture-20260131",
+          label: "Meridian ledger evidence",
+          status: "Missing",
+          evidenceReferenceCount: 0,
+          evidenceReferences: [],
+          requiredActions: ["Load Meridian ledger journal evidence for the fund, book, and period before close approval."]
+        },
+        {
+          packageId: "gl-reconciliation-tie-out:qbo-fixture-20260131",
+          label: "GL reconciliation tie-out",
+          status: "ReviewRequired",
+          evidenceReferenceCount: 1,
+          evidenceReferences: ["quickbooks-fixture:trial-balance"],
+          requiredActions: ["Resolve GL reconciliation breaks before approving close evidence."]
+        }
+      ],
+      rows: [
+        {
+          rowId: "gl-recon-cash",
+          accountCode: "Assets:Cash",
+          accountName: "Cash",
+          currency: "USD",
+          status: "MissingMeridian",
+          externalDebit: 100,
+          externalCredit: 0,
+          meridianDebit: 0,
+          meridianCredit: 0,
+          variance: 100,
+          detail: "External GL evidence is absent from Meridian-owned ledger truth.",
+          evidenceRef: "quickbooks-fixture:trial-balance:cash",
+          externalEvidenceReferences: ["quickbooks-fixture:trial-balance:cash"],
+          meridianEvidenceReferences: [],
+          evidenceReferences: ["quickbooks-fixture:trial-balance:cash"]
+        }
+      ]
+    };
+
+    vi.mocked(api.getAccountingSystemProviders).mockResolvedValueOnce([provider]);
+    vi.mocked(api.getLatestAccountingSystemImport).mockResolvedValueOnce(importDetail);
+    vi.mocked(api.getLatestAccountingSystemReconciliation).mockResolvedValueOnce(reconciliation);
+
+    await renderAccountingScreen(data, "/accounting");
+
+    const packages = await screen.findByLabelText("External GL evidence packages");
+    expect(packages).toHaveTextContent("External GL import evidence");
+    expect(packages).toHaveTextContent("Ready");
+    expect(packages).toHaveTextContent("Meridian ledger evidence");
+    expect(packages).toHaveTextContent("Missing");
+    expect(packages).toHaveTextContent("Load Meridian ledger journal evidence");
+    expect(packages).toHaveTextContent("GL reconciliation tie-out");
+    expect(packages).toHaveTextContent("Resolve GL reconciliation breaks before approving close evidence.");
+  });
+
   it("renders reconciliation, cash-flow, and reporting summaries", async () => {
     await renderAccountingScreen();
 
@@ -1469,6 +1596,8 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("table", { name: "Payment intent and cash evidence workflows" })).toHaveTextContent("payment:fund-alpha:distribution:manual-je-1");
     expect(screen.getByRole("table", { name: "Payment intent and cash evidence workflows" })).toHaveTextContent("Approval pending");
     expect(screen.getByRole("table", { name: "Payment intent and cash evidence workflows" })).toHaveTextContent("Outflow / $100 USD / 2026-06-30 / settlement:fund-alpha:distribution:20260630");
+    expect(screen.getByRole("table", { name: "Payment intent and cash evidence workflows" })).toHaveTextContent("payee investor:lp-1");
+    expect(screen.getByRole("table", { name: "Payment intent and cash evidence workflows" })).toHaveTextContent("2 source evidence link(s)");
     expect(screen.getByRole("table", { name: "Payment intent and cash evidence workflows" })).toHaveTextContent("0/2 approved");
     expect(screen.getByRole("table", { name: "Payment intent and cash evidence workflows" })).toHaveTextContent("0 confirmed / 1 retained / 0 returned");
     expect(screen.getByRole("table", { name: "Payment intent and cash evidence workflows" })).toHaveTextContent("Full payment execution is explicitly deferred");
@@ -1485,6 +1614,7 @@ describe("AccountingScreen", () => {
     expect(paymentIntentDrilldown).toHaveTextContent("Bank evidence");
     expect(paymentIntentDrilldown).toHaveTextContent("Retained wire evidence supports the expected distribution cash movement.");
     expect(paymentIntentDrilldown).toHaveTextContent("$100 USD / 2026-06-30");
+    expect(paymentIntentDrilldown).toHaveTextContent("Recorded by cash-ops@example.com");
     expect(paymentIntentDrilldown).toHaveTextContent("Reconciliation");
     expect(paymentIntentDrilldown).toHaveTextContent("Cash evidence is linked to reconciliation review.");
     expect(paymentIntentDrilldown).toHaveTextContent("Audit trail");

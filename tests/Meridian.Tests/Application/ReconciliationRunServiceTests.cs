@@ -912,6 +912,14 @@ public sealed class ReconciliationRunServiceTests
             new InitiatePaymentRequest(750m, new DateOnly(2026, 3, 21), "RECON-TEST", null));
         await bankingService.ApprovePaymentAsync(pending.PendingPaymentId,
             new ApprovePaymentRequest("Test approval", "test"));
+        await bankingService.RecordPaymentBankEvidenceAsync(pending.PendingPaymentId,
+            new RecordPaymentBankEvidenceRequest(
+                "BankConfirmation",
+                TransactionDate: new DateOnly(2026, 3, 21),
+                SettlementDate: new DateOnly(2026, 3, 21),
+                Amount: 750m,
+                Currency: "USD",
+                ExternalRef: "RECON-TEST"));
 
         var service = CreateService(store, new InMemoryReconciliationRunRepository(),
             securityReferenceLookup: null, bankTransactionSource: bankingService);

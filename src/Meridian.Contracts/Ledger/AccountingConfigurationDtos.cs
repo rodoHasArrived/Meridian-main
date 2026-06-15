@@ -447,7 +447,16 @@ public sealed record PaymentIntentExpectedCashMovementDto(
     string? FundEventType,
     string? CapitalAccountId,
     string? InvestorId,
-    string Purpose);
+    string Purpose,
+    string? Payee = null,
+    string? AccountScope = null,
+    string? BusinessPurpose = null,
+    string? ApprovalPolicy = null,
+    IReadOnlyList<string>? SourceEvidenceLinks = null)
+{
+    public IReadOnlyList<string> SourceEvidenceLinks { get; init; } =
+        SourceEvidenceLinks ?? [];
+}
 
 public sealed record PaymentIntentApprovalStepDto(
     int Sequence,
@@ -469,7 +478,8 @@ public sealed record PaymentIntentBankEvidenceDto(
     DateOnly? EffectiveDate = null,
     DateTimeOffset? RecordedAtUtc = null,
     string? ExternalRef = null,
-    string? EvidenceRoute = null);
+    string? EvidenceRoute = null,
+    string? RecordedBy = null);
 
 public sealed record PaymentIntentReconciliationLinkDto(
     string LinkId,

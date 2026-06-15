@@ -224,25 +224,25 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
 
     private static PrivateCapitalFundEventCommandCenterLaneDto BuildDeliveryLane(PrivateCapitalFundEventLedgerRecordDto record)
     {
-        var publishedOutputs = record.ReportOutputs.Where(static item => item.IsPublished).ToArray();
-        var isReady = publishedOutputs.Length > 0 &&
-                      publishedOutputs.Any(static item => !string.IsNullOrWhiteSpace(item.RetainedManifestPath));
+        var publishedOutputs = GetPublishedReportOutputs(record);
+        var evidenceLinks = BuildDeliverySupportEvidenceLinks(record, publishedOutputs);
+        var isReady = IsDeliverySupportReady(publishedOutputs);
         return Lane(
             "delivery-record",
             "Delivery record",
             isReady,
             isReady
-                ? $"{publishedOutputs.Length} published report output(s) retain delivery or manifest evidence."
+                ? $"{publishedOutputs.Count} published report output(s) retain delivery or manifest evidence."
                 : "No retained delivery or publication manifest is linked to this fund event.",
             publishedOutputs.Select(static item => item.ReportOutputRoute ?? item.ReportRoute).FirstOrDefault(static item => !string.IsNullOrWhiteSpace(item)),
-            publishedOutputs.SelectMany(static item => item.EvidenceLinks).ToArray(),
+            evidenceLinks,
             "Retain delivery package or publication manifest");
     }
 
     private static PrivateCapitalFundEventCommandCenterLaneDto BuildTaxSupportLane(PrivateCapitalFundEventLedgerRecordDto record)
     {
-        var isReady = record.ReportOutputs.Any(static item => item.IsPublished && item.EvidenceLinkCount > 0) &&
-                      record.EvidenceLinkCount > 0;
+        var evidenceLinks = BuildTaxSupportEvidenceLinks(record);
+        var isReady = IsTaxSupportReady(record);
         return Lane(
             "tax-support",
             "Tax support",
@@ -251,7 +251,7 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
                 ? "Retained event and report-output evidence can support tax package review."
                 : "Tax support remains incomplete until retained event and report-output evidence are linked.",
             record.EvidenceRoute,
-            record.EvidenceLinks.Concat(record.ReportOutputs.SelectMany(static item => item.EvidenceLinks)).Distinct(StringComparer.OrdinalIgnoreCase).ToArray(),
+            evidenceLinks,
             "Attach tax support evidence or governed report output");
     }
 
@@ -259,9 +259,8 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
         PrivateCapitalFundEventLedgerRecordDto record,
         PaymentIntentWorkflowDto? paymentIntent)
     {
-        var auditEvidence = paymentIntent?.AuditHistory.SelectMany(static item => item.EvidenceLinks).ToArray() ?? [];
-        var evidence = auditEvidence.Length == 0 ? record.EvidenceLinks : auditEvidence;
-        var isReady = evidence.Count > 0 || record.ApprovalRoute is not null;
+        var evidenceLinks = BuildAuditSupportEvidenceLinks(record, paymentIntent);
+        var isReady = IsAuditSupportReady(record, evidenceLinks);
         return Lane(
             "audit-history",
             "Audit history",
@@ -270,7 +269,7 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
                 ? "Audit, approval, or retained evidence links are available for this fund event."
                 : "No audit history or retained approval evidence is linked to this fund event.",
             record.ApprovalRoute ?? record.EvidenceRoute,
-            evidence,
+            evidenceLinks,
             "Retain approval or audit evidence");
     }
 
@@ -314,8 +313,92 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
                 output.IsReportReady ? [] : ["Repair governed report-output evidence"]));
         }
 
+        var publishedOutputs = GetPublishedReportOutputs(record);
+        var deliveryEvidenceLinks = BuildDeliverySupportEvidenceLinks(record, publishedOutputs);
+        var isDeliveryReady = IsDeliverySupportReady(publishedOutputs);
+        packages.Add(new PrivateCapitalFundEventCommandCenterSupportPackageDto(
+            $"delivery:{record.FundEventId}",
+            "Delivery support package",
+            isDeliveryReady ? "Ready" : "ReviewRequired",
+            publishedOutputs.Select(static item => item.ReportOutputRoute ?? item.ReportRoute).FirstOrDefault(static item => !string.IsNullOrWhiteSpace(item)),
+            deliveryEvidenceLinks.Count,
+            deliveryEvidenceLinks,
+            isDeliveryReady ? [] : ["Retain delivery package or publication manifest"]));
+
+        var taxEvidenceLinks = BuildTaxSupportEvidenceLinks(record);
+        var isTaxReady = IsTaxSupportReady(record);
+        packages.Add(new PrivateCapitalFundEventCommandCenterSupportPackageDto(
+            $"tax-support:{record.FundEventId}",
+            "Tax support package",
+            isTaxReady ? "Ready" : "ReviewRequired",
+            record.EvidenceRoute,
+            taxEvidenceLinks.Count,
+            taxEvidenceLinks,
+            isTaxReady ? [] : ["Attach tax support evidence or governed report output"]));
+
+        var auditEvidenceLinks = BuildAuditSupportEvidenceLinks(record, paymentIntent);
+        var isAuditReady = IsAuditSupportReady(record, auditEvidenceLinks);
+        packages.Add(new PrivateCapitalFundEventCommandCenterSupportPackageDto(
+            $"audit-support:{record.FundEventId}",
+            "Audit support package",
+            isAuditReady ? "Ready" : "ReviewRequired",
+            record.ApprovalRoute ?? record.EvidenceRoute,
+            auditEvidenceLinks.Count,
+            auditEvidenceLinks,
+            isAuditReady ? [] : ["Retain approval or audit evidence"]));
+
         return packages;
     }
+
+    private static IReadOnlyList<PrivateCapitalReportOutputDto> GetPublishedReportOutputs(PrivateCapitalFundEventLedgerRecordDto record)
+        => record.ReportOutputs
+            .Where(static item => item.IsPublished)
+            .ToArray();
+
+    private static bool IsDeliverySupportReady(IReadOnlyList<PrivateCapitalReportOutputDto> publishedOutputs)
+        => publishedOutputs.Count > 0 &&
+           publishedOutputs.Any(static item => !string.IsNullOrWhiteSpace(item.RetainedManifestPath));
+
+    private static bool IsTaxSupportReady(PrivateCapitalFundEventLedgerRecordDto record)
+        => record.ReportOutputs.Any(static item => item.IsPublished && item.EvidenceLinkCount > 0) &&
+           record.EvidenceLinkCount > 0;
+
+    private static bool IsAuditSupportReady(
+        PrivateCapitalFundEventLedgerRecordDto record,
+        IReadOnlyList<string> evidenceLinks)
+        => evidenceLinks.Count > 0 || record.ApprovalRoute is not null;
+
+    private static IReadOnlyList<string> BuildDeliverySupportEvidenceLinks(
+        PrivateCapitalFundEventLedgerRecordDto record,
+        IReadOnlyList<PrivateCapitalReportOutputDto> publishedOutputs)
+        => NormalizeEvidenceLinks(
+            publishedOutputs
+                .SelectMany(static item => item.EvidenceLinks)
+                .Concat(publishedOutputs.Select(static item => item.RetainedManifestPath))
+                .Concat(publishedOutputs.Select(static item => item.PublicationManifestId)));
+
+    private static IReadOnlyList<string> BuildTaxSupportEvidenceLinks(PrivateCapitalFundEventLedgerRecordDto record)
+        => NormalizeEvidenceLinks(record.EvidenceLinks.Concat(record.ReportOutputs.SelectMany(static item => item.EvidenceLinks)));
+
+    private static IReadOnlyList<string> BuildAuditSupportEvidenceLinks(
+        PrivateCapitalFundEventLedgerRecordDto record,
+        PaymentIntentWorkflowDto? paymentIntent)
+    {
+        var auditEvidenceLinks = paymentIntent?.AuditHistory
+            .SelectMany(static item => item.EvidenceLinks)
+            .ToArray() ?? [];
+        return auditEvidenceLinks.Length == 0
+            ? NormalizeEvidenceLinks(record.EvidenceLinks)
+            : NormalizeEvidenceLinks(auditEvidenceLinks);
+    }
+
+    private static IReadOnlyList<string> NormalizeEvidenceLinks(IEnumerable<string?> evidenceLinks)
+        => evidenceLinks
+            .Where(static link => !string.IsNullOrWhiteSpace(link))
+            .Select(static link => link!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
 
     private static PrivateCapitalFundEventCommandCenterLaneDto Lane(
         string laneId,

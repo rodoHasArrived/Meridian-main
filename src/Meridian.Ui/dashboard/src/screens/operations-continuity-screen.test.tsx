@@ -391,6 +391,74 @@ const detail: OperationsContinuityWorkflow = {
       "Complete workflow approval and checklist-control approvals."
     ]
   },
+  reviewedAutomation: {
+    summaryId: "reviewed-automation:fund-alpha:2026-05",
+    stage: "Report commentary and audit request list draft review",
+    status: "ReviewRequired",
+    requiresHumanReview: true,
+    summary: "Automation may draft reporting commentary and audit request lists, but publication remains behind human approval.",
+    allowedUseCases: ["Draft report commentary", "Draft audit request lists"],
+    prohibitedActions: ["Approve workflow", "Publish close package"],
+    evidenceLinks: [
+      {
+        evidenceId: "automation-review-evidence-1",
+        label: "Reviewed automation draft packet",
+        route: "/workstation/reporting/report-packs/automation-review",
+        source: "operations-continuity",
+        capturedAtUtc: "2026-05-08T15:40:00Z"
+      }
+    ],
+    requiredActions: ["Review drafted report commentary and audit request lists against retained evidence before submission."],
+    artifacts: [
+      {
+        artifactId: "reviewed-automation:report-commentary-draft",
+        artifactKind: "Report commentary",
+        title: "Report commentary draft",
+        status: "ReviewRequired",
+        requiresHumanReview: true,
+        confidencePercent: 84,
+        sourceSummary: "Draft commentary is generated from retained close, ledger, reconciliation, and report-pack evidence.",
+        suggestedOperatorAction: "Review commentary against retained evidence before report approval or publication.",
+        blockedMaterialAction: "Cannot publish reports or release support packages.",
+        evidenceLinks: [
+          {
+            evidenceId: "automation-review-evidence-1",
+            label: "Reviewed automation draft packet",
+            route: "/workstation/reporting/report-packs/automation-review",
+            source: "operations-continuity",
+            capturedAtUtc: "2026-05-08T15:40:00Z"
+          }
+        ],
+        reviewChecklist: ["Review drafted report commentary and audit request lists against retained evidence before submission."]
+      },
+      {
+        artifactId: "reviewed-automation:audit-request-list-draft",
+        artifactKind: "Audit request list",
+        title: "Audit request list draft",
+        status: "ReviewRequired",
+        requiresHumanReview: true,
+        confidencePercent: 79,
+        sourceSummary: "Draft audit request lists summarize missing support and unresolved evidence gaps.",
+        suggestedOperatorAction: "Review each requested support item and assign an owner before audit release.",
+        blockedMaterialAction: "Cannot erase evidence or satisfy audit requests without retained support.",
+        evidenceLinks: [],
+        reviewChecklist: ["Review drafted report commentary and audit request lists against retained evidence before submission."]
+      },
+      {
+        artifactId: "reviewed-automation:missing-support-flag",
+        artifactKind: "Missing support",
+        title: "Missing support flag",
+        status: "ReviewRequired",
+        requiresHumanReview: true,
+        confidencePercent: 72,
+        sourceSummary: "Missing support flags are derived from incomplete evidence package categories.",
+        suggestedOperatorAction: "Attach or waive missing support through governed human review.",
+        blockedMaterialAction: "Cannot approve its own missing-support disposition.",
+        evidenceLinks: [],
+        reviewChecklist: ["Review drafted report commentary and audit request lists against retained evidence before submission."]
+      }
+    ]
+  },
   evidencePackages: [
     {
       packageId: "accounting-record-2026-05",
@@ -459,6 +527,27 @@ const detail: OperationsContinuityWorkflow = {
         }
       ],
       requiredActions: ["Complete missing audit evidence categories before releasing the package."]
+    },
+    {
+      packageId: "period-lock-reopen:fund-alpha:2026-05",
+      label: "Period lock and reopen evidence",
+      status: "ReviewRequired",
+      isReady: false,
+      summary: "Workflow was reopened after close package close-package-2026-05; 1 incident evidence link is retained and the period must be locked again after remediation.",
+      routeHint: "/workstation/accounting/operations-continuity",
+      completeCategoryCount: 1,
+      requiredCategoryCount: 2,
+      evidenceLinkCount: 1,
+      evidenceLinks: [
+        {
+          evidenceId: "INC-123",
+          label: "Workflow reopen incident",
+          route: "/workstation/accounting",
+          source: "incident",
+          capturedAtUtc: "2026-05-09T11:00:00Z"
+        }
+      ],
+      requiredActions: ["Complete reopened incident remediation and close the period again with retained evidence."]
     }
   ],
   accountingRecordSummary: {
@@ -741,6 +830,50 @@ const closeCockpit: PrivateCapitalCloseCockpit = {
       requiredActions: ["Retain NAV support package for positions, cash, pricing, and shadow NAV evidence."]
     }
   ],
+  evidencePackages: [
+    {
+      packageId: "private-capital:fund-event-accounting",
+      label: "Fund-event accounting evidence",
+      status: "Ready",
+      isReady: true,
+      summary: "Fund-event accounting package retains source activity, journals, capital accounts, and allocation review.",
+      routeHint: "/workstation/accounting/private-capital/fund-events",
+      completeCategoryCount: 4,
+      requiredCategoryCount: 4,
+      evidenceLinkCount: 3,
+      evidenceLinks: [
+        {
+          evidenceId: "fund-event-accounting-evidence",
+          label: "Fund-event accounting evidence",
+          route: "/workstation/accounting/private-capital/fund-events",
+          source: "private-capital",
+          capturedAtUtc: "2026-05-10T18:05:00Z"
+        }
+      ],
+      requiredActions: []
+    },
+    {
+      packageId: "private-capital:nav-support",
+      label: "NAV support evidence package",
+      status: "ReviewRequired",
+      isReady: false,
+      summary: "NAV support evidence package still needs pricing and shadow NAV support.",
+      routeHint: "/workstation/portfolio/nav",
+      completeCategoryCount: 1,
+      requiredCategoryCount: 3,
+      evidenceLinkCount: 1,
+      evidenceLinks: [
+        {
+          evidenceId: "nav-package-evidence",
+          label: "NAV package evidence",
+          route: "/workstation/portfolio/nav/support-package",
+          source: "operations-continuity",
+          capturedAtUtc: "2026-05-10T18:10:00Z"
+        }
+      ],
+      requiredActions: ["Retain complete NAV support package evidence before close sign-off."]
+    }
+  ],
   blockers: [
     {
       code: "LEDGER_VALIDATION_REQUIRED",
@@ -860,15 +993,45 @@ describe("OperationsContinuityScreen", () => {
     expect(within(dashboard).getByText("Resolve Exceptions")).toBeInTheDocument();
     expect(within(dashboard).getByText("Close package retained")).toBeInTheDocument();
     expect(within(dashboard).getByText("Assign, escalate, or resolve open exceptions and retain resolution evidence.")).toBeInTheDocument();
+    const reviewedAutomation = screen.getByRole("list", { name: "Reviewed automation summary" });
+    expect(within(reviewedAutomation).getByText("Stage: Report commentary and audit request list draft review")).toBeInTheDocument();
+    expect(within(reviewedAutomation).getByText("Human review required")).toBeInTheDocument();
+    expect(within(reviewedAutomation).getByText("Allowed: Draft report commentary, Draft audit request lists")).toBeInTheDocument();
+    expect(within(reviewedAutomation).getByText("Prohibited: Approve workflow, Publish close package")).toBeInTheDocument();
+    expect(within(reviewedAutomation).getByText("1 retained review evidence link")).toBeInTheDocument();
+    expect(within(reviewedAutomation).getByText("Review drafted report commentary and audit request lists against retained evidence before submission.")).toBeInTheDocument();
+    const reviewedAutomationQueue = screen.getByRole("table", { name: "Reviewed automation output queue" });
+    expect(within(reviewedAutomationQueue).getByText("Report commentary draft")).toBeInTheDocument();
+    expect(within(reviewedAutomationQueue).getByText("Audit request list draft")).toBeInTheDocument();
+    expect(within(reviewedAutomationQueue).getByText("Missing support flag")).toBeInTheDocument();
+    expect(within(reviewedAutomationQueue).getByText("84% confidence")).toBeInTheDocument();
+    expect(within(reviewedAutomationQueue).getByText("Cannot publish reports or release support packages.")).toBeInTheDocument();
+    const operatorQueue = screen.getByRole("table", { name: "Financial Operations operator queue" });
+    expect(within(operatorQueue).getByText("recon-break-42")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("CashBalance / cash-balance-check; Level 2 at May 08, 15:20 UTC: Aged cash variance past controller SLA")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Ledger posting controller check")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Period lock and reopen evidence")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Complete reopened incident remediation and close the period again with retained evidence.")).toBeInTheDocument();
+    expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: recon-break-42" }))
+      .toHaveAttribute("href", "/accounting/reconciliation/recon-break-42/evidence");
+    expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Ledger posting controller check" }))
+      .toHaveAttribute("href", "/accounting/ledger");
+    expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Period lock and reopen evidence" }))
+      .toHaveAttribute("href", "/accounting/operations-continuity");
     const evidencePackages = screen.getByRole("table", { name: "Operations continuity evidence packages" });
     expect(within(evidencePackages).getByText("Accounting record evidence")).toBeInTheDocument();
     expect(within(evidencePackages).getByText("Close package manifest")).toBeInTheDocument();
+    expect(within(evidencePackages).getByText("Period lock and reopen evidence")).toBeInTheDocument();
     expect(within(evidencePackages).getAllByText("4/6 categories complete")).toHaveLength(2);
+    expect(within(evidencePackages).getByText("1/2 categories complete")).toBeInTheDocument();
     expect(within(evidencePackages).getByText("Close package close-package-2026-05 retained manifest close-package-2026-05-manifest and evidence hash.")).toBeInTheDocument();
+    expect(within(evidencePackages).getByText("Complete reopened incident remediation and close the period again with retained evidence.")).toBeInTheDocument();
     expect(within(evidencePackages).getByRole("link", { name: "Open evidence package Close package manifest" }))
       .toHaveAttribute("href", "/accounting/operations-continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close-package/close-package-2026-05-manifest");
     expect(within(evidencePackages).getByRole("link", { name: "Open evidence package Audit support package" }))
       .toHaveAttribute("href", "/reporting/evidence");
+    expect(within(evidencePackages).getByRole("link", { name: "Open evidence package Period lock and reopen evidence" }))
+      .toHaveAttribute("href", "/accounting/operations-continuity");
     const cockpitLanes = screen.getByRole("table", { name: "Private-capital close cockpit lanes" });
     expect(within(cockpitLanes).getByText("Partner capital account tie-outs")).toBeInTheDocument();
     expect(within(cockpitLanes).getByText("Expense, fee, and allocation review")).toBeInTheDocument();
@@ -879,6 +1042,14 @@ describe("OperationsContinuityScreen", () => {
     const cockpitWorkflows = screen.getByRole("table", { name: "Private-capital close cockpit workflows" });
     expect(within(cockpitWorkflows).getByText(`${summary.periodId} / ${fundAccountId}`)).toBeInTheDocument();
     expect(within(cockpitWorkflows).getByText("72% ready")).toBeInTheDocument();
+    const cockpitEvidencePackages = screen.getByRole("table", { name: "Private-capital close cockpit evidence packages" });
+    expect(within(cockpitEvidencePackages).getByText("Fund-event accounting evidence")).toBeInTheDocument();
+    expect(within(cockpitEvidencePackages).getByText("NAV support evidence package")).toBeInTheDocument();
+    expect(within(cockpitEvidencePackages).getByText("4/4 categories complete")).toBeInTheDocument();
+    expect(within(cockpitEvidencePackages).getByText("1/3 categories complete")).toBeInTheDocument();
+    expect(within(cockpitEvidencePackages).getByText("Retain complete NAV support package evidence before close sign-off.")).toBeInTheDocument();
+    expect(within(cockpitEvidencePackages).getByRole("link", { name: "Open evidence package Fund-event accounting evidence" }))
+      .toHaveAttribute("href", "/accounting/private-capital/fund-events");
     const navSupportPackages = screen.getByRole("table", { name: "Private-capital close cockpit NAV support packages" });
     expect(within(navSupportPackages).getByText("NAV support package")).toBeInTheDocument();
     expect(within(navSupportPackages).getByText("$1,250,000.00 shadow NAV")).toBeInTheDocument();

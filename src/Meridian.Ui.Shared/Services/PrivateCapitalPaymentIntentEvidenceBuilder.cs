@@ -15,7 +15,13 @@ internal static class PrivateCapitalPaymentIntentEvidenceBuilder
         "treasury",
         "wire",
         "ach",
-        "swift"
+        "swift",
+        "return",
+        "revers",
+        "reject",
+        "void",
+        "failed",
+        "failure"
     ];
 
     public static PrivateCapitalPaymentIntentEvidenceDto BuildForFundEvent(
@@ -200,13 +206,43 @@ internal static class PrivateCapitalPaymentIntentEvidenceBuilder
         IReadOnlyList<string> paymentIntentIds,
         IReadOnlyList<string> settlementReferences)
     {
-        return Normalize(evidenceLinks)
+        var cashEvidenceLinks = Normalize(evidenceLinks)
             .Where(IsCashEvidenceLink)
+            .ToArray();
+        var targetIdentifiers = paymentIntentIds
+            .Concat(settlementReferences)
+            .ToArray();
+        if (targetIdentifiers.Length == 0)
+        {
+            return cashEvidenceLinks;
+        }
+
+        var matched = cashEvidenceLinks
+            .Where(link => ContainsAnyIdentifier(link, targetIdentifiers))
+            .ToArray();
+        if (matched.Length > 0)
+        {
+            return matched;
+        }
+
+        return cashEvidenceLinks
+            .Where(link => !ContainsExplicitPaymentOrSettlementIdentifier(link))
             .ToArray();
     }
 
     private static bool IsCashEvidenceLink(string link)
         => CashEvidenceKeywords.Any(keyword => link.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+
+    private static bool ContainsAnyIdentifier(string link, IReadOnlyList<string> identifiers)
+        => identifiers.Any(identifier =>
+            link.Contains(identifier, StringComparison.OrdinalIgnoreCase) ||
+            link.Contains(Uri.EscapeDataString(identifier), StringComparison.OrdinalIgnoreCase));
+
+    private static bool ContainsExplicitPaymentOrSettlementIdentifier(string link)
+        => link.Contains("payment:", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("payment%3A", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("settlement:", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("settlement%3A", StringComparison.OrdinalIgnoreCase);
 
     private static IReadOnlyList<string> Normalize(IEnumerable<string?> values)
         => values

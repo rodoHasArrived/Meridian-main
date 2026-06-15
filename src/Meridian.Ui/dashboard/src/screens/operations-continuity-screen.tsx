@@ -7,6 +7,7 @@ import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/comp
 import { cn } from "@/lib/utils";
 import {
   useOperationsContinuityScreenViewModel,
+  type FinancialOperationsOperatorQueueRow,
   type OperationsAccountingRecordEvidenceRow,
   type OperationsContinuityCloseCockpitApprovalRow,
   type OperationsContinuityCloseCockpitLaneRow,
@@ -19,6 +20,7 @@ import {
   type OperationsContinuityGateRow,
   type OperationsContinuityNavSupportPackageRow,
   type OperationsContinuityReconciliationLaneRow,
+  type OperationsReviewedAutomationArtifactRow,
   type OperationsContinuityTimelineRow,
   type OperationsContinuityTone,
   type OperationsContinuityWorkflowRow
@@ -172,6 +174,97 @@ const operationalDashboardColumns: DenseDataTableColumn<OperationsContinuityDash
       </Link>
     ) : (
       <span className="text-xs text-muted-foreground">{row.routeLabel}</span>
+    )
+  }
+];
+
+const financialOperationsQueueColumns: DenseDataTableColumn<FinancialOperationsOperatorQueueRow>[] = [
+  {
+    id: "work-item",
+    label: "Work item",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="eyebrow-label">{row.kindLabel}</span>
+        <span className="mt-1 block font-semibold text-foreground">{row.title}</span>
+        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.detail}</span>
+      </span>
+    )
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
+  },
+  {
+    id: "owner",
+    label: "Owner / due",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block font-mono text-foreground/80">{row.ownerLabel}</span>
+        <span className="block text-muted-foreground">{row.dueLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "evidence",
+    label: "Evidence / action",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-foreground">{row.evidenceLabel}</span>
+        <span className="block text-muted-foreground">{row.actionLabel}</span>
+        {row.routeHref ? (
+          <Link className="link-subtle mt-1 inline-flex" to={row.routeHref} aria-label={`Open Financial Operations queue item: ${row.title}`}>
+            {row.routeLabel}
+          </Link>
+        ) : (
+          <span className="mt-1 block text-muted-foreground">{row.routeLabel}</span>
+        )}
+      </span>
+    )
+  }
+];
+
+const reviewedAutomationArtifactColumns: DenseDataTableColumn<OperationsReviewedAutomationArtifactRow>[] = [
+  {
+    id: "artifact",
+    label: "Output",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="eyebrow-label">{row.kindLabel}</span>
+        <span className="mt-1 block font-semibold text-foreground">{row.title}</span>
+        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.sourceSummary}</span>
+      </span>
+    )
+  },
+  {
+    id: "status",
+    label: "Review",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
+        <span className="mt-1 block text-muted-foreground">{row.reviewLabel}</span>
+        <span className="block font-mono text-muted-foreground">{row.confidenceLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "evidence",
+    label: "Evidence",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-foreground">{row.evidenceLabel}</span>
+        <span className="block text-muted-foreground">{row.checklistLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "action",
+    label: "Action / block",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-foreground">{row.suggestedActionLabel}</span>
+        <span className="block text-muted-foreground">{row.blockedActionLabel}</span>
+      </span>
     )
   }
 ];
@@ -845,6 +938,76 @@ export function OperationsContinuityScreen() {
       </section>
 
       <section className="grid gap-4">
+        <Card className={cn("border", tonePanel[vm.reviewedAutomation.statusTone])}>
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Workflow className="h-5 w-5 text-primary" aria-hidden="true" />
+                  {vm.reviewedAutomation.title}
+                </CardTitle>
+                <CardDescription>{vm.reviewedAutomation.summaryLabel}</CardDescription>
+              </div>
+              <Badge variant={toneBadge[vm.reviewedAutomation.statusTone]}>
+                {vm.reviewedAutomation.statusLabel}
+              </Badge>
+            </div>
+            <div
+              role="list"
+              aria-label="Reviewed automation summary"
+              className="grid gap-2 pt-3 text-xs text-muted-foreground sm:grid-cols-2 xl:grid-cols-3"
+            >
+              <span role="listitem">{vm.reviewedAutomation.stageLabel}</span>
+              <span role="listitem">{vm.reviewedAutomation.reviewLabel}</span>
+              <span role="listitem">{vm.reviewedAutomation.evidenceLabel}</span>
+              <span role="listitem">Allowed: {vm.reviewedAutomation.allowedUseCasesLabel}</span>
+              <span role="listitem">Prohibited: {vm.reviewedAutomation.prohibitedActionsLabel}</span>
+              <span role="listitem">{vm.reviewedAutomation.requiredActionsLabel}</span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <DenseDataTable
+              columns={reviewedAutomationArtifactColumns}
+              rows={vm.reviewedAutomation.artifacts}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              emptyText={vm.reviewedAutomation.artifactsEmptyText}
+              ariaLabel="Reviewed automation output queue"
+            />
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-4">
+        <Card className={cn("border", tonePanel[vm.financialOperationsQueue.statusTone])}>
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
+                  {vm.financialOperationsQueue.title}
+                </CardTitle>
+                <CardDescription>{vm.financialOperationsQueue.summaryLabel}</CardDescription>
+              </div>
+              <Badge variant={toneBadge[vm.financialOperationsQueue.statusTone]}>
+                {vm.financialOperationsQueue.statusLabel}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <DenseDataTable
+              columns={financialOperationsQueueColumns}
+              rows={vm.financialOperationsQueue.items}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              emptyText={vm.financialOperationsQueue.emptyText}
+              ariaLabel="Financial Operations operator queue"
+            />
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-4">
         <Card className="panel-surface">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -950,6 +1113,17 @@ export function OperationsContinuityScreen() {
                   ariaLabel="Private-capital close cockpit workflows"
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-foreground">Evidence packages</h3>
+              <DenseDataTable
+                columns={evidencePackageColumns}
+                rows={vm.closeCockpit.evidencePackages}
+                getRowId={(row) => row.id}
+                getRowAriaLabel={(row) => row.ariaLabel}
+                emptyText={vm.closeCockpit.evidencePackagesEmptyText}
+                ariaLabel="Private-capital close cockpit evidence packages"
+              />
             </div>
             <div className="space-y-2">
               <h3 className="text-sm font-semibold text-foreground">NAV support packages</h3>

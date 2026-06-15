@@ -71,8 +71,9 @@ as a thin orchestration surface over shared DTOs and API validation; do not add 
 scripted validation rules.
 Settings also renders the scoped-access assignment console over the shared Auth API. The browser
 lists active or revoked assignments, grants principal authority with role, optional profile, scope,
-permission names, effective dates, rationale, and correlation metadata, and revokes assignments with
-the current assignment version so optimistic-concurrency and audit evidence remain server-owned.
+permission names, effective dates, approval-limit metadata, segregation-of-duties rule text,
+rationale, and correlation metadata, and revokes assignments with the current assignment version so
+optimistic-concurrency and audit evidence remain server-owned.
 
 No-host browser previews must keep fixture data visibly labeled as demo data. The shell banner
 routes operators through the typed demo evidence path: watchlist, live quote evidence, trading
@@ -106,6 +107,10 @@ Accounting reconciliation statement runs now use the shared statement-run endpoi
 broker or custodian, account, period, status, validation, match, break, case, and import timing
 read models; React components only render these values and do not reimplement matching, tolerance,
 validation, or case-state rules.
+The Accounting external-GL panel renders the shared accounting-system reconciliation evidence
+packages for external import, Meridian ledger support, and GL tie-out posture when the API returns
+them, keeping package readiness and required actions service-owned rather than deriving package
+state from browser table rows.
 The Accounting screen also carries a stable Investment Accounting Transaction Lab panel view model
 so the browser renders the Books Before Broker preview entry point without crashing while endpoint
 request wiring remains a follow-on workflow.
@@ -134,7 +139,13 @@ The Operations Continuity screen also renders the shared Financial Operations op
 dashboard. Receive Activity, Match Records, Resolve Exceptions, Approve Results, Produce Evidence,
 and Close Support metric state, retained evidence, route hints, and required actions come from the
 workflow detail payload, so the browser dashboard is a display projection rather than a local
-workflow engine.
+workflow engine. The same screen now renders the workflow detail `Reviewed automation` summary as
+read-only stage, review-state, allowed-use, prohibited-action, retained-evidence, required-action,
+and reviewed-output artifact posture so automation review remains visible without browser-local
+automation policy.
+The Financial Operations operator queue on that screen is also derived from workflow detail:
+reconciliation break cases, close checklist tasks, workflow approvals, and evidence-package
+readiness stay source-backed while React only groups the active work items for review.
 It also renders the shared evidence-package table from the workflow detail payload: accounting
 record evidence, report-pack evidence, close-package manifest, and audit-support package rows show
 server-owned readiness, category completeness, retained evidence counts, local routes, and required
@@ -149,7 +160,11 @@ history, close readiness, and evidence package posture instead of overloading pr
 The app shell consumes the shared Financial Operations `Reviewed automation` evidence badge as an
 operator-focus item only when the badge requires review. React may route the operator back to the
 source-backed workflow step, but it must not approve, post, publish, release payments, erase
-evidence, or invent autonomous automation state outside the shared summary.
+evidence, or invent autonomous automation state outside the shared summary. Browser DTO typings now
+carry `OperationsReviewedAutomationSummary` plus optional material-command `actionOrigin` fields,
+while the shared endpoints force authenticated human origin before Financial Operations accepts
+ledger posting, approval, payment release, report publication, report delivery package creation,
+close-package publication, or governed reopen commands.
 The close-package panel is likewise a read-only projection of the shared operations-continuity
 publication metadata: signer, sign-off rationale, retained manifest route, evidence hash, report
 pack id, retained evidence links, and checklist control approvals come from the server workflow
@@ -162,9 +177,11 @@ and scoped-workflow panel, including shared readiness, blockers, fund-event coun
 delivery, capability labels, server-routed next action state, and a Financial Operations proof-lane
 summary for partner capital tie-outs, expense/fee allocation review, NAV support, evidence packages,
 and period-lock evidence. It also renders shared approval history from workflow approval decisions
-and checklist-control approvals plus NAV support package rows for positions, cash, pricing, shadow
-NAV, and retained evidence links so approval and NAV-support evidence are visible without
-browser-local timeline or report-output reconstruction.
+and checklist-control approvals, private-capital evidence package rows for fund-event accounting,
+partner capital tie-outs, NAV support, and close approval/audit evidence, plus NAV support package
+rows for positions, cash, pricing, shadow NAV, and retained evidence links so approval,
+evidence-package, and NAV-support evidence are visible without browser-local timeline or
+report-output reconstruction.
 The period lock and reopen evidence panel stays read-only as well: locked/open/reopened posture,
 close audit hash, close package hash, reopen incident correlation, rationale, and retained reopen
 evidence are derived from the shared workflow status and timeline. Browser close/reopen command
@@ -199,7 +216,14 @@ packet `proofChain` contract rather than browser-local node classification. Mani
 also render the shared vault request-list groups and support request rows beside retained artifacts,
 including target kind, target id, highest severity, evidence kinds, missing or blocked evidence,
 source system, work item, and blocked output metadata from the server contract instead of rebuilding
-audit, tax, close, or report-package request lists in React.
+audit, tax, close, or report-package request lists in React. The workbench also calls the shared
+`/api/workstation/evidence/vault/request-lists` endpoint to show open frozen request lists for the
+selected subject, or the latest open vault request lists when no subject is selected. Retained
+artifact rows also surface server-provided capture channel/source metadata and extracted-field
+validation summaries so the browser does not infer document intake, confidence, or reviewer state
+locally. Evidence nodes may also carry optional metadata for typed proof identifiers such as
+report-pack delivery package ids; React treats that metadata as server-owned context and does not
+parse node summaries to rebuild vault linkage.
 Operator readiness console API source identifiers use the canonical workspace roots
 `strategy`, `data`, `accounting`, and `reporting`; legacy payload type names and retained
 compatibility routes must not reintroduce visible `Research`, `Data Operations`, or `Governance`
@@ -208,6 +232,10 @@ evidence packet distribution labels follow the same canonical root naming.
 The app-shell trading continuity title uses `Trading Controls` so cross-workspace recovery copy
 does not reintroduce `Governance` as a visible workspace label.
 Reporting workspace status rows consume shared template metadata and recent run projections for investor statements, SEC filing packets, and shadow NAV packs; React renders approval status, retry attempts, audit actions, and lineage completeness rather than reimplementing report orchestration rules.
+The Reporting workspace also renders the shared `AccessAudit` summary from `WorkstationReportingPayload`,
+showing matched user/group/company scopes plus aggregate visible/hidden counts for templates, report
+packs, schedules, deliveries, and structured exports. React displays the service-owned denial
+reasons without probing or naming hidden report objects.
 Report-pack delivery history rows link delivered packages to the shared `report-pack-delivery`
 Evidence Workbench subject using the backend `reportId:attemptId` identity, so React does not build
 delivery evidence packets or audit graph state locally. Publication review and delivery package
@@ -223,20 +251,33 @@ version stamp from the backend payload instead of recomputing those cuts in Reac
 Structured export cards render regulatory, data-warehouse, and investment-decision rows from the
 shared `structuredExports` payload, including retained paths, schema version, source counts,
 data-dictionary links, evidence links, and classification tags before exposing JSON/CSV/XLSX
-downloads.
+downloads. Operator-facing XLS or Excel requests use the shared route's `format=xls`/`format=excel`
+aliases and receive the same canonical `.xlsx` workbook artifact. The shared download routes stamp
+JSON, CSV, and XLSX responses with export id, generated-at, actor, company, report group, version,
+and integrity headers while keeping browser tables read-only over backend-owned export state.
 Cross-fund consolidation cards follow the same rule: fund/entity counts, gross/net exposure, cash,
 P&L, shadow-NAV, variance, source counts, readiness, and drill-through routes are rendered from
 `crossFundConsolidations` without browser-local roll-up math.
+Report-pack delivery cards render branding evidence from the shared package payload, while the
+download routes keep the actual styled artifact generation in shared services. HTML/PDF package
+downloads apply the selected theme colors, firm, logo, footer, and disclaimer server-side, and XLSX
+packages retain a Branding worksheet, so the browser exposes branded packets without recreating
+presentation rules in React. Email-link and secure-portal access links open token-gated shared HTML
+package views; callers that need the raw manifest use the same route with `format=json`.
 It also renders shared `livePortfolioViews` rows for tick-linked portfolio reporting. React shows
 the backend-owned live/source-backed/stale/blocked state, gross/net exposure, cash, pending
 settlement, P&L, shadow NAV, liquidity and telemetry copy, source/cut freshness stamps, and links to
 the portfolio-summary and cash-ladder routes rather than deriving live freshness locally. The rows
 also render contract-owned market tick timestamp, tick age, safe tick sequence, provider label,
-tick freshness summary, and live-link flag so operators can distinguish true live-linked portfolio
-telemetry from retained source-backed snapshots. The
+tick freshness summary, freshness-policy thresholds, policy reason, and live-link flag so operators
+can distinguish true live-linked portfolio telemetry from retained source-backed snapshots. The
 Reporting route participates in the same portfolio refresh lane as Portfolio so the server-owned
 `livePortfolioViews` payload is refreshed with the source portfolio evidence while preserving
-backend freshness classification.
+backend freshness classification. The Reporting live-views panel exposes that shared refresh action
+directly and also schedules a bounded 60-second auto-refresh only when at least one live view is
+`LiveLinked` or marked with `isMarketTickLinked`, so tick-linked reporting views follow the shared
+portfolio route without introducing browser-local market-data state. It shows success or failure
+feedback from the portfolio refresh lane instead of asking operators to leave Reporting.
 `LiveLinked` is rendered only when the shared backend marks the source snapshot inside its freshness
 window; otherwise the browser preserves the emitted `SourceBacked`, `Stale`, or `Blocked` state and
 renders any contract-owned readiness blockers instead of inventing browser-local live-data copy.
@@ -260,8 +301,8 @@ React shows source counts, exposure, cash, P&L, readiness, version stamps, and b
 the payload instead of aggregating multi-fund state in the browser.
 It also renders shared `structuredExports` rows for regulatory, warehouse, and investment-decision
 outputs. The browser displays readiness, format, row/field/source counts, schema version, retained
-path, dataset id, as-of timestamp, version stamp, exact backend API route, and direct backend links
-from the contract. Each ready export exposes JSON, CSV, and XLSX download actions by normalizing the
+path, retained manifest path, SHA-256 integrity summary, dataset id, as-of timestamp, version stamp,
+exact backend API route, and direct backend links from the contract. Each ready export exposes JSON, CSV, and XLSX download actions by normalizing the
 shared retained route's `format` query instead of building browser-local export payloads. Blocked
 exports stay visible with validation copy, but the browser renders contract-owned readiness blockers
 and disabled download controls without anchor `href` values until the backend marks the descriptor
@@ -269,15 +310,22 @@ ready.
 It does this instead of deriving export inventory from report-profile labels.
 The Reporting workspace also renders shared `brandingThemes` rows with firm identity, built-in or
 custom posture, color swatches, logo URI, footer text, and disclaimer copy. When the payload carries
-fund context, React can generate a governed BoardPacket report pack with PDF/XLSX/CSV artifacts by
+fund context, React can first preview the governed BoardPacket through the shared report-pack
+preview endpoint, then generate a governed BoardPacket report pack with PDF/XLSX/CSV artifacts by
 posting the selected `brandingThemeId` to the shared report-pack endpoint; without fund context the
-command stays disabled instead of using a browser-local default. Operators can also generate a
-one-off custom branded pack by entering a theme id, firm name, colors, logo URI, footer, and
-disclaimer; the browser posts the shared `BrandingThemeOverride` contract and lets the backend
-normalize, validate, and retain the branded PDF/XLSX/CSV artifacts.
+commands stay disabled instead of using a browser-local default. The preview request carries the
+selected branding theme id, and the preview status displays the service-owned report totals,
+trial-balance line count, asset-class sections, and normalized branding identity without calculating
+those values in React. Operators can also preview and generate a one-off custom branded pack by
+entering a theme id, firm name, colors, logo URI, footer, and disclaimer; the browser posts the
+shared `BrandingThemeOverride` contract for preview and generation and lets the backend normalize,
+validate, and retain the branded PDF/XLSX/CSV artifacts.
 It also renders shared `scheduleDeliveryPlans` rows for scheduled report packs, including recipient,
 channel, delivery mode, PDF/XLS/CSV formats, readiness, retained package links, latest artifact
-counts, checksum integrity summaries, and version stamps from the backend payload.
+counts, checksum integrity summaries, schedule/package branding theme, and version stamps from the backend payload. Each ready
+delivery-plan row can also run its owning schedule through the shared schedule-run endpoint and
+reports the returned run id, delivery count, recipient-specific delivery count, and target
+delivery mode in the common schedule status lane.
 Those rows render typed drilldown links and next-action references from the shared payload, opening
 browser-safe evidence routes while executing shared POST actions for approval submission/review,
 publication, archive, and report-pack delivery. Restatements remain guarded by changed-line
@@ -295,22 +343,29 @@ recipient delivery state and retry history instead of static status chips. Deliv
 show the shared package mode, requested artifact formats, secure link, retained manifest path, and
 publication-approved branding theme, plus token-gated package artifact download links when the backend includes
 `ReportPackDeliveryPackageDto`; app-relative secure links render as anchors so operators can open
-the token-gated email-link or secure-portal package manifest, while artifact `DownloadRoute` values
+the token-gated email-link or secure-portal package page, while artifact `DownloadRoute` values
 render as direct retained PDF/XLSX/CSV links with retained path, byte size, evidence id, SHA-256
 checksum, and version stamp integrity details. When the package or schedule plan carries
 `accessLinks`, the browser renders labelled access chips for secure portal/email package access,
 operator routes, retained manifests, and token-gated artifact downloads instead of exposing only
-raw secure-link strings. When a schedule targets a custom report-writer
+raw secure-link strings. Workbook delivery packages can include an `artifact-xls` compatibility
+access link; React renders that server-provided `format=xls` route as an XLS package download while
+the backend keeps the canonical XLSX artifact and content type. When the package includes
+server-owned delivery notifications, React renders the notification subject, status, recipient,
+created/expires timestamps, body, and token-gated package href so operators can review the email-link
+or secure-portal outbox evidence without deriving it from raw secure links. Delivery-history rows can also record a failed email-link or portal
+delivery through the shared delivery-failure endpoint, preserving the original attempt as evidence
+for the failed retry path instead of keeping failure state only in operator notes. When a schedule targets a custom report-writer
 template that has not produced a published report-pack workflow record, those package rows still
 render because the backend now falls back to the generated reporting run and includes its retained
 manifest/report-writer artifact provenance on the delivery package; the browser renders the
-reporting run, template, schedule, source-artifact provenance, and generated-run evidence-packet
-package contents, support evidence IDs, delivery evidence links, access entitlement, recipients,
-approval chain, request history, amendments/restatements, audit references, and blocked downstream
-outputs beside the package links.
+reporting run, template, schedule, report-writer dataset source, source-artifact provenance, and
+generated-run evidence-packet package contents, support evidence IDs, delivery evidence links,
+access entitlement, recipients, approval chain, request history, amendments/restatements, audit
+references, and blocked downstream outputs beside the package links.
 When the package carries generated report-writer grid metadata, the delivery panel also shows the
-grid title, kind, and dimension/metric/formula counts from the shared package manifest instead of
-parsing source-artifact strings. If the package also carries rendered report-writer grids, the same
+grid title, kind, dimension/metric/formula counts, and validation summary counts from the shared
+package manifest instead of parsing source-artifact strings. If the package also carries rendered report-writer grids, the same
 panel shows rendered row/column counts, retained data-dictionary fields, generated-field counts, and
 backend validation checks so operators can distinguish descriptor-only packages from source-backed
 pivot, Top-N, contribution, and formula output delivered by the backend.
@@ -320,7 +375,8 @@ delivery mode, and PDF/XLSX/CSV formats, then staging multiple delivery targets 
 single governed schedule can distribute secure-portal, email-link, evidence-vault, or internal-route
 packs to separate recipients. The browser posts the shared `ReportingScheduleUpsertRequestDto`
 instead of maintaining local schedule rules, including optional governed dataset rows when the
-backend has supplied them for report-writer grids. Schedule cards also show configured delivery targets
+backend has supplied them for report-writer grids and the current custom branding override so
+recurring generated-run packages retain the selected firm styling. Schedule cards also show configured delivery targets
 and the run-now status reports returned delivery counts or warnings from
 `ReportingScheduleRunResultDto`, keeping generated report runs distinct from packaged
 client/internal distributions. The backend applies the same governed template access policy to
@@ -338,8 +394,10 @@ When the backend generates an approved custom no-code template, retained
 `report-writer://.../grids/{gridId}` artifacts flow back through recent-run rows so browser
 Reporting can show that pivot, Top-N, contribution, and custom-formula grids were part of the
 actual run evidence, not just a preview-only authoring state. Recent-run cards and delivery
-package metadata expose JSON, CSV, and XLSX links for each retained grid through the shared
-`reportingRunReportWriterGridEndpoint` helper, keeping grid download URLs contract-derived.
+package metadata expose JSON, CSV, XLS, and XLSX links for each retained grid through the shared
+`reportingRunReportWriterGridEndpoint` helper, keeping grid download URLs contract-derived. The
+browser XLS link uses the shared `format=xls` compatibility alias and receives the canonical
+workbook artifact from the backend.
 The Reporting workspace also exposes `/reporting/operations-record` as the polished W1-W5 release
 path. It stays under the canonical Reporting root and projects the loaded Data provider posture,
 Operations Continuity accounting-record evidence, close-package state, and report-pack publication
@@ -377,15 +435,33 @@ correct a draft without resetting the whole grid. The designer renders the compu
 controls and locks private drafts to a user owner before save. The designer Preview action posts the current unsaved layout
 plus an explicit preview dataset profile and bounded sample rows to
 `/api/fund-structure/reporting/templates/render`, then renders the returned grid rows, columns,
-column roles, labelled warnings, and audit trace before publication. Operators can switch previews across representative
-portfolio-position, ledger-fact, cash-ladder, and pasted custom JSON/CSV row shapes while the shared renderer still owns
-pivot, Top-N, contribution, filter, and formula output. When an operator changes a draft to a
+column roles, data-dictionary fields, backend validation checks, labelled warnings, and audit trace
+before publication. Operators can switch previews across combined retained reporting rows, dedicated
+portfolio-cut rows, Top-N/contribution analytics rows, cross-fund consolidation rows, and the
+certified operational data-mart source from `reportWriterDatasetSources`, representative
+portfolio-position, ledger-fact, cash-ladder, and pasted custom JSON/CSV row shapes while the
+shared renderer still owns pivot, Top-N, contribution, filter, and formula output. Each
+source-backed option posts the selected payload-owned rows to the render endpoint; the browser also
+renders the source-owned field catalog with role and data-type metadata before preview. Formula
+preview row generation recognizes brace references, bare identifiers, `total(...)`, and shared
+formula functions such as `abs(...)`, `min(...)`, `max(...)`, and `safeDivide(...)`, so local sample
+rows include the same formula source fields the shared renderer will evaluate. The
+certified operational data-mart option is server-projected with row-lineage keys, lineage manifest
+pointers, evidence-index links, source run ids, validation/reconciliation posture, certification
+state, and permitted consumers; the browser should display those payload fields instead of deriving
+mart metadata locally. The browser uses bounded fixture rows only for the explicit fixture preview
+profiles. When an operator changes a draft to a
 Contribution grid, the browser preview request prefers the P&L metric as the contribution base,
 sorts by `contributionAbsPercent`, and omits generated contribution fields from sample rows so the
 shared renderer remains the source of truth for signed and absolute contribution percentages. That trace displays input/output and
 filtered-input row counts, source fields, metric source mappings, formula expressions/dependencies,
 and filter lineage from the shared renderer. Grid calculation, formula evaluation, filter application,
 approval, and retained template truth remain server/shared-service owned.
+Approved report-writer template runs and schedules can also choose one of those retained dataset
+sources; the browser sends `datasetSourceId` for on-demand and scheduled report-writer automation
+instead of embedding raw source rows in every request. Recent-run cards render the resolved source
+label and row count returned by the shared run projection, so operators can see which retained
+dataset powered the generated grids without parsing artifact names.
 Template cards also show a shared access-governance panel with company-wide, user/group, or
 user-locked mode, resolved scope, runnable versus blocked posture, and the backend access summary;
 inaccessible template rows stay disabled instead of allowing browser-local report runs. Template
@@ -496,8 +572,9 @@ drill-throughs, while the direct record helpers resolve one fund event, one capi
 report output to the same server-owned DTOs the aggregate projection carries. Payment-intent rows
 render the shared `/api/ledger/private-capital/activity?paymentIntentId=...` route supplied by the
 backend so operators open the filtered proof-chain projection instead of an ignored manual-journal
-query. They also render the shared approval chain, retained bank/cash evidence, reconciliation
-links, and audit events as a read-only cash-evidence drilldown while preserving the v0.18
+query. They also render the shared approval chain, retained bank/cash evidence with retaining
+operator attribution, reconciliation links, audit events, payee, account scope, business purpose, approval policy, and retained source
+evidence counts as a read-only cash-evidence drilldown while preserving the v0.18
 execution-deferred posture. `/accounting/capital-accounts` consumes
 `getCapitalAccountWorkbench` from the shared capital-account workbench endpoint so React renders
 investor-level capital-account evidence, governed allocation policy traces, approval and replay

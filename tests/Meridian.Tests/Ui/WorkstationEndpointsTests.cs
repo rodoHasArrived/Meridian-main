@@ -421,6 +421,31 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_OperationsContinuityReadRoutes_ShouldRequireReadPermission()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.ViewStrategies);
+        var client = app.GetTestClient();
+        var workflowId = Guid.NewGuid().ToString("D");
+        var routes = new[]
+        {
+            UiApiRoutes.OperationsContinuity,
+            UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityById, "workflowId", workflowId),
+            UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityTimeline, "workflowId", workflowId),
+            UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityBreaks, "workflowId", workflowId),
+            UiApiRoutes.WithParam(UiApiRoutes.OperationsContinuityLedgerPreview, "workflowId", workflowId)
+        };
+
+        foreach (var route in routes)
+        {
+            var response = await client.GetAsync(route);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden, $"route {route} exposes operations continuity evidence");
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_OperationsContinuityRoutes_ShouldUseTrustedActorInsteadOfRequestActor()
     {
         await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
@@ -443,6 +468,60 @@ public sealed partial class WorkstationEndpointsTests
 
         using var timeline = await ReadJsonAsync(client, $"/api/workstation/operations/continuity/{workflowId}/timeline");
         timeline.RootElement[0].GetProperty("actor").GetString().Should().Be("ops-user");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_OperationsContinuityMaterialCommands_ShouldRejectAssistantOrigin()
+    {
+        await using var app = await CreateAppAsync(RegisterOperationsContinuityServices);
+        var client = app.GetTestClient();
+
+        var start = await PostTransitionAsync(client, "/api/workstation/operations/continuity", new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            "spoofed-user"));
+        var workflowId = start.Workflow!.WorkflowId;
+        var import = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/import",
+            new OperationsTransitionRequestDto(start.Workflow.Version, "spoofed-user"));
+        var normalized = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/broker/normalize",
+            new OperationsTransitionRequestDto(import.Workflow!.Version, "spoofed-user"));
+        var security = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/security-master/resolve",
+            new OperationsSecurityMasterResolveRequestDto(normalized.Workflow!.Version, "spoofed-user"));
+        var draft = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/draft",
+            new OperationsLedgerDraftRequestDto(security.Workflow!.Version, "spoofed-user", "ledger-preview-1", true));
+        var validated = await PostTransitionAsync(client, $"/api/workstation/operations/continuity/{workflowId}/ledger/validate",
+            new OperationsLedgerValidationRequestDto(draft.Workflow!.Version, "spoofed-user", true, true));
+
+        var response = await client.PostAsJsonAsync(
+            $"/api/workstation/operations/continuity/{workflowId}/ledger/post",
+            new OperationsLedgerPostRequestDto(
+                validated.Workflow!.Version,
+                "spoofed-user",
+                "ledger-batch-1",
+                "period-close",
+                true,
+                JournalCandidate: CreateOperationsLedgerJournalCandidate(start.Workflow!.FundAccountId),
+                ActionOrigin: OperationsActionOriginDto.AutomationAssistant),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var result = await response.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
+        result.Should().NotBeNull();
+        result!.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("REVIEWED_AUTOMATION_REVIEW_REQUIRED");
+        result.Blockers.Should().Contain(blocker =>
+            blocker.Code == "REVIEWED_AUTOMATION_MATERIAL_ACTION_REJECTED" &&
+            blocker.Gate == OperationsGateKeyDto.LedgerPosting);
+
+        using var detail = await ReadJsonAsync(client, $"/api/workstation/operations/continuity/{workflowId}");
+        detail.RootElement.GetProperty("ledgerPostingState").GetString().Should().Be(nameof(OperationsLedgerPostingStateDto.Validated));
+        detail.RootElement.GetProperty("timeline")
+            .EnumerateArray()
+            .Select(entry => entry.GetProperty("eventType").GetString())
+            .Should()
+            .NotContain("ledger-posted");
     }
 
     [Fact]
@@ -5826,10 +5905,22 @@ public sealed partial class WorkstationEndpointsTests
                 workflowService: workflow));
         }, currentUserRoleProfileName: "ops-control");
         var client = app.GetTestClient();
+        var requestedRoutes = new List<string>();
 
-        var jsonResponse = await client.GetAsync("/api/workstation/reporting/structured-exports/investment-portfolio-cuts");
-        var csvResponse = await client.GetAsync("/api/workstation/reporting/structured-exports/investment-portfolio-cuts?format=csv");
-        var xlsxResponse = await client.GetAsync("/api/workstation/reporting/structured-exports/investment-portfolio-cuts?format=xlsx");
+        var jsonResponse = await GetAndRecordAsync(client, "/api/workstation/reporting/structured-exports/investment-portfolio-cuts");
+        var csvResponse = await GetAndRecordAsync(client, "/api/workstation/reporting/structured-exports/investment-portfolio-cuts?format=csv");
+        var xlsxResponse = await GetAndRecordAsync(client, "/api/workstation/reporting/structured-exports/investment-portfolio-cuts?format=xlsx");
+        var xlsAliasResponse = await GetAndRecordAsync(client, "/api/workstation/reporting/structured-exports/investment-portfolio-cuts?format=xls");
+        var analyticsJsonResponse = await GetAndRecordAsync(client, "/api/workstation/reporting/structured-exports/investment-topn-contribution-analytics");
+        var analyticsCsvResponse = await GetAndRecordAsync(client, "/api/workstation/reporting/structured-exports/investment-topn-contribution-analytics?format=csv");
+        var crossFundJsonResponse = await GetAndRecordAsync(client, "/api/workstation/reporting/structured-exports/cross-fund-consolidation");
+        var crossFundXlsxResponse = await GetAndRecordAsync(client, "/api/workstation/reporting/structured-exports/cross-fund-consolidation?format=xlsx");
+
+        requestedRoutes.Should().Contain("/api/workstation/reporting/structured-exports/investment-topn-contribution-analytics");
+        requestedRoutes.Should().Contain("/api/workstation/reporting/structured-exports/investment-topn-contribution-analytics?format=csv");
+        requestedRoutes.Should().Contain("/api/workstation/reporting/structured-exports/cross-fund-consolidation");
+        requestedRoutes.Should().Contain("/api/workstation/reporting/structured-exports/cross-fund-consolidation?format=xlsx");
+        requestedRoutes.Should().Contain("/api/workstation/reporting/structured-exports/investment-portfolio-cuts?format=xls");
 
         jsonResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         jsonResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
@@ -5859,6 +5950,11 @@ public sealed partial class WorkstationEndpointsTests
         payload.ValidationChecks!.Should().Contain(check =>
             check.CheckId == "readiness" &&
             check.Status == "Passed");
+        payload.RowLineage.Should().NotBeNull();
+        payload.RowLineage!.Should().Contain(lineage =>
+            lineage.RowNumber == 1 &&
+            lineage.RowKey == "reporting-portfolio-cut:fund-alpha" &&
+            lineage.RowHashSha256.Length == 64);
         payload.Rows.Should().Contain(row =>
             row["cutId"] == "reporting-portfolio-cut:fund-alpha" &&
             row["grossExposure"] == "2500000" &&
@@ -5879,12 +5975,79 @@ public sealed partial class WorkstationEndpointsTests
             workbook.GetEntry("xl/worksheets/sheet2.xml").Should().NotBeNull();
             workbook.GetEntry("xl/worksheets/sheet3.xml").Should().NotBeNull();
             workbook.GetEntry("xl/worksheets/sheet4.xml").Should().NotBeNull();
+            workbook.GetEntry("xl/worksheets/sheet5.xml").Should().NotBeNull();
             using var workbookXmlReader = new StreamReader(workbook.GetEntry("xl/workbook.xml")!.Open());
             var workbookXml = workbookXmlReader.ReadToEnd();
             workbookXml.Should().Contain("portfolio-reporting-cuts");
             workbookXml.Should().Contain("Metadata");
             workbookXml.Should().Contain("DataDictionary");
             workbookXml.Should().Contain("Validation");
+            workbookXml.Should().Contain("RowLineage");
+        }
+        xlsAliasResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        xlsAliasResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        xlsAliasResponse.Content.Headers.ContentDisposition?.FileName.Should().EndWith(".xlsx");
+        using (var workbook = new ZipArchive(new MemoryStream(await xlsAliasResponse.Content.ReadAsByteArrayAsync()), ZipArchiveMode.Read))
+        {
+            workbook.GetEntry("xl/workbook.xml").Should().NotBeNull();
+            workbook.GetEntry("xl/worksheets/sheet1.xml").Should().NotBeNull();
+        }
+        analyticsJsonResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var analyticsPayload = await analyticsJsonResponse.Content.ReadFromJsonAsync<StructuredReportingExportPayloadDto>(ServerJsonOptions);
+        analyticsPayload.Should().NotBeNull();
+        analyticsPayload!.Export.ExportId.Should().Be("investment-topn-contribution-analytics");
+        analyticsPayload.Export.Route.Should().Contain("/api/workstation/reporting/structured-exports/investment-topn-contribution-analytics");
+        analyticsPayload.Columns.Select(static column => column.Name).Should().ContainInOrder(
+            "analyticsId",
+            "kind",
+            "scope",
+            "rank",
+            "label",
+            "totalPnl",
+            "contributionPercent",
+            "heatMapIntensity");
+        analyticsPayload.Rows.Should().Contain(row =>
+            row["kind"] == "TopWinner" &&
+            row["totalPnl"] == "60000" &&
+            row["contributionPercent"] == "100");
+        analyticsCsvResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        analyticsCsvResponse.Content.Headers.ContentType?.MediaType.Should().Be("text/csv");
+        analyticsCsvResponse.Content.Headers.ContentDisposition?.FileName.Should().EndWith(".csv");
+        var analyticsCsv = await analyticsCsvResponse.Content.ReadAsStringAsync();
+        analyticsCsv.Should().StartWith("analyticsId,kind,scope,rank,label,symbol,classification,currency,realizedPnl,unrealizedPnl,totalPnl,contributionPercent,heatMapIntensity");
+        analyticsCsv.Should().Contain("TopWinner");
+        crossFundJsonResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var crossFundPayload = await crossFundJsonResponse.Content.ReadFromJsonAsync<StructuredReportingExportPayloadDto>(ServerJsonOptions);
+        crossFundPayload.Should().NotBeNull();
+        crossFundPayload!.Export.ExportId.Should().Be("cross-fund-consolidation");
+        crossFundPayload.Export.Route.Should().Contain("/api/workstation/reporting/structured-exports/cross-fund-consolidation");
+        crossFundPayload.Columns.Select(static column => column.Name).Should().ContainInOrder(
+            "consolidationId",
+            "label",
+            "scope",
+            "grossExposure",
+            "netExposure",
+            "totalPnl",
+            "shadowNav",
+            "shadowNavVariance");
+        crossFundPayload.Rows.Should().Contain(row =>
+            row["consolidationId"] == "reporting-cross-fund:company" &&
+            row["grossExposure"] == "2500000" &&
+            row["shadowNav"] == "2935000");
+        crossFundPayload.RowLineage.Should().NotBeNull();
+        crossFundPayload.RowLineage!.Should().Contain(lineage =>
+            lineage.RowKey == "reporting-cross-fund:company" &&
+            lineage.RowHashSha256.Length == 64);
+        crossFundXlsxResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        crossFundXlsxResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        using (var workbook = new ZipArchive(new MemoryStream(await crossFundXlsxResponse.Content.ReadAsByteArrayAsync()), ZipArchiveMode.Read))
+        {
+            workbook.GetEntry("xl/worksheets/sheet1.xml").Should().NotBeNull();
+            using var workbookXmlReader = new StreamReader(workbook.GetEntry("xl/workbook.xml")!.Open());
+            var workbookXml = workbookXmlReader.ReadToEnd();
+            workbookXml.Should().Contain("cross-fund-reporting-consolidat");
+            workbookXml.Should().Contain("Metadata");
+            workbookXml.Should().Contain("DataDictionary");
         }
 
         await using var strangerApp = await CreateAppAsync(services =>
@@ -5895,7 +6058,17 @@ public sealed partial class WorkstationEndpointsTests
         });
         var strangerClient = strangerApp.GetTestClient();
         var strangerResponse = await strangerClient.GetAsync("/api/workstation/reporting/structured-exports/investment-portfolio-cuts");
+        var strangerAnalyticsResponse = await strangerClient.GetAsync("/api/workstation/reporting/structured-exports/investment-topn-contribution-analytics");
+        var strangerCrossFundResponse = await strangerClient.GetAsync("/api/workstation/reporting/structured-exports/cross-fund-consolidation");
         strangerResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        strangerAnalyticsResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        strangerCrossFundResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        async Task<HttpResponseMessage> GetAndRecordAsync(HttpClient httpClient, string route)
+        {
+            requestedRoutes.Add(route);
+            return await httpClient.GetAsync(route);
+        }
 
         static ReportPackLineProvenanceDto PortfolioReportingLine(
             string lineKey,

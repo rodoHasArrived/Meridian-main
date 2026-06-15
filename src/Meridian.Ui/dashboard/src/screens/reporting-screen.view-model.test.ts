@@ -60,6 +60,25 @@ const reporting: GovernanceReportingSummary = {
     }
   ],
   summary: "2 export profiles available.",
+  accessAudit: {
+    evaluationScope: "CallerScoped",
+    summary: "Reporting access policy hid 4 object(s) outside the caller's user, group, or company scope.",
+    principalScopes: ["user:viewer.user", "group:ops-control", "company:company-alpha"],
+    visibleTemplateCount: 2,
+    hiddenTemplateCount: 1,
+    visibleReportPackCount: 3,
+    hiddenReportPackCount: 1,
+    visibleScheduleCount: 1,
+    hiddenScheduleCount: 0,
+    visibleDeliveryAttemptCount: 2,
+    hiddenDeliveryAttemptCount: 1,
+    visibleStructuredExportCount: 5,
+    hiddenStructuredExportCount: 1,
+    denialReasons: [
+      "Some report templates are private or restricted to other users, groups, or companies.",
+      "Some delivery attempts are hidden because their report pack or template is outside the caller's report access scope."
+    ]
+  },
   templates: [
       {
         templateId: "investor-monthly-statement",
@@ -98,6 +117,9 @@ const reporting: GovernanceReportingSummary = {
           formulaCount: 1
         }
       ],
+      reportWriterDatasetSourceId: "portfolio-reporting-cuts",
+      reportWriterDatasetSourceLabel: "Portfolio reporting cuts",
+      reportWriterDatasetRowCount: 2,
       drilldownLinks: [
         {
           id: "investor-monthly-statement-20260501:evidence",
@@ -334,6 +356,7 @@ describe("useReportingScreenViewModel", () => {
       generatedGridLabel: "1 generated grid with 1 formula",
       generatedGridNames: ["Sector Pivot (Pivot, 2d/2m/1f)"],
       hasGeneratedGrids: true,
+      datasetSourceLabel: "Portfolio reporting cuts (2 rows)",
       auditSummary: "RunGenerated → ApprovalTransition",
       hasDrilldownLinks: true,
       hasNextActions: true,
@@ -362,6 +385,26 @@ describe("useReportingScreenViewModel", () => {
       ]
     });
     expect(result.current.hasRunStatusRows).toBe(true);
+  });
+
+  it("surfaces aggregate report access audit posture", () => {
+    const { result } = renderHook(() => useReportingScreenViewModel(reporting));
+
+    expect(result.current.accessAudit).toMatchObject({
+      evaluationScope: "CallerScoped",
+      postureLabel: "Scoped",
+      postureVariant: "warning",
+      hiddenTotalLabel: "4 hidden",
+      scopeLabel: "user:viewer.user · group:ops-control · company:company-alpha",
+      hasDenialReasons: true
+    });
+    expect(result.current.accessAudit.countRows).toEqual([
+      expect.objectContaining({ id: "templates", visibleLabel: "2 visible", hiddenLabel: "1 hidden", hasHidden: true }),
+      expect.objectContaining({ id: "report-packs", visibleLabel: "3 visible", hiddenLabel: "1 hidden", hasHidden: true }),
+      expect.objectContaining({ id: "schedules", visibleLabel: "1 visible", hiddenLabel: "0 hidden", hasHidden: false }),
+      expect.objectContaining({ id: "deliveries", visibleLabel: "2 visible", hiddenLabel: "1 hidden", hasHidden: true }),
+      expect.objectContaining({ id: "structured-exports", visibleLabel: "5 visible", hiddenLabel: "1 hidden", hasHidden: true })
+    ]);
   });
 
   it("surfaces report-template access posture and disables inaccessible runs", () => {
@@ -393,6 +436,17 @@ describe("useReportingScreenViewModel", () => {
   it("summarizes configured reporting schedule delivery targets", () => {
     const scheduledReporting: GovernanceReportingSummary = {
       ...reporting,
+      reportWriterDatasetSources: [
+        {
+          sourceId: "portfolio-reporting-cuts",
+          label: "Portfolio reporting cuts",
+          description: "Portfolio source rows.",
+          rowCount: 2,
+          fields: [],
+          rows: [],
+          tags: ["portfolio-cuts"]
+        }
+      ],
       schedules: [
         {
           scheduleId: "sched-investor",
@@ -409,6 +463,7 @@ describe("useReportingScreenViewModel", () => {
           lastRunId: null,
           runCount: 0,
           description: "Monthly investor statement close packet.",
+          datasetSourceId: "portfolio-reporting-cuts",
           deliveryTargets: [
             {
               distributionId: "board-reporting-committee",
@@ -426,6 +481,7 @@ describe("useReportingScreenViewModel", () => {
     expect(result.current.scheduleRows[0]).toMatchObject({
       id: "sched-investor",
       deliveryTargetLabel: "board-reporting-committee via SecurePortal (Pdf/Xlsx/Csv)",
+      datasetSourceLabel: "Portfolio reporting cuts (2)",
       lastRunLabel: "Not run"
     });
   });

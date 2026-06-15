@@ -107,6 +107,138 @@
                             </StackPanel>
                         </Border>
                     </TabItem>
+                    <TabItem Header="Operations Control"
+                             AutomationProperties.AutomationId="SettingsOperationsControlTab">
+                        <StackPanel Margin="0,12,0,0">
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,12">
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                            <TextBlock Text="{StaticResource IconCalendar}"
+                                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                       FontSize="20"
+                                                       Foreground="{StaticResource InfoColorBrush}"
+                                                       VerticalAlignment="Center" />
+                                            <StackPanel Margin="8,0,0,0">
+                                                <TextBlock Text="Operations Control"
+                                                           Style="{StaticResource CardHeaderStyle}" />
+                                                <TextBlock Text="{Binding OperationsControlStatusText}"
+                                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                           TextWrapping="Wrap"
+                                                           MaxWidth="560" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <Button Grid.Column="1"
+                                                Style="{StaticResource SecondaryButtonStyle}"
+                                                Command="{Binding RefreshOperationsControlCommand}"
+                                                AutomationProperties.AutomationId="SettingsOperationsControlRefreshButton">
+                                            <TextBlock Text="Refresh" />
+                                        </Button>
+                                    </Grid>
+
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0"
+                                                   Text="{Binding OperationsApprovalPolicySummaryText}"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                                   TextWrapping="Wrap" />
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding OperationsControlGeneratedAtText, StringFormat=Generated {0}}"
+                                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                   FontSize="12"
+                                                   Margin="12,0,0,0" />
+                                    </Grid>
+
+                                    <DataGrid ItemsSource="{Binding OperationsApprovalPolicyRows}"
+                                              AutoGenerateColumns="False"
+                                              IsReadOnly="True"
+                                              CanUserAddRows="False"
+                                              CanUserDeleteRows="False"
+                                              CanUserResizeRows="False"
+                                              HeadersVisibility="Column"
+                                              MaxHeight="230"
+                                              AutomationProperties.AutomationId="SettingsOperationsApprovalPolicyGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Area" Binding="{Binding WorkflowArea}" Width="1.2*" />
+                                            <DataGridTextColumn Header="Gate" Binding="{Binding GateLabel}" Width="1*" />
+                                            <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="1.4*" />
+                                            <DataGridTextColumn Header="Approvals" Binding="{Binding ApprovalRuleLabel}" Width="1.2*" />
+                                            <DataGridTextColumn Header="Reviewer" Binding="{Binding ReviewerLabel}" Width="1.3*" />
+                                            <DataGridTextColumn Header="Evidence" Binding="{Binding EvidenceRequirement}" Width="1.6*" />
+                                            <DataGridTextColumn Header="Controls" Binding="{Binding ControlLabel}" Width="1.4*" />
+                                            <DataGridTextColumn Header="Severity" Binding="{Binding Severity}" Width="0.9*" />
+                                            <DataGridTextColumn Header="Route" Binding="{Binding Route}" Width="1.2*" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource CardStyle}">
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                            <TextBlock Text="{StaticResource IconCheckmark}"
+                                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                       FontSize="18"
+                                                       Foreground="{StaticResource InfoColorBrush}"
+                                                       VerticalAlignment="Center" />
+                                            <StackPanel Margin="8,0,0,0">
+                                                <TextBlock Text="Close Calendar"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                <TextBlock Text="{Binding OperationsCloseCalendarSummaryText}"
+                                                           Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                           TextWrapping="Wrap"
+                                                           MaxWidth="560" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">
+                                            <TextBlock Text="{Binding OperationsCloseCalendarReadyCount, StringFormat={}{0} ready}"
+                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                       FontSize="12"
+                                                       Margin="0,0,12,0" />
+                                            <TextBlock Text="{Binding OperationsCloseCalendarBlockedCount, StringFormat={}{0} blocked}"
+                                                       Foreground="{StaticResource WarningColorBrush}"
+                                                       FontSize="12" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <DataGrid ItemsSource="{Binding OperationsCloseCalendarRows}"
+                                              AutoGenerateColumns="False"
+                                              IsReadOnly="True"
+                                              CanUserAddRows="False"
+                                              CanUserDeleteRows="False"
+                                              CanUserResizeRows="False"
+                                              HeadersVisibility="Column"
+                                              MaxHeight="260"
+                                              AutomationProperties.AutomationId="SettingsOperationsCloseCalendarGrid">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Period" Binding="{Binding PeriodId}" Width="0.9*" />
+                                            <DataGridTextColumn Header="Status" Binding="{Binding StatusLabel}" Width="1.2*" />
+                                            <DataGridTextColumn Header="Due" Binding="{Binding DueLabel}" Width="1.7*" />
+                                            <DataGridTextColumn Header="Owner" Binding="{Binding OwnerLabel}" Width="1.1*" />
+                                            <DataGridTextColumn Header="Readiness" Binding="{Binding ReadinessLabel}" Width="1*" />
+                                            <DataGridTextColumn Header="Breaks" Binding="{Binding BlockerLabel}" Width="0.9*" />
+                                            <DataGridTextColumn Header="Checklist" Binding="{Binding ChecklistLabel}" Width="1.1*" />
+                                            <DataGridTextColumn Header="Approvals" Binding="{Binding ApprovalLabel}" Width="0.9*" />
+                                            <DataGridTextColumn Header="Route" Binding="{Binding Route}" Width="1.3*" />
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </TabItem>
                     <TabItem Header="Asset Profiles"
                              AutomationProperties.AutomationId="SettingsAssetProfilesTab">
                         <StackPanel Margin="0,12,0,0">

@@ -76,6 +76,8 @@ public sealed class AppServiceRegistrationTests
             serviceProvider.GetRequiredService<ReconciliationReadService>().Should().NotBeNull();
             serviceProvider.GetRequiredService<ISecurityAssetProfileWorkflowClient>()
                 .Should().BeOfType<SecurityAssetProfileWorkflowClient>();
+            serviceProvider.GetRequiredService<IOperationsControlCenterClient>()
+                .Should().BeOfType<OperationsControlCenterClient>();
             serviceProvider.GetRequiredService<FundOperationsWorkspaceReadService>().Should().NotBeNull();
             serviceProvider.GetRequiredService<IAccountingProjectionQueryService>().Should().BeOfType<AccountingProjectionQueryService>();
             serviceProvider.GetRequiredService<IPrivateCapitalCloseCockpitService>().Should().BeOfType<PrivateCapitalCloseCockpitService>();

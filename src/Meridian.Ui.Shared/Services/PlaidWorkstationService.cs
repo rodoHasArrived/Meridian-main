@@ -253,17 +253,25 @@ public sealed class PlaidWorkstationService : IPlaidIngestionService, IPlaidTran
             return Blocked("Banking service is not registered; Meridian payment approval cannot be verified.", request);
         }
 
-        var pendingPayments = await _bankingService.GetPendingPaymentsAsync(request.EntityId, ct).ConfigureAwait(false);
-        var pending = pendingPayments
-            .FirstOrDefault(payment => payment.PendingPaymentId == request.PendingPaymentId);
-        if (pending is not null && pending.Status != PaymentApprovalStatus.Approved)
+        var payment = await _bankingService.GetPaymentAsync(request.PendingPaymentId, ct).ConfigureAwait(false);
+        if (payment is null)
+        {
+            return Blocked("Approved Meridian payment evidence was not found for the requested payment id.", request);
+        }
+
+        if (payment.EntityId != request.EntityId)
+        {
+            return Blocked("Approved Meridian payment evidence does not belong to the requested entity.", request);
+        }
+
+        if (payment.Status != PaymentApprovalStatus.Approved)
         {
             return Blocked("Plaid transfer authorization requires an approved Meridian payment.", request);
         }
 
-        if (pending is null && !await HasApprovedPaymentTransactionAsync(request, ct).ConfigureAwait(false))
+        if (payment.Amount != request.Amount)
         {
-            return Blocked("Approved Meridian payment evidence was not found for the requested entity.", request);
+            return Blocked("Plaid transfer authorization amount must match the approved Meridian payment.", request);
         }
 
         if (!string.Equals(request.Currency, "USD", StringComparison.OrdinalIgnoreCase))
@@ -300,21 +308,6 @@ public sealed class PlaidWorkstationService : IPlaidIngestionService, IPlaidTran
             DateTimeOffset.UtcNow);
         await _repository.RecordTransferAsync(result, ct).ConfigureAwait(false);
         return result;
-    }
-
-    private async Task<bool> HasApprovedPaymentTransactionAsync(PlaidTransferRequest request, CancellationToken ct)
-    {
-        if (_bankingService is null)
-        {
-            return false;
-        }
-
-        var transactions = await _bankingService.GetBankTransactionsAsync(request.EntityId, ct).ConfigureAwait(false);
-        return transactions.Any(transaction =>
-            !transaction.IsVoided &&
-            string.Equals(transaction.TransactionType, "ApprovedPayment", StringComparison.OrdinalIgnoreCase) &&
-            string.Equals(transaction.Currency, request.Currency, StringComparison.OrdinalIgnoreCase) &&
-            transaction.Amount == request.Amount);
     }
 
     private async Task<PlaidClientCredentials> ResolveCredentialsAsync(CancellationToken ct)

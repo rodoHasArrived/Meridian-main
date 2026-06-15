@@ -1487,7 +1487,15 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
           fundEventType: "CapitalCall",
           capitalAccountId: "capital-account:fund-alpha:lp-1",
           investorId: "investor:lp-1",
-          purpose: "Capital call for Fund Alpha LP"
+          purpose: "Capital call for Fund Alpha LP",
+          payee: "fund:fund-alpha",
+          accountScope: "fund:fund-alpha / book:book-alpha / capital-account:fund-alpha:lp-1 / investor:lp-1",
+          businessPurpose: "Capital call for Fund Alpha LP",
+          approvalPolicy: "Controller approval pending before execution-deferred reliance",
+          sourceEvidenceLinks: [
+            "/api/workstation/evidence/subjects/accounting-record/manual-je",
+            "/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-capital-call-manual-je-1/packet"
+          ]
         },
         evidenceRoute: "/api/workstation/evidence/subjects/payment-intent/payment%3Afund-alpha%3Acapital-call%3Amanual-je-1/packet",
         workbenchRoute: "/api/ledger/private-capital/activity?fundProfileId=fund-alpha&paymentIntentId=payment%3Afund-alpha%3Acapital-call%3Amanual-je-1",
@@ -1504,11 +1512,12 @@ const manualJournalWorkbench: ManualJournalEntryWorkbench = {
             amount: 100,
             currency: "USD",
             effectiveDate: "2026-06-30",
-            recordedAtUtc: "2026-06-30T00:00:00Z",
-            externalRef: "settlement:fund-alpha:capital-call:20260630",
-            evidenceRoute: "/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-capital-call-manual-je-1/packet"
-          }
-        ],
+          recordedAtUtc: "2026-06-30T00:00:00Z",
+          externalRef: "settlement:fund-alpha:capital-call:20260630",
+          recordedBy: "cash-ops@example.com",
+          evidenceRoute: "/api/workstation/evidence/subjects/cash-evidence/payment-fund-alpha-capital-call-manual-je-1/packet"
+        }
+      ],
         reconciliationLinks: [
           {
             linkId: "reconciliation:capital-call",
@@ -1932,6 +1941,8 @@ describe("accounting-screen view model", () => {
       statusLabel: "Approval pending",
       statusTone: "warning",
       expectedCashLabel: "Inflow / $100 USD / 2026-06-30 / settlement:fund-alpha:capital-call:20260630",
+      requestMetadataLabel: "payee fund:fund-alpha / scope fund:fund-alpha / book:book-alpha / capital-account:fund-alpha:lp-1 / investor:lp-1 / purpose Capital call for Fund Alpha LP / policy Controller approval pending before execution-deferred reliance",
+      sourceEvidenceLabel: "2 source evidence link(s)",
       approvalLabel: "0/2 approved",
       bankEvidenceLabel: "0 confirmed / 1 retained / 0 returned",
       reconciliationLabel: "1/1 reconciliation ready",
@@ -1959,6 +1970,7 @@ describe("accounting-screen view model", () => {
           statusLabel: "Retained",
           amountLabel: "$100 USD",
           effectiveDateLabel: "2026-06-30",
+          recorderLabel: "Recorded by cash-ops@example.com",
           referenceLabel: "settlement:fund-alpha:capital-call:20260630"
         }
       ],

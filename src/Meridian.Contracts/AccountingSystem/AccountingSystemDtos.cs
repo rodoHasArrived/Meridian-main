@@ -29,6 +29,14 @@ public enum AccountingSystemReconciliationStatusDto
     ReviewRequired
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum AccountingSystemEvidencePackageStatusDto
+{
+    Ready,
+    ReviewRequired,
+    Missing
+}
+
 public sealed record AccountingSystemProviderDto(
     string ProviderId,
     string DisplayName,
@@ -153,6 +161,14 @@ public sealed record AccountingSystemImportDetailDto(
     IReadOnlyList<AccountingSystemJournalEntryDto> JournalEntries,
     IReadOnlyList<AccountingSystemTrialBalanceLineDto> TrialBalance);
 
+public sealed record AccountingSystemReconciliationEvidencePackageDto(
+    string PackageId,
+    string Label,
+    AccountingSystemEvidencePackageStatusDto Status,
+    int EvidenceReferenceCount,
+    IReadOnlyList<string> EvidenceReferences,
+    IReadOnlyList<string> RequiredActions);
+
 public sealed record AccountingSystemReconciliationSummaryDto(
     string ReconciliationId,
     string ImportId,
@@ -170,7 +186,10 @@ public sealed record AccountingSystemReconciliationSummaryDto(
     bool PostingEnabled,
     string PostingDisabledReason,
     IReadOnlyList<AccountingSystemReconciliationRowDto> Rows,
-    IReadOnlyList<string> EvidenceReferences);
+    IReadOnlyList<string> EvidenceReferences)
+{
+    public IReadOnlyList<AccountingSystemReconciliationEvidencePackageDto> EvidencePackages { get; init; } = [];
+}
 
 public sealed record AccountingSystemReconciliationRowDto(
     string RowId,
@@ -184,4 +203,11 @@ public sealed record AccountingSystemReconciliationRowDto(
     decimal MeridianCredit,
     decimal Variance,
     string Detail,
-    string? EvidenceRef = null);
+    string? EvidenceRef = null)
+{
+    public IReadOnlyList<string> ExternalEvidenceReferences { get; init; } = [];
+
+    public IReadOnlyList<string> MeridianEvidenceReferences { get; init; } = [];
+
+    public IReadOnlyList<string> EvidenceReferences { get; init; } = [];
+}

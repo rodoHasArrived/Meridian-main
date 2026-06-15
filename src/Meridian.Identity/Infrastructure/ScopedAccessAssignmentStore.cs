@@ -191,8 +191,17 @@ public sealed class PostgresScopedAccessAssignmentStore : IScopedAccessAssignmen
                 revoked_by text NULL,
                 revoked_at_utc timestamptz NULL,
                 revocation_reason text NULL,
-                last_audit_id text NULL
+                last_audit_id text NULL,
+                approval_limit_amount numeric NULL,
+                approval_limit_currency text NULL,
+                segregation_of_duties_rule text NULL
             );
+            ALTER TABLE {Q("user_access_assignment")}
+                ADD COLUMN IF NOT EXISTS approval_limit_amount numeric NULL;
+            ALTER TABLE {Q("user_access_assignment")}
+                ADD COLUMN IF NOT EXISTS approval_limit_currency text NULL;
+            ALTER TABLE {Q("user_access_assignment")}
+                ADD COLUMN IF NOT EXISTS segregation_of_duties_rule text NULL;
             CREATE INDEX IF NOT EXISTS ix_user_access_assignment_principal
                 ON {Q("user_access_assignment")} (principal_id, scope_kind, scope_id);
             """;
@@ -283,12 +292,14 @@ public sealed class PostgresScopedAccessAssignmentStore : IScopedAccessAssignmen
                 assignment_id, principal_id, principal_kind, scope_kind, scope_id, role,
                 role_profile_name, permission_names, permission_mask, effective_from, effective_to,
                 granted_by, rationale, correlation_id, version, created_at_utc, updated_at_utc,
-                revoked_by, revoked_at_utc, revocation_reason, last_audit_id)
+                revoked_by, revoked_at_utc, revocation_reason, last_audit_id,
+                approval_limit_amount, approval_limit_currency, segregation_of_duties_rule)
             VALUES (
                 @assignment_id, @principal_id, @principal_kind, @scope_kind, @scope_id, @role,
                 @role_profile_name, @permission_names::jsonb, @permission_mask, @effective_from, @effective_to,
                 @granted_by, @rationale, @correlation_id, @version, @created_at_utc, @updated_at_utc,
-                @revoked_by, @revoked_at_utc, @revocation_reason, @last_audit_id)
+                @revoked_by, @revoked_at_utc, @revocation_reason, @last_audit_id,
+                @approval_limit_amount, @approval_limit_currency, @segregation_of_duties_rule)
             """;
         AddParameters(command, assignment);
         return command;
@@ -318,7 +329,10 @@ public sealed class PostgresScopedAccessAssignmentStore : IScopedAccessAssignmen
                 revoked_by = @revoked_by,
                 revoked_at_utc = @revoked_at_utc,
                 revocation_reason = @revocation_reason,
-                last_audit_id = @last_audit_id
+                last_audit_id = @last_audit_id,
+                approval_limit_amount = @approval_limit_amount,
+                approval_limit_currency = @approval_limit_currency,
+                segregation_of_duties_rule = @segregation_of_duties_rule
             WHERE assignment_id = @assignment_id AND version = @expected_version
             """;
         AddParameters(command, assignment);
@@ -349,6 +363,9 @@ public sealed class PostgresScopedAccessAssignmentStore : IScopedAccessAssignmen
         command.Parameters.AddWithValue("revoked_at_utc", assignment.RevokedAtUtc.HasValue ? assignment.RevokedAtUtc.Value : DBNull.Value);
         command.Parameters.AddWithValue("revocation_reason", (object?)assignment.RevocationReason ?? DBNull.Value);
         command.Parameters.AddWithValue("last_audit_id", (object?)assignment.LastAuditId ?? DBNull.Value);
+        command.Parameters.AddWithValue("approval_limit_amount", assignment.ApprovalLimitAmount.HasValue ? assignment.ApprovalLimitAmount.Value : DBNull.Value);
+        command.Parameters.AddWithValue("approval_limit_currency", (object?)assignment.ApprovalLimitCurrency ?? DBNull.Value);
+        command.Parameters.AddWithValue("segregation_of_duties_rule", (object?)assignment.SegregationOfDutiesRule ?? DBNull.Value);
     }
 
     private static UserAccessAssignmentDto Read(NpgsqlDataReader reader)
@@ -373,7 +390,10 @@ public sealed class PostgresScopedAccessAssignmentStore : IScopedAccessAssignmen
             reader.IsDBNull(reader.GetOrdinal("revoked_by")) ? null : reader.GetString(reader.GetOrdinal("revoked_by")),
             reader.IsDBNull(reader.GetOrdinal("revoked_at_utc")) ? null : reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("revoked_at_utc")),
             reader.IsDBNull(reader.GetOrdinal("revocation_reason")) ? null : reader.GetString(reader.GetOrdinal("revocation_reason")),
-            reader.IsDBNull(reader.GetOrdinal("last_audit_id")) ? null : reader.GetString(reader.GetOrdinal("last_audit_id")));
+            reader.IsDBNull(reader.GetOrdinal("last_audit_id")) ? null : reader.GetString(reader.GetOrdinal("last_audit_id")),
+            reader.IsDBNull(reader.GetOrdinal("approval_limit_amount")) ? null : reader.GetDecimal(reader.GetOrdinal("approval_limit_amount")),
+            reader.IsDBNull(reader.GetOrdinal("approval_limit_currency")) ? null : reader.GetString(reader.GetOrdinal("approval_limit_currency")),
+            reader.IsDBNull(reader.GetOrdinal("segregation_of_duties_rule")) ? null : reader.GetString(reader.GetOrdinal("segregation_of_duties_rule")));
 
     private string Q(string table) => $"{QuoteIdentifier(_options.Schema)}.{QuoteIdentifier(table)}";
 

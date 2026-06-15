@@ -278,6 +278,27 @@ public sealed record WorkstationReportWriterFieldPayload(
     string Dataset,
     string? Description = null);
 
+public sealed record WorkstationReportWriterDatasetSourcePayload(
+    string SourceId,
+    string Label,
+    string Description,
+    int RowCount,
+    IReadOnlyList<WorkstationReportWriterFieldPayload> Fields,
+    IReadOnlyList<IReadOnlyDictionary<string, string>> Rows,
+    IReadOnlyList<string>? Tags = null,
+    string? CertificationState = null,
+    string? ValidationState = null,
+    string? ReconciliationState = null,
+    string? RefreshCadence = null,
+    string? Owner = null,
+    string? Version = null,
+    string? ReleaseApproval = null,
+    string? LineageManifest = null,
+    IReadOnlyList<string>? SourceRunIds = null,
+    IReadOnlyList<string>? PermittedConsumers = null,
+    string? RowLineageKeyField = null,
+    string? EvidenceIndexField = null);
+
 public sealed record WorkstationReportWriterGridPayload(
     string GridId,
     string Title,
@@ -355,7 +376,11 @@ public sealed record WorkstationGeneratedReportWriterGridPayload(
     string Artifact,
     int DimensionCount,
     int MetricCount,
-    int FormulaCount);
+    int FormulaCount,
+    string? ValidationSummary = null,
+    int? ValidationPassedCount = null,
+    int? ValidationWarningCount = null,
+    int? ValidationFailedCount = null);
 
 public sealed record WorkstationReportingRunPayload(
     string RunId,
@@ -372,7 +397,10 @@ public sealed record WorkstationReportingRunPayload(
     string? FailureReason,
     IReadOnlyList<WorkstationReportingRunLinkPayload>? DrilldownLinks = null,
     IReadOnlyList<WorkstationReportingRunNextActionPayload>? NextActions = null,
-    IReadOnlyList<WorkstationGeneratedReportWriterGridPayload>? GeneratedReportWriterGrids = null);
+    IReadOnlyList<WorkstationGeneratedReportWriterGridPayload>? GeneratedReportWriterGrids = null,
+    string? ReportWriterDatasetSourceId = null,
+    string? ReportWriterDatasetSourceLabel = null,
+    int? ReportWriterDatasetRowCount = null);
 
 /// <summary>
 /// Recipient-level distribution posture for governed report-pack output.
@@ -432,6 +460,7 @@ public sealed record WorkstationReportingPayload(
     IReadOnlyList<PortfolioReportingAnalyticsRowDto>? AnalyticsRows = null,
     IReadOnlyList<StructuredReportingExportDto>? StructuredExports = null,
     IReadOnlyList<ReportBrandingThemeDto>? BrandingThemes = null,
+    IReadOnlyList<WorkstationReportWriterDatasetSourcePayload>? ReportWriterDatasetSources = null,
     WorkstationReportAccessAuditSummaryDto? AccessAudit = null);
 
 /// <summary>

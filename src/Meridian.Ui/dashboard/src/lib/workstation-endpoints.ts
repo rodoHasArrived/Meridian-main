@@ -60,6 +60,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   runSweeps: "/api/workstation/runs/sweeps",
   evidenceSubjects: UI_API_ROUTES.WorkstationEvidenceSubjects,
   evidenceVaultSearch: "/api/workstation/evidence/vault/search",
+  evidenceVaultRequestLists: "/api/workstation/evidence/vault/request-lists",
   evidenceTemplates: UI_API_ROUTES.WorkstationEvidenceTemplates
 } as const;
 
@@ -87,6 +88,7 @@ export const FUND_STRUCTURE_API_ENDPOINTS = {
   reportPackWorkflowDeliveryPackage: UI_API_ROUTES.ReportingPackWorkflowDeliveryPackage,
   reportPackWorkflowDeliveryFailures: UI_API_ROUTES.ReportingPackWorkflowDeliveryFailures,
   reportPackDeliveryPortalPackage: UI_API_ROUTES.ReportingPackDeliveryPortalPackage,
+  reportPackPreview: "/api/fund-structure/report-pack-preview",
   reportPacks: UI_API_ROUTES.FundReportPacks,
   reportingStructuredExport: UI_API_ROUTES.ReportingStructuredExport,
   reportingTemplateDrafts: "/api/fund-structure/reporting/templates/drafts",
@@ -648,7 +650,7 @@ export function reportingRunAuditTrailEndpoint(runId: string): string {
 export function reportingRunReportWriterGridEndpoint(
   runId: string,
   gridId: string,
-  format?: "json" | "csv" | "xlsx"
+  format?: "json" | "csv" | "xls" | "xlsx"
 ): string {
   const route = routeWithParam(
     routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingRunReportWriterGrid, "runId", runId),

@@ -1125,7 +1125,13 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             ?? records.Select(static record => NormalizeOptional(record.SettlementReference))
                 .FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value));
         var allEvidenceLinks = BuildPaymentIntentEvidenceLinks(records, draftsByJournalEntryId, audit, paymentIntentId, settlementReference);
-        var expectedCashMovement = BuildExpectedCashMovement(paymentIntentId, settlementReference, records);
+        var expectedCashMovement = BuildExpectedCashMovement(
+            fundProfileId,
+            ledgerBookId,
+            paymentIntentId,
+            settlementReference,
+            records,
+            allEvidenceLinks);
         var approvalChain = BuildPaymentIntentApprovalChain(records, draftsByJournalEntryId);
         var bankEvidence = BuildPaymentIntentBankEvidence(paymentIntentId, settlementReference, records, bankTransactions, allEvidenceLinks);
         var reconciliationLinks = BuildPaymentIntentReconciliationLinks(paymentIntentId, settlementReference, records, allEvidenceLinks);
@@ -1168,9 +1174,12 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
     }
 
     private static PaymentIntentExpectedCashMovementDto BuildExpectedCashMovement(
+        string fundProfileId,
+        Guid? ledgerBookId,
         string paymentIntentId,
         string? settlementReference,
-        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records)
+        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
+        IReadOnlyList<string> evidenceLinks)
     {
         var primary = records[0];
         var netActivity = records.Sum(static record => record.NetCapitalActivity);
@@ -1184,6 +1193,10 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         var purpose = records.Count == 1
             ? $"{primary.FundEventType} for {primary.CapitalAccountId}"
             : $"{records.Count} private-capital fund events";
+        var payee = ResolvePaymentIntentPayee(fundProfileId, primary, direction);
+        var accountScope = BuildPaymentIntentAccountScope(fundProfileId, ledgerBookId, primary);
+        var businessPurpose = NormalizeOptional(primary.Memo) ?? purpose;
+        var approvalPolicy = ResolvePaymentIntentApprovalPolicy(records);
 
         return new PaymentIntentExpectedCashMovementDto(
             paymentIntentId,
@@ -1196,7 +1209,77 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             primary.FundEventType,
             primary.CapitalAccountId,
             primary.InvestorId,
-            purpose);
+            purpose,
+            payee,
+            accountScope,
+            businessPurpose,
+            approvalPolicy,
+            BuildPaymentIntentSourceEvidenceLinks(records, evidenceLinks));
+    }
+
+    private static string ResolvePaymentIntentPayee(
+        string fundProfileId,
+        PrivateCapitalFundEventLedgerRecordDto primary,
+        PaymentIntentCashDirectionDto direction)
+    {
+        if (direction == PaymentIntentCashDirectionDto.Inflow)
+        {
+            return $"fund:{fundProfileId}";
+        }
+
+        return NormalizeOptional(primary.InvestorId)
+            ?? NormalizeOptional(primary.CapitalAccountId)
+            ?? $"fund:{fundProfileId}";
+    }
+
+    private static string BuildPaymentIntentAccountScope(
+        string fundProfileId,
+        Guid? ledgerBookId,
+        PrivateCapitalFundEventLedgerRecordDto primary)
+    {
+        var parts = new List<string> { $"fund:{fundProfileId}" };
+        if (ledgerBookId.HasValue)
+        {
+            parts.Add($"book:{ledgerBookId.Value:D}");
+        }
+
+        parts.Add(primary.CapitalAccountId);
+        if (!string.IsNullOrWhiteSpace(primary.InvestorId))
+        {
+            parts.Add(primary.InvestorId);
+        }
+
+        return string.Join(" / ", parts);
+    }
+
+    private static string ResolvePaymentIntentApprovalPolicy(IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records)
+    {
+        if (records.Any(static record => record.ApprovalState is ManualJournalEntryStatusDto.Approved))
+        {
+            return "Controller approval retained before execution-deferred reliance";
+        }
+
+        if (records.Any(static record => record.ApprovalState is ManualJournalEntryStatusDto.Submitted))
+        {
+            return "Controller approval pending before execution-deferred reliance";
+        }
+
+        return "Controller approval required before execution-deferred reliance";
+    }
+
+    private static IReadOnlyList<string> BuildPaymentIntentSourceEvidenceLinks(
+        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
+        IReadOnlyList<string> evidenceLinks)
+    {
+        return records
+            .Select(static record => record.ActivityRoute)
+            .Concat(records.Select(static record => record.EvidenceRoute))
+            .Concat(evidenceLinks)
+            .Where(static link => !string.IsNullOrWhiteSpace(link))
+            .Select(static link => link.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     private static PaymentIntentCashDirectionDto ResolvePaymentIntentDirection(
@@ -1298,7 +1381,8 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 transaction.EffectiveDate,
                 transaction.RecordedAt,
                 NormalizeOptional(transaction.ExternalRef),
-                BuildBankTransactionEvidenceRoute(transaction)));
+                BuildBankTransactionEvidenceRoute(transaction),
+                NormalizeOptional(transaction.RecordedBy)));
         }
 
         foreach (var link in SelectPaymentIntentCashEvidenceLinks(evidenceLinks, paymentIntentId, settlementReference))
@@ -1332,7 +1416,7 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
         IReadOnlyList<string> evidenceLinks)
     {
-        var reconciliationLinks = SelectReconciliationEvidenceLinks(evidenceLinks).ToArray();
+        var reconciliationLinks = SelectReconciliationEvidenceLinks(evidenceLinks, paymentIntentId, settlementReference).ToArray();
         if (reconciliationLinks.Length == 0)
         {
             return
@@ -1472,7 +1556,8 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
             return PaymentIntentWorkflowStatusDto.ApprovalPending;
         }
 
-        if (records.Any(static record => record.PaymentIntentEvidence.Status == PrivateCapitalPaymentIntentEvidenceStatusDto.CashEvidenceMissing))
+        if (records.Any(static record => record.PaymentIntentEvidence is not null &&
+                                         record.PaymentIntentEvidence.Status == PrivateCapitalPaymentIntentEvidenceStatusDto.CashEvidenceMissing))
         {
             return PaymentIntentWorkflowStatusDto.BankEvidencePending;
         }
@@ -1590,7 +1675,9 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         IReadOnlyList<string> links,
         string paymentIntentId,
         string? settlementReference)
-        => links.Where(static link => IsPaymentIntentCashEvidenceLink(link));
+        => links
+            .Where(static link => IsPaymentIntentCashEvidenceLink(link))
+            .Where(link => IsScopedPaymentIntentEvidenceLink(link, paymentIntentId, settlementReference));
 
     private static bool IsPaymentIntentCashEvidenceLink(string link)
         => link.Contains("bank", StringComparison.OrdinalIgnoreCase) ||
@@ -1602,14 +1689,25 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
            link.Contains("treasury", StringComparison.OrdinalIgnoreCase) ||
            link.Contains("wire", StringComparison.OrdinalIgnoreCase) ||
            link.Contains("ach", StringComparison.OrdinalIgnoreCase) ||
-           link.Contains("swift", StringComparison.OrdinalIgnoreCase);
+           link.Contains("swift", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("return", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("revers", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("reject", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("void", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("failed", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("failure", StringComparison.OrdinalIgnoreCase);
 
-    private static IEnumerable<string> SelectReconciliationEvidenceLinks(IReadOnlyList<string> links)
-        => links.Where(static link =>
-            link.Contains("reconciliation", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("reconcile", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("break", StringComparison.OrdinalIgnoreCase) ||
-            link.Contains("match", StringComparison.OrdinalIgnoreCase));
+    private static IEnumerable<string> SelectReconciliationEvidenceLinks(
+        IReadOnlyList<string> links,
+        string paymentIntentId,
+        string? settlementReference)
+        => links
+            .Where(static link =>
+                link.Contains("reconciliation", StringComparison.OrdinalIgnoreCase) ||
+                link.Contains("reconcile", StringComparison.OrdinalIgnoreCase) ||
+                link.Contains("break", StringComparison.OrdinalIgnoreCase) ||
+                link.Contains("match", StringComparison.OrdinalIgnoreCase))
+            .Where(link => IsScopedPaymentIntentEvidenceLink(link, paymentIntentId, settlementReference));
 
     private static bool MatchesPaymentIntentAuditEvent(
         AccountingActionAuditEventDto auditEvent,
@@ -1624,9 +1722,23 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
 
     private static bool MatchesPaymentIntentText(string? value, string paymentIntentId, string? settlementReference)
         => !string.IsNullOrWhiteSpace(value) &&
-           (value.Contains(paymentIntentId, StringComparison.OrdinalIgnoreCase) ||
+           (ContainsPaymentIntentIdentifier(value, paymentIntentId) ||
             (!string.IsNullOrWhiteSpace(settlementReference) &&
-             value.Contains(settlementReference, StringComparison.OrdinalIgnoreCase)));
+             ContainsPaymentIntentIdentifier(value, settlementReference)));
+
+    private static bool IsScopedPaymentIntentEvidenceLink(string link, string paymentIntentId, string? settlementReference)
+        => !ContainsExplicitPaymentOrSettlementIdentifier(link) ||
+           MatchesPaymentIntentText(link, paymentIntentId, settlementReference);
+
+    private static bool ContainsPaymentIntentIdentifier(string value, string identifier)
+        => value.Contains(identifier, StringComparison.OrdinalIgnoreCase) ||
+           value.Contains(Uri.EscapeDataString(identifier), StringComparison.OrdinalIgnoreCase);
+
+    private static bool ContainsExplicitPaymentOrSettlementIdentifier(string link)
+        => link.Contains("payment:", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("payment%3A", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("settlement:", StringComparison.OrdinalIgnoreCase) ||
+           link.Contains("settlement%3A", StringComparison.OrdinalIgnoreCase);
 
     private static string? TryExtractEvidenceToken(string value, string label)
     {

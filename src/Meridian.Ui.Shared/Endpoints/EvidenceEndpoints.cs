@@ -170,6 +170,45 @@ public static class EvidenceEndpoints
         .WithName("GetWorkstationEvidenceTemplates")
         .Produces<IReadOnlyList<EvidenceTemplateDto>>(200);
 
+        group.MapPost("/vault/intake", async (EvidenceVaultIntakeRequestDto? request, HttpContext context) =>
+        {
+            if (request is null)
+            {
+                return Results.BadRequest(Error(
+                    "invalid-evidence-vault-intake",
+                    "Evidence vault intake request body must be a valid JSON object."));
+            }
+
+            try
+            {
+                var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
+                var result = await store
+                    .WriteIntakeArtifactAsync(request, context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(Error(
+                    "invalid-evidence-vault-intake",
+                    ex.Message,
+                    request.SubjectKind,
+                    request.SubjectId));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(Error(
+                    "invalid-evidence-vault-intake",
+                    ex.Message,
+                    request.SubjectKind,
+                    request.SubjectId));
+            }
+        })
+        .WithName("IntakeWorkstationEvidenceVaultArtifact")
+        .Produces<EvidenceVaultIntakeResponseDto>(StatusCodes.Status201Created)
+        .Produces<EvidenceEndpointErrorDto>(StatusCodes.Status400BadRequest)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
         group.MapPost("/vault/search", async (EvidenceVaultLookupRequestDto request, HttpContext context) =>
         {
             if (!HasLookupCriteria(request))
@@ -185,6 +224,40 @@ public static class EvidenceEndpoints
         })
         .WithName("SearchWorkstationEvidenceVault")
         .Produces<IReadOnlyList<EvidenceVaultIdentityDto>>(200)
+        .Produces<EvidenceEndpointErrorDto>(400);
+
+        group.MapGet("/vault/request-lists", async (
+            string? requestListKind,
+            string? targetKind,
+            string? targetId,
+            string? status,
+            string? subjectKind,
+            string? subjectId,
+            int? maxResults,
+            HttpContext context) =>
+        {
+            if (maxResults.HasValue && maxResults.Value <= 0)
+            {
+                return Results.BadRequest(Error(
+                    "invalid-evidence-vault-request-list-query",
+                    "Evidence vault request-list query maxResults must be greater than zero."));
+            }
+
+            var store = context.RequestServices.GetRequiredService<IEvidenceArtifactStore>();
+            var result = await store.ListRequestListsAsync(
+                new EvidenceVaultRequestListQueryDto(
+                    RequestListKind: requestListKind,
+                    TargetKind: targetKind,
+                    TargetId: targetId,
+                    Status: status,
+                    SubjectKind: subjectKind,
+                    SubjectId: subjectId,
+                    MaxResults: maxResults),
+                context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("ListWorkstationEvidenceVaultRequestLists")
+        .Produces<IReadOnlyList<EvidenceVaultRequestListEntryDto>>(200)
         .Produces<EvidenceEndpointErrorDto>(400);
 
         return app;

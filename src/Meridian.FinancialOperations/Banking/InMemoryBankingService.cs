@@ -55,6 +55,7 @@ public sealed class InMemoryBankingService : IBankingService
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        EnsureHumanOrigin(request.ActionOrigin, "approve payment requests");
 
         lock (_gate)
         {
@@ -78,21 +79,18 @@ public sealed class InMemoryBankingService : IBankingService
             };
             _pendingPayments[pendingPaymentId] = approved;
 
-            // Record a bank transaction for the approved payment
-            GetOrCreateList(pending.EntityId).Add(new BankTransactionDto(
-                BankTransactionId: Guid.NewGuid(),
-                EntityId: pending.EntityId,
-                TransactionType: "ApprovedPayment",
-                EffectiveDate: pending.EffectiveDate,
-                TransactionDate: pending.EffectiveDate,
-                SettlementDate: pending.EffectiveDate.AddDays(2),
-                Amount: pending.Amount,
-                Currency: "USD",
-                ExternalRef: pending.ExternalRef,
-                RecordedAt: DateTimeOffset.UtcNow,
-                IsVoided: false));
-
             return Task.FromResult<PendingPaymentDto?>(approved);
+        }
+    }
+
+    private static void EnsureHumanOrigin(
+        Meridian.Contracts.Workstation.OperationsActionOriginDto actionOrigin,
+        string action)
+    {
+        if (actionOrigin != Meridian.Contracts.Workstation.OperationsActionOriginDto.HumanOperator)
+        {
+            throw new BankingException(
+                $"Reviewed automation cannot {action}; a human operator approval is required.");
         }
     }
 
@@ -102,6 +100,7 @@ public sealed class InMemoryBankingService : IBankingService
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        EnsureHumanOrigin(request.ActionOrigin, "reject payments");
         if (string.IsNullOrWhiteSpace(request.Reason))
         {
             throw new BankingException("Rejection reason is required.");
@@ -129,6 +128,43 @@ public sealed class InMemoryBankingService : IBankingService
             };
             _pendingPayments[pendingPaymentId] = rejected;
             return Task.FromResult<PendingPaymentDto?>(rejected);
+        }
+    }
+
+    public Task<PendingPaymentDto?> GetPaymentAsync(Guid pendingPaymentId, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        lock (_gate)
+        {
+            _pendingPayments.TryGetValue(pendingPaymentId, out var pending);
+            return Task.FromResult(pending);
+        }
+    }
+
+    public Task<BankTransactionDto?> RecordPaymentBankEvidenceAsync(
+        Guid pendingPaymentId,
+        RecordPaymentBankEvidenceRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ct.ThrowIfCancellationRequested();
+
+        lock (_gate)
+        {
+            if (!_pendingPayments.TryGetValue(pendingPaymentId, out var pending))
+            {
+                return Task.FromResult<BankTransactionDto?>(null);
+            }
+
+            if (pending.Status != PaymentApprovalStatus.Approved)
+            {
+                throw new BankingException(
+                    $"Payment '{pendingPaymentId}' must be approved before bank confirmation, return, or reversal evidence is recorded.");
+            }
+
+            var transaction = BuildPaymentBankEvidenceTransaction(pending, request);
+            GetOrCreateList(pending.EntityId).Add(transaction);
+            return Task.FromResult<BankTransactionDto?>(transaction);
         }
     }
 
@@ -261,4 +297,61 @@ public sealed class InMemoryBankingService : IBankingService
 
         return list;
     }
+
+    private static BankTransactionDto BuildPaymentBankEvidenceTransaction(
+        PendingPaymentDto pending,
+        RecordPaymentBankEvidenceRequest request)
+    {
+        var evidenceType = NormalizeEvidenceType(request.EvidenceType);
+        var amount = request.Amount ?? pending.Amount;
+        if (amount <= 0m)
+        {
+            throw new BankingException("Bank evidence amount must be positive.");
+        }
+
+        var currency = string.IsNullOrWhiteSpace(request.Currency)
+            ? "USD"
+            : request.Currency.Trim().ToUpperInvariant();
+        if (currency.Length != 3)
+        {
+            throw new BankingException("Bank evidence currency must be a three-letter ISO currency code.");
+        }
+
+        var transactionDate = request.TransactionDate ?? pending.EffectiveDate;
+        var settlementDate = request.SettlementDate ?? transactionDate;
+        if (settlementDate < transactionDate)
+        {
+            throw new BankingException("Bank evidence settlement date cannot be before transaction date.");
+        }
+
+        return new BankTransactionDto(
+            BankTransactionId: Guid.NewGuid(),
+            EntityId: pending.EntityId,
+            TransactionType: evidenceType,
+            EffectiveDate: pending.EffectiveDate,
+            TransactionDate: transactionDate,
+            SettlementDate: settlementDate,
+            Amount: amount,
+            Currency: currency,
+            ExternalRef: FirstNonBlank(request.ExternalRef, pending.ExternalRef, pending.PendingPaymentId.ToString("D")),
+            RecordedAt: DateTimeOffset.UtcNow,
+            IsVoided: IsReturnOrReversalEvidence(evidenceType),
+            RecordedBy: FirstNonBlank(request.RecordedBy));
+    }
+
+    private static string NormalizeEvidenceType(string? evidenceType)
+        => (evidenceType ?? string.Empty).Trim().ToLowerInvariant() switch
+        {
+            "" or "confirmation" or "confirmed" or "bankconfirmation" or "bank-confirmation" => "BankConfirmation",
+            "return" or "returned" or "bankreturn" or "bank-return" => "BankReturn",
+            "reversal" or "reversed" or "bankreversal" or "bank-reversal" => "BankReversal",
+            "failure" or "failed" or "reject" or "rejected" or "bankfailure" or "bank-failure" => "BankFailure",
+            _ => throw new BankingException("Bank evidence type must be BankConfirmation, BankReturn, BankReversal, or BankFailure.")
+        };
+
+    private static bool IsReturnOrReversalEvidence(string evidenceType)
+        => evidenceType is "BankReturn" or "BankReversal" or "BankFailure";
+
+    private static string? FirstNonBlank(params string?[] values)
+        => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
 }

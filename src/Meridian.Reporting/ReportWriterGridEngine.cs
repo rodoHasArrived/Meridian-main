@@ -59,6 +59,9 @@ public static class ReportWriterGridEngine
 
         var lineage = BuildLineage(rows.Count, filteredRows.Count, renderedRows.Count, dimensions, metrics, formulas, filters);
 
+        var dataDictionary = BuildDataDictionary(columnList, renderedRows, lineage);
+        var validationChecks = BuildValidationChecks(columnList, renderedRows, warnings, lineage, dataDictionary);
+
         return new ReportWriterGridRenderDto(
             grid.GridId.Trim(),
             string.IsNullOrWhiteSpace(grid.Title) ? grid.GridId.Trim() : grid.Title.Trim(),
@@ -66,7 +69,9 @@ public static class ReportWriterGridEngine
             columnList,
             renderedRows,
             warnings.ToArray(),
-            lineage);
+            lineage,
+            dataDictionary,
+            validationChecks);
     }
 
     private static IReadOnlyList<ReportWriterGridRowDto> RenderDetailRows(
@@ -327,6 +332,117 @@ public static class ReportWriterGridEngine
             filterLineage);
     }
 
+    private static IReadOnlyList<ReportWriterGridDataDictionaryFieldDto> BuildDataDictionary(
+        IReadOnlyList<ReportWriterGridColumnDto> columns,
+        IReadOnlyList<ReportWriterGridRowDto> rows,
+        ReportWriterGridLineageDto lineage)
+    {
+        var sourceFields = lineage.SourceFields;
+        return columns
+            .Select(column =>
+            {
+                var sourceField = ResolveSourceField(column, lineage);
+                var formulaColumn = string.Equals(column.Role, "formula", StringComparison.OrdinalIgnoreCase);
+                var formulaHasLineage = IsFormulaLineageColumn(column, lineage);
+                var generated = formulaColumn
+                    || string.IsNullOrWhiteSpace(sourceField)
+                    || !sourceFields.Contains(sourceField, StringComparer.OrdinalIgnoreCase);
+                var dataType = InferColumnDataType(column.Key, rows);
+                return new ReportWriterGridDataDictionaryFieldDto(
+                    column.Key,
+                    column.Label,
+                    column.Role,
+                    generated && !formulaHasLineage ? string.Empty : sourceField,
+                    dataType,
+                    generated,
+                    BuildFieldDescription(column, dataType, generated, sourceField));
+            })
+            .ToArray();
+    }
+
+    private static IReadOnlyList<ReportWriterGridValidationCheckDto> BuildValidationChecks(
+        IReadOnlyList<ReportWriterGridColumnDto> columns,
+        IReadOnlyList<ReportWriterGridRowDto> rows,
+        IReadOnlyCollection<string> warnings,
+        ReportWriterGridLineageDto lineage,
+        IReadOnlyList<ReportWriterGridDataDictionaryFieldDto> dataDictionary) =>
+        [
+            new(
+                "row-count",
+                lineage.OutputRowCount == rows.Count ? "Passed" : "Failed",
+                $"Rendered {rows.Count.ToString(CultureInfo.InvariantCulture)} row(s); lineage expected {lineage.OutputRowCount.ToString(CultureInfo.InvariantCulture)}."),
+            new(
+                "column-dictionary",
+                columns.Count == dataDictionary.Count ? "Passed" : "Failed",
+                $"Dictionary covers {dataDictionary.Count.ToString(CultureInfo.InvariantCulture)} of {columns.Count.ToString(CultureInfo.InvariantCulture)} rendered column(s)."),
+            new(
+                "source-field-lineage",
+                lineage.SourceFields.Count > 0 ? "Passed" : "Warning",
+                lineage.SourceFields.Count > 0
+                    ? $"Lineage retains {lineage.SourceFields.Count.ToString(CultureInfo.InvariantCulture)} source field(s)."
+                    : "No source field lineage was retained with this grid."),
+            new(
+                "warnings",
+                warnings.Count == 0 ? "Passed" : "Warning",
+                warnings.Count == 0
+                    ? "No render warnings were retained."
+                    : $"{warnings.Count.ToString(CultureInfo.InvariantCulture)} render warning(s) retained: {string.Join("; ", warnings)}")
+        ];
+
+    private static bool IsFormulaLineageColumn(
+        ReportWriterGridColumnDto column,
+        ReportWriterGridLineageDto lineage) =>
+        string.Equals(column.Role, "formula", StringComparison.OrdinalIgnoreCase)
+        && lineage.Formulas.Any(formula => string.Equals(formula.Name, column.Key, StringComparison.OrdinalIgnoreCase));
+
+    private static string ResolveSourceField(
+        ReportWriterGridColumnDto column,
+        ReportWriterGridLineageDto lineage)
+    {
+        if (lineage.Metrics.FirstOrDefault(metric =>
+                string.Equals(metric.Name, column.Key, StringComparison.OrdinalIgnoreCase)) is { } metric)
+        {
+            return metric.SourceField;
+        }
+
+        if (lineage.Formulas.FirstOrDefault(formula =>
+                string.Equals(formula.Name, column.Key, StringComparison.OrdinalIgnoreCase)) is { } formula)
+        {
+            return string.Join(";", formula.SourceFields);
+        }
+
+        return lineage.SourceFields.FirstOrDefault(field =>
+            string.Equals(field, column.Key, StringComparison.OrdinalIgnoreCase)) ?? column.Key;
+    }
+
+    private static string InferColumnDataType(
+        string columnKey,
+        IReadOnlyList<ReportWriterGridRowDto> rows)
+    {
+        var values = rows
+            .Select(row => row.Values.TryGetValue(columnKey, out var value) ? value : null)
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Take(25)
+            .ToArray();
+        if (values.Length == 0)
+        {
+            return "string";
+        }
+
+        return values.All(static value => decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out _))
+            ? "decimal"
+            : "string";
+    }
+
+    private static string BuildFieldDescription(
+        ReportWriterGridColumnDto column,
+        string dataType,
+        bool generated,
+        string sourceField) =>
+        generated
+            ? $"{column.Label} is generated by the retained report-writer grid as a {column.Role} column."
+            : $"{column.Label} maps to source field {sourceField} and exports as {dataType}.";
+
     private static IReadOnlyList<string> ExtractFormulaSourceFields(string expression)
     {
         if (string.IsNullOrWhiteSpace(expression))
@@ -338,6 +454,34 @@ public static class ReportWriterGridEngine
         var position = 0;
         while (position < expression.Length)
         {
+            if (IsIdentifierStart(expression[position]))
+            {
+                var identifierStart = position;
+                var identifier = ReadIdentifier(expression, ref position);
+                var nextToken = SkipWhitespace(expression, position);
+                if (string.Equals(identifier, "total", StringComparison.OrdinalIgnoreCase)
+                    && nextToken < expression.Length
+                    && expression[nextToken] == '('
+                    && TryReadTotalArgument(expression, nextToken + 1, out var totalReference, out var afterTotal))
+                {
+                    fields.Add(totalReference);
+                    position = afterTotal;
+                    continue;
+                }
+
+                if (IsFormulaFunctionIdentifier(identifier)
+                    && nextToken < expression.Length
+                    && expression[nextToken] == '(')
+                {
+                    position = nextToken + 1;
+                    continue;
+                }
+
+                fields.Add(identifier);
+                position = identifierStart + Math.Max(identifier.Length, 1);
+                continue;
+            }
+
             if (expression[position] != '{')
             {
                 position++;
@@ -364,6 +508,83 @@ public static class ReportWriterGridEngine
             .OrderBy(static field => field, StringComparer.OrdinalIgnoreCase)
             .ToArray();
     }
+
+    private static bool TryReadTotalArgument(
+        string expression,
+        int argumentStart,
+        out string reference,
+        out int nextPosition)
+    {
+        reference = string.Empty;
+        nextPosition = argumentStart;
+        var start = SkipWhitespace(expression, argumentStart);
+        if (start >= expression.Length)
+        {
+            return false;
+        }
+
+        if (expression[start] == '{')
+        {
+            var closeBrace = expression.IndexOf('}', start + 1);
+            if (closeBrace < 0)
+            {
+                return false;
+            }
+
+            reference = expression[(start + 1)..closeBrace].Trim();
+            nextPosition = SkipWhitespace(expression, closeBrace + 1);
+            if (nextPosition < expression.Length && expression[nextPosition] == ')')
+            {
+                nextPosition++;
+                return reference.Length > 0;
+            }
+
+            return false;
+        }
+
+        var close = expression.IndexOf(')', start);
+        if (close < 0)
+        {
+            return false;
+        }
+
+        reference = expression[start..close].Trim();
+        nextPosition = close + 1;
+        return reference.Length > 0;
+    }
+
+    private static string ReadIdentifier(string expression, ref int position)
+    {
+        var start = position;
+        while (position < expression.Length && IsIdentifierPart(expression[position]))
+        {
+            position++;
+        }
+
+        return expression[start..position];
+    }
+
+    private static int SkipWhitespace(string expression, int position)
+    {
+        while (position < expression.Length && char.IsWhiteSpace(expression[position]))
+        {
+            position++;
+        }
+
+        return position;
+    }
+
+    private static bool IsIdentifierStart(char value) =>
+        char.IsLetter(value) || value == '_';
+
+    private static bool IsIdentifierPart(char value) =>
+        char.IsLetterOrDigit(value) || value is '_' or '-' or '.';
+
+    private static bool IsFormulaFunctionIdentifier(string identifier) =>
+        string.Equals(identifier, "abs", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "min", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "max", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "safeDivide", StringComparison.OrdinalIgnoreCase);
 
     private static void ApplyContribution(IReadOnlyList<WorkingRow> rows, string metricName)
     {
@@ -946,7 +1167,17 @@ public static class ReportWriterGridEngine
             }
 
             SkipWhitespace();
-            if (string.Equals(identifier, "total", StringComparison.OrdinalIgnoreCase) && TryConsume('('))
+            if (TryConsume('('))
+            {
+                return EvaluateFunction(identifier);
+            }
+
+            return ResolveValue(identifier);
+        }
+
+        private decimal EvaluateFunction(string identifier)
+        {
+            if (string.Equals(identifier, "total", StringComparison.OrdinalIgnoreCase))
             {
                 var field = ParseFieldArgument();
                 Expect(')');
@@ -954,7 +1185,59 @@ public static class ReportWriterGridEngine
                        ?? throw new InvalidOperationException($"total field '{field}' was not found.");
             }
 
-            return ResolveValue(identifier);
+            if (string.Equals(identifier, "abs", StringComparison.OrdinalIgnoreCase))
+            {
+                var value = ParseExpression();
+                Expect(')');
+                return Math.Abs(value);
+            }
+
+            if (string.Equals(identifier, "min", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(identifier, "max", StringComparison.OrdinalIgnoreCase))
+            {
+                var values = ParseExpressionArgumentList(minimumCount: 1);
+                return string.Equals(identifier, "min", StringComparison.OrdinalIgnoreCase)
+                    ? values.Min()
+                    : values.Max();
+            }
+
+            if (string.Equals(identifier, "safeDivide", StringComparison.OrdinalIgnoreCase))
+            {
+                var values = ParseExpressionArgumentList(minimumCount: 2, maximumCount: 3);
+                var denominator = values[1];
+                return denominator == 0m
+                    ? values.Count == 3 ? values[2] : 0m
+                    : values[0] / denominator;
+            }
+
+            throw new InvalidOperationException($"function '{identifier}' is not supported.");
+        }
+
+        private List<decimal> ParseExpressionArgumentList(int minimumCount, int? maximumCount = null)
+        {
+            var values = new List<decimal>();
+            while (true)
+            {
+                values.Add(ParseExpression());
+                SkipWhitespace();
+                if (!TryConsume(','))
+                {
+                    break;
+                }
+            }
+
+            Expect(')');
+            if (values.Count < minimumCount)
+            {
+                throw new InvalidOperationException($"function expected at least {minimumCount.ToString(CultureInfo.InvariantCulture)} argument(s).");
+            }
+
+            if (maximumCount is { } max && values.Count > max)
+            {
+                throw new InvalidOperationException($"function expected no more than {max.ToString(CultureInfo.InvariantCulture)} argument(s).");
+            }
+
+            return values;
         }
 
         private decimal ResolveValue(string field) =>

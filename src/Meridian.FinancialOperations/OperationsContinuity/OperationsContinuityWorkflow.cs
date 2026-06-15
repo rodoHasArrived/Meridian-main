@@ -89,7 +89,7 @@ public sealed class OperationsContinuityWorkflow
             "gl-reconciliation",
             "GL reconciliation support",
             "/workstation/accounting/ledger",
-            breakCase => BreakContains(breakCase, "ledger", "journal", "gl", "general ledger", "missingledgercoverage"))
+            breakCase => BreakContains(breakCase, "journal", "gl", "general ledger", "ledger posting", "ledgerposting", "missingledgercoverage"))
     ];
 
     public static OperationsContinuityWorkflow Start(
@@ -820,9 +820,24 @@ public sealed class OperationsContinuityWorkflow
         }
 
         var existing = BreakCases[index];
+        var resolutionStatus = string.IsNullOrWhiteSpace(request.ResolutionStatus)
+            ? "Resolved"
+            : request.ResolutionStatus.Trim();
+        if (IsClosedBreakStatus(resolutionStatus) &&
+            RequiresRetainedResolutionEvidence(existing) &&
+            evidenceLinks.Count == 0)
+        {
+            return new OperationsWorkflowBlockerDto(
+                "RECONCILIATION_EVIDENCE_MISSING",
+                "Resolving a critical or material reconciliation break requires retained resolution evidence.",
+                OperationsGateKeyDto.Reconciliation,
+                "Error",
+                []);
+        }
+
         BreakCases[index] = existing with
         {
-            Status = string.IsNullOrWhiteSpace(request.ResolutionStatus) ? "Resolved" : request.ResolutionStatus.Trim(),
+            Status = resolutionStatus,
             Owner = request.Actor,
             EvidenceLinks = existing.EvidenceLinks.Concat(evidenceLinks).ToArray()
         };
@@ -1197,9 +1212,7 @@ public sealed class OperationsContinuityWorkflow
             .Where(static link => !string.IsNullOrWhiteSpace(link.EvidenceId))
             .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var hash = NormalizeClosePackageValue(
-            request.ClosePackageEvidenceHash,
-            ComputeClosePackageEvidenceHash(packageId, request.ReportPackId, manifestId, evidence, approvals));
+        var hash = ComputeClosePackageEvidenceHash(packageId, request.ReportPackId, manifestId, evidence, approvals);
 
         return new OperationsClosePackagePublicationDto(
             packageId,
@@ -1230,8 +1243,8 @@ public sealed class OperationsContinuityWorkflow
         {
             builder.Append('|')
                 .Append(link.EvidenceId.Trim()).Append(':')
-                .Append(link.Source.Trim()).Append(':')
-                .Append(link.Route?.Trim());
+                .Append(link.Source?.Trim() ?? string.Empty).Append(':')
+                .Append(link.Route?.Trim() ?? string.Empty);
         }
 
         foreach (var approval in approvals.OrderBy(static item => item.TaskId, StringComparer.OrdinalIgnoreCase)
@@ -1674,14 +1687,48 @@ public sealed class OperationsContinuityWorkflow
     {
         var searchable = string.Join(
             ' ',
-            breakCase.BreakId,
-            breakCase.CheckId,
-            breakCase.Category,
-            breakCase.ExpectedSource,
-            breakCase.ActualSource,
-            breakCase.Symbol,
-            breakCase.SuggestedAction);
+            BuildBreakSearchValues(breakCase)
+                .Where(static value => !string.IsNullOrWhiteSpace(value))
+                .Select(static value => value!.Trim()));
         return terms.Any(term => searchable.Contains(term, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static IEnumerable<string?> BuildBreakSearchValues(OperationsBreakCaseDto breakCase)
+    {
+        yield return breakCase.BreakId;
+        yield return breakCase.CheckId;
+        yield return breakCase.Category;
+        yield return breakCase.Severity;
+        yield return breakCase.Status;
+        yield return breakCase.Owner;
+        yield return breakCase.ExpectedSource;
+        yield return breakCase.ActualSource;
+        yield return breakCase.SecurityId;
+        yield return breakCase.Symbol;
+        yield return breakCase.SuggestedAction;
+        yield return breakCase.EscalationLevel;
+        yield return breakCase.EscalationReason;
+        yield return breakCase.SlaState;
+        yield return breakCase.RootCauseCode;
+        yield return breakCase.ApprovalState;
+
+        foreach (var output in breakCase.BlockedOutputs ?? [])
+        {
+            yield return output;
+        }
+
+        if (breakCase.CorrelationKeys is { } keys)
+        {
+            yield return keys.ReconciliationCaseId;
+        }
+
+        foreach (var evidence in breakCase.EvidenceLinks)
+        {
+            yield return evidence.EvidenceId;
+            yield return evidence.Label;
+            yield return evidence.Route;
+            yield return evidence.Source;
+        }
     }
 
     private sealed record ReconciliationLaneDefinition(
@@ -1844,6 +1891,10 @@ public sealed class OperationsContinuityWorkflow
         string.Equals(status, "Resolved", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(status, "Dismissed", StringComparison.OrdinalIgnoreCase) ||
         string.Equals(status, "Matched", StringComparison.OrdinalIgnoreCase);
+
+    private static bool RequiresRetainedResolutionEvidence(OperationsBreakCaseDto breakCase) =>
+        string.Equals(breakCase.Severity, "Critical", StringComparison.OrdinalIgnoreCase) ||
+        Math.Abs(breakCase.Materiality ?? 0m) > 0m;
 
     private static DateTimeOffset EnsureUtc(DateTimeOffset value)
     {

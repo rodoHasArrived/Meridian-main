@@ -118,6 +118,93 @@ public sealed class WorkstationWorkflowSummaryFinancialOperationsTests
             badge.Tone == "Warning");
     }
 
+    [Fact]
+    public async Task GetAsync_WithTypedReviewedAutomationSummary_ShouldUseSharedGuardrailStage()
+    {
+        var fundAccountId = Guid.Parse("3B03E7F0-6D91-4B11-9B9E-756842282A6B");
+        var workflow = CreateWorkflow(
+            fundAccountId,
+            OperationsWorkflowStatusDto.ReconciliationActive,
+            OperationsReconciliationStateDto.Cleared,
+            OperationsApprovalStateDto.Pending,
+            breaks: [],
+            reviewedAutomation: new OperationsReviewedAutomationSummaryDto(
+                SummaryId: "reviewed-automation",
+                Stage: "Assistant draft requires controller review",
+                Status: EvidenceStatusDto.ReviewRequired,
+                RequiresHumanReview: true,
+                Summary: "Assistant-origin draft output is retained but cannot mutate the operating record.",
+                AllowedUseCases: ["Draft journal templates"],
+                ProhibitedActions: ["Approve its own work", "Post material journals without approval"],
+                EvidenceLinks: [],
+                RequiredActions: ["Route the draft to a human reviewer."]));
+        var service = CreateSummaryService(new StubOperationsContinuityWorkflowService([workflow]));
+
+        var summary = await service.GetAsync(
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Northwind Income",
+            fundProfileId: "northwind-income",
+            fundAccountId: fundAccountId.ToString("D"),
+            fundDisplayName: "Northwind Income");
+
+        var accounting = GetAccounting(summary);
+        accounting.Evidence.Should().Contain(badge =>
+            badge.Label == "Reviewed automation" &&
+            badge.Value == "Assistant draft requires controller review" &&
+            badge.Tone == "Warning");
+    }
+
+    [Fact]
+    public async Task GetAsync_WithClosedWorkflowAndPeriodLockPackageInReview_ShouldBlockEvidenceProducedState()
+    {
+        var fundAccountId = Guid.Parse("1A5F77B7-23A8-423E-A71E-6A884C2223BF");
+        var closeEvidence = CreateEvidence("close-manifest-2026-05", "Close manifest");
+        var workflow = CreateWorkflow(
+            fundAccountId,
+            OperationsWorkflowStatusDto.Closed,
+            OperationsReconciliationStateDto.Complete,
+            OperationsApprovalStateDto.Approved,
+            breaks: [],
+            closePackage: CreateClosePackage([closeEvidence]),
+            evidencePackages:
+            [
+                CreateEvidencePackage(
+                    $"period-lock-reopen:{fundAccountId:D}:2026-05",
+                    "Period lock and reopen evidence",
+                    EvidenceStatusDto.ReviewRequired,
+                    isReady: false,
+                    [closeEvidence],
+                    ["Retain governed reopen incident evidence before considering the period lock package ready."])
+            ]);
+        var service = CreateSummaryService(new StubOperationsContinuityWorkflowService([workflow]));
+
+        var summary = await service.GetAsync(
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Northwind Income",
+            fundProfileId: "northwind-income",
+            fundAccountId: fundAccountId.ToString("D"),
+            fundDisplayName: "Northwind Income");
+
+        var accounting = GetAccounting(summary);
+        accounting.StatusLabel.Should().Be("Financial operations evidence package review required");
+        accounting.NextAction.Label.Should().Be("Review Evidence Package");
+        accounting.NextAction.TargetPageTag.Should().Be("OperationsContinuity");
+        accounting.PrimaryBlocker.Code.Should().Be("financial-operations-evidence-package");
+        accounting.PrimaryBlocker.Label.Should().Be("Period lock and reopen evidence");
+        accounting.PrimaryBlocker.IsBlocking.Should().BeTrue();
+        accounting.Evidence.Should().Contain(badge =>
+            badge.Label == "Evidence packages" &&
+            badge.Value == "0/1" &&
+            badge.Tone == "Warning");
+        accounting.Evidence.Should().Contain(badge =>
+            badge.Label == "Period lock" &&
+            badge.Value == "ReviewRequired" &&
+            badge.Tone == "Warning");
+        summary.AssuranceScore.Components.Should().Contain(component =>
+            component.ComponentId == "accounting" &&
+            component.Status == EvidenceStatusDto.ReviewRequired);
+    }
+
     private static WorkstationWorkflowSummaryService CreateSummaryService(
         IOperationsContinuityWorkflowService operationsService)
     {
@@ -140,7 +227,10 @@ public sealed class WorkstationWorkflowSummaryFinancialOperationsTests
         OperationsWorkflowStatusDto status,
         OperationsReconciliationStateDto reconciliationState,
         OperationsApprovalStateDto approvalState,
-        IReadOnlyList<OperationsBreakCaseDto> breaks)
+        IReadOnlyList<OperationsBreakCaseDto> breaks,
+        OperationsClosePackagePublicationDto? closePackage = null,
+        IReadOnlyList<OperationsEvidencePackageSummaryDto>? evidencePackages = null,
+        OperationsReviewedAutomationSummaryDto? reviewedAutomation = null)
     {
         var workflowId = Guid.Parse("701C8D64-8F16-44E9-B24C-733F25F5952F");
         var capturedAt = new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero);
@@ -184,7 +274,10 @@ public sealed class WorkstationWorkflowSummaryFinancialOperationsTests
                 Score: 65,
                 Components: [],
                 Blockers: [],
-                NextActions: []));
+                NextActions: []),
+            ClosePackage: closePackage,
+            EvidencePackages: evidencePackages,
+            ReviewedAutomation: reviewedAutomation);
     }
 
     private static IReadOnlyList<OperationsGateDto> CreateGates(
@@ -227,6 +320,40 @@ public sealed class WorkstationWorkflowSummaryFinancialOperationsTests
             Route: $"/api/workstation/evidence/{evidenceId}",
             Source: "test",
             CapturedAtUtc: new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero));
+
+    private static OperationsClosePackagePublicationDto CreateClosePackage(
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks)
+        => new(
+            "close-package-2026-05",
+            "report-pack-2026-05",
+            "manifest-2026-05",
+            "/workstation/accounting/operations-continuity/manifest-2026-05",
+            "sha256-close-package-2026-05",
+            new DateTimeOffset(2026, 6, 1, 12, 30, 0, TimeSpan.Zero),
+            "controller",
+            "Controller signed off the close package.",
+            evidenceLinks,
+            ChecklistControlApprovals: []);
+
+    private static OperationsEvidencePackageSummaryDto CreateEvidencePackage(
+        string packageId,
+        string label,
+        EvidenceStatusDto status,
+        bool isReady,
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
+        IReadOnlyList<string> requiredActions)
+        => new(
+            packageId,
+            label,
+            status,
+            isReady,
+            "Period lock package needs retained reopen evidence before dashboard evidence can be treated as produced.",
+            "/workstation/accounting/operations-continuity",
+            CompleteCategoryCount: isReady ? 2 : 1,
+            RequiredCategoryCount: 2,
+            EvidenceLinkCount: evidenceLinks.Count,
+            EvidenceLinks: evidenceLinks,
+            RequiredActions: requiredActions);
 
     private sealed class StubOperationsContinuityWorkflowService : IOperationsContinuityWorkflowService
     {

@@ -167,6 +167,14 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.ValidationRows.Should().Contain(row => row.Name == "manual-je.book-missing");
         harness.ViewModel.ProviderRows.Should().Contain(row => row.Evidence == "quickbooks-fixture");
         harness.ViewModel.ProviderRows.Should().Contain(row => row.Evidence == "quickbooks" && row.Status == "Planned");
+        harness.ViewModel.ExternalGlEvidencePackageRows.Should().Contain(row =>
+            row.Name == "External GL import evidence" &&
+            row.Status == "Ready" &&
+            row.Evidence.Contains("quickbooks-fixture:", StringComparison.OrdinalIgnoreCase));
+        harness.ViewModel.ExternalGlEvidencePackageRows.Should().Contain(row =>
+            row.Name == "Meridian ledger evidence" &&
+            row.Status == "Missing" &&
+            row.Detail.Contains("Load Meridian ledger journal evidence", StringComparison.OrdinalIgnoreCase));
         harness.ViewModel.ExternalGlRows.Should().NotBeEmpty();
         harness.ViewModel.PostingPostureText.ToLowerInvariant().Should().Contain("source of all ledger truth");
         harness.ViewModel.PolicyRows.Should().Contain(row => row.Evidence == "alpha-fund");
@@ -301,21 +309,27 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             row.Name.Contains("retained manifest", StringComparison.OrdinalIgnoreCase));
         viewModel.CapitalAccountCapabilityRows.Should().Contain(row =>
             row.Status == "Live" &&
-            row.Name == "Statement publication and restatement lineage");
+            row.Name == "Statement publication, restatement changed-line detail, and restatement evidence lineage");
         viewModel.CapitalAccountCapabilityRows.Should().Contain(row =>
             row.Status == "Planned" &&
             row.Name == "Broad LP portal self-service");
-        viewModel.ManualJournalPaymentIntentRows.Should().ContainSingle(row =>
-            row.Name == "payment:alpha-fund:capital-call:20260601"
-            && row.Status == "Ready, execution deferred"
-            && row.Detail.Contains("Inflow 250 USD", StringComparison.OrdinalIgnoreCase)
-            && row.Detail.Contains("requester fund-controller", StringComparison.OrdinalIgnoreCase)
-            && row.Evidence.Contains("2 approval step", StringComparison.OrdinalIgnoreCase)
-            && row.Evidence.Contains("1 bank/cash evidence", StringComparison.OrdinalIgnoreCase)
-            && row.Evidence.Contains("1 reconciliation link", StringComparison.OrdinalIgnoreCase)
-            && row.Evidence.Contains("2 audit event", StringComparison.OrdinalIgnoreCase)
-            && row.Evidence.Contains("Full payment execution is explicitly deferred", StringComparison.OrdinalIgnoreCase)
-            && row.Key.Contains("/api/workstation/evidence/subjects/payment-intent/", StringComparison.OrdinalIgnoreCase));
+        var paymentIntentRow = viewModel.ManualJournalPaymentIntentRows
+            .Should()
+            .ContainSingle(row => row.Name == "payment:alpha-fund:capital-call:20260601")
+            .Subject;
+        paymentIntentRow.Status.Should().Be("Ready, execution deferred");
+        paymentIntentRow.Detail.Should().Contain("Inflow 250 USD");
+        paymentIntentRow.Detail.Should().Contain("requester fund-controller");
+        paymentIntentRow.Evidence.Should().Contain("payee fund:alpha-fund");
+        paymentIntentRow.Evidence.Should().Contain("policy Controller approval retained");
+        paymentIntentRow.Evidence.Should().Contain("2 source evidence");
+        paymentIntentRow.Evidence.Should().Contain("2 approval step");
+        paymentIntentRow.Evidence.Should().Contain("1 bank/cash evidence");
+        paymentIntentRow.Evidence.Should().Contain("recorded by cash-ops@example.com");
+        paymentIntentRow.Evidence.Should().Contain("1 reconciliation link");
+        paymentIntentRow.Evidence.Should().Contain("2 audit event");
+        paymentIntentRow.Evidence.Should().Contain("Full payment execution is explicitly deferred");
+        paymentIntentRow.Key.Should().Contain("/api/workstation/evidence/subjects/payment-intent/");
         viewModel.ManualJournalFundEventRows.Should().ContainSingle(row =>
             row.Name.Contains("CapitalCall", StringComparison.OrdinalIgnoreCase)
             && row.Status == "Posted"
@@ -358,6 +372,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         harness.ViewModel.CapitalAccountAuditDrillThroughRows.Should().BeEmpty();
         harness.ViewModel.CapitalAccountCapabilityRows.Should().BeEmpty();
         harness.ViewModel.CapitalAccountWorkbenchStatusText.Should().Contain("Locked");
+        harness.ViewModel.ExternalGlEvidencePackageRows.Should().BeEmpty();
         harness.ViewModel.ExternalGlRows.Should().BeEmpty();
         harness.ViewModel.PolicyRows.Should().BeEmpty();
         harness.ViewModel.StatusText.ToLowerInvariant().Should().Contain("unlock accounting configure");
@@ -747,7 +762,12 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
                 "CapitalCall",
                 capitalAccountId,
                 "investor:lp-001",
-                "Capital call for Alpha Fund LP"),
+                "Capital call for Alpha Fund LP",
+                "fund:alpha-fund",
+                "fund:alpha-fund / capital-account:alpha-fund:lp-001 / investor:lp-001",
+                "Capital call for Alpha Fund LP",
+                "Controller approval retained before execution-deferred reliance",
+                evidenceLinks),
             UiApiRoutes.WithParam(
                 UiApiRoutes.WithParam(
                     UiApiRoutes.WorkstationEvidenceSubjectPacket,
@@ -787,7 +807,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
                     EffectiveDate: effectiveDate,
                     RecordedAtUtc: updatedAtUtc,
                     ExternalRef: fundEvent.SettlementReference,
-                    EvidenceRoute: evidenceLinks[1])
+                    EvidenceRoute: evidenceLinks[1],
+                    RecordedBy: "cash-ops@example.com")
             ],
             ReconciliationLinks:
             [

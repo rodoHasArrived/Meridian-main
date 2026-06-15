@@ -16,6 +16,7 @@ import type {
   EvidencePacketExportResponse,
   EvidenceSubject,
   EvidenceVaultIdentity,
+  EvidenceVaultRequestListEntry,
   ExecutionAuditEntry,
   ExecutionControlSnapshot,
   AccountingWorkspaceResponse,
@@ -2241,6 +2242,32 @@ const fixtureAccountingSystemReconciliation: AccountingSystemReconciliationSumma
   postingEnabled: false,
   postingDisabledReason: "Meridian is the source of all ledger truth; external GL posting/export is disabled until an approved adapter publishes Meridian-owned ledger entries.",
   evidenceReferences: fixtureAccountingSystemImport.summary.evidenceReferences,
+  evidencePackages: [
+    {
+      packageId: "gl-external-evidence:qbo-fixture-20260131",
+      label: "External GL import evidence",
+      status: "Ready",
+      evidenceReferenceCount: fixtureAccountingSystemImport.summary.evidenceReferences.length,
+      evidenceReferences: fixtureAccountingSystemImport.summary.evidenceReferences,
+      requiredActions: []
+    },
+    {
+      packageId: "gl-meridian-ledger-evidence:qbo-fixture-20260131",
+      label: "Meridian ledger evidence",
+      status: "Missing",
+      evidenceReferenceCount: 0,
+      evidenceReferences: [],
+      requiredActions: ["Load Meridian ledger journal evidence for the fund, book, and period before close approval."]
+    },
+    {
+      packageId: "gl-reconciliation-tie-out:qbo-fixture-20260131",
+      label: "GL reconciliation tie-out",
+      status: "Missing",
+      evidenceReferenceCount: fixtureAccountingSystemImport.summary.evidenceReferences.length,
+      evidenceReferences: fixtureAccountingSystemImport.summary.evidenceReferences,
+      requiredActions: ["Load Meridian ledger journal evidence.", "Resolve GL reconciliation breaks before approving close evidence."]
+    }
+  ],
   rows: fixtureAccountingSystemImport.trialBalance.map((row) => ({
     rowId: `gl-recon-${row.externalAccountId}`,
     accountCode: row.accountCode,
@@ -2253,7 +2280,10 @@ const fixtureAccountingSystemReconciliation: AccountingSystemReconciliationSumma
     meridianCredit: 0,
     variance: row.debit - row.credit,
     detail: "External GL evidence is absent from Meridian-owned ledger truth and requires review before close.",
-    evidenceRef: row.evidenceRef
+    evidenceRef: row.evidenceRef,
+    externalEvidenceReferences: row.evidenceRef ? [row.evidenceRef] : [],
+    meridianEvidenceReferences: [],
+    evidenceReferences: row.evidenceRef ? [row.evidenceRef] : []
   }))
 };
 
@@ -3203,6 +3233,74 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
       "Publish and retain the evidence package before period close."
     ]
   },
+  reviewedAutomation: {
+    summaryId: "reviewed-automation:fixture:2026-05",
+    stage: "Report commentary and audit request list draft review",
+    status: "ReviewRequired",
+    requiresHumanReview: true,
+    summary: "Demo automation may draft close commentary and audit request lists, but publication remains behind human approval.",
+    allowedUseCases: ["Draft report commentary", "Draft audit request lists"],
+    prohibitedActions: ["Approve workflow", "Publish close package", "Erase evidence"],
+    evidenceLinks: [
+      {
+        evidenceId: "ev-reviewed-automation",
+        label: "Reviewed automation draft packet",
+        route: "/workstation/reporting/report-packs/automation-review",
+        source: "operations-continuity",
+        capturedAtUtc: "2026-05-08T15:40:00Z"
+      }
+    ],
+    requiredActions: ["Review drafted report commentary and audit request lists against retained evidence before submission."],
+    artifacts: [
+      {
+        artifactId: "reviewed-automation:report-commentary-draft",
+        artifactKind: "Report commentary",
+        title: "Report commentary draft",
+        status: "ReviewRequired",
+        requiresHumanReview: true,
+        confidencePercent: 84,
+        sourceSummary: "Draft commentary is generated from retained close, ledger, reconciliation, and report-pack evidence.",
+        suggestedOperatorAction: "Review commentary against retained evidence before report approval or publication.",
+        blockedMaterialAction: "Cannot publish reports or release support packages.",
+        evidenceLinks: [
+          {
+            evidenceId: "ev-reviewed-automation",
+            label: "Reviewed automation draft packet",
+            route: "/workstation/reporting/report-packs/automation-review",
+            source: "operations-continuity",
+            capturedAtUtc: "2026-05-08T15:40:00Z"
+          }
+        ],
+        reviewChecklist: ["Review drafted report commentary and audit request lists against retained evidence before submission."]
+      },
+      {
+        artifactId: "reviewed-automation:audit-request-list-draft",
+        artifactKind: "Audit request list",
+        title: "Audit request list draft",
+        status: "ReviewRequired",
+        requiresHumanReview: true,
+        confidencePercent: 79,
+        sourceSummary: "Draft audit request lists summarize missing support and unresolved evidence gaps.",
+        suggestedOperatorAction: "Review each requested support item and assign an owner before audit release.",
+        blockedMaterialAction: "Cannot erase evidence or satisfy audit requests without retained support.",
+        evidenceLinks: [],
+        reviewChecklist: ["Review drafted report commentary and audit request lists against retained evidence before submission."]
+      },
+      {
+        artifactId: "reviewed-automation:missing-support-flag",
+        artifactKind: "Missing support",
+        title: "Missing support flag",
+        status: "ReviewRequired",
+        requiresHumanReview: true,
+        confidencePercent: 72,
+        sourceSummary: "Missing support flags are derived from incomplete evidence package categories.",
+        suggestedOperatorAction: "Attach or waive missing support through governed human review.",
+        blockedMaterialAction: "Cannot approve its own missing-support disposition.",
+        evidenceLinks: [],
+        reviewChecklist: ["Review drafted report commentary and audit request lists against retained evidence before submission."]
+      }
+    ]
+  },
   evidencePackages: [
     {
       packageId: fixtureAccountingRecordId,
@@ -3255,6 +3353,19 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
       evidenceLinkCount: fixtureAccountingRecordEvidenceLinks.length,
       evidenceLinks: fixtureAccountingRecordEvidenceLinks,
       requiredActions: ["Complete missing audit evidence categories before releasing the package."]
+    },
+    {
+      packageId: "period-lock-reopen:fixture:2026-05",
+      label: "Period lock and reopen evidence",
+      status: "Missing",
+      isReady: false,
+      summary: "Period 2026-05 has not been locked by a close package; governed reopen evidence will be required if a closed workflow is reopened.",
+      routeHint: "/workstation/accounting/operations-continuity",
+      completeCategoryCount: 1,
+      requiredCategoryCount: 2,
+      evidenceLinkCount: 0,
+      evidenceLinks: [],
+      requiredActions: ["Close the workflow and retain the period-lock package before evidence release."]
     }
   ],
   evidenceLinks: [],
@@ -3418,6 +3529,43 @@ const fixtureAccountingRecordVaultIdentity: EvidenceVaultIdentity = {
     }
   ]
 };
+
+const fixtureEvidenceVaultRequestLists: EvidenceVaultRequestListEntry[] = [
+  {
+    requestListId: "request-list:auditrequestlist:accounting-record:close-demo",
+    requestListKind: "AuditRequestList",
+    targetKind: "accounting-record",
+    targetId: fixtureOperationsWorkflowId,
+    highestSeverity: "Warning",
+    status: "Open",
+    requestCount: 1,
+    openRequestCount: 1,
+    requestIds: ["support-request:validationissue:accounting-record-report-pack-lineage:report-pack-lineage-required"],
+    evidenceKinds: ["report-pack-lineage"],
+    blockedOutputs: ["close-package/demo-close"],
+    summary: "Accounting record demo close has 1 frozen support request waiting on report-pack lineage evidence.",
+    vaultId: fixtureAccountingRecordVaultIdentity.vaultId,
+    subjectKind: fixtureAccountingRecordVaultIdentity.subjectKind,
+    subjectId: fixtureAccountingRecordVaultIdentity.subjectId,
+    manifestRoute: fixtureAccountingRecordVaultIdentity.manifestRoute,
+    retainedAt: fixtureAccountingRecordVaultIdentity.retainedAt,
+    supportRequests: fixtureAccountingRecordVaultIdentity.supportRequests
+  }
+];
+
+fixtureAccountingRecordVaultIdentity.requestLists = fixtureEvidenceVaultRequestLists.map((entry) => ({
+  requestListId: entry.requestListId,
+  requestListKind: entry.requestListKind,
+  targetKind: entry.targetKind,
+  targetId: entry.targetId,
+  highestSeverity: entry.highestSeverity,
+  status: entry.status,
+  requestCount: entry.requestCount,
+  requestIds: entry.requestIds,
+  evidenceKinds: entry.evidenceKinds,
+  blockedOutputs: entry.blockedOutputs,
+  summary: entry.summary
+}));
 
 const fixtureAccountingRecordExportResponse: EvidencePacketExportResponse = {
   subjectKind: "accounting-record",
@@ -3870,6 +4018,7 @@ const fixtures = {
   [WORKSTATION_API_ENDPOINTS.operationsPrivateCapitalCloseCockpit]: fixturePrivateCapitalCloseCockpit,
   [WORKSTATION_API_ENDPOINTS.evidenceSubjects]: [fixtureAccountingRecordEvidenceSubject],
   [WORKSTATION_API_ENDPOINTS.evidenceVaultSearch]: [fixtureAccountingRecordVaultIdentity],
+  [WORKSTATION_API_ENDPOINTS.evidenceVaultRequestLists]: fixtureEvidenceVaultRequestLists,
   [AUTH_API_ENDPOINTS.roles]: fixtureRolePermissionCatalog,
   [FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingWorkbench]: fixtureLedgerMappingWorkbench,
   [EXECUTION_API_ENDPOINTS.sessions]: fixturePaperSessionSummaries,

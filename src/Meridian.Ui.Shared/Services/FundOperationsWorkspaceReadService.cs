@@ -415,7 +415,11 @@ public sealed class FundOperationsWorkspaceReadService
             warnings,
             DateTimeOffset.UtcNow,
             BuildStructuredExportDataDictionary(columns),
-            BuildStructuredExportValidationChecks(descriptor, columns, rows));
+            BuildStructuredExportValidationChecks(descriptor, columns, rows),
+            GeneratedByPrincipalId: accessContext?.ActorPrincipalId,
+            GeneratedForCompanyId: accessContext?.CompanyId,
+            GeneratedForGroupPrincipalIds: accessContext?.GroupPrincipalIds?.ToArray() ?? [],
+            RowLineage: BuildStructuredExportRowLineage(descriptor.ExportId, columns, rows));
     }
 
     public async Task<FundReportPackPreviewDto> PreviewReportPackAsync(
@@ -427,6 +431,7 @@ public sealed class FundOperationsWorkspaceReadService
         ct.ThrowIfCancellationRequested();
 
         var normalizedFundProfileId = request.FundProfileId.Trim();
+        var brandingTheme = ResolveReportBrandingTheme(request.BrandingThemeId, request.BrandingThemeOverride);
         var runs = await LoadRunsAsync(normalizedFundProfileId, ct).ConfigureAwait(false);
         var displayName = ResolveDisplayName(normalizedFundProfileId, runs);
         var currency = ResolveCurrency(request.Currency, []);
@@ -458,7 +463,8 @@ public sealed class FundOperationsWorkspaceReadService
             TotalNetAssets: report.TotalNetAssets,
             TrialBalanceLineCount: report.TrialBalance.Count,
             AssetClassSectionCount: report.AssetClassSections.Count,
-            AssetClassSections: assetClassSections);
+            AssetClassSections: assetClassSections,
+            BrandingTheme: brandingTheme);
     }
 
     public async Task<FundReportPackSnapshotDto> GenerateReportPackAsync(
@@ -2570,7 +2576,13 @@ public sealed class FundOperationsWorkspaceReadService
             EvidenceReferenceCount: evidenceReferences.Count,
             EvidenceReferences: evidenceReferences.OrderBy(static value => value, StringComparer.OrdinalIgnoreCase).ToArray(),
             AuditReferences: traceReferences.OrderBy(static value => value, StringComparer.OrdinalIgnoreCase).ToArray(),
-            AccountingRecordSummary: activeWorkflow?.AccountingRecordSummary);
+            AccountingRecordSummary: activeWorkflow?.AccountingRecordSummary,
+            EvidencePackages: activeWorkflow?.EvidencePackages,
+            ReconciliationLanes: activeWorkflow?.ReconciliationLanes,
+            BreakCases: activeWorkflow?.BreakCases,
+            CloseChecklist: activeWorkflow?.CloseChecklist,
+            Approvals: activeWorkflow?.Approvals,
+            ReviewedAutomation: activeWorkflow?.ReviewedAutomation);
     }
 
     private async Task<Dictionary<string, WorkstationSecurityReference?>> ResolveSecurityReferencesAsync(
@@ -2642,6 +2654,10 @@ public sealed class FundOperationsWorkspaceReadService
         var livePortfolioViews = BuildPortfolioReportingLiveViews(accounts.Count, portfolioCuts, runSources, asOf);
         var pnlSlices = BuildPortfolioReportingPnlSlices(runSources, cashFinancing.Currency, asOf);
         var analyticsRows = BuildPortfolioReportingAnalyticsRows(runSources, cashFinancing.Currency, asOf);
+        var reportWriterDatasetSources = BuildReportWriterDatasetSources(
+            portfolioCuts,
+            analyticsRows,
+            crossFundConsolidations);
         var structuredExports = BuildStructuredReportingExports(
             fundProfileId,
             ledger,
@@ -2671,8 +2687,18 @@ public sealed class FundOperationsWorkspaceReadService
             FundProfileId: fundProfileId,
             ScheduleDeliveryPlans: scheduleDeliveryPlans,
             ReportLineProvenanceExplorer: reportLineProvenanceExplorer,
+            ReportWriterDatasetSources: reportWriterDatasetSources,
             AccessAudit: filteredReportingPayload?.AccessAudit);
     }
+
+    private static IReadOnlyList<WorkstationReportWriterDatasetSourcePayload> BuildReportWriterDatasetSources(
+        IReadOnlyList<PortfolioReportingCutDto> portfolioCuts,
+        IReadOnlyList<PortfolioReportingAnalyticsRowDto> analyticsRows,
+        IReadOnlyList<CrossFundReportingConsolidationDto> crossFundConsolidations) =>
+        ReportWriterDatasetSourceService.BuildDatasetSources(
+            portfolioCuts,
+            analyticsRows,
+            crossFundConsolidations);
 
     private async Task<IReadOnlyList<CrossFundReportingConsolidationDto>> BuildCrossFundReportingConsolidationsAsync(
         string currentFundProfileId,
@@ -3064,6 +3090,23 @@ public sealed class FundOperationsWorkspaceReadService
         string blockedSummary,
         IReadOnlyList<string> tags)
     {
+        var retainedPath = BuildStructuredExportRetainedPath(fundProfileId, exportId, asOf, format);
+        var retainedManifestPath = BuildStructuredExportRetainedManifestPath(fundProfileId, exportId, asOf);
+        var versionStamp = BuildStructuredExportVersionStamp(asOf, rowCount, sourceCount);
+        var integrityHash = BuildStructuredExportIntegrityHash(
+            fundProfileId,
+            exportId,
+            dataset,
+            consumer,
+            currency,
+            asOf,
+            rowCount,
+            fieldCount,
+            sourceCount,
+            retainedPath,
+            retainedManifestPath,
+            versionStamp);
+
         return new StructuredReportingExportDto(
             exportId,
             label,
@@ -3078,16 +3121,19 @@ public sealed class FundOperationsWorkspaceReadService
             currency,
             asOf,
             isReady,
-            BuildStructuredExportRetainedPath(fundProfileId, exportId, asOf, format),
+            retainedPath,
             BuildStructuredExportRoute(fundProfileId, exportId, asOf, currency, format),
             UiApiRoutes.WorkstationReporting,
             isReady
                 ? $"{readySummary} {rowCount} row(s), {fieldCount} field(s), and {sourceCount} source record(s) are ready."
                 : blockedSummary,
             UiApiRoutes.FundReportPacks,
-            BuildStructuredExportVersionStamp(asOf, rowCount, sourceCount),
+            versionStamp,
             tags,
-            isReady ? [] : [blockedSummary]);
+            isReady ? [] : [blockedSummary],
+            retainedManifestPath,
+            integrityHash,
+            BuildStructuredExportIntegritySummary(rowCount, fieldCount, sourceCount, integrityHash));
     }
 
     private static IReadOnlyList<PortfolioReportingCutDto> BuildPortfolioReportingCuts(
@@ -3263,7 +3309,8 @@ public sealed class FundOperationsWorkspaceReadService
                     MarketTickSequence: sourceAsOf?.ToUnixTimeMilliseconds(),
                     MarketDataProvider: BuildLivePortfolioMarketDataProvider(state, cut.Kind),
                     TickFreshnessSummary: BuildLivePortfolioTickFreshnessSummary(state, sourceAsOf, asOf, marketTickAgeSeconds),
-                    IsMarketTickLinked: state == PortfolioReportingLiveViewStateDto.LiveLinked);
+                    IsMarketTickLinked: state == PortfolioReportingLiveViewStateDto.LiveLinked,
+                    FreshnessPolicy: BuildLivePortfolioFreshnessPolicy(state, sourceAsOf, asOf, marketTickAgeSeconds));
             })
             .OrderBy(static view => view.Kind)
             .ThenBy(static view => view.Label, StringComparer.OrdinalIgnoreCase)
@@ -3769,6 +3816,45 @@ public sealed class FundOperationsWorkspaceReadService
                 : $"Source-backed tick snapshot is {marketTickAgeSeconds} second(s) old; refresh the live portfolio route for current ticks."
         };
 
+    private static PortfolioReportingLiveViewFreshnessPolicyDto BuildLivePortfolioFreshnessPolicy(
+        PortfolioReportingLiveViewStateDto state,
+        DateTimeOffset? sourceAsOf,
+        DateTimeOffset requestedAsOf,
+        int? sourceAgeSeconds)
+    {
+        var isWithinLiveLinkWindow = sourceAgeSeconds.HasValue && sourceAgeSeconds.Value <= (int)LivePortfolioViewFreshnessWindow.TotalSeconds;
+        var isBeyondStaleWindow = sourceAsOf is null || (sourceAgeSeconds.HasValue && sourceAgeSeconds.Value > (int)LivePortfolioViewStaleWindow.TotalSeconds);
+
+        return new PortfolioReportingLiveViewFreshnessPolicyDto(
+            PolicyName: "LivePortfolioView",
+            EvaluatedAtUtc: requestedAsOf,
+            SourceAgeSeconds: sourceAgeSeconds,
+            LiveLinkWindowSeconds: (int)LivePortfolioViewFreshnessWindow.TotalSeconds,
+            StaleWindowSeconds: (int)LivePortfolioViewStaleWindow.TotalSeconds,
+            IsWithinLiveLinkWindow: state == PortfolioReportingLiveViewStateDto.LiveLinked && isWithinLiveLinkWindow,
+            IsBeyondStaleWindow: state == PortfolioReportingLiveViewStateDto.Stale && isBeyondStaleWindow,
+            Reason: BuildLivePortfolioFreshnessPolicyReason(state, sourceAsOf, requestedAsOf, sourceAgeSeconds));
+    }
+
+    private static string BuildLivePortfolioFreshnessPolicyReason(
+        PortfolioReportingLiveViewStateDto state,
+        DateTimeOffset? sourceAsOf,
+        DateTimeOffset requestedAsOf,
+        int? sourceAgeSeconds)
+        => state switch
+        {
+            PortfolioReportingLiveViewStateDto.Blocked => "No source timestamp is available, so live portfolio freshness fails closed.",
+            PortfolioReportingLiveViewStateDto.LiveLinked => sourceAgeSeconds is null
+                ? "The source timestamp is unavailable even though the view is marked live-linked."
+                : $"Source age is {sourceAgeSeconds} second(s), inside the {LivePortfolioViewFreshnessWindow.TotalMinutes:0}-minute live-link window.",
+            PortfolioReportingLiveViewStateDto.Stale => sourceAsOf is null
+                ? "The source timestamp is missing and cannot satisfy the stale-window policy."
+                : $"Source timestamp {FormatStructuredDateTime(sourceAsOf.Value)} is older than the {LivePortfolioViewStaleWindow.TotalHours:0}-hour stale window at {FormatStructuredDateTime(requestedAsOf)}.",
+            _ => sourceAgeSeconds is null
+                ? "Source-backed view has no source timestamp, so the latest source evidence should be refreshed."
+                : $"Source age is {sourceAgeSeconds} second(s), outside the live-link window but inside the {LivePortfolioViewStaleWindow.TotalHours:0}-hour stale window."
+        };
+
     private static IReadOnlyList<string> BuildLivePortfolioReadinessBlockers(
         PortfolioReportingLiveViewStateDto state,
         DateTimeOffset? sourceAsOf,
@@ -4011,6 +4097,50 @@ public sealed class FundOperationsWorkspaceReadService
                 : "No source records are linked to this structured export.")
     ];
 
+    private static IReadOnlyList<StructuredReportingExportRowLineageDto> BuildStructuredExportRowLineage(
+        string exportId,
+        IReadOnlyList<StructuredReportingExportColumnDto> columns,
+        IReadOnlyList<IReadOnlyDictionary<string, string?>> rows) =>
+        rows
+            .Select((row, index) => new StructuredReportingExportRowLineageDto(
+                index + 1,
+                ResolveStructuredExportRowKey(row, index),
+                ComputeStructuredExportRowHash(exportId, columns, row)))
+            .ToArray();
+
+    private static string ResolveStructuredExportRowKey(
+        IReadOnlyDictionary<string, string?> row,
+        int index)
+    {
+        foreach (var key in new[] { "cutId", "analyticsId", "consolidationId", "accountName", "scope", "label" })
+        {
+            if (row.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return $"row-{(index + 1).ToString(CultureInfo.InvariantCulture)}";
+    }
+
+    private static string ComputeStructuredExportRowHash(
+        string exportId,
+        IReadOnlyList<StructuredReportingExportColumnDto> columns,
+        IReadOnlyDictionary<string, string?> row)
+    {
+        var builder = new StringBuilder();
+        builder.Append(exportId);
+        foreach (var column in columns)
+        {
+            builder.Append('|');
+            builder.Append(column.Name);
+            builder.Append('=');
+            builder.Append(row.TryGetValue(column.Name, out var value) ? value : string.Empty);
+        }
+
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()))).ToLowerInvariant();
+    }
+
     private static string BuildStructuredExportRoute(
         string fundProfileId,
         string exportId,
@@ -4055,6 +4185,49 @@ public sealed class FundOperationsWorkspaceReadService
         };
         return $"exports/reporting/{NormalizeCutId(fundProfileId)}/{asOf.UtcDateTime:yyyyMMddHHmmss}/{exportId}.{extension}";
     }
+
+    private static string BuildStructuredExportRetainedManifestPath(
+        string fundProfileId,
+        string exportId,
+        DateTimeOffset asOf) =>
+        $"exports/reporting/{NormalizeCutId(fundProfileId)}/{asOf.UtcDateTime:yyyyMMddHHmmss}/{exportId}.manifest.json";
+
+    private static string BuildStructuredExportIntegrityHash(
+        string fundProfileId,
+        string exportId,
+        string dataset,
+        string consumer,
+        string currency,
+        DateTimeOffset asOf,
+        int rowCount,
+        int fieldCount,
+        int sourceCount,
+        string retainedPath,
+        string retainedManifestPath,
+        string versionStamp)
+    {
+        var input = string.Join('|',
+            NormalizeCutId(fundProfileId),
+            exportId,
+            dataset,
+            consumer,
+            currency,
+            asOf.UtcDateTime.ToString("O", CultureInfo.InvariantCulture),
+            rowCount.ToString(CultureInfo.InvariantCulture),
+            fieldCount.ToString(CultureInfo.InvariantCulture),
+            sourceCount.ToString(CultureInfo.InvariantCulture),
+            retainedPath,
+            retainedManifestPath,
+            versionStamp);
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(input))).ToLowerInvariant();
+    }
+
+    private static string BuildStructuredExportIntegritySummary(
+        int rowCount,
+        int fieldCount,
+        int sourceCount,
+        string integrityHash) =>
+        $"{rowCount.ToString(CultureInfo.InvariantCulture)} row(s), {fieldCount.ToString(CultureInfo.InvariantCulture)} field(s), and {sourceCount.ToString(CultureInfo.InvariantCulture)} source record(s) retained with SHA-256 {integrityHash}.";
 
     private static string BuildStructuredExportVersionStamp(DateTimeOffset asOf, int rowCount, int sourceCount) =>
         $"structured-export:{asOf.UtcDateTime:yyyyMMddHHmmss}:rows-{rowCount}:sources-{sourceCount}:schema-{StructuredReportingExportSchemaVersion}";

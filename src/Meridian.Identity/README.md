@@ -76,6 +76,9 @@ profiles, governed account administration, account/session audit evidence, compa
 company-scoped access policies, and custom role-profile permission persistence. `UserAccountDto`,
 `UserAccountUpsertRequestDto`, and `UserAccountAuditEventDto` carry `CompanyId`, while
 `UserProfileRegistry` preserves the same company id on authenticated profiles.
+Scoped-access assignment DTOs carry role, permission, scope, effective-date, approval-limit,
+segregation-of-duties rule, version, revocation, and audit-event metadata so authority governance
+stays explicit across browser, desktop, endpoint, and policy consumers.
 `FundStructureAccessScopeLineageProvider` is Identity-owned
 and consumes the shared `Meridian.Contracts.Services.IFundStructureService` contract supplied by
 Application composition, so scoped authorization can resolve ancestry without depending on

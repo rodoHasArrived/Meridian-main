@@ -685,6 +685,7 @@ public sealed class WorkstationWorkflowSummaryService
         var unresolvedBreakCount = CountUnresolvedBreaks(workflow);
         var evidenceCount = CountEvidenceLinks(workflow);
         var stage = ResolveFinancialOperationsStage(workflow, unresolvedBreakCount);
+        var evidencePackageBlocker = ResolveFinancialOperationsEvidencePackageBlocker(workflow);
 
         if (unresolvedBreakCount > 0)
         {
@@ -728,6 +729,30 @@ public sealed class WorkstationWorkflowSummaryService
                     code: "financial-operations-approval-pending",
                     label: "Approval history is pending",
                     detail: "The financial operations flow cannot produce final close evidence until approval review is complete.",
+                    tone: "Warning",
+                    isBlocking: true),
+                Evidence: BuildFinancialOperationsEvidence(snapshot, workflow, stage, unresolvedBreakCount, evidenceCount));
+        }
+
+        if ((workflow.Status == OperationsWorkflowStatusDto.Closed || workflow.ClosePackage is not null) &&
+            evidencePackageBlocker is not null)
+        {
+            return new WorkspaceWorkflowSummary(
+                WorkspaceId: "accounting",
+                WorkspaceTitle: "Accounting",
+                StatusLabel: "Financial operations evidence package review required",
+                StatusDetail: $"Period {workflow.PeriodId} has close evidence but {evidencePackageBlocker.Label.ToLowerInvariant()} is {evidencePackageBlocker.Status}.",
+                StatusTone: "Warning",
+                NextAction: new WorkflowNextAction(
+                    Label: "Review Evidence Package",
+                    Detail: evidencePackageBlocker.RequiredActions.FirstOrDefault()
+                        ?? "Review retained evidence-package posture before treating the workflow as close-ready evidence.",
+                    TargetPageTag: ResolveTargetPageTag(WorkflowActionIds.AccountingReviewOperationsContinuity, "OperationsContinuity"),
+                    Tone: "Primary"),
+                PrimaryBlocker: CreateBlocker(
+                    code: "financial-operations-evidence-package",
+                    label: evidencePackageBlocker.Label,
+                    detail: evidencePackageBlocker.Summary,
                     tone: "Warning",
                     isBlocking: true),
                 Evidence: BuildFinancialOperationsEvidence(snapshot, workflow, stage, unresolvedBreakCount, evidenceCount));
@@ -823,12 +848,52 @@ public sealed class WorkstationWorkflowSummaryService
             new WorkflowEvidenceBadge("Approval", workflow.ApprovalState.ToString(), workflow.ApprovalState == OperationsApprovalStateDto.Approved ? "Success" : "Warning"),
             new WorkflowEvidenceBadge("Evidence", evidenceCount.ToString(), evidenceCount > 0 ? "Success" : "Warning"),
             new WorkflowEvidenceBadge("Close", closeValue, workflow.ClosePackage is not null ? "Success" : "Info"),
+            BuildEvidencePackageReadinessEvidence(workflow),
+            BuildPeriodLockEvidence(workflow),
             BuildReviewedAutomationEvidence(workflow)
         ];
     }
 
+    private static WorkflowEvidenceBadge BuildEvidencePackageReadinessEvidence(OperationsContinuityWorkflowDto workflow)
+    {
+        if (workflow.EvidencePackages.Count == 0)
+        {
+            return new WorkflowEvidenceBadge("Evidence packages", "Not projected", "Info");
+        }
+
+        var readyCount = workflow.EvidencePackages.Count(static package => IsEvidencePackageReady(package));
+        var totalCount = workflow.EvidencePackages.Count;
+
+        return new WorkflowEvidenceBadge(
+            "Evidence packages",
+            $"{readyCount}/{totalCount}",
+            readyCount == totalCount ? "Success" : "Warning");
+    }
+
+    private static WorkflowEvidenceBadge BuildPeriodLockEvidence(OperationsContinuityWorkflowDto workflow)
+    {
+        var periodLockPackage = FindPeriodLockEvidencePackage(workflow);
+        if (periodLockPackage is null)
+        {
+            return new WorkflowEvidenceBadge("Period lock", "Not projected", "Info");
+        }
+
+        return new WorkflowEvidenceBadge(
+            "Period lock",
+            periodLockPackage.Status.ToString(),
+            ToneForEvidenceStatus(periodLockPackage.Status));
+    }
+
     private static WorkflowEvidenceBadge BuildReviewedAutomationEvidence(OperationsContinuityWorkflowDto workflow)
     {
+        if (workflow.ReviewedAutomation is { } reviewedAutomation)
+        {
+            return new WorkflowEvidenceBadge(
+                "Reviewed automation",
+                reviewedAutomation.Stage,
+                ToneForReviewedAutomation(reviewedAutomation));
+        }
+
         if (workflow.BrokerIntakeState is OperationsBrokerIntakeStateDto.Imported or OperationsBrokerIntakeStateDto.Normalized)
         {
             return new WorkflowEvidenceBadge("Reviewed automation", "Extraction review", "Warning");
@@ -855,6 +920,18 @@ public sealed class WorkstationWorkflowSummaryService
         }
 
         return new WorkflowEvidenceBadge("Reviewed automation", "Suggestions only", "Info");
+    }
+
+    private static string ToneForReviewedAutomation(OperationsReviewedAutomationSummaryDto reviewedAutomation)
+    {
+        if (reviewedAutomation.RequiresHumanReview || reviewedAutomation.Status == EvidenceStatusDto.ReviewRequired)
+        {
+            return "Warning";
+        }
+
+        return reviewedAutomation.Status == EvidenceStatusDto.Ready
+            ? "Success"
+            : "Info";
     }
 
     private async Task<FinancialOperationsControlSnapshot?> LoadFinancialOperationsSnapshotAsync(
@@ -952,8 +1029,52 @@ public sealed class WorkstationWorkflowSummaryService
         => workflow.EvidenceLinks
             .Concat(workflow.ReportPackReadiness.EvidenceLinks)
             .Concat(workflow.ClosePackage?.EvidenceLinks ?? [])
+            .Concat(workflow.EvidencePackages.SelectMany(static package => package.EvidenceLinks))
             .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
             .Count();
+
+    private static OperationsEvidencePackageSummaryDto? ResolveFinancialOperationsEvidencePackageBlocker(
+        OperationsContinuityWorkflowDto workflow)
+        => workflow.EvidencePackages
+            .Where(static package => !IsEvidencePackageReady(package))
+            .OrderBy(static package => RankEvidencePackageStatus(package.Status))
+            .ThenBy(static package => string.Equals(
+                package.PackageId,
+                "period-lock-reopen",
+                StringComparison.OrdinalIgnoreCase)
+                || package.PackageId.StartsWith("period-lock-reopen:", StringComparison.OrdinalIgnoreCase)
+                    ? 0
+                    : 1)
+            .ThenBy(static package => package.Label, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+
+    private static OperationsEvidencePackageSummaryDto? FindPeriodLockEvidencePackage(
+        OperationsContinuityWorkflowDto workflow)
+        => workflow.EvidencePackages.FirstOrDefault(static package =>
+            string.Equals(package.PackageId, "period-lock-reopen", StringComparison.OrdinalIgnoreCase) ||
+            package.PackageId.StartsWith("period-lock-reopen:", StringComparison.OrdinalIgnoreCase) ||
+            package.Label.Contains("period lock", StringComparison.OrdinalIgnoreCase));
+
+    private static bool IsEvidencePackageReady(OperationsEvidencePackageSummaryDto package)
+        => package.IsReady && package.Status == EvidenceStatusDto.Ready;
+
+    private static int RankEvidencePackageStatus(EvidenceStatusDto status) => status switch
+    {
+        EvidenceStatusDto.Blocked => 0,
+        EvidenceStatusDto.Missing => 1,
+        EvidenceStatusDto.Stale => 2,
+        EvidenceStatusDto.ReviewRequired => 3,
+        EvidenceStatusDto.Unknown => 4,
+        EvidenceStatusDto.Ready => 5,
+        _ => 6
+    };
+
+    private static string ToneForEvidenceStatus(EvidenceStatusDto status) => status switch
+    {
+        EvidenceStatusDto.Ready => "Success",
+        EvidenceStatusDto.Unknown => "Info",
+        _ => "Warning"
+    };
 
     private static string ToneForStage(OperationsContinuityWorkflowDto workflow, int unresolvedBreakCount)
     {

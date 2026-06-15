@@ -118,6 +118,9 @@ interface ScopedAccessAssignmentState {
   permissionNames: string[];
   effectiveFrom: string;
   effectiveTo: string;
+  approvalLimitAmount: string;
+  approvalLimitCurrency: string;
+  segregationOfDutiesRule: string;
   rationale: string;
   includeRevoked: boolean;
   loading: boolean;
@@ -563,6 +566,9 @@ export function SettingsScreen({
     permissionNames: [],
     effectiveFrom: "",
     effectiveTo: "",
+    approvalLimitAmount: "",
+    approvalLimitCurrency: "USD",
+    segregationOfDutiesRule: "",
     rationale: "Grant scoped authority with audit evidence for governed fund operations.",
     includeRevoked: false,
     loading: Boolean(rolePermissionCatalog),
@@ -1277,11 +1283,38 @@ export function SettingsScreen({
     const principalId = scopedAccess.principalId.trim();
     const scopeId = scopedAccess.scopeKind === "Global" ? null : scopedAccess.scopeId.trim();
     const rationale = scopedAccess.rationale.trim();
+    const approvalLimitText = scopedAccess.approvalLimitAmount.trim();
+    let approvalLimitAmount: number | null = null;
+    const approvalLimitCurrency = scopedAccess.approvalLimitCurrency.trim().toUpperCase();
+    const segregationOfDutiesRule = scopedAccess.segregationOfDutiesRule.trim();
     if (!principalId || !scopedAccess.role || scopedAccess.permissionNames.length === 0 || !rationale || (!scopeId && scopedAccess.scopeKind !== "Global")) {
       setScopedAccess((current) => ({
         ...current,
         message: "Principal, scope, role, at least one permission, and rationale are required.",
         details: scopedAccess.scopeKind !== "Global" && !scopeId ? ["Scoped grants require a concrete scope ID."] : [],
+        tone: "warning"
+      }));
+      return;
+    }
+    if (approvalLimitText) {
+      const parsedApprovalLimitAmount = Number(approvalLimitText);
+      if (!Number.isFinite(parsedApprovalLimitAmount) || parsedApprovalLimitAmount <= 0) {
+        setScopedAccess((current) => ({
+          ...current,
+          message: "Approval limit must be greater than zero.",
+          details: ["Use a positive numeric amount or leave the approval limit blank."],
+          tone: "warning"
+        }));
+        return;
+      }
+
+      approvalLimitAmount = parsedApprovalLimitAmount;
+    }
+    if (approvalLimitAmount !== null && !/^[A-Z]{3}$/.test(approvalLimitCurrency)) {
+      setScopedAccess((current) => ({
+        ...current,
+        message: "Approval limit currency must be a three-letter code.",
+        details: ["Use an ISO-style currency code such as USD."],
         tone: "warning"
       }));
       return;
@@ -1308,6 +1341,9 @@ export function SettingsScreen({
         effectiveTo: toScopedAccessDateTime(scopedAccess.effectiveTo),
         requestedBy: session?.displayName ?? "settings-screen",
         rationale,
+        approvalLimitAmount,
+        approvalLimitCurrency: approvalLimitAmount === null ? null : approvalLimitCurrency,
+        segregationOfDutiesRule: segregationOfDutiesRule || null,
         correlationId: `settings-scoped-access-${Date.now()}`
       });
       setScopedAccessAssignments((current) => upsertScopedAccessAssignment(current, result.assignment));
@@ -1316,6 +1352,9 @@ export function SettingsScreen({
         ...current,
         principalId: "",
         scopeId: current.scopeKind === "Global" ? "" : current.scopeId,
+        approvalLimitAmount: "",
+        approvalLimitCurrency: current.approvalLimitCurrency || "USD",
+        segregationOfDutiesRule: "",
         busy: false,
         message: `Scoped access granted for ${result.assignment.principalId}.`,
         details: [
@@ -2141,11 +2180,21 @@ export function SettingsScreen({
                       Revoke
                     </Button>
                   </div>
-                  <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                  <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-6">
                     <SettingsFieldRow label="Role" value={assignment.roleProfileName ?? assignment.role} tone="default" />
                     <SettingsFieldRow label="Version" value={String(assignment.version)} tone="muted" />
                     <SettingsFieldRow label="Audit" value={assignment.lastAuditId ?? "Pending"} tone={assignment.lastAuditId ? "default" : "warning"} />
                     <SettingsFieldRow label="Correlation" value={assignment.correlationId} tone="muted" />
+                    <SettingsFieldRow
+                      label="Approval limit"
+                      value={formatScopedAccessApprovalLimit(assignment)}
+                      tone={assignment.approvalLimitAmount === null || assignment.approvalLimitAmount === undefined ? "muted" : "default"}
+                    />
+                    <SettingsFieldRow
+                      label="SoD rule"
+                      value={assignment.segregationOfDutiesRule || "Not specified"}
+                      tone={assignment.segregationOfDutiesRule ? "default" : "muted"}
+                    />
                   </dl>
                   <div className="flex flex-wrap gap-2" aria-label={`Permissions for ${assignment.principalId}`}>
                     {assignment.permissionNames.map((permission) => (
@@ -2266,6 +2315,42 @@ export function SettingsScreen({
                   onChange={(event) => setScopedAccess((current) => ({ ...current, effectiveTo: event.target.value, message: null }))}
                   disabled={scopedAccess.busy}
                   aria-label="Scoped access effective to"
+                />
+              </label>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,0.55fr)_minmax(0,0.35fr)_minmax(0,1.1fr)]">
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Approval limit
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={scopedAccess.approvalLimitAmount}
+                  onChange={(event) => setScopedAccess((current) => ({ ...current, approvalLimitAmount: event.target.value, message: null }))}
+                  placeholder="100000"
+                  disabled={scopedAccess.busy}
+                  aria-label="Scoped access approval limit amount"
+                />
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Currency
+                <Input
+                  value={scopedAccess.approvalLimitCurrency}
+                  onChange={(event) => setScopedAccess((current) => ({ ...current, approvalLimitCurrency: event.target.value.toUpperCase(), message: null }))}
+                  placeholder="USD"
+                  disabled={scopedAccess.busy}
+                  maxLength={3}
+                  aria-label="Scoped access approval limit currency"
+                />
+              </label>
+              <label className="grid gap-1 text-xs font-medium text-muted-foreground">
+                Segregation rule
+                <Input
+                  value={scopedAccess.segregationOfDutiesRule}
+                  onChange={(event) => setScopedAccess((current) => ({ ...current, segregationOfDutiesRule: event.target.value, message: null }))}
+                  placeholder="Requester cannot approve own payment request"
+                  disabled={scopedAccess.busy}
+                  aria-label="Scoped access segregation of duties rule"
                 />
               </label>
             </div>
@@ -4469,6 +4554,18 @@ function formatScopedAccessWindow(assignment: UserAccessAssignment): string {
   const from = formatScopedAccessDate(assignment.effectiveFrom) ?? "Effective now";
   const to = formatScopedAccessDate(assignment.effectiveTo) ?? "Open-ended";
   return `${from} to ${to}`;
+}
+
+function formatScopedAccessApprovalLimit(assignment: UserAccessAssignment): string {
+  if (assignment.approvalLimitAmount === null || assignment.approvalLimitAmount === undefined) {
+    return "Not specified";
+  }
+
+  const amount = new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 2
+  }).format(assignment.approvalLimitAmount);
+  const currency = assignment.approvalLimitCurrency?.trim();
+  return currency ? `${currency} ${amount}` : amount;
 }
 
 function formatScopedAccessDate(value?: string | null): string | null {

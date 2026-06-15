@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-08
+last_reviewed: 2026-06-11
 ---
 
 # src/Meridian.Storage
@@ -58,7 +58,9 @@ lookup paths, and evidence trails those layers rely on.
 - `AssetOperations/` - read-model projections for operational terms, lifecycle, cash flow,
   reconciliation, readiness, and evidence views.
 - `FundAccounts/`, `Banking/`, and `FundStructure/` - fund accounts, balances, statements, banking
-  records, and fund-structure persistence. `FundStructure/` owns the local JSON and in-memory
+  records, and fund-structure persistence. Banking transaction persistence keeps bank-side evidence
+  amounts, dates, external references, void posture, and retaining operator identity durable for
+  cash-reconciliation audit packages. `FundStructure` owns the local JSON and in-memory
   fund-structure state stores, while PostgreSQL fund-structure service persistence stays in the
   storage-backed rows and migrations.
 - `Packaging/`, `Export/`, and `Maintenance/` - portable data packages, analysis exports, retention,

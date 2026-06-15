@@ -365,6 +365,7 @@
                     <Grid Margin="0,16,0,0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
@@ -438,6 +439,7 @@
                     <Grid Margin="0,16,0,0">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
@@ -454,7 +456,20 @@
                                 </DataGrid>
                             </StackPanel>
                         </Border>
-                        <Border Grid.Row="1" Style="{StaticResource SectionCardStyle}">
+                        <Border Grid.Row="1" Style="{StaticResource SectionCardStyle}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock Text="External GL Evidence Packages" Style="{StaticResource CardHeaderStyle}" />
+                                <DataGrid ItemsSource="{Binding ExternalGlEvidencePackageRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="ExternalGlEvidencePackageGrid">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Package" Binding="{Binding Name}" Width="190" />
+                                        <DataGridTextColumn Header="State" Binding="{Binding Status}" Width="105" />
+                                        <DataGridTextColumn Header="Required Action" Binding="{Binding Detail}" Width="*" />
+                                        <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="180" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Row="2" Style="{StaticResource SectionCardStyle}">
                             <StackPanel>
                                 <TextBlock Text="External GL Reconciliation" Style="{StaticResource CardHeaderStyle}" />
                                 <DataGrid ItemsSource="{Binding ExternalGlRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="ExternalGlEvidenceGrid">
@@ -468,6 +483,7 @@
                                         <DataGridTextColumn Header="Meridian Cr" Binding="{Binding MeridianCredit}" Width="105" />
                                         <DataGridTextColumn Header="Variance" Binding="{Binding Variance}" Width="95" />
                                         <DataGridTextColumn Header="Detail" Binding="{Binding Detail}" Width="*" />
+                                        <DataGridTextColumn Header="Evidence" Binding="{Binding Evidence}" Width="150" />
                                     </DataGrid.Columns>
                                 </DataGrid>
                             </StackPanel>

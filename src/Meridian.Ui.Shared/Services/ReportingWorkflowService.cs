@@ -1224,8 +1224,10 @@ public sealed class ReportPackWorkflowService
         string retainedManifestPath,
         IReadOnlyList<ReportPackEvidenceLinkDto> evidenceLinks,
         string? note = null,
-        ReportBrandingThemeDto? brandingTheme = null)
+        ReportBrandingThemeDto? brandingTheme = null,
+        OperationsActionOriginDto actionOrigin = OperationsActionOriginDto.HumanOperator)
     {
+        EnsureHumanOrigin(actionOrigin, "publish reports");
         ArgumentException.ThrowIfNullOrWhiteSpace(signedOffBy);
         ArgumentException.ThrowIfNullOrWhiteSpace(evidenceHash);
         ArgumentException.ThrowIfNullOrWhiteSpace(manifestId);
@@ -1258,6 +1260,15 @@ public sealed class ReportPackWorkflowService
         _records[reportId] = next;
         PersistRecords();
         return next;
+    }
+
+    private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
+    {
+        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        {
+            throw new InvalidOperationException(
+                $"Reviewed automation cannot {action}; a human operator approval is required.");
+        }
     }
 
     public IReadOnlyList<ReportPackWorkflowRecordDto> GetHistory(string period, string fundAccountId) =>
