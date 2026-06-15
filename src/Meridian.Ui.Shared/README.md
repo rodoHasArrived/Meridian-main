@@ -1148,3 +1148,7 @@ domain-specific endpoint edits to the matching partial file.
 - `src/Meridian.Ui.Services/README.md`
 - `docs/status/contract-compatibility-matrix.md`
 - `docs/source/generated/source-module-index.md`
+
+## W5 private-capital operational records
+
+Private-capital shared services now project operational-record linkage, capital-account commitment/contribution/distribution/allocation/NAV/statement/evidence lineage, and governed package metadata while keeping live payments, broad LP portal, mobile, forecasting, and workflow-designer lanes deferred.

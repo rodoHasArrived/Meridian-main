@@ -106,6 +106,15 @@ internal static class PrivateCapitalFundEventLedgerRecordBuilder
             approvalRoute,
             paymentIntentEvidence);
 
+        var operationalRecord = BuildOperationalRecord(
+            fundEvent,
+            subledgerEntries,
+            eventLedgerImpacts,
+            eventReportOutputs,
+            evidenceLinks,
+            validationIssues,
+            paymentIntentEvidence);
+
         return new PrivateCapitalFundEventLedgerRecordDto(
             $"fund-event-ledger-record:{fundEvent.FundEventId}".ToLowerInvariant(),
             fundEvent.FundEventId,
@@ -155,8 +164,102 @@ internal static class PrivateCapitalFundEventLedgerRecordBuilder
             eventReportOutputs,
             validationIssues,
             EvidenceCategories: evidenceCategories,
-            PaymentIntentEvidence: paymentIntentEvidence);
+            PaymentIntentEvidence: paymentIntentEvidence,
+            OperationalRecord: operationalRecord);
     }
+
+    private static PrivateCapitalOperationalRecordLinkageDto BuildOperationalRecord(
+        PrivateCapitalFundEventDto fundEvent,
+        IReadOnlyList<PrivateCapitalCapitalAccountSubledgerEntryDto> subledgerEntries,
+        IReadOnlyList<PrivateCapitalLedgerImpactDto> ledgerImpacts,
+        IReadOnlyList<PrivateCapitalReportOutputDto> reportOutputs,
+        IReadOnlyList<string> evidenceLinks,
+        IReadOnlyList<AccountingConfigurationValidationIssueDto> validationIssues,
+        PrivateCapitalPaymentIntentEvidenceDto? paymentIntentEvidence)
+    {
+        var eventKind = ResolveEventKind(fundEvent.EntryType, fundEvent.FundEventType);
+        var reconciliationCount = validationIssues.Count(static item =>
+            item.Code.Contains("reconciliation", StringComparison.OrdinalIgnoreCase) ||
+            item.TargetId.Contains("reconciliation", StringComparison.OrdinalIgnoreCase));
+        var deliveryEvidenceCount = reportOutputs.Count(static item => item.IsPublished &&
+            (!string.IsNullOrWhiteSpace(item.RetainedManifestPath) || !string.IsNullOrWhiteSpace(item.PublicationManifestId)));
+        var auditCount = (fundEvent.ApprovalId is null ? 0 : 1) +
+                         (paymentIntentEvidence?.CashEvidenceLinkCount ?? 0);
+        var requiredActions = new List<string>();
+        if (evidenceLinks.Count == 0)
+        {
+            requiredActions.Add("Retain source evidence for the private-capital event.");
+        }
+
+        if (subledgerEntries.Count == 0)
+        {
+            requiredActions.Add("Normalize the event into capital-account subledger records.");
+        }
+
+        if (ledgerImpacts.Count == 0 || ledgerImpacts.Any(static item => !item.IsPostingReady))
+        {
+            requiredActions.Add("Resolve ledger impact before governed reporting relies on the event.");
+        }
+
+        if (reportOutputs.Count == 0)
+        {
+            requiredActions.Add("Link the event to governed report or stakeholder package output.");
+        }
+
+        return new PrivateCapitalOperationalRecordLinkageDto(
+            eventKind,
+            subledgerEntries.Count > 0 ? "Normalized" : "Missing",
+            validationIssues.Count == 0 ? "Clear" : reconciliationCount > 0 ? "ReconciliationReview" : "ValidationReview",
+            ledgerImpacts.Count > 0 && ledgerImpacts.All(static item => item.IsPostingReady) ? "PostingReady" : "ReviewRequired",
+            fundEvent.JournalStatus.ToString(),
+            reportOutputs.Count > 0 && reportOutputs.All(static item => item.IsReportReady) ? "ReportReady" : "ReportReview",
+            deliveryEvidenceCount > 0 ? "DeliveryEvidenceRetained" : "DeliveryEvidenceMissing",
+            auditCount > 0 ? "AuditLinked" : "AuditMissing",
+            evidenceLinks.Count,
+            subledgerEntries.Count,
+            reconciliationCount,
+            ledgerImpacts.Count,
+            fundEvent.ApprovalId is null ? 0 : 1,
+            reportOutputs.Count,
+            deliveryEvidenceCount,
+            auditCount,
+            evidenceLinks,
+            requiredActions);
+    }
+
+    private static PrivateCapitalFundEventKindDto ResolveEventKind(ManualJournalEntryTypeDto entryType, string fundEventType)
+        => entryType switch
+        {
+            ManualJournalEntryTypeDto.FormationClosing => PrivateCapitalFundEventKindDto.FormationClosing,
+            ManualJournalEntryTypeDto.SubscriptionPacket or ManualJournalEntryTypeDto.Subscription => PrivateCapitalFundEventKindDto.SubscriptionPacket,
+            ManualJournalEntryTypeDto.CapitalCall => PrivateCapitalFundEventKindDto.CapitalCall,
+            ManualJournalEntryTypeDto.ContributionReceipt => PrivateCapitalFundEventKindDto.ContributionReceipt,
+            ManualJournalEntryTypeDto.Investment => PrivateCapitalFundEventKindDto.Investment,
+            ManualJournalEntryTypeDto.Distribution or ManualJournalEntryTypeDto.Redemption => PrivateCapitalFundEventKindDto.Distribution,
+            ManualJournalEntryTypeDto.Valuation => PrivateCapitalFundEventKindDto.Valuation,
+            ManualJournalEntryTypeDto.FeeExpense or ManualJournalEntryTypeDto.ManagementFee or ManualJournalEntryTypeDto.Expense => PrivateCapitalFundEventKindDto.FeeExpense,
+            ManualJournalEntryTypeDto.TaxRequest => PrivateCapitalFundEventKindDto.TaxRequest,
+            ManualJournalEntryTypeDto.AuditRequest => PrivateCapitalFundEventKindDto.AuditRequest,
+            ManualJournalEntryTypeDto.WindDownSupport => PrivateCapitalFundEventKindDto.WindDownSupport,
+            _ => ResolveEventKind(fundEventType)
+        };
+
+    private static PrivateCapitalFundEventKindDto ResolveEventKind(string fundEventType)
+        => fundEventType.Replace("-", string.Empty, StringComparison.Ordinal).Replace("_", string.Empty, StringComparison.Ordinal).ToUpperInvariant() switch
+        {
+            "FORMATIONCLOSING" or "CLOSING" or "FORMATION" => PrivateCapitalFundEventKindDto.FormationClosing,
+            "SUBSCRIPTIONPACKET" or "SUBSCRIPTION" => PrivateCapitalFundEventKindDto.SubscriptionPacket,
+            "CAPITALCALL" => PrivateCapitalFundEventKindDto.CapitalCall,
+            "CONTRIBUTIONRECEIPT" or "CONTRIBUTION" => PrivateCapitalFundEventKindDto.ContributionReceipt,
+            "INVESTMENT" => PrivateCapitalFundEventKindDto.Investment,
+            "DISTRIBUTION" or "REDEMPTION" => PrivateCapitalFundEventKindDto.Distribution,
+            "VALUATION" => PrivateCapitalFundEventKindDto.Valuation,
+            "FEEEXPENSE" or "FEE" or "EXPENSE" or "MANAGEMENTFEE" => PrivateCapitalFundEventKindDto.FeeExpense,
+            "TAXREQUEST" => PrivateCapitalFundEventKindDto.TaxRequest,
+            "AUDITREQUEST" => PrivateCapitalFundEventKindDto.AuditRequest,
+            "WINDDOWNSUPPORT" or "WINDDOWN" => PrivateCapitalFundEventKindDto.WindDownSupport,
+            _ => PrivateCapitalFundEventKindDto.Other
+        };
 
     private static PrivateCapitalReportOutputDto? SelectPrimaryReportOutput(
         IReadOnlyList<PrivateCapitalReportOutputDto> reportOutputs)

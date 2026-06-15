@@ -286,7 +286,8 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
                 record.EvidenceRoute,
                 record.EvidenceLinkCount,
                 record.EvidenceLinks,
-                record.EvidenceLinkCount > 0 ? [] : ["Attach retained source evidence"])
+                record.EvidenceLinkCount > 0 ? [] : ["Attach retained source evidence"],
+                PrivateCapitalGovernedPackageKindDto.OperationalEvidence)
         };
 
         if (paymentIntent is not null)
@@ -310,7 +311,9 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
                 output.ReportOutputRoute ?? output.ReportRoute,
                 output.EvidenceLinkCount,
                 output.EvidenceLinks,
-                output.IsReportReady ? [] : ["Repair governed report-output evidence"]));
+                output.IsReportReady ? [] : ["Repair governed report-output evidence"],
+                ResolvePackageKind(output.ReportOutputType),
+                NormalizeEvidenceLinks([output.InvestorId ?? output.CapitalAccountId])));
         }
 
         var publishedOutputs = GetPublishedReportOutputs(record);
@@ -323,7 +326,10 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
             publishedOutputs.Select(static item => item.ReportOutputRoute ?? item.ReportRoute).FirstOrDefault(static item => !string.IsNullOrWhiteSpace(item)),
             deliveryEvidenceLinks.Count,
             deliveryEvidenceLinks,
-            isDeliveryReady ? [] : ["Retain delivery package or publication manifest"]));
+            isDeliveryReady ? [] : ["Retain delivery package or publication manifest"],
+            PrivateCapitalGovernedPackageKindDto.DeliveryLog,
+            NormalizeEvidenceLinks(publishedOutputs.Select(static item => item.InvestorId ?? item.CapitalAccountId)),
+            NormalizeEvidenceLinks(publishedOutputs.Select(static item => item.RetainedManifestPath))));
 
         var taxEvidenceLinks = BuildTaxSupportEvidenceLinks(record);
         var isTaxReady = IsTaxSupportReady(record);
@@ -334,7 +340,8 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
             record.EvidenceRoute,
             taxEvidenceLinks.Count,
             taxEvidenceLinks,
-            isTaxReady ? [] : ["Attach tax support evidence or governed report output"]));
+            isTaxReady ? [] : ["Attach tax support evidence or governed report output"],
+            PrivateCapitalGovernedPackageKindDto.TaxSupport));
 
         var auditEvidenceLinks = BuildAuditSupportEvidenceLinks(record, paymentIntent);
         var isAuditReady = IsAuditSupportReady(record, auditEvidenceLinks);
@@ -345,10 +352,36 @@ public sealed class PrivateCapitalFundEventCommandCenterService : IPrivateCapita
             record.ApprovalRoute ?? record.EvidenceRoute,
             auditEvidenceLinks.Count,
             auditEvidenceLinks,
-            isAuditReady ? [] : ["Retain approval or audit evidence"]));
+            isAuditReady ? [] : ["Retain approval or audit evidence"],
+            PrivateCapitalGovernedPackageKindDto.AuditSupport));
+
+        var restatementLinks = NormalizeEvidenceLinks(record.ReportOutputs
+            .Where(static item => !string.IsNullOrWhiteSpace(item.PublicationManifestId) || !string.IsNullOrWhiteSpace(item.PublicationEvidenceHash))
+            .SelectMany(static item => new[] { item.PublicationManifestId, item.PublicationEvidenceHash }));
+        packages.Add(new PrivateCapitalFundEventCommandCenterSupportPackageDto(
+            $"amendment-restatement:{record.FundEventId}",
+            "Amendment / restatement trail",
+            restatementLinks.Count > 0 ? "Ready" : "ReviewRequired",
+            record.PrimaryReportRoute,
+            restatementLinks.Count,
+            restatementLinks,
+            restatementLinks.Count > 0 ? [] : ["Retain amendment or restatement lineage when package output changes"],
+            PrivateCapitalGovernedPackageKindDto.AmendmentRestatementTrail,
+            AmendmentRestatementTrail: restatementLinks));
 
         return packages;
     }
+
+    private static PrivateCapitalGovernedPackageKindDto ResolvePackageKind(string reportOutputType)
+        => reportOutputType.Contains("Distribution", StringComparison.OrdinalIgnoreCase)
+            ? PrivateCapitalGovernedPackageKindDto.DistributionNotice
+            : reportOutputType.Contains("Tax", StringComparison.OrdinalIgnoreCase)
+                ? PrivateCapitalGovernedPackageKindDto.TaxSupport
+                : reportOutputType.Contains("Audit", StringComparison.OrdinalIgnoreCase)
+                    ? PrivateCapitalGovernedPackageKindDto.AuditSupport
+                    : reportOutputType.Contains("CapitalCall", StringComparison.OrdinalIgnoreCase) || reportOutputType.Contains("CapitalNotice", StringComparison.OrdinalIgnoreCase)
+                        ? PrivateCapitalGovernedPackageKindDto.CapitalNotice
+                        : PrivateCapitalGovernedPackageKindDto.Statement;
 
     private static IReadOnlyList<PrivateCapitalReportOutputDto> GetPublishedReportOutputs(PrivateCapitalFundEventLedgerRecordDto record)
         => record.ReportOutputs

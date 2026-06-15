@@ -873,3 +873,7 @@ contract shape, blocker vocabulary, or route-visible payloads change.
 - `docs/status/contract-compatibility-matrix.md`
 - `docs/architecture/module-map.md`
 - `docs/source/generated/source-module-index.md`
+
+## W5 private-capital operational records
+
+Shared private-capital DTOs now model first-class fund-event kinds, operational-record linkage, capital-account projections, and governed package metadata so browser, WPF, and shared services do not infer private-capital evidence posture locally.

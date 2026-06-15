@@ -102,3 +102,7 @@ shared projections over browser-only or WPF-only product logic.
 - `docs/source/generated/source-module-index.md`
 
 - Reconciliation API service projections expose statement runs, open breaks, account queue status, case summaries, and calibration KPIs for break trend, auto-match rate, T+0 closure rate, and alert thresholds shared by desktop and browser operators.
+
+## W5 private-capital operational records
+
+UI service consumers should treat shared private-capital operational-record and governed-package DTOs as read models; service adapters must not introduce live payment execution, mobile, broad LP portal, forecasting, or no-code workflow orchestration.

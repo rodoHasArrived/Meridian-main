@@ -66,6 +66,14 @@ promises:
 * Fund events should become first-class operational records: formation/closing, subscription packet,
   capital call, contribution receipt, investment, distribution, valuation, fee/expense, tax request,
   audit request, and dissolution/wind-down support.
+* W5 implementation keeps that private-capital spine inside the operational-record baseline: shared
+  contracts classify those fund-event kinds, attach retained source evidence, normalized records,
+  reconciliation posture, ledger impact, approvals, report usage, delivery evidence, and audit history,
+  project commitment/contribution/distribution/allocation/NAV/statement/evidence lineage for capital
+  accounts, and expose governed capital notice, distribution notice, statement, tax/audit support,
+  recipient-list, delivery-log, and amendment/restatement package metadata. Live payment execution,
+  broad LP self-service portal, mobile clients, forecasting engines, and no-code workflow design remain
+  outside this W5 slice unless separately promoted.
 * Capital accounts should be governed ledger projections with commitment, contribution,
   distribution, allocation, NAV, statement, and evidence lineage.
 * LP support should start as governed package production and delivery evidence: capital notices,

@@ -487,3 +487,7 @@ unavailable state rather than seeded sample numbers or plausible-looking derived
 - `src/Meridian.Ui.Shared/README.md`
 - `docs/development/wpf-implementation-notes.md`
 - `docs/source/generated/source-module-index.md`
+
+## W5 private-capital operational records
+
+The WPF Accounting configure presets now include the W5 private-capital event spine (formation/closing, subscription packet, contribution receipt, investment, valuation, fee/expense, tax request, audit request, and wind-down support) using shared treasury context and retained evidence without opening deferred portal, live-payment, mobile, forecasting, or workflow-designer lanes.

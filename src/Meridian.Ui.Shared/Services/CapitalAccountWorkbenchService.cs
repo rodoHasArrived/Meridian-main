@@ -56,6 +56,8 @@ public sealed class CapitalAccountWorkbenchService : ICapitalAccountWorkbenchSer
         var allocationRules = subledgers.SelectMany(BuildAllocationRules).ToArray();
         var statementLineage = subledgers.SelectMany(BuildStatementLineage).ToArray();
         var auditDrillThroughs = BuildAuditDrillThroughs(activity, subledgers, statementLineage);
+        var capitalAccountProjections = BuildCapitalAccountProjections(subledgers, statementLineage);
+        var governedPackages = BuildGovernedPackages(subledgers, statementLineage);
         var status = BuildStatus(investorAccounts, allocationRules, statementLineage, validationIssues);
         var selectedCurrency = normalizedCurrency ?? subledgers.FirstOrDefault()?.Currency ?? activity.Currency;
         var workbenchRoute = PrivateCapitalActivityRouteBuilder.BuildCapitalAccountWorkbenchRoute(
@@ -87,9 +89,95 @@ public sealed class CapitalAccountWorkbenchService : ICapitalAccountWorkbenchSer
             statementLineage,
             auditDrillThroughs,
             validationIssues,
+            capitalAccountProjections,
+            governedPackages,
             LiveCapabilities,
             PlannedCapabilities);
     }
+
+    private static IReadOnlyList<PrivateCapitalCapitalAccountProjectionDto> BuildCapitalAccountProjections(
+        IReadOnlyList<PrivateCapitalCapitalAccountSubledgerDto> subledgers,
+        IReadOnlyList<CapitalAccountWorkbenchStatementLineageDto> statementLineage)
+        => subledgers
+            .Select(subledger =>
+            {
+                var statements = statementLineage
+                    .Where(item => Matches(item.CapitalAccountId, subledger.CapitalAccountId) &&
+                                   Matches(item.InvestorId, subledger.InvestorId))
+                    .ToArray();
+                var evidenceLinks = Normalize(subledger.EvidenceLinks
+                    .Concat(statements.SelectMany(static item => item.EvidenceLinks))
+                    .Concat(statements.SelectMany(static item => item.RestatementEvidenceLinks)));
+                var allocation = subledger.FundEventRecords.Sum(static item => item.NetCapitalActivity) -
+                                 subledger.Contributions +
+                                 subledger.Distributions;
+
+                return new PrivateCapitalCapitalAccountProjectionDto(
+                    $"capital-account-projection:{BuildAccountKey(subledger)}".ToLowerInvariant(),
+                    subledger.CapitalAccountId,
+                    subledger.InvestorId,
+                    subledger.Currency,
+                    subledger.Subscriptions,
+                    subledger.Contributions,
+                    subledger.Distributions,
+                    allocation,
+                    subledger.EndingNetActivity,
+                    statements.Length,
+                    evidenceLinks.Count,
+                    statements.Length > 0 && statements.All(static item => item.IsReportReady) ? "StatementReady" : "StatementReview",
+                    evidenceLinks.Count > 0 ? "EvidenceLineageRetained" : "EvidenceLineageMissing",
+                    statements.Select(static item => item.ReportOutputRoute ?? item.ReportRoute).FirstOrDefault(static item => !string.IsNullOrWhiteSpace(item)),
+                    subledger.EvidenceLinks.FirstOrDefault(),
+                    evidenceLinks);
+            })
+            .ToArray();
+
+    private static IReadOnlyList<PrivateCapitalGovernedPackageDto> BuildGovernedPackages(
+        IReadOnlyList<PrivateCapitalCapitalAccountSubledgerDto> subledgers,
+        IReadOnlyList<CapitalAccountWorkbenchStatementLineageDto> statementLineage)
+    {
+        var packages = new List<PrivateCapitalGovernedPackageDto>();
+        foreach (var subledger in subledgers)
+        {
+            foreach (var statement in statementLineage.Where(item => Matches(item.CapitalAccountId, subledger.CapitalAccountId) && Matches(item.InvestorId, subledger.InvestorId)))
+            {
+                var evidenceLinks = Normalize(statement.EvidenceLinks.Concat(statement.RestatementEvidenceLinks));
+                var recipient = string.IsNullOrWhiteSpace(statement.InvestorId) ? subledger.CapitalAccountId : statement.InvestorId!;
+                var deliveryLogs = string.IsNullOrWhiteSpace(statement.RetainedManifestPath) ? Array.Empty<string>() : new[] { statement.RetainedManifestPath! };
+                var restatements = statement.HasRestatementLineage
+                    ? statement.RestatementChangedLines.Select(static item => item.LineKey).ToArray()
+                    : [];
+                packages.Add(new PrivateCapitalGovernedPackageDto(
+                    statement.ReportPackId ?? statement.ReportOutputId,
+                    ResolvePackageKind(statement.ReportOutputType),
+                    statement.DisplayName,
+                    statement.IsPublished ? "Published" : statement.IsReportReady ? "Ready" : "ReviewRequired",
+                    statement.ReportOutputRoute ?? statement.ReportRoute,
+                    1,
+                    deliveryLogs.Length,
+                    restatements.Length,
+                    evidenceLinks.Count,
+                    evidenceLinks,
+                    [recipient],
+                    deliveryLogs,
+                    restatements,
+                    statement.IsReportReady ? [] : ["Approve and publish the governed package before stakeholder delivery."]));
+            }
+        }
+
+        return packages;
+    }
+
+    private static PrivateCapitalGovernedPackageKindDto ResolvePackageKind(string reportOutputType)
+        => reportOutputType.Contains("Distribution", StringComparison.OrdinalIgnoreCase)
+            ? PrivateCapitalGovernedPackageKindDto.DistributionNotice
+            : reportOutputType.Contains("Tax", StringComparison.OrdinalIgnoreCase)
+                ? PrivateCapitalGovernedPackageKindDto.TaxSupport
+                : reportOutputType.Contains("Audit", StringComparison.OrdinalIgnoreCase)
+                    ? PrivateCapitalGovernedPackageKindDto.AuditSupport
+                    : reportOutputType.Contains("CapitalCall", StringComparison.OrdinalIgnoreCase) || reportOutputType.Contains("CapitalNotice", StringComparison.OrdinalIgnoreCase)
+                        ? PrivateCapitalGovernedPackageKindDto.CapitalNotice
+                        : PrivateCapitalGovernedPackageKindDto.Statement;
 
     private static IReadOnlyList<PrivateCapitalCapitalAccountSubledgerDto> FilterSubledgers(
         PrivateCapitalActivityProjectionDto activity,

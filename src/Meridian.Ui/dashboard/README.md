@@ -681,3 +681,7 @@ Browser extensibility route helpers expose the shared core extensibility catalog
 ## Accounting close browser surface
 
 The Accounting route reuses fund-operations ledger views and now includes trial-balance source-event and approval drill-through affordances. Keep browser-only rendering in `src/screens/accounting-screen.tsx` and shared accounting close contracts in `src/features/accounting/accountingCloseModels.ts`.
+
+## W5 private-capital operational records
+
+The browser Accounting capital-account workbench renders shared private-capital projection and governed-package counts from `CapitalAccountWorkbenchDto`; React remains a display layer and does not create portal, live payment, mobile, forecasting, or workflow-designer behavior.

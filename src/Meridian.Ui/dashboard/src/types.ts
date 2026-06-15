@@ -5335,6 +5335,64 @@ export interface PrivateCapitalFundEventLedgerRecord {
   reportOutputs: PrivateCapitalReportOutput[];
   validationIssues: AccountingConfigurationValidationIssue[];
   paymentIntentEvidence?: PrivateCapitalPaymentIntentEvidence | null;
+  operationalRecord?: PrivateCapitalOperationalRecordLinkage | null;
+}
+
+export interface PrivateCapitalOperationalRecordLinkage {
+  eventKind: string;
+  normalizedRecordStatus: string;
+  reconciliationPosture: string;
+  ledgerImpactStatus: string;
+  approvalStatus: string;
+  reportUsageStatus: string;
+  deliveryEvidenceStatus: string;
+  auditHistoryStatus: string;
+  sourceEvidenceLinkCount: number;
+  normalizedRecordCount: number;
+  reconciliationLinkCount: number;
+  ledgerImpactCount: number;
+  approvalEvidenceCount: number;
+  reportUsageCount: number;
+  deliveryEvidenceCount: number;
+  auditHistoryCount: number;
+  evidenceLinks: string[];
+  requiredActions: string[];
+}
+
+export interface PrivateCapitalCapitalAccountProjection {
+  projectionId: string;
+  capitalAccountId: string;
+  investorId?: string | null;
+  currency: string;
+  commitment: number;
+  contributions: number;
+  distributions: number;
+  allocations: number;
+  nav: number;
+  statementCount: number;
+  evidenceLineageCount: number;
+  statementStatus: string;
+  evidenceLineageStatus: string;
+  statementRoute?: string | null;
+  evidenceRoute?: string | null;
+  evidenceLinks: string[];
+}
+
+export interface PrivateCapitalGovernedPackage {
+  packageId: string;
+  packageKind: string;
+  label: string;
+  status: string;
+  route?: string | null;
+  recipientCount: number;
+  deliveryLogCount: number;
+  amendmentRestatementTrailCount: number;
+  evidenceLinkCount: number;
+  evidenceLinks: string[];
+  recipientList: string[];
+  deliveryLogs: string[];
+  amendmentRestatementTrail: string[];
+  requiredActions: string[];
 }
 
 export interface PrivateCapitalFundEventCommandCenterLane {
@@ -5347,6 +5405,10 @@ export interface PrivateCapitalFundEventCommandCenterLane {
   evidenceLinkCount: number;
   evidenceLinks: string[];
   requiredActions: string[];
+  packageKind?: string | null;
+  recipientList?: string[] | null;
+  deliveryLogs?: string[] | null;
+  amendmentRestatementTrail?: string[] | null;
 }
 
 export interface PrivateCapitalFundEventCommandCenterSupportPackage {
@@ -5357,6 +5419,10 @@ export interface PrivateCapitalFundEventCommandCenterSupportPackage {
   evidenceLinkCount: number;
   evidenceLinks: string[];
   requiredActions: string[];
+  packageKind?: string | null;
+  recipientList?: string[] | null;
+  deliveryLogs?: string[] | null;
+  amendmentRestatementTrail?: string[] | null;
 }
 
 export interface PrivateCapitalFundEventCommandCenter {
@@ -5687,6 +5753,8 @@ export interface CapitalAccountWorkbench {
   statementLineage: CapitalAccountWorkbenchStatementLineage[];
   auditDrillThroughs: CapitalAccountWorkbenchAuditDrillThrough[];
   validationIssues: AccountingConfigurationValidationIssue[];
+  capitalAccountProjections?: PrivateCapitalCapitalAccountProjection[] | null;
+  governedPackages?: PrivateCapitalGovernedPackage[] | null;
   liveCapabilities: string[];
   plannedCapabilities: string[];
 }

@@ -138,7 +138,16 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             "Management fee entry",
             "Expenses:Management Fees",
             "Assets:Cash",
-            "evidence://manual-je/management-fee-calculation")
+            "evidence://manual-je/management-fee-calculation"),
+        new(ManualJournalEntryTypeDto.FormationClosing, "Formation / closing", "Record fund formation, closing, and commitment evidence without opening an LP portal.", "Formation / closing entry", "Assets:Subscription Receivable", "Equity:Commitments", "evidence://manual-je/formation-closing"),
+        new(ManualJournalEntryTypeDto.SubscriptionPacket, "Subscription packet", "Retain subscription packet review and normalized commitment evidence.", "Subscription packet entry", "Assets:Subscription Receivable", "Equity:Commitments", "evidence://manual-je/subscription-packet"),
+        new(ManualJournalEntryTypeDto.ContributionReceipt, "Contribution receipt", "Record received contribution support after a capital call without executing live payments.", "Contribution receipt entry", "Assets:Cash", "Assets:Subscription Receivable", "evidence://manual-je/contribution-receipt"),
+        new(ManualJournalEntryTypeDto.Investment, "Investment", "Record private investment activity with retained deal and valuation support.", "Investment entry", "Assets:Investments", "Assets:Cash", "evidence://manual-je/investment-support"),
+        new(ManualJournalEntryTypeDto.Valuation, "Valuation", "Record valuation or NAV support with retained source evidence.", "Valuation entry", "Assets:Investments", "Income:Unrealized Gain Loss", "evidence://manual-je/valuation-support"),
+        new(ManualJournalEntryTypeDto.FeeExpense, "Fee / expense", "Record fund-administration fee or expense support with approval evidence.", "Fee / expense entry", "Expenses:Operating Expenses", "Assets:Cash", "evidence://manual-je/fee-expense-support"),
+        new(ManualJournalEntryTypeDto.TaxRequest, "Tax request", "Track tax support package request evidence without creating a tax filing engine.", "Tax request entry", "Expenses:Tax Support", "Liabilities:Accrued Expenses", "evidence://manual-je/tax-request"),
+        new(ManualJournalEntryTypeDto.AuditRequest, "Audit request", "Track audit support request evidence and response posture.", "Audit request entry", "Expenses:Audit Support", "Liabilities:Accrued Expenses", "evidence://manual-je/audit-request"),
+        new(ManualJournalEntryTypeDto.WindDownSupport, "Wind-down support", "Record wind-down support evidence, approvals, and report package usage.", "Wind-down support entry", "Equity:Capital", "Assets:Cash", "evidence://manual-je/wind-down-support")
     ];
 
     private readonly FundContextService _fundContextService;
@@ -1174,6 +1183,15 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             ManualJournalEntryTypeDto.Redemption => "redemption",
             ManualJournalEntryTypeDto.LpTransfer => "lp-transfer",
             ManualJournalEntryTypeDto.ManagementFee => "management-fee",
+            ManualJournalEntryTypeDto.FormationClosing => "formation-closing",
+            ManualJournalEntryTypeDto.SubscriptionPacket => "subscription-packet",
+            ManualJournalEntryTypeDto.ContributionReceipt => "contribution-receipt",
+            ManualJournalEntryTypeDto.Investment => "investment",
+            ManualJournalEntryTypeDto.Valuation => "valuation",
+            ManualJournalEntryTypeDto.FeeExpense => "fee-expense",
+            ManualJournalEntryTypeDto.TaxRequest => "tax-request",
+            ManualJournalEntryTypeDto.AuditRequest => "audit-request",
+            ManualJournalEntryTypeDto.WindDownSupport => "wind-down-support",
             _ => "manual-adjustment"
         };
 
@@ -1209,13 +1227,25 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             or ManualJournalEntryTypeDto.Subscription
             or ManualJournalEntryTypeDto.Redemption
             or ManualJournalEntryTypeDto.LpTransfer
-            or ManualJournalEntryTypeDto.ManagementFee;
+            or ManualJournalEntryTypeDto.ManagementFee
+            or ManualJournalEntryTypeDto.FormationClosing
+            or ManualJournalEntryTypeDto.SubscriptionPacket
+            or ManualJournalEntryTypeDto.ContributionReceipt
+            or ManualJournalEntryTypeDto.Investment
+            or ManualJournalEntryTypeDto.Valuation
+            or ManualJournalEntryTypeDto.FeeExpense
+            or ManualJournalEntryTypeDto.TaxRequest
+            or ManualJournalEntryTypeDto.AuditRequest
+            or ManualJournalEntryTypeDto.WindDownSupport;
 
     private static bool RequiresPaymentLinkage(ManualJournalEntryTypeDto entryType)
         => entryType is ManualJournalEntryTypeDto.CapitalCall
             or ManualJournalEntryTypeDto.Distribution
             or ManualJournalEntryTypeDto.Redemption
-            or ManualJournalEntryTypeDto.ManagementFee;
+            or ManualJournalEntryTypeDto.ManagementFee
+            or ManualJournalEntryTypeDto.ContributionReceipt
+            or ManualJournalEntryTypeDto.FeeExpense
+            or ManualJournalEntryTypeDto.WindDownSupport;
 
     private void ApplyManualJournalValidationRows(IReadOnlyList<AccountingConfigurationValidationIssueDto> issues)
     {

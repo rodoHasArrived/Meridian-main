@@ -3198,6 +3198,20 @@ function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | n
         value: workbench.auditDrillThroughCount.toLocaleString(),
         detail: `${workbench.auditDrillThroughs.filter((item) => item.isAvailable).length.toLocaleString()} available`,
         tone: workbench.auditDrillThroughs.every((item) => item.isAvailable) ? "success" : "warning"
+      },
+      {
+        id: "capital-account-projections",
+        label: "Capital projections",
+        value: (workbench.capitalAccountProjections ?? []).length.toLocaleString(),
+        detail: `${(workbench.capitalAccountProjections ?? []).reduce((sum, item) => sum + item.evidenceLineageCount, 0).toLocaleString()} evidence lineage links`,
+        tone: (workbench.capitalAccountProjections ?? []).every((item) => item.evidenceLineageCount > 0) ? "success" : "warning"
+      },
+      {
+        id: "governed-packages",
+        label: "Governed packages",
+        value: (workbench.governedPackages ?? []).length.toLocaleString(),
+        detail: `${(workbench.governedPackages ?? []).reduce((sum, item) => sum + item.deliveryLogCount, 0).toLocaleString()} delivery logs`,
+        tone: (workbench.governedPackages ?? []).every((item) => item.status === "Published" || item.status === "Ready") ? "success" : "warning"
       }
     ],
     investorAccounts: workbench.investorAccounts.map(buildCapitalAccountInvestorAccountRow),

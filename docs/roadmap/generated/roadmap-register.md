@@ -232,7 +232,7 @@ Closed 2026-06-02. Accounting record summaries with all six evidence categories 
 
 ### Current Summary
 
-Completed the first shared multi-asset operations proof lane by exposing Security Master validation/profile posture, required provider evidence, ledger classification, reconciliation signals, and close-readiness blockers through `/api/workstation/portfolio/multi-asset-coverage`, with browser Portfolio/Accounting and WPF Portfolio cockpit surfaces rendering the shared read model.
+Completed the first shared multi-asset operations proof lane by exposing Security Master validation/profile posture, required provider evidence, ledger classification, reconciliation signals, and close-readiness blockers through `/api/workstation/portfolio/multi-asset-coverage`, with browser Portfolio/Accounting and WPF Portfolio cockpit surfaces rendering the shared read model. The W5 baseline now extends private-capital and fund-administration operational records with first-class fund-event kinds, event-level source/normalization/reconciliation/ledger/approval/report/delivery/audit linkage, capital-account projections, and governed package support while live payment execution, broad LP portal, mobile, forecasting engines, and no-code workflow design remain deferred.
 
 ### Exit Criteria
 

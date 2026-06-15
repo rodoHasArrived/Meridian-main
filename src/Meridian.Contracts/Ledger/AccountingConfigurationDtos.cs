@@ -53,7 +53,47 @@ public enum ManualJournalEntryTypeDto
     Subscription = 11,
     Redemption = 12,
     LpTransfer = 13,
-    ManagementFee = 14
+    ManagementFee = 14,
+    FormationClosing = 15,
+    SubscriptionPacket = 16,
+    ContributionReceipt = 17,
+    Investment = 18,
+    Valuation = 19,
+    FeeExpense = 20,
+    TaxRequest = 21,
+    AuditRequest = 22,
+    WindDownSupport = 23
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<PrivateCapitalFundEventKindDto>))]
+public enum PrivateCapitalFundEventKindDto
+{
+    FormationClosing = 0,
+    SubscriptionPacket = 1,
+    CapitalCall = 2,
+    ContributionReceipt = 3,
+    Investment = 4,
+    Distribution = 5,
+    Valuation = 6,
+    FeeExpense = 7,
+    TaxRequest = 8,
+    AuditRequest = 9,
+    WindDownSupport = 10,
+    Other = 99
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter<PrivateCapitalGovernedPackageKindDto>))]
+public enum PrivateCapitalGovernedPackageKindDto
+{
+    CapitalNotice = 0,
+    DistributionNotice = 1,
+    Statement = 2,
+    TaxSupport = 3,
+    AuditSupport = 4,
+    RecipientList = 5,
+    DeliveryLog = 6,
+    AmendmentRestatementTrail = 7,
+    OperationalEvidence = 8
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter<PrivateCapitalFundEventLedgerReadinessDto>))]
@@ -281,6 +321,85 @@ public sealed record ManualJournalEntryDraftDto(
     string? SubmittedBy = null,
     ManualJournalEntryTypeDto EntryType = ManualJournalEntryTypeDto.General,
     TreasuryLedgerContextDto? TreasuryContext = null);
+
+
+public sealed record PrivateCapitalOperationalRecordLinkageDto(
+    PrivateCapitalFundEventKindDto EventKind,
+    string NormalizedRecordStatus,
+    string ReconciliationPosture,
+    string LedgerImpactStatus,
+    string ApprovalStatus,
+    string ReportUsageStatus,
+    string DeliveryEvidenceStatus,
+    string AuditHistoryStatus,
+    int SourceEvidenceLinkCount,
+    int NormalizedRecordCount,
+    int ReconciliationLinkCount,
+    int LedgerImpactCount,
+    int ApprovalEvidenceCount,
+    int ReportUsageCount,
+    int DeliveryEvidenceCount,
+    int AuditHistoryCount,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    IReadOnlyList<string>? RequiredActions = null)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+
+    public IReadOnlyList<string> RequiredActions { get; init; } =
+        RequiredActions ?? [];
+}
+
+public sealed record PrivateCapitalCapitalAccountProjectionDto(
+    string ProjectionId,
+    string CapitalAccountId,
+    string? InvestorId,
+    string Currency,
+    decimal Commitment,
+    decimal Contributions,
+    decimal Distributions,
+    decimal Allocations,
+    decimal Nav,
+    int StatementCount,
+    int EvidenceLineageCount,
+    string StatementStatus,
+    string EvidenceLineageStatus,
+    string? StatementRoute,
+    string? EvidenceRoute,
+    IReadOnlyList<string>? EvidenceLinks = null)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
+public sealed record PrivateCapitalGovernedPackageDto(
+    string PackageId,
+    PrivateCapitalGovernedPackageKindDto PackageKind,
+    string Label,
+    string Status,
+    string? Route,
+    int RecipientCount,
+    int DeliveryLogCount,
+    int AmendmentRestatementTrailCount,
+    int EvidenceLinkCount,
+    IReadOnlyList<string> EvidenceLinks,
+    IReadOnlyList<string>? RecipientList = null,
+    IReadOnlyList<string>? DeliveryLogs = null,
+    IReadOnlyList<string>? AmendmentRestatementTrail = null,
+    IReadOnlyList<string>? RequiredActions = null)
+{
+    public IReadOnlyList<string> RecipientList { get; init; } =
+        RecipientList ?? [];
+
+    public IReadOnlyList<string> DeliveryLogs { get; init; } =
+        DeliveryLogs ?? [];
+
+    public IReadOnlyList<string> AmendmentRestatementTrail { get; init; } =
+        AmendmentRestatementTrail ?? [];
+
+    public IReadOnlyList<string> RequiredActions { get; init; } =
+        RequiredActions ?? [];
+}
 
 public sealed record PrivateCapitalFundEventDto(
     string FundEventId,
@@ -585,7 +704,8 @@ public sealed record PrivateCapitalFundEventLedgerRecordDto(
     IReadOnlyList<PrivateCapitalReportOutputDto> ReportOutputs,
     IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
     IReadOnlyList<PrivateCapitalEvidenceCategoryDto>? EvidenceCategories = null,
-    PrivateCapitalPaymentIntentEvidenceDto? PaymentIntentEvidence = null)
+    PrivateCapitalPaymentIntentEvidenceDto? PaymentIntentEvidence = null,
+    PrivateCapitalOperationalRecordLinkageDto? OperationalRecord = null)
 {
     public IReadOnlyList<PrivateCapitalEvidenceCategoryDto> EvidenceCategories { get; init; } =
         EvidenceCategories ?? [];
@@ -600,7 +720,11 @@ public sealed record PrivateCapitalFundEventCommandCenterLaneDto(
     string? Route,
     int EvidenceLinkCount,
     IReadOnlyList<string> EvidenceLinks,
-    IReadOnlyList<string>? RequiredActions = null)
+    IReadOnlyList<string>? RequiredActions = null,
+    PrivateCapitalGovernedPackageKindDto PackageKind = PrivateCapitalGovernedPackageKindDto.OperationalEvidence,
+    IReadOnlyList<string>? RecipientList = null,
+    IReadOnlyList<string>? DeliveryLogs = null,
+    IReadOnlyList<string>? AmendmentRestatementTrail = null)
 {
     public IReadOnlyList<string> RequiredActions { get; init; } =
         RequiredActions ?? [];
@@ -613,10 +737,23 @@ public sealed record PrivateCapitalFundEventCommandCenterSupportPackageDto(
     string? Route,
     int EvidenceLinkCount,
     IReadOnlyList<string> EvidenceLinks,
-    IReadOnlyList<string>? RequiredActions = null)
+    IReadOnlyList<string>? RequiredActions = null,
+    PrivateCapitalGovernedPackageKindDto PackageKind = PrivateCapitalGovernedPackageKindDto.OperationalEvidence,
+    IReadOnlyList<string>? RecipientList = null,
+    IReadOnlyList<string>? DeliveryLogs = null,
+    IReadOnlyList<string>? AmendmentRestatementTrail = null)
 {
     public IReadOnlyList<string> RequiredActions { get; init; } =
         RequiredActions ?? [];
+
+    public IReadOnlyList<string> RecipientList { get; init; } =
+        RecipientList ?? [];
+
+    public IReadOnlyList<string> DeliveryLogs { get; init; } =
+        DeliveryLogs ?? [];
+
+    public IReadOnlyList<string> AmendmentRestatementTrail { get; init; } =
+        AmendmentRestatementTrail ?? [];
 }
 
 public sealed record PrivateCapitalFundEventCommandCenterDto(
@@ -859,9 +996,17 @@ public sealed record CapitalAccountWorkbenchDto(
     IReadOnlyList<CapitalAccountWorkbenchStatementLineageDto> StatementLineage,
     IReadOnlyList<CapitalAccountWorkbenchAuditDrillThroughDto> AuditDrillThroughs,
     IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues,
+    IReadOnlyList<PrivateCapitalCapitalAccountProjectionDto>? CapitalAccountProjections = null,
+    IReadOnlyList<PrivateCapitalGovernedPackageDto>? GovernedPackages = null,
     IReadOnlyList<string>? LiveCapabilities = null,
     IReadOnlyList<string>? PlannedCapabilities = null)
 {
+    public IReadOnlyList<PrivateCapitalCapitalAccountProjectionDto> CapitalAccountProjections { get; init; } =
+        CapitalAccountProjections ?? [];
+
+    public IReadOnlyList<PrivateCapitalGovernedPackageDto> GovernedPackages { get; init; } =
+        GovernedPackages ?? [];
+
     public IReadOnlyList<string> LiveCapabilities { get; init; } =
         LiveCapabilities ?? [];
 
