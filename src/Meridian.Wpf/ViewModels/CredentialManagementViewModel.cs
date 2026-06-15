@@ -80,6 +80,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
     private bool _isTestResultVisible;
     private string _testResultText = string.Empty;
     private string _testResultColor = "#AABCCD";
+    private bool _isRemoveConfirmPending;
 
     public ObservableCollection<CredentialEntryViewModel> Credentials { get; } = new();
     public ObservableCollection<CredentialFieldViewModel> EditFields { get; } = new();
@@ -111,6 +112,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             {
                 IsEditPanelVisible = false;
                 IsTestResultVisible = false;
+                IsRemoveConfirmPending = false;
                 ((RelayCommand)EditCredentialCommand).NotifyCanExecuteChanged();
                 ((RelayCommand)RemoveCredentialCommand).NotifyCanExecuteChanged();
                 ((RelayCommand)TestCredentialCommand).NotifyCanExecuteChanged();
@@ -148,8 +150,28 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _testResultColor, value);
     }
 
+    /// <summary>
+    /// True once the operator has clicked Remove once; clearing credentials is destructive,
+    /// so a second confirmation click is required before the removal runs.
+    /// </summary>
+    public bool IsRemoveConfirmPending
+    {
+        get => _isRemoveConfirmPending;
+        private set
+        {
+            if (SetProperty(ref _isRemoveConfirmPending, value))
+            {
+                RaisePropertyChanged(nameof(RemoveButtonText));
+            }
+        }
+    }
+
+    /// <summary>Remove-button caption that flips to a confirmation prompt while a clear is pending.</summary>
+    public string RemoveButtonText => _isRemoveConfirmPending ? "Confirm remove" : "Remove";
+
     public ICommand EditCredentialCommand { get; }
     public ICommand RemoveCredentialCommand { get; }
+    public ICommand CancelRemoveCommand { get; }
     public ICommand TestCredentialCommand { get; }
     public ICommand TestAllCredentialsCommand { get; }
     public ICommand SaveCredentialCommand { get; }
@@ -164,6 +186,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
 
         EditCredentialCommand = new RelayCommand(BeginEdit, () => SelectedCredential != null);
         RemoveCredentialCommand = new RelayCommand(() => _ = RemoveCredentialAsync(), () => SelectedCredential != null);
+        CancelRemoveCommand = new RelayCommand(CancelRemove);
         TestCredentialCommand = new RelayCommand(() => _ = TestSelectedCredentialAsync(), () => SelectedCredential != null);
         TestAllCredentialsCommand = new RelayCommand(() => _ = TestAllCredentialsAsync());
         SaveCredentialCommand = new RelayCommand(() => _ = SaveCredentialAsync());
@@ -218,6 +241,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
             return;
         EditFields.Clear();
         IsTestResultVisible = false;
+        IsRemoveConfirmPending = false;
 
         var catalog = SettingsConfigurationService.Instance.GetProviderCatalog();
         var provider = catalog.FirstOrDefault(p => p.Id == SelectedCredential.ProviderId);
@@ -350,12 +374,35 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         IsEditPanelVisible = false;
         EditFields.Clear();
         IsTestResultVisible = false;
+        IsRemoveConfirmPending = false;
+    }
+
+    private void CancelRemove()
+    {
+        if (!IsRemoveConfirmPending)
+            return;
+
+        IsRemoveConfirmPending = false;
+        IsTestResultVisible = false;
     }
 
     private async Task RemoveCredentialAsync()
     {
         if (SelectedCredential is null)
             return;
+
+        // Removing credentials blocks provider-backed workflows, so require an explicit
+        // confirmation click before the destructive call runs.
+        if (!IsRemoveConfirmPending)
+        {
+            IsRemoveConfirmPending = true;
+            IsTestResultVisible = true;
+            TestResultText = $"Removing {SelectedCredential.DisplayName} credentials blocks provider-backed workflows until they are re-entered. Click Confirm remove to proceed, or Cancel.";
+            TestResultColor = "#D29922";
+            return;
+        }
+
+        IsRemoveConfirmPending = false;
         IsBusy = true;
         try
         {
@@ -418,6 +465,7 @@ public sealed class CredentialManagementViewModel : BindableBase, IDisposable
         if (SelectedCredential is null)
             return;
 
+        IsRemoveConfirmPending = false;
         SelectedCredential.IsTesting = true;
         IsTestResultVisible = true;
         TestResultText = $"Testing {SelectedCredential.DisplayName}…";
