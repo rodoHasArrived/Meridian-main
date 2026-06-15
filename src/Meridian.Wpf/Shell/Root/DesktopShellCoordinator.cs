@@ -40,6 +40,16 @@ public sealed class DesktopShellCoordinator
             .ConfigureAwait(false);
     }
 
+    public bool NavigateToWorkspaceTab(string pageTag)
+    {
+        if (string.IsNullOrWhiteSpace(pageTag))
+        {
+            return false;
+        }
+
+        return _sessionService.NavigateToTab(pageTag);
+    }
+
     private static void ValidateWorkspaceCapabilityRegistrations(
         IShellPageRegistry pageRegistry,
         IServiceProvider serviceProvider,

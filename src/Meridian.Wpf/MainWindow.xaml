@@ -247,16 +247,110 @@
             </Border>
         </StackPanel>
 
-        <Frame x:Name="RootFrame"
-               Grid.Row="1"
-               AllowDrop="True"
-               Background="{DynamicResource ShellWindowBackgroundBrush}"
-               NavigationUIVisibility="Hidden"
-               Navigated="OnRootFrameNavigated"
-               DragEnter="OnRootFrameDragEnter"
-               DragOver="OnRootFrameDragOver"
-               DragLeave="OnRootFrameDragLeave"
-               Drop="OnRootFrameDrop" />
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Background="{StaticResource ConsoleBackgroundMediumBrush}"
+                    BorderBrush="{StaticResource ConsoleBorderBrush}"
+                    BorderThickness="0,0,0,1"
+                    Padding="10,6"
+                    AutomationProperties.Name="Open workspace tabs"
+                    AutomationProperties.AutomationId="WorkspaceTabStrip">
+                <ScrollViewer HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Disabled">
+                    <ItemsControl ItemsSource="{Binding OpenTabs}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,0,6,0"
+                                        Padding="10,6"
+                                        CornerRadius="8"
+                                        BorderThickness="1">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
+                                            <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                    <Setter Property="Background" Value="{StaticResource PremiumPanelBrush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding RequiresAttention}" Value="True">
+                                                    <Setter Property="BorderBrush" Value="{StaticResource WarningColorBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel Orientation="Horizontal"
+                                                VerticalAlignment="Center">
+                                        <Button Command="{Binding DataContext.ActivateTabCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource GhostButtonStyle}"
+                                                Padding="0"
+                                                ToolTip="{Binding WorkspaceId}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding Title}"
+                                                           FontSize="12"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           MaxWidth="180"
+                                                           VerticalAlignment="Center" />
+                                                <TextBlock Text="*"
+                                                           Margin="3,0,0,0"
+                                                           Foreground="{StaticResource WarningColorBrush}"
+                                                           VerticalAlignment="Center">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsDirty}" Value="True">
+                                                                    <Setter Property="Visibility" Value="Visible" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Command="{Binding DataContext.CloseTabCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource GhostButtonStyle}"
+                                                Padding="4,0"
+                                                Margin="6,0,0,0"
+                                                ToolTip="Close tab"
+                                                AutomationProperties.Name="Close workspace tab">
+                                            <TextBlock Text="&#xE711;"
+                                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                       FontSize="10" />
+                                        </Button>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Border>
+
+            <Frame x:Name="RootFrame"
+                   Grid.Row="1"
+                   AllowDrop="True"
+                   Background="{DynamicResource ShellWindowBackgroundBrush}"
+                   NavigationUIVisibility="Hidden"
+                   Navigated="OnRootFrameNavigated"
+                   DragEnter="OnRootFrameDragEnter"
+                   DragOver="OnRootFrameDragOver"
+                   DragLeave="OnRootFrameDragLeave"
+                   Drop="OnRootFrameDrop" />
+        </Grid>
 
         <!-- Drop overlay: shown while a file drag is in progress over the window -->
         <Grid x:Name="DropOverlay"

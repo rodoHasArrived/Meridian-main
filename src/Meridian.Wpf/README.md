@@ -278,6 +278,11 @@ the icon asset documentation maps those compatibility names to canonical Strateg
 Accounting, and Settings operator labels.
 `WorkspaceService` uses that same seam for persisted session and layout restore while keeping only
 older template aliases such as monitoring, storage-admin, and analysis-export local to the service.
+`DesktopShellSessionService` now owns first-class workspace tabs for the WPF shell: navigation
+activates an existing canonical page tab when one is already open, otherwise it opens a new tab with
+the route, title, workspace id, dirty/attention flags, and close capability needed by the main
+window tab strip. Session restore rehydrates the persisted open-page list into these tabs before the
+active page is navigated.
 Strategy shell presentation defaults also emit the canonical `strategy` workspace id while retaining
 legacy research aliases for restored workflow summaries.
 Workspace shell copy and automation names use canonical Strategy/Data shell constants instead of

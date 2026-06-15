@@ -5,6 +5,8 @@ using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Contracts;
+using Meridian.Wpf.Shell.Root;
+using Meridian.Wpf.Shell.Session;
 using Meridian.Wpf.Services;
 using WpfServices = Meridian.Wpf.Services;
 
@@ -27,6 +29,8 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
     private readonly WpfServices.WatchlistService _watchlistService;
     private readonly FixtureModeDetector _fixtureModeDetector;
     private readonly DesktopAuthenticationSession _authenticationSession;
+    private readonly DesktopShellCoordinator? _shellCoordinator;
+    private readonly DesktopShellSessionService? _shellSessionService;
     private readonly DispatcherTimer _clipboardBannerTimer;
     private readonly DispatcherTimer _startupBannerTimer;
 
@@ -55,7 +59,9 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         WpfServices.WatchlistService watchlistService,
         FixtureModeDetector fixtureModeDetector,
         DesktopAuthenticationSession authenticationSession,
-        IStatusService statusService)
+        IStatusService statusService,
+        DesktopShellCoordinator? shellCoordinator = null,
+        DesktopShellSessionService? shellSessionService = null)
     {
         _connectionService = connectionService ?? throw new ArgumentNullException(nameof(connectionService));
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
@@ -65,6 +71,8 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         _watchlistService = watchlistService ?? throw new ArgumentNullException(nameof(watchlistService));
         _fixtureModeDetector = fixtureModeDetector ?? throw new ArgumentNullException(nameof(fixtureModeDetector));
         _authenticationSession = authenticationSession ?? throw new ArgumentNullException(nameof(authenticationSession));
+        _shellCoordinator = shellCoordinator;
+        _shellSessionService = shellSessionService;
 
         StatusBar = new StatusBarViewModel(statusService, notificationService);
 
@@ -76,6 +84,8 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         AddClipboardSymbolsCommand = new AsyncRelayCommand(AddPendingSymbolsToWatchlistAsync, () => _pendingClipboardSymbols.Count > 0);
         DismissStartupBannerCommand = new RelayCommand(HideStartupBanner);
         DismissClipboardBannerCommand = new RelayCommand(HideClipboardBanner);
+        ActivateTabCommand = new RelayCommand<ShellWorkspaceTab>(ActivateTab);
+        CloseTabCommand = new RelayCommand<ShellWorkspaceTab>(CloseTab);
 
         _startupBannerTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(18) };
         _startupBannerTimer.Tick += OnStartupBannerTimerTick;
@@ -83,6 +93,11 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         _clipboardBannerTimer.Tick += OnClipboardBannerTimerTick;
 
         _fixtureModeDetector.ModeChanged += OnFixtureModeChanged;
+        if (_shellSessionService is not null)
+        {
+            _shellSessionService.TabsChanged += OnShellTabsChanged;
+        }
+
         RefreshAuthenticationState();
         UpdateFixtureModeBanner();
     }
@@ -106,6 +121,14 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
     public IRelayCommand DismissStartupBannerCommand { get; }
 
     public IRelayCommand DismissClipboardBannerCommand { get; }
+
+    public IReadOnlyList<ShellWorkspaceTab> OpenTabs => _shellSessionService?.OpenTabs ?? Array.Empty<ShellWorkspaceTab>();
+
+    public ShellWorkspaceTab? ActiveTab => _shellSessionService?.ActiveTab;
+
+    public IRelayCommand<ShellWorkspaceTab> ActivateTabCommand { get; }
+
+    public IRelayCommand<ShellWorkspaceTab> CloseTabCommand { get; }
 
     public Visibility AuthenticatedSessionVisibility
     {
@@ -432,6 +455,11 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         _clipboardBannerTimer.Stop();
         _clipboardBannerTimer.Tick -= OnClipboardBannerTimerTick;
         _fixtureModeDetector.ModeChanged -= OnFixtureModeChanged;
+        if (_shellSessionService is not null)
+        {
+            _shellSessionService.TabsChanged -= OnShellTabsChanged;
+        }
+
         StatusBar.Dispose();
     }
 
@@ -514,7 +542,26 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
             return;
         }
 
-        _navigationService.NavigateTo(pageTag);
+        if (_shellCoordinator?.NavigateToWorkspaceTab(pageTag) != true)
+        {
+            _navigationService.NavigateTo(pageTag);
+        }
+    }
+
+    private void ActivateTab(ShellWorkspaceTab? tab)
+    {
+        _shellSessionService?.ActivateTab(tab);
+    }
+
+    private void CloseTab(ShellWorkspaceTab? tab)
+    {
+        _shellSessionService?.CloseTab(tab);
+    }
+
+    private void OnShellTabsChanged(object? sender, EventArgs e)
+    {
+        RaisePropertyChanged(nameof(OpenTabs));
+        RaisePropertyChanged(nameof(ActiveTab));
     }
 
     private async Task StartCollectorAsync()
