@@ -45,7 +45,8 @@
                             <TextBlock Text="Verify Integrity" />
                         </StackPanel>
                     </Button>
-                    <Button x:Name="RefreshButton" Click="Refresh_Click" Style="{StaticResource GhostButtonStyle}">
+                    <Button x:Name="RefreshButton" Click="Refresh_Click" Style="{StaticResource GhostButtonStyle}"
+                            ToolTip="Refresh archive health" AutomationProperties.Name="Refresh archive health">
                         <TextBlock Text="&#xE72C;" FontFamily="{StaticResource SymbolThemeFontFamily}" FontSize="14" />
                     </Button>
                 </StackPanel>
