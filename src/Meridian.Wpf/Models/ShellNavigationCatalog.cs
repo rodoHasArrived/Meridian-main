@@ -176,6 +176,90 @@ public static partial class ShellNavigationCatalog
     public static string GetPageTitle(string pageTag)
         => GetPage(pageTag)?.Title ?? GetCanonicalPageTag(pageTag);
 
+    public static IReadOnlyList<ShellNavigationPanelSection> BuildNavigationPanel(
+        IEnumerable<string>? favoritePageTags = null,
+        IEnumerable<string>? recentPageTags = null)
+    {
+        var favorites = ResolveNavigationItems(favoritePageTags);
+        var recents = ResolveNavigationItems(recentPageTags);
+        var workspaceGroups = WorkspaceCapabilities
+            .Select(capability => new ShellNavigationWorkspaceGroup(
+                WorkspaceId: capability.Workspace.Id,
+                DisplayLabel: capability.Workspace.Title,
+                AutomationId: $"ShellNavigationWorkspace_{capability.Workspace.Id}",
+                Items: capability.Pages
+                    .Where(static page => !page.HideFromDefaultPalette)
+                    .OrderBy(static page => page.VisibilityTier)
+                    .ThenBy(static page => page.SectionLabel, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(static page => page.Order)
+                    .ThenBy(static page => page.Title, StringComparer.OrdinalIgnoreCase)
+                    .Select(ToNavigationPanelItem)
+                    .ToArray()))
+            .ToArray();
+
+        return
+        [
+            new ShellNavigationPanelSection(
+                ShellNavigationSectionIds.Favorites,
+                "Favorites",
+                "ShellNavigationSection_Favorites",
+                "Favorites navigation section",
+                "No favorites yet. Pin critical operator workflows here.",
+                favorites,
+                Array.Empty<ShellNavigationWorkspaceGroup>()),
+            new ShellNavigationPanelSection(
+                ShellNavigationSectionIds.Recent,
+                "Recent",
+                "ShellNavigationSection_Recent",
+                "Recent navigation section",
+                "No recent pages yet. Open a workspace to build history.",
+                recents,
+                Array.Empty<ShellNavigationWorkspaceGroup>()),
+            new ShellNavigationPanelSection(
+                ShellNavigationSectionIds.WorkspaceMenu,
+                "Workspace Menu",
+                "ShellNavigationSection_WorkspaceMenu",
+                "Workspace menu navigation section",
+                "No workspace pages are registered.",
+                Array.Empty<ShellNavigationPanelItem>(),
+                workspaceGroups)
+        ];
+    }
+
+    private static IReadOnlyList<ShellNavigationPanelItem> ResolveNavigationItems(IEnumerable<string>? pageTags)
+    {
+        if (pageTags is null)
+        {
+            return Array.Empty<ShellNavigationPanelItem>();
+        }
+
+        return pageTags
+            .Select(GetPage)
+            .Where(static page => page is not null && !page.HideFromDefaultPalette)
+            .Select(static page => page!)
+            .DistinctBy(static page => page.PageTag, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(static page => page.VisibilityTier)
+            .ThenBy(static page => page.Order)
+            .ThenBy(static page => page.Title, StringComparer.OrdinalIgnoreCase)
+            .Select(ToNavigationPanelItem)
+            .ToArray();
+    }
+
+    private static ShellNavigationPanelItem ToNavigationPanelItem(ShellPageDescriptor page)
+    {
+        var workspace = GetWorkspace(page.WorkspaceId);
+        return new ShellNavigationPanelItem(
+            PageTag: page.PageTag,
+            DisplayLabel: page.Title,
+            Description: page.Subtitle,
+            WorkspaceId: page.WorkspaceId,
+            WorkspaceLabel: workspace?.Title ?? page.WorkspaceId,
+            WorkflowLabel: page.SectionLabel,
+            Glyph: page.Glyph,
+            SearchAliases: page.Aliases,
+            SearchKeywords: page.SearchKeywords);
+    }
+
     private static IReadOnlyDictionary<string, ShellPageDescriptor> BuildPageLookup()
     {
         var lookup = new Dictionary<string, ShellPageDescriptor>(StringComparer.OrdinalIgnoreCase);
