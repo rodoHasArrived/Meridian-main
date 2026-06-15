@@ -1480,3 +1480,57 @@ function deferred<T>() {
   });
   return { promise, resolve, reject };
 }
+
+describe("provider setup state projection", () => {
+  it("surfaces disabled reasons and warning copy for saved but unverified credentials", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      providerConnections: [{
+        ...providerConnections[0],
+        credentialState: "Configured",
+        verificationState: "NotVerified",
+        environment: "paper",
+        setupState: "CredentialsSavedVerificationRequired",
+        setupStateExplanation: "Credentials saved. Verify before using this provider.",
+        routingDisabledReason: "Routing disabled until saved credentials are verified."
+      }],
+      providerRoutingConnections,
+      providerRoutingBindings: providerRoutingBindings.map((binding) => ({ ...binding, enabled: false })),
+      providerRoutingTrustSnapshots
+    });
+
+    const alpaca = vm.providerConnectionCenter.groups.flatMap((group) => group.rows).find((row) => row.providerId === "alpaca");
+    expect(alpaca?.setupStateLabel).toBe("Credentials Saved Verification Required");
+    expect(alpaca?.setupStateExplanation).toBe("Credentials saved. Verify before using this provider.");
+    expect(alpaca?.routingDisabledReason).toBe("Routing disabled until saved credentials are verified.");
+  });
+
+  it("requires live approval separately from verified live credentials", () => {
+    const vm = buildSettingsScreenViewModel({
+      session,
+      overview,
+      providerConnections: [{
+        ...providerConnections[0],
+        credentialState: "Configured",
+        verificationState: "Verified",
+        environment: "live",
+        setupState: undefined,
+        setupStateExplanation: undefined,
+        routingDisabledReason: undefined
+      }],
+      providerRoutingConnections: providerRoutingConnections.map((connection) => ({
+        ...connection,
+        connectionMode: "Live",
+        productionReady: false
+      })),
+      providerRoutingBindings,
+      providerRoutingTrustSnapshots
+    });
+
+    const alpaca = vm.providerConnectionCenter.groups.flatMap((group) => group.rows).find((row) => row.providerId === "alpaca");
+    expect(alpaca?.setupStateLabel).toBe("Live Requires Approval");
+    expect(alpaca?.setupStateExplanation).toBe("Live endpoint selected. Routing remains disabled until approval.");
+    expect(alpaca?.routingDisabledReason).toBe("Live endpoint selected. Routing remains disabled until approval.");
+  });
+});

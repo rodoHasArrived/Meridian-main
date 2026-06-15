@@ -3437,6 +3437,9 @@ export function SettingsScreen({
                         <SettingsFieldRow label="Routing bindings" value={row.routingBindingsLabel} tone="muted" />
                         <SettingsFieldRow label="Trust score" value={row.trustScoreLabel} tone={row.healthTone} />
                         <SettingsFieldRow label="Production gate" value={row.productionStateLabel} tone={row.productionStateLabel === "Production ready" ? "success" : "warning"} />
+                        <SettingsFieldRow label="Setup state" value={row.setupStateLabel} tone={row.routingDisabledReason ? "warning" : "success"} />
+                        <SettingsFieldRow label="Setup warning" value={row.setupStateExplanation} tone={row.routingDisabledReason ? "warning" : "success"} />
+                        <SettingsFieldRow label="Disabled reason" value={row.routingDisabledReason ?? "Routing available"} tone={row.routingDisabledReason ? "warning" : "success"} />
                         <SettingsFieldRow label="Affected workflows" value={row.affectedWorkflowsLabel} tone="default" />
                       </dl>
                       {inlineProviderManagementEnabled ? (
@@ -4637,6 +4640,9 @@ function ProviderInlineActionPanel({
     displayName: string;
     affectedWorkflowsLabel: string;
     productionStateLabel: string;
+    setupStateLabel: string;
+    setupStateExplanation: string;
+    routingDisabledReason: string | null;
     fallbackLabel: string;
     environmentOptions: ProviderEnvironmentOption[];
   };
@@ -4770,7 +4776,7 @@ function ProviderInlineActionPanel({
         </div>
       ) : null}
       <div className="rounded-sm border border-border/60 bg-background/40 px-2 py-2 text-xs text-muted-foreground">
-        Impact summary: {row.affectedWorkflowsLabel} · Production gate {row.productionStateLabel} · Failover {row.fallbackLabel}
+        Impact summary: {row.affectedWorkflowsLabel} · Setup {row.setupStateLabel} · {row.setupStateExplanation} · Routing {row.routingDisabledReason ?? "available"}
       </div>
       {state.testLatencyLabel ? <div className="text-xs text-muted-foreground">Latest test latency: {state.testLatencyLabel}</div> : null}
       {state.statusMessage ? (

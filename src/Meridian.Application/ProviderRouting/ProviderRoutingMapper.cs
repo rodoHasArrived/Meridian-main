@@ -222,9 +222,9 @@ internal static class ProviderRoutingConfigExtensions
                 ConnectionId: cfg.DataSources.DefaultRealTimeSourceId!,
                 Target: new ProviderBindingTarget(),
                 Priority: 100,
-                Enabled: true,
+                Enabled: false,
                 FailoverConnectionIds: ResolveLegacyFailover(cfg, cfg.DataSources.DefaultRealTimeSourceId!),
-                Notes: "Synthesized from legacy default real-time source."));
+                Notes: "Synthesized from legacy default real-time source; disabled until provider setup is verified."));
         }
 
         if (!bindings.Any(b => b.Capability == ProviderCapabilityKind.HistoricalBars) &&
@@ -236,9 +236,9 @@ internal static class ProviderRoutingConfigExtensions
                 ConnectionId: cfg.DataSources.DefaultHistoricalSourceId!,
                 Target: new ProviderBindingTarget(),
                 Priority: 100,
-                Enabled: true,
+                Enabled: false,
                 FailoverConnectionIds: ResolveLegacyFailover(cfg, cfg.DataSources.DefaultHistoricalSourceId!),
-                Notes: "Synthesized from legacy default historical source."));
+                Notes: "Synthesized from legacy default historical source; disabled until provider setup is verified."));
         }
 
         return bindings;

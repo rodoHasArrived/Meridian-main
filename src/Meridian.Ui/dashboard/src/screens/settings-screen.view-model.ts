@@ -37,6 +37,9 @@ import type {
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
+  ProviderSetupState,
+  ProviderVerificationState,
+  ProviderCredentialState,
   StrategyWorkspaceResponse,
   SessionInfo,
   SystemOverviewResponse,
@@ -816,6 +819,9 @@ export interface SettingsProviderConnectionRow {
   routingBindingsLabel: string;
   trustScoreLabel: string;
   productionStateLabel: string;
+  setupStateLabel: string;
+  setupStateExplanation: string;
+  routingDisabledReason: string | null;
   affectedWorkflowsLabel: string;
   affectedWorkflows: string[];
   recommendedAction: string;
@@ -1902,6 +1908,49 @@ function buildProviderConnectionCenter(
   };
 }
 
+
+function projectProviderSetupState({
+  credentialState,
+  verificationState,
+  environment,
+  connectionMode,
+  bindingEnabled,
+  productionReady
+}: {
+  credentialState: ProviderCredentialState;
+  verificationState: ProviderVerificationState;
+  environment?: string | null;
+  connectionMode?: string | null;
+  bindingEnabled: boolean;
+  productionReady?: boolean;
+}): { state: ProviderSetupState; explanation: string; routingDisabledReason: string | null } {
+  const isLive = environment?.toLowerCase() === "live" || connectionMode?.toLowerCase() === "live";
+  const isPaper = environment?.toLowerCase() === "paper" || connectionMode?.toLowerCase() === "paper";
+  const requiresCredentials = credentialState !== "NotRequired";
+  if (credentialState === "Missing" || credentialState === "Partial") {
+    return { state: "CredentialsMissing", explanation: "Required credential fields are missing.", routingDisabledReason: "Routing disabled until required credentials are saved." };
+  }
+  if (credentialState === "Invalid" || verificationState === "Failed") {
+    return { state: "VerificationFailed", explanation: "Credential verification failed. Re-enter credentials and verify this provider.", routingDisabledReason: "Routing disabled until provider verification succeeds." };
+  }
+  if (requiresCredentials && (verificationState === "NotVerified" || verificationState === "Stale")) {
+    return { state: "CredentialsSavedVerificationRequired", explanation: "Credentials saved. Verify before using this provider.", routingDisabledReason: "Routing disabled until saved credentials are verified." };
+  }
+  if (isLive && !productionReady) {
+    return { state: "LiveRequiresApproval", explanation: "Live endpoint selected. Routing remains disabled until approval.", routingDisabledReason: "Live endpoint selected. Routing remains disabled until approval." };
+  }
+  if (!bindingEnabled) {
+    return { state: "VerifiedRoutingDisabled", explanation: "Provider verified, but routing bindings are disabled.", routingDisabledReason: "Routing binding is disabled." };
+  }
+  if (isLive) return { state: "LiveReady", explanation: "Provider verified for live workflows.", routingDisabledReason: null };
+  if (isPaper) return { state: "ReadyPaper", explanation: "Provider verified for paper workflows.", routingDisabledReason: null };
+  return { state: "ReadyReadOnly", explanation: "Provider verified for read-only workflows.", routingDisabledReason: null };
+}
+
+function providerSetupStateLabel(state: ProviderSetupState): string {
+  return state.replace(/([a-z])([A-Z])/g, "$1 $2");
+}
+
 function buildProviderConnectionRow(
   row: ProviderConnectionRow,
   routingContext: ProviderRoutingRowContext
@@ -1914,6 +1963,14 @@ function buildProviderConnectionRow(
     : routingCapabilityLabels.length > 0
       ? routingCapabilityLabels
       : ["Workflow impact not declared"];
+  const setup = projectProviderSetupState({
+    credentialState: row.credentialState,
+    verificationState: row.verificationState,
+    environment: row.environment,
+    connectionMode: routingContext.connection?.connectionMode,
+    bindingEnabled: routingContext.bindings.some((binding) => binding.enabled),
+    productionReady: routingContext.connection?.productionReady
+  });
   return {
     providerId: row.providerId,
     rowAnchorId: row.providerId === "alpaca" ? "alpaca-provider-setup" : `provider-${row.providerId}-connection`,
@@ -1948,6 +2005,9 @@ function buildProviderConnectionRow(
     routingBindingsLabel: providerRoutingBindingsLabel(routingContext.bindings),
     trustScoreLabel: providerRoutingTrustScoreLabel(routingContext.trustSnapshot),
     productionStateLabel: providerRoutingProductionStateLabel(routingContext.connection),
+    setupStateLabel: providerSetupStateLabel(row.setupState ?? setup.state),
+    setupStateExplanation: row.setupStateExplanation ?? setup.explanation,
+    routingDisabledReason: row.routingDisabledReason ?? setup.routingDisabledReason,
     affectedWorkflowsLabel: workflows.join(", "),
     affectedWorkflows: workflows,
     recommendedAction: row.recommendedAction,
@@ -1970,6 +2030,15 @@ function buildProviderRoutingConnectionRow(
     ? connection.productionReady ? "success" : "warning"
     : "success";
   const workflows = routingCapabilityLabels.length > 0 ? routingCapabilityLabels : ["Routing capability not bound"];
+  const bindingEnabled = routingContext.bindings.some((binding) => binding.enabled);
+  const setup = projectProviderSetupState({
+    credentialState: credentialConfigured ? "Configured" : "NotRequired",
+    verificationState: connection.productionReady ? "Verified" : "NotVerified",
+    environment: credentialReferenceEnvironmentLabel(connection.credentialReference).toLowerCase(),
+    connectionMode: connection.connectionMode,
+    bindingEnabled,
+    productionReady: connection.productionReady
+  });
 
   return {
     providerId: connection.connectionId,
@@ -1999,6 +2068,9 @@ function buildProviderRoutingConnectionRow(
     routingBindingsLabel: providerRoutingBindingsLabel(routingContext.bindings),
     trustScoreLabel: providerRoutingTrustScoreLabel(routingContext.trustSnapshot),
     productionStateLabel: providerRoutingProductionStateLabel(connection),
+    setupStateLabel: providerSetupStateLabel(setup.state),
+    setupStateExplanation: setup.explanation,
+    routingDisabledReason: setup.routingDisabledReason,
     affectedWorkflowsLabel: workflows.join(", "),
     affectedWorkflows: workflows,
     recommendedAction: providerRoutingRecommendedAction(connection, routingContext),

@@ -346,8 +346,8 @@ public sealed class ProviderSetupService
                 ConnectionId: providerId,
                 Target: new ProviderBindingTarget(),
                 Priority: priority,
-                Enabled: true,
-                Notes: "Seeded by provider setup."));
+                Enabled: false,
+                Notes: "Seeded by provider setup; disabled until credentials are verified and explicit routing approval is recorded."));
             seeded.Add(bindingId);
         }
 

@@ -53,6 +53,20 @@ public enum ProviderContinuityHealthDto
 }
 
 [JsonConverter(typeof(JsonStringEnumConverter))]
+public enum ProviderSetupStateDto
+{
+    NotStarted,
+    CredentialsMissing,
+    CredentialsSavedVerificationRequired,
+    VerificationFailed,
+    VerifiedRoutingDisabled,
+    ReadyReadOnly,
+    ReadyPaper,
+    LiveRequiresApproval,
+    LiveReady
+}
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum ProviderCredentialInputKindDto
 {
     Text,
@@ -94,7 +108,10 @@ public sealed record ProviderConnectionRowDto(
     string RecommendedAction,
     string ActionHref,
     IReadOnlyList<ProviderCredentialFieldMetadataDto>? CredentialFields = null,
-    IReadOnlyList<ProviderEnvironmentOptionDto>? EnvironmentOptions = null);
+    IReadOnlyList<ProviderEnvironmentOptionDto>? EnvironmentOptions = null,
+    ProviderSetupStateDto SetupState = ProviderSetupStateDto.NotStarted,
+    string SetupStateExplanation = "Provider setup has not started.",
+    string? RoutingDisabledReason = null);
 
 public sealed record ProviderCredentialUpsertRequestDto(
     IReadOnlyDictionary<string, string?>? Credentials,
@@ -109,7 +126,9 @@ public sealed record ProviderCredentialMutationResultDto(
     ProviderContinuityHealthDto Health,
     string? MaskedKeyPreview,
     string? Environment,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings,
+    ProviderSetupStateDto SetupState = ProviderSetupStateDto.NotStarted,
+    string SetupStateExplanation = "Provider setup has not started.");
 
 public sealed record ProviderCredentialVerificationResultDto(
     string ProviderId,
@@ -119,4 +138,6 @@ public sealed record ProviderCredentialVerificationResultDto(
     DateTimeOffset? LastVerifiedAt,
     string? LastError,
     string? ExternalAccountId,
-    IReadOnlyList<string> Warnings);
+    IReadOnlyList<string> Warnings,
+    ProviderSetupStateDto SetupState = ProviderSetupStateDto.NotStarted,
+    string SetupStateExplanation = "Provider setup has not started.");

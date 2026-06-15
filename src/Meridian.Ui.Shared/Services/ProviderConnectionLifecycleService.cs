@@ -246,6 +246,12 @@ public sealed class ProviderConnectionLifecycleService
         ProviderMetrics? metrics)
     {
         var health = ResolveHealth(status, metrics);
+        var setup = ProviderSetupStateProjection.Project(
+            status.CredentialState,
+            status.VerificationState,
+            status.Environment ?? descriptor.DefaultEnvironment,
+            descriptor.DefaultEnvironment?.Equals("paper", StringComparison.OrdinalIgnoreCase) == true ? "Paper" : "ReadOnly",
+            bindingEnabled: false);
         var lastSuccessfulAt = status.LastSuccessfulAt ?? (metrics?.IsConnected == true ? metrics.Timestamp : null);
         var lastFailureAt = status.LastFailureAt ?? (metrics is { IsConnected: false, ConnectionFailures: > 0 } ? metrics.Timestamp : null);
 
@@ -269,7 +275,10 @@ public sealed class ProviderConnectionLifecycleService
             RecommendedAction: ResolveRecommendedAction(descriptor, status, health),
             ActionHref: descriptor.ResolvedActionHref,
             CredentialFields: ProviderCredentialCatalog.BuildCredentialFields(descriptor),
-            EnvironmentOptions: ProviderCredentialCatalog.BuildEnvironmentOptions(descriptor));
+            EnvironmentOptions: ProviderCredentialCatalog.BuildEnvironmentOptions(descriptor),
+            SetupState: setup.State,
+            SetupStateExplanation: setup.Explanation,
+            RoutingDisabledReason: setup.RoutingDisabledReason);
     }
 
     private static ProviderContinuityHealthDto ResolveHealth(
@@ -335,26 +344,36 @@ public sealed class ProviderConnectionLifecycleService
     private static ProviderCredentialMutationResultDto BuildMutationResult(
         ProviderCredentialStoreStatus status,
         IReadOnlyList<string> warnings)
-        => new(
-            status.ProviderId,
-            status.CredentialState,
-            status.CredentialSource,
-            status.VerificationState,
-            ResolveHealth(status, metrics: null),
-            status.MaskedKeyPreview,
-            status.Environment,
-            warnings);
+        {
+            var setup = ProviderSetupStateProjection.Project(
+                status.CredentialState,
+                status.VerificationState,
+                status.Environment,
+                null,
+                bindingEnabled: false);
+            return new ProviderCredentialMutationResultDto(
+                status.ProviderId,
+                status.CredentialState,
+                status.CredentialSource,
+                status.VerificationState,
+                ResolveHealth(status, metrics: null),
+                status.MaskedKeyPreview,
+                status.Environment,
+                warnings,
+                setup.State,
+                setup.Explanation);
+        }
 
     private static IReadOnlyList<string> BuildSaveWarnings(ProviderCredentialStoreStatus status)
     {
         var warnings = new List<string>
         {
             "Credentials were saved to the encrypted local Meridian store; user environment variables were not changed.",
-            "Rotation metadata was recorded; verify the provider before routing dependent workflows."
+            "Credentials saved. Verify before using this provider."
         };
         if (status.Environment?.Equals(AlpacaCredentialEnvironment.LiveEnvironment, StringComparison.OrdinalIgnoreCase) == true)
         {
-            warnings.Add("Live endpoint selected. Paper remains the default for new Alpaca credential setup.");
+            warnings.Add("Live endpoint selected. Routing remains disabled until approval.");
         }
 
         if (status.CredentialState is ProviderCredentialStateDto.Missing or ProviderCredentialStateDto.Partial)

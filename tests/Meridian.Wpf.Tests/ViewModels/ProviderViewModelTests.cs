@@ -121,3 +121,52 @@ public sealed class ProviderViewModelTests
             RateLimitPerHour = "100"
         };
 }
+
+public sealed class ProviderSetupStateProjectionTests
+{
+    [Fact]
+    public void Project_ShouldRequireVerificationAfterSavingCredentials()
+    {
+        var projection = Meridian.Contracts.Configuration.ProviderSetupStateProjection.Project(
+            Meridian.Contracts.Configuration.ProviderCredentialStateDto.Configured,
+            Meridian.Contracts.Configuration.ProviderVerificationStateDto.NotVerified,
+            environment: "paper",
+            connectionMode: "Paper",
+            bindingEnabled: false);
+
+        projection.State.Should().Be(Meridian.Contracts.Configuration.ProviderSetupStateDto.CredentialsSavedVerificationRequired);
+        projection.Explanation.Should().Be("Credentials saved. Verify before using this provider.");
+        projection.RoutingDisabledReason.Should().Be("Routing disabled until saved credentials are verified.");
+    }
+
+    [Fact]
+    public void Project_ShouldKeepLiveProviderDisabledUntilSeparateApproval()
+    {
+        var projection = Meridian.Contracts.Configuration.ProviderSetupStateProjection.Project(
+            Meridian.Contracts.Configuration.ProviderCredentialStateDto.Configured,
+            Meridian.Contracts.Configuration.ProviderVerificationStateDto.Verified,
+            environment: "live",
+            connectionMode: "Live",
+            bindingEnabled: true,
+            liveApproved: false);
+
+        projection.State.Should().Be(Meridian.Contracts.Configuration.ProviderSetupStateDto.LiveRequiresApproval);
+        projection.Explanation.Should().Be("Live endpoint selected. Routing remains disabled until approval.");
+        projection.RoutingDisabledReason.Should().Be("Live endpoint selected. Routing remains disabled until approval.");
+    }
+
+    [Fact]
+    public void Project_ShouldMarkPaperProviderReadyAfterVerificationAndEnabledBinding()
+    {
+        var projection = Meridian.Contracts.Configuration.ProviderSetupStateProjection.Project(
+            Meridian.Contracts.Configuration.ProviderCredentialStateDto.Configured,
+            Meridian.Contracts.Configuration.ProviderVerificationStateDto.Verified,
+            environment: "paper",
+            connectionMode: "Paper",
+            bindingEnabled: true);
+
+        projection.State.Should().Be(Meridian.Contracts.Configuration.ProviderSetupStateDto.ReadyPaper);
+        projection.Explanation.Should().Be("Provider verified for paper workflows.");
+        projection.RoutingDisabledReason.Should().BeNull();
+    }
+}

@@ -2043,6 +2043,8 @@ export interface ChiefOfStaffEvidenceBundle {
   traceArtifacts: EvidenceArtifactRef[];
   completenessStatus: EvidenceStatus;
   warnings: string[];
+  setupState?: ProviderSetupState;
+  setupStateExplanation?: string;
 }
 
 export interface ChiefOfStaffSession {
@@ -2260,6 +2262,16 @@ export type ProviderCredentialSource =
   | "NotRequired";
 export type ProviderVerificationState = "NotRequired" | "NotVerified" | "Verified" | "Failed" | "Stale";
 export type ProviderContinuityHealth = "Unknown" | "Healthy" | "Warning" | "Degraded" | "Blocked";
+export type ProviderSetupState =
+  | "NotStarted"
+  | "CredentialsMissing"
+  | "CredentialsSavedVerificationRequired"
+  | "VerificationFailed"
+  | "VerifiedRoutingDisabled"
+  | "ReadyReadOnly"
+  | "ReadyPaper"
+  | "LiveRequiresApproval"
+  | "LiveReady";
 export type ProviderReadinessStatus = "Ready" | "Review" | "Degraded" | "Blocked" | "Unknown";
 export type ProviderReadinessEvidenceKind = "Credential" | "Connection" | "Validation" | "Degradation" | "Plaid" | "Routing";
 export type ProviderCredentialInputKind = "Text" | "Password" | "Url";
@@ -2301,6 +2313,9 @@ export interface ProviderConnectionRow {
   actionHref: string;
   credentialFields?: ProviderCredentialFieldMetadata[] | null;
   environmentOptions?: ProviderEnvironmentOption[] | null;
+  setupState?: ProviderSetupState;
+  setupStateExplanation?: string;
+  routingDisabledReason?: string | null;
 }
 
 export interface ProviderCredentialUpsertRequest {
@@ -2371,6 +2386,9 @@ export interface ProviderReadinessRow {
   recoveryActions: ProviderRecoveryAction[];
   credentialFields?: ProviderCredentialFieldMetadata[] | null;
   environmentOptions?: ProviderEnvironmentOption[] | null;
+  setupState?: ProviderSetupState;
+  setupStateExplanation?: string;
+  routingDisabledReason?: string | null;
 }
 
 export interface ProviderReadinessEvidence {
