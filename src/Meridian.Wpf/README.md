@@ -78,6 +78,7 @@ Proof actions that carry shared Financial Record Explorer API hrefs map back to 
 report-line drill-throughs stay route-compatible with the browser workstation.
 
 Keep desktop support aligned with shared contracts and governance posture.
+The bottom shell status strip standardizes transient provider, validation, refresh, notification, and background-task feedback into a single severity/message/source/timestamp/action model; blocking banners and dialogs should remain reserved for operator decisions or required remediation.
 Convention-based view-model wiring is handled by `Services/ViewModelViewResolver.cs`; shell pages
 that follow the `*Page` to `*ViewModel` naming convention can receive a DI-constructed DataContext
 without page-specific registration, while pages that set their own DataContext remain authoritative.

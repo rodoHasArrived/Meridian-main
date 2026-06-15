@@ -1,7 +1,9 @@
 using System.IO;
 using System.Windows.Media;
+using CommunityToolkit.Mvvm.Input;
 using FluentAssertions;
 using Meridian.Contracts.Api;
+using Meridian.Ui.Services;
 using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Tests.ViewModels;
@@ -157,5 +159,79 @@ public sealed class StatusBarViewModelTests
 
         throw new DirectoryNotFoundException(
             $"Could not locate repository file '{relativePath}' from '{AppContext.BaseDirectory}'.");
+    }
+}
+
+public sealed class StatusStripModelTests
+{
+    [Fact]
+    public void ResolveStatusReplacement_WhenIncomingSeverityIsLowerFromDifferentSource_KeepsCurrentMessage()
+    {
+        var current = new StatusStripMessage(StatusStripSeverity.Error, "Provider offline", "Provider", DateTimeOffset.Now);
+        var incoming = new StatusStripMessage(StatusStripSeverity.Info, "Refresh complete", "Refresh", DateTimeOffset.Now.AddSeconds(1));
+
+        StatusBarViewModel.ResolveStatusReplacement(current, incoming).Should().BeSameAs(current);
+    }
+
+    [Fact]
+    public void ResolveStatusReplacement_WhenIncomingSeverityIsHigher_ReplacesCurrentMessage()
+    {
+        var current = new StatusStripMessage(StatusStripSeverity.Info, "Refresh complete", "Refresh", DateTimeOffset.Now);
+        var incoming = new StatusStripMessage(StatusStripSeverity.Warning, "Provider degraded", "Provider", DateTimeOffset.Now.AddSeconds(1));
+
+        StatusBarViewModel.ResolveStatusReplacement(current, incoming).Should().BeSameAs(incoming);
+    }
+
+    [Fact]
+    public void ClearStatus_WithMatchingSource_ClearsCurrentMessage()
+    {
+        using var viewModel = new StatusBarViewModel(new FakeStatusService(), new FakeNotificationService());
+        viewModel.ReportStatus(new StatusStripMessage(StatusStripSeverity.Warning, "Validation warning", "Validation", DateTimeOffset.Now));
+
+        viewModel.ClearStatus("Validation");
+
+        viewModel.CurrentStatus.Should().BeNull();
+        viewModel.StatusMessage.Should().Be("Ready");
+    }
+
+    [Fact]
+    public void ReportStatus_WithActionCommand_ExposesExecutableAction()
+    {
+        var executed = false;
+        using var viewModel = new StatusBarViewModel(new FakeStatusService(), new FakeNotificationService());
+        var command = new RelayCommand(() => executed = true);
+
+        viewModel.ReportStatus(new StatusStripMessage(
+            StatusStripSeverity.Warning,
+            "Credentials need validation.",
+            "Validation",
+            DateTimeOffset.Now,
+            "Validate",
+            command));
+
+        viewModel.StatusActionLabel.Should().Be("Validate");
+        viewModel.StatusActionCommand.Should().BeSameAs(command);
+
+        viewModel.StatusActionCommand!.Execute(null);
+
+        executed.Should().BeTrue();
+    }
+
+    private sealed class FakeStatusService : Meridian.Ui.Services.Contracts.IStatusService
+    {
+        public string ServiceUrl => "http://localhost";
+        public Task<StatusResponse?> GetStatusAsync(CancellationToken ct = default) => Task.FromResult<StatusResponse?>(new StatusResponse { IsConnected = true });
+        public Task<ApiResponse<StatusResponse>> GetStatusWithResponseAsync(CancellationToken ct = default) => Task.FromResult(ApiResponse<StatusResponse>.Ok(new StatusResponse { IsConnected = true }));
+        public Task<ServiceHealthResult> CheckHealthAsync(CancellationToken ct = default) => Task.FromResult(new ServiceHealthResult { IsReachable = true, IsConnected = true });
+    }
+
+    private sealed class FakeNotificationService : Meridian.Ui.Services.Contracts.INotificationService
+    {
+        public Task NotifyErrorAsync(string title, string message, Exception? exception = null) => Task.CompletedTask;
+        public Task NotifyWarningAsync(string title, string message) => Task.CompletedTask;
+        public Task NotifyAsync(string title, string message, NotificationType type = NotificationType.Info) => Task.CompletedTask;
+        public Task NotifyBackfillCompleteAsync(bool success, int symbolCount, int barsWritten, TimeSpan duration) => Task.CompletedTask;
+        public Task NotifyScheduledJobAsync(string jobName, bool started, bool success = true) => Task.CompletedTask;
+        public Task NotifyStorageWarningAsync(double usedPercent, long freeSpaceBytes) => Task.CompletedTask;
     }
 }

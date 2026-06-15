@@ -54,6 +54,49 @@
                        Foreground="{StaticResource StatusBarTextBrush}"
                        Text="{Binding ActiveBackfillCount, StringFormat='Backfills: {0}'}"/>
 
+            <Rectangle DockPanel.Dock="Left" Width="1" Margin="12,6"
+                       Fill="{StaticResource StatusBarBorderBrush}" />
+
+            <!-- Unified operator feedback strip -->
+            <Border DockPanel.Dock="Left"
+                    AutomationProperties.Name="Status strip"
+                    AutomationProperties.AutomationId="UnifiedStatusStrip"
+                    Margin="0,3,12,3"
+                    Padding="8,2"
+                    CornerRadius="3"
+                    BorderBrush="{Binding StatusSeverityBrush}"
+                    BorderThickness="1">
+                <DockPanel LastChildFill="True">
+                    <Ellipse DockPanel.Dock="Left"
+                             Width="6"
+                             Height="6"
+                             Margin="0,0,6,0"
+                             Fill="{Binding StatusSeverityBrush}"
+                             VerticalAlignment="Center" />
+                    <TextBlock DockPanel.Dock="Left"
+                               VerticalAlignment="Center"
+                               FontSize="10"
+                               FontWeight="SemiBold"
+                               Foreground="{Binding StatusSeverityBrush}"
+                               Text="{Binding StatusSource}"
+                               Margin="0,0,6,0" />
+                    <TextBlock DockPanel.Dock="Left"
+                               VerticalAlignment="Center"
+                               FontSize="11"
+                               Foreground="{StaticResource StatusBarTextBrush}"
+                               Text="{Binding StatusMessage}"
+                               TextTrimming="CharacterEllipsis"
+                               MaxWidth="520" />
+                    <Button DockPanel.Dock="Right"
+                            Content="{Binding StatusActionLabel}"
+                            Command="{Binding StatusActionCommand}"
+                            Visibility="{Binding StatusActionVisibility}"
+                            Padding="8,0"
+                            Margin="8,0,0,0"
+                            FontSize="10" />
+                </DockPanel>
+            </Border>
+
             <!-- Right side: errors badge + UTC clock -->
             <TextBlock DockPanel.Dock="Right" VerticalAlignment="Center" FontSize="11"
                        FontFamily="{StaticResource MeridianDataFontFamily}"

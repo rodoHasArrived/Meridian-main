@@ -71,7 +71,7 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         NavigateCommand = new RelayCommand<string>(Navigate);
         StartCollectorCommand = new AsyncRelayCommand(StartCollectorAsync);
         StopCollectorCommand = new AsyncRelayCommand(StopCollectorAsync);
-        RefreshCommand = new RelayCommand(() => _messagingService.Send("RefreshStatus"));
+        RefreshCommand = new RelayCommand(RefreshStatus);
         LogoutCommand = new RelayCommand(Logout, CanLogout);
         AddClipboardSymbolsCommand = new AsyncRelayCommand(AddPendingSymbolsToWatchlistAsync, () => _pendingClipboardSymbols.Count > 0);
         DismissStartupBannerCommand = new RelayCommand(HideStartupBanner);
@@ -507,6 +507,16 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
             : OfflineBrush;
     }
 
+    private void RefreshStatus()
+    {
+        _messagingService.Send("RefreshStatus");
+        StatusBar.ReportStatus(new StatusStripMessage(
+            StatusStripSeverity.Info,
+            "Refresh requested for the current shell and workspace diagnostics.",
+            "Refresh",
+            DateTimeOffset.Now));
+    }
+
     private void Navigate(string? pageTag)
     {
         if (string.IsNullOrWhiteSpace(pageTag))
@@ -528,21 +538,24 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
             }
 
             var success = await _connectionService.ConnectAsync(provider);
-            _notificationService.ShowNotification(
-                success ? "Collector Started" : "Start Failed",
-                success
-                    ? "Data collection has started successfully."
-                    : "Failed to start the data collector. Check service connection.",
-                success ? NotificationType.Success : NotificationType.Error,
-                success ? 5000 : 0);
+            var title = success ? "Collector Started" : "Start Failed";
+            var message = success
+                ? "Data collection has started successfully."
+                : "Failed to start the data collector. Check service connection.";
+            var type = success ? NotificationType.Success : NotificationType.Error;
+
+            StatusBar.ReportStatus(new StatusStripMessage(
+                success ? StatusStripSeverity.Success : StatusStripSeverity.Error,
+                message,
+                "Provider",
+                DateTimeOffset.Now));
+            _notificationService.ShowNotification(title, message, type, success ? 5000 : 0);
         }
         catch (Exception ex)
         {
-            _notificationService.ShowNotification(
-                "Start Error",
-                $"Error starting collector: {ex.Message}",
-                NotificationType.Error,
-                0);
+            var message = $"Error starting collector: {ex.Message}";
+            StatusBar.ReportStatus(new StatusStripMessage(StatusStripSeverity.Error, message, "Provider", DateTimeOffset.Now));
+            _notificationService.ShowNotification("Start Error", message, NotificationType.Error, 0);
         }
     }
 
@@ -551,6 +564,11 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         try
         {
             await _connectionService.DisconnectAsync();
+            StatusBar.ReportStatus(new StatusStripMessage(
+                StatusStripSeverity.Warning,
+                "Data collection has been stopped.",
+                "Provider",
+                DateTimeOffset.Now));
             _notificationService.ShowNotification(
                 "Collector Stopped",
                 "Data collection has been stopped.",
@@ -559,11 +577,9 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         }
         catch (Exception ex)
         {
-            _notificationService.ShowNotification(
-                "Stop Error",
-                $"Error stopping collector: {ex.Message}",
-                NotificationType.Error,
-                0);
+            var message = $"Error stopping collector: {ex.Message}";
+            StatusBar.ReportStatus(new StatusStripMessage(StatusStripSeverity.Error, message, "Provider", DateTimeOffset.Now));
+            _notificationService.ShowNotification("Stop Error", message, NotificationType.Error, 0);
         }
     }
 

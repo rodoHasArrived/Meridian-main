@@ -3,9 +3,11 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media;
 using Meridian.Contracts.Api;
 using Meridian.Ui.Services.Contracts;
+using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -15,6 +17,23 @@ namespace Meridian.Wpf.ViewModels;
 /// Displays live system state including provider health, throughput, backfills, and errors.
 /// Uses PeriodicTimer on a background thread; marshals UI updates via Dispatcher.InvokeAsync.
 /// </summary>
+public enum StatusStripSeverity
+{
+    None = 0,
+    Info = 1,
+    Success = 2,
+    Warning = 3,
+    Error = 4
+}
+
+public sealed record StatusStripMessage(
+    StatusStripSeverity Severity,
+    string Message,
+    string Source,
+    DateTimeOffset Timestamp,
+    string? ActionLabel = null,
+    ICommand? ActionCommand = null);
+
 public sealed class StatusBarViewModel : BindableBase, IDisposable
 {
     // ── Frozen brush resources (cache all static brushes) ──────────────────────
@@ -109,6 +128,47 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _errorCount, value);
     }
 
+
+    private StatusStripMessage? _currentStatus;
+    public StatusStripMessage? CurrentStatus
+    {
+        get => _currentStatus;
+        private set
+        {
+            if (SetProperty(ref _currentStatus, value))
+            {
+                RaisePropertyChanged(nameof(StatusMessage));
+                RaisePropertyChanged(nameof(StatusSource));
+                RaisePropertyChanged(nameof(StatusTimestampText));
+                RaisePropertyChanged(nameof(StatusSeverityLabel));
+                RaisePropertyChanged(nameof(StatusSeverityBrush));
+                RaisePropertyChanged(nameof(HasStatusMessage));
+                RaisePropertyChanged(nameof(StatusActionVisibility));
+                RaisePropertyChanged(nameof(StatusActionLabel));
+                RaisePropertyChanged(nameof(StatusActionCommand));
+            }
+        }
+    }
+
+    public string StatusMessage => CurrentStatus?.Message ?? "Ready";
+    public string StatusSource => CurrentStatus?.Source ?? "Shell";
+
+    public string StatusTimestampText => CurrentStatus is null
+        ? string.Empty
+        : CurrentStatus.Timestamp.ToLocalTime().ToString("HH:mm:ss", CultureInfo.InvariantCulture);
+
+    public string StatusSeverityLabel => CurrentStatus?.Severity.ToString() ?? StatusStripSeverity.None.ToString();
+
+    public Brush StatusSeverityBrush => ResolveSeverityBrush(CurrentStatus?.Severity ?? StatusStripSeverity.None);
+
+    public bool HasStatusMessage => CurrentStatus is not null;
+
+    public Visibility StatusActionVisibility => CurrentStatus?.ActionCommand is not null && !string.IsNullOrWhiteSpace(CurrentStatus.ActionLabel)
+        ? Visibility.Visible
+        : Visibility.Collapsed;
+    public string StatusActionLabel => CurrentStatus?.ActionLabel ?? string.Empty;
+    public ICommand? StatusActionCommand => CurrentStatus?.ActionCommand;
+
     private string _utcTime = DateTime.UtcNow.ToString("HH:mm:ss") + " UTC";
     public string UtcTime
     {
@@ -147,6 +207,11 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
         _statusDotBrush = _greenBrush;
         _errorBadgeBrush = _transparentBrush;
         _pipelineQueueBrush = _mutedBrush;
+
+        if (_notificationService is NotificationServiceBase notificationEvents)
+        {
+            notificationEvents.NotificationReceived += OnNotificationReceived;
+        }
     }
 
     /// <summary>
@@ -226,6 +291,7 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
             var (backendStatus, dotBrush) = DeriveBackendStatus(status, dropRate);
             var toolTip = BuildToolTip(backendStatus, throughput, dropRate, droppedTotal, pipelineQueueLabel);
             var totalNewDrops = newDrops > int.MaxValue ? int.MaxValue : (int)newDrops;
+            var stripSeverity = DeriveStatusSeverity(status, dropRate, totalNewDrops);
             var errorBadgeBrush = totalNewDrops > 0 ? _redBrush : _transparentBrush;
 
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
@@ -239,6 +305,11 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
                 HasErrors = totalNewDrops > 0;
                 ErrorBadgeBrush = errorBadgeBrush;
                 StatusToolTip = toolTip;
+                ReportStatus(new StatusStripMessage(
+                    stripSeverity,
+                    BuildMetricStatusMessage(backendStatus, totalNewDrops, pipelineQueueLabel),
+                    "Status",
+                    DateTimeOffset.Now));
             });
         }
         catch (Exception)
@@ -295,6 +366,90 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
             ? "Queue: n/a"
             : string.Create(CultureInfo.InvariantCulture, $"Queue: {utilization.Value * 100.0:0}%");
     }
+
+    public void ReportStatus(StatusStripMessage message)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+
+        if (message.Severity == StatusStripSeverity.None || string.IsNullOrWhiteSpace(message.Message))
+        {
+            ClearStatus(message.Source);
+            return;
+        }
+
+        CurrentStatus = ResolveStatusReplacement(CurrentStatus, message);
+    }
+
+    public void ClearStatus(string? source = null)
+    {
+        if (source is null || CurrentStatus is null || string.Equals(CurrentStatus.Source, source, StringComparison.OrdinalIgnoreCase))
+        {
+            CurrentStatus = null;
+        }
+    }
+
+    internal static StatusStripMessage ResolveStatusReplacement(StatusStripMessage? current, StatusStripMessage incoming)
+    {
+        if (current is null)
+        {
+            return incoming;
+        }
+
+        return incoming.Severity >= current.Severity
+            || string.Equals(incoming.Source, current.Source, StringComparison.OrdinalIgnoreCase)
+            || incoming.Timestamp >= current.Timestamp.AddSeconds(30)
+            ? incoming
+            : current;
+    }
+
+    internal static StatusStripSeverity DeriveStatusSeverity(StatusResponse? status, double dropRate, int totalNewDrops)
+    {
+        if (status is null || status.IsConnected == false)
+        {
+            return StatusStripSeverity.Error;
+        }
+
+        if (totalNewDrops > 0 || dropRate > DegradedDropRateThreshold)
+        {
+            return StatusStripSeverity.Warning;
+        }
+
+        return StatusStripSeverity.Success;
+    }
+
+    internal static string BuildMetricStatusMessage(string backendStatus, int totalNewDrops, string pipelineQueueLabel)
+    {
+        if (totalNewDrops > 0)
+        {
+            return $"{backendStatus}; {totalNewDrops:N0} dropped event(s) since the last status refresh.";
+        }
+
+        return $"{backendStatus}; {pipelineQueueLabel}.";
+    }
+
+    private void OnNotificationReceived(object? sender, NotificationEventArgs e)
+        => ReportStatus(new StatusStripMessage(
+            MapNotificationSeverity(e.Type),
+            string.IsNullOrWhiteSpace(e.Message) ? e.Title : e.Message,
+            string.IsNullOrWhiteSpace(e.Title) ? "Notification" : e.Title,
+            DateTimeOffset.Now));
+
+    internal static StatusStripSeverity MapNotificationSeverity(NotificationType type) => type switch
+    {
+        NotificationType.Error => StatusStripSeverity.Error,
+        NotificationType.Warning => StatusStripSeverity.Warning,
+        NotificationType.Success => StatusStripSeverity.Success,
+        _ => StatusStripSeverity.Info
+    };
+
+    private static Brush ResolveSeverityBrush(StatusStripSeverity severity) => severity switch
+    {
+        StatusStripSeverity.Error => _redBrush,
+        StatusStripSeverity.Warning => _amberBrush,
+        StatusStripSeverity.Success => _greenBrush,
+        StatusStripSeverity.Info => _mutedBrush,
+        _ => _mutedBrush
+    };
 
     internal static Brush DerivePipelineQueueBrush(PipelineData? pipeline)
     {
@@ -380,6 +535,11 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
 
     public void Dispose()
     {
+        if (_notificationService is NotificationServiceBase notificationEvents)
+        {
+            notificationEvents.NotificationReceived -= OnNotificationReceived;
+        }
+
         _cts?.Cancel();
         _cts?.Dispose();
         _timer?.Dispose();
