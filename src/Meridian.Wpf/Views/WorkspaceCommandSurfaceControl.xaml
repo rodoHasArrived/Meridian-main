@@ -1,6 +1,7 @@
 <UserControl x:Class="Meridian.Wpf.Views.WorkspaceCommandSurfaceControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:workstationControls="clr-namespace:Meridian.Wpf.Workstation.Controls"
              x:Name="Root"
              AutomationProperties.AutomationId="{Binding SurfaceAutomationId, RelativeSource={RelativeSource Self}}"
              AutomationProperties.Name="Workspace Command Surface">
@@ -221,6 +222,9 @@
                     </WrapPanel>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <workstationControls:ContextCommandToolbarControl Commands="{Binding ActiveWorkspaceContextCommands}"
+                                                                           Visibility="{Binding ActiveWorkspaceContextCommandsVisibility}"
+                                                                           ToolbarAutomationId="ActiveWorkspaceContextCommandToolbar" />
                         <Button Style="{StaticResource SecondaryButtonStyle}"
                                 ToolTip="Choose operating context"
                                 Margin="0,0,8,0"

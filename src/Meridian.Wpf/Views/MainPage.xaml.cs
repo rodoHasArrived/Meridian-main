@@ -54,6 +54,17 @@ public partial class MainPage : Page
     private void OnContentFrameNavigated(object sender, WpfNavigationEventArgs e)
     {
         _viewModel.SyncNavigationState();
+        _viewModel.SetActiveWorkspaceContextCommandSource(ResolveContextCommandSource(e.Content));
+    }
+
+    private static object? ResolveContextCommandSource(object? content)
+    {
+        if (content is FrameworkElement { DataContext: { } dataContext })
+        {
+            return dataContext;
+        }
+
+        return content;
     }
 
     private bool TryHandleCommandPaletteDirectionalKey(Key key)

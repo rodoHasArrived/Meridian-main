@@ -18,6 +18,7 @@ using Meridian.Wpf.Tests.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
+using Meridian.Wpf.Workstation.Commands;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit.Sdk;
 
@@ -77,6 +78,84 @@ public sealed class MainShellViewModelTests
             fixtureModeDetector,
             authenticationSession ?? DesktopAuthenticationSessionTests.CreateSession("Development"),
             Substitute.For<IStatusService>());
+    }
+
+
+    [Fact]
+    public void ActiveWorkspaceContextCommands_WhenProviderIsActivated_PublishesVisibleCommands()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+            var command = new ContextCommandDescriptor
+            {
+                Label = "Inspect Run",
+                IconGlyph = "\uE8A5",
+                Command = new RelayCommand(() => { }),
+                Importance = ContextCommandImportance.Primary,
+                AutomationId = "InspectRunContextCommand"
+            };
+            var provider = new TestContextCommandProvider(command);
+
+            vm.SetActiveWorkspaceContextCommandSource(provider);
+
+            vm.ActiveWorkspaceContextCommands.Should().ContainSingle().Which.Should().BeSameAs(command);
+            vm.ActiveWorkspaceContextCommandsVisibility.Should().Be(Visibility.Visible);
+        });
+    }
+
+    [Fact]
+    public void ActiveWorkspaceContextCommands_WhenProviderChanges_ReplacesPreviousWorkspaceCommands()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+            var first = new ContextCommandDescriptor { Label = "Open Detail", Command = new RelayCommand(() => { }) };
+            var second = new ContextCommandDescriptor { Label = "Open Ledger", Command = new RelayCommand(() => { }) };
+
+            vm.SetActiveWorkspaceContextCommandSource(new TestContextCommandProvider(first));
+            vm.SetActiveWorkspaceContextCommandSource(new TestContextCommandProvider(second));
+
+            vm.ActiveWorkspaceContextCommands.Should().ContainSingle().Which.Label.Should().Be("Open Ledger");
+            vm.ActiveWorkspaceContextCommands.Should().NotContain(first);
+        });
+    }
+
+    [Fact]
+    public void ActiveWorkspaceContextCommands_WhenSourceDoesNotPublishCommands_ClearsToolbar()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+            vm.SetActiveWorkspaceContextCommandSource(new TestContextCommandProvider(
+                new ContextCommandDescriptor { Label = "Refresh", Command = new RelayCommand(() => { }) }));
+
+            vm.SetActiveWorkspaceContextCommandSource(new object());
+
+            vm.ActiveWorkspaceContextCommands.Should().BeEmpty();
+            vm.ActiveWorkspaceContextCommandsVisibility.Should().Be(Visibility.Collapsed);
+        });
+    }
+
+    [Fact]
+    public void ContextCommandDescriptor_DisabledAndBusyStates_AreViewModelOwned()
+    {
+        var descriptor = new ContextCommandDescriptor
+        {
+            Label = "Compare Runs",
+            AutomationId = "CompareRunsContextCommand",
+            DisabledReason = "Select two runs to compare.",
+            IsVisible = false
+        };
+
+        descriptor.EffectiveAutomationId.Should().Be("CompareRunsContextCommand");
+        descriptor.EffectiveToolTip.Should().Be("Select two runs to compare.");
+        descriptor.IsVisible.Should().BeFalse();
+
+        descriptor.IsBusy = true;
+        descriptor.BusyText = "Comparing selected runs…";
+
+        descriptor.EffectiveToolTip.Should().Be("Comparing selected runs…");
     }
 
     [Fact]
@@ -1470,5 +1549,19 @@ public sealed class MainShellViewModelTests
 
             return Task.FromResult(_inbox);
         }
+    }
+
+
+    private sealed class TestContextCommandProvider : IWorkspaceContextCommandProvider
+    {
+        private readonly ObservableCollection<ContextCommandDescriptor> _commands;
+
+        public TestContextCommandProvider(params ContextCommandDescriptor[] commands)
+        {
+            _commands = new ObservableCollection<ContextCommandDescriptor>(commands);
+            ContextCommands = new ReadOnlyObservableCollection<ContextCommandDescriptor>(_commands);
+        }
+
+        public ReadOnlyObservableCollection<ContextCommandDescriptor> ContextCommands { get; }
     }
 }

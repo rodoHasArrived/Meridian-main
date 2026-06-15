@@ -12,6 +12,7 @@ using Meridian.Wpf.Shell.Refresh;
 using Meridian.Wpf.Shell.Services;
 using Meridian.Wpf.Shell.ViewModels;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Workstation.Commands;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.ViewModels;
@@ -41,6 +42,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     private readonly ShellRefreshCoordinator _shellRefreshCoordinator;
     private readonly MainPageNavigationSectionViewModel _navigationSection = new();
     private readonly MainPageChromeSectionViewModel _chromeSection = new();
+    private readonly ObservableCollection<ContextCommandDescriptor> _activeWorkspaceContextCommands = [];
+    private readonly ReadOnlyObservableCollection<ContextCommandDescriptor> _activeWorkspaceContextCommandsView;
 
     private bool _suppressNavigation;
     private bool _suppressOperatingContextSelection;
@@ -90,6 +93,7 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
         _operatorInboxPresentation = operatorInboxPresentation ?? new OperatorInboxViewModel();
         _workflowSummaryStrip = workflowSummaryStrip ?? new WorkflowSummaryStripViewModel();
         _shellRefreshCoordinator = shellRefreshCoordinator ?? new ShellRefreshCoordinator();
+        _activeWorkspaceContextCommandsView = new ReadOnlyObservableCollection<ContextCommandDescriptor>(_activeWorkspaceContextCommands);
 
         SplitPane = new SplitPaneViewModel(shellRouteRegistry);
         PaneHost = SplitPane;
@@ -176,6 +180,10 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     public ReadOnlyObservableCollection<PrimaryOperatorWorkflowStep> PrimaryOperatorWorkflowSteps => WorkflowSection.PrimaryOperatorWorkflowSteps;
 
     public ReadOnlyObservableCollection<BoundedWindowMode> WindowModes => _navigationSection.WindowModes;
+
+    public ReadOnlyObservableCollection<ContextCommandDescriptor> ActiveWorkspaceContextCommands => _activeWorkspaceContextCommandsView;
+
+    public Visibility ActiveWorkspaceContextCommandsVisibility => _activeWorkspaceContextCommands.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
     internal MainPageNavigationSectionViewModel NavigationSection => _navigationSection;
 
@@ -668,6 +676,22 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
     {
         BackButtonVisibility = _navigationService.CanGoBack ? Visibility.Visible : Visibility.Collapsed;
         GoBackCommand.NotifyCanExecuteChanged();
+    }
+
+
+    public void SetActiveWorkspaceContextCommandSource(object? source)
+    {
+        _activeWorkspaceContextCommands.Clear();
+
+        if (source is IWorkspaceContextCommandProvider provider)
+        {
+            foreach (var command in provider.ContextCommands)
+            {
+                _activeWorkspaceContextCommands.Add(command);
+            }
+        }
+
+        OnPropertyChanged(nameof(ActiveWorkspaceContextCommandsVisibility));
     }
 
     public void Dispose()
