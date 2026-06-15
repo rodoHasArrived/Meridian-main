@@ -2436,17 +2436,29 @@ The standard depth model is:
 | 2 | Side drawer or proof panel | Inspect a selected row without leaving the grid. |
 | 3 | Full record page | Review approvals, evidence, history, related records, and protected actions. |
 
-The shared explorer shell should include:
+The shared explorer shell should follow a standard explorer contract so operators can move across
+financial record types without relearning scope, proof, status, or action semantics:
 
-* scope bar for tenant, fund, legal entity, portfolio, account, book, period, currency, and as-of date where applicable
-* saved-view selector surfaced near the top, not hidden inside advanced filters
-* visible basic filters plus an advanced filter drawer
-* applied filter chips that can be removed quickly
-* summary strip for totals, counts, exceptions, unreconciled items, blockers, stale values, and missing evidence
-* dense but configurable grid with default and optional columns
-* column chooser, grouping, export policy, row actions, and saved column layouts
-* right-side record drawer with action links into evidence, reconciliation, ledger, report usage, and audit trail
-* full record page with record header, proof ribbon, summary cards, tabs, proof panel, audit timeline, Used In, Impacts, and Record Graph sections
+* **Scope bar dimensions:** tenant, fund, legal entity, portfolio, account, book, period, currency,
+  and as-of date. Explorers can hide dimensions that are not meaningful for a record type, but they
+  should not rename them or create explorer-specific substitutes.
+* **Shared states:** evidence missing, unreconciled, approved, blocked, stale, restated, report-used,
+  and close-impacting. These states must use the same definitions, icons, tooltips, filtering
+  semantics, proof-ribbon summaries, and audit vocabulary across browser and WPF surfaces.
+* **Standard actions:** inspect proof, open full record, compare versions, export allowed view,
+  attach evidence, assign exception, and request approval. Explorer-specific actions can extend this
+  set, provided that the common actions remain visible and permission-aware.
+* **Required subcomponents:** `ExplorerShell`, `ScopeBar`, `SavedViewSelector`, `FilterBar`,
+  `ExplorerGrid`, `RecordDrawer`, `ProofRibbon`, `ProofPanel`, `ColumnChooser`, and
+  `AuditTimeline`. These components are the minimum reusable contract for a Financial Record
+  Explorer and should be backed by shared filters, saved views, record identifiers, evidence links,
+  approval state, audit events, and read models.
+* **Baseline shell affordances:** saved-view selector surfaced near the top, visible basic filters
+  plus an advanced filter drawer, removable applied filter chips, a summary strip for totals and
+  exception counts, dense configurable grids with default and optional columns, grouping, export
+  policy, row actions, saved column layouts, right-side record drawers, and full record pages with
+  record headers, proof ribbons, summary cards, tabs, proof panels, audit timelines, Used In,
+  Impacts, and Record Graph sections.
 
 Record Graph does not need to be visually elaborate in the first slice. A structured tree is enough
 when it clearly shows how a fund event, journal, position, instrument, cash flow, report line,
@@ -2459,7 +2471,8 @@ review. Both surfaces must share filters, saved views, status definitions, proof
 record identifiers, audit events, evidence links, approval states, and read models. Presentation can
 differ; business state cannot.
 
-The implementation sequence should stay conservative:
+The implementation sequence should stay conservative and preserve a clear initial explorer
+sequence:
 
 1. Build the reusable explorer framework: `ExplorerShell`, `ScopeBar`, `SavedViewSelector`,
    `FilterBar`, `ExplorerGrid`, `RecordDrawer`, `ProofRibbon`, `ProofPanel`, `ColumnChooser`, and
@@ -2471,8 +2484,11 @@ The implementation sequence should stay conservative:
 4. Build Security & Instrument Explorer third with instrument list, identifier map, term status,
    source conflicts, held positions, evidence links, valuation status, expected cash flows, and
    accounting classification.
-5. Connect all three through a Proof Trail that can move from Instrument to Position, Transaction,
-   Reconciliation, Journal, Report Line, Evidence, and Audit Event.
+5. Build Report-Line Provenance Explorer fourth so governed reporting can trace each report line
+   through calculation inputs, approved source records, ledger impact, evidence packets, versions,
+   approvals, restatements, and audit events.
+6. Connect the first four explorers through a Proof Trail that can move from Instrument to Position,
+   Transaction, Reconciliation, Journal, Report Line, Evidence, and Audit Event.
 
 This is a planned productization target, not a completion claim. The roadmap item
 `W5X-FREX-001` tracks the delivery slice that turns the existing accounting-record and
