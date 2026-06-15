@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { TradingScreen } from "@/screens/trading-screen";
 import * as api from "@/lib/api";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
+import { expectNoAxeViolations } from "@/test/axe";
 import type { PaperSessionSummary, TradingWorkspaceResponse } from "@/types";
 
 vi.mock("@/lib/api", async () => {
@@ -326,6 +327,13 @@ async function openStrategyControls(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("TradingScreen", () => {
+  it("has no basic accessibility violations", async () => {
+    const { container } = await renderTradingScreen();
+
+    // Pre-existing debt: a cockpit table emits an empty <th> for its row-header column.
+    await expectNoAxeViolations(container, { knownIssues: ["empty-table-header"] });
+  });
+
   it("renders a VM-owned pending state while the cockpit data loads", async () => {
     await renderTradingScreen(null, "/trading/positions");
 

@@ -9,6 +9,8 @@ import {
 } from "@/lib/api";
 import { OperationsContinuityScreen } from "@/screens/operations-continuity-screen";
 import { OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID } from "@/screens/operations-continuity-screen.view-model";
+import { expectNoAxeViolations } from "@/test/axe";
+import { waitForAsyncEffects } from "@/test/render";
 import type {
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
@@ -764,6 +766,13 @@ const closeCockpit: PrivateCapitalCloseCockpit = {
 };
 
 describe("OperationsContinuityScreen", () => {
+  it("has no basic accessibility violations", async () => {
+    const { container } = renderScreen();
+    await waitForAsyncEffects();
+
+    await expectNoAxeViolations(container);
+  });
+
   it("renders workflow list, detail gates, blockers, timeline, and enabled next action", async () => {
     renderScreen();
 

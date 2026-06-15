@@ -4,6 +4,7 @@ import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
 import { AccountingScreen } from "@/screens/accounting-screen";
 import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
+import { expectNoAxeViolations } from "@/test/axe";
 import type {
   CorporateAction,
   AccountingWorkspaceResponse,
@@ -1363,6 +1364,16 @@ async function renderAccountingScreen(
 }
 
 describe("AccountingScreen", () => {
+  it("has no basic accessibility violations", async () => {
+    const { container } = await renderAccountingScreen();
+
+    // Pre-existing debt: grid-based <dl> layout splits dt/dd grouping, and the
+    // shared dense-row detail <aside> nests a complementary landmark.
+    await expectNoAxeViolations(container, {
+      knownIssues: ["definition-list", "landmark-complementary-is-top-level"]
+    });
+  });
+
   it("renders actionable Accounting loading work while workstation payloads bootstrap", async () => {
     renderWithRouter(<AccountingScreen data={null} />, { initialEntries: ["/accounting/reconciliation"] });
     await waitForAsyncEffects();

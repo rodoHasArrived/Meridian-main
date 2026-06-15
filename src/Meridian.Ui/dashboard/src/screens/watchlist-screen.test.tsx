@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { ApiError } from "@/lib/api-errors";
 import { WatchlistScreen } from "@/screens/watchlist-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
+import { expectNoAxeViolations } from "@/test/axe";
 import * as api from "@/lib/api";
 import type { QuotesSnapshotResponse, SymbolRecord, SymbolStatistics } from "@/types";
 
@@ -130,6 +131,14 @@ describe("WatchlistScreen", () => {
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
+  });
+
+  it("has no basic accessibility violations", async () => {
+    const { container } = renderWithRouter(<WatchlistScreen />, { initialEntries: ["/data/watchlist"] });
+    await screen.findByRole("treegrid", { name: /subscribed symbol watchlist/i });
+    await waitForAsyncEffects();
+
+    await expectNoAxeViolations(container);
   });
 
   it("renders sorted rows through the dense table with live quote labels", async () => {

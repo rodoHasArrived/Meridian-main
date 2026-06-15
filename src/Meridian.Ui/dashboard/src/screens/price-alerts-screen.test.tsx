@@ -4,6 +4,7 @@ import { PriceAlertsProvider } from "@/lib/price-alerts/service";
 import type { StorageLike } from "@/lib/price-alerts/storage";
 import { PRICE_ALERT_STORAGE_KEY, type PriceAlert, type PriceAlertStorageState, type PriceAlertTrigger } from "@/lib/price-alerts/types";
 import { renderWithRouter } from "@/test/render";
+import { expectNoAxeViolations } from "@/test/axe";
 import { PriceAlertsScreen } from "./price-alerts-screen";
 
 class MemoryStorage implements StorageLike {
@@ -91,6 +92,20 @@ describe("PriceAlertsScreen", () => {
   afterEach(() => {
     cleanup();
     delete (globalThis as { Notification?: unknown }).Notification;
+  });
+
+  it("has no basic accessibility violations", async () => {
+    const storage = seedStorage({
+      version: 1,
+      alerts: [
+        buildAlert({ id: "a-1", symbol: "AAPL", threshold: 200, enabled: false }),
+        buildAlert({ id: "a-2", symbol: "MSFT", threshold: 350, enabled: true })
+      ],
+      triggers: []
+    });
+    const { container } = renderScreen(storage);
+
+    await expectNoAxeViolations(container);
   });
 
   it("renders the empty state and form when no alerts exist", () => {

@@ -5,6 +5,8 @@ import { ApiError } from "@/lib/api-errors";
 import * as coveredCallApi from "@/lib/api/covered-call";
 import { CoveredCallScreen } from "@/screens/covered-call-screen";
 import { COVERED_CALL_CHAIN_DETAIL_PANEL_ID } from "@/screens/covered-call-screen.view-model";
+import { expectNoAxeViolations } from "@/test/axe";
+import { waitForAsyncEffects } from "@/test/render";
 import type { CoveredCallChainPreview, CoveredCallRunHandle, CoveredCallRunResult, CoveredCallRunSummary } from "@/types/covered-call";
 
 vi.mock("@/lib/api/covered-call", () => ({
@@ -191,6 +193,13 @@ describe("CoveredCallScreen", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  it("has no basic accessibility violations", async () => {
+    const { container } = renderCoveredCallScreen();
+    await waitForAsyncEffects();
+
+    await expectNoAxeViolations(container);
   });
 
   it("renders chain preview rows with keyboard selection and a linked detail panel", async () => {

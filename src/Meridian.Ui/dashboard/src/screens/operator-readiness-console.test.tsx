@@ -3,6 +3,7 @@ import { afterEach, vi } from "vitest";
 import * as api from "@/lib/api";
 import { OperatorReadinessConsole } from "@/screens/operator-readiness-console";
 import { renderWithRouter } from "@/test/render";
+import { expectNoAxeViolations } from "@/test/axe";
 import type { OperatorInbox, OperatorWorkItem, TradingWorkspaceResponse } from "@/types";
 
 const inbox: OperatorInbox = {
@@ -140,6 +141,19 @@ const scopedTrading: TradingWorkspaceResponse = {
 describe("OperatorReadinessConsole", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it("has no basic accessibility violations", async () => {
+    vi.spyOn(api, "getOperatorInbox").mockResolvedValueOnce(inbox);
+
+    const { container } = renderWithRouter(
+      <OperatorReadinessConsole strategy={null} trading={null} data={null} accounting={null} reporting={null} />,
+      { initialEntries: ["/trading/readiness"] }
+    );
+    await screen.findByRole("treegrid", { name: "Prioritized operator work items table" });
+
+    // Pre-existing debt: work-item list items use <article role="listitem">.
+    await expectNoAxeViolations(container, { knownIssues: ["aria-allowed-role"] });
   });
 
   it("renders operator inbox work-item routes as accessible next actions", async () => {

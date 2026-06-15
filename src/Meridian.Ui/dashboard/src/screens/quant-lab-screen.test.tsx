@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 
 import { QuantLabScreen } from "@/screens/quant-lab-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
+import { expectNoAxeViolations } from "@/test/axe";
 import * as api from "@/lib/api";
 import type { QuantParametersResponse, QuantRunResponse, QuantTemplatesResponse } from "@/types";
 
@@ -122,6 +123,13 @@ describe("QuantLabScreen", () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
+  });
+
+  it("has no basic accessibility violations", async () => {
+    const { container } = renderWithRouter(<QuantLabScreen />);
+    await waitForAsyncEffects();
+
+    await expectNoAxeViolations(container);
   });
 
   it("loads templates and lets the user pick one", async () => {

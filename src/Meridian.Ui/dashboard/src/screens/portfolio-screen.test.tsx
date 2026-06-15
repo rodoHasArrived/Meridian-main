@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
+import { expectNoAxeViolations } from "@/test/axe";
 import { PortfolioScreen } from "@/screens/portfolio-screen";
 import * as api from "@/lib/api";
 import type {
@@ -363,6 +364,18 @@ describe("PortfolioScreen", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it("has no basic accessibility violations", async () => {
+    const { container } = await renderPortfolioScreen(
+      <PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />
+    );
+
+    // Pre-existing debt: the shared dense-row detail <aside> nests a
+    // complementary landmark, and grid-based <dl> layout splits dt/dd grouping.
+    await expectNoAxeViolations(container, {
+      knownIssues: ["landmark-complementary-is-top-level", "definition-list"]
+    });
   });
 
   it("renders position table with trading data", async () => {
