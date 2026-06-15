@@ -134,7 +134,7 @@ public sealed class ProviderCredentialStoreTests : IDisposable
 
         descriptor.Should().NotBeNull();
         descriptor!.ProviderId.Should().Be("plaid");
-        descriptor.ResolvedActionHref.Should().Be("/settings#plaid-provider-setup");
+        ProviderSetupExperienceCatalog.Find(descriptor.ProviderId).ResolvedActionHref.Should().Be("/settings#plaid-provider-setup");
         status.Environment.Should().Be(expectedEnvironment);
         status.CredentialState.Should().Be(ProviderCredentialStateDto.Configured);
     }
@@ -164,7 +164,7 @@ public sealed class ProviderCredentialStoreTests : IDisposable
 
         descriptor.Should().NotBeNull();
         descriptor!.RequiresCredentials.Should().BeTrue();
-        descriptor.ResolvedActionHref.Should().Be("/settings#provider-quickbooks-connection");
+        ProviderSetupExperienceCatalog.Find(descriptor.ProviderId).ResolvedActionHref.Should().Be("/settings#provider-quickbooks-connection");
         status.Environment.Should().Be("production");
         status.CredentialState.Should().Be(ProviderCredentialStateDto.Configured);
         status.MissingFields.Should().BeEmpty();
@@ -278,6 +278,50 @@ public sealed class ProviderCredentialStoreTests : IDisposable
         auditText.Should().Contain("\"action\":\"delete\"");
         auditText.Should().Contain("\"actor\":\"test-operator\"");
         auditText.Should().NotContain("finnhub-secret");
+    }
+
+    [Fact]
+    public void ProviderCatalogs_EnvironmentFallbackMetadata_DoesNotDriveUserFacingSetupCopy()
+    {
+        var descriptor = ProviderCredentialCatalog.Find("plaid-api");
+
+        descriptor.Should().NotBeNull();
+        descriptor!.RequiredFields.SelectMany(field => field.EnvironmentNames).Should().Contain("PLAID_SANDBOX_SECRET");
+
+        var experience = ProviderSetupExperienceCatalog.Find(descriptor.ProviderId);
+        experience.DisplayName.Should().Be("Plaid");
+        experience.ShortDescription.Should().Contain("Link bank and investment accounts");
+        experience.HelpText.Should().NotContain("PLAID_SANDBOX_SECRET");
+        experience.SetupSteps.Should().Contain(step => step.Contains("Open Link", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task SaveAsync_UserFacingSetupCopy_DoesNotAffectCredentialPersistence()
+    {
+        var store = new FileProviderCredentialStore(_root);
+        var experience = ProviderSetupExperienceCatalog.Find("quickbooks-online");
+
+        await store.SaveAsync(new ProviderCredentialSaveRequest(
+            "quickbooks-online",
+            new Dictionary<string, string?>
+            {
+                ["ClientId"] = "qbo-client-id",
+                ["ClientSecret"] = "qbo-client-secret",
+                ["RefreshToken"] = "qbo-refresh-token",
+                ["RealmId"] = "9130359087654321"
+            },
+            Environment: "sandbox",
+            Actor: "test-operator"));
+
+        var read = await store.ReadForProviderAsync("quickbooks");
+        var vaultText = await File.ReadAllTextAsync(store.VaultPath);
+
+        read.Should().NotBeNull();
+        read!.Get("ClientId").Should().Be("qbo-client-id");
+        read.Get("RealmId").Should().Be("9130359087654321");
+        vaultText.Should().NotContain(experience.ShortDescription);
+        vaultText.Should().NotContain(experience.HelpText);
+        vaultText.Should().NotContain(experience.RecoveryActionLabel);
     }
 
     private sealed class EnvironmentScope : IDisposable

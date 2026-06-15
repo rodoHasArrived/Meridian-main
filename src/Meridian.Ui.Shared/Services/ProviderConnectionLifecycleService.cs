@@ -245,14 +245,15 @@ public sealed class ProviderConnectionLifecycleService
         ProviderCredentialStoreStatus status,
         ProviderMetrics? metrics)
     {
+        var experience = ProviderSetupExperienceCatalog.Find(descriptor.ProviderId);
         var health = ResolveHealth(status, metrics);
         var lastSuccessfulAt = status.LastSuccessfulAt ?? (metrics?.IsConnected == true ? metrics.Timestamp : null);
         var lastFailureAt = status.LastFailureAt ?? (metrics is { IsConnected: false, ConnectionFailures: > 0 } ? metrics.Timestamp : null);
 
         return new ProviderConnectionRowDto(
             ProviderId: descriptor.ProviderId,
-            DisplayName: descriptor.DisplayName,
-            Capability: descriptor.Capability,
+            DisplayName: experience.DisplayName,
+            Capability: experience.Capability,
             CredentialState: status.CredentialState,
             CredentialSource: status.CredentialSource,
             VerificationState: status.VerificationState,
@@ -265,11 +266,18 @@ public sealed class ProviderConnectionLifecycleService
             MaskedKeyPreview: status.MaskedKeyPreview,
             Environment: status.Environment,
             ExternalAccountId: status.ExternalAccountId,
-            AffectedWorkflows: descriptor.AffectedWorkflows ?? [],
-            RecommendedAction: ResolveRecommendedAction(descriptor, status, health),
-            ActionHref: descriptor.ResolvedActionHref,
-            CredentialFields: ProviderCredentialCatalog.BuildCredentialFields(descriptor),
-            EnvironmentOptions: ProviderCredentialCatalog.BuildEnvironmentOptions(descriptor));
+            AffectedWorkflows: experience.AffectedWorkflows,
+            RecommendedAction: ResolveRecommendedAction(experience, status, health),
+            ActionHref: experience.ResolvedActionHref,
+            CredentialFields: ProviderSetupExperienceCatalog.BuildCredentialFields(descriptor),
+            EnvironmentOptions: ProviderSetupExperienceCatalog.BuildEnvironmentOptions(descriptor),
+            DisplayGroup: experience.DisplayGroup,
+            ShortDescription: experience.ShortDescription,
+            HelpText: experience.HelpText,
+            SetupSteps: experience.SetupSteps,
+            WarningCopy: experience.WarningCopy,
+            DocsLinks: experience.DocsLinks,
+            RecoveryActionLabel: experience.RecoveryActionLabel);
     }
 
     private static ProviderContinuityHealthDto ResolveHealth(
@@ -305,7 +313,7 @@ public sealed class ProviderConnectionLifecycleService
     }
 
     private static string ResolveRecommendedAction(
-        ProviderCredentialCatalogEntry descriptor,
+        ProviderSetupExperienceCatalogEntry experience,
         ProviderCredentialStoreStatus status,
         ProviderContinuityHealthDto health)
     {
@@ -316,7 +324,7 @@ public sealed class ProviderConnectionLifecycleService
 
         if (status.CredentialState is ProviderCredentialStateDto.Missing or ProviderCredentialStateDto.Partial)
         {
-            return descriptor.RecommendedActionWhenMissing;
+            return experience.RecommendedActionWhenMissing;
         }
 
         if (status.CredentialState == ProviderCredentialStateDto.Invalid)

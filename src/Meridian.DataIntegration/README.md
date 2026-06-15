@@ -23,7 +23,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 ## Key folders and files
 
 - `src/Meridian.DataIntegration` - registered source module root.
-- `Credentials/ProviderCredentialCatalog.cs` - canonical provider credential descriptors, field mappings, environment normalization, and credential-source projection.
+- `Credentials/ProviderCredentialCatalog.cs` - canonical provider credential descriptors, aliases, field mappings, environment fallback names, environment normalization, and credential-source projection.
+- `Credentials/ProviderSetupExperienceCatalog.cs` - value-free provider setup experience metadata such as display groups, help copy, setup steps, warnings, affected workflows, docs links, and recovery labels.
 - `Credentials/ICredentialStore.cs` - provider-neutral credential-store contract, credential metadata, validation result, and common credential extension helpers.
 - `Credentials/IProviderCredentialStore.cs` - provider-neutral encrypted credential store contract and mutation/read result models.
 - `Credentials/FileProviderCredentialStore.cs` - local encrypted provider credential vault with audit metadata, verification status, and environment fallback handling.
@@ -75,10 +76,14 @@ Use this README to understand the module before editing source files. Update the
 QuickBooks accounting-system integration lives in this module. The adapter family imports chart-of-accounts, journal-entry, and trial-balance evidence as read-only reconciliation input through `IAccountingSystemProvider`, refreshes OAuth access tokens through the server-side QuickBooks client seam, records connection verification posture, maps provider-vault credentials into the QuickBooks connection store, and leaves posting/export disabled. UI Shared registers the Data Integration providers and connection store; it does not own QuickBooks transport, credential persistence mapping, or import mapping.
 
 Provider credential catalog, credential-store contracts, vault, status, and OAuth record ownership also lives in this module. Application and UI layers may orchestrate setup, testing, token refresh, and endpoint projection, but provider credential descriptors, encrypted local storage, validation metadata, verification metadata, expiration policy records, OAuth token records, and provider-environment normalization must stay behind the `Meridian.DataIntegration.Credentials` seam. Saved provider secrets are written to the encrypted local vault with rotation metadata and verification-required state; environment fallback is for Development/Test or explicit migration override only and is disabled for packaged/customer builds.
-`ProviderCredentialCatalog` also owns the value-free provider setup metadata projected to UI clients:
-credential field identifiers, labels, required flags, input kinds, safe help text, action routes,
-and allowed/default environments. Do not move stored credential values or environment variable
-contents into that metadata projection.
+`ProviderCredentialCatalog` owns stable credential metadata only: provider IDs, aliases,
+required credential field identifiers, read-only environment-variable fallback names, and
+provider environment normalization/defaults. User-facing setup copy lives separately in
+`ProviderSetupExperienceCatalog`, which projects display groups, short descriptions, help text,
+setup steps, warnings, affected workflows, docs links, recovery labels, credential field labels,
+input kinds, safe help text, action routes, and allowed/default environment options to UI clients.
+Do not move stored credential values or environment variable contents into either metadata
+projection.
 
 Market-event filtering and provider-depth-buffer self-tests live in this module because they
 validate and route provider-ingested event streams before higher-level application orchestration.

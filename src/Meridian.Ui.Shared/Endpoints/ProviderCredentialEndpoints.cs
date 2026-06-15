@@ -50,7 +50,7 @@ public static class ProviderCredentialEndpoints
                 Status: isValid ? "Valid" : "Invalid",
                 ErrorMessage: isValid
                     ? null
-                    : $"Credentials for {descriptor.DisplayName} are incomplete or invalid.",
+                    : $"Credentials for {ProviderSetupExperienceCatalog.Find(descriptor.ProviderId).DisplayName} are incomplete or invalid.",
                 LastVerified: DateTime.UtcNow,
                 Details: new Dictionary<string, string>
                 {

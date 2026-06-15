@@ -228,11 +228,12 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
         ProviderCredentialCatalogEntry descriptor,
         ProviderCredentialReadResult? readResult)
     {
+        var displayName = ProviderSetupExperienceCatalog.Find(descriptor.ProviderId).DisplayName;
         if (!descriptor.RequiresCredentials)
         {
             return new ProviderCredentialStoreStatus(
                 descriptor.ProviderId,
-                descriptor.DisplayName,
+                displayName,
                 ProviderCredentialStateDto.NotRequired,
                 ProviderCredentialSourceDto.NotRequired,
                 ProviderVerificationStateDto.NotRequired,
@@ -283,7 +284,7 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
 
         return new ProviderCredentialStoreStatus(
             descriptor.ProviderId,
-            descriptor.DisplayName,
+            displayName,
             credentialState,
             credentialSource,
             verificationState,

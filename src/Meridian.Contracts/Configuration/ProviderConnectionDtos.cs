@@ -94,7 +94,14 @@ public sealed record ProviderConnectionRowDto(
     string RecommendedAction,
     string ActionHref,
     IReadOnlyList<ProviderCredentialFieldMetadataDto>? CredentialFields = null,
-    IReadOnlyList<ProviderEnvironmentOptionDto>? EnvironmentOptions = null);
+    IReadOnlyList<ProviderEnvironmentOptionDto>? EnvironmentOptions = null,
+    string? DisplayGroup = null,
+    string? ShortDescription = null,
+    string? HelpText = null,
+    IReadOnlyList<string>? SetupSteps = null,
+    string? WarningCopy = null,
+    IReadOnlyList<string>? DocsLinks = null,
+    string? RecoveryActionLabel = null);
 
 public sealed record ProviderCredentialUpsertRequestDto(
     IReadOnlyDictionary<string, string?>? Credentials,

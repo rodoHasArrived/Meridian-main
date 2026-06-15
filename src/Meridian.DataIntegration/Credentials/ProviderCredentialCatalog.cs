@@ -9,8 +9,6 @@ public static class ProviderCredentialCatalog
     [
         new(
             ProviderId: "alpaca",
-            DisplayName: "Alpaca",
-            Capability: ProviderConnectionCapabilityDto.DataAndBrokerage,
             RequiredFields:
             [
                 new ProviderCredentialFieldDefinition(
@@ -21,112 +19,57 @@ public static class ProviderCredentialCatalog
                     EnvironmentNames: [AlpacaCredentialEnvironment.SecretKeyName, ..AlpacaCredentialEnvironment.SecretKeyAliases])
             ],
             EnvironmentNames: [AlpacaCredentialEnvironment.TradingEnvironmentName],
-            DefaultEnvironment: AlpacaCredentialEnvironment.PaperEnvironment,
-            AffectedWorkflows:
-            [
-                "Trading readiness",
-                "Portfolio brokerage sync",
-                "Backfill fallback chain"
-            ],
-            RecommendedActionWhenMissing: "Add Alpaca paper API keys and verify /v2/account.",
-            ActionHref: "/settings#alpaca-provider-setup"),
+            DefaultEnvironment: AlpacaCredentialEnvironment.PaperEnvironment),
         new(
             ProviderId: "polygon",
-            DisplayName: "Polygon.io",
-            Capability: ProviderConnectionCapabilityDto.Data,
             RequiredFields:
             [
                 new ProviderCredentialFieldDefinition("ApiKey", ["POLYGON_API_KEY"])
-            ],
-            AffectedWorkflows: ["Historical backfill", "Market data validation"],
-            RecommendedActionWhenMissing: "Add the Polygon API key before routing data repair through Polygon."),
+            ]),
         new(
             ProviderId: "finnhub",
-            DisplayName: "Finnhub",
-            Capability: ProviderConnectionCapabilityDto.Data,
             RequiredFields:
             [
                 new ProviderCredentialFieldDefinition("ApiKey", ["FINNHUB_API_KEY"])
-            ],
-            AffectedWorkflows: ["Historical backfill", "Market data validation"],
-            RecommendedActionWhenMissing: "Add the Finnhub API key before enabling Finnhub as a repair source."),
+            ]),
         new(
             ProviderId: "tiingo",
-            DisplayName: "Tiingo",
-            Capability: ProviderConnectionCapabilityDto.Data,
             RequiredFields:
             [
                 new ProviderCredentialFieldDefinition("ApiKey", ["TIINGO_API_TOKEN", "TIINGO_API_KEY"])
-            ],
-            AffectedWorkflows: ["Historical backfill", "Market data validation"],
-            RecommendedActionWhenMissing: "Add the Tiingo token before using Tiingo for continuity repair."),
+            ]),
         new(
             ProviderId: "alphavantage",
-            DisplayName: "Alpha Vantage",
-            Capability: ProviderConnectionCapabilityDto.Data,
             RequiredFields:
             [
                 new ProviderCredentialFieldDefinition("ApiKey", ["ALPHA_VANTAGE_API_KEY", "ALPHAVANTAGE_API_KEY"])
-            ],
-            AffectedWorkflows: ["Historical backfill", "Market data validation"],
-            RecommendedActionWhenMissing: "Add the Alpha Vantage API key before using it as a fallback source."),
+            ]),
         new(
             ProviderId: "nasdaqdatalink",
-            DisplayName: "Nasdaq Data Link",
-            Capability: ProviderConnectionCapabilityDto.Data,
             RequiredFields:
             [
                 new ProviderCredentialFieldDefinition("ApiKey", ["NASDAQ_DATA_LINK_API_KEY", "NASDAQ_API_KEY"])
-            ],
-            AffectedWorkflows: ["Reference data", "Historical backfill"],
-            RecommendedActionWhenMissing: "Add the Nasdaq Data Link API key before routing reference-data repair."),
+            ]),
         new(
             ProviderId: "openfigi",
-            DisplayName: "OpenFIGI",
-            Capability: ProviderConnectionCapabilityDto.Data,
             RequiredFields:
             [
                 new ProviderCredentialFieldDefinition("ApiKey", ["OPENFIGI_API_KEY"])
-            ],
-            AffectedWorkflows: ["Security master resolution", "Reference data"],
-            RecommendedActionWhenMissing: "Add the OpenFIGI API key before enabling identifier repair."),
+            ]),
         new(
             ProviderId: "plaid",
-            DisplayName: "Plaid",
-            Capability: ProviderConnectionCapabilityDto.Data,
             RequiredFields:
             [
                 new ProviderCredentialFieldDefinition("ClientId", ["PLAID_CLIENT_ID"]),
                 new ProviderCredentialFieldDefinition("Secret", ["PLAID_SECRET", "PLAID_SANDBOX_SECRET", "PLAID_DEVELOPMENT_SECRET"])
             ],
             EnvironmentNames: ["PLAID_ENV", "PLAID_ENVIRONMENT"],
-            DefaultEnvironment: "sandbox",
-            AffectedWorkflows:
-            [
-                "Bank cash reconciliation",
-                "Treasury account verification",
-                "Investment account evidence",
-                "Sandbox transfer authorization"
-            ],
-            RecommendedActionWhenMissing: "Add Plaid client credentials before linking bank accounts or syncing Plaid evidence.",
-            ActionHref: "/settings#plaid-provider-setup"),
+            DefaultEnvironment: "sandbox"),
         new(
             ProviderId: "quickbooks-fixture",
-            DisplayName: "QuickBooks Fixture",
-            Capability: ProviderConnectionCapabilityDto.AccountingSystem,
-            RequiredFields: [],
-            AffectedWorkflows:
-            [
-                "External GL reconciliation",
-                "Accounting records evidence",
-                "Close-package trial balance review"
-            ],
-            RecommendedActionWhenMissing: "No credential action required; use the fixture to preview external GL reconciliation.",
-            ActionHref: "/settings#provider-quickbooks-fixture-connection"),
+            RequiredFields: []),
         new(
             ProviderId: "quickbooks",
-            DisplayName: "QuickBooks Online",
-            Capability: ProviderConnectionCapabilityDto.AccountingSystem,
             RequiredFields:
             [
                 new ProviderCredentialFieldDefinition("ClientId", ["QUICKBOOKS_CLIENT_ID", "QBO_CLIENT_ID"]),
@@ -136,43 +79,19 @@ public static class ProviderCredentialCatalog
                 new ProviderCredentialFieldDefinition("CompanyName", ["QUICKBOOKS_COMPANY_NAME", "QBO_COMPANY_NAME"], Required: false)
             ],
             EnvironmentNames: ["QUICKBOOKS_ENVIRONMENT"],
-            DefaultEnvironment: "sandbox",
-            AffectedWorkflows:
-            [
-                "External GL reconciliation",
-                "Accounting records evidence",
-                "Close-package trial balance review"
-            ],
-            RecommendedActionWhenMissing: "Add QuickBooks Online OAuth client ID, client secret, refresh token, and company realm ID before importing read-only GL evidence.",
-            ActionHref: "/settings#provider-quickbooks-connection"),
+            DefaultEnvironment: "sandbox"),
         new(
             ProviderId: "ib",
-            DisplayName: "Interactive Brokers",
-            Capability: ProviderConnectionCapabilityDto.DataAndBrokerage,
-            RequiredFields: [],
-            AffectedWorkflows: ["Trading readiness", "Brokerage sync", "Live market data"],
-            RecommendedActionWhenMissing: "Confirm IB Gateway is available before routing live brokerage workflows."),
+            RequiredFields: []),
         new(
             ProviderId: "yahoo",
-            DisplayName: "Yahoo Finance",
-            Capability: ProviderConnectionCapabilityDto.Data,
-            RequiredFields: [],
-            AffectedWorkflows: ["Historical backfill fallback"],
-            RecommendedActionWhenMissing: "No credential action required; monitor provider health before relying on fallback data."),
+            RequiredFields: []),
         new(
             ProviderId: "stooq",
-            DisplayName: "Stooq",
-            Capability: ProviderConnectionCapabilityDto.Data,
-            RequiredFields: [],
-            AffectedWorkflows: ["Historical backfill fallback"],
-            RecommendedActionWhenMissing: "No credential action required; monitor data coverage before relying on fallback data."),
+            RequiredFields: []),
         new(
             ProviderId: "synthetic",
-            DisplayName: "Synthetic",
-            Capability: ProviderConnectionCapabilityDto.Data,
-            RequiredFields: [],
-            AffectedWorkflows: ["Offline simulation", "Demo mode"],
-            RecommendedActionWhenMissing: "No credential action required for synthetic data.")
+            RequiredFields: [])
     ];
 
     private static readonly IReadOnlyDictionary<string, string> Aliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -203,174 +122,15 @@ public static class ProviderCredentialCatalog
         return Aliases.TryGetValue(trimmed, out var canonical) ? canonical : trimmed.ToLowerInvariant();
     }
 
-    public static IReadOnlyList<ProviderCredentialFieldMetadataDto> BuildCredentialFields(ProviderCredentialCatalogEntry entry)
-    {
-        ArgumentNullException.ThrowIfNull(entry);
-
-        return entry.RequiredFields
-            .Select(field => new ProviderCredentialFieldMetadataDto(
-                field.Name,
-                LabelCredentialField(field.Name),
-                field.Required,
-                ResolveCredentialInputKind(field.Name),
-                ResolveCredentialPlaceholder(field),
-                ResolveCredentialHelpText(entry.ProviderId, field)))
-            .ToArray();
-    }
-
-    public static IReadOnlyList<ProviderEnvironmentOptionDto> BuildEnvironmentOptions(ProviderCredentialCatalogEntry entry)
-    {
-        ArgumentNullException.ThrowIfNull(entry);
-
-        var environments = ResolveAllowedEnvironments(entry);
-        if (environments.Count == 0)
-        {
-            return [];
-        }
-
-        var defaultEnvironment = entry.NormalizeEnvironment(entry.DefaultEnvironment);
-        return environments
-            .Select(environment =>
-            {
-                var normalized = entry.NormalizeEnvironment(environment);
-                return new ProviderEnvironmentOptionDto(
-                    normalized,
-                    LabelEnvironment(normalized),
-                    string.Equals(normalized, defaultEnvironment, StringComparison.OrdinalIgnoreCase),
-                    ResolveEnvironmentHelpText(entry.ProviderId, normalized));
-            })
-            .GroupBy(option => option.Value, StringComparer.OrdinalIgnoreCase)
-            .Select(group => group.First())
-            .ToArray();
-    }
-
-    private static IReadOnlyList<string> ResolveAllowedEnvironments(ProviderCredentialCatalogEntry entry)
-        => entry.ProviderId.ToLowerInvariant() switch
-        {
-            "alpaca" => [AlpacaCredentialEnvironment.PaperEnvironment, AlpacaCredentialEnvironment.LiveEnvironment],
-            "plaid" => ["sandbox", "development", "production"],
-            "quickbooks" => ["sandbox", "production"],
-            _ when !string.IsNullOrWhiteSpace(entry.DefaultEnvironment) => [entry.DefaultEnvironment],
-            _ => []
-        };
-
-    private static ProviderCredentialInputKindDto ResolveCredentialInputKind(string fieldName)
-    {
-        if (fieldName.Contains("Url", StringComparison.OrdinalIgnoreCase) ||
-            fieldName.Contains("Endpoint", StringComparison.OrdinalIgnoreCase))
-        {
-            return ProviderCredentialInputKindDto.Url;
-        }
-
-        if (fieldName.Equals("RealmId", StringComparison.OrdinalIgnoreCase) ||
-            fieldName.Equals("CompanyName", StringComparison.OrdinalIgnoreCase))
-        {
-            return ProviderCredentialInputKindDto.Text;
-        }
-
-        return ProviderCredentialInputKindDto.Password;
-    }
-
-    private static string LabelCredentialField(string fieldName)
-        => fieldName switch
-        {
-            "ApiKey" => "API key",
-            "KeyId" => "Key ID",
-            "SecretKey" => "Secret key",
-            "ClientId" => "Client ID",
-            "ClientSecret" => "Client secret",
-            "RefreshToken" => "Refresh token",
-            "RealmId" => "Company realm ID",
-            "CompanyName" => "Company name",
-            "Secret" => "Secret",
-            _ => SplitPascalCase(fieldName)
-        };
-
-    private static string? ResolveCredentialPlaceholder(ProviderCredentialFieldDefinition field)
-        => field.EnvironmentNames.FirstOrDefault()
-           ?? (field.Required ? "Stored server-side and masked after save" : "Optional");
-
-    private static string ResolveCredentialHelpText(string providerId, ProviderCredentialFieldDefinition field)
-        => ProviderCredentialCatalog.NormalizeProviderId(providerId) switch
-        {
-            "alpaca" => "Stored in Meridian's encrypted local provider store for Alpaca account verification.",
-            "plaid" => "Used server-side to create Plaid link tokens and retain bank evidence.",
-            "quickbooks" => field.Name switch
-            {
-                "ClientId" => "Stored in Meridian's encrypted local provider store for OAuth token refresh.",
-                "ClientSecret" => "Used only server-side for OAuth token refresh.",
-                "RefreshToken" => "Token exchange refreshes read-only API access and stores rotated tokens locally.",
-                "RealmId" => "Selects the QuickBooks Online company to read.",
-                "CompanyName" => "Optional display label for the selected QuickBooks company.",
-                _ => "Stored in Meridian's encrypted local provider store and masked after save."
-            },
-            _ when field.Required => "Stored in Meridian's encrypted local provider store and masked after save.",
-            _ => "Optional provider metadata; no secret value is displayed after save."
-        };
-
-    private static string LabelEnvironment(string value)
-        => value switch
-        {
-            "paper" => "Paper",
-            "live" => "Live",
-            "sandbox" => "Sandbox",
-            "development" => "Development",
-            "production" => "Production",
-            _ => SplitPascalCase(value)
-        };
-
-    private static string ResolveEnvironmentHelpText(string providerId, string environment)
-        => ProviderCredentialCatalog.NormalizeProviderId(providerId) switch
-        {
-            "alpaca" when environment.Equals(AlpacaCredentialEnvironment.LiveEnvironment, StringComparison.OrdinalIgnoreCase)
-                => "Live Alpaca credentials remain gated by live-routing acknowledgement and execution controls.",
-            "alpaca" => "Paper is the default Alpaca environment for setup and verification.",
-            "plaid" when environment.Equals("production", StringComparison.OrdinalIgnoreCase)
-                => "Production Plaid credentials are used only for server-owned link and evidence sync flows.",
-            "plaid" => "Plaid sandbox and development environments support institution linking and evidence tests.",
-            "quickbooks" when environment.Equals("production", StringComparison.OrdinalIgnoreCase)
-                => "Production QuickBooks Online access remains read-only GL evidence import.",
-            "quickbooks" => "QuickBooks sandbox is the default for read-only GL evidence setup.",
-            _ => "Provider environment selected for server-side credential verification."
-        };
-
-    private static string SplitPascalCase(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return "Credential";
-        }
-
-        var chars = new List<char>(value.Length + 8);
-        for (var index = 0; index < value.Length; index++)
-        {
-            var current = value[index];
-            if (index > 0 && char.IsUpper(current) && !char.IsWhiteSpace(value[index - 1]))
-            {
-                chars.Add(' ');
-            }
-
-            chars.Add(current);
-        }
-
-        return new string(chars.ToArray());
-    }
 }
 
 public sealed record ProviderCredentialCatalogEntry(
     string ProviderId,
-    string DisplayName,
-    ProviderConnectionCapabilityDto Capability,
     IReadOnlyList<ProviderCredentialFieldDefinition> RequiredFields,
     IReadOnlyList<string>? EnvironmentNames = null,
-    string? DefaultEnvironment = null,
-    IReadOnlyList<string>? AffectedWorkflows = null,
-    string RecommendedActionWhenMissing = "Add and verify credentials before using this provider for repair.",
-    string? ActionHref = null)
+    string? DefaultEnvironment = null)
 {
     public bool RequiresCredentials => RequiredFields.Count > 0;
-
-    public string ResolvedActionHref => ActionHref ?? $"/settings#provider-{ProviderId}-connection";
 
     public string NormalizeEnvironment(string? value)
     {

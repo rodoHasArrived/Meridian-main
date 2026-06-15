@@ -44,6 +44,7 @@ public sealed class ProviderSetupService
             return Failure(displayName, $"Provider '{request.Kind}' is not in the credential catalog.");
         }
 
+        var experience = ProviderSetupExperienceCatalog.Find(descriptor.ProviderId);
         var normalizedCapabilities = NormalizeCapabilities(request.Capabilities);
         var sourceType = ResolveSourceType(normalizedCapabilities);
         var environment = descriptor.NormalizeEnvironment(request.Environment);
@@ -107,7 +108,15 @@ public sealed class ProviderSetupService
                 CredentialSource: credentialStatus.CredentialSource,
                 CredentialReference: credentialReference,
                 Environment: string.IsNullOrWhiteSpace(credentialStatus.Environment) ? null : credentialStatus.Environment,
-                Warnings: warnings.ToArray());
+                Warnings: warnings.ToArray(),
+                DisplayGroup: experience.DisplayGroup,
+                ShortDescription: experience.ShortDescription,
+                HelpText: experience.HelpText,
+                SetupSteps: experience.SetupSteps.ToArray(),
+                WarningCopy: experience.WarningCopy,
+                AffectedWorkflows: experience.AffectedWorkflows.ToArray(),
+                DocsLinks: experience.DocsLinks.ToArray(),
+                RecoveryActionLabel: experience.RecoveryActionLabel);
         }
 
         if (sourceKind is null)
@@ -196,7 +205,15 @@ public sealed class ProviderSetupService
             CredentialSource: credentialStatus.CredentialSource,
             CredentialReference: credentialReference,
             Environment: string.IsNullOrWhiteSpace(credentialStatus.Environment) ? null : credentialStatus.Environment,
-            Warnings: warnings.ToArray());
+            Warnings: warnings.ToArray(),
+            DisplayGroup: experience.DisplayGroup,
+            ShortDescription: experience.ShortDescription,
+            HelpText: experience.HelpText,
+            SetupSteps: experience.SetupSteps.ToArray(),
+            WarningCopy: experience.WarningCopy,
+            AffectedWorkflows: experience.AffectedWorkflows.ToArray(),
+            DocsLinks: experience.DocsLinks.ToArray(),
+            RecoveryActionLabel: experience.RecoveryActionLabel);
     }
 
     private static ProviderSetupResult Failure(string providerName, string error)

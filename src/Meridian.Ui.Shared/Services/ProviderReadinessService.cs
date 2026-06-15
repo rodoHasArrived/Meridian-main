@@ -57,6 +57,7 @@ public sealed class ProviderReadinessService
             var connection = FindConnection(connections, providerId);
             var source = FindSource(configuredProviders, providerId);
             var providerMetrics = FindMetrics(metrics, providerId, source);
+            var experience = descriptor is null ? ProviderSetupExperienceCatalog.Find(providerId) : ProviderSetupExperienceCatalog.Find(descriptor.ProviderId);
             var degradationScore = scorer?.GetScore(providerId).CompositeScore;
             var isEnabled = source?.Enabled ?? connection is not null || descriptor is not null;
             var isConnected = providerMetrics is not null
@@ -69,8 +70,8 @@ public sealed class ProviderReadinessService
 
             rows.Add(new ProviderReadinessRowDto(
                 ProviderId: descriptor?.ProviderId ?? providerId,
-                DisplayName: connection?.DisplayName ?? descriptor?.DisplayName ?? source?.Name ?? providerId,
-                Capability: connection?.Capability ?? descriptor?.Capability ?? ProviderConnectionCapabilityDto.Data,
+                DisplayName: connection?.DisplayName ?? experience.DisplayName ?? source?.Name ?? providerId,
+                Capability: connection?.Capability ?? experience.Capability,
                 Status: status,
                 CredentialState: connection?.CredentialState ?? (descriptor?.RequiresCredentials == true ? ProviderCredentialStateDto.Missing : ProviderCredentialStateDto.NotRequired),
                 CredentialSource: connection?.CredentialSource ?? (descriptor?.RequiresCredentials == true ? ProviderCredentialSourceDto.None : ProviderCredentialSourceDto.NotRequired),
@@ -87,13 +88,13 @@ public sealed class ProviderReadinessService
                 MaskedKeyPreview: connection?.MaskedKeyPreview,
                 Environment: connection?.Environment ?? descriptor?.DefaultEnvironment,
                 ExternalAccountId: connection?.ExternalAccountId,
-                AffectedWorkflows: connection?.AffectedWorkflows ?? descriptor?.AffectedWorkflows ?? [],
-                RecommendedAction: ResolveRecommendedAction(status, connection, descriptor, degradationScore),
-                ActionHref: connection?.ActionHref ?? descriptor?.ResolvedActionHref ?? "/settings#providers",
+                AffectedWorkflows: connection?.AffectedWorkflows ?? experience.AffectedWorkflows,
+                RecommendedAction: ResolveRecommendedAction(status, connection, experience, degradationScore),
+                ActionHref: connection?.ActionHref ?? experience.ResolvedActionHref,
                 Evidence: BuildEvidence(providerId, connection, providerMetrics, degradationScore, plaidItems, plaidAccounts),
-                RecoveryActions: BuildRecoveryActions(providerId, status, connection, descriptor),
-                CredentialFields: descriptor is null ? [] : ProviderCredentialCatalog.BuildCredentialFields(descriptor),
-                EnvironmentOptions: descriptor is null ? [] : ProviderCredentialCatalog.BuildEnvironmentOptions(descriptor)));
+                RecoveryActions: BuildRecoveryActions(providerId, status, connection, experience),
+                CredentialFields: descriptor is null ? [] : ProviderSetupExperienceCatalog.BuildCredentialFields(descriptor),
+                EnvironmentOptions: descriptor is null ? [] : ProviderSetupExperienceCatalog.BuildEnvironmentOptions(descriptor)));
         }
 
         var ordered = rows
@@ -196,15 +197,15 @@ public sealed class ProviderReadinessService
     private static string ResolveRecommendedAction(
         ProviderReadinessStatusDto status,
         ProviderConnectionRowDto? connection,
-        ProviderCredentialCatalogEntry? descriptor,
+        ProviderSetupExperienceCatalogEntry experience,
         double? degradationScore)
         => status switch
         {
             ProviderReadinessStatusDto.Ready => "No provider readiness action required.",
-            ProviderReadinessStatusDto.Blocked => connection?.RecommendedAction ?? descriptor?.RecommendedActionWhenMissing ?? "Repair provider credentials before routing dependent workflows.",
+            ProviderReadinessStatusDto.Blocked => connection?.RecommendedAction ?? experience.RecommendedActionWhenMissing,
             ProviderReadinessStatusDto.Degraded when degradationScore is not null => "Review degradation evidence and fallback routing before accepting downstream readiness.",
             ProviderReadinessStatusDto.Degraded => "Review provider health and fallback routing before accepting downstream readiness.",
-            _ => connection?.RecommendedAction ?? descriptor?.RecommendedActionWhenMissing ?? "Review provider setup before routing dependent workflows."
+            _ => connection?.RecommendedAction ?? experience.RecommendedActionWhenMissing
         };
 
     private static IReadOnlyList<ProviderReadinessEvidenceDto> BuildEvidence(
@@ -261,9 +262,9 @@ public sealed class ProviderReadinessService
         string providerId,
         ProviderReadinessStatusDto status,
         ProviderConnectionRowDto? connection,
-        ProviderCredentialCatalogEntry? descriptor)
+        ProviderSetupExperienceCatalogEntry experience)
     {
-        var target = connection?.ActionHref ?? descriptor?.ResolvedActionHref ?? "/settings#providers";
+        var target = connection?.ActionHref ?? experience.ResolvedActionHref;
         var actions = new List<ProviderRecoveryActionDto>
         {
             new($"provider.{providerId}.open-setup", "Open setup", target, RequiresMutation: false)

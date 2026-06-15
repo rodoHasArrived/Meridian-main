@@ -30,4 +30,12 @@ public sealed record ProviderSetupResult(
     ProviderCredentialSourceDto? CredentialSource = null,
     string? CredentialReference = null,
     string? Environment = null,
-    string[]? Warnings = null);
+    string[]? Warnings = null,
+    string? DisplayGroup = null,
+    string? ShortDescription = null,
+    string? HelpText = null,
+    string[]? SetupSteps = null,
+    string? WarningCopy = null,
+    string[]? AffectedWorkflows = null,
+    string[]? DocsLinks = null,
+    string? RecoveryActionLabel = null);
