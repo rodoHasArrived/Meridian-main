@@ -423,6 +423,11 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        if (RejectAutomationMaterialAction(request.ActionOrigin, OperationsGateKeyDto.SecurityMaster, "Security Master override approval") is { } automationFailure)
+        {
+            return automationFailure;
+        }
+
         if (!string.IsNullOrWhiteSpace(overrideId) &&
             !string.IsNullOrWhiteSpace(request.OverrideId) &&
             !string.Equals(overrideId, request.OverrideId, StringComparison.OrdinalIgnoreCase))
@@ -760,9 +765,9 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             workflowId,
             request.ExpectedVersion,
             request.Actor,
-            request.Rationale,
+            BuildReopenGovernanceRationale(request),
             request.CorrelationId,
-            EnsureIncidentEvidence(request.IncidentId, request.EvidenceLinks),
+            EnsureReopenGovernanceEvidence(request, request.EvidenceLinks),
             eventType: "workflow-reopened",
             gate: OperationsGateKeyDto.Reconciliation,
             precondition: workflow => workflow.GetReopenTransitionBlocker(request),
@@ -3076,23 +3081,61 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         return normalized;
     }
 
-    private static IReadOnlyList<OperationsEvidenceLinkDto> EnsureIncidentEvidence(
-        string? incidentId,
+    private static string BuildReopenGovernanceRationale(OperationsReopenWorkflowRequestDto request)
+    {
+        var parts = new List<string>();
+        AddRationalePart(parts, "Rationale", request.Rationale);
+        AddRationalePart(parts, "Justification", request.Justification);
+        AddRationalePart(parts, "Approval reference", request.ApprovalReference);
+        AddRationalePart(parts, "Impact summary", request.ImpactSummary);
+        return string.Join(" | ", parts);
+    }
+
+    private static void AddRationalePart(List<string> parts, string label, string? value)
+    {
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            parts.Add($"{label}: {value.Trim()}");
+        }
+    }
+
+    private static IReadOnlyList<OperationsEvidenceLinkDto> EnsureReopenGovernanceEvidence(
+        OperationsReopenWorkflowRequestDto request,
         IReadOnlyList<OperationsEvidenceLinkDto>? evidenceLinks)
     {
         var normalized = NormalizeEvidence(evidenceLinks).ToList();
-        if (!string.IsNullOrWhiteSpace(incidentId) &&
-            normalized.All(link => !string.Equals(link.EvidenceId, incidentId, StringComparison.OrdinalIgnoreCase)))
-        {
-            normalized.Add(new OperationsEvidenceLinkDto(
-                incidentId.Trim(),
-                "Workflow reopen incident",
-                "/workstation/accounting",
-                "incident",
-                DateTimeOffset.UtcNow));
-        }
+        EnsureReopenGovernanceEvidenceLink(
+            normalized,
+            request.IncidentId,
+            "Workflow reopen incident",
+            "incident");
+        EnsureReopenGovernanceEvidenceLink(
+            normalized,
+            request.ApprovalReference,
+            "Governed reopen approval reference",
+            "approval-reference");
 
         return normalized;
+    }
+
+    private static void EnsureReopenGovernanceEvidenceLink(
+        List<OperationsEvidenceLinkDto> normalized,
+        string? evidenceId,
+        string label,
+        string source)
+    {
+        if (string.IsNullOrWhiteSpace(evidenceId) ||
+            normalized.Any(link => string.Equals(link.EvidenceId, evidenceId.Trim(), StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        normalized.Add(new OperationsEvidenceLinkDto(
+            evidenceId.Trim(),
+            label,
+            "/workstation/accounting",
+            source,
+            DateTimeOffset.UtcNow));
     }
 
     private static OperationsGateState GetGate(OperationsContinuityWorkflow workflow, OperationsGateKeyDto gate) =>

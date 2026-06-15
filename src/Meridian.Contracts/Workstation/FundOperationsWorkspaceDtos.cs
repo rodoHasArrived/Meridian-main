@@ -1411,6 +1411,9 @@ public sealed record ReportPackPublishRequestDto(
     string? Note = null,
     ReportBrandingThemeDto? BrandingTheme = null,
     OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+/// <summary>Optional action-origin metadata for report-pack workflow commands that historically used an empty body.</summary>
+public sealed record ReportPackWorkflowActionRequestDto(
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 /// <summary>Request payload for rejecting an in-review report pack with reviewer metadata and supporting evidence.</summary>
 public sealed record ReportPackRejectRequestDto(
     string Reason,
@@ -1442,7 +1445,8 @@ public sealed record ReportPackRestateRequestDto(
     string ReasonCode,
     Guid PriorVersionReportId,
     IReadOnlyList<ReportPackChangedLineDto> ChangedLines,
-    string? Approver = null);
+    string? Approver = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 public sealed record ReportPackWorkflowRecordDto(
     Guid ReportId,
     string FundProfileId,

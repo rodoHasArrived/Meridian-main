@@ -57,7 +57,8 @@ public sealed record RecordPaymentBankEvidenceRequest(
     decimal? Amount = null,
     string? Currency = null,
     string? ExternalRef = null,
-    string? RecordedBy = null);
+    string? RecordedBy = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 // ---------------------------------------------------------------------------
 // Bank transaction records

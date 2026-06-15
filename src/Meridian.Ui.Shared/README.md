@@ -591,11 +591,12 @@ publication-approved branding metadata, stakeholder delivery evidence packets, s
 portal URLs, service-owned delivery access/channel/download summaries, and delivery-mode inference
 for portal, vault, and internal-route channels; callers can override the mode and requested formats
 in `ReportPackDeliveryRequestDto`.
+`ReportPackWorkflowActionRequestDto`, `ReportPackRestateRequestDto`,
 `ReportPackPublishRequestDto`, `ReportPackDeliveryRequestDto`, and
 `ReportPackDeliveryFailureRequestDto` carry reviewed-automation action origin metadata, and the
-shared workflow/delivery services reject assistant or automation-origin publication, stakeholder
-package creation, and delivery-failure recording before retained outputs or delivery attempts are
-written.
+shared workflow/delivery services reject assistant or automation-origin approval, restatement,
+archival, publication, stakeholder package creation, and delivery-failure recording before retained
+outputs, changed report lines, or delivery attempts are written.
 Email-link and secure-portal packages also retain
 `ReportPackDeliveryNotificationDto` rows with recipient, subject, body, package href, token posture,
 status, creation time, and expiry so operator clients can display the notification/outbox proof

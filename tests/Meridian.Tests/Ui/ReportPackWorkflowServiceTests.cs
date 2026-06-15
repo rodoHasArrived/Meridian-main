@@ -138,6 +138,75 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public async Task Endpoint_ApproveCommand_WhenReviewedAutomationOrigin_ReturnsBadRequestWithoutApproval()
+    {
+        await using var app = await CreateFundStructureAppAsync(UserRole.Admin);
+        var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
+        var client = app.GetTestClient();
+        var request = new ReportPackCreateRequestDto(
+            "fund-a",
+            "acct-1",
+            "2026-03",
+            new VersionedReportTemplateIdDto("board-pack", 1));
+
+        var createResponse = await client.PostAsJsonAsync("/api/fund-structure/reporting/packs", request, ServerJsonOptions);
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var created = await createResponse.Content.ReadFromJsonAsync<ReportPackWorkflowRecordDto>(ServerJsonOptions);
+        created.Should().NotBeNull();
+
+        var submitResponse = await client.PostAsync($"/api/fund-structure/reporting/packs/{created!.ReportId:D}/submit", null);
+        submitResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var approveResponse = await client.PostAsJsonAsync(
+            $"/api/fund-structure/reporting/packs/{created.ReportId:D}/approve",
+            new ReportPackWorkflowActionRequestDto(OperationsActionOriginDto.AssistantDraft),
+            ServerJsonOptions);
+
+        approveResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var record = workflow.GetRecord(created.ReportId);
+        record.Should().NotBeNull();
+        record!.State.Should().Be(ReportPackWorkflowStateDto.InReview);
+        record.AuditTrail.Should().NotContain(entry => entry.ToState == ReportPackWorkflowStateDto.Approved);
+    }
+
+    [Fact]
+    public async Task Endpoint_RestateCommand_WhenReviewedAutomationOrigin_ReturnsBadRequestWithoutRestatement()
+    {
+        await using var app = await CreateFundStructureAppAsync(UserRole.Admin);
+        var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
+        var approved = CreateApprovedPack(
+            workflow,
+            [CompleteLineProvenance("trial-balance.cash", "ledger-evidence-1")]);
+        var published = workflow.Publish(
+            approved.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:abc123",
+            "manifest-1",
+            "vault/report-packs/manifest-1.json",
+            CompleteLineProvenanceEvidenceLinks("ledger-evidence-1"));
+        var client = app.GetTestClient();
+
+        var response = await client.PostAsJsonAsync(
+            $"/api/fund-structure/reporting/packs/{published.ReportId:D}/restatements",
+            new ReportPackRestateRequestDto(
+                "pricing-correction",
+                published.ReportId,
+                [new ReportPackChangedLineDto("trial-balance.cash", "100", "125", [new ReportPackEvidenceLinkDto("pricing-evidence-1", "Pricing correction", "/evidence/pricing-evidence-1", "pricing")])],
+                Approver: "reviewed-automation",
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var record = workflow.GetRecord(published.ReportId);
+        record.Should().NotBeNull();
+        record!.State.Should().Be(ReportPackWorkflowStateDto.Published);
+        record.Version.Should().Be(published.Version);
+        record.Restatement.Should().BeNull();
+    }
+
+    [Fact]
     public void Transition_ToPublished_RequiresGovernedPublicationMetadata()
     {
         var svc = new ReportPackWorkflowService();
@@ -933,6 +1002,29 @@ public sealed class ReportPackWorkflowServiceTests
         record.Should().NotBeNull();
         record!.State.Should().Be(ReportPackWorkflowStateDto.Approved);
         record.Publication.Should().BeNull();
+    }
+
+    [Fact]
+    public void Transition_RejectsReviewedAutomationApprovalOriginBeforeMutation()
+    {
+        var svc = new ReportPackWorkflowService();
+        var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
+        var inReview = svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
+
+        Action act = () => svc.Transition(
+            created.ReportId,
+            ReportPackWorkflowStateDto.Approved,
+            "reviewed-automation",
+            "approver",
+            actionOrigin: OperationsActionOriginDto.AssistantDraft);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Reviewed automation cannot approve reports; a human operator approval is required.");
+
+        var record = svc.GetRecord(created.ReportId);
+        record.Should().NotBeNull();
+        record!.State.Should().Be(ReportPackWorkflowStateDto.InReview);
+        record.AuditTrail.Should().HaveCount(inReview.AuditTrail.Count);
     }
 
     [Fact]
@@ -4742,6 +4834,43 @@ public sealed class ReportPackWorkflowServiceTests
 
         act.Should().Throw<ArgumentException>()
             .WithMessage("Restatement changed lines require evidence links: line-1.");
+    }
+
+    [Fact]
+    public void Restate_RejectsReviewedAutomationOriginBeforeMutation()
+    {
+        var svc = new ReportPackWorkflowService();
+        var created = svc.Create("fund-a", "acct-1", "2026-03", new VersionedReportTemplateIdDto("board-pack", 1), "author");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.InReview, "reviewer", "reviewer");
+        svc.Transition(created.ReportId, ReportPackWorkflowStateDto.Approved, "approver", "approver");
+        var published = svc.Publish(
+            created.ReportId,
+            "publisher",
+            "publisher",
+            "controller",
+            "sha256:abc123",
+            "manifest-1",
+            "vault/report-packs/manifest-1.json",
+            [new ReportPackEvidenceLinkDto("report-pack-1", "Report pack manifest", "/evidence/report-pack-1", "reporting")]);
+
+        Action act = () => svc.Restate(
+            created.ReportId,
+            "reviewed-automation",
+            "approver",
+            "pricing-correction",
+            "chief-approver",
+            created.ReportId,
+            [new ReportPackChangedLineDto("line-1", "100", "125", [new ReportPackEvidenceLinkDto("pricing-evidence-1", "Pricing correction", "/evidence/pricing-evidence-1", "pricing")])],
+            OperationsActionOriginDto.AssistantDraft);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Reviewed automation cannot restate reports; a human operator approval is required.");
+
+        var record = svc.GetRecord(created.ReportId);
+        record.Should().NotBeNull();
+        record!.State.Should().Be(ReportPackWorkflowStateDto.Published);
+        record.Version.Should().Be(published.Version);
+        record.Restatement.Should().BeNull();
     }
 
     [Fact]

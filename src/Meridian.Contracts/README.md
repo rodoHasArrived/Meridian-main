@@ -109,17 +109,20 @@ human actions, retained evidence, and artifact rows for extraction, match sugges
 report commentary, audit request list, missing-support, and evidence-summary review outputs.
 Guarded mutation request DTOs carry
 `OperationsActionOriginDto` so Financial Operations can reject assistant or automation-origin
-ledger posting, reconciliation break assignment, escalation, or resolution, approval, close-package publication,
-and governed reopen commands before they mutate the operating record. Report-pack-ready workflows can use the
+ledger posting, Security Master override approval, reconciliation break assignment, escalation, or
+resolution, approval, close-package publication, and governed reopen commands before they mutate
+the operating record. Report-pack-ready workflows can use the
 same review-stage contract to surface report-commentary and audit-request-list drafts as
 evidence-backed review artifacts rather than approved publications.
-Payment approval/rejection, report-pack publication, and report-pack delivery request contracts also carry
-the same action-origin metadata so assistant or automation-origin calls cannot approve or reject payment requests,
-publish reports, or create stakeholder delivery packages.
+Payment approval/rejection, bank-evidence recording, report-pack workflow approval/restatement,
+report-pack publication, and report-pack delivery request contracts also carry the same
+action-origin metadata so assistant or automation-origin calls cannot approve or reject payment
+requests, satisfy cash evidence, approve report packs, restate published report lines, publish
+reports, or create stakeholder delivery packages.
 Banking contracts keep payment approval separate from bank-side evidence: approved payments remain
 Meridian approval records, while `RecordPaymentBankEvidenceRequest` records retained confirmation,
-return, reversal, or failure evidence before downstream cash, reconciliation, or transfer surfaces
-can treat the payment as bank-supported. Bank transactions now carry the retaining operator so
+return, reversal, or failure evidence under a human-operator origin before downstream cash,
+reconciliation, or transfer surfaces can treat the payment as bank-supported. Bank transactions now carry the retaining operator so
 confirmation and return evidence remain attributable in audit packages.
 `OperationsEvidencePackageSummaryDto` publishes the same workflow's package posture for accounting
 record evidence, report-pack evidence, close-package manifests, and audit-support packages. Package
@@ -146,7 +149,7 @@ includes a close-control checklist lane for reversal approval, recurring journal
 period lock or governed reopen evidence. Reporting, delivery, and partner-capital statement
 posture require approved report outputs before retained manifests can satisfy close readiness. It
 also carries approval history rows for workflow
-approval decisions and checklist-control approvals plus
+approval decisions, governed reopen approvals, and checklist-control approvals plus
 NAV support package rows for positions, cash, pricing, shadow NAV, administrator NAV, the
 administrator-versus-Meridian tie-out, and retained evidence links, so clients can inspect
 approve-result and NAV-support evidence without rebuilding it from timeline, close-package, or
@@ -258,16 +261,18 @@ Report-pack workflow contracts carry the W4 governed lifecycle states `Draft`, `
 `Approved`, and `Published` plus governed publication metadata: sign-off actor, evidence hash,
 retained manifest path, retained evidence links, report-line provenance, create requests, publish
 requests, explicit `Rejected` state support, explicit review-state rejection requests with reason,
-actor/role, and optional evidence-link metadata, and restatement requests with approver,
-prior-version, changed-line, and evidence-link metadata. The same shared contracts also carry
+actor/role, and optional evidence-link metadata, workflow action-origin requests for material
+report-pack state changes, and restatement requests with approver, prior-version, changed-line,
+evidence-link, and action-origin metadata. The same shared contracts also carry
 report-pack delivery attempts, delivery failure attempts, delivery history, operator-managed
 reporting schedules, schedule delivery targets, due-schedule run results with delivery
 attempts/warnings, ad-hoc report-run requests/results, and HTML/PDF rendered-statement artifact
 formats so browser, WPF, endpoints, and host bootstrap payloads consume the same reporting command
 and history shape.
-Publish and delivery request DTOs carry `OperationsActionOriginDto`; services must reject assistant
-or automation-origin publication and delivery-package creation before any retained output or
-stakeholder package is written.
+Workflow action, restatement, publish, and delivery request DTOs carry `OperationsActionOriginDto`;
+services must reject assistant or automation-origin approval, restatement, archival, publication,
+delivery-package creation, and delivery-failure recording before any retained output, report-line
+edit, or stakeholder package is written.
 Delivered report-pack attempts can also carry `ReportPackDeliveryPackageDto`, including the
 delivery mode, secure link or portal route, retained manifest path, requested PDF/XLSX/CSV
 formats, retained artifact metadata, artifact SHA-256 checksums, artifact version stamps, the

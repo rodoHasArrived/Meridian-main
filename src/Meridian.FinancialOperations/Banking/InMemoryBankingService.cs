@@ -147,6 +147,7 @@ public sealed class InMemoryBankingService : IBankingService
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        EnsureHumanOrigin(request.ActionOrigin, "record bank evidence");
         ct.ThrowIfCancellationRequested();
 
         lock (_gate)

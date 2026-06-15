@@ -1740,6 +1740,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         IReadOnlyList<PrivateCapitalReportOutputDto> reportOutputs)
         => workflows
             .SelectMany(BuildWorkflowApprovalHistory)
+            .Concat(workflows.SelectMany(BuildWorkflowReopenApprovalHistory))
             .Concat(BuildFundEventApprovalHistory(workflows, records))
             .Concat(BuildReportOutputApprovalHistory(workflows, reportOutputs))
             .OrderByDescending(static approval =>
@@ -1907,6 +1908,31 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
                 workflowRoute,
                 packageEvidence.Count,
                 packageEvidence);
+        }
+    }
+
+    private static IEnumerable<PrivateCapitalCloseCockpitApprovalDto> BuildWorkflowReopenApprovalHistory(
+        OperationsContinuityWorkflowDto workflow)
+    {
+        var workflowRoute = BuildWorkflowRoute(workflow.WorkflowId);
+        foreach (var entry in workflow.Timeline.Where(static entry =>
+                     string.Equals(entry.EventType, "workflow-reopened", StringComparison.OrdinalIgnoreCase)))
+        {
+            var evidence = entry.References ?? [];
+            yield return new PrivateCapitalCloseCockpitApprovalDto(
+                $"workflow-reopened:{entry.AuditId:D}",
+                workflow.WorkflowId,
+                workflow.FundAccountId,
+                workflow.PeriodId,
+                OperationsApprovalStateDto.Approved,
+                Normalize(entry.Actor),
+                Normalize(entry.Actor),
+                Normalize(entry.Rationale) ?? "Governed period reopen approval retained.",
+                entry.OccurredAtUtc,
+                entry.OccurredAtUtc,
+                workflowRoute,
+                evidence.Count,
+                evidence);
         }
     }
 

@@ -194,6 +194,37 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
     }
 
     [Fact]
+    public async Task GetCockpitAsync_WhenGovernedReopenTimelineExists_ProjectsApprovalHistory()
+    {
+        var activity = BuildActivity();
+        var workflow = BuildClosedWorkflow(
+            periodLockPackageReady: false,
+            timeline: [GovernedReopenTimelineEntry()]);
+        var service = new PrivateCapitalCloseCockpitService(
+            new StubManualJournalEntryWorkbenchService(activity),
+            new StubOperationsContinuityWorkflowService([workflow]));
+
+        var cockpit = await service.GetCockpitAsync(
+            FundProfileId,
+            activity.LedgerBookId,
+            FundAccountId,
+            PeriodId,
+            EntityId);
+
+        cockpit.ApprovalHistory.Should().ContainSingle(row =>
+            row.ApprovalId.StartsWith("workflow-reopened:", StringComparison.OrdinalIgnoreCase) &&
+            row.WorkflowId == workflow.WorkflowId &&
+            row.Status == OperationsApprovalStateDto.Approved &&
+            row.Operator == "ops-user" &&
+            row.Reviewer == "ops-user" &&
+            row.Rationale!.Contains("Approval reference: approval-ref-123", StringComparison.OrdinalIgnoreCase) &&
+            row.Rationale.Contains("Impact summary: Reopened reconciliation for incident follow-up.", StringComparison.OrdinalIgnoreCase) &&
+            row.EvidenceLinkCount == 2 &&
+            row.EvidenceLinks.Any(link => link.EvidenceId == "INC-123" && link.Source == "incident") &&
+            row.EvidenceLinks.Any(link => link.EvidenceId == "approval-ref-123" && link.Source == "approval-reference"));
+    }
+
+    [Fact]
     public async Task GetCockpitAsync_WhenNoSourcesAreRegistered_FailsClosedWithMissingLanes()
     {
         var service = new PrivateCapitalCloseCockpitService(null, null);
@@ -530,7 +561,8 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
 
     private static OperationsContinuityWorkflowDto BuildClosedWorkflow(
         bool includeCloseControlEvidence = true,
-        bool periodLockPackageReady = true)
+        bool periodLockPackageReady = true,
+        IReadOnlyList<OperationsTimelineEntryDto>? timeline = null)
     {
         var workflowId = Guid.Parse("22222222-2222-2222-2222-222222222222");
         var now = new DateTimeOffset(2026, 6, 30, 18, 0, 0, TimeSpan.Zero);
@@ -575,7 +607,7 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
                 Gate(OperationsGateKeyDto.Reconciliation),
                 Gate(OperationsGateKeyDto.Approval)
             ],
-            Timeline: [],
+            Timeline: timeline ?? [],
             BreakCases: [],
             LedgerPreview: null,
             Approvals:
@@ -612,6 +644,34 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
                 [Evidence("close-package", "Close package", "/operations-continuity/close-package/manifest-fund-alpha-2026-06")],
                 CloseControlApprovals(now)),
             EvidencePackages: [PeriodLockReopenPackage(workflowId, periodLockPackageReady)]);
+    }
+
+    private static OperationsTimelineEntryDto GovernedReopenTimelineEntry()
+    {
+        var workflowId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var occurredAt = new DateTimeOffset(2026, 6, 30, 18, 30, 0, TimeSpan.Zero);
+        return new OperationsTimelineEntryDto(
+            Guid.Parse("99999999-9999-9999-9999-999999999999"),
+            occurredAt,
+            workflowId,
+            FundAccountId,
+            PeriodId,
+            "workflow-reopened",
+            OperationsWorkflowStatusDto.Closed,
+            OperationsWorkflowStatusDto.ReconciliationActive,
+            OperationsGateKeyDto.Reconciliation,
+            OperationsGateStatusDto.Passed,
+            OperationsGateStatusDto.InProgress,
+            "ops-user",
+            "Rationale: Incident requires reopened reconciliation | Justification: Controller approved reopening the closed period. | Approval reference: approval-ref-123 | Impact summary: Reopened reconciliation for incident follow-up.",
+            null,
+            null,
+            [
+                new OperationsEvidenceLinkDto("INC-123", "Workflow reopen incident", "/workstation/accounting", "incident", occurredAt),
+                new OperationsEvidenceLinkDto("approval-ref-123", "Governed reopen approval reference", "/workstation/accounting", "approval-reference", occurredAt)
+            ],
+            null,
+            "reopen-hash");
     }
 
     private static OperationsEvidencePackageSummaryDto PeriodLockReopenPackage(

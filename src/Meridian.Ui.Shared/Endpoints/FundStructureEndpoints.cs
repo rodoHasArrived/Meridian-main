@@ -1193,9 +1193,11 @@ public static class FundStructureEndpoints
         .WithName("CreateReportingPackWorkflow")
         .Produces<ReportPackWorkflowRecordDto>(StatusCodes.Status201Created);
 
-        group.MapPost("/reporting/packs/{reportId:guid}/validate", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Validated));
+        group.MapPost("/reporting/packs/{reportId:guid}/validate", async (Guid reportId, HttpContext context) =>
+            await TransitionPackAsync(context, reportId, ReportPackWorkflowStateDto.Validated, jsonOptions).ConfigureAwait(false));
         group.MapPost("/reporting/packs/{reportId:guid}/submit", (Guid reportId, HttpContext context) => SubmitPack(context, reportId));
-        group.MapPost("/reporting/packs/{reportId:guid}/approve", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Approved));
+        group.MapPost("/reporting/packs/{reportId:guid}/approve", async (Guid reportId, HttpContext context) =>
+            await TransitionPackAsync(context, reportId, ReportPackWorkflowStateDto.Approved, jsonOptions).ConfigureAwait(false));
         group.MapPost("/reporting/packs/{reportId:guid}/reject", (Guid reportId, ReportPackRejectRequestDto request, HttpContext context) =>
         {
             if (!HasReportingWorkflowPermission(context))
@@ -1314,7 +1316,7 @@ public static class FundStructureEndpoints
                 }
 
                 var approver = string.IsNullOrWhiteSpace(request.Approver) ? actor : request.Approver.Trim();
-                return Results.Json(svc.Restate(reportId, actor, role, request.ReasonCode, approver, request.PriorVersionReportId, request.ChangedLines), jsonOptions);
+                return Results.Json(svc.Restate(reportId, actor, role, request.ReasonCode, approver, request.PriorVersionReportId, request.ChangedLines, request.ActionOrigin), jsonOptions);
             }
             catch (Exception ex) when (ex is ArgumentException or UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
             {
@@ -1324,7 +1326,8 @@ public static class FundStructureEndpoints
         .WithName("RestateReportingPackWorkflow")
         .Produces<ReportPackWorkflowRecordDto>(StatusCodes.Status200OK);
 
-        group.MapPost("/reporting/packs/{reportId:guid}/archive", (Guid reportId, HttpContext context) => TransitionPack(context, reportId, ReportPackWorkflowStateDto.Archived));
+        group.MapPost("/reporting/packs/{reportId:guid}/archive", async (Guid reportId, HttpContext context) =>
+            await TransitionPackAsync(context, reportId, ReportPackWorkflowStateDto.Archived, jsonOptions).ConfigureAwait(false));
 
         group.MapGet("/reporting/packs/{reportId:guid}/deliveries", (Guid reportId, HttpContext context) =>
         {
@@ -1950,7 +1953,11 @@ public static class FundStructureEndpoints
         }
     }
 
-    private static IResult TransitionPack(HttpContext context, Guid reportId, ReportPackWorkflowStateDto target)
+    private static async Task<IResult> TransitionPackAsync(
+        HttpContext context,
+        Guid reportId,
+        ReportPackWorkflowStateDto target,
+        JsonSerializerOptions jsonOptions)
     {
         if (!HasReportingWorkflowPermission(context))
         {
@@ -1976,11 +1983,37 @@ public static class FundStructureEndpoints
                 return accessResult;
             }
 
-            return Results.Json(svc.Transition(reportId, target, actor, role), statusCode: StatusCodes.Status200OK);
+            var actionOrigin = await ResolveReportPackActionOriginAsync(context, jsonOptions).ConfigureAwait(false);
+            return Results.Json(
+                svc.Transition(reportId, target, actor, role, actionOrigin: actionOrigin),
+                statusCode: StatusCodes.Status200OK);
         }
-        catch (Exception ex) when (ex is UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
+        catch (Exception ex) when (ex is ArgumentException or UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException)
         {
             return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+        }
+    }
+
+    private static async Task<OperationsActionOriginDto> ResolveReportPackActionOriginAsync(
+        HttpContext context,
+        JsonSerializerOptions jsonOptions)
+    {
+        if (context.Request.ContentLength is null or 0)
+        {
+            return OperationsActionOriginDto.HumanOperator;
+        }
+
+        try
+        {
+            var request = await JsonSerializer.DeserializeAsync<ReportPackWorkflowActionRequestDto>(
+                context.Request.Body,
+                jsonOptions,
+                context.RequestAborted).ConfigureAwait(false);
+            return request?.ActionOrigin ?? OperationsActionOriginDto.HumanOperator;
+        }
+        catch (JsonException ex)
+        {
+            throw new ArgumentException($"Report pack action request body is invalid JSON. {ex.Message}", ex);
         }
     }
 

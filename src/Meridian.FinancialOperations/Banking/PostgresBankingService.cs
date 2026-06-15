@@ -120,6 +120,7 @@ public sealed class PostgresBankingService : IBankingService
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        EnsureHumanOrigin(request.ActionOrigin, "record bank evidence");
         var pending = await _store.GetPendingPaymentAsync(pendingPaymentId, ct).ConfigureAwait(false);
         if (pending is null)
         {

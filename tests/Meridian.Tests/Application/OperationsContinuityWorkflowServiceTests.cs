@@ -996,6 +996,47 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task ApproveSecurityMasterOverrideAsync_ShouldRejectReviewedAutomationOriginBeforeApprovalAudit()
+    {
+        var service = CreateService(out _, out var auditStore);
+        var start = await service.StartWorkflowAsync(new OperationsStartWorkflowRequestDto(
+            Guid.NewGuid(),
+            "2026-05",
+            null,
+            "custodian",
+            "ops-user"));
+        var import = await service.ImportBrokerDataAsync(start.Workflow!.WorkflowId, new OperationsTransitionRequestDto(start.Workflow.Version, "ops-user"));
+        var normalized = await service.NormalizeBrokerTransactionsAsync(
+            start.Workflow.WorkflowId,
+            new OperationsTransitionRequestDto(import.Workflow!.Version, "ops-user", "Normalized imported rows"));
+        var security = await service.ResolveSecurityMasterMappingsAsync(start.Workflow.WorkflowId, new OperationsSecurityMasterResolveRequestDto(
+            normalized.Workflow!.Version,
+            "ops-user",
+            OverrideRequestCount: 1));
+        var timelineBefore = await auditStore.GetTimelineAsync(start.Workflow.WorkflowId);
+
+        var result = await service.ApproveSecurityMasterOverrideAsync(
+            start.Workflow.WorkflowId,
+            "override-1",
+            new OperationsSecurityMasterOverrideApprovalRequestDto(
+                security.Workflow!.Version,
+                "reviewed-automation",
+                "override-1",
+                "Assistant draft approval",
+                "policy-sm-override-v1",
+                DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft));
+
+        result.Success.Should().BeFalse();
+        result.ErrorCode.Should().Be("REVIEWED_AUTOMATION_REVIEW_REQUIRED");
+        result.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "REVIEWED_AUTOMATION_MATERIAL_ACTION_REJECTED" &&
+            blocker.Gate == OperationsGateKeyDto.SecurityMaster);
+        var timelineAfter = await auditStore.GetTimelineAsync(start.Workflow.WorkflowId);
+        timelineAfter.Should().HaveCount(timelineBefore.Count);
+    }
+
+    [Fact]
     public async Task ApproveSecurityMasterOverrideAsync_ShouldRejectMismatchedRouteAndBodyOverrideIds()
     {
         var service = CreateService(out _, out _);
@@ -2585,7 +2626,7 @@ public sealed class OperationsContinuityWorkflowServiceTests
     [Fact]
     public async Task ReopenWorkflowAsync_ShouldRequireGovernedIncidentMetadata()
     {
-        var service = CreateService(out _, out _);
+        var service = CreateService(out _, out var auditStore);
         var workflow = await CreateApprovalSubmittedWorkflowAsync(service);
         var approved = await service.ApproveWorkflowAsync(workflow.WorkflowId, new OperationsApprovalDecisionRequestDto(
             workflow.Version,
@@ -2626,7 +2667,20 @@ public sealed class OperationsContinuityWorkflowServiceTests
             package.Label == "Period lock and reopen evidence" &&
             package.Status == EvidenceStatusDto.ReviewRequired &&
             package.EvidenceLinks.Any(link => link.EvidenceId == "INC-123") &&
+            package.EvidenceLinks.Any(link => link.EvidenceId == "approval-ref-123") &&
             package.RequiredActions.Contains("Complete reopened incident remediation and close the period again with retained evidence."));
+        var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        var reopenAudit = timeline.Should().ContainSingle(entry => entry.EventType == "workflow-reopened").Subject;
+        reopenAudit.Rationale.Should().Contain("Rationale: Incident requires reopened reconciliation");
+        reopenAudit.Rationale.Should().Contain("Justification: Controller approved reopening the closed period.");
+        reopenAudit.Rationale.Should().Contain("Approval reference: approval-ref-123");
+        reopenAudit.Rationale.Should().Contain("Impact summary: Reopens reconciliation gate for incident follow-up.");
+        reopenAudit.References.Should().Contain(link =>
+            link.EvidenceId == "INC-123" &&
+            link.Source == "incident");
+        reopenAudit.References.Should().Contain(link =>
+            link.EvidenceId == "approval-ref-123" &&
+            link.Source == "approval-reference");
     }
 
     [Fact]

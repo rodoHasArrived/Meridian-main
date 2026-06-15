@@ -72,9 +72,10 @@ required actions so UI surfaces consume a shared core-flow rollup instead of rec
 dashboard state locally.
 It also derives the reviewed-automation summary from aggregate state and enforces the action-origin
 guard for material commands. Automation-origin and assistant-origin requests may carry suggestions,
-summaries, drafts, flags, and retained review evidence, but ledger posting, reconciliation break
-assignment, escalation, and resolution, approval submission or decision, close-package publication, and governed reopen
-commands fail closed unless the request origin is a human operator. Critical or material
+summaries, drafts, flags, and retained review evidence, but Security Master override approval,
+ledger posting, reconciliation break assignment, escalation, and resolution, approval submission or
+decision, close-package publication, and governed reopen commands fail closed unless the request
+origin is a human operator. Critical or material
 reconciliation breaks also require retained resolution evidence before the aggregate can clear the
 exception and advance approval posture. When report-pack evidence is ready but not yet submitted for
 approval, the same summary surfaces report-commentary and audit-request-list drafts as review-only
@@ -98,8 +99,9 @@ completion, stale-mark resolution, and period lock or governed reopen proof befo
 can make the cockpit ready. Reporting, delivery, and partner-capital tie-out lanes require approved
 report outputs and retained delivery manifests, so published but unapproved statements cannot make a
 close package ready. Approval history includes workflow approvals, checklist-control approvals,
-fund-event approvals, and governed report-output decisions so close reviewers can trace source,
-journal, report, NAV, and administrator-tie-out approval evidence from one shared cockpit.
+governed reopen approvals retained from the workflow timeline, fund-event approvals, and governed
+report-output decisions so close reviewers can trace source, journal, report, NAV, period-reopen,
+and administrator-tie-out approval evidence from one shared cockpit.
 It also publishes explicit private-capital evidence package summaries for fund-event accounting,
 partner capital tie-outs, NAV support, and close approval/audit evidence so operator surfaces can
 inspect package completeness without rebuilding lane rules locally.
@@ -141,9 +143,10 @@ transaction state. Approval and rejection requests carry the reviewed-automation
 assistant or automation-origin drafts can be rejected before payment approval state changes. Payment
 approval no longer records bank-side transactions by itself; retained bank confirmation, return,
 reversal, or failure evidence is recorded through an explicit bank-evidence command after approval,
-and that bank-side transaction retains the operator that recorded the evidence. This keeps payment
-work in the request/approval/cash-evidence lane rather than treating approval as live payment
-execution.
+and that bank-side transaction retains the operator that recorded the evidence. The bank-evidence
+command also carries reviewed-automation action origin and rejects assistant or automation-origin
+requests before the cash-evidence record is retained. This keeps payment work in the
+request/approval/cash-evidence lane rather than treating approval as live payment execution.
 Operations Continuity also projects reviewed-automation output artifacts for extraction, match
 suggestion, journal draft, report commentary, audit request list, missing-support, and evidence
 summary review stages. These artifacts are review rows backed by retained workflow evidence; they

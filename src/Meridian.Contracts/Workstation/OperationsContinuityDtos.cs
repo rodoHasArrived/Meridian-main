@@ -491,7 +491,8 @@ public sealed record OperationsSecurityMasterOverrideApprovalRequestDto(
     string PolicyReference,
     DateOnly? ExpiresOn,
     string? CorrelationId = null,
-    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record OperationsGatePostureRequestDto(
     long ExpectedVersion,
