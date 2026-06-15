@@ -98,7 +98,7 @@ ready.
 ## Validation
 
 - Run the narrowest command that proves the touched surface, then broaden only when risk justifies it.
-- For AI/tooling changes, run `python3 build/scripts/docs/check-codex-skills.py --summary`, `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/validate-skill-packages.py`, the implementation-assurance eval dry-run, and `git diff --check`.
+- For AI/tooling changes, run `python3 build/scripts/docs/check-codex-skills.py --summary`, `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/validate-skill-packages.py`, `python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run --summary`, and `git diff --check`.
 - For Codex-skill changes with `agents/openai.yaml`, verify the YAML metadata still matches the frontmatter description, default prompt, and routing behavior.
 - For registered source module changes, run `python3 build/scripts/docs/mark-stale-docs.py --write --summary` before source-doc updates so only stale module docs are targeted, then run `python3 build/scripts/docs/validate-doc-hashes.py --summary` after source README and registry review. Refresh the hash manifest with `--write` only when code/docs alignment is intentionally accepted.
 - Confirm `.github/workflows/ci.yml` still contains the `Validate AI contract drift` step when AI workflow behavior changes.
