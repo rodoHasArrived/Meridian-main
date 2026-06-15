@@ -201,6 +201,65 @@ public sealed class ProviderCredentialStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task GetOrCreateLocalKey_NonWindows_CreatesOwnerOnlyKeyAndDirectoryPermissions()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var store = new FileProviderCredentialStore(_root);
+
+        await store.SaveAsync(new ProviderCredentialSaveRequest(
+            "alpaca",
+            new Dictionary<string, string?>
+            {
+                ["KeyId"] = "owner-only-key-id",
+                ["SecretKey"] = "owner-only-secret"
+            },
+            Environment: "paper",
+            Actor: "test-operator"));
+
+        var mdcPath = Path.Combine(_root, ".mdc");
+        var keyPath = Path.Combine(mdcPath, "provider-credentials.key");
+
+        File.Exists(keyPath).Should().BeTrue();
+        Directory.Exists(mdcPath).Should().BeTrue();
+        AssertOwnerOnlyPermissions(keyPath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        AssertOwnerOnlyPermissions(mdcPath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+    }
+
+    [Fact]
+    public async Task GetOrCreateLocalKey_NonWindows_RepairsPermissiveExistingKeyBeforeReuse()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var store = new FileProviderCredentialStore(_root);
+        await store.SaveAsync(new ProviderCredentialSaveRequest(
+            "alpaca",
+            new Dictionary<string, string?>
+            {
+                ["KeyId"] = "repair-key-id",
+                ["SecretKey"] = "repair-secret"
+            },
+            Environment: "paper",
+            Actor: "test-operator"));
+
+        var keyPath = Path.Combine(_root, ".mdc", "provider-credentials.key");
+        File.SetUnixFileMode(keyPath,
+            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+
+        var read = await store.ReadForProviderAsync("alpaca");
+
+        read.Should().NotBeNull();
+        read!.Get("SecretKey").Should().Be("repair-secret");
+        AssertOwnerOnlyPermissions(keyPath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+    }
+
+    [Fact]
     public async Task ReadForProviderAsync_UsesEnvironmentAsReadOnlyLegacyFallback()
     {
         using var env = new EnvironmentScope("POLYGON_API_KEY", "legacy-polygon-key");
@@ -278,6 +337,18 @@ public sealed class ProviderCredentialStoreTests : IDisposable
         auditText.Should().Contain("\"action\":\"delete\"");
         auditText.Should().Contain("\"actor\":\"test-operator\"");
         auditText.Should().NotContain("finnhub-secret");
+    }
+
+    private static void AssertOwnerOnlyPermissions(string path, UnixFileMode expectedMode)
+    {
+        var mode = File.GetUnixFileMode(path);
+        mode.Should().Be(expectedMode);
+        mode.Should().NotHaveFlag(UnixFileMode.GroupRead);
+        mode.Should().NotHaveFlag(UnixFileMode.GroupWrite);
+        mode.Should().NotHaveFlag(UnixFileMode.GroupExecute);
+        mode.Should().NotHaveFlag(UnixFileMode.OtherRead);
+        mode.Should().NotHaveFlag(UnixFileMode.OtherWrite);
+        mode.Should().NotHaveFlag(UnixFileMode.OtherExecute);
     }
 
     private sealed class EnvironmentScope : IDisposable

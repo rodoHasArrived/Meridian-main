@@ -74,7 +74,18 @@ Use this README to understand the module before editing source files. Update the
 
 QuickBooks accounting-system integration lives in this module. The adapter family imports chart-of-accounts, journal-entry, and trial-balance evidence as read-only reconciliation input through `IAccountingSystemProvider`, refreshes OAuth access tokens through the server-side QuickBooks client seam, records connection verification posture, maps provider-vault credentials into the QuickBooks connection store, and leaves posting/export disabled. UI Shared registers the Data Integration providers and connection store; it does not own QuickBooks transport, credential persistence mapping, or import mapping.
 
-Provider credential catalog, credential-store contracts, vault, status, and OAuth record ownership also lives in this module. Application and UI layers may orchestrate setup, testing, token refresh, and endpoint projection, but provider credential descriptors, encrypted local storage, validation metadata, verification metadata, expiration policy records, OAuth token records, and provider-environment normalization must stay behind the `Meridian.DataIntegration.Credentials` seam. Saved provider secrets are written to the encrypted local vault with rotation metadata and verification-required state; environment fallback is for Development/Test or explicit migration override only and is disabled for packaged/customer builds.
+Provider credential catalog, credential-store contracts, vault, status, and OAuth record ownership
+also lives in this module. Application and UI layers may orchestrate setup, testing, token
+refresh, and endpoint projection, but provider credential descriptors, encrypted local storage,
+validation metadata, verification metadata, expiration policy records, OAuth token records, and
+provider-environment normalization must stay behind the `Meridian.DataIntegration.Credentials`
+seam. Saved provider secrets are written to the encrypted local vault with rotation metadata and
+verification-required state; environment fallback is for Development/Test or explicit migration
+override only and is disabled for packaged/customer builds. On Windows, the vault payload is
+protected with current-user DPAPI. On non-Windows systems, the vault payload is protected with
+AES-GCM using a local key under the data-root `.mdc` directory; the `.mdc` directory is hardened
+to owner-only access and the local key file is created or repaired to owner-read/write only before
+reuse so group and world accounts cannot read it.
 `ProviderCredentialCatalog` also owns the value-free provider setup metadata projected to UI clients:
 credential field identifiers, labels, required flags, input kinds, safe help text, action routes,
 and allowed/default environments. Do not move stored credential values or environment variable

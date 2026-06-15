@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Runtime.Versioning;
+using System.Security;
 using Meridian.Contracts.Configuration;
 using Meridian.Storage.Archival;
 
@@ -569,15 +570,68 @@ public sealed class FileProviderCredentialStore : IProviderCredentialStore
     private byte[] GetOrCreateLocalKey(CancellationToken ct)
     {
         Directory.CreateDirectory(_directoryPath);
+        HardenLocalDirectoryPermissions(_directoryPath);
+
         if (File.Exists(_keyPath))
         {
+            HardenLocalKeyPermissions(_keyPath);
             return File.ReadAllBytes(_keyPath);
         }
 
         var key = RandomNumberGenerator.GetBytes(32);
         AtomicFileWriter.WriteAsync(_keyPath, key, ct).GetAwaiter().GetResult();
+        HardenLocalKeyPermissions(_keyPath);
         TrySetHidden(_keyPath);
         return key;
+    }
+
+    private static void HardenLocalDirectoryPermissions(string path)
+        => HardenUnixPermissions(
+            path,
+            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute,
+            "provider credential directory");
+
+    private static void HardenLocalKeyPermissions(string path)
+        => HardenUnixPermissions(
+            path,
+            UnixFileMode.UserRead | UnixFileMode.UserWrite,
+            "provider credential local key");
+
+    private static void HardenUnixPermissions(string path, UnixFileMode ownerOnlyMode, string description)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        try
+        {
+            var currentMode = File.GetUnixFileMode(path);
+            if ((currentMode & ~ownerOnlyMode) == 0 && (currentMode & ownerOnlyMode) == ownerOnlyMode)
+            {
+                return;
+            }
+
+            File.SetUnixFileMode(path, ownerOnlyMode);
+            currentMode = File.GetUnixFileMode(path);
+            if ((currentMode & ~ownerOnlyMode) != 0 || (currentMode & ownerOnlyMode) != ownerOnlyMode)
+            {
+                throw new SecurityException($"The {description} at '{path}' is not restricted to the current user.");
+            }
+        }
+        catch (Exception ex) when (ex is PlatformNotSupportedException or NotSupportedException)
+        {
+            // Some non-Windows filesystems do not expose Unix mode APIs. The vault remains
+            // encrypted, but permission hardening cannot be verified on this platform.
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new SecurityException($"The {description} at '{path}' could not be restricted to the current user.", ex);
+        }
+        catch (IOException ex)
+        {
+            throw new SecurityException($"The {description} at '{path}' could not be verified for owner-only permissions.", ex);
+        }
     }
 
     private static void TrySetHidden(string path)
