@@ -2530,6 +2530,94 @@ This is a planned product direction, not a completion claim. Roadmap and impleme
 require registry-backed acceptance evidence before stakeholder-facing status can move from planned
 or supported to complete.
 
+### v0.18 Addendum: Operational Evidence Graph Product Surface
+
+The Operational Evidence Graph should become the reusable proof surface that browser and WPF
+workstations can open from any material operating record. It is not a separate compliance module; it
+is the shared navigation, manifest, and proof contract that explains how a retained source became a
+ledger, close, report, delivery, or audit object.
+
+#### Standard Graph Layers
+
+Every graph view, proof drawer, and exported manifest should preserve these layers even when a
+particular subject has no records in a layer yet. Missing required layers must render as
+`review-required` or `blocked`, not as implicit success.
+
+| Layer | Required product meaning | Typical record examples |
+| --- | --- | --- |
+| Source | Original retained input and receipt proof. | Provider payload, administrator file, bank statement, document, source hash, vault object, receipt timestamp. |
+| Normalization | Transformation from source into Meridian-controlled records. | Import run, mapping profile, schema version, extraction confidence, reviewer state, normalized transaction, position, balance, or document field. |
+| Validation | Deterministic checks that make the normalized record usable. | Validation rule, data-quality gate, duplicate check, required-field result, tolerance result, validation reviewer, validation exception. |
+| Reconciliation | Tie-out between expected, source, portfolio, cash, ledger, administrator, or report records. | Reconciliation run, match rule, break, true-break narrative, resolution code, assignment, SLA, approval. |
+| Ledger | Accounting impact and posting control. | Draft journal, posted journal, ledger detail, posting policy, reversal chain, period lock, ledger version. |
+| Capital accounts | Investor-level capital projection and statement lineage. | Commitment, contribution, distribution, allocation, capital-account roll-forward, NAV impact, statement line. |
+| Close | Period readiness, blockers, lock state, and reopen proof. | Close lane, checklist item, blocker, late adjustment, reopen request, period lock, close package. |
+| Reporting | Report number provenance and package approval. | Dataset version, report line, template version, package approval, restatement lineage, report-pack snapshot. |
+| Delivery | Stakeholder publication evidence. | Recipient list, package version, timestamp, channel, delivery artifact, delivery exception. |
+| Audit | Immutable reconstruction support. | Audit event, retained support package, request list, evidence manifest, export hash, reviewer attestation. |
+
+#### Reusable Browser and WPF UI Pattern
+
+The browser workstation in `src/Meridian.Ui/dashboard/` and the WPF workstation in
+`src/Meridian.Wpf/` should consume the same read models and service APIs for all proof surfaces. UI
+implementations may differ in layout mechanics, but the business state, action eligibility, layer
+labels, link semantics, and manifest payload must remain shared.
+
+| Pattern | Purpose | Minimum behavior |
+| --- | --- | --- |
+| Compact proof ribbon | Inline confidence strip for grids, drawers, cards, and command-center rows. | Shows layer coverage, blocker count, evidence freshness, approval posture, export availability, and a one-click route to the side proof drawer. |
+| Side proof drawer | Contextual proof inspection without leaving the operator task. | Shows the selected subject, ordered layer summary, required versus present evidence, key warnings, first-hop links, audit timeline preview, and actions to validate, export, or open the full graph. |
+| Full proof graph page | Deep reconstruction surface for complex investigations and audits. | Provides layered graph navigation, filters by layer/link/status, path tracing from source to output, missing-link highlighting, compare/restatement mode, and stable deep links back to source explorer records. |
+| Exportable evidence manifest | Durable handoff artifact for audit, tax, reporting, admin tie-out, or internal approval. | Exports subject identifiers, node identifiers, link types, source hashes or vault references, generated timestamp, schema version, validation warnings, completeness state, and reviewer/export attestations. |
+
+#### Required Entry Points
+
+Operational Evidence Graph entry points should be available anywhere the operator sees a material
+record whose trust depends on upstream proof. The first implementation candidates should include:
+
+* **Ledger Explorer:** open proof from journal entries, ledger details, reversal chains, posting
+  policies, close locks, report usage, and capital-account impact.
+* **Portfolio Explorer:** open proof from positions, lots, transactions, valuations, cash flows,
+  reconciliation status, ledger impact, instrument links, and report usage.
+* **Report-Line Provenance Explorer:** open proof from a report line, dataset version, package
+  approval, restatement lineage, delivery record, and stakeholder output.
+* **Fund Event Command Center:** open proof from capital calls, distributions, investments, fees,
+  valuations, closings, tax requests, audit requests, wind-downs, approvals, and event blockers.
+* **Evidence Vault:** open proof from request-list items, uploaded documents, extracted fields,
+  confidence reviews, frozen manifests, support packages, and vault object references.
+
+#### Shared Read-Model and Service API Minimums
+
+Shared read models in `src/Meridian.Ui.Shared/` and service APIs in `src/Meridian.Ui.Services/`
+should use stable identifiers and typed links so browser and WPF do not invent incompatible proof
+semantics. At minimum, graph-capable DTOs should carry:
+
+* `subjectKind`, `subjectId`, `tenantId`, `fundId`, `entityId`, `bookId`, `periodId`, and optional
+  `investorId`, `accountId`, `instrumentId`, `portfolioId`, `reportPackId`, `fundEventId`,
+  `evidenceVaultObjectId`, and `auditEventId` when those scopes are relevant.
+* Node identifiers: `evidenceId`, `layer`, `recordKind`, `recordId`, `recordVersion`, `status`,
+  `generatedAt`, `effectiveAt`, `sourceSystem`, `sourceUri` or vault reference, `sourceHash`,
+  `schemaVersion`, `owner`, `reviewer`, `approvalId`, and `warningCodes`.
+* Link identifiers: `edgeId`, `fromEvidenceId`, `toEvidenceId`, `linkType`, `linkStatus`,
+  `createdAt`, `createdBy`, `ruleId`, `confidence`, and optional `materiality`, `tolerance`,
+  `restatementId`, `reversalId`, or `deliveryId`.
+* Standard link types: `derived_from`, `normalized_by`, `validated_by`, `matched_to`,
+  `reconciled_by`, `break_resolved_by`, `posted_to`, `reversed_by`, `allocated_to`,
+  `rolled_forward_to`, `closed_by`, `reopened_by`, `reported_as`, `approved_by`,
+  `delivered_as`, `requested_by`, `satisfies_request`, `attested_by`, `exported_as`, and
+  `audited_by`.
+
+#### Roadmap Acceptance Language
+
+Roadmap candidates that claim the Operational Evidence Graph should stay `planned` until
+implementation evidence exists in the roadmap registry. Candidate acceptance must require shared
+read models and service APIs, at least one browser entry point, at least one WPF entry point or an
+explicit WPF parity plan, exported manifest validation, retained source or vault references, and
+tests proving that missing required evidence remains `review-required` or `blocked`. A candidate may
+move beyond `planned` only when `docs/roadmap/data/roadmap-items.yml` links concrete tests, source
+modules, and implementation paths that prove the graph layers, UI pattern, entry points, identifiers,
+link types, and manifest behavior are implemented rather than only designed.
+
 ---
 
 ## 26. Foundational Product Slice
