@@ -200,6 +200,129 @@ public sealed class ProviderHealthServiceTests : IDisposable
         Enum.IsDefined(typeof(HealthAlertType), type).Should().BeTrue();
     }
 
+
+    [Fact]
+    public async Task GetAllProviderHealthAsync_SlowEndpoint_CoalescesHealthUpdatedPerRefresh()
+    {
+        var service = new ProviderHealthService(async ct =>
+        {
+            await Task.Delay(50, ct);
+            return CreateHealthResponse("slow-feed");
+        });
+        var events = 0;
+        service.HealthUpdated += (_, args) =>
+        {
+            events++;
+            args.Providers.Should().ContainSingle(p => p.ProviderId == "slow-feed");
+        };
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var providers = await service.GetAllProviderHealthAsync(timeout.Token);
+
+        providers.Should().ContainSingle(p => p.ProviderId == "slow-feed");
+        events.Should().Be(1);
+        service.Dispose();
+    }
+
+    [Fact]
+    public async Task MonitoringRefresh_StopMonitoring_CancelsOutstandingHealthCheck()
+    {
+        using var entered = new ManualResetEventSlim(false);
+        var service = new ProviderHealthService(async ct =>
+        {
+            entered.Set();
+            await Task.Delay(TimeSpan.FromMinutes(1), ct);
+            return CreateHealthResponse("cancelled-feed");
+        });
+
+        service.StartMonitoring();
+        var refresh = service.TriggerMonitoringRefreshForTestsAsync();
+        entered.Wait(TimeSpan.FromSeconds(2)).Should().BeTrue();
+        service.StopMonitoring();
+
+        await refresh;
+        service.Dispose();
+    }
+
+    [Fact]
+    public async Task MonitoringRefresh_Dispose_CancelsOutstandingHealthCheck()
+    {
+        using var entered = new ManualResetEventSlim(false);
+        var service = new ProviderHealthService(async ct =>
+        {
+            entered.Set();
+            await Task.Delay(TimeSpan.FromMinutes(1), ct);
+            return CreateHealthResponse("disposed-feed");
+        });
+
+        service.StartMonitoring();
+        var refresh = service.TriggerMonitoringRefreshForTestsAsync();
+        entered.Wait(TimeSpan.FromSeconds(2)).Should().BeTrue();
+        service.Dispose();
+
+        await refresh;
+    }
+
+    [Fact]
+    public async Task GetAllProviderHealthAsync_ConcurrentRefreshes_DoNotOverlapEndpointCalls()
+    {
+        var activeCalls = 0;
+        var maxActiveCalls = 0;
+        var service = new ProviderHealthService(async ct =>
+        {
+            var active = Interlocked.Increment(ref activeCalls);
+            maxActiveCalls = Math.Max(maxActiveCalls, active);
+            try
+            {
+                await Task.Delay(50, ct);
+                return CreateHealthResponse("serial-feed");
+            }
+            finally
+            {
+                Interlocked.Decrement(ref activeCalls);
+            }
+        });
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await Task.WhenAll(
+            service.GetAllProviderHealthAsync(timeout.Token),
+            service.GetAllProviderHealthAsync(timeout.Token),
+            service.GetAllProviderHealthAsync(timeout.Token));
+
+        maxActiveCalls.Should().Be(1);
+        service.Dispose();
+    }
+
+    private static ApiResponse<ProviderHealthResponse> CreateHealthResponse(string providerId)
+    {
+        return new ApiResponse<ProviderHealthResponse>
+        {
+            Success = true,
+            StatusCode = 200,
+            Data = new ProviderHealthResponse
+            {
+                Providers =
+                [
+                    new ProviderHealthInfo
+                    {
+                        ProviderId = providerId,
+                        ProviderName = providerId,
+                        IsConnected = true,
+                        ConnectionStabilityScore = 99,
+                        AverageLatencyMs = 25,
+                        LatencyP99Ms = 40,
+                        LatencyConsistencyScore = 95,
+                        DataCompletenessPercent = 99,
+                        ReconnectsLastHour = 0,
+                        UptimePercent = 99,
+                        MessagesPerSecond = 1000,
+                        ErrorsLastHour = 0
+                    }
+                ]
+            }
+        };
+    }
+
     public void Dispose()
     {
         // Ensure monitoring is stopped after tests

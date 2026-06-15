@@ -17,16 +17,34 @@ public sealed class ProviderHealthService : IDisposable
 {
     private static readonly Lazy<ProviderHealthService> _instance = new(() => new ProviderHealthService());
     private readonly ApiClientService _apiClient;
+    private readonly Func<CancellationToken, Task<ApiResponse<ProviderHealthResponse>>> _healthFetcher;
+    private readonly SemaphoreSlim _refreshGate = new(1, 1);
     private readonly Timer _updateTimer;
     private readonly ConcurrentDictionary<string, ProviderHealthData> _providerHealth = new();
     private readonly ConcurrentDictionary<string, List<HealthHistoryPoint>> _healthHistory = new();
+    private CancellationTokenSource _monitoringCts = new();
     private bool _disposed;
 
     public static ProviderHealthService Instance => _instance.Value;
 
     private ProviderHealthService()
+        : this(ApiClientService.Instance, null)
     {
-        _apiClient = ApiClientService.Instance;
+    }
+
+    internal ProviderHealthService(Func<CancellationToken, Task<ApiResponse<ProviderHealthResponse>>> healthFetcher)
+        : this(ApiClientService.Instance, healthFetcher)
+    {
+    }
+
+    private ProviderHealthService(
+        ApiClientService apiClient,
+        Func<CancellationToken, Task<ApiResponse<ProviderHealthResponse>>>? healthFetcher)
+    {
+        _apiClient = apiClient;
+        _healthFetcher = healthFetcher ?? (ct => _apiClient.GetWithResponseAsync<ProviderHealthResponse>(
+            "/api/providers/health",
+            ct));
         _updateTimer = new Timer(5000);
         _updateTimer.Elapsed += OnTimerElapsed;
         _updateTimer.AutoReset = true;
@@ -47,6 +65,15 @@ public sealed class ProviderHealthService : IDisposable
     /// </summary>
     public void StartMonitoring()
     {
+        if (_disposed)
+            return;
+
+        if (_monitoringCts.IsCancellationRequested)
+        {
+            _monitoringCts.Dispose();
+            _monitoringCts = new CancellationTokenSource();
+        }
+
         _updateTimer.Start();
     }
 
@@ -56,16 +83,30 @@ public sealed class ProviderHealthService : IDisposable
     public void StopMonitoring()
     {
         _updateTimer.Stop();
+        _monitoringCts.Cancel();
     }
 
-    private async void OnTimerElapsed(object? sender, ElapsedEventArgs e)
+    private void OnTimerElapsed(object? sender, ElapsedEventArgs e)
     {
-        if (_disposed)
+        _ = RunTimerRefreshAsync();
+    }
+
+    internal Task TriggerMonitoringRefreshForTestsAsync()
+    {
+        return RunTimerRefreshAsync();
+    }
+
+    private async Task RunTimerRefreshAsync()
+    {
+        if (_disposed || _monitoringCts.IsCancellationRequested)
             return;
 
         try
         {
-            await RefreshHealthDataAsync();
+            await RefreshHealthDataAsync(_monitoringCts.Token, skipIfBusy: true);
+        }
+        catch (OperationCanceledException) when (_monitoringCts.IsCancellationRequested)
+        {
         }
         catch (Exception ex)
         {
@@ -176,81 +217,100 @@ public sealed class ProviderHealthService : IDisposable
         };
     }
 
-    private async Task RefreshHealthDataAsync(CancellationToken ct = default)
+    private async Task RefreshHealthDataAsync(CancellationToken ct = default, bool skipIfBusy = false)
     {
-        var response = await _apiClient.GetWithResponseAsync<ProviderHealthResponse>(
-            "/api/providers/health",
-            ct);
+        var entered = skipIfBusy
+            ? await _refreshGate.WaitAsync(0, ct)
+            : await WaitForRefreshGateAsync(ct);
 
-        if (response.Success && response.Data?.Providers != null)
+        if (!entered)
+            return;
+
+        try
         {
-            foreach (var provider in response.Data.Providers)
+            ct.ThrowIfCancellationRequested();
+            var response = await _healthFetcher(ct);
+
+            if (response.Success && response.Data?.Providers != null)
             {
-                var healthData = new ProviderHealthData
+                foreach (var provider in response.Data.Providers)
                 {
-                    ProviderId = provider.ProviderId,
-                    ProviderName = provider.ProviderName,
-                    IsConnected = provider.IsConnected,
-                    LifecycleState = provider.LifecycleState,
-                    WebSocketState = provider.WebSocketState,
-                    IsReconnecting = provider.IsReconnecting,
-                    LastHeartbeatReceivedAt = provider.LastHeartbeatReceivedAt,
-                    LastMessageReceivedAt = provider.LastMessageReceivedAt,
-                    LastReconnectAttemptAt = provider.LastReconnectAttemptAt,
-                    ReconnectAttempts = provider.ReconnectAttempts,
-                    LastFailureKind = provider.LastFailureKind,
-                    LastUpdated = DateTime.UtcNow,
-                    OverallScore = CalculateOverallScore(provider),
-                    Metrics = new HealthMetrics
+                    var healthData = new ProviderHealthData
                     {
-                        ConnectionStabilityScore = provider.ConnectionStabilityScore,
-                        AverageLatencyMs = provider.AverageLatencyMs,
-                        LatencyP99Ms = provider.LatencyP99Ms,
-                        LatencyConsistencyScore = provider.LatencyConsistencyScore,
-                        DataCompletenessPercent = provider.DataCompletenessPercent,
-                        ReconnectsLastHour = provider.ReconnectsLastHour,
-                        ReconnectionScore = CalculateReconnectionScore(provider.ReconnectsLastHour),
-                        UptimePercent = provider.UptimePercent,
-                        MessagesPerSecond = provider.MessagesPerSecond,
-                        ErrorsLastHour = provider.ErrorsLastHour
-                    },
-                    Breakdown = CalculateBreakdown(provider)
-                };
+                        ProviderId = provider.ProviderId,
+                        ProviderName = provider.ProviderName,
+                        IsConnected = provider.IsConnected,
+                        LifecycleState = provider.LifecycleState,
+                        WebSocketState = provider.WebSocketState,
+                        IsReconnecting = provider.IsReconnecting,
+                        LastHeartbeatReceivedAt = provider.LastHeartbeatReceivedAt,
+                        LastMessageReceivedAt = provider.LastMessageReceivedAt,
+                        LastReconnectAttemptAt = provider.LastReconnectAttemptAt,
+                        ReconnectAttempts = provider.ReconnectAttempts,
+                        LastFailureKind = provider.LastFailureKind,
+                        LastUpdated = DateTime.UtcNow,
+                        OverallScore = CalculateOverallScore(provider),
+                        Metrics = new HealthMetrics
+                        {
+                            ConnectionStabilityScore = provider.ConnectionStabilityScore,
+                            AverageLatencyMs = provider.AverageLatencyMs,
+                            LatencyP99Ms = provider.LatencyP99Ms,
+                            LatencyConsistencyScore = provider.LatencyConsistencyScore,
+                            DataCompletenessPercent = provider.DataCompletenessPercent,
+                            ReconnectsLastHour = provider.ReconnectsLastHour,
+                            ReconnectionScore = CalculateReconnectionScore(provider.ReconnectsLastHour),
+                            UptimePercent = provider.UptimePercent,
+                            MessagesPerSecond = provider.MessagesPerSecond,
+                            ErrorsLastHour = provider.ErrorsLastHour
+                        },
+                        Breakdown = CalculateBreakdown(provider)
+                    };
 
-                _providerHealth[provider.ProviderId] = healthData;
+                    _providerHealth[provider.ProviderId] = healthData;
 
-                // Update history
-                var history = _healthHistory.GetOrAdd(provider.ProviderId, _ => new List<HealthHistoryPoint>());
+                    // Update history
+                    var history = _healthHistory.GetOrAdd(provider.ProviderId, _ => new List<HealthHistoryPoint>());
 
-                lock (history)
-                {
-                    history.Add(new HealthHistoryPoint
+                    lock (history)
                     {
-                        Timestamp = DateTime.UtcNow,
-                        OverallScore = healthData.OverallScore,
-                        LatencyMs = provider.AverageLatencyMs,
-                        CompletenessPercent = provider.DataCompletenessPercent
-                    });
+                        history.Add(new HealthHistoryPoint
+                        {
+                            Timestamp = DateTime.UtcNow,
+                            OverallScore = healthData.OverallScore,
+                            LatencyMs = provider.AverageLatencyMs,
+                            CompletenessPercent = provider.DataCompletenessPercent
+                        });
 
-                    // Keep only last 24 hours
-                    var cutoff = DateTime.UtcNow.AddHours(-24);
-                    history.RemoveAll(h => h.Timestamp < cutoff);
+                        // Keep only last 24 hours
+                        var cutoff = DateTime.UtcNow.AddHours(-24);
+                        history.RemoveAll(h => h.Timestamp < cutoff);
+                    }
+
+                    // Check for alerts
+                    CheckHealthAlerts(healthData);
                 }
-
-                // Check for alerts
-                CheckHealthAlerts(healthData);
             }
-        }
-        else
-        {
-            // Generate mock data for demo
-            GenerateMockHealthData();
-        }
+            else
+            {
+                // Generate mock data for demo
+                GenerateMockHealthData();
+            }
 
-        HealthUpdated?.Invoke(this, new HealthUpdateEventArgs
+            HealthUpdated?.Invoke(this, new HealthUpdateEventArgs
+            {
+                Providers = _providerHealth.Values.ToList()
+            });
+        }
+        finally
         {
-            Providers = _providerHealth.Values.ToList()
-        });
+            _refreshGate.Release();
+        }
+    }
+
+    private async Task<bool> WaitForRefreshGateAsync(CancellationToken ct)
+    {
+        await _refreshGate.WaitAsync(ct);
+        return true;
     }
 
     private void GenerateMockHealthData()
@@ -429,9 +489,11 @@ public sealed class ProviderHealthService : IDisposable
         if (_disposed)
             return;
         _disposed = true; // Set before stopping so in-flight callbacks exit early
+        _monitoringCts.Cancel();
         _updateTimer.Stop();
         _updateTimer.Elapsed -= OnTimerElapsed;
         _updateTimer.Dispose();
+        _monitoringCts.Dispose();
     }
 }
 

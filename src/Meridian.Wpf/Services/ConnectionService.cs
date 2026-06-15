@@ -20,9 +20,13 @@ public sealed class ConnectionService : ConnectionServiceBase, IConnectionServic
 {
     private static readonly Lazy<ConnectionService> _instance = new(() => new ConnectionService());
 
+    private readonly SemaphoreSlim _healthCheckGate = new(1, 1);
+    private readonly object _httpClientLock = new();
     private HttpClient _httpClient;
     private Timer? _monitoringTimer;
     private Timer? _reconnectTimer;
+    private CancellationTokenSource _monitoringCts = new();
+    private CancellationTokenSource _reconnectCts = new();
 
     /// <summary>
     /// Gets the singleton instance of the ConnectionService.
@@ -40,15 +44,32 @@ public sealed class ConnectionService : ConnectionServiceBase, IConnectionServic
     /// <inheritdoc />
     protected override async Task<bool> PerformHealthCheckCoreAsync(CancellationToken ct)
     {
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        cts.CancelAfter(TimeSpan.FromSeconds(10));
-        var response = await _httpClient.GetAsync($"{ServiceUrl}/healthz", cts.Token);
-        return response.IsSuccessStatusCode;
+        await _healthCheckGate.WaitAsync(ct);
+        try
+        {
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            cts.CancelAfter(TimeSpan.FromSeconds(10));
+
+            HttpClient client;
+            lock (_httpClientLock)
+            {
+                client = _httpClient;
+            }
+
+            var response = await client.GetAsync($"{ServiceUrl}/healthz", cts.Token);
+            return response.IsSuccessStatusCode;
+        }
+        finally
+        {
+            _healthCheckGate.Release();
+        }
     }
 
     /// <inheritdoc />
     protected override void StartMonitoringTimer(int intervalMs)
     {
+        _monitoringCts.Dispose();
+        _monitoringCts = new CancellationTokenSource();
         _monitoringTimer = new Timer(intervalMs);
         _monitoringTimer.Elapsed += OnMonitoringTimerElapsed;
         _monitoringTimer.AutoReset = true;
@@ -60,6 +81,7 @@ public sealed class ConnectionService : ConnectionServiceBase, IConnectionServic
     {
         if (_monitoringTimer != null)
         {
+            _monitoringCts.Cancel();
             _monitoringTimer.Stop();
             _monitoringTimer.Elapsed -= OnMonitoringTimerElapsed;
             _monitoringTimer.Dispose();
@@ -73,6 +95,8 @@ public sealed class ConnectionService : ConnectionServiceBase, IConnectionServic
         if (_reconnectTimer != null)
             return;
 
+        _reconnectCts.Dispose();
+        _reconnectCts = new CancellationTokenSource();
         _reconnectTimer = new Timer(delayMs);
         _reconnectTimer.Elapsed += OnReconnectTimerElapsed;
         _reconnectTimer.AutoReset = false;
@@ -84,6 +108,7 @@ public sealed class ConnectionService : ConnectionServiceBase, IConnectionServic
     {
         if (_reconnectTimer != null)
         {
+            _reconnectCts.Cancel();
             _reconnectTimer.Stop();
             _reconnectTimer.Elapsed -= OnReconnectTimerElapsed;
             _reconnectTimer.Dispose();
@@ -94,12 +119,23 @@ public sealed class ConnectionService : ConnectionServiceBase, IConnectionServic
     /// <inheritdoc />
     protected override void OnSettingsUpdated(ConnectionSettings settings)
     {
-        var old = _httpClient;
-        _httpClient = new HttpClient
+        _healthCheckGate.Wait();
+        try
         {
-            Timeout = TimeSpan.FromSeconds(settings.ServiceTimeoutSeconds)
-        };
-        old.Dispose();
+            var old = _httpClient;
+            lock (_httpClientLock)
+            {
+                _httpClient = new HttpClient
+                {
+                    Timeout = TimeSpan.FromSeconds(settings.ServiceTimeoutSeconds)
+                };
+            }
+            old.Dispose();
+        }
+        finally
+        {
+            _healthCheckGate.Release();
+        }
     }
 
     /// <inheritdoc />
@@ -117,16 +153,29 @@ public sealed class ConnectionService : ConnectionServiceBase, IConnectionServic
     /// <inheritdoc />
     protected override void DisposePlatformResources()
     {
-        _httpClient.Dispose();
+        _monitoringCts.Cancel();
+        _reconnectCts.Cancel();
+        _healthCheckGate.Wait();
+        try
+        {
+            _httpClient.Dispose();
+        }
+        finally
+        {
+            _healthCheckGate.Release();
+            _healthCheckGate.Dispose();
+            _monitoringCts.Dispose();
+            _reconnectCts.Dispose();
+        }
     }
 
-    private async void OnMonitoringTimerElapsed(object? sender, ElapsedEventArgs e)
+    private void OnMonitoringTimerElapsed(object? sender, ElapsedEventArgs e)
     {
-        await OnMonitoringTimerFired();
+        _ = OnMonitoringTimerFired(_monitoringCts.Token);
     }
 
-    private async void OnReconnectTimerElapsed(object? sender, ElapsedEventArgs e)
+    private void OnReconnectTimerElapsed(object? sender, ElapsedEventArgs e)
     {
-        await OnReconnectTimerFired();
+        _ = OnReconnectTimerFired(_reconnectCts.Token);
     }
 }
