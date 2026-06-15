@@ -41,6 +41,40 @@ export function formatUsd(
 }
 
 /**
+ * Formats an amount in an arbitrary ISO currency, e.g. `"€1,234.50"`. Unlike
+ * {@link formatUsd}, the currency code is data-driven, so a malformed or
+ * unsupported code (which makes `Intl.NumberFormat` throw a `RangeError`) is
+ * caught and degraded to a readable `"<CODE> <amount>"` string rather than
+ * crashing the surface. Returns {@link EMPTY_VALUE} for missing or non-finite
+ * values.
+ */
+export function formatMoney(
+  value: number | null | undefined,
+  currencyCode: string,
+  options: { maximumFractionDigits?: number; minimumFractionDigits?: number; locale?: string } = {}
+): string {
+  if (!isFiniteNumber(value)) {
+    return EMPTY_VALUE;
+  }
+
+  const currency = currencyCode.trim() || "USD";
+  const { locale, ...numberFormatOptions } = options;
+
+  try {
+    return value.toLocaleString(locale, {
+      style: "currency",
+      currency,
+      ...numberFormatOptions
+    });
+  } catch {
+    return `${currency} ${value.toLocaleString(locale, {
+      maximumFractionDigits: numberFormatOptions.maximumFractionDigits ?? 2,
+      minimumFractionDigits: numberFormatOptions.minimumFractionDigits
+    })}`;
+  }
+}
+
+/**
  * Formats a USD amount compactly with magnitude suffixes, e.g. `"$10.0M"`,
  * `"$250.0K"`, or `"$420"`. Negative amounts are prefixed with `"-"`.
  * Returns {@link EMPTY_VALUE} for missing or non-finite values.

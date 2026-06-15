@@ -20,6 +20,7 @@ import {
   rejectOperationsContinuityWorkflow,
   saveFinancialRecordExplorerView
 } from "@/lib/api";
+import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG, workspaceForPath } from "@/lib/workspace";
 import {
@@ -504,11 +505,7 @@ function AccountingSystemReconciliationPanel({
 }
 
 function formatGlAmount(value: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency || "USD",
-    maximumFractionDigits: 2
-  }).format(value);
+  return formatMoney(value, currency, { maximumFractionDigits: 2, locale: "en-US" });
 }
 
 function AccountingApprovalsWorkstream() {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { EMPTY_VALUE, formatCompactUsd, formatPercent, formatUsd } from "@/lib/format";
+import { EMPTY_VALUE, formatCompactUsd, formatMoney, formatPercent, formatUsd } from "@/lib/format";
 
 describe("formatUsd", () => {
   it("formats finite amounts with the currency style", () => {
@@ -42,6 +42,30 @@ describe("formatCompactUsd", () => {
     "returns the sentinel for non-finite or missing value %p",
     (value) => {
       expect(formatCompactUsd(value as number | null | undefined)).toBe(EMPTY_VALUE);
+    }
+  );
+});
+
+describe("formatMoney", () => {
+  it("formats supported ISO currencies", () => {
+    expect(formatMoney(1234.5, "USD", { maximumFractionDigits: 2, locale: "en-US" })).toBe("$1,234.50");
+    expect(formatMoney(1000, "EUR", { maximumFractionDigits: 2, locale: "en-US" })).toBe("€1,000.00");
+  });
+
+  it("falls back to USD when the currency code is blank", () => {
+    expect(formatMoney(500, "  ", { maximumFractionDigits: 2, locale: "en-US" })).toBe("$500.00");
+  });
+
+  it("degrades gracefully instead of throwing on a malformed currency code", () => {
+    // An invalid ISO code makes Intl.NumberFormat throw a RangeError; the helper
+    // must return a readable string rather than crash the calling surface.
+    expect(formatMoney(2500, "BOGUS", { maximumFractionDigits: 2, locale: "en-US" })).toBe("BOGUS 2,500");
+  });
+
+  it.each([NaN, Infinity, -Infinity, null, undefined])(
+    "returns the sentinel for non-finite or missing value %p",
+    (value) => {
+      expect(formatMoney(value as number | null | undefined, "USD")).toBe(EMPTY_VALUE);
     }
   );
 });
