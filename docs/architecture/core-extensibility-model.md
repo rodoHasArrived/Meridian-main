@@ -38,6 +38,21 @@ evidence expectations, but they must attach to these objects instead of replacin
 | Domain extensions | Tenant object attributes and descriptors | Layer around stable objects without ungoverned identity. |
 | Tenant templates | Profile bundles for onboarding | Activate governed configuration; do not create separate products. |
 
+## Tenant-Profile Configuration
+
+Tenant profiles are an extensibility-layer packaging pattern, not a license to fork core financial
+records. The product design section
+[`Tenant-Profile Design`](../product/meridian-design-document.md#111-tenant-profile-design) defines
+the supported profile examples, profile-configurable surfaces, non-forkable foundations, Settings UI
+concepts, and migration expectations. Engineering implementations should model profile selection,
+preview, import, activation review, and migration history as governed configuration state that
+reuses the stable core object vocabulary above.
+
+Profile bundles may configure labels, workflows, rules, evidence checklists, report templates,
+permissions, saved views, dashboards, and default workspaces. They must not replace ledger
+invariants, audit event contracts, evidence-retention requirements, approval controls, record
+identifiers, or shared source-of-record rules.
+
 ## Governed Foundations
 
 These foundations are intentionally not fully configurable:

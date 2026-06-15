@@ -128,10 +128,16 @@ Meridian should be one platform with configurable tenant profiles, not separate 
 Example profiles:
 
 * Fund Administrator Profile
+* Private Fund CFO Profile
 * RIA Profile
-* Single Family Office Profile
+* Family Office Profile
+* Investment Accounting Team Profile
 * Private Credit / Alternative Asset Profile
 * Hybrid Institutional Profile
+
+The tenant-profile boundary is defined in [Section 11.1 Tenant-Profile Design](#111-tenant-profile-design) and
+mirrored by the engineering guardrails in
+[`docs/architecture/core-extensibility-model.md`](../architecture/core-extensibility-model.md#tenant-profile-configuration).
 
 The platform must also support scoped authority inside those profiles. A user is not only
 "Accounting" or "Administrator"; production authorization must be able to answer whether that user
@@ -1558,6 +1564,51 @@ These should remain governed and consistent:
 * Data lineage model
 * Approval evidence model
 * Immutable record preservation
+
+### 11.1 Tenant-Profile Design
+
+Tenant profiles are governed configuration bundles that tune Meridian for common operating models
+without creating separate products or tenant-specific forks. Supported profile examples include:
+
+* fund administrator
+* private fund CFO
+* RIA
+* family office
+* investment accounting team
+
+Profiles may configure the tenant-facing vocabulary and operating posture around the stable core:
+labels, workflows, rules, evidence checklists, report templates, permissions, saved views,
+dashboards, and default workspaces. These settings should be versioned, scoped, reviewable, and
+exportable as tenant-template bundles so an implementation team can explain which assumptions are
+active for each tenant, fund, household, legal entity, or operating organization.
+
+Profiles may not fork the shared financial record foundations. Ledger invariants, the audit event
+model, evidence retention, approval controls, record identifiers, and shared source-of-record rules
+must remain common platform behavior. Profile-specific terminology can rename a view or checklist,
+but it cannot make a journal entry unbalanced, remove approval evidence, rewrite retained lineage,
+replace record IDs, or create a private source-of-record hierarchy outside Meridian's governed model.
+
+Settings should expose profile configuration as a governed operator workflow:
+
+* **Profile selection** — choose a baseline profile during tenant setup or controlled reconfiguration,
+  with clear scope, owner, effective date, and impacted workspaces.
+* **Profile preview** — show label, workflow, rule, evidence, report, permission, saved-view,
+  dashboard, and default-workspace changes before activation.
+* **Template import** — import profile templates from approved configuration bundles, validate schema
+  compatibility, and retain source, version, checksum, and approval metadata.
+* **Governance review** — require authorized review for profile activation, high-impact changes,
+  permission expansion, evidence checklist reduction, report-template changes, and source-priority
+  assumptions.
+
+When a tenant changes profile assumptions, Meridian should treat the change as a migration rather
+than a cosmetic preference update. Migration rules should include an impact assessment, immutable
+retention of the prior profile version, explicit mapping from old labels/workflows/rules/templates to
+new ones, compatibility checks for open tasks and in-flight approvals, report-template versioning,
+saved-view/dashboard remapping, permission-delta review, replay or revalidation requirements for
+evidence-sensitive outputs, and a cutover/audit event that records who approved the change, when it
+became effective, and which tenant scopes were affected. Historical records should continue to
+resolve against the profile version that governed them unless a reviewed migration explicitly
+reclassifies them with retained evidence.
 
 ---
 
