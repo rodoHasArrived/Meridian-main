@@ -808,7 +808,7 @@ describe("App", () => {
 
     renderWithRouter(<App />, { initialEntries: ["/portfolio"] });
 
-    const positionsTable = await screen.findByRole("table", { name: /open positions/i }, { timeout: 5000 });
+    const positionsTable = await screen.findByRole("treegrid", { name: /open positions/i }, { timeout: 5000 });
     expect(within(positionsTable).getByText("NVDA")).toBeInTheDocument();
     expect(screen.getAllByText("Portfolio workspace").length).toBeGreaterThan(0);
   });

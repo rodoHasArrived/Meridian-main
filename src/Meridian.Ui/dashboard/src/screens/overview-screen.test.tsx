@@ -1,5 +1,6 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "jest-axe";
 import { OverviewScreen } from "@/screens/overview-screen";
 import { renderWithRouter } from "@/test/render";
 import type { SessionInfo, SystemOverviewResponse, TradingWorkspaceResponse } from "@/types";
@@ -62,6 +63,15 @@ const tradingWorkspace: TradingWorkspaceResponse = {
 };
 
 describe("OverviewScreen", () => {
+  it("has no basic accessibility violations when fully hydrated", async () => {
+    const { container } = renderWithRouter(
+      <OverviewScreen data={overview} session={session} trading={tradingWorkspace} />
+    );
+
+    const results = await axe(container);
+    expect(results.violations).toHaveLength(0);
+  });
+
   it("renders system health as a named live status banner", () => {
     renderWithRouter(<OverviewScreen data={overview} session={null} />);
 
@@ -111,7 +121,7 @@ describe("OverviewScreen", () => {
 
     expect(screen.getByText("Recent activity")).toBeInTheDocument();
 
-    const activityTable = screen.getByRole("table", { name: "2 recent system events" });
+    const activityTable = screen.getByRole("treegrid", { name: "2 recent system events" });
     const warningRow = within(activityTable).getByRole("row", {
       name: /Inspect Warning event from Provider health at .*Brokerage sync delayed\./i
     });

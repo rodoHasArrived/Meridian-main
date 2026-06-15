@@ -258,7 +258,7 @@ describe("DataScreen", () => {
     expect(screen.getAllByText("Provider health").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Backfill queue").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Recent exports").length).toBeGreaterThan(0);
-    expect(screen.getByRole("table", { name: "Provider health" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Provider health" })).toBeInTheDocument();
     const providerRow = screen.getByRole("row", { name: "Inspect provider Polygon.io" });
     expect(providerRow).toHaveAttribute("aria-selected", "true");
     expect(providerRow).toHaveAttribute("aria-expanded", "true");
@@ -278,7 +278,7 @@ describe("DataScreen", () => {
     expect(backfillDetail).toHaveAttribute("id", DATA_BACKFILL_DETAIL_PANEL_ID);
     expect(within(backfillDetail).getByText("US equities / 30d")).toBeInTheDocument();
     expect(within(backfillDetail).getByText(/Replay is currently advancing/i)).toBeInTheDocument();
-    const exportTable = screen.getByRole("table", { name: "Recent exports" });
+    const exportTable = screen.getByRole("treegrid", { name: "Recent exports" });
     expect(exportTable).toBeInTheDocument();
     const exportRow = screen.getByRole("row", { name: "Inspect export EX-2201" });
     expect(exportRow).toHaveAttribute("aria-selected", "true");
@@ -342,7 +342,7 @@ describe("DataScreen", () => {
 
     expect(screen.getByText(/1 provider blocks dependent workflows/i)).toBeInTheDocument();
     expect(screen.getByText(/Next action: Repair Plaid credentials/i)).toBeInTheDocument();
-    expect(screen.getByRole("table", { name: "Provider health" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Provider health" })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Next Action" })).toBeInTheDocument();
     const plaidRow = screen.getByRole("row", { name: /Inspect provider Plaid/i });
     expect(plaidRow).toHaveClass("bg-danger/5");
@@ -777,7 +777,7 @@ describe("DataScreen", () => {
 
     renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/backfills"] });
 
-    expect(screen.getByRole("table", { name: "Backfill queue" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Backfill queue" })).toBeInTheDocument();
 
     const reviewBackfill = screen.getByRole("row", { name: "Inspect backfill BF-1044" });
     const runningBackfill = screen.getByRole("row", { name: "Inspect backfill BF-1042" });

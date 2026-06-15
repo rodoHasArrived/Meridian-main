@@ -1768,7 +1768,7 @@ describe("AccountingScreen", () => {
 
     expect(await screen.findByRole("heading", { name: "Approval queue and audit gate" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Approval gate", level: 2 })).toBeInTheDocument();
-    expect(screen.queryByRole("table", { name: "Primary trial balance lines for run-42" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("treegrid", { name: "Primary trial balance lines for run-42" })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Accounting approval queue" })).toHaveTextContent("2026-05");
     expect(screen.getByRole("region", { name: "Selected approval detail" })).toHaveTextContent("approval-close-1");
     expect(screen.getByRole("region", { name: "Selected approval detail" })).toHaveTextContent("ops.controller");
@@ -1786,14 +1786,14 @@ describe("AccountingScreen", () => {
   it("renders reconciliation strong panels with view-model presentation state", async () => {
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
-    expect(screen.getAllByRole("table", { name: "Reconciliation runs" })).toHaveLength(1);
+    expect(screen.getAllByRole("treegrid", { name: "Reconciliation runs" })).toHaveLength(1);
     expect(screen.queryByRole("link", { name: "Open Accounting reconciliation workstream" })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Reconciliation detail for Paper Index Mean Reversion" })).toBeInTheDocument();
     const selectedRun = screen.getByRole("row", { name: "Inspect reconciliation run Paper Index Mean Reversion" });
     expect(selectedRun).toHaveAttribute("aria-selected", "true");
     expect(selectedRun).toHaveAttribute("aria-expanded", "true");
     expect(selectedRun).toHaveAttribute("aria-controls", "reconciliation-run-detail-panel");
-    expect(screen.getByRole("table", { name: "Reconciliation runs" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Reconciliation runs" })).toBeInTheDocument();
     expect(screen.getByLabelText("Open breaks: 1")).toHaveTextContent("1");
     expect(screen.getByLabelText("Reconciliation narrative for Paper Index Mean Reversion")).toHaveTextContent(
       "Open reconciliation breaks remain on this run."
@@ -1814,7 +1814,7 @@ describe("AccountingScreen", () => {
       "href",
       "/reporting/evidence?subjectKind=accounting-exceptions&subjectId=active"
     );
-    expect(screen.getByRole("table", { name: "Reconciliation break queue" })).toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Reconciliation break queue" })).toBeInTheDocument();
   });
 
   it("renders calibration tolerance profiles as selectable row-detail evidence", async () => {
@@ -1823,7 +1823,7 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
-    const table = await screen.findByRole("table", { name: "Tolerance profile health by reconciliation route" });
+    const table = await screen.findByRole("treegrid", { name: "Tolerance profile health by reconciliation route" });
     expect(table).toHaveTextContent("tp-cash-variance");
     const firstProfile = screen.getByRole("row", {
       name: "Inspect tolerance profile tp-cash-variance: Operator review required"
@@ -1885,7 +1885,7 @@ describe("AccountingScreen", () => {
 
     await user.click(retry);
 
-    expect(await screen.findByRole("table", { name: "Tolerance profile health by reconciliation route" })).toHaveTextContent(
+    expect(await screen.findByRole("treegrid", { name: "Tolerance profile health by reconciliation route" })).toHaveTextContent(
       "tp-cash-variance"
     );
     expect(screen.getByRole("button", { name: "Refresh calibration summary" })).toBeEnabled();
@@ -1915,7 +1915,7 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
-    const table = await screen.findByRole("table", { name: "Accounting statement runs" });
+    const table = await screen.findByRole("treegrid", { name: "Accounting statement runs" });
     expect(table).toHaveTextContent("Northern Trust");
     expect(table).toHaveTextContent("Fund A - Prime");
     expect(table).toHaveTextContent("2026-04");
@@ -1974,7 +1974,7 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting");
 
-    const table = await screen.findByRole("table", { name: "Primary trial balance lines for run-42" });
+    const table = await screen.findByRole("treegrid", { name: "Primary trial balance lines for run-42" });
     expect(table).toBeInTheDocument();
     const cashRow = screen.getByRole("row", { name: "Inspect trial-balance account Cash for Asset" });
     const financingRow = screen.getByRole("row", { name: "Inspect trial-balance account Financing payable for Liability" });
@@ -2019,7 +2019,7 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(data, "/accounting");
 
     expect(await screen.findByText("No trial balance lines")).toBeInTheDocument();
-    expect(screen.queryByRole("table", { name: "Primary trial balance lines for run-42" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("treegrid", { name: "Primary trial balance lines for run-42" })).not.toBeInTheDocument();
   });
 
   it("renders structured trial-balance api-errors with endpoint and validation detail", async () => {
@@ -2369,7 +2369,7 @@ describe("AccountingScreen", () => {
     await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
     await user.click(await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." }));
 
-    const table = await screen.findByRole("table", { name: "Cash-flow and factor schedules for sec-1" });
+    const table = await screen.findByRole("treegrid", { name: "Cash-flow and factor schedules for sec-1" });
     expect(table).toHaveTextContent("sched-1-coupon");
     const couponRow = screen.getByRole("row", { name: "Inspect schedule event Coupon for sec-1 on 2026-05-15" });
     const principalRow = screen.getByRole("row", { name: "Inspect schedule event Principal for sec-1 on 2026-11-15" });
@@ -2384,7 +2384,7 @@ describe("AccountingScreen", () => {
     expect(principalRow).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("region", { name: "Cash-flow schedule detail for Principal on sec-1" })).toHaveTextContent("126,250 USD");
     expect(screen.getByRole("toolbar", { name: "Cash-flow schedule status for sec-1" })).toHaveTextContent("2");
-    expect(screen.getByRole("table", { name: "Open lot read model for sec-1" })).toHaveTextContent("lot-1");
+    expect(screen.getByRole("treegrid", { name: "Open lot read model for sec-1" })).toHaveTextContent("lot-1");
     expect(screen.getByRole("row", { name: "Inspect open lot lot-1 for AAPL" })).toHaveAttribute("aria-controls", "security-open-lot-detail-panel");
     expect(screen.getByRole("region", { name: "Open lot detail for lot-1 on AAPL" })).toHaveTextContent("85,500");
   });
@@ -2431,7 +2431,7 @@ describe("AccountingScreen", () => {
     await user.type(screen.getByPlaceholderText("Search securities…"), "AAPL");
     await user.click(await screen.findByRole("row", { name: "Open identity drill-in for Apple Inc." }));
 
-    const table = await screen.findByRole("table", { name: "Corporate actions for sec-1" });
+    const table = await screen.findByRole("treegrid", { name: "Corporate actions for sec-1" });
     expect(table).toBeInTheDocument();
     const dividendRow = screen.getByRole("row", { name: "Inspect corporate action Dividend for sec-1" });
     const splitRow = screen.getByRole("row", { name: "Inspect corporate action Stock split for sec-1" });

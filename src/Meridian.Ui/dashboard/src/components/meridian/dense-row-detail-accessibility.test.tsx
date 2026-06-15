@@ -1,5 +1,6 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { axe } from "jest-axe";
 import { describe, expect, it } from "vitest";
 import {
   DENSE_ROW_DETAIL_ACCESSIBILITY_SPEC,
@@ -110,7 +111,7 @@ describe("dense row detail accessibility contract", () => {
 
     render(<Harness />);
 
-    const table = screen.getByRole("table", { name: moduleCase.tableLabel });
+    const table = screen.getByRole("treegrid", { name: moduleCase.tableLabel });
     expect(table).toHaveAccessibleDescription(DENSE_ROW_DETAIL_KEYBOARD_INSTRUCTIONS);
 
     const firstRow = screen.getByRole("row", { name: `Select ${moduleCase.moduleName} First row` });
@@ -139,5 +140,38 @@ describe("dense row detail accessibility contract", () => {
 
     await user.keyboard("{Escape}");
     expect(firstRow).toHaveFocus();
+  });
+
+  it("exposes the selectable dense table as a treegrid with no accessibility violations", async () => {
+    const moduleCase = moduleCases[0];
+    const { container } = render(
+      <div>
+        <DenseDataTable
+          columns={columns}
+          rows={rows}
+          getRowId={(row) => row.id}
+          getRowAriaLabel={(row) => `${moduleCase.moduleName} ${row.label} ${row.status}`}
+          getRowSelectAriaLabel={(row) => `Select ${moduleCase.moduleName} ${row.label}`}
+          getRowAriaControls={() => moduleCase.detailPanelId}
+          getRowAriaExpanded={(row) => row.id === "first"}
+          onRowSelect={() => undefined}
+          selectedRowId="first"
+          emptyText="No rows"
+          ariaLabel={moduleCase.tableLabel}
+          caption={`${moduleCase.moduleName} shared contract regression harness.`}
+        />
+        <DenseRowDetailPanel id={moduleCase.detailPanelId} ariaLabel={moduleCase.detailPanelLabel}>
+          <h2>{moduleCase.detailPanelLabel}</h2>
+          <p>Panel content updates when selection changes.</p>
+        </DenseRowDetailPanel>
+      </div>
+    );
+
+    // Regression guard: interactive dense rows carry aria-selected/aria-expanded,
+    // which are only valid ARIA on a row owned by a grid/treegrid. The table must
+    // therefore be exposed as a treegrid (axe rule: aria-conditional-attr).
+    expect(screen.getByRole("treegrid", { name: moduleCase.tableLabel })).toBeInTheDocument();
+    const results = await axe(container);
+    expect(results.violations).toHaveLength(0);
   });
 });

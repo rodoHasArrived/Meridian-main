@@ -20,7 +20,7 @@ export const DENSE_ROW_DETAIL_ACCESSIBILITY_SPEC = {
     "Escape resolves aria-controls back to the currently selected row before falling back to the first controlling row."
   ],
   ariaRolesAndStates: [
-    "The dense list remains a semantic table with labelled selectable rows.",
+    "Selectable dense lists are exposed as a treegrid so labelled rows can carry aria-selected and aria-expanded; static lists remain plain tables.",
     "The active row exposes aria-selected=true and inactive rows omit aria-selected.",
     "Rows expose aria-controls pointing at their detail panel and aria-expanded to mirror the selected/expanded relationship.",
     "Detail panels are labelled regions or complementary asides with aria-live=polite updates."

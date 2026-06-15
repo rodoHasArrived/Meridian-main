@@ -110,6 +110,12 @@ export function DenseDataTable<T>({
       ) : null}
       <table
         id={tableId}
+        // Selectable rows are interactive (roving tabindex, keyboard navigation,
+        // selection, and aria-expanded disclosure of a detail panel). ARIA only
+        // permits aria-expanded/aria-selected on a row when its owner is a
+        // grid/treegrid, so an interactive dense table is exposed as a treegrid;
+        // static tables keep their native table semantics.
+        role={selectableRows ? "treegrid" : undefined}
         className="dense-data-table"
         aria-label={ariaLabel}
         aria-describedby={selectableRows ? keyboardInstructionsId : undefined}

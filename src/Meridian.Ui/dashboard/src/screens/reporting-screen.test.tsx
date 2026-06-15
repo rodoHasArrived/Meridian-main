@@ -4091,7 +4091,7 @@ describe("ReportingScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
 
-    const profileTable = screen.getByRole("table", { name: "Export profiles" });
+    const profileTable = screen.getByRole("treegrid", { name: "Export profiles" });
     const auditRow = within(profileTable).getByRole("row", { name: /select audit pack export profile/i });
     await user.click(auditRow);
 

@@ -768,7 +768,7 @@ describe("OperationsContinuityScreen", () => {
     renderScreen();
 
     expect(await screen.findByRole("heading", { name: "Operations continuity" })).toBeInTheDocument();
-    const workflows = await screen.findByRole("table", { name: "Operations continuity workflows" });
+    const workflows = await screen.findByRole("treegrid", { name: "Operations continuity workflows" });
     expect(within(workflows).getByText("2026-05 close")).toBeInTheDocument();
     const workflowRow = within(workflows).getByRole("row", { name: /open 2026-05 operations continuity workflow/i });
     expect(workflowRow).toHaveAttribute("aria-controls", OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID);

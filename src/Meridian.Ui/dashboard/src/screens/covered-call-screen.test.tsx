@@ -325,7 +325,7 @@ describe("CoveredCallScreen", () => {
 
     renderCoveredCallScreen();
 
-    const historyTable = await screen.findByRole("table", { name: "Previous covered-call runs" });
+    const historyTable = await screen.findByRole("treegrid", { name: "Previous covered-call runs" });
     const historyRow = await screen.findByRole("row", {
       name: "Reload covered-call run run-history-1 for SPY"
     });
@@ -508,7 +508,7 @@ describe("CoveredCallScreen", () => {
     });
     fireEvent.click(historyRow);
 
-    const tradeTable = await screen.findByRole("table", { name: "SPY covered-call trade timeline" });
+    const tradeTable = await screen.findByRole("treegrid", { name: "SPY covered-call trade timeline" });
     const firstTrade = await screen.findByRole("row", {
       name: "Inspect SPY trade 1, entry 2024-01-10, exit 2024-01-24, strike 505.00, PnL $320, status Closed gain."
     });
