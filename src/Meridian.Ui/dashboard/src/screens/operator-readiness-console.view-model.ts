@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getOperatorInbox, type ApiRequestOptions } from "@/lib/api";
+import { formatUsd } from "@/lib/format";
 import { countPendingReportPackDistributions, getReportPackDistributions } from "@/lib/reporting-distributions";
 import { normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
@@ -1853,11 +1854,7 @@ function levelFromTone(tone: string): ReadinessConsoleLevel {
 }
 
 function formatCurrency(value: number): string {
-  return value.toLocaleString(undefined, {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2
-  });
+  return formatUsd(value, { maximumFractionDigits: 2 });
 }
 
 function formatReadinessUtcMinute(value: string | null | undefined, fallback: string): string {

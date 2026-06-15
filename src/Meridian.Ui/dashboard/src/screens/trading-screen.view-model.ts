@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
+import { formatUsd } from "@/lib/format";
 import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
 import type {
   ExecutionAuditEntry,
@@ -2112,11 +2113,7 @@ function getPaperSessionStatus(session: PaperSessionSummary): string {
 }
 
 function formatUsdValue(value: number): string {
-  return value.toLocaleString(undefined, {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 2
-  });
+  return formatUsd(value, { maximumFractionDigits: 2 });
 }
 
 export type SessionReplayCommandKind =

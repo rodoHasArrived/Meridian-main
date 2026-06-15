@@ -1,3 +1,4 @@
+import { formatCompactUsd, formatPercent } from "@/lib/format";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 
 export type FamilyOfficeTone = "default" | "success" | "warning" | "danger";
@@ -328,7 +329,7 @@ function buildFamilyOfficePanels(entityStructure: FamilyOfficeEntityStructure): 
     {
       id: "total-family-net-worth",
       label: "Total family net worth",
-      value: formatCurrency(totalNetWorth),
+      value: formatCompactUsd(totalNetWorth),
       detail: `Consolidated ${entityStructure.displayName} NAV after liabilities and unfunded commitments as of ${entityStructure.asOfDate}.`,
       tone: "success",
       emptyState: "No household NAV feed has been connected."
@@ -352,7 +353,7 @@ function buildFamilyOfficePanels(entityStructure: FamilyOfficeEntityStructure): 
     {
       id: "cash-and-liabilities",
       label: "Cash and liabilities",
-      value: `${formatCurrency(totalCash)} / ${formatCurrency(totalLiabilities)}`,
+      value: `${formatCompactUsd(totalCash)} / ${formatCompactUsd(totalLiabilities)}`,
       detail: "Available cash and short-term liabilities across custody, treasury, and operating accounts.",
       tone: totalLiabilities > 0 ? "warning" : "success",
       emptyState: "Cash and liability ledgers have not been reconciled."
@@ -360,7 +361,7 @@ function buildFamilyOfficePanels(entityStructure: FamilyOfficeEntityStructure): 
     {
       id: "private-assets",
       label: "Private assets",
-      value: formatCurrency(privateAssetValue),
+      value: formatCompactUsd(privateAssetValue),
       detail: `${formatCountLabel(entityStructure.privateAssets.length, "private asset")} tied to the entity structure and valuation evidence status.`,
       tone: staleWarningCount > 0 ? "warning" : "success",
       emptyState: "No private asset register is available."
@@ -368,7 +369,7 @@ function buildFamilyOfficePanels(entityStructure: FamilyOfficeEntityStructure): 
     {
       id: "unfunded-commitments",
       label: "Unfunded commitments",
-      value: formatCurrency(unfundedCommitments),
+      value: formatCompactUsd(unfundedCommitments),
       detail: `${formatCountLabel(entityStructure.commitments.length, "capital commitment")} across private funds and direct investment side letters.`,
       tone: unfundedCommitments > 0 ? "danger" : "success",
       emptyState: "Commitment schedule is unavailable."
@@ -404,7 +405,7 @@ function buildOwnershipNodes(entityStructure: FamilyOfficeEntityStructure): Arra
     id: entity.entityId,
     label: entity.displayName,
     type: entity.parentEntityId === null ? "family" as const : "entity" as const,
-    value: formatCurrency(entity.netWorth),
+    value: formatCompactUsd(entity.netWorth),
     percentage: formatPercent(entity.ownershipPercent),
     detail: entity.detail,
     parentId: entity.parentEntityId,
@@ -416,7 +417,7 @@ function buildOwnershipNodes(entityStructure: FamilyOfficeEntityStructure): Arra
       id: asset.assetId,
       label: asset.displayName,
       type: "asset" as const,
-      value: formatCurrency(asset.value),
+      value: formatCompactUsd(asset.value),
       percentage: formatPercent(totalNetWorth === 0 ? 0 : (asset.value / totalNetWorth) * 100),
       detail: `${asset.assetType} held by ${entityDisplayName(entityStructure, asset.entityId)}. ${asset.valuationStatus === "stale" ? "Valuation is past the freshness policy." : "Independent valuation evidence is missing."}`,
       parentId: asset.entityId,
@@ -474,24 +475,6 @@ function ownershipToneRowClassName(tone: FamilyOfficeTone): string {
 
 function entityDisplayName(entityStructure: FamilyOfficeEntityStructure, entityId: string | null): string {
   return entityStructure.entities.find((entity) => entity.entityId === entityId)?.displayName ?? "Unmapped entity";
-}
-
-function formatCurrency(value: number): string {
-  const absoluteValue = Math.abs(value);
-  const sign = value < 0 ? "-" : "";
-  if (absoluteValue >= 1_000_000) {
-    return `${sign}$${(absoluteValue / 1_000_000).toFixed(1)}M`;
-  }
-
-  if (absoluteValue >= 1_000) {
-    return `${sign}$${(absoluteValue / 1_000).toFixed(1)}K`;
-  }
-
-  return `${sign}$${absoluteValue.toFixed(0)}`;
-}
-
-function formatPercent(value: number): string {
-  return Number.isInteger(value) ? `${value}%` : `${value.toFixed(1)}%`;
 }
 
 function formatCountLabel(count: number, singular: string, plural = `${singular}s`): string {
