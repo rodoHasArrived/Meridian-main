@@ -968,6 +968,99 @@ Collect Approved Information
 * Client portal support (later; near-term delivery is governed report-package distribution)
 * Document delivery
 
+### Report-Line Provenance Explorer
+
+The `Reporting` workspace should include a Report-Line Provenance Explorer for governed stakeholder,
+board, audit, tax-support, and internal control packages. The explorer must make every reported value
+traceable from package delivery back to retained operating evidence without creating a broad
+stakeholder portal or bypassing Accounting, Compliance, or approval workflows.
+
+#### Drill Path
+
+The primary drill path is:
+
+```text
+Report Package
+→ Report Page
+→ Report Line
+→ Source Records
+```
+
+* Report package selection shows package ID, report type, fund/entity scope, period, package version,
+  recipient group, delivery state, approval state, dataset version, template version, and restatement
+  state.
+* Report page review shows page-level template section, page render status, page approval evidence,
+  delivery inclusion, and any page-specific amendment or restatement notes.
+* Report line review shows the line label, original displayed value, current displayed value, formula
+  or mapping rule, materiality classification, reviewer state, and lineage completeness.
+* Source-record drilldown opens the retained source records that contributed to the line, including
+  imported files, provider/API payload references, normalized records, ledger or capital-account
+  postings, and validation or reconciliation evidence.
+
+#### Lineage Links
+
+Every report line must expose lineage links to the evidence needed to defend the value:
+
+* Source files or provider/API payloads, including source URI or vault reference, receipt timestamp,
+  source hash, schema version, mapping version, and import-run evidence.
+* Normalized records, extraction confidence, transformation rule, validation results, validation
+  exceptions, and any replay or repair action that affected the reporting dataset.
+* Reconciliation cases, match groups, unresolved breaks, waivers, owner decisions, and close or NAV
+  readiness blockers tied to the line.
+* Journals, reversals, adjustment approvals, posting state, period-lock state, and ledger-impact
+  evidence when the line depends on accounting records.
+* Capital-account effects, capital activity support, allocation basis, roll-forward contribution, and
+  investor or stakeholder-specific entitlement scope.
+* Report approvals, segregation-of-duties checks, reviewer comments, approver identity, approval
+  timestamp, and held/released decision history.
+* Report template versions, formula versions, saved filters, package builder inputs, render artifacts,
+  and export manifests.
+* Delivery records, recipient lists, delivery channel, timestamp, delivery evidence, bounce/failure
+  status, revoked-delivery state, and recipient-impact scope.
+* Audit events, legal-hold markers, retention class, correlation IDs, and evidence-manifest freeze
+  references.
+
+#### Restatement Behavior
+
+Restatement review must preserve the prior reporting record while explaining the corrected record:
+
+* The explorer shows the original value, corrected value, variance, affected page and line, affected
+  package versions, and whether the original package was delivered, held, amended, revoked, or
+  archived.
+* Each restatement captures reason code, narrative reason, triggering evidence, corrected source
+  records, validation and reconciliation changes, journal or capital-account effects, and retained
+  support files.
+* Controller or CFO approval is required for release; the view shows approver, approval timestamp,
+  approval comments, segregation-of-duties result, and linked audit events.
+* Delivery impact is explicit: impacted recipient groups, package versions requiring redelivery,
+  delivery channels, prior-delivery evidence, corrected-delivery evidence, failure handling, and
+  stakeholder notification status.
+* Original package and line evidence remains immutable; corrected values are represented as a new
+  package version or restatement package linked to the original lineage.
+
+#### Required Filters
+
+The explorer must support saved and ad hoc filters for:
+
+* Fund or entity.
+* Period.
+* Report type.
+* Package version.
+* Recipient group.
+* Approval state.
+* Restatement state.
+
+#### Browser and WPF Workstation Behavior
+
+* Browser workstation behavior focuses on stakeholder-review and package-governance flows: package
+  summary, page preview, line proof drawer, approval and delivery badges, entitlement-scoped
+  recipient impact, restatement comparison, and shareable internal review links for authorized
+  operators. External self-service behavior remains deferred beyond governed package delivery.
+* WPF workstation behavior focuses on dense workpaper review: virtualized package/page/line grids,
+  bulk filter and sort, side-by-side original-versus-corrected values, source-record tables,
+  reconciliation and journal tabs, keyboard-first navigation, offline-friendly evidence inspection,
+  and exportable reviewer workpapers for audit support.
+
 ### Acceptance Criteria
 
 * Each report package has package ID, tenant/fund/entity scope, dataset version, template version,
