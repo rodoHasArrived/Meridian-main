@@ -281,7 +281,7 @@ Use these placement rules when adding or moving tests so cross-platform coverage
 
 - **Implementation Guides:**
   - [Provider Implementation Guide](./provider-implementation.md) - Adding new data providers
-  - [Desktop Platform Improvements](../evaluations/desktop-platform-improvements-implementation-guide.md) - Desktop development
+  - [Desktop Platform Improvements archive](../../archive/docs/assessments/desktop-platform-improvements-implementation-guide.md) - Historical desktop development assessment; use current engineering/operator docs for active work
   - [WPF Implementation Notes](./wpf-implementation-notes.md) - WPF architecture
 
 - **Status and Tracking:**

@@ -1,17 +1,17 @@
 # Documentation Health Dashboard
 
 _Auto-generated from canonical JSON payload._
-_Generated: 2026-06-16T11:36:32.118468+00:00_
+_Generated: 2026-06-16T21:42:51.866547+00:00_
 Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-06-16T11:36:32.080128+00:00
+> Last updated: 2026-06-16T21:42:51.855951+00:00
 
 ## Overall Health Score
 
 ```text
-  [#########################-----] 82/100
+  [#########################-----] 83/100
   Rating: Good
 ```
 
@@ -19,14 +19,14 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 715 |
-| Total lines | 102,789 |
-| Average file size (lines) | 143.8 |
-| Orphaned files | 293 |
-| Files without headings | 22 |
-| Stale files (>90 days) | 69 |
-| TODO/FIXME markers | 239 |
-| **Health score** | **82/100** |
+| Total documentation files | 594 |
+| Total lines | 84,791 |
+| Average file size (lines) | 142.7 |
+| Orphaned files | 236 |
+| Files without headings | 21 |
+| Stale files (>90 days) | 0 |
+| TODO/FIXME markers | 236 |
+| **Health score** | **83/100** |
 
 ### Score Breakdown
 
@@ -44,7 +44,6 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 These files lack a Markdown heading, making them harder to navigate:
 
-- `.nuget/packages/newtonsoft.json/13.0.4/LICENSE.md`
 - `benchmarks/results/20260521_111257/batchserialization/results/Meridian.Benchmarks.BatchSerializationBenchmarks-report-github.md`
 - `benchmarks/results/20260521_111257/canonicalizing/results/Meridian.Benchmarks.CanonicalizingPublisherBenchmarks-report-github.md`
 - `benchmarks/results/20260521_111257/composite/results/Meridian.Benchmarks.CompositeSinkBenchmarks-report-github.md`
@@ -59,7 +58,8 @@ These files lack a Markdown heading, making them harder to navigate:
 - `benchmarks/results/20260521_181635/results/Meridian.Benchmarks.EventPipelineBenchmarks-report-github.md`
 - `benchmarks/results/20260521_181812/results/Meridian.Benchmarks.EventBufferBenchmarks-report-github.md`
 - `benchmarks/results/20260521_182021/results/Meridian.Benchmarks.BatchSerializationBenchmarks-report-github.md`
-- ... and 7 more
+- `benchmarks/results/20260521_182313/results/Meridian.Benchmarks.JsonSerializationBenchmarks-report-github.md`
+- ... and 6 more
 
 ### Orphaned Documentation
 
@@ -77,41 +77,15 @@ These files are not linked from any other Markdown file in the repository:
 - `.agents/skills/meridian-roadmap-strategist/SKILL.md`
 - `.agents/skills/meridian-simulated-user-panel/SKILL.md`
 - `.agents/skills/meridian-test-writer/SKILL.md`
-- `.nuget/packages/communitytoolkit.highperformance/8.4.0/License.md`
-- `.nuget/packages/farmer/1.9.26/readme.md`
-- `.nuget/packages/microsoft.aspnetcore.openapi/9.0.15/PACKAGE.md`
-- `.nuget/packages/microsoft.bcl.asyncinterfaces/10.0.3/PACKAGE.md`
-- `.nuget/packages/microsoft.bcl.asyncinterfaces/8.0.0/PACKAGE.md`
-- `.nuget/packages/microsoft.codeanalysis.analyzers/5.3.0-2.25625.1/documentation/readme.md`
-- `.nuget/packages/microsoft.codecoverage/18.5.1/PACKAGE.md`
-- `.nuget/packages/microsoft.extensions.caching.abstractions/10.0.5/PACKAGE.md`
-- ... and 273 more
-
-### Stale Documentation
-
-These files have not been updated in over 90 days:
-
-- `.nuget/packages/azure.core.amqp/1.3.1/CHANGELOG.md`
-- `.nuget/packages/azure.core.amqp/1.3.1/README.md`
-- `.nuget/packages/azure.core/1.38.0/CHANGELOG.md`
-- `.nuget/packages/azure.core/1.38.0/README.md`
-- `.nuget/packages/azure.core/1.46.2/CHANGELOG.md`
-- `.nuget/packages/azure.core/1.46.2/README.md`
-- `.nuget/packages/azure.identity/1.11.4/CHANGELOG.md`
-- `.nuget/packages/azure.identity/1.11.4/README.md`
-- `.nuget/packages/azure.messaging.servicebus/7.20.1/CHANGELOG.md`
-- `.nuget/packages/azure.messaging.servicebus/7.20.1/README.md`
-- `.nuget/packages/communitytoolkit.highperformance/8.4.0/License.md`
-- `.nuget/packages/farmer/1.9.26/readme.md`
-- `.nuget/packages/fluentvalidation/12.1.1/README.md`
-- `.nuget/packages/fsharpplus/1.9.1/README.md`
-- `.nuget/packages/fstoolkit.errorhandling/5.2.0/README.md`
-- `.nuget/packages/microsoft.bcl.asyncinterfaces/10.0.3/PACKAGE.md`
-- `.nuget/packages/microsoft.bcl.asyncinterfaces/8.0.0/PACKAGE.md`
-- `.nuget/packages/microsoft.codeanalysis.analyzers/5.3.0-2.25625.1/documentation/Microsoft.CodeAnalysis.Analyzers.md`
-- `.nuget/packages/microsoft.codeanalysis.analyzers/5.3.0-2.25625.1/documentation/readme.md`
-- `.nuget/packages/microsoft.codecoverage/18.5.1/PACKAGE.md`
-- ... and 49 more
+- `AGENTS.md`
+- `Meridian Design System/BRAND_GUIDELINES.md`
+- `Meridian Design System/CONTENT_FUNDAMENTALS.md`
+- `Meridian Design System/ICONOGRAPHY.md`
+- `Meridian Design System/INSPIRATION_BRIEF.md`
+- `Meridian Design System/SKILL.md`
+- `Meridian Design System/VISUAL_FOUNDATIONS.md`
+- `benchmarks/BOTTLENECK_REPORT.md`
+- ... and 216 more
 
 ## Trend
 
@@ -119,7 +93,7 @@ These files have not been updated in over 90 days:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 2026-06-16 | 82 | 715 | 293 | 69 |
+| 2026-06-16 | 83 | 594 | 236 | 0 |
 
 ---
 
