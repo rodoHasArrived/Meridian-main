@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
+    <ProjectReference Include="..\Meridian.Modularity\Meridian.Modularity.csproj" />
     <ProjectReference Include="..\Meridian.Ledger\Meridian.Ledger.csproj" />
   </ItemGroup>
 

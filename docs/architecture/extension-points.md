@@ -43,7 +43,7 @@ Maturity legend:
 | Backtest strategies | `IBacktestStrategy` + `[StrategyParameter]` | `AssemblyLoadContext`-isolated load of external assemblies | `src/Meridian.Backtesting/Plugins/StrategyPluginLoader.cs` | **Pluggable** (ALC) |
 | Desktop feature modules | `IDesktopFeatureModule` | **Static hard-coded array** iterated at startup | `src/Meridian.Wpf/Features/IDesktopFeatureModule.cs`, `src/Meridian.Wpf/Features/DesktopFeatureModuleRegistry.cs` | Registered |
 | Workflow definitions | `IWorkflowDefinitionProvider` | Aggregated via DI; built-in provider + manual additions | `src/Meridian.Ui.Shared/Workflows/IWorkflowDefinitionProvider.cs`, `src/Meridian.Ui.Shared/Workflows/WorkflowRegistry.cs` | Registered |
-| Reporting templates | `IReportingTemplateCatalog` | Hard-coded dictionary | `src/Meridian.Reporting/DefaultReportingTemplateCatalog.cs` | Hard-coded |
+| Reporting templates | `IReportingTemplateCatalog` via `ExtensionRegistry<>` | Built-ins plus DI-injected additional templates | `src/Meridian.Reporting/DefaultReportingTemplateCatalog.cs` | **Registered** (migrated) |
 | Evidence templates | `EvidenceTemplateDto` via `ExtensionRegistry<>` | Built-ins plus DI-injected additional templates | `src/Meridian.Ui.Shared/Evidence/EvidenceTemplateRegistry.cs` | **Registered** (migrated) |
 | Risk rules | `IRiskRule` | Manual DI registration | `src/Meridian.Risk/IRiskRule.cs` | Registered |
 
@@ -84,13 +84,14 @@ See the approved refactor plan for the wave-by-wave sequence.
   `ExtensionDiscovery` provide the keyed-catalog + safe reflection-discovery primitives for
   migrating the hard-coded catalogs. `ServiceFeatureModuleAdapter` (in
   `Meridian.Application`) wraps an existing `IServiceFeatureRegistration` as an
-  `IMeridianModule`. `EvidenceTemplateRegistry` is the first hard-coded catalog migrated
-  onto `ExtensionRegistry<EvidenceTemplateDto>` — built-ins preserved exactly, with a new
-  constructor seam that accepts DI-registered additional templates.
+  `IMeridianModule`. `EvidenceTemplateRegistry` and
+  `DefaultReportingTemplateCatalog` are migrated onto `ExtensionRegistry<TContract>` —
+  built-ins preserved exactly (ids, ordering, lookup/throw semantics), each with a new
+  constructor seam that accepts DI-registered additional entries.
 - **Pending:** migrating `ServiceCompositionRoot` and `DesktopFeatureModuleRegistry` onto
-  the loader; provider/desktop adapters; moving the remaining hard-coded catalogs
-  (reporting templates, risk-rule wiring) onto `ExtensionRegistry<TContract>`; repairing
-  the coupling drifts below behind ArchUnit guards.
+  the loader; provider/desktop adapters; moving the remaining hard-coded catalog
+  (risk-rule wiring) onto `ExtensionRegistry<TContract>`; repairing the coupling drifts
+  below behind ArchUnit guards.
 
 ## Known coupling drifts (remediation targets)
 

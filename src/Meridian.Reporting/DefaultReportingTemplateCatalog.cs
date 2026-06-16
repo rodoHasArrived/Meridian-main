@@ -1,81 +1,111 @@
 using System.Collections.Immutable;
+using Meridian.Modularity;
 
 namespace Meridian.Reporting;
 
 public sealed class DefaultReportingTemplateCatalog : IReportingTemplateCatalog
 {
-    private readonly IReadOnlyDictionary<string, ReportingTemplateMetadata> templates = new Dictionary<string, ReportingTemplateMetadata>(StringComparer.OrdinalIgnoreCase)
-    {
-        ["investor-monthly-statement"] = new(
+    private static readonly IReadOnlyList<ReportingTemplateMetadata> BuiltInTemplates =
+    [
+        new(
             "investor-monthly-statement",
             ReportingTemplateFamily.InvestorStatement,
             "Investor Monthly Statement",
             "1.0.0",
             ["cover", "performance", "positions", "flows"],
             ImmutableDictionary<string, string>.Empty.Add("audience", "investor")),
-        ["sec-13f-packet"] = new(
+        new(
             "sec-13f-packet",
             ReportingTemplateFamily.SecFilingPacket,
             "SEC 13F Filing Packet",
             "1.0.0",
             ["cover", "holdings", "attestation"],
             ImmutableDictionary<string, string>.Empty.Add("audience", "regulator")),
-        ["shadow-nav-daily-pack"] = new(
+        new(
             "shadow-nav-daily-pack",
             ReportingTemplateFamily.ShadowNavPack,
             "Shadow NAV Daily Pack",
             "1.0.0",
             ["cover", "valuation", "breaks", "signoff"],
             ImmutableDictionary<string, string>.Empty.Add("audience", "ops")),
-        ["performance-quarterly-report"] = new(
+        new(
             "performance-quarterly-report",
             ReportingTemplateFamily.PerformanceReport,
             "Performance Quarterly Report",
             "1.0.0",
             ["cover", "performance", "benchmark", "attribution"],
             ImmutableDictionary<string, string>.Empty.Add("audience", "investment-committee")),
-        ["holdings-board-report"] = new(
+        new(
             "holdings-board-report",
             ReportingTemplateFamily.HoldingsReport,
             "Holdings Board Report",
             "1.0.0",
             ["cover", "holdings", "asset-class", "exceptions"],
             ImmutableDictionary<string, string>.Empty.Add("audience", "board")),
-        ["capital-account-statement"] = new(
+        new(
             "capital-account-statement",
             ReportingTemplateFamily.CapitalAccountStatement,
             "Capital Account Statement",
             "1.0.0",
             ["cover", "capital-balance", "flows", "allocation"],
             ImmutableDictionary<string, string>.Empty.Add("audience", "investor")),
-        ["board-governance-packet"] = new(
+        new(
             "board-governance-packet",
             ReportingTemplateFamily.BoardPacket,
             "Board Governance Packet",
             "1.0.0",
             ["cover", "operations-record", "approvals", "risk-exceptions"],
             ImmutableDictionary<string, string>.Empty.Add("audience", "board")),
-        ["audit-evidence-package"] = new(
+        new(
             "audit-evidence-package",
             ReportingTemplateFamily.AuditPackage,
             "Audit Evidence Package",
             "1.0.0",
             ["cover", "source-evidence", "reconciliation", "lineage"],
             ImmutableDictionary<string, string>.Empty.Add("audience", "auditor")),
-        ["certified-dataset-export"] = new(
+        new(
             "certified-dataset-export",
             ReportingTemplateFamily.CertifiedDataset,
             "Certified Dataset Export",
             "1.0.0",
             ["cover", "dataset-snapshot", "hashes", "lineage"],
             ImmutableDictionary<string, string>.Empty.Add("audience", "data-governance"))
-    };
+    ];
+
+    private readonly ExtensionRegistry<ReportingTemplateMetadata> templates;
+
+    /// <summary>
+    /// Creates a catalog containing only the built-in reporting templates.
+    /// </summary>
+    public DefaultReportingTemplateCatalog()
+        : this(Array.Empty<ReportingTemplateMetadata>())
+    {
+    }
+
+    /// <summary>
+    /// Creates a catalog seeded with the built-in templates plus any additional templates
+    /// (for example DI-registered <see cref="ReportingTemplateMetadata"/> instances). Built-in
+    /// templates take precedence when a template id collides, preserving existing behaviour.
+    /// </summary>
+    public DefaultReportingTemplateCatalog(IEnumerable<ReportingTemplateMetadata> additionalTemplates)
+    {
+        ArgumentNullException.ThrowIfNull(additionalTemplates);
+
+        templates = new ExtensionRegistry<ReportingTemplateMetadata>(static template => template.TemplateId);
+        templates.AddRange(BuiltInTemplates);
+
+        foreach (var template in additionalTemplates)
+        {
+            // Built-ins win on conflict; additional templates extend the catalog.
+            templates.TryAdd(template);
+        }
+    }
 
     public ReportingTemplateMetadata Get(string templateId)
-        => templates.TryGetValue(templateId, out var value)
+        => templates.TryGet(templateId, out var value)
             ? value
             : throw new KeyNotFoundException($"Unknown reporting template '{templateId}'.");
 
     public IReadOnlyList<ReportingTemplateMetadata> ListTemplates()
-        => templates.Values.OrderBy(static template => template.TemplateId, StringComparer.OrdinalIgnoreCase).ToArray();
+        => templates.Entries.OrderBy(static template => template.TemplateId, StringComparer.OrdinalIgnoreCase).ToArray();
 }
