@@ -3008,7 +3008,43 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
       currentHash: "devhash-ledger"
     }
   ],
-  breakCases: [],
+  breakCases: [
+    {
+      breakId: "recon-break-factor-1",
+      checkId: "mbs-factor-reconciliation",
+      category: "MBS factor reconciliation",
+      severity: "Warning",
+      status: "Open",
+      owner: null,
+      dueDate: "2026-05-09T18:00:00Z",
+      expectedSource: "custodian factor file",
+      actualSource: "Security Master factor snapshot",
+      expectedAmount: 0.847125,
+      actualAmount: 0.8425,
+      variance: 0.004625,
+      securityId: "fixture-mbs-001",
+      symbol: "FNMA 30Y 5.5",
+      suggestedAction: "Assign controller review, validate the factor source, and retain resolution evidence before close approval.",
+      evidenceLinks: [
+        {
+          evidenceId: "fixture-factor-break-evidence",
+          label: "Fixture factor variance evidence",
+          route: "/workstation/accounting/reconciliation/recon-break-factor-1",
+          source: "development-fixture",
+          capturedAtUtc: "2026-05-08T15:36:00Z"
+        }
+      ],
+      escalationLevel: "Controller review",
+      escalationReason: "Factor variance blocks NAV support and close package publication.",
+      escalatedAtUtc: "2026-05-08T15:45:00Z",
+      slaState: "DueSoon",
+      slaDueAtUtc: "2026-05-09T18:00:00Z",
+      materiality: 0.004625,
+      rootCauseCode: "FactorSourceMismatch",
+      approvalState: "Pending",
+      blockedOutputs: ["NAV support package", "Close package"]
+    }
+  ],
   reconciliationLanes: [
     {
       laneId: "cash-reconciliation",

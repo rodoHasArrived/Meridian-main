@@ -151,15 +151,15 @@ def _write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def _validation_lock_path(repo_root: Path = REPO_ROOT) -> Path:
-    return repo_root / _VALIDATION_LOCK_RELATIVE_PATH
+def _validation_lock_path(repo_root: Path | None = None) -> Path:
+    return (repo_root or REPO_ROOT) / _VALIDATION_LOCK_RELATIVE_PATH
 
 
-def _validation_runs_dir(repo_root: Path = REPO_ROOT) -> Path:
-    return repo_root / _VALIDATION_RUNS_RELATIVE_PATH
+def _validation_runs_dir(repo_root: Path | None = None) -> Path:
+    return (repo_root or REPO_ROOT) / _VALIDATION_RUNS_RELATIVE_PATH
 
 
-def _read_validation_lock(repo_root: Path = REPO_ROOT) -> dict | None:
+def _read_validation_lock(repo_root: Path | None = None) -> dict | None:
     lock_path = _validation_lock_path(repo_root)
     if not lock_path.exists():
         return None
@@ -217,7 +217,8 @@ def _find_powershell() -> str | None:
     return shutil.which("pwsh") or shutil.which("powershell")
 
 
-def _get_active_repo_build_processes(repo_root: Path = REPO_ROOT) -> list[dict[str, object]]:
+def _get_active_repo_build_processes(repo_root: Path | None = None) -> list[dict[str, object]]:
+    repo_root = repo_root or REPO_ROOT
     if platform.system().lower() != "windows":
         return []
 
@@ -1160,7 +1161,9 @@ def cmd_test(args: argparse.Namespace) -> int:
 
         _prune_for_isolation(args, isolation_key)
 
-        msbuild_args = _build_serialized_msbuild_args(args)
+        effective_args = argparse.Namespace(**vars(args))
+        effective_args.isolation_key = isolation_key
+        msbuild_args = _build_serialized_msbuild_args(effective_args)
         results_directory = Path(getattr(args, "results_directory", "") or (REPO_ROOT / ".ai/test-results" / run_id))
         if not results_directory.is_absolute():
             results_directory = REPO_ROOT / results_directory

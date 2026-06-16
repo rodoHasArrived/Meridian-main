@@ -38,6 +38,17 @@ Canonical ownership rule:
 
 Prefer the narrowest proof lane for the files you change.
 
+For local .NET tests, prefer the contention-aware runner over raw `dotnet test`:
+
+```powershell
+python build/python/cli/buildctl.py validation-status --summary
+python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~<TestClassOrMethod>" --queue
+```
+
+The runner serializes local validation, detects active repo-owned build/test/compiler processes,
+builds before testing to avoid stale `--no-build` assemblies, uses isolated `artifacts/bin` and
+`artifacts/obj` roots by default, and writes run evidence under `.ai/validation-runs/`.
+
 For local pre-PR proof across the highest-value free tools, use:
 
 ```powershell
@@ -67,7 +78,7 @@ gh workflow run targeted-test.yml --ref <branch> `
 ```powershell
 dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 dotnet build Meridian.sln -c Release --no-restore /p:EnableWindowsTargeting=true
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore
+python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --queue
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 ```

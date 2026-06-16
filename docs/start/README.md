@@ -86,6 +86,14 @@ persisting the password in WPF config files.
 
 Use the narrowest command that covers the surface you touched:
 
+For local .NET tests, use the contention-aware runner when another agent, desktop shell, or test
+lane may be active:
+
+```powershell
+python build/python/cli/buildctl.py validation-status --summary
+python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~<TestClassOrMethod>" --queue
+```
+
 If local machine limits make the relevant proof lane unreliable, push the branch and use the
 manual GitHub-hosted `Targeted Test` workflow before retrying broad local scripts:
 
@@ -97,7 +105,7 @@ gh workflow run targeted-test.yml --ref <branch> -f lane=browser-dashboard -f br
 ```powershell
 dotnet run --project src/Meridian/Meridian.csproj -- --validate-config
 dotnet run --project src/Meridian/Meridian.csproj -- --quick-check
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
+python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --queue
 npm --prefix src/Meridian.Ui/dashboard run test
 python build/scripts/docs/check-ai-inventory.py --summary
 python build/scripts/docs/check-ai-handoff.py --output docs/ai/generated/ai-handoff-checklist-report.md

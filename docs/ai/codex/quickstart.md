@@ -19,6 +19,9 @@ still lives in `../assistant-workflow-contract.md`.
 6. For source edits under `src/**`, read the nearest `README.md` and identify the module in
    `docs/source/data/source-modules.yml`.
 7. Choose the smallest validation lane from the task-to-proof matrix before editing.
+   For local .NET tests, prefer
+   `python build/python/cli/buildctl.py test --project <project> --filter "<filter>" --queue`
+   so agent-triggered validation uses isolated outputs and avoids parallel test collisions.
    If local machine limits or MSBuild/package contention make that lane unreliable, plan to push
    the branch and dispatch GitHub Actions `Targeted Test` with the same project/filter or
    dashboard test file.
@@ -62,6 +65,11 @@ AI-doc proof lane defaults: `python3 build/scripts/docs/check-ai-inventory.py --
 Hosted proof fallback: after pushing a branch, use `gh workflow run targeted-test.yml --ref <branch>`
 with `lane=dotnet` plus `dotnet_project`/`dotnet_filter`, or `lane=browser-dashboard` plus
 `browser_script=test:vitest` and `vitest_file`, when local resources are the blocker.
+
+Local .NET proof lane default: use `python build/python/cli/buildctl.py test` instead of raw
+`dotnet test` when another agent, shell, WPF validation, or desktop launch may be active. The
+runner writes `.ai/validation-runs/<run-id>.json`, serializes through `.ai/locks/validation.lock`,
+and uses `MeridianBuildIsolationKey` output roots by default.
 
 ## Dirty Worktree Protocol
 

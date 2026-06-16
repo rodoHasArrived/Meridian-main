@@ -198,10 +198,12 @@ Every assistant and automation should use the same high-level flow:
 7. **Make the smallest safe change.** Avoid speculative rewrites, fake providers, unused agents,
    broad cleanup, and unrelated formatting churn.
 8. **Validate narrowly first.** Run the smallest build, test, docs, or skill-validation command
-   that covers the touched surface; expand only when the change risk justifies it. When local
-   machine limits, dependency restore, or MSBuild contention make local validation unreliable, push
-   the branch and use the manual GitHub-hosted `Targeted Test` workflow as the remote proof lane
-   before retrying broad local scripts.
+   that covers the touched surface; expand only when the change risk justifies it. For local .NET
+   tests, prefer `python build/python/cli/buildctl.py test --project <project> --filter "<filter>" --queue`
+   so validation uses a local lock, active-process checks, and isolated build outputs. When local
+   machine limits, dependency restore, or MSBuild contention still make local validation unreliable,
+   push the branch and use the manual GitHub-hosted `Targeted Test` workflow as the remote proof
+   lane before retrying broad local scripts.
 9. **Synchronize docs and AI catalogs.** When a behavior, workflow, prompt, skill, or agent changes,
    update the nearest `docs/ai/*/README.md` index and any mirrored host surfaces that teach the
    same workflow.
