@@ -313,6 +313,94 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationQuarantineReplay_StagesReviewedRecords()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = await CreateSeededProviderIntegrationStoreAsync(testRoot);
+            var tenantStore = DefaultProviderIntegrationTenantStore(store);
+            await tenantStore.SaveManifestAsync(CreateProviderIntegrationReplayManifest());
+            await tenantStore.SaveQuarantineDecisionAsync(new ProviderIntegrationQuarantineDecisionDto(
+                "decision-sync-run-new-0",
+                "sync-run-new",
+                "quarantine-sync-run-new-0",
+                "connection-alpha",
+                ProviderIntegrationQuarantineResolutionActionDto.ReplayAfterMappingChange,
+                "operator@example.com",
+                DateTimeOffset.Parse("2026-06-16T12:10:00Z"),
+                "Mapping updated for replay."));
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ManageProviders);
+            var client = app.GetTestClient();
+            var request = new ProviderIntegrationQuarantineReplayRequestDto(
+                "sync-run-replay-endpoint-1",
+                "sync-run-new",
+                "manifest-custodian-abc-v1",
+                "connection-alpha",
+                ProviderCapabilityKindDto.Positions,
+                ["quarantine-sync-run-new-0"],
+                "operator@example.com",
+                DateTimeOffset.Parse("2026-06-16T12:20:00Z"));
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationQuarantineReplay,
+                request,
+                ServerJsonOptions);
+            var result = await response.Content.ReadFromJsonAsync<ProviderIntegrationQuarantineReplayResultDto>(ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            result.Should().NotBeNull();
+            result!.RecordsAccepted.Should().Be(1);
+            result.RecordsRequarantined.Should().Be(0);
+            (await tenantStore.ListStagingRecordsAsync(request.ReplaySyncRunId)).Should().ContainSingle();
+            (await tenantStore.GetSyncRunAsync(request.ReplaySyncRunId))!.Status.Should()
+                .Be(ProviderIntegrationProcessingStatusDto.Validated);
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationQuarantineReplay_RequiresConfigurePermission()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = await CreateSeededProviderIntegrationStoreAsync(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewConfig);
+            var client = app.GetTestClient();
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationQuarantineReplay,
+                new ProviderIntegrationQuarantineReplayRequestDto(
+                    "sync-run-replay-endpoint-1",
+                    "sync-run-new",
+                    "manifest-custodian-abc-v1",
+                    "connection-alpha",
+                    ProviderCapabilityKindDto.Positions,
+                    ["quarantine-sync-run-new-0"],
+                    "operator@example.com",
+                    DateTimeOffset.Parse("2026-06-16T12:20:00Z")),
+                ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            (await DefaultProviderIntegrationTenantStore(store).GetSyncRunAsync("sync-run-replay-endpoint-1"))
+                .Should()
+                .BeNull();
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ProviderIntegrationReadiness_ReturnsActivationBlockers()
     {
         var testRoot = CreateProviderIntegrationTestRoot();
@@ -740,6 +828,7 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<ProviderIntegrationActivationService>();
         services.AddSingleton<ProviderIntegrationMonitoringService>();
         services.AddSingleton<ProviderIntegrationQuarantineReviewService>();
+        services.AddSingleton<ProviderIntegrationQuarantineReplayService>();
     }
 
     private static async Task<FileProviderIntegrationManifestStore> CreateSeededProviderIntegrationStoreAsync(string testRoot)
@@ -899,6 +988,36 @@ public sealed partial class WorkstationEndpointsTests
             ApprovedBy: null,
             ApprovedAt: null,
             ChangeReason: "Workstation monitor endpoint test manifest");
+
+    private static ProviderIntegrationManifestDto CreateProviderIntegrationReplayManifest()
+        => CreateProviderIntegrationEndpointManifest() with
+        {
+            ManifestVersion = 2,
+            FieldMappings:
+            [
+                ProviderIntegrationReplayMapping("$.account_id", "providerAccountId", "trim", required: true),
+                ProviderIntegrationReplayMapping("$.quantity", "quantity", "decimal", required: true, constantValue: "100"),
+                ProviderIntegrationReplayMapping("$.as_of_date", "asOf", "date", required: true, constantValue: "2026-06-16"),
+                ProviderIntegrationReplayMapping("$.cusip", "security.cusip", "uppercase", required: true, constantValue: "9128285M8")
+            ],
+            ChangeReason = "Replay mapping update"
+        };
+
+    private static FieldMappingDto ProviderIntegrationReplayMapping(
+        string sourcePath,
+        string targetField,
+        string transform,
+        bool required,
+        string? constantValue = null)
+        => new(
+            ProviderCapabilityKindDto.Positions,
+            sourcePath,
+            targetField,
+            new TransformRuleDto(transform, new Dictionary<string, string>()),
+            required,
+            ProviderMappingConfidenceDto.Approved,
+            DefaultValue: null,
+            constantValue);
 
     private static IntegrationProviderConnectionDto CreateProviderIntegrationEndpointConnection(ProviderIntegrationManifestDto manifest)
         => new(

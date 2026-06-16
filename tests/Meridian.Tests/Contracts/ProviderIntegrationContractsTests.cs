@@ -367,6 +367,49 @@ public sealed class ProviderIntegrationContractsTests
         resultRoundTrip.Decision.Should().BeEquivalentTo(decision);
     }
 
+    [Fact]
+    public void ProviderIntegrationQuarantineReplay_RoundTripsWithReplaySummary()
+    {
+        var request = new ProviderIntegrationQuarantineReplayRequestDto(
+            "sync-run-replay-1",
+            "sync-run-source-1",
+            "manifest-custodian-abc-v1",
+            "connection-alpha",
+            ProviderCapabilityKindDto.Positions,
+            ["quarantine-1"],
+            "operator@example.com",
+            DateTimeOffset.Parse("2026-06-16T12:20:00Z"));
+        var result = new ProviderIntegrationQuarantineReplayResultDto(
+            request.ReplaySyncRunId,
+            "payload-replay-1",
+            request.Capability,
+            RecordsReplayed: 1,
+            RecordsAccepted: 1,
+            RecordsRequarantined: 0,
+            ProviderIntegrationProcessingStatusDto.Validated,
+            Issues: []);
+
+        var requestJson = JsonSerializer.Serialize(
+            request,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationQuarantineReplayRequestDto);
+        var resultJson = JsonSerializer.Serialize(
+            result,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationQuarantineReplayResultDto);
+        var requestRoundTrip = JsonSerializer.Deserialize(
+            requestJson,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationQuarantineReplayRequestDto);
+        var resultRoundTrip = JsonSerializer.Deserialize(
+            resultJson,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationQuarantineReplayResultDto);
+
+        requestJson.Should().Contain("\"replaySyncRunId\"");
+        requestJson.Should().Contain("\"quarantineRecordIds\"");
+        requestJson.Should().NotContain("\"ReplaySyncRunId\"");
+        resultJson.Should().Contain("\"recordsRequarantined\": 0");
+        resultRoundTrip.Should().BeEquivalentTo(result);
+        requestRoundTrip.Should().BeEquivalentTo(request);
+    }
+
     private static ProviderIntegrationManifestDto CreateManifest()
         => new(
             "manifest-custodian-abc-v1",

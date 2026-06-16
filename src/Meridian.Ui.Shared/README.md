@@ -128,7 +128,9 @@ blockers, dry-run command routes execute manual CSV and REST validation through 
 services, and the connection monitor route adapts durable sync-run, staging, quarantine, and
 validation evidence into browser/WPF-compatible payloads. Quarantine review routes expose grouped
 validation issues and persist operator review decisions without changing the retained rejected raw
-records. Setup, readiness, dry-run, activation, quarantine review, and monitor endpoints resolve the
+records. Quarantine replay routes remap records approved for replay after mapping changes and
+write accepted records back into integration staging or re-quarantine unresolved records. Setup,
+readiness, dry-run, activation, quarantine review/replay, and monitor endpoints resolve the
 authenticated workstation tenant before reading or writing stored manifests, connections, or
 retained run evidence. Dry runs require provider/configuration permissions because they retain raw
 payload, staging, quarantine, and sync-run evidence. The activation command persists active

@@ -503,6 +503,59 @@ public static partial class WorkstationEndpoints
             UserPermission.ManageProviders,
             UserPermission.ModifyConfig,
             UserPermission.AdminMaintenance);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationQuarantineReplay), async (
+            ProviderIntegrationQuarantineReplayRequestDto request,
+            HttpContext context) =>
+        {
+            if (!HasProviderIntegrationConfigurePermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<ProviderIntegrationQuarantineReplayService>();
+            if (service is null)
+            {
+                return Results.Problem(
+                    "Provider integration quarantine replay service is not registered.",
+                    statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            try
+            {
+                if (!TryResolveRequiredTenantId(context, out var tenantId))
+                {
+                    return Results.Problem("A tenant-scoped workstation request context is required.", statusCode: StatusCodes.Status403Forbidden);
+                }
+
+                var result = await service
+                    .ReplayAsync(tenantId, request, context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Results.NotFound(new { error = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("ReplayWorkstationProviderIntegrationQuarantineRecords")
+        .Produces<ProviderIntegrationQuarantineReplayResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireAnyPermission(
+            UserPermission.ManageProviders,
+            UserPermission.ModifyConfig,
+            UserPermission.AdminMaintenance);
     }
 
     private static bool HasProviderIntegrationReadPermission(HttpContext context)
