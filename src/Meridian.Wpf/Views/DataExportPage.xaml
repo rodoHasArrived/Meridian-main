@@ -223,7 +223,7 @@
                         </StackPanel>
 
                         <StackPanel Grid.Row="0" Grid.Column="1">
-                            <TextBlock Text="Host" Style="{StaticResource FormLabelStyle}" />
+                            <TextBlock Text="Database server" Style="{StaticResource FormLabelStyle}" />
                             <TextBox x:Name="DatabaseHostBox" Style="{StaticResource FormTextBoxStyle}" Text="{Binding DatabaseHost, UpdateSourceTrigger=PropertyChanged}" />
                         </StackPanel>
 

@@ -29,7 +29,7 @@ public sealed class DemoTourService
     public IReadOnlyList<DemoTourStep> Steps { get; } =
     [
         new(1, "Data/provider status", "DataShell", "Review sample provider health and queue telemetry before any live provider credentials are connected."),
-        new(2, "Portfolio records", "PortfolioShell", "Inspect fixture portfolio records that are isolated from retained source-backed books."),
+        new(2, "Portfolio records", "PortfolioShell", "Inspect sample portfolio records that are isolated from retained source-backed books."),
         new(3, "Accounting reconciliation", "FundReconciliation", "Walk through safe sample breaks, match context, and close-readiness posture."),
         new(4, "Evidence/audit context", "FundAuditTrail", "Confirm retained evidence, audit history, and source references are visibly sample-only."),
         new(5, "Reporting readiness", "ReportingShell", "Preview governed report readiness without publishing provider-backed operational data."),
@@ -45,7 +45,7 @@ public sealed class DemoTourService
         : "Demo/sample tour inactive";
 
     public string CurrentStepDetail => CurrentStep?.Description
-        ?? "Start the guided tour to load fixture data and visit the safe demo workflow.";
+        ?? "Start the guided tour to load sample data and visit the safe demo workflow.";
 
     public bool CanMoveNext => IsTourActive && _currentStepIndex < Steps.Count - 1;
 

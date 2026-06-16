@@ -141,7 +141,7 @@ internal static class StrategyWorkspaceShellPresentationDefaults
         new(
             FocusLabel: "New cycle",
             Summary: "Strategy queue is empty.",
-            Detail: "Start a backtest and stage a watchlist to seed comparisons, alerts, and the promotion pipeline.",
+            Detail: "Start a backtest and stage a watchlist to seed comparisons, alerts, and promotion readiness.",
             BadgeText: "Setup",
             BadgeTone: StrategyDeskHeroTone.Info,
             HandoffTitle: "Launch the first run",

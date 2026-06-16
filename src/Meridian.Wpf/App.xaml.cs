@@ -1122,7 +1122,7 @@ public partial class App : System.Windows.Application
             try
             {
                 _ = WpfServices.NotificationService.Instance.NotifyErrorAsync(
-                    "Application Error",
+                    "Workstation needs attention",
                     ex.Message);
             }
             catch (Exception notifyEx)

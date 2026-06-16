@@ -615,7 +615,7 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
             TotalBreaks: runRow.TotalBreaks,
             BreakAmountTotal: runRow.BreakAmountTotal,
             SecurityIssueCount: 0,
-            EmptyExceptionsText: "No account-level exception rows are open for this reconciliation run.",
+            EmptyExceptionsText: "No account-level review items are open for this reconciliation run.",
             EmptySecurityCoverageText: "Security coverage detail is only available on strategy-run reconciliation items.",
             ExceptionRows: exceptionRows,
             AllCheckRows: allRows,

@@ -2916,8 +2916,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     private static (string Mode, string Title, string Subtitle) DescribeWorkbench(FundOperationsTab tab) => tab switch
     {
-        FundOperationsTab.Overview => ("Overview Mode", "Overview Workbench", "Fund-wide operating summary, liquidity posture, and exception pressure."),
-        FundOperationsTab.Reconciliation => ("Reconciliation Mode", "Reconciliation Workbench", "Exception queue, operator ownership, stale-snapshot checks, and break resolution."),
+        FundOperationsTab.Overview => ("Overview Mode", "Overview Workbench", "Fund-wide operating summary, liquidity posture, and review pressure."),
+        FundOperationsTab.Reconciliation => ("Reconciliation Mode", "Reconciliation Workbench", "Break queue, operator ownership, stale-snapshot checks, and resolution."),
         FundOperationsTab.ReportPack => ("Reporting Mode", "Report Pack Workbench", "Reporting preview, handoff readiness, and sign-off posture for accounting artifacts."),
         FundOperationsTab.AuditTrail => ("Accounting Mode", "Audit Trail Workbench", "Recent journal and reconciliation evidence for operator review and traceability."),
         FundOperationsTab.Portfolio => ("Accounting Mode", "Portfolio Accounting Workbench", "Fund-scoped positions, security coverage, and exposure review inside Accounting."),

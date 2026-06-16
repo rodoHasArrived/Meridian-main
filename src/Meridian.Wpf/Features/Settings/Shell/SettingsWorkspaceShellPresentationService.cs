@@ -60,7 +60,7 @@ public sealed class SettingsWorkspaceShellPresentationService : ISettingsWorkspa
         ],
         SecondaryCommands =
         [
-            new WorkspaceCommandItem { Id = "SystemHealth", Label = "System Health", Description = "Open host and dependency readiness.", Glyph = "\uE9D9" },
+            new WorkspaceCommandItem { Id = "SystemHealth", Label = "System Health", Description = "Open workstation and dependency readiness.", Glyph = "\uE9D9" },
             new WorkspaceCommandItem { Id = "NotificationCenter", Label = "Notifications", Description = "Open alerts and workstation events.", Glyph = "\uE7F4" },
             new WorkspaceCommandItem { Id = "Help", Label = "Help", Description = "Open support resources.", Glyph = "\uE897" }
         ]
@@ -84,8 +84,8 @@ public sealed class SettingsWorkspaceShellPresentationService : ISettingsWorkspa
         },
         new WorkspaceQueueItem
         {
-            Title = "Diagnostics and host health",
-            Detail = "Keep diagnostics, service state, and host readiness docked beside settings changes.",
+            Title = "Diagnostics and service health",
+            Detail = "Keep diagnostics, service state, and workstation readiness docked beside settings changes.",
             StatusLabel = "Available",
             CountLabel = "2 panes",
             Tone = WorkspaceTone.Info,

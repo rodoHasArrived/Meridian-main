@@ -381,8 +381,8 @@ public sealed class WelcomePageViewModel : BindableBase
                 "Provider session",
                 isConnected ? "Connected" : "Blocked",
                 isConnected
-                    ? $"{connectionProviderText} is currently reachable from the workstation host."
-                    : "The workstation is disconnected from the local Meridian host or its active provider session.",
+                    ? $"{connectionProviderText} is currently reachable from the workstation service."
+                    : "The workstation is disconnected from the local Meridian service or its active provider session.",
                 "Inspect Provider",
                 "Provider",
                 "\uE968",
@@ -470,7 +470,7 @@ public sealed class WelcomePageViewModel : BindableBase
             return new WelcomeNextAction(
                 "Connection blocker",
                 "Restore provider connectivity first",
-                "Reconnect the workstation host or verify provider settings before moving into live desk, queue, or freshness workflows.",
+                "Reconnect the workstation service or verify provider settings before moving into live desk, queue, or freshness workflows.",
                 "Open Provider",
                 "Provider",
                 "Open Data",
