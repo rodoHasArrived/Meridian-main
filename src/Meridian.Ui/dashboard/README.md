@@ -130,6 +130,10 @@ approval counts, expiration dates, and close-readiness blockers, so the browser 
 approval gate state enforced by the API and WPF clients. The browser checklist summary is also
 derived from those shared task fields: ready, blocked, acknowledged, approval, evidence-pointer,
 and next-due counts are display projections only and must not become client-local close state.
+Operations Continuity also renders the shared close-calendar read model from
+`getOperationsCloseCalendar`, scoped by the selected workflow fund account and period, so due task,
+owner, readiness, blocker, checklist, approval, and route posture stay server-owned workflow-control
+evidence rather than browser-local calendar state.
 Checklist rows also display shared acknowledgement command posture and the expected workflow
 version guard beside retained acknowledgement evidence, keeping close-control acknowledgement
 available through the operations-continuity command API instead of browser-local checklist state.

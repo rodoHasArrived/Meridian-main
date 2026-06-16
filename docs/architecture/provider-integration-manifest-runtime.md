@@ -568,7 +568,7 @@ usable operator artifact and a replayable proof path.
 | 1. Manifest foundation | Persist draft provider templates and connection instances without secrets. | Manifest DTOs round-trip through source-generated JSON, credentials stay in the provider credential store, and activation readiness fails closed. |
 | 2. Dry-run runner | Execute manual CSV upload and one REST pull-mode endpoint without loading canonical stores. | Raw payload retention, record extraction, cursor pagination, durable sync-run summaries, and dry-run summary output work for manual CSV and one custodian-position sample provider. |
 | 3. Mapping and validation | Map one capability into canonical records and quarantine rejects. | Required-field mapping, safe transforms, validation issues, confidence scores, and replay from raw payload are tested. |
-| 4. Operator setup | Expose guided setup and review through shared workstation endpoints. | Template catalog, manifest detail, activation-readiness, activation, manual CSV dry-run, REST dry-run, and connection monitor endpoints now adapt starter manifests, fail-closed blockers, active-state promotion, durable sync-run, staging, quarantine, and validation evidence for WPF/browser consumers; setup save screens and quarantine-review commands still need to surface draft state, tests, sync runs, and quarantine groups. |
+| 4. Operator setup | Expose guided setup and review through shared workstation endpoints. | Template catalog, manifest detail, setup-save, activation-readiness, activation, manual CSV dry-run, REST dry-run, and connection monitor endpoints now adapt starter manifests, tenant-scoped draft persistence, fail-closed blockers, active-state promotion, durable sync-run, staging, quarantine, and validation evidence for WPF/browser consumers; setup screens and quarantine-review commands still need to surface draft state, tests, sync runs, and quarantine groups. |
 | 5. Controlled load | Write accepted read-only records into integration staging and promote only after reconciliation. | Identity resolution, idempotent staging, downstream blockers, audit events, and reconciliation handoff are proven. |
 | 6. Template expansion and OpenAPI import | Add OpenAPI import and more templates without changing the runtime contract. | OpenAPI import seeds endpoint and schema drafts; additional providers or file modes reuse the same manifest, mapping, validation, and activation seams. |
 | 7. Certified action boundary | Add controlled write capabilities only through certified adapters. | Sandbox tests, approval evidence, kill switch, idempotency, entitlement checks, and reconciliation are mandatory before production write activation. |
@@ -576,7 +576,8 @@ usable operator artifact and a replayable proof path.
 ## Implementation Slices
 
 1. Contracts and JSON context:
-   Add manifest, endpoint, mapping, validation, sync, quarantine, and activation-readiness DTOs.
+   Add manifest, endpoint, mapping, validation, sync, setup-save, quarantine, and
+   activation-readiness DTOs.
 2. Manifest store:
    Add `Meridian.Storage.Integrations` with local durable stores for provider templates, connection
    instances, manifest versions, raw payloads, quarantine records, integration staging records, and
@@ -588,10 +589,11 @@ usable operator artifact and a replayable proof path.
    Implement manual CSV mapping, custodian positions, brokerage transactions, and fixed income
    security master templates with safe transforms and quarantine.
 5. UI services and endpoints:
-   Surface the connection monitor read model through shared workstation endpoints, then bind browser
-   and WPF setup screens to dry-run evidence, activation blockers, sync runs, and quarantine groups.
-   Add shared endpoints for catalog, connection draft, test auth, test endpoint, sample preview,
-   mapping preview, dry run, activation readiness, activation, sync runs, and quarantine.
+   Surface setup-save and the connection monitor read model through shared workstation endpoints,
+   then bind browser and WPF setup screens to dry-run evidence, activation blockers, sync runs, and
+   quarantine groups. Add shared endpoints for catalog, connection draft, test auth, test endpoint,
+   sample preview, mapping preview, dry run, activation readiness, activation, sync runs, and
+   quarantine.
 6. Browser and WPF operator surfaces:
    Render the guided setup flow in the Data or Settings workspace using shared view models and
    route contracts.

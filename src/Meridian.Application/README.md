@@ -42,16 +42,19 @@ and UI presentation concerns in their owning layers.
   export service now lives in `Meridian.DataIntegration.Etl`. The ETL job-definition store and
   SFTP publisher port contracts live in `Meridian.Contracts.Etl`, and the local JSON-backed
   job-definition store implementation lives in `Meridian.Storage.Etl`.
-- `Integrations/` - provider integration template catalog, dry-run orchestration, and activation
-  readiness. The catalog seeds the first no-code template pack for manual CSV upload, custodian
-  positions, brokerage transactions, and fixed income security master. The manual CSV dry-run
-  service consumes contract-owned manifests and the Storage-owned integration manifest store, parses
-  operator-uploaded samples, applies configured field mappings and safe transforms, writes raw
-  payload evidence, stages accepted records, quarantines rejected records, and saves sync-run
-  summaries without promoting directly into Portfolio, Security Master, or Ledger stores. When a
-  workstation endpoint supplies tenant context, dry-run, readiness, activation, and monitoring
-  services resolve a tenant-scoped provider-integration store before reading or writing manifests,
-  connections, and retained evidence. The REST dry-run service executes a
+- `Integrations/` - provider integration template catalog, setup persistence, dry-run
+  orchestration, and activation readiness. The catalog seeds the first no-code template pack for
+  manual CSV upload, custodian positions, brokerage transactions, and fixed income security master.
+  The setup service saves draft manifests and connection instances through the Storage-owned
+  integration manifest store, preserving tenant partitioning and returning readiness blockers before
+  dry runs or activation. The manual CSV dry-run service consumes contract-owned manifests and the
+  Storage-owned integration manifest store, parses operator-uploaded samples, applies configured
+  field mappings and safe transforms, writes raw payload evidence, stages accepted records,
+  quarantines rejected records, and saves sync-run summaries without promoting directly into
+  Portfolio, Security Master, or Ledger stores. When a workstation endpoint supplies tenant context,
+  setup, dry-run, readiness, activation, and monitoring services resolve a tenant-scoped
+  provider-integration store before reading or writing manifests, connections, and retained
+  evidence. The REST dry-run service executes a
   configured read-only endpoint through an injectable transport, resolves path/query parameters,
   follows cursor pagination, retains raw responses before mapping, and uses the same staging and
   quarantine boundary for accepted and rejected records. The default `HttpClient` transport supplies
