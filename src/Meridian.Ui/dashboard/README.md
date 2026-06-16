@@ -246,8 +246,8 @@ secure-portal, evidence-vault, and internal-route packages instead of deriving r
 copy from URL shape. When the shared package includes an access-expiry timestamp, React displays it
 beside the token-gated delivery link so operators can see when email-link or portal access closes.
 Schedule delivery-plan cards render the latest retained delivery access expiry, access/channel summary, and entitlement
-scope from the shared plan payload beside artifact integrity, retained download summary, notification proof, branding,
-and retained access links, so operators can verify private or restricted scheduled packages without
+scope from the shared plan payload beside artifact integrity, retained download summary, notification proof, report-writer
+dataset/grid summaries, branding, and retained access links, so operators can verify private or restricted scheduled packages without
 opening the package manifest first.
 The Reporting workspace also renders shared `portfolioCuts` rows for fund, strategy, and tag
 reporting views. The browser shows exposure, cash, P&L, shadow-NAV, variance, source-count, and

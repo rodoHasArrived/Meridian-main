@@ -2776,6 +2776,8 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                         <ReportingScheduleField label="Channel" value={plan.channelSummaryLabel} />
                         <ReportingScheduleField label="Downloads" value={plan.downloadSummaryLabel} />
                         <ReportingScheduleField label="Notifications" value={plan.notificationSummaryLabel} />
+                        <ReportingScheduleField label="Writer dataset" value={plan.reportWriterDatasetSummaryLabel} />
+                        <ReportingScheduleField label="Writer grids" value={plan.reportWriterGridSummaryLabel} />
                         <ReportingScheduleField label="Artifact integrity" value={plan.integrityLabel} />
                         <ReportingScheduleField label="Entitlement" value={plan.entitlementLabel} />
                         <ReportingScheduleField label="Branding" value={plan.brandingLabel} />

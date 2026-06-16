@@ -21,14 +21,14 @@ function Get-RepoRoot {
         throw "This script must be run inside a Git checkout."
     }
 
-    return (Resolve-Path $root).Path
+    return [string](Resolve-Path $root).Path
 }
 
 function Get-RelativePath {
     param([Parameter(Mandatory)] [string]$RepoRoot, [Parameter(Mandatory)] [string]$Path)
 
-    $baseUri = [System.Uri](Ensure-TrailingSeparator (Resolve-Path $RepoRoot).Path)
-    $targetUri = [System.Uri](Resolve-Path $Path)
+    $baseUri = [System.Uri](Ensure-TrailingSeparator $RepoRoot)
+    $targetUri = [System.Uri]([string](Resolve-Path -Path $Path).Path)
     $relativeUri = $baseUri.MakeRelativeUri($targetUri)
     return [System.Uri]::UnescapeDataString($relativeUri.ToString())
 }

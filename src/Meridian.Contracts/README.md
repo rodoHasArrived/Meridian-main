@@ -416,8 +416,9 @@ format sets, email-link or secure-portal mode, readiness text, due/as-of posture
 delivery attempt metadata, latest package artifact counts, checksum integrity summaries, and
 version stamps plus the schedule or last-package branding theme. It also carries the last retained
 download summary, access-expiry timestamp, package access/channel summaries, notification proof,
-and entitlement scope from the package evidence packet so clients can show whether the latest
-scheduled package was company-wide, private, or restricted to specific user/group/company
+report-writer dataset/grid summaries, and entitlement scope from the package evidence packet so clients can show whether the latest
+scheduled no-code package was generated from a retained dataset and whether its pivot/Top-N/formula grids were rendered,
+as well as whether it was company-wide, private, or restricted to specific user/group/company
 principals. Delivery package `accessLinks` may include an `artifact-xls` compatibility link for
 retained XLSX workbook artifacts; it is a token-gated `format=xls` route that returns the canonical
 XLSX workbook bytes and MIME type rather than a separate legacy workbook artifact.

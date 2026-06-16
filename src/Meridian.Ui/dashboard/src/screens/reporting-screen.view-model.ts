@@ -374,6 +374,8 @@ export interface ReportingScheduleDeliveryPlanRow {
   channelSummaryLabel: string;
   downloadSummaryLabel: string;
   notificationSummaryLabel: string;
+  reportWriterDatasetSummaryLabel: string;
+  reportWriterGridSummaryLabel: string;
   integrityLabel: string;
   integritySummary: string | null;
   entitlementLabel: string;
@@ -1773,6 +1775,8 @@ function buildScheduleDeliveryPlanRows(plans: ReportingScheduleDeliveryPlan[]): 
     channelSummaryLabel: plan.lastDeliveryChannelSummary?.trim() || "No retained channel summary",
     downloadSummaryLabel: plan.lastDeliveryDownloadSummary?.trim() || "No retained download summary",
     notificationSummaryLabel: plan.lastDeliveryNotificationSummary?.trim() || "No retained notification proof",
+    reportWriterDatasetSummaryLabel: plan.lastDeliveryReportWriterDatasetSummary?.trim() || "No retained report-writer dataset",
+    reportWriterGridSummaryLabel: plan.lastDeliveryReportWriterGridSummary?.trim() || "No retained report-writer grids",
     integrityLabel: formatSchedulePlanIntegrity(plan),
     integritySummary: plan.lastDeliveryIntegritySummary ?? null,
     entitlementLabel: plan.lastDeliveryEntitlementScope?.trim() || "No retained delivery entitlement",

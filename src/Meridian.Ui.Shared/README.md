@@ -620,7 +620,9 @@ blockers, the latest retained package artifact count, download summary, access-e
 access/channel summary, integrity summary, and the schedule or last-package branding theme, so clients can show
 recipient/package readiness without fetching package manifests or inferring failure reasons from prose. Schedule plan
 rows also carry the latest retained notification count and summary from the package evidence so clients can show whether
-email-link or secure-portal notification proof exists without opening the package manifest. The shared read model marks a scheduled target unready when the schedule is inactive,
+email-link or secure-portal notification proof exists without opening the package manifest. The same projection carries
+latest retained report-writer dataset and generated/rendered grid summaries, so scheduled custom reports expose their
+source-backed no-code output from the delivery-plan row. The shared read model marks a scheduled target unready when the schedule is inactive,
 due without a successful retained package, configured with an incompatible delivery mode for its
 channel, or missing one of the requested artifact formats from the latest package. Package manifest reads are token-gated by
 `ReportPackDeliveryService`, using constant-time token comparison and shared GET routes for the
@@ -649,8 +651,8 @@ the governed catalog, and `ReportPackDeliveryService` stamps that policy into
 `ReportingRunDelivery.EntitlementScope` before storing the email-link or portal package.
 `ReportPackRunReadService` carries the latest retained package entitlement back onto
 `scheduleDeliveryPlans`, letting browser and desktop clients show the delivery audience lock beside
-artifact integrity, retained download summary, access expiry, access/channel summary, notification proof, branding, and
-access-link rows without opening the package manifest first.
+artifact integrity, retained download summary, access expiry, access/channel summary, notification proof, report-writer
+dataset/grid evidence, branding, and access-link rows without opening the package manifest first.
 Schedule run results return delivery attempts and warnings so operators can distinguish generated
 reports from actually packaged email-link or portal deliveries.
 `ReportingRunCommandService` also runs approved built-in templates on demand through the same orchestration and run-store seam,

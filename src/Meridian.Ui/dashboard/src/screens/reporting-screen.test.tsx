@@ -3777,6 +3777,10 @@ describe("ReportingScreen", () => {
             lastDeliveryDownloadSummary: "3 artifact(s) retained as Pdf/Xlsx/Csv; manifest workstation/reporting/deliveries/board/manifest.json.",
             lastDeliveryNotificationCount: 1,
             lastDeliveryNotificationSummary: "1 notification retained: ReadyToSend via EmailLink.",
+            lastDeliveryGeneratedReportWriterGridCount: 1,
+            lastDeliveryRenderedReportWriterGridCount: 1,
+            lastDeliveryReportWriterDatasetSummary: "Portfolio reporting cuts (2 rows)",
+            lastDeliveryReportWriterGridSummary: "1 generated / 1 rendered report-writer grids: generated: Sector Pivot (Pivot, 1d/1m/1f, validation 2 passed / 2 checks); rendered: Sector Pivot (2r/2c).",
             versionStamp: "schedule-delivery-plan:sched-investor:board-reporting-committee:20260503080000:formats-3",
             lastDeliveryArtifactCount: 3,
             lastDeliveryIntegritySummary: "3 artifact(s) retained with SHA-256 checksums against publication evidence hash sha256:board-pack.",
@@ -4147,6 +4151,10 @@ describe("ReportingScreen", () => {
     expect(boardPlan).toHaveTextContent("EmailLink delivery to Board reporting committee via Board portal.");
     expect(boardPlan).toHaveTextContent("3 artifact(s) retained as Pdf/Xlsx/Csv; manifest workstation/reporting/deliveries/board/manifest.json.");
     expect(boardPlan).toHaveTextContent("1 notification retained: ReadyToSend via EmailLink.");
+    expect(boardPlan).toHaveTextContent("Portfolio reporting cuts (2 rows)");
+    expect(boardPlan).toHaveTextContent("1 generated / 1 rendered report-writer grids");
+    expect(boardPlan).toHaveTextContent("Sector Pivot (Pivot, 1d/1m/1f, validation 2 passed / 2 checks)");
+    expect(boardPlan).toHaveTextContent("rendered: Sector Pivot (2r/2c)");
     expect(boardPlan).toHaveTextContent("3 artifacts with SHA-256");
     expect(boardPlan).toHaveTextContent("Restricted principals=Group:investor-relations");
     expect(boardPlan).toHaveTextContent("Allocator Quarterly · Northstar Capital · allocator-quarterly");
@@ -4174,6 +4182,8 @@ describe("ReportingScreen", () => {
     expect(investorPlan).toHaveTextContent("No retained channel summary");
     expect(investorPlan).toHaveTextContent("No retained download summary");
     expect(investorPlan).toHaveTextContent("No retained notification proof");
+    expect(investorPlan).toHaveTextContent("No retained report-writer dataset");
+    expect(investorPlan).toHaveTextContent("No retained report-writer grids");
     expect(investorPlan).toHaveTextContent("No retained artifact checksums");
     expect(investorPlan).toHaveTextContent("No retained delivery entitlement");
 

@@ -3020,6 +3020,13 @@ public sealed class ReportPackWorkflowServiceTests
         plan.LastDeliveryArtifactCount.Should().Be(3);
         plan.LastDeliveryIntegritySummary.Should().Be("3 artifact(s) retained with SHA-256 checksums without a publication evidence hash.");
         plan.LastDeliveryEntitlementScope.Should().Be("Restricted principals=Group:investor-relations");
+        plan.LastDeliveryGeneratedReportWriterGridCount.Should().Be(2);
+        plan.LastDeliveryRenderedReportWriterGridCount.Should().Be(2);
+        plan.LastDeliveryReportWriterDatasetSummary.Should().Be("Custom report-writer dataset (3 rows)");
+        plan.LastDeliveryReportWriterGridSummary.Should().Contain("2 generated / 2 rendered report-writer grids");
+        plan.LastDeliveryReportWriterGridSummary.Should().Contain("Sector Pivot (Pivot, 1d/1m/1f");
+        plan.LastDeliveryReportWriterGridSummary.Should().Contain("Top Laggards (TopN, 1d/1m/0f");
+        plan.LastDeliveryReportWriterGridSummary.Should().Contain("rendered: Sector Pivot");
         plan.BrandingThemeId.Should().Be("allocator-quarterly");
         plan.BrandingTheme.Should().NotBeNull();
         plan.BrandingTheme!.FirmName.Should().Be("Northstar Capital");

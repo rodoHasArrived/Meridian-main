@@ -4136,6 +4136,10 @@ export interface ReportingScheduleDeliveryPlan {
   lastDeliveryDownloadSummary?: string | null;
   lastDeliveryNotificationCount?: number;
   lastDeliveryNotificationSummary?: string | null;
+  lastDeliveryGeneratedReportWriterGridCount?: number;
+  lastDeliveryRenderedReportWriterGridCount?: number;
+  lastDeliveryReportWriterDatasetSummary?: string | null;
+  lastDeliveryReportWriterGridSummary?: string | null;
   versionStamp: string | null;
   lastDeliveryArtifactCount?: number;
   lastDeliveryIntegritySummary?: string | null;

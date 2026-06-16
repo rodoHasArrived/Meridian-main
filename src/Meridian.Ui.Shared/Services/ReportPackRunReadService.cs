@@ -1763,6 +1763,10 @@ public sealed class ReportPackRunReadService
                     LastDeliveryDownloadSummary: latestAttempt?.Package?.DownloadSummary,
                     LastDeliveryNotificationCount: latestAttempt?.Package?.Notifications?.Count ?? 0,
                     LastDeliveryNotificationSummary: BuildScheduleDeliveryPlanNotificationSummary(latestAttempt),
+                    LastDeliveryGeneratedReportWriterGridCount: latestAttempt?.Package?.GeneratedReportWriterGrids?.Count ?? 0,
+                    LastDeliveryRenderedReportWriterGridCount: latestAttempt?.Package?.RenderedReportWriterGrids?.Count ?? 0,
+                    LastDeliveryReportWriterDatasetSummary: BuildScheduleDeliveryPlanReportWriterDatasetSummary(latestAttempt),
+                    LastDeliveryReportWriterGridSummary: BuildScheduleDeliveryPlanReportWriterGridSummary(latestAttempt),
                     VersionStamp: BuildScheduleDeliveryPlanVersionStamp(schedule, distributionId, formats),
                     LastDeliveryArtifactCount: latestAttempt?.Package?.Artifacts.Count ?? 0,
                     LastDeliveryIntegritySummary: latestAttempt?.Package?.IntegritySummary,
@@ -1813,6 +1817,10 @@ public sealed class ReportPackRunReadService
                 LastDeliveryDownloadSummary: latestAttempt?.Package?.DownloadSummary,
                 LastDeliveryNotificationCount: latestAttempt?.Package?.Notifications?.Count ?? 0,
                 LastDeliveryNotificationSummary: BuildScheduleDeliveryPlanNotificationSummary(latestAttempt),
+                LastDeliveryGeneratedReportWriterGridCount: latestAttempt?.Package?.GeneratedReportWriterGrids?.Count ?? 0,
+                LastDeliveryRenderedReportWriterGridCount: latestAttempt?.Package?.RenderedReportWriterGrids?.Count ?? 0,
+                LastDeliveryReportWriterDatasetSummary: BuildScheduleDeliveryPlanReportWriterDatasetSummary(latestAttempt),
+                LastDeliveryReportWriterGridSummary: BuildScheduleDeliveryPlanReportWriterGridSummary(latestAttempt),
                 VersionStamp: BuildScheduleDeliveryPlanVersionStamp(schedule, policy.DistributionId, formats),
                 LastDeliveryArtifactCount: latestAttempt?.Package?.Artifacts.Count ?? 0,
                 LastDeliveryIntegritySummary: latestAttempt?.Package?.IntegritySummary,
@@ -1841,6 +1849,63 @@ public sealed class ReportPackRunReadService
             "; ",
             notifications.Select(static notification => $"{notification.Status} via {notification.Channel}"));
         return $"{notifications.Count} notification{(notifications.Count == 1 ? string.Empty : "s")} retained: {statusSummary}.";
+    }
+
+    private static string? BuildScheduleDeliveryPlanReportWriterDatasetSummary(ReportPackDeliveryAttemptDto? latestAttempt)
+    {
+        var package = latestAttempt?.Package;
+        if (package is null)
+        {
+            return null;
+        }
+
+        var label = NormalizeOptional(package.ReportWriterDatasetSourceLabel)
+            ?? NormalizeOptional(package.ReportWriterDatasetSourceId)
+            ?? (package.ReportWriterDatasetRowCount.HasValue ? "Custom report-writer dataset" : null);
+        if (string.IsNullOrWhiteSpace(label))
+        {
+            return null;
+        }
+
+        return package.ReportWriterDatasetRowCount.HasValue
+            ? $"{label} ({package.ReportWriterDatasetRowCount.Value} row{(package.ReportWriterDatasetRowCount.Value == 1 ? string.Empty : "s")})"
+            : label;
+    }
+
+    private static string? BuildScheduleDeliveryPlanReportWriterGridSummary(ReportPackDeliveryAttemptDto? latestAttempt)
+    {
+        var package = latestAttempt?.Package;
+        var generatedGrids = package?.GeneratedReportWriterGrids ?? [];
+        var renderedGrids = package?.RenderedReportWriterGrids ?? [];
+        if (generatedGrids.Count == 0 && renderedGrids.Count == 0)
+        {
+            return null;
+        }
+
+        var generatedSummary = generatedGrids.Count == 0
+            ? null
+            : "generated: " + string.Join(", ", generatedGrids.Select(FormatGeneratedReportWriterGrid));
+        var renderedSummary = renderedGrids.Count == 0
+            ? null
+            : "rendered: " + string.Join(", ", renderedGrids.Select(FormatRenderedReportWriterGrid));
+        var details = string.Join("; ", new[] { generatedSummary, renderedSummary }.Where(static item => !string.IsNullOrWhiteSpace(item)));
+        var prefix = $"{generatedGrids.Count} generated / {renderedGrids.Count} rendered report-writer grid{(generatedGrids.Count + renderedGrids.Count == 1 ? string.Empty : "s")}";
+        return string.IsNullOrWhiteSpace(details) ? prefix : $"{prefix}: {details}.";
+    }
+
+    private static string FormatGeneratedReportWriterGrid(WorkstationGeneratedReportWriterGridPayload grid)
+    {
+        var validation = NormalizeOptional(grid.ValidationSummary);
+        var title = NormalizeOptional(grid.Title) ?? grid.GridId;
+        return validation is null
+            ? $"{title} ({grid.Kind}, {grid.DimensionCount}d/{grid.MetricCount}m/{grid.FormulaCount}f)"
+            : $"{title} ({grid.Kind}, {grid.DimensionCount}d/{grid.MetricCount}m/{grid.FormulaCount}f, validation {validation})";
+    }
+
+    private static string FormatRenderedReportWriterGrid(ReportWriterGridRenderDto grid)
+    {
+        var title = NormalizeOptional(grid.Title) ?? grid.GridId;
+        return $"{title} ({grid.Rows.Count}r/{grid.Columns.Count}c)";
     }
 
     private static string? ResolveScheduleBrandingThemeId(
