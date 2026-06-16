@@ -410,6 +410,59 @@ public sealed class ProviderIntegrationContractsTests
         requestRoundTrip.Should().BeEquivalentTo(request);
     }
 
+    [Fact]
+    public void ProviderIntegrationOpenApiImport_RoundTripsWithGeneratedManifest()
+    {
+        var manifest = CreateManifest() with
+        {
+            IntegrationType = IntegrationTypeDto.OpenApiRest,
+            ChangeReason = "Imported from OpenAPI specification."
+        };
+        var request = new ProviderIntegrationOpenApiImportRequestDto(
+            "manifest-openapi-custodian-v1",
+            "openapi-custodian",
+            "OpenAPI Custodian",
+            "test",
+            ProviderIntegrationAuthTypeDto.OAuth2,
+            "https://api.example.com/oauth/token",
+            ["positions.read"],
+            [ProviderCapabilityKindDto.Positions],
+            """{"openapi":"3.0.0","paths":{}}""",
+            "operator@example.com",
+            DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+            "Imported from provider OpenAPI spec.");
+        var result = new ProviderIntegrationOpenApiImportResultDto(
+            Imported: true,
+            manifest,
+            new ProviderIntegrationActivationReadinessDto(
+                IsReady: false,
+                Issues: [],
+                RequiredEvidence: ["endpoint-test", "dry-run-result"]),
+            Issues: [],
+            "OpenAPI import draft manifest saved.");
+
+        var requestJson = JsonSerializer.Serialize(
+            request,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationOpenApiImportRequestDto);
+        var resultJson = JsonSerializer.Serialize(
+            result,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationOpenApiImportResultDto);
+        var requestRoundTrip = JsonSerializer.Deserialize(
+            requestJson,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationOpenApiImportRequestDto);
+        var resultRoundTrip = JsonSerializer.Deserialize(
+            resultJson,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationOpenApiImportResultDto);
+
+        requestJson.Should().Contain("\"openApiDocumentJson\"");
+        requestJson.Should().Contain("\"authType\": \"OAuth2\"");
+        requestJson.Should().NotContain("\"OpenApiDocumentJson\"");
+        resultJson.Should().Contain("\"imported\": true");
+        resultJson.Should().Contain("\"integrationType\": \"OpenApiRest\"");
+        requestRoundTrip.Should().BeEquivalentTo(request);
+        resultRoundTrip.Should().BeEquivalentTo(result);
+    }
+
     private static ProviderIntegrationManifestDto CreateManifest()
         => new(
             "manifest-custodian-abc-v1",

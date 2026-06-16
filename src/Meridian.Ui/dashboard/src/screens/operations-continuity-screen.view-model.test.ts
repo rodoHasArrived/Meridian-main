@@ -925,10 +925,11 @@ describe("Operations Continuity view model", () => {
     expect(vm.financialOperationsQueue).toMatchObject({
       statusLabel: "Blocked",
       statusTone: "blocked",
-      summaryLabel: "8 open work items: 3 blocked, 5 review."
+      summaryLabel: "9 open work items: 4 blocked, 5 review."
     });
     expect(vm.financialOperationsQueue.items.map((item) => item.id)).toEqual([
       "reconciliation-lane:mbs-factor-reconciliation",
+      "workflow-blocker:LEDGER_VALIDATION_REQUIRED:0",
       "checklist:close-gate-ledgerposting",
       "approval:approval-close-2026-05",
       "evidence-package:accounting-record-2026-05",
@@ -949,6 +950,18 @@ describe("Operations Continuity view model", () => {
       routeHref: "/accounting/reconciliation"
     });
     expect(vm.financialOperationsQueue.items[1]).toMatchObject({
+      kindLabel: "Workflow blocker",
+      title: "LEDGER_VALIDATION_REQUIRED",
+      detail: "Ledger Posting: Ledger posting requires a balanced and validated journal draft.",
+      statusLabel: "Critical",
+      statusTone: "blocked",
+      ownerLabel: "Operations control",
+      dueLabel: "Ledger Posting gate",
+      evidenceLabel: "No linked evidence",
+      actionLabel: "Resolve Ledger Posting blocker and retain evidence.",
+      routeHref: "/accounting/operations-continuity"
+    });
+    expect(vm.financialOperationsQueue.items[2]).toMatchObject({
       kindLabel: "Checklist",
       title: "Ledger posting controller check",
       statusLabel: "Pending",
@@ -957,7 +970,7 @@ describe("Operations Continuity view model", () => {
       evidenceLabel: "ledger-evidence-1",
       routeHref: "/accounting/ledger"
     });
-    expect(vm.financialOperationsQueue.items[2]).toMatchObject({
+    expect(vm.financialOperationsQueue.items[3]).toMatchObject({
       kindLabel: "Approval",
       title: "approval-close-2026-05",
       statusLabel: "Reviewer Assigned",
@@ -990,7 +1003,7 @@ describe("Operations Continuity view model", () => {
       canRejectWorkflow: true,
       rejectWorkflowDisabledReason: null
     });
-    expect(vm.financialOperationsQueue.items[5]).toMatchObject({
+    expect(vm.financialOperationsQueue.items[6]).toMatchObject({
       kindLabel: "Evidence package",
       title: "Close package manifest",
       statusLabel: "Missing",

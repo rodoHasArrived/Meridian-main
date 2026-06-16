@@ -350,6 +350,17 @@ public sealed class ProviderIntegrationRestDryRunService
 
     private static IReadOnlyList<JsonElement> ExtractRecords(JsonElement responseBody, string recordsPath)
     {
+        if (string.IsNullOrWhiteSpace(recordsPath) ||
+            StringComparer.Ordinal.Equals(recordsPath.Trim(), "$"))
+        {
+            if (responseBody.ValueKind == JsonValueKind.Array)
+            {
+                return responseBody.EnumerateArray().Select(record => record.Clone()).ToArray();
+            }
+
+            return responseBody.ValueKind == JsonValueKind.Object ? [responseBody.Clone()] : [];
+        }
+
         var current = responseBody;
         foreach (var part in NormalizeSourcePath(recordsPath).Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {

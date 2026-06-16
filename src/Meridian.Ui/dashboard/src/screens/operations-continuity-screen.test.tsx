@@ -1166,6 +1166,10 @@ describe("OperationsContinuityScreen", () => {
     expect(within(operatorQueue).getByText("Reconciliation lane")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("MBS factor reconciliation")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("1 open break; MBS factor reconciliation has 1 open break requiring controller review.")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Workflow blocker")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("LEDGER_VALIDATION_REQUIRED")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Ledger Posting: Ledger posting requires a balanced and validated journal draft.")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Resolve Ledger Posting blocker and retain evidence.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Ledger posting controller check")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Close calendar")).toBeInTheDocument();
     expect(within(operatorQueue).getByText(`2026-05 / ${fundAccountId}: Ledger posting controller check`)).toBeInTheDocument();
@@ -1178,6 +1182,8 @@ describe("OperationsContinuityScreen", () => {
       .toHaveAttribute("href", "/accounting/approvals");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: MBS factor reconciliation" }))
       .toHaveAttribute("href", "/accounting/reconciliation");
+    expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: LEDGER_VALIDATION_REQUIRED" }))
+      .toHaveAttribute("href", "/accounting/operations-continuity");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Ledger posting controller check" }))
       .toHaveAttribute("href", "/accounting/ledger");
     expect(within(operatorQueue).getByRole("link", { name: `Open Financial Operations queue item: 2026-05 / ${fundAccountId}: Ledger posting controller check` }))

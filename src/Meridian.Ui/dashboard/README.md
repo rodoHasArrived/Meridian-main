@@ -172,8 +172,9 @@ and reviewed-output artifact posture so automation review remains visible withou
 automation policy.
 The Financial Operations operator queue on that screen is also derived from workflow detail and the
 shared close-calendar projection: reconciliation break cases, non-ready reconciliation lane posture,
-close checklist tasks, close-calendar due items, workflow approvals, and evidence-package readiness
-stay source-backed while React only groups the active work items for review. If the close-calendar
+workflow blockers, close checklist tasks, close-calendar due items, workflow approvals, and
+evidence-package readiness stay source-backed while React only groups the active work items for
+review. If the close-calendar
 projection cannot load, the queue adds a blocked calendar-unavailable item so workflow control fails
 closed.
 The same workflow approval payload also feeds the approval-history table with submission timing,

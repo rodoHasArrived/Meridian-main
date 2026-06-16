@@ -452,6 +452,27 @@ public sealed record ProviderIntegrationRestDryRunRequestDto(
     DateTimeOffset RequestedAt,
     int MaxPages);
 
+public sealed record ProviderIntegrationOpenApiImportRequestDto(
+    string ManifestId,
+    string ProviderId,
+    string DisplayName,
+    string Environment,
+    ProviderIntegrationAuthTypeDto AuthType,
+    string? TokenUrl,
+    IReadOnlyList<string> Scopes,
+    IReadOnlyList<ProviderCapabilityKindDto> Capabilities,
+    string OpenApiDocumentJson,
+    string ImportedBy,
+    DateTimeOffset ImportedAt,
+    string? ChangeReason);
+
+public sealed record ProviderIntegrationOpenApiImportResultDto(
+    bool Imported,
+    ProviderIntegrationManifestDto Manifest,
+    ProviderIntegrationActivationReadinessDto Readiness,
+    IReadOnlyList<ValidationIssueDto> Issues,
+    string? Message);
+
 public sealed record ProviderIntegrationDryRunResultDto(
     string SyncRunId,
     string RawPayloadId,

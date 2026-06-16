@@ -81,6 +81,8 @@ export interface OperationsContinuityBlockerRow {
   severityLabel: string;
   severityTone: OperationsContinuityTone;
   evidenceLabel: string;
+  evidenceHref: string | null;
+  evidenceRouteLabel: string;
   ariaLabel: string;
 }
 
@@ -984,6 +986,7 @@ export function buildOperationsContinuityScreenViewModel({
   const financialOperationsQueue = buildFinancialOperationsOperatorQueueViewModel({
     breakCases,
     reconciliationLanes,
+    blockers,
     checklist,
     approvals: effectiveDetail?.approvals ?? [],
     evidencePackages,
@@ -1422,16 +1425,22 @@ function mapGateRow(gate: OperationsGate): OperationsContinuityGateRow {
 }
 
 function buildBlockerRows(blockers: OperationsWorkflowBlocker[]): OperationsContinuityBlockerRow[] {
-  return blockers.map((blocker, index) => ({
-    id: `${blocker.code}:${index}`,
-    code: blocker.code,
-    message: blocker.message,
-    gateLabel: blocker.gate ? gateLabel(blocker.gate) : "Workflow",
-    severityLabel: blocker.severity || "Review",
-    severityTone: severityTone(blocker.severity),
-    evidenceLabel: blocker.evidenceLinks.length === 0 ? "No linked evidence" : `${blocker.evidenceLinks.length} evidence link${blocker.evidenceLinks.length === 1 ? "" : "s"}`,
-    ariaLabel: `${blocker.code}, ${blocker.severity || "Review"} blocker for ${blocker.gate ? gateLabel(blocker.gate) : "workflow"}`
-  }));
+  return blockers.map((blocker, index) => {
+    const evidenceHref = normalizeLocalWorkstationRoute(blocker.evidenceLinks[0]?.route) ?? null;
+
+    return {
+      id: `${blocker.code}:${index}`,
+      code: blocker.code,
+      message: blocker.message,
+      gateLabel: blocker.gate ? gateLabel(blocker.gate) : "Workflow",
+      severityLabel: blocker.severity || "Review",
+      severityTone: severityTone(blocker.severity),
+      evidenceLabel: blocker.evidenceLinks.length === 0 ? "No linked evidence" : `${blocker.evidenceLinks.length} evidence link${blocker.evidenceLinks.length === 1 ? "" : "s"}`,
+      evidenceHref,
+      evidenceRouteLabel: evidenceHref ? "Open blocker evidence" : "No local evidence route",
+      ariaLabel: `${blocker.code}, ${blocker.severity || "Review"} blocker for ${blocker.gate ? gateLabel(blocker.gate) : "workflow"}`
+    };
+  });
 }
 
 function buildReconciliationLaneRows(lanes: OperationsReconciliationLaneSummary[]): OperationsContinuityReconciliationLaneRow[] {
@@ -2049,6 +2058,7 @@ function buildEvidencePackageRows(packages: OperationsEvidencePackageSummary[]):
 function buildFinancialOperationsOperatorQueueViewModel({
   breakCases,
   reconciliationLanes,
+  blockers,
   checklist,
   approvals,
   evidencePackages,
@@ -2059,6 +2069,7 @@ function buildFinancialOperationsOperatorQueueViewModel({
 }: {
   breakCases: OperationsContinuityBreakCaseRow[];
   reconciliationLanes: OperationsContinuityReconciliationLaneRow[];
+  blockers: OperationsContinuityBlockerRow[];
   checklist: OperationsContinuityChecklistRow[];
   approvals: OperationsContinuityWorkflow["approvals"];
   evidencePackages: OperationsContinuityEvidencePackageRow[];
@@ -2090,6 +2101,9 @@ function buildFinancialOperationsOperatorQueueViewModel({
     ...reconciliationLanes
       .filter(isOpenQueueItem)
       .map(mapReconciliationLaneQueueRow),
+    ...blockers
+      .map(mapWorkflowBlockerQueueRow)
+      .filter(isOpenQueueItem),
     ...checklist
       .filter(isOpenQueueItem)
       .map((row) => ({
@@ -2165,6 +2179,27 @@ function buildFinancialOperationsOperatorQueueViewModel({
       ? "Loading Financial Operations operator queue..."
       : "No open Financial Operations queue items are surfaced for the selected workflow.",
     items
+  };
+}
+
+function mapWorkflowBlockerQueueRow(row: OperationsContinuityBlockerRow): FinancialOperationsOperatorQueueRow {
+  const routeHref = row.evidenceHref ?? "/accounting/operations-continuity";
+  const routeLabel = row.evidenceHref ? row.evidenceRouteLabel : "Open operations continuity";
+
+  return {
+    id: `workflow-blocker:${row.id}`,
+    kindLabel: "Workflow blocker",
+    title: row.code,
+    detail: `${row.gateLabel}: ${row.message}`,
+    statusLabel: row.severityLabel,
+    statusTone: row.severityTone,
+    ownerLabel: "Operations control",
+    dueLabel: `${row.gateLabel} gate`,
+    evidenceLabel: row.evidenceLabel,
+    actionLabel: `Resolve ${row.gateLabel} blocker and retain evidence.`,
+    routeHref,
+    routeLabel,
+    ariaLabel: `Financial Operations workflow blocker ${row.ariaLabel}`
   };
 }
 

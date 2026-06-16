@@ -80,6 +80,69 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationOpenApiImport_SavesDraftInTenantPartition()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ManageProviders);
+            var client = app.GetTestClient();
+            var request = CreateProviderIntegrationOpenApiImportRequest();
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationOpenApiImport,
+                request,
+                ServerJsonOptions);
+            var result = await response.Content.ReadFromJsonAsync<ProviderIntegrationOpenApiImportResultDto>(ServerJsonOptions);
+            var tenantStore = DefaultProviderIntegrationTenantStore(store);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            result.Should().NotBeNull();
+            result!.Imported.Should().BeTrue();
+            result.Manifest.IntegrationType.Should().Be(IntegrationTypeDto.OpenApiRest);
+            result.Manifest.Endpoints.Should().Contain(endpoint =>
+                endpoint.Capability == ProviderCapabilityKindDto.Positions &&
+                endpoint.Response.RecordsPath == "$.positions");
+            (await tenantStore.GetManifestAsync(request.ManifestId)).Should().BeEquivalentTo(result.Manifest);
+            (await store.GetManifestAsync(request.ManifestId)).Should().BeNull();
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationOpenApiImport_RequiresConfigurePermission()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewConfig);
+            var client = app.GetTestClient();
+            var request = CreateProviderIntegrationOpenApiImportRequest();
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationOpenApiImport,
+                request,
+                ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            (await DefaultProviderIntegrationTenantStore(store).GetManifestAsync(request.ManifestId)).Should().BeNull();
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ProviderIntegrationSetupSave_PersistsDraftInTenantPartition()
     {
         var testRoot = CreateProviderIntegrationTestRoot();
@@ -823,6 +886,7 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<ProviderIntegrationDryRunService>();
         services.AddSingleton<IProviderIntegrationHttpTransport>(transport ?? new ProviderIntegrationEndpointTransport());
         services.AddSingleton<ProviderIntegrationRestDryRunService>();
+        services.AddSingleton<ProviderIntegrationOpenApiImportService>();
         services.AddSingleton<ProviderIntegrationSetupService>();
         services.AddSingleton<ProviderIntegrationActivationReadinessService>();
         services.AddSingleton<ProviderIntegrationActivationService>();
@@ -1190,6 +1254,71 @@ public sealed partial class WorkstationEndpointsTests
             DateTimeOffset.Parse("2026-06-16T15:00:00Z"),
             "Saved from workstation endpoint.");
     }
+
+    private static ProviderIntegrationOpenApiImportRequestDto CreateProviderIntegrationOpenApiImportRequest()
+        => new(
+            "manifest-openapi-endpoint-v1",
+            "openapi-custodian",
+            "OpenAPI Custodian",
+            "test",
+            ProviderIntegrationAuthTypeDto.OAuth2,
+            "https://api.example.com/oauth/token",
+            ["positions.read"],
+            [ProviderCapabilityKindDto.Positions],
+            """
+            {
+              "openapi": "3.0.0",
+              "info": { "title": "Custodian API", "version": "1.0" },
+              "servers": [{ "url": "https://api.example.com" }],
+              "paths": {
+                "/v1/accounts/{accountId}/positions": {
+                  "get": {
+                    "operationId": "listPositions",
+                    "summary": "List account positions",
+                    "parameters": [
+                      { "name": "accountId", "in": "path", "required": true, "schema": { "type": "string" } },
+                      { "name": "updated_since", "in": "query", "schema": { "type": "string" } }
+                    ],
+                    "responses": {
+                      "200": {
+                        "content": {
+                          "application/json": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "positions": {
+                                  "type": "array",
+                                  "items": { "$ref": "#/components/schemas/Position" }
+                                },
+                                "nextCursor": { "type": "string" }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "Position": {
+                    "type": "object",
+                    "properties": {
+                      "account_id": { "type": "string" },
+                      "cusip": { "type": "string" },
+                      "quantity": { "type": "number" },
+                      "as_of_date": { "type": "string", "format": "date" },
+                      "currency": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+            """,
+            "operator@example.com",
+            DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+            "Imported from workstation endpoint test.");
 
     private static ProviderIntegrationActivationRequestDto CreateProviderIntegrationActivationRequest(
         ProviderIntegrationManifestDto manifest,

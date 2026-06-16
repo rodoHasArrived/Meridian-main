@@ -83,6 +83,58 @@ public static partial class WorkstationEndpoints
             UserPermission.ModifyConfig,
             UserPermission.AdminMaintenance);
 
+        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationOpenApiImport), async (
+            ProviderIntegrationOpenApiImportRequestDto request,
+            HttpContext context) =>
+        {
+            if (!HasProviderIntegrationConfigurePermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<ProviderIntegrationOpenApiImportService>();
+            if (service is null)
+            {
+                return Results.Problem(
+                    "Provider integration OpenAPI import service is not registered.",
+                    statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            try
+            {
+                if (!TryResolveRequiredTenantId(context, out var tenantId))
+                {
+                    return Results.Problem("A tenant-scoped workstation request context is required.", statusCode: StatusCodes.Status403Forbidden);
+                }
+
+                var result = await service
+                    .ImportAsync(tenantId, request, context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (JsonException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("ImportWorkstationProviderIntegrationOpenApi")
+        .Produces<ProviderIntegrationOpenApiImportResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireAnyPermission(
+            UserPermission.ManageProviders,
+            UserPermission.ModifyConfig,
+            UserPermission.AdminMaintenance);
+
         group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationSetupSave), async (
             ProviderIntegrationSetupSaveRequestDto request,
             HttpContext context) =>

@@ -66,6 +66,8 @@ namespace Meridian.Contracts.Integrations;
 [JsonSerializable(typeof(ProviderIntegrationConnectionMonitorDto))]
 [JsonSerializable(typeof(ManualCsvProviderIntegrationDryRunRequestDto))]
 [JsonSerializable(typeof(ProviderIntegrationRestDryRunRequestDto))]
+[JsonSerializable(typeof(ProviderIntegrationOpenApiImportRequestDto))]
+[JsonSerializable(typeof(ProviderIntegrationOpenApiImportResultDto))]
 [JsonSerializable(typeof(ProviderIntegrationDryRunResultDto))]
 [JsonSerializable(typeof(ProviderIntegrationSetupSaveRequestDto))]
 [JsonSerializable(typeof(ProviderIntegrationSetupSaveResultDto))]
