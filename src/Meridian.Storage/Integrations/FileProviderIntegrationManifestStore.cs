@@ -6,7 +6,9 @@ using Meridian.Storage.Archival;
 
 namespace Meridian.Storage.Integrations;
 
-public sealed class FileProviderIntegrationManifestStore : IProviderIntegrationManifestStore
+public sealed class FileProviderIntegrationManifestStore :
+    IProviderIntegrationManifestStore,
+    IProviderIntegrationTenantManifestStoreFactory
 {
     private readonly string _rootPath;
 
@@ -15,6 +17,22 @@ public sealed class FileProviderIntegrationManifestStore : IProviderIntegrationM
         var root = string.IsNullOrWhiteSpace(dataRoot) ? "data" : dataRoot;
         _rootPath = Path.Combine(root, "_integrations");
         Directory.CreateDirectory(_rootPath);
+    }
+
+    private FileProviderIntegrationManifestStore(string rootPath, bool useResolvedRootPath)
+    {
+        _rootPath = useResolvedRootPath
+            ? rootPath
+            : Path.Combine(rootPath, "_integrations");
+        Directory.CreateDirectory(_rootPath);
+    }
+
+    public IProviderIntegrationManifestStore ForTenant(string tenantId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        return new FileProviderIntegrationManifestStore(
+            Path.Combine(_rootPath, "tenants", HashSegment(tenantId.Trim())),
+            useResolvedRootPath: true);
     }
 
     public Task SaveManifestAsync(ProviderIntegrationManifestDto manifest, CancellationToken ct = default)

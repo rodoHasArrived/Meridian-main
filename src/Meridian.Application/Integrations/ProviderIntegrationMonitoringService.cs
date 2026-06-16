@@ -18,16 +18,24 @@ public sealed class ProviderIntegrationMonitoringService
         string connectionId,
         int recentRunLimit = DefaultRecentRunLimit,
         CancellationToken ct = default)
+        => await GetConnectionMonitorAsync(null, connectionId, recentRunLimit, ct).ConfigureAwait(false);
+
+    public async Task<ProviderIntegrationConnectionMonitorDto> GetConnectionMonitorAsync(
+        string? tenantId,
+        string connectionId,
+        int recentRunLimit = DefaultRecentRunLimit,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
         ct.ThrowIfCancellationRequested();
 
-        var connection = await store.GetConnectionAsync(connectionId, ct).ConfigureAwait(false)
+        var scopedStore = ResolveStore(tenantId);
+        var connection = await scopedStore.GetConnectionAsync(connectionId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException($"Provider integration connection '{connectionId}' was not found.");
-        var manifest = await store.GetManifestAsync(connection.ManifestId, ct).ConfigureAwait(false)
+        var manifest = await scopedStore.GetManifestAsync(connection.ManifestId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException($"Provider integration manifest '{connection.ManifestId}' was not found.");
         var limit = NormalizeLimit(recentRunLimit);
-        var syncRuns = (await store.ListSyncRunsAsync(connection.ConnectionId, ct).ConfigureAwait(false))
+        var syncRuns = (await scopedStore.ListSyncRunsAsync(connection.ConnectionId, ct).ConfigureAwait(false))
             .Take(limit)
             .ToArray();
 
@@ -35,8 +43,8 @@ public sealed class ProviderIntegrationMonitoringService
         foreach (var syncRun in syncRuns)
         {
             ct.ThrowIfCancellationRequested();
-            var stagingRecords = await store.ListStagingRecordsAsync(syncRun.SyncRunId, ct).ConfigureAwait(false);
-            var quarantinedRecords = await store.ListQuarantinedRecordsAsync(syncRun.SyncRunId, ct).ConfigureAwait(false);
+            var stagingRecords = await scopedStore.ListStagingRecordsAsync(syncRun.SyncRunId, ct).ConfigureAwait(false);
+            var quarantinedRecords = await scopedStore.ListQuarantinedRecordsAsync(syncRun.SyncRunId, ct).ConfigureAwait(false);
             runEvidence.Add(CreateRunEvidence(syncRun, stagingRecords.Count, quarantinedRecords.Count));
         }
 
@@ -93,4 +101,11 @@ public sealed class ProviderIntegrationMonitoringService
 
         return Math.Min(recentRunLimit, MaxRecentRunLimit);
     }
+
+    private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
+        => string.IsNullOrWhiteSpace(tenantId)
+            ? store
+            : store is IProviderIntegrationTenantManifestStoreFactory factory
+                ? factory.ForTenant(tenantId)
+                : store;
 }

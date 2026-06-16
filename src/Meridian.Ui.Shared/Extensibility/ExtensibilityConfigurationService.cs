@@ -50,7 +50,8 @@ public sealed class InMemoryExtensibilityConfigurationStore : IExtensibilityConf
         lock (_tenantTemplatesByTenant)
         {
             _tenantTemplatesByTenant.TryGetValue(normalizedTenantId, out var tenantTemplates);
-            tenantTemplates?.TryGetValue(NormalizeTenantTemplateId(tenantTemplateId), out var tenantTemplate);
+            TenantTemplateConfigurationBundleDto? tenantTemplate = null;
+            tenantTemplates?.TryGetValue(NormalizeTenantTemplateId(tenantTemplateId), out tenantTemplate);
             return Task.FromResult(tenantTemplate);
         }
     }

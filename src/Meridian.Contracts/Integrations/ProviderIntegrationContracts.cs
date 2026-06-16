@@ -438,3 +438,8 @@ public interface IProviderIntegrationManifestStore
 
     Task<IReadOnlyList<ProviderIntegrationSyncRunDto>> ListSyncRunsAsync(string connectionId, CancellationToken ct = default);
 }
+
+public interface IProviderIntegrationTenantManifestStoreFactory
+{
+    IProviderIntegrationManifestStore ForTenant(string tenantId);
+}

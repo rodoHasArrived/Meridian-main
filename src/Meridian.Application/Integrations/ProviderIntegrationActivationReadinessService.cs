@@ -22,6 +22,13 @@ public sealed class ProviderIntegrationActivationReadinessService
         string manifestId,
         string? connectionId = null,
         CancellationToken ct = default)
+        => await EvaluateAsync(null, manifestId, connectionId, ct).ConfigureAwait(false);
+
+    public async Task<ProviderIntegrationActivationReadinessDto> EvaluateAsync(
+        string? tenantId,
+        string manifestId,
+        string? connectionId = null,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(manifestId);
         if (connectionId is not null)
@@ -29,15 +36,23 @@ public sealed class ProviderIntegrationActivationReadinessService
             ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
         }
 
-        var manifest = await store.GetManifestAsync(manifestId, ct).ConfigureAwait(false)
+        var scopedStore = ResolveStore(tenantId);
+        var manifest = await scopedStore.GetManifestAsync(manifestId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException($"Provider integration manifest '{manifestId}' was not found.");
         var connection = string.IsNullOrWhiteSpace(connectionId)
             ? null
-            : await store.GetConnectionAsync(connectionId, ct).ConfigureAwait(false)
+            : await scopedStore.GetConnectionAsync(connectionId, ct).ConfigureAwait(false)
                 ?? throw new KeyNotFoundException($"Provider integration connection '{connectionId}' was not found.");
 
         return Evaluate(manifest, connection);
     }
+
+    private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
+        => string.IsNullOrWhiteSpace(tenantId)
+            ? store
+            : store is IProviderIntegrationTenantManifestStoreFactory factory
+                ? factory.ForTenant(tenantId)
+                : store;
 
     public static ProviderIntegrationActivationReadinessDto Evaluate(
         ProviderIntegrationManifestDto manifest,

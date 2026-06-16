@@ -14,6 +14,12 @@ public sealed class ProviderIntegrationActivationService
     public async Task<ProviderIntegrationActivationResultDto> ActivateAsync(
         ProviderIntegrationActivationRequestDto request,
         CancellationToken ct = default)
+        => await ActivateAsync(null, request, ct).ConfigureAwait(false);
+
+    public async Task<ProviderIntegrationActivationResultDto> ActivateAsync(
+        string? tenantId,
+        ProviderIntegrationActivationRequestDto request,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ManifestId);
@@ -23,9 +29,10 @@ public sealed class ProviderIntegrationActivationService
 
         ct.ThrowIfCancellationRequested();
 
-        var manifest = await store.GetManifestAsync(request.ManifestId, ct).ConfigureAwait(false)
+        var scopedStore = ResolveStore(tenantId);
+        var manifest = await scopedStore.GetManifestAsync(request.ManifestId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException($"Provider integration manifest '{request.ManifestId}' was not found.");
-        var connection = await store.GetConnectionAsync(request.ConnectionId, ct).ConfigureAwait(false)
+        var connection = await scopedStore.GetConnectionAsync(request.ConnectionId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException($"Provider integration connection '{request.ConnectionId}' was not found.");
 
         var activationManifest = manifest with
@@ -58,8 +65,8 @@ public sealed class ProviderIntegrationActivationService
                 "Provider integration activation is blocked by readiness issues.");
         }
 
-        await store.SaveManifestAsync(activationManifest, ct).ConfigureAwait(false);
-        await store.SaveConnectionAsync(activationConnection, ct).ConfigureAwait(false);
+        await scopedStore.SaveManifestAsync(activationManifest, ct).ConfigureAwait(false);
+        await scopedStore.SaveConnectionAsync(activationConnection, ct).ConfigureAwait(false);
         return new ProviderIntegrationActivationResultDto(
             Activated: true,
             activationManifest.ManifestId,
@@ -70,4 +77,11 @@ public sealed class ProviderIntegrationActivationService
             activationConnection.ApprovalEvidenceId,
             "Provider integration connection activated.");
     }
+
+    private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
+        => string.IsNullOrWhiteSpace(tenantId)
+            ? store
+            : store is IProviderIntegrationTenantManifestStoreFactory factory
+                ? factory.ForTenant(tenantId)
+                : store;
 }
