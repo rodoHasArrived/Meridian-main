@@ -59,7 +59,7 @@ pwsh ./scripts/dev/run-local-quality.ps1 -IncludePlaywrightSmoke
 When local CPU, memory, disk, package restore, or MSBuild lock contention makes validation
 unreliable, push the branch and run the manual GitHub-hosted
 `Targeted Test` workflow before retrying broad local scripts. It accepts a .NET test project plus
-filter, or a fixed browser workstation npm script plus optional Vitest file/name.
+required filter, or a fixed browser workstation npm script plus optional Vitest file/name.
 
 ```powershell
 gh workflow run targeted-test.yml --ref <branch> `

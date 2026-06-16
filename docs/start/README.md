@@ -95,7 +95,8 @@ python build/python/cli/buildctl.py test --project tests/Meridian.Tests/Meridian
 ```
 
 If local machine limits make the relevant proof lane unreliable, push the branch and use the
-manual GitHub-hosted `Targeted Test` workflow before retrying broad local scripts:
+manual GitHub-hosted `Targeted Test` workflow before retrying broad local scripts. The .NET lane
+requires `dotnet_filter` so it runs the failing slice instead of a whole test project:
 
 ```powershell
 gh workflow run targeted-test.yml --ref <branch> -f lane=dotnet -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"

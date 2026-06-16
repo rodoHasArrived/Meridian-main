@@ -37,7 +37,7 @@ automation outside the current build/test/publish/docs scope.
 When local CPU, memory, disk, package restore, or MSBuild lock contention makes testing unreliable,
 push the branch and use `Targeted Test` from the GitHub Actions tab or dispatch it with `gh`.
 Use the GitHub-hosted targeted lane as the preferred remote proof tool before retrying broad local
-scripts.
+scripts. The .NET lane requires `dotnet_filter`; leave broad CI filters on the normal CI workflow.
 
 ```powershell
 gh workflow run targeted-test.yml --ref <branch> `

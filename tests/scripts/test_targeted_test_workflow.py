@@ -39,6 +39,7 @@ class TargetedTestWorkflowTests(unittest.TestCase):
         self.assertIn("Unsupported dotnet_project", self.workflow)
         self.assertIn("Test-Path -LiteralPath $project", self.workflow)
         self.assertIn("'^(tests|src)/[A-Za-z0-9._/-]+\\.(csproj|fsproj|sln|slnf)$'", self.workflow)
+        self.assertIn("dotnet_filter is required for lane=dotnet", self.workflow)
 
     def test_dotnet_step_runs_exact_selected_project_with_optional_filter(self) -> None:
         self.assertIn("& dotnet restore $project @props", self.workflow)
