@@ -105,6 +105,24 @@ public sealed class ModuleLoaderTests
     }
 
     [Fact]
+    public void Order_Throws_OnNullOrWhitespaceModuleId()
+    {
+        var loader = new ModuleLoader().Add(new FakeModule("  "));
+
+        loader.Invoking(l => l.Order())
+            .Should().Throw<InvalidOperationException>().WithMessage("*null or empty module id*");
+    }
+
+    [Fact]
+    public void Order_Throws_OnNullOrWhitespaceDependencyId()
+    {
+        var loader = new ModuleLoader().Add(new FakeModule("a", dependsOn: new[] { "  " }));
+
+        loader.Invoking(l => l.Order())
+            .Should().Throw<InvalidOperationException>().WithMessage("*null or empty dependency id*");
+    }
+
+    [Fact]
     public void RegisterAll_InvokesEachModule_InDependencyOrder()
     {
         var calls = new List<string>();

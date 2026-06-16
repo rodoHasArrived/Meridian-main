@@ -36,6 +36,9 @@ public static class ExtensionDiscovery
         var contract = typeof(TContract);
         foreach (var assembly in assemblies)
         {
+            if (assembly is null)
+                continue;
+
             foreach (var type in GetLoadableTypes(assembly))
             {
                 if (type.IsAbstract || type.IsInterface)

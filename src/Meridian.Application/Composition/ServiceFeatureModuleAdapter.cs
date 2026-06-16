@@ -19,23 +19,27 @@ public sealed class ServiceFeatureModuleAdapter : IMeridianModule
     private readonly IServiceFeatureRegistration _inner;
     private readonly CompositionOptions _options;
     private readonly IReadOnlyCollection<string> _dependsOn;
+    private readonly string _moduleId;
 
     /// <summary>
     /// Wraps the supplied feature registration, optionally declaring ordering dependencies on
-    /// other module ids.
+    /// other module ids and a custom module id. A custom id avoids duplicate-id conflicts when the
+    /// same feature-registration type is wrapped more than once (for example with different options).
     /// </summary>
     public ServiceFeatureModuleAdapter(
         IServiceFeatureRegistration inner,
         CompositionOptions options,
-        IReadOnlyCollection<string>? dependsOn = null)
+        IReadOnlyCollection<string>? dependsOn = null,
+        string? moduleId = null)
     {
         _inner = inner ?? throw new ArgumentNullException(nameof(inner));
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _dependsOn = dependsOn ?? Array.Empty<string>();
+        _moduleId = moduleId ?? inner.GetType().Name;
     }
 
     /// <inheritdoc />
-    public string ModuleId => _inner.GetType().Name;
+    public string ModuleId => _moduleId;
 
     /// <inheritdoc />
     public IReadOnlyCollection<string> DependsOn => _dependsOn;

@@ -43,6 +43,8 @@ public sealed class ModuleLoader
         var byId = new Dictionary<string, IMeridianModule>(StringComparer.OrdinalIgnoreCase);
         foreach (var module in _modules)
         {
+            if (string.IsNullOrWhiteSpace(module.ModuleId))
+                throw new InvalidOperationException($"Module of type '{module.GetType().Name}' has a null or empty module id.");
             if (!byId.TryAdd(module.ModuleId, module))
                 throw new InvalidOperationException($"Duplicate module id '{module.ModuleId}'.");
         }
@@ -64,6 +66,8 @@ public sealed class ModuleLoader
             state[module.ModuleId] = 1;
             foreach (var dependencyId in module.DependsOn)
             {
+                if (string.IsNullOrWhiteSpace(dependencyId))
+                    throw new InvalidOperationException($"Module '{module.ModuleId}' declares a null or empty dependency id.");
                 if (!byId.TryGetValue(dependencyId, out var dependency))
                     throw new InvalidOperationException($"Module '{module.ModuleId}' depends on unknown module '{dependencyId}'.");
                 Visit(dependency);

@@ -73,6 +73,7 @@ public sealed class DefaultReportingTemplateCatalog : IReportingTemplateCatalog
     ];
 
     private readonly ExtensionRegistry<ReportingTemplateMetadata> templates;
+    private readonly IReadOnlyList<ReportingTemplateMetadata> sortedTemplates;
 
     /// <summary>
     /// Creates a catalog containing only the built-in reporting templates.
@@ -99,6 +100,11 @@ public sealed class DefaultReportingTemplateCatalog : IReportingTemplateCatalog
             // Built-ins win on conflict; additional templates extend the catalog.
             templates.TryAdd(template);
         }
+
+        // The catalog is immutable after construction, so pre-sort once instead of on every call.
+        sortedTemplates = templates.Entries
+            .OrderBy(static template => template.TemplateId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     public ReportingTemplateMetadata Get(string templateId)
@@ -107,5 +113,5 @@ public sealed class DefaultReportingTemplateCatalog : IReportingTemplateCatalog
             : throw new KeyNotFoundException($"Unknown reporting template '{templateId}'.");
 
     public IReadOnlyList<ReportingTemplateMetadata> ListTemplates()
-        => templates.Entries.OrderBy(static template => template.TemplateId, StringComparer.OrdinalIgnoreCase).ToArray();
+        => sortedTemplates;
 }
