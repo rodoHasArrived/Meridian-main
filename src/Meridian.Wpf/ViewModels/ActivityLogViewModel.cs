@@ -216,7 +216,11 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
     {
         _loggingService.LogWritten += OnLogEntryAdded;
 
-        await LoadLogsAsync();
+        await LoadLogsAsync(ct);
+        if (ct.IsCancellationRequested)
+        {
+            return;
+        }
 
         _refreshTimer.Start();
     }
@@ -346,8 +350,10 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
 
     private async Task LoadLogsAsync(CancellationToken ct = default)
     {
-        _cts?.Cancel();
-        _cts = new CancellationTokenSource();
+        var previousCts = _cts;
+        previousCts?.Cancel();
+        previousCts?.Dispose();
+        _cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
 
         try
         {
@@ -637,9 +643,10 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
         _cts?.Dispose();
     }
 
-    private sealed record ActivityLogEntryDto(
-        DateTime? Timestamp,
-        string? Level,
-        string? Category,
-        string? Message);
 }
+
+internal sealed record ActivityLogEntryDto(
+    DateTime? Timestamp,
+    string? Level,
+    string? Category,
+    string? Message);

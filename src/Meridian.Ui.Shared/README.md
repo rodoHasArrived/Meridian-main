@@ -131,8 +131,9 @@ command routes execute manual CSV and REST validation through Application-owned 
 schema-drift check route compares retained raw payloads with manifest response and mapping paths,
 the sync-plan route reports due/manual/blocked capability state from schedule and retained run
 history, the run-due sync route starts due read-only REST/OpenAPI/hybrid capabilities through the
-staging-first dry-run runtime, and the connection monitor route adapts durable sync-run, staging,
-quarantine, and validation evidence into browser/WPF-compatible payloads. Quarantine review routes expose grouped validation issues and
+staging-first dry-run runtime, resolves configured endpoint dependencies from retained raw payload
+evidence, and the connection monitor route adapts durable sync-run, staging, quarantine, and
+validation evidence into browser/WPF-compatible payloads. Quarantine review routes expose grouped validation issues and
 persist operator review decisions without changing the retained rejected raw records. Quarantine
 replay routes remap records approved for replay after mapping changes and write accepted records
 back into integration staging or re-quarantine unresolved records. Setup, OpenAPI import,

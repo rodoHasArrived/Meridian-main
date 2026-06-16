@@ -116,7 +116,7 @@ dedupe keys, validation evidence, and downstream ownership are proven.
 | Manifest store | Implement `src/Meridian.Storage/Integrations/` as the first durable store. | Manifests, raw payloads, quarantine records, quarantine review decisions, quarantine replay payloads, staging records, and replay evidence are operational records, not workstation preferences. |
 | Template catalog | Implement manual CSV upload, custodian positions, brokerage transactions, and fixed income security master in the first catalog. | The four templates jointly prove file intake, REST intake, transaction semantics, and institutional reference-data richness. |
 | First execution proof | Execute manual CSV first; execute custodian positions as the first REST proof. | CSV proves mapping and validation without network variance; custodian positions proves endpoint dependencies, pagination, and raw API payload retention. |
-| Scheduled execution | Run due read-only REST/OpenAPI/hybrid capabilities through the sync-orchestration service, which composes sync planning with the REST dry-run runtime. | Scheduled execution should reuse raw payload retention, staging, quarantine, validation, and sync-run evidence instead of introducing a second connector path. |
+| Scheduled execution | Run due read-only REST/OpenAPI/hybrid capabilities through the sync-orchestration service, which composes sync planning with the REST dry-run runtime and resolves configured endpoint dependencies. | Scheduled execution should reuse raw payload retention, staging, quarantine, validation, dependency evidence, and sync-run evidence instead of introducing a second connector path. |
 | OpenAPI import | Seed draft `OpenApiRest` manifests from OpenAPI/Swagger JSON after manual endpoint definition, sample response mapping, dry-run, validation, replay, and activation gates are stable. | OpenAPI is an accelerator over the manifest model, not a separate runtime or a substitute for mapping approval. |
 | Accepted record writer | Write accepted records to integration staging first, then reconcile and promote into Portfolio, Security Master, Ledger, or Reporting-owned stores. | Staging preserves replay, identity review, dedupe, and downstream ownership before canonical mutation. |
 | Trading boundary | Keep production trading out of the generic no-code runtime. | Order placement/cancel/amend flows require certified adapters, sandbox proof, idempotency, entitlement, approval, kill switch, audit, and reconciliation controls. |
@@ -216,7 +216,10 @@ Application and infrastructure seams:
 - `IIntegrationActivationService` evaluates safe activation gates and exposes readiness issues.
 - `ProviderIntegrationSyncOrchestrationService` evaluates the current sync plan, skips blocked,
   manual-only, not-due, or unsupported capabilities, and starts due read-only REST/OpenAPI/hybrid
-  capabilities through the same dry-run runtime used by setup tests.
+  capabilities through the same dry-run runtime used by setup tests. When an endpoint depends on a
+  previous endpoint output, it runs or reuses the dependency endpoint, reads the configured output
+  path from retained raw payload evidence, and fans out child endpoint calls with the resolved path
+  parameter.
 
 The first storage implementation should be local and self-hosted under
 `src/Meridian.Storage/Integrations/`, but it must preserve the same semantic boundaries a

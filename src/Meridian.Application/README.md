@@ -65,11 +65,14 @@ and UI presentation concerns in their owning layers.
   without starting provider calls. The sync-orchestration service composes that plan with the REST
   dry-run runtime, skips blocked/manual/not-due capabilities, and starts due read-only REST,
   OpenAPI REST, or hybrid capabilities while retaining raw payloads and writing only staging or
-  quarantine evidence. The REST dry-run service executes a configured read-only endpoint through an
-  injectable transport, resolves path/query parameters, follows cursor pagination, retains raw
-  responses before mapping, and uses the same staging and quarantine boundary for accepted and
-  rejected records. The default `HttpClient` transport supplies the concrete HTTP execution path
-  while tests can still inject deterministic transports. The monitoring service composes
+  quarantine evidence. For endpoint chains such as accounts before positions, orchestration can run
+  or reuse the dependency endpoint, read the dependency output path from retained raw payload
+  evidence, and fan out child endpoint calls with the resolved path parameter. The REST dry-run
+  service executes a configured read-only endpoint through an injectable transport, resolves
+  path/query parameters, follows cursor pagination, retains raw responses before mapping, and uses
+  the same staging and quarantine boundary for accepted and rejected records. The default
+  `HttpClient` transport supplies the concrete HTTP execution path while tests can still inject
+  deterministic transports. The monitoring service composes
   connection-level read models from durable sync-run summaries,
   integration staging counts, quarantine counts, and retained validation issues so workstation
   surfaces can show dry-run evidence without reading storage internals. The quarantine review

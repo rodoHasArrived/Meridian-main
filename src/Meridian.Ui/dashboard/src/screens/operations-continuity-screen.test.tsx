@@ -1188,6 +1188,14 @@ describe("OperationsContinuityScreen", () => {
     expect(within(operatorQueue).getByText("Private-capital approval")).toBeInTheDocument();
     expect(within(operatorQueue).getByText(`2026-05 / ${fundAccountId}: Pending final ledger validation before close sign-off.`)).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Complete private-capital close approval")).toBeInTheDocument();
+    expect(within(operatorQueue).getAllByText("Reviewed automation")).toHaveLength(3);
+    expect(within(operatorQueue).getByText("Report commentary draft")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Report commentary: Draft commentary is generated from retained close, ledger, reconciliation, and report-pack evidence.; 84% confidence")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Review commentary against retained evidence before report approval or publication.; Cannot publish reports or release support packages.")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Audit request list draft")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Review each requested support item and assign an owner before audit release.; Cannot erase evidence or satisfy audit requests without retained support.")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Missing support flag")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Attach or waive missing support through governed human review.; Cannot approve its own missing-support disposition.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Period lock and reopen evidence")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Complete reopened incident remediation and close the period again with retained evidence.")).toBeInTheDocument();
     expect(within(operatorQueue).getAllByText("Command stage")).toHaveLength(4);
@@ -1218,6 +1226,8 @@ describe("OperationsContinuityScreen", () => {
       .toHaveAttribute("href", "/portfolio/nav");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: NAV support evidence package" }))
       .toHaveAttribute("href", "/portfolio/nav");
+    expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Report commentary draft" }))
+      .toHaveAttribute("href", "/reporting/report-packs/automation-review");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Period lock and reopen evidence" }))
       .toHaveAttribute("href", "/accounting/operations-continuity");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Match Records" }))

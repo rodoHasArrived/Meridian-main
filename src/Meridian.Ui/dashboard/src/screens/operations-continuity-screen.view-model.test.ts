@@ -913,6 +913,8 @@ describe("Operations Continuity view model", () => {
       reviewLabel: "Human review required",
       confidenceLabel: "84% confidence",
       evidenceLabel: "1 evidence link",
+      evidenceHref: "/reporting/report-packs/automation-review",
+      evidenceRouteLabel: "Open reviewed automation evidence",
       blockedActionLabel: "Cannot publish reports or release support packages."
     });
     expect(vm.reviewedAutomation.artifacts[1]).toMatchObject({
@@ -920,18 +922,22 @@ describe("Operations Continuity view model", () => {
       kindLabel: "Audit request list",
       confidenceLabel: "79% confidence",
       evidenceLabel: "No retained evidence",
+      evidenceHref: null,
+      evidenceRouteLabel: "No local evidence route",
       suggestedActionLabel: "Review each requested support item and assign an owner before audit release."
     });
     expect(vm.financialOperationsQueue).toMatchObject({
       statusLabel: "Blocked",
       statusTone: "blocked",
-      summaryLabel: "14 open work items: 6 blocked, 8 review."
+      summaryLabel: "16 open work items: 6 blocked, 10 review."
     });
     expect(vm.financialOperationsQueue.items.map((item) => item.id)).toEqual([
       "reconciliation-lane:mbs-factor-reconciliation",
       "workflow-blocker:LEDGER_VALIDATION_REQUIRED:0",
       "checklist:close-gate-ledgerposting",
       "approval:approval-close-2026-05",
+      "reviewed-automation:reviewed-automation:report-commentary-draft",
+      "reviewed-automation:reviewed-automation:audit-request-list-draft",
       "evidence-package:accounting-record-2026-05",
       "evidence-package:report-pack:fund-alpha:2026-05",
       "evidence-package:close-package:fund-alpha:2026-05",
@@ -985,6 +991,27 @@ describe("Operations Continuity view model", () => {
       evidenceLabel: "1 evidence link",
       routeHref: "/accounting/approvals"
     });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "reviewed-automation:reviewed-automation:report-commentary-draft")).toMatchObject({
+      kindLabel: "Reviewed automation",
+      title: "Report commentary draft",
+      detail: "Report commentary: Draft commentary is generated from retained close, ledger, reconciliation, and report-pack evidence.; 84% confidence",
+      statusLabel: "Review Required",
+      statusTone: "review",
+      ownerLabel: "Automation review",
+      dueLabel: "Human review required",
+      evidenceLabel: "1 evidence link",
+      actionLabel: "Review commentary against retained evidence before report approval or publication.; Cannot publish reports or release support packages.",
+      routeHref: "/reporting/report-packs/automation-review"
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "reviewed-automation:reviewed-automation:audit-request-list-draft")).toMatchObject({
+      kindLabel: "Reviewed automation",
+      title: "Audit request list draft",
+      statusLabel: "Review Required",
+      statusTone: "review",
+      evidenceLabel: "No retained evidence",
+      actionLabel: "Review each requested support item and assign an owner before audit release.; Cannot erase evidence or satisfy audit requests without retained support.",
+      routeHref: null
+    });
     expect(vm.workflowApprovalHistory).toHaveLength(1);
     expect(vm.workflowApprovalHistory[0]).toMatchObject({
       id: "approval-close-2026-05",
@@ -1008,7 +1035,7 @@ describe("Operations Continuity view model", () => {
       canRejectWorkflow: true,
       rejectWorkflowDisabledReason: null
     });
-    expect(vm.financialOperationsQueue.items[6]).toMatchObject({
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "evidence-package:close-package:fund-alpha:2026-05")).toMatchObject({
       kindLabel: "Evidence package",
       title: "Close package manifest",
       statusLabel: "Missing",
@@ -1017,7 +1044,7 @@ describe("Operations Continuity view model", () => {
       actionLabel: "Publish the close package manifest and retain the evidence hash.",
       routeHref: "/accounting/operations-continuity"
     });
-    expect(vm.financialOperationsQueue.items[9]).toMatchObject({
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "command-stage:match-records")).toMatchObject({
       kindLabel: "Command stage",
       title: "Match Records",
       detail: "Run reconciliation and refresh posture; Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.",
@@ -1029,7 +1056,7 @@ describe("Operations Continuity view model", () => {
       actionLabel: "Complete source-backed reconciliation lanes before approval.",
       routeHref: "/accounting/reconciliation"
     });
-    expect(vm.financialOperationsQueue.items[12]).toMatchObject({
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "command-stage:produce-evidence")).toMatchObject({
       kindLabel: "Command stage",
       title: "Produce Evidence",
       detail: "Open evidence package routes; Close workflow has unresolved ledger blockers.",

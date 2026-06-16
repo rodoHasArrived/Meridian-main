@@ -70,6 +70,66 @@ public sealed class ProviderIntegrationSyncOrchestrationServiceTests : IDisposab
     }
 
     [Fact]
+    public async Task RunDueAsync_ResolvesEndpointDependencyFromRetainedRawPayload()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = ActiveCustodianManifest();
+        var connection = ActiveConnection(manifest, includeAccounts: true);
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(connection);
+        var transport = new RecordingTransport(
+            new ProviderIntegrationHttpResponse(
+                200,
+                new Dictionary<string, string>(),
+                """
+                {
+                  "accounts": [
+                    {
+                      "id": "A-200",
+                      "name": "General Account",
+                      "currency": "usd",
+                      "type": "general"
+                    }
+                  ]
+                }
+                """),
+            new ProviderIntegrationHttpResponse(
+                200,
+                new Dictionary<string, string>(),
+                """
+                {
+                  "positions": [
+                    {
+                      "account_id": "A-200",
+                      "cusip": "3133EP3T5",
+                      "quantity": "250",
+                      "currency": "usd",
+                      "as_of_date": "2026-06-16",
+                      "position_id": "POS-2"
+                    }
+                  ]
+                }
+                """));
+        var service = CreateService(store, transport);
+
+        var result = await service.RunDueAsync(CreateRequest(connection, includePathParameters: false));
+
+        result.StartedCount.Should().Be(2);
+        result.SkippedCount.Should().Be(0);
+        transport.Requests.Select(request => request.Path).Should().Equal(
+            "/v1/accounts",
+            "/v1/accounts/A-200/positions");
+        var accountItem = result.Items.Should().Contain(item => item.Capability == ProviderCapabilityKindDto.Accounts).Subject;
+        accountItem.Reason.Should().Be("started");
+        var positionItem = result.Items.Should().Contain(item => item.Capability == ProviderCapabilityKindDto.Positions).Subject;
+        positionItem.Reason.Should().Be("started-with-dependency");
+        positionItem.DryRunResult.Should().NotBeNull();
+        positionItem.DryRunResult!.RecordsAccepted.Should().Be(1);
+        (await store.ListStagingRecordsAsync(positionItem.SyncRunId!)).Should().ContainSingle()
+            .Which.MappedRecord.GetProperty("providerAccountId").GetString().Should().Be("A-200");
+    }
+
+    [Fact]
     public async Task RunDueAsync_SkipsNotDueCapabilityWithoutCallingTransport()
     {
         var store = new FileProviderIntegrationManifestStore(testRoot);
@@ -110,9 +170,9 @@ public sealed class ProviderIntegrationSyncOrchestrationServiceTests : IDisposab
         result.StartedCount.Should().Be(0);
         result.SkippedCount.Should().Be(1);
         var item = result.Items.Should().ContainSingle().Subject;
-        item.Reason.Should().Be("runtime-blocked");
+        item.Reason.Should().Be("dependency-capability-not-enabled");
         item.Issues.Should().ContainSingle(issue =>
-            issue.Code == "sync-run.runtime-blocked" &&
+            issue.Code == "sync-run.dependency-capability-not-enabled" &&
             issue.Severity == ProviderIntegrationIssueSeverityDto.Critical);
         transport.Requests.Should().BeEmpty();
     }
@@ -143,7 +203,8 @@ public sealed class ProviderIntegrationSyncOrchestrationServiceTests : IDisposab
         IProviderIntegrationHttpTransport transport)
         => new(
             new ProviderIntegrationSyncPlanningService(store),
-            new ProviderIntegrationRestDryRunService(store, transport));
+            new ProviderIntegrationRestDryRunService(store, transport),
+            store);
 
     private static ProviderIntegrationRunDueSyncRequestDto CreateRequest(
         ProviderConnectionDto connection,
@@ -172,7 +233,9 @@ public sealed class ProviderIntegrationSyncOrchestrationServiceTests : IDisposab
             ApprovedAt = DateTimeOffset.Parse("2026-06-16T09:00:00Z")
         };
 
-    private static ProviderConnectionDto ActiveConnection(ProviderIntegrationManifestDto manifest)
+    private static ProviderConnectionDto ActiveConnection(
+        ProviderIntegrationManifestDto manifest,
+        bool includeAccounts = false)
         => new(
             "connection-sync-run-due",
             manifest.ProviderId,
@@ -181,7 +244,9 @@ public sealed class ProviderIntegrationSyncOrchestrationServiceTests : IDisposab
             "production",
             ProviderIntegrationActivationStateDto.Active,
             "vault://provider-credentials/custodian-run-due",
-            [ProviderCapabilityKindDto.Positions],
+            includeAccounts
+                ? [ProviderCapabilityKindDto.Accounts, ProviderCapabilityKindDto.Positions]
+                : [ProviderCapabilityKindDto.Positions],
             "operator@example.com",
             DateTimeOffset.Parse("2026-06-16T09:00:00Z"),
             DateTimeOffset.Parse("2026-06-16T09:05:00Z"),

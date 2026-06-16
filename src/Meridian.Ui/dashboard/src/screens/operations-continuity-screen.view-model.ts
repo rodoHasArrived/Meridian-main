@@ -291,6 +291,8 @@ export interface OperationsReviewedAutomationArtifactRow {
   confidenceLabel: string;
   sourceSummary: string;
   evidenceLabel: string;
+  evidenceHref: string | null;
+  evidenceRouteLabel: string;
   suggestedActionLabel: string;
   blockedActionLabel: string;
   checklistLabel: string;
@@ -996,6 +998,7 @@ export function buildOperationsContinuityScreenViewModel({
     checklist,
     commandSpineRows: commandSpine.rows,
     approvals: effectiveDetail?.approvals ?? [],
+    reviewedAutomationArtifacts: reviewedAutomation.artifacts,
     evidencePackages,
     closeCalendarRows: closeCalendarPanel.rows,
     closeCalendarError,
@@ -1992,6 +1995,7 @@ function buildReviewedAutomationViewModel(
 function buildReviewedAutomationArtifactRows(artifacts: OperationsReviewedAutomationArtifact[]): OperationsReviewedAutomationArtifactRow[] {
   return artifacts.map((artifact) => {
     const evidenceCount = artifact.evidenceLinks.length;
+    const evidenceHref = normalizeLocalWorkstationRoute(artifact.evidenceLinks[0]?.route) ?? null;
     const checklist = (artifact.reviewChecklist ?? [])
       .map((item) => item.trim())
       .filter(Boolean);
@@ -2007,6 +2011,8 @@ function buildReviewedAutomationArtifactRows(artifacts: OperationsReviewedAutoma
       confidenceLabel: formatReviewedAutomationConfidence(artifact.confidencePercent),
       sourceSummary: artifact.sourceSummary?.trim() || "No source summary returned.",
       evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
+      evidenceHref,
+      evidenceRouteLabel: evidenceHref ? "Open reviewed automation evidence" : "No local evidence route",
       suggestedActionLabel: artifact.suggestedOperatorAction?.trim() || "No suggested operator action returned.",
       blockedActionLabel: artifact.blockedMaterialAction?.trim() || "No blocked material action returned.",
       checklistLabel: checklist.length === 0 ? "No review checklist returned" : checklist.join("; "),
@@ -2064,6 +2070,7 @@ function buildFinancialOperationsOperatorQueueViewModel({
   checklist,
   commandSpineRows,
   approvals,
+  reviewedAutomationArtifacts,
   evidencePackages,
   closeCalendarRows,
   closeCalendarError,
@@ -2078,6 +2085,7 @@ function buildFinancialOperationsOperatorQueueViewModel({
   checklist: OperationsContinuityChecklistRow[];
   commandSpineRows: FinancialOperationsCommandSpineRow[];
   approvals: OperationsContinuityWorkflow["approvals"];
+  reviewedAutomationArtifacts: OperationsReviewedAutomationArtifactRow[];
   evidencePackages: OperationsContinuityEvidencePackageRow[];
   closeCalendarRows: OperationsContinuityCloseCalendarRow[];
   closeCalendarError: string | null;
@@ -2154,6 +2162,9 @@ function buildFinancialOperationsOperatorQueueViewModel({
       .sort(compareApprovalsByDecisionTime)
       .map(mapApprovalQueueRow)
       .filter(isOpenQueueItem),
+    ...reviewedAutomationArtifacts
+      .filter(isOpenQueueItem)
+      .map(mapReviewedAutomationArtifactQueueRow),
     ...evidencePackages
       .filter(isOpenQueueItem)
       .map((row) => ({
@@ -2477,6 +2488,28 @@ function mapApprovalQueueRow(
     routeHref,
     routeLabel: routeHref ? "Open approval evidence" : "No local route",
     ariaLabel: `Financial Operations approval ${approval.approvalId}, ${statusLabelText}, ${actorLabel}`
+  };
+}
+
+function mapReviewedAutomationArtifactQueueRow(
+  row: OperationsReviewedAutomationArtifactRow
+): FinancialOperationsOperatorQueueRow {
+  return {
+    id: `reviewed-automation:${row.id}`,
+    kindLabel: "Reviewed automation",
+    title: row.title,
+    detail: `${row.kindLabel}: ${row.sourceSummary}; ${row.confidenceLabel}`,
+    statusLabel: row.statusLabel,
+    statusTone: row.statusTone,
+    ownerLabel: "Automation review",
+    dueLabel: row.reviewLabel,
+    evidenceLabel: row.evidenceLabel,
+    actionLabel: row.blockedActionLabel === "No blocked material action returned."
+      ? row.suggestedActionLabel
+      : `${row.suggestedActionLabel}; ${row.blockedActionLabel}`,
+    routeHref: row.evidenceHref,
+    routeLabel: row.evidenceRouteLabel,
+    ariaLabel: `Financial Operations reviewed automation ${row.ariaLabel}`
   };
 }
 
