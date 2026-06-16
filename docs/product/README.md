@@ -11,6 +11,7 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
 
 - If you need the current product framing, start with:
   - [Meridian Design Document (Version 0.18)](meridian-design-document.md) — design baseline extended with current implementation posture, the v0.15 accounting records package, the v0.16 private-capital operations and treasury-ledger addendum, the v0.17 shared Financial Record Explorer productization target, the W5X Financial Operations control target, and the v0.18 operational proof layer market-gap update
+  - [Meridian Implementation TODO List](implementation-todo-list.md) — single planning-tooling tracker for implemented design-document items and remaining TODOs
   - [Roadmap Registry](../roadmap/README.md)
   - [Roadmap Generated Summary](../roadmap/generated/ROADMAP_SUMMARY.md)
 - If you need evidence-backed examples of current operations, check:

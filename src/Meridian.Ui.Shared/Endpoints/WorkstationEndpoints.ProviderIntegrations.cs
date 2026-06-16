@@ -1,0 +1,74 @@
+using System.Text.Json;
+using Meridian.Application.Integrations;
+using Meridian.Contracts.Api;
+using Meridian.Contracts.Integrations;
+using Meridian.Identity.Auth;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Meridian.Ui.Shared.Endpoints;
+
+public static partial class WorkstationEndpoints
+{
+    private static void MapProviderIntegrationEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
+    {
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationConnectionMonitor), async (
+            string connectionId,
+            int? recentRunLimit,
+            HttpContext context) =>
+        {
+            if (!HasProviderIntegrationReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<ProviderIntegrationMonitoringService>();
+            if (service is null)
+            {
+                return Results.Problem(
+                    "Provider integration monitoring service is not registered.",
+                    statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            try
+            {
+                var monitor = await service
+                    .GetConnectionMonitorAsync(
+                        connectionId,
+                        recentRunLimit ?? 10,
+                        context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(monitor, jsonOptions);
+            }
+            catch (KeyNotFoundException)
+            {
+                return Results.NotFound(new { error = $"Provider integration connection '{connectionId}' was not found." });
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("GetWorkstationProviderIntegrationConnectionMonitor")
+        .Produces<ProviderIntegrationConnectionMonitorDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireAnyPermission(
+            UserPermission.ViewConfig,
+            UserPermission.ManageProviders,
+            UserPermission.ModifyConfig,
+            UserPermission.AdminMaintenance);
+    }
+
+    private static bool HasProviderIntegrationReadPermission(HttpContext context)
+        => EndpointAuthorization.HasAnyPermission(
+            context,
+            UserPermission.ViewConfig,
+            UserPermission.ManageProviders,
+            UserPermission.ModifyConfig,
+            UserPermission.AdminMaintenance);
+}

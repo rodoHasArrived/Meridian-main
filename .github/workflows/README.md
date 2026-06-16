@@ -24,7 +24,7 @@ automation outside the current build/test/publish/docs scope.
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
 | CI | `ci.yml` | Pull requests, pushes to `main`, manual | Restores `Meridian.sln`, verifies formatting, validates warning-suppression inventory, builds the focused `Meridian.WebWorkstation.slnf` lane, reports build warning counts, runs non-integration .NET tests, then tests and builds `src/Meridian.Ui/dashboard`. | .NET TRX results on failure |
-| Targeted Test | `targeted-test.yml` | Manual only | Runs one selected .NET test target or browser workstation npm test/build command on a GitHub-hosted runner when local machine capacity, locks, or long-running suites make local validation impractical. Inputs are validated and limited to known repo-relative project/test paths and fixed npm scripts. | Targeted TRX results and dashboard build output when present |
+| Targeted Test | `targeted-test.yml` | Manual only | Runs one selected .NET test project plus a required `dotnet test --filter`, or a browser workstation npm test/build command, on a GitHub-hosted runner when local machine capacity, locks, or long-running suites make local validation impractical. Inputs are validated and limited to repo-relative `tests/` project paths, dashboard test files, and fixed npm scripts. | Targeted TRX results and dashboard build output when present |
 | Golden Path Validation | `golden-path-validation.yml` | Golden-path contract, browser W4, WPF W4, or manual changes | Blocks pilot acceptance on browser `test:w4` parity and Windows `Category=W4Acceptance` desktop coverage before running `PilotAcceptanceHarnessTests`, writing `pilot-readiness.json` plus `pilot-readiness.md`, validating the pilot readiness dashboard renderer, generating `artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.md`, and uploading the evidence bundles. | `pilot-acceptance-evidence`, `wpf-w4-acceptance-evidence` |
 | Windows Desktop Build | `windows-desktop-build.yml` | Pull requests, pushes to `main`, manual | Builds the real WPF app on Windows, runs WPF tests, and smoke-publishes the desktop executable. | WPF TRX results on failure |
 | Documentation Automation | `documentation.yml` | Documentation, docs-script, workflow, WPF navigation, or diagram changes; manual | Runs docs automation checks, regenerates tracked documentation outputs, refreshes Mermaid/UML/UI diagrams, and gates severe dashboard regressions when a previous baseline exists. | Docs dashboard delta summary on failure |
@@ -37,7 +37,8 @@ automation outside the current build/test/publish/docs scope.
 When local CPU, memory, disk, package restore, or MSBuild lock contention makes testing unreliable,
 push the branch and use `Targeted Test` from the GitHub Actions tab or dispatch it with `gh`.
 Use the GitHub-hosted targeted lane as the preferred remote proof tool before retrying broad local
-scripts. The .NET lane requires `dotnet_filter`; leave broad CI filters on the normal CI workflow.
+scripts. The .NET lane requires a repo-relative test project under `tests/` and a non-empty
+`dotnet_filter`; leave solution-level and broad CI filters on the normal CI workflow.
 
 ```powershell
 gh workflow run targeted-test.yml --ref <branch> `

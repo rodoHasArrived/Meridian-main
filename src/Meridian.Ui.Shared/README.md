@@ -120,6 +120,13 @@ ledger/accounting records. Bank-statement CSV import uses
 require a bank fund account, and apply the parsed lines through
 `IFundAccountService.IngestBankStatementAsync`; the imported bank data remains reconciliation
 evidence and does not post Meridian-owned ledger entries.
+
+Provider integration monitor endpoints are registered under
+`/api/workstation/provider-integrations/*`. The connection monitor route adapts the
+Application-owned provider integration monitoring service into a browser/WPF-compatible payload
+with recent sync-run evidence, durable staging counts, quarantine counts, and validation issues;
+it remains read-only and permission-gated until setup, dry-run, activation, and quarantine review
+commands are surfaced through the shared workstation API.
 `BankFeedTransportService` reuses that same import boundary for scheduled local-file and SFTP
 CSV pulls through `IEtlSourceReader`, and delegates Plaid API schedules to `IPlaidIngestionService`
 so API feeds stay server-owned and ledger posting remains gated by Meridian approvals.
