@@ -154,7 +154,10 @@ Receive Activity, Match Records, Resolve Exceptions, Approve Results, Produce Ev
 Support rows with server-owned guard, evidence, and route labels. The Approve Results row also
 exposes a guarded approval-submission command when the selected workflow has no open breaks,
 report-pack readiness includes a retained report-pack id, and reviewer ownership can be resolved
-from the shared workflow payload.
+from the shared workflow payload. The Produce Evidence row exposes a guarded close-package
+publication command only when the shared close-readiness payload is ready and the workflow supplies
+retained report-pack evidence plus checklist-control approvals for the close request; permission,
+transition, and evidence-hash enforcement remain server-owned.
 The Operations Continuity screen also renders the shared Financial Operations operational
 dashboard. Receive Activity, Match Records, Resolve Exceptions, Approve Results, Produce Evidence,
 and Close Support metric state, retained evidence, route hints, and required actions come from the

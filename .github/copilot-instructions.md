@@ -94,7 +94,8 @@ dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj -c Release 
 If only one area is affected, run the nearest test project first and expand scope only if needed.
 When local machine limits, dependency restore, or MSBuild locks make validation unreliable, push the
 branch and run the manual GitHub-hosted `Targeted Test` workflow instead of repeatedly retrying
-broad local scripts:
+broad local scripts. The .NET lane requires a repo-relative test project under `tests/` and a
+non-empty `dotnet_filter`:
 
 ```bash
 gh workflow run targeted-test.yml --ref <branch> -f lane=dotnet -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"

@@ -88,7 +88,8 @@ nothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above ins
 Prefer the narrowest validation command that matches the touched files.
 When local CPU, memory, disk, dependency restore, or MSBuild lock contention makes validation
 unreliable, push the branch and use the GitHub-hosted `Targeted Test` workflow as the remote proof
-tool before retrying broad local scripts.
+tool before retrying broad local scripts. The .NET lane requires a repo-relative test project under
+`tests/` plus `dotnet_filter`.
 
 ---
 

@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import {
   acknowledgeOperationsContinuityChecklistTask,
   assignOperationsContinuityBreakCase,
+  closeOperationsContinuityWorkflow,
   resolveOperationsContinuityBreakCase,
   submitOperationsContinuityApproval
 } from "@/lib/api";
@@ -190,11 +191,13 @@ const operationalDashboardColumns: DenseDataTableColumn<OperationsContinuityDash
 interface FinancialOperationsCommandSpineColumnOptions {
   pendingStageId: string | null;
   onSubmitApproval: (row: FinancialOperationsCommandSpineRow) => void;
+  onCloseWorkflow: (row: FinancialOperationsCommandSpineRow) => void;
 }
 
 function buildFinancialOperationsCommandSpineColumns({
   pendingStageId,
-  onSubmitApproval
+  onSubmitApproval,
+  onCloseWorkflow
 }: FinancialOperationsCommandSpineColumnOptions): DenseDataTableColumn<FinancialOperationsCommandSpineRow>[] {
   return [
     {
@@ -233,9 +236,11 @@ function buildFinancialOperationsCommandSpineColumns({
       label: "Route / action",
       render: (row) => {
         const busy = pendingStageId === row.id;
-        const disabledReason = pendingStageId && !busy
+        const activeCommandDisabledReason = pendingStageId && !busy
           ? "Wait for the active Financial Operations command to finish."
-          : row.submitApprovalDisabledReason;
+          : null;
+        const approvalDisabledReason = activeCommandDisabledReason ?? row.submitApprovalDisabledReason;
+        const closeDisabledReason = activeCommandDisabledReason ?? row.closeWorkflowDisabledReason;
 
         return (
           <span className="block text-xs leading-5">
@@ -254,12 +259,28 @@ function buildFinancialOperationsCommandSpineColumns({
                 className="mt-2"
                 busy={busy}
                 busyLabel="Submitting"
-                disabled={disabledReason !== null}
-                disabledReason={disabledReason}
+                disabled={approvalDisabledReason !== null}
+                disabledReason={approvalDisabledReason}
                 aria-label={row.submitApprovalAriaLabel}
                 onClick={() => onSubmitApproval(row)}
               >
                 {row.submitApprovalLabel}
+              </Button>
+            ) : null}
+            {row.id === "produce-evidence" ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="mt-2"
+                busy={busy}
+                busyLabel="Publishing"
+                disabled={closeDisabledReason !== null}
+                disabledReason={closeDisabledReason}
+                aria-label={row.closeWorkflowAriaLabel}
+                onClick={() => onCloseWorkflow(row)}
+              >
+                {row.closeWorkflowLabel}
               </Button>
             ) : null}
           </span>
@@ -1029,6 +1050,11 @@ export function OperationsContinuityScreen() {
     message: string | null;
     error: string | null;
   }>({ pendingStageId: null, message: null, error: null });
+  const [closeWorkflowCommand, setCloseWorkflowCommand] = useState<{
+    pendingStageId: string | null;
+    message: string | null;
+    error: string | null;
+  }>({ pendingStageId: null, message: null, error: null });
 
   const runBreakCommand = useCallback(async (row: OperationsContinuityBreakCaseRow, kind: BreakCommandKind) => {
     const disabledReason = kind === "assign" ? row.assignDisabledReason : row.resolveDisabledReason;
@@ -1180,12 +1206,62 @@ export function OperationsContinuityScreen() {
     }
   }, [vm.refresh]);
 
+  const closeWorkflowCommandHandler = useCallback(async (row: FinancialOperationsCommandSpineRow) => {
+    if (
+      !row.workflowId ||
+      row.expectedWorkflowVersion === null ||
+      !row.closeWorkflowReportPackId ||
+      row.closeWorkflowDisabledReason !== null
+    ) {
+      setCloseWorkflowCommand({
+        pendingStageId: null,
+        message: null,
+        error: row.closeWorkflowDisabledReason ?? "Close package publication command is unavailable."
+      });
+      return;
+    }
+
+    setCloseWorkflowCommand({ pendingStageId: row.id, message: null, error: null });
+
+    try {
+      const result = await closeOperationsContinuityWorkflow(row.workflowId, {
+        expectedVersion: row.expectedWorkflowVersion,
+        actor: "browser-operator",
+        rationale: `Published ${row.stageLabel} close package from Operations Continuity command spine.`,
+        reportPackId: row.closeWorkflowReportPackId,
+        correlationId: `browser-close-package:${row.id}`,
+        evidenceLinks: row.closeWorkflowEvidenceLinks,
+        checklistControlApprovals: row.closeWorkflowChecklistControlApprovals,
+        actionOrigin: "HumanOperator"
+      });
+
+      setCloseWorkflowCommand({
+        pendingStageId: null,
+        message: result.message?.trim() || "Close package publication retained through shared operations command.",
+        error: null
+      });
+      await vm.refresh();
+    } catch (err) {
+      setCloseWorkflowCommand({
+        pendingStageId: null,
+        message: null,
+        error: formatCloseWorkflowCommandError(err)
+      });
+    }
+  }, [vm.refresh]);
+
   const financialOperationsCommandSpineColumns = useMemo(
     () => buildFinancialOperationsCommandSpineColumns({
-      pendingStageId: approvalSubmitCommand.pendingStageId,
-      onSubmitApproval: (row) => { void submitApprovalCommand(row); }
+      pendingStageId: approvalSubmitCommand.pendingStageId ?? closeWorkflowCommand.pendingStageId,
+      onSubmitApproval: (row) => { void submitApprovalCommand(row); },
+      onCloseWorkflow: (row) => { void closeWorkflowCommandHandler(row); }
     }),
-    [approvalSubmitCommand.pendingStageId, submitApprovalCommand]
+    [
+      approvalSubmitCommand.pendingStageId,
+      closeWorkflowCommand.pendingStageId,
+      submitApprovalCommand,
+      closeWorkflowCommandHandler
+    ]
   );
 
   return (
@@ -1401,6 +1477,16 @@ export function OperationsContinuityScreen() {
             {approvalSubmitCommand.message ? (
               <p role="status" className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
                 {approvalSubmitCommand.message}
+              </p>
+            ) : null}
+            {closeWorkflowCommand.error ? (
+              <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+                {closeWorkflowCommand.error}
+              </p>
+            ) : null}
+            {closeWorkflowCommand.message ? (
+              <p role="status" className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
+                {closeWorkflowCommand.message}
               </p>
             ) : null}
             <DenseDataTable
@@ -1972,4 +2058,12 @@ function formatApprovalSubmitCommandError(err: unknown): string {
   }
 
   return "Approval submission command failed.";
+}
+
+function formatCloseWorkflowCommandError(err: unknown): string {
+  if (err instanceof Error && err.message.trim().length > 0) {
+    return err.message;
+  }
+
+  return "Close package publication command failed.";
 }

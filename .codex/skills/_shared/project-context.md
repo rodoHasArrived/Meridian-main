@@ -131,8 +131,8 @@ nothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above ins
 Prefer the narrowest validation command that matches the files being changed.
 When local CPU, memory, disk, dependency restore, or MSBuild lock contention makes validation
 unreliable, push the branch and use the GitHub-hosted `Targeted Test` workflow as the remote proof
-tool before retrying broad local scripts. The .NET lane requires `dotnet_filter` to keep the
-remote run scoped to the failing slice.
+tool before retrying broad local scripts. The .NET lane requires a repo-relative test project under
+`tests/` plus `dotnet_filter` to keep the remote run scoped to the failing slice.
 
 For Codex skill, catalog, prompt, docs-automation, or AI workflow changes, prefer this deterministic
 validation stack before broad build or test runs:

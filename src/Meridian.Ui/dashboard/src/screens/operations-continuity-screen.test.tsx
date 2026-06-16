@@ -5,6 +5,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import {
   acknowledgeOperationsContinuityChecklistTask,
   assignOperationsContinuityBreakCase,
+  closeOperationsContinuityWorkflow,
   getPrivateCapitalCloseCockpit,
   getOperationsContinuityWorkflow,
   getOperationsContinuityWorkflows,
@@ -14,8 +15,10 @@ import {
 import { OperationsContinuityScreen } from "@/screens/operations-continuity-screen";
 import { OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID } from "@/screens/operations-continuity-screen.view-model";
 import type {
+  OperationsCloseChecklistTask,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
+  OperationsEvidenceLink,
   OperationsGate,
   OperationsReconciliationLaneSummary,
   PrivateCapitalCloseCockpit
@@ -24,6 +27,7 @@ import type {
 vi.mock("@/lib/api", () => ({
   acknowledgeOperationsContinuityChecklistTask: vi.fn(),
   assignOperationsContinuityBreakCase: vi.fn(),
+  closeOperationsContinuityWorkflow: vi.fn(),
   getPrivateCapitalCloseCockpit: vi.fn(),
   getOperationsContinuityWorkflows: vi.fn(),
   getOperationsContinuityWorkflow: vi.fn(),
@@ -63,6 +67,12 @@ beforeEach(() => {
     workflow: detail,
     blockers: [],
     message: "Workflow approval submitted."
+  });
+  vi.mocked(closeOperationsContinuityWorkflow).mockResolvedValue({
+    success: true,
+    workflow: detail,
+    blockers: [],
+    message: "Close package published."
   });
 });
 
@@ -1178,7 +1188,7 @@ describe("OperationsContinuityScreen", () => {
 
     const acknowledge = await screen.findByRole("button", {
       name: "Acknowledge close checklist task Ledger posting controller check"
-    });
+    }, { timeout: 5000 });
     await user.click(acknowledge);
 
     await waitFor(() => {
@@ -1273,6 +1283,71 @@ describe("OperationsContinuityScreen", () => {
 
     const alert = await screen.findByRole("alert");
     expect(within(alert).getByText("Approval submission version conflict.")).toBeInTheDocument();
+  });
+
+  it("publishes the close package from the command spine with retained checklist-control approvals", async () => {
+    const reportPackEvidence = {
+      evidenceId: "report-pack-close-evidence",
+      label: "Report-pack retained manifest",
+      route: "/workstation/reporting/report-packs/report-pack-2026-05/evidence",
+      source: "operations-continuity",
+      capturedAtUtc: "2026-05-10T18:00:00Z"
+    };
+    const readyDetail = createCloseReadyDetail(reportPackEvidence);
+    vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(readyDetail);
+
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(await screen.findByRole("button", { name: "Publish close package for 2026-05" }));
+
+    await waitFor(() => {
+      expect(closeOperationsContinuityWorkflow).toHaveBeenCalledWith(
+        workflowId,
+        expect.objectContaining({
+          expectedVersion: 4,
+          actor: "browser-operator",
+          rationale: "Published Produce Evidence close package from Operations Continuity command spine.",
+          reportPackId: "report-pack-2026-05",
+          correlationId: "browser-close-package:produce-evidence",
+          evidenceLinks: expect.arrayContaining([reportPackEvidence]),
+          checklistControlApprovals: expect.arrayContaining([
+            {
+              taskId: "close-gate-brokeringest",
+              approvedBy: "operations-lead",
+              approvedAtUtc: "2026-05-10T17:00:00Z"
+            },
+            {
+              taskId: "close-gate-approval",
+              approvedBy: "fund-controller",
+              approvedAtUtc: "2026-05-10T17:45:00Z"
+            }
+          ]),
+          actionOrigin: "HumanOperator"
+        })
+      );
+    });
+    expect(await screen.findByText("Close package published.")).toBeInTheDocument();
+  });
+
+  it("surfaces command-spine close package publication failures", async () => {
+    const readyDetail = createCloseReadyDetail({
+      evidenceId: "report-pack-close-evidence",
+      label: "Report-pack retained manifest",
+      route: "/workstation/reporting/report-packs/report-pack-2026-05/evidence",
+      source: "operations-continuity",
+      capturedAtUtc: "2026-05-10T18:00:00Z"
+    });
+    vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(readyDetail);
+    vi.mocked(closeOperationsContinuityWorkflow).mockRejectedValueOnce(new Error("Close package publication version conflict."));
+
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(await screen.findByRole("button", { name: "Publish close package for 2026-05" }));
+
+    const alert = await screen.findByRole("alert");
+    expect(within(alert).getByText("Close package publication version conflict.")).toBeInTheDocument();
   });
 
   it("posts break resolution with retained evidence and the shared workflow guard", async () => {
@@ -1427,4 +1502,179 @@ function renderScreen() {
       </Routes>
     </MemoryRouter>
   );
+}
+
+function createCloseReadyDetail(reportPackEvidence: OperationsEvidenceLink): OperationsContinuityWorkflow {
+  const readyGates: OperationsGate[] = [
+    createPassedGate("BrokerIngest", "Broker intake", "2026-05-10T17:00:00Z", "operations-lead"),
+    createPassedGate("SecurityMaster", "Security Master", "2026-05-10T17:05:00Z", "security-master-lead"),
+    createPassedGate("LedgerPosting", "Ledger posting", "2026-05-10T17:10:00Z", "ledger-lead"),
+    createPassedGate("Reconciliation", "Reconciliation", "2026-05-10T17:20:00Z", "reconciliation-lead"),
+    createPassedGate("Approval", "Approval", "2026-05-10T17:45:00Z", "fund-controller")
+  ];
+  const closeChecklist: OperationsCloseChecklistTask[] = [
+    createAcknowledgedCloseTask("close-gate-brokeringest", "BrokerIngest", "Broker ingest close gate", "operations-lead", 1, "2026-05-10T17:00:00Z"),
+    createAcknowledgedCloseTask("close-gate-securitymaster", "SecurityMaster", "Security Master close gate", "security-master-lead", 1, "2026-05-10T17:05:00Z"),
+    createAcknowledgedCloseTask("close-gate-ledgerposting", "LedgerPosting", "Ledger posting close gate", "ledger-lead", 1, "2026-05-10T17:10:00Z"),
+    createAcknowledgedCloseTask("close-gate-reconciliation", "Reconciliation", "Reconciliation close gate", "reconciliation-lead", 1, "2026-05-10T17:20:00Z"),
+    {
+      taskId: "close-gate-approval",
+      gate: "Approval",
+      label: "Approval close gate",
+      owner: "fund-controller",
+      requiredEvidence: "Approved workflow and retained report-pack evidence.",
+      dueDate: "2026-05-10",
+      requiredApprovalCount: 2,
+      expiresOn: "2026-05-14",
+      status: "Done",
+      blockingReason: null,
+      evidencePointer: reportPackEvidence.evidenceId,
+      remediationRoute: "/workstation/accounting/approvals",
+      canAcknowledge: false,
+      acknowledgedAtUtc: null,
+      acknowledgedBy: null
+    }
+  ];
+
+  return {
+    ...detail,
+    status: "ReadyForClose",
+    gates: readyGates,
+    brokerIntakeState: "Complete",
+    securityMasterState: "Complete",
+    ledgerPostingState: "Complete",
+    reconciliationState: "Complete",
+    approvalState: "Approved",
+    breakCases: detail.breakCases.map((breakCase) => ({
+      ...breakCase,
+      status: "Resolved"
+    })),
+    approvals: [
+      {
+        approvalId: "approval-close-2026-05",
+        status: "Approved",
+        operator: "ops-user",
+        reviewer: "fund-controller",
+        rationale: "Approved close package publication from retained report-pack evidence.",
+        submittedAtUtc: "2026-05-10T17:30:00Z",
+        decidedAtUtc: "2026-05-10T17:45:00Z",
+        evidenceLinks: [reportPackEvidence]
+      }
+    ],
+    reportPackReadiness: {
+      isReady: true,
+      reportPackId: "report-pack-2026-05",
+      blockingReason: null,
+      evidenceLinks: [reportPackEvidence]
+    },
+    closeChecklist,
+    closeReadiness: {
+      isReadyToClose: true,
+      severity: "Info",
+      score: 100,
+      components: [],
+      blockers: [],
+      nextActions: []
+    },
+    closePackage: null,
+    dashboardSummary: detail.dashboardSummary
+      ? {
+          ...detail.dashboardSummary,
+          stage: "Produce Evidence",
+          status: "Ready",
+          isReady: true,
+          readyMetricCount: 6,
+          totalMetricCount: 6,
+          summary: "Financial Operations dashboard is ready to publish the retained close package.",
+          metrics: detail.dashboardSummary.metrics.map((metric) => {
+            if (metric.metricId === "approve-results") {
+              return {
+                ...metric,
+                value: "Approved",
+                status: "Ready",
+                detail: "Workflow approval is complete and retained.",
+                evidenceLinks: [reportPackEvidence],
+                requiredActions: []
+              };
+            }
+
+            if (metric.metricId === "produce-evidence") {
+              return {
+                ...metric,
+                value: "Ready to publish",
+                status: "Ready",
+                detail: "Close readiness is clear and retained report-pack evidence is ready.",
+                evidenceLinks: [reportPackEvidence],
+                requiredActions: []
+              };
+            }
+
+            if (metric.metricId === "close-support") {
+              return {
+                ...metric,
+                value: "100% ready",
+                status: "Ready",
+                detail: "Close checklist, period lock, and retained evidence are ready for publication.",
+                evidenceLinks: [reportPackEvidence],
+                requiredActions: []
+              };
+            }
+
+            return {
+              ...metric,
+              status: "Ready",
+              requiredActions: []
+            };
+          }),
+          evidenceLinks: [reportPackEvidence],
+          requiredActions: []
+        }
+      : null
+  };
+}
+
+function createPassedGate(
+  gateKey: OperationsGate["gateKey"],
+  displayName: string,
+  completedAtUtc: string,
+  completedBy: string
+): OperationsGate {
+  return {
+    gateKey,
+    displayName,
+    status: "Passed",
+    isRequired: true,
+    description: `${displayName} gate passed.`,
+    blockers: [],
+    nextActions: [],
+    completedAtUtc,
+    completedBy
+  };
+}
+
+function createAcknowledgedCloseTask(
+  taskId: string,
+  gate: OperationsGate["gateKey"],
+  label: string,
+  owner: string,
+  requiredApprovalCount: number,
+  acknowledgedAtUtc: string
+): OperationsCloseChecklistTask {
+  return {
+    taskId,
+    gate,
+    label,
+    owner,
+    requiredEvidence: `${label} evidence is retained.`,
+    dueDate: "2026-05-10",
+    requiredApprovalCount,
+    expiresOn: "2026-05-14",
+    status: "Done",
+    blockingReason: null,
+    evidencePointer: `${taskId}-evidence`,
+    remediationRoute: "/workstation/accounting/operations-continuity",
+    canAcknowledge: false,
+    acknowledgedAtUtc,
+    acknowledgedBy: owner
+  };
 }

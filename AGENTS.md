@@ -44,7 +44,7 @@ Keep it short and route detailed work to the canonical Meridian guidance sources
 4. Read the nearest source README and `docs/source/data/source-modules.yml` before source edits under `src/**`.
 5. Prefer shared service/read-model seams before UI-specific forks.
 6. Use the narrowest validation command that covers the files changed.
-7. If local machine capacity, restore, or MSBuild locks block validation, push the branch and use the manual GitHub-hosted `Targeted Test` workflow before retrying broad local scripts.
+7. If local machine capacity, restore, or MSBuild locks block validation, push the branch and use the manual GitHub-hosted `Targeted Test` workflow with a repo-relative test project under `tests/` plus `dotnet_filter` before retrying broad local scripts.
 8. Update docs and AI indexes in the same change when behavior, workflow, prompt, skill, or agent guidance changes.
 9. For Codex development workflow changes, keep `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `.github/agents/implementation-assurance-agent.md`, `.github/workflows/README.md`, `docs/engineering/README.md`, `docs/start/README.md`, `.codex/skills/_shared/*`, `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md` synchronized when they teach the same rule.
 10. For documentation rebuild work, update the new canonical audience path first, then archive or redirect older hand-authored material in reviewable batches.

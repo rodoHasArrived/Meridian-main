@@ -118,6 +118,12 @@ preview rows without mutating trades, transactions, Security Master assets, enti
 ledger/accounting records. Bank-statement CSV import uses
 `/api/workstation/data/uploads/bank-statements/import` to validate a retained bank statement,
 require a bank fund account, and apply the parsed lines through
+Provider integration monitor endpoints are registered under
+`/api/workstation/provider-integrations/*`. The connection monitor route adapts the
+Application-owned provider integration monitoring service into a browser/WPF-compatible payload
+with recent sync-run evidence, durable staging counts, quarantine counts, and validation issues;
+it remains read-only and permission-gated until setup, dry-run, activation, and quarantine review
+commands are surfaced through the shared workstation API.
 `IFundAccountService.IngestBankStatementAsync`; the imported bank data remains reconciliation
 evidence and does not post Meridian-owned ledger entries.
 `BankFeedTransportService` reuses that same import boundary for scheduled local-file and SFTP

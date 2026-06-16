@@ -6,8 +6,10 @@ import {
   useOperationsContinuityScreenViewModel
 } from "@/screens/operations-continuity-screen.view-model";
 import type {
+  OperationsCloseChecklistTask,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
+  OperationsEvidenceLink,
   OperationsGate,
   OperationsReconciliationLaneSummary,
   PrivateCapitalCloseCockpit
@@ -1304,6 +1306,112 @@ describe("Operations Continuity view model", () => {
       submitApprovalChecklistControlApprovals: [],
       canSubmitApproval: true,
       submitApprovalDisabledReason: null
+    });
+  });
+
+  it("enables close package publication when shared close readiness and checklist-control approvals are retained", () => {
+    const reportPackEvidence: OperationsEvidenceLink = {
+      evidenceId: "report-pack-close-evidence",
+      label: "Report-pack retained manifest",
+      route: "/workstation/reporting/report-packs/report-pack-2026-05/evidence",
+      source: "operations-continuity",
+      capturedAtUtc: "2026-05-10T18:00:00Z"
+    };
+    const closeChecklist: OperationsCloseChecklistTask[] = [
+      {
+        ...detail.closeChecklist[0],
+        status: "Done",
+        blockingReason: null,
+        acknowledgedAtUtc: "2026-05-10T17:10:00Z",
+        acknowledgedBy: "ledger-lead",
+        requiredApprovalCount: 1
+      },
+      {
+        taskId: "close-gate-approval",
+        gate: "Approval",
+        label: "Approval close gate",
+        owner: "fund-controller",
+        requiredEvidence: "Approved workflow and retained report-pack evidence.",
+        dueDate: "2026-05-10",
+        requiredApprovalCount: 2,
+        expiresOn: "2026-05-14",
+        status: "Done",
+        blockingReason: null,
+        evidencePointer: reportPackEvidence.evidenceId,
+        remediationRoute: "/workstation/accounting/approvals",
+        canAcknowledge: false,
+        acknowledgedAtUtc: null,
+        acknowledgedBy: null
+      }
+    ];
+    const closeReadyDetail: OperationsContinuityWorkflow = {
+      ...detail,
+      status: "ReadyForClose",
+      approvalState: "Approved",
+      approvals: [
+        {
+          approvalId: "approval-close-2026-05",
+          status: "Approved",
+          operator: "ops-user",
+          reviewer: "fund-controller",
+          rationale: "Approved close package publication from retained report-pack evidence.",
+          submittedAtUtc: "2026-05-10T17:30:00Z",
+          decidedAtUtc: "2026-05-10T17:45:00Z",
+          evidenceLinks: [reportPackEvidence]
+        }
+      ],
+      reportPackReadiness: {
+        isReady: true,
+        reportPackId: "report-pack-2026-05",
+        blockingReason: null,
+        evidenceLinks: [reportPackEvidence]
+      },
+      closeChecklist,
+      closeReadiness: {
+        isReadyToClose: true,
+        severity: "Info",
+        score: 100,
+        components: [],
+        blockers: [],
+        nextActions: []
+      },
+      closePackage: null
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail: closeReadyDetail,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.commandSpine.rows[4]).toMatchObject({
+      id: "produce-evidence",
+      workflowId,
+      expectedWorkflowVersion: 4,
+      closeWorkflowReportPackId: "report-pack-2026-05",
+      closeWorkflowEvidenceLinks: expect.arrayContaining([reportPackEvidence]),
+      closeWorkflowChecklistControlApprovals: expect.arrayContaining([
+        {
+          taskId: "close-gate-ledgerposting",
+          approvedBy: "ledger-lead",
+          approvedAtUtc: "2026-05-10T17:10:00Z"
+        },
+        {
+          taskId: "close-gate-approval",
+          approvedBy: "fund-controller",
+          approvedAtUtc: "2026-05-10T17:45:00Z"
+        }
+      ]),
+      canCloseWorkflow: true,
+      closeWorkflowLabel: "Publish close package",
+      closeWorkflowDisabledReason: null,
+      closeWorkflowAriaLabel: "Publish close package for 2026-05"
     });
   });
 
