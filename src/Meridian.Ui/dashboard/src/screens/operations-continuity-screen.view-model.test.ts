@@ -7,6 +7,7 @@ import {
 } from "@/screens/operations-continuity-screen.view-model";
 import type {
   OperationsCloseChecklistTask,
+  OperationsCloseCalendar,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
   OperationsEvidenceLink,
@@ -757,6 +758,34 @@ const closeCockpit: PrivateCapitalCloseCockpit = {
   ],
   liveCapabilities: ["workflow-readiness", "capital-account-evidence"],
   plannedCapabilities: ["tax-support-drilldown"]
+};
+
+const closeCalendar: OperationsCloseCalendar = {
+  generatedAtUtc: "2026-05-10T18:45:00Z",
+  items: [
+    {
+      workflowId,
+      fundAccountId,
+      periodId: "2026-05",
+      status: "LedgerPostingDraft",
+      version: 4,
+      nextDueDate: "2026-05-12",
+      nextDueTaskId: "ledger-controller-check",
+      nextDueLabel: "Ledger posting controller check",
+      nextDueOwner: "fund-controller",
+      readinessSeverity: "Critical",
+      readinessScore: 72,
+      isReadyToClose: false,
+      blockerCount: 1,
+      openChecklistCount: 2,
+      requiredApprovalCount: 2,
+      completedApprovalCount: 1,
+      route: "/workstation/accounting/operations-continuity",
+      readinessComponents: [],
+      readinessBlockers: [],
+      readinessNextActions: []
+    }
+  ]
 };
 
 describe("Operations Continuity view model", () => {
@@ -1926,6 +1955,52 @@ describe("Operations Continuity view model", () => {
     });
   });
 
+  it("projects the source-backed close calendar for workflow control", () => {
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail,
+      loading: false,
+      detailLoading: false,
+      closeCalendar,
+      closeCalendarLoading: false,
+      closeCalendarError: null,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.closeCalendar).toMatchObject({
+      title: "Close calendar",
+      statusLabel: "Blocked",
+      statusTone: "blocked",
+      summaryLabel: "0/1 calendar item ready; 2 open checklist items.",
+      scopeLabel: `Selected 2026-05 / ${fundAccountId}`,
+      freshnessLabel: "Generated May 10, 18:45 UTC",
+      itemCountLabel: "1 calendar item",
+      blockerCountLabel: "1 blocker",
+      checklistCountLabel: "2 open checklist items",
+      approvalCountLabel: "1/2 approvals complete",
+      nextDueLabel: "Next due May 12, 2026: Ledger posting controller check"
+    });
+    expect(vm.closeCalendar.rows[0]).toMatchObject({
+      id: workflowId,
+      periodLabel: `2026-05 / ${fundAccountId}`,
+      statusLabel: "Ledger Posting Draft",
+      statusTone: "review",
+      dueLabel: "May 12, 2026",
+      taskLabel: "Ledger posting controller check",
+      ownerLabel: "fund-controller",
+      readinessLabel: "72% ready",
+      readinessTone: "blocked",
+      blockerLabel: "1 blocker",
+      checklistLabel: "2 open checklist items",
+      approvalLabel: "1/2 approvals complete",
+      routeHref: "/accounting/operations-continuity"
+    });
+  });
+
   it("fails closed when the private-capital close cockpit cannot be loaded", () => {
     const vm = buildOperationsContinuityScreenViewModel({
       workflows: [summary],
@@ -2237,6 +2312,7 @@ describe("Operations Continuity view model", () => {
     const services = {
       listWorkflows: vi.fn().mockResolvedValue([summary]),
       getWorkflow: vi.fn().mockResolvedValue(detail),
+      getCloseCalendar: vi.fn().mockResolvedValue(closeCalendar),
       getCloseCockpit: vi.fn().mockResolvedValue(closeCockpit)
     };
 
@@ -2248,6 +2324,10 @@ describe("Operations Continuity view model", () => {
       expect(result.current.timeline).toHaveLength(1);
     });
     expect(services.getWorkflow).toHaveBeenCalledWith(workflowId, expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    expect(services.getCloseCalendar).toHaveBeenCalledWith(
+      { fundAccountId, periodId: "2026-05" },
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    );
     expect(services.getCloseCockpit).toHaveBeenCalledWith(
       { fundAccountId, periodId: "2026-05" },
       expect.objectContaining({ signal: expect.any(AbortSignal) })

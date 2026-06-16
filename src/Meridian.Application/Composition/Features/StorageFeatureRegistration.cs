@@ -103,6 +103,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IProviderIntegrationHttpTransport>(_ =>
             new ProviderIntegrationHttpClientTransport(new HttpClient()));
         services.TryAddSingleton<ProviderIntegrationRestDryRunService>();
+        services.TryAddSingleton<ProviderIntegrationSetupService>();
         services.TryAddSingleton<ProviderIntegrationActivationReadinessService>();
         services.TryAddSingleton<ProviderIntegrationActivationService>();
         services.TryAddSingleton<ProviderIntegrationMonitoringService>();

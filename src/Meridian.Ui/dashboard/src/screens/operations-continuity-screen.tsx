@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { AlertTriangle, ArrowRight, Gauge, GitBranch, ListChecks, Lock, RefreshCcw, Workflow } from "lucide-react";
+import { AlertTriangle, ArrowRight, CalendarDays, Gauge, GitBranch, ListChecks, Lock, RefreshCcw, Workflow } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import {
   type FinancialOperationsCommandSpineRow,
   type FinancialOperationsOperatorQueueRow,
   type OperationsAccountingRecordEvidenceRow,
+  type OperationsContinuityCloseCalendarRow,
   type OperationsContinuityCloseCockpitApprovalRow,
   type OperationsContinuityCloseCockpitLaneRow,
   type OperationsContinuityCloseCockpitWorkflowRow,
@@ -185,6 +186,61 @@ const operationalDashboardColumns: DenseDataTableColumn<OperationsContinuityDash
     label: "Route",
     render: (row) => row.routeHref ? (
       <Link className="text-xs" to={row.routeHref} aria-label={`Open operational dashboard metric ${row.label}`}>
+        {row.routeLabel}
+      </Link>
+    ) : (
+      <span className="text-xs text-muted-foreground">{row.routeLabel}</span>
+    )
+  }
+];
+
+const closeCalendarColumns: DenseDataTableColumn<OperationsContinuityCloseCalendarRow>[] = [
+  {
+    id: "scope",
+    label: "Scope",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.periodLabel}</span>
+        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.taskLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
+        <span className="mt-1 block text-muted-foreground">{row.dueLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "readiness",
+    label: "Readiness",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <Badge variant={toneBadge[row.readinessTone]}>{row.readinessLabel}</Badge>
+        <span className="mt-1 block text-muted-foreground">{row.ownerLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "controls",
+    label: "Controls",
+    render: (row) => (
+      <span className="block text-xs leading-5 text-muted-foreground">
+        <span className="block text-foreground">{row.blockerLabel}</span>
+        <span className="block">{row.checklistLabel}</span>
+        <span className="block">{row.approvalLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "route",
+    label: "Route",
+    render: (row) => row.routeHref ? (
+      <Link className="text-xs" to={row.routeHref} aria-label={`Open close calendar workflow ${row.periodLabel}`}>
         {row.routeLabel}
       </Link>
     ) : (
@@ -1667,6 +1723,51 @@ export function OperationsContinuityScreen() {
               getRowAriaLabel={(row) => row.ariaLabel}
               emptyText={vm.dashboard.metricsEmptyText}
               ariaLabel="Financial Operations operational dashboard"
+            />
+          </CardContent>
+        </Card>
+        <Card className={cn("border", tonePanel[vm.closeCalendar.statusTone])}>
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <CalendarDays className="h-5 w-5 text-primary" aria-hidden="true" />
+                  {vm.closeCalendar.title}
+                </CardTitle>
+                <CardDescription>{vm.closeCalendar.summaryLabel}</CardDescription>
+              </div>
+              <Badge variant={toneBadge[vm.closeCalendar.statusTone]}>
+                {vm.closeCalendar.statusLabel}
+              </Badge>
+            </div>
+            <div
+              role="list"
+              aria-label="Operations close calendar summary"
+              className="grid gap-2 pt-3 text-xs text-muted-foreground sm:grid-cols-2 xl:grid-cols-4"
+            >
+              <span role="listitem">{vm.closeCalendar.scopeLabel}</span>
+              <span role="listitem">{vm.closeCalendar.itemCountLabel}</span>
+              <span role="listitem">{vm.closeCalendar.nextDueLabel}</span>
+              <span role="listitem">{vm.closeCalendar.blockerCountLabel}</span>
+              <span role="listitem">{vm.closeCalendar.checklistCountLabel}</span>
+              <span role="listitem">{vm.closeCalendar.approvalCountLabel}</span>
+              <span role="listitem">{vm.closeCalendar.freshnessLabel}</span>
+            </div>
+            {vm.closeCalendar.errorText ? (
+              <p role="alert" className="mt-3 inline-flex items-center gap-2 text-sm text-danger">
+                <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+                {vm.closeCalendar.errorText}
+              </p>
+            ) : null}
+          </CardHeader>
+          <CardContent>
+            <DenseDataTable
+              columns={closeCalendarColumns}
+              rows={vm.closeCalendar.rows}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              emptyText={vm.closeCalendar.emptyText}
+              ariaLabel="Operations continuity close calendar"
             />
           </CardContent>
         </Card>

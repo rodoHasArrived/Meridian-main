@@ -390,6 +390,22 @@ public sealed record ProviderIntegrationDryRunResultDto(
     ProviderIntegrationProcessingStatusDto Status,
     IReadOnlyList<ValidationIssueDto> Issues);
 
+public sealed record ProviderIntegrationSetupSaveRequestDto(
+    ProviderIntegrationManifestDto Manifest,
+    ProviderConnectionDto Connection,
+    string SavedBy,
+    DateTimeOffset SavedAt,
+    string? ChangeReason);
+
+public sealed record ProviderIntegrationSetupSaveResultDto(
+    bool Saved,
+    string ManifestId,
+    string ConnectionId,
+    ProviderIntegrationActivationStateDto ManifestState,
+    ProviderIntegrationActivationStateDto ConnectionState,
+    ProviderIntegrationActivationReadinessDto Readiness,
+    string? Message);
+
 public sealed record ProviderIntegrationActivationRequestDto(
     string ManifestId,
     string ConnectionId,

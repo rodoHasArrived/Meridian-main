@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  getOperationsCloseCalendar,
   getPrivateCapitalCloseCockpit,
   getOperationsContinuityWorkflow,
   getOperationsContinuityWorkflows,
@@ -15,6 +16,8 @@ import type {
   OperationsAccountingRecordSummary,
   OperationsBreakCase,
   OperationsChecklistControlApproval,
+  OperationsCloseCalendar,
+  OperationsCloseCalendarItem,
   OperationsDashboardSummary,
   OperationsEvidenceLink,
   OperationsEvidencePackageSummary,
@@ -371,6 +374,41 @@ export interface OperationsContinuityCloseGovernanceViewModel {
   reopenWorkflowAriaLabel: string;
 }
 
+export interface OperationsContinuityCloseCalendarRow {
+  id: string;
+  periodLabel: string;
+  statusLabel: string;
+  statusTone: OperationsContinuityTone;
+  dueLabel: string;
+  taskLabel: string;
+  ownerLabel: string;
+  readinessLabel: string;
+  readinessTone: OperationsContinuityTone;
+  blockerLabel: string;
+  checklistLabel: string;
+  approvalLabel: string;
+  routeHref: string | null;
+  routeLabel: string;
+  ariaLabel: string;
+}
+
+export interface OperationsContinuityCloseCalendarViewModel {
+  title: string;
+  statusLabel: string;
+  statusTone: OperationsContinuityTone;
+  summaryLabel: string;
+  scopeLabel: string;
+  freshnessLabel: string;
+  itemCountLabel: string;
+  blockerCountLabel: string;
+  checklistCountLabel: string;
+  approvalCountLabel: string;
+  nextDueLabel: string;
+  errorText: string | null;
+  emptyText: string;
+  rows: OperationsContinuityCloseCalendarRow[];
+}
+
 export interface OperationsContinuityCloseCockpitLaneRow {
   id: string;
   label: string;
@@ -589,6 +627,7 @@ export interface OperationsContinuityScreenViewModel {
   checklist: OperationsContinuityChecklistRow[];
   closeGovernance: OperationsContinuityCloseGovernanceViewModel;
   closePackage: OperationsContinuityClosePackageViewModel;
+  closeCalendar: OperationsContinuityCloseCalendarViewModel;
   closeCockpit: OperationsContinuityCloseCockpitViewModel;
   accountingRecordLabel: string;
   accountingRecordSummary: OperationsAccountingRecordSummaryViewModel;
@@ -610,6 +649,10 @@ export interface OperationsContinuityScreenServices {
     query?: PrivateCapitalCloseCockpitQuery,
     options?: ApiRequestOptions
   ) => Promise<PrivateCapitalCloseCockpit>;
+  getCloseCalendar?: (
+    filters?: { fundAccountId?: string; periodId?: string },
+    options?: ApiRequestOptions
+  ) => Promise<OperationsCloseCalendar>;
 }
 
 export interface BuildOperationsContinuityScreenViewModelOptions {
@@ -618,6 +661,9 @@ export interface BuildOperationsContinuityScreenViewModelOptions {
   detail: OperationsContinuityWorkflow | null;
   loading: boolean;
   detailLoading: boolean;
+  closeCalendar?: OperationsCloseCalendar | null;
+  closeCalendarLoading?: boolean;
+  closeCalendarError?: string | null;
   closeCockpit?: PrivateCapitalCloseCockpit | null;
   closeCockpitLoading?: boolean;
   closeCockpitError?: string | null;
@@ -630,6 +676,7 @@ export interface BuildOperationsContinuityScreenViewModelOptions {
 const defaultServices: OperationsContinuityScreenServices = {
   listWorkflows: (filters = {}, options = {}) => getOperationsContinuityWorkflows(filters, options),
   getWorkflow: (workflowId: string, options = {}) => getOperationsContinuityWorkflow(workflowId, options),
+  getCloseCalendar: (filters = {}, options = {}) => getOperationsCloseCalendar(filters, options),
   getCloseCockpit: (query = {}, options = {}) => getPrivateCapitalCloseCockpit(query, options)
 };
 
@@ -641,6 +688,9 @@ export function useOperationsContinuityScreenViewModel(
   const [detail, setDetail] = useState<OperationsContinuityWorkflow | null>(null);
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [closeCalendar, setCloseCalendar] = useState<OperationsCloseCalendar | null>(null);
+  const [closeCalendarLoading, setCloseCalendarLoading] = useState(false);
+  const [closeCalendarError, setCloseCalendarError] = useState<string | null>(null);
   const [closeCockpit, setCloseCockpit] = useState<PrivateCapitalCloseCockpit | null>(null);
   const [closeCockpitLoading, setCloseCockpitLoading] = useState(false);
   const [closeCockpitError, setCloseCockpitError] = useState<string | null>(null);
@@ -649,9 +699,11 @@ export function useOperationsContinuityScreenViewModel(
   const mountedRef = useRef(true);
   const listRevisionRef = useRef(0);
   const detailRevisionRef = useRef(0);
+  const closeCalendarRevisionRef = useRef(0);
   const closeCockpitRevisionRef = useRef(0);
   const listAbortRef = useRef<AbortController | null>(null);
   const detailAbortRef = useRef<AbortController | null>(null);
+  const closeCalendarAbortRef = useRef<AbortController | null>(null);
   const closeCockpitAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -661,9 +713,11 @@ export function useOperationsContinuityScreenViewModel(
       mountedRef.current = false;
       listRevisionRef.current += 1;
       detailRevisionRef.current += 1;
+      closeCalendarRevisionRef.current += 1;
       closeCockpitRevisionRef.current += 1;
       listAbortRef.current?.abort();
       detailAbortRef.current?.abort();
+      closeCalendarAbortRef.current?.abort();
       closeCockpitAbortRef.current?.abort();
     };
   }, []);
@@ -676,9 +730,11 @@ export function useOperationsContinuityScreenViewModel(
     const revision = listRevisionRef.current + 1;
     listRevisionRef.current = revision;
     detailRevisionRef.current += 1;
+    closeCalendarRevisionRef.current += 1;
     closeCockpitRevisionRef.current += 1;
     listAbortRef.current?.abort();
     detailAbortRef.current?.abort();
+    closeCalendarAbortRef.current?.abort();
     closeCockpitAbortRef.current?.abort();
     const controller = new AbortController();
     listAbortRef.current = controller;
@@ -775,6 +831,47 @@ export function useOperationsContinuityScreenViewModel(
       return;
     }
 
+    const revision = closeCalendarRevisionRef.current + 1;
+    closeCalendarRevisionRef.current = revision;
+    closeCalendarAbortRef.current?.abort();
+    const controller = new AbortController();
+    closeCalendarAbortRef.current = controller;
+    setCloseCalendarLoading(true);
+    setCloseCalendarError(null);
+
+    const filters = closeCockpitScope ? buildCloseCalendarQuery(closeCockpitScope) : {};
+    const getCloseCalendar = services.getCloseCalendar ?? defaultServices.getCloseCalendar!;
+
+    getCloseCalendar(filters, { signal: controller.signal })
+      .then((calendar) => {
+        if (!mountedRef.current || closeCalendarRevisionRef.current !== revision) {
+          return;
+        }
+
+        setCloseCalendar(calendar);
+      })
+      .catch((err) => {
+        if (!isAbortError(err) && mountedRef.current && closeCalendarRevisionRef.current === revision) {
+          setCloseCalendar(null);
+          setCloseCalendarError(formatError(err, "Operations close calendar could not be loaded."));
+        }
+      })
+      .finally(() => {
+        if (mountedRef.current && closeCalendarRevisionRef.current === revision) {
+          setCloseCalendarLoading(false);
+        }
+
+        if (closeCalendarAbortRef.current === controller) {
+          closeCalendarAbortRef.current = null;
+        }
+      });
+  }, [closeCockpitScope, loading, services]);
+
+  useEffect(() => {
+    if (loading) {
+      return;
+    }
+
     const revision = closeCockpitRevisionRef.current + 1;
     closeCockpitRevisionRef.current = revision;
     closeCockpitAbortRef.current?.abort();
@@ -821,6 +918,9 @@ export function useOperationsContinuityScreenViewModel(
     detail,
     loading,
     detailLoading,
+    closeCalendar,
+    closeCalendarLoading,
+    closeCalendarError,
     closeCockpit,
     closeCockpitLoading,
     closeCockpitError,
@@ -828,7 +928,7 @@ export function useOperationsContinuityScreenViewModel(
     detailError,
     refresh,
     selectWorkflow
-  }), [closeCockpit, closeCockpitError, closeCockpitLoading, detail, detailError, detailLoading, error, loading, refresh, selectWorkflow, selectedWorkflowId, workflows]);
+  }), [closeCalendar, closeCalendarError, closeCalendarLoading, closeCockpit, closeCockpitError, closeCockpitLoading, detail, detailError, detailLoading, error, loading, refresh, selectWorkflow, selectedWorkflowId, workflows]);
 }
 
 export function buildOperationsContinuityScreenViewModel({
@@ -837,6 +937,9 @@ export function buildOperationsContinuityScreenViewModel({
   detail,
   loading,
   detailLoading,
+  closeCalendar = null,
+  closeCalendarLoading = false,
+  closeCalendarError = null,
   closeCockpit = null,
   closeCockpitLoading = false,
   closeCockpitError = null,
@@ -896,6 +999,12 @@ export function buildOperationsContinuityScreenViewModel({
     closeCockpitError,
     selectedSummary
   );
+  const closeCalendarPanel = buildCloseCalendarViewModel(
+    closeCalendar,
+    closeCalendarLoading,
+    closeCalendarError,
+    selectedSummary
+  );
 
   return {
     title: "Operations continuity",
@@ -950,6 +1059,7 @@ export function buildOperationsContinuityScreenViewModel({
     checklist,
     closeGovernance: buildCloseGovernanceViewModel(effectiveDetail, detailLoading),
     closePackage: buildClosePackageViewModel(effectiveDetail?.closePackage ?? null, detailLoading),
+    closeCalendar: closeCalendarPanel,
     closeCockpit: closeCockpitPanel,
     accountingRecordLabel: "Accounting record evidence",
     accountingRecordSummary,
@@ -2597,6 +2707,13 @@ function buildCloseCockpitQuery(workflow: OperationsContinuityWorkflowSummary): 
   };
 }
 
+function buildCloseCalendarQuery(workflow: OperationsContinuityWorkflowSummary): { fundAccountId: string; periodId: string } {
+  return {
+    fundAccountId: workflow.fundAccountId,
+    periodId: workflow.periodId
+  };
+}
+
 const FINANCIAL_OPERATIONS_PROOF_LANE_LABELS: Record<string, string> = {
   "partner-capital-tie-outs": "partner tie-outs",
   "expense-fee-allocation": "expense/fee allocation",
@@ -2644,6 +2761,126 @@ const FINANCIAL_OPERATIONS_EVIDENCE_PACKAGE_ORDER = [
   "nav-support",
   "close-approval-audit"
 ];
+
+function buildCloseCalendarViewModel(
+  calendar: OperationsCloseCalendar | null,
+  loading: boolean,
+  error: string | null,
+  selectedSummary: OperationsContinuityWorkflowSummary | null
+): OperationsContinuityCloseCalendarViewModel {
+  if (!calendar) {
+    return {
+      title: "Close calendar",
+      statusLabel: loading ? "Loading" : error ? "Unavailable" : "No calendar",
+      statusTone: error ? "blocked" : "neutral",
+      summaryLabel: loading
+        ? "Loading close calendar tasks from the shared operations API."
+        : error
+          ? "Close calendar evidence is unavailable."
+          : "No close calendar data is available for this workstation context.",
+      scopeLabel: selectedSummary
+        ? `Selected ${selectedSummary.periodId} / ${selectedSummary.fundAccountId}`
+        : "No close scope selected",
+      freshnessLabel: "Projection pending",
+      itemCountLabel: "No calendar items",
+      blockerCountLabel: "No blockers loaded",
+      checklistCountLabel: "No checklist posture loaded",
+      approvalCountLabel: "No approval posture loaded",
+      nextDueLabel: loading
+        ? "Next due task loading"
+        : error
+          ? "Next due task unavailable"
+          : "No dated close-calendar tasks",
+      errorText: error,
+      emptyText: loading
+        ? "Loading close calendar items..."
+        : error
+          ? "Close calendar items could not be loaded."
+          : "No close calendar items returned by the shared operations API.",
+      rows: []
+    };
+  }
+
+  const rows = [...calendar.items]
+    .sort(compareCloseCalendarItems)
+    .map(mapCloseCalendarRow);
+  const readyCount = calendar.items.filter((item) => item.isReadyToClose).length;
+  const blockerCount = calendar.items.reduce((total, item) => total + item.blockerCount, 0);
+  const openChecklistCount = calendar.items.reduce((total, item) => total + item.openChecklistCount, 0);
+  const requiredApprovalCount = calendar.items.reduce((total, item) => total + item.requiredApprovalCount, 0);
+  const completedApprovalCount = calendar.items.reduce((total, item) => total + item.completedApprovalCount, 0);
+  const nextDueItem = [...calendar.items]
+    .filter((item) => Boolean(item.nextDueDate))
+    .sort(compareCloseCalendarItems)[0] ?? null;
+  const statusTone: OperationsContinuityTone = blockerCount > 0
+    ? "blocked"
+    : readyCount === calendar.items.length && calendar.items.length > 0
+      ? "ready"
+      : "review";
+  const statusLabel = statusTone === "ready"
+    ? "Ready"
+    : statusTone === "blocked"
+      ? "Blocked"
+      : "Review required";
+
+  return {
+    title: "Close calendar",
+    statusLabel,
+    statusTone,
+    summaryLabel: `${readyCount}/${calendar.items.length} calendar item${calendar.items.length === 1 ? "" : "s"} ready; ${openChecklistCount} open checklist item${openChecklistCount === 1 ? "" : "s"}.`,
+    scopeLabel: selectedSummary
+      ? `Selected ${selectedSummary.periodId} / ${selectedSummary.fundAccountId}`
+      : "All close calendar scopes",
+    freshnessLabel: `Generated ${formatDate(calendar.generatedAtUtc)}`,
+    itemCountLabel: `${calendar.items.length} calendar item${calendar.items.length === 1 ? "" : "s"}`,
+    blockerCountLabel: blockerCount === 0 ? "No blockers" : `${blockerCount} blocker${blockerCount === 1 ? "" : "s"}`,
+    checklistCountLabel: openChecklistCount === 0 ? "Checklist clear" : `${openChecklistCount} open checklist item${openChecklistCount === 1 ? "" : "s"}`,
+    approvalCountLabel: requiredApprovalCount === 0
+      ? "No approvals required"
+      : `${completedApprovalCount}/${requiredApprovalCount} approval${requiredApprovalCount === 1 ? "" : "s"} complete`,
+    nextDueLabel: nextDueItem
+      ? `Next due ${formatDateOnly(nextDueItem.nextDueDate)}: ${nextDueItem.nextDueLabel?.trim() || nextDueItem.nextDueTaskId || "close task"}`
+      : "No dated close-calendar tasks",
+    errorText: error,
+    emptyText: "No close calendar items returned by the shared operations API.",
+    rows
+  };
+}
+
+function mapCloseCalendarRow(item: OperationsCloseCalendarItem): OperationsContinuityCloseCalendarRow {
+  const routeHref = normalizeLocalWorkstationRoute(item.route) ?? null;
+  const statusText = statusLabel(item.status);
+  const readinessTone: OperationsContinuityTone = item.isReadyToClose
+    ? "ready"
+    : item.blockerCount > 0
+      ? "blocked"
+      : severityTone(item.readinessSeverity);
+  const readinessLabel = item.readinessScore === null || item.readinessScore === undefined
+    ? item.isReadyToClose
+      ? "Ready to close"
+      : "Readiness not measured"
+    : `${formatPercent(item.readinessScore)} ready`;
+
+  return {
+    id: item.workflowId,
+    periodLabel: `${item.periodId} / ${item.fundAccountId}`,
+    statusLabel: statusText,
+    statusTone: statusTone(item.status),
+    dueLabel: item.nextDueDate ? formatDateOnly(item.nextDueDate) : "No due date",
+    taskLabel: item.nextDueLabel?.trim() || item.nextDueTaskId || "No open close task",
+    ownerLabel: item.nextDueOwner?.trim() || "Owner pending",
+    readinessLabel,
+    readinessTone,
+    blockerLabel: item.blockerCount === 0 ? "No blockers" : `${item.blockerCount} blocker${item.blockerCount === 1 ? "" : "s"}`,
+    checklistLabel: item.openChecklistCount === 0 ? "Checklist clear" : `${item.openChecklistCount} open checklist item${item.openChecklistCount === 1 ? "" : "s"}`,
+    approvalLabel: item.requiredApprovalCount === 0
+      ? "No approvals required"
+      : `${item.completedApprovalCount}/${item.requiredApprovalCount} approval${item.requiredApprovalCount === 1 ? "" : "s"} complete`,
+    routeHref,
+    routeLabel: routeHref ? "Open workflow" : "No local route",
+    ariaLabel: `${item.periodId} close calendar, ${statusText}, ${readinessLabel}, ${item.blockerCount} blockers`
+  };
+}
 
 function buildCloseCockpitViewModel(
   cockpit: PrivateCapitalCloseCockpit | null,
@@ -2975,6 +3212,15 @@ function compareCloseCockpitWorkflows(
 ): number {
   return right.updatedAtUtc.localeCompare(left.updatedAtUtc)
     || right.periodId.localeCompare(left.periodId)
+    || left.workflowId.localeCompare(right.workflowId);
+}
+
+function compareCloseCalendarItems(left: OperationsCloseCalendarItem, right: OperationsCloseCalendarItem): number {
+  const leftDue = left.nextDueDate ?? "9999-12-31";
+  const rightDue = right.nextDueDate ?? "9999-12-31";
+  return leftDue.localeCompare(rightDue)
+    || left.periodId.localeCompare(right.periodId)
+    || left.fundAccountId.localeCompare(right.fundAccountId)
     || left.workflowId.localeCompare(right.workflowId);
 }
 
@@ -3374,6 +3620,22 @@ function formatDate(value: string | null | undefined): string {
   const hour = date.getUTCHours().toString().padStart(2, "0");
   const minute = date.getUTCMinutes().toString().padStart(2, "0");
   return `${month} ${day}, ${hour}:${minute} UTC`;
+}
+
+function formatDateOnly(value: string | null | undefined): string {
+  if (!value) {
+    return "No due date";
+  }
+
+  const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00:00Z` : value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  const month = date.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
+  const day = date.getUTCDate().toString().padStart(2, "0");
+  const year = date.getUTCFullYear();
+  return `${month} ${day}, ${year}`;
 }
 
 function formatDecimal(value: number | null | undefined): string {

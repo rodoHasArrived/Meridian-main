@@ -80,6 +80,96 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationSetupSave_PersistsDraftInTenantPartition()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ManageProviders);
+            var client = app.GetTestClient();
+            var request = CreateProviderIntegrationSetupSaveRequest();
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationSetupSave,
+                request,
+                ServerJsonOptions);
+            var result = await response.Content.ReadFromJsonAsync<ProviderIntegrationSetupSaveResultDto>(ServerJsonOptions);
+            var tenantStore = DefaultProviderIntegrationTenantStore(store);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            result.Should().NotBeNull();
+            result!.Saved.Should().BeTrue();
+            result.Readiness.Issues.Should().Contain(issue => issue.Code == "provider-manifest.endpoint-test-required");
+            (await tenantStore.GetManifestAsync(request.Manifest.ManifestId))!.ChangeReason.Should()
+                .Be("Saved from workstation endpoint.");
+            (await tenantStore.GetConnectionAsync(request.Connection.ConnectionId))!.UpdatedAt.Should()
+                .Be(DateTimeOffset.Parse("2026-06-16T15:00:00Z"));
+            (await store.GetManifestAsync(request.Manifest.ManifestId)).Should().BeNull();
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationSetupSave_ReturnsBadRequestForMismatchedConnection()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ManageProviders);
+            var client = app.GetTestClient();
+            var request = CreateProviderIntegrationSetupSaveRequest(connectionManifestId: "manifest-other");
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationSetupSave,
+                request,
+                ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            (await DefaultProviderIntegrationTenantStore(store).GetManifestAsync(request.Manifest.ManifestId)).Should().BeNull();
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationSetupSave_RequiresConfigurePermission()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewConfig);
+            var client = app.GetTestClient();
+            var request = CreateProviderIntegrationSetupSaveRequest();
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationSetupSave,
+                request,
+                ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            (await DefaultProviderIntegrationTenantStore(store).GetManifestAsync(request.Manifest.ManifestId)).Should().BeNull();
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ProviderIntegrationMonitor_ReturnsLatestDurableEvidence()
     {
         var testRoot = CreateProviderIntegrationTestRoot();
@@ -538,6 +628,7 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<ProviderIntegrationDryRunService>();
         services.AddSingleton<IProviderIntegrationHttpTransport>(transport ?? new ProviderIntegrationEndpointTransport());
         services.AddSingleton<ProviderIntegrationRestDryRunService>();
+        services.AddSingleton<ProviderIntegrationSetupService>();
         services.AddSingleton<ProviderIntegrationActivationReadinessService>();
         services.AddSingleton<ProviderIntegrationActivationService>();
         services.AddSingleton<ProviderIntegrationMonitoringService>();
@@ -796,6 +887,76 @@ public sealed partial class WorkstationEndpointsTests
             DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
             DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
             ApprovalEvidenceId: null);
+
+    private static ProviderIntegrationSetupSaveRequestDto CreateProviderIntegrationSetupSaveRequest(
+        string connectionManifestId = "manifest-setup-endpoint-v1")
+    {
+        var manifest = new ProviderIntegrationManifestDto(
+            "manifest-setup-endpoint-v1",
+            1,
+            "provider-setup",
+            "Provider Setup",
+            IntegrationTypeDto.Rest,
+            "test",
+            new ProviderIntegrationAuthConfigDto(
+                ProviderIntegrationAuthTypeDto.OAuth2,
+                "https://api.example.com/oauth/token",
+                ["positions.read"],
+                new Dictionary<string, string>()),
+            [
+                new ProviderCapabilityDto(
+                    ProviderCapabilityKindDto.Positions,
+                    Enabled: true,
+                    RequiresCertifiedAdapter: false,
+                    RequiredCanonicalFields: ["providerAccountId", "quantity", "asOf"])
+            ],
+            [],
+            [
+                ProviderIntegrationActivationMapping("providerAccountId"),
+                ProviderIntegrationActivationMapping("quantity")
+            ],
+            new SyncScheduleDto(
+                "incremental",
+                "daily",
+                "06:00",
+                "America/New_York",
+                ProviderIntegrationCursorTypeDto.Timestamp,
+                "updated_at",
+                "monthly"),
+            [],
+            new ProviderIntegrationActivationPolicyDto(
+                RequiresAuthenticationTest: true,
+                RequiresEndpointTest: true,
+                RequiresDryRun: true,
+                RequiresApproval: true,
+                ProductionWriteCapabilitiesAllowed: false,
+                RequiredIssueCodes: []),
+            ProviderIntegrationActivationStateDto.Draft,
+            "operator@example.com",
+            DateTimeOffset.Parse("2026-06-16T14:30:00Z"),
+            ApprovedBy: null,
+            ApprovedAt: null,
+            ChangeReason: "Endpoint setup draft");
+        var connection = new IntegrationProviderConnectionDto(
+            "connection-setup-endpoint",
+            manifest.ProviderId,
+            connectionManifestId,
+            "Provider Setup Test",
+            manifest.Environment,
+            ProviderIntegrationActivationStateDto.Draft,
+            "vault://provider-credentials/provider-setup/test",
+            [ProviderCapabilityKindDto.Positions],
+            "operator@example.com",
+            DateTimeOffset.Parse("2026-06-16T14:30:00Z"),
+            DateTimeOffset.Parse("2026-06-16T14:30:00Z"),
+            ApprovalEvidenceId: null);
+        return new ProviderIntegrationSetupSaveRequestDto(
+            manifest,
+            connection,
+            "operator@example.com",
+            DateTimeOffset.Parse("2026-06-16T15:00:00Z"),
+            "Saved from workstation endpoint.");
+    }
 
     private static ProviderIntegrationActivationRequestDto CreateProviderIntegrationActivationRequest(
         ProviderIntegrationManifestDto manifest,

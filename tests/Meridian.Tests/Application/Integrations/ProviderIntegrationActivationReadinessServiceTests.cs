@@ -43,7 +43,9 @@ public sealed class ProviderIntegrationActivationReadinessServiceTests : IDispos
         var connection = CreateConnection(manifest, [ProviderCapabilityKindDto.OrderPlacement]);
         var service = await CreateServiceAsync(manifest, connection);
 
-        var readiness = await service.EvaluateAsync(manifest.ManifestId, connection.ConnectionId);
+        var readiness = await service.EvaluateAsync(
+            manifestId: manifest.ManifestId,
+            connectionId: connection.ConnectionId);
 
         readiness.IsReady.Should().BeFalse();
         readiness.RequiredEvidence.Should().Contain("certified-adapter:OrderPlacement");
@@ -115,7 +117,9 @@ public sealed class ProviderIntegrationActivationReadinessServiceTests : IDispos
         var connection = CreateConnection(manifest, [ProviderCapabilityKindDto.Positions], "approval-evidence-1");
         var service = await CreateServiceAsync(manifest, connection);
 
-        var readiness = await service.EvaluateAsync(manifest.ManifestId, connection.ConnectionId);
+        var readiness = await service.EvaluateAsync(
+            manifestId: manifest.ManifestId,
+            connectionId: connection.ConnectionId);
 
         readiness.IsReady.Should().BeTrue();
         readiness.Issues.Should().BeEmpty();

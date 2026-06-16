@@ -7,6 +7,7 @@ import {
   approveOperationsContinuityWorkflow,
   assignOperationsContinuityBreakCase,
   closeOperationsContinuityWorkflow,
+  getOperationsCloseCalendar,
   getPrivateCapitalCloseCockpit,
   getOperationsContinuityWorkflow,
   getOperationsContinuityWorkflows,
@@ -19,6 +20,7 @@ import { OperationsContinuityScreen } from "@/screens/operations-continuity-scre
 import { OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID } from "@/screens/operations-continuity-screen.view-model";
 import type {
   OperationsCloseChecklistTask,
+  OperationsCloseCalendar,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
   OperationsEvidenceLink,
@@ -32,6 +34,7 @@ vi.mock("@/lib/api", () => ({
   approveOperationsContinuityWorkflow: vi.fn(),
   assignOperationsContinuityBreakCase: vi.fn(),
   closeOperationsContinuityWorkflow: vi.fn(),
+  getOperationsCloseCalendar: vi.fn(),
   getPrivateCapitalCloseCockpit: vi.fn(),
   getOperationsContinuityWorkflows: vi.fn(),
   getOperationsContinuityWorkflow: vi.fn(),
@@ -49,6 +52,7 @@ afterEach(() => {
 beforeEach(() => {
   vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([summary]);
   vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(detail);
+  vi.mocked(getOperationsCloseCalendar).mockResolvedValue(closeCalendar);
   vi.mocked(getPrivateCapitalCloseCockpit).mockResolvedValue(closeCockpit);
   vi.mocked(assignOperationsContinuityBreakCase).mockResolvedValue({
     success: true,
@@ -981,6 +985,34 @@ const closeCockpit: PrivateCapitalCloseCockpit = {
   plannedCapabilities: ["tax-support-drilldown"]
 };
 
+const closeCalendar: OperationsCloseCalendar = {
+  generatedAtUtc: "2026-05-10T18:45:00Z",
+  items: [
+    {
+      workflowId,
+      fundAccountId,
+      periodId: "2026-05",
+      status: "LedgerPostingDraft",
+      version: 4,
+      nextDueDate: "2026-05-12",
+      nextDueTaskId: "ledger-controller-check",
+      nextDueLabel: "Ledger posting controller check",
+      nextDueOwner: "fund-controller",
+      readinessSeverity: "Critical",
+      readinessScore: 72,
+      isReadyToClose: false,
+      blockerCount: 1,
+      openChecklistCount: 2,
+      requiredApprovalCount: 2,
+      completedApprovalCount: 1,
+      route: "/workstation/accounting/operations-continuity",
+      readinessComponents: [],
+      readinessBlockers: [],
+      readinessNextActions: []
+    }
+  ]
+};
+
 describe("OperationsContinuityScreen", () => {
   it("renders workflow list, detail gates, blockers, timeline, and enabled next action", async () => {
     renderScreen();
@@ -1090,6 +1122,20 @@ describe("OperationsContinuityScreen", () => {
     expect(within(dashboard).getByText("Resolve Exceptions")).toBeInTheDocument();
     expect(within(dashboard).getByText("Close package retained")).toBeInTheDocument();
     expect(within(dashboard).getByText("Assign, escalate, or resolve open exceptions and retain resolution evidence.")).toBeInTheDocument();
+    expect(getOperationsCloseCalendar).toHaveBeenCalledWith(
+      { fundAccountId, periodId: "2026-05" },
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    );
+    const closeCalendarSummary = screen.getByRole("list", { name: "Operations close calendar summary" });
+    expect(within(closeCalendarSummary).getByText(`Selected 2026-05 / ${fundAccountId}`)).toBeInTheDocument();
+    expect(within(closeCalendarSummary).getByText("Next due May 12, 2026: Ledger posting controller check")).toBeInTheDocument();
+    expect(within(closeCalendarSummary).getByText("1/2 approvals complete")).toBeInTheDocument();
+    const closeCalendarTable = screen.getByRole("table", { name: "Operations continuity close calendar" });
+    expect(within(closeCalendarTable).getByText(`2026-05 / ${fundAccountId}`)).toBeInTheDocument();
+    expect(within(closeCalendarTable).getByText("Ledger posting controller check")).toBeInTheDocument();
+    expect(within(closeCalendarTable).getByText("fund-controller")).toBeInTheDocument();
+    expect(within(closeCalendarTable).getByRole("link", { name: `Open close calendar workflow 2026-05 / ${fundAccountId}` }))
+      .toHaveAttribute("href", "/accounting/operations-continuity");
     const commandSpine = screen.getByRole("table", { name: "Financial Operations command spine" });
     expect(within(commandSpine).getByText("Start/import/normalize activity")).toBeInTheDocument();
     expect(within(commandSpine).getByText("Run reconciliation and refresh posture")).toBeInTheDocument();
