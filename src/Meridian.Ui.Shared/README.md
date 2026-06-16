@@ -138,11 +138,14 @@ staging records, reconciliation-ready counts, warning groups, and capability sum
 promoting those records to Portfolio, Security Master, Ledger, or Accounting stores. The identity-resolution
 route previews provider account and Security Master match posture for staged records, including
 missing identifiers, unresolved securities, and review-required account mappings before
-reconciliation promotion. Quarantine review routes expose grouped validation issues and persist operator review decisions without
+reconciliation promotion. The promotion-readiness route composes that posture into ready,
+review-required, and blocked rows for the reconciliation-staging handoff while remaining read-only.
+Quarantine review routes expose grouped validation issues and persist operator review decisions without
 changing the retained rejected raw records. Quarantine replay routes remap records approved for
 replay after mapping changes and write accepted records back into integration staging or
 re-quarantine unresolved records. Setup, OpenAPI import, readiness, dry-run, activation, sync-plan,
-run-due sync, schema-drift, staging review, identity-resolution preview, quarantine review/replay, and monitor endpoints resolve the
+run-due sync, schema-drift, staging review, identity-resolution preview, promotion-readiness,
+quarantine review/replay, and monitor endpoints resolve the
 authenticated workstation tenant before reading or writing stored manifests, connections, or
 retained run evidence. Import, dry-run, and run-due commands require provider/configuration permissions
 because they create manifests or retain raw payload, staging, quarantine, and sync-run evidence.

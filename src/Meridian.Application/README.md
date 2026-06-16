@@ -80,7 +80,10 @@ and UI presentation concerns in their owning layers.
   summaries from durable staging records without promoting them to canonical stores. The identity
   resolution preview service inspects those staged records, extracts provider account and security
   identifiers, resolves active Security Master matches when the query service is registered, and
-  returns account/security review blockers before any canonical promotion. The quarantine
+  returns account/security review blockers before any canonical promotion. The promotion-readiness
+  service composes that identity posture into a read-only reconciliation staging preview, labeling
+  accepted rows as ready, review-required, or blocked without writing Portfolio, Security Master,
+  Ledger, or Accounting records. The quarantine
   review service groups rejected records by operator-safe issue code and records durable review decisions
   without mutating the retained raw rejected records. The quarantine replay service remaps reviewed
   rejected records after mapping changes, writes a replay raw payload, stages accepted records, and

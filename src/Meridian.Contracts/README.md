@@ -269,9 +269,10 @@ for no-code provider intake. They keep credentials as secret references, preserv
 quarantine, quarantine-review decisions, quarantine replay summaries, and staging identities, and
 expose template catalog entries, OpenAPI import requests/results, setup-save requests/results,
 manual CSV dry-run requests/results, schema-drift check requests/results, sync planning
-requests/results, run-due sync requests/results, activation state, mapping confidence, validation
-issues, endpoint definitions, and sync schedules as shared contracts before browser or WPF surfaces
-render setup, monitoring, or scheduled execution state.
+requests/results, run-due sync requests/results, promotion-readiness preview rows, activation
+state, mapping confidence, validation issues, endpoint definitions, and sync schedules as shared
+contracts before browser or WPF surfaces render setup, monitoring, reconciliation handoff, or
+scheduled execution state.
 `IProviderIntegrationTenantManifestStoreFactory`
 lets workstation-hosted services resolve a tenant-partitioned manifest store while preserving the
 existing global store contract for non-workstation callers. Activation-readiness

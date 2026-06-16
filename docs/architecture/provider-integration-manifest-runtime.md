@@ -213,6 +213,10 @@ Application and infrastructure seams:
 - `ProviderIntegrationIdentityResolutionPreviewService` reads staged records, extracts provider
   account ids and security identifiers, resolves active Security Master matches when that query
   service is registered, and returns review-required issue rows without mutating canonical stores.
+- `ProviderIntegrationPromotionReadinessService` composes staging identity posture into a read-only
+  reconciliation promotion preview. It labels each staged record as ready for reconciliation,
+  review-required, or blocked, and keeps the first accepted-record writer pointed at integration
+  staging rather than Portfolio, Security Master, Ledger, or Accounting stores.
 - `ICanonicalFinancialDataWriter` promotes staged accepted records to the owned domain store only
   after reconciliation, identity, lineage, dedupe, and ownership gates pass.
 - `IIntegrationQuarantineService` stores rejected records, issue groups, suggested fixes, replay
