@@ -1,5 +1,5 @@
-using Meridian.Core.Config;
 using Meridian.Application.UI;
+using Meridian.Core.Config;
 using Microsoft.Extensions.Options;
 
 namespace Meridian.Wpf.Features;

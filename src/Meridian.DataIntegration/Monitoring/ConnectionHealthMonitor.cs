@@ -3,8 +3,8 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Meridian.Core.Logging;
-using Serilog;
 using Meridian.Core.Monitoring;
+using Serilog;
 
 namespace Meridian.DataIntegration.Monitoring;
 

@@ -422,14 +422,14 @@ public sealed class LedgerAmountProvenanceServiceTests
             item.SourceSystem == "provider" &&
             item.EvidenceId == "alpaca-position-aapl");
         detail.Evidence.Should().Contain(item => item.EvidenceType == "ledger-account");
-            detail.SecurityMaster.Should().NotBeNull();
-            detail.SecurityMaster!.Symbol.Should().Be("AAPL");
-            detail.Reconciliation.OpenBreakCount.Should().Be(1);
-            detail.Approval.ReportStatus.Should().Be(GovernanceReportPackStatusDto.Approved);
-            detail.ReportUsage.ReportRoute.Should().Be($"/api/fund-structure/report-packs/{reportId:D}");
-            detail.StrategyRuns.Should().ContainSingle(item => item.RunId == "run-report-001");
-            detail.Warnings.Should().NotContain("No retained provider-event pointer is attached to this ledger amount.");
-        }
+        detail.SecurityMaster.Should().NotBeNull();
+        detail.SecurityMaster!.Symbol.Should().Be("AAPL");
+        detail.Reconciliation.OpenBreakCount.Should().Be(1);
+        detail.Approval.ReportStatus.Should().Be(GovernanceReportPackStatusDto.Approved);
+        detail.ReportUsage.ReportRoute.Should().Be($"/api/fund-structure/report-packs/{reportId:D}");
+        detail.StrategyRuns.Should().ContainSingle(item => item.RunId == "run-report-001");
+        detail.Warnings.Should().NotContain("No retained provider-event pointer is attached to this ledger amount.");
+    }
 
     private static async Task<WebApplication> CreateEndpointAppAsync(FundReportPackSnapshotDto snapshot)
     {

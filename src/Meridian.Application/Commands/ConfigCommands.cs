@@ -1,6 +1,6 @@
+using Meridian.Application.Services;
 using Meridian.Core.Config;
 using Meridian.Platform.Results;
-using Meridian.Application.Services;
 using Serilog;
 
 namespace Meridian.Application.Commands;

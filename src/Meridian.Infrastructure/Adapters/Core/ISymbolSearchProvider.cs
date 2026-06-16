@@ -1,5 +1,5 @@
-using Meridian.Core.Subscriptions.Models;
 using Meridian.Contracts.Domain;
+using Meridian.Core.Subscriptions.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 

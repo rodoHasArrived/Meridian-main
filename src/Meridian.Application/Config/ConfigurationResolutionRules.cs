@@ -1,5 +1,6 @@
 using Meridian.Application.Config.Credentials;
 using Meridian.Application.Services;
+using Meridian.Application.UI;
 using Meridian.Core.Config;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
@@ -170,7 +171,7 @@ internal static class ConfigurationResolutionRules
         SelfHealingStrictness strictness,
         ProviderCredentialResolver credentialResolver,
         Func<bool> isIBGatewayAvailable,
-        Func<DetectedProvider?>? getBestRealTimeProvider = null)
+        Func<AutoConfigurationService.DetectedProvider?>? getBestRealTimeProvider = null)
     {
         var applied = new List<SelfHealingFix>();
         var refused = new List<SelfHealingFix>();

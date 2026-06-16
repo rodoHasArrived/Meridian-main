@@ -1,7 +1,7 @@
 using FluentAssertions;
-using Meridian.PortfolioRecords.FundAccounts;
-using Meridian.PortfolioRecords.Accounts;
 using Meridian.Contracts.FundStructure;
+using Meridian.PortfolioRecords.Accounts;
+using Meridian.PortfolioRecords.FundAccounts;
 
 namespace Meridian.Tests.PortfolioRecords.FundAccounts;
 
@@ -356,8 +356,10 @@ public sealed class FundAccountServiceTests
         var action = () => svc.UpdateCustodianDetailsAsync(account.AccountId, new UpdateCustodianAccountDetailsRequest(
             new CustodianAccountDetailsDto("x", null, null, null, null, null, null, null), "tester"));
 
-        if (shouldFail) await Assert.ThrowsAsync<AccountStatusPolicyException>(action);
-        else Assert.NotNull(await action());
+        if (shouldFail)
+            await Assert.ThrowsAsync<AccountStatusPolicyException>(action);
+        else
+            Assert.NotNull(await action());
     }
 
     [Theory]
@@ -371,8 +373,10 @@ public sealed class FundAccountServiceTests
         var action = () => svc.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
             account.AccountId, DateOnly.FromDateTime(DateTime.Today), "USD", 100m, "Manual"));
 
-        if (shouldFail) await Assert.ThrowsAsync<AccountStatusPolicyException>(action);
-        else Assert.NotNull(await action());
+        if (shouldFail)
+            await Assert.ThrowsAsync<AccountStatusPolicyException>(action);
+        else
+            Assert.NotNull(await action());
     }
 
     [Fact]

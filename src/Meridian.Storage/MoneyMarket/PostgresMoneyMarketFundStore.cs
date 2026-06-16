@@ -55,17 +55,17 @@ public sealed class PostgresMoneyMarketFundStore : IMoneyMarketFundAuxStore
                 version                     = EXCLUDED.version;
             """;
 
-        cmd.Parameters.AddWithValue("id",       securityId);
-        cmd.Parameters.AddWithValue("name",     displayName);
+        cmd.Parameters.AddWithValue("id", securityId);
+        cmd.Parameters.AddWithValue("name", displayName);
         cmd.Parameters.AddWithValue("currency", currency);
-        cmd.Parameters.AddWithValue("family",   (object?)fundFamily ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("sweep",    isSweepEligible);
-        cmd.Parameters.AddWithValue("wam",      (object?)weightedAverageMaturityDays ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("fee",      hasLiquidityFee);
-        cmd.Parameters.AddWithValue("active",   isActive);
+        cmd.Parameters.AddWithValue("family", (object?)fundFamily ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("sweep", isSweepEligible);
+        cmd.Parameters.AddWithValue("wam", (object?)weightedAverageMaturityDays ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("fee", hasLiquidityFee);
+        cmd.Parameters.AddWithValue("active", isActive);
         cmd.Parameters.AddWithValue("eff_from", effectiveFrom);
-        cmd.Parameters.AddWithValue("eff_to",   (object?)effectiveTo ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("version",  version);
+        cmd.Parameters.AddWithValue("eff_to", (object?)effectiveTo ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("version", version);
 
         await cmd.ExecuteNonQueryAsync(ct);
     }
@@ -89,7 +89,8 @@ public sealed class PostgresMoneyMarketFundStore : IMoneyMarketFundAuxStore
         cmd.Parameters.AddWithValue("id", securityId);
 
         await using var reader = await cmd.ExecuteReaderAsync(ct);
-        if (!await reader.ReadAsync(ct)) return null;
+        if (!await reader.ReadAsync(ct))
+            return null;
         return ReadFundRow(reader);
     }
 
@@ -132,7 +133,7 @@ public sealed class PostgresMoneyMarketFundStore : IMoneyMarketFundAuxStore
                 liquidity_state = EXCLUDED.liquidity_state,
                 set_at = now();
             """;
-        cmd.Parameters.AddWithValue("id",    securityId);
+        cmd.Parameters.AddWithValue("id", securityId);
         cmd.Parameters.AddWithValue("state", (short)state);
         await cmd.ExecuteNonQueryAsync(ct);
     }
@@ -170,9 +171,9 @@ public sealed class PostgresMoneyMarketFundStore : IMoneyMarketFundAuxStore
                 checkpointed_at     = EXCLUDED.checkpointed_at,
                 rebuild_source      = EXCLUDED.rebuild_source;
             """;
-        cmd.Parameters.AddWithValue("id",  checkpoint.SecurityId);
+        cmd.Parameters.AddWithValue("id", checkpoint.SecurityId);
         cmd.Parameters.AddWithValue("ver", checkpoint.AggregateVersion);
-        cmd.Parameters.AddWithValue("at",  checkpoint.CheckpointedAt);
+        cmd.Parameters.AddWithValue("at", checkpoint.CheckpointedAt);
         cmd.Parameters.AddWithValue("src", checkpoint.RebuildSource);
         await cmd.ExecuteNonQueryAsync(ct);
     }
@@ -193,10 +194,10 @@ public sealed class PostgresMoneyMarketFundStore : IMoneyMarketFundAuxStore
         var results = new List<MmfRebuildCheckpointDto>();
         while (await reader.ReadAsync(ct))
             results.Add(new MmfRebuildCheckpointDto(
-                SecurityId:       reader.GetGuid(0),
+                SecurityId: reader.GetGuid(0),
                 AggregateVersion: reader.GetInt64(1),
-                CheckpointedAt:   reader.GetFieldValue<DateTimeOffset>(2),
-                RebuildSource:    reader.GetString(3)));
+                CheckpointedAt: reader.GetFieldValue<DateTimeOffset>(2),
+                RebuildSource: reader.GetString(3)));
         return results;
     }
 

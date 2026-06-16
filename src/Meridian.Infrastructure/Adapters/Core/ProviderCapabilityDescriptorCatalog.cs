@@ -1,15 +1,15 @@
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Adapters.Alpaca;
-using Meridian.Infrastructure.Adapters.Polygon;
-using Meridian.Infrastructure.Adapters.Synthetic;
-using Meridian.Infrastructure.Adapters.YahooFinance;
-using Meridian.Infrastructure.Adapters.Finnhub;
-using Meridian.Infrastructure.Adapters.Tiingo;
-using Meridian.Infrastructure.Adapters.Stooq;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
+using Meridian.Infrastructure.Adapters.Finnhub;
 using Meridian.Infrastructure.Adapters.Fred;
-using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
+using Meridian.Infrastructure.Adapters.NasdaqDataLink;
+using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.Infrastructure.Adapters.Stooq;
+using Meridian.Infrastructure.Adapters.Synthetic;
+using Meridian.Infrastructure.Adapters.Tiingo;
+using Meridian.Infrastructure.Adapters.YahooFinance;
 
 namespace Meridian.Infrastructure.Adapters.Core;
 
@@ -53,11 +53,17 @@ public sealed record ProviderCapabilityDescriptor(
 
     public IEnumerable<Type> Implementations()
     {
-        if (Streaming is not null) yield return Streaming;
-        if (Historical is not null) yield return Historical;
-        if (Search is not null) yield return Search;
-        if (CorporateActions is not null) yield return CorporateActions;
-        if (Options is not null) yield return Options;
-        if (Brokerage is not null) yield return Brokerage;
+        if (Streaming is not null)
+            yield return Streaming;
+        if (Historical is not null)
+            yield return Historical;
+        if (Search is not null)
+            yield return Search;
+        if (CorporateActions is not null)
+            yield return CorporateActions;
+        if (Options is not null)
+            yield return Options;
+        if (Brokerage is not null)
+            yield return Brokerage;
     }
 }

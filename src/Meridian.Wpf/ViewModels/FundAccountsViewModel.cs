@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Input;
-using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.ProviderSdk;
 using Meridian.Ui.Services;
 using Meridian.Ui.Shared.Services;

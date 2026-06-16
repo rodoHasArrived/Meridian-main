@@ -1,7 +1,7 @@
 using System.Collections.Frozen;
 using System.Text.Json;
-using Meridian.Core.Logging;
 using Meridian.Contracts.Domain.Enums;
+using Meridian.Core.Logging;
 using Meridian.FSharp.Canonicalization;
 using Serilog;
 

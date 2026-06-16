@@ -329,10 +329,14 @@ public sealed class StatementReconciliationService
             rawSnapshot["tradeDate"] = tradeDate.ToString("O");
             rawSnapshot["rowNumber"] = rowNumber.ToString(CultureInfo.InvariantCulture);
             rawSnapshot["rawLine"] = line;
-            if (!string.IsNullOrWhiteSpace(settlementDate)) rawSnapshot["settlementDate"] = settlementDate;
-            if (!string.IsNullOrWhiteSpace(currency)) rawSnapshot["currency"] = currency;
-            if (!string.IsNullOrWhiteSpace(feesCommission)) rawSnapshot["feesCommission"] = feesCommission;
-            if (!string.IsNullOrWhiteSpace(externalTransactionId)) rawSnapshot["externalTransactionId"] = externalTransactionId;
+            if (!string.IsNullOrWhiteSpace(settlementDate))
+                rawSnapshot["settlementDate"] = settlementDate;
+            if (!string.IsNullOrWhiteSpace(currency))
+                rawSnapshot["currency"] = currency;
+            if (!string.IsNullOrWhiteSpace(feesCommission))
+                rawSnapshot["feesCommission"] = feesCommission;
+            if (!string.IsNullOrWhiteSpace(externalTransactionId))
+                rawSnapshot["externalTransactionId"] = externalTransactionId;
 
             rows.Add(new NormalizedStatementRow(
                 $"{importId}:{rowNumber}",

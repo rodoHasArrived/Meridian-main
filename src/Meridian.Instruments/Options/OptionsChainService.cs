@@ -1,13 +1,13 @@
-using Meridian.Core.Config;
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Config;
 using Meridian.Domain.Collectors;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.ProviderSdk;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics;
-using System.Diagnostics.Metrics;
 
 namespace Meridian.Instruments.Options;
 

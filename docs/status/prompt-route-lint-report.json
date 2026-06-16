@@ -1,37 +1,34 @@
 {
   "valid": true,
   "rulesPath": "docs\\ai\\codex\\prompt-route-rules.json",
-  "generatedAt": "2026-06-01T06:11:23.616302+00:00",
+  "generatedAt": "2026-06-16T18:19:16.399864+00:00",
   "match": {
-    "lane": "provider",
-    "skill": "meridian-provider-builder",
-    "mode": "Deep Review",
-    "modelRouteId": "governance-research",
-    "rationale": "Provider changes need adapter-specific validation, telemetry capture, and readiness evidence.",
+    "lane": "docs",
+    "skill": "meridian-docs",
+    "mode": "Lightweight",
+    "modelRouteId": "analysis-economy",
+    "rationale": "Docs updates should stay in canonical audience paths with minimal proof.",
     "validationFloor": [
-      "dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter \"FullyQualifiedName~Provider\""
+      "git diff --check",
+      "python build/scripts/docs/check-ai-inventory.py --summary",
+      "python build/scripts/docs/check-ai-handoff.py --strict"
     ],
     "validationScripts": [
+      "check-ai-handoff-strict",
       "prompt-route-linter",
-      "handoff-packet-generator",
-      "check-handoff-packet-schema"
+      "handoff-packet-generator"
     ],
     "requiredTelemetry": [
       "route_id",
-      "selected_model",
-      "input_tokens",
-      "output_tokens",
-      "estimated_cost_usd",
-      "latency_ms",
       "handoff_path"
     ],
     "escalationTriggers": [
-      "provider credentials or failover behavior changes",
-      "provider validation fails",
-      "policy exception requires wider context"
+      "docs change touches shared AI policy",
+      "docs change spans Codex and shared host guidance",
+      "required validation script fails"
     ],
-    "matchedRule": "provider-integration",
-    "score": 5.5,
+    "matchedRule": "docs-maintenance",
+    "score": 6.6,
     "confidence": 1.0,
     "fallbackApplied": false
   }

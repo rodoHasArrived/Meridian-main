@@ -1,8 +1,8 @@
 using System.Text.Json;
 using Meridian.Application.Monitoring;
-using Meridian.DataIntegration.Monitoring;
 using Meridian.Application.Services;
 using Meridian.Contracts.Api;
+using Meridian.DataIntegration.Monitoring;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

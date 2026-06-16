@@ -1,8 +1,8 @@
 using FluentAssertions;
 using Meridian.Application.Commands;
-using Meridian.Platform.Results;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Platform.Results;
 using Serilog.Core;
 using Xunit;
 

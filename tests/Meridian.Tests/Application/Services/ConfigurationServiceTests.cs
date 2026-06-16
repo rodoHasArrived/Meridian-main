@@ -1,8 +1,8 @@
 using FluentAssertions;
 using Meridian.Application.Config;
-using Meridian.Core.Config;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
+using Meridian.Core.Config;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Xunit;
 

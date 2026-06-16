@@ -168,7 +168,8 @@ public sealed class CashSyncOrchestrationService : ICashSyncOrchestrationService
 
         void Add(DateOnly date, string accountId, string currency, decimal inflow, decimal outflow)
         {
-            if (date < startDate || date > horizonEnd) return;
+            if (date < startDate || date > horizonEnd)
+                return;
             var key = Key(date, accountId, currency);
             if (!points.TryGetValue(key, out var existing))
             {
@@ -186,14 +187,18 @@ public sealed class CashSyncOrchestrationService : ICashSyncOrchestrationService
 
         foreach (var payment in payments)
         {
-            if (payment.Amount >= 0m) Add(payment.ValueDate, payment.AccountId, payment.Currency, payment.Amount, 0m);
-            else Add(payment.ValueDate, payment.AccountId, payment.Currency, 0m, Math.Abs(payment.Amount));
+            if (payment.Amount >= 0m)
+                Add(payment.ValueDate, payment.AccountId, payment.Currency, payment.Amount, 0m);
+            else
+                Add(payment.ValueDate, payment.AccountId, payment.Currency, 0m, Math.Abs(payment.Amount));
         }
 
         foreach (var settlement in settlements)
         {
-            if (settlement.GrossAmount >= 0m) Add(settlement.SettlementDate, settlement.AccountId, settlement.Currency, settlement.GrossAmount, 0m);
-            else Add(settlement.SettlementDate, settlement.AccountId, settlement.Currency, 0m, Math.Abs(settlement.GrossAmount));
+            if (settlement.GrossAmount >= 0m)
+                Add(settlement.SettlementDate, settlement.AccountId, settlement.Currency, settlement.GrossAmount, 0m);
+            else
+                Add(settlement.SettlementDate, settlement.AccountId, settlement.Currency, 0m, Math.Abs(settlement.GrossAmount));
         }
 
         foreach (var coupon in coupons)

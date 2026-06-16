@@ -1,8 +1,8 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Meridian.Core.Exceptions;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Exceptions;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;

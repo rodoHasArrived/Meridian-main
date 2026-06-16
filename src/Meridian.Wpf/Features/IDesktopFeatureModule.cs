@@ -1,6 +1,6 @@
-using Microsoft.Extensions.DependencyInjection;
 using Meridian.Core.Config;
 using Meridian.Wpf.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.Features;
 

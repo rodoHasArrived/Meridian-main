@@ -2,12 +2,12 @@ using FluentAssertions;
 using Meridian.Application.Pipeline;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Pipeline;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
 using Xunit;
-using Meridian.Core.Pipeline;
 
 namespace Meridian.Tests.Pipeline;
 

@@ -1,8 +1,8 @@
 using FluentAssertions;
-using Meridian.Core.Config;
-using Meridian.Contracts.Coordination;
 using Meridian.Application.Subscriptions;
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.Coordination;
+using Meridian.Core.Config;
 using Meridian.Domain.Collectors;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;

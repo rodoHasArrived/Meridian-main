@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.Input;
 using System.Windows.Media;
+using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Coordination;
 using Meridian.Core.Logging;
 using Meridian.Wpf.Models;

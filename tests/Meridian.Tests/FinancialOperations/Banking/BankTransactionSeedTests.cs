@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Meridian.FinancialOperations.Banking;
 using Meridian.Contracts.Banking;
+using Meridian.FinancialOperations.Banking;
 
 namespace Meridian.Tests.FinancialOperations.Banking;
 

@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Meridian.Instruments.FxSpot;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FxSpot;
+using Meridian.Instruments.FxSpot;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

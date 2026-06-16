@@ -1,7 +1,7 @@
 using Meridian.Wpf.Models;
+using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Workstation.Commands;
 using Meridian.Wpf.Workstation.State;
-using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Workstation.ViewModels.Base;
 

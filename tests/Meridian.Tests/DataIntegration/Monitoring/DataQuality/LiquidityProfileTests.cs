@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Contracts.Domain.Enums;
+using Meridian.DataIntegration.Monitoring.DataQuality;
 using Xunit;
 
 namespace Meridian.Tests.DataIntegration.Monitoring.DataQuality;

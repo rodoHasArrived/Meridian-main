@@ -1,6 +1,6 @@
-using Meridian.Core.Config;
 using Meridian.Application.UI;
 using Meridian.Application.Wizard.Core;
+using Meridian.Core.Config;
 
 namespace Meridian.Application.Wizard.Steps;
 

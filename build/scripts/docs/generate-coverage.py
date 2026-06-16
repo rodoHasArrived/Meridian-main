@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from dataclasses import dataclass, field
@@ -144,10 +145,15 @@ def _should_skip(path: Path) -> bool:
 def _collect_files(root: Path, extensions: Tuple[str, ...]) -> List[Path]:
     """Recursively collect files matching *extensions*, honouring exclusions."""
     results: List[Path] = []
-    for ext in extensions:
-        for p in root.rglob(f"*{ext}"):
-            if not _should_skip(p):
-                results.append(p)
+    for current_root, dir_names, file_names in os.walk(root):
+        dir_names[:] = [
+            name for name in dir_names
+            if name not in EXCLUDE_DIRS and not _should_skip(Path(current_root) / name)
+        ]
+        for file_name in file_names:
+            path = Path(current_root) / file_name
+            if path.suffix in extensions and not _should_skip(path):
+                results.append(path)
     return results
 
 

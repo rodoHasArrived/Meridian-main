@@ -1,7 +1,7 @@
 using System.Text.Json;
+using Meridian.Contracts.Banking;
 using Meridian.FinancialOperations.Banking;
 using Meridian.Identity.Auth;
-using Meridian.Contracts.Banking;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,8 +1,8 @@
 using System.Text.Json;
+using Meridian.Contracts.Backfill;
 using Meridian.Core.Config;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Storage.Archival;
-using Meridian.Contracts.Backfill;
 
 namespace Meridian.Storage.Backfill;
 

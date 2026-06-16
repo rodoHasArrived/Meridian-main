@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
-using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Ui.Shared.Contracts;
 using Meridian.Ui.Shared.Services;
 

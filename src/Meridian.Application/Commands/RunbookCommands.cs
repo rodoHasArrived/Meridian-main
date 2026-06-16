@@ -1,5 +1,5 @@
-using Meridian.Workflow.Runbooks;
 using Meridian.Platform.Results;
+using Meridian.Workflow.Runbooks;
 
 namespace Meridian.Application.Commands;
 
@@ -66,7 +66,8 @@ internal sealed class RunbookCommands(IRunbookStore store, IRunbookExecutor exec
 
             var dryRun = CliArguments.HasFlag(args, "--dry-run");
             var result = await executor.ExecuteAsync(runbook, dryRun, ct).ConfigureAwait(false);
-            foreach (var message in result.Messages) Console.WriteLine(message);
+            foreach (var message in result.Messages)
+                Console.WriteLine(message);
             return result.Success ? CliResult.Ok() : CliResult.Fail(ErrorCode.InternalError);
         }
 

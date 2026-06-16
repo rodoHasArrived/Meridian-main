@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Meridian.Storage.Archival;
 using FsCheck.Xunit;
+using Meridian.Storage.Archival;
 using Xunit;
 
 namespace Meridian.Tests.Storage;

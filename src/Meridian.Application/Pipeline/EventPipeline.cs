@@ -4,7 +4,10 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
 using Meridian.Application.Monitoring;
+using Meridian.Contracts.Monitoring;
+using Meridian.Contracts.Pipeline;
 using Meridian.Core.Performance;
+using Meridian.Core.Pipeline;
 using Meridian.Core.Services;
 using Meridian.DataIntegration.Etl;
 using Meridian.Domain.Events;
@@ -14,9 +17,6 @@ using Meridian.Storage.Archival;
 using Meridian.Storage.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Meridian.Contracts.Monitoring;
-using Meridian.Contracts.Pipeline;
-using Meridian.Core.Pipeline;
 
 namespace Meridian.Application.Pipeline;
 

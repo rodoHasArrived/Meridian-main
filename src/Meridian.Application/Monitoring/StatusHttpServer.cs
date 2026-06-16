@@ -3,19 +3,19 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
-using Meridian.Core.Logging;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
 using Meridian.Contracts.Api;
-using Meridian.DataIntegration.Monitoring;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.Monitoring;
+using Meridian.Contracts.Pipeline;
+using Meridian.Core.Logging;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Models;
 using Meridian.Platform.Diagnostics;
 using Meridian.Platform.Monitoring;
 using Serilog;
-using Meridian.Contracts.Monitoring;
-using Meridian.Contracts.Pipeline;
 
 namespace Meridian.Application.Monitoring;
 

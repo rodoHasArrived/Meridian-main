@@ -6,8 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services;
-using WpfConfigService = Meridian.Wpf.Services.ConfigService;
 using UiStorageOptimizationAdvisorService = Meridian.Ui.Services.StorageOptimizationAdvisorService;
+using WpfConfigService = Meridian.Wpf.Services.ConfigService;
 
 namespace Meridian.Wpf.ViewModels;
 

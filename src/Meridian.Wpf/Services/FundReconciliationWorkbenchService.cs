@@ -1,6 +1,6 @@
-using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Services;
@@ -345,25 +345,25 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
              EvidenceCount: item.EvidenceCount,
              LastActivityText: item.LastActivityAt.HasValue ? FormatTimestamp(item.LastActivityAt.Value) : FormatTimestamp(item.LastUpdatedAt),
              SignOffChecklist: BuildSignOffChecklist(item));
-     }
+    }
 
-     private static string JoinOrDefault(IReadOnlyList<string>? values, string fallback)
-     {
-         var nonBlankValues = values?
-             .Where(value => !string.IsNullOrWhiteSpace(value))
-             .ToArray();
-         if (nonBlankValues is null || nonBlankValues.Length == 0)
-         {
-             return fallback;
-         }
+    private static string JoinOrDefault(IReadOnlyList<string>? values, string fallback)
+    {
+        var nonBlankValues = values?
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .ToArray();
+        if (nonBlankValues is null || nonBlankValues.Length == 0)
+        {
+            return fallback;
+        }
 
-         return string.Join(", ", nonBlankValues);
-     }
+        return string.Join(", ", nonBlankValues);
+    }
 
-     private static string BuildSlaBadge(ReconciliationBreakQueueItem item)
-         => item.SlaDueAt.HasValue
-            ? $"{Humanize(item.SlaState)} · due {FormatTimestamp(item.SlaDueAt.Value)}"
-            : Humanize(item.SlaState);
+    private static string BuildSlaBadge(ReconciliationBreakQueueItem item)
+        => item.SlaDueAt.HasValue
+           ? $"{Humanize(item.SlaState)} · due {FormatTimestamp(item.SlaDueAt.Value)}"
+           : Humanize(item.SlaState);
 
     private static string BuildSignOffChecklist(ReconciliationBreakQueueItem item)
     {
@@ -371,9 +371,9 @@ public sealed class FundReconciliationWorkbenchService : IFundReconciliationWork
         checks.Add(string.IsNullOrWhiteSpace(item.RootCauseCode) ? "root cause missing" : "root cause captured");
         checks.Add(string.IsNullOrWhiteSpace(item.ResolutionCode) ? "resolution code missing" : "resolution coded");
         checks.Add(item.EvidenceCount > 0 ? $"{item.EvidenceCount} evidence link(s)" : "evidence missing");
-         checks.Add(item.SignedOffAt.HasValue ? "signed off" : "dual-control sign-off pending");
-         return string.Join("; ", checks);
-     }
+        checks.Add(item.SignedOffAt.HasValue ? "signed off" : "dual-control sign-off pending");
+        return string.Join("; ", checks);
+    }
 
     private static FundReconciliationCalibrationProfileRow MapCalibrationProfileRow(
         ReconciliationCalibrationProfileSummaryDto profile)

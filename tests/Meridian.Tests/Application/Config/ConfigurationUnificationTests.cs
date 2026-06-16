@@ -1,8 +1,8 @@
 using FluentAssertions;
 using Meridian.Application.Config;
-using Meridian.Core.Config;
 using Meridian.Application.Services;
 using Meridian.Contracts.Domain.Enums;
+using Meridian.Core.Config;
 using Meridian.Platform.Runtime;
 using Xunit;
 

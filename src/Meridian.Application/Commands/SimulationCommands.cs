@@ -1,5 +1,5 @@
-using Meridian.Platform.Results;
 using Meridian.Application.Services;
+using Meridian.Platform.Results;
 
 namespace Meridian.Application.Commands;
 

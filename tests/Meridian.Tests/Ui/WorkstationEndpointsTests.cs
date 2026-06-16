@@ -1,37 +1,37 @@
+using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Application.Config.Credentials;
-using Meridian.DataIntegration.Credentials;
 using Meridian.Application.Monitoring;
-using Meridian.DataIntegration.Monitoring;
-using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Api;
-using Meridian.Identity.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.DataIntegration.Credentials;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.Identity.Auth;
 using Meridian.Ledger;
 using Meridian.ProviderSdk;
 using Meridian.Reporting;
+using Meridian.Storage.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
-using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -42,9 +42,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using IReconciliationApiService = Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService;
+using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 using ReconciliationCaseSummaryDto = Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationCaseSummaryDto;
 using ReconciliationQueueAccountStatusDto = Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto;
-using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 using StatementImportSummaryDto = Meridian.Ui.Shared.Contracts.Reconciliation.StatementImportSummaryDto;
 
 namespace Meridian.Tests.Ui;
@@ -1518,12 +1518,12 @@ public sealed partial class WorkstationEndpointsTests
             datasetReference: "dataset/us/equities",
             feedReference: "synthetic:equities",
             fundProfileId: fundProfileId).Complete(BuildBacktestResultWithSymbol("AAPL")) with
-            {
-                RunId = "run-wave2-backtest",
-                AuditReference = "audit-run-wave2-backtest",
-                FundProfileId = fundProfileId,
-                FundDisplayName = "Wave 2 Readiness Fund"
-            });
+        {
+            RunId = "run-wave2-backtest",
+            AuditReference = "audit-run-wave2-backtest",
+            FundProfileId = fundProfileId,
+            FundDisplayName = "Wave 2 Readiness Fund"
+        });
 
         var persistence = app.Services.GetRequiredService<PaperSessionPersistenceService>();
         var session = await persistence.CreateSessionAsync(new CreatePaperSessionDto(
@@ -1773,10 +1773,10 @@ public sealed partial class WorkstationEndpointsTests
             startedAt: new DateTimeOffset(2026, 4, 25, 14, 0, 0, TimeSpan.Zero),
             datasetReference: "dataset/us/equities",
             feedReference: "synthetic:equities").Complete(BuildBacktestResultWithSymbol("AAPL")) with
-            {
-                RunId = "run-api-backtest",
-                AuditReference = "audit-run-api-backtest"
-            });
+        {
+            RunId = "run-api-backtest",
+            AuditReference = "audit-run-api-backtest"
+        });
 
         var client = app.GetTestClient();
 
@@ -5641,9 +5641,9 @@ public sealed partial class WorkstationEndpointsTests
             strategyName: "Lineage Endpoint Strategy",
             runType: RunType.Paper,
             startedAt: new DateTimeOffset(2026, 3, 21, 10, 0, 0, TimeSpan.Zero)) with
-            {
-                ParentRunId = "lineage-endpoint-backtest"
-            });
+        {
+            ParentRunId = "lineage-endpoint-backtest"
+        });
 
         var client = app.GetTestClient();
         using var timeline = await ReadJsonAsync(client, "/api/workstation/runs/lineage-timeline?mode=paper,backtest&limit=10");

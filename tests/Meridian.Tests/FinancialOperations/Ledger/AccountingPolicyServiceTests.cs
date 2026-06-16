@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Meridian.FinancialOperations.Ledger;
 using Meridian.Contracts.Ledger;
+using Meridian.FinancialOperations.Ledger;
 using Meridian.Ledger;
 
 namespace Meridian.Tests.FinancialOperations.Ledger;

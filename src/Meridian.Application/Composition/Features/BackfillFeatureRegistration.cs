@@ -1,10 +1,10 @@
 using Meridian.Application.Backfill;
-using Meridian.Core.Config;
-using Meridian.Contracts.Coordination;
 using Meridian.Application.Pipeline;
 using Meridian.Application.Scheduling;
 using Meridian.Application.Subscriptions.Services;
 using Meridian.Application.UI;
+using Meridian.Contracts.Coordination;
+using Meridian.Core.Config;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Infrastructure.Adapters.Core;
 using Microsoft.Extensions.DependencyInjection;

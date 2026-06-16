@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using Meridian.Core.Subscriptions.Models;
 using Meridian.Contracts.Monitoring;
+using Meridian.Core.Subscriptions.Models;
 
 namespace Meridian.Platform.Tracing;
 

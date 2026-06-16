@@ -1,9 +1,9 @@
 using System.Text.Json;
-using Meridian.Instruments.Options;
 using Meridian.Contracts.Api;
-using Meridian.Identity.Auth;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Options;
+using Meridian.Identity.Auth;
+using Meridian.Instruments.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

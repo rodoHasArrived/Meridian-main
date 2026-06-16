@@ -1,8 +1,8 @@
 using Meridian.Application.Config.Credentials;
-using Meridian.Core.Config;
-using Meridian.Core.Logging;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
+using Meridian.Core.Config;
+using Meridian.Core.Logging;
 using Serilog;
 
 namespace Meridian.Application.Config;

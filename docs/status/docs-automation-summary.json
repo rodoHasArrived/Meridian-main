@@ -1,8 +1,351 @@
 {
+  "dry_run": false,
+  "profile": "core",
+  "selected_scripts": [
+    "scan-todos",
+    "validate-docs-structure",
+    "generate-structure-docs",
+    "generate-health-dashboard",
+    "validate-examples",
+    "check-ai-inventory",
+    "check-ai-handoff-strict",
+    "check-ai-contract-drift",
+    "prompt-route-linter",
+    "handoff-packet-generator",
+    "check-handoff-packet-schema",
+    "check-ai-routing-parity",
+    "check-mode-escalation",
+    "generate-coverage",
+    "generate-pilot-readiness-dashboard",
+    "generate-paper-replay-reliability-dashboard",
+    "generate-evidence-continuity-dashboard",
+    "generate-governance-readiness-dashboard",
+    "generate-api-contract-coverage-dashboard",
+    "generate-workflow-manifest"
+  ],
   "results": [
-    {"name":"prompt-route-linter","status":"success"},
-    {"name":"handoff-packet-generator","status":"success"},
-    {"name":"check-handoff-packet-schema","status":"success"},
-    {"name":"check-ai-handoff-strict","status":"success"}
+    {
+      "name": "scan-todos",
+      "command": [
+        "C:\\Python311\\python.exe",
+        "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\scan-todos.py",
+        "--output",
+        "docs/status/TODO.md",
+        "--json-output",
+        "docs/status/todo-scan-results.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 7.912,
+      "status": "success",
+      "output_file": "docs/status/TODO.md",
+      "error": null
+    },
+    {
+      "name": "validate-docs-structure",
+      "command": [
+        "C:\\Python311\\python.exe",
+        "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\validate-docs-structure.py",
+        "--summary"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.283,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    },
+    {
+      "name": "generate-structure-docs",
+      "command": [
+        "C:\\Python311\\python.exe",
+        "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\generate-structure-docs.py",
+        "--output",
+        "docs/generated/repository-structure.md"
+      ],
+      "return_code": 0,
+      "duration_seconds": 1.447,
+      "status": "success",
+      "output_file": "docs/generated/repository-structure.md",
+      "error": null
+    },
+    {
+      "name": "generate-health-dashboard",
+      "command": [
+        "C:\\Python311\\python.exe",
+        "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\generate-health-dashboard.py",
+        "--output",
+        "docs/status/doc-health-dashboard.md",
+        "--json-output",
+        "docs/status/doc-health-dashboard.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 2.002,
+      "status": "success",
+      "output_file": "docs/status/doc-health-dashboard.md",
+      "error": null
+    },
+    {
+      "name": "validate-examples",
+      "command": [
+        "C:\\Python311\\python.exe",
+        "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\validate-examples.py",
+        "--output",
+        "docs/status/example-validation.md"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.568,
+      "status": "success",
+      "output_file": "docs/status/example-validation.md",
+      "error": null
+    },
+    {
+      "name": "check-ai-inventory",
+      "command": [
+        "C:\\Python311\\python.exe",
+        "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\check-ai-inventory.py",
+        "--output",
+        "docs/status/ai-inventory-report.md",
+        "--json-output",
+        "docs/status/ai-inventory-report.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.659,
+      "status": "success",
+      "output_file": "docs/status/ai-inventory-report.md",
+      "error": null
+    },
+    {
+      "name": "check-ai-handoff-strict",
+      "command": [
+        "C:\\Python311\\python.exe",
+        "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\check-ai-handoff.py",
+        "--strict",
+        "--output",
+        "docs/status/ai-handoff-checklist-report.md",
+        "--json-output",
+        "docs/status/ai-handoff-checklist-report.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.183,
+      "status": "success",
+      "output_file": "docs/status/ai-handoff-checklist-report.md",
+      "error": null
+    },
+    {
+      "name": "check-ai-contract-drift",
+      "command": [
+        "C:\\Python311\\python.exe",
+        "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\check-ai-contract-drift.py",
+        "--canonical",
+        "docs/ai/contract-policy.json",
+        "--mirror",
+        "docs/ai/copilot/contract-policy.mirror.json",
+        "--mirror",
+        "docs/ai/claude/contract-policy.mirror.json",
+        "--routing-rules",
+        "docs/ai/codex/prompt-route-rules.json",
+        "--routing-host-doc",
+        "docs/ai/codex/README.md",
+        "--routing-host-doc",
+        "docs/ai/assistant-workflow-contract.md"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.206,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    },
+    {
+      "name": "prompt-route-linter",
+      "command": [
+        "C:\\Python311\\python.exe",
+        "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\prompt-route-linter.py",
+        "--summary",
+        "--prompt",
+        "documentation readme guide index",
+        "--json-output",
+        "docs/status/prompt-route-lint-report.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.172,
+      "status": "success",
+      "output_file": "docs/status/prompt-route-lint-report.json",
+      "error": null
+    },
+    {
+      "name": "handoff-packet-generator",
+      "command": [
+        "C:\\Python311\\python.exe",
+        "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\handoff-packet-generator.py",
+        "--route-json",
+        "docs/status/prompt-route-lint-report.json",
+        "--scope",
+        "Docs automation generated handoff packet",
+        "--next-lane",
+        "implementation-assurance",
+        "--allow-incomplete",
+        "--validation",
+        "python build/scripts/docs/prompt-route-linter.py --summary::pass",
+        "--output",
+        "docs/status/ai-handoff-packet.md",
+        "--json-output",
+        "docs/status/ai-handoff-packet.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 1.509,
+      "status": "success",
+      "output_file": "docs/status/ai-handoff-packet.json",
+      "error": null
+    },
+    {
+      "name": "check-handoff-packet-schema",
+      "command": [
+        "C:\\Python311\\python.exe",
+        "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\check-handoff-packet-schema.py",
+        "--packet-json",
+        "docs/status/ai-handoff-packet.json",
+        "--summary"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.161,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    },
+    {
+      "name": "check-ai-routing-parity",
+      "command": [
+        "C:\\Python311\\python.exe",
+        "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\check-ai-routing-parity.py",
+        "--summary"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.123,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    },
+    {
+      "name": "check-mode-escalation",
+      "command": [
+        "C:\\Python311\\python.exe",
+        "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\check-mode-escalation.py",
+        "--route-json",
+        "docs/status/prompt-route-lint-report.json",
+        "--summary",
+        "--summary-json",
+        "D:\\Meridian-main\\.tmp\\pr1926\\.tmp\\docs-automation-summary.current.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.226,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    },
+    {
+      "name": "generate-coverage",
+      "command": [
+        "C:\\Python311\\python.exe",
+        "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\generate-coverage.py",
+        "--output",
+        "docs/status/coverage-report.md"
+      ],
+      "return_code": 0,
+      "duration_seconds": 13.341,
+      "status": "success",
+      "output_file": "docs/status/coverage-report.md",
+      "error": null
+    },
+    {
+      "name": "generate-pilot-readiness-dashboard",
+      "command": [
+        "C:\\Python311\\python.exe",
+        "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\generate-pilot-readiness-dashboard.py",
+        "--output",
+        "docs/status/pilot-readiness-dashboard.md",
+        "--json-output",
+        "docs/status/pilot-readiness-dashboard.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.196,
+      "status": "success",
+      "output_file": "docs/status/pilot-readiness-dashboard.md",
+      "error": null
+    },
+    {
+      "name": "generate-paper-replay-reliability-dashboard",
+      "command": [
+        "C:\\Python311\\python.exe",
+        "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\generate-paper-replay-reliability-dashboard.py",
+        "--output",
+        "docs/status/paper-replay-reliability-dashboard.md",
+        "--json-output",
+        "docs/status/paper-replay-reliability-dashboard.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.171,
+      "status": "success",
+      "output_file": "docs/status/paper-replay-reliability-dashboard.md",
+      "error": null
+    },
+    {
+      "name": "generate-evidence-continuity-dashboard",
+      "command": [
+        "C:\\Python311\\python.exe",
+        "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\generate-evidence-continuity-dashboard.py",
+        "--output",
+        "docs/status/evidence-continuity-dashboard.md",
+        "--json-output",
+        "docs/status/evidence-continuity-dashboard.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.141,
+      "status": "success",
+      "output_file": "docs/status/evidence-continuity-dashboard.md",
+      "error": null
+    },
+    {
+      "name": "generate-governance-readiness-dashboard",
+      "command": [
+        "C:\\Python311\\python.exe",
+        "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\generate-governance-readiness-dashboard.py",
+        "--output",
+        "docs/status/governance-readiness-dashboard.md",
+        "--json-output",
+        "docs/status/governance-readiness-dashboard.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.165,
+      "status": "success",
+      "output_file": "docs/status/governance-readiness-dashboard.md",
+      "error": null
+    },
+    {
+      "name": "generate-api-contract-coverage-dashboard",
+      "command": [
+        "C:\\Python311\\python.exe",
+        "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\generate-api-contract-coverage-dashboard.py",
+        "--output",
+        "docs/status/api-contract-coverage-dashboard.md",
+        "--json-output",
+        "docs/status/api-contract-coverage-dashboard.json"
+      ],
+      "return_code": 0,
+      "duration_seconds": 3.998,
+      "status": "success",
+      "output_file": "docs/status/api-contract-coverage-dashboard.md",
+      "error": null
+    },
+    {
+      "name": "generate-workflow-manifest",
+      "command": [
+        "C:\\Python311\\python.exe",
+        "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\generate-workflow-manifest.py"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.183,
+      "status": "success",
+      "output_file": "docs/status/workflow-validation-summary.json",
+      "error": null
+    }
   ]
 }

@@ -1,8 +1,8 @@
 using FluentAssertions;
 using Meridian.Application.Commands;
+using Meridian.Application.Services;
 using Meridian.Core.Config;
 using Meridian.Platform.Results;
-using Meridian.Application.Services;
 using Serilog;
 using Xunit;
 

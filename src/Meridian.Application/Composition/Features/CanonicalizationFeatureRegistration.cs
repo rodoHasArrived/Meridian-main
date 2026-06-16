@@ -1,12 +1,12 @@
-using Meridian.Core.Config;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
+using Meridian.Contracts.Monitoring;
+using Meridian.Core.Config;
 using Meridian.DataIntegration.Canonicalization;
 using Meridian.Domain.Events;
 using Meridian.Storage;
 using Microsoft.Extensions.DependencyInjection;
-using Meridian.Contracts.Monitoring;
 
 namespace Meridian.Application.Composition.Features;
 

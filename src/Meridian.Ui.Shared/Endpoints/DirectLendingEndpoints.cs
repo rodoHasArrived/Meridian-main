@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.DirectLending;
-using Meridian.Identity.Auth;
 using Meridian.Contracts.DirectLending;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;

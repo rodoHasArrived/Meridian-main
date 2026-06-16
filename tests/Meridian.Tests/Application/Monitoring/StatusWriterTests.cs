@@ -1,7 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Core.Config;
 using Meridian.Application.Monitoring;
+using Meridian.Core.Config;
 
 namespace Meridian.Tests.Application.Monitoring;
 

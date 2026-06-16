@@ -1,6 +1,6 @@
-using Meridian.Core.Config;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.RuleEvaluation;
+using Meridian.Core.Config;
 
 namespace Meridian.Application.ProviderRouting;
 

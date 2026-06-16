@@ -1,7 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Instruments.FixedIncome;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Instruments.FixedIncome;
 using Meridian.Storage.SecurityMaster;
 using NSubstitute;
 

@@ -1,8 +1,8 @@
-using FluentAssertions;
-using Meridian.Infrastructure.Resilience;
 using System.Net;
 using System.Net.WebSockets;
 using System.Security.Authentication;
+using FluentAssertions;
+using Meridian.Infrastructure.Resilience;
 using Xunit;
 
 namespace Meridian.Tests.Infrastructure.Resilience;

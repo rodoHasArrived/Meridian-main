@@ -1,20 +1,20 @@
-using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
-using Meridian.DataIntegration.Credentials;
-using Meridian.Core.Logging;
 using Meridian.Application.Monitoring;
 using Meridian.Application.UI;
+using Meridian.Core.Config;
+using Meridian.Core.Logging;
+using Meridian.Core.Monitoring;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
+using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Adapters.Synthetic;
-using Meridian.Infrastructure;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Microsoft.Extensions.DependencyInjection;
-using Meridian.Core.Monitoring;
 
 namespace Meridian.Application.Composition.Features;
 

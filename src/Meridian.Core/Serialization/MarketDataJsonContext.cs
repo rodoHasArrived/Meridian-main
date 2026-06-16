@@ -1,10 +1,10 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
-using Meridian.Core.Config;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Config;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using ContractEvents = Meridian.Contracts.Domain.Events;

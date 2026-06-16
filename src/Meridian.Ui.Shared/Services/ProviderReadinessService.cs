@@ -1,11 +1,11 @@
-using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
-using Meridian.DataIntegration.Credentials;
 using Meridian.Application.Monitoring;
-using Meridian.DataIntegration.Monitoring;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Plaid;
+using Meridian.Core.Config;
+using Meridian.DataIntegration.Credentials;
+using Meridian.DataIntegration.Monitoring;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Services;

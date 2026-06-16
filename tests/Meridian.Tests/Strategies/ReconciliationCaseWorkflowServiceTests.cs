@@ -32,5 +32,5 @@ public sealed class ReconciliationCaseWorkflowServiceTests
     }
 
     private static ReconciliationBreakQueueItem Seed() => new(
-        "b1","r1","s",ReconciliationBreakCategory.CashMismatch,ReconciliationBreakQueueStatus.Open,1,"reason",null,DateTimeOffset.UtcNow,DateTimeOffset.UtcNow);
+        "b1", "r1", "s", ReconciliationBreakCategory.CashMismatch, ReconciliationBreakQueueStatus.Open, 1, "reason", null, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow);
 }

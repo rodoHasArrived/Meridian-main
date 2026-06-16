@@ -3,16 +3,15 @@ using System.Linq;
 using System.Threading;
 using FluentAssertions;
 using Meridian.Application.Backfill;
-using Meridian.Core.Config;
-using Meridian.Core.Exceptions;
 using Meridian.Application.Pipeline;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Config;
+using Meridian.Core.Exceptions;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Storage.Backfill;
 using Meridian.Storage.Interfaces;
 using Xunit;
-using Meridian.Storage.Backfill;
-
 // Disambiguate from the infrastructure-layer BackfillRequest used by the job-queue subsystem
 using AppBackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 

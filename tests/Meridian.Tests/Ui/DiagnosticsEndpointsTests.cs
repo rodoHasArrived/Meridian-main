@@ -4,15 +4,16 @@ using System.Text.Json;
 using System.Threading.Channels;
 using System.Threading.RateLimiting;
 using FluentAssertions;
-using Meridian.Contracts.Coordination;
-using Meridian.Core.Config;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Coordination;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.Monitoring;
+using Meridian.Core.Config;
 using Meridian.Core.Performance;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
@@ -28,7 +29,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using UiConfigStore = Meridian.Ui.Shared.Services.ConfigStore;
-using Meridian.Contracts.Monitoring;
 
 namespace Meridian.Tests.Ui;
 

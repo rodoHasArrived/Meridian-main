@@ -1,9 +1,9 @@
-using Meridian.Instruments.CryptoCurrency;
+using FluentAssertions;
 using Meridian.Contracts.CryptoCurrency;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Instruments.CryptoCurrency;
 using Meridian.Storage.SecurityMaster;
 using NSubstitute;
-using FluentAssertions;
 
 namespace Meridian.Tests.CryptoCurrency;
 

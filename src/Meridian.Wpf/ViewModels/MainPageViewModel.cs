@@ -8,10 +8,10 @@ using Meridian.Ui.Shared.Services;
 using Meridian.Ui.Shared.Workflows;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Services;
 using Meridian.Wpf.Shell.Refresh;
 using Meridian.Wpf.Shell.Services;
 using Meridian.Wpf.Shell.ViewModels;
-using Meridian.Wpf.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Wpf.ViewModels;

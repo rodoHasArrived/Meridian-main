@@ -1,13 +1,13 @@
 using System.Text.Json;
-using Meridian.PortfolioRecords.Accounts;
-using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.FundStructure;
-using Meridian.Identity.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
-using Meridian.Ui.Shared.Services;
+using Meridian.Identity.Auth;
+using Meridian.PortfolioRecords.Accounts;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -134,7 +134,7 @@ public static class FundAccountEndpoints
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
-                        try
+            try
             {
                 var result = await service.UpdateCustodianDetailsAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
                 return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
@@ -158,7 +158,7 @@ public static class FundAccountEndpoints
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
-                        try
+            try
             {
                 var result = await service.UpdateBankDetailsAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
                 return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
@@ -424,7 +424,7 @@ public static class FundAccountEndpoints
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
-                        try
+            try
             {
                 var result = await service.RecordBalanceSnapshotAsync(request, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
@@ -507,7 +507,7 @@ public static class FundAccountEndpoints
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
-                        try
+            try
             {
                 var result = await service.IngestCustodianStatementAsync(request, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
@@ -547,7 +547,7 @@ public static class FundAccountEndpoints
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
 
-                        try
+            try
             {
                 var result = await service.IngestBankStatementAsync(request, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
@@ -632,7 +632,7 @@ public static class FundAccountEndpoints
                 BlockerReason: unresolvedBreaks == 0 ? "None" : "One or more unresolved reconciliation breaks remain.",
                 EvidenceLinks: latestRun is null
                     ? Array.Empty<string>()
-                    : [ $"/api/fund-accounts/reconciliation-runs/{latestRun.ReconciliationRunId}/results" ]);
+                    : [$"/api/fund-accounts/reconciliation-runs/{latestRun.ReconciliationRunId}/results"]);
 
             return Results.Json(payload, jsonOptions);
         })

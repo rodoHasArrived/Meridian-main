@@ -1,8 +1,8 @@
-using Meridian.Core.Config;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Meridian.Contracts.Monitoring;
+using Meridian.Core.Config;
 using Meridian.DataIntegration.Historical;
 using Meridian.DataIntegration.Testing;
 using Meridian.Infrastructure.Adapters.Core;

@@ -1,11 +1,11 @@
-using Meridian.Core.Config;
-using Meridian.Contracts.Coordination;
-using Meridian.Core.Logging;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.Services;
 using Meridian.Application.Subscriptions;
 using Meridian.Application.UI;
+using Meridian.Contracts.Coordination;
+using Meridian.Core.Config;
+using Meridian.Core.Logging;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure;

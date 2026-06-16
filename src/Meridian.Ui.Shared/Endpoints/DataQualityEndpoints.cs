@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Api.Quality;
+using Meridian.DataIntegration.Monitoring.DataQuality;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 

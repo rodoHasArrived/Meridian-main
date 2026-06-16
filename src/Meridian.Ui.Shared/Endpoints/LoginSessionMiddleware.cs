@@ -1,10 +1,10 @@
+using System.Net;
+using System.Security.Cryptography;
+using System.Text;
 using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using System.Net;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Meridian.Ui.Shared.Endpoints;
 

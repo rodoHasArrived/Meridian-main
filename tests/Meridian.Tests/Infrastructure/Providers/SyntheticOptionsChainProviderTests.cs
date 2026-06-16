@@ -1,7 +1,7 @@
 using FluentAssertions;
-using Meridian.Core.Config;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Config;
 using Meridian.Infrastructure.Adapters.Synthetic;
 
 namespace Meridian.Tests.Infrastructure.Providers;

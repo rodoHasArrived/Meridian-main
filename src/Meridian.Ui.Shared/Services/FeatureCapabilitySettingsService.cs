@@ -1,5 +1,5 @@
-using Meridian.Core.Config;
 using Meridian.Contracts.Workstation;
+using Meridian.Core.Config;
 using CoreConfigStore = Meridian.Application.UI.ConfigStore;
 
 namespace Meridian.Ui.Shared.Services;

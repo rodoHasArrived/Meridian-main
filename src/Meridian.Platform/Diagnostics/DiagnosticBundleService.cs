@@ -1,11 +1,11 @@
-using System.IO.Compression;
 using System.Diagnostics;
+using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
-using Meridian.Core.Config;
-using Meridian.Core.Logging;
 using Meridian.Contracts.Monitoring;
+using Meridian.Core.Config;
 using Meridian.Core.Diagnostics;
+using Meridian.Core.Logging;
 using Meridian.Platform.Diagnostics;
 using Serilog;
 
@@ -715,18 +715,30 @@ public sealed class DiagnosticBundleService
             return 0;
 
         var count = 0;
-        if (providers.Alpaca is not null) count++;
-        if (providers.Yahoo is not null) count++;
-        if (providers.Nasdaq is not null) count++;
-        if (providers.Stooq is not null) count++;
-        if (providers.OpenFigi is not null) count++;
-        if (providers.Tiingo is not null) count++;
-        if (providers.Polygon is not null) count++;
-        if (providers.AlphaVantage is not null) count++;
-        if (providers.Finnhub is not null) count++;
-        if (providers.Fred is not null) count++;
-        if (providers.Synthetic is not null) count++;
-        if (providers.Robinhood is not null) count++;
+        if (providers.Alpaca is not null)
+            count++;
+        if (providers.Yahoo is not null)
+            count++;
+        if (providers.Nasdaq is not null)
+            count++;
+        if (providers.Stooq is not null)
+            count++;
+        if (providers.OpenFigi is not null)
+            count++;
+        if (providers.Tiingo is not null)
+            count++;
+        if (providers.Polygon is not null)
+            count++;
+        if (providers.AlphaVantage is not null)
+            count++;
+        if (providers.Finnhub is not null)
+            count++;
+        if (providers.Fred is not null)
+            count++;
+        if (providers.Synthetic is not null)
+            count++;
+        if (providers.Robinhood is not null)
+            count++;
         return count;
     }
 

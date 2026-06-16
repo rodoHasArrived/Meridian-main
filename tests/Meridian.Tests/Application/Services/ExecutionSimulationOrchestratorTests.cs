@@ -1,7 +1,7 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Services;
 using Meridian.DataIntegration.Historical;
-using System.Text.Json;
 
 namespace Meridian.Tests.Application.Services;
 
@@ -22,7 +22,7 @@ public class ExecutionSimulationOrchestratorTests
 
         var orchestrator = new ExecutionSimulationOrchestrator(new HistoricalDataQueryService(dataRoot));
         var output = Path.Combine(dataRoot, "out");
-        var result = await orchestrator.RunAsync(new ExecutionSimulationRequest(["AAPL"], new DateOnly(2026,1,1), new DateOnly(2026,1,31), null, null, true, output));
+        var result = await orchestrator.RunAsync(new ExecutionSimulationRequest(["AAPL"], new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 31), null, null, true, output));
 
         result.DryRun.Should().BeTrue();
         File.Exists(Path.Combine(output, "fill-tape.jsonl")).Should().BeTrue();

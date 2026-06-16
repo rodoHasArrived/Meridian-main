@@ -1,10 +1,10 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
-using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
+using Meridian.Contracts.Configuration;
+using Meridian.Core.Config;
 using Meridian.DataIntegration.Credentials;
 using Meridian.DataIntegration.Monitoring;
-using Meridian.Contracts.Configuration;
 using Meridian.ProviderSdk.AccountingSystem;
 using Microsoft.Extensions.Logging;
 

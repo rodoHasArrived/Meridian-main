@@ -1,10 +1,10 @@
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Core.Config;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Meridian.Application.Wizard.Core;
 using Meridian.Application.Wizard.Steps;
+using Meridian.Core.Config;
 
 namespace Meridian.Tests.Application.Wizard;
 

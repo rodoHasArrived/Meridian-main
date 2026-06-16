@@ -1,18 +1,18 @@
-using CashSyncSourceAvailability = Meridian.Contracts.Workstation.CashSyncSourceAvailability;
-using CashSyncWindow = Meridian.Contracts.Workstation.CashSyncWindow;
-using SyncCompletenessResult = Meridian.Contracts.Workstation.SyncCompletenessResult;
-using DeltaOutlierResult = Meridian.Contracts.Workstation.DeltaOutlierResult;
-using WorkstationSyncValidationResult = Meridian.Contracts.Workstation.SyncValidationResult;
-using WorkstationApprovalPolicy = Meridian.Contracts.Workstation.ApprovalPolicy;
-using WorkstationApprovalDecision = Meridian.Contracts.Workstation.ApprovalDecision;
-using WorkstationPaymentInstruction = Meridian.Contracts.Workstation.PaymentInstruction;
-using WorkstationSettlementInstruction = Meridian.Contracts.Workstation.SettlementInstruction;
-using WorkstationCouponEvent = Meridian.Contracts.Workstation.CouponEvent;
-using WorkstationFxConversionReference = Meridian.Contracts.Workstation.FxConversionReference;
 using CashFlowProjectionPoint = Meridian.Contracts.Workstation.CashFlowProjectionPoint;
 using CashForecastResult = Meridian.Contracts.Workstation.CashForecastResult;
-using WorkstationStpStateTransition = Meridian.Contracts.Workstation.StpStateTransition;
+using CashSyncSourceAvailability = Meridian.Contracts.Workstation.CashSyncSourceAvailability;
+using CashSyncWindow = Meridian.Contracts.Workstation.CashSyncWindow;
+using DeltaOutlierResult = Meridian.Contracts.Workstation.DeltaOutlierResult;
 using StpProcessingState = Meridian.Contracts.Workstation.StpProcessingState;
+using SyncCompletenessResult = Meridian.Contracts.Workstation.SyncCompletenessResult;
+using WorkstationApprovalDecision = Meridian.Contracts.Workstation.ApprovalDecision;
+using WorkstationApprovalPolicy = Meridian.Contracts.Workstation.ApprovalPolicy;
+using WorkstationCouponEvent = Meridian.Contracts.Workstation.CouponEvent;
+using WorkstationFxConversionReference = Meridian.Contracts.Workstation.FxConversionReference;
+using WorkstationPaymentInstruction = Meridian.Contracts.Workstation.PaymentInstruction;
+using WorkstationSettlementInstruction = Meridian.Contracts.Workstation.SettlementInstruction;
+using WorkstationStpStateTransition = Meridian.Contracts.Workstation.StpStateTransition;
+using WorkstationSyncValidationResult = Meridian.Contracts.Workstation.SyncValidationResult;
 
 namespace Meridian.Ui.Shared.Services;
 
@@ -38,8 +38,10 @@ public sealed class CashOperationsOrchestratorService
         ArgumentNullException.ThrowIfNull(outliers);
 
         var warnings = new List<string>();
-        if (completeness.Any(c => !c.IsComplete)) warnings.Add("Completeness gaps detected.");
-        if (outliers.Any(o => o.IsOutlier)) warnings.Add("Outlier deltas exceed policy threshold.");
+        if (completeness.Any(c => !c.IsComplete))
+            warnings.Add("Completeness gaps detected.");
+        if (outliers.Any(o => o.IsOutlier))
+            warnings.Add("Outlier deltas exceed policy threshold.");
 
         return new WorkstationSyncValidationResult(warnings.Count == 0, completeness, outliers, warnings);
     }
@@ -131,7 +133,8 @@ public sealed class CashOperationsOrchestratorService
                 running += net;
                 var warn = running < liquidityWarningThreshold;
                 var detail = warn ? $"Projected balance {running} {currency} is below threshold {liquidityWarningThreshold}." : "";
-                if (warn) warnings.Add($"{accountId} {currency} {day:yyyy-MM-dd}: {detail}");
+                if (warn)
+                    warnings.Add($"{accountId} {currency} {day:yyyy-MM-dd}: {detail}");
 
                 timeline.Add(new CashFlowProjectionPoint(accountId, currency, day, inflow, outflow, net, running, warn, detail));
             }

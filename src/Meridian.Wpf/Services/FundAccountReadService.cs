@@ -1,6 +1,6 @@
-using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
+using Meridian.PortfolioRecords.FundAccounts;
 
 namespace Meridian.Wpf.Services;
 

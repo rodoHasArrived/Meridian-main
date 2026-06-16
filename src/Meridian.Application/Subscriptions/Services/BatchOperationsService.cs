@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using Meridian.Application.UI;
 using Meridian.Core.Config;
 using Meridian.Core.Subscriptions.Models;
-using Meridian.Application.UI;
 
 namespace Meridian.Application.Subscriptions.Services;
 

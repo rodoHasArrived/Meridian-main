@@ -3,11 +3,11 @@ using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.Monitoring;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using Meridian.Storage.Interfaces;
 using Xunit;
-using Meridian.Contracts.Monitoring;
 
 namespace Meridian.Tests.Pipeline;
 

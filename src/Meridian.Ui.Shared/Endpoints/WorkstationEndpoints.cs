@@ -3,25 +3,25 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Application.Monitoring;
-using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Application.ProviderRouting;
-using Meridian.DataIntegration.Monitoring;
-using Meridian.Reporting;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.AssetOperations;
-using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Ledger;
-using Meridian.Contracts.StrategyEngine;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.StrategyEngine;
 using Meridian.Contracts.Workstation;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Domain.Collectors;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.Identity.Auth;
 using Meridian.Instruments.AssetOperations;
 using Meridian.QuantScript.Compilation;
+using Meridian.Reporting;
 using Meridian.Storage.Export;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
@@ -4485,7 +4485,7 @@ public static partial class WorkstationEndpoints
                 : routingConnection.ProductionReady ? "Pass" : "Review",
             Detail: routingConnection is null
                 ? "No routing connection is configured for this provider yet."
-                : $"Bindings {bindings.Count}; fallback routes {bindings.Sum(static binding => binding.FailoverConnectionIds.Length)}; production ready {routingConnection.ProductionReady}." ));
+                : $"Bindings {bindings.Count}; fallback routes {bindings.Sum(static binding => binding.FailoverConnectionIds.Length)}; production ready {routingConnection.ProductionReady}."));
 
         diagnostics.Add(new WorkstationDataProviderDiagnostic(
             Id: "trust-state",

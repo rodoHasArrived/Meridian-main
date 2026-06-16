@@ -1,12 +1,12 @@
 using FluentAssertions;
 using Meridian.Application.Monitoring;
-using Meridian.DataIntegration.Monitoring;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Monitoring;
+using Meridian.DataIntegration.Monitoring;
 using Meridian.Domain.Events;
 using Xunit;
 using ContractPayload = Meridian.Contracts.Domain.Events.MarketEventPayload;
-using Meridian.Core.Monitoring;
 
 namespace Meridian.Tests.DataIntegration.Monitoring;
 

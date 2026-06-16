@@ -1,8 +1,8 @@
 using System.IO;
 using Meridian.Application.Pipeline;
-using Meridian.Core.Serialization;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
 using Meridian.Storage.Archival;
 using Xunit;

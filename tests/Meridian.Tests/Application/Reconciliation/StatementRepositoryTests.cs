@@ -1,7 +1,7 @@
 using FluentAssertions;
+using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
 using WorkstationReconciliationBreakSeverity = Meridian.Contracts.Workstation.ReconciliationBreakSeverity;
-using Meridian.Domain.Reconciliation;
 
 namespace Meridian.Tests.Application.Reconciliation;
 

@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Meridian.DataIntegration.Canonicalization;
 using Meridian.Contracts.Domain.Enums;
+using Meridian.DataIntegration.Canonicalization;
 using Xunit;
 
 namespace Meridian.Tests.DataIntegration.Canonicalization;

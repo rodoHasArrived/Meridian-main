@@ -1,6 +1,6 @@
 using Meridian.Application.Commands;
-using Meridian.Core.Config;
 using Meridian.Application.Services;
+using Meridian.Core.Config;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 

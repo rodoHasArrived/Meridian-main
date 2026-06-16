@@ -1,9 +1,9 @@
 using System.Text.Json;
 using Meridian.Application.Backfill;
 using Meridian.Application.Commands;
+using Meridian.Contracts.Configuration;
 using Meridian.Core.Config;
 using Meridian.Core.Exceptions;
-using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Adapters.Core;
 using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
 using DeploymentContext = Meridian.Platform.Runtime.DeploymentContext;

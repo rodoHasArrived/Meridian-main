@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Meridian.Instruments.MoneyMarketFunds;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Instruments.MoneyMarketFunds;
 using Meridian.Storage.SecurityMaster;
 using NSubstitute;
 

@@ -1,7 +1,7 @@
 using FluentAssertions;
-using Meridian.Instruments.Options;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Instruments.Options;
 using Meridian.Storage.SecurityMaster;
 using NSubstitute;
 

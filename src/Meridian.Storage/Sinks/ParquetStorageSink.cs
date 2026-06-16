@@ -1,9 +1,10 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Threading;
-using Meridian.Core.Logging;
-using Meridian.Core.Serialization;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Logging;
+using Meridian.Core.Monitoring;
+using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using Meridian.Storage.Interfaces;
@@ -12,7 +13,6 @@ using Parquet;
 using Parquet.Data;
 using Parquet.Schema;
 using Serilog;
-using Meridian.Core.Monitoring;
 
 namespace Meridian.Storage.Sinks;
 

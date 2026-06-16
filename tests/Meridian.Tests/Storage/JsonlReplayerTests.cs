@@ -1,9 +1,9 @@
 using System.IO.Compression;
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Core.Serialization;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
 using Meridian.Storage.Replay;
 using Xunit;

@@ -1,13 +1,13 @@
 using System.Security.Cryptography;
 using System.Text;
-using Meridian.FinancialOperations.Banking;
 using Meridian.Application.Config.Credentials;
-using Meridian.DataIntegration.Credentials;
-using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Contracts.Banking;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Plaid;
+using Meridian.DataIntegration.Credentials;
+using Meridian.FinancialOperations.Banking;
 using Meridian.Infrastructure.Adapters.Plaid;
+using Meridian.PortfolioRecords.FundAccounts;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;

@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Domain;
 using Meridian.Core.Logging;
 using Meridian.Core.Subscriptions.Models;
-using Meridian.Contracts.Domain;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Http;
 using Serilog;

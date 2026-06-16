@@ -1,7 +1,7 @@
 using System.Text;
+using Meridian.Contracts.Configuration;
 using Meridian.Core.Config;
 using Meridian.Core.Logging;
-using Meridian.Contracts.Configuration;
 using Meridian.Platform.Runtime;
 using Serilog;
 

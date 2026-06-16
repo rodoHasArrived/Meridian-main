@@ -1,6 +1,6 @@
 using System.Collections.Immutable;
-using Meridian.Reporting;
 using Meridian.Contracts.Workstation;
+using Meridian.Reporting;
 
 namespace Meridian.Ui.Shared.Services;
 

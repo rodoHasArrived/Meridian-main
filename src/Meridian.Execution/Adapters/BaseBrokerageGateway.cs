@@ -1,9 +1,9 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using Meridian.Application.Pipeline;
+using Meridian.Core.Pipeline;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
-using Meridian.Core.Pipeline;
 
 namespace Meridian.Execution.Adapters;
 

@@ -1,7 +1,7 @@
 using FluentAssertions;
-using Meridian.Core.Subscriptions.Models;
 using Meridian.Application.Subscriptions.Services;
 using Meridian.Contracts.Domain;
+using Meridian.Core.Subscriptions.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Moq;
 using Xunit;

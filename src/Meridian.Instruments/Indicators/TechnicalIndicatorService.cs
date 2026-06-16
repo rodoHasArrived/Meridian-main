@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
-using Meridian.Core.Logging;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Logging;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using Serilog;

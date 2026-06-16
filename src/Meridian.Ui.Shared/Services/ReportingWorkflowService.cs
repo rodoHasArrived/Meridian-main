@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using Meridian.Contracts.Api;
-using Meridian.Reporting;
 using Meridian.Contracts.Workstation;
+using Meridian.Reporting;
 using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 
@@ -1149,9 +1149,11 @@ public sealed class ReportPackWorkflowService
 
     private ReportPackWorkflowRecordDto TransitionCore(Guid reportId, ReportPackWorkflowStateDto target, string actor, string role, string? note = null)
     {
-        if (!_records.TryGetValue(reportId, out var record)) throw new KeyNotFoundException("report pack not found");
+        if (!_records.TryGetValue(reportId, out var record))
+            throw new KeyNotFoundException("report pack not found");
         EnsureRole(target, role);
-        if (!AllowedTransitions[record.State].Contains(target)) throw new InvalidOperationException($"invalid transition {record.State} -> {target}");
+        if (!AllowedTransitions[record.State].Contains(target))
+            throw new InvalidOperationException($"invalid transition {record.State} -> {target}");
         var now = DateTimeOffset.UtcNow;
         var next = record with
         {
@@ -1203,8 +1205,10 @@ public sealed class ReportPackWorkflowService
         OperationsActionOriginDto actionOrigin = OperationsActionOriginDto.HumanOperator)
     {
         EnsureHumanOrigin(actionOrigin, "restate reports");
-        if (string.IsNullOrWhiteSpace(reasonCode)) throw new ArgumentException("reasonCode is required");
-        if (changedLines.Count == 0) throw new ArgumentException("changedLines are required");
+        if (string.IsNullOrWhiteSpace(reasonCode))
+            throw new ArgumentException("reasonCode is required");
+        if (changedLines.Count == 0)
+            throw new ArgumentException("changedLines are required");
         var linesWithoutEvidence = changedLines
             .Where(static line => line.EvidenceLinks is null || line.EvidenceLinks.Count == 0 || line.EvidenceLinks.All(static link => string.IsNullOrWhiteSpace(link.EvidenceId)))
             .Select(static line => line.LineKey)
@@ -1334,15 +1338,16 @@ public sealed class ReportPackWorkflowService
             target == ReportPackWorkflowStateDto.PendingApproval
                 ? normalized is "operator" or "reviewer" or "validator" or "admin"
                 : target switch
-        {
-            ReportPackWorkflowStateDto.Rejected => normalized is "reviewer" or "approver" or "admin",
-            ReportPackWorkflowStateDto.Approved => normalized is "approver" or "admin",
-            ReportPackWorkflowStateDto.Published => normalized is "publisher" or "admin",
-            ReportPackWorkflowStateDto.Restated => normalized is "approver" or "admin",
-            ReportPackWorkflowStateDto.Archived => normalized is "admin" or "records-manager",
-            _ => true
-        };
-        if (!allowed) throw new UnauthorizedAccessException($"Role '{role}' cannot transition to {target}.");
+                {
+                    ReportPackWorkflowStateDto.Rejected => normalized is "reviewer" or "approver" or "admin",
+                    ReportPackWorkflowStateDto.Approved => normalized is "approver" or "admin",
+                    ReportPackWorkflowStateDto.Published => normalized is "publisher" or "admin",
+                    ReportPackWorkflowStateDto.Restated => normalized is "approver" or "admin",
+                    ReportPackWorkflowStateDto.Archived => normalized is "admin" or "records-manager",
+                    _ => true
+                };
+        if (!allowed)
+            throw new UnauthorizedAccessException($"Role '{role}' cannot transition to {target}.");
     }
 
     private static IReadOnlyList<ReportPackLineProvenanceDto> NormalizeLineProvenance(IReadOnlyList<ReportPackLineProvenanceDto>? lineProvenance) =>

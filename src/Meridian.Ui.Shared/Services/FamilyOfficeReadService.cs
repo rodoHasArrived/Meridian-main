@@ -1,8 +1,8 @@
-using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Contracts;
 
@@ -213,11 +213,16 @@ public sealed class FamilyOfficeReadService
         entityIds.UnionWith(accounts.Select(static account => account.EntityId).OfType<Guid>());
         var entities = graph.Entities.Where(entity => entityIds.Contains(entity.EntityId)).ToArray();
         var nodeIds = new HashSet<Guid>([clientId]);
-        if (business is not null) nodeIds.Add(business.BusinessId);
-        foreach (var fund in funds) nodeIds.Add(fund.FundId);
-        foreach (var portfolio in portfolios) nodeIds.Add(portfolio.InvestmentPortfolioId);
-        foreach (var entity in entities) nodeIds.Add(entity.EntityId);
-        foreach (var account in accounts) nodeIds.Add(account.AccountId);
+        if (business is not null)
+            nodeIds.Add(business.BusinessId);
+        foreach (var fund in funds)
+            nodeIds.Add(fund.FundId);
+        foreach (var portfolio in portfolios)
+            nodeIds.Add(portfolio.InvestmentPortfolioId);
+        foreach (var entity in entities)
+            nodeIds.Add(entity.EntityId);
+        foreach (var account in accounts)
+            nodeIds.Add(account.AccountId);
 
         var links = graph.OwnershipLinks
             .Where(link => nodeIds.Contains(link.ParentNodeId) || nodeIds.Contains(link.ChildNodeId))

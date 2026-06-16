@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Meridian.Execution.Models;
-using Meridian.Execution.Services;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit;

@@ -3,10 +3,10 @@ using Meridian.Application.Composition;
 using Meridian.Application.Composition.Startup.StartupModels;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
-using Meridian.Platform.Results;
 using Meridian.Infrastructure.Adapters.Core;
-using Serilog;
+using Meridian.Platform.Results;
 using Meridian.Storage.Backfill;
+using Serilog;
 
 namespace Meridian.Application.Composition.Startup.ModeRunners;
 

@@ -1,7 +1,7 @@
-using Meridian.Core.Config;
 using Meridian.Application.Services;
 using Meridian.Application.Wizard.Core;
 using Meridian.Application.Wizard.Metadata;
+using Meridian.Core.Config;
 
 namespace Meridian.Application.Wizard.Steps;
 

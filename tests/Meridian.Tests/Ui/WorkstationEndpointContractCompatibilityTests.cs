@@ -4,9 +4,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using FluentAssertions;
+using FsCheck.Xunit;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
-using FsCheck.Xunit;
 using Xunit;
 
 namespace Meridian.Tests.Ui;

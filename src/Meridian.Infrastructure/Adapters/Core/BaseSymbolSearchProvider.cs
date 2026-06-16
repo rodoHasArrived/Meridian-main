@@ -1,7 +1,7 @@
 using System.Text.Json;
+using Meridian.Contracts.Domain;
 using Meridian.Core.Logging;
 using Meridian.Core.Subscriptions.Models;
-using Meridian.Contracts.Domain;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.Http;

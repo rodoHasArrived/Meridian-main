@@ -158,7 +158,7 @@ public partial class AccountingWorkspaceShellPage : AccountingWorkspaceShellPage
 
             ContextStrip.ShellContext = await _shellContextService.CreateAsync(new WorkspaceShellContextInput
             {
-                    WorkspaceTitle = "Accounting Workspace",
+                WorkspaceTitle = "Accounting Workspace",
                 WorkspaceSubtitle = "Review operations, accounting, reconciliations, reporting, and approval gates without leaving the workstation shell.",
                 PrimaryScopeLabel = "Accounting Scope",
                 PrimaryScopeValue = operatingContext?.DisplayName ?? $"{profile.DisplayName} · {profile.BaseCurrency}",

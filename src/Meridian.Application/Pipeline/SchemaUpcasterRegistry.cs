@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
-using Meridian.Core.Serialization;
 using Meridian.Contracts.Schema;
+using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Contracts;
 using Microsoft.Extensions.Logging;

@@ -41,7 +41,8 @@ public sealed class JsonCanonicalStatementStore(string dataRoot) : ICanonicalSta
 
     public Task<IReadOnlyList<CanonicalStatementImport>> ListImportsAsync(CancellationToken ct = default)
     {
-        if (!Directory.Exists(_folder)) return Task.FromResult<IReadOnlyList<CanonicalStatementImport>>([]);
+        if (!Directory.Exists(_folder))
+            return Task.FromResult<IReadOnlyList<CanonicalStatementImport>>([]);
         var imports = Directory.EnumerateFiles(_folder, "*.json")
             .Select(path => JsonSerializer.Deserialize<ImportEnvelope>(File.ReadAllText(path))?.import)
             .Where(x => x is not null)
@@ -59,9 +60,12 @@ public sealed class CsvBrokerStatementService(ICanonicalStatementStore store) : 
     public async Task<BrokerStatementValidationResult> ValidateAsync(BrokerStatementImportRequest request, CancellationToken ct = default)
     {
         var errors = new List<string>();
-        if (!File.Exists(request.SourcePath)) errors.Add("Source file not found.");
-        if (!IsSupportedStatementSource(request.Broker)) errors.Add("Unsupported broker or custodian statement source.");
-        if (errors.Count > 0) return new BrokerStatementValidationResult(false, errors, 0);
+        if (!File.Exists(request.SourcePath))
+            errors.Add("Source file not found.");
+        if (!IsSupportedStatementSource(request.Broker))
+            errors.Add("Unsupported broker or custodian statement source.");
+        if (errors.Count > 0)
+            return new BrokerStatementValidationResult(false, errors, 0);
 
         var lines = await File.ReadAllLinesAsync(request.SourcePath, ct).ConfigureAwait(false);
         if (lines.Length == 0 || !lines[0].Contains("account,symbol,quantity,price,cashAmount,activityType,tradeDate", StringComparison.OrdinalIgnoreCase))
@@ -180,7 +184,8 @@ public sealed class JsonReconciliationBreakStore(string dataRoot) : IReconciliat
 
     public Task<IReadOnlyList<ReconciliationBreakRecord>> ListOpenAsync(CancellationToken ct = default)
     {
-        if (!Directory.Exists(_folder)) return Task.FromResult<IReadOnlyList<ReconciliationBreakRecord>>([]);
+        if (!Directory.Exists(_folder))
+            return Task.FromResult<IReadOnlyList<ReconciliationBreakRecord>>([]);
         var items = Directory.EnumerateFiles(_folder, "*.json")
             .Select(path => JsonSerializer.Deserialize<ReconciliationBreakRecord>(File.ReadAllText(path)))
             .Where(x => x is not null && x.Status == "Open")
@@ -268,26 +273,30 @@ public sealed class StatementMatchingService
         return Math.Max(tolerance.TransactionAmountTolerance, tolerance.PriceTolerance);
     }
 
-    private static (bool,string,string,decimal) MatchPosition(CanonicalStatementRow row, StatementMatchingTolerance tolerance)
+    private static (bool, string, string, decimal) MatchPosition(CanonicalStatementRow row, StatementMatchingTolerance tolerance)
     {
-        if (string.IsNullOrWhiteSpace(row.Symbol)) return (false, "POS_SYMBOL_MISSING", "Position row missing symbol.", 0.1m);
-        if (Math.Abs(row.Quantity) <= tolerance.PositionQuantityTolerance) return (false, "POS_QTY_TOLERANCE_BREACH", "Position quantity within tolerance floor and treated as unresolved.", 0.3m);
+        if (string.IsNullOrWhiteSpace(row.Symbol))
+            return (false, "POS_SYMBOL_MISSING", "Position row missing symbol.", 0.1m);
+        if (Math.Abs(row.Quantity) <= tolerance.PositionQuantityTolerance)
+            return (false, "POS_QTY_TOLERANCE_BREACH", "Position quantity within tolerance floor and treated as unresolved.", 0.3m);
         return (true, "", $"Position matched within configured tolerance rule {tolerance.PositionToleranceRuleId}.", 0.95m);
     }
 
-    private static (bool,string,string,decimal) MatchCash(CanonicalStatementRow row, StatementMatchingTolerance tolerance)
+    private static (bool, string, string, decimal) MatchCash(CanonicalStatementRow row, StatementMatchingTolerance tolerance)
     {
         var basisPointTolerance = tolerance.BasisPointCashTolerance is { } basisPoints
             ? Math.Abs(row.CashAmount) * Math.Abs(basisPoints) / 10_000m
             : 0m;
         var allowedTolerance = Math.Max(tolerance.CashAmountTolerance, basisPointTolerance);
-        if (Math.Abs(row.CashAmount) <= allowedTolerance) return (true, "", $"Cash movement within tolerance rule {tolerance.CashToleranceRuleId}.", 0.9m);
+        if (Math.Abs(row.CashAmount) <= allowedTolerance)
+            return (true, "", $"Cash movement within tolerance rule {tolerance.CashToleranceRuleId}.", 0.9m);
         return (false, "CASH_TOLERANCE_BREACH", "Cash movement exceeds configured tolerance.", 0.25m);
     }
 
-    private static (bool,string,string,decimal) MatchTransaction(CanonicalStatementRow row, StatementMatchingTolerance tolerance)
+    private static (bool, string, string, decimal) MatchTransaction(CanonicalStatementRow row, StatementMatchingTolerance tolerance)
     {
-        if (Math.Abs(row.Price * row.Quantity) <= tolerance.TransactionAmountTolerance) return (true, "", $"Transaction amount within tolerance rule {tolerance.TransactionToleranceRuleId}.", 0.85m);
+        if (Math.Abs(row.Price * row.Quantity) <= tolerance.TransactionAmountTolerance)
+            return (true, "", $"Transaction amount within tolerance rule {tolerance.TransactionToleranceRuleId}.", 0.85m);
         return (false, "TXN_TOLERANCE_BREACH", "Transaction amount exceeds configured tolerance.", 0.25m);
     }
 }

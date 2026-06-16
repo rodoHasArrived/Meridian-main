@@ -1,6 +1,6 @@
 using Meridian.FinancialOperations.LedgerTextJournal;
-using Meridian.Platform.Results;
 using Meridian.Ledger;
+using Meridian.Platform.Results;
 
 namespace Meridian.Application.Commands;
 

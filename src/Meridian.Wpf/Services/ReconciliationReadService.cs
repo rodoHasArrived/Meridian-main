@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
-using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Contracts.Workstation;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Strategies.Services;
 
 namespace Meridian.Wpf.Services;

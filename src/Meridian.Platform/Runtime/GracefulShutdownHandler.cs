@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Threading;
-using Meridian.Core.Logging;
 using Meridian.Core.Diagnostics;
+using Meridian.Core.Logging;
 using Meridian.Core.Services;
 using Meridian.Platform.Diagnostics;
 using Serilog;

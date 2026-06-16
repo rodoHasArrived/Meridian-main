@@ -5,10 +5,10 @@ using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Copy;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
-using WpfNotificationService = Meridian.Wpf.Services.NotificationService;
-using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
 using ProviderInfoModel = Meridian.Ui.Services.Services.ProviderInfo;
 using StatusProviderInfoModel = Meridian.Ui.Services.Services.StatusProviderInfo;
+using WpfLoggingService = Meridian.Wpf.Services.LoggingService;
+using WpfNotificationService = Meridian.Wpf.Services.NotificationService;
 
 namespace Meridian.Wpf.Features.Data.Shell;
 

@@ -1,5 +1,5 @@
-using Meridian.Identity.Auth;
 using Meridian.Identity;
+using Meridian.Identity.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 

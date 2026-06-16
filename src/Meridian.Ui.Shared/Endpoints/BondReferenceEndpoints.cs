@@ -1,8 +1,8 @@
 using System.Text.Json;
-using Meridian.Instruments.FixedIncome;
 using Meridian.Contracts.Api;
-using Meridian.Identity.Auth;
 using Meridian.Contracts.FixedIncome;
+using Meridian.Identity.Auth;
+using Meridian.Instruments.FixedIncome;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

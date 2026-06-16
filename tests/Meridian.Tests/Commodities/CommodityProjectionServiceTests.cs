@@ -1,9 +1,9 @@
+using FluentAssertions;
 using Meridian.Contracts.Commodities;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Instruments.Commodities;
 using Meridian.Storage.SecurityMaster;
 using NSubstitute;
-using FluentAssertions;
 
 namespace Meridian.Tests.Commodities;
 

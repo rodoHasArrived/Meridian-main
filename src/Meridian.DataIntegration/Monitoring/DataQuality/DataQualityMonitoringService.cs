@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
-using Meridian.Core.Logging;
 using Meridian.Contracts.Domain.Enums;
-using Serilog;
 using Meridian.Contracts.Monitoring;
+using Meridian.Core.Logging;
+using Serilog;
 
 namespace Meridian.DataIntegration.Monitoring.DataQuality;
 

@@ -1,6 +1,5 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
@@ -8,6 +7,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
 using Meridian.FSharp.Ledger;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.ProviderSdk;
 using Meridian.Storage.Archival;
 using Meridian.Storage.SecurityMaster;

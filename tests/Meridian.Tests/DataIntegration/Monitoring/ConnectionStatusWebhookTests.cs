@@ -1,8 +1,8 @@
 using FluentAssertions;
 using Meridian.Application.Monitoring;
+using Meridian.Contracts.Monitoring;
 using Meridian.DataIntegration.Monitoring;
 using Xunit;
-using Meridian.Contracts.Monitoring;
 
 namespace Meridian.Tests.DataIntegration.Monitoring;
 

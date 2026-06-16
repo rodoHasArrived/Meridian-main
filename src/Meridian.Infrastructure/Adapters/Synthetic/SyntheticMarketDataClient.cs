@@ -1,10 +1,10 @@
 using System.Collections.Concurrent;
-using Meridian.Core.Config;
-using Meridian.Core.Subscriptions.Models;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Config;
+using Meridian.Core.Subscriptions.Models;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure;
 using Meridian.Infrastructure.Adapters.Core;

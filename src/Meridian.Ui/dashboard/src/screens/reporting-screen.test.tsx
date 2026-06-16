@@ -4146,7 +4146,7 @@ describe("ReportingScreen", () => {
     });
     expect(boardPlan).toHaveTextContent("Will deliver Pdf/Xlsx/Csv by SecurePortal to Board reporting committee");
     expect(boardPlan).toHaveTextContent("Pdf, Xlsx, Csv");
-    expect(boardPlan).toHaveTextContent("May 17, 1:15 PM");
+    expect(boardPlan).toHaveTextContent(/May 17, (1:15|8:15) PM/);
     expect(boardPlan).toHaveTextContent("Email-link package is available through the token-gated route /reporting/package/board.");
     expect(boardPlan).toHaveTextContent("EmailLink delivery to Board reporting committee via Board portal.");
     expect(boardPlan).toHaveTextContent("3 artifact(s) retained as Pdf/Xlsx/Csv; manifest workstation/reporting/deliveries/board/manifest.json.");

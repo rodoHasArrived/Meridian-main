@@ -1,6 +1,6 @@
 using System.Text.Json;
-using Meridian.Instruments.MoneyMarketFunds;
 using Meridian.Contracts.Treasury;
+using Meridian.Instruments.MoneyMarketFunds;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;

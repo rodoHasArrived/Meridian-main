@@ -386,7 +386,7 @@ def resolve_selected_scripts(args: argparse.Namespace) -> List[str]:
 def run_script_with_args(name: str, root: Path, extra_args: Sequence[str] | None = None) -> ScriptResult:
     config = SCRIPT_CONFIG[name]
     script_path = root / "build" / "scripts" / "docs" / str(config["script"])
-    command = ["python3", str(script_path), *[str(arg) for arg in config.get("args", [])]]
+    command = [sys.executable, str(script_path), *[str(arg) for arg in config.get("args", [])]]
     if extra_args:
         command.extend(str(arg) for arg in extra_args)
 
@@ -512,6 +512,23 @@ def main() -> int:  # noqa: C901
             extra_args: List[str] = []
             if name == "scan-todos" and args.auto_create_todos:
                 extra_args.extend(["--json-output", TODO_SCAN_JSON_PATH])
+            if name == "check-mode-escalation":
+                current_summary = root / ".tmp" / "docs-automation-summary.current.json"
+                current_summary.parent.mkdir(parents=True, exist_ok=True)
+                current_summary.write_text(
+                    json.dumps(
+                        {
+                            "dry_run": args.dry_run,
+                            "profile": args.profile,
+                            "selected_scripts": selected,
+                            "results": [asdict(result) for result in results],
+                        },
+                        indent=2,
+                    )
+                    + "\n",
+                    encoding="utf-8",
+                )
+                extra_args.extend(["--summary-json", str(current_summary)])
 
             print(f"Running {name}...")
             result = run_script_with_args(name, root, extra_args=extra_args)

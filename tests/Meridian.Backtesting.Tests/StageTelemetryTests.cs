@@ -1,7 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Core.Serialization;
 using Meridian.Backtesting.Engine;
+using Meridian.Core.Serialization;
 using Meridian.Domain.Events;
 using Meridian.Storage;
 using Meridian.Storage.Services;

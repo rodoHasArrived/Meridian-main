@@ -1,8 +1,8 @@
-using Microsoft.Extensions.Logging.Abstractions;
 using Meridian.Backtesting;
 using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Portfolio;
 using Meridian.Backtesting.Sdk;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Meridian.Backtesting.Tests;
 

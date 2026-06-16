@@ -1,6 +1,6 @@
 using System.Threading;
-using Meridian.Core.Logging;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Logging;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;
 using Meridian.ProviderSdk;

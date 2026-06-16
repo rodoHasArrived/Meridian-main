@@ -1,9 +1,9 @@
 using System.Collections.Concurrent;
+using Meridian.Contracts.Api;
 using Meridian.Core.Config;
 using Meridian.Core.Logging;
 using Meridian.Core.Monitoring;
 using Meridian.Core.Monitoring.Core;
-using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Serilog;

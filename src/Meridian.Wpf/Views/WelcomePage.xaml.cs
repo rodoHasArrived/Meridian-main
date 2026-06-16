@@ -1,8 +1,8 @@
-using Microsoft.Extensions.Logging;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Meridian.Wpf.ViewModels;
+using Microsoft.Extensions.Logging;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Views;

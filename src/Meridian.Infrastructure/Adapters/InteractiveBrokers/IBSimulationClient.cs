@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
-using Meridian.Core.Config;
-using Meridian.Core.Logging;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Config;
+using Meridian.Core.Logging;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;

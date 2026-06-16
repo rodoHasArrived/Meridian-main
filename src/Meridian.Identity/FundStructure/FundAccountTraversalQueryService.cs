@@ -1,6 +1,6 @@
-using Microsoft.Extensions.Caching.Memory;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Meridian.Identity;
 

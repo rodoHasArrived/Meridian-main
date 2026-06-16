@@ -1,9 +1,11 @@
 using System.Threading;
 using Meridian.Application.Backfill;
-using Meridian.Core.Config;
-using Meridian.Core.Logging;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
+using Meridian.Contracts.Backfill;
+using Meridian.Contracts.Monitoring;
+using Meridian.Core.Config;
+using Meridian.Core.Logging;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Core.SymbolResolution;
 using Meridian.Infrastructure.Adapters.Fred;
@@ -14,13 +16,11 @@ using Meridian.Infrastructure.Adapters.YahooFinance;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Platform.Tracing;
 using Meridian.Storage;
+using Meridian.Storage.Backfill;
 using Meridian.Storage.Policies;
 using Meridian.Storage.Sinks;
 using Serilog;
 using BackfillRequest = Meridian.Application.Backfill.BackfillRequest;
-using Meridian.Contracts.Monitoring;
-using Meridian.Contracts.Backfill;
-using Meridian.Storage.Backfill;
 
 namespace Meridian.Application.UI;
 

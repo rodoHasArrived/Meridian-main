@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Ui.Services.Services;
-using Microsoft.Extensions.Logging;
 using Meridian.Wpf.Copy;
+using Microsoft.Extensions.Logging;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;

@@ -1,10 +1,10 @@
 using System.Collections.Concurrent;
 using System.Threading.Channels;
 using Meridian.Application.Pipeline;
+using Meridian.Core.Pipeline;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging;
-using Meridian.Core.Pipeline;
 
 namespace Meridian.Execution;
 

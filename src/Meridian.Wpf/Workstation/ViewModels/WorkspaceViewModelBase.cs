@@ -1,5 +1,5 @@
-using System.Collections.ObjectModel;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Workstation.Commands;
 using Meridian.Wpf.Workstation.Models;
@@ -84,12 +84,12 @@ public abstract class CommandHostViewModel : WorkspaceViewModelBase
     private static IReadOnlyList<CommandViewModel> BuildCommandDescriptors(WorkstationCommandGroupModel source)
     {
         var commands = new List<CommandViewModel>();
-        foreach (var command in source.PrimaryCommands ?? Array.Empty<WorkspaceCommandModel>())
+        foreach (var command in source.PrimaryCommands ?? Array.Empty<WorkstationCommandModel>())
         {
             commands.Add(ToCommandDescriptor(command));
         }
 
-        foreach (var command in source.SecondaryCommands ?? Array.Empty<WorkspaceCommandModel>())
+        foreach (var command in source.SecondaryCommands ?? Array.Empty<WorkstationCommandModel>())
         {
             commands.Add(ToCommandDescriptor(command));
         }
@@ -97,16 +97,15 @@ public abstract class CommandHostViewModel : WorkspaceViewModelBase
         return commands;
     }
 
-    private static CommandViewModel ToCommandDescriptor(WorkspaceCommandModel command)
+    private static CommandViewModel ToCommandDescriptor(WorkstationCommandModel command)
     {
         return new CommandViewModel
         {
             Id = command.Id,
             Label = command.Label,
-            Description = command.Description,
-            ShortcutHint = command.ShortcutHint,
-            Glyph = command.Glyph,
+            IconGlyph = command.Glyph,
             Tone = command.Tone,
+            Tooltip = string.IsNullOrWhiteSpace(command.Description) ? command.Label : command.Description,
             IsEnabled = command.IsEnabled
         };
     }
@@ -123,7 +122,7 @@ public class TableViewModel<TRow> : Base.TableViewModel<TRow>
     }
 }
 
-public class FilterableTableViewModel<TRow, TFilter> : Base.FilterableTableViewModel<TRow>
+public class FilterableTableViewModel<TRow, TFilter> : TableViewModel<TRow>
 {
     private TFilter? _filter;
 
@@ -134,7 +133,7 @@ public class FilterableTableViewModel<TRow, TFilter> : Base.FilterableTableViewM
     }
 }
 
-public class InspectorViewModel<TItem> : Base.InspectorViewModel
+public class InspectorViewModel<TItem> : BindableBase
 {
     private TItem? _selectedItem;
 

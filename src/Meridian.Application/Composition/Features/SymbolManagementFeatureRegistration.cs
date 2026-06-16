@@ -1,6 +1,6 @@
+using Meridian.Application.Subscriptions.Services;
 using Meridian.Core.Logging;
 using Meridian.Core.Subscriptions.Models;
-using Meridian.Application.Subscriptions.Services;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.OpenFigi;
 using Meridian.Infrastructure.Contracts;

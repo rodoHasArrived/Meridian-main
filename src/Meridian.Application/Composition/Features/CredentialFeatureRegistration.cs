@@ -1,7 +1,7 @@
-using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
-using Meridian.DataIntegration.Credentials;
 using Meridian.Application.UI;
+using Meridian.Core.Config;
+using Meridian.DataIntegration.Credentials;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Application.Composition.Features;

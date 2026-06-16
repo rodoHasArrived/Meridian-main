@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Meridian.DataIntegration.Monitoring.DataQuality;
 using FsCheck.Xunit;
+using Meridian.DataIntegration.Monitoring.DataQuality;
 using Xunit;
 
 namespace Meridian.Tests.DataIntegration.Services.DataQuality;

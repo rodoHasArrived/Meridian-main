@@ -1,7 +1,7 @@
 using System.Net.Http;
-using Meridian.Core.Config;
 using Meridian.Application.UI;
 using Meridian.Contracts.Api;
+using Meridian.Core.Config;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Polygon;

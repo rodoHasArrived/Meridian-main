@@ -1,31 +1,31 @@
 # AI Handoff Packet
 
 ## Scope
-- Requested: Provider integration execution
+- Requested: Docs automation generated handoff packet
 - Excluded: No explicit exclusions recorded.
 
 ## Route
-- Lane: provider
-- Skill: meridian-provider-builder
-- Mode: Deep Review
-- Model route: governance-research
-- Matched rule: provider-integration
+- Lane: docs
+- Skill: meridian-docs
+- Mode: Lightweight
+- Model route: analysis-economy
+- Matched rule: docs-maintenance
 - Confidence: 1.0
-- Rationale: Provider changes need adapter-specific validation, telemetry capture, and readiness evidence.
+- Rationale: Docs updates should stay in canonical audience paths with minimal proof.
 
 ## Route outcome
 - Final status: partial
-- Route assessment: possible-misroute
-- Inferred lanes from changes: docs
+- Route assessment: aligned
+- Inferred lanes from changes: browser, desktop, docs, provider
 
 ## Telemetry
-- route_id: provider-integration
-- model_route_id: governance-research
-- selected_model: gpt-4.1
-- input_tokens: 1200
-- output_tokens: 450
-- estimated_cost_usd: 0.09
-- latency_ms: 920
+- route_id: docs-maintenance
+- model_route_id: analysis-economy
+- selected_model: unknown
+- input_tokens: None
+- output_tokens: None
+- estimated_cost_usd: None
+- latency_ms: None
 - error_class: None
 - handoff_path: docs/status/ai-handoff-packet.md
 
@@ -34,7 +34,473 @@
 - git diff: Changed-file evidence for handoff packet.
 
 ## Changes made
-- build/scripts/docs/prompt-route-linter.py: Touched in current git diff.
+- .github/workflows/ci.yml: Touched in current git diff.
+- build/scripts/docs/generate-coverage.py: Touched in current git diff.
+- build/scripts/docs/run-docs-automation.py: Touched in current git diff.
+- docs/generated/repository-structure.md: Touched in current git diff.
+- docs/status/TODO.md: Touched in current git diff.
+- docs/status/ai-handoff-checklist-report.json: Touched in current git diff.
+- docs/status/ai-handoff-packet.json: Touched in current git diff.
+- docs/status/ai-handoff-packet.md: Touched in current git diff.
+- docs/status/ai-inventory-report.json: Touched in current git diff.
+- docs/status/ai-inventory-report.md: Touched in current git diff.
+- docs/status/coverage-report.md: Touched in current git diff.
+- docs/status/doc-health-dashboard.json: Touched in current git diff.
+- docs/status/doc-health-dashboard.md: Touched in current git diff.
+- docs/status/docs-automation-summary.json: Touched in current git diff.
+- docs/status/docs-automation-summary.md: Touched in current git diff.
+- docs/status/example-validation.md: Touched in current git diff.
+- docs/status/prompt-route-lint-report.json: Touched in current git diff.
+- src/Meridian.Application/Backfill/AutoGapRemediationService.cs: Touched in current git diff.
+- src/Meridian.Application/Backfill/GapBackfillService.cs: Touched in current git diff.
+- src/Meridian.Application/Backfill/HistoricalBackfillService.cs: Touched in current git diff.
+- src/Meridian.Application/Commands/ConfigCommands.cs: Touched in current git diff.
+- src/Meridian.Application/Commands/ConfigPresetCommand.cs: Touched in current git diff.
+- src/Meridian.Application/Commands/DiagnosticsCommands.cs: Touched in current git diff.
+- src/Meridian.Application/Commands/DryRunCommand.cs: Touched in current git diff.
+- src/Meridian.Application/Commands/EtlCommands.cs: Touched in current git diff.
+- src/Meridian.Application/Commands/LedgerCliCommand.cs: Touched in current git diff.
+- src/Meridian.Application/Commands/QueryCommand.cs: Touched in current git diff.
+- src/Meridian.Application/Commands/RunbookCommands.cs: Touched in current git diff.
+- src/Meridian.Application/Commands/SchemaCheckCommand.cs: Touched in current git diff.
+- src/Meridian.Application/Commands/SecurityMasterCommands.cs: Touched in current git diff.
+- src/Meridian.Application/Commands/SelfTestCommand.cs: Touched in current git diff.
+- src/Meridian.Application/Commands/SimulationCommands.cs: Touched in current git diff.
+- src/Meridian.Application/Commands/StatementImportCommands.cs: Touched in current git diff.
+- src/Meridian.Application/Commands/SymbolCommands.cs: Touched in current git diff.
+- src/Meridian.Application/Commands/ValidateConfigCommand.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Features/BackfillFeatureRegistration.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Features/CanonicalizationFeatureRegistration.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Features/ConfigurationFeatureRegistration.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Features/CredentialFeatureRegistration.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Features/DiagnosticsFeatureRegistration.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Features/MaintenanceFeatureRegistration.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Features/PipelineFeatureRegistration.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Features/ProviderFeatureRegistration.OptionsChain.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Features/ProviderFeatureRegistration.Registry.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Features/ProviderFeatureRegistration.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Features/SymbolManagementFeatureRegistration.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/HostStartup.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/SecurityMasterStartup.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/ServiceCompositionRoot.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Startup/CommandDispatchPlanner.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Startup/CommandServiceRegistration.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Startup/SharedStartupHelpers.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs: Touched in current git diff.
+- src/Meridian.Application/Composition/Startup/StartupValidationRunner.cs: Touched in current git diff.
+- src/Meridian.Application/Config/ConfigValidatorCli.cs: Touched in current git diff.
+- src/Meridian.Application/Config/ConfigurationPipeline.cs: Touched in current git diff.
+- src/Meridian.Application/Config/ConfigurationResolutionRules.cs: Touched in current git diff.
+- src/Meridian.Application/Config/Credentials/CredentialTestingService.cs: Touched in current git diff.
+- src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs: Touched in current git diff.
+- src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs: Touched in current git diff.
+- src/Meridian.Application/DirectLending/DirectLendingOutboxDispatcher.cs: Touched in current git diff.
+- src/Meridian.Application/DirectLending/InMemoryDirectLendingService.cs: Touched in current git diff.
+- src/Meridian.Application/DirectLending/LoanAccountingProjector.cs: Touched in current git diff.
+- src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs: Touched in current git diff.
+- src/Meridian.Application/FundStructure/PostgresFundStructureService.cs: Touched in current git diff.
+- src/Meridian.Application/Http/BackfillCoordinator.cs: Touched in current git diff.
+- src/Meridian.Application/Http/ConfigStore.cs: Touched in current git diff.
+- src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs: Touched in current git diff.
+- src/Meridian.Application/Monitoring/DetailedHealthCheck.cs: Touched in current git diff.
+- src/Meridian.Application/Monitoring/PrometheusMetrics.cs: Touched in current git diff.
+- src/Meridian.Application/Monitoring/StatusHttpServer.cs: Touched in current git diff.
+- src/Meridian.Application/Monitoring/StatusSnapshot.cs: Touched in current git diff.
+- src/Meridian.Application/Monitoring/StatusWriter.cs: Touched in current git diff.
+- src/Meridian.Application/Pipeline/DeadLetterSink.cs: Touched in current git diff.
+- src/Meridian.Application/Pipeline/EventPipeline.cs: Touched in current git diff.
+- src/Meridian.Application/Pipeline/IngestionJobService.cs: Touched in current git diff.
+- src/Meridian.Application/Pipeline/PersistentDedupLedger.cs: Touched in current git diff.
+- src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs: Touched in current git diff.
+- src/Meridian.Application/ProviderRouting/ProviderBindingService.cs: Touched in current git diff.
+- src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs: Touched in current git diff.
+- src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs: Touched in current git diff.
+- src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs: Touched in current git diff.
+- src/Meridian.Application/ProviderRouting/ProviderRoutingMapper.cs: Touched in current git diff.
+- src/Meridian.Application/ProviderRouting/ProviderSetupService.cs: Touched in current git diff.
+- src/Meridian.Application/Services/AutoConfigurationService.cs: Touched in current git diff.
+- src/Meridian.Application/Services/ConfigurationService.cs: Touched in current git diff.
+- src/Meridian.Application/Services/ConfigurationWizard.cs: Touched in current git diff.
+- src/Meridian.Application/Services/ConnectivityProbeService.cs: Touched in current git diff.
+- src/Meridian.Application/Services/DailySummaryWebhook.cs: Touched in current git diff.
+- src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs: Touched in current git diff.
+- src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs: Touched in current git diff.
+- src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs: Touched in current git diff.
+- src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs: Touched in current git diff.
+- src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs: Touched in current git diff.
+- src/Meridian.Application/Subscriptions/Services/SchedulingService.cs: Touched in current git diff.
+- src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs: Touched in current git diff.
+- src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs: Touched in current git diff.
+- src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs: Touched in current git diff.
+- src/Meridian.Application/Subscriptions/Services/TemplateService.cs: Touched in current git diff.
+- src/Meridian.Application/Subscriptions/Services/WatchlistService.cs: Touched in current git diff.
+- src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs: Touched in current git diff.
+- src/Meridian.Application/Wizard/Core/WizardContext.cs: Touched in current git diff.
+- src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs: Touched in current git diff.
+- src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs: Touched in current git diff.
+- src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs: Touched in current git diff.
+- src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs: Touched in current git diff.
+- src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs: Touched in current git diff.
+- src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs: Touched in current git diff.
+- src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs: Touched in current git diff.
+- src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs: Touched in current git diff.
+- src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs: Touched in current git diff.
+- src/Meridian.Contracts/Workstation/StrategyRunContractCompatibility.cs: Touched in current git diff.
+- src/Meridian.Core/Serialization/MarketDataJsonContext.cs: Touched in current git diff.
+- src/Meridian.DataIntegration/Canonicalization/ConditionCodeMapper.cs: Touched in current git diff.
+- src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs: Touched in current git diff.
+- src/Meridian.DataIntegration/Credentials/ProviderCredentialCatalog.cs: Touched in current git diff.
+- src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs: Touched in current git diff.
+- src/Meridian.DataIntegration/Monitoring/ConnectionHealthMonitor.cs: Touched in current git diff.
+- src/Meridian.DataIntegration/Monitoring/ConnectionStatusWebhook.cs: Touched in current git diff.
+- src/Meridian.DataIntegration/Monitoring/DataQuality/AnomalyDetector.cs: Touched in current git diff.
+- src/Meridian.DataIntegration/Monitoring/DataQuality/CompletenessScoreCalculator.cs: Touched in current git diff.
+- src/Meridian.DataIntegration/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs: Touched in current git diff.
+- src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityMonitoringService.cs: Touched in current git diff.
+- src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs: Touched in current git diff.
+- src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs: Touched in current git diff.
+- src/Meridian.DataIntegration/Monitoring/ProviderDegradationScorer.cs: Touched in current git diff.
+- src/Meridian.DataIntegration/Monitoring/SchemaValidationService.cs: Touched in current git diff.
+- src/Meridian.Domain/Collectors/SessionStatsCollector.cs: Touched in current git diff.
+- src/Meridian.Entities/FundStructure/FundStructurePolicyService.cs: Touched in current git diff.
+- src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs: Touched in current git diff.
+- src/Meridian.Execution/Adapters/PaperTradingGateway.cs: Touched in current git diff.
+- src/Meridian.Execution/OrderManagementSystem.cs: Touched in current git diff.
+- src/Meridian.FinancialOperations/Banking/PostgresBankingService.cs: Touched in current git diff.
+- src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs: Touched in current git diff.
+- src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs: Touched in current git diff.
+- src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs: Touched in current git diff.
+- src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs: Touched in current git diff.
+- src/Meridian.IbApi.SmokeStub/IBApiSmokeStub.cs: Touched in current git diff.
+- src/Meridian.Identity/FundStructure/FundAccountTraversalQueryService.cs: Touched in current git diff.
+- src/Meridian.Identity/Infrastructure/UserAccountStore.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/InteractiveBrokers/ContractFactory.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Reconciliation/BrokerStatementInfrastructure.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Reconciliation/ReconciliationCaseInfrastructure.cs: Touched in current git diff.
+- src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs: Touched in current git diff.
+- src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs: Touched in current git diff.
+- src/Meridian.Instruments/Indicators/TechnicalIndicatorService.cs: Touched in current git diff.
+- src/Meridian.Instruments/MoneyMarketFunds/PostgresMoneyMarketFundService.cs: Touched in current git diff.
+- src/Meridian.Instruments/Options/OptionsChainService.cs: Touched in current git diff.
+- src/Meridian.Platform/Diagnostics/DiagnosticBundleService.cs: Touched in current git diff.
+- src/Meridian.Platform/Monitoring/BackpressureAlertService.cs: Touched in current git diff.
+- src/Meridian.Platform/Runtime/GracefulShutdownHandler.cs: Touched in current git diff.
+- src/Meridian.Platform/Runtime/StartupSummary.cs: Touched in current git diff.
+- src/Meridian.Platform/Tracing/Metrics.cs: Touched in current git diff.
+- src/Meridian.PortfolioRecords/FundAccounts/InMemoryFundAccountService.cs: Touched in current git diff.
+- src/Meridian.PortfolioRecords/FundAccounts/PostgresFundAccountService.cs: Touched in current git diff.
+- src/Meridian.QuantScript/Api/QuantDataContext.cs: Touched in current git diff.
+- src/Meridian.Storage/Backfill/BackfillStatusStore.cs: Touched in current git diff.
+- src/Meridian.Storage/Banking/BankingMigrationRunner.cs: Touched in current git diff.
+- src/Meridian.Storage/Banking/PostgresBankingStore.cs: Touched in current git diff.
+- src/Meridian.Storage/Etl/EtlStores.cs: Touched in current git diff.
+- src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs: Touched in current git diff.
+- src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs: Touched in current git diff.
+- src/Meridian.Storage/Ledger/ILedgerJournalStore.cs: Touched in current git diff.
+- src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs: Touched in current git diff.
+- src/Meridian.Storage/MoneyMarket/MoneyMarketMigrationRunner.cs: Touched in current git diff.
+- src/Meridian.Storage/MoneyMarket/PostgresMoneyMarketFundStore.cs: Touched in current git diff.
+- src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs: Touched in current git diff.
+- src/Meridian.Storage/Services/StorageCatalogService.cs: Touched in current git diff.
+- src/Meridian.Storage/Services/SymbolRegistryService.cs: Touched in current git diff.
+- src/Meridian.Storage/Sinks/JsonlStorageSink.cs: Touched in current git diff.
+- src/Meridian.Storage/Sinks/ParquetStorageSink.cs: Touched in current git diff.
+- src/Meridian.Storage/Store/JsonlMarketDataStore.cs: Touched in current git diff.
+- src/Meridian.Strategies/Services/ReconciliationGovernanceService.cs: Touched in current git diff.
+- src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs: Touched in current git diff.
+- src/Meridian.Ui.Services/Services/Reconciliation/ReconciliationApiService.cs: Touched in current git diff.
+- src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/DtoExtensions.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/AnalyticsEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/AuthEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/CredentialEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/CryptoReferenceEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/DepositReferenceEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/EdgarReferenceDataEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/EndpointHelpers.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/EquityReferenceEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/FundAccountEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/FundStructureEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/FutureReferenceEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/FxSpotReferenceEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/OptionChainEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/OptionReferenceEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/ProviderCredentialEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/SwapReferenceEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperationsContinuity.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Reconciliation.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Evidence/EvidenceSubjectResolver.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Extensibility/WorkflowExtensibilityCatalogProvider.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/FeatureCapabilitySettingsService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/InMemoryOperatorInboxService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs: Touched in current git diff.
+- src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs: Touched in current git diff.
+- src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx: Touched in current git diff.
+- src/Meridian.Workflow/Runbooks/RunbookStore.cs: Touched in current git diff.
+- src/Meridian.Workflow/Workflows/FundWorkflowCommandHandler.cs: Touched in current git diff.
+- src/Meridian.Wpf/App.xaml.cs: Touched in current git diff.
+- src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs: Touched in current git diff.
+- src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellSnapshotService.cs: Touched in current git diff.
+- src/Meridian.Wpf/Features/DesktopFeatureModuleRegistry.cs: Touched in current git diff.
+- src/Meridian.Wpf/Features/FeatureCapabilityGateService.cs: Touched in current git diff.
+- src/Meridian.Wpf/Features/IDesktopFeatureModule.cs: Touched in current git diff.
+- src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellSnapshotService.cs: Touched in current git diff.
+- src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs: Touched in current git diff.
+- src/Meridian.Wpf/MainWindow.xaml.cs: Touched in current git diff.
+- src/Meridian.Wpf/Services/FirstRunService.cs: Touched in current git diff.
+- src/Meridian.Wpf/Services/FundAccountReadService.cs: Touched in current git diff.
+- src/Meridian.Wpf/Services/FundReconciliationWorkbenchService.cs: Touched in current git diff.
+- src/Meridian.Wpf/Services/ReconciliationReadService.cs: Touched in current git diff.
+- src/Meridian.Wpf/Services/SetupWizardStateService.cs: Touched in current git diff.
+- src/Meridian.Wpf/Services/WpfShellServiceCollectionExtensions.cs: Touched in current git diff.
+- src/Meridian.Wpf/Shell/Root/DesktopLaunchRouter.cs: Touched in current git diff.
+- src/Meridian.Wpf/ViewModels/ClusterStatusViewModel.cs: Touched in current git diff.
+- src/Meridian.Wpf/ViewModels/FundAccountsViewModel.cs: Touched in current git diff.
+- src/Meridian.Wpf/ViewModels/MainPageViewModel.cs: Touched in current git diff.
+- src/Meridian.Wpf/ViewModels/SecurityMasterEditViewModel.cs: Touched in current git diff.
+- src/Meridian.Wpf/ViewModels/SettingsViewModel.cs: Touched in current git diff.
+- src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs: Touched in current git diff.
+- src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs: Touched in current git diff.
+- src/Meridian.Wpf/Views/AccountingWorkspaceShellPage.xaml.cs: Touched in current git diff.
+- src/Meridian.Wpf/Views/MainPage.xaml.cs: Touched in current git diff.
+- src/Meridian.Wpf/Views/WelcomePage.xaml.cs: Touched in current git diff.
+- src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs: Touched in current git diff.
+- src/Meridian.Wpf/Workstation/ViewModels/Base/WorkspaceViewModelBase.cs: Touched in current git diff.
+- src/Meridian.Wpf/Workstation/ViewModels/WorkspaceViewModelBase.cs: Touched in current git diff.
+- src/Meridian/UiServer.cs: Touched in current git diff.
+- tests/Meridian.Backtesting.Tests/BacktestEngineIntegrationTests.cs: Touched in current git diff.
+- tests/Meridian.Backtesting.Tests/BatchBacktestServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Backtesting.Tests/StageTelemetryTests.cs: Touched in current git diff.
+- tests/Meridian.Backtesting.Tests/YahooFinanceBacktestIntegrationTests.cs: Touched in current git diff.
+- tests/Meridian.DirectLending.Tests/DirectLendingPostgresTestDatabase.cs: Touched in current git diff.
+- tests/Meridian.FundStructure.Tests/FundStructureSetupWorkflowServiceTests.cs: Touched in current git diff.
+- tests/Meridian.FundStructure.Tests/GovernanceSharedDataAccessServiceTests.cs: Touched in current git diff.
+- tests/Meridian.FundStructure.Tests/InMemoryFundStructureServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Auth/ScopedAccessServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Backfill/AutoGapRemediationServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Backfill/CompositeHistoricalDataProviderTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Backfill/GapBackfillServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Backfill/ParallelBackfillServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Commands/DiagnosticsCommandsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Commands/SecurityMasterCommandsEdgarTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Commands/SimulationCommandsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Commands/StatementImportCommandsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Composition/DiagnosticsFeatureRegistrationTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Composition/PipelineFeatureRegistrationTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Composition/ProviderCapabilityContractRegistrationTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Composition/ProviderFeatureRegistrationTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Composition/Startup/ModeRunners/CommandModeRunnerTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Composition/Startup/SharedStartupBootstrapperTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Composition/StorageFeatureRegistrationTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Config/ConfigurationUnificationTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Config/ProviderCredentialStoreTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Coordination/SubscriptionOrchestratorCoordinationTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Credentials/CredentialTestingServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/DirectLending/AccrualLedgerServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/DirectLending/PostgresDirectLendingCommandServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Monitoring/StatusWriterTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/OperationsContinuityPostgresRoundTripTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/OperationsContinuityWorkflowServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Pipeline/EventPipelineMetricsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Pipeline/IngestionJobServiceCoordinationTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Pipeline/MarketDataClientFactoryTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Pipeline/WalEventPipelineTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/ProviderRouting/BestOfBreedProviderSelectorTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/ProviderRouting/ProviderRoutingServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/ProviderRouting/ProviderTrustScoringServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Reconciliation/CanonicalReconciliationMatchingEngineTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Reconciliation/StatementRepositoryTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/ReconciliationRunServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Services/ConfigurationPresetsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Services/ConfigurationServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Services/ExecutionSimulationOrchestratorTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Services/FundOperationsWorkspaceReadServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Application/Wizard/WizardConfigurationStepTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/AssetOperations/AssetOperationsReadServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Commodities/CommodityProjectionServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Core/Config/ConfigValidationPipelineTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/CryptoCurrency/CryptoProjectionServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/DataIntegration/Canonicalization/ConditionCodeMapperTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/DataIntegration/Monitoring/ConnectionStatusWebhookTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/DataIntegration/Monitoring/DataQuality/LiquidityProfileTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/DataIntegration/Monitoring/ProviderDegradationCalibrationTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/DataIntegration/Monitoring/SchemaValidationServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/DataIntegration/Services/DataQuality/CompletenessScoreCalculatorTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Deposits/DepositProjectionServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Derivatives/SwapProjectionServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Equity/EquityProjectionServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Execution/OrderManagementSystemGovernanceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Execution/TradierExecutionReconciliationTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/FinancialOperations/Banking/BankTransactionSeedTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/FinancialOperations/Banking/PaymentApprovalTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/FinancialOperations/Ledger/AccountingPolicyServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/FixedIncome/BondProjectionServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Futures/FutureProjectionServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/FxSpot/FxSpotProjectionServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Infrastructure/Providers/AlpacaMessageParsingTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Infrastructure/Providers/PolygonMarketDataClientTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Infrastructure/Providers/PolygonRecordedSessionReplayTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Infrastructure/Providers/PolygonSubscriptionTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Infrastructure/Providers/ProviderFactoryCredentialContextTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Infrastructure/Providers/ProviderResilienceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Infrastructure/Providers/SyntheticMarketDataProviderTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Infrastructure/Providers/SyntheticOptionsChainProviderTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Infrastructure/Resilience/WebSocketConnectionManagerTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Instruments/Options/OptionsChainServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Integration/EndpointStubDetectionTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Integration/EndpointTests/CheckpointEndpointTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Integration/EndpointTests/EndpointTestFixture.cs: Touched in current git diff.
+- tests/Meridian.Tests/Integration/EndpointTests/FundStructureEndpointTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Integration/EndpointTests/QualityEndpointContractTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/MoneyMarketFunds/MoneyMarketFundProjectionServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Options/OptionProjectionServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Performance/AllocationBudgetIntegrationTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Platform/Diagnostics/DiagnosticBundleServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Platform/Monitoring/BackpressureAlertServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Platform/Tracing/TracedEventMetricsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/PortfolioRecords/FundAccounts/FundAccountServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Reconciliation/StatementBreakClassifierTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Reconciliation/StatementFixtureScenarioTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Reconciliation/StatementImportAndMatchingTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Serialization/HighPerformanceJsonTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/StatementReconciliationServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Storage/Backfill/BackfillStatusStoreTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Storage/DataValidatorTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Storage/JsonlReplayerTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Storage/LedgerBookServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Storage/WriteAheadLogTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Strategies/ReconciliationCaseWorkflowServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Strategies/StrategyRunReadServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/SymbolSearch/SymbolSearchServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Treasury/MmfFamilyNormalizationTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Treasury/MmfLiquidityServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Treasury/MmfRebuildTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Treasury/MoneyMarketFundServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/AccountingConfigurationServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/AccountingSystemIntegrationServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/AlpacaBrokerageConnectionServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/AuditTrailExplorerServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/BondReferenceEndpointsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/BrokerageConnectionEndpointsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/BrokeragePortfolioSyncServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/CashOperationsOrchestratorServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/CredentialCompatibilityEndpointsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/DiagnosticsEndpointsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/DirectLendingEndpointsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/EdgarReferenceDataEndpointsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/ExecutionWriteEndpointsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/FamilyOfficeReadServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/LedgerAmountProvenanceServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/OmsIntegrationServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/OperationsContinuityReconciliationBridgeTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/OptionReferenceEndpointsRoundtripTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/PlaidWorkstationServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/ProviderConnectionEndpointsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/ProviderLedgerReconciliationServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/ProviderReadinessEndpointTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/ProviderRoutingEndpointsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/ReconciliationApiServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/ReferenceDataEndpointAuthorizationTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/ReportPackWorkflowServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/RiskEndpointsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/SecurityMasterConvertibleEquityEndpointsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/SecurityMasterExceptionCaseworkServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/SecurityMasterIngestStatusEndpointsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/SecurityMasterPreferredEquityEndpointsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/SecurityMasterValidationEndpointsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/StrategyDesignerWorkstationEndpointsTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/TradingOperatorReadinessServiceTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/WorkstationEndpointContractCompatibilityTests.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/WorkstationEndpointsTests.AccountingConfiguration.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Infrastructure.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Wave4.cs: Touched in current git diff.
+- tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs: Touched in current git diff.
 
 ## Validation
 - [pass] python build/scripts/docs/prompt-route-linter.py --summary

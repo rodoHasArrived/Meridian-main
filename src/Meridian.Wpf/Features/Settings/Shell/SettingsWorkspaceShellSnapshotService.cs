@@ -1,6 +1,6 @@
 using Meridian.Contracts.Api;
-using Meridian.Wpf.Services;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.Features.Settings.Shell;
 

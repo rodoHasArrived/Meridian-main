@@ -1,10 +1,10 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
-using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
-using Meridian.DataIntegration.Credentials;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Workstation;
+using Meridian.Core.Config;
+using Meridian.DataIntegration.Credentials;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;

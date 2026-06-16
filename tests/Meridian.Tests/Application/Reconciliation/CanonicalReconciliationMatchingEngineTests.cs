@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Domain.Reconciliation;
+using Meridian.FinancialOperations.Reconciliation;
 
 namespace Meridian.Tests.Application.Reconciliation;
 

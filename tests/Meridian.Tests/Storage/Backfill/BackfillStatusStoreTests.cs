@@ -1,10 +1,10 @@
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Backfill;
-using Meridian.Infrastructure.Adapters.Core;
-using Xunit;
 using Meridian.Contracts.Backfill;
+using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Storage.Backfill;
+using Xunit;
 
 namespace Meridian.Tests.Storage.Backfill;
 

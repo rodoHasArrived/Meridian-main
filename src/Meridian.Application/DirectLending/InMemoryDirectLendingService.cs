@@ -1,9 +1,9 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Meridian.Application.Composition;
 using Meridian.Contracts.DirectLending;
 using Meridian.FSharp.DirectLendingInterop;
-using Meridian.Application.Composition;
 
 namespace Meridian.Application.DirectLending;
 

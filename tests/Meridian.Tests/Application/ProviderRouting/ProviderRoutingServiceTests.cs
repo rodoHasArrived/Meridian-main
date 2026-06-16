@@ -1,7 +1,7 @@
 using FluentAssertions;
-using Meridian.Core.Config;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.UI;
+using Meridian.Core.Config;
 using Meridian.ProviderSdk;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;

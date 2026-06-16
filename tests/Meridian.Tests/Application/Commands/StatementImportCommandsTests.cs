@@ -1,9 +1,9 @@
 using FluentAssertions;
 using Meridian.Application.Commands;
-using Meridian.FinancialOperations.Reconciliation;
-using Meridian.Platform.Results;
 using Meridian.Domain.Reconciliation;
+using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Infrastructure.Reconciliation;
+using Meridian.Platform.Results;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog.Core;
 using Xunit;

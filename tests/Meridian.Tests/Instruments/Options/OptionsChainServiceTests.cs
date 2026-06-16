@@ -1,13 +1,13 @@
 using FluentAssertions;
-using Meridian.Core.Config;
+using FsCheck.Xunit;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Config;
 using Meridian.Domain.Collectors;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Instruments.Options;
 using Meridian.ProviderSdk;
 using Meridian.Tests.TestHelpers;
-using FsCheck.Xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;

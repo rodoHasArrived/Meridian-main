@@ -1,6 +1,6 @@
 using System;
-using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.ViewModels;
 
 namespace Meridian.Wpf.Shell.Root;
 

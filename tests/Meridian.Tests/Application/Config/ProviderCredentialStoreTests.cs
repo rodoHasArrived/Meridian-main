@@ -1,8 +1,8 @@
 using FluentAssertions;
-using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
-using Meridian.DataIntegration.Credentials;
 using Meridian.Contracts.Configuration;
+using Meridian.Core.Config;
+using Meridian.DataIntegration.Credentials;
 using Xunit;
 
 namespace Meridian.Tests.Application.Config;

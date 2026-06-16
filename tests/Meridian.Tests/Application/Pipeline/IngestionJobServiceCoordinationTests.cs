@@ -1,8 +1,8 @@
 using FluentAssertions;
-using Meridian.Core.Config;
-using Meridian.Contracts.Coordination;
 using Meridian.Application.Pipeline;
+using Meridian.Contracts.Coordination;
 using Meridian.Contracts.Pipeline;
+using Meridian.Core.Config;
 using Meridian.Platform.Coordination;
 using Meridian.Storage.Coordination;
 using Xunit;

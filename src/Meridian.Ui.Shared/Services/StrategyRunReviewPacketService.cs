@@ -1,6 +1,6 @@
+using Meridian.Application.Monitoring;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Workstation;
-using Meridian.Application.Monitoring;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging;
 

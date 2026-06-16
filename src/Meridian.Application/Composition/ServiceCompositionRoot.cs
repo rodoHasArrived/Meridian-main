@@ -1,12 +1,12 @@
 using Meridian.Application.Composition.Features;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
+using Meridian.Contracts.Monitoring;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Contracts;
-using Microsoft.Extensions.DependencyInjection;
-using Meridian.Contracts.Monitoring;
 using Meridian.Platform.Monitoring;
 using Meridian.Platform.Tracing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Application.Composition;
 

@@ -1,6 +1,6 @@
 using System.Text.Json;
-using Meridian.Core.Config;
 using Meridian.Contracts.Credentials;
+using Meridian.Core.Config;
 using Meridian.Infrastructure.Adapters.NYSE;
 
 namespace Meridian.Infrastructure.DataSources;

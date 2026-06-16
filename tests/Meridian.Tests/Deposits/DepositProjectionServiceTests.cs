@@ -1,9 +1,9 @@
-using Meridian.Instruments.Deposits;
+using FluentAssertions;
 using Meridian.Contracts.Deposits;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Instruments.Deposits;
 using Meridian.Storage.SecurityMaster;
 using NSubstitute;
-using FluentAssertions;
 
 namespace Meridian.Tests.Deposits;
 

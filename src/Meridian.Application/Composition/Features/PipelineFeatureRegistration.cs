@@ -1,11 +1,14 @@
-using Meridian.Core.Config;
-using Meridian.Core.Logging;
 using Meridian.Application.Monitoring;
-using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
+using Meridian.Contracts.Monitoring;
+using Meridian.Core.Config;
+using Meridian.Core.Logging;
+using Meridian.Core.Monitoring;
 using Meridian.Core.Performance;
+using Meridian.Core.Pipeline;
 using Meridian.DataIntegration.Canonicalization;
+using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Domain.Events;
 using Meridian.Platform.Tracing;
 using Meridian.Storage;
@@ -14,9 +17,6 @@ using Meridian.Storage.Policies;
 using Meridian.Storage.Sinks;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using Meridian.Contracts.Monitoring;
-using Meridian.Core.Monitoring;
-using Meridian.Core.Pipeline;
 
 namespace Meridian.Application.Composition.Features;
 

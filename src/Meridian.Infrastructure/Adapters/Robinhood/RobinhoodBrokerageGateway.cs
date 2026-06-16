@@ -1,4 +1,3 @@
-using Meridian.Core.Pipeline;
 // ✅ ADR-001: IBrokerageGateway contract for brokerage order execution
 // ✅ ADR-004: CancellationToken on all async methods
 // ✅ ADR-005: Attribute-based provider discovery via [DataSource]
@@ -10,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Channels;
+using Meridian.Core.Pipeline;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;

@@ -1,6 +1,6 @@
-using Meridian.Core.Config;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
+using Meridian.Core.Config;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Application.Composition.Features;

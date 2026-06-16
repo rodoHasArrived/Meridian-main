@@ -1,7 +1,7 @@
 using FluentAssertions;
+using Meridian.Contracts.Monitoring;
 using Meridian.Platform.Tracing;
 using Xunit;
-using Meridian.Contracts.Monitoring;
 
 namespace Meridian.Tests.Platform.Tracing;
 

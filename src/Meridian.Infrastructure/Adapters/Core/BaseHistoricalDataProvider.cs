@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Exceptions;
 using Meridian.Core.Logging;
-using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.Http;
@@ -10,7 +10,6 @@ using Meridian.Infrastructure.Resilience;
 using Meridian.Infrastructure.Utilities;
 using Polly;
 using Serilog;
-
 // Use centralized HttpHandleResult from HttpResiliencePolicy
 using HttpHandleResult = Meridian.Infrastructure.Resilience.HttpHandleResult;
 

@@ -167,11 +167,16 @@ public sealed class ProviderDegradationCalibrationRunner
         var coverageQuality = (double)coveredIncidentWindows / totalIncidentWindows;
 
         var criteriaBlockers = new List<string>();
-        if (baselineDeltaPrecision < 0) criteriaBlockers.Add("Candidate precision regressed below baseline.");
-        if (baselineDeltaRecall < 0) criteriaBlockers.Add("Candidate recall regressed below baseline.");
-        if (precisionLowerConfidence < 0.60) criteriaBlockers.Add("Candidate precision confidence band is below 0.60.");
-        if (recallLowerConfidence < 0.60) criteriaBlockers.Add("Candidate recall confidence band is below 0.60.");
-        if (coverageQuality < 0.75) criteriaBlockers.Add("Incident coverage quality is below 0.75.");
+        if (baselineDeltaPrecision < 0)
+            criteriaBlockers.Add("Candidate precision regressed below baseline.");
+        if (baselineDeltaRecall < 0)
+            criteriaBlockers.Add("Candidate recall regressed below baseline.");
+        if (precisionLowerConfidence < 0.60)
+            criteriaBlockers.Add("Candidate precision confidence band is below 0.60.");
+        if (recallLowerConfidence < 0.60)
+            criteriaBlockers.Add("Candidate recall confidence band is below 0.60.");
+        if (coverageQuality < 0.75)
+            criteriaBlockers.Add("Incident coverage quality is below 0.75.");
 
         var calibrationPass = criteriaBlockers.Count == 0;
 

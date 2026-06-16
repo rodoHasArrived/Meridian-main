@@ -1,7 +1,7 @@
 using Meridian.Application.Composition;
-using Meridian.Platform.Results;
 using Meridian.Contracts.Etl;
 using Meridian.DataIntegration.Etl;
+using Meridian.Platform.Results;
 using Serilog;
 
 namespace Meridian.Application.Commands;

@@ -163,11 +163,16 @@ public sealed class FundWorkflowCommandHandler
 
     private static FundWorkflowOverallStatus DeriveOverallStatus(WorkflowSnapshot s)
     {
-        if (s.IsClosed) return FundWorkflowOverallStatus.Closed;
-        if (s.StageStatus[FundWorkflowStage.Approval] == FundWorkflowSubStatus.Blocked) return FundWorkflowOverallStatus.Rejected;
-        if (s.StageStatus.Values.All(x => x == FundWorkflowSubStatus.Completed)) return FundWorkflowOverallStatus.Approved;
-        if (s.StageStatus[FundWorkflowStage.Approval] == FundWorkflowSubStatus.InProgress) return FundWorkflowOverallStatus.AwaitingApproval;
-        if (s.StageStatus.Values.Any(x => x is FundWorkflowSubStatus.InProgress or FundWorkflowSubStatus.Completed)) return FundWorkflowOverallStatus.InProgress;
+        if (s.IsClosed)
+            return FundWorkflowOverallStatus.Closed;
+        if (s.StageStatus[FundWorkflowStage.Approval] == FundWorkflowSubStatus.Blocked)
+            return FundWorkflowOverallStatus.Rejected;
+        if (s.StageStatus.Values.All(x => x == FundWorkflowSubStatus.Completed))
+            return FundWorkflowOverallStatus.Approved;
+        if (s.StageStatus[FundWorkflowStage.Approval] == FundWorkflowSubStatus.InProgress)
+            return FundWorkflowOverallStatus.AwaitingApproval;
+        if (s.StageStatus.Values.Any(x => x is FundWorkflowSubStatus.InProgress or FundWorkflowSubStatus.Completed))
+            return FundWorkflowOverallStatus.InProgress;
         return FundWorkflowOverallStatus.Draft;
     }
 

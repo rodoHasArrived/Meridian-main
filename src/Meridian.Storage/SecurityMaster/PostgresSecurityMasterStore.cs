@@ -311,17 +311,17 @@ public sealed class PostgresSecurityMasterStore : ISecurityMasterStore
             command.Parameters.AddWithValue("version", record.Version);
             command.Parameters.AddWithValue("effective_from", record.EffectiveFrom.UtcDateTime);
             command.Parameters.AddWithValue("effective_to", (object?)record.EffectiveTo?.UtcDateTime ?? DBNull.Value);
-        await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-    }
+            await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
 
-    await ReplaceIdentifiersAsync(connection, transaction, record.SecurityId, record.Identifiers, ct).ConfigureAwait(false);
-    await ReplaceAliasesAsync(connection, transaction, record.SecurityId, record.Aliases, ct).ConfigureAwait(false);
-    await UpsertBondProjectionTablesAsync(connection, transaction, record, ct).ConfigureAwait(false);
-    await UpsertOptionProjectionTablesAsync(connection, transaction, record, ct).ConfigureAwait(false);
-    await UpsertEquityProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
-    await UpsertFutureProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
-    await UpsertFxSpotProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
-    await UpsertSwapProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
+        await ReplaceIdentifiersAsync(connection, transaction, record.SecurityId, record.Identifiers, ct).ConfigureAwait(false);
+        await ReplaceAliasesAsync(connection, transaction, record.SecurityId, record.Aliases, ct).ConfigureAwait(false);
+        await UpsertBondProjectionTablesAsync(connection, transaction, record, ct).ConfigureAwait(false);
+        await UpsertOptionProjectionTablesAsync(connection, transaction, record, ct).ConfigureAwait(false);
+        await UpsertEquityProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
+        await UpsertFutureProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
+        await UpsertFxSpotProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
+        await UpsertSwapProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
         await UpsertCommodityProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
         await UpsertCryptoProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);
         await UpsertDepositProjectionAsync(connection, transaction, record, ct).ConfigureAwait(false);

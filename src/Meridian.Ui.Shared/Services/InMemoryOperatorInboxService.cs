@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
-using Meridian.Contracts.Workstation;
 using Meridian.Application.Composition;
+using Meridian.Contracts.Workstation;
 
 namespace Meridian.Ui.Shared.Services;
 

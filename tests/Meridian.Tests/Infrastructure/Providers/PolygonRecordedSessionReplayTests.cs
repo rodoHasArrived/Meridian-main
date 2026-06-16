@@ -1,9 +1,9 @@
 using System.Reflection;
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Core.Config;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Config;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Domain.Models;

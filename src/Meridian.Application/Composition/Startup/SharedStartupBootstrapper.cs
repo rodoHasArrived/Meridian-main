@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using Meridian.Application.Commands;
+using Meridian.Application.Services;
 using Meridian.Core.Config;
 using Meridian.Core.Logging;
 using Meridian.Platform.Results;
-using Meridian.Application.Services;
 using Serilog;
 using DeploymentContext = Meridian.Platform.Runtime.DeploymentContext;
 

@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Meridian.Instruments.MoneyMarketFunds;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.MoneyMarketFunds;
+using Meridian.Instruments.MoneyMarketFunds;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

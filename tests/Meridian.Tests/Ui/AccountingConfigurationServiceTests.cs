@@ -1,3 +1,4 @@
+using System.Reflection;
 using FluentAssertions;
 using Meridian.Contracts.Banking;
 using Meridian.Contracts.FundStructure;
@@ -6,7 +7,6 @@ using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
-using System.Reflection;
 
 namespace Meridian.Tests.Ui;
 

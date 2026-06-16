@@ -1,5 +1,5 @@
-using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Domain.Reconciliation;
+using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Platform.Results;
 using Serilog;
 
@@ -36,7 +36,8 @@ public sealed class StatementImportCommands(
         {
             var result = await brokerStatementService.ValidateAsync(new BrokerStatementImportRequest(broker, path, statementDate), ct);
             Console.WriteLine($"valid={result.IsValid}; rows={result.RowCount}");
-            foreach (var error in result.Errors) Console.WriteLine($"error={error}");
+            foreach (var error in result.Errors)
+                Console.WriteLine($"error={error}");
             return result.IsValid ? CliResult.Ok() : CliResult.Fail(ErrorCode.ValidationFailed);
         }
 

@@ -530,8 +530,8 @@ public sealed record IntradayBar(
 );
 #else
 
-using Meridian.Core.Logging;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Logging;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;

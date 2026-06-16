@@ -1,8 +1,8 @@
 using FluentAssertions;
-using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
-using Meridian.DataIntegration.Credentials;
 using Meridian.Application.Services;
+using Meridian.Core.Config;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Core;

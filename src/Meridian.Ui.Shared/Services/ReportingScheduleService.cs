@@ -591,15 +591,24 @@ public sealed class ReportingScheduleService
 
     private static string ResolveFamily(string templateId)
     {
-        if (templateId.StartsWith("investor", StringComparison.OrdinalIgnoreCase)) return ReportingTemplateFamily.InvestorStatement.ToString();
-        if (templateId.StartsWith("sec", StringComparison.OrdinalIgnoreCase)) return ReportingTemplateFamily.SecFilingPacket.ToString();
-        if (templateId.StartsWith("shadow", StringComparison.OrdinalIgnoreCase)) return ReportingTemplateFamily.ShadowNavPack.ToString();
-        if (templateId.StartsWith("performance", StringComparison.OrdinalIgnoreCase)) return ReportingTemplateFamily.PerformanceReport.ToString();
-        if (templateId.StartsWith("holdings", StringComparison.OrdinalIgnoreCase)) return ReportingTemplateFamily.HoldingsReport.ToString();
-        if (templateId.StartsWith("capital", StringComparison.OrdinalIgnoreCase)) return ReportingTemplateFamily.CapitalAccountStatement.ToString();
-        if (templateId.StartsWith("board", StringComparison.OrdinalIgnoreCase)) return ReportingTemplateFamily.BoardPacket.ToString();
-        if (templateId.StartsWith("audit", StringComparison.OrdinalIgnoreCase)) return ReportingTemplateFamily.AuditPackage.ToString();
-        if (templateId.StartsWith("certified", StringComparison.OrdinalIgnoreCase)) return ReportingTemplateFamily.CertifiedDataset.ToString();
+        if (templateId.StartsWith("investor", StringComparison.OrdinalIgnoreCase))
+            return ReportingTemplateFamily.InvestorStatement.ToString();
+        if (templateId.StartsWith("sec", StringComparison.OrdinalIgnoreCase))
+            return ReportingTemplateFamily.SecFilingPacket.ToString();
+        if (templateId.StartsWith("shadow", StringComparison.OrdinalIgnoreCase))
+            return ReportingTemplateFamily.ShadowNavPack.ToString();
+        if (templateId.StartsWith("performance", StringComparison.OrdinalIgnoreCase))
+            return ReportingTemplateFamily.PerformanceReport.ToString();
+        if (templateId.StartsWith("holdings", StringComparison.OrdinalIgnoreCase))
+            return ReportingTemplateFamily.HoldingsReport.ToString();
+        if (templateId.StartsWith("capital", StringComparison.OrdinalIgnoreCase))
+            return ReportingTemplateFamily.CapitalAccountStatement.ToString();
+        if (templateId.StartsWith("board", StringComparison.OrdinalIgnoreCase))
+            return ReportingTemplateFamily.BoardPacket.ToString();
+        if (templateId.StartsWith("audit", StringComparison.OrdinalIgnoreCase))
+            return ReportingTemplateFamily.AuditPackage.ToString();
+        if (templateId.StartsWith("certified", StringComparison.OrdinalIgnoreCase))
+            return ReportingTemplateFamily.CertifiedDataset.ToString();
         return ReportingTemplateFamily.CustomReport.ToString();
     }
 

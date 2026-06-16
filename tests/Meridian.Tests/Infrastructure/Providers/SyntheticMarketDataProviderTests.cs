@@ -1,9 +1,9 @@
 using System.Collections.Concurrent;
 using FluentAssertions;
-using Meridian.Core.Config;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Domain.Events;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Core.Config;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Adapters.Synthetic;
 using Xunit;

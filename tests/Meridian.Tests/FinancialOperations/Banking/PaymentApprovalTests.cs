@@ -1,7 +1,7 @@
 using FluentAssertions;
+using Meridian.Contracts.Banking;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.Banking;
-using Meridian.Contracts.Banking;
 
 namespace Meridian.Tests.FinancialOperations.Banking;
 

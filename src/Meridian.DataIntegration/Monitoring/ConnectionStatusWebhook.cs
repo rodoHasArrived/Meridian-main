@@ -1,8 +1,8 @@
 using System.Threading;
+using Meridian.Contracts.Monitoring;
 using Meridian.Core.Monitoring;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Meridian.Contracts.Monitoring;
 
 namespace Meridian.DataIntegration.Monitoring;
 

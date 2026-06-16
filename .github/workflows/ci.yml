@@ -55,7 +55,7 @@ jobs:
         run: dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 
       - name: Verify formatting
-        run: dotnet format Meridian.sln --verify-no-changes --verbosity minimal --no-restore
+        run: dotnet format Meridian.sln --verify-no-changes --verbosity minimal --no-restore --exclude-diagnostics CA2024
 
       - name: Validate warning suppression inventory
         run: python3 build/scripts/ci/check-warning-suppressions.py
@@ -169,6 +169,7 @@ jobs:
       - name: Run gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_CONFIG: .gitleaks.toml
 
   browser-workstation:

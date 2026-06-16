@@ -1,12 +1,12 @@
-using Meridian.Wpf.Models;
+using Meridian.Ui.Services;
+using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Features;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Shell.Refresh;
 using Meridian.Wpf.Shell.Root;
 using Meridian.Wpf.Shell.Services;
 using Meridian.Wpf.Shell.Session;
 using Meridian.Wpf.Shell.ViewModels;
-using Meridian.Ui.Services;
-using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

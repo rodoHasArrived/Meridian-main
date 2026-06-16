@@ -1,5 +1,5 @@
-using Meridian.Core.Config;
 using Meridian.Contracts.Api;
+using Meridian.Core.Config;
 using Meridian.ProviderSdk;
 
 namespace Meridian.Application.ProviderRouting;

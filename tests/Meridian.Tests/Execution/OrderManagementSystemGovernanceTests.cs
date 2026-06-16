@@ -334,4 +334,4 @@ public sealed class OrderManagementSystemGovernanceTests
         decimal AverageCostBasis = 100m,
         decimal UnrealizedPnl = 0m,
         decimal RealizedPnl = 0m) : IPosition;
-    }
+}

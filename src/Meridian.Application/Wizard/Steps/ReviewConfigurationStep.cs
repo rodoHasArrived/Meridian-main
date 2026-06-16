@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Meridian.Core.Config;
 using Meridian.Application.Services;
 using Meridian.Application.Wizard.Core;
+using Meridian.Core.Config;
 
 namespace Meridian.Application.Wizard.Steps;
 

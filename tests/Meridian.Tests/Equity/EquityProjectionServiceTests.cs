@@ -1,8 +1,8 @@
 using System.Text.Json;
 using FluentAssertions;
-using Meridian.Instruments.Equity;
 using Meridian.Contracts.Equity;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Instruments.Equity;
 using Meridian.Storage.SecurityMaster;
 using NSubstitute;
 

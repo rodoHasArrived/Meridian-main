@@ -1,15 +1,15 @@
+using System.Globalization;
+using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
-using Meridian.FinancialOperations.OperationsContinuity;
-using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Storage.Export;
 using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
-using System.Globalization;
 using static Meridian.Ui.Shared.Evidence.EvidenceContributionHelpers;
 
 namespace Meridian.Ui.Shared.Evidence;
@@ -2462,10 +2462,10 @@ public sealed class PaymentIntentEvidenceContributor : IEvidenceContributor
                     evidence.EvidenceKind,
                     evidence.EvidenceRoute,
                     evidence.RecordedAtUtc ?? generatedAt) with
-                {
-                    Capture = BuildBankEvidenceCapture(evidence),
-                    ExtractedFields = BuildBankEvidenceExtractedFields(evidence, expectedCashMovement)
-                })
+            {
+                Capture = BuildBankEvidenceCapture(evidence),
+                ExtractedFields = BuildBankEvidenceExtractedFields(evidence, expectedCashMovement)
+            })
             .ToArray();
 
     private static EvidenceArtifactCaptureDto BuildBankEvidenceCapture(PaymentIntentBankEvidenceDto evidence)

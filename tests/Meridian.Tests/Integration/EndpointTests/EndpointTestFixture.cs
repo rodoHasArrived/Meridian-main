@@ -1,14 +1,16 @@
 using System;
 using System.Text.Json;
 using Meridian.Application.DirectLending;
-using Meridian.PortfolioRecords.FundAccounts;
-using Meridian.Identity.Auth;
 using Meridian.Application.FundStructure;
-using Meridian.Contracts.Services;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.Monitoring;
+using Meridian.Contracts.Pipeline;
+using Meridian.Contracts.Services;
+using Meridian.Identity.Auth;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Ui.Shared;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
@@ -18,8 +20,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Xunit;
-using Meridian.Contracts.Monitoring;
-using Meridian.Contracts.Pipeline;
 
 namespace Meridian.Tests.Integration.EndpointTests;
 

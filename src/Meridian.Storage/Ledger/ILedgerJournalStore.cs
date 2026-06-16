@@ -1,6 +1,6 @@
-using Meridian.Ledger;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Ledger;
 using Npgsql;
 
 namespace Meridian.Storage.Ledger;

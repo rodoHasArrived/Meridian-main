@@ -1,9 +1,9 @@
-using Meridian.Instruments.Derivatives;
+using FluentAssertions;
 using Meridian.Contracts.Derivatives;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Instruments.Derivatives;
 using Meridian.Storage.SecurityMaster;
 using NSubstitute;
-using FluentAssertions;
 
 namespace Meridian.Tests.Derivatives;
 

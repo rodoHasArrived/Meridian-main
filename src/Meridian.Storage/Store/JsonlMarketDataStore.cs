@@ -1,9 +1,9 @@
 using System.IO.Compression;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using Meridian.Contracts.Store;
 using Meridian.Core.Logging;
 using Meridian.Core.Serialization;
-using Meridian.Contracts.Store;
 using Meridian.Domain.Events;
 using Meridian.Storage.Interfaces;
 using Serilog;

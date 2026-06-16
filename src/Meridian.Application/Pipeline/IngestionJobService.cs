@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using Meridian.Contracts.Coordination;
-using Meridian.Core.Logging;
 using Meridian.Contracts.Pipeline;
+using Meridian.Core.Logging;
 using Meridian.DataIntegration.Etl;
 using Serilog;
 

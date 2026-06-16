@@ -1,8 +1,8 @@
 using System.Linq;
 using System.Text.Json;
-using Meridian.Core.Config;
 using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Api;
+using Meridian.Core.Config;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;

@@ -1,7 +1,7 @@
 using System.Net;
 using FluentAssertions;
-using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
+using Meridian.Core.Config;
 using Meridian.DataIntegration.Credentials;
 using Moq;
 using Moq.Protected;

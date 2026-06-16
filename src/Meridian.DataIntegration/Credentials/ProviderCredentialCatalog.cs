@@ -1,5 +1,5 @@
-using Meridian.Core.Config;
 using Meridian.Contracts.Configuration;
+using Meridian.Core.Config;
 
 namespace Meridian.DataIntegration.Credentials;
 

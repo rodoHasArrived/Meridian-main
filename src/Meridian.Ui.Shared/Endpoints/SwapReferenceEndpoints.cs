@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Meridian.Instruments.Derivatives;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Derivatives;
+using Meridian.Instruments.Derivatives;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
