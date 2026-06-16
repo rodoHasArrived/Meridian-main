@@ -226,6 +226,64 @@ public sealed class ProviderIntegrationContractsTests
         resultRoundTrip.Should().BeEquivalentTo(result);
     }
 
+    [Fact]
+    public void ProviderIntegrationSetupSave_RoundTripsWithManifestAndConnection()
+    {
+        var manifest = CreateManifest();
+        var connection = new ProviderConnectionDto(
+            "connection-alpha",
+            manifest.ProviderId,
+            manifest.ManifestId,
+            "General Account",
+            manifest.Environment,
+            ProviderIntegrationActivationStateDto.Draft,
+            "vault://provider-credentials/custodian-abc/general-account",
+            [ProviderCapabilityKindDto.Positions],
+            "ops@example.com",
+            DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+            DateTimeOffset.Parse("2026-06-16T12:05:00Z"),
+            ApprovalEvidenceId: null);
+        var request = new ProviderIntegrationSetupSaveRequestDto(
+            manifest,
+            connection,
+            "ops@example.com",
+            DateTimeOffset.Parse("2026-06-16T12:10:00Z"),
+            "Saved from setup wizard.");
+        var result = new ProviderIntegrationSetupSaveResultDto(
+            Saved: true,
+            manifest.ManifestId,
+            connection.ConnectionId,
+            ProviderIntegrationActivationStateDto.Draft,
+            ProviderIntegrationActivationStateDto.Draft,
+            new ProviderIntegrationActivationReadinessDto(
+                IsReady: false,
+                Issues: [],
+                RequiredEvidence: ["endpoint-test", "dry-run-result"]),
+            "Provider integration setup draft saved.");
+
+        var requestJson = JsonSerializer.Serialize(
+            request,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationSetupSaveRequestDto);
+        var resultJson = JsonSerializer.Serialize(
+            result,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationSetupSaveResultDto);
+        var requestRoundTrip = JsonSerializer.Deserialize(
+            requestJson,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationSetupSaveRequestDto);
+        var resultRoundTrip = JsonSerializer.Deserialize(
+            resultJson,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationSetupSaveResultDto);
+
+        requestJson.Should().Contain("\"manifest\"");
+        requestJson.Should().Contain("\"connection\"");
+        requestJson.Should().Contain("\"savedBy\"");
+        requestJson.Should().NotContain("\"SavedBy\"");
+        resultJson.Should().Contain("\"saved\": true");
+        resultJson.Should().Contain("\"manifestState\": \"Draft\"");
+        requestRoundTrip.Should().BeEquivalentTo(request);
+        resultRoundTrip.Should().BeEquivalentTo(result);
+    }
+
     private static ProviderIntegrationManifestDto CreateManifest()
         => new(
             "manifest-custodian-abc-v1",
