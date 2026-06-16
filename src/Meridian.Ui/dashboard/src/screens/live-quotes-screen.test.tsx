@@ -21,6 +21,7 @@ import {
   validateQuickTicket
 } from "@/screens/live-quotes-screen.view-model";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
+import { expectNoAxeViolations } from "@/test/axe";
 import * as api from "@/lib/api";
 import type { OrderResult } from "@/types";
 
@@ -1141,6 +1142,13 @@ describe("LiveQuotesScreen quick trade", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it("has no basic accessibility violations", async () => {
+    const { container } = renderWithRouter(<LiveQuotesScreen />, { initialEntries: ["/data/quotes?symbol=AAPL"] });
+    await waitForAsyncEffects();
+
+    await expectNoAxeViolations(container);
   });
 
   it("seeds a buy ticket at the ask price when ask is clicked and submits", async () => {

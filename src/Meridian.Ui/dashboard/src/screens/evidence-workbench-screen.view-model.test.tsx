@@ -10,6 +10,7 @@ import {
   validateEvidencePacket
 } from "@/lib/api";
 import { EvidenceWorkbenchScreen } from "@/screens/evidence-workbench-screen";
+import { expectNoAxeViolations } from "@/test/axe";
 import {
   buildEvidenceLineageDetail,
   buildEvidenceLineagePanel,
@@ -1166,6 +1167,18 @@ describe("Evidence Workbench view model", () => {
 });
 
 describe("EvidenceWorkbenchScreen", () => {
+  it("has no basic accessibility violations", async () => {
+    vi.mocked(getEvidenceSubjects).mockResolvedValue([subject]);
+    vi.mocked(getEvidencePacket).mockResolvedValue(packet);
+
+    renderEvidenceRoute("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1");
+    await screen.findByText("Momentum strategy run");
+
+    // Pre-existing debt: duplicate same-name landmarks and a region/landmark
+    // containment gap on the evidence graph surface.
+    await expectNoAxeViolations(document.body, { knownIssues: ["landmark-unique", "region"] });
+  });
+
   it("renders subject query route, validation result, and manifest export result", async () => {
     const validation: EvidenceCompleteness = { ...completeness, score: 50 };
     const exportResponse: EvidencePacketExportResponse = {
