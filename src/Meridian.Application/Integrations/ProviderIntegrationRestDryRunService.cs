@@ -43,6 +43,12 @@ public sealed class ProviderIntegrationRestDryRunService
     public async Task<ProviderIntegrationDryRunResultDto> RunRestDryRunAsync(
         ProviderIntegrationRestDryRunRequestDto request,
         CancellationToken ct = default)
+        => await RunRestDryRunAsync(null, request, ct).ConfigureAwait(false);
+
+    public async Task<ProviderIntegrationDryRunResultDto> RunRestDryRunAsync(
+        string? tenantId,
+        ProviderIntegrationRestDryRunRequestDto request,
+        CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.SyncRunId);
@@ -52,9 +58,10 @@ public sealed class ProviderIntegrationRestDryRunService
 
         ct.ThrowIfCancellationRequested();
 
-        var manifest = await store.GetManifestAsync(request.ManifestId, ct).ConfigureAwait(false)
+        var scopedStore = ResolveStore(tenantId);
+        var manifest = await scopedStore.GetManifestAsync(request.ManifestId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException($"Provider integration manifest '{request.ManifestId}' was not found.");
-        var connection = await store.GetConnectionAsync(request.ConnectionId, ct).ConfigureAwait(false)
+        var connection = await scopedStore.GetConnectionAsync(request.ConnectionId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException($"Provider integration connection '{request.ConnectionId}' was not found.");
 
         ValidateRequestScope(request, manifest, connection);
@@ -83,7 +90,7 @@ public sealed class ProviderIntegrationRestDryRunService
                 RecordsQuarantined: 0,
                 ProviderIntegrationProcessingStatusDto.Blocked,
                 [issue]);
-            await SaveSyncRunAsync(request, manifest, connection, endpoint.EndpointKey, null, blockedResult, ct).ConfigureAwait(false);
+            await SaveSyncRunAsync(scopedStore, request, manifest, connection, endpoint.EndpointKey, null, blockedResult, ct).ConfigureAwait(false);
             return blockedResult;
         }
 
@@ -114,7 +121,7 @@ public sealed class ProviderIntegrationRestDryRunService
             var payloadId = StableId("raw-payload", request.SyncRunId, endpoint.EndpointKey, page.ToString(CultureInfo.InvariantCulture));
             firstPayloadId ??= payloadId;
 
-            await store.SaveRawPayloadAsync(
+            await scopedStore.SaveRawPayloadAsync(
                 new RawIngestionPayloadDto(
                     payloadId,
                     manifest.ProviderId,
@@ -174,7 +181,7 @@ public sealed class ProviderIntegrationRestDryRunService
                 if (rowIssues.Any(issue => issue.Severity == ProviderIntegrationIssueSeverityDto.Critical))
                 {
                     quarantined++;
-                    await store.SaveQuarantinedRecordAsync(
+                    await scopedStore.SaveQuarantinedRecordAsync(
                         new QuarantinedRecordDto(
                             StableId("quarantine", request.SyncRunId, endpoint.EndpointKey, recordOrdinal),
                             request.SyncRunId,
@@ -190,7 +197,7 @@ public sealed class ProviderIntegrationRestDryRunService
                 }
 
                 accepted++;
-                await store.SaveStagingRecordAsync(
+                await scopedStore.SaveStagingRecordAsync(
                     new IntegrationStagingRecordDto(
                         StableId("staging", request.SyncRunId, endpoint.EndpointKey, recordOrdinal),
                         request.SyncRunId,
@@ -239,11 +246,12 @@ public sealed class ProviderIntegrationRestDryRunService
             quarantined,
             status,
             allIssues);
-        await SaveSyncRunAsync(request, manifest, connection, endpoint.EndpointKey, firstPayloadId, result, ct).ConfigureAwait(false);
+        await SaveSyncRunAsync(scopedStore, request, manifest, connection, endpoint.EndpointKey, firstPayloadId, result, ct).ConfigureAwait(false);
         return result;
     }
 
     private Task SaveSyncRunAsync(
+        IProviderIntegrationManifestStore scopedStore,
         ProviderIntegrationRestDryRunRequestDto request,
         ProviderIntegrationManifestDto manifest,
         ProviderConnectionDto connection,
@@ -251,7 +259,7 @@ public sealed class ProviderIntegrationRestDryRunService
         string? rawPayloadId,
         ProviderIntegrationDryRunResultDto result,
         CancellationToken ct)
-        => store.SaveSyncRunAsync(
+        => scopedStore.SaveSyncRunAsync(
             new ProviderIntegrationSyncRunDto(
                 request.SyncRunId,
                 manifest.ManifestId,
@@ -268,6 +276,13 @@ public sealed class ProviderIntegrationRestDryRunService
                 rawPayloadId,
                 result.Issues),
             ct);
+
+    private IProviderIntegrationManifestStore ResolveStore(string? tenantId)
+        => string.IsNullOrWhiteSpace(tenantId)
+            ? store
+            : store is IProviderIntegrationTenantManifestStoreFactory factory
+                ? factory.ForTenant(tenantId)
+                : store;
 
     private static void ValidateRequestScope(
         ProviderIntegrationRestDryRunRequestDto request,

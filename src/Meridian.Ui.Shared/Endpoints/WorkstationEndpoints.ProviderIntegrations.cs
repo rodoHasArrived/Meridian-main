@@ -103,8 +103,13 @@ public static partial class WorkstationEndpoints
 
             try
             {
+                if (!TryResolveRequiredTenantId(context, out var tenantId))
+                {
+                    return Results.Problem("A tenant-scoped workstation request context is required.", statusCode: StatusCodes.Status403Forbidden);
+                }
+
                 var readiness = await service
-                    .EvaluateAsync(manifestId, connectionId, context.RequestAborted)
+                    .EvaluateAsync(tenantId, manifestId, connectionId, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(readiness, jsonOptions);
             }
@@ -148,8 +153,13 @@ public static partial class WorkstationEndpoints
 
             try
             {
+                if (!TryResolveRequiredTenantId(context, out var tenantId))
+                {
+                    return Results.Problem("A tenant-scoped workstation request context is required.", statusCode: StatusCodes.Status403Forbidden);
+                }
+
                 var result = await service
-                    .RunManualCsvDryRunAsync(request, context.RequestAborted)
+                    .RunManualCsvDryRunAsync(tenantId, request, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -196,8 +206,13 @@ public static partial class WorkstationEndpoints
 
             try
             {
+                if (!TryResolveRequiredTenantId(context, out var tenantId))
+                {
+                    return Results.Problem("A tenant-scoped workstation request context is required.", statusCode: StatusCodes.Status403Forbidden);
+                }
+
                 var result = await service
-                    .RunRestDryRunAsync(request, context.RequestAborted)
+                    .RunRestDryRunAsync(tenantId, request, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -244,8 +259,13 @@ public static partial class WorkstationEndpoints
 
             try
             {
+                if (!TryResolveRequiredTenantId(context, out var tenantId))
+                {
+                    return Results.Problem("A tenant-scoped workstation request context is required.", statusCode: StatusCodes.Status403Forbidden);
+                }
+
                 var result = await service
-                    .ActivateAsync(request, context.RequestAborted)
+                    .ActivateAsync(tenantId, request, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -293,8 +313,14 @@ public static partial class WorkstationEndpoints
 
             try
             {
+                if (!TryResolveRequiredTenantId(context, out var tenantId))
+                {
+                    return Results.Problem("A tenant-scoped workstation request context is required.", statusCode: StatusCodes.Status403Forbidden);
+                }
+
                 var monitor = await service
                     .GetConnectionMonitorAsync(
+                        tenantId,
                         connectionId,
                         recentRunLimit ?? 10,
                         context.RequestAborted)
