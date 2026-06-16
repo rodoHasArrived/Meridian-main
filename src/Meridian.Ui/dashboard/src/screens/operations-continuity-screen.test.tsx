@@ -1183,6 +1183,13 @@ describe("OperationsContinuityScreen", () => {
     expect(within(operatorQueue).getByText("Retain NAV support package for positions, cash, pricing, and shadow NAV evidence.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Period lock and reopen evidence")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Complete reopened incident remediation and close the period again with retained evidence.")).toBeInTheDocument();
+    expect(within(operatorQueue).getAllByText("Command stage")).toHaveLength(4);
+    expect(within(operatorQueue).getByText("Match Records")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Run reconciliation and refresh posture; Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Complete source-backed reconciliation lanes before approval.")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Close Support")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Review checklist and close readiness; Close checklist, period lock, and reopen evidence are governed by the shared workflow.")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Clear close readiness blockers and retain period-lock or reopen evidence.")).toBeInTheDocument();
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: recon-break-42" }))
       .toHaveAttribute("href", "/accounting/reconciliation/recon-break-42/evidence");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: approval-close-2026-05" }))
@@ -1200,6 +1207,10 @@ describe("OperationsContinuityScreen", () => {
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: NAV support package" }))
       .toHaveAttribute("href", "/portfolio/nav");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Period lock and reopen evidence" }))
+      .toHaveAttribute("href", "/accounting/operations-continuity");
+    expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Match Records" }))
+      .toHaveAttribute("href", "/accounting/reconciliation");
+    expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Close Support" }))
       .toHaveAttribute("href", "/accounting/operations-continuity");
     const workflowApprovalHistory = screen.getByRole("table", { name: "Operations continuity workflow approval history" });
     expect(within(workflowApprovalHistory).getByText("approval-close-2026-05")).toBeInTheDocument();

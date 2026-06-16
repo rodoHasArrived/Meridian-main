@@ -994,6 +994,7 @@ export function buildOperationsContinuityScreenViewModel({
     reconciliationLanes,
     blockers,
     checklist,
+    commandSpineRows: commandSpine.rows,
     approvals: effectiveDetail?.approvals ?? [],
     evidencePackages,
     closeCalendarRows: closeCalendarPanel.rows,
@@ -2061,6 +2062,7 @@ function buildFinancialOperationsOperatorQueueViewModel({
   reconciliationLanes,
   blockers,
   checklist,
+  commandSpineRows,
   approvals,
   evidencePackages,
   closeCalendarRows,
@@ -2074,6 +2076,7 @@ function buildFinancialOperationsOperatorQueueViewModel({
   reconciliationLanes: OperationsContinuityReconciliationLaneRow[];
   blockers: OperationsContinuityBlockerRow[];
   checklist: OperationsContinuityChecklistRow[];
+  commandSpineRows: FinancialOperationsCommandSpineRow[];
   approvals: OperationsContinuityWorkflow["approvals"];
   evidencePackages: OperationsContinuityEvidencePackageRow[];
   closeCalendarRows: OperationsContinuityCloseCalendarRow[];
@@ -2161,6 +2164,23 @@ function buildFinancialOperationsOperatorQueueViewModel({
         routeHref: row.routeHref,
         routeLabel: row.routeLabel,
         ariaLabel: `Financial Operations evidence package ${row.ariaLabel}`
+      })),
+    ...commandSpineRows
+      .filter(isOpenQueueItem)
+      .map((row) => ({
+        id: `command-stage:${row.id}`,
+        kindLabel: "Command stage",
+        title: row.stageLabel,
+        detail: `${row.commandLabel}; ${row.detail}`,
+        statusLabel: row.statusLabel,
+        statusTone: row.statusTone,
+        ownerLabel: commandStageOwnerLabel(row),
+        dueLabel: row.postureLabel,
+        evidenceLabel: row.evidenceLabel,
+        actionLabel: row.guardLabel === "Shared command guard clear" ? row.commandLabel : row.guardLabel,
+        routeHref: row.routeHref,
+        routeLabel: row.routeLabel,
+        ariaLabel: `Financial Operations command stage ${row.ariaLabel}`
       }))
   ];
 
@@ -2242,6 +2262,25 @@ function mapReconciliationLaneQueueRow(
     routeLabel,
     ariaLabel: `Financial Operations reconciliation lane ${row.ariaLabel}`
   };
+}
+
+function commandStageOwnerLabel(row: FinancialOperationsCommandSpineRow): string {
+  switch (row.id) {
+    case "receive-activity":
+      return "Intake operations";
+    case "match-records":
+      return "Reconciliation operations";
+    case "resolve-exceptions":
+      return "Exception management";
+    case "approve-results":
+      return "Approval control";
+    case "produce-evidence":
+      return "Evidence operations";
+    case "close-support":
+      return "Close operations";
+    default:
+      return "Financial Operations control";
+  }
 }
 
 function mapCloseCalendarErrorQueueRow(

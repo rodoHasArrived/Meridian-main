@@ -886,6 +886,22 @@ public static class FundAccountEndpoints
             return false;
         }
 
+        if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
+        {
+            var requiredScopedPermission = requireWriteAccess
+                ? UserPermission.ExecuteTrades
+                : UserPermission.ViewTrades;
+            if (!await EndpointAuthorization.HasScopedPermissionAsync(
+                    context,
+                    requiredScopedPermission,
+                    AccessScopeKindDto.Account,
+                    accountId,
+                    context.RequestAborted).ConfigureAwait(false))
+            {
+                return false;
+            }
+        }
+
         var queryService = ResolveQueryService(context);
         if (queryService is null)
         {

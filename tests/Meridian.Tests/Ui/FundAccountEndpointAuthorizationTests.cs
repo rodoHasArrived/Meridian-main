@@ -78,6 +78,29 @@ public sealed class FundAccountEndpointAuthorizationTests
         denied.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task BrokerageSyncAccountRoute_ShouldRequireScopedAccountAccess()
+    {
+        var fundId = Guid.NewGuid();
+        var allowedAccountId = Guid.NewGuid();
+        var deniedAccountId = Guid.NewGuid();
+        await using var app = await CreateAppAsync(
+            [
+                BuildAccount(allowedAccountId, fundId, "ALLOWED-BROKERAGE"),
+                BuildAccount(deniedAccountId, fundId, "DENIED-BROKERAGE")
+            ],
+            [(AccessScopeKindDto.Account, allowedAccountId)],
+            UserPermission.ViewTrades);
+
+        var client = app.GetTestClient();
+
+        var allowed = await client.GetAsync($"/api/fund-accounts/{allowedAccountId:D}/brokerage-sync/status");
+        allowed.StatusCode.Should().Be(HttpStatusCode.NotImplemented);
+
+        var denied = await client.GetAsync($"/api/fund-accounts/{deniedAccountId:D}/brokerage-sync/status");
+        denied.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         IReadOnlyList<CreateAccountRequest> accounts,
         IReadOnlyCollection<(AccessScopeKindDto Kind, Guid Id)> allowedScopes,

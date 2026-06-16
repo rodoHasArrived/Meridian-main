@@ -925,7 +925,7 @@ describe("Operations Continuity view model", () => {
     expect(vm.financialOperationsQueue).toMatchObject({
       statusLabel: "Blocked",
       statusTone: "blocked",
-      summaryLabel: "9 open work items: 4 blocked, 5 review."
+      summaryLabel: "14 open work items: 6 blocked, 8 review."
     });
     expect(vm.financialOperationsQueue.items.map((item) => item.id)).toEqual([
       "reconciliation-lane:mbs-factor-reconciliation",
@@ -936,7 +936,12 @@ describe("Operations Continuity view model", () => {
       "evidence-package:report-pack:fund-alpha:2026-05",
       "evidence-package:close-package:fund-alpha:2026-05",
       "evidence-package:audit-support:fund-alpha:2026-05",
-      "evidence-package:period-lock-reopen:fund-alpha:2026-05"
+      "evidence-package:period-lock-reopen:fund-alpha:2026-05",
+      "command-stage:match-records",
+      "command-stage:resolve-exceptions",
+      "command-stage:approve-results",
+      "command-stage:produce-evidence",
+      "command-stage:close-support"
     ]);
     expect(vm.financialOperationsQueue.items[0]).toMatchObject({
       kindLabel: "Reconciliation lane",
@@ -1011,6 +1016,30 @@ describe("Operations Continuity view model", () => {
       dueLabel: "0/1 categories complete",
       actionLabel: "Publish the close package manifest and retain the evidence hash.",
       routeHref: "/accounting/operations-continuity"
+    });
+    expect(vm.financialOperationsQueue.items[9]).toMatchObject({
+      kindLabel: "Command stage",
+      title: "Match Records",
+      detail: "Run reconciliation and refresh posture; Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.",
+      statusLabel: "Review Required",
+      statusTone: "review",
+      ownerLabel: "Reconciliation operations",
+      dueLabel: "6/7 lanes ready",
+      evidenceLabel: "1 evidence link",
+      actionLabel: "Complete source-backed reconciliation lanes before approval.",
+      routeHref: "/accounting/reconciliation"
+    });
+    expect(vm.financialOperationsQueue.items[12]).toMatchObject({
+      kindLabel: "Command stage",
+      title: "Produce Evidence",
+      detail: "Open evidence package routes; Close workflow has unresolved ledger blockers.",
+      statusLabel: "Missing",
+      statusTone: "blocked",
+      ownerLabel: "Evidence operations",
+      dueLabel: "Evidence package pending",
+      evidenceLabel: "No retained evidence",
+      actionLabel: "Publish and retain the evidence package before period close.",
+      routeHref: "/reporting/report-packs"
     });
     expect(vm.evidencePackages).toHaveLength(5);
     expect(vm.evidencePackages[0]).toMatchObject({
