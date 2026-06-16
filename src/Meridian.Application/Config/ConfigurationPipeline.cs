@@ -1,17 +1,8 @@
 using Meridian.Application.Config.Credentials;
 using Meridian.Core.Config;
-using Meridian.DataIntegration.Credentials;
 using Meridian.Core.Logging;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
-using Meridian.Infrastructure.Adapters.Alpaca;
-using Meridian.Infrastructure.Adapters.AlphaVantage;
-using Meridian.Infrastructure.Adapters.Finnhub;
-using Meridian.Infrastructure.Adapters.Fred;
-using Meridian.Infrastructure.Adapters.NasdaqDataLink;
-using Meridian.Infrastructure.Adapters.Polygon;
-using Meridian.Infrastructure.Adapters.Tiingo;
-using Meridian.Infrastructure.Contracts;
 using Serilog;
 
 namespace Meridian.Application.Config;
@@ -38,12 +29,15 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
     private readonly ILogger _log;
     private readonly ProviderCredentialResolver _credentialResolver;
     private readonly ConfigEnvironmentOverride _envOverride;
+    private readonly Func<bool> _ibGatewayAvailabilityProbe;
     private ConfigWatcher? _watcher;
 
-    public ConfigurationPipeline(ILogger? log = null, ProviderCredentialResolver? credentialResolver = null)
+    public ConfigurationPipeline(ILogger? log = null, ProviderCredentialResolver? credentialResolver = null,
+        Func<bool>? ibGatewayAvailabilityProbe = null)
     {
         _log = log ?? LoggingSetup.ForContext<ConfigurationPipeline>();
         _credentialResolver = credentialResolver ?? new ProviderCredentialResolver(_log);
+        _ibGatewayAvailabilityProbe = ibGatewayAvailabilityProbe ?? IsIBGatewayAvailable;
         _envOverride = new ConfigEnvironmentOverride();
     }
 
@@ -60,10 +54,10 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
         {
             // Stage 1: Load base config
             var config = ConfigStore.LoadConfig(configPath);
-            var environmentName = GetEnvironmentName();
+            var environmentName = ConfigurationResolutionRules.GetEnvironmentName();
 
             // Stage 2: Apply environment overlay
-            config = ApplyEnvironmentOverlay(config, configPath);
+            config = ConfigurationResolutionRules.ApplyEnvironmentOverlay(config, configPath, _log);
 
             // Run through common pipeline
             return RunPipeline(config, configPath, environmentName, ConfigurationOrigin.File, options);
@@ -86,7 +80,7 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
     public ValidatedConfig Process(AppConfig config, PipelineOptions? options = null)
     {
         options ??= PipelineOptions.Default;
-        var environmentName = GetEnvironmentName();
+        var environmentName = ConfigurationResolutionRules.GetEnvironmentName();
 
         return RunPipeline(config, null, environmentName, ConfigurationOrigin.Programmatic, options);
     }
@@ -105,7 +99,7 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
         }
 
         options ??= PipelineOptions.Default;
-        var environmentName = GetEnvironmentName();
+        var environmentName = ConfigurationResolutionRules.GetEnvironmentName();
 
         return RunPipeline(result.Config, result.ConfigPath, environmentName, ConfigurationOrigin.Wizard, options);
     }
@@ -116,7 +110,7 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
     public ValidatedConfig FromAutoConfigResult(AutoConfigurationService.AutoConfigResult result, PipelineOptions? options = null)
     {
         options ??= PipelineOptions.Default;
-        var environmentName = GetEnvironmentName();
+        var environmentName = ConfigurationResolutionRules.GetEnvironmentName();
 
         var warnings = new List<string>(result.Warnings);
         if (result.Recommendations.Count > 0)
@@ -140,7 +134,7 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
     public ValidatedConfig FromHotReload(AppConfig config, string configPath, PipelineOptions? options = null)
     {
         options ??= PipelineOptions.Default with { ApplySelfHealing = true };
-        var environmentName = GetEnvironmentName();
+        var environmentName = ConfigurationResolutionRules.GetEnvironmentName();
 
         return RunPipeline(config, configPath, environmentName, ConfigurationOrigin.HotReload, options);
     }
@@ -414,154 +408,7 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
 
 
     private AppConfig ResolveAllCredentials(AppConfig config)
-    {
-        // Resolve Alpaca credentials
-        if (config.DataSource == DataSourceKind.Alpaca || config.Alpaca != null)
-        {
-            var credentials = CreateCredentialContext(
-                typeof(AlpacaHistoricalDataProvider),
-                new Dictionary<string, string?>(StringComparer.Ordinal)
-                {
-                    ["ALPACA_KEY_ID"] = config.Alpaca?.KeyId,
-                    ["ALPACA_SECRET_KEY"] = config.Alpaca?.SecretKey
-                });
-            var keyId = credentials.Get("ALPACA_KEY_ID");
-            var secretKey = credentials.Get("ALPACA_SECRET_KEY");
-            if (!string.IsNullOrEmpty(keyId) && !string.IsNullOrEmpty(secretKey))
-            {
-                config = config with
-                {
-                    Alpaca = (config.Alpaca ?? new AlpacaOptions(keyId, secretKey)) with
-                    {
-                        KeyId = keyId,
-                        SecretKey = secretKey
-                    }
-                };
-            }
-        }
-
-        // Resolve Polygon credentials
-        if (config.DataSource == DataSourceKind.Polygon || config.Polygon != null)
-        {
-            var apiKey = CreateCredentialContext(
-                typeof(PolygonHistoricalDataProvider),
-                new Dictionary<string, string?>(StringComparer.Ordinal)
-                {
-                    ["POLYGON_API_KEY"] = config.Polygon?.ApiKey
-                }).Get("POLYGON_API_KEY");
-            if (!string.IsNullOrEmpty(apiKey) && config.Polygon != null)
-            {
-                config = config with
-                {
-                    Polygon = config.Polygon with { ApiKey = apiKey }
-                };
-            }
-        }
-
-        // Resolve backfill provider credentials
-        if (config.Backfill?.Providers != null)
-        {
-            var providers = config.Backfill.Providers;
-            var updated = false;
-
-            if (providers.Tiingo != null)
-            {
-                var token = CreateCredentialContext(
-                    typeof(TiingoHistoricalDataProvider),
-                    new Dictionary<string, string?>(StringComparer.Ordinal)
-                    {
-                        ["TIINGO_API_TOKEN"] = providers.Tiingo.ApiToken
-                    }).Get("TIINGO_API_TOKEN");
-                if (!string.IsNullOrEmpty(token))
-                {
-                    providers = providers with { Tiingo = providers.Tiingo with { ApiToken = token } };
-                    updated = true;
-                }
-            }
-
-            if (providers.Finnhub != null)
-            {
-                var key = CreateCredentialContext(
-                    typeof(FinnhubHistoricalDataProvider),
-                    new Dictionary<string, string?>(StringComparer.Ordinal)
-                    {
-                        ["FINNHUB_API_KEY"] = providers.Finnhub.ApiKey
-                    }).Get("FINNHUB_API_KEY");
-                if (!string.IsNullOrEmpty(key))
-                {
-                    providers = providers with { Finnhub = providers.Finnhub with { ApiKey = key } };
-                    updated = true;
-                }
-            }
-
-            if (providers.Polygon != null)
-            {
-                var key = CreateCredentialContext(
-                    typeof(PolygonHistoricalDataProvider),
-                    new Dictionary<string, string?>(StringComparer.Ordinal)
-                    {
-                        ["POLYGON_API_KEY"] = providers.Polygon.ApiKey
-                    }).Get("POLYGON_API_KEY");
-                if (!string.IsNullOrEmpty(key))
-                {
-                    providers = providers with { Polygon = providers.Polygon with { ApiKey = key } };
-                    updated = true;
-                }
-            }
-
-            if (providers.AlphaVantage != null)
-            {
-                var key = CreateCredentialContext(
-                    typeof(AlphaVantageHistoricalDataProvider),
-                    new Dictionary<string, string?>(StringComparer.Ordinal)
-                    {
-                        ["ALPHA_VANTAGE_API_KEY"] = providers.AlphaVantage.ApiKey
-                    }).Get("ALPHA_VANTAGE_API_KEY");
-                if (!string.IsNullOrEmpty(key))
-                {
-                    providers = providers with { AlphaVantage = providers.AlphaVantage with { ApiKey = key } };
-                    updated = true;
-                }
-            }
-
-            if (providers.Nasdaq != null)
-            {
-                var key = CreateCredentialContext(
-                    typeof(NasdaqDataLinkHistoricalDataProvider),
-                    new Dictionary<string, string?>(StringComparer.Ordinal)
-                    {
-                        ["NASDAQ_DATA_LINK_API_KEY"] = providers.Nasdaq.ApiKey
-                    }).Get("NASDAQ_DATA_LINK_API_KEY");
-                if (!string.IsNullOrEmpty(key))
-                {
-                    providers = providers with { Nasdaq = providers.Nasdaq with { ApiKey = key } };
-                    updated = true;
-                }
-            }
-
-            if (providers.Fred != null)
-            {
-                var key = CreateCredentialContext(
-                    typeof(FredHistoricalDataProvider),
-                    new Dictionary<string, string?>(StringComparer.Ordinal)
-                    {
-                        ["FRED_API_KEY"] = providers.Fred.ApiKey
-                    }).Get("FRED_API_KEY");
-                if (!string.IsNullOrEmpty(key))
-                {
-                    providers = providers with { Fred = providers.Fred with { ApiKey = key } };
-                    updated = true;
-                }
-            }
-
-            if (updated)
-            {
-                config = config with { Backfill = config.Backfill with { Providers = providers } };
-            }
-        }
-
-        return config;
-    }
+        => ConfigurationResolutionRules.ResolveAllCredentials(config, _credentialResolver);
 
 
 
@@ -586,182 +433,17 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
              IReadOnlyList<string> Warnings)
         ApplySelfHealingFixes(AppConfig config, SelfHealingStrictness strictness)
     {
-        var applied = new List<SelfHealingFix>();
-        var refused = new List<SelfHealingFix>();
-        var warnings = new List<string>();
-
-        // Helper: attempt to apply a fix, routing to applied/refused based on severity + strictness.
-        void TryFix(
-            SelfHealingSeverity severity,
-            string description,
-            Func<AppConfig, AppConfig> applyFn)
-        {
-            bool apply = severity == SelfHealingSeverity.AutoFix
-                         || strictness == SelfHealingStrictness.Development;
-
-            var fix = new SelfHealingFix(description, severity);
-            if (apply)
-            {
-                config = applyFn(config);
-                applied.Add(fix);
-            }
-            else
-            {
-                refused.Add(fix);
-            }
-        }
-
-        // ── Fix: Alpaca selected but no credentials (AutoFix — safe credential injection) ──
-        if (config.DataSource == DataSourceKind.Alpaca)
-        {
-            if (config.Alpaca == null || string.IsNullOrEmpty(config.Alpaca.KeyId))
-            {
-                var credentials = CreateCredentialContext(typeof(AlpacaHistoricalDataProvider));
-                var keyId = credentials.Get("ALPACA_KEY_ID");
-                var secretKey = credentials.Get("ALPACA_SECRET_KEY");
-                if (!string.IsNullOrEmpty(keyId) && !string.IsNullOrEmpty(secretKey))
-                {
-                    TryFix(
-                        SelfHealingSeverity.AutoFix,
-                        "Added Alpaca credentials from environment variables",
-                        c => c with { Alpaca = new AlpacaOptions(keyId, secretKey) });
-                }
-                else
-                {
-                    warnings.Add(
-                        "Alpaca selected but no credentials found. " +
-                        "Set ALPACA_KEY_ID and ALPACA_SECRET_KEY environment variables.");
-                }
-            }
-        }
-
-        // ── Fix: IB selected but gateway not available (Warn — switches active provider) ──
-        if (config.DataSource == DataSourceKind.IB && !IsIBGatewayAvailable())
-        {
-            var credentials = CreateCredentialContext(typeof(AlpacaHistoricalDataProvider));
-            var keyId = credentials.Get("ALPACA_KEY_ID");
-            var secretKey = credentials.Get("ALPACA_SECRET_KEY");
-            if (!string.IsNullOrEmpty(keyId) && !string.IsNullOrEmpty(secretKey))
-            {
-                TryFix(
-                    SelfHealingSeverity.Warn,
-                    "Switched active data provider from IB to Alpaca (IB Gateway not detected)",
-                    c => c with
-                    {
-                        DataSource = DataSourceKind.Alpaca,
-                        Alpaca = new AlpacaOptions(keyId, secretKey)
-                    });
-            }
-            else
-            {
-                warnings.Add("IB Gateway not detected and no alternative real-time providers configured.");
-            }
-        }
-
-        // ── Fix: Invalid storage naming convention (AutoFix — normalises format string) ──
-        if (config.Storage != null)
-        {
-            var validConventions = new[]
-            {
-                "flat", "bysymbol", "bydate", "bytype",
-                "bysource", "byassetclass", "hierarchical", "canonical"
-            };
-            if (!validConventions.Contains(config.Storage.NamingConvention.ToLowerInvariant()))
-            {
-                var oldValue = config.Storage.NamingConvention;
-                TryFix(
-                    SelfHealingSeverity.AutoFix,
-                    $"Invalid naming convention '{oldValue}' changed to 'BySymbol'",
-                    c => c with { Storage = c.Storage! with { NamingConvention = "BySymbol" } });
-            }
-
-            // ── Fix: Invalid date partition (AutoFix — normalises format string) ──
-            var validPartitions = new[] { "none", "daily", "hourly", "monthly" };
-            if (!validPartitions.Contains(config.Storage.DatePartition.ToLowerInvariant()))
-            {
-                var oldValue = config.Storage.DatePartition;
-                TryFix(
-                    SelfHealingSeverity.AutoFix,
-                    $"Invalid date partition '{oldValue}' changed to 'Daily'",
-                    c => c with { Storage = c.Storage! with { DatePartition = "Daily" } });
-            }
-        }
-
-        // ── Fix: Empty symbols list (Warn — adds a default symbol the operator didn't configure) ──
-        if (config.Symbols == null || config.Symbols.Length == 0)
-        {
-            TryFix(
-                SelfHealingSeverity.Warn,
-                "Added default symbol (SPY) because no symbols were configured — set Symbols explicitly to silence this",
-                c => c with
-                {
-                    Symbols = new[]
-                    {
-                        new SymbolConfig("SPY", SubscribeTrades: true, SubscribeDepth: true, DepthLevels: 10)
-                    }
-                });
-        }
-
-        // ── Fix: Invalid depth levels (AutoFix — clamps numeric range) ──
-        if (config.Symbols != null)
-        {
-            var fixedSymbols = config.Symbols.Select(s =>
-                s.SubscribeDepth && (s.DepthLevels < 1 || s.DepthLevels > 50)
-                    ? s with { DepthLevels = Math.Clamp(s.DepthLevels, 1, 50) }
-                    : s).ToArray();
-
-            if (!config.Symbols.SequenceEqual(fixedSymbols))
-            {
-                TryFix(
-                    SelfHealingSeverity.AutoFix,
-                    "Adjusted depth levels to valid range (1–50)",
-                    c => c with { Symbols = fixedSymbols });
-            }
-        }
-
-        // ── Fix: Backfill date range issues ──
-        if (config.Backfill != null)
-        {
-            var backfill = config.Backfill;
-
-            // AutoFix: From date after To date (cosmetic swap)
-            if (backfill.From.HasValue && backfill.To.HasValue && backfill.From > backfill.To)
-            {
-                var (swappedFrom, swappedTo) = (backfill.To, backfill.From);
-                TryFix(
-                    SelfHealingSeverity.AutoFix,
-                    "Swapped backfill From/To dates (From was after To)",
-                    c => c with
-                    {
-                        Backfill = c.Backfill! with { From = swappedFrom, To = swappedTo }
-                    });
-                // Refresh local backfill snapshot so the future-date check sees the swapped values.
-                backfill = config.Backfill!;
-            }
-
-            // AutoFix: Future end date (safe adjustment)
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
-            if (backfill.To.HasValue && backfill.To > today)
-            {
-                TryFix(
-                    SelfHealingSeverity.AutoFix,
-                    $"Adjusted backfill To date to today ({today:yyyy-MM-dd}) — was in the future",
-                    c => c with { Backfill = c.Backfill! with { To = today } });
-            }
-        }
+        var result = ConfigurationResolutionRules.ApplySelfHealingFixes(
+            config,
+            strictness,
+            _credentialResolver,
+            _ibGatewayAvailabilityProbe);
 
         _log.Debug(
             "Self-healing: {AppliedCount} fix(es) applied, {RefusedCount} refused, {WarningCount} warning(s)",
-            applied.Count, refused.Count, warnings.Count);
+            result.Applied.Count, result.Refused.Count, result.Warnings.Count);
 
-        return (config, applied, refused, warnings);
-    }
-
-    private ICredentialContext CreateCredentialContext(
-        Type providerType,
-        IReadOnlyDictionary<string, string?>? configuredValues = null)
-    {
-        return _credentialResolver.CreateContext(providerType, configuredValues);
+        return (result.Config, result.Applied, result.Refused, result.Warnings);
     }
 
     private static bool IsIBGatewayAvailable()
@@ -790,58 +472,6 @@ public sealed class ConfigurationPipeline : IAsyncDisposable
 
 
 
-    private AppConfig ApplyEnvironmentOverlay(AppConfig baseConfig, string basePath)
-    {
-        var envName = GetEnvironmentName();
-        if (string.IsNullOrWhiteSpace(envName))
-            return baseConfig;
-
-        var directory = Path.GetDirectoryName(basePath) ?? ".";
-        var fileName = Path.GetFileNameWithoutExtension(basePath);
-        var extension = Path.GetExtension(basePath);
-        var envPath = Path.Combine(directory, $"{fileName}.{envName}{extension}");
-
-        if (!File.Exists(envPath))
-            return baseConfig;
-
-        try
-        {
-            _log.Information("Loading environment-specific configuration: {EnvPath}", envPath);
-            var envConfig = ConfigStore.LoadConfig(envPath);
-            return MergeConfigs(baseConfig, envConfig);
-        }
-        catch (Exception ex)
-        {
-            _log.Warning(ex, "Failed to load environment config {EnvPath}", envPath);
-            return baseConfig;
-        }
-    }
-
-    private static string? GetEnvironmentName()
-    {
-        var env = Environment.GetEnvironmentVariable("MDC_ENVIRONMENT");
-        if (!string.IsNullOrWhiteSpace(env))
-            return env;
-
-        return Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
-    }
-
-    private static AppConfig MergeConfigs(AppConfig baseConfig, AppConfig overlay)
-    {
-        return baseConfig with
-        {
-            DataSource = overlay.DataSource != default ? overlay.DataSource : baseConfig.DataSource,
-            DataRoot = !string.IsNullOrWhiteSpace(overlay.DataRoot) ? overlay.DataRoot : baseConfig.DataRoot,
-            Compress = overlay.Compress ?? baseConfig.Compress,
-            Symbols = overlay.Symbols?.Length > 0 ? overlay.Symbols : baseConfig.Symbols,
-            Alpaca = overlay.Alpaca ?? baseConfig.Alpaca,
-            IB = overlay.IB ?? baseConfig.IB,
-            IBClientPortal = overlay.IBClientPortal ?? baseConfig.IBClientPortal,
-            Polygon = overlay.Polygon ?? baseConfig.Polygon,
-            Storage = overlay.Storage ?? baseConfig.Storage,
-            Backfill = overlay.Backfill ?? baseConfig.Backfill
-        };
-    }
 
 
     public ValueTask DisposeAsync()
