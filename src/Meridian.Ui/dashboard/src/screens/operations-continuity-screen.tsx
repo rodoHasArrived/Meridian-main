@@ -23,6 +23,7 @@ import {
   type OperationsReviewedAutomationArtifactRow,
   type OperationsContinuityTimelineRow,
   type OperationsContinuityTone,
+  type OperationsContinuityWorkflowApprovalRow,
   type OperationsContinuityWorkflowRow
 } from "@/screens/operations-continuity-screen.view-model";
 
@@ -224,6 +225,55 @@ const financialOperationsQueueColumns: DenseDataTableColumn<FinancialOperationsO
   }
 ];
 
+const workflowApprovalHistoryColumns: DenseDataTableColumn<OperationsContinuityWorkflowApprovalRow>[] = [
+  {
+    id: "approval",
+    label: "Approval",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-mono text-xs font-semibold text-foreground">{row.id}</span>
+        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.rationale}</span>
+      </span>
+    )
+  },
+  {
+    id: "status",
+    label: "Status",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
+        <span className="mt-1 block text-muted-foreground">{row.decidedLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "actor",
+    label: "Actor / submitted",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-foreground">{row.actorLabel}</span>
+        <span className="block text-muted-foreground">{row.submittedLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "evidence",
+    label: "Evidence",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-foreground">{row.evidenceLabel}</span>
+        {row.evidenceHref ? (
+          <Link className="link-subtle mt-1 inline-flex" to={row.evidenceHref} aria-label={`Open approval evidence for workflow approval ${row.id}`}>
+            {row.evidenceRouteLabel}
+          </Link>
+        ) : (
+          <span className="mt-1 block text-muted-foreground">{row.evidenceRouteLabel}</span>
+        )}
+      </span>
+    )
+  }
+];
+
 const reviewedAutomationArtifactColumns: DenseDataTableColumn<OperationsReviewedAutomationArtifactRow>[] = [
   {
     id: "artifact",
@@ -296,6 +346,13 @@ const evidencePackageColumns: DenseDataTableColumn<OperationsContinuityEvidenceP
     render: (row) => (
       <span className="block text-xs leading-5">
         <span className="block text-foreground">{row.evidenceLabel}</span>
+        {row.evidenceHref ? (
+          <Link className="block" to={row.evidenceHref} aria-label={`Open retained evidence for package ${row.label}`}>
+            {row.evidenceRouteLabel}
+          </Link>
+        ) : (
+          <span className="block text-muted-foreground">{row.evidenceRouteLabel}</span>
+        )}
         <span className="block text-muted-foreground">{row.requiredActionsLabel}</span>
       </span>
     )
@@ -353,6 +410,13 @@ const breakCaseColumns: DenseDataTableColumn<OperationsContinuityBreakCaseRow>[]
       <span className="block text-xs leading-5">
         <span className="block text-foreground">{row.escalationLabel}</span>
         <span className="block text-muted-foreground">{row.evidenceLabel}</span>
+        {row.evidenceHref ? (
+          <Link className="block" to={row.evidenceHref} aria-label={`Open retained evidence for break ${row.caseLabel}`}>
+            {row.evidenceRouteLabel}
+          </Link>
+        ) : (
+          <span className="block text-muted-foreground">{row.evidenceRouteLabel}</span>
+        )}
       </span>
     )
   },
@@ -375,6 +439,15 @@ const breakCaseColumns: DenseDataTableColumn<OperationsContinuityBreakCaseRow>[]
         <span className="block text-foreground">{row.actionLabel}</span>
         <span className="block text-muted-foreground">{row.approvalLabel}</span>
         <span className="block text-muted-foreground">{row.blockedOutputsLabel}</span>
+        <span className="block text-muted-foreground">{row.commandPostureLabel}</span>
+        <span className="block text-muted-foreground">{row.commandGuardLabel}</span>
+        {row.caseworkHref ? (
+          <Link className="link-subtle mt-1 inline-flex" to={row.caseworkHref} aria-label={`Open exception casework for break ${row.caseLabel}`}>
+            {row.caseworkRouteLabel}
+          </Link>
+        ) : (
+          <span className="mt-1 block text-muted-foreground">{row.caseworkRouteLabel}</span>
+        )}
         <span className="block font-mono text-muted-foreground">{row.symbolLabel}</span>
       </span>
     )
@@ -464,7 +537,18 @@ const reconciliationLaneColumns: DenseDataTableColumn<OperationsContinuityReconc
   {
     id: "evidence",
     label: "Evidence",
-    render: (row) => <span className="text-xs text-muted-foreground">{row.evidenceLabel}</span>
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-muted-foreground">{row.evidenceLabel}</span>
+        {row.evidenceHref ? (
+          <Link to={row.evidenceHref} aria-label={`Open retained evidence for reconciliation lane ${row.label}`}>
+            {row.evidenceRouteLabel}
+          </Link>
+        ) : (
+          <span className="block text-muted-foreground">{row.evidenceRouteLabel}</span>
+        )}
+      </span>
+    )
   },
   {
     id: "actions",
@@ -610,8 +694,15 @@ const closeCockpitApprovalColumns: DenseDataTableColumn<OperationsContinuityClos
     render: (row) => (
       <span className="block text-xs leading-5">
         <span className="block text-muted-foreground">{row.evidenceLabel}</span>
+        {row.evidenceHref ? (
+          <Link to={row.evidenceHref} aria-label={`Open private-capital close approval evidence ${row.id}`}>
+            {row.evidenceRouteLabel}
+          </Link>
+        ) : (
+          <span className="block text-muted-foreground">{row.evidenceRouteLabel}</span>
+        )}
         {row.workflowHref ? (
-          <Link to={row.workflowHref} aria-label={`Open private-capital close approval workflow ${row.workflowLabel}`}>
+          <Link className="block" to={row.workflowHref} aria-label={`Open private-capital close approval workflow ${row.workflowLabel}`}>
             {row.routeLabel}
           </Link>
         ) : (
@@ -932,6 +1023,25 @@ export function OperationsContinuityScreen() {
               getRowAriaLabel={(row) => row.ariaLabel}
               emptyText={vm.dashboard.metricsEmptyText}
               ariaLabel="Financial Operations operational dashboard"
+            />
+          </CardContent>
+        </Card>
+        <Card className="panel-surface">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ListChecks className="h-5 w-5 text-primary" aria-hidden="true" />
+              {vm.workflowApprovalHistoryLabel}
+            </CardTitle>
+            <CardDescription>Source-owned approval submissions, reviewer decisions, and retained approval evidence for the selected workflow.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DenseDataTable
+              columns={workflowApprovalHistoryColumns}
+              rows={vm.workflowApprovalHistory}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              emptyText={vm.workflowApprovalHistoryEmptyText}
+              ariaLabel="Operations continuity workflow approval history"
             />
           </CardContent>
         </Card>

@@ -51,7 +51,7 @@ Use this lane whenever the task creates or updates an agent or skill package.
 
 1. **Gather inputs:** identify the source of truth, acceptance criteria, and expected evidence. Confirm whether Scenario A (existing docs), B (new docs needed), or C (performance-sensitive) applies.
 2. **Plan mapping:** map each requirement to implementing files and intended validation artifacts. Use `doc_route.py --kind ai` to decide which catalogs need updating.
-3. **Execute & validate:** apply minimal changes, run required commands, and capture outputs. For performance-sensitive paths, explicitly address allocation and async blocking risks.
+3. **Execute & validate:** apply minimal changes, run required commands, and capture outputs. If local machine capacity, restore, or MSBuild locks block proof, push the branch and use GitHub Actions `Targeted Test` with the same project/filter or dashboard test file before retrying broad local scripts. For performance-sensitive paths, explicitly address allocation and async blocking risks.
 4. **Report & route:** summarize traceability, list validation commands and outcomes, update AI catalogs, and run `score_eval.py` to produce the rubric report.
 
 ## Quality Gates
@@ -62,6 +62,9 @@ dotnet build Meridian.sln -c Release /p:EnableWindowsTargeting=true
 
 # Gate 2: Tests for touched projects
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release /p:EnableWindowsTargeting=true
+
+# Hosted fallback when local validation is unreliable
+gh workflow run targeted-test.yml --ref <branch> -f lane=dotnet -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
 
 # Gate 3: AI catalog routing when updating docs or catalogs
 python3 .claude/skills/meridian-implementation-assurance/scripts/doc_route.py \

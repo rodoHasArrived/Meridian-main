@@ -44,6 +44,12 @@ the shared workstation host while delegating identity state to `Meridian.Identit
 keeps the existing global role checks for compatibility and adds scoped authorization helpers so
 governance-core routes can require a permission on a specific organization, fund, portfolio, legal
 entity, or account.
+`LoginSessionMiddleware` now also attaches a request tenant scope through
+`CurrentTenantIdKey`, currently derived from the authenticated company id until tenant ids diverge
+from company ids. `IWorkstationTenantContextAccessor` is the shared endpoint/service seam for
+resolving actor, company, tenant, role profile, and permission context; production endpoint work
+should use that accessor instead of reparsing `HttpContext.Items` or trusting client-supplied actor
+and company fields.
 
 Preserve cross-surface compatibility when evolving shared read models. Keep ledger/reconciliation
 source-of-truth services authoritative. `SecurityMasterWorkbenchQueryService` is published under
@@ -298,7 +304,8 @@ count, formula count, and validation summary counts plus `ReportWriterGridRows`,
 flags, and row-count/source-lineage checks. Reporting
 schedules can persist optional dataset rows and pass them into scheduled runs, allowing scheduled
 no-code packs to deliver source-backed pivot, Top-N, contribution, and formula output when a
-governed dataset snapshot is supplied. `ReportWriterDatasetSourceService` also resolves retained
+governed dataset snapshot is supplied. Individual retained grids can also be exported as JSON, CSV,
+XLS/XLSX, or PDF from the same policy-aware run artifact. `ReportWriterDatasetSourceService` also resolves retained
 portfolio cuts, Top-N/contribution analytics, and cross-fund consolidation rows when ad-hoc or
 scheduled report-writer execution omits dataset rows, so approved templates can run from retained
 Meridian evidence instead of requiring pasted operator data.
@@ -405,7 +412,8 @@ fields, metric source mappings, formula dependencies, and saved filter lineage s
 previews can display the same audit trace as retained exports. Template governance validation now
 blocks report-writer formulas that reference unknown metrics/formulas, unsupported `total(...)`
 fields, or self/forward/circular formula dependencies before those templates can enter review or
-approval.
+approval, while recognizing supported helpers such as `safeDivide(...)`, `percent(...)`,
+`basisPoints(...)`, and `round(...)` as functions instead of missing row fields.
 Browser and WPF clients should render that shared
 template state instead of treating built-in templates as the full authoring workflow.
 Template definitions and report-pack workflow records now carry shared access policies for
@@ -436,11 +444,12 @@ template preview response. Reporting manifests and workstation run projections a
 resolved report-writer dataset source id, label, row count, and generated-grid validation summaries
 when ad-hoc or scheduled automation uses a governed source-backed dataset. `ReportWriterGridArtifactService` serves those retained grids through
 `/api/fund-structure/reporting/runs/{runId}/report-writer-grids/{gridId}` as JSON by default, with
-`format=csv` and `format=xlsx` downloads for operators that need direct grid extracts from a
-governed run artifact; `format=xls` and `format=excel` are compatibility aliases for the same
-canonical `.xlsx` workbook. JSON and XLSX downloads enrich the retained render with a data dictionary
-for every output column plus validation checks for row-count, column coverage, source-field lineage,
-and render warnings, while CSV stays a flat grid extract for downstream ingestion. Those retained
+`format=csv`, `format=pdf`, and `format=xlsx` downloads for operators that need direct grid extracts
+or allocator-ready grid previews from a governed run artifact; `format=xls` and `format=excel` are
+compatibility aliases for the same canonical `.xlsx` workbook. JSON, PDF, and XLSX downloads enrich
+the retained render with a data dictionary or lineage summary plus validation checks for row-count,
+column coverage, source-field lineage, and render warnings, while CSV stays a flat grid extract for
+downstream ingestion. Those retained
 grid downloads evaluate the source template access policy at read time, so private, restricted
 user/group/company, and company-wide report audiences are enforced for JSON, CSV, and XLSX artifact
 retrieval.
@@ -646,6 +655,9 @@ Those schedule records can also persist a selected `BrandingThemeId` or custom
 `BrandingThemeOverride`; scheduled generated-run manifests and delivery packages carry that
 normalized theme forward so recurring no-code report-writer deliveries preserve the same firm
 identity, colors, footer, and disclaimer metadata as one-off branded report-pack generation.
+Retained report-writer grid artifact downloads also read the manifest branding theme: PDF grid
+artifacts use the selected firm name, primary color, logo reference, footer, and disclaimer, while
+XLSX grid artifacts include a Branding worksheet with the normalized theme fields.
 Generated scheduled-run manifests also carry the approved template access policy resolved through
 the governed catalog, and `ReportPackDeliveryService` stamps that policy into
 `ReportingRunDelivery.EntitlementScope` before storing the email-link or portal package.
@@ -1072,7 +1084,9 @@ close-package publication, or governed reopen commands mutate the operating reco
 when building the Accounting workspace home state. A closed workflow with a non-ready package,
 including period-lock and reopen evidence, remains in review-required posture instead of being
 reported as fully evidence-produced, and the shared evidence badges roll up package readiness plus
-period-lock status for browser and WPF callers.
+period-lock status for browser and WPF callers. Close-readiness blockers and non-ready retained
+packages move the shared `Core flow` badge to `Close Support` so clients do not infer that final
+evidence production is complete while close support work remains.
 The same detail payload serializes Financial Operations evidence-package summaries for
 accounting-record evidence, report-pack evidence, close-package manifests, and audit-support
 packages. Shared endpoint callers receive status, category completeness, retained evidence counts,

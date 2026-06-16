@@ -15,6 +15,7 @@ It replaces hand-built planning and historical engineering prose with active ope
 - **Source ownership:** [Source registry](../source/README.md)
 - **Roadmap truth:** [Roadmap registry](../roadmap/README.md)
 - **Generated output rules:** [Documentation ownership](../documentation-ownership.md)
+- **Free development tools:** [Free Development Tools](free-development-tools.md)
 - **C#/WPF market study companion:** [Practical C# and WPF for Financial Markets](practical-csharp-wpf-financial-markets.md)
 
 ## Architecture and Module Boundaries
@@ -36,6 +37,30 @@ Canonical ownership rule:
 ## Build/Test/Run
 
 Prefer the narrowest proof lane for the files you change.
+
+For local pre-PR proof across the highest-value free tools, use:
+
+```powershell
+pwsh ./scripts/dev/run-local-quality.ps1
+pwsh ./scripts/dev/run-local-quality.ps1 -IncludePlaywrightSmoke
+```
+
+When local CPU, memory, disk, package restore, or MSBuild lock contention makes validation
+unreliable, push the branch and run the manual GitHub-hosted
+`Targeted Test` workflow before retrying broad local scripts. It accepts a .NET test project plus
+filter, or a fixed browser workstation npm script plus optional Vitest file/name.
+
+```powershell
+gh workflow run targeted-test.yml --ref <branch> `
+  -f lane=dotnet `
+  -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj `
+  -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
+
+gh workflow run targeted-test.yml --ref <branch> `
+  -f lane=browser-dashboard `
+  -f browser_script=test:vitest `
+  -f vitest_file=src/screens/<screen>.test.tsx
+```
 
 ### Most common default lanes
 

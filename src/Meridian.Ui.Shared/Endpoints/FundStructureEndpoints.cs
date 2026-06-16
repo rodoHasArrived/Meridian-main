@@ -1698,6 +1698,7 @@ public static class FundStructureEndpoints
         .Produces<ReportWriterGridRenderDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status200OK, contentType: "application/json")
         .Produces(StatusCodes.Status200OK, contentType: "text/csv")
+        .Produces(StatusCodes.Status200OK, contentType: "application/pdf")
         .Produces(StatusCodes.Status200OK, contentType: StructuredXlsxContentType)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)

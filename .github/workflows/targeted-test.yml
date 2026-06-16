@@ -1,0 +1,241 @@
+name: Targeted Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      lane:
+        description: Test lane to run.
+        required: true
+        type: choice
+        default: dotnet
+        options:
+          - dotnet
+          - browser-dashboard
+      runner:
+        description: GitHub-hosted runner.
+        required: true
+        type: choice
+        default: ubuntu-latest
+        options:
+          - ubuntu-latest
+          - windows-latest
+      configuration:
+        description: .NET build configuration.
+        required: true
+        default: Release
+      dotnet_project:
+        description: .NET test project, solution, or solution filter.
+        required: false
+        default: tests/Meridian.Tests/Meridian.Tests.csproj
+      dotnet_filter:
+        description: Optional dotnet test --filter expression.
+        required: false
+        default: Category!=Integration&Category!=Performance
+      enable_windows_targeting:
+        description: Pass EnableWindowsTargeting=true to dotnet.
+        required: true
+        type: boolean
+        default: true
+      enable_full_wpf_build:
+        description: Pass EnableFullWpfBuild=true to dotnet.
+        required: true
+        type: boolean
+        default: false
+      browser_script:
+        description: Dashboard npm script to run when lane is browser-dashboard.
+        required: true
+        type: choice
+        default: test
+        options:
+          - test
+          - test:vitest
+          - test:w4
+          - build
+      vitest_file:
+        description: Optional dashboard test file for test:vitest, relative to src/Meridian.Ui/dashboard.
+        required: false
+        default: ""
+      vitest_name:
+        description: Optional Vitest -t name pattern for test:vitest.
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: targeted-test-${{ github.ref }}-${{ inputs.lane }}-${{ inputs.runner }}
+  cancel-in-progress: false
+
+env:
+  CI: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: "false"
+  DOTNET_NOLOGO: "true"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+  MERIDIAN_DISABLE_DOCKER_TESTS: "true"
+
+jobs:
+  targeted:
+    name: targeted-${{ inputs.lane }} on ${{ inputs.runner }}
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up .NET SDK
+        if: inputs.lane == 'dotnet'
+        uses: actions/setup-dotnet@v5.2.0
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        if: inputs.lane == 'dotnet'
+        uses: actions/cache@v5.0.5
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-targeted-${{ hashFiles('**/*.csproj', '**/*.fsproj', 'Directory.Build.props', 'Directory.Packages.props', 'NuGet.config', 'global.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-targeted-
+            ${{ runner.os }}-nuget-
+
+      - name: Run targeted .NET tests
+        if: inputs.lane == 'dotnet'
+        shell: pwsh
+        env:
+          DOTNET_PROJECT: ${{ inputs.dotnet_project }}
+          DOTNET_FILTER: ${{ inputs.dotnet_filter }}
+          DOTNET_CONFIGURATION: ${{ inputs.configuration }}
+          ENABLE_WINDOWS_TARGETING: ${{ inputs.enable_windows_targeting }}
+          ENABLE_FULL_WPF_BUILD: ${{ inputs.enable_full_wpf_build }}
+        run: |
+          $project = $env:DOTNET_PROJECT.Replace('\', '/').Trim()
+          $configuration = $env:DOTNET_CONFIGURATION.Trim()
+          $filter = $env:DOTNET_FILTER.Trim()
+
+          $allowedRootProject = $project -in @('Meridian.sln', 'Meridian.WebWorkstation.slnf')
+          $allowedNestedProject = $project -match '^(tests|src)/[A-Za-z0-9._/-]+\.(csproj|fsproj|sln|slnf)$'
+          if (-not ($allowedRootProject -or $allowedNestedProject)) {
+            throw "Unsupported dotnet_project '$project'. Use a repo-relative tests/ or src/ project, Meridian.sln, or Meridian.WebWorkstation.slnf."
+          }
+          if (-not (Test-Path -LiteralPath $project)) {
+            throw "dotnet_project does not exist: $project"
+          }
+          if ($configuration -notmatch '^[A-Za-z0-9._-]+$') {
+            throw "Unsupported configuration '$configuration'."
+          }
+
+          $props = @("/p:EnableWindowsTargeting=$env:ENABLE_WINDOWS_TARGETING")
+          if ($env:ENABLE_FULL_WPF_BUILD -eq 'true') {
+            $props += '/p:EnableFullWpfBuild=true'
+          }
+
+          & dotnet restore $project @props
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          $testArgs = @(
+            'test',
+            $project,
+            '-c',
+            $configuration,
+            '--no-restore',
+            '--logger',
+            'trx;LogFilePrefix=targeted',
+            '--results-directory',
+            'artifacts/test-results/targeted-dotnet'
+          )
+          if ($filter -ne '') {
+            $testArgs += @('--filter', $filter)
+          }
+
+          & dotnet @testArgs @props
+
+      - name: Set up Node.js
+        if: inputs.lane == 'browser-dashboard'
+        uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
+
+      - name: Install dashboard dependencies
+        if: inputs.lane == 'browser-dashboard'
+        run: npm install --prefix src/Meridian.Ui/dashboard --include=optional
+
+      - name: Run targeted browser workstation task
+        if: inputs.lane == 'browser-dashboard'
+        shell: pwsh
+        env:
+          BROWSER_SCRIPT: ${{ inputs.browser_script }}
+          VITEST_FILE: ${{ inputs.vitest_file }}
+          VITEST_NAME: ${{ inputs.vitest_name }}
+        run: |
+          $script = $env:BROWSER_SCRIPT.Trim()
+          $vitestFile = $env:VITEST_FILE.Replace('\', '/').Trim()
+          $vitestName = $env:VITEST_NAME.Trim()
+
+          if ($script -notin @('test', 'test:vitest', 'test:w4', 'build')) {
+            throw "Unsupported browser_script '$script'."
+          }
+          if (($vitestFile -ne '' -or $vitestName -ne '') -and $script -ne 'test:vitest') {
+            throw "vitest_file and vitest_name are only supported with browser_script=test:vitest."
+          }
+
+          $scriptArgs = @()
+          if ($vitestFile -ne '') {
+            if ($vitestFile -notmatch '^[A-Za-z0-9._/-]+\.(test|spec)\.(ts|tsx)$' -or $vitestFile.Contains('..')) {
+              throw "Unsupported vitest_file '$vitestFile'. Use a dashboard .test.ts/.test.tsx or .spec.ts/.spec.tsx path."
+            }
+            $dashboardPath = Join-Path 'src/Meridian.Ui/dashboard' $vitestFile
+            if (-not (Test-Path -LiteralPath $dashboardPath)) {
+              throw "vitest_file does not exist: $dashboardPath"
+            }
+            $scriptArgs += $vitestFile
+          }
+          if ($vitestName -ne '') {
+            $scriptArgs += @('-t', $vitestName)
+          }
+
+          if ($scriptArgs.Count -gt 0) {
+            & npm '--prefix' 'src/Meridian.Ui/dashboard' 'run' $script '--' @scriptArgs
+          } else {
+            & npm '--prefix' 'src/Meridian.Ui/dashboard' 'run' $script
+          }
+
+      - name: Write summary
+        if: always()
+        shell: pwsh
+        env:
+          SUMMARY_LANE: ${{ inputs.lane }}
+          SUMMARY_RUNNER: ${{ inputs.runner }}
+          SUMMARY_DOTNET_PROJECT: ${{ inputs.dotnet_project }}
+          SUMMARY_DOTNET_FILTER: ${{ inputs.dotnet_filter }}
+          SUMMARY_BROWSER_SCRIPT: ${{ inputs.browser_script }}
+          SUMMARY_VITEST_FILE: ${{ inputs.vitest_file }}
+          SUMMARY_VITEST_NAME: ${{ inputs.vitest_name }}
+        run: |
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "### Targeted test run"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- Lane: $env:SUMMARY_LANE"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- Runner: $env:SUMMARY_RUNNER"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- .NET project: $env:SUMMARY_DOTNET_PROJECT"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- .NET filter: $env:SUMMARY_DOTNET_FILTER"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- Browser script: $env:SUMMARY_BROWSER_SCRIPT"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- Vitest file: $env:SUMMARY_VITEST_FILE"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- Vitest name: $env:SUMMARY_VITEST_NAME"
+
+      - name: Upload targeted test artifacts
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: targeted-test-${{ inputs.lane }}-${{ github.run_number }}
+          path: |
+            artifacts/test-results/targeted-dotnet/
+            src/Meridian.Ui/dashboard/dist/
+          if-no-files-found: ignore
+          retention-days: 14

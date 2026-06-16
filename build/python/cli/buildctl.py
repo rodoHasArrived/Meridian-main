@@ -7,6 +7,8 @@ for the Meridian project.
 Usage:
     python3 build/python/cli/buildctl.py doctor [--quick] [--no-fail-on-warn]
     python3 build/python/cli/buildctl.py build --project <path> --configuration <cfg>
+    python3 build/python/cli/buildctl.py test --project <path> [--filter <expr>]
+    python3 build/python/cli/buildctl.py validation-status
     python3 build/python/cli/buildctl.py collect-debug --project <path> --configuration <cfg>
     python3 build/python/cli/buildctl.py build-profile
     python3 build/python/cli/buildctl.py validate-data --directory <dir>
@@ -32,6 +34,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -53,6 +56,9 @@ _DEFAULT_ISOLATION_RETENTION_DAYS = 14
 _DEFAULT_ISOLATION_RETAIN_LATEST = 10
 _DEFAULT_ISOLATION_MAX_ROOT_SIZE_MB = 4096
 _ISOLATED_BUILD_ARTIFACT_ROOTS = ("artifacts/bin", "artifacts/obj")
+_VALIDATION_LOCK_RELATIVE_PATH = ".ai/locks/validation.lock"
+_VALIDATION_RUNS_RELATIVE_PATH = ".ai/validation-runs"
+_CONTENTIOUS_PROCESS_NAMES = ("dotnet.exe", "MSBuild.exe", "testhost.exe", "csc.exe", "VBCSCompiler.exe")
 
 
 # ---------------------------------------------------------------------------
@@ -114,12 +120,223 @@ def _build_msbuild_args(args: argparse.Namespace) -> list[str]:
     return msbuild_args
 
 
+def _build_serialized_msbuild_args(args: argparse.Namespace) -> list[str]:
+    return [
+        *_build_msbuild_args(args),
+        "/p:BuildInParallel=false",
+        "/p:UseSharedCompilation=false",
+    ]
+
+
 def _have(tool: str) -> bool:
     return shutil.which(tool) is not None
 
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _safe_slug(value: str) -> str:
+    slug = re.sub(r"[^a-zA-Z0-9]+", "-", value).strip("-").lower()
+    return slug or "validation"
+
+
+def _new_run_id(prefix: str) -> str:
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+    return f"{_safe_slug(prefix)}-{os.getpid()}-{timestamp}"
+
+
+def _write_json(path: Path, payload: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def _validation_lock_path(repo_root: Path = REPO_ROOT) -> Path:
+    return repo_root / _VALIDATION_LOCK_RELATIVE_PATH
+
+
+def _validation_runs_dir(repo_root: Path = REPO_ROOT) -> Path:
+    return repo_root / _VALIDATION_RUNS_RELATIVE_PATH
+
+
+def _read_validation_lock(repo_root: Path = REPO_ROOT) -> dict | None:
+    lock_path = _validation_lock_path(repo_root)
+    if not lock_path.exists():
+        return None
+    try:
+        return json.loads(lock_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {
+            "path": str(lock_path),
+            "error": "validation lock exists but could not be parsed",
+        }
+
+
+def _acquire_validation_lock(
+    repo_root: Path,
+    *,
+    run_id: str,
+    command: str,
+    queue: bool,
+    timeout_seconds: int,
+) -> bool:
+    lock_path = _validation_lock_path(repo_root)
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    deadline = time.monotonic() + max(0, timeout_seconds)
+    payload = {
+        "runId": run_id,
+        "pid": os.getpid(),
+        "command": command,
+        "startedAt": _utc_now(),
+    }
+
+    while True:
+        try:
+            fd = os.open(str(lock_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                handle.write(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+            return True
+        except FileExistsError:
+            if not queue or time.monotonic() >= deadline:
+                return False
+            time.sleep(2)
+
+
+def _release_validation_lock(repo_root: Path, run_id: str) -> None:
+    lock_path = _validation_lock_path(repo_root)
+    try:
+        current = _read_validation_lock(repo_root)
+        if current and current.get("runId") != run_id:
+            return
+        lock_path.unlink(missing_ok=True)
+    except OSError as exc:
+        print(f"WARN: Failed to release validation lock '{lock_path}': {exc}", file=sys.stderr)
+
+
+def _find_powershell() -> str | None:
+    return shutil.which("pwsh") or shutil.which("powershell")
+
+
+def _get_active_repo_build_processes(repo_root: Path = REPO_ROOT) -> list[dict[str, object]]:
+    if platform.system().lower() != "windows":
+        return []
+
+    powershell = _find_powershell()
+    if not powershell:
+        return []
+
+    repo = "'" + str(repo_root.resolve()).replace("'", "''") + "'"
+    names = " OR ".join(f"Name = '{name}'" for name in _CONTENTIOUS_PROCESS_NAMES)
+    script = f"""
+$repo = [System.IO.Path]::GetFullPath({repo})
+$processes = @(Get-CimInstance Win32_Process -Filter "{names}" -ErrorAction SilentlyContinue)
+$repoBuildProcessIds = @(
+  $processes | Where-Object {{
+    $_.ProcessId -ne {os.getpid()} -and
+    $_.CommandLine -and
+    (
+      $_.CommandLine.IndexOf($repo, [System.StringComparison]::OrdinalIgnoreCase) -ge 0 -or
+      $_.CommandLine.IndexOf("Meridian.Wpf", [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+    ) -and
+    (
+      $_.Name -eq "MSBuild.exe" -or
+      $_.Name -eq "testhost.exe" -or
+      $_.CommandLine -match '(?i)\\bdotnet(\\.exe)?"?\\s+(build|test|restore|msbuild|clean)\\b' -or
+      $_.CommandLine.IndexOf("MSBuild.dll", [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+    )
+  }} | Select-Object -ExpandProperty ProcessId
+)
+$result = @(
+  $processes | Where-Object {{
+    $_.ProcessId -ne {os.getpid()} -and
+    (
+      $repoBuildProcessIds -contains $_.ProcessId -or
+      (($_.Name -eq "csc.exe" -or $_.Name -eq "VBCSCompiler.exe") -and $repoBuildProcessIds -contains $_.ParentProcessId)
+    )
+  }} | ForEach-Object {{
+    [pscustomobject]@{{
+      processId = $_.ProcessId
+      parentProcessId = $_.ParentProcessId
+      name = $_.Name
+      commandLine = $_.CommandLine
+    }}
+  }}
+)
+$result | ConvertTo-Json -Compress
+"""
+    result = subprocess.run(
+        [powershell, "-NoProfile", "-Command", script],
+        capture_output=True,
+        text=True,
+        cwd=repo_root,
+    )
+    if result.returncode != 0 or not result.stdout.strip():
+        return []
+
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return []
+
+    if isinstance(payload, dict):
+        return [payload]
+    if isinstance(payload, list):
+        return [item for item in payload if isinstance(item, dict)]
+    return []
+
+
+def _wait_for_no_active_repo_build_processes(timeout_seconds: int) -> list[dict[str, object]]:
+    deadline = time.monotonic() + max(0, timeout_seconds)
+    active = _get_active_repo_build_processes()
+    while active and time.monotonic() < deadline:
+        time.sleep(2)
+        active = _get_active_repo_build_processes()
+    return active
+
+
+def _resolve_isolation_key(raw_key: str | None, *, run_id: str, disabled: bool) -> str | None:
+    if disabled:
+        return None
+    if not raw_key or raw_key == "auto":
+        return run_id
+    return raw_key
+
+
+def _prune_for_isolation(args: argparse.Namespace, isolation_key: str | None) -> None:
+    if not isolation_key:
+        return
+
+    isolation_retention_days = getattr(args, "isolation_retention_days", _DEFAULT_ISOLATION_RETENTION_DAYS)
+    isolation_retain_latest = getattr(args, "isolation_retain_latest", _DEFAULT_ISOLATION_RETAIN_LATEST)
+    isolation_max_root_size_mb = getattr(
+        args,
+        "isolation_max_root_size_mb",
+        _DEFAULT_ISOLATION_MAX_ROOT_SIZE_MB,
+    )
+    deleted_count, freed_bytes = _prune_isolated_build_artifacts(
+        REPO_ROOT,
+        max_age_days=isolation_retention_days,
+        retain_latest=isolation_retain_latest,
+        max_root_size_mb=isolation_max_root_size_mb,
+        active_isolation_key=isolation_key,
+    )
+    if deleted_count:
+        policies = []
+        if isolation_retention_days > 0:
+            policies.append(f"older than {isolation_retention_days} days")
+        if isolation_retain_latest > 0:
+            policies.append(f"beyond latest {isolation_retain_latest} per root")
+        if isolation_max_root_size_mb > 0:
+            policies.append(f"above {isolation_max_root_size_mb} MB per root")
+
+        print(
+            "INFO: Pruned "
+            f"{deleted_count} isolated build artifact "
+            f"{'directory' if deleted_count == 1 else 'directories'} "
+            f"using age/count/size retention ({' or '.join(policies)}) "
+            "from artifacts/bin and artifacts/obj "
+            f"({_format_bytes(freed_bytes)} recovered)."
+        )
 
 
 def _default_isolation_retention_days() -> int:
@@ -782,38 +999,7 @@ def cmd_build(args: argparse.Namespace) -> int:
     msbuild_args = _build_msbuild_args(args)
     isolation_key = getattr(args, "isolation_key", None)
 
-    if isolation_key:
-        isolation_retention_days = getattr(args, "isolation_retention_days", _DEFAULT_ISOLATION_RETENTION_DAYS)
-        isolation_retain_latest = getattr(args, "isolation_retain_latest", _DEFAULT_ISOLATION_RETAIN_LATEST)
-        isolation_max_root_size_mb = getattr(
-            args,
-            "isolation_max_root_size_mb",
-            _DEFAULT_ISOLATION_MAX_ROOT_SIZE_MB,
-        )
-        deleted_count, freed_bytes = _prune_isolated_build_artifacts(
-            REPO_ROOT,
-            max_age_days=isolation_retention_days,
-            retain_latest=isolation_retain_latest,
-            max_root_size_mb=isolation_max_root_size_mb,
-            active_isolation_key=isolation_key,
-        )
-        if deleted_count:
-            policies = []
-            if isolation_retention_days > 0:
-                policies.append(f"older than {isolation_retention_days} days")
-            if isolation_retain_latest > 0:
-                policies.append(f"beyond latest {isolation_retain_latest} per root")
-            if isolation_max_root_size_mb > 0:
-                policies.append(f"above {isolation_max_root_size_mb} MB per root")
-
-            print(
-                "INFO: Pruned "
-                f"{deleted_count} isolated build artifact "
-                f"{'directory' if deleted_count == 1 else 'directories'} "
-                f"using age/count/size retention ({' or '.join(policies)}) "
-                "from artifacts/bin and artifacts/obj "
-                f"({_format_bytes(freed_bytes)} recovered)."
-            )
+    _prune_for_isolation(args, isolation_key)
 
     if getattr(args, "shutdown_build_servers", False):
         print("Shutting down dotnet build servers...")
@@ -844,6 +1030,231 @@ def cmd_build(args: argparse.Namespace) -> int:
             *msbuild_args,
         ]
     )
+
+
+# ---------------------------------------------------------------------------
+# test and validation status commands
+# ---------------------------------------------------------------------------
+
+
+def _record_validation_run(run_path: Path, payload: dict, **updates: object) -> None:
+    payload.update(updates)
+    _write_json(run_path, payload)
+
+
+def cmd_validation_status(args: argparse.Namespace) -> int:
+    lock = _read_validation_lock()
+    active_processes = _get_active_repo_build_processes()
+    blocked = bool(lock or active_processes)
+    status = {
+        "timestamp": _utc_now(),
+        "lock": lock,
+        "activeRepoBuildProcesses": active_processes,
+        "blocked": blocked,
+    }
+
+    if getattr(args, "json_output", None):
+        _write_json(Path(args.json_output), status)
+
+    if getattr(args, "summary", False) or not getattr(args, "json_output", None):
+        print(f"blocked={str(blocked).lower()}")
+        print(f"lock={'present' if lock else 'none'}")
+        print(f"active_processes={len(active_processes)}")
+        for process in active_processes[:10]:
+            print(
+                "  PID {pid} {name}: {command}".format(
+                    pid=process.get("processId"),
+                    name=process.get("name"),
+                    command=str(process.get("commandLine", ""))[:240],
+                )
+            )
+
+    return 1 if blocked and getattr(args, "fail_on_active", False) else 0
+
+
+def cmd_test(args: argparse.Namespace) -> int:
+    if getattr(args, "lane", "dotnet") != "dotnet":
+        print("Only lane=dotnet is currently supported by buildctl test.", file=sys.stderr)
+        return 2
+
+    project: str = getattr(args, "project", "tests/Meridian.Tests/Meridian.Tests.csproj")
+    configuration: str = getattr(args, "configuration", "Release")
+    verbosity: str = getattr(args, "verbosity", os.environ.get("BUILD_VERBOSITY", "normal"))
+    run_id = getattr(args, "run_id", None) or _new_run_id(f"test-{Path(project).stem}")
+    isolation_key = _resolve_isolation_key(
+        getattr(args, "isolation_key", "auto"),
+        run_id=run_id,
+        disabled=getattr(args, "no_isolation", False),
+    )
+
+    if getattr(args, "no_build", False) and getattr(args, "isolation_key", "auto") == "auto" and not getattr(args, "no_isolation", False):
+        print(
+            "--no-build cannot be used with the default auto isolation key because no matching build output exists.",
+            file=sys.stderr,
+        )
+        return 2
+
+    run_path = _validation_runs_dir() / f"{run_id}.json"
+    run_payload: dict = {
+        "runId": run_id,
+        "command": "test",
+        "lane": "dotnet",
+        "project": project,
+        "filter": getattr(args, "filter", ""),
+        "configuration": configuration,
+        "isolationKey": isolation_key,
+        "startedAt": _utc_now(),
+        "status": "started",
+        "steps": [],
+    }
+    _write_json(run_path, run_payload)
+
+    lock_acquired = False
+    if not getattr(args, "allow_concurrent", False):
+        lock_acquired = _acquire_validation_lock(
+            REPO_ROOT,
+            run_id=run_id,
+            command=f"buildctl test --project {project}",
+            queue=getattr(args, "queue", False),
+            timeout_seconds=getattr(args, "queue_timeout_seconds", 300),
+        )
+        if not lock_acquired:
+            lock = _read_validation_lock()
+            _record_validation_run(
+                run_path,
+                run_payload,
+                status="blocked",
+                finishedAt=_utc_now(),
+                blockReason="validation lock is held by another run",
+                lock=lock,
+            )
+            print("Validation is already running; rerun with --queue to wait or --allow-concurrent to override.", file=sys.stderr)
+            if lock:
+                print(json.dumps(lock, indent=2, sort_keys=True), file=sys.stderr)
+            return 3
+
+    try:
+        active_processes = _wait_for_no_active_repo_build_processes(
+            getattr(args, "queue_timeout_seconds", 300) if getattr(args, "queue", False) else 0
+        )
+        if active_processes and not getattr(args, "allow_concurrent", False):
+            _record_validation_run(
+                run_path,
+                run_payload,
+                status="blocked",
+                finishedAt=_utc_now(),
+                blockReason="repo-owned build/test/compiler processes are already active",
+                activeRepoBuildProcesses=active_processes,
+            )
+            print("Active repo-owned build/test/compiler processes detected; refusing to start shared validation.", file=sys.stderr)
+            for process in active_processes[:10]:
+                print(
+                    "PID {pid} {name}: {command}".format(
+                        pid=process.get("processId"),
+                        name=process.get("name"),
+                        command=str(process.get("commandLine", ""))[:240],
+                    ),
+                    file=sys.stderr,
+                )
+            return 3
+
+        _prune_for_isolation(args, isolation_key)
+
+        msbuild_args = _build_serialized_msbuild_args(args)
+        results_directory = Path(getattr(args, "results_directory", "") or (REPO_ROOT / ".ai/test-results" / run_id))
+        if not results_directory.is_absolute():
+            results_directory = REPO_ROOT / results_directory
+        results_directory.mkdir(parents=True, exist_ok=True)
+
+        step_results: list[dict[str, object]] = []
+
+        def run_step(name: str, command: list[str]) -> int:
+            print(f"{name}: {' '.join(command)}")
+            started = time.monotonic()
+            code = _run_passthrough(command)
+            step_results.append(
+                {
+                    "name": name,
+                    "command": command,
+                    "exitCode": code,
+                    "durationSeconds": round(time.monotonic() - started, 2),
+                }
+            )
+            _record_validation_run(run_path, run_payload, steps=step_results)
+            return code
+
+        if getattr(args, "shutdown_build_servers", False):
+            shutdown_code = run_step("shutdown-build-servers", ["dotnet", "build-server", "shutdown"])
+            if shutdown_code != 0:
+                _record_validation_run(run_path, run_payload, status="failed", finishedAt=_utc_now(), exitCode=shutdown_code)
+                return shutdown_code
+
+        if not getattr(args, "skip_restore", False):
+            restore_code = run_step("restore", ["dotnet", "restore", project, "--verbosity", verbosity, *msbuild_args])
+            if restore_code != 0:
+                _record_validation_run(run_path, run_payload, status="failed", finishedAt=_utc_now(), exitCode=restore_code)
+                return restore_code
+
+        if not getattr(args, "no_build", False):
+            build_code = run_step(
+                "build",
+                [
+                    "dotnet",
+                    "build",
+                    project,
+                    "-c",
+                    configuration,
+                    "--verbosity",
+                    verbosity,
+                    "-nologo",
+                    "--no-restore",
+                    *msbuild_args,
+                ],
+            )
+            if build_code != 0:
+                _record_validation_run(run_path, run_payload, status="failed", finishedAt=_utc_now(), exitCode=build_code)
+                return build_code
+
+        test_command = [
+            "dotnet",
+            "test",
+            project,
+            "-c",
+            configuration,
+            "--verbosity",
+            verbosity,
+            "-nologo",
+            "--no-restore",
+            "--results-directory",
+            str(results_directory),
+        ]
+        if not getattr(args, "no_build", False):
+            test_command.append("--no-build")
+        if getattr(args, "filter", ""):
+            test_command.extend(["--filter", getattr(args, "filter")])
+        if getattr(args, "settings", None):
+            test_command.extend(["--settings", getattr(args, "settings")])
+        for logger in getattr(args, "logger", None) or ["console;verbosity=normal"]:
+            test_command.extend(["--logger", logger])
+        for collector in getattr(args, "collect", []) or []:
+            test_command.extend(["--collect", collector])
+        test_command.extend(msbuild_args)
+
+        test_code = run_step("test", test_command)
+        status = "passed" if test_code == 0 else "failed"
+        _record_validation_run(
+            run_path,
+            run_payload,
+            status=status,
+            finishedAt=_utc_now(),
+            exitCode=test_code,
+            resultsDirectory=str(results_directory),
+        )
+        print(f"Validation run artifact: {run_path}")
+        return test_code
+    finally:
+        if lock_acquired:
+            _release_validation_lock(REPO_ROOT, run_id)
 
 
 # ---------------------------------------------------------------------------
@@ -1274,6 +1685,55 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_build.add_argument("--property", action="append", default=[])
 
+    # test
+    p_test = sub.add_parser("test", help="Run contention-aware .NET tests with optional isolated outputs")
+    p_test.add_argument("--lane", default="dotnet", choices=["dotnet"], help="Validation lane to run.")
+    p_test.add_argument("--project", default="tests/Meridian.Tests/Meridian.Tests.csproj")
+    p_test.add_argument("--configuration", default="Release")
+    p_test.add_argument("--framework")
+    p_test.add_argument("--runtime")
+    p_test.add_argument("--filter", default="")
+    p_test.add_argument("--verbosity", default=os.environ.get("BUILD_VERBOSITY", "normal"))
+    p_test.add_argument("--skip-restore", action="store_true")
+    p_test.add_argument("--no-build", action="store_true")
+    p_test.add_argument("--no-isolation", action="store_true")
+    p_test.add_argument("--full-wpf-build", action="store_true")
+    p_test.add_argument("--shutdown-build-servers", action="store_true")
+    p_test.add_argument("--allow-concurrent", action="store_true")
+    p_test.add_argument("--queue", action="store_true", help="Wait for the validation lock and active repo build processes.")
+    p_test.add_argument("--queue-timeout-seconds", type=int, default=300)
+    p_test.add_argument("--run-id")
+    p_test.add_argument("--isolation-key", default="auto")
+    p_test.add_argument("--results-directory")
+    p_test.add_argument("--settings")
+    p_test.add_argument("--logger", action="append", default=None)
+    p_test.add_argument("--collect", action="append", default=[])
+    p_test.add_argument(
+        "--isolation-retention-days",
+        type=int,
+        default=_default_isolation_retention_days(),
+        help="Prune isolated artifacts/bin and artifacts/obj output directories older than this many days.",
+    )
+    p_test.add_argument(
+        "--isolation-retain-latest",
+        type=int,
+        default=_default_isolation_retain_latest(),
+        help="Retain this many newest isolated artifacts/bin and artifacts/obj output directories per root.",
+    )
+    p_test.add_argument(
+        "--isolation-max-root-size-mb",
+        type=int,
+        default=_default_isolation_max_root_size_mb(),
+        help="Prune oldest isolated artifacts when either root exceeds this many MB.",
+    )
+    p_test.add_argument("--property", action="append", default=[])
+
+    # validation-status
+    p_status = sub.add_parser("validation-status", help="Show local validation lock and active build/test processes")
+    p_status.add_argument("--summary", action="store_true")
+    p_status.add_argument("--json-output")
+    p_status.add_argument("--fail-on-active", action="store_true")
+
     # collect-debug
     p_cd = sub.add_parser("collect-debug", help="Collect debug bundle")
     p_cd.add_argument("--project", default="Meridian.sln")
@@ -1331,6 +1791,8 @@ def build_parser() -> argparse.ArgumentParser:
 _COMMANDS = {
     "doctor": cmd_doctor,
     "build": cmd_build,
+    "test": cmd_test,
+    "validation-status": cmd_validation_status,
     "collect-debug": cmd_collect_debug,
     "build-profile": cmd_build_profile,
     "validate-data": cmd_validate_data,

@@ -9,7 +9,7 @@ import {
   updateAlert,
   type StorageLike
 } from "./storage";
-import type { PriceAlert, PriceAlertDraft, PriceAlertField, PriceAlertStorageState, PriceAlertTrigger } from "./types";
+import type { PriceAlert, PriceAlertDraft, PriceAlertField, PriceAlertStorageState, PriceAlertTrigger } from "./index";
 
 export const PRICE_ALERTS_POLL_INTERVAL_MS = 5000;
 

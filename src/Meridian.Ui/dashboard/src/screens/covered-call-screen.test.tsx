@@ -5,7 +5,7 @@ import { ApiError } from "@/lib/api-errors";
 import * as coveredCallApi from "@/lib/api/covered-call.api";
 import { CoveredCallScreen } from "@/screens/covered-call-screen";
 import { COVERED_CALL_CHAIN_DETAIL_PANEL_ID } from "@/screens/covered-call-screen.view-model";
-import type { CoveredCallChainPreview, CoveredCallRunHandle, CoveredCallRunResult, CoveredCallRunSummary } from "@/types/covered-call.types";
+import type { CoveredCallChainPreview, CoveredCallRunHandle, CoveredCallRunResult, CoveredCallRunSummary } from "@/lib/covered-call";
 
 vi.mock("@/lib/api/covered-call.api", () => ({
   startCoveredCallBacktest: vi.fn(),

@@ -72,7 +72,9 @@ public static class WorkstationServiceCollectionExtensions
         });
 
         services.AddHttpClient();
+        services.AddHttpContextAccessor();
         services.AddMemoryCache();
+        services.TryAddScoped<IWorkstationTenantContextAccessor, HttpContextWorkstationTenantContextAccessor>();
         services.TryAddSingleton<IRolePermissionProfileStore, FileRolePermissionProfileStore>();
         services.TryAddSingleton<IUserAccountStore, FileUserAccountStore>();
         if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")))

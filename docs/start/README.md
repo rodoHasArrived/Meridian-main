@@ -86,6 +86,14 @@ persisting the password in WPF config files.
 
 Use the narrowest command that covers the surface you touched:
 
+If local machine limits make the relevant proof lane unreliable, push the branch and use the
+manual GitHub-hosted `Targeted Test` workflow before retrying broad local scripts:
+
+```powershell
+gh workflow run targeted-test.yml --ref <branch> -f lane=dotnet -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
+gh workflow run targeted-test.yml --ref <branch> -f lane=browser-dashboard -f browser_script=test:vitest -f vitest_file=src/screens/<screen>.test.tsx
+```
+
 ```powershell
 dotnet run --project src/Meridian/Meridian.csproj -- --validate-config
 dotnet run --project src/Meridian/Meridian.csproj -- --quick-check

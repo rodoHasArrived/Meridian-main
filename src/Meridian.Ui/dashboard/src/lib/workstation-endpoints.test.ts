@@ -112,6 +112,7 @@ import {
   workstationOperatorInboxEndpoint,
   workstationAssetOperationsEndpoint,
   workstationOperationsContinuityBreakAssignEndpoint,
+  workstationOperationsContinuityBreakResolveEndpoint,
   workstationOperationsContinuityBreaksEndpoint,
   workstationOperationsContinuityCloseEndpoint,
   workstationOperationsContinuityDetailEndpoint,
@@ -296,6 +297,9 @@ describe("workstation API endpoint catalog", () => {
     expect(workstationOperationsContinuityBreakAssignEndpoint("workflow / 1", "break / 1")).toBe(
       "/api/workstation/operations/continuity/workflow%20%2F%201/reconciliation/breaks/break%20%2F%201/assign"
     );
+    expect(workstationOperationsContinuityBreakResolveEndpoint("workflow / 1", "break / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/reconciliation/breaks/break%20%2F%201/resolve"
+    );
     expect(workstationOperationsContinuityLedgerPreviewEndpoint("workflow / 1")).toBe(
       "/api/workstation/operations/continuity/workflow%20%2F%201/ledger-preview"
     );
@@ -353,6 +357,9 @@ describe("workstation API endpoint catalog", () => {
     );
     expect(reportingRunReportWriterGridEndpoint("run / 1", "grid / 1", "csv")).toBe(
       "/api/fund-structure/reporting/runs/run%20%2F%201/report-writer-grids/grid%20%2F%201?format=csv"
+    );
+    expect(reportingRunReportWriterGridEndpoint("run / 1", "grid / 1", "pdf")).toBe(
+      "/api/fund-structure/reporting/runs/run%20%2F%201/report-writer-grids/grid%20%2F%201?format=pdf"
     );
     expect(reportPackDeliveryPackageEndpoint("report / 1", "attempt / 1", "tok / 1")).toBe(
       "/api/fund-structure/reporting/packs/report%20%2F%201/deliveries/attempt%20%2F%201/package?token=tok+%2F+1"

@@ -161,6 +161,7 @@ import type {
   OperationsCloseWorkflowRequest,
   OperationsReopenWorkflowRequest,
   OperationsRejectWorkflowRequest,
+  OperationsResolveBreakCaseRequest,
   OperationsTransitionResult,
   PlaidLinkTokenRequest,
   PlaidLinkTokenResponse,
@@ -327,6 +328,7 @@ import {
   workstationOperationsContinuityApprovalApproveEndpoint,
   workstationOperationsContinuityApprovalRejectEndpoint,
   workstationOperationsContinuityBreakAssignEndpoint,
+  workstationOperationsContinuityBreakResolveEndpoint,
   workstationOperationsContinuityCloseEndpoint,
   workstationOperationsContinuityDetailEndpoint,
   workstationOperationsContinuityEndpoint,
@@ -893,6 +895,19 @@ export function assignOperationsContinuityBreakCase(
 ) {
   return postJson<OperationsTransitionResult>(
     workstationOperationsContinuityBreakAssignEndpoint(workflowId, breakId),
+    request,
+    options
+  );
+}
+
+export function resolveOperationsContinuityBreakCase(
+  workflowId: string,
+  breakId: string,
+  request: OperationsResolveBreakCaseRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityBreakResolveEndpoint(workflowId, breakId),
     request,
     options
   );

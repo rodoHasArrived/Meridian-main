@@ -2,7 +2,7 @@ import type {
   CoveredCallChainPreview,
   CoveredCallRunResult,
   CoveredCallRunSummary
-} from "../types/covered-call.types";
+} from "@/lib/covered-call";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,

@@ -217,11 +217,13 @@ The same cockpit now advertises the shared Asset Operations detail route
 `AssetOperationsDetailDto` subject, projected-cash-flow, reconciliation-result, and ledger-projection
 sections for any Security Master asset instead of rebuilding direct-lending-only drill-ins in WPF.
 The Reporting cockpit keeps the desktop entry point aligned with the shared reporting engine by
-surfacing report writer grids, branded report packs, scheduled PDF/XLSX/CSV delivery, secure-portal
-and email-link distribution, Top-N/contribution analytics, custom-formula grid validation,
-cross-fund consolidation roll-ups, regulatory exports, and audit lineage
-through registered WPF targets (`FundReportPack`, `ReportRunStatus`, `Dashboard`, `AnalysisExport`,
-`ExportPresets`, `FundAuditTrail`, and `DataQuality`) rather than desktop-local reporting logic.
+refreshing its decision queue and summary tiles from `FundOperationsWorkspaceReadService` reporting
+telemetry. It surfaces report writer datasets and retained grids, branded report packs, scheduled
+PDF/XLSX/CSV delivery, secure-portal and email-link distribution, Top-N/contribution analytics,
+custom-formula grid validation, cross-fund consolidation roll-ups with shadow-NAV, regulatory and
+warehouse exports, user/group/company access posture, and audit lineage through registered WPF
+targets (`FundReportPack`, `ReportRunStatus`, `Dashboard`, `AnalysisExport`, `ExportPresets`,
+`FundAuditTrail`, and `DataQuality`) rather than desktop-local reporting logic.
 Fund Ledger Report Pack handoff also renders the shared Operations Continuity accounting-record
 summary, including retained source records, normalized activity, reconciliation history, ledger
 evidence, approvals, report-pack lineage, export evidence, restatement lineage, measured

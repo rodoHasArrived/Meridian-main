@@ -132,9 +132,10 @@ derived from those shared task fields: ready, blocked, acknowledged, approval, e
 and next-due counts are display projections only and must not become client-local close state.
 Operations Continuity break assignment and escalation rows likewise render owner, due date,
 SLA state/due time, materiality, root cause, approval posture, blocked downstream outputs,
-escalation, variance, suggested action, and retained evidence from the shared workflow payload, with
-assignment/escalation mutations routed through the shared operations-continuity API instead of
-browser-local break state.
+escalation, variance, suggested action, retained evidence counts, and the first local retained
+evidence route from the shared workflow payload. They also route operators to the Accounting
+exception casework lane with workflow and break context while assignment/escalation and resolution
+commands stay on the shared operations-continuity API instead of browser-local break state.
 The Operations Continuity screen also renders the shared Financial Operations operational
 dashboard. Receive Activity, Match Records, Resolve Exceptions, Approve Results, Produce Evidence,
 and Close Support metric state, retained evidence, route hints, and required actions come from the
@@ -146,6 +147,9 @@ automation policy.
 The Financial Operations operator queue on that screen is also derived from workflow detail:
 reconciliation break cases, close checklist tasks, workflow approvals, and evidence-package
 readiness stay source-backed while React only groups the active work items for review.
+The same workflow approval payload also feeds a read-only approval-history table with submission
+timing, reviewer/operator attribution, rationale, status, and the first local retained approval
+evidence route, keeping approval history inspectable without browser-local approval state.
 It also renders the shared evidence-package table from the workflow detail payload: accounting
 record evidence, report-pack evidence, close-package manifest, and audit-support package rows show
 server-owned readiness, category completeness, retained evidence counts, local routes, and required
@@ -181,7 +185,9 @@ and checklist-control approvals, private-capital evidence package rows for fund-
 partner capital tie-outs, NAV support, and close approval/audit evidence, plus NAV support package
 rows for positions, cash, pricing, shadow NAV, and retained evidence links so approval,
 evidence-package, and NAV-support evidence are visible without browser-local timeline or
-report-output reconstruction.
+report-output reconstruction. Approval-history and evidence-package rows preserve the first local
+retained evidence route alongside the workflow or package route so audit evidence remains directly
+reachable from the close cockpit tables.
 The period lock and reopen evidence panel stays read-only as well: locked/open/reopened posture,
 close audit hash, close package hash, reopen incident correlation, rationale, and retained reopen
 evidence are derived from the shared workflow status and timeline. Browser close/reopen command
@@ -196,9 +202,9 @@ evidence. Browser evidence clients also carry the shared vault lookup and export
 including `accountingRecordId`, so retained accounting-record manifests can be rediscovered through
 the same API shape used by WPF and host endpoints.
 The same detail view renders contract-owned reconciliation lane coverage for cash, position, trade,
-income, MBS factor, bank, and GL support. Lane readiness, break counts, retained evidence links,
-route hints, and required actions come from the Operations Continuity payload rather than
-browser-local reconciliation heuristics.
+income, MBS factor, bank, and GL support. Lane readiness, break counts, retained evidence counts,
+first local retained evidence routes, lane route hints, and required actions come from the
+Operations Continuity payload rather than browser-local reconciliation heuristics.
 No-host browser previews include the same accounting-record evidence subject, packet, validation,
 manifest export, and vault-search fixture path so operators can inspect the evidence workbench demo
 without a live Meridian API host.
@@ -401,10 +407,11 @@ When the backend generates an approved custom no-code template, retained
 `report-writer://.../grids/{gridId}` artifacts flow back through recent-run rows so browser
 Reporting can show that pivot, Top-N, contribution, and custom-formula grids were part of the
 actual run evidence, not just a preview-only authoring state. Recent-run cards and delivery
-package metadata expose JSON, CSV, XLS, and XLSX links for each retained grid through the shared
+package metadata expose JSON, CSV, PDF, XLS, and XLSX links for each retained grid through the shared
 `reportingRunReportWriterGridEndpoint` helper, keeping grid download URLs contract-derived. The
 browser XLS link uses the shared `format=xls` compatibility alias and receives the canonical
-workbook artifact from the backend.
+workbook artifact from the backend, while the browser PDF link uses the shared `format=pdf` route
+for allocator-ready retained-grid previews.
 The Reporting workspace also exposes `/reporting/operations-record` as the polished W1-W5 release
 path. It stays under the canonical Reporting root and projects the loaded Data provider posture,
 Operations Continuity accounting-record evidence, close-package state, and report-pack publication
@@ -451,8 +458,9 @@ shared renderer still owns pivot, Top-N, contribution, filter, and formula outpu
 source-backed option posts the selected payload-owned rows to the render endpoint; the browser also
 renders the source-owned field catalog with role and data-type metadata before preview. Formula
 preview row generation recognizes brace references, bare identifiers, `total(...)`, and shared
-formula functions such as `abs(...)`, `min(...)`, `max(...)`, and `safeDivide(...)`, so local sample
-rows include the same formula source fields the shared renderer will evaluate. The
+formula functions such as `abs(...)`, `min(...)`, `max(...)`, `safeDivide(...)`, `percent(...)`,
+`basisPoints(...)`, and `round(...)`, so local sample rows include the same formula source fields
+the shared renderer will evaluate. The
 certified operational data-mart option is server-projected with row-lineage keys, lineage manifest
 pointers, evidence-index links, source run ids, validation/reconciliation posture, certification
 state, and permitted consumers; the browser should display those payload fields instead of deriving
@@ -531,8 +539,9 @@ workflow as a browser-wide strip: `Import`, `Validate`, `Reconcile`, `Investigat
 `Report`. Route-specific trails such as Market Data To Paper, Research To Paper, or Accounting Closeout remain intact,
 while the primary strip anchors every workspace to the financial-operations flow.
 Accounting Closeout keeps the design-document Financial Operations lane in the app-shell continuity
-dock while the browser `AccountingScreen` focuses on the owned ledger, reconciliation, approvals,
-exceptions, security coverage, and reporting evidence panels. Retained `Governance*` view-model, DTO,
+dock with Receive Activity, Match Records, Resolve Exceptions, Approve Results, Produce Evidence,
+and Close Support while the browser `AccountingScreen` focuses on the owned ledger, reconciliation,
+approvals, exceptions, security coverage, and reporting evidence panels. Retained `Governance*` view-model, DTO,
 endpoint, and test fixture names are compatibility seams only; new browser component routing should
 use Accounting naming.
 The Accounting ledger workstream includes a GL account inquiry surface: operators can filter
@@ -662,6 +671,7 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 ```bash
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
+npm --prefix src/Meridian.Ui/dashboard run smoke:workstation
 ```
 
 ## Change rules

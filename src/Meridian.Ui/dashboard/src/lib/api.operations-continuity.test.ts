@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  assignOperationsContinuityBreakCase,
   closeOperationsContinuityWorkflow,
   reopenOperationsContinuityWorkflow,
+  resolveOperationsContinuityBreakCase,
   resetDevelopmentFixtureUsage
 } from "@/lib/api";
 
@@ -44,6 +46,58 @@ describe("operations continuity API command wiring", () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/workstation/operations/continuity/workflow%20%2F%201/close",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify(request)
+      })
+    );
+  });
+
+  it("posts break assignment requests to the shared operations continuity command endpoint", async () => {
+    const request = {
+      expectedVersion: 4,
+      actor: "browser-operator",
+      owner: "fund-controller",
+      rationale: "Assign aged cash variance to controller review.",
+      escalationLevel: "Level 2",
+      escalationReason: "Aged cash variance past controller SLA",
+      dueDate: "2026-05-09",
+      correlationId: "assign-recon-break-42"
+    };
+
+    await assignOperationsContinuityBreakCase("workflow / 1", "break / 1", request);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/reconciliation/breaks/break%20%2F%201/assign",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify(request)
+      })
+    );
+  });
+
+  it("posts break resolution requests to the shared operations continuity command endpoint", async () => {
+    const request = {
+      expectedVersion: 5,
+      actor: "browser-operator",
+      resolutionStatus: "Resolved",
+      rationale: "Accepted retained custodian statement evidence and closed the cash break.",
+      correlationId: "resolve-recon-break-42",
+      evidenceLinks: [
+        {
+          evidenceId: "recon-break-close-evidence-1",
+          label: "Custodian statement case close evidence",
+          route: "/workstation/accounting/reconciliation/recon-break-42/evidence",
+          source: "operations-continuity",
+          capturedAtUtc: "2026-05-08T15:34:00Z"
+        }
+      ]
+    };
+
+    await resolveOperationsContinuityBreakCase("workflow / 1", "break / 1", request);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/reconciliation/breaks/break%20%2F%201/resolve",
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify(request)

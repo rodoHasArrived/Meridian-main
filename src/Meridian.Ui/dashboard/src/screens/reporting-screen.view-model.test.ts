@@ -356,6 +356,16 @@ describe("useReportingScreenViewModel", () => {
       generatedGridLabel: "1 generated grid with 1 formula",
       generatedGridNames: ["Sector Pivot (Pivot, 2d/2m/1f)"],
       hasGeneratedGrids: true,
+      generatedGridArtifacts: [
+        expect.objectContaining({
+          label: "Sector Pivot (Pivot)",
+          jsonHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot",
+          csvHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot?format=csv",
+          pdfHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot?format=pdf",
+          xlsHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot?format=xls",
+          xlsxHref: "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot?format=xlsx"
+        })
+      ],
       datasetSourceLabel: "Portfolio reporting cuts (2 rows)",
       auditSummary: "RunGenerated → ApprovalTransition",
       hasDrilldownLinks: true,

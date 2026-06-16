@@ -28,6 +28,9 @@ python3 build/python/cli/buildctl.py build --project Meridian.sln --configuratio
 - Run the narrowest command that covers the touched surface.
 - Prefer filtered `dotnet test`, package-local dashboard commands, doc-only checks, and `--no-build`
   after a valid isolated build.
+- When local resource limits, package restore, or MSBuild/output locks make local proof unreliable,
+  push the branch and dispatch GitHub Actions `Targeted Test` with the same .NET project/filter or
+  dashboard test file before retrying broad local scripts.
 - Use broad suites only when the changed layer or release risk requires them.
 - If `make` is unavailable on Windows, run the target's underlying command directly and report that
   the Make wrapper could not be invoked.

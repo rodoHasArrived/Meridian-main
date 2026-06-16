@@ -102,10 +102,15 @@ pwsh ./scripts/dev/run-desktop.ps1 -Fixture
 pwsh ./scripts/dev/test-wpf-dev.ps1
 dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
 make test
+gh workflow run targeted-test.yml --ref <branch> -f lane=dotnet -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
+gh workflow run targeted-test.yml --ref <branch> -f lane=browser-dashboard -f browser_script=test:vitest -f vitest_file=src/screens/<screen>.test.tsx
 python3 build/scripts/ai-repo-updater.py known-errors
 ```
 
 Prefer the narrowest validation command that matches the files being changed.
+When local CPU, memory, disk, dependency restore, or MSBuild lock contention makes validation
+unreliable, push the branch and use the GitHub-hosted `Targeted Test` workflow as the remote proof
+tool before retrying broad local scripts.
 
 For Codex skill, catalog, prompt, docs-automation, or AI workflow changes, prefer this deterministic
 validation stack before broad build or test runs:

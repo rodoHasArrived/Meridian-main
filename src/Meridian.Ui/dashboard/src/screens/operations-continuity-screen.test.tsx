@@ -254,7 +254,26 @@ const detail: OperationsContinuityWorkflow = {
   ],
   reconciliationLanes,
   ledgerPreview: null,
-  approvals: [],
+  approvals: [
+    {
+      approvalId: "approval-close-2026-05",
+      status: "ReviewerAssigned",
+      operator: "ops-user",
+      reviewer: "fund-controller",
+      rationale: "Pending final ledger validation before close sign-off.",
+      submittedAtUtc: "2026-05-08T15:05:00Z",
+      decidedAtUtc: null,
+      evidenceLinks: [
+        {
+          evidenceId: "approval-evidence-1",
+          label: "Approval evidence",
+          route: "/workstation/accounting/approvals",
+          source: "operations-continuity",
+          capturedAtUtc: "2026-05-08T15:05:00Z"
+        }
+      ]
+    }
+  ],
   reportPackReadiness: {
     isReady: false,
     reportPackId: null,
@@ -934,11 +953,17 @@ describe("OperationsContinuityScreen", () => {
     expect(within(breakCases).getByText("Level 2 at May 08, 15:20 UTC: Aged cash variance past controller SLA")).toBeInTheDocument();
     expect(within(breakCases).getByText("Expected 125,000.25 / Actual 124,998.25 / Variance -2")).toBeInTheDocument();
     expect(within(breakCases).getByText("1 retained evidence link")).toBeInTheDocument();
+    expect(within(breakCases).getByRole("link", { name: "Open retained evidence for break recon-break-42" }))
+      .toHaveAttribute("href", "/accounting/reconciliation/recon-break-42/evidence");
     expect(within(breakCases).getByText("SLA Warning due May 09, 16:00 UTC")).toBeInTheDocument();
     expect(within(breakCases).getByText("Materiality 2")).toBeInTheDocument();
     expect(within(breakCases).getByText("Root cause Broker Cash Timing")).toBeInTheDocument();
     expect(within(breakCases).getByText("Approval Ready For Signoff")).toBeInTheDocument();
     expect(within(breakCases).getByText("Blocks Report package release, Close sign-off review")).toBeInTheDocument();
+    expect(within(breakCases).getByText("Resolution command ready")).toBeInTheDocument();
+    expect(within(breakCases).getByText("Expected workflow version 4")).toBeInTheDocument();
+    expect(within(breakCases).getByRole("link", { name: "Open exception casework for break recon-break-42" }))
+      .toHaveAttribute("href", `/accounting/exceptions?workflowId=${workflowId}&breakId=recon-break-42`);
     const reconciliationLaneCoverage = screen.getByRole("table", { name: "Operations continuity reconciliation lane coverage" });
     expect(within(reconciliationLaneCoverage).getByText("Cash reconciliation")).toBeInTheDocument();
     expect(within(reconciliationLaneCoverage).getByText("MBS factor reconciliation")).toBeInTheDocument();
@@ -946,6 +971,10 @@ describe("OperationsContinuityScreen", () => {
     expect(within(reconciliationLaneCoverage).getByText("GL reconciliation support")).toBeInTheDocument();
     expect(within(reconciliationLaneCoverage).getByText("Resolve or assign MBS factor reconciliation breaks and retain evidence.")).toBeInTheDocument();
     expect(within(reconciliationLaneCoverage).getAllByText("1 evidence link")).toHaveLength(2);
+    expect(within(reconciliationLaneCoverage).getByRole("link", { name: "Open retained evidence for reconciliation lane Cash reconciliation" }))
+      .toHaveAttribute("href", "/accounting/reconciliation/cash");
+    expect(within(reconciliationLaneCoverage).getByRole("link", { name: "Open retained evidence for reconciliation lane MBS factor reconciliation" }))
+      .toHaveAttribute("href", "/accounting/reconciliation/recon-break-factor-1");
     const accountingRecordSummary = screen.getByRole("list", { name: "Accounting record evidence summary" });
     expect(within(accountingRecordSummary).getByText("accounting-record-2026-05")).toBeInTheDocument();
     expect(within(accountingRecordSummary).getByText("1 retained evidence link")).toBeInTheDocument();
@@ -1008,16 +1037,27 @@ describe("OperationsContinuityScreen", () => {
     expect(within(reviewedAutomationQueue).getByText("Cannot publish reports or release support packages.")).toBeInTheDocument();
     const operatorQueue = screen.getByRole("table", { name: "Financial Operations operator queue" });
     expect(within(operatorQueue).getByText("recon-break-42")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("approval-close-2026-05")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("CashBalance / cash-balance-check; Level 2 at May 08, 15:20 UTC: Aged cash variance past controller SLA")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Ledger posting controller check")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Period lock and reopen evidence")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Complete reopened incident remediation and close the period again with retained evidence.")).toBeInTheDocument();
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: recon-break-42" }))
       .toHaveAttribute("href", "/accounting/reconciliation/recon-break-42/evidence");
+    expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: approval-close-2026-05" }))
+      .toHaveAttribute("href", "/accounting/approvals");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Ledger posting controller check" }))
       .toHaveAttribute("href", "/accounting/ledger");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Period lock and reopen evidence" }))
       .toHaveAttribute("href", "/accounting/operations-continuity");
+    const workflowApprovalHistory = screen.getByRole("table", { name: "Operations continuity workflow approval history" });
+    expect(within(workflowApprovalHistory).getByText("approval-close-2026-05")).toBeInTheDocument();
+    expect(within(workflowApprovalHistory).getByText("Reviewer fund-controller / Operator ops-user")).toBeInTheDocument();
+    expect(within(workflowApprovalHistory).getByText("Submitted May 08, 15:05 UTC")).toBeInTheDocument();
+    expect(within(workflowApprovalHistory).getByText("Decision pending")).toBeInTheDocument();
+    expect(within(workflowApprovalHistory).getByText("Pending final ledger validation before close sign-off.")).toBeInTheDocument();
+    expect(within(workflowApprovalHistory).getByRole("link", { name: "Open approval evidence for workflow approval approval-close-2026-05" }))
+      .toHaveAttribute("href", "/accounting/approvals");
     const evidencePackages = screen.getByRole("table", { name: "Operations continuity evidence packages" });
     expect(within(evidencePackages).getByText("Accounting record evidence")).toBeInTheDocument();
     expect(within(evidencePackages).getByText("Close package manifest")).toBeInTheDocument();
@@ -1026,6 +1066,8 @@ describe("OperationsContinuityScreen", () => {
     expect(within(evidencePackages).getByText("1/2 categories complete")).toBeInTheDocument();
     expect(within(evidencePackages).getByText("Close package close-package-2026-05 retained manifest close-package-2026-05-manifest and evidence hash.")).toBeInTheDocument();
     expect(within(evidencePackages).getByText("Complete reopened incident remediation and close the period again with retained evidence.")).toBeInTheDocument();
+    expect(within(evidencePackages).getByRole("link", { name: "Open retained evidence for package Accounting record evidence" }))
+      .toHaveAttribute("href", "/accounting/reconciliation/recon-break-42/evidence");
     expect(within(evidencePackages).getByRole("link", { name: "Open evidence package Close package manifest" }))
       .toHaveAttribute("href", "/accounting/operations-continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close-package/close-package-2026-05-manifest");
     expect(within(evidencePackages).getByRole("link", { name: "Open evidence package Audit support package" }))
@@ -1048,6 +1090,8 @@ describe("OperationsContinuityScreen", () => {
     expect(within(cockpitEvidencePackages).getByText("4/4 categories complete")).toBeInTheDocument();
     expect(within(cockpitEvidencePackages).getByText("1/3 categories complete")).toBeInTheDocument();
     expect(within(cockpitEvidencePackages).getByText("Retain complete NAV support package evidence before close sign-off.")).toBeInTheDocument();
+    expect(within(cockpitEvidencePackages).getByRole("link", { name: "Open retained evidence for package NAV support evidence package" }))
+      .toHaveAttribute("href", "/portfolio/nav/support-package");
     expect(within(cockpitEvidencePackages).getByRole("link", { name: "Open evidence package Fund-event accounting evidence" }))
       .toHaveAttribute("href", "/accounting/private-capital/fund-events");
     const navSupportPackages = screen.getByRole("table", { name: "Private-capital close cockpit NAV support packages" });
@@ -1060,6 +1104,8 @@ describe("OperationsContinuityScreen", () => {
     expect(within(cockpitApprovalHistory).getByText("Reviewer fund-controller / Operator ops-user")).toBeInTheDocument();
     expect(within(cockpitApprovalHistory).getByText("Pending final ledger validation before close sign-off.")).toBeInTheDocument();
     expect(within(cockpitApprovalHistory).getByText("1 evidence link")).toBeInTheDocument();
+    expect(within(cockpitApprovalHistory).getByRole("link", { name: "Open private-capital close approval evidence approval-close-2026-05" }))
+      .toHaveAttribute("href", "/accounting/approvals");
     expect(screen.getByRole("link", { name: "Open private-capital close cockpit action: Resolve Ledger Posting blockers" }))
       .toHaveAttribute("href", "/accounting/ledger");
 

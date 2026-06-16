@@ -436,6 +436,14 @@ export function workstationOperationsContinuityBreakAssignEndpoint(workflowId: s
   );
 }
 
+export function workstationOperationsContinuityBreakResolveEndpoint(workflowId: string, breakId: string): string {
+  return routeWithParam(
+    routeWithParam(UI_API_ROUTES.OperationsContinuityReconciliationBreakResolve, "workflowId", workflowId),
+    "breakId",
+    breakId
+  );
+}
+
 export function workstationOperationsContinuityLedgerPreviewEndpoint(workflowId: string): string {
   return routeWithParam(UI_API_ROUTES.OperationsContinuityLedgerPreview, "workflowId", workflowId);
 }
@@ -650,7 +658,7 @@ export function reportingRunAuditTrailEndpoint(runId: string): string {
 export function reportingRunReportWriterGridEndpoint(
   runId: string,
   gridId: string,
-  format?: "json" | "csv" | "xls" | "xlsx"
+  format?: "json" | "csv" | "pdf" | "xls" | "xlsx"
 ): string {
   const route = routeWithParam(
     routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingRunReportWriterGrid, "runId", runId),

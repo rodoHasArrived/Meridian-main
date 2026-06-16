@@ -886,6 +886,19 @@ describe("Operations Continuity view model", () => {
       evidenceLabel: "1 evidence link",
       routeHref: "/accounting/approvals"
     });
+    expect(vm.workflowApprovalHistory).toHaveLength(1);
+    expect(vm.workflowApprovalHistory[0]).toMatchObject({
+      id: "approval-close-2026-05",
+      statusLabel: "Reviewer Assigned",
+      statusTone: "review",
+      actorLabel: "Reviewer fund-controller / Operator ops-user",
+      submittedLabel: "Submitted May 08, 15:05 UTC",
+      decidedLabel: "Decision pending",
+      rationale: "Pending final ledger validation before close sign-off.",
+      evidenceLabel: "1 evidence link",
+      evidenceHref: "/accounting/approvals",
+      evidenceRouteLabel: "Open approval evidence"
+    });
     expect(vm.financialOperationsQueue.items[4]).toMatchObject({
       kindLabel: "Evidence package",
       title: "Close package manifest",
@@ -903,6 +916,8 @@ describe("Operations Continuity view model", () => {
       statusTone: "review",
       readinessLabel: "3/8 categories complete",
       evidenceLabel: "1 evidence link",
+      evidenceHref: "/accounting/operations-continuity",
+      evidenceRouteLabel: "Open retained evidence",
       routeHref: "/accounting/operations-continuity"
     });
     expect(vm.evidencePackages[2]).toMatchObject({
@@ -910,6 +925,7 @@ describe("Operations Continuity view model", () => {
       label: "Close package manifest",
       statusLabel: "Missing",
       statusTone: "blocked",
+      evidenceRouteLabel: "No local evidence route",
       requiredActionsLabel: "Publish the close package manifest and retain the evidence hash."
     });
     expect(vm.evidencePackages[4]).toMatchObject({
@@ -1113,9 +1129,17 @@ describe("Operations Continuity view model", () => {
       rootCauseLabel: "Root cause Broker Cash Timing",
       symbolLabel: "No security",
       evidenceLabel: "1 retained evidence link",
+      evidenceHref: "/accounting/reconciliation/recon-break-42/evidence",
+      evidenceRouteLabel: "Open retained evidence",
       approvalLabel: "Approval Ready For Signoff",
       blockedOutputsLabel: "Blocks Report package release, Close sign-off review",
-      actionLabel: "Accept custodian statement evidence and close the reconciliation break."
+      actionLabel: "Accept custodian statement evidence and close the reconciliation break.",
+      caseworkHref: `/accounting/exceptions?workflowId=${workflowId}&breakId=recon-break-42`,
+      caseworkRouteLabel: "Open casework",
+      commandPostureLabel: "Resolution retained",
+      commandGuardLabel: "Expected workflow version 4",
+      routeHref: "/accounting/reconciliation/recon-break-42/evidence",
+      routeLabel: "Open break evidence"
     });
     expect(vm.reconciliationLanes).toHaveLength(7);
     expect(vm.reconciliationLanes[0]).toMatchObject({
@@ -1125,6 +1149,8 @@ describe("Operations Continuity view model", () => {
       statusTone: "ready",
       breakCountLabel: "No open breaks",
       evidenceLabel: "1 evidence link",
+      evidenceHref: "/accounting/reconciliation/cash",
+      evidenceRouteLabel: "Open retained evidence",
       routeHref: "/accounting/reconciliation",
       requiredActionsLabel: "No required actions"
     });
@@ -1133,7 +1159,168 @@ describe("Operations Continuity view model", () => {
       statusTone: "review",
       breakCountLabel: "1 open break",
       evidenceLabel: "1 evidence link",
+      evidenceHref: "/accounting/reconciliation/recon-break-factor-1",
+      evidenceRouteLabel: "Open retained evidence",
       requiredActionsLabel: "Resolve or assign MBS factor reconciliation breaks and retain evidence."
+    });
+  });
+
+  it("fails closed when reconciliation lane evidence has no local route", () => {
+    const workflowWithExternalLaneEvidence: OperationsContinuityWorkflow = {
+      ...detail,
+      reconciliationLanes: [
+        {
+          laneId: "bank-reconciliation",
+          label: "Bank reconciliation",
+          status: "ReviewRequired",
+          isReady: false,
+          breakCount: 1,
+          summary: "Bank reconciliation is waiting for retained bank statement evidence.",
+          routeHint: "/workstation/accounting/reconciliation",
+          evidenceLinks: [
+            {
+              evidenceId: "external-bank-evidence-1",
+              label: "External bank statement evidence",
+              route: "https://evidence.example/bank-reconciliation",
+              source: "external-vault",
+              capturedAtUtc: "2026-05-08T15:36:00Z"
+            }
+          ],
+          requiredActions: ["Retain the bank statement evidence inside the Meridian evidence vault."]
+        }
+      ]
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail: workflowWithExternalLaneEvidence,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.reconciliationLanes[0]).toMatchObject({
+      id: "bank-reconciliation",
+      evidenceLabel: "1 evidence link",
+      evidenceHref: null,
+      evidenceRouteLabel: "No local evidence route",
+      routeHref: "/accounting/reconciliation",
+      routeLabel: "Open lane"
+    });
+  });
+
+  it("fails closed when workflow approval evidence has no local route", () => {
+    const workflowWithExternalApprovalEvidence: OperationsContinuityWorkflow = {
+      ...detail,
+      approvals: [
+        {
+          ...detail.approvals[0]!,
+          evidenceLinks: [
+            {
+              evidenceId: "external-approval-evidence-1",
+              label: "External approval evidence",
+              route: "https://evidence.example/approval-close-2026-05",
+              source: "external-vault",
+              capturedAtUtc: "2026-05-08T15:06:00Z"
+            }
+          ]
+        }
+      ]
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail: workflowWithExternalApprovalEvidence,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.workflowApprovalHistory[0]).toMatchObject({
+      id: "approval-close-2026-05",
+      evidenceLabel: "1 evidence link",
+      evidenceHref: null,
+      evidenceRouteLabel: "No local evidence route"
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "approval:approval-close-2026-05")).toMatchObject({
+      routeHref: null,
+      routeLabel: "No local route"
+    });
+  });
+
+  it("fails closed when a break-case retained evidence link has no local route", () => {
+    const workflowWithExternalBreakEvidence: OperationsContinuityWorkflow = {
+      ...detail,
+      breakCases: [
+        {
+          breakId: "recon-break-external",
+          checkId: "income-accrual-check",
+          category: "IncomeAccrual",
+          severity: "Warning",
+          status: "Open",
+          owner: null,
+          dueDate: null,
+          expectedSource: "ledger",
+          actualSource: "agent-bank",
+          expectedAmount: 2400,
+          actualAmount: 0,
+          variance: -2400,
+          securityId: null,
+          symbol: "BOND1",
+          suggestedAction: "Assign income accrual break and retain local evidence before approval.",
+          evidenceLinks: [
+            {
+              evidenceId: "external-break-evidence-1",
+              label: "External income accrual support",
+              route: "https://evidence.example/recon-break-external",
+              source: "external-vault",
+              capturedAtUtc: "2026-05-08T15:34:00Z"
+            }
+          ],
+          escalationLevel: null,
+          escalationReason: null,
+          escalatedAtUtc: null,
+          slaState: null,
+          slaDueAtUtc: null,
+          materiality: null,
+          rootCauseCode: null,
+          approvalState: null,
+          blockedOutputs: null
+        }
+      ]
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail: workflowWithExternalBreakEvidence,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.breakCases[0]).toMatchObject({
+      id: "recon-break-external",
+      evidenceLabel: "1 retained evidence link",
+      evidenceHref: null,
+      evidenceRouteLabel: "No local evidence route",
+      caseworkHref: `/accounting/exceptions?workflowId=${workflowId}&breakId=recon-break-external`,
+      caseworkRouteLabel: "Open casework",
+      commandPostureLabel: "Assignment and escalation ready",
+      commandGuardLabel: "Expected workflow version 4",
+      routeHref: null,
+      routeLabel: "No local route"
     });
   });
 
@@ -1268,6 +1455,8 @@ describe("Operations Continuity view model", () => {
       statusTone: "ready",
       readinessLabel: "4/4 categories complete",
       evidenceLabel: "3 evidence links",
+      evidenceHref: "/accounting/private-capital/fund-events",
+      evidenceRouteLabel: "Open retained evidence",
       routeHref: "/accounting/private-capital/fund-events",
       requiredActionsLabel: "No required actions"
     });
@@ -1277,6 +1466,8 @@ describe("Operations Continuity view model", () => {
       statusTone: "review",
       readinessLabel: "1/3 categories complete",
       evidenceLabel: "1 evidence link",
+      evidenceHref: "/portfolio/nav/support-package",
+      evidenceRouteLabel: "Open retained evidence",
       routeHref: "/portfolio/nav",
       requiredActionsLabel: "Retain complete NAV support package evidence before close sign-off."
     });
@@ -1289,6 +1480,8 @@ describe("Operations Continuity view model", () => {
       actorLabel: "Reviewer fund-controller / Operator ops-user",
       decidedLabel: "May 08, 15:05 UTC",
       evidenceLabel: "1 evidence link",
+      evidenceHref: "/accounting/approvals",
+      evidenceRouteLabel: "Open evidence",
       workflowHref: "/accounting/operations-continuity"
     });
     expect(vm.closeCockpit.navSupportPackages).toHaveLength(1);

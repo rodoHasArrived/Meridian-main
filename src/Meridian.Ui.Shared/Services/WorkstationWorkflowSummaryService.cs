@@ -684,8 +684,8 @@ public sealed class WorkstationWorkflowSummaryService
 
         var unresolvedBreakCount = CountUnresolvedBreaks(workflow);
         var evidenceCount = CountEvidenceLinks(workflow);
-        var stage = ResolveFinancialOperationsStage(workflow, unresolvedBreakCount);
         var evidencePackageBlocker = ResolveFinancialOperationsEvidencePackageBlocker(workflow);
+        var stage = ResolveFinancialOperationsStage(workflow, unresolvedBreakCount, evidencePackageBlocker);
 
         if (unresolvedBreakCount > 0)
         {
@@ -706,7 +706,7 @@ public sealed class WorkstationWorkflowSummaryService
                     detail: "Approval and close evidence remain blocked until every break is matched, resolved, or explicitly closed.",
                     tone: "Warning",
                     isBlocking: true),
-                Evidence: BuildFinancialOperationsEvidence(snapshot, workflow, stage, unresolvedBreakCount, evidenceCount));
+                Evidence: BuildFinancialOperationsEvidence(snapshot, workflow, stage, unresolvedBreakCount, evidenceCount, evidencePackageBlocker));
         }
 
         if (workflow.ApprovalState is OperationsApprovalStateDto.Submitted or OperationsApprovalStateDto.ReviewerAssigned ||
@@ -731,7 +731,7 @@ public sealed class WorkstationWorkflowSummaryService
                     detail: "The financial operations flow cannot produce final close evidence until approval review is complete.",
                     tone: "Warning",
                     isBlocking: true),
-                Evidence: BuildFinancialOperationsEvidence(snapshot, workflow, stage, unresolvedBreakCount, evidenceCount));
+                Evidence: BuildFinancialOperationsEvidence(snapshot, workflow, stage, unresolvedBreakCount, evidenceCount, evidencePackageBlocker));
         }
 
         if ((workflow.Status == OperationsWorkflowStatusDto.Closed || workflow.ClosePackage is not null) &&
@@ -755,7 +755,7 @@ public sealed class WorkstationWorkflowSummaryService
                     detail: evidencePackageBlocker.Summary,
                     tone: "Warning",
                     isBlocking: true),
-                Evidence: BuildFinancialOperationsEvidence(snapshot, workflow, stage, unresolvedBreakCount, evidenceCount));
+                Evidence: BuildFinancialOperationsEvidence(snapshot, workflow, stage, unresolvedBreakCount, evidenceCount, evidencePackageBlocker));
         }
 
         if (workflow.Status == OperationsWorkflowStatusDto.Closed || workflow.ClosePackage is not null)
@@ -779,7 +779,7 @@ public sealed class WorkstationWorkflowSummaryService
                     detail: "The active operations workflow has produced retained approval and close evidence.",
                     tone: "Success",
                     isBlocking: false),
-                Evidence: BuildFinancialOperationsEvidence(snapshot, workflow, stage, unresolvedBreakCount, evidenceCount));
+                Evidence: BuildFinancialOperationsEvidence(snapshot, workflow, stage, unresolvedBreakCount, evidenceCount, evidencePackageBlocker));
         }
 
         if ((workflow.Status == OperationsWorkflowStatusDto.ReadyForClose ||
@@ -804,7 +804,7 @@ public sealed class WorkstationWorkflowSummaryService
                         ?? "Close readiness blockers remain before the workflow can produce final evidence.",
                     tone: "Warning",
                     isBlocking: true),
-                Evidence: BuildFinancialOperationsEvidence(snapshot, workflow, stage, unresolvedBreakCount, evidenceCount));
+                Evidence: BuildFinancialOperationsEvidence(snapshot, workflow, stage, unresolvedBreakCount, evidenceCount, evidencePackageBlocker));
         }
 
         return new WorkspaceWorkflowSummary(
@@ -824,7 +824,7 @@ public sealed class WorkstationWorkflowSummaryService
                 detail: "Continue the source-backed receive, match, resolve, approve, and evidence workflow before close.",
                 tone: "Info",
                 isBlocking: false),
-            Evidence: BuildFinancialOperationsEvidence(snapshot, workflow, stage, unresolvedBreakCount, evidenceCount));
+            Evidence: BuildFinancialOperationsEvidence(snapshot, workflow, stage, unresolvedBreakCount, evidenceCount, evidencePackageBlocker));
     }
 
     private static IReadOnlyList<WorkflowEvidenceBadge> BuildFinancialOperationsEvidence(
@@ -832,7 +832,8 @@ public sealed class WorkstationWorkflowSummaryService
         OperationsContinuityWorkflowDto workflow,
         string stage,
         int unresolvedBreakCount,
-        int evidenceCount)
+        int evidenceCount,
+        OperationsEvidencePackageSummaryDto? evidencePackageBlocker)
     {
         var closeValue = workflow.ClosePackage is not null
             ? "Package retained"
@@ -842,7 +843,7 @@ public sealed class WorkstationWorkflowSummaryService
 
         return
         [
-            new WorkflowEvidenceBadge("Core flow", stage, ToneForStage(workflow, unresolvedBreakCount)),
+            new WorkflowEvidenceBadge("Core flow", stage, ToneForStage(workflow, unresolvedBreakCount, evidencePackageBlocker)),
             new WorkflowEvidenceBadge("Workflows", snapshot.WorkflowCount.ToString(), "Neutral"),
             new WorkflowEvidenceBadge("Breaks", unresolvedBreakCount.ToString(), unresolvedBreakCount > 0 ? "Warning" : "Success"),
             new WorkflowEvidenceBadge("Approval", workflow.ApprovalState.ToString(), workflow.ApprovalState == OperationsApprovalStateDto.Approved ? "Success" : "Warning"),
@@ -991,7 +992,10 @@ public sealed class WorkstationWorkflowSummaryService
         _ => 9
     };
 
-    private static string ResolveFinancialOperationsStage(OperationsContinuityWorkflowDto workflow, int unresolvedBreakCount)
+    private static string ResolveFinancialOperationsStage(
+        OperationsContinuityWorkflowDto workflow,
+        int unresolvedBreakCount,
+        OperationsEvidencePackageSummaryDto? evidencePackageBlocker)
     {
         if (workflow.BrokerIntakeState is OperationsBrokerIntakeStateDto.Pending or OperationsBrokerIntakeStateDto.Imported or OperationsBrokerIntakeStateDto.Normalized)
         {
@@ -1014,7 +1018,28 @@ public sealed class WorkstationWorkflowSummaryService
             return "Approve Results";
         }
 
+        if (IsFinancialOperationsCloseSupportStage(workflow, evidencePackageBlocker))
+        {
+            return "Close Support";
+        }
+
         return "Produce Evidence";
+    }
+
+    private static bool IsFinancialOperationsCloseSupportStage(
+        OperationsContinuityWorkflowDto workflow,
+        OperationsEvidencePackageSummaryDto? evidencePackageBlocker)
+    {
+        var isClosedOrPackaged = workflow.Status == OperationsWorkflowStatusDto.Closed ||
+            workflow.ClosePackage is not null;
+        if (isClosedOrPackaged)
+        {
+            return evidencePackageBlocker is not null;
+        }
+
+        return (workflow.Status == OperationsWorkflowStatusDto.ReadyForClose ||
+                workflow.ApprovalState == OperationsApprovalStateDto.Approved) &&
+            workflow.CloseReadiness is { IsReadyToClose: false };
     }
 
     private static int CountUnresolvedBreaks(OperationsContinuityWorkflowDto workflow)
@@ -1076,9 +1101,14 @@ public sealed class WorkstationWorkflowSummaryService
         _ => "Warning"
     };
 
-    private static string ToneForStage(OperationsContinuityWorkflowDto workflow, int unresolvedBreakCount)
+    private static string ToneForStage(
+        OperationsContinuityWorkflowDto workflow,
+        int unresolvedBreakCount,
+        OperationsEvidencePackageSummaryDto? evidencePackageBlocker)
     {
-        if (unresolvedBreakCount > 0 || workflow.Status == OperationsWorkflowStatusDto.Blocked)
+        if (unresolvedBreakCount > 0 ||
+            workflow.Status == OperationsWorkflowStatusDto.Blocked ||
+            IsFinancialOperationsCloseSupportStage(workflow, evidencePackageBlocker))
         {
             return "Warning";
         }

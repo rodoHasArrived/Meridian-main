@@ -200,6 +200,9 @@ each specialist lane. Specialist agents should load only the required context fo
 the `required context` vs `optional context` split from
 [`../agent-handoff-checklist.md`](../agent-handoff-checklist.md), and record rerun triggers before
 handoff so downstream agents do not repeat discovery or validation without cause.
+When local validation is blocked by machine capacity, restore failures, or MSBuild locks, agents
+should use GitHub Actions `Targeted Test` on the pushed branch as the hosted proof lane before
+retrying broad local scripts.
 
 ## AI Contract Coverage
 

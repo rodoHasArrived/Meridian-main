@@ -376,6 +376,123 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public void TemplateRegistry_RenderFormulaGridWithReportingMathFunctions_ReturnsRoundedPercentAndBasisPoints()
+    {
+        var svc = new ReportTemplateRegistryService();
+        var draft = svc.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "reporting-math-formula-grid",
+                "Reporting Math Formula Grid",
+                [],
+                [],
+                Family: "CustomReport",
+                Rationale: "Allow no-code finance formulas without scripting",
+                Grids:
+                [
+                    new ReportWriterGridDefinitionDto(
+                        "strategy-reporting-math",
+                        "Strategy Reporting Math",
+                        ReportWriterGridKindDto.Pivot,
+                        RowFields: ["strategy"],
+                        Metrics:
+                        [
+                            new ReportWriterMetricDefinitionDto("marketValue", "marketValue"),
+                            new ReportWriterMetricDefinitionDto("pnl", "pnl")
+                        ],
+                        Formulas:
+                        [
+                            new ReportWriterFormulaDefinitionDto("returnPct", "round(percent({pnl}, {marketValue}), 2)"),
+                            new ReportWriterFormulaDefinitionDto("fundWeightPct", "round(percent({marketValue}, total(marketValue)), 1)"),
+                            new ReportWriterFormulaDefinitionDto("returnBps", "round(basisPoints({pnl}, {marketValue}), 0)")
+                        ])
+                ]),
+            "report.author");
+
+        draft.ValidationIssues.Should().BeEmpty();
+        svc.Submit(draft.Definition.TemplateId, "report.author", "ready");
+        svc.Approve(
+            draft.Definition.TemplateId,
+            new ReportTemplateDecisionRequestDto("Controller approved no-code reporting math functions", "APP-FORMULA-MATH"),
+            "controller.admin");
+
+        var rendered = svc.Render(new RenderReportTemplateRequestDto(
+            draft.Definition.TemplateId,
+            new Dictionary<string, string>(),
+            [
+                new Dictionary<string, string> { ["strategy"] = "Core", ["marketValue"] = "300", ["pnl"] = "20" },
+                new Dictionary<string, string> { ["strategy"] = "Credit", ["marketValue"] = "100", ["pnl"] = "-5" }
+            ]));
+
+        var grid = rendered.Grids.Should().ContainSingle().Subject;
+        grid.Warnings.Should().BeEmpty();
+        grid.Columns.Select(static column => column.Key).Should().ContainInOrder(
+            "strategy",
+            "marketValue",
+            "pnl",
+            "returnPct",
+            "fundWeightPct",
+            "returnBps");
+        grid.Rows.Should().Contain(row =>
+            row.Values["strategy"] == "Core" &&
+            row.Values["returnPct"] == "6.67" &&
+            row.Values["fundWeightPct"] == "75" &&
+            row.Values["returnBps"] == "667");
+        grid.Rows.Should().Contain(row =>
+            row.Values["strategy"] == "Credit" &&
+            row.Values["returnPct"] == "-5" &&
+            row.Values["fundWeightPct"] == "25" &&
+            row.Values["returnBps"] == "-500");
+        grid.Lineage!.Formulas.Should().Contain(formula =>
+            formula.Name == "returnPct" &&
+            formula.SourceFields.Contains("pnl") &&
+            formula.SourceFields.Contains("marketValue"));
+        grid.Lineage.Formulas.Should().Contain(formula =>
+            formula.Name == "fundWeightPct" &&
+            formula.SourceFields.Contains("marketValue"));
+    }
+
+    [Fact]
+    public void TemplateRegistry_RenderFormulaGridWithInvalidRoundScale_ReturnsGridWarning()
+    {
+        var svc = new ReportTemplateRegistryService();
+        var draft = svc.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "invalid-round-scale-grid",
+                "Invalid Round Scale Grid",
+                [],
+                [],
+                Family: "CustomReport",
+                Rationale: "Keep bad no-code formula math isolated to grid warnings",
+                Grids:
+                [
+                    new ReportWriterGridDefinitionDto(
+                        "invalid-round-scale",
+                        "Invalid Round Scale",
+                        ReportWriterGridKindDto.Detail,
+                        Metrics: [new ReportWriterMetricDefinitionDto("pnl", "pnl")],
+                        Formulas: [new ReportWriterFormulaDefinitionDto("badRound", "round({pnl}, 9)")])
+                ]),
+            "report.author");
+
+        draft.ValidationIssues.Should().BeEmpty();
+        svc.Submit(draft.Definition.TemplateId, "report.author", "ready");
+        svc.Approve(
+            draft.Definition.TemplateId,
+            new ReportTemplateDecisionRequestDto("Controller approved warning isolation", "APP-FORMULA-WARN"),
+            "controller.admin");
+
+        var rendered = svc.Render(new RenderReportTemplateRequestDto(
+            draft.Definition.TemplateId,
+            new Dictionary<string, string>(),
+            [new Dictionary<string, string> { ["pnl"] = "12.34" }]));
+
+        var grid = rendered.Grids.Should().ContainSingle().Subject;
+        grid.Rows.Should().ContainSingle().Which.Values["badRound"].Should().BeEmpty();
+        grid.Warnings.Should().Contain("Formula 'badRound' could not be evaluated: round scale must be a whole number between 0 and 8.");
+        rendered.Warnings.Should().Contain("Formula 'badRound' could not be evaluated: round scale must be a whole number between 0 and 8.");
+    }
+
+    [Fact]
     public void TemplateRegistry_ReportWriterContributionValidation_ReservesGeneratedContributionFields()
     {
         var svc = new ReportTemplateRegistryService();
@@ -2870,6 +2987,33 @@ public sealed class ReportPackWorkflowServiceTests
             security == "DEF Loan" &&
             row.Values.TryGetValue("totalPnl", out var totalPnl) &&
             totalPnl == "-9").Should().BeTrue();
+
+        var gridArtifactService = new ReportWriterGridArtifactService(orchestration);
+        var brandedPdf = gridArtifactService.GetArtifact(result.Run.RunId, "sector-pivot", "pdf", ServerJsonOptions);
+        brandedPdf.ContentType.Should().Be("application/pdf");
+        var brandedPdfText = System.Text.Encoding.ASCII.GetString(brandedPdf.Content);
+        brandedPdfText.Should().Contain("Northstar Capital - Sector Pivot");
+        brandedPdfText.Should().Contain("Branding theme allocator-quarterly | Allocator Quarterly | Northstar Capital");
+        brandedPdfText.Should().Contain("Generated for Northstar Capital investors.");
+        brandedPdfText.Should().Contain("Confidential investor reporting pack.");
+
+        var brandedWorkbook = gridArtifactService.GetArtifact(result.Run.RunId, "sector-pivot", "xlsx", ServerJsonOptions);
+        brandedWorkbook.ContentType.Should().Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        using (var brandedWorkbookArchive = new ZipArchive(new MemoryStream(brandedWorkbook.Content), ZipArchiveMode.Read))
+        {
+            using var workbookReader = new StreamReader(brandedWorkbookArchive.GetEntry("xl/workbook.xml")!.Open());
+            var workbookXml = workbookReader.ReadToEnd();
+            workbookXml.Should().Contain("Branding");
+            using var sharedStringsReader = new StreamReader(brandedWorkbookArchive.GetEntry("xl/sharedStrings.xml")!.Open());
+            var sharedStringsXml = sharedStringsReader.ReadToEnd();
+            sharedStringsXml.Should().Contain("allocator-quarterly");
+            sharedStringsXml.Should().Contain("Allocator Quarterly");
+            sharedStringsXml.Should().Contain("Northstar Capital");
+            sharedStringsXml.Should().Contain("https://assets.example/northstar.svg");
+            sharedStringsXml.Should().Contain("Generated for Northstar Capital investors.");
+            sharedStringsXml.Should().Contain("Confidential investor reporting pack.");
+        }
+
         result.DeliveryWarnings.Should().NotBeNull().And.BeEmpty();
         result.DeliveryAttempts.Should().NotBeNull().And.ContainSingle();
         var attempt = result.DeliveryAttempts!.Single();
@@ -3022,7 +3166,7 @@ public sealed class ReportPackWorkflowServiceTests
         plan.LastDeliveryEntitlementScope.Should().Be("Restricted principals=Group:investor-relations");
         plan.LastDeliveryGeneratedReportWriterGridCount.Should().Be(2);
         plan.LastDeliveryRenderedReportWriterGridCount.Should().Be(2);
-        plan.LastDeliveryReportWriterDatasetSummary.Should().Be("Custom report-writer dataset (3 rows)");
+        plan.LastDeliveryReportWriterDatasetSummary.Should().Be("Custom schedule dataset (3 rows)");
         plan.LastDeliveryReportWriterGridSummary.Should().Contain("2 generated / 2 rendered report-writer grids");
         plan.LastDeliveryReportWriterGridSummary.Should().Contain("Sector Pivot (Pivot, 1d/1m/1f");
         plan.LastDeliveryReportWriterGridSummary.Should().Contain("Top Laggards (TopN, 1d/1m/0f");
@@ -4107,7 +4251,7 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
-    public async Task Endpoint_ReportWriterGridArtifact_ReturnsJsonCsvAndXlsxForRetainedRunGrid()
+    public async Task Endpoint_ReportWriterGridArtifact_ReturnsJsonCsvPdfAndXlsxForRetainedRunGrid()
     {
         await using var app = await CreateFundStructureAppAsync(UserRole.Admin);
         var registry = app.Services.GetRequiredService<ReportTemplateRegistryService>();
@@ -4170,6 +4314,7 @@ public sealed class ReportPackWorkflowServiceTests
         var csvResponse = await client.GetAsync($"/api/fund-structure/reporting/runs/{run.Run.RunId}/report-writer-grids/sector-pnl?format=csv");
         var xlsAliasResponse = await client.GetAsync($"/api/fund-structure/reporting/runs/{run.Run.RunId}/report-writer-grids/sector-pnl?format=xls");
         var xlsxResponse = await client.GetAsync($"/api/fund-structure/reporting/runs/{run.Run.RunId}/report-writer-grids/sector-pnl?format=xlsx");
+        var pdfResponse = await client.GetAsync($"/api/fund-structure/reporting/runs/{run.Run.RunId}/report-writer-grids/sector-pnl?format=pdf");
 
         jsonResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         jsonResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/json");
@@ -4227,6 +4372,14 @@ public sealed class ReportPackWorkflowServiceTests
         var workbookXml = await workbookReader.ReadToEndAsync();
         workbookXml.Should().Contain("DataDictionary");
         workbookXml.Should().Contain("Validation");
+
+        pdfResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        pdfResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/pdf");
+        pdfResponse.Content.Headers.ContentDisposition?.FileName.Should().Be("retained-grid-20260505-sector-pnl.pdf");
+        var pdf = await pdfResponse.Content.ReadAsByteArrayAsync();
+        pdf.Should().StartWith(System.Text.Encoding.ASCII.GetBytes("%PDF-1.4"));
+        System.Text.Encoding.ASCII.GetString(pdf).Should().Contain("Sector P&L");
+        System.Text.Encoding.ASCII.GetString(pdf).Should().Contain("Technology | 250 | 10000 | 2.5");
     }
 
     [Fact]

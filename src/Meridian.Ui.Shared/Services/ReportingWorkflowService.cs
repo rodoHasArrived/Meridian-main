@@ -711,6 +711,14 @@ public sealed class ReportTemplateRegistryService
                 continue;
             }
 
+            if (IsFormulaFunctionIdentifier(identifier)
+                && nextToken < expression.Length
+                && expression[nextToken] == '(')
+            {
+                position = nextToken + 1;
+                continue;
+            }
+
             rowReferences.Add(identifier);
         }
 
@@ -804,6 +812,15 @@ public sealed class ReportTemplateRegistryService
 
     private static bool IsIdentifierPart(char value) =>
         char.IsLetterOrDigit(value) || value is '_' or '-' or '.';
+
+    private static bool IsFormulaFunctionIdentifier(string identifier) =>
+        string.Equals(identifier, "abs", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "min", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "max", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "safeDivide", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "percent", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "basisPoints", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "round", StringComparison.OrdinalIgnoreCase);
 
     private static IReadOnlyList<string> FindFormulaCycles(IReadOnlyDictionary<string, HashSet<string>> dependencies)
     {

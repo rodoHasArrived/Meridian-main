@@ -2,7 +2,7 @@
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-06-09
+**Reviewed:** 2026-06-15
 **Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.16 extends the roadmap and source-module registry evidence with the v0.15 accounting records package plus current Carta Fund ERP, Carta Data Warehouse, Carta Management Company Administration, FundStudio fund administrator, FundStudio managed-services, FundStudio general-ledger/accounting, and Modern Treasury ledger research. Version 0.17 adds the shared Financial Record Explorer productization target from `C:\Users\Andrew James Rowden\.codex\attachments\e76a7c8a-33a1-45f6-bf2e-036d6635920d\pasted-text.txt`. Version 0.18 incorporates the operational proof layer market-gap update from `C:\Users\Andrew James Rowden\.codex\attachments\7c4bee43-4269-4284-8747-2bdeadf0287b\pasted-text.txt`.
 
 ## 1. Product Vision
@@ -52,7 +52,9 @@ admin-neutral verification, governed automation, and cross-domain proof chains.
 | --- | --- | --- |
 | [Carta Fund Administration](https://carta.com/fund-management/fund-administration/), [Carta Fund Management](https://carta.com/fund-management/), [Carta Data Warehouse](https://docs.carta.com/api-platform/docs/overview), and [Carta Management Company Administration](https://carta.com/fund-management/manco-administration/) | A connected private-capital operating suite for fund administration, event-based fund accounting, capital calls, distributions, investments, LP closings and support, KYC/AML, tax and K-1 support, SPVs, portfolio valuations, management-company expense allocation, intercompany balances, cash reconciliation, budget/cash planning, and queryable fund intelligence. | Strengthen Meridian as the private-capital operational record: first-class fund events, capital account evidence, LP/stakeholder report packages, tax and audit support files, portfolio valuation inputs, management-company operating records, certified operational datasets, and report-line provenance. |
 | [FundStudio Fund Administrators](https://fundstudio.com/fund-administrators/), [FundStudio Managed Services](https://fundstudio.com/managed-services/), [FundStudio General Ledger/Accounting](https://fundstudio.com/general-ledger-accounting/), and [FundStudio Portfolio Management](https://fundstudio.com/portfolio-management/) | Administrator-grade middle/back-office control across portfolios, custodians, primes, reconciliation, shadow NAV, multi-book/multi-currency accounting, locked periods, recurring journals, year-end close, capital-account and shadow-NAV packs, role-based JE/report/period-lock permissions, immutable logs, onboarding templates, T+0 capture, T+1 reconciliation, file distribution, SLA tracking, and reporting. | Strengthen Meridian's portfolio/accounting control plane: multi-asset operations, cash and collateral monitoring, reconciliation queues, close packages, versioned NAV support, journal evidence, fund/book/period/report admin scopes, delivery logs, exception SLAs, and drill-through reporting. |
+| [eFront Platform](https://www.efront.com/) and [SS&C Advent Geneva](https://www.advent.com/geneva/) | Private-markets platforms emphasizing broad asset-class coverage, reporting, auditability, and front-to-back workflows that support both asset managers and asset servicers. | Keep breadth goals scoped and proof-first: a fund-event and ledger-first control graph where each object is evidence-reconstructable from source to report and delivery. |
 | [Modern Treasury Ledgers](https://docs.moderntreasury.com/ledgers/docs/overview), [ledger guarantees](https://docs.moderntreasury.com/ledgers/docs/ledgers-guarantees), and ledger engineering posts on [transaction models](https://www.moderntreasury.com/journal/how-to-scale-a-ledger-part-iii), [immutability and double-entry](https://www.moderntreasury.com/journal/how-to-scale-a-ledger-part-v), and [optimistic locking](https://www.moderntreasury.com/journal/designing-ledgers-with-optimistic-locking) | Immutable double-entry ledgering, idempotent writes, atomic transactions, per-currency balancing, pending/posted/archived transaction states, append-only versions, and concurrency controls. | Make Meridian-owned ledger records treasury-grade: posted entries are immutable, corrections use reversing or adjusting journals, writes are idempotent and atomic, balance-affecting records are per-currency balanced, and authoritative ledger writes fail closed under stale versions or missing evidence. |
+| [BlackLine Financial Close](https://www.blackline.com/products/financial-close/) | Enterprise close-management tools focus on centralized close tasks, role-based controls, exception handling, and audit-compliant workflow visibility. | Bring BlackLine-style governance discipline into FinOps: explicit task ownership, SLA status, approval/state transitions, and evidence-ready close readiness signals mapped into the operational record graph. |
 
 Meridian should not treat this as permission to build a full cap-table system, outsourced services
 operation, live payment processor, broad investor portal, or autonomous-agent workflow that bypasses
@@ -99,6 +101,7 @@ promises:
 * Reconciliation should act as a close-blocking operating control: exceptions must expose owner,
   SLA, materiality, root cause, supporting evidence, approval state, and the specific NAV, close,
   capital-account, tax, audit, or report outputs they block.
+* Close governance should be operationally safe by default: each exception state change must capture owner, age, due date, and policy check outcomes before release-related actions are allowed.
 * Payment work should begin as payment intent and cash evidence, not premature live execution:
   request, approval, expected cash movement, bank confirmation, ledger intent, reconciliation, and
   report linkage are the near-term product surface.
@@ -2289,7 +2292,105 @@ Configurability creates power, but also risk. Meridian should include guardrails
 
 ## 25. Design Backlog and Remaining Productization Work
 
-The following artifacts should be maintained or expanded to keep the design document aligned with the existing implementation and remaining productization work.
+### 25.0 Marketplace Positioning and 2026 Competitor Lens
+
+Meridian is a W1-W5 proof-control platform for private-capital operations. It is not a close-only toolkit, not a generalized fund administrator, and not a replacement for every external operating domain.
+
+## Executive Marketecture Deck (Fixed 6-Page Format)
+
+### Page 1 — Executive Positioning and Decision Framing
+
+Meridian must win on one buyer question: who can reduce close risk and reporting uncertainty with less trust debt?
+
+Market reality:
+
+* Buyers operate across fragmented toolchains for data, accounting, close, and investor distribution.
+* Fragmentation creates reconciliation lag, policy inconsistency, and version drift.
+* Manual stitching increases audit exposure and extends period close.
+* The highest-value control systems are those that turn these blind spots into explicit, shared decision state.
+
+Meridian positioning:
+
+* Proof-first over feature-first.
+* Evidence-first over dashboard-first.
+* Explainability over abstraction.
+* W1-W5 continuity over broad platform breadth.
+
+Meridian must be the only operator environment where close readiness, exception state, and report impact are always traceable from source to output in one governed workflow.
+
+### Page 2 — Competitor Signal Translation
+
+Reference vendors and strongest signals (as of June 2026):
+
+* BlackLine: financial-close workflow, reconciliations, task management, transaction matching, journal controls, reporting linkage.
+* Trintech Cadency: high-volume matching, close orchestration, workflow automation, exception management, audit/compliance framing.
+* SS&C Advent Geneva: multi-asset portfolio/investor accounting scale, reporting breadth, NAV and compliance operations.
+* eFront: private-markets lifecycle and client-facing operations, data consolidation, capital event workflows.
+
+Competitive implication:
+
+* These systems are strong in their chosen domains.
+* Meridian must outperform through single-source proof continuity across fund-event, ledger, close, and report impact.
+
+### Page 3 — 2026 Operating Model (Meridian Marketecture)
+
+Meridian’s architecture for market differentiation:
+
+* Source Integrity: immutable source records plus retained imports and attachments.
+* Reconciliation Quality: break ownership, severity, aging, and blocker state tied to policy.
+* Close Governance: lock/reopen posture and readiness as enforced system state.
+* Proof-Ready Reporting: each report-line impact traces back to reconciliations, journals, approvals, and retained evidence.
+
+Design law:
+
+Every operator action must be answerable by one of three questions:
+
+1. What changed?
+2. Who approved it?
+3. Why did it remain blocked?
+
+### Page 4 — W5X-FREX-001: Shared Financial Record Explorers
+
+| Feature to ship | Competitor evidence | Meridian proof requirement | W5X-FREX gate |
+| --- | --- | --- | --- |
+| Shared explorer contract | BlackLine/Cadency show standardized close-reconciliation modules that scale operator workflows. | Shared read models and state contracts for scope, filters, saved views, summary strip, proof ribbon, and evidence links. | No FREX UI can launch without browser + WPF consuming the same DTO model and contract schema. |
+| Explorer-to-proof graph | BlackLine links modules with reporting/drill-down semantics. | `UsedIn`, `Impacts`, report-line lineage, reconciliation lineage, journal lineage per row. | A seeded close case must traverse Fund Event → Reconciliation → Journal → Report Line in one trace path. |
+| Multi-asset operator continuity | SS&C advertises broad instrument and valuation coverage across structures. | Multi-asset explorer behavior must preserve source conflict states, classification, and proof markers consistently. | The same user action produces identical proof behavior across at least 6 asset classes and both surfaces. |
+| Deterministic exception context | Competitor close stacks emphasize task visibility and review load balancing. | Exception state must remain visible and auditable from explorer context without local overrides. | Any unresolved blocker linked to close state blocks completion state transition. |
+| Report impact safety | Vendor literature stresses reporting/compliance workflows and auditability. | Report usage links must require evidence packet IDs, versioned output linkage, and approval lineage. | Report impact tags cannot appear without complete report-line provenance. |
+
+### Page 5 — W5X-FINOPS-001: Financial Operations Control Center
+
+| Feature to ship | Competitor evidence | Meridian proof requirement | W5X-FINOPS gate |
+| --- | --- | --- | --- |
+| Unified operations queue | BlackLine and Cadency prioritize centralized close-task and exception orchestration. | FINOPS queue must show blocker type, owner, aging, severity, escalation state, and close impact. | Queue “done” is blocked if any exception remains unresolved for a period-bound close dependency. |
+| Close and reopen posture | Close-focused vendors highlight workflow and role-signoff discipline. | Period-lock and reopen evidence lifecycle must be shared by both browser and WPF. | Close cannot move to “ready” until lock posture, evidence packet completeness, and approver chain are present. |
+| High-risk action governance | Competitors combine approvals with compliance controls in close and journal modules. | Policy service required for posting, reopening, override, reassignment, and exception dismissal. | Any high-risk action without approval evidence reverts with immutable denial record. |
+| Capital-event to reporting coupling | eFront and SS&C emphasize event and investor-cycle workflows. | FINOPS must surface capital-event impact on close and reporting dependencies in one operator lane. | One capital event, one valuation shock, and one report package must complete dependency validation. |
+### Page 6 — Go/No-Go Checklist (Attached)
+
+Decision gate for W5X public-readiness:
+
+| Gate | Requirement | Evidence owner | Status |
+| --- | --- | --- | --- |
+| Go-01 Source-chain | Record lineage exists from source input to proof packet for close-critical entities | Shared contracts + record lineage tests | [ ] |
+| Go-02 Reconciliation rigor | Open breaks carry owner, blocker cause, and policy threshold visibility | Explorer + FINOPS | [ ] |
+| Go-03 Closure integrity | No synthetic completion; close-ready logic enforces lock/posting/reopen constraints | FINOPS state machine | [ ] |
+| Go-04 Approval safety | No high-risk action without approval chain and approver traceability | Policy + services | [ ] |
+| Go-05 Evidence retention | Every report-impact item retains package ID, source hash, and version lineage | Reporting + audit | [ ] |
+| Go-06 Cross-surface parity | Browser and WPF produce identical proof state under same filter/time window | Shared UI contracts | [ ] |
+| Go-07 Roadmap quality | W5X-FREX and W5X-FINOPS exit with complete evidence gates | PM + QA | [ ] |
+
+Go decision is valid only when all seven checks are fully green and evidence artifacts are retained.
+
+Comparable products reviewed for this deck (June 2026):
+
+* BlackLine Financial Close: https://www.blackline.com/solutions/financial-close/
+* SS&C Advent Geneva brief: https://cdn.advent.com/cms/pdfs/briefs/PB-Geneva-Asset-Mgrs.pdf
+* eFront home and private-equity: https://www.efront.com/ ; https://www.efront.com/en/alternative-investment-solutions/private-equity
+* Trintech Cadency and Match: https://www.trintech.com/cadency/ ; https://www.trintech.com/cadency/match/
+
+### Supporting work for design backlog completion
 
 ### 1. Master Workflow Inventory
 

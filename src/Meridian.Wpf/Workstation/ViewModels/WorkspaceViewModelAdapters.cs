@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-using System.Collections.Generic;
 using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Workstation.Commands;
 using Meridian.Wpf.Workstation.Models;
@@ -84,12 +82,12 @@ public abstract class CommandHostViewModel : WorkspaceViewModelBase
     private static IReadOnlyList<CommandViewModel> BuildCommandDescriptors(WorkstationCommandGroupModel source)
     {
         var commands = new List<CommandViewModel>();
-        foreach (var command in source.PrimaryCommands ?? Array.Empty<WorkspaceCommandModel>())
+        foreach (var command in source.PrimaryCommands ?? Array.Empty<WorkstationCommandModel>())
         {
             commands.Add(ToCommandDescriptor(command));
         }
 
-        foreach (var command in source.SecondaryCommands ?? Array.Empty<WorkspaceCommandModel>())
+        foreach (var command in source.SecondaryCommands ?? Array.Empty<WorkstationCommandModel>())
         {
             commands.Add(ToCommandDescriptor(command));
         }
@@ -97,50 +95,16 @@ public abstract class CommandHostViewModel : WorkspaceViewModelBase
         return commands;
     }
 
-    private static CommandViewModel ToCommandDescriptor(WorkspaceCommandModel command)
+    private static CommandViewModel ToCommandDescriptor(WorkstationCommandModel command)
     {
         return new CommandViewModel
         {
             Id = command.Id,
             Label = command.Label,
-            Description = command.Description,
-            ShortcutHint = command.ShortcutHint,
-            Glyph = command.Glyph,
+            IconGlyph = command.Glyph,
+            Tooltip = command.Description,
             Tone = command.Tone,
             IsEnabled = command.IsEnabled
         };
-    }
-}
-
-public class TableViewModel<TRow> : Base.TableViewModel<TRow>
-{
-    private TRow? _selectedRecord;
-
-    public TRow? SelectedRecord
-    {
-        get => _selectedRecord;
-        set => SetProperty(ref _selectedRecord, value);
-    }
-}
-
-public class FilterableTableViewModel<TRow, TFilter> : Base.FilterableTableViewModel<TRow>
-{
-    private TFilter? _filter;
-
-    public TFilter? Filter
-    {
-        get => _filter;
-        set => SetProperty(ref _filter, value);
-    }
-}
-
-public class InspectorViewModel<TItem> : Base.InspectorViewModel
-{
-    private TItem? _selectedItem;
-
-    public TItem? SelectedItem
-    {
-        get => _selectedItem;
-        set => SetProperty(ref _selectedItem, value);
     }
 }

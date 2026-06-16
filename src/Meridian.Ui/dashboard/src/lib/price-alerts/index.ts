@@ -9,3 +9,4 @@ export type {
 export type { PriceAlertStorageState } from "./types";
 
 export { PRICE_ALERT_STORAGE_KEY } from "./types";
+export { PRICE_ALERT_MAX_TRIGGER_HISTORY } from "./types";

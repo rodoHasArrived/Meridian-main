@@ -1,7 +1,10 @@
 using Meridian.Contracts.Api;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Workstation;
+using Meridian.Ui.Services;
+using Meridian.Ui.Shared.Services;
 using Meridian.Wpf.Models;
+using Meridian.Wpf.Services;
 using Meridian.Wpf.Workstation.Commands;
 using Meridian.Wpf.Workstation.ViewModels.Base;
 
@@ -166,92 +169,142 @@ public sealed class AccountingWorkspaceShellViewModel : WorkspaceShellViewModelB
 
 public sealed class ReportingWorkspaceShellViewModel : WorkspaceShellViewModelBase
 {
-    public IReadOnlyList<WorkspaceQueueItem> CockpitDecisionItems { get; } =
-    [
-        new()
-        {
-            Title = "Pack assembly",
-            Detail = "Review no-code report grids, branded pack output, shadow-NAV evidence, and downstream handoff readiness.",
-            StatusLabel = "Report writer",
-            CountLabel = "Draft",
-            Tone = WorkspaceTone.Info,
-            PrimaryActionId = "FundReportPack",
-            PrimaryActionLabel = "Open",
-            SecondaryActionId = "ExportPresets",
-            SecondaryActionLabel = "Presets",
-            AutomationName = "Reporting pack assembly decision"
-        },
-        new()
-        {
-            Title = "Approval gates",
-            Detail = "Review scheduled runs, approval blockers, retry manifests, and immutable audit lineage.",
-            StatusLabel = "Schedule controls",
-            CountLabel = "Gate",
-            Tone = WorkspaceTone.Warning,
-            PrimaryActionId = "ReportRunStatus",
-            PrimaryActionLabel = "Open",
-            SecondaryActionId = "FundAuditTrail",
-            SecondaryActionLabel = "Audit",
-            AutomationName = "Reporting approval gates decision"
-        },
-        new()
-        {
-            Title = "Dashboard exceptions",
-            Detail = "Inspect live exposure, cash, P&L, liquidity, Top-N, contribution, and data-quality signals.",
-            StatusLabel = "Portfolio views",
-            CountLabel = "Review",
-            Tone = WorkspaceTone.Neutral,
-            PrimaryActionId = "Dashboard",
-            PrimaryActionLabel = "Open",
-            SecondaryActionId = "DataQuality",
-            SecondaryActionLabel = "Quality",
-            AutomationName = "Reporting dashboard exceptions decision"
-        },
-        new()
-        {
-            Title = "Formula grid validation",
-            Detail = $"Check {nameof(ReportWriterGridDefinitionDto.Formulas)}, {nameof(ReportWriterGridDefinitionDto.Metrics)}, {nameof(ReportWriterGridDefinitionDto.RowFields)}, and custom-formula lineage before publishing no-code report writer output.",
-            StatusLabel = "Custom formulas",
-            CountLabel = "Validate",
-            Tone = WorkspaceTone.Info,
-            PrimaryActionId = "FundReportPack",
-            PrimaryActionLabel = "Open Pack",
-            SecondaryActionId = "DataQuality",
-            SecondaryActionLabel = "Quality",
-            AutomationName = "Reporting formula grid validation decision"
-        },
-        new()
-        {
-            Title = "Cross-fund consolidation",
-            Detail = $"Review {nameof(FundReportingSummaryDto.CrossFundConsolidations)}, {nameof(CrossFundReportingConsolidationDto.FundCount)}, {nameof(CrossFundReportingConsolidationDto.EntityCount)}, {nameof(CrossFundReportingConsolidationDto.ShadowNav)}, and drill-through routes before allocator or company-wide delivery.",
-            StatusLabel = "Consolidation",
-            CountLabel = "Roll-up",
-            Tone = WorkspaceTone.Warning,
-            PrimaryActionId = "Dashboard",
-            PrimaryActionLabel = "Open Dashboard",
-            SecondaryActionId = "AnalysisExport",
-            SecondaryActionLabel = "Exports",
-            AutomationName = "Reporting cross-fund consolidation decision"
-        },
-        new()
-        {
-            Title = "Export delivery",
-            Detail = "Prepare scheduled PDF/XLSX/CSV packages for email-link, secure-portal, regulatory, and warehouse delivery.",
-            StatusLabel = "Distribution",
-            CountLabel = "Ready",
-            Tone = WorkspaceTone.Success,
-            PrimaryActionId = "AnalysisExport",
-            PrimaryActionLabel = "Open",
-            SecondaryActionId = "ExportPresets",
-            SecondaryActionLabel = "Presets",
-            AutomationName = "Reporting export delivery decision"
-        }
-    ];
+    private readonly FundContextService? _fundContextService;
+    private readonly FundOperationsWorkspaceReadService? _workspaceReadService;
+    private readonly SemaphoreSlim _refreshGate = new(1, 1);
+    private bool _isMonitoringFundContext;
+    private IReadOnlyList<WorkspaceQueueItem> _cockpitDecisionItems = ReportingWorkspaceShellPresentationService.BuildFallbackDecisionItems();
+    private string _writerSummaryText = "Locked";
+    private string _approvalSummaryText = "Context";
+    private string _deliverySummaryText = "Awaiting fund";
+    private string _summarySnapshotDetailText = "Select a fund-linked context to load report-writer, schedule, export, branding, access, and audit telemetry.";
 
-    public ReportingWorkspaceShellViewModel()
+    public ReportingWorkspaceShellViewModel(
+        FundContextService? fundContextService = null,
+        FundOperationsWorkspaceReadService? workspaceReadService = null)
         : base(ShellNavigationCatalog.GetWorkspaceShell("reporting")!)
     {
+        _fundContextService = fundContextService;
+        _workspaceReadService = workspaceReadService;
+        CommandGroup = ReportingWorkspaceShellPresentationService.BuildCommandGroup(hasFund: false);
     }
+
+    public event EventHandler? RefreshRequested;
+
+    public IReadOnlyList<WorkspaceQueueItem> CockpitDecisionItems
+    {
+        get => _cockpitDecisionItems;
+        private set => SetProperty(ref _cockpitDecisionItems, value);
+    }
+
+    public string WriterSummaryText
+    {
+        get => _writerSummaryText;
+        private set => SetProperty(ref _writerSummaryText, value);
+    }
+
+    public string ApprovalSummaryText
+    {
+        get => _approvalSummaryText;
+        private set => SetProperty(ref _approvalSummaryText, value);
+    }
+
+    public string DeliverySummaryText
+    {
+        get => _deliverySummaryText;
+        private set => SetProperty(ref _deliverySummaryText, value);
+    }
+
+    public string SummarySnapshotDetailText
+    {
+        get => _summarySnapshotDetailText;
+        private set => SetProperty(ref _summarySnapshotDetailText, value);
+    }
+
+    public void Start()
+    {
+        if (_fundContextService is null || _isMonitoringFundContext)
+        {
+            return;
+        }
+
+        _fundContextService.ActiveFundProfileChanged += OnFundContextChanged;
+        _isMonitoringFundContext = true;
+    }
+
+    public void Stop()
+    {
+        if (_fundContextService is null || !_isMonitoringFundContext)
+        {
+            return;
+        }
+
+        _fundContextService.ActiveFundProfileChanged -= OnFundContextChanged;
+        _isMonitoringFundContext = false;
+    }
+
+    public async Task RefreshAsync(CancellationToken cancellationToken = default)
+    {
+        if (_fundContextService?.CurrentFundProfile is not { } profile || _workspaceReadService is null)
+        {
+            ApplyReporting(null);
+            return;
+        }
+
+        await _refreshGate.WaitAsync(cancellationToken);
+        try
+        {
+            var workspace = await _workspaceReadService.GetWorkspaceAsync(
+                    new FundOperationsWorkspaceQuery(profile.FundProfileId, Currency: profile.BaseCurrency),
+                    cancellationToken)
+                .ConfigureAwait(true);
+
+            ApplyReporting(workspace.Reporting);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Meridian.Wpf.Services.LoggingService.Instance.LogError("[ReportingWorkspaceShell] Refresh failed", ex);
+            ApplyReporting(null);
+        }
+        finally
+        {
+            _refreshGate.Release();
+        }
+    }
+
+    private void ApplyReporting(FundReportingSummaryDto? reporting)
+    {
+        CockpitDecisionItems = ReportingWorkspaceShellPresentationService.BuildDecisionItems(reporting);
+        CommandGroup = ReportingWorkspaceShellPresentationService.BuildCommandGroup(reporting is not null);
+
+        if (reporting is null)
+        {
+            WriterSummaryText = "Locked";
+            ApprovalSummaryText = "Context";
+            DeliverySummaryText = "Awaiting fund";
+            SummarySnapshotDetailText = "Select a fund-linked context to load report-writer, schedule, export, branding, access, and audit telemetry.";
+            return;
+        }
+
+        var datasetSources = reporting.ReportWriterDatasetSources?.Count ?? 0;
+        var generatedGrids = reporting.ScheduleDeliveryPlans?.Sum(static plan => plan.LastDeliveryGeneratedReportWriterGridCount) ?? 0;
+        var schedulePlans = reporting.ScheduleDeliveryPlans?.Count ?? 0;
+        var readyPlans = reporting.ScheduleDeliveryPlans?.Count(static plan => plan.IsReady) ?? 0;
+        var deliveryAttempts = reporting.DeliveryAttempts?.Count ?? 0;
+        var workflowRecords = reporting.WorkflowRecords?.Count ?? 0;
+
+        WriterSummaryText = generatedGrids > 0 ? $"{generatedGrids} grids" : $"{datasetSources} sources";
+        ApprovalSummaryText = workflowRecords > 0 ? $"{workflowRecords} records" : "No records";
+        DeliverySummaryText = schedulePlans > 0 ? $"{readyPlans}/{schedulePlans} ready" : $"{deliveryAttempts} attempts";
+        SummarySnapshotDetailText = $"{reporting.Summary} Report writer, scheduled delivery, portfolio views, exports, branding, access, and audit lineage are refreshed from the shared fund-operations read model.";
+    }
+
+    private void OnFundContextChanged(object? sender, FundProfileChangedEventArgs e)
+        => RefreshRequested?.Invoke(this, EventArgs.Empty);
 }
 
 public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase

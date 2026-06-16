@@ -19,6 +19,9 @@ still lives in `../assistant-workflow-contract.md`.
 6. For source edits under `src/**`, read the nearest `README.md` and identify the module in
    `docs/source/data/source-modules.yml`.
 7. Choose the smallest validation lane from the task-to-proof matrix before editing.
+   If local machine limits or MSBuild/package contention make that lane unreliable, plan to push
+   the branch and dispatch GitHub Actions `Targeted Test` with the same project/filter or
+   dashboard test file.
 8. Update the nearest docs or AI index when behavior, workflow, prompt, skill, or agent guidance
    changes.
 
@@ -55,6 +58,10 @@ Load only enough context to route and validate the task.
 | Browser task | `.codex/skills/meridian-browser-workstation/SKILL.md`, package tests | WPF validation unless shared contracts changed |
 
 AI-doc proof lane defaults: `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/check-codex-skills.py --summary`, `python3 build/scripts/docs/validate-docs-structure.py --top-level ai --summary`, `python3 build/scripts/docs/repair-links.py --summary`, `git diff --check`
+
+Hosted proof fallback: after pushing a branch, use `gh workflow run targeted-test.yml --ref <branch>`
+with `lane=dotnet` plus `dotnet_project`/`dotnet_filter`, or `lane=browser-dashboard` plus
+`browser_script=test:vitest` and `vitest_file`, when local resources are the blocker.
 
 ## Dirty Worktree Protocol
 

@@ -7,7 +7,7 @@ import {
   type PrivateCapitalCloseCockpitQuery
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
-import { normalizeLocalWorkstationRoute } from "@/lib/workspace";
+import { normalizeLocalWorkstationRoute, workstationRouteWithQuery } from "@/lib/workspace";
 import type {
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
@@ -137,9 +137,15 @@ export interface OperationsContinuityBreakCaseRow {
   rootCauseLabel: string;
   symbolLabel: string;
   evidenceLabel: string;
+  evidenceHref: string | null;
+  evidenceRouteLabel: string;
   approvalLabel: string;
   blockedOutputsLabel: string;
   actionLabel: string;
+  caseworkHref: string | null;
+  caseworkRouteLabel: string;
+  commandPostureLabel: string;
+  commandGuardLabel: string;
   routeHref: string | null;
   routeLabel: string;
   ariaLabel: string;
@@ -153,6 +159,8 @@ export interface OperationsContinuityReconciliationLaneRow {
   breakCountLabel: string;
   summary: string;
   evidenceLabel: string;
+  evidenceHref: string | null;
+  evidenceRouteLabel: string;
   routeHref: string | null;
   routeLabel: string;
   requiredActionsLabel: string;
@@ -250,6 +258,8 @@ export interface OperationsContinuityEvidencePackageRow {
   readinessLabel: string;
   summary: string;
   evidenceLabel: string;
+  evidenceHref: string | null;
+  evidenceRouteLabel: string;
   requiredActionsLabel: string;
   routeHref: string | null;
   routeLabel: string;
@@ -324,8 +334,24 @@ export interface OperationsContinuityCloseCockpitApprovalRow {
   decidedLabel: string;
   rationale: string;
   evidenceLabel: string;
+  evidenceHref: string | null;
+  evidenceRouteLabel: string;
   workflowHref: string | null;
   routeLabel: string;
+  ariaLabel: string;
+}
+
+export interface OperationsContinuityWorkflowApprovalRow {
+  id: string;
+  statusLabel: string;
+  statusTone: OperationsContinuityTone;
+  actorLabel: string;
+  submittedLabel: string;
+  decidedLabel: string;
+  rationale: string;
+  evidenceLabel: string;
+  evidenceHref: string | null;
+  evidenceRouteLabel: string;
   ariaLabel: string;
 }
 
@@ -456,9 +482,12 @@ export interface OperationsContinuityScreenViewModel {
   reconciliationLanesEmptyText: string;
   evidencePackagesLabel: string;
   evidencePackagesEmptyText: string;
+  workflowApprovalHistoryLabel: string;
+  workflowApprovalHistoryEmptyText: string;
   dashboard: OperationsContinuityDashboardViewModel;
   reviewedAutomation: OperationsReviewedAutomationViewModel;
   financialOperationsQueue: FinancialOperationsOperatorQueueViewModel;
+  workflowApprovalHistory: OperationsContinuityWorkflowApprovalRow[];
   breakCases: OperationsContinuityBreakCaseRow[];
   reconciliationLanes: OperationsContinuityReconciliationLaneRow[];
   evidencePackages: OperationsContinuityEvidencePackageRow[];
@@ -734,9 +763,14 @@ export function buildOperationsContinuityScreenViewModel({
     detailError
   });
   const blockers = buildBlockerRows(effectiveDetail?.blockers ?? collectGateBlockers(gateSource));
-  const breakCases = buildBreakCaseRows(effectiveDetail?.breakCases ?? []);
+  const breakCases = buildBreakCaseRows(
+    effectiveDetail?.breakCases ?? [],
+    effectiveDetail?.workflowId ?? null,
+    effectiveDetail?.version ?? null
+  );
   const reconciliationLanes = buildReconciliationLaneRows(effectiveDetail?.reconciliationLanes ?? []);
   const evidencePackages = buildEvidencePackageRows(effectiveDetail?.evidencePackages ?? []);
+  const workflowApprovalHistory = buildWorkflowApprovalHistoryRows(effectiveDetail?.approvals ?? []);
   const dashboard = buildOperationsDashboardViewModel(effectiveDetail?.dashboardSummary ?? null, detailLoading);
   const reviewedAutomation = buildReviewedAutomationViewModel(effectiveDetail?.reviewedAutomation ?? null, detailLoading);
   const checklistSource = effectiveDetail?.closeChecklist ?? [];
@@ -803,9 +837,12 @@ export function buildOperationsContinuityScreenViewModel({
     reconciliationLanesEmptyText: detailLoading ? "Loading reconciliation lane coverage..." : "No reconciliation lane coverage is surfaced for the selected workflow.",
     evidencePackagesLabel: "Evidence packages",
     evidencePackagesEmptyText: detailLoading ? "Loading evidence packages..." : "No evidence packages are surfaced for the selected workflow.",
+    workflowApprovalHistoryLabel: "Workflow approval history",
+    workflowApprovalHistoryEmptyText: detailLoading ? "Loading workflow approval history..." : "No workflow approval history is surfaced for the selected workflow.",
     dashboard,
     reviewedAutomation,
     financialOperationsQueue,
+    workflowApprovalHistory,
     breakCases,
     reconciliationLanes,
     evidencePackages,
@@ -939,6 +976,43 @@ function compareApprovalsByDecisionTime(
   return rightTime.localeCompare(leftTime);
 }
 
+function buildWorkflowApprovalHistoryRows(
+  approvals: OperationsContinuityWorkflow["approvals"]
+): OperationsContinuityWorkflowApprovalRow[] {
+  return [...approvals]
+    .sort(compareApprovalsByDecisionTime)
+    .map(mapWorkflowApprovalHistoryRow);
+}
+
+function mapWorkflowApprovalHistoryRow(
+  approval: OperationsContinuityWorkflow["approvals"][number]
+): OperationsContinuityWorkflowApprovalRow {
+  const reviewer = approval.reviewer?.trim();
+  const operator = approval.operator?.trim();
+  const actors = [
+    reviewer ? `Reviewer ${reviewer}` : null,
+    operator ? `Operator ${operator}` : null
+  ].filter((value): value is string => value !== null);
+  const actorLabel = actors.length === 0 ? "Approval actor pending" : actors.join(" / ");
+  const statusLabelText = splitEnumLabel(approval.status);
+  const evidenceHref = normalizeLocalWorkstationRoute(approval.evidenceLinks[0]?.route) ?? null;
+  const evidenceCount = approval.evidenceLinks.length;
+
+  return {
+    id: approval.approvalId,
+    statusLabel: statusLabelText,
+    statusTone: approvalStatusTone(approval.status),
+    actorLabel,
+    submittedLabel: approval.submittedAtUtc ? `Submitted ${formatDate(approval.submittedAtUtc)}` : "Submission time pending",
+    decidedLabel: approval.decidedAtUtc ? `Decided ${formatDate(approval.decidedAtUtc)}` : "Decision pending",
+    rationale: approval.rationale?.trim() || "Approval rationale pending.",
+    evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
+    evidenceHref,
+    evidenceRouteLabel: evidenceHref ? "Open approval evidence" : "No local evidence route",
+    ariaLabel: `Workflow approval ${approval.approvalId}, ${statusLabelText}, ${actorLabel}`
+  };
+}
+
 function buildNextActionViewModel({
   workflow,
   gates,
@@ -1067,7 +1141,8 @@ function buildReconciliationLaneRows(lanes: OperationsReconciliationLaneSummary[
   return [...lanes]
     .sort(compareReconciliationLanes)
     .map((lane) => {
-      const href = normalizeLocalWorkstationRoute(lane.routeHint) ?? null;
+      const routeHref = normalizeLocalWorkstationRoute(lane.routeHint) ?? null;
+      const evidenceHref = normalizeLocalWorkstationRoute(lane.evidenceLinks[0]?.route) ?? null;
       const evidenceCount = lane.evidenceLinks.length;
       const actions = (lane.requiredActions ?? [])
         .map((action) => action.trim())
@@ -1081,8 +1156,10 @@ function buildReconciliationLaneRows(lanes: OperationsReconciliationLaneSummary[
         breakCountLabel: lane.breakCount === 0 ? "No open breaks" : `${lane.breakCount} open break${lane.breakCount === 1 ? "" : "s"}`,
         summary: lane.summary?.trim() || "No reconciliation lane summary returned.",
         evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
-        routeHref: href,
-        routeLabel: href ? "Open lane" : "No local route",
+        evidenceHref,
+        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local evidence route",
+        routeHref,
+        routeLabel: routeHref ? "Open lane" : "No local route",
         requiredActionsLabel: actions.length === 0 ? "No required actions" : actions.join("; "),
         ariaLabel: `${lane.label || lane.laneId}, ${evidenceStatusLabel(lane.status)}, ${lane.breakCount} open breaks`
       };
@@ -1269,6 +1346,7 @@ function buildEvidencePackageRows(packages: OperationsEvidencePackageSummary[]):
     .sort(compareEvidencePackages)
     .map((packageDto) => {
       const routeHref = normalizeLocalWorkstationRoute(packageDto.routeHint) ?? null;
+      const evidenceHref = normalizeLocalWorkstationRoute(packageDto.evidenceLinks[0]?.route) ?? null;
       const evidenceCount = Math.max(packageDto.evidenceLinkCount, packageDto.evidenceLinks.length);
       const actions = (packageDto.requiredActions ?? [])
         .map((action) => action.trim())
@@ -1282,6 +1360,8 @@ function buildEvidencePackageRows(packages: OperationsEvidencePackageSummary[]):
         readinessLabel: `${packageDto.completeCategoryCount}/${packageDto.requiredCategoryCount} categories complete`,
         summary: packageDto.summary?.trim() || "No evidence package summary returned.",
         evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
+        evidenceHref,
+        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local evidence route",
         requiredActionsLabel: actions.length === 0 ? "No required actions" : actions.join("; "),
         routeHref,
         routeLabel: routeHref ? "Open package" : "No local route",
@@ -1486,7 +1566,11 @@ function evidencePackageOrderKey(packageDto: OperationsEvidencePackageSummary): 
   return packageDto.packageId;
 }
 
-function buildBreakCaseRows(breakCases: OperationsBreakCase[]): OperationsContinuityBreakCaseRow[] {
+function buildBreakCaseRows(
+  breakCases: OperationsBreakCase[],
+  workflowId: string | null,
+  workflowVersion: number | null
+): OperationsContinuityBreakCaseRow[] {
   return [...breakCases]
     .sort(compareBreakCases)
     .map((breakCase) => {
@@ -1504,7 +1588,14 @@ function buildBreakCaseRows(breakCases: OperationsBreakCase[]): OperationsContin
       const approvalLabel = buildApprovalLabel(breakCase);
       const blockedOutputsLabel = buildBlockedOutputsLabel(breakCase);
       const evidenceCount = breakCase.evidenceLinks.length;
-      const routeHref = normalizeLocalWorkstationRoute(breakCase.evidenceLinks[0]?.route) ?? null;
+      const evidenceHref = normalizeLocalWorkstationRoute(breakCase.evidenceLinks[0]?.route) ?? null;
+      const caseworkHref = workflowId
+        ? workstationRouteWithQuery("accountingExceptions", {
+            workflowId,
+            breakId: breakCase.breakId
+          })
+        : null;
+      const isReady = breakStatusTone(breakCase.status) === "ready";
       return {
         id: breakCase.breakId,
         caseLabel: breakCase.breakId,
@@ -1523,11 +1614,23 @@ function buildBreakCaseRows(breakCases: OperationsBreakCase[]): OperationsContin
         rootCauseLabel,
         symbolLabel,
         evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} retained evidence link${evidenceCount === 1 ? "" : "s"}`,
+        evidenceHref,
+        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local evidence route",
         approvalLabel,
         blockedOutputsLabel,
         actionLabel,
-        routeHref,
-        routeLabel: routeHref ? "Open break evidence" : "No local route",
+        caseworkHref,
+        caseworkRouteLabel: caseworkHref ? "Open casework" : "No local casework route",
+        commandPostureLabel: isReady
+          ? "Resolution retained"
+          : ownerLabel === "Unassigned"
+            ? "Assignment and escalation ready"
+            : "Resolution command ready",
+        commandGuardLabel: workflowVersion === null
+          ? "Workflow version pending"
+          : `Expected workflow version ${workflowVersion}`,
+        routeHref: evidenceHref,
+        routeLabel: evidenceHref ? "Open break evidence" : "No local route",
         ariaLabel: `${breakCase.breakId}, ${statusLabel}, ${ownerLabel}, ${slaLabel}, ${blockedOutputsLabel}`
       };
     });
@@ -2000,6 +2103,7 @@ function mapCloseCockpitApprovalRow(
   approval: PrivateCapitalCloseCockpitApproval
 ): OperationsContinuityCloseCockpitApprovalRow {
   const workflowHref = normalizeLocalWorkstationRoute(approval.workflowRoute) ?? null;
+  const evidenceHref = normalizeLocalWorkstationRoute(approval.evidenceLinks[0]?.route) ?? null;
   const evidenceCount = Math.max(approval.evidenceLinkCount, approval.evidenceLinks.length);
   const operator = approval.operator?.trim();
   const reviewer = approval.reviewer?.trim();
@@ -2018,6 +2122,8 @@ function mapCloseCockpitApprovalRow(
     decidedLabel: decidedAt ? formatDate(decidedAt) : "Decision time pending",
     rationale: approval.rationale?.trim() || "No approval rationale returned.",
     evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
+    evidenceHref,
+    evidenceRouteLabel: evidenceHref ? "Open evidence" : "No local evidence route",
     workflowHref,
     routeLabel: workflowHref ? "Open workflow" : "No local route",
     ariaLabel: `${approval.periodId} approval ${approval.approvalId}, ${splitEnumLabel(approval.status)}`

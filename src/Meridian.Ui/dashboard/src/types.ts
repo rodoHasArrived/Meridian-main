@@ -1450,6 +1450,16 @@ export interface OperationsAssignBreakCaseRequest {
   actionOrigin?: OperationsActionOrigin | null;
 }
 
+export interface OperationsResolveBreakCaseRequest {
+  expectedVersion: number;
+  actor: string;
+  resolutionStatus: string;
+  rationale: string;
+  correlationId?: string | null;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+  actionOrigin?: OperationsActionOrigin | null;
+}
+
 export interface OperationsCloseWorkflowRequest {
   expectedVersion: number;
   actor: string;

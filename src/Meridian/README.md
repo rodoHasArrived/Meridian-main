@@ -18,8 +18,8 @@ Meridian host is the application host, CLI entrypoint, and runtime composition r
 ## Layer responsibility
 
 This module owns process startup, dependency-injection composition, configuration bootstrap, CLI
-routing, and local API hosting. Keep startup orchestration and process-host concerns isolated from
-domain and application logic.
+routing, local workstation API hosting, and the remote API host boundary. Keep startup orchestration
+and process-host concerns isolated from domain and application logic.
 
 ## Key folders and files
 
@@ -30,7 +30,15 @@ domain and application logic.
 ## Important workflows
 
 Use this module when changing host startup, CLI routing, runtime hosting, configuration bootstrap,
-or local workstation API process behavior.
+local workstation API process behavior, or production API binding policy.
+
+`ApiHost` configuration separates local workstation hosting from remote API deployment. The default
+`LocalWorkstation` posture preserves `http://localhost:8080` and host-served `/workstation` assets.
+`ProductionApi` is the remote service posture for browser and WPF workstations; production
+auth-required startup rejects non-HTTPS bindings unless
+`AllowInsecureTransportForReverseProxy` is explicitly enabled for a trusted TLS-terminating proxy.
+`AllowedOrigins` declares browser workstation origins that may call the API when the UI is deployed
+separately from the service.
 
 Hosted brokerage composition registers concrete Alpaca and Interactive Brokers gateways by keyed
 runtime ID (`alpaca`, `ib`, `ibkr`) and registers StockSharp only when the connector runtime type is

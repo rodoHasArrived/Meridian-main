@@ -193,6 +193,10 @@ public sealed class WorkstationWorkflowSummaryFinancialOperationsTests
         accounting.PrimaryBlocker.Label.Should().Be("Period lock and reopen evidence");
         accounting.PrimaryBlocker.IsBlocking.Should().BeTrue();
         accounting.Evidence.Should().Contain(badge =>
+            badge.Label == "Core flow" &&
+            badge.Value == "Close Support" &&
+            badge.Tone == "Warning");
+        accounting.Evidence.Should().Contain(badge =>
             badge.Label == "Evidence packages" &&
             badge.Value == "0/1" &&
             badge.Tone == "Warning");
@@ -203,6 +207,87 @@ public sealed class WorkstationWorkflowSummaryFinancialOperationsTests
         summary.AssuranceScore.Components.Should().Contain(component =>
             component.ComponentId == "accounting" &&
             component.Status == EvidenceStatusDto.ReviewRequired);
+    }
+
+    [Fact]
+    public async Task GetAsync_WithClosedWorkflowAndReadyEvidencePackage_ShouldKeepProduceEvidenceStage()
+    {
+        var fundAccountId = Guid.Parse("4C77C615-633D-491B-9A7E-28EC5E59F3C8");
+        var closeEvidence = CreateEvidence("close-manifest-2026-05", "Close manifest");
+        var workflow = CreateWorkflow(
+            fundAccountId,
+            OperationsWorkflowStatusDto.Closed,
+            OperationsReconciliationStateDto.Complete,
+            OperationsApprovalStateDto.Approved,
+            breaks: [],
+            closePackage: CreateClosePackage([closeEvidence]),
+            evidencePackages:
+            [
+                CreateEvidencePackage(
+                    $"period-lock-reopen:{fundAccountId:D}:2026-05",
+                    "Period lock and reopen evidence",
+                    EvidenceStatusDto.Ready,
+                    isReady: true,
+                    [closeEvidence],
+                    [])
+            ]);
+        var service = CreateSummaryService(new StubOperationsContinuityWorkflowService([workflow]));
+
+        var summary = await service.GetAsync(
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Northwind Income",
+            fundProfileId: "northwind-income",
+            fundAccountId: fundAccountId.ToString("D"),
+            fundDisplayName: "Northwind Income");
+
+        var accounting = GetAccounting(summary);
+        accounting.StatusLabel.Should().Be("Financial operations evidence produced");
+        accounting.NextAction.Label.Should().Be("Open Evidence Packet");
+        accounting.PrimaryBlocker.Code.Should().Be("financial-operations-evidence-produced");
+        accounting.PrimaryBlocker.IsBlocking.Should().BeFalse();
+        accounting.Evidence.Should().Contain(badge =>
+            badge.Label == "Core flow" &&
+            badge.Value == "Produce Evidence" &&
+            badge.Tone == "Success");
+        accounting.Evidence.Should().Contain(badge =>
+            badge.Label == "Evidence packages" &&
+            badge.Value == "1/1" &&
+            badge.Tone == "Success");
+    }
+
+    [Fact]
+    public async Task GetAsync_WithCloseReadinessBlocked_ShouldExposeCloseSupportStage()
+    {
+        var fundAccountId = Guid.Parse("9C0C1651-F76B-460B-B92D-0968D6C4577E");
+        var workflow = CreateWorkflow(
+            fundAccountId,
+            OperationsWorkflowStatusDto.ReadyForClose,
+            OperationsReconciliationStateDto.Complete,
+            OperationsApprovalStateDto.Approved,
+            breaks: []);
+        var service = CreateSummaryService(new StubOperationsContinuityWorkflowService([workflow]));
+
+        var summary = await service.GetAsync(
+            hasOperatingContext: true,
+            operatingContextDisplayName: "Northwind Income",
+            fundProfileId: "northwind-income",
+            fundAccountId: fundAccountId.ToString("D"),
+            fundDisplayName: "Northwind Income");
+
+        var accounting = GetAccounting(summary);
+        accounting.StatusLabel.Should().Be("Financial operations close readiness blocked");
+        accounting.NextAction.Label.Should().Be("Review Close Readiness");
+        accounting.NextAction.TargetPageTag.Should().Be("OperationsClose");
+        accounting.PrimaryBlocker.Code.Should().Be("financial-operations-close-readiness");
+        accounting.PrimaryBlocker.IsBlocking.Should().BeTrue();
+        accounting.Evidence.Should().Contain(badge =>
+            badge.Label == "Core flow" &&
+            badge.Value == "Close Support" &&
+            badge.Tone == "Warning");
+        accounting.Evidence.Should().Contain(badge =>
+            badge.Label == "Close" &&
+            badge.Value == "65" &&
+            badge.Tone == "Info");
     }
 
     private static WorkstationWorkflowSummaryService CreateSummaryService(

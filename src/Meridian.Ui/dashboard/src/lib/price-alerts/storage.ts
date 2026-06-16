@@ -4,7 +4,7 @@ import {
   type PriceAlert,
   type PriceAlertStorageState,
   type PriceAlertTrigger
-} from "./types";
+} from "./index";
 
 export interface StorageLike {
   getItem(key: string): string | null;

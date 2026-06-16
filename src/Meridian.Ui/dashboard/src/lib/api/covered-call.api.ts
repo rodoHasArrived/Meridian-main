@@ -20,7 +20,7 @@ import type {
   CoveredCallRunResult,
   CoveredCallRunStatus,
   CoveredCallRunSummary
-} from "@/types/covered-call.types";
+} from "@/lib/covered-call";
 
 export async function startCoveredCallBacktest(
   request: CoveredCallBacktestRequest,

@@ -584,7 +584,10 @@ public static class ReportWriterGridEngine
         string.Equals(identifier, "abs", StringComparison.OrdinalIgnoreCase)
         || string.Equals(identifier, "min", StringComparison.OrdinalIgnoreCase)
         || string.Equals(identifier, "max", StringComparison.OrdinalIgnoreCase)
-        || string.Equals(identifier, "safeDivide", StringComparison.OrdinalIgnoreCase);
+        || string.Equals(identifier, "safeDivide", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "percent", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "basisPoints", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "round", StringComparison.OrdinalIgnoreCase);
 
     private static void ApplyContribution(IReadOnlyList<WorkingRow> rows, string metricName)
     {
@@ -1210,7 +1213,36 @@ public static class ReportWriterGridEngine
                     : values[0] / denominator;
             }
 
+            if (string.Equals(identifier, "percent", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(identifier, "basisPoints", StringComparison.OrdinalIgnoreCase))
+            {
+                var values = ParseExpressionArgumentList(minimumCount: 2, maximumCount: 3);
+                var denominator = values[1];
+                var fallback = values.Count == 3 ? values[2] : 0m;
+                var ratio = denominator == 0m ? fallback : values[0] / denominator;
+                return string.Equals(identifier, "percent", StringComparison.OrdinalIgnoreCase)
+                    ? ratio * 100m
+                    : ratio * 10000m;
+            }
+
+            if (string.Equals(identifier, "round", StringComparison.OrdinalIgnoreCase))
+            {
+                var values = ParseExpressionArgumentList(minimumCount: 1, maximumCount: 2);
+                var decimals = values.Count == 2 ? ToScale(values[1]) : 2;
+                return Math.Round(values[0], decimals, MidpointRounding.AwayFromZero);
+            }
+
             throw new InvalidOperationException($"function '{identifier}' is not supported.");
+        }
+
+        private static int ToScale(decimal value)
+        {
+            if (value < 0m || value > 8m || value != decimal.Truncate(value))
+            {
+                throw new InvalidOperationException("round scale must be a whole number between 0 and 8.");
+            }
+
+            return decimal.ToInt32(value);
         }
 
         private List<decimal> ParseExpressionArgumentList(int minimumCount, int? maximumCount = null)

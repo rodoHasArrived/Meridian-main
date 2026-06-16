@@ -15,6 +15,7 @@ automation outside the current build/test/publish/docs scope.
 | --- | --- |
 | `bootstrap` | Local-only lane (`make bootstrap`); no dedicated hosted workflow. |
 | `verify-fast` | `CI` (`ci.yml`) and browser workstation job names reference this lane. |
+| `targeted-test` | `Targeted Test` (`targeted-test.yml`) for manually dispatched GitHub-hosted .NET or browser workstation slices. |
 | `verify-full` | Local-only broad lane (`make verify-full`) used before PR when needed. |
 | `verify-docs` | `CI` source-doc determinism job plus local docs checks. |
 | `verify-desktop` | `Windows Desktop Build` (`windows-desktop-build.yml`). |
@@ -23,6 +24,7 @@ automation outside the current build/test/publish/docs scope.
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
 | CI | `ci.yml` | Pull requests, pushes to `main`, manual | Restores `Meridian.sln`, verifies formatting, validates warning-suppression inventory, builds the focused `Meridian.WebWorkstation.slnf` lane, reports build warning counts, runs non-integration .NET tests, then tests and builds `src/Meridian.Ui/dashboard`. | .NET TRX results on failure |
+| Targeted Test | `targeted-test.yml` | Manual only | Runs one selected .NET test target or browser workstation npm test/build command on a GitHub-hosted runner when local machine capacity, locks, or long-running suites make local validation impractical. Inputs are validated and limited to known repo-relative project/test paths and fixed npm scripts. | Targeted TRX results and dashboard build output when present |
 | Golden Path Validation | `golden-path-validation.yml` | Golden-path contract, browser W4, WPF W4, or manual changes | Blocks pilot acceptance on browser `test:w4` parity and Windows `Category=W4Acceptance` desktop coverage before running `PilotAcceptanceHarnessTests`, writing `pilot-readiness.json` plus `pilot-readiness.md`, validating the pilot readiness dashboard renderer, generating `artifacts/pilot-acceptance/latest/pilot-readiness-dashboard.md`, and uploading the evidence bundles. | `pilot-acceptance-evidence`, `wpf-w4-acceptance-evidence` |
 | Windows Desktop Build | `windows-desktop-build.yml` | Pull requests, pushes to `main`, manual | Builds the real WPF app on Windows, runs WPF tests, and smoke-publishes the desktop executable. | WPF TRX results on failure |
 | Documentation Automation | `documentation.yml` | Documentation, docs-script, workflow, WPF navigation, or diagram changes; manual | Runs docs automation checks, regenerates tracked documentation outputs, refreshes Mermaid/UML/UI diagrams, and gates severe dashboard regressions when a previous baseline exists. | Docs dashboard delta summary on failure |
@@ -31,6 +33,32 @@ automation outside the current build/test/publish/docs scope.
 | Maintenance | `maintenance.yml` | Workflow/docs/tooling changes, weekly schedule, manual | Runs repository workflow hygiene checks and validates workflow syntax with `actionlint`. | None |
 
 ## Local Equivalents
+
+When local CPU, memory, disk, package restore, or MSBuild lock contention makes testing unreliable,
+push the branch and use `Targeted Test` from the GitHub Actions tab or dispatch it with `gh`.
+Use the GitHub-hosted targeted lane as the preferred remote proof tool before retrying broad local
+scripts.
+
+```powershell
+gh workflow run targeted-test.yml --ref <branch> `
+  -f lane=dotnet `
+  -f runner=ubuntu-latest `
+  -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj `
+  -f dotnet_filter="FullyQualifiedName~ReportPackWorkflowServiceTests"
+
+gh workflow run targeted-test.yml --ref <branch> `
+  -f lane=dotnet `
+  -f runner=windows-latest `
+  -f dotnet_project=tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj `
+  -f dotnet_filter="FullyQualifiedName~DesktopWorkflowScriptTests" `
+  -f enable_full_wpf_build=true
+
+gh workflow run targeted-test.yml --ref <branch> `
+  -f lane=browser-dashboard `
+  -f browser_script=test:vitest `
+  -f vitest_file=src/screens/reporting-screen.view-model.test.ts `
+  -f vitest_name="reporting"
+```
 
 ```powershell
 dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
@@ -41,6 +69,7 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore -
 npm install --prefix src/Meridian.Ui/dashboard --include=optional
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
+pwsh ./scripts/dev/run-local-quality.ps1 -IncludePlaywrightSmoke
 ```
 
 Golden-path pilot acceptance:
@@ -67,6 +96,7 @@ Publish smoke:
 pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project collector -Version 1.0.0-smoke -Configuration Release -OutputDir artifacts/publish/publish-smoke -OutputRetentionDays 0 -OutputRetainLatest 0
 pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project desktop -Version 1.0.0-smoke -Configuration Release -OutputDir artifacts/publish/publish-smoke -OutputRetentionDays 0 -OutputRetainLatest 0
 pwsh ./build/scripts/publish/publish.ps1 -Platform win-x64 -Project web-workstation -Version 1.0.0-smoke -Configuration Release -OutputDir artifacts/publish/publish-smoke -OutputRetentionDays 0 -OutputRetainLatest 0
+pwsh ./build/scripts/publish/generate-sbom.ps1 -BuildDropPath artifacts/publish/publish-smoke/win-x64/web-workstation -PackageName Meridian -PackageVersion 1.0.0-smoke
 ```
 
 Desktop installer release packaging:

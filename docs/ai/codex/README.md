@@ -176,6 +176,9 @@ command discovery in [`../../start/README.md`](../../start/README.md),
 [`../../engineering/README.md`](../../engineering/README.md),
 [`../../HELP.md`](../../HELP.md), and route-specific docs instead of copying long command
 catalogs into assistant shims.
+When local machine capacity is the validation blocker, use the manual GitHub-hosted
+`Targeted Test` workflow from `.github/workflows/targeted-test.yml` with the narrow same
+project/filter or dashboard test file before retrying broad local scripts.
 
 ## Required Gates For Codex AI/Tooling Changes
 
