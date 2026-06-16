@@ -28,9 +28,9 @@ on:
         required: false
         default: tests/Meridian.Tests/Meridian.Tests.csproj
       dotnet_filter:
-        description: Optional dotnet test --filter expression.
+        description: Required for the .NET lane; dotnet test --filter expression for the failing slice.
         required: false
-        default: Category!=Integration&Category!=Performance
+        default: ""
       enable_windows_targeting:
         description: Pass EnableWindowsTargeting=true to dotnet.
         required: true
@@ -128,6 +128,9 @@ jobs:
           }
           if ($configuration -notmatch '^[A-Za-z0-9._-]+$') {
             throw "Unsupported configuration '$configuration'."
+          }
+          if ($filter -eq '') {
+            throw "dotnet_filter is required for lane=dotnet so Targeted Test runs the exact failing slice instead of a broad test project."
           }
 
           $props = @("/p:EnableWindowsTargeting=$env:ENABLE_WINDOWS_TARGETING")
