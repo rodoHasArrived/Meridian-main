@@ -1,5 +1,7 @@
 using Meridian.Identity.Auth;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -41,16 +43,8 @@ public sealed class HttpContextWorkstationTenantContextAccessor : IWorkstationTe
             return false;
         }
 
-        var actor = EndpointAuthorization.TryResolveActor(httpContext, out var resolvedActor)
-            ? resolvedActor
-            : null;
-        var companyId = EndpointAuthorization.ResolveCompanyId(httpContext);
-        var tenantId = ResolveTenantId(httpContext) ?? companyId;
-        var roleProfileName = ResolveStringItem(httpContext, LoginSessionMiddleware.CurrentUserRoleProfileNameKey);
-        EndpointAuthorization.TryGetPermissions(httpContext, out var permissions);
-
-        context = new WorkstationTenantContext(tenantId, companyId, actor, roleProfileName, permissions);
-        return !string.IsNullOrWhiteSpace(actor) || !string.IsNullOrWhiteSpace(tenantId);
+        context = Resolve(httpContext);
+        return !string.IsNullOrWhiteSpace(context.Actor) || context.HasTenantScope;
     }
 
     public WorkstationTenantContext GetRequired()
@@ -66,6 +60,19 @@ public sealed class HttpContextWorkstationTenantContextAccessor : IWorkstationTe
     private static string? ResolveTenantId(HttpContext context)
         => ResolveStringItem(context, LoginSessionMiddleware.CurrentTenantIdKey);
 
+    public static WorkstationTenantContext Resolve(HttpContext httpContext)
+    {
+        var actor = EndpointAuthorization.TryResolveActor(httpContext, out var resolvedActor)
+            ? resolvedActor
+            : null;
+        var companyId = EndpointAuthorization.ResolveCompanyId(httpContext);
+        var tenantId = ResolveTenantId(httpContext) ?? companyId;
+        var roleProfileName = ResolveStringItem(httpContext, LoginSessionMiddleware.CurrentUserRoleProfileNameKey);
+        EndpointAuthorization.TryGetPermissions(httpContext, out var permissions);
+
+        return new WorkstationTenantContext(tenantId, companyId, actor, roleProfileName, permissions);
+    }
+
     private static string? ResolveStringItem(HttpContext context, string key)
     {
         if (context.Items.TryGetValue(key, out var value) &&
@@ -76,5 +83,32 @@ public sealed class HttpContextWorkstationTenantContextAccessor : IWorkstationTe
         }
 
         return null;
+    }
+}
+
+public sealed class WorkstationTenantScopeMetadata;
+
+public static class WorkstationTenantScopeEndpointFilters
+{
+    private const string MissingTenantScopeMessage = "A tenant-scoped workstation request context is required.";
+
+    public static RouteGroupBuilder RequireWorkstationTenantScope(this RouteGroupBuilder group)
+    {
+        group.AddEndpointFilter(RequireTenantScope);
+        group.WithMetadata(new WorkstationTenantScopeMetadata());
+        return group;
+    }
+
+    private static ValueTask<object?> RequireTenantScope(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+    {
+        var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context.HttpContext);
+        if (tenantContext.HasTenantScope)
+        {
+            return next(context);
+        }
+
+        return ValueTask.FromResult<object?>(Results.Problem(
+            MissingTenantScopeMessage,
+            statusCode: StatusCodes.Status403Forbidden));
     }
 }

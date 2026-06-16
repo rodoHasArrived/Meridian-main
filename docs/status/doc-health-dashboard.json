@@ -1,17 +1,19 @@
 {
-  "total_files": 660,
-  "total_lines": 87868,
-  "orphaned_count": 290,
-  "no_heading_count": 20,
-  "stale_count": 59,
-  "todo_count": 185,
-  "average_lines": 133.1,
-  "health_score": 81,
+  "total_files": 714,
+  "total_lines": 102480,
+  "orphaned_count": 293,
+  "no_heading_count": 22,
+  "stale_count": 69,
+  "todo_count": 231,
+  "average_lines": 143.5,
+  "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
     ".agents/skills/meridian-brainstorm/SKILL.md",
     ".agents/skills/meridian-browser-workstation/SKILL.md",
+    ".agents/skills/meridian-cleanup/SKILL.md",
+    ".agents/skills/meridian-docs/SKILL.md",
     ".agents/skills/meridian-implementation-assurance/SKILL.md",
     ".agents/skills/meridian-provider-builder/SKILL.md",
     ".agents/skills/meridian-repo-navigation/SKILL.md",
@@ -106,6 +108,7 @@
     "docs/ai/claude/CLAUDE.roadmap-learning-log.md",
     "docs/ai/claude/CLAUDE.structure.md",
     "docs/ai/copilot/ai-sync-workflow.md",
+    "docs/ai/exports/LLM_CONTEXT.md",
     "docs/ai/model-routing-telemetry.md",
     "docs/api/oms-ems-integration.md",
     "docs/architecture/operator-observability-dashboard.md",
@@ -117,17 +120,16 @@
     "docs/development/score-reason-taxonomy.md",
     "docs/development/synthetic-provider-test-harness.md",
     "docs/docfx/api/index.md",
+    "docs/engineering/wpf-perf-uiux-audit-2026-06-14.md",
     "docs/generated/adr-index.md",
     "docs/generated/configuration-schema.md",
     "docs/generated/documentation-coverage.md",
     "docs/generated/interfaces.md",
     "docs/generated/project-dependencies.md",
     "docs/generated/provider-registry.md",
-    "docs/generated/workflows-overview.md",
     "docs/integrations/tastytrade-endpoint-coverage.md",
     "docs/operations/broker-order-routing-phased-runbook.md",
     "docs/operations/canonical-buyer-workflow.md",
-    "docs/operations/cleanup-and-maintenance.md",
     "docs/operations/deployment.md",
     "docs/operations/disk-space-hygiene.md",
     "docs/operations/error-budget-policy-runbook.md",
@@ -238,6 +240,7 @@
     "docs/status/EVALUATIONS_AND_AUDITS.md",
     "docs/status/FEATURE_INVENTORY.md",
     "docs/status/FULL_IMPLEMENTATION_TODO.md",
+    "docs/status/IMPROVEMENTS.md",
     "docs/status/OPPORTUNITY_SCAN.md",
     "docs/status/PROGRAM_STATE.md",
     "docs/status/ROADMAP.md",
@@ -319,7 +322,9 @@
     "benchmarks/results/20260521_182521/results/Meridian.Benchmarks.JsonParsingBenchmarks-report-github.md",
     "benchmarks/results/latest-manual/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
     "benchmarks/results/short-run-short/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
-    "benchmarks/results/short-run-short2/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md"
+    "benchmarks/results/short-run-short2/results/Meridian.Benchmarks.WalChecksumBenchmarks-report-github.md",
+    "tools/actionlint/docs/README.md",
+    "tools/actionlint/docs/reference.md"
   ],
   "stale_files": [
     ".nuget/packages/azure.core/1.38.0/CHANGELOG.md",
@@ -342,9 +347,12 @@
     ".nuget/packages/microsoft.codeanalysis.analyzers/5.3.0-2.25625.1/documentation/Microsoft.CodeAnalysis.Analyzers.md",
     ".nuget/packages/microsoft.codeanalysis.analyzers/5.3.0-2.25625.1/documentation/readme.md",
     ".nuget/packages/microsoft.codecoverage/18.5.1/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.caching.abstractions/10.0.5/PACKAGE.md",
     ".nuget/packages/microsoft.extensions.caching.memory/10.0.1/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.caching.memory/10.0.5/PACKAGE.md",
     ".nuget/packages/microsoft.extensions.configuration.abstractions/10.0.0/PACKAGE.md",
     ".nuget/packages/microsoft.extensions.dependencymodel/10.0.0/PACKAGE.md",
+    ".nuget/packages/microsoft.extensions.primitives/10.0.5/PACKAGE.md",
     ".nuget/packages/microsoft.identity.client/4.61.3/README.md",
     ".nuget/packages/microsoft.io.recyclablememorystream/3.0.0/README.md",
     ".nuget/packages/microsoft.io.recyclablememorystream/3.0.1/README.md",
@@ -357,10 +365,15 @@
     ".nuget/packages/microsoft.testing.platform.msbuild/1.9.0/PACKAGE.md",
     ".nuget/packages/newtonsoft.json/13.0.4/LICENSE.md",
     ".nuget/packages/newtonsoft.json/13.0.4/README.md",
+    ".nuget/packages/npgsql/10.0.2/README.md",
     ".nuget/packages/opentelemetry.api.providerbuilderextensions/1.15.0/README.md",
     ".nuget/packages/opentelemetry.exporter.prometheus.aspnetcore/1.14.0-beta.1/README.md",
+    ".nuget/packages/opentelemetry.instrumentation.aspnetcore/1.15.1/README.md",
     ".nuget/packages/opentelemetry.instrumentation.http/1.15.0/README.md",
     ".nuget/packages/parquet.net/5.5.0/README.md",
+    ".nuget/packages/polly/8.6.6/package-readme.md",
+    ".nuget/packages/polly.core/8.6.6/package-readme.md",
+    ".nuget/packages/polly.extensions/8.6.6/package-readme.md",
     ".nuget/packages/prometheus-net/8.2.1/README.md",
     ".nuget/packages/prometheus-net.aspnetcore/8.2.1/README.md",
     ".nuget/packages/rabbitmq.client/7.2.1/README.md",
@@ -369,6 +382,7 @@
     ".nuget/packages/serilog.settings.configuration/10.0.0/README.md",
     ".nuget/packages/serilog.sinks.console/6.1.1/README.md",
     ".nuget/packages/serilog.sinks.file/7.0.0/README.md",
+    ".nuget/packages/sharpino.core/4.8.8/README.md",
     ".nuget/packages/skender.stock.indicators/2.7.1/README.md",
     ".nuget/packages/system.clientmodel/1.4.2/CHANGELOG.md",
     ".nuget/packages/system.clientmodel/1.4.2/README.md",
@@ -380,31 +394,32 @@
     ".nuget/packages/system.runtime.caching/8.0.0/PACKAGE.md",
     ".nuget/packages/system.security.cryptography.protecteddata/9.0.2/PACKAGE.md",
     ".nuget/packages/websocket.client/5.3.0/README.md",
+    ".nuget/packages/ziggycreatures.fusioncache/2.6.0/README.md",
     ".nuget/packages/ziggycreatures.fusioncache.serialization.systemtextjson/2.6.0/README.md"
   ],
   "all_files": [
     {
       "path": "AGENTS.md",
-      "line_count": 61,
+      "line_count": 70,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T11:44:14.052374+00:00",
+      "last_modified_utc": "2026-06-16T05:44:36.179774+00:00",
       "stale": false
     },
     {
       "path": "CLAUDE.md",
-      "line_count": 174,
+      "line_count": 192,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-02T01:53:18.931220+00:00",
+      "last_modified_utc": "2026-06-16T05:27:24.208820+00:00",
       "stale": false
     },
     {
       "path": "README.md",
-      "line_count": 306,
+      "line_count": 163,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-31T12:56:46.305943+00:00",
+      "last_modified_utc": "2026-06-15T03:42:32.608707+00:00",
       "stale": false
     },
     {
@@ -528,6 +543,14 @@
       "stale": false
     },
     {
+      "path": ".agents/skills/meridian-cleanup/SKILL.md",
+      "line_count": 93,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-10T07:05:06.816073+00:00",
+      "stale": false
+    },
+    {
       "path": ".agents/skills/meridian-code-review/CHANGELOG.md",
       "line_count": 62,
       "has_heading": true,
@@ -568,11 +591,19 @@
       "stale": false
     },
     {
+      "path": ".agents/skills/meridian-docs/SKILL.md",
+      "line_count": 111,
+      "has_heading": true,
+      "todo_count": 2,
+      "last_modified_utc": "2026-06-10T07:05:20.270005+00:00",
+      "stale": false
+    },
+    {
       "path": ".agents/skills/meridian-implementation-assurance/SKILL.md",
-      "line_count": 131,
+      "line_count": 147,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:19:18.231897+00:00",
+      "last_modified_utc": "2026-06-09T00:50:30.980944+00:00",
       "stale": false
     },
     {
@@ -769,10 +800,10 @@
     },
     {
       "path": ".agents/skills/_shared/project-context.md",
-      "line_count": 156,
+      "line_count": 176,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-22T23:54:14.887439+00:00",
+      "last_modified_utc": "2026-06-16T05:44:36.186683+00:00",
       "stale": false
     },
     {
@@ -949,7 +980,7 @@
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "2026-03-03T17:47:26+00:00",
-      "stale": false
+      "stale": true
     },
     {
       "path": ".nuget/packages/microsoft.extensions.caching.memory/10.0.1/PACKAGE.md",
@@ -965,7 +996,7 @@
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "2026-03-03T17:47:26+00:00",
-      "stale": false
+      "stale": true
     },
     {
       "path": ".nuget/packages/microsoft.extensions.configuration/10.0.7/PACKAGE.md",
@@ -1173,7 +1204,7 @@
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "2026-03-03T17:47:26+00:00",
-      "stale": false
+      "stale": true
     },
     {
       "path": ".nuget/packages/microsoft.extensions.primitives/10.0.7/PACKAGE.md",
@@ -1293,7 +1324,7 @@
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "2026-03-12T15:53:46+00:00",
-      "stale": false
+      "stale": true
     },
     {
       "path": ".nuget/packages/opentelemetry/1.15.3/README.md",
@@ -1365,7 +1396,7 @@
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "2026-03-11T10:18:36+00:00",
-      "stale": false
+      "stale": true
     },
     {
       "path": ".nuget/packages/opentelemetry.instrumentation.http/1.15.0/README.md",
@@ -1389,7 +1420,7 @@
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "2026-03-04T12:42:30+00:00",
-      "stale": false
+      "stale": true
     },
     {
       "path": ".nuget/packages/polly.core/8.6.6/package-readme.md",
@@ -1397,7 +1428,7 @@
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "2026-03-04T12:42:30+00:00",
-      "stale": false
+      "stale": true
     },
     {
       "path": ".nuget/packages/polly.extensions/8.6.6/package-readme.md",
@@ -1405,7 +1436,7 @@
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "2026-03-04T12:42:30+00:00",
-      "stale": false
+      "stale": true
     },
     {
       "path": ".nuget/packages/prometheus-net/8.2.1/README.md",
@@ -1485,7 +1516,7 @@
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "2026-03-12T13:58:24+00:00",
-      "stale": false
+      "stale": true
     },
     {
       "path": ".nuget/packages/skender.stock.indicators/2.7.1/README.md",
@@ -1629,7 +1660,7 @@
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "2026-03-14T09:21:30+00:00",
-      "stale": false
+      "stale": true
     },
     {
       "path": ".nuget/packages/ziggycreatures.fusioncache.serialization.systemtextjson/2.6.0/README.md",
@@ -1801,10 +1832,10 @@
     },
     {
       "path": "build/scripts/docs/README.md",
-      "line_count": 681,
+      "line_count": 676,
       "has_heading": true,
       "todo_count": 8,
-      "last_modified_utc": "2026-06-01T07:25:33.295719+00:00",
+      "last_modified_utc": "2026-06-02T08:54:06.322735+00:00",
       "stale": false
     },
     {
@@ -1833,18 +1864,18 @@
     },
     {
       "path": "docs/HELP.md",
-      "line_count": 221,
+      "line_count": 239,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T12:36:17.832527+00:00",
+      "last_modified_utc": "2026-06-16T05:35:04.965587+00:00",
       "stale": false
     },
     {
       "path": "docs/README.md",
-      "line_count": 77,
+      "line_count": 80,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-01T01:10:37.642453+00:00",
+      "last_modified_utc": "2026-06-16T05:27:24.266728+00:00",
       "stale": false
     },
     {
@@ -1984,6 +2015,14 @@
       "stale": false
     },
     {
+      "path": "docs/adr/017-modular-operational-monolith.md",
+      "line_count": 27,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-16T05:27:24.267729+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/adr/README.md",
       "line_count": 13,
       "has_heading": true,
@@ -2001,194 +2040,258 @@
     },
     {
       "path": "docs/ai/agent-handoff-checklist.md",
-      "line_count": 68,
+      "line_count": 89,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-01T19:34:54.379876+00:00",
+      "last_modified_utc": "2026-06-16T05:27:24.269730+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/ai-known-errors.md",
-      "line_count": 413,
+      "line_count": 416,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T10:40:03.142622+00:00",
+      "last_modified_utc": "2026-06-07T12:26:25.082200+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/assistant-workflow-contract.md",
-      "line_count": 442,
+      "line_count": 491,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-01T19:34:54.383941+00:00",
+      "last_modified_utc": "2026-06-16T05:44:52.835974+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/model-routing-telemetry.md",
-      "line_count": 68,
+      "line_count": 84,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T10:45:30.204410+00:00",
+      "last_modified_utc": "2026-06-04T16:06:32.618278+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/parallel-task-manifest-template.md",
-      "line_count": 62,
+      "line_count": 133,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-01T19:34:54.391043+00:00",
+      "last_modified_utc": "2026-06-16T05:27:24.280479+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/README.md",
-      "line_count": 246,
+      "line_count": 261,
       "has_heading": true,
       "todo_count": 8,
-      "last_modified_utc": "2026-06-01T19:34:54.377864+00:00",
+      "last_modified_utc": "2026-06-16T05:44:52.838974+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/work-modes.md",
-      "line_count": 44,
+      "line_count": 71,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-01T19:34:54.394590+00:00",
+      "last_modified_utc": "2026-06-04T16:06:32.406444+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/ai/working-memory.md",
+      "line_count": 113,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-16T05:27:24.281480+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/agents/README.md",
-      "line_count": 164,
+      "line_count": 251,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T11:55:53.309998+00:00",
+      "last_modified_utc": "2026-06-16T02:47:53.385964+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/claude/CLAUDE.actions.md",
-      "line_count": 73,
+      "line_count": 77,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-01T12:47:50.619472+00:00",
+      "last_modified_utc": "2026-06-04T16:09:22.316631+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/claude/CLAUDE.api.md",
-      "line_count": 233,
+      "line_count": 244,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-31T11:22:52.579818+00:00",
+      "last_modified_utc": "2026-06-06T22:20:19.985923+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/claude/CLAUDE.domain-naming.md",
-      "line_count": 520,
+      "line_count": 524,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T11:52:00.588185+00:00",
+      "last_modified_utc": "2026-06-04T16:09:22.537199+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/claude/CLAUDE.fsharp.md",
-      "line_count": 913,
+      "line_count": 922,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.918338+00:00",
+      "last_modified_utc": "2026-06-08T00:37:26.053209+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/claude/CLAUDE.providers.md",
-      "line_count": 877,
+      "line_count": 882,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T13:19:42.873597+00:00",
+      "last_modified_utc": "2026-06-16T02:32:02.842217+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/claude/CLAUDE.repo-updater.md",
-      "line_count": 200,
+      "line_count": 204,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.918338+00:00",
+      "last_modified_utc": "2026-06-04T16:09:22.862858+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/claude/CLAUDE.roadmap-learning-log.md",
-      "line_count": 62,
+      "line_count": 66,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T12:00:05.035189+00:00",
+      "last_modified_utc": "2026-06-04T16:09:22.953192+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/claude/CLAUDE.storage.md",
-      "line_count": 786,
+      "line_count": 790,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.918338+00:00",
+      "last_modified_utc": "2026-06-04T16:09:23.044825+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/claude/CLAUDE.structure.md",
-      "line_count": 1577,
+      "line_count": 1595,
       "has_heading": true,
       "todo_count": 2,
-      "last_modified_utc": "2026-06-01T19:34:54.387984+00:00",
+      "last_modified_utc": "2026-06-07T03:23:58.740414+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/claude/CLAUDE.testing.md",
-      "line_count": 831,
+      "line_count": 835,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-25T01:02:51.335249+00:00",
+      "last_modified_utc": "2026-06-04T16:09:23.213367+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/ai/codex/advanced-configuration.md",
+      "line_count": 536,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-09T19:29:40.920301+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/codex/prompt-execution-trace.md",
-      "line_count": 86,
+      "line_count": 83,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-01T03:25:11.873390+00:00",
+      "last_modified_utc": "2026-06-04T16:07:39.218485+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/codex/quickstart.md",
-      "line_count": 140,
+      "line_count": 179,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-01T19:34:54.387984+00:00",
+      "last_modified_utc": "2026-06-16T05:44:52.836972+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/codex/README.md",
-      "line_count": 223,
+      "line_count": 318,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-01T06:08:54.413023+00:00",
+      "last_modified_utc": "2026-06-16T05:27:24.271730+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/codex/route-cards.md",
-      "line_count": 85,
+      "line_count": 89,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-02T01:45:04.514979+00:00",
+      "last_modified_utc": "2026-06-04T16:06:32.796290+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/ai/codex/self-improving-agents.md",
+      "line_count": 89,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-09T00:52:03.013402+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/ai/context/accounting-context.md",
+      "line_count": 33,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-16T05:27:24.275468+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/ai/context/operational-evidence-context.md",
+      "line_count": 55,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-16T05:27:24.276481+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/ai/context/README.md",
+      "line_count": 16,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-16T05:27:24.273728+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/copilot/ai-sync-workflow.md",
-      "line_count": 64,
+      "line_count": 68,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T12:00:06.579861+00:00",
+      "last_modified_utc": "2026-06-04T16:09:23.295156+00:00",
       "stale": false
     },
     {
       "path": "docs/ai/copilot/instructions.md",
-      "line_count": 123,
+      "line_count": 148,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T16:06:38.187716+00:00",
+      "last_modified_utc": "2026-06-16T05:44:36.188692+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/ai/exports/LLM_CONTEXT.md",
+      "line_count": 141,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "2026-06-16T05:27:24.278480+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/ai/exports/README.md",
+      "line_count": 17,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-16T05:27:24.279478+00:00",
       "stale": false
     },
     {
@@ -2196,7 +2299,7 @@
       "line_count": 49,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-02T01:45:09.504906+00:00",
+      "last_modified_utc": "2026-06-07T13:10:24.428911+00:00",
       "stale": false
     },
     {
@@ -2204,7 +2307,7 @@
       "line_count": 151,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-02T01:45:09.503912+00:00",
+      "last_modified_utc": "2026-06-07T13:10:24.428911+00:00",
       "stale": false
     },
     {
@@ -2220,7 +2323,7 @@
       "line_count": 98,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T11:27:13.145882+00:00",
+      "last_modified_utc": "2026-06-10T07:24:00.608184+00:00",
       "stale": false
     },
     {
@@ -2233,10 +2336,18 @@
     },
     {
       "path": "docs/ai/skills/README.md",
-      "line_count": 150,
+      "line_count": 160,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T12:00:10.735878+00:00",
+      "last_modified_utc": "2026-06-10T07:10:28.335370+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/ai/tooling/README.md",
+      "line_count": 157,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-16T02:56:24.241718+00:00",
       "stale": false
     },
     {
@@ -2257,10 +2368,18 @@
     },
     {
       "path": "docs/architecture/c4-diagrams.md",
-      "line_count": 61,
+      "line_count": 71,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-01T19:34:54.396581+00:00",
+      "last_modified_utc": "2026-06-05T05:32:35.797523+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/architecture/core-extensibility-model.md",
+      "line_count": 99,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-16T05:27:24.283481+00:00",
       "stale": false
     },
     {
@@ -2269,6 +2388,22 @@
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "2026-05-18T04:10:13.940040+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/architecture/design-document-adaptation.md",
+      "line_count": 94,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-05T03:42:51.140272+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/architecture/design-module-conformance.md",
+      "line_count": 70,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-06T07:44:48.521550+00:00",
       "stale": false
     },
     {
@@ -2284,7 +2419,7 @@
       "line_count": 682,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.942054+00:00",
+      "last_modified_utc": "2026-06-07T08:31:59.815135+00:00",
       "stale": false
     },
     {
@@ -2297,10 +2432,10 @@
     },
     {
       "path": "docs/architecture/environment-designer-runtime-projection-and-wpf-admin-surface.md",
-      "line_count": 155,
+      "line_count": 148,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-01T19:34:54.399581+00:00",
+      "last_modified_utc": "2026-06-06T11:34:20.826815+00:00",
       "stale": false
     },
     {
@@ -2324,15 +2459,39 @@
       "line_count": 592,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-29T09:50:52.827346+00:00",
+      "last_modified_utc": "2026-06-05T05:30:24.305990+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/architecture/meridian-development-intelligence-framework.md",
+      "line_count": 104,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-16T05:27:24.283481+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/architecture/meridian-domain-model.md",
+      "line_count": 45,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-16T05:27:24.284483+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/architecture/meridian-vision.md",
+      "line_count": 62,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-16T05:27:24.284483+00:00",
       "stale": false
     },
     {
       "path": "docs/architecture/module-map.md",
-      "line_count": 81,
+      "line_count": 107,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T03:33:00.086895+00:00",
+      "last_modified_utc": "2026-06-09T19:32:08.306528+00:00",
       "stale": false
     },
     {
@@ -2361,26 +2520,34 @@
     },
     {
       "path": "docs/architecture/project-structure.md",
-      "line_count": 76,
+      "line_count": 79,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-28T05:40:21.917299+00:00",
+      "last_modified_utc": "2026-06-09T19:32:35.916723+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/architecture/provider-integration-manifest-runtime.md",
+      "line_count": 731,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-16T06:22:09.191735+00:00",
       "stale": false
     },
     {
       "path": "docs/architecture/provider-management.md",
-      "line_count": 760,
+      "line_count": 786,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-20T13:08:28.849521+00:00",
+      "last_modified_utc": "2026-06-06T22:31:15.299032+00:00",
       "stale": false
     },
     {
       "path": "docs/architecture/README.md",
-      "line_count": 73,
+      "line_count": 80,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T12:44:47.464432+00:00",
+      "last_modified_utc": "2026-06-16T05:27:24.282481+00:00",
       "stale": false
     },
     {
@@ -2512,6 +2679,14 @@
       "stale": false
     },
     {
+      "path": "docs/design/design-system-usage.md",
+      "line_count": 34,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-15T03:41:52.957138+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/design/meridian-design-document.md",
       "line_count": 15,
       "has_heading": true,
@@ -2525,6 +2700,38 @@
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "2026-05-31T13:28:12.828635+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/developer/build-test-run.md",
+      "line_count": 69,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-16T05:27:24.286479+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/developer/publish-standalone-exe.md",
+      "line_count": 45,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-15T03:41:48.418727+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/developer/README.md",
+      "line_count": 14,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-16T05:36:55.177013+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/developer/setup.md",
+      "line_count": 58,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-15T03:41:43.605694+00:00",
       "stale": false
     },
     {
@@ -2577,26 +2784,26 @@
     },
     {
       "path": "docs/development/desktop-testing-guide.md",
-      "line_count": 46,
+      "line_count": 60,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-01T23:52:25.641327+00:00",
+      "last_modified_utc": "2026-06-08T01:29:49.547836+00:00",
       "stale": false
     },
     {
       "path": "docs/development/desktop-workflow-automation.md",
-      "line_count": 241,
+      "line_count": 243,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-01T23:52:27.387014+00:00",
+      "last_modified_utc": "2026-06-10T03:22:25.345762+00:00",
       "stale": false
     },
     {
       "path": "docs/development/documentation-automation.md",
-      "line_count": 559,
+      "line_count": 560,
       "has_heading": true,
-      "todo_count": 40,
-      "last_modified_utc": "2026-06-01T07:25:33.293707+00:00",
+      "todo_count": 37,
+      "last_modified_utc": "2026-06-16T05:35:04.967595+00:00",
       "stale": false
     },
     {
@@ -2620,15 +2827,15 @@
       "line_count": 209,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-01T23:52:27.389014+00:00",
+      "last_modified_utc": "2026-06-06T22:02:06.491957+00:00",
       "stale": false
     },
     {
       "path": "docs/development/fund-account-traversal.md",
-      "line_count": 19,
+      "line_count": 21,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:14.001558+00:00",
+      "last_modified_utc": "2026-06-07T09:02:38.127074+00:00",
       "stale": false
     },
     {
@@ -2641,10 +2848,10 @@
     },
     {
       "path": "docs/development/github-actions-summary.md",
-      "line_count": 57,
+      "line_count": 50,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.617157+00:00",
+      "last_modified_utc": "2026-06-02T17:58:54.569149+00:00",
       "stale": false
     },
     {
@@ -2689,18 +2896,18 @@
     },
     {
       "path": "docs/development/README.md",
-      "line_count": 127,
+      "line_count": 128,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T13:22:30.117651+00:00",
+      "last_modified_utc": "2026-06-15T03:50:07.300735+00:00",
       "stale": false
     },
     {
       "path": "docs/development/refactor-map.md",
-      "line_count": 287,
+      "line_count": 290,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T12:30:36.947364+00:00",
+      "last_modified_utc": "2026-06-07T00:39:27.198186+00:00",
       "stale": false
     },
     {
@@ -2761,18 +2968,18 @@
     },
     {
       "path": "docs/development/tooling-architecture.md",
-      "line_count": 100,
+      "line_count": 118,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T13:22:30.113652+00:00",
+      "last_modified_utc": "2026-06-02T17:58:54.569149+00:00",
       "stale": false
     },
     {
       "path": "docs/development/tooling-workflow-backlog.md",
-      "line_count": 177,
+      "line_count": 183,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:14.009445+00:00",
+      "last_modified_utc": "2026-06-02T17:58:54.569149+00:00",
       "stale": false
     },
     {
@@ -2809,10 +3016,10 @@
     },
     {
       "path": "docs/diagrams/README.md",
-      "line_count": 546,
+      "line_count": 554,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-01T23:52:27.394849+00:00",
+      "last_modified_utc": "2026-06-10T04:49:14.690915+00:00",
       "stale": false
     },
     {
@@ -2849,18 +3056,18 @@
     },
     {
       "path": "docs/diagrams/ui/README.md",
-      "line_count": 3,
+      "line_count": 21,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:14.325812+00:00",
+      "last_modified_utc": "2026-06-10T04:18:38.624543+00:00",
       "stale": false
     },
     {
       "path": "docs/diagrams/uml/README.md",
-      "line_count": 112,
+      "line_count": 113,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-21T00:55:34.623154+00:00",
+      "last_modified_utc": "2026-06-10T04:49:14.693959+00:00",
       "stale": false
     },
     {
@@ -2876,7 +3083,7 @@
       "line_count": 109,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-02T01:18:03.510758+00:00",
+      "last_modified_utc": "2026-06-02T08:54:06.347997+00:00",
       "stale": false
     },
     {
@@ -2888,11 +3095,67 @@
       "stale": false
     },
     {
+      "path": "docs/domain/fund-event.md",
+      "line_count": 36,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-16T05:27:24.287478+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/domain/operational-evidence-graph.md",
+      "line_count": 35,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-16T05:27:24.287478+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/domain/README.md",
+      "line_count": 15,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-16T05:27:24.286479+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/domain/security.md",
+      "line_count": 35,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-16T05:27:24.288482+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/free-development-tools.md",
+      "line_count": 74,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-16T02:48:16.389652+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/practical-csharp-wpf-financial-markets.md",
+      "line_count": 57,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-09T00:29:45.483534+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/README.md",
-      "line_count": 167,
+      "line_count": 217,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-01T23:52:27.410556+00:00",
+      "last_modified_utc": "2026-06-16T05:27:24.289480+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/wpf-perf-uiux-audit-2026-06-14.md",
+      "line_count": 79,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-15T02:07:12.953632+00:00",
       "stale": false
     },
     {
@@ -3017,10 +3280,18 @@
     },
     {
       "path": "docs/examples/README.md",
-      "line_count": 15,
+      "line_count": 16,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.565918+00:00",
+      "last_modified_utc": "2026-06-09T00:29:45.483534+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/examples/agent-improvement-loop/README.md",
+      "line_count": 34,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-09T00:29:45.483534+00:00",
       "stale": false
     },
     {
@@ -3028,7 +3299,7 @@
       "line_count": 85,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-18T04:10:19.565918+00:00",
+      "last_modified_utc": "2026-06-07T10:30:53.172417+00:00",
       "stale": false
     },
     {
@@ -3052,7 +3323,7 @@
       "line_count": 202,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.577927+00:00",
+      "last_modified_utc": "2026-06-02T12:03:08.644546+00:00",
       "stale": false
     },
     {
@@ -3073,18 +3344,18 @@
     },
     {
       "path": "docs/generated/project-dependencies.md",
-      "line_count": 1262,
+      "line_count": 1144,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T04:11:53.539027+00:00",
+      "last_modified_utc": "2026-06-02T08:54:06.350965+00:00",
       "stale": false
     },
     {
       "path": "docs/generated/provider-registry.md",
-      "line_count": 111,
+      "line_count": 142,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.579665+00:00",
+      "last_modified_utc": "2026-06-06T23:38:03.960251+00:00",
       "stale": false
     },
     {
@@ -3097,10 +3368,10 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 6116,
+      "line_count": 6622,
       "has_heading": true,
       "todo_count": 8,
-      "last_modified_utc": "2026-06-01T23:52:27.415242+00:00",
+      "last_modified_utc": "2026-06-16T06:26:51.162147+00:00",
       "stale": false
     },
     {
@@ -3108,15 +3379,15 @@
       "line_count": 117,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T09:53:02.266971+00:00",
+      "last_modified_utc": "2026-06-16T05:35:04.968597+00:00",
       "stale": false
     },
     {
       "path": "docs/generated/workflows-overview.md",
-      "line_count": 48,
+      "line_count": 32,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.581687+00:00",
+      "last_modified_utc": "2026-06-16T05:35:04.571369+00:00",
       "stale": false
     },
     {
@@ -3129,10 +3400,10 @@
     },
     {
       "path": "docs/integrations/language-strategy.md",
-      "line_count": 760,
+      "line_count": 761,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.588363+00:00",
+      "last_modified_utc": "2026-06-07T03:24:37.048090+00:00",
       "stale": false
     },
     {
@@ -3177,10 +3448,10 @@
     },
     {
       "path": "docs/operations/cleanup-and-maintenance.md",
-      "line_count": 13,
+      "line_count": 49,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T13:04:45.588299+00:00",
+      "last_modified_utc": "2026-06-15T03:41:56.603027+00:00",
       "stale": false
     },
     {
@@ -3433,10 +3704,10 @@
     },
     {
       "path": "docs/operators/preflight-checklist.md",
-      "line_count": 65,
+      "line_count": 76,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T12:06:19.734027+00:00",
+      "last_modified_utc": "2026-06-02T12:03:08.650544+00:00",
       "stale": false
     },
     {
@@ -3449,10 +3720,10 @@
     },
     {
       "path": "docs/operators/provider-credentials.md",
-      "line_count": 100,
+      "line_count": 116,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-01T19:34:54.414156+00:00",
+      "last_modified_utc": "2026-06-02T12:03:08.654549+00:00",
       "stale": false
     },
     {
@@ -3473,10 +3744,10 @@
     },
     {
       "path": "docs/operators/README.md",
-      "line_count": 174,
+      "line_count": 178,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-02T01:42:12.436763+00:00",
+      "last_modified_utc": "2026-06-10T16:17:37.863628+00:00",
       "stale": false
     },
     {
@@ -4001,18 +4272,18 @@
     },
     {
       "path": "docs/product/meridian-design-document.md",
-      "line_count": 2011,
+      "line_count": 2979,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-02T01:13:36.999554+00:00",
+      "last_modified_utc": "2026-06-16T06:10:22.057780+00:00",
       "stale": false
     },
     {
       "path": "docs/product/README.md",
-      "line_count": 180,
+      "line_count": 199,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-02T00:53:13.389410+00:00",
+      "last_modified_utc": "2026-06-16T06:10:22.055770+00:00",
       "stale": false
     },
     {
@@ -4144,19 +4415,35 @@
       "stale": false
     },
     {
-      "path": "docs/reference/accounting-report-packs.md",
-      "line_count": 154,
+      "path": "docs/reference/accounting-configuration.md",
+      "line_count": 103,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-01T23:52:27.420026+00:00",
+      "last_modified_utc": "2026-06-02T08:34:39.584402+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/accounting-report-packs.md",
+      "line_count": 288,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-06T17:11:25.625736+00:00",
       "stale": false
     },
     {
       "path": "docs/reference/api-reference.md",
-      "line_count": 615,
+      "line_count": 646,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-02T01:42:12.435756+00:00",
+      "last_modified_utc": "2026-06-02T12:03:08.665545+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/appsettings-schema.md",
+      "line_count": 53,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-02T12:03:08.666543+00:00",
       "stale": false
     },
     {
@@ -4196,7 +4483,7 @@
       "line_count": 87,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.809900+00:00",
+      "last_modified_utc": "2026-06-06T22:31:15.057581+00:00",
       "stale": false
     },
     {
@@ -4217,10 +4504,10 @@
     },
     {
       "path": "docs/reference/environment-variables.md",
-      "line_count": 154,
+      "line_count": 201,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.811828+00:00",
+      "last_modified_utc": "2026-06-08T12:00:15.428075+00:00",
       "stale": false
     },
     {
@@ -4260,7 +4547,7 @@
       "line_count": 638,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:19.817043+00:00",
+      "last_modified_utc": "2026-06-07T00:39:27.342250+00:00",
       "stale": false
     },
     {
@@ -4297,10 +4584,10 @@
     },
     {
       "path": "docs/reference/README.md",
-      "line_count": 133,
+      "line_count": 135,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-01T23:52:27.420026+00:00",
+      "last_modified_utc": "2026-06-02T12:03:08.663549+00:00",
       "stale": false
     },
     {
@@ -4409,18 +4696,18 @@
     },
     {
       "path": "docs/roadmap/generated/roadmap-register.md",
-      "line_count": 274,
+      "line_count": 372,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-02T01:50:52.303946+00:00",
+      "last_modified_utc": "2026-06-16T06:10:42.518566+00:00",
       "stale": false
     },
     {
       "path": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
-      "line_count": 33,
+      "line_count": 36,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-02T01:50:52.300946+00:00",
+      "last_modified_utc": "2026-06-10T15:19:24.306662+00:00",
       "stale": false
     },
     {
@@ -4444,7 +4731,7 @@
       "line_count": 280,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-01T23:52:27.969457+00:00",
+      "last_modified_utc": "2026-06-07T09:02:38.247809+00:00",
       "stale": false
     },
     {
@@ -4473,10 +4760,10 @@
     },
     {
       "path": "docs/security/threat-model-current-state.md",
-      "line_count": 108,
+      "line_count": 109,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-30T04:06:18.661220+00:00",
+      "last_modified_utc": "2026-06-08T12:00:15.418301+00:00",
       "stale": false
     },
     {
@@ -4601,42 +4888,42 @@
     },
     {
       "path": "docs/source/generated/source-module-index.md",
-      "line_count": 47,
+      "line_count": 59,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-02T01:50:52.330943+00:00",
+      "last_modified_utc": "2026-06-05T04:44:54.557201+00:00",
       "stale": false
     },
     {
       "path": "docs/source/generated/source-roadmap-traceability.md",
-      "line_count": 94,
+      "line_count": 124,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-02T01:26:36.216739+00:00",
+      "last_modified_utc": "2026-06-10T15:34:59.125711+00:00",
       "stale": false
     },
     {
       "path": "docs/source/generated/source-todo-checklist.md",
-      "line_count": 21,
+      "line_count": 27,
       "has_heading": true,
-      "todo_count": 2,
-      "last_modified_utc": "2026-05-21T18:05:08.220111+00:00",
+      "todo_count": 8,
+      "last_modified_utc": "2026-06-02T17:58:54.577019+00:00",
       "stale": false
     },
     {
       "path": "docs/source/generated/stale-docs.md",
-      "line_count": 16,
+      "line_count": 14,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-02T01:25:03.259186+00:00",
+      "last_modified_utc": "2026-06-16T06:11:39.771120+00:00",
       "stale": false
     },
     {
       "path": "docs/start/README.md",
-      "line_count": 110,
+      "line_count": 146,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T16:06:09.037627+00:00",
+      "last_modified_utc": "2026-06-16T05:27:24.343048+00:00",
       "stale": false
     },
     {
@@ -4644,23 +4931,23 @@
       "line_count": 5,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T16:06:46.199328+00:00",
+      "last_modified_utc": "2026-06-16T06:24:07.947736+00:00",
       "stale": false
     },
     {
       "path": "docs/status/ai-handoff-packet.md",
-      "line_count": 53,
+      "line_count": 81,
       "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-06-01T06:11:44.569946+00:00",
+      "todo_count": 1,
+      "last_modified_utc": "2026-06-16T06:24:35.755858+00:00",
       "stale": false
     },
     {
       "path": "docs/status/ai-inventory-report.md",
-      "line_count": 14,
+      "line_count": 26,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T13:35:36.263216+00:00",
+      "last_modified_utc": "2026-06-16T06:24:03.956764+00:00",
       "stale": false
     },
     {
@@ -4732,15 +5019,15 @@
       "line_count": 126,
       "has_heading": true,
       "todo_count": 5,
-      "last_modified_utc": "2026-06-02T01:53:28.512570+00:00",
+      "last_modified_utc": "2026-06-16T06:23:57.095767+00:00",
       "stale": false
     },
     {
       "path": "docs/status/docs-automation-summary.md",
-      "line_count": 10,
+      "line_count": 23,
       "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-31T12:51:40.259231+00:00",
+      "todo_count": 1,
+      "last_modified_utc": "2026-06-16T06:24:39.679900+00:00",
       "stale": false
     },
     {
@@ -4753,10 +5040,10 @@
     },
     {
       "path": "docs/status/example-validation.md",
-      "line_count": 14,
+      "line_count": 125,
       "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "2026-05-31T13:35:36.277220+00:00",
+      "todo_count": 1,
+      "last_modified_utc": "2026-06-16T06:24:01.543973+00:00",
       "stale": false
     },
     {
@@ -4977,10 +5264,10 @@
     },
     {
       "path": "docs/status/ROADMAP_SUMMARY.md",
-      "line_count": 33,
+      "line_count": 36,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-02T01:50:52.307947+00:00",
+      "last_modified_utc": "2026-06-10T15:19:24.318259+00:00",
       "stale": false
     },
     {
@@ -5001,18 +5288,18 @@
     },
     {
       "path": "docs/status/TODO.md",
-      "line_count": 10,
+      "line_count": 187,
       "has_heading": true,
-      "todo_count": 5,
-      "last_modified_utc": "2026-05-31T13:35:36.346730+00:00",
+      "todo_count": 17,
+      "last_modified_utc": "2026-06-16T06:26:39.708704+00:00",
       "stale": false
     },
     {
       "path": "docs/status/workflow-drift-report.md",
-      "line_count": 14,
+      "line_count": 75,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-31T13:35:36.347928+00:00",
+      "last_modified_utc": "2026-06-16T05:35:04.999262+00:00",
       "stale": false
     },
     {
@@ -5132,15 +5419,15 @@
       "line_count": 153,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.574740+00:00",
+      "last_modified_utc": "2026-06-10T10:34:06.403108+00:00",
       "stale": false
     },
     {
       "path": "Meridian Design System/CONTENT_FUNDAMENTALS.md",
-      "line_count": 101,
+      "line_count": 105,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.574740+00:00",
+      "last_modified_utc": "2026-06-10T10:34:06.400110+00:00",
       "stale": false
     },
     {
@@ -5153,10 +5440,10 @@
     },
     {
       "path": "Meridian Design System/INSPIRATION_BRIEF.md",
-      "line_count": 74,
+      "line_count": 83,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.584136+00:00",
+      "last_modified_utc": "2026-06-10T10:34:06.402111+00:00",
       "stale": false
     },
     {
@@ -5164,31 +5451,31 @@
       "line_count": 134,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-29T00:25:28.139057+00:00",
+      "last_modified_utc": "2026-06-10T10:38:07.258317+00:00",
       "stale": false
     },
     {
       "path": "Meridian Design System/SKILL.md",
-      "line_count": 59,
+      "line_count": 61,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-29T00:24:38.759446+00:00",
+      "last_modified_utc": "2026-06-10T10:38:07.339279+00:00",
       "stale": false
     },
     {
       "path": "Meridian Design System/VISUAL_FOUNDATIONS.md",
-      "line_count": 177,
+      "line_count": 181,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-29T00:24:23.174256+00:00",
+      "last_modified_utc": "2026-06-10T10:38:07.409088+00:00",
       "stale": false
     },
     {
       "path": "Meridian Design System/assets/brand/README.md",
-      "line_count": 122,
+      "line_count": 123,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.589703+00:00",
+      "last_modified_utc": "2026-06-10T10:34:06.431107+00:00",
       "stale": false
     },
     {
@@ -5201,10 +5488,10 @@
     },
     {
       "path": "Meridian Design System/ui_kits/dashboard/README.md",
-      "line_count": 57,
+      "line_count": 62,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-05-18T04:10:13.662875+00:00",
+      "last_modified_utc": "2026-06-10T10:34:06.539628+00:00",
       "stale": false
     },
     {
@@ -5361,10 +5648,10 @@
     },
     {
       "path": "src/Meridian/README.md",
-      "line_count": 81,
+      "line_count": 94,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-06-02T00:55:20.609637+00:00",
+      "todo_count": 3,
+      "last_modified_utc": "2026-06-16T02:39:08.696976+00:00",
       "stale": false
     },
     {
@@ -5377,18 +5664,26 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 175,
+      "line_count": 362,
+      "has_heading": true,
+      "todo_count": 3,
+      "last_modified_utc": "2026-06-16T06:22:02.127690+00:00",
+      "stale": false
+    },
+    {
+      "path": "src/Meridian.Audit/README.md",
+      "line_count": 86,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-01T23:57:55.992558+00:00",
+      "last_modified_utc": "2026-06-06T02:24:23.636067+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Backtesting/README.md",
-      "line_count": 87,
+      "line_count": 102,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-02T01:50:42.975363+00:00",
+      "last_modified_utc": "2026-06-06T08:27:41.222272+00:00",
       "stale": false
     },
     {
@@ -5401,26 +5696,50 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 320,
+      "line_count": 893,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-06-02T01:13:45.778249+00:00",
+      "todo_count": 3,
+      "last_modified_utc": "2026-06-16T06:21:54.227259+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Core/README.md",
-      "line_count": 73,
+      "line_count": 111,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-02T00:55:20.616175+00:00",
+      "last_modified_utc": "2026-06-07T13:02:14.794294+00:00",
+      "stale": false
+    },
+    {
+      "path": "src/Meridian.DataIntegration/README.md",
+      "line_count": 245,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "2026-06-08T12:00:15.423963+00:00",
+      "stale": false
+    },
+    {
+      "path": "src/Meridian.Documents/README.md",
+      "line_count": 75,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "2026-06-05T03:22:19.346244+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Domain/README.md",
-      "line_count": 72,
+      "line_count": 77,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-28T22:52:21.426578+00:00",
+      "last_modified_utc": "2026-06-07T07:08:22.086024+00:00",
+      "stale": false
+    },
+    {
+      "path": "src/Meridian.Entities/README.md",
+      "line_count": 91,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "2026-06-10T15:34:44.614793+00:00",
       "stale": false
     },
     {
@@ -5440,19 +5759,27 @@
       "stale": false
     },
     {
-      "path": "src/Meridian.FSharp/README.md",
-      "line_count": 73,
+      "path": "src/Meridian.FinancialOperations/README.md",
+      "line_count": 210,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-02T01:50:42.977362+00:00",
+      "last_modified_utc": "2026-06-16T05:35:06.978878+00:00",
+      "stale": false
+    },
+    {
+      "path": "src/Meridian.FSharp/README.md",
+      "line_count": 78,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "2026-06-08T00:44:16.999231+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.FSharp.DirectLending.Aggregates/README.md",
-      "line_count": 63,
+      "line_count": 71,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-02T01:31:03.372044+00:00",
+      "last_modified_utc": "2026-06-08T00:36:36.809268+00:00",
       "stale": false
     },
     {
@@ -5460,7 +5787,7 @@
       "line_count": 73,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-02T01:31:03.373052+00:00",
+      "last_modified_utc": "2026-06-08T00:36:19.314124+00:00",
       "stale": false
     },
     {
@@ -5468,7 +5795,7 @@
       "line_count": 63,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-05-21T03:15:40.662002+00:00",
+      "last_modified_utc": "2026-06-08T00:36:27.304461+00:00",
       "stale": false
     },
     {
@@ -5480,19 +5807,35 @@
       "stale": false
     },
     {
-      "path": "src/Meridian.Infrastructure/README.md",
-      "line_count": 98,
+      "path": "src/Meridian.Identity/README.md",
+      "line_count": 120,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-02T00:55:20.629725+00:00",
+      "last_modified_utc": "2026-06-16T05:27:24.364035+00:00",
+      "stale": false
+    },
+    {
+      "path": "src/Meridian.Infrastructure/README.md",
+      "line_count": 118,
+      "has_heading": true,
+      "todo_count": 3,
+      "last_modified_utc": "2026-06-07T03:32:15.314126+00:00",
+      "stale": false
+    },
+    {
+      "path": "src/Meridian.Instruments/README.md",
+      "line_count": 114,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "2026-06-06T17:55:33.428597+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Ledger/README.md",
-      "line_count": 114,
+      "line_count": 135,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-02T01:31:03.371035+00:00",
+      "last_modified_utc": "2026-06-09T19:45:13.072659+00:00",
       "stale": false
     },
     {
@@ -5504,11 +5847,27 @@
       "stale": false
     },
     {
-      "path": "src/Meridian.ProviderSdk/README.md",
-      "line_count": 67,
+      "path": "src/Meridian.Platform/README.md",
+      "line_count": 165,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-02T00:55:20.626725+00:00",
+      "last_modified_utc": "2026-06-07T11:30:49.438759+00:00",
+      "stale": false
+    },
+    {
+      "path": "src/Meridian.PortfolioRecords/README.md",
+      "line_count": 87,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "2026-06-08T10:59:18.161213+00:00",
+      "stale": false
+    },
+    {
+      "path": "src/Meridian.ProviderSdk/README.md",
+      "line_count": 80,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "2026-06-07T11:38:20.545055+00:00",
       "stale": false
     },
     {
@@ -5517,6 +5876,22 @@
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "2026-06-02T01:50:42.978468+00:00",
+      "stale": false
+    },
+    {
+      "path": "src/Meridian.ReferenceData/README.md",
+      "line_count": 87,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "2026-06-05T20:38:19.966957+00:00",
+      "stale": false
+    },
+    {
+      "path": "src/Meridian.Reporting/README.md",
+      "line_count": 133,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "2026-06-16T01:56:07.716587+00:00",
       "stale": false
     },
     {
@@ -5529,58 +5904,66 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 104,
+      "line_count": 250,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-02T01:31:03.369986+00:00",
+      "last_modified_utc": "2026-06-16T06:10:05.323616+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Strategies/README.md",
-      "line_count": 82,
+      "line_count": 90,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-02T01:50:42.979488+00:00",
+      "last_modified_utc": "2026-06-16T05:27:24.370432+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Ui/README.md",
-      "line_count": 78,
+      "line_count": 96,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-02T00:30:01.094404+00:00",
+      "last_modified_utc": "2026-06-10T23:59:12.094749+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 219,
+      "line_count": 714,
       "has_heading": true,
-      "todo_count": 3,
-      "last_modified_utc": "2026-06-02T01:13:45.810021+00:00",
+      "todo_count": 4,
+      "last_modified_utc": "2026-06-16T06:11:12.760531+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Ui.Services/README.md",
-      "line_count": 100,
+      "line_count": 104,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-02T01:13:45.801861+00:00",
+      "last_modified_utc": "2026-06-11T14:31:38.596617+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 442,
+      "line_count": 1178,
+      "has_heading": true,
+      "todo_count": 3,
+      "last_modified_utc": "2026-06-16T06:22:14.615325+00:00",
+      "stale": false
+    },
+    {
+      "path": "src/Meridian.Workflow/README.md",
+      "line_count": 88,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-02T01:11:36.131644+00:00",
+      "last_modified_utc": "2026-06-06T11:34:20.438969+00:00",
       "stale": false
     },
     {
       "path": "src/Meridian.Wpf/README.md",
-      "line_count": 233,
+      "line_count": 493,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-02T01:11:36.133644+00:00",
+      "last_modified_utc": "2026-06-16T06:03:52.691077+00:00",
       "stale": false
     },
     {
@@ -5613,6 +5996,70 @@
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "2026-05-25T00:24:24.587202+00:00",
+      "stale": false
+    },
+    {
+      "path": "tools/actionlint/README.md",
+      "line_count": 148,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-31T00:47:32+00:00",
+      "stale": false
+    },
+    {
+      "path": "tools/actionlint/docs/api.md",
+      "line_count": 67,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-31T00:47:32+00:00",
+      "stale": false
+    },
+    {
+      "path": "tools/actionlint/docs/checks.md",
+      "line_count": 3242,
+      "has_heading": true,
+      "todo_count": 2,
+      "last_modified_utc": "2026-03-31T00:47:32+00:00",
+      "stale": false
+    },
+    {
+      "path": "tools/actionlint/docs/config.md",
+      "line_count": 78,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-31T00:47:32+00:00",
+      "stale": false
+    },
+    {
+      "path": "tools/actionlint/docs/install.md",
+      "line_count": 220,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-31T00:47:32+00:00",
+      "stale": false
+    },
+    {
+      "path": "tools/actionlint/docs/README.md",
+      "line_count": 12,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-31T00:47:32+00:00",
+      "stale": false
+    },
+    {
+      "path": "tools/actionlint/docs/reference.md",
+      "line_count": 24,
+      "has_heading": false,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-31T00:47:32+00:00",
+      "stale": false
+    },
+    {
+      "path": "tools/actionlint/docs/usage.md",
+      "line_count": 486,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "2026-03-31T00:47:32+00:00",
       "stale": false
     },
     {
@@ -5664,6 +6111,6 @@
       "stale": false
     }
   ],
-  "scan_time": "2026-06-02T01:55:15.746143+00:00",
+  "scan_time": "2026-06-16T06:27:08.341098+00:00",
   "root_dir": "D:\\Meridian-main"
 }

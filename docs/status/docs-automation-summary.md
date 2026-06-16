@@ -6,5 +6,18 @@
 
 | Script | Status | Duration (s) | Output |
 |--------|--------|--------------|--------|
-| `check-ai-handoff-strict` | `success` | `0.508` | `docs/status/ai-handoff-checklist-report.md` |
+| `scan-todos` | `success` | `37.052` | `docs/status/TODO.md` |
+| `validate-docs-structure` | `success` | `8.548` | `-` |
+| `generate-structure-docs` | `success` | `9.000` | `docs/generated/repository-structure.md` |
+| `generate-health-dashboard` | `success` | `18.235` | `docs/status/doc-health-dashboard.md` |
+| `validate-examples` | `success` | `4.504` | `docs/status/example-validation.md` |
+| `check-ai-inventory` | `success` | `2.367` | `docs/status/ai-inventory-report.md` |
+| `check-ai-handoff-strict` | `success` | `3.974` | `docs/status/ai-handoff-checklist-report.md` |
+| `check-ai-contract-drift` | `success` | `2.414` | `-` |
+| `prompt-route-linter` | `success` | `6.475` | `docs/status/prompt-route-lint-report.json` |
+| `handoff-packet-generator` | `success` | `18.984` | `docs/status/ai-handoff-packet.json` |
+| `check-handoff-packet-schema` | `failed` | `3.813` | `-` |
 
+## Failures
+
+- `check-handoff-packet-schema`: [check-handoff-packet-schema] FAILED: telemetry.selected_model required for high-risk route lane/mode.

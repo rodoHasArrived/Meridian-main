@@ -59,7 +59,7 @@ public sealed partial class WorkstationEndpointsTests
         UserPermission currentUserPermissions = UserPermission.ModifySecurityMaster,
         UserRole? currentUserRole = null,
         string? currentUserRoleProfileName = null,
-        string? currentUserCompanyId = null)
+        string? currentUserCompanyId = "tenant-test")
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -89,7 +89,9 @@ public sealed partial class WorkstationEndpointsTests
 
             if (!string.IsNullOrWhiteSpace(currentUserCompanyId))
             {
-                context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = currentUserCompanyId.Trim();
+                var companyId = currentUserCompanyId.Trim();
+                context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = companyId;
+                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = companyId;
             }
 
             await next();

@@ -1,8 +1,8 @@
 {
   "status": "pass",
-  "generatedAtUtc": "2026-05-31T16:06:46.192329+00:00",
-  "checksTotal": 10,
-  "checksPassed": 10,
+  "generatedAtUtc": "2026-06-16T06:27:35.896936+00:00",
+  "checksTotal": 12,
+  "checksPassed": 12,
   "checksFailed": 0,
   "failures": [
     "No failures detected."
@@ -34,6 +34,11 @@
       "message": "Required orchestration references present."
     },
     {
+      "target": "`docs/ai/agents/README.md`",
+      "status": "ok",
+      "message": "Required orchestration references present."
+    },
+    {
       "target": "`docs/ai/README.md`",
       "status": "ok",
       "message": "Required orchestration references present."
@@ -45,6 +50,11 @@
     },
     {
       "target": "`docs/ai/codex/README.md`",
+      "status": "ok",
+      "message": "Required orchestration references present."
+    },
+    {
+      "target": "`docs/ai/codex/quickstart.md`",
       "status": "ok",
       "message": "Required orchestration references present."
     },

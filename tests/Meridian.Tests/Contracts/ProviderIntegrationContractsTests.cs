@@ -123,6 +123,65 @@ public sealed class ProviderIntegrationContractsTests
         roundTrip.Should().BeEquivalentTo(syncRun);
     }
 
+    [Fact]
+    public void ProviderIntegrationConnectionMonitor_RoundTripsWithOperatorEvidence()
+    {
+        var evidence = new ProviderIntegrationSyncRunEvidenceDto(
+            "sync-run-1",
+            ProviderCapabilityKindDto.Positions,
+            "positions",
+            DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+            DateTimeOffset.Parse("2026-06-16T12:01:00Z"),
+            ProviderIntegrationProcessingStatusDto.Quarantined,
+            RecordsReceived: 50,
+            RecordsAccepted: 48,
+            RecordsQuarantined: 2,
+            DurableStagingRecordCount: 48,
+            DurableQuarantinedRecordCount: 2,
+            CriticalIssueCount: 1,
+            WarningIssueCount: 1,
+            RawPayloadId: "payload-1",
+            Issues:
+            [
+                new ValidationIssueDto(
+                    "required.missing",
+                    ProviderIntegrationIssueSeverityDto.Critical,
+                    "Required field 'security.cusip' is missing.",
+                    "security.cusip",
+                    "Map CUSIP, ISIN, ticker, or provider security id.")
+            ]);
+        var monitor = new ProviderIntegrationConnectionMonitorDto(
+            "connection-alpha",
+            "manifest-custodian-abc-v1",
+            "custodian-abc",
+            "Custodian ABC",
+            "General Account",
+            "production",
+            ProviderIntegrationActivationStateDto.DryRunPassed,
+            [ProviderCapabilityKindDto.Positions],
+            evidence,
+            [evidence],
+            RecentRecordsReceived: 50,
+            RecentRecordsAccepted: 48,
+            RecentRecordsQuarantined: 2,
+            DurableStagingRecordCount: 48,
+            DurableQuarantinedRecordCount: 2,
+            HasCriticalIssues: true);
+
+        var json = JsonSerializer.Serialize(
+            monitor,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationConnectionMonitorDto);
+        var roundTrip = JsonSerializer.Deserialize(
+            json,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationConnectionMonitorDto);
+
+        json.Should().Contain("\"lastSyncRun\"");
+        json.Should().Contain("\"durableQuarantinedRecordCount\": 2");
+        json.Should().Contain("\"hasCriticalIssues\": true");
+        json.Should().NotContain("\"LastSyncRun\"");
+        roundTrip.Should().BeEquivalentTo(monitor);
+    }
+
     private static ProviderIntegrationManifestDto CreateManifest()
         => new(
             "manifest-custodian-abc-v1",

@@ -128,6 +128,19 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_WhenTenantScopeIsMissing_ShouldRejectRequest()
+    {
+        await using var app = await CreateAppAsync(currentUserCompanyId: null);
+        var client = app.GetTestClient();
+
+        var response = await client.GetAsync(UiApiRoutes.WorkstationSession);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("tenant-scoped workstation request context is required");
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_CanonicalWorkspaceRouteConstants_ShouldExposeBootstrapPayloads()
     {
         await using var app = await CreateAppAsync();

@@ -2496,6 +2496,59 @@ Configurability creates power, but also risk. Meridian should include guardrails
 
 Meridian is a W1-W5 proof-control platform for private-capital operations. It is not a close-only toolkit, not a generalized fund administrator, and not a replacement for every external operating domain.
 
+### 25.0.1 Implemented vs TODO Register (Design-Document-Sourced)
+
+Use this as the canonical execution list derived from the design doc.
+
+#### Implemented items currently documented in the design doc
+
+- [x] W1 provider trust gate and data confidence baseline completed (`Current Implementation Baseline` → `Closed Baselines`).
+- [x] W2 paper trading cockpit reliability and operator acceptance preserved (`Current Implementation Baseline` → `Closed Baselines`).
+- [x] W2 paper promotion evidence and promotion handoff are in place (`Current Implementation Baseline` → `Closed Baselines`).
+- [x] W3 research-to-paper continuity and run-comparison continuity (`Current Implementation Baseline` → `Closed Baselines`).
+- [x] W4 reconciliation readiness and portfolio ledger casework (`Current Implementation Baseline` → `Closed Baselines`).
+- [x] W4 governed report-pack readiness, provenance, and restatement posture (`Current Implementation Baseline` → `Closed Baselines`).
+- [x] W5 accounting records and operational evidence across source, ledger, approvals, documents, reporting (`Current Implementation Baseline` → `Closed Baselines`).
+- [x] W5 multi-asset operational coverage for provider evidence, ledger classification, reconciliation signaling, and close blockers (`Current Implementation Baseline` → `Closed Baselines`).
+- [x] Active UI surfaces remain browser workstation and WPF with shared contracts/services (`Active Product Surfaces`).
+- [x] Data & Integration implemented evidence, including ingestion, validation, mapping, and confidence gates (`Capability Posture by Domain`).
+- [x] Financial Operations implemented evidence, including reconciliation, close casework, and funding-event accounting records (`Capability Posture by Domain`).
+- [x] Portfolio & Investment Operations implemented evidence, including positions, valuations, and ledger-backed workflows (`Capability Posture by Domain`).
+- [x] Reference Data implemented evidence, including Security Master coverage and asset metadata (`Capability Posture by Domain`).
+- [x] Instrument, Contract & Obligation implemented evidence (`Capability Posture by Domain`).
+- [x] Client & Stakeholder Reporting implemented evidence (`Capability Posture by Domain`).
+- [x] Audit, Compliance & Regulatory implemented evidence (`Capability Posture by Domain`).
+- [x] Reporting & Analytics Platform implemented evidence (`Capability Posture by Domain`).
+- [x] Multi-asset operational coverage and shared browser/WPF read models included in current evidence slice (`26. Foundational Product Slice` → `Existing Evidence`).
+- [x] Core foundational slice includes provider, mapping, validation, reconciliation, exceptions, approvals, reporting, evidence graph basics (`26. Foundational Product Slice`).
+
+#### Unimplemented / TODO items documented as planned or deferred
+
+- [ ] W6 backtesting studio evidence loop remains planned (`Planned and Gated Baselines`).
+- [ ] W7 live-readiness governance remains planned (`Planned and Gated Baselines`).
+- [ ] W5X-FREX-001 Shared Financial Record Explorers are planned productization, not completion (`25.1` matrix).
+- [ ] W5X-FINOPS-001 Financial Operations control center is planned productization (`25.1` matrix).
+- [ ] Treasury full live payment execution and bank release automation are deferred (`Current, Supported, and Planned Productization Matrix`).
+- [ ] Full payments module and bill-pay orchestration are deferred (`Current, Supported, and Planned Productization Matrix`).
+- [ ] Full enterprise risk engine is deferred (`Remaining Expansion Work`; `Current, Supported, and Planned Productization Matrix`).
+- [ ] Full forecasting engine is deferred (`Remaining Expansion Work`; `Current, Supported, and Planned Productization Matrix`).
+- [ ] Full alternative asset operations are deferred (`Remaining Expansion Work`).
+- [ ] Complex capital structure modeling is deferred (`Remaining Expansion Work`).
+- [ ] Full client portal and broad LP stakeholder co-browsing are deferred (`Remaining Expansion Work`; `Current, Supported, and Planned Productization Matrix`).
+- [ ] Full no-code workflow designer is deferred (`Current, Supported, and Planned Productization Matrix`).
+- [ ] Full live-trading readiness remains deferred (`Planned and Gated Baselines`).
+- [ ] Backtesting Studio expansion beyond evidence-linking remains deferred (`Foundational Product Slice` → `Remaining Expansion Work`).
+- [ ] Mobile applications remain deferred per roadmap and scope constraints (`Remaining Expansion Work`).
+- [ ] Document vault and knowledge-management depth beyond evidence links is deferred (`Capability Posture by Domain`).
+- [ ] Broad collaboration tooling beyond operator workflow messaging is deferred (`Capability Posture by Domain`).
+- [ ] No-code rules governance and full planner/enterprise workflow builders are deferred (`Current, Supported, and Planned Productization Matrix`).
+
+### 25.0.2 How to treat this TODO list
+
+- [ ] Completed rows should remain linked to explicit evidence or milestone gates before any “complete” status changes.
+- [ ] Unimplemented rows should remain visible in roadmap updates until either roadmap gates close or scope is intentionally deferred.
+- [ ] New TODOs should be blocked unless they strengthen W1-W5 proof outcomes first.
+
 ## Executive Marketecture Deck (Fixed 6-Page Format)
 
 ### Page 1 — Executive Positioning and Decision Framing

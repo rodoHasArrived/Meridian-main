@@ -1,35 +1,38 @@
 {
-  "generatedAtUtc": "2026-05-31T09:58:43.477561+00:00",
+  "generatedAtUtc": "2026-06-16T06:27:31.498433+00:00",
   "repositoryRoot": ".",
   "repositoryName": "Meridian-main",
   "status": "pass",
   "summary": {
-    "inventoryCount": 231,
+    "inventoryCount": 296,
     "findingCount": 0,
     "bySurface": {
-      "agent-skills-compatible-hosts": 16,
-      "claude": 39,
-      "codex": 82,
-      "docs-ai": 26,
+      "agent-skills-compatible-hosts": 18,
+      "claude": 46,
+      "codex": 122,
+      "docs-ai": 39,
+      "github-actions": 2,
       "github-copilot": 44,
       "local-ai-maintenance-tools": 8,
-      "mcp": 11,
+      "mcp": 12,
       "reusable-prompts": 3,
       "root-assistant-compatibility": 2
     },
     "byKind": {
-      "agent": 22,
-      "agent-profile": 8,
-      "ai-doc": 26,
+      "agent": 27,
+      "agent-profile": 48,
+      "ai-doc": 39,
+      "ai-workflow": 1,
       "codex-tool": 10,
       "config": 3,
+      "copilot-workflow": 1,
       "entrypoint": 2,
       "environment-config": 1,
       "instruction-entrypoint": 2,
       "maintenance-script": 8,
       "mcp-prompt": 3,
       "mcp-resource": 3,
-      "mcp-tool": 5,
+      "mcp-tool": 6,
       "openai-metadata": 30,
       "path-instruction": 5,
       "plugin-agent": 3,
@@ -39,7 +42,7 @@
       "prompt-documentation": 3,
       "prompt-template": 10,
       "shared-context": 1,
-      "skill": 45,
+      "skill": 49,
       "validation-checklist": 5
     },
     "bySeverity": {}
@@ -130,8 +133,28 @@
     {
       "surface": "agent-skills-compatible-hosts",
       "kind": "skill",
+      "name": "meridian-cleanup",
+      "path": ".agents/skills/meridian-cleanup/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "agent-skills-compatible-hosts",
+      "kind": "skill",
       "name": "meridian-code-review",
       "path": ".agents/skills/meridian-code-review/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "agent-skills-compatible-hosts",
+      "kind": "skill",
+      "name": "meridian-docs",
+      "path": ".agents/skills/meridian-docs/SKILL.md",
       "expected_docs": [
         "docs/ai/skills/README.md"
       ],
@@ -220,8 +243,38 @@
     {
       "surface": "claude",
       "kind": "agent",
+      "name": "meridian-brainstorm.md",
+      "path": ".claude/agents/meridian-brainstorm.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "agent",
+      "name": "meridian-browser-workstation.md",
+      "path": ".claude/agents/meridian-browser-workstation.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "agent",
       "name": "meridian-cleanup.md",
       "path": ".claude/agents/meridian-cleanup.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "agent",
+      "name": "meridian-code-review.md",
+      "path": ".claude/agents/meridian-code-review.md",
       "expected_docs": [
         "docs/ai/agents/README.md"
       ],
@@ -240,8 +293,18 @@
     {
       "surface": "claude",
       "kind": "agent",
-      "name": "meridian-navigation.md",
-      "path": ".claude/agents/meridian-navigation.md",
+      "name": "meridian-implementation-assurance.md",
+      "path": ".claude/agents/meridian-implementation-assurance.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "agent",
+      "name": "meridian-provider-builder.md",
+      "path": ".claude/agents/meridian-provider-builder.md",
       "expected_docs": [
         "docs/ai/agents/README.md"
       ],
@@ -270,8 +333,18 @@
     {
       "surface": "claude",
       "kind": "agent",
-      "name": "meridian-user-panel.md",
-      "path": ".claude/agents/meridian-user-panel.md",
+      "name": "meridian-simulated-user-panel.md",
+      "path": ".claude/agents/meridian-simulated-user-panel.md",
+      "expected_docs": [
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "agent",
+      "name": "meridian-test-writer.md",
+      "path": ".claude/agents/meridian-test-writer.md",
       "expected_docs": [
         "docs/ai/agents/README.md"
       ],
@@ -546,8 +619,28 @@
     {
       "surface": "claude",
       "kind": "skill",
+      "name": "meridian-cleanup",
+      "path": ".claude/skills/meridian-cleanup/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "skill",
       "name": "meridian-code-review",
       "path": ".claude/skills/meridian-code-review/SKILL.md",
+      "expected_docs": [
+        "docs/ai/skills/README.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "claude",
+      "kind": "skill",
+      "name": "meridian-docs",
+      "path": ".claude/skills/meridian-docs/SKILL.md",
       "expected_docs": [
         "docs/ai/skills/README.md"
       ],
@@ -616,6 +709,48 @@
     {
       "surface": "codex",
       "kind": "agent-profile",
+      "name": "dense-data-grid-inspector-panel.toml",
+      "path": ".codex/agents/dense-data-grid-inspector-panel.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "desktop-test-generation.toml",
+      "path": ".codex/agents/desktop-test-generation.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "diagnostics-audit-timeline.toml",
+      "path": ".codex/agents/diagnostics-audit-timeline.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
       "name": "meridian-archive-organizer.toml",
       "path": ".codex/agents/meridian-archive-organizer.toml",
       "expected_docs": [
@@ -644,8 +779,50 @@
     {
       "surface": "codex",
       "kind": "agent-profile",
+      "name": "meridian-brainstorm.toml",
+      "path": ".codex/agents/meridian-brainstorm.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-browser-workstation.toml",
+      "path": ".codex/agents/meridian-browser-workstation.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
       "name": "meridian-cleanup.toml",
       "path": ".codex/agents/meridian-cleanup.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-code-review.toml",
+      "path": ".codex/agents/meridian-code-review.toml",
       "expected_docs": [
         "docs/ai/assistant-workflow-contract.md",
         "docs/ai/codex/README.md",
@@ -672,8 +849,22 @@
     {
       "surface": "codex",
       "kind": "agent-profile",
-      "name": "meridian-navigation.toml",
-      "path": ".codex/agents/meridian-navigation.toml",
+      "name": "meridian-implementation-assurance.toml",
+      "path": ".codex/agents/meridian-implementation-assurance.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-provider-builder.toml",
+      "path": ".codex/agents/meridian-provider-builder.toml",
       "expected_docs": [
         "docs/ai/assistant-workflow-contract.md",
         "docs/ai/codex/README.md",
@@ -714,8 +905,470 @@
     {
       "surface": "codex",
       "kind": "agent-profile",
-      "name": "meridian-user-panel.toml",
-      "path": ".codex/agents/meridian-user-panel.toml",
+      "name": "meridian-simulated-user-panel.toml",
+      "path": ".codex/agents/meridian-simulated-user-panel.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-test-writer.toml",
+      "path": ".codex/agents/meridian-test-writer.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-auditor.toml",
+      "path": ".codex/agents/meridian-user-testing-auditor.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-cfo.toml",
+      "path": ".codex/agents/meridian-user-testing-cfo.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-cio.toml",
+      "path": ".codex/agents/meridian-user-testing-cio.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-compliance-officer.toml",
+      "path": ".codex/agents/meridian-user-testing-compliance-officer.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-controller.toml",
+      "path": ".codex/agents/meridian-user-testing-controller.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-data-operations-analyst.toml",
+      "path": ".codex/agents/meridian-user-testing-data-operations-analyst.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-family-beneficiary.toml",
+      "path": ".codex/agents/meridian-user-testing-family-beneficiary.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-financial-operations-professional.toml",
+      "path": ".codex/agents/meridian-user-testing-financial-operations-professional.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-fund-accountant.toml",
+      "path": ".codex/agents/meridian-user-testing-fund-accountant.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-fund-investor-lp.toml",
+      "path": ".codex/agents/meridian-user-testing-fund-investor-lp.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-integration-administrator.toml",
+      "path": ".codex/agents/meridian-user-testing-integration-administrator.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-investment-accountant.toml",
+      "path": ".codex/agents/meridian-user-testing-investment-accountant.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-investment-analyst.toml",
+      "path": ".codex/agents/meridian-user-testing-investment-analyst.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-operations-manager.toml",
+      "path": ".codex/agents/meridian-user-testing-operations-manager.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-portfolio-manager.toml",
+      "path": ".codex/agents/meridian-user-testing-portfolio-manager.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-quantitative-researcher.toml",
+      "path": ".codex/agents/meridian-user-testing-quantitative-researcher.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-reconciliation-analyst.toml",
+      "path": ".codex/agents/meridian-user-testing-reconciliation-analyst.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-reporting-analyst.toml",
+      "path": ".codex/agents/meridian-user-testing-reporting-analyst.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-ria-client.toml",
+      "path": ".codex/agents/meridian-user-testing-ria-client.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-risk-manager.toml",
+      "path": ".codex/agents/meridian-user-testing-risk-manager.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-security-administrator.toml",
+      "path": ".codex/agents/meridian-user-testing-security-administrator.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-system-administrator.toml",
+      "path": ".codex/agents/meridian-user-testing-system-administrator.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-trader.toml",
+      "path": ".codex/agents/meridian-user-testing-trader.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-treasury-operations-specialist.toml",
+      "path": ".codex/agents/meridian-user-testing-treasury-operations-specialist.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "meridian-user-testing-trustee.toml",
+      "path": ".codex/agents/meridian-user-testing-trustee.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "modular-desktop-mvvm.toml",
+      "path": ".codex/agents/modular-desktop-mvvm.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "performance-resource-review.toml",
+      "path": ".codex/agents/performance-resource-review.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "provider-management-workflow.toml",
+      "path": ".codex/agents/provider-management-workflow.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "research-data-acquisition.toml",
+      "path": ".codex/agents/research-data-acquisition.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "safe-refactoring.toml",
+      "path": ".codex/agents/safe-refactoring.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "shared-component-extraction.toml",
+      "path": ".codex/agents/shared-component-extraction.toml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md",
+        "docs/ai/codex/README.md",
+        "docs/ai/agents/README.md"
+      ],
+      "alternate_markers": [
+        ".codex/agents/"
+      ]
+    },
+    {
+      "surface": "codex",
+      "kind": "agent-profile",
+      "name": "workstation-screen-composition.toml",
+      "path": ".codex/agents/workstation-screen-composition.toml",
       "expected_docs": [
         "docs/ai/assistant-workflow-contract.md",
         "docs/ai/codex/README.md",
@@ -1651,6 +2304,22 @@
     {
       "surface": "docs-ai",
       "kind": "ai-doc",
+      "name": "advanced-configuration.md",
+      "path": "docs/ai/codex/advanced-configuration.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "prompt-execution-trace.md",
+      "path": "docs/ai/codex/prompt-execution-trace.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
       "name": "quickstart.md",
       "path": "docs/ai/codex/quickstart.md",
       "expected_docs": [],
@@ -1667,6 +2336,38 @@
     {
       "surface": "docs-ai",
       "kind": "ai-doc",
+      "name": "self-improving-agents.md",
+      "path": "docs/ai/codex/self-improving-agents.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "README.md",
+      "path": "docs/ai/context/README.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "accounting-context.md",
+      "path": "docs/ai/context/accounting-context.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "operational-evidence-context.md",
+      "path": "docs/ai/context/operational-evidence-context.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
       "name": "ai-sync-workflow.md",
       "path": "docs/ai/copilot/ai-sync-workflow.md",
       "expected_docs": [],
@@ -1677,6 +2378,22 @@
       "kind": "ai-doc",
       "name": "instructions.md",
       "path": "docs/ai/copilot/instructions.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "LLM_CONTEXT.md",
+      "path": "docs/ai/exports/LLM_CONTEXT.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "README.md",
+      "path": "docs/ai/exports/README.md",
       "expected_docs": [],
       "alternate_markers": []
     },
@@ -1707,8 +2424,24 @@
     {
       "surface": "docs-ai",
       "kind": "ai-doc",
+      "name": "model-routing-telemetry.md",
+      "path": "docs/ai/model-routing-telemetry.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
       "name": "README.md",
       "path": "docs/ai/navigation/README.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "parallel-task-manifest-template.md",
+      "path": "docs/ai/parallel-task-manifest-template.md",
       "expected_docs": [],
       "alternate_markers": []
     },
@@ -1727,6 +2460,52 @@
       "path": "docs/ai/skills/README.md",
       "expected_docs": [],
       "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "README.md",
+      "path": "docs/ai/tooling/README.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "work-modes.md",
+      "path": "docs/ai/work-modes.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "working-memory.md",
+      "path": "docs/ai/working-memory.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-actions",
+      "kind": "ai-workflow",
+      "name": "documentation.yml",
+      "path": ".github/workflows/documentation.yml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md"
+      ],
+      "alternate_markers": []
+    },
+    {
+      "surface": "github-actions",
+      "kind": "copilot-workflow",
+      "name": "copilot-setup-steps.yml",
+      "path": ".github/workflows/copilot-setup-steps.yml",
+      "expected_docs": [
+        "docs/ai/assistant-workflow-contract.md"
+      ],
+      "alternate_markers": [
+        ".github/workflows/copilot-*"
+      ]
     },
     {
       "surface": "github-copilot",
@@ -2381,6 +3160,14 @@
       "kind": "mcp-tool",
       "name": "ProviderTools.cs",
       "path": "src/Meridian.Mcp/Tools/ProviderTools.cs",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "mcp",
+      "kind": "mcp-tool",
+      "name": "RepoEditTools.cs",
+      "path": "src/Meridian.Mcp/Tools/RepoEditTools.cs",
       "expected_docs": [],
       "alternate_markers": []
     },

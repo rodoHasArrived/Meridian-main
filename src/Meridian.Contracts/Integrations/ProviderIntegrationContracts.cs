@@ -323,6 +323,41 @@ public sealed record ProviderIntegrationSyncRunDto(
     string? RawPayloadId,
     IReadOnlyList<ValidationIssueDto> Issues);
 
+public sealed record ProviderIntegrationSyncRunEvidenceDto(
+    string SyncRunId,
+    ProviderCapabilityKindDto Capability,
+    string EndpointKey,
+    DateTimeOffset StartedAt,
+    DateTimeOffset? CompletedAt,
+    ProviderIntegrationProcessingStatusDto Status,
+    int RecordsReceived,
+    int RecordsAccepted,
+    int RecordsQuarantined,
+    int DurableStagingRecordCount,
+    int DurableQuarantinedRecordCount,
+    int CriticalIssueCount,
+    int WarningIssueCount,
+    string? RawPayloadId,
+    IReadOnlyList<ValidationIssueDto> Issues);
+
+public sealed record ProviderIntegrationConnectionMonitorDto(
+    string ConnectionId,
+    string ManifestId,
+    string ProviderId,
+    string DisplayName,
+    string ConnectionName,
+    string Environment,
+    ProviderIntegrationActivationStateDto State,
+    IReadOnlyList<ProviderCapabilityKindDto> EnabledCapabilities,
+    ProviderIntegrationSyncRunEvidenceDto? LastSyncRun,
+    IReadOnlyList<ProviderIntegrationSyncRunEvidenceDto> RecentSyncRuns,
+    int RecentRecordsReceived,
+    int RecentRecordsAccepted,
+    int RecentRecordsQuarantined,
+    int DurableStagingRecordCount,
+    int DurableQuarantinedRecordCount,
+    bool HasCriticalIssues);
+
 public sealed record ManualCsvProviderIntegrationDryRunRequestDto(
     string SyncRunId,
     string ManifestId,

@@ -20,6 +20,8 @@ Usage:
     python3 validate-docs-structure.py --top-level ai --summary
 """
 
+from __future__ import annotations
+
 import argparse
 import re
 import sys

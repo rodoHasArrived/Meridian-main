@@ -53,9 +53,12 @@ and UI presentation concerns in their owning layers.
   follows cursor pagination, retains raw responses before mapping, and uses the same staging and
   quarantine boundary for accepted and rejected records. The default `HttpClient` transport supplies
   the concrete HTTP execution path while tests can still inject deterministic transports. The
-  activation-readiness service evaluates those manifests before enablement, blocking unresolved
-  required mappings, missing approval evidence, and order-preview/place/cancel capabilities unless
-  they use a certified provider adapter with production-write activation policy.
+  monitoring service composes connection-level read models from durable sync-run summaries,
+  integration staging counts, quarantine counts, and retained validation issues so workstation
+  surfaces can show dry-run evidence without reading storage internals. The activation-readiness
+  service evaluates those manifests before enablement, blocking unresolved required mappings,
+  missing approval evidence, and order-preview/place/cancel capabilities unless they use a
+  certified provider adapter with production-write activation policy.
 - Canonicalization composition consumes `Meridian.DataIntegration.Canonicalization` contracts,
   provider condition-code mapping, venue normalization, parity metrics, the default
   `EventCanonicalizer`, and the Data Integration-owned `CanonicalizingPublisher` decorator.

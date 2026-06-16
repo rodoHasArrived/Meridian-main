@@ -69,7 +69,14 @@ jobs:
         run: python3 build/scripts/docs/check-ai-handoff.py
 
       - name: Check AI contract drift
-        run: python3 build/scripts/docs/check-ai-contract-drift.py --summary
+        run: >
+          python3 build/scripts/docs/check-ai-contract-drift.py
+          --canonical docs/ai/contract-policy.json
+          --mirror docs/ai/copilot/contract-policy.mirror.json
+          --mirror docs/ai/claude/contract-policy.mirror.json
+          --routing-rules docs/ai/codex/prompt-route-rules.json
+          --routing-host-doc docs/ai/codex/README.md
+          --routing-host-doc docs/ai/assistant-workflow-contract.md
 
   regenerate-docs:
     runs-on: ubuntu-latest

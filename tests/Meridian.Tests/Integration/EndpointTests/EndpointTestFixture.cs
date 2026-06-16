@@ -146,6 +146,9 @@ public sealed class EndpointTestFixture : IAsyncLifetime
                 context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = RolePermissions.For(UserRole.Accounting);
             }
 
+            context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "endpoint-test-tenant";
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "endpoint-test-tenant";
+
             await next(context);
         });
 

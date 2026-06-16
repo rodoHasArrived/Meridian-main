@@ -1,17 +1,17 @@
 # Documentation Health Dashboard
 
 _Auto-generated from canonical JSON payload._
-_Generated: 2026-06-02T01:55:15.765443+00:00_
+_Generated: 2026-06-16T06:27:08.531105+00:00_
 Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-06-02T01:55:15.746143+00:00
+> Last updated: 2026-06-16T06:27:08.341098+00:00
 
 ## Overall Health Score
 
 ```text
-  [########################------] 81/100
+  [#########################-----] 82/100
   Rating: Good
 ```
 
@@ -19,14 +19,14 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 660 |
-| Total lines | 87,868 |
-| Average file size (lines) | 133.1 |
-| Orphaned files | 290 |
-| Files without headings | 20 |
-| Stale files (>90 days) | 59 |
-| TODO/FIXME markers | 185 |
-| **Health score** | **81/100** |
+| Total documentation files | 714 |
+| Total lines | 102,480 |
+| Average file size (lines) | 143.5 |
+| Orphaned files | 293 |
+| Files without headings | 22 |
+| Stale files (>90 days) | 69 |
+| TODO/FIXME markers | 231 |
+| **Health score** | **82/100** |
 
 ### Score Breakdown
 
@@ -59,7 +59,7 @@ These files lack a Markdown heading, making them harder to navigate:
 - `benchmarks/results/20260521_181635/results/Meridian.Benchmarks.EventPipelineBenchmarks-report-github.md`
 - `benchmarks/results/20260521_181812/results/Meridian.Benchmarks.EventBufferBenchmarks-report-github.md`
 - `benchmarks/results/20260521_182021/results/Meridian.Benchmarks.BatchSerializationBenchmarks-report-github.md`
-- ... and 5 more
+- ... and 7 more
 
 ### Orphaned Documentation
 
@@ -69,6 +69,8 @@ These files are not linked from any other Markdown file in the repository:
 - `.agents/skills/meridian-blueprint/SKILL.md`
 - `.agents/skills/meridian-brainstorm/SKILL.md`
 - `.agents/skills/meridian-browser-workstation/SKILL.md`
+- `.agents/skills/meridian-cleanup/SKILL.md`
+- `.agents/skills/meridian-docs/SKILL.md`
 - `.agents/skills/meridian-implementation-assurance/SKILL.md`
 - `.agents/skills/meridian-provider-builder/SKILL.md`
 - `.agents/skills/meridian-repo-navigation/SKILL.md`
@@ -83,9 +85,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.nuget/packages/microsoft.codeanalysis.analyzers/5.3.0-2.25625.1/documentation/readme.md`
 - `.nuget/packages/microsoft.codecoverage/18.5.1/PACKAGE.md`
 - `.nuget/packages/microsoft.extensions.caching.abstractions/10.0.5/PACKAGE.md`
-- `.nuget/packages/microsoft.extensions.caching.memory/10.0.1/PACKAGE.md`
-- `.nuget/packages/microsoft.extensions.caching.memory/10.0.5/PACKAGE.md`
-- ... and 270 more
+- ... and 273 more
 
 ### Stale Documentation
 
@@ -111,7 +111,7 @@ These files have not been updated in over 90 days:
 - `.nuget/packages/microsoft.codeanalysis.analyzers/5.3.0-2.25625.1/documentation/Microsoft.CodeAnalysis.Analyzers.md`
 - `.nuget/packages/microsoft.codeanalysis.analyzers/5.3.0-2.25625.1/documentation/readme.md`
 - `.nuget/packages/microsoft.codecoverage/18.5.1/PACKAGE.md`
-- ... and 39 more
+- ... and 49 more
 
 ## Trend
 
@@ -119,7 +119,7 @@ These files have not been updated in over 90 days:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 2026-06-02 | 81 | 660 | 290 | 59 |
+| 2026-06-16 | 82 | 714 | 293 | 69 |
 
 ---
 

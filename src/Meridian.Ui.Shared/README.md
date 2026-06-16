@@ -49,7 +49,9 @@ entity, or account.
 from company ids. `IWorkstationTenantContextAccessor` is the shared endpoint/service seam for
 resolving actor, company, tenant, role profile, and permission context; production endpoint work
 should use that accessor instead of reparsing `HttpContext.Items` or trusting client-supplied actor
-and company fields.
+and company fields. The `/api/workstation` route group also requires that tenant scope before any
+workstation endpoint handler runs, so browser and WPF clients must operate through an authenticated
+tenant-scoped session rather than relying on client-supplied organization fields.
 
 Preserve cross-surface compatibility when evolving shared read models. Keep ledger/reconciliation
 source-of-truth services authoritative. `SecurityMasterWorkbenchQueryService` is published under
