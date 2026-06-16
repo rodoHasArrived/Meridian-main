@@ -75,6 +75,20 @@ exact current built-in set.
 
 See the approved refactor plan for the wave-by-wave sequence.
 
+### Implementation status
+
+- **Landed (additive, no behaviour change):** `src/Meridian.Modularity/` now hosts
+  `IMeridianModule`, `ModuleRegistrationContext`, `ModuleCapability`,
+  `ModuleValidationResult`, and the `ModuleLoader` (stable dependency ordering with
+  duplicate/cycle/missing-dependency detection). `ExtensionRegistry<TContract>` and
+  `ExtensionDiscovery` provide the keyed-catalog + safe reflection-discovery primitives for
+  migrating the hard-coded catalogs. `ServiceFeatureModuleAdapter` (in
+  `Meridian.Application`) wraps an existing `IServiceFeatureRegistration` as an
+  `IMeridianModule`.
+- **Pending:** migrating `ServiceCompositionRoot` and `DesktopFeatureModuleRegistry` onto
+  the loader; provider/desktop adapters; moving the hard-coded catalogs onto
+  `ExtensionRegistry<TContract>`; repairing the coupling drifts below behind ArchUnit guards.
+
 ## Known coupling drifts (remediation targets)
 
 These dependency edges contradict [`layer-boundaries.md`](layer-boundaries.md) and are
