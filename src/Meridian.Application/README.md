@@ -47,7 +47,10 @@ and UI presentation concerns in their owning layers.
   manual CSV upload, custodian positions, brokerage transactions, and fixed income security master.
   The setup service saves draft manifests and connection instances through the Storage-owned
   integration manifest store, preserving tenant partitioning and returning readiness blockers before
-  dry runs or activation. The manual CSV dry-run service consumes contract-owned manifests and the
+  dry runs or activation. The OpenAPI import service parses OpenAPI/Swagger JSON into tenant-scoped
+  draft `OpenApiRest` manifests, imports endpoint definitions, response record paths, query
+  parameters, and schema-backed mapping suggestions, and keeps trading actions blocked behind
+  certified-adapter activation readiness. The manual CSV dry-run service consumes contract-owned manifests and the
   Storage-owned integration manifest store, parses operator-uploaded samples, applies configured
   field mappings and safe transforms, writes raw payload evidence, stages accepted records,
   quarantines rejected records, and saves sync-run summaries without promoting directly into

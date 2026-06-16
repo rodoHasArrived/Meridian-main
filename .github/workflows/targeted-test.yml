@@ -121,14 +121,13 @@ jobs:
             '-c',
             $configuration,
             '--no-restore',
+            '--filter',
+            $filter,
             '--logger',
             'trx;LogFilePrefix=targeted',
             '--results-directory',
             'artifacts/test-results/targeted-dotnet'
           )
-          if ($filter -ne '') {
-            $testArgs += @('--filter', $filter)
-          }
 
           & dotnet @testArgs @props
 

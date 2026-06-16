@@ -191,14 +191,58 @@ public sealed partial class WorkstationEndpointsTests
             !view.GetProperty("isSystem").GetBoolean());
     }
 
-    private static void RegisterFinancialRecordExplorerTestServices(IServiceCollection services)
+    [Fact]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorerSavedViews_ShouldPartitionByRequestTenant()
+    {
+        var savedViewRoot = Path.Combine(
+            Path.GetTempPath(),
+            "meridian-tests",
+            "financial-record-explorers",
+            Guid.NewGuid().ToString("N"));
+
+        await using var alphaApp = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services, savedViewRoot),
+            currentUserCompanyId: "tenant-alpha");
+        await using var betaApp = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services, savedViewRoot),
+            currentUserCompanyId: "tenant-beta");
+
+        var alphaClient = alphaApp.GetTestClient();
+        var betaClient = betaApp.GetTestClient();
+
+        var saveResponse = await alphaClient.PostAsJsonAsync(
+            "/api/workstation/financial-record-explorers/ledger/saved-views",
+            new FinancialRecordExplorerSavedViewSaveRequestDto(
+                "Alpha-only ledger view",
+                "Tenant alpha operator view.",
+                "Cash",
+                [new("account-type", "Account Type", "Asset")]),
+            ServerJsonOptions);
+
+        saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var saved = await saveResponse.Content.ReadFromJsonAsync<FinancialRecordExplorerSavedViewDto>(ServerJsonOptions);
+        saved.Should().NotBeNull();
+
+        using var alphaPayload = await ReadJsonAsync(alphaClient, "/api/workstation/financial-record-explorers/ledger");
+        alphaPayload.RootElement.GetProperty("savedViews").EnumerateArray().Should().Contain(view =>
+            view.GetProperty("viewId").GetString() == saved!.ViewId &&
+            view.GetProperty("label").GetString() == "Alpha-only ledger view" &&
+            !view.GetProperty("isSystem").GetBoolean());
+
+        using var betaPayload = await ReadJsonAsync(betaClient, "/api/workstation/financial-record-explorers/ledger");
+        betaPayload.RootElement.GetProperty("savedViews").EnumerateArray().Should().NotContain(view =>
+            view.GetProperty("viewId").GetString() == saved!.ViewId ||
+            view.GetProperty("label").GetString() == "Alpha-only ledger view");
+    }
+
+    private static void RegisterFinancialRecordExplorerTestServices(IServiceCollection services, string? savedViewRoot = null)
     {
         RegisterRunReadServices(services);
         services.AddSingleton<ReportPackWorkflowService>();
         services.AddSingleton<ReportPackDeliveryService>();
         services.AddSingleton<IFinancialRecordExplorerSavedViewStore>(_ =>
             new FileFinancialRecordExplorerSavedViewStore(
-                Path.Combine(Path.GetTempPath(), "meridian-tests", "financial-record-explorers", Guid.NewGuid().ToString("N")),
+                savedViewRoot ?? Path.Combine(Path.GetTempPath(), "meridian-tests", "financial-record-explorers", Guid.NewGuid().ToString("N")),
                 NullLogger<FileFinancialRecordExplorerSavedViewStore>.Instance));
         services.AddSingleton<FinancialRecordExplorerReadService>();
     }

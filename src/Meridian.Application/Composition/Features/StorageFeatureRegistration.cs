@@ -108,6 +108,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ProviderIntegrationActivationReadinessService>();
         services.TryAddSingleton<ProviderIntegrationActivationService>();
         services.TryAddSingleton<ProviderIntegrationMonitoringService>();
+        services.TryAddSingleton<ProviderIntegrationSchemaDriftService>();
         services.TryAddSingleton<ProviderIntegrationQuarantineReviewService>();
         services.TryAddSingleton<ProviderIntegrationQuarantineReplayService>();
         if (IsScopedAccessPostgresConfigured())

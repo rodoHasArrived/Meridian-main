@@ -68,20 +68,24 @@ Near-term non-goals:
 - No promise that every provider can be supported without certified adapter work.
 - No roadmap completion claim until registry rows and acceptance evidence are updated.
 
-## Decisions
+## Resolved Planning Decisions
 
 The following decisions are no longer open planning questions. They are the baseline for the first
 implementation wave unless a later architecture decision record explicitly supersedes them.
 
-The first implementation should use a new integration-specific durable store under
-`src/Meridian.Storage/Integrations/`, not the existing workstation file-backed configuration store.
+| Question | Decision |
+| --- | --- |
+| First durable manifest store | Use a new integration-specific durable store under `src/Meridian.Storage/Integrations/`. Do not make the existing workstation file-backed configuration store the authoritative manifest store. |
+| First template release | Ship all four templates in the first `ProviderIntegrationTemplateCatalog`: manual CSV upload, custodian positions, brokerage transactions, and fixed income security master. |
+| OpenAPI import sequencing | Build the first setup slice around sample responses and guided manual endpoint definitions. OpenAPI import is a draft-seeding accelerator after mapping, validation, dry-run, replay, and activation gates exist; it is not the core runtime path. |
+| First accepted-record writer | Write accepted records into integration staging first, then reconcile and promote into Portfolio, Security Master, Ledger, Reporting, or Accounting-owned stores only after lineage, dedupe, validation evidence, and ownership are proven. |
+
 The workstation store may cache draft UI state, but approved manifests, raw payloads, sync runs,
 quarantine records, quarantine review decisions, quarantine replay payloads, schema snapshots, and
 replay evidence are operational records and need a storage-owned boundary with WAL or
 `AtomicFileWriter` durability.
 
-The first template release ships as `ProviderIntegrationTemplateCatalog` and includes all four
-templates as a coherent pack:
+The first template release ships all four templates as a coherent pack:
 
 - Manual CSV upload.
 - Custodian positions.
@@ -94,10 +98,11 @@ fragility. Custodian positions should be the first API proof, brokerage transact
 once enum/sign handling is proven, and fixed income security master should validate the richer
 identifier and instrument-attribute path.
 
-The first slice should use sample responses plus guided manual endpoint definitions before OpenAPI
-import. Visual mapping, transformation, validation, and replay are the core product risks; OpenAPI
-import is valuable, but it should seed endpoints and schemas only after the runtime can already
-execute a manually defined endpoint and map a sample payload safely.
+The first setup slice should use sample responses plus guided manual endpoint definitions before
+operator-facing OpenAPI import. Visual mapping, transformation, validation, and replay are the core
+product risks; OpenAPI import can seed endpoint, response-shape, query-parameter, and
+mapping-suggestion drafts into the same manifest model after the manual runtime, dry-run,
+validation, replay, and activation gates are in place.
 
 Accepted records should first load into an integration staging store feeding reconciliation, not
 directly into Portfolio, Security Master, or Ledger. Reconciliation and identity resolution should
@@ -111,7 +116,7 @@ dedupe keys, validation evidence, and downstream ownership are proven.
 | Manifest store | Implement `src/Meridian.Storage/Integrations/` as the first durable store. | Manifests, raw payloads, quarantine records, quarantine review decisions, quarantine replay payloads, staging records, and replay evidence are operational records, not workstation preferences. |
 | Template catalog | Implement manual CSV upload, custodian positions, brokerage transactions, and fixed income security master in the first catalog. | The four templates jointly prove file intake, REST intake, transaction semantics, and institutional reference-data richness. |
 | First execution proof | Execute manual CSV first; execute custodian positions as the first REST proof. | CSV proves mapping and validation without network variance; custodian positions proves endpoint dependencies, pagination, and raw API payload retention. |
-| OpenAPI import | Defer OpenAPI import until manual endpoint definition, sample response mapping, dry-run, validation, replay, and activation gates are stable. | OpenAPI is an accelerator over the manifest model, not a separate runtime or a substitute for mapping approval. |
+| OpenAPI import | Seed draft `OpenApiRest` manifests from OpenAPI/Swagger JSON after manual endpoint definition, sample response mapping, dry-run, validation, replay, and activation gates are stable. | OpenAPI is an accelerator over the manifest model, not a separate runtime or a substitute for mapping approval. |
 | Accepted record writer | Write accepted records to integration staging first, then reconcile and promote into Portfolio, Security Master, Ledger, or Reporting-owned stores. | Staging preserves replay, identity review, dedupe, and downstream ownership before canonical mutation. |
 | Trading boundary | Keep production trading out of the generic no-code runtime. | Order placement/cancel/amend flows require certified adapters, sandbox proof, idempotency, entitlement, approval, kill switch, audit, and reconciliation controls. |
 
@@ -569,9 +574,9 @@ usable operator artifact and a replayable proof path.
 | 1. Manifest foundation | Persist draft provider templates and connection instances without secrets. | Manifest DTOs round-trip through source-generated JSON, credentials stay in the provider credential store, and activation readiness fails closed. |
 | 2. Dry-run runner | Execute manual CSV upload and one REST pull-mode endpoint without loading canonical stores. | Raw payload retention, record extraction, cursor pagination, durable sync-run summaries, and dry-run summary output work for manual CSV and one custodian-position sample provider. |
 | 3. Mapping and validation | Map one capability into canonical records and quarantine rejects. | Required-field mapping, safe transforms, validation issues, confidence scores, and replay from raw payload are tested. |
-| 4. Operator setup | Expose guided setup and review through shared workstation endpoints. | Template catalog, manifest detail, setup-save, activation-readiness, activation, manual CSV dry-run, REST dry-run, quarantine review, quarantine replay, and connection monitor endpoints now adapt starter manifests, tenant-scoped draft persistence, fail-closed blockers, active-state promotion, durable sync-run, staging, quarantine, review decisions, replay evidence, and validation evidence for WPF/browser consumers; setup screens and quarantine-review screens still need to surface draft state, tests, sync runs, and quarantine groups. |
+| 4. Operator setup | Expose guided setup and review through shared workstation endpoints. | Template catalog, manifest detail, OpenAPI import, setup-save, activation-readiness, activation, manual CSV dry-run, REST dry-run, quarantine review, quarantine replay, and connection monitor endpoints now adapt starter manifests, tenant-scoped draft persistence, fail-closed blockers, active-state promotion, durable sync-run, staging, quarantine, review decisions, replay evidence, and validation evidence for WPF/browser consumers; setup screens and quarantine-review screens still need to surface draft state, tests, sync runs, and quarantine groups. |
 | 5. Controlled load | Write accepted read-only records into integration staging and promote only after reconciliation. | Identity resolution, idempotent staging, downstream blockers, audit events, and reconciliation handoff are proven. |
-| 6. Template expansion and OpenAPI import | Add OpenAPI import and more templates without changing the runtime contract. | OpenAPI import seeds endpoint and schema drafts; additional providers or file modes reuse the same manifest, mapping, validation, and activation seams. |
+| 6. Template expansion and OpenAPI import | Add more templates without changing the runtime contract; OpenAPI import is now available as a draft-seeding backend capability. | OpenAPI import seeds endpoint and schema drafts; additional providers or file modes reuse the same manifest, mapping, validation, and activation seams. |
 | 7. Certified action boundary | Add controlled write capabilities only through certified adapters. | Sandbox tests, approval evidence, kill switch, idempotency, entitlement checks, and reconciliation are mandatory before production write activation. |
 
 ## Implementation Slices
@@ -590,7 +595,7 @@ usable operator artifact and a replayable proof path.
    Implement manual CSV mapping, custodian positions, brokerage transactions, and fixed income
    security master templates with safe transforms and quarantine.
 5. UI services and endpoints:
-   Surface setup-save, quarantine review/replay, and the connection monitor read model through
+   Surface setup-save, OpenAPI import, quarantine review/replay, and the connection monitor read model through
    shared workstation endpoints, then bind browser and WPF setup screens to dry-run evidence,
    activation blockers, sync runs, and quarantine groups. Add shared endpoints for catalog,
    connection draft, test auth, test endpoint, sample preview, mapping preview, dry run, activation
@@ -601,24 +606,25 @@ usable operator artifact and a replayable proof path.
 7. Drift and monitoring:
    Add schema snapshots, drift issues, sync health, and downstream blocker read models.
 8. OpenAPI import:
-   Add OpenAPI import as a draft-seeding feature after manual endpoint definition, visual mapping,
-   validation, and replay are proven.
+   OpenAPI import now exists as a draft-seeding feature after manual endpoint definition, visual
+   mapping, validation, and replay are proven. Browser and WPF setup screens still need to expose
+   the route as a paste/upload action with mapping-review follow-through.
 9. Certified trading boundary:
    Expose write capabilities only when a certified adapter declares support and activation evidence
    includes sandbox, approval, entitlement, idempotency, and kill-switch checks.
 
 ## Planning Gates
 
-Before implementation starts:
+Before the next implementation slice:
 
-- Confirm `src/Meridian.Storage/Integrations/` as the first durable storage owner for manifests, raw
+- Use `src/Meridian.Storage/Integrations/` as the first durable storage owner for manifests, raw
   payloads, quarantine records, quarantine review decisions, quarantine replay payloads, staging
   records, and replay evidence.
-- Confirm the first template pack: manual CSV upload, custodian positions, brokerage transactions,
-  and fixed income security master.
-- Confirm manual CSV upload as the first execution proof and custodian positions as the first API
+- Keep the first template pack complete: manual CSV upload, custodian positions, brokerage
+  transactions, and fixed income security master.
+- Use manual CSV upload as the first execution proof and custodian positions as the first API
   proof.
-- Confirm integration staging records as the first accepted-record write path feeding
+- Use integration staging records as the first accepted-record write path feeding
   reconciliation.
 - Keep expanding activation issue-code coverage as new templates and controlled actions are added.
 - Identify which existing provider credential flows can be reused without adding new secret

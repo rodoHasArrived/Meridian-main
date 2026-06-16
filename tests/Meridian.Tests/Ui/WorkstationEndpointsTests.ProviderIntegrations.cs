@@ -269,6 +269,87 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationSchemaDriftCheck_ReturnsPauseRecommendation()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            var tenantStore = DefaultProviderIntegrationTenantStore(store);
+            var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-custodian-positions-v1")!;
+            var connection = CreateProviderIntegrationRestConnection(manifest);
+            await tenantStore.SaveManifestAsync(manifest);
+            await tenantStore.SaveConnectionAsync(connection);
+            await SaveProviderIntegrationRawPayloadAsync(
+                tenantStore,
+                manifest,
+                connection,
+                "sync-run-schema-endpoint-1",
+                "payload-schema-endpoint-1",
+                """
+                {
+                  "positions": [
+                    {
+                      "account_id": "A-100",
+                      "quantity": "100",
+                      "as_of_date": "2026-06-16"
+                    }
+                  ]
+                }
+                """);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewConfig);
+            var client = app.GetTestClient();
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationSchemaDriftCheck,
+                CreateProviderIntegrationSchemaDriftRequest(manifest, connection),
+                ServerJsonOptions);
+            var result = await response.Content.ReadFromJsonAsync<ProviderIntegrationSchemaDriftCheckResultDto>(ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            result.Should().NotBeNull();
+            result!.DriftDetected.Should().BeTrue();
+            result.ShouldPauseCapability.Should().BeTrue();
+            result.Issues.Should().ContainSingle(issue =>
+                issue.Code == "schema.mapping-source.missing" &&
+                issue.JsonPath == "$.cusip");
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationSchemaDriftCheck_RequiresProviderReadPermission()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-custodian-positions-v1")!;
+            var connection = CreateProviderIntegrationRestConnection(manifest);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewMarketData);
+            var client = app.GetTestClient();
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationSchemaDriftCheck,
+                CreateProviderIntegrationSchemaDriftRequest(manifest, connection),
+                ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ProviderIntegrationQuarantineReview_ReturnsIssueGroups()
     {
         var testRoot = CreateProviderIntegrationTestRoot();
@@ -876,6 +957,76 @@ public sealed partial class WorkstationEndpointsTests
         }
     }
 
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationSchemaDriftCheck_ReturnsPauseRecommendation()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            var tenantStore = DefaultProviderIntegrationTenantStore(store);
+            var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-custodian-positions-v1")!;
+            var connection = CreateProviderIntegrationEndpointConnection(manifest);
+            await tenantStore.SaveManifestAsync(manifest);
+            await tenantStore.SaveConnectionAsync(connection);
+            await tenantStore.SaveRawPayloadAsync(
+                new RawIngestionPayloadDto(
+                    "payload-schema-drift-endpoint",
+                    manifest.ProviderId,
+                    connection.ConnectionId,
+                    ProviderCapabilityKindDto.Positions,
+                    "positions",
+                    "sync-run-schema-drift-endpoint",
+                    DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+                    new Dictionary<string, string> { ["source"] = "schema-drift-endpoint-test" },
+                    ProviderIntegrationEndpointJson(
+                        """
+                        {
+                          "positions": [
+                            {
+                              "account_id": "A-100",
+                              "quantity": "100",
+                              "as_of_date": "2026-06-16"
+                            }
+                          ]
+                        }
+                        """),
+                    $"{manifest.ManifestId}:v{manifest.ManifestVersion}",
+                    ProviderIntegrationProcessingStatusDto.Received));
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewConfig);
+            var client = app.GetTestClient();
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationSchemaDriftCheck,
+                new ProviderIntegrationSchemaDriftCheckRequestDto(
+                    manifest.ManifestId,
+                    connection.ConnectionId,
+                    ProviderCapabilityKindDto.Positions,
+                    "positions",
+                    "sync-run-schema-drift-endpoint",
+                    "payload-schema-drift-endpoint",
+                    "operator@example.com",
+                    DateTimeOffset.Parse("2026-06-16T12:05:00Z")),
+                ServerJsonOptions);
+            var result = await response.Content.ReadFromJsonAsync<ProviderIntegrationSchemaDriftCheckResultDto>(ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            result.Should().NotBeNull();
+            result!.DriftDetected.Should().BeTrue();
+            result.ShouldPauseCapability.Should().BeTrue();
+            result.RecordsInspected.Should().Be(1);
+            result.Issues.Should().ContainSingle(issue =>
+                issue.Code == "schema.mapping-source.missing" &&
+                issue.JsonPath == "$.cusip");
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
     private static void RegisterProviderIntegrationEndpointServices(
         IServiceCollection services,
         IProviderIntegrationManifestStore store,
@@ -891,6 +1042,7 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<ProviderIntegrationActivationReadinessService>();
         services.AddSingleton<ProviderIntegrationActivationService>();
         services.AddSingleton<ProviderIntegrationMonitoringService>();
+        services.AddSingleton<ProviderIntegrationSchemaDriftService>();
         services.AddSingleton<ProviderIntegrationQuarantineReviewService>();
         services.AddSingleton<ProviderIntegrationQuarantineReplayService>();
     }
@@ -1152,6 +1304,40 @@ public sealed partial class WorkstationEndpointsTests
             "operator@example.com",
             DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
             MaxPages: 1);
+
+    private static ProviderIntegrationSchemaDriftCheckRequestDto CreateProviderIntegrationSchemaDriftRequest(
+        ProviderIntegrationManifestDto manifest,
+        IntegrationProviderConnectionDto connection)
+        => new(
+            manifest.ManifestId,
+            connection.ConnectionId,
+            ProviderCapabilityKindDto.Positions,
+            "positions",
+            "sync-run-schema-endpoint-1",
+            "payload-schema-endpoint-1",
+            "operator@example.com",
+            DateTimeOffset.Parse("2026-06-16T12:05:00Z"));
+
+    private static Task SaveProviderIntegrationRawPayloadAsync(
+        IProviderIntegrationManifestStore store,
+        ProviderIntegrationManifestDto manifest,
+        IntegrationProviderConnectionDto connection,
+        string syncRunId,
+        string payloadId,
+        string rawPayload)
+        => store.SaveRawPayloadAsync(
+            new RawIngestionPayloadDto(
+                payloadId,
+                manifest.ProviderId,
+                connection.ConnectionId,
+                ProviderCapabilityKindDto.Positions,
+                "positions",
+                syncRunId,
+                DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+                new Dictionary<string, string> { ["source"] = "workstation-endpoint-test" },
+                ProviderIntegrationEndpointJson(rawPayload),
+                $"{manifest.ManifestId}:v{manifest.ManifestVersion}",
+                ProviderIntegrationProcessingStatusDto.Received));
 
     private static IntegrationProviderConnectionDto CreateProviderIntegrationManualCsvConnection(
         ProviderIntegrationManifestDto manifest)

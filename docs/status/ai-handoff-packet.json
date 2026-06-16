@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-16T08:35:00.331837+00:00",
+  "generatedAt": "2026-06-16T09:37:44.571270+00:00",
   "scope": {
     "requested": "Docs automation generated handoff packet",
     "excluded": [
@@ -40,10 +40,10 @@
   "routeOutcome": {
     "finalValidationStatus": "partial",
     "routeAssessment": {
-      "status": "possible-misroute",
+      "status": "aligned",
       "inferredLanes": [
-        "desktop",
-        "docs"
+        "docs",
+        "provider"
       ]
     }
   },
@@ -70,11 +70,23 @@
   ],
   "changesMade": [
     {
+      "path": "docs/architecture/provider-integration-manifest-runtime.md",
+      "reason": "Touched in current git diff."
+    },
+    {
       "path": "docs/generated/repository-structure.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "docs/status/TODO.md",
+      "path": "docs/source/generated/source-hash-manifest.json",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/source/generated/stale-docs.json",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/source/generated/stale-docs.md",
       "reason": "Touched in current git diff."
     },
     {
@@ -102,11 +114,15 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Wpf/Services/WatchlistService.cs",
+      "path": "src/Meridian.Application/README.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Wpf.Tests/Services/WatchlistServiceTests.cs",
+      "path": "src/Meridian.Contracts/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/README.md",
       "reason": "Touched in current git diff."
     }
   ],

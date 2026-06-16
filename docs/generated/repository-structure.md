@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-06-16 08:34:47 UTC. Do not edit manually.
+> Auto-generated on 2026-06-16 09:37:37 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -138,8 +138,10 @@ Meridian-main
 │   │   ├── test-meridian-wpf-tests-13908-20260616070459
 │   │   ├── test-meridian-wpf-tests-14820-20260616070535
 │   │   ├── test-meridian-wpf-tests-22980-20260616070411
+│   │   ├── test-meridian-wpf-tests-29004-20260616084449
 │   │   ├── test-meridian-wpf-tests-30452-20260616070638
-│   │   └── test-meridian-wpf-tests-30912-20260616070212
+│   │   ├── test-meridian-wpf-tests-30912-20260616070212
+│   │   └── test-meridian-wpf-tests-8064-20260616084410
 │   └── validation-runs
 │       ├── run-one.json
 │       ├── test-meridian-tests-13432-20260616073753.json
@@ -147,8 +149,10 @@ Meridian-main
 │       ├── test-meridian-wpf-tests-13908-20260616070459.json
 │       ├── test-meridian-wpf-tests-14820-20260616070535.json
 │       ├── test-meridian-wpf-tests-22980-20260616070411.json
+│       ├── test-meridian-wpf-tests-29004-20260616084449.json
 │       ├── test-meridian-wpf-tests-30452-20260616070638.json
-│       └── test-meridian-wpf-tests-30912-20260616070212.json
+│       ├── test-meridian-wpf-tests-30912-20260616070212.json
+│       └── test-meridian-wpf-tests-8064-20260616084410.json
 ├── .claude
 │   ├── agents
 │   │   ├── meridian-archive-organizer.md
@@ -2198,6 +2202,9 @@ Meridian-main
 │   │   │   ├── ProviderIntegrationDryRunService.cs
 │   │   │   ├── ProviderIntegrationHttpClientTransport.cs
 │   │   │   ├── ProviderIntegrationMonitoringService.cs
+│   │   │   ├── ProviderIntegrationOpenApiImportService.cs
+│   │   │   ├── ProviderIntegrationQuarantineReplayService.cs
+│   │   │   ├── ProviderIntegrationQuarantineReviewService.cs
 │   │   │   ├── ProviderIntegrationRestDryRunService.cs
 │   │   │   ├── ProviderIntegrationSetupService.cs
 │   │   │   └── ProviderIntegrationTemplateCatalog.cs
@@ -4165,70 +4172,70 @@ Meridian-main
 │   │   ├── wwwroot
 │   │   │   └── workstation
 │   │   │       ├── assets
-│   │   │       │   ├── accounting-screen-DZ8NO9k2.js
-│   │   │       │   ├── activity-D873MWec.js
-│   │   │       │   ├── card-DPM2-9bP.js
-│   │   │       │   ├── chart-column-DUKf7EoW.js
-│   │   │       │   ├── chart-line-CIHy3h6D.js
-│   │   │       │   ├── circle-alert-BcL0LDIf.js
-│   │   │       │   ├── circle-check-S0wXrkZX.js
-│   │   │       │   ├── circle-play-fky5itJo.js
-│   │   │       │   ├── circle-x-CGtsdzRz.js
-│   │   │       │   ├── clipboard-list-D_KCFMpC.js
-│   │   │       │   ├── covered-call-screen-CrdtTDxv.js
-│   │   │       │   ├── data-screen--5SXSr4a.js
-│   │   │       │   ├── database-DQ-_D6RZ.js
-│   │   │       │   ├── dialog-CIjjZ85H.js
-│   │   │       │   ├── download-CcURpVQp.js
-│   │   │       │   ├── entity-setup-wizard-DLiu9T6h.js
-│   │   │       │   ├── evidence-workbench-screen-B3sL6QQT.js
-│   │   │       │   ├── external-link-CniFTJuC.js
-│   │   │       │   ├── eye-Cn41-UW7.js
-│   │   │       │   ├── family-office-screen-DrDT2yay.js
-│   │   │       │   ├── field-support-RJoZ8_8I.js
-│   │   │       │   ├── file-text-4K6G7bhp.js
-│   │   │       │   ├── financial-record-explorer-DLW8rDcy.js
-│   │   │       │   ├── index-CBxx8Tp-.js
+│   │   │       │   ├── accounting-screen-BJVov0GY.js
+│   │   │       │   ├── activity-CLyMayGs.js
+│   │   │       │   ├── card-BpkKlqeO.js
+│   │   │       │   ├── chart-column-DjkDDFzF.js
+│   │   │       │   ├── chart-line-Ty8BZY0z.js
+│   │   │       │   ├── circle-alert-BAuvaS2W.js
+│   │   │       │   ├── circle-check-CtDMxEBL.js
+│   │   │       │   ├── circle-play-BUO7ADDr.js
+│   │   │       │   ├── circle-x-xpKoYZjw.js
+│   │   │       │   ├── clipboard-list-D2mOkXO0.js
+│   │   │       │   ├── covered-call-screen-BEHvam3g.js
+│   │   │       │   ├── data-screen-h7I1aUYn.js
+│   │   │       │   ├── database-CE7fHN8v.js
+│   │   │       │   ├── dialog-GIsU-kBl.js
+│   │   │       │   ├── download-DnWyvkNP.js
+│   │   │       │   ├── entity-setup-wizard-CVnSp9D_.js
+│   │   │       │   ├── evidence-workbench-screen-DEuvyfCC.js
+│   │   │       │   ├── external-link-BZH9UqaK.js
+│   │   │       │   ├── eye-b6WmYjm5.js
+│   │   │       │   ├── family-office-screen-BX15ttPt.js
+│   │   │       │   ├── field-support-HDgVbYaF.js
+│   │   │       │   ├── file-text-DEcCrZmi.js
+│   │   │       │   ├── financial-record-explorer-E80tv1yn.js
 │   │   │       │   ├── index-CEFXXBOL.css
-│   │   │       │   ├── input-DnPWiIFD.js
-│   │   │       │   ├── layers-D4REmsBP.js
-│   │   │       │   ├── list-checks-C9boNf1N.js
-│   │   │       │   ├── live-quotes-screen-ByF-mOr4.js
-│   │   │       │   ├── metric-card-DjBK4ylg.js
-│   │   │       │   ├── monitor-check-CTYgO7Ra.js
-│   │   │       │   ├── network-DVVBErtL.js
-│   │   │       │   ├── operations-continuity-screen-BFOpblA9.js
-│   │   │       │   ├── operations-continuity-screen.view-model-SnbwCdtR.js
-│   │   │       │   ├── operations-record-release-screen-J8cS6NEs.js
-│   │   │       │   ├── operator-readiness-console-BcMvhXrE.js
-│   │   │       │   ├── play-LKBC78K9.js
-│   │   │       │   ├── plus-Bxhmx9TM.js
-│   │   │       │   ├── portfolio-screen-Bz_WFiNq.js
-│   │   │       │   ├── portfolio-screen.view-model-DZ6Ds3lb.js
-│   │   │       │   ├── price-alerts-screen-C0bll8jd.js
-│   │   │       │   ├── quant-lab-screen-XPYfXsML.js
-│   │   │       │   ├── refresh-cw-Bpur_40W.js
-│   │   │       │   ├── reporting-screen-BQGSOrMN.js
-│   │   │       │   ├── reporting-screen.view-model-DXPN3LY6.js
-│   │   │       │   ├── rotate-ccw-C53vyfMw.js
-│   │   │       │   ├── save-BrP93xTC.js
-│   │   │       │   ├── select-DBn81HCZ.js
-│   │   │       │   ├── send-CeFexoTH.js
-│   │   │       │   ├── settings-screen-0f9Fn5am.js
-│   │   │       │   ├── shield-check-DSMyu_hL.js
-│   │   │       │   ├── sigma-CEjh71Zi.js
-│   │   │       │   ├── sparkles-fcvOOyBH.js
-│   │   │       │   ├── strategy-designer-screen-BRsR96_0.js
-│   │   │       │   ├── strategy-formula-workbench-screen-SpUex4bB.js
-│   │   │       │   ├── strategy-screen-Cfcz6uuX.js
-│   │   │       │   ├── trading-screen-tU5PyyzD.js
-│   │   │       │   ├── trash-2-rqNwqqJL.js
-│   │   │       │   ├── trending-up-BL3TQOVX.js
-│   │   │       │   ├── ui-kit-primitives-Bm6_ER5D.js
-│   │   │       │   ├── wallet-DuHZtwe4.js
-│   │   │       │   ├── watchlist-screen-Dwp0iGwQ.js
-│   │   │       │   ├── workflow-BzpbTGY2.js
-│   │   │       │   └── workspace-primitives-TpFZTBdj.js
+│   │   │       │   ├── index-DXl4ZOEQ.js
+│   │   │       │   ├── input-B_WgQsWN.js
+│   │   │       │   ├── layers-CvcBTcFT.js
+│   │   │       │   ├── list-checks-Ds5oGC2V.js
+│   │   │       │   ├── live-quotes-screen-BK8BITXE.js
+│   │   │       │   ├── metric-card-BhmfTk5T.js
+│   │   │       │   ├── monitor-check-DpMElexj.js
+│   │   │       │   ├── network-Bavkc06O.js
+│   │   │       │   ├── operations-continuity-screen-CgN2aelg.js
+│   │   │       │   ├── operations-continuity-screen.view-model-CEJPtKaZ.js
+│   │   │       │   ├── operations-record-release-screen-C8lITs0K.js
+│   │   │       │   ├── operator-readiness-console-Bll9QS8u.js
+│   │   │       │   ├── play-BbzLQ-TI.js
+│   │   │       │   ├── plus-C-kRdwe_.js
+│   │   │       │   ├── portfolio-screen-kRZxJdK0.js
+│   │   │       │   ├── portfolio-screen.view-model-D4eEasK6.js
+│   │   │       │   ├── price-alerts-screen-oT3rmKPI.js
+│   │   │       │   ├── quant-lab-screen-B-6xZZSh.js
+│   │   │       │   ├── refresh-cw-BaXpnlGv.js
+│   │   │       │   ├── reporting-screen-BczeRHq1.js
+│   │   │       │   ├── reporting-screen.view-model-mgoXfIF9.js
+│   │   │       │   ├── rotate-ccw-DcdAIq3p.js
+│   │   │       │   ├── save-BlT60NsZ.js
+│   │   │       │   ├── select-DLa-B7TJ.js
+│   │   │       │   ├── send-DApohIg-.js
+│   │   │       │   ├── settings-screen-C3siqWP7.js
+│   │   │       │   ├── shield-check-BDE5RWlT.js
+│   │   │       │   ├── sigma-BwqHvc_r.js
+│   │   │       │   ├── sparkles-DZa4qJ8B.js
+│   │   │       │   ├── strategy-designer-screen-Ci_fGEaR.js
+│   │   │       │   ├── strategy-formula-workbench-screen-D7S33O1E.js
+│   │   │       │   ├── strategy-screen-Csfi7fA8.js
+│   │   │       │   ├── trading-screen-DWfd8qJz.js
+│   │   │       │   ├── trash-2-C-3nI8wO.js
+│   │   │       │   ├── trending-up-DdrJxEgE.js
+│   │   │       │   ├── ui-kit-primitives-D5Hvnh7P.js
+│   │   │       │   ├── wallet-h0sn2bCL.js
+│   │   │       │   ├── watchlist-screen-CiiwIa-I.js
+│   │   │       │   ├── workflow-C1Xo0UIP.js
+│   │   │       │   └── workspace-primitives-w3a-Oj0G.js
 │   │   │       └── index.html
 │   │   └── README.md
 │   ├── Meridian.Ui.Services
@@ -5497,6 +5504,9 @@ Meridian-main
 │   │   │   │   ├── ProviderIntegrationDryRunServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationHttpClientTransportTests.cs
 │   │   │   │   ├── ProviderIntegrationMonitoringServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationOpenApiImportServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationQuarantineReplayServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationQuarantineReviewServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationRestDryRunServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationSetupServiceTests.cs
 │   │   │   │   └── ProviderIntegrationTemplateCatalogTests.cs

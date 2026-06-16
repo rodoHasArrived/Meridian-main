@@ -473,6 +473,37 @@ public sealed record ProviderIntegrationOpenApiImportResultDto(
     IReadOnlyList<ValidationIssueDto> Issues,
     string? Message);
 
+public sealed record ProviderIntegrationSchemaDriftIssueDto(
+    string Code,
+    ProviderIntegrationIssueSeverityDto Severity,
+    ProviderCapabilityKindDto Capability,
+    string EndpointKey,
+    string JsonPath,
+    string Message,
+    string SuggestedFix);
+
+public sealed record ProviderIntegrationSchemaDriftCheckRequestDto(
+    string ManifestId,
+    string ConnectionId,
+    ProviderCapabilityKindDto Capability,
+    string EndpointKey,
+    string SyncRunId,
+    string RawPayloadId,
+    string CheckedBy,
+    DateTimeOffset CheckedAt);
+
+public sealed record ProviderIntegrationSchemaDriftCheckResultDto(
+    string ManifestId,
+    string ConnectionId,
+    ProviderCapabilityKindDto Capability,
+    string EndpointKey,
+    string SyncRunId,
+    string RawPayloadId,
+    bool DriftDetected,
+    bool ShouldPauseCapability,
+    int RecordsInspected,
+    IReadOnlyList<ProviderIntegrationSchemaDriftIssueDto> Issues);
+
 public sealed record ProviderIntegrationDryRunResultDto(
     string SyncRunId,
     string RawPayloadId,

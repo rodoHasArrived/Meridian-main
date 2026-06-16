@@ -1174,6 +1174,13 @@ describe("OperationsContinuityScreen", () => {
     expect(within(operatorQueue).getByText("Close calendar")).toBeInTheDocument();
     expect(within(operatorQueue).getByText(`2026-05 / ${fundAccountId}: Ledger posting controller check`)).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Calendar status: Ledger Posting Draft")).toBeInTheDocument();
+    expect(within(operatorQueue).getAllByText("Private-capital proof lane")).toHaveLength(3);
+    expect(within(operatorQueue).getByText("NAV support")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Shadow NAV support package still needs retained positions, cash, and pricing evidence.")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Retain NAV support for positions, cash, and pricing")).toBeInTheDocument();
+    expect(within(operatorQueue).getAllByText("NAV support package")).toHaveLength(2);
+    expect(within(operatorQueue).getByText(/2\/4 components ready; review Pricing, Shadow NAV; \$1,250,000\.00 shadow NAV/)).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Retain NAV support package for positions, cash, pricing, and shadow NAV evidence.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Period lock and reopen evidence")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Complete reopened incident remediation and close the period again with retained evidence.")).toBeInTheDocument();
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: recon-break-42" }))
@@ -1188,6 +1195,10 @@ describe("OperationsContinuityScreen", () => {
       .toHaveAttribute("href", "/accounting/ledger");
     expect(within(operatorQueue).getByRole("link", { name: `Open Financial Operations queue item: 2026-05 / ${fundAccountId}: Ledger posting controller check` }))
       .toHaveAttribute("href", "/accounting/operations-continuity");
+    expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: NAV support" }))
+      .toHaveAttribute("href", "/portfolio/nav");
+    expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: NAV support package" }))
+      .toHaveAttribute("href", "/portfolio/nav");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Period lock and reopen evidence" }))
       .toHaveAttribute("href", "/accounting/operations-continuity");
     const workflowApprovalHistory = screen.getByRole("table", { name: "Operations continuity workflow approval history" });

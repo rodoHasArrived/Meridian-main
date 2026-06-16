@@ -983,6 +983,12 @@ export function buildOperationsContinuityScreenViewModel({
     closeCalendarError,
     selectedSummary
   );
+  const closeCockpitPanel = buildCloseCockpitViewModel(
+    closeCockpit,
+    closeCockpitLoading,
+    closeCockpitError,
+    selectedSummary
+  );
   const financialOperationsQueue = buildFinancialOperationsOperatorQueueViewModel({
     breakCases,
     reconciliationLanes,
@@ -992,8 +998,10 @@ export function buildOperationsContinuityScreenViewModel({
     evidencePackages,
     closeCalendarRows: closeCalendarPanel.rows,
     closeCalendarError,
+    closeCockpit: closeCockpitPanel,
+    closeCockpitError,
     selectedSummary,
-    loading: detailLoading || closeCalendarLoading
+    loading: detailLoading || closeCalendarLoading || closeCockpitLoading
   });
   const accountingRecordSummary = buildAccountingRecordSummaryViewModel(
     effectiveDetail?.accountingRecordSummary ?? null,
@@ -1006,13 +1014,6 @@ export function buildOperationsContinuityScreenViewModel({
   const selectedDetail = selectedSummary
     ? buildDetailPanel(selectedSummary, effectiveDetail, blockers.length)
     : null;
-  const closeCockpitPanel = buildCloseCockpitViewModel(
-    closeCockpit,
-    closeCockpitLoading,
-    closeCockpitError,
-    selectedSummary
-  );
-
   return {
     title: "Operations continuity",
     subtitle: "Track account-period close workflows from broker intake through Security Master coverage, ledger posting, reconciliation, approval, and close evidence.",
@@ -2064,6 +2065,8 @@ function buildFinancialOperationsOperatorQueueViewModel({
   evidencePackages,
   closeCalendarRows,
   closeCalendarError,
+  closeCockpit,
+  closeCockpitError,
   selectedSummary,
   loading
 }: {
@@ -2075,6 +2078,8 @@ function buildFinancialOperationsOperatorQueueViewModel({
   evidencePackages: OperationsContinuityEvidencePackageRow[];
   closeCalendarRows: OperationsContinuityCloseCalendarRow[];
   closeCalendarError: string | null;
+  closeCockpit: OperationsContinuityCloseCockpitViewModel;
+  closeCockpitError: string | null;
   selectedSummary: OperationsContinuityWorkflowSummary | null;
   loading: boolean;
 }): FinancialOperationsOperatorQueueViewModel {
@@ -2126,6 +2131,15 @@ function buildFinancialOperationsOperatorQueueViewModel({
       .filter(isOpenQueueItem),
     ...(closeCalendarError && !loading
       ? [mapCloseCalendarErrorQueueRow(closeCalendarError, selectedSummary)]
+      : []),
+    ...closeCockpit.lanes
+      .filter(isOpenQueueItem)
+      .map(mapCloseCockpitLaneQueueRow),
+    ...closeCockpit.navSupportPackages
+      .filter(isOpenQueueItem)
+      .map(mapNavSupportPackageQueueRow),
+    ...(closeCockpitError && !loading
+      ? [mapCloseCockpitErrorQueueRow(closeCockpitError, selectedSummary)]
       : []),
     ...[...approvals]
       .sort(compareApprovalsByDecisionTime)
@@ -2278,6 +2292,92 @@ function mapCloseCalendarQueueRow(
     routeLabel,
     ariaLabel: `Financial Operations close calendar ${row.ariaLabel}, next task ${row.taskLabel}`
   };
+}
+
+function mapCloseCockpitLaneQueueRow(
+  row: OperationsContinuityCloseCockpitLaneRow
+): FinancialOperationsOperatorQueueRow {
+  const actionLabel = row.requiredActionsLabel === "No required actions"
+    ? `Review ${row.label} and retain private-capital close evidence.`
+    : row.requiredActionsLabel;
+
+  return {
+    id: `private-capital-proof-lane:${row.id}`,
+    kindLabel: "Private-capital proof lane",
+    title: row.label,
+    detail: row.summary,
+    statusLabel: row.statusLabel,
+    statusTone: row.statusTone,
+    ownerLabel: privateCapitalProofLaneOwnerLabel(row),
+    dueLabel: "Before close approval",
+    evidenceLabel: row.evidenceLabel,
+    actionLabel,
+    routeHref: row.routeHref,
+    routeLabel: row.routeLabel,
+    ariaLabel: `Financial Operations private-capital proof lane ${row.ariaLabel}`
+  };
+}
+
+function mapNavSupportPackageQueueRow(
+  row: OperationsContinuityNavSupportPackageRow
+): FinancialOperationsOperatorQueueRow {
+  const actionLabel = row.requiredActionsLabel === "No required actions"
+    ? "Review the NAV support package and retain shadow NAV evidence."
+    : row.requiredActionsLabel;
+
+  return {
+    id: `nav-support-package:${row.id}`,
+    kindLabel: "NAV support package",
+    title: row.label,
+    detail: `${row.componentSummaryLabel}; ${row.shadowNavLabel}; ${row.summary}`,
+    statusLabel: row.statusLabel,
+    statusTone: row.statusTone,
+    ownerLabel: "NAV support operations",
+    dueLabel: "Before NAV package sign-off",
+    evidenceLabel: row.evidenceLabel,
+    actionLabel,
+    routeHref: row.routeHref,
+    routeLabel: row.routeLabel,
+    ariaLabel: `Financial Operations NAV support package ${row.ariaLabel}`
+  };
+}
+
+function mapCloseCockpitErrorQueueRow(
+  error: string,
+  selectedSummary: OperationsContinuityWorkflowSummary | null
+): FinancialOperationsOperatorQueueRow {
+  const scopeLabel = selectedSummary
+    ? `${selectedSummary.periodId} / ${selectedSummary.fundAccountId}`
+    : "Selected close scope";
+
+  return {
+    id: "private-capital-close-cockpit:error",
+    kindLabel: "Private-capital close cockpit",
+    title: `${scopeLabel}: Private-capital close cockpit unavailable`,
+    detail: "Private-capital proof-lane and NAV-support projection could not be loaded from the shared operations API.",
+    statusLabel: "Unavailable",
+    statusTone: "blocked",
+    ownerLabel: "Operations control",
+    dueLabel: "Close cockpit unavailable",
+    evidenceLabel: "Private-capital close evidence unavailable",
+    actionLabel: error,
+    routeHref: "/accounting/operations-continuity",
+    routeLabel: "Open operations continuity",
+    ariaLabel: `Financial Operations private-capital close cockpit unavailable for ${scopeLabel}: ${error}`
+  };
+}
+
+function privateCapitalProofLaneOwnerLabel(row: OperationsContinuityCloseCockpitLaneRow): string {
+  switch (row.id) {
+    case "nav-support":
+      return "NAV support operations";
+    case "close-package":
+      return "Evidence operations";
+    case "period-lock":
+      return "Operations control";
+    default:
+      return "Private-capital operations";
+  }
 }
 
 function mapApprovalQueueRow(

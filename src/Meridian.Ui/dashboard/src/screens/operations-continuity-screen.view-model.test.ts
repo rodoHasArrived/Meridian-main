@@ -1978,6 +1978,48 @@ describe("Operations Continuity view model", () => {
       requiredActionsLabel: "Retain NAV support package for positions, cash, pricing, and shadow NAV evidence.",
       routeHref: "/portfolio/nav"
     });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-proof-lane:nav-support")).toMatchObject({
+      kindLabel: "Private-capital proof lane",
+      title: "NAV support",
+      detail: "Shadow NAV support package still needs retained positions, cash, and pricing evidence.",
+      statusLabel: "Review Required",
+      statusTone: "review",
+      ownerLabel: "NAV support operations",
+      dueLabel: "Before close approval",
+      evidenceLabel: "1 evidence link",
+      actionLabel: "Retain NAV support for positions, cash, and pricing",
+      routeHref: "/portfolio/nav"
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-proof-lane:close-package")).toMatchObject({
+      kindLabel: "Private-capital proof lane",
+      title: "Evidence package",
+      statusLabel: "Blocked",
+      statusTone: "blocked",
+      ownerLabel: "Evidence operations",
+      evidenceLabel: "No retained evidence",
+      actionLabel: "Publish the close package manifest",
+      routeHref: "/accounting/operations-continuity"
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-proof-lane:period-lock")).toMatchObject({
+      kindLabel: "Private-capital proof lane",
+      title: "Period lock evidence",
+      statusLabel: "Review Required",
+      statusTone: "review",
+      ownerLabel: "Operations control",
+      actionLabel: "Close the workflow and retain period-lock evidence"
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "nav-support-package:nav-support:fund-alpha:2026-05")).toMatchObject({
+      kindLabel: "NAV support package",
+      title: "NAV support package",
+      detail: expect.stringContaining("2/4 components ready; review Pricing, Shadow NAV"),
+      statusLabel: "Review Required",
+      statusTone: "review",
+      ownerLabel: "NAV support operations",
+      dueLabel: "Before NAV package sign-off",
+      evidenceLabel: "1 evidence link",
+      actionLabel: "Retain NAV support package for positions, cash, pricing, and shadow NAV evidence.",
+      routeHref: "/portfolio/nav"
+    });
   });
 
   it("projects the source-backed close calendar for workflow control", () => {
@@ -2099,6 +2141,17 @@ describe("Operations Continuity view model", () => {
     });
     expect(vm.closeCockpit.errorText).toBe("Private-capital close cockpit could not be loaded.");
     expect(vm.closeCockpit.lanesEmptyText).toBe("Private-capital cockpit lanes could not be loaded.");
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-close-cockpit:error")).toMatchObject({
+      kindLabel: "Private-capital close cockpit",
+      title: `2026-05 / ${fundAccountId}: Private-capital close cockpit unavailable`,
+      statusLabel: "Unavailable",
+      statusTone: "blocked",
+      ownerLabel: "Operations control",
+      dueLabel: "Close cockpit unavailable",
+      evidenceLabel: "Private-capital close evidence unavailable",
+      actionLabel: "Private-capital close cockpit could not be loaded.",
+      routeHref: "/accounting/operations-continuity"
+    });
   });
 
   it("summarizes completed checklist controls from the shared close-checklist contract", () => {

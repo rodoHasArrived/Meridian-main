@@ -473,6 +473,7 @@ export const UI_API_ROUTES = {
   WorkstationProviderIntegrationRestDryRun: "/api/workstation/provider-integrations/dry-runs/rest",
   WorkstationProviderIntegrationActivate: "/api/workstation/provider-integrations/activate",
   WorkstationProviderIntegrationConnectionMonitor: "/api/workstation/provider-integrations/connections/{connectionId}/monitor",
+  WorkstationProviderIntegrationSchemaDriftCheck: "/api/workstation/provider-integrations/schema-drift/check",
   WorkstationProviderIntegrationQuarantineReview: "/api/workstation/provider-integrations/connections/{connectionId}/quarantine",
   WorkstationProviderIntegrationQuarantineResolve: "/api/workstation/provider-integrations/quarantine/resolve",
   WorkstationProviderIntegrationQuarantineReplay: "/api/workstation/provider-integrations/quarantine/replay",

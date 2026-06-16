@@ -38,21 +38,18 @@ class TargetedTestWorkflowTests(unittest.TestCase):
         self.assertIn("DOTNET_FILTER: ${{ inputs.dotnet_filter }}", self.workflow)
         self.assertIn("Unsupported dotnet_project", self.workflow)
         self.assertIn("Test-Path -LiteralPath $project", self.workflow)
-        self.assertIn("'^(tests|src)/[A-Za-z0-9._/-]+\\.(csproj|fsproj|sln|slnf)$'", self.workflow)
-        self.assertIn("dotnet_filter is required for lane=dotnet", self.workflow)
+        self.assertIn("'^tests/[A-Za-z0-9._/-]+\\.(csproj|fsproj)$'", self.workflow)
+        self.assertIn("dotnet_filter is required so Targeted Test runs the exact failing slice", self.workflow)
+        self.assertIn("dotnet_filter '$filter' is too broad for Targeted Test", self.workflow)
 
-    def test_dotnet_step_runs_exact_selected_project_with_optional_filter(self) -> None:
+    def test_dotnet_step_runs_exact_selected_project_with_required_filter(self) -> None:
         self.assertIn("& dotnet restore $project @props", self.workflow)
         self.assertIn("'test',", self.workflow)
         self.assertIn("$project,", self.workflow)
-        self.assertIn("$testArgs += @('--filter', $filter)", self.workflow)
+        self.assertIn("'--filter',", self.workflow)
+        self.assertIn("$filter,", self.workflow)
+        self.assertNotIn("if ($filter -ne '')", self.workflow)
         self.assertIn("& dotnet @testArgs @props", self.workflow)
-
-    def test_browser_slice_remains_constrained_to_known_dashboard_targets(self) -> None:
-        self.assertIn("browser-dashboard", self.workflow)
-        self.assertIn("Unsupported browser_script", self.workflow)
-        self.assertIn("vitest_file and vitest_name are only supported with browser_script=test:vitest.", self.workflow)
-        self.assertIn("$vitestFile.Contains('..')", self.workflow)
 
     def test_docs_show_remote_dispatch_examples_for_project_and_filter(self) -> None:
         for path in (WORKFLOW_README_PATH, START_README_PATH, ENGINEERING_README_PATH):

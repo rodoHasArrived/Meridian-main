@@ -463,6 +463,62 @@ public sealed class ProviderIntegrationContractsTests
         resultRoundTrip.Should().BeEquivalentTo(result);
     }
 
+    [Fact]
+    public void ProviderIntegrationSchemaDriftCheck_RoundTripsWithPauseRecommendation()
+    {
+        var request = new ProviderIntegrationSchemaDriftCheckRequestDto(
+            "manifest-custodian-abc-v1",
+            "connection-alpha",
+            ProviderCapabilityKindDto.Positions,
+            "positions",
+            "sync-run-1",
+            "payload-1",
+            "operator@example.com",
+            DateTimeOffset.Parse("2026-06-16T12:05:00Z"));
+        var result = new ProviderIntegrationSchemaDriftCheckResultDto(
+            request.ManifestId,
+            request.ConnectionId,
+            request.Capability,
+            request.EndpointKey,
+            request.SyncRunId,
+            request.RawPayloadId,
+            DriftDetected: true,
+            ShouldPauseCapability: true,
+            RecordsInspected: 0,
+            Issues:
+            [
+                new ProviderIntegrationSchemaDriftIssueDto(
+                    "schema.records-path.missing",
+                    ProviderIntegrationIssueSeverityDto.Critical,
+                    request.Capability,
+                    request.EndpointKey,
+                    "$.positions",
+                    "No records were found at configured records path '$.positions'.",
+                    "Pause this capability until the records path is remapped.")
+            ]);
+
+        var requestJson = JsonSerializer.Serialize(
+            request,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationSchemaDriftCheckRequestDto);
+        var resultJson = JsonSerializer.Serialize(
+            result,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationSchemaDriftCheckResultDto);
+        var requestRoundTrip = JsonSerializer.Deserialize(
+            requestJson,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationSchemaDriftCheckRequestDto);
+        var resultRoundTrip = JsonSerializer.Deserialize(
+            resultJson,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationSchemaDriftCheckResultDto);
+
+        requestJson.Should().Contain("\"rawPayloadId\"");
+        requestJson.Should().Contain("\"capability\": \"Positions\"");
+        requestJson.Should().NotContain("\"RawPayloadId\"");
+        resultJson.Should().Contain("\"shouldPauseCapability\": true");
+        resultJson.Should().Contain("\"code\": \"schema.records-path.missing\"");
+        requestRoundTrip.Should().BeEquivalentTo(request);
+        resultRoundTrip.Should().BeEquivalentTo(result);
+    }
+
     private static ProviderIntegrationManifestDto CreateManifest()
         => new(
             "manifest-custodian-abc-v1",

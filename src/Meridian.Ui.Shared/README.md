@@ -79,8 +79,10 @@ under `/api/workstation/financial-record-explorers/{explorerId}` for `ledger`, `
 source-backed strategy run ledger, portfolio, Security Master, report-pack line provenance,
 delivery history, evidence, reconciliation, reporting, and audit projections into the shared DTO,
 while `FileFinancialRecordExplorerSavedViewStore` persists operator-created views under the
-workstation data root. Missing projections return empty or blocked DTO state with disabled actions
-and reasons, not synthetic operational balances.
+workstation data root. Saved views are keyed by the authenticated workstation tenant and explorer
+id, so operator filters created in one tenant do not appear in another tenant's Financial Record
+Explorer session. Missing projections return empty or blocked DTO state with disabled actions and
+reasons, not synthetic operational balances.
 Reference-data endpoint groups for bonds, options, equity, futures, FX spot, crypto, deposits,
 certificates of deposit, commodities, swaps, and money-market funds adapt `Meridian.Instruments` services
 to shared browser/WPF routes. Keep those endpoints as permission and HTTP adapters; instrument
@@ -124,19 +126,20 @@ evidence and does not post Meridian-owned ledger entries.
 Provider integration endpoints are registered under `/api/workstation/provider-integrations/*`.
 Template routes expose the Application-owned starter manifest pack, the setup-save command persists
 draft manifests and connection instances, activation-readiness routes surface fail-closed readiness
-blockers, dry-run command routes execute manual CSV and REST validation through Application-owned
-services, and the connection monitor route adapts durable sync-run, staging, quarantine, and
-validation evidence into browser/WPF-compatible payloads. Quarantine review routes expose grouped
-validation issues and persist operator review decisions without changing the retained rejected raw
-records. Quarantine replay routes remap records approved for replay after mapping changes and
-write accepted records back into integration staging or re-quarantine unresolved records. Setup,
+blockers, the OpenAPI import route seeds tenant-scoped draft manifests from provider specs, dry-run
+command routes execute manual CSV and REST validation through Application-owned services, and the
+connection monitor route adapts durable sync-run, staging, quarantine, and validation evidence into
+browser/WPF-compatible payloads. Quarantine review routes expose grouped validation issues and
+persist operator review decisions without changing the retained rejected raw records. Quarantine
+replay routes remap records approved for replay after mapping changes and write accepted records
+back into integration staging or re-quarantine unresolved records. Setup, OpenAPI import,
 readiness, dry-run, activation, quarantine review/replay, and monitor endpoints resolve the
 authenticated workstation tenant before reading or writing stored manifests, connections, or
-retained run evidence. Dry runs require provider/configuration permissions because they retain raw
-payload, staging, quarantine, and sync-run evidence. The activation command persists active
-manifest and connection state only after Application readiness passes with retained approval
-evidence; setup screens and quarantine review screens still need to be surfaced through the shared
-workstation API.
+retained run evidence. Import and dry-run commands require provider/configuration permissions
+because they create manifests or retain raw payload, staging, quarantine, and sync-run evidence.
+The activation command persists active manifest and connection state only after Application
+readiness passes with retained approval evidence; setup screens and quarantine review screens still
+need to be surfaced through the shared workstation API.
 `BankFeedTransportService` reuses that same import boundary for scheduled local-file and SFTP
 CSV pulls through `IEtlSourceReader`, and delegates Plaid API schedules to `IPlaidIngestionService`
 so API feeds stay server-owned and ledger posting remains gated by Meridian approvals.

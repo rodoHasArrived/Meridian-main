@@ -12,6 +12,7 @@ public sealed class FinancialRecordExplorerReadService
     public const string PortfolioExplorerId = "portfolio";
     public const string SecurityInstrumentExplorerId = "security-instrument";
     public const string ReportLineProvenanceExplorerId = "report-line-provenance";
+    private const string LegacySavedViewTenantId = "legacy-global";
 
     private static readonly string[] KnownExplorerIds =
     [
@@ -38,14 +39,21 @@ public sealed class FinancialRecordExplorerReadService
     public async Task<FinancialRecordExplorerDto?> GetExplorerAsync(
         string explorerId,
         CancellationToken ct = default)
+        => await GetExplorerAsync(explorerId, LegacySavedViewTenantId, ct).ConfigureAwait(false);
+
+    public async Task<FinancialRecordExplorerDto?> GetExplorerAsync(
+        string explorerId,
+        string tenantId,
+        CancellationToken ct = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
         var normalized = NormalizeExplorerId(explorerId);
         return normalized switch
         {
-            LedgerExplorerId => await BuildLedgerExplorerAsync(ct).ConfigureAwait(false),
-            PortfolioExplorerId => await BuildPortfolioExplorerAsync(ct).ConfigureAwait(false),
-            SecurityInstrumentExplorerId => await BuildSecurityInstrumentExplorerAsync(ct).ConfigureAwait(false),
-            ReportLineProvenanceExplorerId => await BuildReportLineProvenanceExplorerAsync(ct).ConfigureAwait(false),
+            LedgerExplorerId => await BuildLedgerExplorerAsync(tenantId, ct).ConfigureAwait(false),
+            PortfolioExplorerId => await BuildPortfolioExplorerAsync(tenantId, ct).ConfigureAwait(false),
+            SecurityInstrumentExplorerId => await BuildSecurityInstrumentExplorerAsync(tenantId, ct).ConfigureAwait(false),
+            ReportLineProvenanceExplorerId => await BuildReportLineProvenanceExplorerAsync(tenantId, ct).ConfigureAwait(false),
             _ => null
         };
     }
@@ -54,10 +62,17 @@ public sealed class FinancialRecordExplorerReadService
         string explorerId,
         string recordId,
         CancellationToken ct = default)
+        => await GetRecordAsync(explorerId, recordId, LegacySavedViewTenantId, ct).ConfigureAwait(false);
+
+    public async Task<FinancialRecordExplorerSelectedRecordDto?> GetRecordAsync(
+        string explorerId,
+        string recordId,
+        string tenantId,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(recordId);
 
-        var explorer = await GetExplorerAsync(explorerId, ct).ConfigureAwait(false);
+        var explorer = await GetExplorerAsync(explorerId, tenantId, ct).ConfigureAwait(false);
         return explorer?.Rows
             .FirstOrDefault(row => string.Equals(row.RecordId, recordId, StringComparison.OrdinalIgnoreCase))
             ?.Detail;
@@ -67,7 +82,15 @@ public sealed class FinancialRecordExplorerReadService
         string explorerId,
         FinancialRecordExplorerSavedViewSaveRequestDto request,
         CancellationToken ct = default)
+        => await SaveViewAsync(explorerId, LegacySavedViewTenantId, request, ct).ConfigureAwait(false);
+
+    public async Task<FinancialRecordExplorerSavedViewDto?> SaveViewAsync(
+        string explorerId,
+        string tenantId,
+        FinancialRecordExplorerSavedViewSaveRequestDto request,
+        CancellationToken ct = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
         ArgumentNullException.ThrowIfNull(request);
         var normalized = NormalizeExplorerId(explorerId);
         if (!IsKnownExplorerId(normalized))
@@ -95,10 +118,10 @@ public sealed class FinancialRecordExplorerReadService
             Filters: request.Filters,
             SearchText: request.SearchText.Trim());
 
-        return await _savedViewStore.SaveAsync(normalized, view, ct).ConfigureAwait(false);
+        return await _savedViewStore.SaveAsync(tenantId, normalized, view, ct).ConfigureAwait(false);
     }
 
-    private async Task<FinancialRecordExplorerDto> BuildLedgerExplorerAsync(CancellationToken ct)
+    private async Task<FinancialRecordExplorerDto> BuildLedgerExplorerAsync(string tenantId, CancellationToken ct)
     {
         var readService = _services.GetService<StrategyRunReadService>();
         if (readService is null)
@@ -121,6 +144,7 @@ public sealed class FinancialRecordExplorerReadService
                 "Ledger Explorer",
                 "Explore retained trial-balance records and their proof links.",
                 "No source-backed ledger projection is available.",
+                tenantId,
                 ct).ConfigureAwait(false);
         }
 
@@ -149,10 +173,11 @@ public sealed class FinancialRecordExplorerReadService
             ],
             rows,
             BuildExplorerProofActions(run, UiApiRoutes.WithParam(UiApiRoutes.RunsLedgerTrialBalance, "runId", run.RunId)),
+            tenantId,
             ct).ConfigureAwait(false);
     }
 
-    private async Task<FinancialRecordExplorerDto> BuildPortfolioExplorerAsync(CancellationToken ct)
+    private async Task<FinancialRecordExplorerDto> BuildPortfolioExplorerAsync(string tenantId, CancellationToken ct)
     {
         var readService = _services.GetService<StrategyRunReadService>();
         if (readService is null)
@@ -175,6 +200,7 @@ public sealed class FinancialRecordExplorerReadService
                 "Portfolio Explorer",
                 "Explore retained account and aggregate position records.",
                 "No source-backed portfolio projection is available.",
+                tenantId,
                 ct).ConfigureAwait(false);
         }
 
@@ -204,10 +230,11 @@ public sealed class FinancialRecordExplorerReadService
             ],
             rows,
             BuildExplorerProofActions(run, UiApiRoutes.WithParam(UiApiRoutes.WorkstationPortfolio, "runId", run.RunId)),
+            tenantId,
             ct).ConfigureAwait(false);
     }
 
-    private async Task<FinancialRecordExplorerDto> BuildSecurityInstrumentExplorerAsync(CancellationToken ct)
+    private async Task<FinancialRecordExplorerDto> BuildSecurityInstrumentExplorerAsync(string tenantId, CancellationToken ct)
     {
         var readService = _services.GetService<StrategyRunReadService>();
         if (readService is null)
@@ -230,6 +257,7 @@ public sealed class FinancialRecordExplorerReadService
                 "Security & Instrument Explorer",
                 "Explore Security Master references used by retained accounting and portfolio records.",
                 "No source-backed Security Master references are available.",
+                tenantId,
                 ct).ConfigureAwait(false);
         }
 
@@ -263,10 +291,11 @@ public sealed class FinancialRecordExplorerReadService
             ],
             rows,
             BuildExplorerProofActions(run, UiApiRoutes.WorkstationSecurityMasterSearch),
+            tenantId,
             ct).ConfigureAwait(false);
     }
 
-    private async Task<FinancialRecordExplorerDto> BuildReportLineProvenanceExplorerAsync(CancellationToken ct)
+    private async Task<FinancialRecordExplorerDto> BuildReportLineProvenanceExplorerAsync(string tenantId, CancellationToken ct)
     {
         var workflowService = _services.GetService<ReportPackWorkflowService>();
         if (workflowService is null)
@@ -282,7 +311,7 @@ public sealed class FinancialRecordExplorerReadService
             ReportLineProvenanceExplorerId,
             "Report lines",
             "Governed report lines with retained source provenance.");
-        var savedViews = await LoadSavedViewsAsync(ReportLineProvenanceExplorerId, systemViews, ct).ConfigureAwait(false);
+        var savedViews = await LoadSavedViewsAsync(tenantId, ReportLineProvenanceExplorerId, systemViews, ct).ConfigureAwait(false);
         var deliveryService = _services.GetService<ReportPackDeliveryService>();
         return BuildReportLineProvenanceExplorer(
             workflowService.ListRecords(200),
@@ -376,9 +405,10 @@ public sealed class FinancialRecordExplorerReadService
         IReadOnlyList<FinancialRecordExplorerColumnDto> columns,
         IReadOnlyList<FinancialRecordExplorerRowDto> rows,
         IReadOnlyList<FinancialRecordExplorerProofActionDto> proofActions,
+        string tenantId,
         CancellationToken ct)
     {
-        var savedViews = await LoadSavedViewsAsync(explorerId, systemViews, ct).ConfigureAwait(false);
+        var savedViews = await LoadSavedViewsAsync(tenantId, explorerId, systemViews, ct).ConfigureAwait(false);
         return new FinancialRecordExplorerDto(
             explorerId,
             title,
@@ -402,6 +432,7 @@ public sealed class FinancialRecordExplorerReadService
         string title,
         string description,
         string sourceState,
+        string tenantId,
         CancellationToken ct)
     {
         var systemViews = BuildSystemViews(explorerId, "Default", "No source-backed records are available.");
@@ -413,7 +444,7 @@ public sealed class FinancialRecordExplorerReadService
             IsBlocked: false,
             BlockedReason: string.Empty,
             ScopeItems: [new("Source", "No retained projection", FinancialRecordExplorerTone.Warning)],
-            await LoadSavedViewsAsync(explorerId, systemViews, ct).ConfigureAwait(false),
+            await LoadSavedViewsAsync(tenantId, explorerId, systemViews, ct).ConfigureAwait(false),
             SummaryItems: [new("Records", "0", "No retained source projection was found.", FinancialRecordExplorerTone.Warning)],
             Filters: [],
             Columns: [],
@@ -466,11 +497,12 @@ public sealed class FinancialRecordExplorerReadService
             RecordGraph: new FinancialRecordExplorerRecordGraphDto([], []));
 
     private async Task<IReadOnlyList<FinancialRecordExplorerSavedViewDto>> LoadSavedViewsAsync(
+        string tenantId,
         string explorerId,
         IReadOnlyList<FinancialRecordExplorerSavedViewDto> systemViews,
         CancellationToken ct)
     {
-        var operatorViews = await _savedViewStore.LoadAsync(explorerId, ct).ConfigureAwait(false);
+        var operatorViews = await _savedViewStore.LoadAsync(tenantId, explorerId, ct).ConfigureAwait(false);
         return systemViews.Concat(operatorViews).ToArray();
     }
 
