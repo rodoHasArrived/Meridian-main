@@ -260,6 +260,9 @@ create index if not exists ix_outbox_message_pending
     on __SCHEMA__.outbox_message(processed_at, visible_after)
     where processed_at is null;
 
+create unique index if not exists ux_outbox_message_topic_message_key
+    on __SCHEMA__.outbox_message(topic, message_key);
+
 create table if not exists __SCHEMA__.read_model_checkpoint (
     projection_name           text primary key,
     last_processed_position   bigint not null,
