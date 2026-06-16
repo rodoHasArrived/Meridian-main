@@ -424,7 +424,7 @@ Ensure:
 - **Service**: `src/Meridian.Ui.Services/Services/FixtureDataService.cs`
 - **Tests**: `tests/Meridian.Ui.Tests/Services/FixtureDataServiceTests.cs`
 - **Contracts**: `src/Meridian.Contracts/Api/`
-- **Implementation Guide**: `docs/evaluations/desktop-platform-improvements-implementation-guide.md`
+- **Historical assessment**: `archive/docs/assessments/desktop-platform-improvements-implementation-guide.md`; use current engineering and operator docs for active guidance.
 
 ## Next Steps
 
@@ -447,7 +447,7 @@ After implementing basic fixture mode:
 - **Desktop Development:**
   - [Desktop Testing Guide](./desktop-testing-guide.md) - Complete testing procedures and fixture usage
   - [WPF Implementation Notes](./wpf-implementation-notes.md) - WPF architecture and patterns
-  - [Desktop Platform Improvements](../evaluations/desktop-platform-improvements-implementation-guide.md) - Improvement roadmap
+  - [Desktop Platform Improvements archive](../../archive/docs/assessments/desktop-platform-improvements-implementation-guide.md) - Historical improvement program; current guidance lives in engineering and operator docs
 
 - **Testing and Quality:**
   - [Test Project README](https://github.com/rodoHasArrived/Meridian/blob/main/tests/Meridian.Ui.Tests/README.md) - Test coverage details

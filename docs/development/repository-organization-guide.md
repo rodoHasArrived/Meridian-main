@@ -742,7 +742,7 @@ This guide should evolve as the repository grows. To suggest improvements:
 
 - **Implementation Guides:**
   - [Provider Implementation Guide](./provider-implementation.md) - Adding data providers
-  - [Desktop Platform Improvements](../evaluations/desktop-platform-improvements-implementation-guide.md) - Desktop development
+  - [Desktop Platform Improvements archive](../../archive/docs/assessments/desktop-platform-improvements-implementation-guide.md) - Historical desktop development assessment; use current engineering/operator docs for active work
   - [WPF Implementation Notes](./wpf-implementation-notes.md) - WPF architecture
 
 - **Architecture:**

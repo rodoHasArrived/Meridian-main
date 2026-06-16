@@ -34,7 +34,7 @@ This inventory seeds the documentation rebuild. It classifies the existing `docs
 | `docs/providers/` | source-material | `docs/operators/` and `docs/reference/` | Provider setup and recovery belong to operators; provider capability and comparison lookup belongs to reference. |
 | `docs/plans/` | source-material/archive | `docs/product/`, `docs/engineering/`, `docs/roadmap/`, `archive/docs/plans/` | Index demoted to migration source material; extract current direction and archive superseded plans. |
 | `docs/status/` | controlled-migration/generated/archive | `docs/product/`, `docs/roadmap/`, `docs/generated/`, `archive/docs/status/` | Index demoted to controlled status/reporting migration; generated reports stay automation-owned. |
-| `docs/evaluations/` | source-material/archive | `docs/product/`, `docs/engineering/`, `docs/reference/`, `archive/docs/assessments/` | Index demoted to migration source material; extract verified-current facts before archiving individual evaluations. |
+| `docs/evaluations/` | archive-routed index | `docs/product/`, `docs/engineering/`, `docs/operators/`, `docs/reference/`, `docs/roadmap/`, `archive/docs/assessments/` | Historical evaluation stubs removed; use the routing README and migration record for archive lookup. |
 | `docs/audits/` | source-material/archive | `docs/engineering/`, `archive/docs/assessments/` | Index demoted to migration source material; duplicate historical snapshots should become redirects to archive. |
 | `docs/security/` | source-material | `docs/operators/`, `docs/engineering/`, `docs/reference/` | Split procedure, engineering, and lookup content later. |
 | `docs/design/` | archive | `archive/docs/design/` | Archived during migration. Keep a short stub in `docs/design/` with replacement links. |
@@ -61,7 +61,7 @@ This inventory seeds the documentation rebuild. It classifies the existing `docs
 1. Continue collapsing `docs/plans/` completed, speculative, or point-in-time plans into redirect stubs after checking whether any durable rule needs extraction.
 2. Add targeted archive entries as files move into `archive/docs/assessments/`, `archive/docs/plans/`, `archive/docs/status/`, `archive/docs/summaries/`, `archive/docs/migrations/`, or `archive/docs/workflows/`.
 3. Leave redirect stubs only for high-traffic paths linked from root, AI, roadmap, command docs, or current folder indexes.
-4. Do not move `docs/evaluations/` wholesale yet: its README still classifies several files as canonical/current. First extract current product, engineering, or reference facts into the rebuilt docs model, then archive the old evaluation files.
+4. Do not recreate per-document redirect stubs in `docs/evaluations/`; link current guidance to the owning canonical lane and historical rationale directly to `archive/docs/assessments/`.
 5. Run link repair and structure validation after each batch.
 
 ## Completed Migration Notes
@@ -104,7 +104,8 @@ This inventory seeds the documentation rebuild. It classifies the existing `docs
 | 2026-05-30 | `docs/plans/meridian-pilot-workflow.md` | `archive/docs/plans/meridian-pilot-workflow.md` | Meridian pilot workflow archived as historical sequencing context; active pilot-path status and acceptance now maintained in product/roadmap status artifacts. |
 | 2026-05-30 | `docs/plans/sfo-mvp-implementation-design.md` | `archive/docs/plans/sfo-mvp-implementation-design.md` | SFO MVP implementation design archived as historical planning context; active SFO scope guidance now maintained in canonical product/engineering status surfaces. |
 | 2026-05-30 | `docs/audits/README.md` | n/a | Reframed as a source-material migration index instead of an active governance front door. |
-| 2026-05-30 | `docs/evaluations/README.md` | n/a | Reframed as a source-material migration index with target canonical lanes for extraction. |
+| 2026-06-16 | `docs/evaluations/README.md` | n/a | Reframed as an archive-routed landing page after historical redirect stubs were removed. |
+| 2026-06-16 | `docs/evaluations/evaluation-archive-migration-2026-06-16.md` | n/a | Added a migration record listing former evaluation paths, archive destinations, classifications, and current authority lanes. |
 | 2026-05-30 | `docs/plans/README.md` | n/a | Reframed as a plan source-material migration index under product, engineering, roadmap, and archive ownership. |
 | 2026-05-30 | `docs/status/README.md` | n/a | Reframed as a controlled status/reporting migration index with generated reports kept automation-owned. |
 | 2026-05-30 | `docs/reference/README.md` | n/a | Rebuilt as the canonical lookup lane and linked migration sources for provider matrices, schemas, contracts, and UFL material. |
