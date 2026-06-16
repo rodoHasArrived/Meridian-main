@@ -86,7 +86,9 @@ of letting pages or services create their own HTTP clients or bind directly to t
 singleton. Watchlist backend synchronization now uses that seam for the optional `/api/watchlists`
 probe while retaining local desktop persistence when the remote host does not provide a watchlist
 payload. Activity Log also loads `/api/logs` through that seam and keeps the local offline
-indicator path when the remote host is unavailable or returns a non-success response.
+indicator path when the remote host is unavailable or returns a non-success response. Service
+Manager health checks also use the same seam for deployable desktop clients; its graceful shutdown
+path remains a local managed-process request because it uses the runtime-scoped shutdown token.
 Convention-based view-model wiring is handled by `Services/ViewModelViewResolver.cs`; shell pages
 that follow the `*Page` to `*ViewModel` naming convention can receive a DI-constructed DataContext
 without page-specific registration, while pages that set their own DataContext remain authoritative.

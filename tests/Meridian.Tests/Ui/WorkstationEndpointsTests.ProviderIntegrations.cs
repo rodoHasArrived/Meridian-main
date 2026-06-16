@@ -622,7 +622,7 @@ public sealed partial class WorkstationEndpointsTests
                 summary.Capability == ProviderCapabilityKindDto.Positions &&
                 summary.RecordCount == 1);
             review.Records.Should().ContainSingle(record =>
-                record.DedupeKey == "sync-run-new|0");
+                record.DedupeKey == "connection-alpha:Positions:source-0");
         }
         finally
         {
