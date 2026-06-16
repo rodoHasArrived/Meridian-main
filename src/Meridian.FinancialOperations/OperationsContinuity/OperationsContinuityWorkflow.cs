@@ -820,6 +820,16 @@ public sealed class OperationsContinuityWorkflow
         }
 
         var existing = BreakCases[index];
+        if (IsClosedBreakStatus(existing.Status))
+        {
+            return new OperationsWorkflowBlockerDto(
+                "RECONCILIATION_BREAK_ALREADY_CLOSED",
+                "Closed reconciliation breaks cannot be resolved again.",
+                OperationsGateKeyDto.Reconciliation,
+                "Error",
+                []);
+        }
+
         var resolutionStatus = string.IsNullOrWhiteSpace(request.ResolutionStatus)
             ? "Resolved"
             : request.ResolutionStatus.Trim();

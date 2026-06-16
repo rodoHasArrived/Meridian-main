@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-06-04
-**Last Updated:** 2026-06-04
+**Reviewed:** 2026-06-16
+**Last Updated:** 2026-06-16
 
 This file is the Copilot-specific companion to the shared Meridian AI guidance. Keep it short:
 shared policy belongs in [`../assistant-workflow-contract.md`](../assistant-workflow-contract.md),

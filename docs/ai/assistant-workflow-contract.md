@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-06-04
+**Reviewed:** 2026-06-16
 
 This contract is the shared operating standard for AI-assisted development in Meridian. It applies
 to Codex, Claude, GitHub Copilot, MCP clients, reusable prompt templates, CI prompt generation, and
@@ -476,7 +476,7 @@ Before adding support for a new assistant, IDE, model provider, or automation:
 
 ---
 
-_Last Updated: 2026-05-31_
+_Last Updated: 2026-06-16_
 
 ## Machine-checkable synchronization contract
 

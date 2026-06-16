@@ -1,6 +1,6 @@
 # Meridian Shared Project Context
 
-> Last verified: 2026-06-04
+> Last verified: 2026-06-16
 > Canonical companions: `CLAUDE.md`, `docs/ai/assistant-workflow-contract.md`,
 > `docs/product/meridian-design-document.md`,
 > `docs/architecture/meridian-development-intelligence-framework.md`, and

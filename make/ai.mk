@@ -14,11 +14,13 @@
         skill-run skill-chain skill-run-chain skill-validate skill-run-eval \
         skill-benchmark skill-discover
 
-AI_UPDATER := python3 build/scripts/ai-repo-updater.py
-AI_ARCH_CHECK := python3 build/scripts/ai-architecture-check.py
-AI_DOCS := python3 build/scripts/docs/ai-docs-maintenance.py
+PYTHON ?= python
 
-SKILLS_CLI := python3 .claude/skills/skills_provider.py
+AI_UPDATER := $(PYTHON) build/scripts/ai-repo-updater.py
+AI_ARCH_CHECK := $(PYTHON) build/scripts/ai-architecture-check.py
+AI_DOCS := $(PYTHON) build/scripts/docs/ai-docs-maintenance.py
+
+SKILLS_CLI := $(PYTHON) .claude/skills/skills_provider.py
 SKILL      ?= meridian-code-review
 SCRIPT     ?=
 RESOURCE   ?=

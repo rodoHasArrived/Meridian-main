@@ -2036,6 +2036,53 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task ResolveBreakCaseAsync_ShouldRejectAlreadyClosedBreakWithoutAppendingAudit()
+    {
+        var service = CreateService(out var repository, out var auditStore);
+        var workflow = await CreateLedgerPostedWorkflowAsync(service);
+
+        var reconciled = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
+            workflow.Version,
+            "ops-user",
+            BreakCases: [CreateOpenCriticalBreak(workflow, "break-duplicate-resolution")]));
+        var resolved = await service.ResolveBreakCaseAsync(
+            workflow.WorkflowId,
+            "break-duplicate-resolution",
+            new OperationsResolveBreakCaseRequestDto(
+                reconciled.Workflow!.Version,
+                "ops-user",
+                ResolutionStatus: "Resolved",
+                Rationale: "Controller retained the first resolution evidence.",
+                EvidenceLinks: [CreateEvidenceLink("break-duplicate-resolution-evidence", "First resolution evidence")]));
+        var timelineBeforeDuplicate = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+
+        var duplicate = await service.ResolveBreakCaseAsync(
+            workflow.WorkflowId,
+            "break-duplicate-resolution",
+            new OperationsResolveBreakCaseRequestDto(
+                resolved.Workflow!.Version,
+                "ops-user",
+                ResolutionStatus: "Resolved",
+                Rationale: "Controller attempted to resolve the already closed break again.",
+                EvidenceLinks: [CreateEvidenceLink("break-duplicate-resolution-second-evidence", "Duplicate resolution evidence")]));
+
+        duplicate.Success.Should().BeFalse();
+        duplicate.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        duplicate.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "RECONCILIATION_BREAK_ALREADY_CLOSED" &&
+            blocker.Gate == OperationsGateKeyDto.Reconciliation);
+        var persisted = await repository.GetAsync(workflow.WorkflowId);
+        persisted.Should().NotBeNull();
+        persisted!.Version.Should().Be(resolved.Workflow.Version);
+        var breakCase = persisted.BreakCases.Single(static item => item.BreakId == "break-duplicate-resolution");
+        breakCase.Status.Should().Be("Resolved");
+        breakCase.EvidenceLinks.Should().ContainSingle(link => link.EvidenceId == "break-duplicate-resolution-evidence");
+        breakCase.EvidenceLinks.Should().NotContain(link => link.EvidenceId == "break-duplicate-resolution-second-evidence");
+        var timelineAfterDuplicate = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timelineAfterDuplicate.Should().HaveCount(timelineBeforeDuplicate.Count);
+    }
+
+    [Fact]
     public async Task ResolveBreakCaseAsync_ShouldRejectAssistantOriginBeforeMutation()
     {
         var service = CreateService(out _, out var auditStore);

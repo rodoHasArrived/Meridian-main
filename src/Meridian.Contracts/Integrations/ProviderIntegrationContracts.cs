@@ -317,6 +317,18 @@ public sealed record ManualCsvProviderIntegrationDryRunRequestDto(
     string RequestedBy,
     DateTimeOffset RequestedAt);
 
+public sealed record ProviderIntegrationRestDryRunRequestDto(
+    string SyncRunId,
+    string ManifestId,
+    string ConnectionId,
+    ProviderCapabilityKindDto Capability,
+    string EndpointKey,
+    IReadOnlyDictionary<string, string> PathParameters,
+    IReadOnlyDictionary<string, string> QueryParameters,
+    string RequestedBy,
+    DateTimeOffset RequestedAt,
+    int MaxPages);
+
 public sealed record ProviderIntegrationDryRunResultDto(
     string SyncRunId,
     string RawPayloadId,

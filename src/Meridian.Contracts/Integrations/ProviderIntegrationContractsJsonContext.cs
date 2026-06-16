@@ -50,6 +50,7 @@ namespace Meridian.Contracts.Integrations;
 [JsonSerializable(typeof(IntegrationStagingRecordDto))]
 [JsonSerializable(typeof(IReadOnlyList<IntegrationStagingRecordDto>))]
 [JsonSerializable(typeof(ManualCsvProviderIntegrationDryRunRequestDto))]
+[JsonSerializable(typeof(ProviderIntegrationRestDryRunRequestDto))]
 [JsonSerializable(typeof(ProviderIntegrationDryRunResultDto))]
 [JsonSerializable(typeof(IReadOnlyDictionary<string, string>))]
 [JsonSerializable(typeof(Dictionary<string, string>))]

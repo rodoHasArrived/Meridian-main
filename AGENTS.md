@@ -29,7 +29,7 @@ Keep it short and route detailed work to the canonical Meridian guidance sources
 - The authoritative local checkout path for this workspace is `D:\Meridian-main`.
 - Position new roadmap and docs work around the W1-W5 operational record baseline: data confidence, retained source evidence, reconciliation, approvals, accounting records, multi-asset operational coverage, and governed reports.
 - Defer Backtesting Studio, live-readiness beyond paper-first governance, full payments, forecasting, enterprise risk, client portal, no-code workflow design, mobile, and other expansion lanes unless the work directly strengthens that operational record workflow.
-- Use the current [Meridian Design Document (Version 0.15)](docs/product/meridian-design-document.md) as the canonical product scope reference.
+- Use the current [Meridian Design Document](docs/product/meridian-design-document.md) as the canonical product scope reference.
 - `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/` are both active operator UI surfaces.
 - `src/Meridian.Ui/wwwroot/workstation/` remains the built browser workstation asset lane served by the local host.
 - Keep `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/` as shared API/read-model support surfaces for both the desktop shell and browser workstation.

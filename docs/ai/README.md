@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-05-31
+**Reviewed:** 2026-06-16
 
 This document is the master index for AI guidance in the Meridian repository. It now treats repository orientation as a first-class step before specialist task guidance.
 
@@ -248,7 +248,7 @@ The following high-traffic files are source material or historical entrypoints o
 
 ---
 
-_Last Updated: 2026-05-31_
+_Last Updated: 2026-06-16_
 
 ## Drift failure remediation
 

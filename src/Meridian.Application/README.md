@@ -48,10 +48,13 @@ and UI presentation concerns in their owning layers.
   service consumes contract-owned manifests and the Storage-owned integration manifest store, parses
   operator-uploaded samples, applies configured field mappings and safe transforms, writes raw
   payload evidence, stages accepted records, and quarantines rejected records without promoting
-  directly into Portfolio, Security Master, or Ledger stores. The activation-readiness service
-  evaluates those manifests before enablement, blocking unresolved required mappings, missing
-  approval evidence, and order-preview/place/cancel capabilities unless they use a certified
-  provider adapter with production-write activation policy.
+  directly into Portfolio, Security Master, or Ledger stores. The REST dry-run service executes a
+  configured read-only endpoint through an injectable transport, resolves path/query parameters,
+  follows cursor pagination, retains raw responses before mapping, and uses the same staging and
+  quarantine boundary for accepted and rejected records. The activation-readiness service evaluates
+  those manifests before enablement, blocking unresolved required mappings, missing approval
+  evidence, and order-preview/place/cancel capabilities unless they use a certified provider
+  adapter with production-write activation policy.
 - Canonicalization composition consumes `Meridian.DataIntegration.Canonicalization` contracts,
   provider condition-code mapping, venue normalization, parity metrics, the default
   `EventCanonicalizer`, and the Data Integration-owned `CanonicalizingPublisher` decorator.

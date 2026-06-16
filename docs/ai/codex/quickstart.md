@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-05-31
+**Reviewed:** 2026-06-16
 
 Use this page for the first 10 minutes of a Codex task in Meridian. It compresses the shared
 workflow into a task routing checklist, proof matrix, and dirty-worktree protocol. Shared policy

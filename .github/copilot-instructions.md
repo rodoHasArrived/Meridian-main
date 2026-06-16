@@ -1,6 +1,6 @@
 # Copilot Repository Instructions
 
-**Last Updated:** 2026-06-04
+**Last Updated:** 2026-06-16
 
 Use these instructions for every task in this repository to improve quality, reliability, and review speed.
 

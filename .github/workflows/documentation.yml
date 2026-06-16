@@ -57,7 +57,7 @@ jobs:
           python-version: "3.12"
 
       - name: Run docs rules engine
-        run: python3 build/scripts/docs/rules-engine.py --summary
+        run: python3 build/scripts/docs/rules-engine.py --rules build/rules/doc-rules.yaml --summary
 
       - name: Validate examples
         run: python3 build/scripts/docs/validate-examples.py --summary

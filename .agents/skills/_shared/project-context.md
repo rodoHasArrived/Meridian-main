@@ -4,7 +4,7 @@
 > routing, runtime semantics, or key architecture guidance changes; mirrored Codex and GitHub AI
 > surfaces should follow from here.
 >
-> **Last verified:** 2026-06-04
+> **Last verified:** 2026-06-16
 > **Primary grounding docs:** `README.md`, `docs/roadmap/data/*.yml`,
 > `docs/roadmap/generated/ROADMAP_SUMMARY.md`,
 > `docs/product/meridian-design-document.md`,
