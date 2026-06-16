@@ -1,6 +1,6 @@
 # Provider Integration Manifest Runtime
 
-**Status:** proposed
+**Status:** accepted planning baseline
 **Owner:** core-team
 **Reviewed:** 2026-06-16
 
@@ -70,6 +70,9 @@ Near-term non-goals:
 
 ## Decisions
 
+The following decisions are no longer open planning questions. They are the baseline for the first
+implementation wave unless a later architecture decision record explicitly supersedes them.
+
 The first implementation should use a new integration-specific durable store under
 `src/Meridian.Storage/Integrations/`, not the existing workstation file-backed configuration store.
 The workstation store may cache draft UI state, but approved manifests, raw payloads, sync runs,
@@ -99,6 +102,17 @@ Accepted records should first load into an integration staging store feeding rec
 directly into Portfolio, Security Master, or Ledger. Reconciliation and identity resolution should
 promote staged records into source-owned canonical services only after accepted-record lineage,
 dedupe keys, validation evidence, and downstream ownership are proven.
+
+### First-Wave Commitments
+
+| Area | Baseline commitment | Why |
+| --- | --- | --- |
+| Manifest store | Implement `src/Meridian.Storage/Integrations/` as the first durable store. | Manifests, raw payloads, quarantine records, staging records, and replay evidence are operational records, not workstation preferences. |
+| Template catalog | Implement manual CSV upload, custodian positions, brokerage transactions, and fixed income security master in the first catalog. | The four templates jointly prove file intake, REST intake, transaction semantics, and institutional reference-data richness. |
+| First execution proof | Execute manual CSV first; execute custodian positions as the first REST proof. | CSV proves mapping and validation without network variance; custodian positions proves endpoint dependencies, pagination, and raw API payload retention. |
+| OpenAPI import | Defer OpenAPI import until manual endpoint definition, sample response mapping, dry-run, validation, replay, and activation gates are stable. | OpenAPI is an accelerator over the manifest model, not a separate runtime or a substitute for mapping approval. |
+| Accepted record writer | Write accepted records to integration staging first, then reconcile and promote into Portfolio, Security Master, Ledger, or Reporting-owned stores. | Staging preserves replay, identity review, dedupe, and downstream ownership before canonical mutation. |
+| Trading boundary | Keep production trading out of the generic no-code runtime. | Order placement/cancel/amend flows require certified adapters, sandbox proof, idempotency, entitlement, approval, kill switch, audit, and reconciliation controls. |
 
 ## Architecture
 
@@ -550,7 +564,7 @@ usable operator artifact and a replayable proof path.
 
 | Phase | Goal | Exit criteria |
 | --- | --- | --- |
-| 0. Decision record | Lock the boundary and template pack. | Storage owner, template pack, first execution proof, canonical writer target, and activation gate issue codes are accepted. |
+| 0. Decision record | Lock the boundary and template pack. | Storage owner, four-template pack, manual CSV first proof, custodian-position first API proof, integration-staging writer target, and activation gate issue codes are accepted. |
 | 1. Manifest foundation | Persist draft provider templates and connection instances without secrets. | Manifest DTOs round-trip through source-generated JSON, credentials stay in the provider credential store, and activation readiness fails closed. |
 | 2. Dry-run runner | Execute manual CSV upload and one REST pull-mode endpoint without loading canonical stores. | Raw payload retention, record extraction, and dry-run summary work for manual CSV and one custodian-position sample provider. |
 | 3. Mapping and validation | Map one capability into canonical records and quarantine rejects. | Required-field mapping, safe transforms, validation issues, confidence scores, and replay from raw payload are tested. |
@@ -707,7 +721,9 @@ GitHub-hosted `Targeted Test` workflow with the same filters.
 
 ## Remaining Open Questions
 
-- Which concrete canonical service should receive the first promoted records after the integration
-  staging and reconciliation path is proven?
+- After integration staging and reconciliation are proven, which promoted record type should be
+  first to mutate its source-owned canonical store: positions into Portfolio, security reference
+  data into Security Master, transactions into Portfolio and Ledger evidence, or accounting
+  evidence into close/reporting workflows?
 - Which provider-sanitized external fixtures should supplement the seeded manual CSV upload,
   custodian positions, brokerage transactions, and fixed income security master template tests?
