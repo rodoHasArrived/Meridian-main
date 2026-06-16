@@ -14,6 +14,20 @@ coordinator: <owner>
 goal: <single-sentence outcome>
 mode: <Lightweight|Standard|Deep Review>
 
+working_memory:
+  last_synced: <timestamp>
+  codebase_snapshot: <branch plus dirty/clean summary>
+  active_claims:
+    - lane_id: <lane id>
+      files: [<paths this lane may write>]
+      status: <planned|editing|ready-for-integration|blocked|merged>
+  open_assumptions:
+    - <assumption needing confirmation>
+  validation_snapshot:
+    - command: <command>
+      outcome: <pass|fail|blocked|not-run>
+      reuse_until: <file or condition that invalidates this proof>
+
 lanes:
   - lane_id: lane-1
     owner: <agent/person>
@@ -69,6 +83,8 @@ context_budget:
 ## Usage Rules
 
 - Keep lane scopes disjoint unless overlap is explicitly approved by the coordinator.
+- Keep the `working_memory` block current whenever lane ownership, codebase drift, validation reuse,
+  or merge risk changes. Use [`working-memory.md`](working-memory.md) for the full ledger contract.
 - Record files already inspected to prevent duplicate discovery across lanes.
 - Record one validation owner per lane so reuse and rerun responsibility stays explicit.
 - Reuse prior validation evidence when files are unchanged; rerun when touched files differ.

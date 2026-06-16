@@ -25,6 +25,7 @@ Meridian is a .NET 10 trading and fund-operations platform with:
 6. Treat unrelated dirty-worktree changes as user-owned.
 7. For workflows with multiple agents/lanes, use `docs/ai/agent-handoff-checklist.md` as the required handoff format.
 8. Select `docs/ai/work-modes.md` mode before implementation; if running parallel lanes, initialize `docs/ai/parallel-task-manifest-template.md`.
+9. For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load the MDIF spine in `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-vision.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, and `docs/ai/context/README.md`.
 
 ## Current Product Direction
 
@@ -62,8 +63,10 @@ npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
 python3 build/scripts/docs/check-ai-inventory.py --summary
 python3 build/scripts/docs/validate-skill-packages.py
-make test
 ```
+
+GNU Make targets are optional convenience wrappers. In Windows shells where `where.exe make` finds
+nothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above instead of `make ...`.
 
 When local machine limits, restore failures, or MSBuild locks make validation unreliable, push the
 branch and use the manual GitHub-hosted `Targeted Test` workflow instead of repeatedly retrying
@@ -169,6 +172,7 @@ Do not embed the generated repository tree in `CLAUDE.md`. Use these maintained 
 - `docs/documentation-ownership.md` for docs ownership, generated-doc, and archive rules.
 - `docs/architecture/project-structure.md` for the maintained repository map.
 - `docs/architecture/module-map.md` for layer ownership and dependency boundaries.
+- `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-vision.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, and `docs/ai/context/README.md` for MDIF grounding before broad AI-assisted generation or architecture-sensitive work.
 - `docs/start/README.md` and `docs/engineering/README.md` for current local build, test, and run commands.
 - `docs/prompts/repo-maintenance-prompts.md` for prompt, agent, and skill maintenance rules.
 - `docs/ai/navigation/README.md` for the generated repo-navigation workflow.

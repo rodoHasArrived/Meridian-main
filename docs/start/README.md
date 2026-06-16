@@ -53,13 +53,22 @@ dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
 
 ## First Help Commands
 
+Plain Windows/PowerShell path:
+
 ```powershell
-make help
 dotnet run --project src/Meridian/Meridian.csproj -- --help
 python build/python/cli/buildctl.py --help
 ```
 
-If `make` is unavailable, use the underlying `dotnet`, `npm`, or `python` command shown in [Engineering](../engineering/README.md).
+Optional Make wrapper path:
+
+```powershell
+where.exe make
+make help
+```
+
+If `where.exe make` finds nothing, skip Make and use the underlying `dotnet`, `npm`, `pwsh`, or
+`python` command shown in [Engineering](../engineering/README.md).
 
 ## Choose A Launch Path
 

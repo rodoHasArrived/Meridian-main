@@ -2,7 +2,9 @@
 
 > Last verified: 2026-06-04
 > Canonical companions: `CLAUDE.md`, `docs/ai/assistant-workflow-contract.md`,
-> `docs/product/meridian-design-document.md`, and `docs/architecture/project-structure.md`
+> `docs/product/meridian-design-document.md`,
+> `docs/architecture/meridian-development-intelligence-framework.md`, and
+> `docs/architecture/project-structure.md`
 
 Use this file as the common source of truth for Meridian-specific terminology, current product
 direction, commands, and architecture when a Codex skill needs repository grounding without
@@ -21,6 +23,9 @@ repeating the same facts in every `SKILL.md`.
 - The active W5X productization targets are the shared Financial Record Explorers and the Financial
   Operations control center for reconciliation, exception management, close support, workflow
   control, and audit evidence.
+- MDIF is the required context spine for broad generation, domain modeling, workflow design, and
+  architecture-sensitive refactors: load the MDIF framework, vision, domain model, relevant domain
+  dictionary pages, and context packs before implementation.
 - Defer Backtesting Studio, live-readiness beyond paper-first governance, full treasury payment
   execution, full alternative asset operations, forecasting/scenario engines, enterprise risk,
   client portal, no-code workflow design, mobile, and other broad expansion lanes unless the work
@@ -44,11 +49,25 @@ repeating the same facts in every `SKILL.md`.
 
 Use these together before changing AI guidance, routing, or workflow-oriented skills:
 
+- `AGENTS.md`
+- `CLAUDE.md`
+- `.codex/AGENTS.md`
+- `.codex/skills/_shared/codex-execution-contract.md`
+- `.github/copilot-instructions.md`
+- `.github/agents/implementation-assurance-agent.md`
+- `.github/workflows/README.md`
+- `.claude/skills/_shared/project-context.md`
+- `.agents/skills/_shared/project-context.md`
 - `README.md`
 - `docs/README.md`
 - `docs/start/README.md`
 - `docs/product/README.md`
 - `docs/product/meridian-design-document.md`
+- `docs/architecture/meridian-development-intelligence-framework.md`
+- `docs/architecture/meridian-vision.md`
+- `docs/architecture/meridian-domain-model.md`
+- `docs/domain/README.md`
+- `docs/ai/context/README.md`
 - `docs/engineering/README.md`
 - `docs/operators/README.md`
 - `docs/documentation-ownership.md`
@@ -101,11 +120,13 @@ pwsh ./scripts/dev/desktop-dev.ps1
 pwsh ./scripts/dev/run-desktop.ps1 -Fixture
 pwsh ./scripts/dev/test-wpf-dev.ps1
 dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
-make test
 gh workflow run targeted-test.yml --ref <branch> -f lane=dotnet -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
 gh workflow run targeted-test.yml --ref <branch> -f lane=browser-dashboard -f browser_script=test:vitest -f vitest_file=src/screens/<screen>.test.tsx
 python3 build/scripts/ai-repo-updater.py known-errors
 ```
+
+GNU Make targets are optional convenience wrappers. In Windows shells where `where.exe make` finds
+nothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above instead of `make ...`.
 
 Prefer the narrowest validation command that matches the files being changed.
 When local CPU, memory, disk, dependency restore, or MSBuild lock contention makes validation
@@ -117,7 +138,6 @@ For Codex skill, catalog, prompt, docs-automation, or AI workflow changes, prefe
 validation stack before broad build or test runs:
 
 ```bash
-make ai-codex-skills-check
 python build/scripts/docs/check-codex-skills.py --summary
 python build/scripts/docs/check-ai-inventory.py --summary
 python build/scripts/docs/validate-skill-packages.py

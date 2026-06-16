@@ -65,6 +65,7 @@ import type {
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
   OperationsAssignBreakCaseRequest,
+  OperationsBreakCase,
   OperatorWorkflowHomeSummary,
   OrderResult,
   OrderSubmitRequest,
@@ -155,13 +156,28 @@ import type {
   OperationsApprovalPolicyMatrix,
   OperationsApprovalPolicyRuleUpsertRequest,
   OperationsApprovalPolicyRuleUpsertResult,
+  OperationsChecklistAcknowledgeRequest,
   OperationsCloseCalendar,
   OperationsCloseCalendarItemUpsertRequest,
   OperationsCloseCalendarItemUpsertResult,
+  OperationsCloseChecklistTask,
+  OperationsCloseReadiness,
   OperationsCloseWorkflowRequest,
+  OperationsGatePostureRequest,
+  OperationsLedgerDraftRequest,
+  OperationsLedgerPostRequest,
+  OperationsLedgerPreview,
+  OperationsLedgerValidationRequest,
+  OperationsReconciliationRunRequest,
   OperationsReopenWorkflowRequest,
   OperationsRejectWorkflowRequest,
   OperationsResolveBreakCaseRequest,
+  OperationsSecurityMasterOverrideApprovalRequest,
+  OperationsSecurityMasterResolveRequest,
+  OperationsStartWorkflowRequest,
+  OperationsSubmitApprovalRequest,
+  OperationsTimelineEntry,
+  OperationsTransitionRequest,
   OperationsTransitionResult,
   PlaidLinkTokenRequest,
   PlaidLinkTokenResponse,
@@ -327,14 +343,30 @@ import {
   workstationOperatorInboxEndpoint,
   workstationOperationsContinuityApprovalApproveEndpoint,
   workstationOperationsContinuityApprovalRejectEndpoint,
+  workstationOperationsContinuityApprovalSubmitEndpoint,
+  workstationOperationsContinuityBrokerImportEndpoint,
+  workstationOperationsContinuityBrokerNormalizeEndpoint,
   workstationOperationsContinuityBreakAssignEndpoint,
   workstationOperationsContinuityBreakResolveEndpoint,
+  workstationOperationsContinuityBreaksEndpoint,
+  workstationOperationsContinuityChecklistEndpoint,
+  workstationOperationsContinuityChecklistAcknowledgeEndpoint,
   workstationOperationsContinuityCloseEndpoint,
   workstationOperationsContinuityDetailEndpoint,
   workstationOperationsContinuityEndpoint,
   workstationOperationsContinuityCloseCalendarEndpoint,
+  workstationOperationsContinuityCloseReadinessEndpoint,
+  workstationOperationsContinuityLedgerDraftEndpoint,
+  workstationOperationsContinuityLedgerPostEndpoint,
   workstationOperationsPrivateCapitalCloseCockpitEndpoint,
+  workstationOperationsContinuityLedgerPreviewEndpoint,
+  workstationOperationsContinuityLedgerValidateEndpoint,
+  workstationOperationsContinuityPostureRefreshEndpoint,
+  workstationOperationsContinuityReconciliationRunEndpoint,
   workstationOperationsContinuityReopenEndpoint,
+  workstationOperationsContinuitySecurityMasterOverrideApproveEndpoint,
+  workstationOperationsContinuitySecurityMasterResolveEndpoint,
+  workstationOperationsContinuityTimelineEndpoint,
   workstationChiefOfStaffDecisionEndpoint,
   workstationChiefOfStaffHealthEndpoint,
   workstationChiefOfStaffSessionEndpoint,
@@ -887,6 +919,142 @@ export function getOperationsContinuityWorkflow(workflowId: string, options: Api
   return getJson<OperationsContinuityWorkflow>(workstationOperationsContinuityDetailEndpoint(workflowId), options);
 }
 
+export function getOperationsContinuityTimeline(workflowId: string, options: ApiRequestOptions = {}) {
+  return getJson<OperationsTimelineEntry[]>(workstationOperationsContinuityTimelineEndpoint(workflowId), options);
+}
+
+export function getOperationsContinuityBreaks(workflowId: string, options: ApiRequestOptions = {}) {
+  return getJson<OperationsBreakCase[]>(workstationOperationsContinuityBreaksEndpoint(workflowId), options);
+}
+
+export function getOperationsContinuityLedgerPreview(workflowId: string, options: ApiRequestOptions = {}) {
+  return getJson<OperationsLedgerPreview | null>(workstationOperationsContinuityLedgerPreviewEndpoint(workflowId), options);
+}
+
+export function getOperationsContinuityChecklist(workflowId: string, options: ApiRequestOptions = {}) {
+  return getJson<OperationsCloseChecklistTask[]>(workstationOperationsContinuityChecklistEndpoint(workflowId), options);
+}
+
+export function getOperationsContinuityCloseReadiness(workflowId: string, options: ApiRequestOptions = {}) {
+  return getJson<OperationsCloseReadiness>(workstationOperationsContinuityCloseReadinessEndpoint(workflowId), options);
+}
+
+export function startOperationsContinuityWorkflow(
+  request: OperationsStartWorkflowRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(workstationOperationsContinuityEndpoint(), request, options);
+}
+
+export function importOperationsContinuityBrokerData(
+  workflowId: string,
+  request: OperationsTransitionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityBrokerImportEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function normalizeOperationsContinuityBrokerTransactions(
+  workflowId: string,
+  request: OperationsTransitionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityBrokerNormalizeEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function refreshOperationsContinuityGatePosture(
+  workflowId: string,
+  request: OperationsGatePostureRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityPostureRefreshEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function resolveOperationsContinuitySecurityMasterMappings(
+  workflowId: string,
+  request: OperationsSecurityMasterResolveRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuitySecurityMasterResolveEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function approveOperationsContinuitySecurityMasterOverride(
+  workflowId: string,
+  overrideId: string,
+  request: OperationsSecurityMasterOverrideApprovalRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuitySecurityMasterOverrideApproveEndpoint(workflowId, overrideId),
+    request,
+    options
+  );
+}
+
+export function draftOperationsContinuityLedger(
+  workflowId: string,
+  request: OperationsLedgerDraftRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityLedgerDraftEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function validateOperationsContinuityLedger(
+  workflowId: string,
+  request: OperationsLedgerValidationRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityLedgerValidateEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function postOperationsContinuityLedger(
+  workflowId: string,
+  request: OperationsLedgerPostRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityLedgerPostEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function runOperationsContinuityReconciliation(
+  workflowId: string,
+  request: OperationsReconciliationRunRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityReconciliationRunEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
 export function assignOperationsContinuityBreakCase(
   workflowId: string,
   breakId: string,
@@ -908,6 +1076,31 @@ export function resolveOperationsContinuityBreakCase(
 ) {
   return postJson<OperationsTransitionResult>(
     workstationOperationsContinuityBreakResolveEndpoint(workflowId, breakId),
+    request,
+    options
+  );
+}
+
+export function acknowledgeOperationsContinuityChecklistTask(
+  workflowId: string,
+  taskId: string,
+  request: OperationsChecklistAcknowledgeRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityChecklistAcknowledgeEndpoint(workflowId, taskId),
+    request,
+    options
+  );
+}
+
+export function submitOperationsContinuityApproval(
+  workflowId: string,
+  request: OperationsSubmitApprovalRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityApprovalSubmitEndpoint(workflowId),
     request,
     options
   );

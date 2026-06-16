@@ -182,7 +182,6 @@ public static class LedgerEndpoints
 
             try
             {
-                var trustedRequest = request with { ClosedBy = actor };
                 var result = await service
                     .ClosePeriodAsync(
                         periodId,

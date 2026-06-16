@@ -1,12 +1,19 @@
+import { useCallback, useMemo, useState } from "react";
 import { AlertTriangle, ArrowRight, Gauge, GitBranch, ListChecks, Lock, RefreshCcw, Workflow } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  acknowledgeOperationsContinuityChecklistTask,
+  assignOperationsContinuityBreakCase,
+  resolveOperationsContinuityBreakCase
+} from "@/lib/api";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
 import {
   useOperationsContinuityScreenViewModel,
+  type FinancialOperationsCommandSpineRow,
   type FinancialOperationsOperatorQueueRow,
   type OperationsAccountingRecordEvidenceRow,
   type OperationsContinuityCloseCockpitApprovalRow,
@@ -171,6 +178,51 @@ const operationalDashboardColumns: DenseDataTableColumn<OperationsContinuityDash
     label: "Route",
     render: (row) => row.routeHref ? (
       <Link className="text-xs" to={row.routeHref} aria-label={`Open operational dashboard metric ${row.label}`}>
+        {row.routeLabel}
+      </Link>
+    ) : (
+      <span className="text-xs text-muted-foreground">{row.routeLabel}</span>
+    )
+  }
+];
+
+const financialOperationsCommandSpineColumns: DenseDataTableColumn<FinancialOperationsCommandSpineRow>[] = [
+  {
+    id: "stage",
+    label: "Stage",
+    render: (row) => (
+      <span className="block min-w-0">
+        <span className="block font-semibold text-foreground">{row.stageLabel}</span>
+        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.detail}</span>
+      </span>
+    )
+  },
+  {
+    id: "command",
+    label: "Command",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
+        <span className="mt-1 block text-foreground">{row.commandLabel}</span>
+        <span className="block font-mono text-muted-foreground">{row.postureLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "guard",
+    label: "Guard / evidence",
+    render: (row) => (
+      <span className="block text-xs leading-5">
+        <span className="block text-foreground">{row.guardLabel}</span>
+        <span className="block text-muted-foreground">{row.evidenceLabel}</span>
+      </span>
+    )
+  },
+  {
+    id: "route",
+    label: "Route",
+    render: (row) => row.routeHref ? (
+      <Link className="text-xs" to={row.routeHref} aria-label={`Open Financial Operations command stage ${row.stageLabel}`}>
         {row.routeLabel}
       </Link>
     ) : (
@@ -370,148 +422,236 @@ const evidencePackageColumns: DenseDataTableColumn<OperationsContinuityEvidenceP
   }
 ];
 
-const breakCaseColumns: DenseDataTableColumn<OperationsContinuityBreakCaseRow>[] = [
-  {
-    id: "case",
-    label: "Break",
-    render: (row) => (
-      <span className="block min-w-0">
-        <span className="block break-words font-mono text-xs font-semibold text-foreground">{row.caseLabel}</span>
-        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.categoryLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "status",
-    label: "Status",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
-        <span className="mt-1 block text-muted-foreground">{row.severityLabel}</span>
-        <span className="block text-muted-foreground">{row.materialityLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "owner",
-    label: "Owner",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <span className="block font-mono text-foreground/80">{row.ownerLabel}</span>
-        <span className="block text-muted-foreground">{row.dueLabel}</span>
-        <span className="block text-muted-foreground">{row.slaLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "escalation",
-    label: "Escalation",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <span className="block text-foreground">{row.escalationLabel}</span>
-        <span className="block text-muted-foreground">{row.evidenceLabel}</span>
-        {row.evidenceHref ? (
-          <Link className="block" to={row.evidenceHref} aria-label={`Open retained evidence for break ${row.caseLabel}`}>
-            {row.evidenceRouteLabel}
-          </Link>
-        ) : (
-          <span className="block text-muted-foreground">{row.evidenceRouteLabel}</span>
-        )}
-      </span>
-    )
-  },
-  {
-    id: "variance",
-    label: "Variance",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <span className="block text-foreground">{row.varianceLabel}</span>
-        <span className="block text-muted-foreground">{row.sourceLabel}</span>
-        <span className="block text-muted-foreground">{row.rootCauseLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "action",
-    label: "Action",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <span className="block text-foreground">{row.actionLabel}</span>
-        <span className="block text-muted-foreground">{row.approvalLabel}</span>
-        <span className="block text-muted-foreground">{row.blockedOutputsLabel}</span>
-        <span className="block text-muted-foreground">{row.commandPostureLabel}</span>
-        <span className="block text-muted-foreground">{row.commandGuardLabel}</span>
-        {row.caseworkHref ? (
-          <Link className="link-subtle mt-1 inline-flex" to={row.caseworkHref} aria-label={`Open exception casework for break ${row.caseLabel}`}>
-            {row.caseworkRouteLabel}
-          </Link>
-        ) : (
-          <span className="mt-1 block text-muted-foreground">{row.caseworkRouteLabel}</span>
-        )}
-        <span className="block font-mono text-muted-foreground">{row.symbolLabel}</span>
-      </span>
-    )
-  }
-];
+type BreakCommandKind = "assign" | "resolve";
 
-const checklistColumns: DenseDataTableColumn<OperationsContinuityChecklistRow>[] = [
-  {
-    id: "task",
-    label: "Task",
-    render: (row) => (
-      <span className="block min-w-0">
-        <span className="block font-semibold text-foreground">{row.label}</span>
-        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.requiredEvidence}</span>
-      </span>
-    )
-  },
-  {
-    id: "status",
-    label: "Status",
-    render: (row) => <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
-  },
-  {
-    id: "owner",
-    label: "Owner",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <span className="block font-mono text-foreground/80">{row.ownerLabel}</span>
-        <span className="block text-muted-foreground">{row.approvalLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "due",
-    label: "Due",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <span className="block text-foreground">{row.dueLabel}</span>
-        <span className="block text-muted-foreground">{row.expiresLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "evidence",
-    label: "Evidence",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <span className="block font-mono text-muted-foreground">{row.evidenceLabel}</span>
-        {row.remediationHref ? (
-          <Link to={row.remediationHref} aria-label={`Open remediation for ${row.label}`}>
-            {row.remediationLabel}
-          </Link>
-        ) : (
-          <span className="block text-muted-foreground">{row.remediationLabel}</span>
-        )}
-      </span>
-    )
-  },
-  {
-    id: "acknowledgement",
-    label: "Acknowledgement",
-    render: (row) => <span className="text-xs leading-5 text-muted-foreground">{row.acknowledgementLabel}</span>
-  }
-];
+interface BreakCaseColumnOptions {
+  pendingBreakCommand: { breakId: string; kind: BreakCommandKind } | null;
+  onRunCommand: (row: OperationsContinuityBreakCaseRow, kind: BreakCommandKind) => void;
+}
+
+function buildBreakCaseColumns({
+  pendingBreakCommand,
+  onRunCommand
+}: BreakCaseColumnOptions): DenseDataTableColumn<OperationsContinuityBreakCaseRow>[] {
+  return [
+    {
+      id: "case",
+      label: "Break",
+      render: (row) => (
+        <span className="block min-w-0">
+          <span className="block break-words font-mono text-xs font-semibold text-foreground">{row.caseLabel}</span>
+          <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.categoryLabel}</span>
+        </span>
+      )
+    },
+    {
+      id: "status",
+      label: "Status",
+      render: (row) => (
+        <span className="block text-xs leading-5">
+          <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
+          <span className="mt-1 block text-muted-foreground">{row.severityLabel}</span>
+          <span className="block text-muted-foreground">{row.materialityLabel}</span>
+        </span>
+      )
+    },
+    {
+      id: "owner",
+      label: "Owner",
+      render: (row) => (
+        <span className="block text-xs leading-5">
+          <span className="block font-mono text-foreground/80">{row.ownerLabel}</span>
+          <span className="block text-muted-foreground">{row.dueLabel}</span>
+          <span className="block text-muted-foreground">{row.slaLabel}</span>
+        </span>
+      )
+    },
+    {
+      id: "escalation",
+      label: "Escalation",
+      render: (row) => (
+        <span className="block text-xs leading-5">
+          <span className="block text-foreground">{row.escalationLabel}</span>
+          <span className="block text-muted-foreground">{row.evidenceLabel}</span>
+          {row.evidenceHref ? (
+            <Link className="block" to={row.evidenceHref} aria-label={`Open retained evidence for break ${row.caseLabel}`}>
+              {row.evidenceRouteLabel}
+            </Link>
+          ) : (
+            <span className="block text-muted-foreground">{row.evidenceRouteLabel}</span>
+          )}
+        </span>
+      )
+    },
+    {
+      id: "variance",
+      label: "Variance",
+      render: (row) => (
+        <span className="block text-xs leading-5">
+          <span className="block text-foreground">{row.varianceLabel}</span>
+          <span className="block text-muted-foreground">{row.sourceLabel}</span>
+          <span className="block text-muted-foreground">{row.rootCauseLabel}</span>
+        </span>
+      )
+    },
+    {
+      id: "action",
+      label: "Action",
+      render: (row) => {
+        const assignBusy = pendingBreakCommand?.breakId === row.id && pendingBreakCommand.kind === "assign";
+        const resolveBusy = pendingBreakCommand?.breakId === row.id && pendingBreakCommand.kind === "resolve";
+        const assignDisabledReason = pendingBreakCommand && !assignBusy
+          ? "Wait for the active break command to finish."
+          : row.assignDisabledReason;
+        const resolveDisabledReason = pendingBreakCommand && !resolveBusy
+          ? "Wait for the active break command to finish."
+          : row.resolveDisabledReason;
+
+        return (
+          <span className="block text-xs leading-5">
+            <span className="block text-foreground">{row.actionLabel}</span>
+            <span className="block text-muted-foreground">{row.approvalLabel}</span>
+            <span className="block text-muted-foreground">{row.blockedOutputsLabel}</span>
+            <span className="block text-muted-foreground">{row.commandPostureLabel}</span>
+            <span className="block text-muted-foreground">{row.commandGuardLabel}</span>
+            <span className="mt-2 flex flex-wrap gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                busy={assignBusy}
+                busyLabel="Assigning"
+                disabled={assignDisabledReason !== null}
+                disabledReason={assignDisabledReason}
+                aria-label={row.assignAriaLabel}
+                onClick={() => onRunCommand(row, "assign")}
+              >
+                {row.assignLabel}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                busy={resolveBusy}
+                busyLabel="Resolving"
+                disabled={resolveDisabledReason !== null}
+                disabledReason={resolveDisabledReason}
+                aria-label={row.resolveAriaLabel}
+                onClick={() => onRunCommand(row, "resolve")}
+              >
+                {row.resolveLabel}
+              </Button>
+            </span>
+            {row.caseworkHref ? (
+              <Link className="link-subtle mt-1 inline-flex" to={row.caseworkHref} aria-label={`Open exception casework for break ${row.caseLabel}`}>
+                {row.caseworkRouteLabel}
+              </Link>
+            ) : (
+              <span className="mt-1 block text-muted-foreground">{row.caseworkRouteLabel}</span>
+            )}
+            <span className="block font-mono text-muted-foreground">{row.symbolLabel}</span>
+          </span>
+        );
+      }
+    }
+  ];
+}
+
+interface ChecklistColumnOptions {
+  pendingTaskId: string | null;
+  onAcknowledge: (row: OperationsContinuityChecklistRow) => void;
+}
+
+function buildChecklistColumns({
+  pendingTaskId,
+  onAcknowledge
+}: ChecklistColumnOptions): DenseDataTableColumn<OperationsContinuityChecklistRow>[] {
+  return [
+    {
+      id: "task",
+      label: "Task",
+      render: (row) => (
+        <span className="block min-w-0">
+          <span className="block font-semibold text-foreground">{row.label}</span>
+          <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.requiredEvidence}</span>
+        </span>
+      )
+    },
+    {
+      id: "status",
+      label: "Status",
+      render: (row) => <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
+    },
+    {
+      id: "owner",
+      label: "Owner",
+      render: (row) => (
+        <span className="block text-xs leading-5">
+          <span className="block font-mono text-foreground/80">{row.ownerLabel}</span>
+          <span className="block text-muted-foreground">{row.approvalLabel}</span>
+        </span>
+      )
+    },
+    {
+      id: "due",
+      label: "Due",
+      render: (row) => (
+        <span className="block text-xs leading-5">
+          <span className="block text-foreground">{row.dueLabel}</span>
+          <span className="block text-muted-foreground">{row.expiresLabel}</span>
+        </span>
+      )
+    },
+    {
+      id: "evidence",
+      label: "Evidence",
+      render: (row) => (
+        <span className="block text-xs leading-5">
+          <span className="block font-mono text-muted-foreground">{row.evidenceLabel}</span>
+          {row.remediationHref ? (
+            <Link to={row.remediationHref} aria-label={`Open remediation for ${row.label}`}>
+              {row.remediationLabel}
+            </Link>
+          ) : (
+            <span className="block text-muted-foreground">{row.remediationLabel}</span>
+          )}
+        </span>
+      )
+    },
+    {
+      id: "acknowledgement",
+      label: "Acknowledgement",
+      render: (row) => {
+        const busy = pendingTaskId === row.id;
+        const disabledReason = pendingTaskId && !busy
+          ? "Wait for the active checklist acknowledgement command to finish."
+          : row.acknowledgeDisabledReason;
+
+        return (
+          <span className="block text-xs leading-5">
+            <span className="block text-muted-foreground">{row.acknowledgementLabel}</span>
+            <span className="mt-1 block font-medium text-foreground">{row.acknowledgementCommandPostureLabel}</span>
+            <span className="block font-mono text-muted-foreground">{row.acknowledgementGuardLabel}</span>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="mt-2"
+              busy={busy}
+              busyLabel="Acknowledging"
+              disabled={disabledReason !== null}
+              disabledReason={disabledReason}
+              aria-label={row.acknowledgeAriaLabel}
+              onClick={() => onAcknowledge(row)}
+            >
+              {row.acknowledgeLabel}
+            </Button>
+          </span>
+        );
+      }
+    }
+  ];
+}
 
 const reconciliationLaneColumns: DenseDataTableColumn<OperationsContinuityReconciliationLaneRow>[] = [
   {
@@ -836,6 +976,120 @@ const timelineColumns: DenseDataTableColumn<OperationsContinuityTimelineRow>[] =
 
 export function OperationsContinuityScreen() {
   const vm = useOperationsContinuityScreenViewModel();
+  const [breakCommand, setBreakCommand] = useState<{
+    pending: { breakId: string; kind: BreakCommandKind } | null;
+    message: string | null;
+    error: string | null;
+  }>({ pending: null, message: null, error: null });
+  const [acknowledgementCommand, setAcknowledgementCommand] = useState<{
+    pendingTaskId: string | null;
+    message: string | null;
+    error: string | null;
+  }>({ pendingTaskId: null, message: null, error: null });
+
+  const runBreakCommand = useCallback(async (row: OperationsContinuityBreakCaseRow, kind: BreakCommandKind) => {
+    const disabledReason = kind === "assign" ? row.assignDisabledReason : row.resolveDisabledReason;
+    if (!row.workflowId || row.expectedWorkflowVersion === null || disabledReason !== null) {
+      setBreakCommand({
+        pending: null,
+        message: null,
+        error: disabledReason ?? "Break command is unavailable."
+      });
+      return;
+    }
+
+    setBreakCommand({ pending: { breakId: row.id, kind }, message: null, error: null });
+
+    try {
+      const result = kind === "assign"
+        ? await assignOperationsContinuityBreakCase(row.workflowId, row.id, {
+            expectedVersion: row.expectedWorkflowVersion,
+            actor: "browser-operator",
+            owner: row.assignmentOwner,
+            rationale: `Assigned break ${row.caseLabel} from Operations Continuity exception management.`,
+            escalationLevel: row.assignmentEscalationLevel,
+            escalationReason: row.assignmentEscalationReason,
+            dueDate: row.assignmentDueDate,
+            correlationId: `browser-break-assign:${row.id}`,
+            actionOrigin: "HumanOperator"
+          })
+        : await resolveOperationsContinuityBreakCase(row.workflowId, row.id, {
+            expectedVersion: row.expectedWorkflowVersion,
+            actor: "browser-operator",
+            resolutionStatus: row.resolutionStatus,
+            rationale: `Resolved break ${row.caseLabel} after retained evidence review.`,
+            correlationId: `browser-break-resolve:${row.id}`,
+            evidenceLinks: row.resolutionEvidenceLinks,
+            actionOrigin: "HumanOperator"
+          });
+
+      setBreakCommand({
+        pending: null,
+        message: result.message?.trim() || (kind === "assign"
+          ? "Break assignment retained through shared operations command."
+          : "Break resolution retained through shared operations command."),
+        error: null
+      });
+      await vm.refresh();
+    } catch (err) {
+      setBreakCommand({
+        pending: null,
+        message: null,
+        error: formatBreakCommandError(err)
+      });
+    }
+  }, [vm.refresh]);
+
+  const acknowledgeChecklistTask = useCallback(async (row: OperationsContinuityChecklistRow) => {
+    if (!row.workflowId || row.expectedWorkflowVersion === null || !row.canAcknowledge) {
+      setAcknowledgementCommand({
+        pendingTaskId: null,
+        message: null,
+        error: row.acknowledgeDisabledReason ?? "Checklist acknowledgement command is unavailable."
+      });
+      return;
+    }
+
+    setAcknowledgementCommand({ pendingTaskId: row.id, message: null, error: null });
+
+    try {
+      const result = await acknowledgeOperationsContinuityChecklistTask(row.workflowId, row.id, {
+        expectedVersion: row.expectedWorkflowVersion,
+        actor: "browser-operator",
+        rationale: `Acknowledged close checklist task ${row.label} after retained evidence review.`,
+        correlationId: `browser-checklist:${row.id}`
+      });
+
+      setAcknowledgementCommand({
+        pendingTaskId: null,
+        message: result.message?.trim() || "Checklist acknowledgement retained through shared operations command.",
+        error: null
+      });
+      await vm.refresh();
+    } catch (err) {
+      setAcknowledgementCommand({
+        pendingTaskId: null,
+        message: null,
+        error: formatChecklistCommandError(err)
+      });
+    }
+  }, [vm.refresh]);
+
+  const checklistColumns = useMemo(
+    () => buildChecklistColumns({
+      pendingTaskId: acknowledgementCommand.pendingTaskId,
+      onAcknowledge: (row) => { void acknowledgeChecklistTask(row); }
+    }),
+    [acknowledgementCommand.pendingTaskId, acknowledgeChecklistTask]
+  );
+
+  const breakCaseColumns = useMemo(
+    () => buildBreakCaseColumns({
+      pendingBreakCommand: breakCommand.pending,
+      onRunCommand: (row, kind) => { void runBreakCommand(row, kind); }
+    }),
+    [breakCommand.pending, runBreakCommand]
+  );
 
   return (
     <div className="space-y-6">
@@ -1023,6 +1277,32 @@ export function OperationsContinuityScreen() {
               getRowAriaLabel={(row) => row.ariaLabel}
               emptyText={vm.dashboard.metricsEmptyText}
               ariaLabel="Financial Operations operational dashboard"
+            />
+          </CardContent>
+        </Card>
+        <Card className={cn("border", tonePanel[vm.commandSpine.statusTone])}>
+          <CardHeader>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <GitBranch className="h-5 w-5 text-primary" aria-hidden="true" />
+                  {vm.commandSpine.title}
+                </CardTitle>
+                <CardDescription>{vm.commandSpine.summaryLabel}</CardDescription>
+              </div>
+              <Badge variant={toneBadge[vm.commandSpine.statusTone]}>
+                {vm.commandSpine.statusLabel}
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <DenseDataTable
+              columns={financialOperationsCommandSpineColumns}
+              rows={vm.commandSpine.rows}
+              getRowId={(row) => row.id}
+              getRowAriaLabel={(row) => row.ariaLabel}
+              emptyText={vm.commandSpine.emptyText}
+              ariaLabel="Financial Operations command spine"
             />
           </CardContent>
         </Card>
@@ -1310,7 +1590,17 @@ export function OperationsContinuityScreen() {
             </CardTitle>
             <CardDescription>Source-owned reconciliation breaks with retained owner, due-date, escalation, variance, and evidence posture.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
+            {breakCommand.error ? (
+              <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+                {breakCommand.error}
+              </p>
+            ) : null}
+            {breakCommand.message ? (
+              <p role="status" className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
+                {breakCommand.message}
+              </p>
+            ) : null}
             <DenseDataTable
               columns={breakCaseColumns}
               rows={vm.breakCases}
@@ -1349,7 +1639,17 @@ export function OperationsContinuityScreen() {
               <span role="listitem">{vm.checklistSummary.dueSoonLabel}</span>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
+            {acknowledgementCommand.error ? (
+              <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+                {acknowledgementCommand.error}
+              </p>
+            ) : null}
+            {acknowledgementCommand.message ? (
+              <p role="status" className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
+                {acknowledgementCommand.message}
+              </p>
+            ) : null}
             <DenseDataTable
               columns={checklistColumns}
               rows={vm.checklist}
@@ -1541,4 +1841,20 @@ export function OperationsContinuityScreen() {
       </section>
     </div>
   );
+}
+
+function formatChecklistCommandError(err: unknown): string {
+  if (err instanceof Error && err.message.trim().length > 0) {
+    return err.message;
+  }
+
+  return "Checklist acknowledgement command failed.";
+}
+
+function formatBreakCommandError(err: unknown): string {
+  if (err instanceof Error && err.message.trim().length > 0) {
+    return err.message;
+  }
+
+  return "Break command failed.";
 }

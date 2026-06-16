@@ -428,6 +428,69 @@ export function workstationOperationsContinuityBreaksEndpoint(workflowId: string
   return routeWithParam(UI_API_ROUTES.OperationsContinuityBreaks, "workflowId", workflowId);
 }
 
+export function workstationOperationsContinuityChecklistEndpoint(workflowId: string): string {
+  return routeWithParam(UI_API_ROUTES.OperationsContinuityChecklist, "workflowId", workflowId);
+}
+
+export function workstationOperationsContinuityCloseReadinessEndpoint(workflowId: string): string {
+  return routeWithParam(UI_API_ROUTES.OperationsContinuityCloseReadiness, "workflowId", workflowId);
+}
+
+export function workstationOperationsContinuityBrokerImportEndpoint(workflowId: string): string {
+  return routeWithParam(UI_API_ROUTES.OperationsContinuityBrokerImport, "workflowId", workflowId);
+}
+
+export function workstationOperationsContinuityBrokerNormalizeEndpoint(workflowId: string): string {
+  return routeWithParam(UI_API_ROUTES.OperationsContinuityBrokerNormalize, "workflowId", workflowId);
+}
+
+export function workstationOperationsContinuityPostureRefreshEndpoint(workflowId: string): string {
+  return routeWithParam(UI_API_ROUTES.OperationsContinuityPostureRefresh, "workflowId", workflowId);
+}
+
+export function workstationOperationsContinuitySecurityMasterResolveEndpoint(workflowId: string): string {
+  return routeWithParam(UI_API_ROUTES.OperationsContinuitySecurityMasterResolve, "workflowId", workflowId);
+}
+
+export function workstationOperationsContinuitySecurityMasterOverrideApproveEndpoint(
+  workflowId: string,
+  overrideId: string
+): string {
+  return routeWithParam(
+    routeWithParam(UI_API_ROUTES.OperationsContinuitySecurityMasterOverrideApprove, "workflowId", workflowId),
+    "overrideId",
+    overrideId
+  );
+}
+
+export function workstationOperationsContinuityLedgerDraftEndpoint(workflowId: string): string {
+  return routeWithParam(UI_API_ROUTES.OperationsContinuityLedgerDraft, "workflowId", workflowId);
+}
+
+export function workstationOperationsContinuityLedgerValidateEndpoint(workflowId: string): string {
+  return routeWithParam(UI_API_ROUTES.OperationsContinuityLedgerValidate, "workflowId", workflowId);
+}
+
+export function workstationOperationsContinuityLedgerPostEndpoint(workflowId: string): string {
+  return routeWithParam(UI_API_ROUTES.OperationsContinuityLedgerPost, "workflowId", workflowId);
+}
+
+export function workstationOperationsContinuityReconciliationRunEndpoint(workflowId: string): string {
+  return routeWithParam(UI_API_ROUTES.OperationsContinuityReconciliationRun, "workflowId", workflowId);
+}
+
+export function workstationOperationsContinuityApprovalSubmitEndpoint(workflowId: string): string {
+  return routeWithParam(UI_API_ROUTES.OperationsContinuityApprovalSubmit, "workflowId", workflowId);
+}
+
+export function workstationOperationsContinuityChecklistAcknowledgeEndpoint(workflowId: string, taskId: string): string {
+  return routeWithParam(
+    routeWithParam(UI_API_ROUTES.OperationsContinuityChecklistAcknowledge, "workflowId", workflowId),
+    "taskId",
+    taskId
+  );
+}
+
 export function workstationOperationsContinuityBreakAssignEndpoint(workflowId: string, breakId: string): string {
   return routeWithParam(
     routeWithParam(UI_API_ROUTES.OperationsContinuityReconciliationBreakAssign, "workflowId", workflowId),

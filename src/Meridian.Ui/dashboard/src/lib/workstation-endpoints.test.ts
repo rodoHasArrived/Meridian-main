@@ -111,16 +111,29 @@ import {
   workstationChiefOfStaffTraceExportEndpoint,
   workstationOperatorInboxEndpoint,
   workstationAssetOperationsEndpoint,
+  workstationOperationsContinuityApprovalSubmitEndpoint,
+  workstationOperationsContinuityBrokerImportEndpoint,
+  workstationOperationsContinuityBrokerNormalizeEndpoint,
   workstationOperationsContinuityBreakAssignEndpoint,
   workstationOperationsContinuityBreakResolveEndpoint,
   workstationOperationsContinuityBreaksEndpoint,
+  workstationOperationsContinuityChecklistEndpoint,
+  workstationOperationsContinuityChecklistAcknowledgeEndpoint,
   workstationOperationsContinuityCloseEndpoint,
   workstationOperationsContinuityDetailEndpoint,
   workstationOperationsContinuityEndpoint,
   workstationOperationsContinuityCloseCalendarEndpoint,
+  workstationOperationsContinuityCloseReadinessEndpoint,
+  workstationOperationsContinuityLedgerDraftEndpoint,
   workstationOperationsContinuityLedgerPreviewEndpoint,
+  workstationOperationsContinuityLedgerPostEndpoint,
+  workstationOperationsContinuityLedgerValidateEndpoint,
+  workstationOperationsContinuityPostureRefreshEndpoint,
   workstationOperationsPrivateCapitalCloseCockpitEndpoint,
+  workstationOperationsContinuityReconciliationRunEndpoint,
   workstationOperationsContinuityReopenEndpoint,
+  workstationOperationsContinuitySecurityMasterOverrideApproveEndpoint,
+  workstationOperationsContinuitySecurityMasterResolveEndpoint,
   workstationOperationsContinuityTimelineEndpoint,
   workstationRunAttributionEndpoint,
   workstationRunCompareEndpoint,
@@ -293,6 +306,45 @@ describe("workstation API endpoint catalog", () => {
     );
     expect(workstationOperationsContinuityBreaksEndpoint("workflow / 1")).toBe(
       "/api/workstation/operations/continuity/workflow%20%2F%201/breaks"
+    );
+    expect(workstationOperationsContinuityChecklistEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/checklist"
+    );
+    expect(workstationOperationsContinuityCloseReadinessEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/close-readiness"
+    );
+    expect(workstationOperationsContinuityBrokerImportEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/broker/import"
+    );
+    expect(workstationOperationsContinuityBrokerNormalizeEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/broker/normalize"
+    );
+    expect(workstationOperationsContinuityPostureRefreshEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/posture/refresh"
+    );
+    expect(workstationOperationsContinuitySecurityMasterResolveEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/security-master/resolve"
+    );
+    expect(workstationOperationsContinuitySecurityMasterOverrideApproveEndpoint("workflow / 1", "override / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/security-master/overrides/override%20%2F%201/approve"
+    );
+    expect(workstationOperationsContinuityLedgerDraftEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/ledger/draft"
+    );
+    expect(workstationOperationsContinuityLedgerValidateEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/ledger/validate"
+    );
+    expect(workstationOperationsContinuityLedgerPostEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/ledger/post"
+    );
+    expect(workstationOperationsContinuityReconciliationRunEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/reconciliation/run"
+    );
+    expect(workstationOperationsContinuityApprovalSubmitEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/approval/submit"
+    );
+    expect(workstationOperationsContinuityChecklistAcknowledgeEndpoint("workflow / 1", "task / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/checklist/task%20%2F%201/acknowledge"
     );
     expect(workstationOperationsContinuityBreakAssignEndpoint("workflow / 1", "break / 1")).toBe(
       "/api/workstation/operations/continuity/workflow%20%2F%201/reconciliation/breaks/break%20%2F%201/assign"

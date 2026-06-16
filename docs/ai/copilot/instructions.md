@@ -22,9 +22,14 @@ Use this order for Copilot Chat, Copilot coding agent, and Copilot-authored PRs:
 4. [`../ai-known-errors.md`](../ai-known-errors.md) before changing code or generated artifacts.
 5. [`../navigation/README.md`](../navigation/README.md) and
    [`../generated/repo-navigation.md`](../generated/repo-navigation.md) for large-repo routing.
-6. `../agent-handoff-checklist.md` for coordinator-to-specialist-to-assurance handoffs.
-7. `../work-modes.md` to select Lightweight, Standard, or Deep Review context budgets before implementation.
-8. [`../tooling/README.md`](../tooling/README.md) when the task needs AI validators, route tooling,
+6. For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load
+   [`../../architecture/meridian-development-intelligence-framework.md`](../../architecture/meridian-development-intelligence-framework.md),
+   [`../../architecture/meridian-vision.md`](../../architecture/meridian-vision.md),
+   [`../../architecture/meridian-domain-model.md`](../../architecture/meridian-domain-model.md),
+   [`../../domain/README.md`](../../domain/README.md), and [`../context/README.md`](../context/README.md).
+7. `../agent-handoff-checklist.md` for coordinator-to-specialist-to-assurance handoffs.
+8. `../work-modes.md` to select Lightweight, Standard, or Deep Review context budgets before implementation.
+9. [`../tooling/README.md`](../tooling/README.md) when the task needs AI validators, route tooling,
    or maintenance scripts.
 
 Do not copy the full repository tree or long convention lists into Copilot prompts. Link to the
@@ -67,6 +72,7 @@ Visible operator navigation should stay aligned to `Trading`, `Portfolio`, `Acco
 | Task | Start here |
 | --- | --- |
 | Need repo orientation | [`../navigation/README.md`](../navigation/README.md) |
+| Broad generation or architecture-sensitive work | [`../../architecture/meridian-development-intelligence-framework.md`](../../architecture/meridian-development-intelligence-framework.md), [`../../domain/README.md`](../../domain/README.md), and [`../context/README.md`](../context/README.md) |
 | Bug or regression | [`../../../.github/agents/bug-fix-agent.md`](../../../.github/agents/bug-fix-agent.md) |
 | Code review | [`../../../.github/agents/code-review-agent.md`](../../../.github/agents/code-review-agent.md) |
 | Tests | [`../../../.github/instructions/dotnet-tests.instructions.md`](../../../.github/instructions/dotnet-tests.instructions.md) and [`../../../.github/agents/test-writer-agent.md`](../../../.github/agents/test-writer-agent.md) |

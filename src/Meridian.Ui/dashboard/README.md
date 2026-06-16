@@ -130,12 +130,28 @@ approval counts, expiration dates, and close-readiness blockers, so the browser 
 approval gate state enforced by the API and WPF clients. The browser checklist summary is also
 derived from those shared task fields: ready, blocked, acknowledged, approval, evidence-pointer,
 and next-due counts are display projections only and must not become client-local close state.
+Checklist rows also display shared acknowledgement command posture and the expected workflow
+version guard beside retained acknowledgement evidence, keeping close-control acknowledgement
+available through the operations-continuity command API instead of browser-local checklist state.
+When a checklist task is command-ready, the screen posts acknowledgement through the same shared API
+with the workflow version guard, browser operator actor, rationale, and correlation id, then
+refreshes from the server-owned workflow payload.
 Operations Continuity break assignment and escalation rows likewise render owner, due date,
 SLA state/due time, materiality, root cause, approval posture, blocked downstream outputs,
 escalation, variance, suggested action, retained evidence counts, and the first local retained
 evidence route from the shared workflow payload. They also route operators to the Accounting
 exception casework lane with workflow and break context while assignment/escalation and resolution
 commands stay on the shared operations-continuity API instead of browser-local break state.
+The same rows expose guarded assignment and resolution commands: unassigned breaks can be assigned
+to the browser operator with the workflow version, escalation, due-date, and rationale carried to
+the shared API, while assigned breaks can resolve only when retained evidence links are present.
+The browser API client exposes the same shared operations-continuity command spine for workflow
+start, broker import/normalize, gate posture refresh, Security Master resolution, ledger
+draft/validate/post, reconciliation run, and approval submission so browser surfaces can call
+server-owned workflow transitions without adding local Financial Operations rules.
+The Operations Continuity screen projects that spine from shared dashboard metrics as read-only
+Receive Activity, Match Records, Resolve Exceptions, Approve Results, Produce Evidence, and Close
+Support rows with server-owned guard, evidence, and route labels.
 The Operations Continuity screen also renders the shared Financial Operations operational
 dashboard. Receive Activity, Match Records, Resolve Exceptions, Approve Results, Produce Evidence,
 and Close Support metric state, retained evidence, route hints, and required actions come from the

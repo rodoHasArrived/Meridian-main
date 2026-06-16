@@ -1414,6 +1414,138 @@ export type OperationsActionOrigin =
   | "AssistantDraft"
   | "AutomationAssistant";
 
+export interface OperationsStartWorkflowRequest {
+  fundAccountId: string;
+  periodId: string;
+  securityMasterSnapshotId?: string | null;
+  brokerSource?: string | null;
+  actor: string;
+  rationale?: string | null;
+  correlationId?: string | null;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+}
+
+export interface OperationsTransitionRequest {
+  expectedVersion: number;
+  actor: string;
+  rationale?: string | null;
+  correlationId?: string | null;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+  evidenceReferenceIds?: string[] | null;
+}
+
+export interface OperationsGatePostureRequest extends OperationsTransitionRequest {
+  providerAccountLinked?: boolean | null;
+  providerSyncStale?: boolean | null;
+  securityCoverageIssueCount?: number | null;
+  securityAccountingIssueCount?: number | null;
+  ledgerPreviewAvailable?: boolean | null;
+  ledgerDraftBalanced?: boolean | null;
+  ledgerPostingValidated?: boolean | null;
+  openCriticalBreakCount?: number | null;
+  openNonCriticalBreakCount?: number | null;
+  reportPackReady?: boolean | null;
+  reportPackId?: string | null;
+  providerRequiredCapabilityGaps?: string[] | null;
+  providerDegradedCapabilityGaps?: string[] | null;
+}
+
+export interface OperationsSecurityMasterResolveRequest {
+  expectedVersion: number;
+  actor: string;
+  rationale?: string | null;
+  correlationId?: string | null;
+  unresolvedInstrumentCount?: number;
+  overrideRequestCount?: number;
+  overridesApproved?: boolean;
+  missingAccountingTermCount?: number;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+}
+
+export interface OperationsSecurityMasterOverrideApprovalRequest {
+  expectedVersion: number;
+  actor: string;
+  overrideId: string;
+  rationale: string;
+  policyReference: string;
+  expiresOn?: string | null;
+  correlationId?: string | null;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+  actionOrigin?: OperationsActionOrigin | null;
+}
+
+export interface OperationsLedgerDraftRequest {
+  expectedVersion: number;
+  actor: string;
+  previewId: string;
+  isBalanced: boolean;
+  rationale?: string | null;
+  correlationId?: string | null;
+  hasSecurityMasterProvenance?: boolean;
+  hasIdempotencyKey?: boolean;
+  ledgerBatchId?: string | null;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+  hasSecurityMasterApproval?: boolean;
+  hasLedgerMappings?: boolean;
+}
+
+export interface OperationsLedgerValidationRequest {
+  expectedVersion: number;
+  actor: string;
+  isBalanced: boolean;
+  periodOpen: boolean;
+  hasDuplicatePostingCandidate?: boolean;
+  rationale?: string | null;
+  correlationId?: string | null;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+}
+
+export interface OperationsLedgerPostRequest {
+  expectedVersion: number;
+  actor: string;
+  ledgerBatchId: string;
+  postingKind: string;
+  periodOpen: boolean;
+  hasValidatedJournal?: boolean;
+  hasDuplicatePostingCandidate?: boolean;
+  rationale?: string | null;
+  correlationId?: string | null;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+  journalCandidate?: Record<string, unknown> | null;
+  actionOrigin?: OperationsActionOrigin | null;
+}
+
+export interface OperationsReconciliationRunRequest {
+  expectedVersion: number;
+  actor: string;
+  rationale?: string | null;
+  correlationId?: string | null;
+  breakCases?: OperationsBreakCase[] | null;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+  securityCoverageIssueCount?: number | null;
+  securityAccountingIssueCount?: number | null;
+  expectedAccountingEventCount?: number | null;
+  expectedJournalPreviewCount?: number | null;
+  sourceRunId?: string | null;
+  reconciliationRunId?: string | null;
+  bankEntityId?: string | null;
+  amountTolerance?: number | null;
+  maxAsOfDriftMinutes?: number | null;
+  reconciliationLanes?: OperationsReconciliationLaneSummary[] | null;
+}
+
+export interface OperationsSubmitApprovalRequest {
+  expectedVersion: number;
+  actor: string;
+  reviewer: string;
+  rationale: string;
+  reportPackId: string;
+  correlationId?: string | null;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+  checklistControlApprovals?: OperationsChecklistControlApproval[] | null;
+  actionOrigin?: OperationsActionOrigin | null;
+}
+
 export interface OperationsApprovalDecisionRequest {
   expectedVersion: number;
   actor: string;
@@ -1489,6 +1621,13 @@ export interface OperationsReopenWorkflowRequest {
   actionOrigin?: OperationsActionOrigin | null;
 }
 
+export interface OperationsChecklistAcknowledgeRequest {
+  expectedVersion: number;
+  actor: string;
+  rationale: string;
+  correlationId?: string | null;
+}
+
 export interface OperationsTransitionResult {
   success: boolean;
   workflow: OperationsContinuityWorkflow;
@@ -1536,8 +1675,22 @@ export interface OperationsChecklistControlApproval {
 export interface OperationsCloseReadiness {
   isReadyToClose: boolean;
   severity: string;
+  score: number;
+  components: OperationsCloseReadinessComponent[];
   blockers: OperationsCloseReadinessBlocker[];
   nextActions: OperationsNextAction[];
+}
+
+export interface OperationsCloseReadinessComponent {
+  key: string;
+  label: string;
+  score: number;
+  weight: number;
+  isReady: boolean;
+  severity: string;
+  blockingReason: string | null;
+  gate: OperationsGateKey | null;
+  routeHint: string | null;
 }
 
 export interface OperationsCloseReadinessBlocker {

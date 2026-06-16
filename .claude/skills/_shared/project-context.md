@@ -6,7 +6,8 @@
 >
 > **Last verified:** 2026-06-04
 > **Primary grounding docs:** `README.md`, `docs/roadmap/data/*.yml`,
-> `docs/roadmap/generated/ROADMAP_SUMMARY.md`, `docs/product/meridian-design-document.md`
+> `docs/roadmap/generated/ROADMAP_SUMMARY.md`, `docs/product/meridian-design-document.md`,
+> `docs/architecture/meridian-development-intelligence-framework.md`
 
 ---
 
@@ -23,6 +24,9 @@
   execution, full alternative asset operations, forecasting/scenario engines, enterprise risk,
   client portal, no-code workflow design, mobile, and other broad expansion lanes unless the work
   directly strengthens that operational record workflow.
+- MDIF is the required context spine for broad generation, domain modeling, workflow design, and
+  architecture-sensitive refactors: load the MDIF framework, vision, domain model, relevant domain
+  dictionary pages, and context packs before implementation.
 - The authoritative local checkout path for this workspace is `D:\Meridian-main`.
 - Active operator UI work spans `src/Meridian.Wpf/` and `src/Meridian.Ui/dashboard/`.
 - `src/Meridian.Wpf/` is again a first-class Windows desktop operator surface for workstation
@@ -51,6 +55,11 @@ Read these before changing skills, agents, or workflow guidance:
 - `docs/roadmap/generated/ROADMAP_SUMMARY.md`
 - `docs/roadmap/generated/roadmap-register.md`
 - `docs/product/meridian-design-document.md`
+- `docs/architecture/meridian-development-intelligence-framework.md`
+- `docs/architecture/meridian-vision.md`
+- `docs/architecture/meridian-domain-model.md`
+- `docs/domain/README.md`
+- `docs/ai/context/README.md`
 - `docs/product/README.md`
 - `docs/status/README.md` for migration routing only
 
@@ -68,11 +77,13 @@ npm --prefix src/Meridian.Ui/dashboard run build
 pwsh ./scripts/dev/desktop-dev.ps1
 pwsh ./scripts/dev/run-desktop.ps1 -Fixture
 pwsh ./scripts/dev/test-wpf-dev.ps1
-make test
 gh workflow run targeted-test.yml --ref <branch> -f lane=dotnet -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
 gh workflow run targeted-test.yml --ref <branch> -f lane=browser-dashboard -f browser_script=test:vitest -f vitest_file=src/screens/<screen>.test.tsx
 python3 build/scripts/ai-repo-updater.py known-errors
 ```
+
+GNU Make targets are optional convenience wrappers. In Windows shells where `where.exe make` finds
+nothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above instead of `make ...`.
 
 Prefer the narrowest validation command that matches the touched files.
 When local CPU, memory, disk, dependency restore, or MSBuild lock contention makes validation
