@@ -23,7 +23,7 @@ scope.
 
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
-| CI | `ci.yml` | Pull requests, pushes to `main`, nightly, manual | Restores `Meridian.sln`, verifies formatting and warning-suppression inventory, builds the focused `Meridian.WebWorkstation.slnf` lane, runs non-integration .NET tests, tests and builds the dashboard with lockfile-strict `npm ci`, scans secrets, validates source-doc determinism, and runs nightly/manual verify-full coverage on `main`. | .NET TRX and coverage artifacts |
+| CI | `ci.yml` | Pull requests, pushes to `main`, nightly, manual | Restores `Meridian.sln`, verifies formatting and warning-suppression inventory, builds the focused `Meridian.WebWorkstation.slnf` lane, runs every configured non-integration .NET test project through the aggregate `run-dotnet-ci-tests.py` runner so one failing project does not hide later failures, tests and builds the dashboard with lockfile-strict `npm ci`, scans secrets, validates source-doc determinism, and runs nightly/manual verify-full coverage on `main`. | .NET TRX and coverage artifacts |
 | Targeted Test | `targeted-test.yml` | Manual only | Runs one selected .NET test project plus a required `dotnet test --filter` on a GitHub-hosted runner when local machine capacity, locks, or long-running suites make local validation impractical. Inputs are validated and limited to repo-relative `tests/` project paths and normal filter expressions for the failing slice. | Targeted TRX results |
 | Golden Path Validation | `golden-path-validation.yml` | Golden-path contract, browser W4, WPF W4, or manual changes | Blocks pilot acceptance on browser `test:w4` parity and Windows `Category=W4Acceptance` desktop coverage before running `PilotAcceptanceHarnessTests`, validating the pilot readiness dashboard renderer, and uploading evidence bundles. | `pilot-acceptance-evidence`, `wpf-w4-acceptance-evidence` |
 | Windows Desktop Build | `windows-desktop-build.yml` | WPF or WPF dependency changes, pushes to `main`, manual | Builds the real WPF app on Windows, runs WPF tests, and smoke-publishes the desktop executable. Path filters include the WPF project-reference closure so shared service, reporting, storage, workflow, and related dependency changes trigger the lane. | WPF TRX results and desktop smoke publish output |
@@ -68,7 +68,7 @@ dotnet restore Meridian.sln /p:EnableWindowsTargeting=true
 dotnet format Meridian.sln --verify-no-changes --verbosity minimal --no-restore
 python3 build/scripts/ci/check-warning-suppressions.py
 dotnet build Meridian.WebWorkstation.slnf -c Release --no-restore /p:EnableWindowsTargeting=true /p:UseAppHost=false
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" /p:EnableWindowsTargeting=true
+python3 build/scripts/ci/run-dotnet-ci-tests.py --configuration Release --filter "Category!=Integration&Category!=Performance" --results-dir artifacts/test-results/dotnet
 npm ci --prefix src/Meridian.Ui/dashboard --include=optional
 npm --prefix src/Meridian.Ui/dashboard run test
 npm --prefix src/Meridian.Ui/dashboard run build
@@ -134,6 +134,6 @@ python3 build/scripts/docs/generate-workflow-manifest.py
 - Manual screenshot and manual-generation workflows are artifact-only; repository writes should be
   made from a reviewed local or PR workflow, not from those capture jobs.
 - PR and branch workflows cancel superseded runs.
-- Build/test workflows use explicit restore, build, and test phases.
+- Build/test workflows use explicit restore, build, and test phases; the CI .NET lane aggregates per-project test results before failing so each run reports all broken configured test slices.
 - Generated outputs stay under ignored `artifacts/`, `bin/`, `obj/`, `publish/`, `dist/`, or `TestResults/` paths.
 - Publish smoke artifacts are uploaded for inspection, and desktop installer tag runs publish packaged installer assets to GitHub Releases.
