@@ -993,13 +993,13 @@ public sealed partial class WorkstationEndpointsTests
         => CreateProviderIntegrationEndpointManifest() with
         {
             ManifestVersion = 2,
-            FieldMappings:
-            [
+            FieldMappings = new[]
+            {
                 ProviderIntegrationReplayMapping("$.account_id", "providerAccountId", "trim", required: true),
                 ProviderIntegrationReplayMapping("$.quantity", "quantity", "decimal", required: true, constantValue: "100"),
                 ProviderIntegrationReplayMapping("$.as_of_date", "asOf", "date", required: true, constantValue: "2026-06-16"),
                 ProviderIntegrationReplayMapping("$.cusip", "security.cusip", "uppercase", required: true, constantValue: "9128285M8")
-            ],
+            },
             ChangeReason = "Replay mapping update"
         };
 
