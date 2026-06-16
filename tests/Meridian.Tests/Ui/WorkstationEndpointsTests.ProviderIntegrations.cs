@@ -754,7 +754,7 @@ public sealed partial class WorkstationEndpointsTests
 
     private static ProviderIntegrationActivationRequestDto CreateProviderIntegrationActivationRequest(
         ProviderIntegrationManifestDto manifest,
-        IntegrationProviderConnectionDto connection)
+        ProviderConnectionDto connection)
         => new(
             manifest.ManifestId,
             connection.ConnectionId,
@@ -831,7 +831,7 @@ public sealed partial class WorkstationEndpointsTests
             DefaultValue: null,
             ConstantValue: null);
 
-    private static IntegrationProviderConnectionDto CreateProviderIntegrationActivationConnection(
+    private static ProviderConnectionDto CreateProviderIntegrationActivationConnection(
         ProviderIntegrationManifestDto manifest)
         => new(
             "connection-activation-endpoint",

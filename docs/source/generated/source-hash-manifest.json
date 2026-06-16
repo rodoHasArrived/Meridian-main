@@ -9,7 +9,7 @@
       "id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
-      "readme_hash": "479095351ac49c8e2d43c5319bb5cd083acc4bc4806b41fd8fa32a46c08ab7b2",
+      "readme_hash": "24e9567846e82a497ece21b67c6abb781fc808701f28045c3580e389134ad161",
       "source_hash": "7de9192b19eaa1e69def0697a1e859072528a8b800cd506d95983a152b9d572e"
     },
     {
@@ -268,7 +268,7 @@
       "id": "SRC-UI-SHARED",
       "path": "src/Meridian.Ui.Shared",
       "readme": "src/Meridian.Ui.Shared/README.md",
-      "readme_hash": "291e51d007c1d522cfb85d13290dfd27dfb01a6e082cf89df160805dc164c25b",
+      "readme_hash": "326a7ca91842826cb9a4699f91b48cf865fb94b369489de06dc95bb49bcf8a73",
       "source_hash": "268345aa7f9b1a6a50c0746a32d165f514a8208b176ec84f133e3969f443293e"
     },
     {

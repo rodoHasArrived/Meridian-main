@@ -127,8 +127,9 @@ surface fail-closed readiness blockers, dry-run command routes execute manual CS
 validation through Application-owned services, and the connection monitor route adapts durable
 sync-run, staging, quarantine, and validation evidence into browser/WPF-compatible payloads. Dry
 runs require provider/configuration permissions because they retain raw payload, staging,
-quarantine, and sync-run evidence; activation and quarantine review commands still need to be
-surfaced through the shared workstation API.
+quarantine, and sync-run evidence. The activation command persists active manifest and connection
+state only after Application readiness passes with retained approval evidence; setup save screens
+and quarantine review commands still need to be surfaced through the shared workstation API.
 `BankFeedTransportService` reuses that same import boundary for scheduled local-file and SFTP
 CSV pulls through `IEtlSourceReader`, and delegates Plaid API schedules to `IPlaidIngestionService`
 so API feeds stay server-owned and ledger posting remains gated by Meridian approvals.

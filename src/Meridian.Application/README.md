@@ -58,7 +58,9 @@ and UI presentation concerns in their owning layers.
   surfaces can show dry-run evidence without reading storage internals. The activation-readiness
   service evaluates those manifests before enablement, blocking unresolved required mappings,
   missing approval evidence, and order-preview/place/cancel capabilities unless they use a
-  certified provider adapter with production-write activation policy.
+  certified provider adapter with production-write activation policy. The activation service
+  persists manifest and connection `Active` state only after readiness passes with retained
+  approval evidence, leaving failed activation attempts in draft state for operator review.
 - Canonicalization composition consumes `Meridian.DataIntegration.Canonicalization` contracts,
   provider condition-code mapping, venue normalization, parity metrics, the default
   `EventCanonicalizer`, and the Data Integration-owned `CanonicalizingPublisher` decorator.
