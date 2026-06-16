@@ -31,6 +31,7 @@
   <!-- Project references -->
   <ItemGroup>
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
+    <ProjectReference Include="..\Meridian.Modularity\Meridian.Modularity.csproj" />
     <ProjectReference Include="..\Meridian.Application\Meridian.Application.csproj" />
     <ProjectReference Include="..\Meridian.Audit\Meridian.Audit.csproj" />
     <ProjectReference Include="..\Meridian.Backtesting\Meridian.Backtesting.csproj" />

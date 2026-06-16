@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using Meridian.Modularity;
 
 namespace Meridian.Ui.Shared.Evidence;
 
@@ -9,7 +10,7 @@ public sealed class EvidenceTemplateRegistry
         ManifestOnly: true,
         DefaultFormat: "json");
 
-    private readonly IReadOnlyList<EvidenceTemplateDto> _templates =
+    private static readonly IReadOnlyList<EvidenceTemplateDto> BuiltInTemplates =
     [
         new EvidenceTemplateDto(
             WorkflowId: "strategy-to-paper-review",
@@ -215,7 +216,36 @@ public sealed class EvidenceTemplateRegistry
             ExportSettings: ManifestOnlyV1)
     ];
 
-    public IReadOnlyList<EvidenceTemplateDto> GetTemplates() => _templates;
+    private readonly ExtensionRegistry<EvidenceTemplateDto> _registry;
+
+    /// <summary>
+    /// Creates a registry containing only the built-in evidence templates.
+    /// </summary>
+    public EvidenceTemplateRegistry()
+        : this(Array.Empty<EvidenceTemplateDto>())
+    {
+    }
+
+    /// <summary>
+    /// Creates a registry seeded with the built-in templates plus any additional templates
+    /// (for example DI-registered <see cref="EvidenceTemplateDto"/> instances). Built-in
+    /// templates take precedence when a workflow id collides, preserving existing behaviour.
+    /// </summary>
+    public EvidenceTemplateRegistry(IEnumerable<EvidenceTemplateDto> additionalTemplates)
+    {
+        ArgumentNullException.ThrowIfNull(additionalTemplates);
+
+        _registry = new ExtensionRegistry<EvidenceTemplateDto>(static template => template.WorkflowId);
+        _registry.AddRange(BuiltInTemplates);
+
+        foreach (var template in additionalTemplates)
+        {
+            // Built-ins win on conflict; additional templates extend the catalog.
+            _registry.TryAdd(template);
+        }
+    }
+
+    public IReadOnlyList<EvidenceTemplateDto> GetTemplates() => _registry.Entries;
 
     public EvidenceTemplateDto? GetTemplate(string? workflowId)
     {
@@ -224,7 +254,6 @@ public sealed class EvidenceTemplateRegistry
             return null;
         }
 
-        return _templates.FirstOrDefault(template =>
-            string.Equals(template.WorkflowId, workflowId, StringComparison.OrdinalIgnoreCase));
+        return _registry.TryGet(workflowId, out var template) ? template : null;
     }
 }
