@@ -740,18 +740,6 @@ public static class FundStructureEndpoints
                     statusCode: StatusCodes.Status400BadRequest);
             }
 
-            if (TryCreateEmptyUnassignedLedgerGroupCashFlowView(scopeKind.Value, ledgerGroupId, q)
-                is { } emptyUnassignedLedgerGroupView)
-            {
-                return Results.Json(emptyUnassignedLedgerGroupView, jsonOptions);
-            }
-
-            var service = ResolveService(context);
-            if (service is null)
-            {
-                return ServiceUnavailable();
-            }
-
             var query = new GovernanceCashFlowQuery(
                 scopeKind.Value,
                 OrganizationId: ParseGuid(q["organizationId"]),
@@ -774,6 +762,18 @@ public static class FundStructureEndpoints
             if (scopeGuard is not null)
             {
                 return scopeGuard;
+            }
+
+            if (TryCreateEmptyUnassignedLedgerGroupCashFlowView(scopeKind.Value, ledgerGroupId, q)
+                is { } emptyUnassignedLedgerGroupView)
+            {
+                return Results.Json(emptyUnassignedLedgerGroupView, jsonOptions);
+            }
+
+            var service = ResolveService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
             }
 
             var result = await service.GetCashFlowViewAsync(query, context.RequestAborted).ConfigureAwait(false);

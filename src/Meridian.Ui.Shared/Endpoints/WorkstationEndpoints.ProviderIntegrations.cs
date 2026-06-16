@@ -735,6 +735,61 @@ public static partial class WorkstationEndpoints
             UserPermission.ModifyConfig,
             UserPermission.AdminMaintenance);
 
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationPromotionReadiness), async (
+            string connectionId,
+            int? recentRunLimit,
+            HttpContext context) =>
+        {
+            if (!HasProviderIntegrationReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<ProviderIntegrationPromotionReadinessService>();
+            if (service is null)
+            {
+                return Results.Problem(
+                    "Provider integration promotion readiness service is not registered.",
+                    statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            try
+            {
+                if (!TryResolveRequiredTenantId(context, out var tenantId))
+                {
+                    return Results.Problem("A tenant-scoped workstation request context is required.", statusCode: StatusCodes.Status403Forbidden);
+                }
+
+                var preview = await service
+                    .PreviewAsync(
+                        tenantId,
+                        connectionId,
+                        recentRunLimit ?? 10,
+                        context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(preview, jsonOptions);
+            }
+            catch (KeyNotFoundException)
+            {
+                return Results.NotFound(new { error = $"Provider integration connection '{connectionId}' was not found." });
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("PreviewWorkstationProviderIntegrationPromotionReadiness")
+        .Produces<ProviderIntegrationPromotionReadinessPreviewDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireAnyPermission(
+            UserPermission.ViewConfig,
+            UserPermission.ManageProviders,
+            UserPermission.ModifyConfig,
+            UserPermission.AdminMaintenance);
+
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationQuarantineReview), async (
             string connectionId,
             int? recentRunLimit,

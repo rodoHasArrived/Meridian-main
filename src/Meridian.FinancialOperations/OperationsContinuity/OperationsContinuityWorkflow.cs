@@ -860,6 +860,7 @@ public sealed class OperationsContinuityWorkflow
             Owner = request.Actor,
             EvidenceLinks = existing.EvidenceLinks.Concat(evidenceLinks).ToArray()
         };
+        RefreshReconciliationLanePosture();
 
         var openCriticalBreaks = BreakCases.Count(static item =>
             !IsClosedBreakStatus(item.Status) &&
@@ -946,6 +947,7 @@ public sealed class OperationsContinuityWorkflow
             EscalationReason = escalationReason,
             EscalatedAtUtc = escalatedAt
         };
+        RefreshReconciliationLanePosture();
 
         return null;
     }
@@ -1607,7 +1609,8 @@ public sealed class OperationsContinuityWorkflow
     private static IReadOnlyList<OperationsReconciliationLaneSummaryDto> BuildReconciliationLanes(
         IReadOnlyList<OperationsReconciliationLaneSummaryDto>? requestedLanes,
         IReadOnlyList<OperationsBreakCaseDto> breakCases,
-        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks)
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
+        bool refreshBreakDerivedPosture = false)
     {
         var requestedById = (requestedLanes ?? [])
             .Where(static lane => !string.IsNullOrWhiteSpace(lane.LaneId))
@@ -1615,7 +1618,12 @@ public sealed class OperationsContinuityWorkflow
             .ToDictionary(static group => group.Key, static group => group.First(), StringComparer.OrdinalIgnoreCase);
 
         return ReconciliationLaneDefinitions
-            .Select(definition => BuildReconciliationLane(definition, requestedById, breakCases, evidenceLinks))
+            .Select(definition => BuildReconciliationLane(
+                definition,
+                requestedById,
+                breakCases,
+                evidenceLinks,
+                refreshBreakDerivedPosture))
             .ToArray();
     }
 
@@ -1623,7 +1631,8 @@ public sealed class OperationsContinuityWorkflow
         ReconciliationLaneDefinition definition,
         IReadOnlyDictionary<string, OperationsReconciliationLaneSummaryDto> requestedById,
         IReadOnlyList<OperationsBreakCaseDto> breakCases,
-        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks)
+        IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks,
+        bool refreshBreakDerivedPosture)
     {
         requestedById.TryGetValue(definition.LaneId, out var requested);
         var laneBreaks = breakCases
@@ -1639,7 +1648,11 @@ public sealed class OperationsContinuityWorkflow
             : openBreaks.Length > 0
                 ? OperationsReconciliationLaneStatusDto.ReviewRequired
                 : OperationsReconciliationLaneStatusDto.Ready;
-        var status = requested?.Status ?? inferredStatus;
+        var requestedBreakCount = requested?.BreakCount ?? 0;
+        var shouldRefreshBreakPosture = refreshBreakDerivedPosture &&
+            requested is not null &&
+            requestedBreakCount != openBreaks.Length;
+        var status = shouldRefreshBreakPosture ? inferredStatus : requested?.Status ?? inferredStatus;
         if (hasCriticalBreak)
         {
             status = OperationsReconciliationLaneStatusDto.Blocked;
@@ -1655,7 +1668,9 @@ public sealed class OperationsContinuityWorkflow
             .Where(static link => !string.IsNullOrWhiteSpace(link.EvidenceId))
             .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var breakCount = Math.Max(requested?.BreakCount ?? 0, openBreaks.Length);
+        var breakCount = shouldRefreshBreakPosture
+            ? openBreaks.Length
+            : Math.Max(requestedBreakCount, openBreaks.Length);
         var isReady = status == OperationsReconciliationLaneStatusDto.Ready && breakCount == 0;
 
         return new OperationsReconciliationLaneSummaryDto(
@@ -1664,12 +1679,24 @@ public sealed class OperationsContinuityWorkflow
             status,
             isReady,
             breakCount,
-            string.IsNullOrWhiteSpace(requested?.Summary)
+            shouldRefreshBreakPosture || string.IsNullOrWhiteSpace(requested?.Summary)
                 ? BuildReconciliationLaneSummary(definition.Label, status, breakCount)
                 : requested.Summary.Trim(),
             string.IsNullOrWhiteSpace(requested?.RouteHint) ? definition.RouteHint : requested.RouteHint.Trim(),
             retainedEvidence,
-            BuildReconciliationLaneActions(definition.Label, status, requested?.RequiredActions));
+            BuildReconciliationLaneActions(
+                definition.Label,
+                status,
+                shouldRefreshBreakPosture ? null : requested?.RequiredActions));
+    }
+
+    private void RefreshReconciliationLanePosture()
+    {
+        ReconciliationLanes = BuildReconciliationLanes(
+            ReconciliationLanes,
+            BreakCases,
+            evidenceLinks: [],
+            refreshBreakDerivedPosture: true).ToList();
     }
 
     private static string BuildReconciliationLaneSummary(

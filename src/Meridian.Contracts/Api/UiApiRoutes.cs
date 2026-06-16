@@ -584,6 +584,7 @@ public static class UiApiRoutes
     public const string WorkstationProviderIntegrationSchemaDriftCheck = "/api/workstation/provider-integrations/schema-drift/check";
     public const string WorkstationProviderIntegrationStagingReview = "/api/workstation/provider-integrations/connections/{connectionId}/staging";
     public const string WorkstationProviderIntegrationIdentityResolution = "/api/workstation/provider-integrations/connections/{connectionId}/identity-resolution";
+    public const string WorkstationProviderIntegrationPromotionReadiness = "/api/workstation/provider-integrations/connections/{connectionId}/promotion-readiness";
     public const string WorkstationProviderIntegrationQuarantineReview = "/api/workstation/provider-integrations/connections/{connectionId}/quarantine";
     public const string WorkstationProviderIntegrationQuarantineResolve = "/api/workstation/provider-integrations/quarantine/resolve";
     public const string WorkstationProviderIntegrationQuarantineReplay = "/api/workstation/provider-integrations/quarantine/replay";

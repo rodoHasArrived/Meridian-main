@@ -84,7 +84,10 @@ exception and advance approval posture. When report-pack evidence is ready but n
 approval, the same summary surfaces report-commentary and audit-request-list drafts as review-only
 work so publication remains behind human approval. Already closed reconciliation breaks reject
 duplicate resolution or reassignment commands so retained case evidence and audit history cannot be
-mutated after closure.
+mutated after closure. Break assignment, escalation, and resolution commands also refresh the
+derived reconciliation lane summaries so active-work queues, dashboards, and evidence tables do not
+show stale break counts, required actions, or retained assignment/resolution evidence after
+exception work.
 It also derives evidence-package summaries for accounting-record evidence, report-pack readiness,
 close-package manifests, audit-support packages, and period lock/reopen evidence from the same
 workflow, accounting-record, close-package, and retained timeline evidence. Package status and

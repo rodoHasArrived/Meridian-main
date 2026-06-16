@@ -4,6 +4,7 @@ using FluentAssertions;
 using Meridian.Application.FundStructure;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Services;
+using Meridian.Entities.FundStructure;
 using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.PortfolioRecords.FundAccounts;
@@ -59,6 +60,36 @@ public sealed class FundStructureEndpointAuthorizationTests
         var response = await app.GetTestClient().GetAsync("/api/fund-structure/graph");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task CashFlowView_UnassignedLedgerGroup_ShouldDenyUnscopedReadForNonAdmin()
+    {
+        await using var app = await CreateAppAsync([(AccessScopeKindDto.Organization, Guid.NewGuid())]);
+
+        var response = await app.GetTestClient().GetAsync(
+            "/api/fund-structure/cash-flow-view?scopeKind=LedgerGroup&ledgerGroupId=unassigned");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task CashFlowView_UnassignedLedgerGroup_ShouldAllowScopedRead()
+    {
+        var organizationId = Guid.NewGuid();
+        await using var app = await CreateAppAsync([(AccessScopeKindDto.Organization, organizationId)]);
+
+        var response = await app.GetTestClient().GetAsync(
+            $"/api/fund-structure/cash-flow-view?scopeKind=LedgerGroup&ledgerGroupId=unassigned&organizationId={organizationId:D}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var payload = await response.Content.ReadFromJsonAsync<GovernanceCashFlowViewDto>(JsonOptions);
+
+        payload.Should().NotBeNull();
+        payload!.Scope.ScopeKind.Should().Be(GovernanceCashFlowScopeKindDto.LedgerGroup);
+        payload.Scope.LedgerGroupId.Should().Be(LedgerGroupId.Unassigned);
+        payload.AccountCount.Should().Be(0);
+        payload.Accounts.Should().BeEmpty();
     }
 
     private static async Task<WebApplication> CreateAppAsync(

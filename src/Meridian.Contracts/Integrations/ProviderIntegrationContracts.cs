@@ -147,6 +147,14 @@ public enum ProviderIntegrationIdentityResolutionStatusDto
     NotConfigured = 4
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<ProviderIntegrationPromotionReadinessStatusDto>))]
+public enum ProviderIntegrationPromotionReadinessStatusDto
+{
+    ReadyForReconciliation = 0,
+    ReviewRequired = 1,
+    Blocked = 2
+}
+
 public sealed record ProviderIntegrationAuthConfigDto(
     ProviderIntegrationAuthTypeDto Type,
     string? TokenUrl,
@@ -439,6 +447,28 @@ public sealed record ProviderIntegrationStagingIdentityResolutionPreviewDto(
     int SecurityResolvedCount,
     int SecurityReviewRequiredCount,
     int MissingSecurityIdentifierCount);
+
+public sealed record ProviderIntegrationPromotionReadinessRowDto(
+    string StagingRecordId,
+    string SyncRunId,
+    ProviderCapabilityKindDto Capability,
+    string PromotionTarget,
+    ProviderIntegrationPromotionReadinessStatusDto Status,
+    string? ProviderAccountId,
+    string? InternalAccountId,
+    string? InternalSecurityId,
+    string? SecurityDisplayName,
+    string? SecurityRoute,
+    IReadOnlyList<ValidationIssueDto> Issues);
+
+public sealed record ProviderIntegrationPromotionReadinessPreviewDto(
+    string ConnectionId,
+    IReadOnlyList<string> SyncRunIds,
+    IReadOnlyList<ProviderIntegrationPromotionReadinessRowDto> Rows,
+    int TotalRows,
+    int ReadyForReconciliationCount,
+    int ReviewRequiredCount,
+    int BlockedCount);
 
 public sealed record ProviderIntegrationSyncRunDto(
     string SyncRunId,

@@ -1999,6 +1999,14 @@ public sealed class OperationsContinuityWorkflowServiceTests
 
         resolved.Workflow!.ReconciliationState.Should().Be(OperationsReconciliationStateDto.Complete);
         resolved.Workflow.Status.Should().Be(OperationsWorkflowStatusDto.ApprovalPending);
+        var incomeLane = resolved.Workflow.ReconciliationLanes.Single(static lane => lane.LaneId == "income-reconciliation");
+        incomeLane.Status.Should().Be(OperationsReconciliationLaneStatusDto.Ready);
+        incomeLane.IsReady.Should().BeTrue();
+        incomeLane.BreakCount.Should().Be(0);
+        incomeLane.RequiredActions.Should().BeEmpty();
+        incomeLane.EvidenceLinks.Should().Contain(link =>
+            link.EvidenceId == "break-1-resolution-evidence" &&
+            link.Label == "Custodian resolution evidence");
         submit.Success.Should().BeTrue();
     }
 
@@ -2155,6 +2163,15 @@ public sealed class OperationsContinuityWorkflowServiceTests
         breakCase.EscalatedAtUtc.Should().NotBeNull();
         breakCase.EscalatedAtUtc!.Value.Offset.Should().Be(TimeSpan.Zero);
         breakCase.EvidenceLinks.Should().Contain(link => link.EvidenceId == "assignment-note");
+        var cashLane = assigned.Workflow.ReconciliationLanes.Single(static lane => lane.LaneId == "cash-reconciliation");
+        cashLane.Status.Should().Be(OperationsReconciliationLaneStatusDto.Blocked);
+        cashLane.IsReady.Should().BeFalse();
+        cashLane.BreakCount.Should().Be(1);
+        cashLane.RequiredActions.Should().Contain(action =>
+            action.Contains("Resolve or assign cash reconciliation", StringComparison.OrdinalIgnoreCase));
+        cashLane.EvidenceLinks.Should().Contain(link =>
+            link.EvidenceId == "assignment-note" &&
+            link.Label == "Controller assignment note");
 
         var timelineAfter = await auditStore.GetTimelineAsync(workflow.WorkflowId);
         timelineAfter.Should().HaveCount(timelineBefore.Count + 1);
