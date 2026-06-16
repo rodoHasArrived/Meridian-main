@@ -16,7 +16,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v6.0.3
 
       - name: Install .NET 10 SDK (official installer)
         shell: bash
