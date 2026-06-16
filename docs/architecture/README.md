@@ -35,6 +35,9 @@ This directory contains documentation about the system's design, architectural d
 | Document | Description |
 | -------- | ----------- |
 | [Overview](overview.md) | High-level system architecture |
+| [Meridian Development Intelligence Framework](meridian-development-intelligence-framework.md) | AI development intelligence framework for project constitution, domain dictionaries, context packs, templates, reviews, and context exports |
+| [Meridian Vision](meridian-vision.md) | Product scope boundaries and long-term module intent for AI-assisted development |
+| [Meridian Domain Model](meridian-domain-model.md) | Compact operational-record domain model and invariants for generated code, tests, UI, and reports |
 | [Project Structure](project-structure.md) | Maintained repository inventory and cleanup classification |
 | [Module Map](module-map.md) | Layer-oriented project map and dependency boundary quick reference |
 | [Design Document Adaptation](design-document-adaptation.md) | Executable adaptation contract for the design document's scope, contexts, modules, workspaces, screen inventory, and deferrals |

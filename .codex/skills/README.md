@@ -78,7 +78,10 @@ different work:
 - [`docs/ai/codex/quickstart.md`](../../docs/ai/codex/quickstart.md) — first-10-minutes Codex task
   routing, proof matrix, read budget, and dirty-worktree protocol
 - [`docs/ai/codex/route-cards.md`](../../docs/ai/codex/route-cards.md) — compact subsystem cards
-  for owner projects, first docs, entrypoints, and validation lanes
+  for owner projects, first docs, entrypoints, validation lanes, and MDIF/domain context routing
+- [`docs/architecture/meridian-development-intelligence-framework.md`](../../docs/architecture/meridian-development-intelligence-framework.md) — project constitution, domain/context pack loading order, and context-export workflow
+- [`docs/domain/README.md`](../../docs/domain/README.md) — business dictionary lane for Codex-generated domain work
+- [`docs/ai/context/accounting-context.md`](../../docs/ai/context/accounting-context.md) — accounting invariants for Codex generation and review
 - [`docs/ai/codex/README.md`](../../docs/ai/codex/README.md) — Codex-specific AI docs index,
   skill validation commands, and required/advisory/maintenance tooling split
 - [`../AGENTS.md`](../AGENTS.md) — Codex-specific desktop workstation implementation rules

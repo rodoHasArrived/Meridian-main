@@ -50,6 +50,7 @@ Classify AI/doc changes in this rebuild model:
 | Portable skills | [`skills/README.md`](skills/README.md) | [`.agents/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills), [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills) |
 | Codex repo-local skills and profiles | [`codex/README.md`](codex/README.md) | [`.codex/agents/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.codex/agents), [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md), [`.codex/skills/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.codex/skills) |
 | Fast Codex task startup | [`codex/quickstart.md`](codex/quickstart.md) | [`codex/advanced-configuration.md`](codex/advanced-configuration.md), [`codex/route-cards.md`](codex/route-cards.md) |
+| MDIF context packs | [`context/accounting-context.md`](context/accounting-context.md) | [`../architecture/meridian-development-intelligence-framework.md`](../architecture/meridian-development-intelligence-framework.md) and [`exports/README.md`](exports/README.md) |
 | Copilot setup | [`copilot/instructions.md`](copilot/instructions.md) | [`.github/copilot-instructions.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/copilot-instructions.md) |
 
 ---

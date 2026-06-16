@@ -34,6 +34,7 @@ GENERATED_DIRS = {"generated", "_site"}
 # during migration, but this list is used to report which active lanes belong to the target model.
 CANONICAL_TOP_LEVEL_DIRS = {
     "ai",
+    "domain",
     "engineering",
     "generated",
     "operators",
