@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-16T06:34:21.285159+00:00",
+  "generatedAt": "2026-06-16T08:35:00.331837+00:00",
   "scope": {
     "requested": "Docs automation generated handoff packet",
     "excluded": [
@@ -40,10 +40,10 @@
   "routeOutcome": {
     "finalValidationStatus": "partial",
     "routeAssessment": {
-      "status": "aligned",
+      "status": "possible-misroute",
       "inferredLanes": [
-        "docs",
-        "provider"
+        "desktop",
+        "docs"
       ]
     }
   },
@@ -70,27 +70,7 @@
   ],
   "changesMade": [
     {
-      "path": ".github/workflows/documentation.yml",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "build/scripts/docs/run-docs-automation.py",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "build/scripts/docs/validate-docs-structure.py",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "docs/architecture/provider-integration-manifest-runtime.md",
-      "reason": "Touched in current git diff."
-    },
-    {
       "path": "docs/generated/repository-structure.md",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "docs/source/generated/source-hash-manifest.json",
       "reason": "Touched in current git diff."
     },
     {
@@ -102,19 +82,7 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "docs/status/ai-handoff-packet.json",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "docs/status/ai-handoff-packet.md",
-      "reason": "Touched in current git diff."
-    },
-    {
       "path": "docs/status/ai-inventory-report.json",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "docs/status/ai-inventory-report.md",
       "reason": "Touched in current git diff."
     },
     {
@@ -126,14 +94,6 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "docs/status/docs-automation-summary.json",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "docs/status/docs-automation-summary.md",
-      "reason": "Touched in current git diff."
-    },
-    {
       "path": "docs/status/example-validation.md",
       "reason": "Touched in current git diff."
     },
@@ -142,47 +102,11 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/README.md",
+      "path": "src/Meridian.Wpf/Services/WatchlistService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Contracts/Integrations/ProviderIntegrationContractsJsonContext.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Contracts/README.md",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/README.md",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Contracts/ProviderIntegrationContractsTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Integration/EndpointTests/EndpointTestFixture.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Infrastructure.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs",
+      "path": "tests/Meridian.Wpf.Tests/Services/WatchlistServiceTests.cs",
       "reason": "Touched in current git diff."
     }
   ],

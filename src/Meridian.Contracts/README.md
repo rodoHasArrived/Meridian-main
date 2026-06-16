@@ -46,9 +46,9 @@ or provider implementations.
   extensibility catalog DTOs.
 - `Integrations/` - provider integration template catalog entry, manifest, endpoint, mapping,
   validation, sync, setup-save request/result, activation-readiness, activation request/result,
-  manual CSV and REST dry-run request, raw payload, quarantine, staging, sync-run summary,
-  tenant-store factory seam, and connection monitor contracts for no-code read-only provider setup,
-  monitoring, activation evidence, and replayable ingestion.
+  manual CSV and REST dry-run request, raw payload, quarantine review request/result, staging,
+  sync-run summary, tenant-store factory seam, and connection monitor contracts for no-code
+  read-only provider setup, monitoring, activation evidence, and replayable ingestion.
 - `Monitoring/` - shared event-pipeline metrics contracts, snapshot payloads, and monitoring
   webhook sink contracts consumed by Application, Platform tracing/monitoring, diagnostics
   endpoints, WPF, and browser workstation services.
@@ -264,10 +264,10 @@ evidence model by blocking unapproved configuration envelopes and envelopes that
 approval actor/timestamp metadata.
 Provider integration manifest contracts under `Integrations/` define the versioned setup payloads
 for no-code provider intake. They keep credentials as secret references, preserve raw payload,
-quarantine, and staging identities, and expose template catalog entries, setup-save
-requests/results, manual CSV dry-run requests/results, activation state, mapping confidence,
-validation issues, endpoint definitions, and sync schedules as shared contracts before browser or
-WPF surfaces render setup or monitoring state. `IProviderIntegrationTenantManifestStoreFactory`
+quarantine, quarantine-review decisions, and staging identities, and expose template catalog
+entries, setup-save requests/results, manual CSV dry-run requests/results, activation state,
+mapping confidence, validation issues, endpoint definitions, and sync schedules as shared contracts
+before browser or WPF surfaces render setup or monitoring state. `IProviderIntegrationTenantManifestStoreFactory`
 lets workstation-hosted services resolve a tenant-partitioned manifest store while preserving the
 existing global store contract for non-workstation callers. Activation-readiness
 payloads carry operator-safe issue codes and required evidence labels so no-code setup can block

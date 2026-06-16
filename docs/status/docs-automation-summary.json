@@ -35,7 +35,7 @@
         "docs/status/todo-scan-results.json"
       ],
       "return_code": 0,
-      "duration_seconds": 37.052,
+      "duration_seconds": 21.999,
       "status": "success",
       "output_file": "docs/status/TODO.md",
       "error": null
@@ -48,7 +48,7 @@
         "--summary"
       ],
       "return_code": 0,
-      "duration_seconds": 8.548,
+      "duration_seconds": 5.29,
       "status": "success",
       "output_file": null,
       "error": null
@@ -62,7 +62,7 @@
         "docs/generated/repository-structure.md"
       ],
       "return_code": 0,
-      "duration_seconds": 9.0,
+      "duration_seconds": 5.337,
       "status": "success",
       "output_file": "docs/generated/repository-structure.md",
       "error": null
@@ -78,7 +78,7 @@
         "docs/status/doc-health-dashboard.json"
       ],
       "return_code": 0,
-      "duration_seconds": 18.235,
+      "duration_seconds": 18.789,
       "status": "success",
       "output_file": "docs/status/doc-health-dashboard.md",
       "error": null
@@ -92,7 +92,7 @@
         "docs/status/example-validation.md"
       ],
       "return_code": 0,
-      "duration_seconds": 4.504,
+      "duration_seconds": 10.174,
       "status": "success",
       "output_file": "docs/status/example-validation.md",
       "error": null
@@ -108,7 +108,7 @@
         "docs/status/ai-inventory-report.json"
       ],
       "return_code": 0,
-      "duration_seconds": 2.367,
+      "duration_seconds": 12.09,
       "status": "success",
       "output_file": "docs/status/ai-inventory-report.md",
       "error": null
@@ -125,7 +125,7 @@
         "docs/status/ai-handoff-checklist-report.json"
       ],
       "return_code": 0,
-      "duration_seconds": 3.974,
+      "duration_seconds": 3.655,
       "status": "success",
       "output_file": "docs/status/ai-handoff-checklist-report.md",
       "error": null
@@ -149,7 +149,7 @@
         "docs/ai/assistant-workflow-contract.md"
       ],
       "return_code": 0,
-      "duration_seconds": 2.414,
+      "duration_seconds": 6.338,
       "status": "success",
       "output_file": null,
       "error": null
@@ -166,7 +166,7 @@
         "docs/status/prompt-route-lint-report.json"
       ],
       "return_code": 0,
-      "duration_seconds": 6.475,
+      "duration_seconds": 2.164,
       "status": "success",
       "output_file": "docs/status/prompt-route-lint-report.json",
       "error": null
@@ -183,6 +183,16 @@
         "--next-lane",
         "implementation-assurance",
         "--allow-incomplete",
+        "--model",
+        "docs-automation-profile",
+        "--input-tokens",
+        "1",
+        "--output-tokens",
+        "1",
+        "--estimated-cost-usd",
+        "0",
+        "--latency-ms",
+        "1",
         "--validation",
         "python build/scripts/docs/prompt-route-linter.py --summary::pass",
         "--output",
@@ -191,7 +201,7 @@
         "docs/status/ai-handoff-packet.json"
       ],
       "return_code": 0,
-      "duration_seconds": 18.984,
+      "duration_seconds": 6.969,
       "status": "success",
       "output_file": "docs/status/ai-handoff-packet.json",
       "error": null
@@ -205,11 +215,53 @@
         "docs/status/ai-handoff-packet.json",
         "--summary"
       ],
-      "return_code": 1,
-      "duration_seconds": 3.813,
-      "status": "failed",
+      "return_code": 0,
+      "duration_seconds": 2.719,
+      "status": "success",
       "output_file": null,
-      "error": "[check-handoff-packet-schema] FAILED: telemetry.selected_model required for high-risk route lane/mode."
+      "error": null
+    },
+    {
+      "name": "check-ai-routing-parity",
+      "command": [
+        "python3",
+        "D:\\Meridian-main\\build\\scripts\\docs\\check-ai-routing-parity.py",
+        "--summary"
+      ],
+      "return_code": 0,
+      "duration_seconds": 2.335,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    },
+    {
+      "name": "check-mode-escalation",
+      "command": [
+        "python3",
+        "D:\\Meridian-main\\build\\scripts\\docs\\check-mode-escalation.py",
+        "--route-json",
+        "docs/status/prompt-route-lint-report.json",
+        "--summary"
+      ],
+      "return_code": 0,
+      "duration_seconds": 15.508,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    },
+    {
+      "name": "generate-coverage",
+      "command": [
+        "python3",
+        "D:\\Meridian-main\\build\\scripts\\docs\\generate-coverage.py",
+        "--output",
+        "docs/status/coverage-report.md"
+      ],
+      "return_code": 1,
+      "duration_seconds": 7858.217,
+      "status": "failed",
+      "output_file": "docs/status/coverage-report.md",
+      "error": "Error: failed to build coverage report: [WinError 1921] The name of the file cannot be resolved by the system: 'D:\\\\Meridian-main\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools'"
     }
   ]
 }

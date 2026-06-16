@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Contracts;
 
 namespace Meridian.Wpf.Services;
 
@@ -25,16 +24,15 @@ public interface IWatchlistReader
 /// </summary>
 public sealed class WatchlistService : IWatchlistReader
 {
-    private static readonly Lazy<WatchlistService> _instance = new(() => new WatchlistService());
-    private static readonly HttpClient _httpClient = new();
+    private static readonly Lazy<WatchlistService> _instance =
+        new(() => new WatchlistService(WpfRemoteWorkstationClient.Instance));
 
+    private readonly IRemoteWorkstationClient _remoteClient;
     private readonly string _watchlistsPath;
     private readonly object _lock = new();
     private readonly SemaphoreSlim _loadGate = new(1, 1);
     private List<Watchlist> _watchlists = new();
     private bool _isLoaded;
-
-    private string _baseUrl = "http://localhost:8080";
 
     /// <summary>
     /// Gets the singleton instance of the WatchlistService.
@@ -46,8 +44,8 @@ public sealed class WatchlistService : IWatchlistReader
     /// </summary>
     public string BaseUrl
     {
-        get => _baseUrl;
-        set => _baseUrl = value;
+        get => _remoteClient.BaseUrl;
+        set => _remoteClient.Configure(value);
     }
 
     /// <summary>
@@ -55,12 +53,20 @@ public sealed class WatchlistService : IWatchlistReader
     /// </summary>
     public event EventHandler<WatchlistsChangedEventArgs>? WatchlistsChanged;
 
-    private WatchlistService()
+    internal WatchlistService(IRemoteWorkstationClient remoteClient, string? watchlistsPath = null)
     {
-        var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var configDir = Path.Combine(appData, "Meridian");
-        Directory.CreateDirectory(configDir);
-        _watchlistsPath = Path.Combine(configDir, "watchlists.json");
+        _remoteClient = remoteClient ?? throw new ArgumentNullException(nameof(remoteClient));
+
+        var configDir = watchlistsPath is null
+            ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Meridian")
+            : Path.GetDirectoryName(watchlistsPath);
+
+        if (!string.IsNullOrWhiteSpace(configDir))
+        {
+            Directory.CreateDirectory(configDir);
+        }
+
+        _watchlistsPath = watchlistsPath ?? Path.Combine(configDir!, "watchlists.json");
     }
 
     /// <summary>
@@ -385,23 +391,26 @@ public sealed class WatchlistService : IWatchlistReader
     {
         try
         {
-            var response = await _httpClient.GetAsync($"{_baseUrl}/api/watchlists", ct);
-            if (response.IsSuccessStatusCode)
-            {
-                var json = await response.Content.ReadAsStringAsync(ct);
-                var remoteWatchlists = JsonSerializer.Deserialize<List<Watchlist>>(json, DesktopJsonOptions.Compact);
+            var remoteWatchlists = await _remoteClient.GetAsync<List<Watchlist>>("/api/watchlists", ct)
+                .ConfigureAwait(false);
 
-                if (remoteWatchlists != null)
-                {
-                    lock (_lock)
-                    {
-                        _watchlists = remoteWatchlists;
-                    }
-                    await SaveWatchlistsAsync(ct);
-                    OnWatchlistsChanged(WatchlistChangeType.Synced, null);
-                    return true;
-                }
+            if (remoteWatchlists is null)
+            {
+                return false;
             }
+
+            lock (_lock)
+            {
+                _watchlists = remoteWatchlists;
+            }
+
+            await SaveWatchlistsAsync(ct).ConfigureAwait(false);
+            OnWatchlistsChanged(WatchlistChangeType.Synced, null);
+            return true;
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
         }
         catch
         {

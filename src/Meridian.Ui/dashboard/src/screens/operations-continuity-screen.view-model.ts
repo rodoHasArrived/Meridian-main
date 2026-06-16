@@ -975,12 +975,21 @@ export function buildOperationsContinuityScreenViewModel({
     effectiveDetail?.workflowId ?? null,
     effectiveDetail?.version ?? null
   );
+  const closeCalendarPanel = buildCloseCalendarViewModel(
+    closeCalendar,
+    closeCalendarLoading,
+    closeCalendarError,
+    selectedSummary
+  );
   const financialOperationsQueue = buildFinancialOperationsOperatorQueueViewModel({
     breakCases,
     checklist,
     approvals: effectiveDetail?.approvals ?? [],
     evidencePackages,
-    loading: detailLoading
+    closeCalendarRows: closeCalendarPanel.rows,
+    closeCalendarError,
+    selectedSummary,
+    loading: detailLoading || closeCalendarLoading
   });
   const accountingRecordSummary = buildAccountingRecordSummaryViewModel(
     effectiveDetail?.accountingRecordSummary ?? null,
@@ -997,12 +1006,6 @@ export function buildOperationsContinuityScreenViewModel({
     closeCockpit,
     closeCockpitLoading,
     closeCockpitError,
-    selectedSummary
-  );
-  const closeCalendarPanel = buildCloseCalendarViewModel(
-    closeCalendar,
-    closeCalendarLoading,
-    closeCalendarError,
     selectedSummary
   );
 
@@ -2047,12 +2050,18 @@ function buildFinancialOperationsOperatorQueueViewModel({
   checklist,
   approvals,
   evidencePackages,
+  closeCalendarRows,
+  closeCalendarError,
+  selectedSummary,
   loading
 }: {
   breakCases: OperationsContinuityBreakCaseRow[];
   checklist: OperationsContinuityChecklistRow[];
   approvals: OperationsContinuityWorkflow["approvals"];
   evidencePackages: OperationsContinuityEvidencePackageRow[];
+  closeCalendarRows: OperationsContinuityCloseCalendarRow[];
+  closeCalendarError: string | null;
+  selectedSummary: OperationsContinuityWorkflowSummary | null;
   loading: boolean;
 }): FinancialOperationsOperatorQueueViewModel {
   const items: FinancialOperationsOperatorQueueRow[] = [
@@ -2092,6 +2101,12 @@ function buildFinancialOperationsOperatorQueueViewModel({
         routeLabel: row.remediationLabel,
         ariaLabel: `Financial Operations checklist ${row.ariaLabel}`
       })),
+    ...closeCalendarRows
+      .map(mapCloseCalendarQueueRow)
+      .filter(isOpenQueueItem),
+    ...(closeCalendarError && !loading
+      ? [mapCloseCalendarErrorQueueRow(closeCalendarError, selectedSummary)]
+      : []),
     ...[...approvals]
       .sort(compareApprovalsByDecisionTime)
       .map(mapApprovalQueueRow)
@@ -2144,6 +2159,56 @@ function buildFinancialOperationsOperatorQueueViewModel({
       ? "Loading Financial Operations operator queue..."
       : "No open Financial Operations queue items are surfaced for the selected workflow.",
     items
+  };
+}
+
+function mapCloseCalendarErrorQueueRow(
+  error: string,
+  selectedSummary: OperationsContinuityWorkflowSummary | null
+): FinancialOperationsOperatorQueueRow {
+  const scopeLabel = selectedSummary
+    ? `${selectedSummary.periodId} / ${selectedSummary.fundAccountId}`
+    : "Selected close scope";
+
+  return {
+    id: "close-calendar:error",
+    kindLabel: "Close calendar",
+    title: `${scopeLabel}: Close calendar unavailable`,
+    detail: "Close-calendar projection could not be loaded from the shared operations API.",
+    statusLabel: "Unavailable",
+    statusTone: "blocked",
+    ownerLabel: "Operations control",
+    dueLabel: "Next due task unavailable",
+    evidenceLabel: "Close calendar evidence unavailable",
+    actionLabel: error,
+    routeHref: "/accounting/operations-continuity",
+    routeLabel: "Open operations continuity",
+    ariaLabel: `Financial Operations close calendar unavailable for ${scopeLabel}: ${error}`
+  };
+}
+
+function mapCloseCalendarQueueRow(
+  row: OperationsContinuityCloseCalendarRow
+): FinancialOperationsOperatorQueueRow {
+  const title = `${row.periodLabel}: ${row.taskLabel}`;
+  const routeLabel = row.routeHref ? row.routeLabel : "No local route";
+
+  return {
+    id: `close-calendar:${row.id}`,
+    kindLabel: "Close calendar",
+    title,
+    detail: `${row.blockerLabel}; ${row.checklistLabel}; ${row.approvalLabel}`,
+    statusLabel: row.readinessLabel,
+    statusTone: row.readinessTone,
+    ownerLabel: row.ownerLabel,
+    dueLabel: row.dueLabel,
+    evidenceLabel: `Calendar status: ${row.statusLabel}`,
+    actionLabel: row.readinessTone === "blocked"
+      ? "Resolve close-calendar blockers before approval or close lock."
+      : "Complete the next close-calendar task before producing close evidence.",
+    routeHref: row.routeHref,
+    routeLabel,
+    ariaLabel: `Financial Operations close calendar ${row.ariaLabel}, next task ${row.taskLabel}`
   };
 }
 

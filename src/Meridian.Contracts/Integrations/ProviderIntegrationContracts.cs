@@ -128,6 +128,15 @@ public enum ProviderIntegrationIssueSeverityDto
     Critical = 2
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<ProviderIntegrationQuarantineResolutionActionDto>))]
+public enum ProviderIntegrationQuarantineResolutionActionDto
+{
+    ReviewOnly = 0,
+    ReplayAfterMappingChange = 1,
+    IgnoreProviderRecord = 2,
+    MarkAsCashPosition = 3
+}
+
 public sealed record ProviderIntegrationAuthConfigDto(
     ProviderIntegrationAuthTypeDto Type,
     string? TokenUrl,
@@ -294,6 +303,49 @@ public sealed record QuarantinedRecordDto(
     ProviderIntegrationProcessingStatusDto Status,
     DateTimeOffset CreatedAt);
 
+public sealed record ProviderIntegrationQuarantineIssueGroupDto(
+    string IssueCode,
+    ProviderIntegrationIssueSeverityDto Severity,
+    string? TargetField,
+    string Message,
+    string? SuggestedFix,
+    int RecordCount);
+
+public sealed record ProviderIntegrationQuarantineDecisionDto(
+    string DecisionId,
+    string SyncRunId,
+    string QuarantineRecordId,
+    string ConnectionId,
+    ProviderIntegrationQuarantineResolutionActionDto Action,
+    string ReviewedBy,
+    DateTimeOffset ReviewedAt,
+    string? Note);
+
+public sealed record ProviderIntegrationQuarantineReviewDto(
+    string ConnectionId,
+    IReadOnlyList<string> SyncRunIds,
+    IReadOnlyList<QuarantinedRecordDto> Records,
+    IReadOnlyList<ProviderIntegrationQuarantineIssueGroupDto> IssueGroups,
+    IReadOnlyList<ProviderIntegrationQuarantineDecisionDto> Decisions,
+    int TotalQuarantinedRecords,
+    int CriticalIssueCount,
+    int WarningIssueCount);
+
+public sealed record ProviderIntegrationQuarantineResolutionRequestDto(
+    string ConnectionId,
+    string SyncRunId,
+    string QuarantineRecordId,
+    ProviderIntegrationQuarantineResolutionActionDto Action,
+    string ReviewedBy,
+    DateTimeOffset ReviewedAt,
+    string? Note);
+
+public sealed record ProviderIntegrationQuarantineResolutionResultDto(
+    bool Resolved,
+    QuarantinedRecordDto Record,
+    ProviderIntegrationQuarantineDecisionDto Decision,
+    string? Message);
+
 public sealed record IntegrationStagingRecordDto(
     string StagingRecordId,
     string SyncRunId,
@@ -443,6 +495,10 @@ public interface IProviderIntegrationManifestStore
     Task SaveQuarantinedRecordAsync(QuarantinedRecordDto record, CancellationToken ct = default);
 
     Task<IReadOnlyList<QuarantinedRecordDto>> ListQuarantinedRecordsAsync(string syncRunId, CancellationToken ct = default);
+
+    Task SaveQuarantineDecisionAsync(ProviderIntegrationQuarantineDecisionDto decision, CancellationToken ct = default);
+
+    Task<IReadOnlyList<ProviderIntegrationQuarantineDecisionDto>> ListQuarantineDecisionsAsync(string syncRunId, CancellationToken ct = default);
 
     Task SaveStagingRecordAsync(IntegrationStagingRecordDto record, CancellationToken ct = default);
 

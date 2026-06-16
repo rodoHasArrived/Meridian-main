@@ -83,7 +83,9 @@ Keep desktop support aligned with shared contracts and governance posture.
 Remote workstation calls should migrate through `IRemoteWorkstationClient`, which centralizes the
 configured service URL, host health checks, and typed API calls for deployable WPF clients instead
 of letting pages or services create their own HTTP clients or bind directly to the shared API
-singleton.
+singleton. Watchlist backend synchronization now uses that seam for the optional `/api/watchlists`
+probe while retaining local desktop persistence when the remote host does not provide a watchlist
+payload.
 Convention-based view-model wiring is handled by `Services/ViewModelViewResolver.cs`; shell pages
 that follow the `*Page` to `*ViewModel` naming convention can receive a DI-constructed DataContext
 without page-specific registration, while pages that set their own DataContext remain authoritative.

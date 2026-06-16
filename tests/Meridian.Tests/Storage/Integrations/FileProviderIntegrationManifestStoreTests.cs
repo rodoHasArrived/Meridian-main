@@ -146,12 +146,23 @@ public sealed class FileProviderIntegrationManifestStoreTests : IDisposable
         await store.SaveSyncRunAsync(syncRun);
         await store.SaveRawPayloadAsync(rawPayload);
         await store.SaveQuarantinedRecordAsync(quarantineRecord);
+        await store.SaveQuarantineDecisionAsync(
+            new ProviderIntegrationQuarantineDecisionDto(
+                "decision-1",
+                "sync-run-1",
+                quarantineRecord.QuarantineRecordId,
+                quarantineRecord.ConnectionId,
+                ProviderIntegrationQuarantineResolutionActionDto.ReplayAfterMappingChange,
+                "operator@example.com",
+                DateTimeOffset.Parse("2026-06-16T12:05:00Z"),
+                "Mapping updated for CUSIP."));
         await store.SaveStagingRecordAsync(stagingRecord);
 
         var reloadedSyncRun = await store.GetSyncRunAsync("sync-run-1");
         var listedSyncRuns = await store.ListSyncRunsAsync("connection-alpha");
         var reloadedPayload = await store.GetRawPayloadAsync("sync-run-1", "payload-1");
         var quarantined = await store.ListQuarantinedRecordsAsync("sync-run-1");
+        var quarantineDecisions = await store.ListQuarantineDecisionsAsync("sync-run-1");
         var staged = await store.ListStagingRecordsAsync("sync-run-1");
 
         reloadedSyncRun.Should().BeEquivalentTo(syncRun);
@@ -167,6 +178,8 @@ public sealed class FileProviderIntegrationManifestStoreTests : IDisposable
         reloadedQuarantine.RawRecord.GetProperty("account_id").GetString().Should().Be("A1");
         reloadedQuarantine.ValidationErrors.Should().ContainSingle()
             .Which.Code.Should().Be("position.security-id.missing");
+        quarantineDecisions.Should().ContainSingle()
+            .Which.Action.Should().Be(ProviderIntegrationQuarantineResolutionActionDto.ReplayAfterMappingChange);
 
         var reloadedStaging = staged.Should().ContainSingle().Which;
         reloadedStaging.StagingRecordId.Should().Be(stagingRecord.StagingRecordId);

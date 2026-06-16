@@ -112,6 +112,28 @@ public sealed class FileProviderIntegrationManifestStore :
             ct);
     }
 
+    public Task SaveQuarantineDecisionAsync(ProviderIntegrationQuarantineDecisionDto decision, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(decision);
+        ArgumentException.ThrowIfNullOrWhiteSpace(decision.SyncRunId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(decision.DecisionId);
+
+        return WriteAsync(
+            GetSyncRunScopedPath("quarantine-decisions", decision.SyncRunId, decision.DecisionId),
+            decision,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationQuarantineDecisionDto,
+            ct);
+    }
+
+    public Task<IReadOnlyList<ProviderIntegrationQuarantineDecisionDto>> ListQuarantineDecisionsAsync(string syncRunId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(syncRunId);
+        return ListAsync(
+            GetSyncRunScopedDirectory("quarantine-decisions", syncRunId),
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationQuarantineDecisionDto,
+            ct);
+    }
+
     public Task SaveStagingRecordAsync(IntegrationStagingRecordDto record, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(record);

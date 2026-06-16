@@ -1999,6 +1999,52 @@ describe("Operations Continuity view model", () => {
       approvalLabel: "1/2 approvals complete",
       routeHref: "/accounting/operations-continuity"
     });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === `close-calendar:${workflowId}`)).toMatchObject({
+      kindLabel: "Close calendar",
+      title: `2026-05 / ${fundAccountId}: Ledger posting controller check`,
+      detail: "1 blocker; 2 open checklist items; 1/2 approvals complete",
+      statusLabel: "72% ready",
+      statusTone: "blocked",
+      ownerLabel: "fund-controller",
+      dueLabel: "May 12, 2026",
+      evidenceLabel: "Calendar status: Ledger Posting Draft",
+      actionLabel: "Resolve close-calendar blockers before approval or close lock.",
+      routeHref: "/accounting/operations-continuity"
+    });
+  });
+
+  it("fails closed in the operator queue when the close calendar cannot be loaded", () => {
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail,
+      loading: false,
+      detailLoading: false,
+      closeCalendar: null,
+      closeCalendarLoading: false,
+      closeCalendarError: "Close calendar projection could not be loaded.",
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.closeCalendar).toMatchObject({
+      statusLabel: "Unavailable",
+      statusTone: "blocked",
+      errorText: "Close calendar projection could not be loaded."
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "close-calendar:error")).toMatchObject({
+      kindLabel: "Close calendar",
+      title: `2026-05 / ${fundAccountId}: Close calendar unavailable`,
+      statusLabel: "Unavailable",
+      statusTone: "blocked",
+      ownerLabel: "Operations control",
+      dueLabel: "Next due task unavailable",
+      evidenceLabel: "Close calendar evidence unavailable",
+      actionLabel: "Close calendar projection could not be loaded.",
+      routeHref: "/accounting/operations-continuity"
+    });
   });
 
   it("fails closed when the private-capital close cockpit cannot be loaded", () => {

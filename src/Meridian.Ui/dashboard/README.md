@@ -170,9 +170,11 @@ workflow engine. The same screen now renders the workflow detail `Reviewed autom
 read-only stage, review-state, allowed-use, prohibited-action, retained-evidence, required-action,
 and reviewed-output artifact posture so automation review remains visible without browser-local
 automation policy.
-The Financial Operations operator queue on that screen is also derived from workflow detail:
-reconciliation break cases, close checklist tasks, workflow approvals, and evidence-package
-readiness stay source-backed while React only groups the active work items for review.
+The Financial Operations operator queue on that screen is also derived from workflow detail and the
+shared close-calendar projection: reconciliation break cases, close checklist tasks, close-calendar
+due items, workflow approvals, and evidence-package readiness stay source-backed while React only
+groups the active work items for review. If the close-calendar projection cannot load, the queue
+adds a blocked calendar-unavailable item so workflow control fails closed.
 The same workflow approval payload also feeds the approval-history table with submission timing,
 reviewer/operator attribution, rationale, status, and retained approval evidence routes. Pending
 rows expose guarded approve/reject commands only when the selected workflow supplies version,

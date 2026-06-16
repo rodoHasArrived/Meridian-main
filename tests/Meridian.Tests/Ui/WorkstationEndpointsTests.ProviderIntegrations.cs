@@ -206,6 +206,113 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationQuarantineReview_ReturnsIssueGroups()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = await CreateSeededProviderIntegrationStoreAsync(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewConfig);
+            var client = app.GetTestClient();
+
+            var review = await client.GetFromJsonAsync<ProviderIntegrationQuarantineReviewDto>(
+                $"{ProviderIntegrationQuarantineReviewRoute("connection-alpha")}?recentRunLimit=1",
+                ServerJsonOptions);
+
+            review.Should().NotBeNull();
+            review!.ConnectionId.Should().Be("connection-alpha");
+            review.SyncRunIds.Should().ContainSingle().Which.Should().Be("sync-run-new");
+            review.TotalQuarantinedRecords.Should().Be(2);
+            review.CriticalIssueCount.Should().Be(2);
+            review.IssueGroups.Should().ContainSingle(group =>
+                group.IssueCode == "required.missing" &&
+                group.RecordCount == 2);
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationQuarantineResolve_PersistsDecision()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = await CreateSeededProviderIntegrationStoreAsync(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ManageProviders);
+            var client = app.GetTestClient();
+            var request = new ProviderIntegrationQuarantineResolutionRequestDto(
+                "connection-alpha",
+                "sync-run-new",
+                "quarantine-sync-run-new-0",
+                ProviderIntegrationQuarantineResolutionActionDto.ReplayAfterMappingChange,
+                "operator@example.com",
+                DateTimeOffset.Parse("2026-06-16T12:10:00Z"),
+                "CUSIP mapping was updated.");
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationQuarantineResolve,
+                request,
+                ServerJsonOptions);
+            var result = await response.Content.ReadFromJsonAsync<ProviderIntegrationQuarantineResolutionResultDto>(ServerJsonOptions);
+            var decisions = await DefaultProviderIntegrationTenantStore(store)
+                .ListQuarantineDecisionsAsync(request.SyncRunId);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            result.Should().NotBeNull();
+            result!.Resolved.Should().BeTrue();
+            result.Decision.Action.Should().Be(ProviderIntegrationQuarantineResolutionActionDto.ReplayAfterMappingChange);
+            decisions.Should().ContainSingle()
+                .Which.QuarantineRecordId.Should().Be(request.QuarantineRecordId);
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationQuarantineResolve_RequiresConfigurePermission()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = await CreateSeededProviderIntegrationStoreAsync(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewConfig);
+            var client = app.GetTestClient();
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationQuarantineResolve,
+                new ProviderIntegrationQuarantineResolutionRequestDto(
+                    "connection-alpha",
+                    "sync-run-new",
+                    "quarantine-sync-run-new-0",
+                    ProviderIntegrationQuarantineResolutionActionDto.IgnoreProviderRecord,
+                    "operator@example.com",
+                    DateTimeOffset.Parse("2026-06-16T12:10:00Z"),
+                    "Provider duplicate."),
+                ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            (await DefaultProviderIntegrationTenantStore(store).ListQuarantineDecisionsAsync("sync-run-new"))
+                .Should()
+                .BeEmpty();
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ProviderIntegrationReadiness_ReturnsActivationBlockers()
     {
         var testRoot = CreateProviderIntegrationTestRoot();
@@ -632,6 +739,7 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<ProviderIntegrationActivationReadinessService>();
         services.AddSingleton<ProviderIntegrationActivationService>();
         services.AddSingleton<ProviderIntegrationMonitoringService>();
+        services.AddSingleton<ProviderIntegrationQuarantineReviewService>();
     }
 
     private static async Task<FileProviderIntegrationManifestStore> CreateSeededProviderIntegrationStoreAsync(string testRoot)
@@ -809,6 +917,12 @@ public sealed partial class WorkstationEndpointsTests
 
     private static string ProviderIntegrationMonitorRoute(string connectionId)
         => UiApiRoutes.WorkstationProviderIntegrationConnectionMonitor.Replace(
+            "{connectionId}",
+            Uri.EscapeDataString(connectionId),
+            StringComparison.Ordinal);
+
+    private static string ProviderIntegrationQuarantineReviewRoute(string connectionId)
+        => UiApiRoutes.WorkstationProviderIntegrationQuarantineReview.Replace(
             "{connectionId}",
             Uri.EscapeDataString(connectionId),
             StringComparison.Ordinal);

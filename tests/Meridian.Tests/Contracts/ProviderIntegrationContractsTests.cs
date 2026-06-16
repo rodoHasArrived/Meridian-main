@@ -284,6 +284,89 @@ public sealed class ProviderIntegrationContractsTests
         resultRoundTrip.Should().BeEquivalentTo(result);
     }
 
+    [Fact]
+    public void ProviderIntegrationQuarantineReview_RoundTripsWithDecisionEvidence()
+    {
+        var record = new QuarantinedRecordDto(
+            "quarantine-1",
+            "sync-run-1",
+            "connection-alpha",
+            ProviderCapabilityKindDto.Positions,
+            JsonDocument.Parse("""{"account_id":"A1"}""").RootElement.Clone(),
+            MappedRecord: null,
+            [
+                new ValidationIssueDto(
+                    "position.security-id.missing",
+                    ProviderIntegrationIssueSeverityDto.Critical,
+                    "Security identifier is required.",
+                    "security",
+                    "Map CUSIP, ISIN, ticker, or provider security id.")
+            ],
+            ProviderIntegrationProcessingStatusDto.Quarantined,
+            DateTimeOffset.Parse("2026-06-16T12:01:00Z"));
+        var decision = new ProviderIntegrationQuarantineDecisionDto(
+            "decision-1",
+            record.SyncRunId,
+            record.QuarantineRecordId,
+            record.ConnectionId,
+            ProviderIntegrationQuarantineResolutionActionDto.ReplayAfterMappingChange,
+            "operator@example.com",
+            DateTimeOffset.Parse("2026-06-16T12:05:00Z"),
+            "Mapping updated.");
+        var review = new ProviderIntegrationQuarantineReviewDto(
+            record.ConnectionId,
+            [record.SyncRunId],
+            [record],
+            [
+                new ProviderIntegrationQuarantineIssueGroupDto(
+                    "position.security-id.missing",
+                    ProviderIntegrationIssueSeverityDto.Critical,
+                    "security",
+                    "Security identifier is required.",
+                    "Map CUSIP, ISIN, ticker, or provider security id.",
+                    RecordCount: 1)
+            ],
+            [decision],
+            TotalQuarantinedRecords: 1,
+            CriticalIssueCount: 1,
+            WarningIssueCount: 0);
+        var result = new ProviderIntegrationQuarantineResolutionResultDto(
+            Resolved: true,
+            record,
+            decision,
+            "Provider integration quarantine review decision recorded.");
+
+        var reviewJson = JsonSerializer.Serialize(
+            review,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationQuarantineReviewDto);
+        var resultJson = JsonSerializer.Serialize(
+            result,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationQuarantineResolutionResultDto);
+        var reviewRoundTrip = JsonSerializer.Deserialize(
+            reviewJson,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationQuarantineReviewDto);
+        var resultRoundTrip = JsonSerializer.Deserialize(
+            resultJson,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationQuarantineResolutionResultDto);
+
+        reviewJson.Should().Contain("\"issueGroups\"");
+        reviewJson.Should().Contain("\"action\": \"ReplayAfterMappingChange\"");
+        reviewJson.Should().NotContain("\"IssueGroups\"");
+        resultJson.Should().Contain("\"resolved\": true");
+        reviewRoundTrip.Should().NotBeNull();
+        reviewRoundTrip!.ConnectionId.Should().Be(review.ConnectionId);
+        reviewRoundTrip.Records.Should().ContainSingle()
+            .Which.RawRecord.GetProperty("account_id").GetString().Should().Be("A1");
+        reviewRoundTrip.IssueGroups.Should().ContainSingle()
+            .Which.IssueCode.Should().Be("position.security-id.missing");
+        reviewRoundTrip.Decisions.Should().ContainSingle()
+            .Which.Action.Should().Be(ProviderIntegrationQuarantineResolutionActionDto.ReplayAfterMappingChange);
+        resultRoundTrip.Should().NotBeNull();
+        resultRoundTrip!.Resolved.Should().BeTrue();
+        resultRoundTrip.Record.RawRecord.GetProperty("account_id").GetString().Should().Be("A1");
+        resultRoundTrip.Decision.Should().BeEquivalentTo(decision);
+    }
+
     private static ProviderIntegrationManifestDto CreateManifest()
         => new(
             "manifest-custodian-abc-v1",

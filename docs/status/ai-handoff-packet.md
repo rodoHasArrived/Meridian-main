@@ -15,8 +15,8 @@
 
 ## Route outcome
 - Final status: partial
-- Route assessment: aligned
-- Inferred lanes from changes: docs, provider
+- Route assessment: possible-misroute
+- Inferred lanes from changes: desktop, docs
 
 ## Telemetry
 - route_id: provider-integration
@@ -34,35 +34,16 @@
 - git diff: Changed-file evidence for handoff packet.
 
 ## Changes made
-- .github/workflows/documentation.yml: Touched in current git diff.
-- build/scripts/docs/run-docs-automation.py: Touched in current git diff.
-- build/scripts/docs/validate-docs-structure.py: Touched in current git diff.
-- docs/architecture/provider-integration-manifest-runtime.md: Touched in current git diff.
 - docs/generated/repository-structure.md: Touched in current git diff.
-- docs/source/generated/source-hash-manifest.json: Touched in current git diff.
 - docs/status/TODO.md: Touched in current git diff.
 - docs/status/ai-handoff-checklist-report.json: Touched in current git diff.
-- docs/status/ai-handoff-packet.json: Touched in current git diff.
-- docs/status/ai-handoff-packet.md: Touched in current git diff.
 - docs/status/ai-inventory-report.json: Touched in current git diff.
-- docs/status/ai-inventory-report.md: Touched in current git diff.
 - docs/status/doc-health-dashboard.json: Touched in current git diff.
 - docs/status/doc-health-dashboard.md: Touched in current git diff.
-- docs/status/docs-automation-summary.json: Touched in current git diff.
-- docs/status/docs-automation-summary.md: Touched in current git diff.
 - docs/status/example-validation.md: Touched in current git diff.
 - docs/status/prompt-route-lint-report.json: Touched in current git diff.
-- src/Meridian.Application/README.md: Touched in current git diff.
-- src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs: Touched in current git diff.
-- src/Meridian.Contracts/Integrations/ProviderIntegrationContractsJsonContext.cs: Touched in current git diff.
-- src/Meridian.Contracts/README.md: Touched in current git diff.
-- src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs: Touched in current git diff.
-- src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs: Touched in current git diff.
-- src/Meridian.Ui.Shared/README.md: Touched in current git diff.
-- tests/Meridian.Tests/Contracts/ProviderIntegrationContractsTests.cs: Touched in current git diff.
-- tests/Meridian.Tests/Integration/EndpointTests/EndpointTestFixture.cs: Touched in current git diff.
-- tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Infrastructure.cs: Touched in current git diff.
-- tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs: Touched in current git diff.
+- src/Meridian.Wpf/Services/WatchlistService.cs: Touched in current git diff.
+- tests/Meridian.Wpf.Tests/Services/WatchlistServiceTests.cs: Touched in current git diff.
 
 ## Validation
 - [pass] python build/scripts/docs/prompt-route-linter.py --summary

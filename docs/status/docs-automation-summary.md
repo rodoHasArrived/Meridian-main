@@ -6,18 +6,21 @@
 
 | Script | Status | Duration (s) | Output |
 |--------|--------|--------------|--------|
-| `scan-todos` | `success` | `37.052` | `docs/status/TODO.md` |
-| `validate-docs-structure` | `success` | `8.548` | `-` |
-| `generate-structure-docs` | `success` | `9.000` | `docs/generated/repository-structure.md` |
-| `generate-health-dashboard` | `success` | `18.235` | `docs/status/doc-health-dashboard.md` |
-| `validate-examples` | `success` | `4.504` | `docs/status/example-validation.md` |
-| `check-ai-inventory` | `success` | `2.367` | `docs/status/ai-inventory-report.md` |
-| `check-ai-handoff-strict` | `success` | `3.974` | `docs/status/ai-handoff-checklist-report.md` |
-| `check-ai-contract-drift` | `success` | `2.414` | `-` |
-| `prompt-route-linter` | `success` | `6.475` | `docs/status/prompt-route-lint-report.json` |
-| `handoff-packet-generator` | `success` | `18.984` | `docs/status/ai-handoff-packet.json` |
-| `check-handoff-packet-schema` | `failed` | `3.813` | `-` |
+| `scan-todos` | `success` | `21.999` | `docs/status/TODO.md` |
+| `validate-docs-structure` | `success` | `5.290` | `-` |
+| `generate-structure-docs` | `success` | `5.337` | `docs/generated/repository-structure.md` |
+| `generate-health-dashboard` | `success` | `18.789` | `docs/status/doc-health-dashboard.md` |
+| `validate-examples` | `success` | `10.174` | `docs/status/example-validation.md` |
+| `check-ai-inventory` | `success` | `12.090` | `docs/status/ai-inventory-report.md` |
+| `check-ai-handoff-strict` | `success` | `3.655` | `docs/status/ai-handoff-checklist-report.md` |
+| `check-ai-contract-drift` | `success` | `6.338` | `-` |
+| `prompt-route-linter` | `success` | `2.164` | `docs/status/prompt-route-lint-report.json` |
+| `handoff-packet-generator` | `success` | `6.969` | `docs/status/ai-handoff-packet.json` |
+| `check-handoff-packet-schema` | `success` | `2.719` | `-` |
+| `check-ai-routing-parity` | `success` | `2.335` | `-` |
+| `check-mode-escalation` | `success` | `15.508` | `-` |
+| `generate-coverage` | `failed` | `7858.217` | `docs/status/coverage-report.md` |
 
 ## Failures
 
-- `check-handoff-packet-schema`: [check-handoff-packet-schema] FAILED: telemetry.selected_model required for high-risk route lane/mode.
+- `generate-coverage`: Error: failed to build coverage report: [WinError 1921] The name of the file cannot be resolved by the system: 'D:\\Meridian-main\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools\\src\\Meridian.Ui\\dashboard\\node_modules\\meridian-tools'

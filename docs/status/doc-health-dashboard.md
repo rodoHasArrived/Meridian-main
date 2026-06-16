@@ -1,12 +1,12 @@
 # Documentation Health Dashboard
 
 _Auto-generated from canonical JSON payload._
-_Generated: 2026-06-16T06:27:08.531105+00:00_
+_Generated: 2026-06-16T08:34:52.083996+00:00_
 Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-06-16T06:27:08.341098+00:00
+> Last updated: 2026-06-16T08:34:52.052936+00:00
 
 ## Overall Health Score
 
@@ -19,13 +19,13 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 714 |
-| Total lines | 102,480 |
-| Average file size (lines) | 143.5 |
+| Total documentation files | 715 |
+| Total lines | 102,673 |
+| Average file size (lines) | 143.6 |
 | Orphaned files | 293 |
 | Files without headings | 22 |
 | Stale files (>90 days) | 69 |
-| TODO/FIXME markers | 231 |
+| TODO/FIXME markers | 240 |
 | **Health score** | **82/100** |
 
 ### Score Breakdown
@@ -119,7 +119,7 @@ These files have not been updated in over 90 days:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 2026-06-16 | 82 | 714 | 293 | 69 |
+| 2026-06-16 | 82 | 715 | 293 | 69 |
 
 ---
 

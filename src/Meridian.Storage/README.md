@@ -54,7 +54,8 @@ lookup paths, and evidence trails those layers rely on.
 - `Ledger/` - accounting journal storage, tax-lot policy inputs, and guardrails for instrument
   postings.
 - `Integrations/` - file-backed provider integration manifest, connection, raw payload,
-  quarantine, and staging-record persistence for replayable no-code provider intake.
+  quarantine, quarantine-review decision, and staging-record persistence for replayable no-code
+  provider intake.
 - `SecurityMaster/` - reference-data stores that identify securities and preserve provenance.
 - `DirectLending/` - direct-lending state, events, workflow audit, and transactional ledger handoff.
 - `AssetOperations/` - read-model projections for operational terms, lifecycle, cash flow,

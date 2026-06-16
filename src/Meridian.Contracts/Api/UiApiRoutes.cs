@@ -578,6 +578,8 @@ public static class UiApiRoutes
     public const string WorkstationProviderIntegrationRestDryRun = "/api/workstation/provider-integrations/dry-runs/rest";
     public const string WorkstationProviderIntegrationActivate = "/api/workstation/provider-integrations/activate";
     public const string WorkstationProviderIntegrationConnectionMonitor = "/api/workstation/provider-integrations/connections/{connectionId}/monitor";
+    public const string WorkstationProviderIntegrationQuarantineReview = "/api/workstation/provider-integrations/connections/{connectionId}/quarantine";
+    public const string WorkstationProviderIntegrationQuarantineResolve = "/api/workstation/provider-integrations/quarantine/resolve";
     public const string WorkstationGovernance = "/api/workstation/governance";
     public const string WorkstationAccounting = "/api/workstation/accounting";
     public const string WorkstationReporting = "/api/workstation/reporting";
