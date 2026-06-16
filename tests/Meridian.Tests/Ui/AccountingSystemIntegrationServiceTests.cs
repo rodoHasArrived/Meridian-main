@@ -160,6 +160,115 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task ReconcileLatestAsync_WithMixedGlBreaks_ReturnsCategorySpecificTieOutActions()
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var timestamp = new DateTimeOffset(2026, 1, 12, 0, 0, 0, TimeSpan.Zero);
+        var journalEntryId = Guid.NewGuid();
+        var cashLineId = Guid.NewGuid();
+        var receivableLineId = Guid.NewGuid();
+        var incomeLineId = Guid.NewGuid();
+        var sourceEventId = Guid.NewGuid();
+        var sourceJournalEntryId = Guid.NewGuid();
+        var journal = new JournalEntry(
+            journalEntryId,
+            timestamp,
+            "Mixed GL tie-out breaks",
+            [
+                new LedgerEntry(
+                    cashLineId,
+                    journalEntryId,
+                    timestamp,
+                    new LedgerAccount("Assets:Cash:Operating", LedgerAccountType.Asset),
+                    240_000m,
+                    0m,
+                    "Mixed GL tie-out breaks"),
+                new LedgerEntry(
+                    receivableLineId,
+                    journalEntryId,
+                    timestamp,
+                    new LedgerAccount("Assets:Receivable:Subscription", LedgerAccountType.Asset),
+                    5_000m,
+                    0m,
+                    "Mixed GL tie-out breaks"),
+                new LedgerEntry(
+                    incomeLineId,
+                    journalEntryId,
+                    timestamp,
+                    new LedgerAccount("Income:Investment", LedgerAccountType.Revenue),
+                    0m,
+                    245_000m,
+                    "Mixed GL tie-out breaks")
+            ]);
+        var ledgerStore = new StaticLedgerJournalStore(
+            new LedgerBookRecord(
+                ledgerBookId,
+                "default-fund",
+                Guid.NewGuid(),
+                FundStructureNodeKindDto.Fund,
+                "Default fund primary book",
+                "USD",
+                timestamp,
+                timestamp),
+            new LedgerAccountingPeriod(
+                periodId,
+                ledgerBookId,
+                2026,
+                1,
+                "2026-01",
+                new DateOnly(2026, 1, 1),
+                new DateOnly(2026, 1, 31),
+                "Open",
+                timestamp,
+                null,
+                1),
+            [
+                new LedgerJournalEntryRecord(
+                    journal,
+                    Guid.NewGuid(),
+                    periodId,
+                    CommandId: null,
+                    CorrelationId: null,
+                    GlobalSequence: 1,
+                    CreatedAt: timestamp,
+                    SourceEventId: sourceEventId,
+                    SourceJournalEntryId: sourceJournalEntryId)
+            ]);
+        var service = CreateService(ledgerStore);
+
+        await service.ImportAsync(new AccountingSystemImportRequestDto(
+            "quickbooks-fixture",
+            "default-fund",
+            ledgerBookId,
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31)));
+
+        var summary = await service.ReconcileLatestAsync("quickbooks-fixture", "default-fund", ledgerBookId);
+
+        summary.BreakCount.Should().Be(5);
+        summary.Rows.Should().ContainSingle(row =>
+            row.AccountCode == "Assets:Receivable:Subscription" &&
+            row.Status == AccountingSystemReconciliationStatusDto.MissingExternal &&
+            row.MeridianEvidenceReferences.Contains($"ledger-entry:{receivableLineId:D}"));
+        summary.Rows.Count(row => row.Status == AccountingSystemReconciliationStatusDto.MissingMeridian).Should().Be(2);
+        summary.Rows.Count(row => row.Status == AccountingSystemReconciliationStatusDto.Variance).Should().Be(2);
+
+        var tieOutPackage = summary.EvidencePackages.Should().ContainSingle(package =>
+            package.PackageId == $"gl-reconciliation-tie-out:{summary.ImportId}").Subject;
+        tieOutPackage.Status.Should().Be(AccountingSystemEvidencePackageStatusDto.ReviewRequired);
+        tieOutPackage.RequiredActions.Should().Contain(action =>
+            action.Contains("1 Meridian ledger account is absent", StringComparison.OrdinalIgnoreCase) &&
+            action.Contains("assign to accounting operations", StringComparison.OrdinalIgnoreCase));
+        tieOutPackage.RequiredActions.Should().Contain(action =>
+            action.Contains("2 external GL rows are absent", StringComparison.OrdinalIgnoreCase) &&
+            action.Contains("assign to ledger operations", StringComparison.OrdinalIgnoreCase));
+        tieOutPackage.RequiredActions.Should().Contain(action =>
+            action.Contains("2 GL variance rows require", StringComparison.OrdinalIgnoreCase) &&
+            action.Contains("retained approval evidence", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task ImportAsync_PropagatesCancellation()
     {
         var service = CreateService();

@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-11
+last_reviewed: 2026-06-16
 ---
 
 # src/Meridian.FinancialOperations
@@ -128,7 +128,7 @@ portfolio/ledger candidates with the contracts-owned Security Master query surfa
 matches and breaks through the F# ledger reconciliation kernel instead of Application-local
 service/logging ownership.
 
-Accounting-system GL evidence integration lives here as provider-neutral Financial Operations behavior. The integration service lists accounting-system providers, chooses configured QuickBooks Online evidence when available, falls back to the read-only fixture provider when live company evidence is not configured, retains latest imports by provider/fund/book, and reconciles external trial-balance rows against Meridian-owned ledger totals when a ledger store is available. Reconciliation rows retain both provider-side evidence refs and Meridian ledger-entry, journal-entry, period, and source refs; the summary also publishes external-import, Meridian-ledger, and tie-out evidence package posture so close support can distinguish missing ledger proof from unresolved GL breaks. UI Shared maps endpoints and supplies credential-backed provider registration, but it does not own GL evidence reconciliation or posting-disable posture.
+Accounting-system GL evidence integration lives here as provider-neutral Financial Operations behavior. The integration service lists accounting-system providers, chooses configured QuickBooks Online evidence when available, falls back to the read-only fixture provider when live company evidence is not configured, retains latest imports by provider/fund/book, and reconciles external trial-balance rows against Meridian-owned ledger totals when a ledger store is available. Reconciliation rows retain both provider-side evidence refs and Meridian ledger-entry, journal-entry, period, and source refs; the summary also publishes external-import, Meridian-ledger, and tie-out evidence package posture so close support can distinguish missing ledger proof from unresolved GL breaks. The tie-out evidence package classifies missing-external, missing-Meridian, and variance breaks into operator required actions for assignment, retained provider support, ledger remediation, and close approval evidence. UI Shared maps endpoints and supplies credential-backed provider registration, but it does not own GL evidence reconciliation or posting-disable posture.
 
 Accounting close projections live here as deterministic Financial Operations behavior. Journal
 posting, FX translation, trial-balance, roll-forward, source-linked audit, and close evidence gates

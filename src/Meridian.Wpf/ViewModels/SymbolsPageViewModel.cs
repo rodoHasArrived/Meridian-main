@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
@@ -33,7 +33,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
     private readonly WpfServices.NavigationService _navigationService;
     private readonly SymbolManagementService _symbolManagementService;
     private readonly CommandPaletteService _commandPaletteService;
-    private readonly HttpClient _httpClient = new();
+    private readonly IRemoteWorkstationClient _remoteClient;
     private readonly Func<CancellationToken, Task<SymbolConfigDto[]>> _getConfiguredSymbolsAsync;
     private readonly Func<SymbolConfigDto[], CancellationToken, Task> _saveSymbolsAsync;
     private readonly Func<CancellationToken, Task<IReadOnlyList<WpfServices.Watchlist>>> _getAllWatchlistsAsync;
@@ -296,7 +296,8 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
         WpfServices.NotificationService notificationService,
         WpfServices.NavigationService navigationService,
         SymbolManagementService symbolManagementService,
-        CommandPaletteService commandPaletteService)
+        CommandPaletteService commandPaletteService,
+        IRemoteWorkstationClient? remoteClient = null)
         : this(
             configService,
             watchlistService,
@@ -305,6 +306,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
             navigationService,
             symbolManagementService,
             commandPaletteService,
+            remoteClient,
             null,
             null,
             null)
@@ -319,6 +321,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
         WpfServices.NavigationService navigationService,
         SymbolManagementService symbolManagementService,
         CommandPaletteService commandPaletteService,
+        IRemoteWorkstationClient? remoteClient,
         Func<CancellationToken, Task<SymbolConfigDto[]>>? getConfiguredSymbolsAsync,
         Func<SymbolConfigDto[], CancellationToken, Task>? saveSymbolsAsync,
         Func<CancellationToken, Task<IReadOnlyList<WpfServices.Watchlist>>>? getAllWatchlistsAsync)
@@ -330,6 +333,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
         _navigationService = navigationService;
         _symbolManagementService = symbolManagementService;
         _commandPaletteService = commandPaletteService;
+        _remoteClient = remoteClient ?? WpfServices.WpfRemoteWorkstationClient.Instance;
         _getConfiguredSymbolsAsync = getConfiguredSymbolsAsync ?? configService.GetConfiguredSymbolsAsync;
         _saveSymbolsAsync = saveSymbolsAsync ?? configService.SaveSymbolsAsync;
         _getAllWatchlistsAsync = getAllWatchlistsAsync ?? watchlistService.GetAllWatchlistsAsync;
@@ -1167,67 +1171,37 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
 
         try
         {
-            var baseUrl = _watchlistService.BaseUrl; // Use same base URL as watchlist service
-            var url = $"{baseUrl}/api/security-master/search?query={Uri.EscapeDataString(ticker)}&pageSize=10";
-
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             cts.CancelAfter(TimeSpan.FromSeconds(5)); // 5-second timeout
 
-            using var response = await _httpClient.GetAsync(url, cts.Token);
+            var query = $"query={Uri.EscapeDataString(ticker)}&take=10&activeOnly=true";
+            var endpoint = UiApiRoutes.WithQuery(UiApiRoutes.WorkstationSecurityMasterSearch, query);
+            var response = await _remoteClient
+                .GetWithResponseAsync<SecurityMasterWorkstationDto[]>(endpoint, cts.Token)
+                .ConfigureAwait(false);
 
-            if (!response.IsSuccessStatusCode)
+            if (!response.Success || response.Data is null)
             {
-                _loggingService.LogError($"Security Master search failed with status {response.StatusCode} for {ticker}");
+                _loggingService.LogError($"Security Master search failed for {ticker}");
                 SelectedSymbolSecurityId = null;
                 CanViewInSecurityMaster = false;
                 CanAddToSecurityMaster = true; // Allow adding if lookup fails
                 return;
             }
 
-            var content = await response.Content.ReadAsStringAsync(cts.Token);
-            using var doc = JsonDocument.Parse(content);
-
-            // Look for a result with an exact Ticker identifier match
-            var root = doc.RootElement;
-            if (root.TryGetProperty("results", out var results) && results.ValueKind == JsonValueKind.Array)
+            foreach (var result in response.Data)
             {
-                foreach (var result in results.EnumerateArray())
+                if (IsTickerMatch(result, ticker))
                 {
-                    if (result.TryGetProperty("classification", out var classification) &&
-                        classification.TryGetProperty("primaryIdentifiers", out var identifiers) &&
-                        identifiers.ValueKind == JsonValueKind.Array)
-                    {
-                        foreach (var identifier in identifiers.EnumerateArray())
-                        {
-                            if (identifier.TryGetProperty("kind", out var kind) &&
-                                kind.GetString()?.Equals("Ticker", StringComparison.OrdinalIgnoreCase) == true &&
-                                identifier.TryGetProperty("value", out var value) &&
-                                value.GetString()?.Equals(ticker, StringComparison.OrdinalIgnoreCase) == true)
-                            {
-                                // Found exact match!
-                                if (result.TryGetProperty("securityId", out var securityIdElem) &&
-                                    Guid.TryParse(securityIdElem.GetString(), out var securityId))
-                                {
-                                    SelectedSymbolSecurityId = securityId;
-                                    CanViewInSecurityMaster = true;
-                                    CanAddToSecurityMaster = false;
-                                    _loggingService.LogInfo($"Found security in Master for {ticker}");
-                                    return;
-                                }
-                            }
-                        }
-                    }
+                    SelectedSymbolSecurityId = result.SecurityId;
+                    CanViewInSecurityMaster = true;
+                    CanAddToSecurityMaster = false;
+                    _loggingService.LogInfo($"Found security in Master for {ticker}");
+                    return;
                 }
             }
 
             // Not found or no match
-            SelectedSymbolSecurityId = null;
-            CanViewInSecurityMaster = false;
-            CanAddToSecurityMaster = true;
-        }
-        catch (HttpRequestException ex)
-        {
-            _loggingService.LogError($"HTTP error checking Security Master status for {ticker}", ex);
             SelectedSymbolSecurityId = null;
             CanViewInSecurityMaster = false;
             CanAddToSecurityMaster = true;
@@ -1247,6 +1221,17 @@ public sealed class SymbolsPageViewModel : BindableBase, IPageActivationLifetime
             CanAddToSecurityMaster = true;
         }
     }
+
+    private static bool IsTickerMatch(SecurityMasterWorkstationDto result, string ticker)
+    {
+        var classification = result.Classification;
+        return IsIdentifierMatch(classification.PrimaryIdentifierKind, classification.PrimaryIdentifierValue, ticker) ||
+               IsIdentifierMatch(classification.MatchedIdentifierKind, classification.MatchedIdentifierValue, ticker);
+    }
+
+    private static bool IsIdentifierMatch(string? kind, string? value, string ticker)
+        => string.Equals(kind, "Ticker", StringComparison.OrdinalIgnoreCase) &&
+           string.Equals(value, ticker, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Navigates to the Security Master page with the selected ticker pre-filled for creation.
