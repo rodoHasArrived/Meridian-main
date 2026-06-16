@@ -73,6 +73,17 @@ instead of editing generated artifacts when routes, projects, or authoritative d
 | Entrypoints | `src/Meridian.Mcp/Program.cs`, MCP tools/resources/prompts, retained MCP server tests |
 | Validation | Focused MCP host/tool tests plus navigation freshness when repo-navigation payloads change |
 
+## MDIF, Domain Dictionary, And Context Packs
+
+| Field | Start here |
+| --- | --- |
+| Projects | `docs/architecture`, `docs/domain`, `docs/ai/context`, `docs/ai/exports`, `build/scripts/ai` |
+| First docs | `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, relevant `docs/ai/context/*.md` |
+| Entrypoints | `build/scripts/ai/meridian_context_exporter.py`, `docs/ai/exports/README.md`, `docs/README.md`, `docs/ai/README.md` |
+| Validation | `python3 build/scripts/ai/meridian_context_exporter.py --summary`; `python3 build/scripts/docs/validate-docs-structure.py --top-level domain --summary`; `python3 build/scripts/docs/check-ai-inventory.py --summary`; `git diff --check -- <paths>` |
+
+Use this card when Codex is asked to add business nouns, accounting rules, architecture constitution material, reusable context packs, or generated context snapshots. Keep source-of-truth edits in the hand-authored MDIF/domain/context files, then regenerate exports instead of manually editing `docs/ai/exports/LLM_CONTEXT.md` or `docs/ai/exports/context.json`.
+
 ## AI Docs And Codex Tooling
 
 | Field | Start here |

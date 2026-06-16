@@ -55,6 +55,10 @@ Use these together before changing AI guidance, routing, or workflow-oriented sk
 - `docs/architecture/project-structure.md`
 - `docs/architecture/module-map.md`
 - `docs/architecture/mvvm-guidelines.md`
+- `docs/architecture/meridian-development-intelligence-framework.md`
+- `docs/architecture/meridian-domain-model.md`
+- `docs/domain/README.md`
+- `docs/ai/context/accounting-context.md`
 - `docs/prompts/repo-maintenance-prompts.md`
 - `docs/roadmap/README.md`
 - `docs/roadmap/data/roadmap-items.yml`
@@ -62,7 +66,7 @@ Use these together before changing AI guidance, routing, or workflow-oriented sk
 ## Source Documentation Mesh
 
 - Active documentation is being rebuilt around `docs/start/`, `docs/product/`,
-  `docs/engineering/`, `docs/operators/`, `docs/ai/`, `docs/roadmap/`, `docs/source/`,
+  `docs/engineering/`, `docs/operators/`, `docs/domain/`, `docs/ai/`, `docs/roadmap/`, `docs/source/`,
   `docs/reference/`, and `docs/generated/`. Treat older hand-authored folders such as
   `docs/plans/`, `docs/status/`, `docs/developer/`, `docs/development/`,
   `docs/operations/`, `docs/evaluations/`, and `docs/audits/` as canonical only when linked from
@@ -72,6 +76,7 @@ Use these together before changing AI guidance, routing, or workflow-oriented sk
 - Source/module truth lives in `docs/source/data/*.yml`; registered modules have local
   `src/**/README.md` files with purpose, ownership, diagrams, roadmap traceability, TODOs, and
   validation commands.
+- For architecture, domain, accounting, or broad feature-generation tasks, load the MDIF spine in `docs/architecture/meridian-development-intelligence-framework.md`, the matching domain dictionary page under `docs/domain/`, and the relevant context pack under `docs/ai/context/` before implementation.
 - Before editing `src/**`, read the nearest source README, identify the module ID in
   `docs/source/data/source-modules.yml`, and update source README or registry records when behavior,
   validation, ownership, diagrams, or TODO scope changes.
