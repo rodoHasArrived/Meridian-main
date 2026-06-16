@@ -1724,7 +1724,7 @@ describe("AccountingScreen", () => {
         evidenceCategorySummary: "1/1 allocation evidence categories ready.",
         evidenceLinks: ["/evidence/source"],
         evidenceCategories: [],
-        fundEventRecords: [{ effectiveDate: "2026-06-30" } as never],
+        fundEventRecords: [manualJournalWorkbench.privateCapitalActivity!.fundEventRecords[0]],
         subledgerEntries: [],
         ledgerImpacts: [],
         reportOutputs: [],
@@ -1840,6 +1840,14 @@ describe("AccountingScreen", () => {
     })));
     const region = screen.getByRole("region", { name: "Capital Account Workbench" });
     expect(region).toHaveTextContent("Investor capital accounts");
+    expect(region).toHaveTextContent("Fund-event command centers");
+    expect(within(region).getByRole("table", { name: "Capital-account fund-event command centers" })).toHaveTextContent("Distribution");
+    expect(within(region).getByRole("table", { name: "Capital-account fund-event command centers" })).toHaveTextContent("Approval pending");
+    expect(within(region).getByRole("table", { name: "Capital-account fund-event command centers" })).toHaveTextContent("1 ledger impact");
+    expect(within(region).getByRole("link", { name: "Open capital-account fund-event command center for Distribution" })).toHaveAttribute(
+      "href",
+      "/api/ledger/private-capital/fund-event-command-center?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Adistribution%3A20260630"
+    );
     expect(region).toHaveTextContent("Source support");
     expect(region).toHaveTextContent("source-support:projection:1.1.1.1");
     expect(region).toHaveTextContent("fund_event.source_evidence_count > 0");

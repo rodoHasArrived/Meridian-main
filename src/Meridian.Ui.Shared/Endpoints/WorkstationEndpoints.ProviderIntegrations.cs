@@ -448,6 +448,66 @@ public static partial class WorkstationEndpoints
             UserPermission.ModifyConfig,
             UserPermission.AdminMaintenance);
 
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationConnectionSyncPlan), async (
+            string connectionId,
+            DateTimeOffset? evaluatedAt,
+            HttpContext context) =>
+        {
+            if (!HasProviderIntegrationReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<ProviderIntegrationSyncPlanningService>();
+            if (service is null)
+            {
+                return Results.Problem(
+                    "Provider integration sync-planning service is not registered.",
+                    statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            try
+            {
+                if (!TryResolveRequiredTenantId(context, out var tenantId))
+                {
+                    return Results.Problem("A tenant-scoped workstation request context is required.", statusCode: StatusCodes.Status403Forbidden);
+                }
+
+                var plan = await service
+                    .PlanAsync(
+                        tenantId,
+                        new ProviderIntegrationSyncPlanRequestDto(
+                            connectionId,
+                            evaluatedAt ?? DateTimeOffset.UtcNow),
+                        context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(plan, jsonOptions);
+            }
+            catch (KeyNotFoundException)
+            {
+                return Results.NotFound(new { error = $"Provider integration connection '{connectionId}' was not found." });
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("GetWorkstationProviderIntegrationConnectionSyncPlan")
+        .Produces<ProviderIntegrationSyncPlanDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireAnyPermission(
+            UserPermission.ViewConfig,
+            UserPermission.ManageProviders,
+            UserPermission.ModifyConfig,
+            UserPermission.AdminMaintenance);
+
         group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationSchemaDriftCheck), async (
             ProviderIntegrationSchemaDriftCheckRequestDto request,
             HttpContext context) =>

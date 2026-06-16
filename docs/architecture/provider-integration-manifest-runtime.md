@@ -597,16 +597,20 @@ usable operator artifact and a replayable proof path.
    Implement manual CSV mapping, custodian positions, brokerage transactions, and fixed income
    security master templates with safe transforms and quarantine.
 5. UI services and endpoints:
-   Surface setup-save, OpenAPI import, quarantine review/replay, and the connection monitor read model through
-   shared workstation endpoints, then bind browser and WPF setup screens to dry-run evidence,
-   activation blockers, sync runs, and quarantine groups. Add shared endpoints for catalog,
-   connection draft, test auth, test endpoint, sample preview, mapping preview, dry run, activation
-   readiness, activation, sync runs, and quarantine.
+   Surface setup-save, OpenAPI import, sync planning, quarantine review/replay, and the connection
+   monitor read model through shared workstation endpoints, then bind browser and WPF setup screens
+   to dry-run evidence, activation blockers, due/manual/blocked sync state, sync runs, and
+   quarantine groups. Add shared endpoints for catalog, connection draft, test auth, test endpoint,
+   sample preview, mapping preview, dry run, activation readiness, activation, sync planning, sync
+   runs, and quarantine.
 6. Browser and WPF operator surfaces:
    Render the guided setup flow in the Data or Settings workspace using shared view models and
    route contracts.
 7. Drift and monitoring:
-   Add schema snapshots, drift issues, sync health, and downstream blocker read models.
+   Add schema snapshots, drift issues, sync health, due-sync planning, and downstream blocker read
+   models. The first sync-planning backend reports whether enabled capabilities are due, not due,
+   manual-only, unsupported, or activation-blocked from the manifest schedule and retained sync-run
+   history; background job orchestration and provider execution remain separate slices.
 8. OpenAPI import:
    OpenAPI import now exists as a draft-seeding feature after manual endpoint definition, visual
    mapping, validation, and replay are proven. Browser and WPF setup screens still need to expose

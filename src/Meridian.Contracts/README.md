@@ -267,9 +267,10 @@ Provider integration manifest contracts under `Integrations/` define the version
 for no-code provider intake. They keep credentials as secret references, preserve raw payload,
 quarantine, quarantine-review decisions, quarantine replay summaries, and staging identities, and
 expose template catalog entries, OpenAPI import requests/results, setup-save requests/results,
-manual CSV dry-run requests/results, schema-drift check requests/results, activation state, mapping
-confidence, validation issues, endpoint definitions, and sync schedules as shared contracts before
-browser or WPF surfaces render setup or monitoring state. `IProviderIntegrationTenantManifestStoreFactory`
+manual CSV dry-run requests/results, schema-drift check requests/results, sync planning
+requests/results, activation state, mapping confidence, validation issues, endpoint definitions, and
+sync schedules as shared contracts before browser or WPF surfaces render setup or monitoring state.
+`IProviderIntegrationTenantManifestStoreFactory`
 lets workstation-hosted services resolve a tenant-partitioned manifest store while preserving the
 existing global store contract for non-workstation callers. Activation-readiness
 payloads carry operator-safe issue codes and required evidence labels so no-code setup can block

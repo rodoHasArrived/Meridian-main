@@ -430,6 +430,34 @@ public sealed record ProviderIntegrationConnectionMonitorDto(
     int DurableQuarantinedRecordCount,
     bool HasCriticalIssues);
 
+public sealed record ProviderIntegrationSyncPlanRequestDto(
+    string ConnectionId,
+    DateTimeOffset EvaluatedAt);
+
+public sealed record ProviderIntegrationSyncPlanItemDto(
+    ProviderCapabilityKindDto Capability,
+    string? EndpointKey,
+    string ScheduleMode,
+    string Frequency,
+    string Timezone,
+    DateTimeOffset? LastSuccessfulSyncAt,
+    DateTimeOffset? NextEligibleSyncAt,
+    bool IsDue,
+    bool IsBlocked,
+    string Reason,
+    IReadOnlyList<ValidationIssueDto> Issues);
+
+public sealed record ProviderIntegrationSyncPlanDto(
+    string ConnectionId,
+    string ManifestId,
+    string ProviderId,
+    string ConnectionName,
+    ProviderIntegrationActivationStateDto ConnectionState,
+    DateTimeOffset EvaluatedAt,
+    IReadOnlyList<ProviderIntegrationSyncPlanItemDto> Items,
+    int DueCount,
+    int BlockedCount);
+
 public sealed record ManualCsvProviderIntegrationDryRunRequestDto(
     string SyncRunId,
     string ManifestId,

@@ -141,6 +141,10 @@ legacy `MERIDIAN_DIRECT_LENDING_*` override is explicitly supplied.
 Direct-lending saves can also include projected ledger journals in the same database transaction as
 the loan event append. If the ledger append fails, the loan state, event, projection, and outbox
 write roll back together instead of leaving the books and loan record out of sync.
+Direct-lending outbox polling claims pending messages with a PostgreSQL `FOR UPDATE SKIP LOCKED`
+update and moves `visible_after` forward as a short lease before returning work to a dispatcher.
+That keeps multiple hosted workers from processing the same message concurrently while still
+allowing abandoned messages to become visible again after the lease window.
 
 Asset Operations persistence stays separate from `security_master`. Its default schema is
 `asset_operations`, configured by `MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING` and

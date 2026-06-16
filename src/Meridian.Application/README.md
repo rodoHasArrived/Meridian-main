@@ -60,7 +60,9 @@ and UI presentation concerns in their owning layers.
   evidence. The schema-drift service compares retained raw payloads against configured records
   paths, required response paths, and required mapping source paths, returning a pause
   recommendation when critical provider-shape drift would make the capability unsafe to sync. The
-  REST dry-run service executes a
+  sync-planning service reads the manifest schedule plus retained sync-run history and returns
+  per-capability due, not-due, manual-only, unsupported, or activation-blocked planning state
+  without starting provider calls. The REST dry-run service executes a
   configured read-only endpoint through an injectable transport, resolves path/query parameters,
   follows cursor pagination, retains raw responses before mapping, and uses the same staging and
   quarantine boundary for accepted and rejected records. The default `HttpClient` transport supplies

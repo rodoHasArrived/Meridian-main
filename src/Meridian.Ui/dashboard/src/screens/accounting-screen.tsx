@@ -3802,6 +3802,79 @@ function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWorkbenchV
           </div>
         ) : null}
 
+        {view.fundEventCommandRows.length > 0 ? (
+          <section className="space-y-2" aria-labelledby="capital-account-fund-event-command-heading">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h4 id="capital-account-fund-event-command-heading" className="text-sm font-semibold text-foreground">Fund-event command centers</h4>
+              <Badge variant="outline">{view.fundEventCommandRows.length.toLocaleString()} events</Badge>
+            </div>
+            <div className="overflow-x-auto rounded-md border border-border/70">
+              <table className="w-full min-w-[940px] text-sm" aria-label="Capital-account fund-event command centers">
+                <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
+                  <tr>
+                    <th className="px-3 py-2 text-left">Fund event</th>
+                    <th className="px-3 py-2 text-left">Readiness</th>
+                    <th className="px-3 py-2 text-left">Evidence</th>
+                    <th className="px-3 py-2 text-left">Routes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {view.fundEventCommandRows.map((row) => (
+                    <tr key={row.id} className="border-t border-border/60 align-top">
+                      <td className="px-3 py-2">
+                        <div className="font-semibold text-foreground">{row.title}</div>
+                        <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{row.subtitle}</div>
+                        <div className="mt-1 text-xs text-muted-foreground">{row.memoLabel}</div>
+                        <div className="mt-1 font-mono text-xs text-muted-foreground">{row.netActivityLabel}</div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <Badge variant={row.readinessTone} dot>{row.readinessLabel}</Badge>
+                        <div className="mt-1 text-xs text-muted-foreground">{row.readinessReasonLabel}</div>
+                        <div className="mt-1 text-xs text-muted-foreground">{row.nextActionLabel}</div>
+                      </td>
+                      <td className="px-3 py-2 text-xs text-muted-foreground">
+                        <div>{row.evidenceLabel}</div>
+                        <div className="mt-1">{row.subledgerLabel}</div>
+                        <div className="mt-1">{row.ledgerImpactLabel}</div>
+                        <div className="mt-1">{row.reportOutputLabel}</div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <a
+                          className="block break-all font-mono text-[11px] text-primary hover:underline"
+                          href={row.commandCenterRouteLabel}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Open capital-account fund-event command center for ${row.title}`}
+                        >
+                          {row.commandCenterRouteLabel}
+                        </a>
+                        <a
+                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                          href={row.activityRouteLabel}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Open capital-account fund-event activity for ${row.title}`}
+                        >
+                          {row.activityRouteLabel}
+                        </a>
+                        <a
+                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                          href={row.evidenceRouteLabel}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Open capital-account fund-event evidence for ${row.title}`}
+                        >
+                          {row.evidenceRouteLabel}
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        ) : null}
+
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
           <section className="space-y-2" aria-labelledby="capital-account-investor-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">

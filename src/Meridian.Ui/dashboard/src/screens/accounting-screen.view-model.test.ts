@@ -1676,7 +1676,7 @@ describe("accounting-screen view model", () => {
         evidenceCategorySummary: "2/2 allocation evidence categories ready.",
         evidenceLinks: ["/evidence/source", "/evidence/cash"],
         evidenceCategories: [],
-        fundEventRecords: [{ effectiveDate: "2026-06-30" } as never],
+        fundEventRecords: [manualJournalWorkbench.privateCapitalActivity!.fundEventRecords[0]],
         subledgerEntries: [],
         ledgerImpacts: [],
         reportOutputs: [],
@@ -1806,6 +1806,17 @@ describe("accounting-screen view model", () => {
       title: "capital-account:fund-alpha:lp-1",
       netActivityLabel: "+$125.00 USD",
       paymentEvidenceLabel: "Settlement matched / Inflow / $125 USD / 1 cash evidence / settlement linked"
+    });
+    expect(result.current.fundEventCommandRows[0]).toMatchObject({
+      title: "CapitalCall",
+      readinessLabel: "Approval pending",
+      readinessReasonLabel: "Submit the fund-event journal for approval before posting or stakeholder report output.",
+      nextActionLabel: "Submit approval",
+      commandCenterRouteLabel: "/api/ledger/private-capital/fund-event-command-center?fundProfileId=fund-alpha&fundEventId=fund-event%3Afund-alpha%3Acapital-call%3A20260630",
+      evidenceRouteLabel: "/api/workstation/evidence/subjects/private-capital-fund-event/fund-event%3Afund-alpha%3Acapital-call%3A20260630/packet",
+      ledgerImpactLabel: "1 ledger impact(s)",
+      subledgerLabel: "1 subledger movement(s)",
+      reportOutputLabel: "1 report output(s)"
     });
     expect(result.current.allocationRules[0]).toMatchObject({
       label: "Source support",

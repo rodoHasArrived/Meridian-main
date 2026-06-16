@@ -629,9 +629,11 @@ execution-deferred posture. `/accounting/capital-accounts` consumes
 `getCapitalAccountWorkbench` from the shared capital-account workbench endpoint so React renders
 investor-level capital-account evidence, governed allocation policy traces, approval and replay
 inputs, statement/restatement changed-line lineage, audit drill-through rows, and
-live-versus-planned capability labels without browser-local accounting rules. Browser report-output rows prefer the
-server-built direct report-output route before falling back to the aggregate report route. The React
-view model preserves
+live-versus-planned capability labels without browser-local accounting rules. The same workbench
+now promotes source-backed fund-event command-center rows from the investor-account records, keeping
+command-center, activity, and evidence routes visible beside partner capital tie-out posture.
+Browser report-output rows prefer the server-built direct report-output route before falling back to
+the aggregate report route. The React view model preserves
 posted-event and published-output labels from the shared DTOs and renders server-owned fund-event
 ledger records as the primary event-level table before the account-level capital-account subledger,
 decomposed movement, GL-impact, and report-output tables. The account-level subledger table renders

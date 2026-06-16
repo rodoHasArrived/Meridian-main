@@ -519,6 +519,56 @@ public sealed class ProviderIntegrationContractsTests
         resultRoundTrip.Should().BeEquivalentTo(result);
     }
 
+    [Fact]
+    public void ProviderIntegrationSyncPlan_RoundTripsWithDueAndBlockedCounts()
+    {
+        var request = new ProviderIntegrationSyncPlanRequestDto(
+            "connection-alpha",
+            DateTimeOffset.Parse("2026-06-16T12:00:00Z"));
+        var item = new ProviderIntegrationSyncPlanItemDto(
+            ProviderCapabilityKindDto.Positions,
+            "positions",
+            "incremental",
+            "daily",
+            "America/New_York",
+            LastSuccessfulSyncAt: DateTimeOffset.Parse("2026-06-15T06:00:00Z"),
+            NextEligibleSyncAt: DateTimeOffset.Parse("2026-06-16T06:00:00Z"),
+            IsDue: true,
+            IsBlocked: false,
+            "due",
+            Issues: []);
+        var plan = new ProviderIntegrationSyncPlanDto(
+            request.ConnectionId,
+            "manifest-custodian-abc-v1",
+            "custodian-abc",
+            "General Account",
+            ProviderIntegrationActivationStateDto.Active,
+            request.EvaluatedAt,
+            [item],
+            DueCount: 1,
+            BlockedCount: 0);
+
+        var requestJson = JsonSerializer.Serialize(
+            request,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationSyncPlanRequestDto);
+        var planJson = JsonSerializer.Serialize(
+            plan,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationSyncPlanDto);
+        var requestRoundTrip = JsonSerializer.Deserialize(
+            requestJson,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationSyncPlanRequestDto);
+        var planRoundTrip = JsonSerializer.Deserialize(
+            planJson,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationSyncPlanDto);
+
+        requestJson.Should().Contain("\"connectionId\"");
+        requestJson.Should().NotContain("\"ConnectionId\"");
+        planJson.Should().Contain("\"dueCount\": 1");
+        planJson.Should().Contain("\"reason\": \"due\"");
+        requestRoundTrip.Should().BeEquivalentTo(request);
+        planRoundTrip.Should().BeEquivalentTo(plan);
+    }
+
     private static ProviderIntegrationManifestDto CreateManifest()
         => new(
             "manifest-custodian-abc-v1",

@@ -90,7 +90,7 @@ public sealed class FundAccountEndpointAuthorizationTests
                 BuildAccount(deniedAccountId, fundId, "DENIED-BROKERAGE")
             ],
             [(AccessScopeKindDto.Account, allowedAccountId)],
-            UserPermission.ViewTrades);
+            UserPermission.ManageDirectLending | UserPermission.ViewTrades);
 
         var client = app.GetTestClient();
 

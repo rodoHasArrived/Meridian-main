@@ -269,6 +269,74 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationSyncPlan_ReturnsDueCapabilities()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            var tenantStore = DefaultProviderIntegrationTenantStore(store);
+            var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-custodian-positions-v1")! with
+            {
+                State = ProviderIntegrationActivationStateDto.Active,
+                ApprovedBy = "approver@example.com",
+                ApprovedAt = DateTimeOffset.Parse("2026-06-16T09:00:00Z")
+            };
+            var connection = CreateProviderIntegrationRestConnection(manifest) with
+            {
+                State = ProviderIntegrationActivationStateDto.Active,
+                ApprovalEvidenceId = "approval-evidence-sync-plan"
+            };
+            await tenantStore.SaveManifestAsync(manifest);
+            await tenantStore.SaveConnectionAsync(connection);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewConfig);
+            var client = app.GetTestClient();
+
+            var plan = await client.GetFromJsonAsync<ProviderIntegrationSyncPlanDto>(
+                $"{ProviderIntegrationSyncPlanRoute(connection.ConnectionId)}?evaluatedAt=2026-06-16T12:00:00Z",
+                ServerJsonOptions);
+
+            plan.Should().NotBeNull();
+            plan!.ConnectionId.Should().Be(connection.ConnectionId);
+            plan.DueCount.Should().Be(1);
+            plan.BlockedCount.Should().Be(0);
+            plan.Items.Should().ContainSingle(item =>
+                item.Capability == ProviderCapabilityKindDto.Positions &&
+                item.EndpointKey == "positions" &&
+                item.IsDue &&
+                item.Reason == "due");
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationSyncPlan_RequiresProviderReadPermission()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewMarketData);
+            var client = app.GetTestClient();
+
+            var response = await client.GetAsync(ProviderIntegrationSyncPlanRoute("connection-alpha"));
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ProviderIntegrationSchemaDriftCheck_ReturnsPauseRecommendation()
     {
         var testRoot = CreateProviderIntegrationTestRoot();
@@ -972,6 +1040,7 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<ProviderIntegrationActivationReadinessService>();
         services.AddSingleton<ProviderIntegrationActivationService>();
         services.AddSingleton<ProviderIntegrationMonitoringService>();
+        services.AddSingleton<ProviderIntegrationSyncPlanningService>();
         services.AddSingleton<ProviderIntegrationSchemaDriftService>();
         services.AddSingleton<ProviderIntegrationQuarantineReviewService>();
         services.AddSingleton<ProviderIntegrationQuarantineReplayService>();
@@ -1182,6 +1251,12 @@ public sealed partial class WorkstationEndpointsTests
 
     private static string ProviderIntegrationMonitorRoute(string connectionId)
         => UiApiRoutes.WorkstationProviderIntegrationConnectionMonitor.Replace(
+            "{connectionId}",
+            Uri.EscapeDataString(connectionId),
+            StringComparison.Ordinal);
+
+    private static string ProviderIntegrationSyncPlanRoute(string connectionId)
+        => UiApiRoutes.WorkstationProviderIntegrationConnectionSyncPlan.Replace(
             "{connectionId}",
             Uri.EscapeDataString(connectionId),
             StringComparison.Ordinal);

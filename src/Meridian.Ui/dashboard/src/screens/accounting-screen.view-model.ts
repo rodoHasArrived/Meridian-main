@@ -1112,6 +1112,9 @@ export interface CapitalAccountWorkbenchAuditDrillThroughRowViewModel {
   relatedLabel: string;
 }
 
+export type CapitalAccountWorkbenchFundEventCommandRowViewModel =
+  ManualJournalPrivateCapitalFundEventLedgerRecordViewModel;
+
 export interface CapitalAccountWorkbenchViewModel {
   title: string;
   description: string;
@@ -1128,6 +1131,7 @@ export interface CapitalAccountWorkbenchViewModel {
   allocationRules: CapitalAccountWorkbenchAllocationRuleRowViewModel[];
   statementLineage: CapitalAccountWorkbenchStatementLineageRowViewModel[];
   auditDrillThroughs: CapitalAccountWorkbenchAuditDrillThroughRowViewModel[];
+  fundEventCommandRows: CapitalAccountWorkbenchFundEventCommandRowViewModel[];
   validationIssues: AccountingConfigurationIssueViewModel[];
   liveCapabilities: string[];
   plannedCapabilities: string[];
@@ -3155,6 +3159,7 @@ function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | n
       allocationRules: [],
       statementLineage: [],
       auditDrillThroughs: [],
+      fundEventCommandRows: [],
       validationIssues: [],
       liveCapabilities: [],
       plannedCapabilities: []
@@ -3204,6 +3209,7 @@ function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | n
     allocationRules: workbench.allocationRules.map(buildCapitalAccountAllocationRuleRow),
     statementLineage: workbench.statementLineage.map(buildCapitalAccountStatementLineageRow),
     auditDrillThroughs: workbench.auditDrillThroughs.map(buildCapitalAccountAuditDrillThroughRow),
+    fundEventCommandRows: buildCapitalAccountFundEventCommandRows(workbench),
     validationIssues: workbench.validationIssues.map<AccountingConfigurationIssueViewModel>((issue, index) => ({
       id: `${issue.code}-${index}`,
       label: issue.code,
@@ -3214,6 +3220,30 @@ function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | n
     liveCapabilities: workbench.liveCapabilities,
     plannedCapabilities: workbench.plannedCapabilities
   };
+}
+
+function buildCapitalAccountFundEventCommandRows(
+  workbench: CapitalAccountWorkbench
+): CapitalAccountWorkbenchFundEventCommandRowViewModel[] {
+  const seen = new Set<string>();
+  const rows: CapitalAccountWorkbenchFundEventCommandRowViewModel[] = [];
+
+  for (const account of workbench.investorAccounts) {
+    for (const record of account.fundEventRecords) {
+      if (seen.has(record.fundEventId)) {
+        continue;
+      }
+
+      seen.add(record.fundEventId);
+      rows.push(buildManualJournalPrivateCapitalFundEventLedgerRecordRow(
+        record,
+        workbench.fundProfileId,
+        workbench.ledgerBookId
+      ));
+    }
+  }
+
+  return rows;
 }
 
 function buildCapitalAccountInvestorAccountRow(

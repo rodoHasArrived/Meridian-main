@@ -129,12 +129,13 @@ draft manifests and connection instances, activation-readiness routes surface fa
 blockers, the OpenAPI import route seeds tenant-scoped draft manifests from provider specs, dry-run
 command routes execute manual CSV and REST validation through Application-owned services, the
 schema-drift check route compares retained raw payloads with manifest response and mapping paths,
-and the connection monitor route adapts durable sync-run, staging, quarantine, and validation
-evidence into browser/WPF-compatible payloads. Quarantine review routes expose grouped validation issues and
+the sync-plan route reports due/manual/blocked capability state from schedule and retained run
+history, and the connection monitor route adapts durable sync-run, staging, quarantine, and
+validation evidence into browser/WPF-compatible payloads. Quarantine review routes expose grouped validation issues and
 persist operator review decisions without changing the retained rejected raw records. Quarantine
 replay routes remap records approved for replay after mapping changes and write accepted records
 back into integration staging or re-quarantine unresolved records. Setup, OpenAPI import,
-readiness, dry-run, activation, schema-drift, quarantine review/replay, and monitor endpoints resolve the
+readiness, dry-run, activation, sync-plan, schema-drift, quarantine review/replay, and monitor endpoints resolve the
 authenticated workstation tenant before reading or writing stored manifests, connections, or
 retained run evidence. Import and dry-run commands require provider/configuration permissions
 because they create manifests or retain raw payload, staging, quarantine, and sync-run evidence.

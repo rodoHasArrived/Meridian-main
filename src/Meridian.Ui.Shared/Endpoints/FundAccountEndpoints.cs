@@ -889,7 +889,9 @@ public static class FundAccountEndpoints
         if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
         {
             var requiredScopedPermission = requireWriteAccess
-                ? UserPermission.ExecuteTrades
+                ? (permissions.HasFlag(UserPermission.ExecuteTrades)
+                    ? UserPermission.ExecuteTrades
+                    : UserPermission.ManageOrders)
                 : UserPermission.ViewTrades;
             if (!await EndpointAuthorization.HasScopedPermissionAsync(
                     context,
