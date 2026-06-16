@@ -9,6 +9,7 @@ using Meridian.Identity.Auth;
 using Meridian.Storage.Integrations;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using IntegrationProviderConnectionDto = Meridian.Contracts.Integrations.ProviderConnectionDto;
 
 namespace Meridian.Tests.Ui;
 
@@ -191,7 +192,7 @@ public sealed partial class WorkstationEndpointsTests
     private static ProviderIntegrationSyncRunDto CreateProviderIntegrationEndpointSyncRun(
         string syncRunId,
         ProviderIntegrationManifestDto manifest,
-        ProviderConnectionDto connection,
+        IntegrationProviderConnectionDto connection,
         DateTimeOffset startedAt,
         ProviderIntegrationProcessingStatusDto status,
         int received,
@@ -259,7 +260,7 @@ public sealed partial class WorkstationEndpointsTests
             ApprovedAt: null,
             ChangeReason: "Workstation monitor endpoint test manifest");
 
-    private static ProviderConnectionDto CreateProviderIntegrationEndpointConnection(ProviderIntegrationManifestDto manifest)
+    private static IntegrationProviderConnectionDto CreateProviderIntegrationEndpointConnection(ProviderIntegrationManifestDto manifest)
         => new(
             "connection-alpha",
             manifest.ProviderId,
