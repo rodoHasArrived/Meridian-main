@@ -62,12 +62,15 @@ and UI presentation concerns in their owning layers.
   recommendation when critical provider-shape drift would make the capability unsafe to sync. The
   sync-planning service reads the manifest schedule plus retained sync-run history and returns
   per-capability due, not-due, manual-only, unsupported, or activation-blocked planning state
-  without starting provider calls. The REST dry-run service executes a
-  configured read-only endpoint through an injectable transport, resolves path/query parameters,
-  follows cursor pagination, retains raw responses before mapping, and uses the same staging and
-  quarantine boundary for accepted and rejected records. The default `HttpClient` transport supplies
-  the concrete HTTP execution path while tests can still inject deterministic transports. The
-  monitoring service composes connection-level read models from durable sync-run summaries,
+  without starting provider calls. The sync-orchestration service composes that plan with the REST
+  dry-run runtime, skips blocked/manual/not-due capabilities, and starts due read-only REST,
+  OpenAPI REST, or hybrid capabilities while retaining raw payloads and writing only staging or
+  quarantine evidence. The REST dry-run service executes a configured read-only endpoint through an
+  injectable transport, resolves path/query parameters, follows cursor pagination, retains raw
+  responses before mapping, and uses the same staging and quarantine boundary for accepted and
+  rejected records. The default `HttpClient` transport supplies the concrete HTTP execution path
+  while tests can still inject deterministic transports. The monitoring service composes
+  connection-level read models from durable sync-run summaries,
   integration staging counts, quarantine counts, and retained validation issues so workstation
   surfaces can show dry-run evidence without reading storage internals. The quarantine review
   service groups rejected records by operator-safe issue code and records durable review decisions

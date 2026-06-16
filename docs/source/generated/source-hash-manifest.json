@@ -9,7 +9,7 @@
       "id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
-      "readme_hash": "39a0aa4154a6aa5c84b28bde51034c3afbf3b6c8816a3a47363ff31f08434c6e",
+      "readme_hash": "76d8963a831fb0124ebbfc2511d570a4b9ae29ca6cf665fcd37b2b694e3ea49e",
       "source_hash": "0317e4a300185e80c68345a98fe73638013cfb1afab248053b421059376dac8a"
     },
     {
@@ -30,7 +30,7 @@
       "id": "SRC-CONTRACTS",
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
-      "readme_hash": "37f35e6ffa2b754b26f4f5fa2982da8a8cb0ceec91fc27d839cce5bfef30cbf6",
+      "readme_hash": "a44be297a0af87de7ba74382bb9b5f9d453f7b40b636b32b5309127db30b8973",
       "source_hash": "dce63abb31a2ac5a2cc91895d68e32337cef94b68757caa6f9c120fa5e13fb13"
     },
     {
@@ -248,14 +248,14 @@
       "path": "src/Meridian.Ui",
       "readme": "src/Meridian.Ui/README.md",
       "readme_hash": "b667c70daeb4df367cc8671b402b3a5d62319fbcfda4a873f7c69326e6ab5a65",
-      "source_hash": "ba2959a62eaf20b3844fd724e851dbb7c801a51baca61d334d41540c69f18f9f"
+      "source_hash": "d47cca1eaffc15e30a18bce2aad337e788135ee825b2a30fbac762c1abef16c4"
     },
     {
       "id": "SRC-UI-DASHBOARD",
       "path": "src/Meridian.Ui/dashboard",
       "readme": "src/Meridian.Ui/dashboard/README.md",
       "readme_hash": "64a6da8a6d494090d6ebd892bdef3ad4c1d8c9b757d7fb7c2b5e2c3aeb0495c5",
-      "source_hash": "ba2959a62eaf20b3844fd724e851dbb7c801a51baca61d334d41540c69f18f9f"
+      "source_hash": "d47cca1eaffc15e30a18bce2aad337e788135ee825b2a30fbac762c1abef16c4"
     },
     {
       "id": "SRC-UI-SERVICES",
@@ -268,7 +268,7 @@
       "id": "SRC-UI-SHARED",
       "path": "src/Meridian.Ui.Shared",
       "readme": "src/Meridian.Ui.Shared/README.md",
-      "readme_hash": "786f5a379e4824166a637c40f2057c426f3cfaf8f335040b78abc5dc8826e9d5",
+      "readme_hash": "376c24f1948abb16d9946ae59b2bb6db78228ed7e1538fe31a6321c482f6654b",
       "source_hash": "7f491f639b33a52a40008b1963656a438a73685ad85a2f830e0899cd38ec3090"
     },
     {
