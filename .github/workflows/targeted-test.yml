@@ -103,7 +103,8 @@ jobs:
           if ($filter -notmatch '^[A-Za-z0-9_ .,:&|!<>=~()''"+\-\[\]\\/]+$') {
             throw "Unsupported dotnet_filter '$filter'. Use a normal dotnet test filter expression for the failing slice."
           }
-          if ($filter -in @('*', 'Category!=Integration', 'Category!=Performance', 'Category!=Integration&Category!=Performance')) {
+          $normalizedFilter = $filter -replace '\s+', ''
+          if ($normalizedFilter -in @('*', 'Category!=Integration', 'Category!=Performance', 'Category!=Integration&Category!=Performance')) {
             throw "dotnet_filter '$filter' is too broad for Targeted Test. Provide a class, method, trait, or fully qualified name slice."
           }
 

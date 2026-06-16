@@ -2061,6 +2061,18 @@ describe("Operations Continuity view model", () => {
       actionLabel: "Retain complete NAV support package evidence before close sign-off.",
       routeHref: "/portfolio/nav"
     });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-approval:approval-close-2026-05")).toMatchObject({
+      kindLabel: "Private-capital approval",
+      title: "approval-close-2026-05",
+      detail: `2026-05 / ${fundAccountId}: Pending final ledger validation before close sign-off.`,
+      statusLabel: "Reviewer Assigned",
+      statusTone: "review",
+      ownerLabel: "Reviewer fund-controller / Operator ops-user",
+      dueLabel: "May 08, 15:05 UTC",
+      evidenceLabel: "1 evidence link",
+      actionLabel: "Complete private-capital close approval",
+      routeHref: "/accounting/approvals"
+    });
   });
 
   it("projects the source-backed close calendar for workflow control", () => {

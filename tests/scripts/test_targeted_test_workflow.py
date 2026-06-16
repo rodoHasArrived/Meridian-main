@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 import unittest
 from pathlib import Path
@@ -10,6 +11,7 @@ WORKFLOW_PATH = REPO_ROOT / ".github" / "workflows" / "targeted-test.yml"
 WORKFLOW_README_PATH = REPO_ROOT / ".github" / "workflows" / "README.md"
 START_README_PATH = REPO_ROOT / "docs" / "start" / "README.md"
 ENGINEERING_README_PATH = REPO_ROOT / "docs" / "engineering" / "README.md"
+WORKFLOW_MANIFEST_PATH = REPO_ROOT / "docs" / "status" / "workflow-manifest.json"
 
 
 class TargetedTestWorkflowTests(unittest.TestCase):
@@ -40,6 +42,8 @@ class TargetedTestWorkflowTests(unittest.TestCase):
         self.assertIn("Test-Path -LiteralPath $project", self.workflow)
         self.assertIn("'^tests/[A-Za-z0-9._/-]+\\.(csproj|fsproj)$'", self.workflow)
         self.assertIn("dotnet_filter is required so Targeted Test runs the exact failing slice", self.workflow)
+        self.assertIn("$normalizedFilter = $filter -replace '\\s+', ''", self.workflow)
+        self.assertIn("Category!=Integration&Category!=Performance", self.workflow)
         self.assertIn("dotnet_filter '$filter' is too broad for Targeted Test", self.workflow)
 
     def test_dotnet_step_runs_exact_selected_project_with_required_filter(self) -> None:
@@ -65,6 +69,15 @@ class TargetedTestWorkflowTests(unittest.TestCase):
             readme,
             re.compile(r"\|\s*`targeted-test`\s*\|\s*`Targeted Test`", re.MULTILINE),
         )
+
+    def test_workflow_manifest_declares_targeted_test_command(self) -> None:
+        manifest = json.loads(WORKFLOW_MANIFEST_PATH.read_text(encoding="utf-8"))
+        targeted = next(workflow for workflow in manifest["workflows"] if workflow["id"] == "targeted-test")
+
+        self.assertIn("tests/", " ".join(targeted["requiredPrerequisites"]))
+        self.assertIn("filter", " ".join(targeted["requiredPrerequisites"]).lower())
+        self.assertIn("artifacts/test-results/targeted-dotnet", targeted["expectedArtifacts"])
+        self.assertIn("gh workflow run targeted-test.yml", targeted["executionCommands"][0]["command"])
 
 
 if __name__ == "__main__":

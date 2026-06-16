@@ -94,6 +94,17 @@
 - Commands:
   - `pwsh ./scripts/dev/validate-wpf-dev.ps1 -Restore`
 
+## targeted-test
+
+- Owners: @developer-experience, @ci-platform
+- Expected artifacts: artifacts/test-results/targeted-dotnet
+- Owner lane: Developer Experience
+- Refresh trigger: manual GitHub Actions Targeted Test dispatch
+- Canonical output roots: artifacts/test-results/targeted-dotnet
+- Retention: workflow-artifact-retention (maxAgeDays=14, retainLatest=20)
+- Commands:
+  - `gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"`
+
 ## robinhood-options-smoke
 
 - Owners: @desktop-shell, @provider-infra

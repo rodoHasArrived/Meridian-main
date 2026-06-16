@@ -553,6 +553,7 @@ Use this generated snapshot when validating docs automation and workflow drift.
 | `ibapi-smoke-build` | dotnet SDK with Windows targeting packs; PowerShell available | IBAPI smoke build script exists |
 | `wpf-route-validation-position-blotter` | dotnet SDK with Windows targeting packs; PowerShell available | position blotter route artifact directory exists |
 | `wpf-dev-loop-validation` | dotnet SDK with Windows targeting packs; PowerShell available | WPF dev-loop validation artifacts produced |
+| `targeted-test` | Branch pushed to GitHub; GitHub CLI authenticated or manual Actions UI access; Repo-relative .NET test project under tests/; Specific dotnet test filter for the failing class, method, or trait | Targeted Test workflow exists; Targeted Test requires project path and filter |
 | `robinhood-options-smoke` | dotnet SDK with Windows targeting packs; PowerShell available | Robinhood options smoke artifacts produced |
 | `web-screenshot-capture` | Node.js 24 available on PATH; npm dependencies installed for src/Meridian.Ui/dashboard | web screenshot output directory exists |
 

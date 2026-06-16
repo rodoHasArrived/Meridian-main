@@ -2144,6 +2144,9 @@ function buildFinancialOperationsOperatorQueueViewModel({
     ...closeCockpit.evidencePackages
       .filter(isOpenQueueItem)
       .map(mapCloseCockpitEvidencePackageQueueRow),
+    ...closeCockpit.approvalHistory
+      .filter(isOpenQueueItem)
+      .map(mapCloseCockpitApprovalQueueRow),
     ...(closeCockpitError && !loading
       ? [mapCloseCockpitErrorQueueRow(closeCockpitError, selectedSummary)]
       : []),
@@ -2474,6 +2477,33 @@ function mapApprovalQueueRow(
     routeHref,
     routeLabel: routeHref ? "Open approval evidence" : "No local route",
     ariaLabel: `Financial Operations approval ${approval.approvalId}, ${statusLabelText}, ${actorLabel}`
+  };
+}
+
+function mapCloseCockpitApprovalQueueRow(
+  row: OperationsContinuityCloseCockpitApprovalRow
+): FinancialOperationsOperatorQueueRow {
+  const routeHref = row.evidenceHref ?? row.workflowHref;
+  const routeLabel = row.evidenceHref
+    ? row.evidenceRouteLabel
+    : row.workflowHref
+      ? row.routeLabel
+      : "No local route";
+
+  return {
+    id: `private-capital-approval:${row.id}`,
+    kindLabel: "Private-capital approval",
+    title: row.id,
+    detail: `${row.workflowLabel}: ${row.rationale}`,
+    statusLabel: row.statusLabel,
+    statusTone: row.statusTone,
+    ownerLabel: row.actorLabel,
+    dueLabel: row.decidedLabel,
+    evidenceLabel: row.evidenceLabel,
+    actionLabel: row.statusLabel === "Approved" ? "Approval completed" : "Complete private-capital close approval",
+    routeHref,
+    routeLabel,
+    ariaLabel: `Financial Operations private-capital approval ${row.ariaLabel}`
   };
 }
 

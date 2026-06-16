@@ -1161,7 +1161,7 @@ describe("OperationsContinuityScreen", () => {
     expect(within(reviewedAutomationQueue).getByText("Cannot publish reports or release support packages.")).toBeInTheDocument();
     const operatorQueue = screen.getByRole("table", { name: "Financial Operations operator queue" });
     expect(within(operatorQueue).getByText("recon-break-42")).toBeInTheDocument();
-    expect(within(operatorQueue).getByText("approval-close-2026-05")).toBeInTheDocument();
+    expect(within(operatorQueue).getAllByText("approval-close-2026-05")).toHaveLength(2);
     expect(within(operatorQueue).getByText("CashBalance / cash-balance-check; Level 2 at May 08, 15:20 UTC: Aged cash variance past controller SLA")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Reconciliation lane")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("MBS factor reconciliation")).toBeInTheDocument();
@@ -1185,6 +1185,9 @@ describe("OperationsContinuityScreen", () => {
     expect(within(operatorQueue).getByText("NAV support evidence package")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("NAV support evidence package still needs pricing and shadow NAV support.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Retain complete NAV support package evidence before close sign-off.")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Private-capital approval")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText(`2026-05 / ${fundAccountId}: Pending final ledger validation before close sign-off.`)).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Complete private-capital close approval")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Period lock and reopen evidence")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Complete reopened incident remediation and close the period again with retained evidence.")).toBeInTheDocument();
     expect(within(operatorQueue).getAllByText("Command stage")).toHaveLength(4);
@@ -1196,8 +1199,11 @@ describe("OperationsContinuityScreen", () => {
     expect(within(operatorQueue).getByText("Clear close readiness blockers and retain period-lock or reopen evidence.")).toBeInTheDocument();
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: recon-break-42" }))
       .toHaveAttribute("href", "/accounting/reconciliation/recon-break-42/evidence");
-    expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: approval-close-2026-05" }))
-      .toHaveAttribute("href", "/accounting/approvals");
+    const approvalQueueLinks = within(operatorQueue).getAllByRole("link", { name: "Open Financial Operations queue item: approval-close-2026-05" });
+    expect(approvalQueueLinks).toHaveLength(2);
+    approvalQueueLinks.forEach((link) => {
+      expect(link).toHaveAttribute("href", "/accounting/approvals");
+    });
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: MBS factor reconciliation" }))
       .toHaveAttribute("href", "/accounting/reconciliation");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: LEDGER_VALIDATION_REQUIRED" }))
