@@ -115,7 +115,7 @@ public sealed class FundAccountEndpointAuthorizationTests
     private static CreateAccountRequest BuildAccount(Guid accountId, Guid fundId, string accountCode)
         => new(
             accountId,
-            AccountTypeDto.Custodian,
+            AccountTypeDto.Custody,
             accountCode,
             $"{accountCode} account",
             "USD",
