@@ -86,7 +86,7 @@
       "id": "SRC-DESIGN-INSTRUMENTS",
       "path": "src/Meridian.Instruments",
       "readme": "src/Meridian.Instruments/README.md",
-      "readme_hash": "a8e174c171ce27a1ee017a164dca8c3a40e0dc805fe053acada46676e76e61c7",
+      "readme_hash": "9e8700c10e9d07f9180bbee3549ea955b079690ba3fbbd202789d59b0678245b",
       "source_hash": "0e5b98cdfc040dc416a044f7c1232321941e9a0e25d1d4d15c5fa6de5067d903"
     },
     {
@@ -100,14 +100,14 @@
       "id": "SRC-DESIGN-PORTFOLIO-RECORDS",
       "path": "src/Meridian.PortfolioRecords",
       "readme": "src/Meridian.PortfolioRecords/README.md",
-      "readme_hash": "192adb8327ada0623451064e1dd05b211d99e7d6b717f457f5ea001727bb838f",
+      "readme_hash": "fcf0c7c85007fd302732cc118b9e245e8b0e830aaa43f817229e2308848695e6",
       "source_hash": "c275c265e7fb594abef559e4c8efff27f7947ae11054853d6e2534b059bb401b"
     },
     {
       "id": "SRC-DESIGN-REFERENCE-DATA",
       "path": "src/Meridian.ReferenceData",
       "readme": "src/Meridian.ReferenceData/README.md",
-      "readme_hash": "1ba9397f836309c644e870a7a794957b7411bbfdb84733681edcc4cbc1235b92",
+      "readme_hash": "30a0a670e029b5f0b8e5c90c0e0c28e4bd94f892cafe4618f9bba5418b3579eb",
       "source_hash": "6729a573a4588f805beab6055fb1ff43dfa2a896fbbec5a0c669ca16a6b0e131"
     },
     {

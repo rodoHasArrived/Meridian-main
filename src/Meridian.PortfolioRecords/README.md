@@ -48,7 +48,7 @@ Use this README to understand the module before editing source files. Update the
 | --- | --- |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
-| `W5-MULTIASSET-001` | - |
+| `W5-MASSET-001` | Multi-asset operational coverage proof lane |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

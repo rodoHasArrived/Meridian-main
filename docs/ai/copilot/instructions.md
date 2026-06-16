@@ -54,11 +54,12 @@ Meridian is a .NET 10 fund-management and trading platform. Active operator UI w
 Shared product behavior should land behind shared contracts, local/web API endpoints, or shared
 read models before either client composes it.
 
-Keep product work centered on the W1-W5 operational record baseline: data confidence, retained
-source evidence, reconciliation, approvals, accounting records, multi-asset operational coverage,
-and governed reports. Defer Backtesting Studio, live-readiness beyond paper-first governance, full
-payments, forecasting, enterprise risk, client portal, no-code workflow design, mobile, and other
-expansion lanes unless they directly strengthen that workflow.
+Keep product work centered on the closed W1-W5 operational record baseline plus the active W5X
+productization targets: shared Financial Record Explorers and the Financial Operations control
+center. Defer Backtesting Studio, live-readiness beyond paper-first governance, full treasury
+payment execution, full alternative asset operations, forecasting/scenario engines, enterprise risk,
+client portal, no-code workflow design, mobile, and other expansion lanes unless they directly
+strengthen that workflow.
 
 **No mobile development lane:** do not create mobile applications, mobile-specific product
 surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or

@@ -16,10 +16,10 @@ repeating the same facts in every `SKILL.md`.
 - The authoritative local checkout path for this workspace is `D:\Meridian-main`.
 - The repo already includes strong provider, storage, replay, backtesting, execution, ledger,
   QuantScript, MCP, and workstation foundations.
-- The current delivery focus is productization around the W1-W5 operational record baseline: data
-  confidence, retained source evidence, reconciliation, approvals, accounting records, multi-asset
-  operational coverage, and governed reports across `Trading`, `Portfolio`, `Accounting`,
-  `Reporting`, `Strategy`, `Data`, and `Settings`.
+- The current delivery focus is productization around the closed W1-W5 operational record baseline:
+  data confidence, retained source evidence, reconciliation, approvals, accounting records,
+  multi-asset operational coverage, and governed reports across `Trading`, `Portfolio`,
+  `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
 - The active W5X productization targets are the shared Financial Record Explorers and the Financial
   Operations control center for reconciliation, exception management, close support, workflow
   control, and audit evidence.

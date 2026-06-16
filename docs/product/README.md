@@ -44,7 +44,7 @@ The operating question remains:
 
 ## Active Product Scope Gate
 
-The active product scope is the W1-W5 operational record baseline: data confidence, retained source evidence, reconciliation, approvals, accounting records, multi-asset operational coverage, and governed report packs.
+The active product scope is the closed W1-W5 operational record baseline plus the W5X productization targets: shared Financial Record Explorers and the Financial Operations control center. The baseline covers data confidence, retained source evidence, reconciliation, approvals, accounting records, multi-asset operational coverage, and governed report packs; W5X turns that evidence foundation into operator-facing explorer and control-center workflows.
 
 Defer Backtesting Studio, live-readiness beyond paper-first governance, full treasury payment execution, full alternative asset operations, forecasting/scenario engines, enterprise risk, client portal, no-code workflow design, mobile, and other broad expansion lanes unless the work directly strengthens that operational record workflow.
 

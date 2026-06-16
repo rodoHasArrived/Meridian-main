@@ -25,11 +25,12 @@ For each task, follow this sequence:
 surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
 mobile-first workflows. Responsive browser validation may continue for the browser workstation.
 
-Keep product work centered on the W1-W5 operational record baseline: data confidence, retained
-source evidence, reconciliation, approvals, accounting records, multi-asset operational coverage,
-and governed reports. Defer Backtesting Studio, live-readiness beyond paper-first governance, full
-payments, forecasting, enterprise risk, client portal, no-code workflow design, mobile, and other
-expansion lanes unless they directly strengthen that workflow.
+Keep product work centered on the closed W1-W5 operational record baseline plus the active W5X
+productization targets: shared Financial Record Explorers and the Financial Operations control
+center. Defer Backtesting Studio, live-readiness beyond paper-first governance, full treasury
+payment execution, full alternative asset operations, forecasting/scenario engines, enterprise risk,
+client portal, no-code workflow design, mobile, and other expansion lanes unless they directly
+strengthen that workflow.
 
 If the task request is ambiguous, document assumptions in the PR body.
 

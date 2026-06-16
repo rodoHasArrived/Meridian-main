@@ -21,7 +21,7 @@ public sealed partial class WorkstationEndpointsTests
         var testRoot = CreateProviderIntegrationTestRoot();
         try
         {
-            var store = await CreateSeededProviderIntegrationStoreAsync(testRoot).ConfigureAwait(false);
+            var store = await CreateSeededProviderIntegrationStoreAsync(testRoot);
             await using var app = await CreateAppAsync(
                 services => RegisterProviderIntegrationEndpointServices(services, store),
                 currentUserPermissions: UserPermission.ViewConfig);
@@ -79,7 +79,7 @@ public sealed partial class WorkstationEndpointsTests
         var testRoot = CreateProviderIntegrationTestRoot();
         try
         {
-            var store = await CreateSeededProviderIntegrationStoreAsync(testRoot).ConfigureAwait(false);
+            var store = await CreateSeededProviderIntegrationStoreAsync(testRoot);
             await using var app = await CreateAppAsync(
                 services => RegisterProviderIntegrationEndpointServices(services, store),
                 currentUserPermissions: UserPermission.ViewMarketData);

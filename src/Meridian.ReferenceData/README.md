@@ -51,7 +51,7 @@ ownership.
 | Roadmap item | Title |
 | --- | --- |
 | `W1-DATA-001` | Provider trust gate and data confidence baseline |
-| `W5-MULTIASSET-001` | - |
+| `W5-MASSET-001` | Multi-asset operational coverage proof lane |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

@@ -627,7 +627,7 @@ modules:
     readme: src/Meridian.ReferenceData/README.md
     roadmap_items:
       - W1-DATA-001
-      - W5-MULTIASSET-001
+      - W5-MASSET-001
     stage_gates:
       - DataConfidence
       - AccountingRecords
@@ -649,7 +649,7 @@ modules:
     readme: src/Meridian.Instruments/README.md
     roadmap_items:
       - W4-RECON-001
-      - W5-MULTIASSET-001
+      - W5-MASSET-001
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords
@@ -675,7 +675,7 @@ modules:
     roadmap_items:
       - W4-RECON-001
       - W5-ACCT-001
-      - W5-MULTIASSET-001
+      - W5-MASSET-001
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords

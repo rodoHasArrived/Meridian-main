@@ -9,7 +9,7 @@ program:
   owner: Core Team
   snapshot_date: 2026-06-10
   status: active
-  active_scope: W1-W5 operational record baseline
+  active_scope: Closed W1-W5 operational record baseline plus W5X productization targets
   scope_gate: New product work should strengthen data confidence, reconciliation, approvals, accounting records, retained evidence, or governed reporting before expanding research, live trading, payments, forecasting, risk, portal, workflow-designer, mobile, or scale-out lanes.
   near_term_release_baseline:
     - W1-DATA-001
@@ -42,6 +42,6 @@ program:
     - Client portal
     - No-code workflow designer
     - Mobile applications
-  active_ui_lane: browser_workstation
-  retained_support_lane: wpf
+  active_ui_lane: browser_and_wpf_workstations
+  retained_support_lane: none
   mobile_lane: closed
