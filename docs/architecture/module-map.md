@@ -10,7 +10,8 @@ For complete product design document adaptation, use
 [`design-document-adaptation.md`](design-document-adaptation.md). For the physical bounded-context
 module structure, use [`design-module-conformance.md`](design-module-conformance.md). Together they
 bridge design names such as `Meridian.FinancialOperations` to the current source projects listed
-below.
+below. For the inventory of extension points and module-registration patterns, use
+[`extension-points.md`](extension-points.md).
 
 ## Runtime Flow
 

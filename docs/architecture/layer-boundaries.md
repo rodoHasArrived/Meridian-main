@@ -4,6 +4,10 @@ This document defines the allowed dependency directions between layer assemblies
 These boundaries are enforced by **project references** (compile-time) and
 **Roslyn analyzer rules** (IDE warnings).
 
+For the inventory of module-registration and extension patterns that compose within these
+boundaries — and the known coupling drifts scheduled for repair — see
+[`extension-points.md`](extension-points.md).
+
 ## Dependency Graph
 
 ```
