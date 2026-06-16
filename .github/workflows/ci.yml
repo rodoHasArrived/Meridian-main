@@ -92,13 +92,24 @@ jobs:
 
       - name: Run non-integration tests
         run: |
-          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=core" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
-          dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=fsharp" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
-          dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=ui" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
-          dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=backtesting" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
-          dotnet test tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=directlending" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
-          dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=fundstructure" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
-          dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=quantscript" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+          set -euo pipefail
+          COMMON_TEST_ARGS=(
+            -c Release
+            --no-restore
+            --filter "Category!=Integration&Category!=Performance"
+            --results-directory artifacts/test-results/dotnet
+            --blame-hang
+            --blame-hang-timeout
+            5m
+            /p:EnableWindowsTargeting=true
+          )
+          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj "${COMMON_TEST_ARGS[@]}" --logger "trx;LogFilePrefix=core"
+          dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj "${COMMON_TEST_ARGS[@]}" --logger "trx;LogFilePrefix=fsharp"
+          dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj "${COMMON_TEST_ARGS[@]}" --logger "trx;LogFilePrefix=ui"
+          dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj "${COMMON_TEST_ARGS[@]}" --logger "trx;LogFilePrefix=backtesting"
+          dotnet test tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj "${COMMON_TEST_ARGS[@]}" --logger "trx;LogFilePrefix=directlending"
+          dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj "${COMMON_TEST_ARGS[@]}" --logger "trx;LogFilePrefix=fundstructure"
+          dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj "${COMMON_TEST_ARGS[@]}" --logger "trx;LogFilePrefix=quantscript"
 
       - name: Validate status docs delivery claims
         run: |
@@ -142,11 +153,11 @@ jobs:
         run: |
           python3 build/scripts/docs/check-validation-floor.py --summary-json docs/status/docs-automation-summary.json --route-json docs/status/prompt-route-lint-report.json --summary
 
-      - name: Upload .NET test results
-        if: failure()
+      - name: Upload .NET evidence artifacts
+        if: always()
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: ci-dotnet-${{ github.run_number }}
+          name: ci-dotnet-${{ github.run_number }}-${{ github.run_attempt }}
           path: |
             artifacts/build-logs/
             artifacts/test-results/dotnet/
@@ -200,10 +211,10 @@ jobs:
         run: npm --prefix src/Meridian.Ui/dashboard run build
 
       - name: Upload browser workstation artifacts
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: ci-browser-workstation-${{ github.run_number }}
+          name: ci-browser-workstation-${{ github.run_number }}-${{ github.run_attempt }}
           path: src/Meridian.Ui/dashboard/dist
           if-no-files-found: ignore
           retention-days: 14
@@ -281,6 +292,8 @@ jobs:
             --results-directory artifacts/test-results/full \
             --settings tests/coverlet.runsettings \
             --logger "trx;LogFilePrefix=full" \
+            --blame-hang \
+            --blame-hang-timeout 10m \
             --filter "Category!=Integration&Category!=Performance" \
             /p:EnableWindowsTargeting=true
 
@@ -292,7 +305,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: verify-full-coverage-${{ github.run_number }}
+          name: verify-full-coverage-${{ github.run_number }}-${{ github.run_attempt }}
           path: |
             artifacts/test-results/full/
             docs/status/coverage-report.md
