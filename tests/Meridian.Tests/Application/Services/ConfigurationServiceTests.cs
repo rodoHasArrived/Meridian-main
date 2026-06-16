@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Application.Config;
 using Meridian.Core.Config;
 using Meridian.Application.Services;
+using Meridian.Application.UI;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Xunit;
 
@@ -302,7 +303,7 @@ public class ConfigurationServiceTests : IAsyncDisposable
     #region Self-Healing: IB Gateway Not Available
 
     [Fact]
-    public void ApplySelfHealingFixes_IBSelectedGatewayUnavailable_GeneratesWarning()
+    public async Task ApplySelfHealingFixes_IBSelectedGatewayUnavailable_GeneratesWarning()
     {
         // Arrange - IB gateway won't be running in tests
         var config = new AppConfig(
@@ -310,7 +311,9 @@ public class ConfigurationServiceTests : IAsyncDisposable
             Symbols: new[] { new SymbolConfig("SPY") });
 
         // Act
-        var (_, appliedFixes, warnings) = _sut.ApplySelfHealingFixes(config);
+        await using var service = new ConfigurationService(ibGatewayAvailabilityProbe: () => false);
+
+        var (_, appliedFixes, warnings) = service.ApplySelfHealingFixes(config);
 
         // Assert - Either switched to alternative OR warning generated
         // In CI, no IB gateway is available. If alternative credentials exist,
@@ -482,6 +485,100 @@ public class ConfigurationServiceTests : IAsyncDisposable
     #endregion
 
     #region Credential Resolution
+
+
+    [Fact]
+    public void ResolveAllCredentials_AlpacaEnvOverlay_UsesEnvironmentCredentials()
+    {
+        using var keyScope = new EnvironmentVariableScope("ALPACA_KEY_ID", "env-alpaca-key");
+        using var secretScope = new EnvironmentVariableScope("ALPACA_SECRET_KEY", "env-alpaca-secret");
+        var config = new AppConfig(DataSource: DataSourceKind.Alpaca, Alpaca: new AlpacaOptions("configured-key", "configured-secret"));
+
+        var resolved = _sut.ResolveAllCredentials(config);
+
+        resolved.Alpaca!.KeyId.Should().Be("env-alpaca-key");
+        resolved.Alpaca.SecretKey.Should().Be("env-alpaca-secret");
+    }
+
+    [Fact]
+    public void ResolveAllCredentials_PolygonConfiguredCredential_UsesConfiguredWhenEnvironmentMissing()
+    {
+        using var keyScope = new EnvironmentVariableScope("POLYGON_API_KEY", null);
+        var config = new AppConfig(DataSource: DataSourceKind.Polygon, Polygon: new PolygonOptions("configured-polygon-key"));
+
+        var resolved = _sut.ResolveAllCredentials(config);
+
+        resolved.Polygon!.ApiKey.Should().Be("configured-polygon-key");
+    }
+
+    [Fact]
+    public void ResolveAllCredentials_PolygonEnvironmentCredential_OverridesConfiguredCredential()
+    {
+        using var keyScope = new EnvironmentVariableScope("POLYGON_API_KEY", "env-polygon-key");
+        var config = new AppConfig(DataSource: DataSourceKind.Polygon, Polygon: new PolygonOptions("configured-polygon-key"));
+
+        var resolved = _sut.ResolveAllCredentials(config);
+
+        resolved.Polygon!.ApiKey.Should().Be("env-polygon-key");
+    }
+
+    [Fact]
+    public void ResolveAllCredentials_BackfillProviderCredentialOverlays_UsesEnvironmentCredentials()
+    {
+        using var alpacaKey = new EnvironmentVariableScope("ALPACA_KEY_ID", "env-backfill-alpaca-key");
+        using var alpacaSecret = new EnvironmentVariableScope("ALPACA_SECRET_KEY", "env-backfill-alpaca-secret");
+        using var tiingo = new EnvironmentVariableScope("TIINGO_API_TOKEN", "env-tiingo-token");
+        using var finnhub = new EnvironmentVariableScope("FINNHUB_API_KEY", "env-finnhub-key");
+        using var alpha = new EnvironmentVariableScope("ALPHA_VANTAGE_API_KEY", "env-alpha-key");
+        using var nasdaq = new EnvironmentVariableScope("NASDAQ_DATA_LINK_API_KEY", "env-nasdaq-key");
+        using var fred = new EnvironmentVariableScope("FRED_API_KEY", "env-fred-key");
+        var config = new AppConfig(
+            Symbols: new[] { new SymbolConfig("SPY") },
+            Backfill: new BackfillConfig(Providers: new BackfillProvidersConfig(
+                Alpaca: new AlpacaBackfillConfig(KeyId: "configured-alpaca-key", SecretKey: "configured-alpaca-secret"),
+                Tiingo: new TiingoConfig(ApiToken: "configured-tiingo-token"),
+                Finnhub: new FinnhubConfig(ApiKey: "configured-finnhub-key"),
+                AlphaVantage: new AlphaVantageConfig(ApiKey: "configured-alpha-key"),
+                Nasdaq: new NasdaqDataLinkConfig(ApiKey: "configured-nasdaq-key"),
+                Fred: new FredConfig(ApiKey: "configured-fred-key"))));
+
+        var resolved = _sut.ResolveAllCredentials(config);
+
+        resolved.Backfill!.Providers!.Alpaca!.KeyId.Should().Be("env-backfill-alpaca-key");
+        resolved.Backfill.Providers.Alpaca.SecretKey.Should().Be("env-backfill-alpaca-secret");
+        resolved.Backfill.Providers.Tiingo!.ApiToken.Should().Be("env-tiingo-token");
+        resolved.Backfill.Providers.Finnhub!.ApiKey.Should().Be("env-finnhub-key");
+        resolved.Backfill.Providers.AlphaVantage!.ApiKey.Should().Be("env-alpha-key");
+        resolved.Backfill.Providers.Nasdaq!.ApiKey.Should().Be("env-nasdaq-key");
+        resolved.Backfill.Providers.Fred!.ApiKey.Should().Be("env-fred-key");
+    }
+
+    [Fact]
+    public async Task LoadAndPrepareConfig_EnvironmentOverlayMerge_AppliesOverlayValues()
+    {
+        using var envScope = new EnvironmentVariableScope("MDC_ENVIRONMENT", "Test");
+        using var dotnetScope = new EnvironmentVariableScope("DOTNET_ENVIRONMENT", null);
+        var directory = Path.Combine(Path.GetTempPath(), $"meridian-config-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var basePath = Path.Combine(directory, "appsettings.json");
+            var overlayPath = Path.Combine(directory, "appsettings.Test.json");
+            await new ConfigStore(basePath).SaveAsync(new AppConfig(DataRoot: "base-data", DataSource: DataSourceKind.Synthetic, Symbols: new[] { new SymbolConfig("SPY") }));
+            await new ConfigStore(overlayPath).SaveAsync(new AppConfig(DataRoot: "overlay-data", DataSource: DataSourceKind.Polygon, Polygon: new PolygonOptions("overlay-key"), Symbols: Array.Empty<SymbolConfig>()));
+
+            var loaded = _sut.LoadAndPrepareConfig(basePath, applySelfHealing: false);
+
+            loaded.DataRoot.Should().Be(Path.GetFullPath(Path.Combine(directory, "overlay-data")));
+            loaded.DataSource.Should().Be(DataSourceKind.Polygon);
+            loaded.Polygon!.ApiKey.Should().Be("overlay-key");
+            loaded.Symbols.Should().ContainSingle(s => s.Symbol == "SPY");
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
 
     [Fact]
     public void ResolveAllCredentials_NoCredentialsConfigured_ReturnsOriginalConfig()
