@@ -1,5 +1,4 @@
 using System;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
@@ -20,7 +19,7 @@ public sealed class ConnectionService : ConnectionServiceBase, IConnectionServic
 {
     private static readonly Lazy<ConnectionService> _instance = new(() => new ConnectionService());
 
-    private HttpClient _httpClient;
+    private readonly IRemoteWorkstationClient _remoteClient;
     private Timer? _monitoringTimer;
     private Timer? _reconnectTimer;
 
@@ -30,11 +29,13 @@ public sealed class ConnectionService : ConnectionServiceBase, IConnectionServic
     public static ConnectionService Instance => _instance.Value;
 
     private ConnectionService()
+        : this(WpfRemoteWorkstationClient.Instance)
     {
-        _httpClient = new HttpClient
-        {
-            Timeout = TimeSpan.FromSeconds(GetSettings().ServiceTimeoutSeconds)
-        };
+    }
+
+    internal ConnectionService(IRemoteWorkstationClient remoteClient)
+    {
+        _remoteClient = remoteClient ?? throw new ArgumentNullException(nameof(remoteClient));
     }
 
     /// <inheritdoc />
@@ -42,8 +43,7 @@ public sealed class ConnectionService : ConnectionServiceBase, IConnectionServic
     {
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         cts.CancelAfter(TimeSpan.FromSeconds(10));
-        var response = await _httpClient.GetAsync($"{ServiceUrl}/healthz", cts.Token);
-        return response.IsSuccessStatusCode;
+        return await _remoteClient.CheckHealthEndpointAsync(cts.Token).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -94,12 +94,7 @@ public sealed class ConnectionService : ConnectionServiceBase, IConnectionServic
     /// <inheritdoc />
     protected override void OnSettingsUpdated(ConnectionSettings settings)
     {
-        var old = _httpClient;
-        _httpClient = new HttpClient
-        {
-            Timeout = TimeSpan.FromSeconds(settings.ServiceTimeoutSeconds)
-        };
-        old.Dispose();
+        _remoteClient.Configure(settings.ServiceUrl, settings.ServiceTimeoutSeconds);
     }
 
     /// <inheritdoc />
@@ -117,7 +112,6 @@ public sealed class ConnectionService : ConnectionServiceBase, IConnectionServic
     /// <inheritdoc />
     protected override void DisposePlatformResources()
     {
-        _httpClient.Dispose();
     }
 
     private async void OnMonitoringTimerElapsed(object? sender, ElapsedEventArgs e)

@@ -8,6 +8,7 @@ using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Ui.Shared.Services;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Features.Data.Shell;
 using Meridian.Wpf.Features.Settings.Shell;
 using Meridian.Wpf.Models;
@@ -45,6 +46,8 @@ public sealed class AppServiceRegistrationTests
             serviceProvider.GetRequiredService<WorkspaceService>().Should().BeSameAs(WorkspaceService.Instance);
             serviceProvider.GetRequiredService<WorkspaceStateTokenStore>().Should().NotBeNull();
             serviceProvider.GetRequiredService<ConnectionService>().Should().BeSameAs(ConnectionService.Instance);
+            serviceProvider.GetRequiredService<IRemoteWorkstationClient>().Should().BeSameAs(WpfRemoteWorkstationClient.Instance);
+            serviceProvider.GetRequiredService<WpfRemoteWorkstationClient>().Should().BeSameAs(WpfRemoteWorkstationClient.Instance);
             serviceProvider.GetRequiredService<LoggingService>().Should().BeSameAs(LoggingService.Instance);
             serviceProvider.GetRequiredService<StatusService>().Should().BeSameAs(StatusService.Instance);
             serviceProvider.GetRequiredService<StrategyRunWorkspaceService>().Should().NotBeNull();

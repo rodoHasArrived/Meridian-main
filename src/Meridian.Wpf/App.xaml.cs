@@ -257,6 +257,8 @@ public partial class App : System.Windows.Application
 
         // Shared API infrastructure
         services.AddSingleton<ApiClientService>(_ => ApiClientService.Instance);
+        services.AddSingleton<WpfServices.WpfRemoteWorkstationClient>(_ => WpfServices.WpfRemoteWorkstationClient.Instance);
+        services.AddSingleton<IRemoteWorkstationClient>(sp => sp.GetRequiredService<WpfServices.WpfRemoteWorkstationClient>());
 
         // ── Fixture mode service (offline mock data) ────────────────────────
         services.AddSingleton<Meridian.Ui.Services.Services.FixtureDataService>(_ => Meridian.Ui.Services.Services.FixtureDataService.Instance);
