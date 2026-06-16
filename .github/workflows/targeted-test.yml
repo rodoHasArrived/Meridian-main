@@ -90,7 +90,7 @@ jobs:
 
       - name: Set up .NET SDK
         if: inputs.lane == 'dotnet'
-        uses: actions/setup-dotnet@v5.2.0
+        uses: actions/setup-dotnet@v5.3.0
         with:
           global-json-file: global.json
 
