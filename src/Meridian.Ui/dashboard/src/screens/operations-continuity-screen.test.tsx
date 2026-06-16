@@ -1196,6 +1196,10 @@ describe("OperationsContinuityScreen", () => {
     expect(within(operatorQueue).getByText("Review each requested support item and assign an owner before audit release.; Cannot erase evidence or satisfy audit requests without retained support.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Missing support flag")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Attach or waive missing support through governed human review.; Cannot approve its own missing-support disposition.")).toBeInTheDocument();
+    expect(within(operatorQueue).getAllByText("Accounting-record evidence")).toHaveLength(6);
+    expect(within(operatorQueue).getByText("Journal and ledger evidence")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Ledger validation is still required.; Requires journal preview, posted ledger batch, trial-balance support")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Retain journal preview, posted ledger batch, trial-balance support.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Period lock and reopen evidence")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Complete reopened incident remediation and close the period again with retained evidence.")).toBeInTheDocument();
     expect(within(operatorQueue).getAllByText("Command stage")).toHaveLength(4);
@@ -1217,6 +1221,8 @@ describe("OperationsContinuityScreen", () => {
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: LEDGER_VALIDATION_REQUIRED" }))
       .toHaveAttribute("href", "/accounting/operations-continuity");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Ledger posting controller check" }))
+      .toHaveAttribute("href", "/accounting/ledger");
+    expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Journal and ledger evidence" }))
       .toHaveAttribute("href", "/accounting/ledger");
     expect(within(operatorQueue).getByRole("link", { name: `Open Financial Operations queue item: 2026-05 / ${fundAccountId}: Ledger posting controller check` }))
       .toHaveAttribute("href", "/accounting/operations-continuity");

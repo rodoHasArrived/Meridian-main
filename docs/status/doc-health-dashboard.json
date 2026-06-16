@@ -1,11 +1,11 @@
 {
   "total_files": 715,
-  "total_lines": 102696,
+  "total_lines": 102789,
   "orphaned_count": 293,
   "no_heading_count": 22,
   "stale_count": 69,
-  "todo_count": 240,
-  "average_lines": 143.6,
+  "todo_count": 239,
+  "average_lines": 143.8,
   "health_score": 82,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -1864,10 +1864,10 @@
     },
     {
       "path": "docs/HELP.md",
-      "line_count": 239,
+      "line_count": 245,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-16T06:44:21.680824+00:00",
+      "last_modified_utc": "2026-06-16T11:34:58.914143+00:00",
       "stale": false
     },
     {
@@ -2528,10 +2528,10 @@
     },
     {
       "path": "docs/architecture/provider-integration-manifest-runtime.md",
-      "line_count": 736,
+      "line_count": 753,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-16T09:36:59.485558+00:00",
+      "last_modified_utc": "2026-06-16T11:16:36.956539+00:00",
       "stale": false
     },
     {
@@ -2800,10 +2800,10 @@
     },
     {
       "path": "docs/development/documentation-automation.md",
-      "line_count": 560,
+      "line_count": 561,
       "has_heading": true,
       "todo_count": 37,
-      "last_modified_utc": "2026-06-16T06:44:21.706734+00:00",
+      "last_modified_utc": "2026-06-16T11:34:58.917145+00:00",
       "stale": false
     },
     {
@@ -3368,18 +3368,18 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 6653,
+      "line_count": 6670,
       "has_heading": true,
       "todo_count": 9,
-      "last_modified_utc": "2026-06-16T09:37:37.013015+00:00",
+      "last_modified_utc": "2026-06-16T11:36:22.383617+00:00",
       "stale": false
     },
     {
       "path": "docs/generated/workflow-command-reference.md",
-      "line_count": 117,
+      "line_count": 128,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-16T06:44:21.716554+00:00",
+      "last_modified_utc": "2026-06-16T11:34:58.918145+00:00",
       "stale": false
     },
     {
@@ -3387,7 +3387,7 @@
       "line_count": 32,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-16T05:35:04.571369+00:00",
+      "last_modified_utc": "2026-06-16T11:34:58.526561+00:00",
       "stale": false
     },
     {
@@ -4920,10 +4920,10 @@
     },
     {
       "path": "docs/source/generated/stale-docs.md",
-      "line_count": 18,
+      "line_count": 14,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-16T09:37:22.909563+00:00",
+      "last_modified_utc": "2026-06-16T11:25:46.069443+00:00",
       "stale": false
     },
     {
@@ -4939,15 +4939,15 @@
       "line_count": 5,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-16T08:34:55.301438+00:00",
+      "last_modified_utc": "2026-06-16T09:37:43.439168+00:00",
       "stale": false
     },
     {
       "path": "docs/status/ai-handoff-packet.md",
-      "line_count": 62,
+      "line_count": 66,
       "has_heading": true,
-      "todo_count": 1,
-      "last_modified_utc": "2026-06-16T08:35:00.333848+00:00",
+      "todo_count": 0,
+      "last_modified_utc": "2026-06-16T09:37:44.571271+00:00",
       "stale": false
     },
     {
@@ -4955,7 +4955,7 @@
       "line_count": 26,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-16T08:34:54.845293+00:00",
+      "last_modified_utc": "2026-06-16T09:37:43.051739+00:00",
       "stale": false
     },
     {
@@ -5027,7 +5027,7 @@
       "line_count": 126,
       "has_heading": true,
       "todo_count": 5,
-      "last_modified_utc": "2026-06-16T08:34:52.086714+00:00",
+      "last_modified_utc": "2026-06-16T09:37:41.686722+00:00",
       "stale": false
     },
     {
@@ -5051,7 +5051,7 @@
       "line_count": 125,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-16T08:34:53.964674+00:00",
+      "last_modified_utc": "2026-06-16T09:37:42.356313+00:00",
       "stale": false
     },
     {
@@ -5299,7 +5299,7 @@
       "line_count": 187,
       "has_heading": true,
       "todo_count": 17,
-      "last_modified_utc": "2026-06-16T09:37:33.529567+00:00",
+      "last_modified_utc": "2026-06-16T11:36:12.351596+00:00",
       "stale": false
     },
     {
@@ -5307,7 +5307,7 @@
       "line_count": 75,
       "has_heading": true,
       "todo_count": 0,
-      "last_modified_utc": "2026-06-16T06:44:21.790109+00:00",
+      "last_modified_utc": "2026-06-16T11:34:58.945306+00:00",
       "stale": false
     },
     {
@@ -5672,10 +5672,10 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 377,
+      "line_count": 388,
       "has_heading": true,
       "todo_count": 3,
-      "last_modified_utc": "2026-06-16T09:36:24.489324+00:00",
+      "last_modified_utc": "2026-06-16T11:16:52.570975+00:00",
       "stale": false
     },
     {
@@ -5704,10 +5704,10 @@
     },
     {
       "path": "src/Meridian.Contracts/README.md",
-      "line_count": 898,
+      "line_count": 900,
       "has_heading": true,
       "todo_count": 3,
-      "last_modified_utc": "2026-06-16T09:36:17.107711+00:00",
+      "last_modified_utc": "2026-06-16T10:50:02.499403+00:00",
       "stale": false
     },
     {
@@ -5912,10 +5912,10 @@
     },
     {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 253,
+      "line_count": 259,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-16T09:00:40.937588+00:00",
+      "last_modified_utc": "2026-06-16T10:55:02.678172+00:00",
       "stale": false
     },
     {
@@ -5936,10 +5936,10 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 728,
+      "line_count": 733,
       "has_heading": true,
       "todo_count": 4,
-      "last_modified_utc": "2026-06-16T09:19:20.856342+00:00",
+      "last_modified_utc": "2026-06-16T11:22:47.684270+00:00",
       "stale": false
     },
     {
@@ -5952,10 +5952,10 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 1198,
+      "line_count": 1214,
       "has_heading": true,
       "todo_count": 3,
-      "last_modified_utc": "2026-06-16T09:36:37.268800+00:00",
+      "last_modified_utc": "2026-06-16T11:17:00.563885+00:00",
       "stale": false
     },
     {
@@ -5968,10 +5968,10 @@
     },
     {
       "path": "src/Meridian.Wpf/README.md",
-      "line_count": 499,
+      "line_count": 500,
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "2026-06-16T08:43:23.272803+00:00",
+      "last_modified_utc": "2026-06-16T11:16:54.693498+00:00",
       "stale": false
     },
     {
@@ -6119,6 +6119,6 @@
       "stale": false
     }
   ],
-  "scan_time": "2026-06-16T09:37:41.662618+00:00",
+  "scan_time": "2026-06-16T11:36:32.080128+00:00",
   "root_dir": "D:\\Meridian-main"
 }

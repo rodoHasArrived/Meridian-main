@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-06-16 09:37:37 UTC. Do not edit manually.
+> Auto-generated on 2026-06-16 11:36:22 UTC. Do not edit manually.
 
 ```text
 Meridian-main
@@ -134,7 +134,10 @@ Meridian-main
 │   ├── locks
 │   │   └── validation.lock
 │   ├── test-results
+│   │   ├── test-meridian-tests-26276-20260616101826
 │   │   ├── test-meridian-tests-32736-20260616041611
+│   │   ├── test-meridian-tests-33760-20260616101717
+│   │   ├── test-meridian-tests-37300-20260616100501
 │   │   ├── test-meridian-wpf-tests-13908-20260616070459
 │   │   ├── test-meridian-wpf-tests-14820-20260616070535
 │   │   ├── test-meridian-wpf-tests-22980-20260616070411
@@ -145,7 +148,12 @@ Meridian-main
 │   └── validation-runs
 │       ├── run-one.json
 │       ├── test-meridian-tests-13432-20260616073753.json
+│       ├── test-meridian-tests-19316-20260616104444.json
+│       ├── test-meridian-tests-26276-20260616101826.json
 │       ├── test-meridian-tests-32736-20260616041611.json
+│       ├── test-meridian-tests-33760-20260616101717.json
+│       ├── test-meridian-tests-36836-20260616094823.json
+│       ├── test-meridian-tests-37300-20260616100501.json
 │       ├── test-meridian-wpf-tests-13908-20260616070459.json
 │       ├── test-meridian-wpf-tests-14820-20260616070535.json
 │       ├── test-meridian-wpf-tests-22980-20260616070411.json
@@ -2206,7 +2214,10 @@ Meridian-main
 │   │   │   ├── ProviderIntegrationQuarantineReplayService.cs
 │   │   │   ├── ProviderIntegrationQuarantineReviewService.cs
 │   │   │   ├── ProviderIntegrationRestDryRunService.cs
+│   │   │   ├── ProviderIntegrationSchemaDriftService.cs
 │   │   │   ├── ProviderIntegrationSetupService.cs
+│   │   │   ├── ProviderIntegrationSyncOrchestrationService.cs
+│   │   │   ├── ProviderIntegrationSyncPlanningService.cs
 │   │   │   └── ProviderIntegrationTemplateCatalog.cs
 │   │   ├── Monitoring
 │   │   │   ├── DetailedHealthCheck.cs
@@ -4172,70 +4183,70 @@ Meridian-main
 │   │   ├── wwwroot
 │   │   │   └── workstation
 │   │   │       ├── assets
-│   │   │       │   ├── accounting-screen-BJVov0GY.js
-│   │   │       │   ├── activity-CLyMayGs.js
-│   │   │       │   ├── card-BpkKlqeO.js
-│   │   │       │   ├── chart-column-DjkDDFzF.js
-│   │   │       │   ├── chart-line-Ty8BZY0z.js
-│   │   │       │   ├── circle-alert-BAuvaS2W.js
-│   │   │       │   ├── circle-check-CtDMxEBL.js
-│   │   │       │   ├── circle-play-BUO7ADDr.js
-│   │   │       │   ├── circle-x-xpKoYZjw.js
-│   │   │       │   ├── clipboard-list-D2mOkXO0.js
-│   │   │       │   ├── covered-call-screen-BEHvam3g.js
-│   │   │       │   ├── data-screen-h7I1aUYn.js
-│   │   │       │   ├── database-CE7fHN8v.js
-│   │   │       │   ├── dialog-GIsU-kBl.js
-│   │   │       │   ├── download-DnWyvkNP.js
-│   │   │       │   ├── entity-setup-wizard-CVnSp9D_.js
-│   │   │       │   ├── evidence-workbench-screen-DEuvyfCC.js
-│   │   │       │   ├── external-link-BZH9UqaK.js
-│   │   │       │   ├── eye-b6WmYjm5.js
-│   │   │       │   ├── family-office-screen-BX15ttPt.js
-│   │   │       │   ├── field-support-HDgVbYaF.js
-│   │   │       │   ├── file-text-DEcCrZmi.js
-│   │   │       │   ├── financial-record-explorer-E80tv1yn.js
-│   │   │       │   ├── index-CEFXXBOL.css
-│   │   │       │   ├── index-DXl4ZOEQ.js
-│   │   │       │   ├── input-B_WgQsWN.js
-│   │   │       │   ├── layers-CvcBTcFT.js
-│   │   │       │   ├── list-checks-Ds5oGC2V.js
-│   │   │       │   ├── live-quotes-screen-BK8BITXE.js
-│   │   │       │   ├── metric-card-BhmfTk5T.js
-│   │   │       │   ├── monitor-check-DpMElexj.js
-│   │   │       │   ├── network-Bavkc06O.js
-│   │   │       │   ├── operations-continuity-screen-CgN2aelg.js
-│   │   │       │   ├── operations-continuity-screen.view-model-CEJPtKaZ.js
-│   │   │       │   ├── operations-record-release-screen-C8lITs0K.js
-│   │   │       │   ├── operator-readiness-console-Bll9QS8u.js
-│   │   │       │   ├── play-BbzLQ-TI.js
-│   │   │       │   ├── plus-C-kRdwe_.js
-│   │   │       │   ├── portfolio-screen-kRZxJdK0.js
-│   │   │       │   ├── portfolio-screen.view-model-D4eEasK6.js
-│   │   │       │   ├── price-alerts-screen-oT3rmKPI.js
-│   │   │       │   ├── quant-lab-screen-B-6xZZSh.js
-│   │   │       │   ├── refresh-cw-BaXpnlGv.js
-│   │   │       │   ├── reporting-screen-BczeRHq1.js
-│   │   │       │   ├── reporting-screen.view-model-mgoXfIF9.js
-│   │   │       │   ├── rotate-ccw-DcdAIq3p.js
-│   │   │       │   ├── save-BlT60NsZ.js
-│   │   │       │   ├── select-DLa-B7TJ.js
-│   │   │       │   ├── send-DApohIg-.js
-│   │   │       │   ├── settings-screen-C3siqWP7.js
-│   │   │       │   ├── shield-check-BDE5RWlT.js
-│   │   │       │   ├── sigma-BwqHvc_r.js
-│   │   │       │   ├── sparkles-DZa4qJ8B.js
-│   │   │       │   ├── strategy-designer-screen-Ci_fGEaR.js
-│   │   │       │   ├── strategy-formula-workbench-screen-D7S33O1E.js
-│   │   │       │   ├── strategy-screen-Csfi7fA8.js
-│   │   │       │   ├── trading-screen-DWfd8qJz.js
-│   │   │       │   ├── trash-2-C-3nI8wO.js
-│   │   │       │   ├── trending-up-DdrJxEgE.js
-│   │   │       │   ├── ui-kit-primitives-D5Hvnh7P.js
-│   │   │       │   ├── wallet-h0sn2bCL.js
-│   │   │       │   ├── watchlist-screen-CiiwIa-I.js
-│   │   │       │   ├── workflow-C1Xo0UIP.js
-│   │   │       │   └── workspace-primitives-w3a-Oj0G.js
+│   │   │       │   ├── accounting-screen-C3r0SpWq.js
+│   │   │       │   ├── activity-csHCWdZ2.js
+│   │   │       │   ├── card-BJ-i4x43.js
+│   │   │       │   ├── chart-column-DofHtlI_.js
+│   │   │       │   ├── chart-line-BdgDscVN.js
+│   │   │       │   ├── circle-alert-Blu0R67p.js
+│   │   │       │   ├── circle-check-D0h-hQsS.js
+│   │   │       │   ├── circle-play-CCjNczFe.js
+│   │   │       │   ├── circle-x-BnV0rB1i.js
+│   │   │       │   ├── clipboard-list-Cv4OBji3.js
+│   │   │       │   ├── covered-call-screen-xLKa9IaI.js
+│   │   │       │   ├── data-screen-DpCiK7OV.js
+│   │   │       │   ├── database-DCGIHrCR.js
+│   │   │       │   ├── dialog-C_C9mA0V.js
+│   │   │       │   ├── download-DnxA96IY.js
+│   │   │       │   ├── entity-setup-wizard-BisIh7SG.js
+│   │   │       │   ├── evidence-workbench-screen-DP_K7xEy.js
+│   │   │       │   ├── external-link-B7_twio3.js
+│   │   │       │   ├── eye-DMNdti0K.js
+│   │   │       │   ├── family-office-screen-9P91yTmo.js
+│   │   │       │   ├── field-support-BYt8fHsU.js
+│   │   │       │   ├── file-text-CQ99SdPh.js
+│   │   │       │   ├── financial-record-explorer-cjXueEDp.js
+│   │   │       │   ├── index-CIjVlneJ.css
+│   │   │       │   ├── index-CKTSva2G.js
+│   │   │       │   ├── input-CloCSnB0.js
+│   │   │       │   ├── layers-COV263Xo.js
+│   │   │       │   ├── list-checks-C7rs5_5_.js
+│   │   │       │   ├── live-quotes-screen-DaV4I3nQ.js
+│   │   │       │   ├── metric-card-B7SqasfA.js
+│   │   │       │   ├── monitor-check-rpy2MEPq.js
+│   │   │       │   ├── network-BCFvCjnh.js
+│   │   │       │   ├── operations-continuity-screen-D3wAfx1z.js
+│   │   │       │   ├── operations-continuity-screen.view-model-DIG2e8Ni.js
+│   │   │       │   ├── operations-record-release-screen-DlQXOlT0.js
+│   │   │       │   ├── operator-readiness-console-BrYhmGtU.js
+│   │   │       │   ├── play-CWamoZVu.js
+│   │   │       │   ├── plus-18TPK6Ho.js
+│   │   │       │   ├── portfolio-screen-BGw0ZNrk.js
+│   │   │       │   ├── portfolio-screen.view-model-Cj6ZHRtu.js
+│   │   │       │   ├── price-alerts-screen-BEvGp2oU.js
+│   │   │       │   ├── quant-lab-screen-DQtGfXpn.js
+│   │   │       │   ├── refresh-cw-N7CSbVbk.js
+│   │   │       │   ├── reporting-screen-B8x85_jt.js
+│   │   │       │   ├── reporting-screen.view-model-C00O1dsM.js
+│   │   │       │   ├── rotate-ccw-BxmY4U4Z.js
+│   │   │       │   ├── save-CN2O75Wp.js
+│   │   │       │   ├── select-zdEa0o1m.js
+│   │   │       │   ├── send-BKeNxuMR.js
+│   │   │       │   ├── settings-screen-W2R1ODJB.js
+│   │   │       │   ├── shield-check-CcwplIzU.js
+│   │   │       │   ├── sigma-Da6weOQ-.js
+│   │   │       │   ├── sparkles-0j1lqlV2.js
+│   │   │       │   ├── strategy-designer-screen-Bd2SBS1p.js
+│   │   │       │   ├── strategy-formula-workbench-screen-DPcTwYnB.js
+│   │   │       │   ├── strategy-screen-DWhkfrMW.js
+│   │   │       │   ├── trading-screen-BwxZroLg.js
+│   │   │       │   ├── trash-2-Br_4Zoej.js
+│   │   │       │   ├── trending-up-gKrEpffZ.js
+│   │   │       │   ├── ui-kit-primitives-D4Ul_stJ.js
+│   │   │       │   ├── wallet-Db-VgYB1.js
+│   │   │       │   ├── watchlist-screen-g3VuCxPM.js
+│   │   │       │   ├── workflow-cLKem5C1.js
+│   │   │       │   └── workspace-primitives-ewNYcZZS.js
 │   │   │       └── index.html
 │   │   └── README.md
 │   ├── Meridian.Ui.Services
@@ -5508,7 +5519,10 @@ Meridian-main
 │   │   │   │   ├── ProviderIntegrationQuarantineReplayServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationQuarantineReviewServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationRestDryRunServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationSchemaDriftServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationSetupServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationSyncOrchestrationServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationSyncPlanningServiceTests.cs
 │   │   │   │   └── ProviderIntegrationTemplateCatalogTests.cs
 │   │   │   ├── Logging
 │   │   │   │   └── LoggingSetupTests.cs
@@ -6102,7 +6116,9 @@ Meridian-main
 │   │   │   ├── ExportEndpointsTests.cs
 │   │   │   ├── FamilyOfficeContractTests.cs
 │   │   │   ├── FamilyOfficeReadServiceTests.cs
+│   │   │   ├── FundAccountEndpointAuthorizationTests.cs
 │   │   │   ├── FundOpsCloseLaneScenarioTests.cs
+│   │   │   ├── FundStructureEndpointAuthorizationTests.cs
 │   │   │   ├── InvestmentAccountingTransactionLabServiceTests.cs
 │   │   │   ├── LedgerAmountProvenanceServiceTests.cs
 │   │   │   ├── OmsIntegrationServiceTests.cs
@@ -6442,6 +6458,7 @@ Meridian-main
 │   │   ├── test_compare_run_contract.py
 │   │   ├── test_dashboard_package_lock.py
 │   │   ├── test_desktop_screen_blueprint_checklist.py
+│   │   ├── test_direct_lending_outbox_claim_sql.py
 │   │   ├── test_doc_render_determinism.py
 │   │   ├── test_documentation_workflow.py
 │   │   ├── test_export_project_artifact_workflow.py

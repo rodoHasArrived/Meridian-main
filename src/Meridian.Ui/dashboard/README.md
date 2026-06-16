@@ -175,7 +175,7 @@ shared close-calendar projection, and the private-capital close cockpit: reconci
 non-ready reconciliation lane posture, workflow blockers, close checklist tasks, close-calendar due
 items, non-ready private-capital proof lanes, NAV support packages, workflow approvals,
 private-capital close approvals, reviewed-automation outputs, workflow evidence-package readiness,
-close-cockpit evidence-package readiness, and non-ready Receive
+accounting-record evidence categories, close-cockpit evidence-package readiness, and non-ready Receive
 Activity, Match Records, Resolve Exceptions, Approve Results, Produce Evidence, and Close Support
 command stages stay source-backed while React only groups the active work items for review. If the
 close-calendar or private-capital close cockpit projection cannot load, the queue adds a blocked

@@ -18,7 +18,7 @@ digraph UiNavigationMap {
   node [fontname="Segoe UI", shape=box, style="rounded,filled", color="#475569", fontcolor="#e2e8f0", fillcolor="#1e293b"];
   edge [fontname="Segoe UI", color="#94a3b8", penwidth=1.3, arrowsize=0.8];
 
-  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: c1361951d49e\nWorkspaces: 7\nRegistry pages: 86"];
+  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: cdd5af0d5b7e\nWorkspaces: 7\nRegistry pages: 91"];
   shell [shape=component, fillcolor="#0f766e", color="#2dd4bf", label="ShellNavigationCatalog\nWorkspace registry"];
   navigation [shape=component, fillcolor="#7c3aed", color="#c4b5fd", label="NavigationService\nBuildDefault registry"];
   shell -> navigation [label="resolve canonical page tags", color="#38bdf8"];
@@ -47,7 +47,7 @@ digraph UiNavigationMap {
     label="Portfolio workspace";
     color="#334155";
     style="rounded";
-    workspace_2 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Portfolio\n8 shell entries"];
+    workspace_2 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Portfolio\n9 shell entries"];
     shell -> workspace_2 [color="#22d3ee"];
     page_DirectLending [label="Direct lending\nDirectLending → DirectLendingPage", fillcolor="#1e293b"];
     workspace_2 -> page_DirectLending;
@@ -59,6 +59,8 @@ digraph UiNavigationMap {
     workspace_2 -> page_AggregatePortfolio;
     page_RunPortfolio [label="Run portfolio\nRunPortfolio → RunPortfolioPage", fillcolor="#1e293b"];
     workspace_2 -> page_RunPortfolio;
+    page_PortfolioExplorer [label="Portfolio explorer\nPortfolioExplorer → FinancialRecordExplorerPage", fillcolor="#1e293b"];
+    workspace_2 -> page_PortfolioExplorer;
     page_FundPortfolio [label="Fund portfolio\nFundPortfolio → FundLedgerPage", fillcolor="#1e293b"];
     workspace_2 -> page_FundPortfolio;
     page_FundAccounts [label="Fund accounts\nFundAccounts → FundAccountsPage", fillcolor="#1e293b"];
@@ -71,7 +73,7 @@ digraph UiNavigationMap {
     label="Accounting workspace";
     color="#334155";
     style="rounded";
-    workspace_3 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Accounting\n11 shell entries"];
+    workspace_3 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Accounting\n13 shell entries"];
     shell -> workspace_3 [color="#22d3ee"];
     page_AccountingShell [label="Accounting Workspace\nAccountingShell → AccountingWorkspaceShellPage", fillcolor="#1e293b"];
     workspace_3 -> page_AccountingShell;
@@ -93,15 +95,19 @@ digraph UiNavigationMap {
     workspace_3 -> page_FundAccountingConfigure;
     page_FundTrialBalance [label="Fund trial balance\nFundTrialBalance → FundLedgerPage", fillcolor="#1e293b"];
     workspace_3 -> page_FundTrialBalance;
+    page_LedgerExplorer [label="Ledger explorer\nLedgerExplorer → FinancialRecordExplorerPage", fillcolor="#1e293b"];
+    workspace_3 -> page_LedgerExplorer;
     page_FundAuditTrail [label="Fund audit trail\nFundAuditTrail → FundLedgerPage", fillcolor="#1e293b"];
     workspace_3 -> page_FundAuditTrail;
+    page_SecurityInstrumentExplorer [label="Security and instrument explorer\nSecurityInstrumentExplorer → FinancialRecordExplorerPage", fillcolor="#1e293b"];
+    workspace_3 -> page_SecurityInstrumentExplorer;
   }
 
   subgraph cluster_workspace_4 {
     label="Reporting workspace";
     color="#334155";
     style="rounded";
-    workspace_4 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Reporting\n7 shell entries"];
+    workspace_4 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Reporting\n8 shell entries"];
     shell -> workspace_4 [color="#22d3ee"];
     page_ReportingShell [label="Reporting Workspace\nReportingShell → ReportingWorkspaceShellPage", fillcolor="#1e293b"];
     workspace_4 -> page_ReportingShell;
@@ -113,6 +119,8 @@ digraph UiNavigationMap {
     workspace_4 -> page_Dashboard;
     page_AnalysisExport [label="Analysis export\nAnalysisExport → AnalysisExportPage", fillcolor="#1e293b"];
     workspace_4 -> page_AnalysisExport;
+    page_ReportLineProvenanceExplorer [label="Report-line provenance\nReportLineProvenanceExplorer → FinancialRecordExplorerPage", fillcolor="#1e293b"];
+    workspace_4 -> page_ReportLineProvenanceExplorer;
     page_AnalysisExportWizard [label="Analysis export wizard\nAnalysisExportWizard → AnalysisExportWizardPage", fillcolor="#1e293b"];
     workspace_4 -> page_AnalysisExportWizard;
     page_ExportPresets [label="Export presets\nExportPresets → ExportPresetsPage", fillcolor="#1e293b"];
@@ -123,7 +131,7 @@ digraph UiNavigationMap {
     label="Strategy workspace";
     color="#334155";
     style="rounded";
-    workspace_5 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Strategy\n12 shell entries"];
+    workspace_5 [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="Strategy\n13 shell entries"];
     shell -> workspace_5 [color="#22d3ee"];
     page_LeanIntegration [label="Lean integration\nLeanIntegration → LeanIntegrationPage", fillcolor="#1e293b"];
     workspace_5 -> page_LeanIntegration;
@@ -149,6 +157,8 @@ digraph UiNavigationMap {
     workspace_5 -> page_AdvancedAnalytics;
     page_QuantScript [label="Quant script\nQuantScript → QuantScriptPage", fillcolor="#1e293b"];
     workspace_5 -> page_QuantScript;
+    page_HomeWorkspace [label="Home\nHomeWorkspace → HomeWorkspacePage", fillcolor="#1e293b"];
+    workspace_5 -> page_HomeWorkspace;
   }
 
   subgraph cluster_workspace_6 {

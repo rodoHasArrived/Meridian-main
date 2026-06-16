@@ -45,6 +45,8 @@ class TargetedTestWorkflowTests(unittest.TestCase):
         self.assertIn("$normalizedFilter = $filter -replace '\\s+', ''", self.workflow)
         self.assertIn("Category!=Integration&Category!=Performance", self.workflow)
         self.assertIn("dotnet_filter '$filter' is too broad for Targeted Test", self.workflow)
+        self.assertIn("$normalizedFilter -notmatch '(?<![!<>])(?:=|~)'", self.workflow)
+        self.assertIn("must include a positive class, method, trait, or fully qualified name selector", self.workflow)
 
     def test_dotnet_step_runs_exact_selected_project_with_required_filter(self) -> None:
         self.assertIn("& dotnet restore $project @props", self.workflow)

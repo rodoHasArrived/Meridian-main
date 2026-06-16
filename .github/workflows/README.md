@@ -38,7 +38,8 @@ When local CPU, memory, disk, package restore, or MSBuild lock contention makes 
 push the branch and use `Targeted Test` from the GitHub Actions tab or dispatch it with `gh`.
 Use the GitHub-hosted targeted lane as the preferred remote proof tool before retrying broad local
 scripts. The .NET lane requires a repo-relative test project under `tests/` and a non-empty
-`dotnet_filter`; leave solution-level and broad CI filters on the normal CI workflow.
+`dotnet_filter` with a positive class, method, trait, or fully qualified name selector; leave
+solution-level, negative-only, and broad CI filters on the normal CI workflow.
 
 ```powershell
 gh workflow run targeted-test.yml --ref <branch> `

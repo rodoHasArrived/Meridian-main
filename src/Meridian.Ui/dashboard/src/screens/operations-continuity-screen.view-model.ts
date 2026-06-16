@@ -973,6 +973,11 @@ export function buildOperationsContinuityScreenViewModel({
   const dashboard = buildOperationsDashboardViewModel(effectiveDetail?.dashboardSummary ?? null, detailLoading);
   const commandSpine = buildFinancialOperationsCommandSpineViewModel(dashboard, effectiveDetail, detailLoading);
   const reviewedAutomation = buildReviewedAutomationViewModel(effectiveDetail?.reviewedAutomation ?? null, detailLoading);
+  const accountingRecordSummary = buildAccountingRecordSummaryViewModel(
+    effectiveDetail?.accountingRecordSummary ?? null,
+    detailLoading
+  );
+  const accountingRecordEvidence = buildAccountingRecordEvidenceRows(effectiveDetail?.accountingRecordSummary ?? null);
   const checklistSource = effectiveDetail?.closeChecklist ?? [];
   const checklist = buildChecklistRows(
     checklistSource,
@@ -999,6 +1004,7 @@ export function buildOperationsContinuityScreenViewModel({
     commandSpineRows: commandSpine.rows,
     approvals: effectiveDetail?.approvals ?? [],
     reviewedAutomationArtifacts: reviewedAutomation.artifacts,
+    accountingRecordEvidence,
     evidencePackages,
     closeCalendarRows: closeCalendarPanel.rows,
     closeCalendarError,
@@ -1007,11 +1013,6 @@ export function buildOperationsContinuityScreenViewModel({
     selectedSummary,
     loading: detailLoading || closeCalendarLoading || closeCockpitLoading
   });
-  const accountingRecordSummary = buildAccountingRecordSummaryViewModel(
-    effectiveDetail?.accountingRecordSummary ?? null,
-    detailLoading
-  );
-  const accountingRecordEvidence = buildAccountingRecordEvidenceRows(effectiveDetail?.accountingRecordSummary ?? null);
   const timeline = buildTimelineRows(effectiveDetail?.timeline ?? []);
   const gates = gateSource.map(mapGateRow);
   const rows = workflows.map((workflow) => mapWorkflowRow(workflow, selectedSummary?.workflowId ?? null));
@@ -2071,6 +2072,7 @@ function buildFinancialOperationsOperatorQueueViewModel({
   commandSpineRows,
   approvals,
   reviewedAutomationArtifacts,
+  accountingRecordEvidence,
   evidencePackages,
   closeCalendarRows,
   closeCalendarError,
@@ -2086,6 +2088,7 @@ function buildFinancialOperationsOperatorQueueViewModel({
   commandSpineRows: FinancialOperationsCommandSpineRow[];
   approvals: OperationsContinuityWorkflow["approvals"];
   reviewedAutomationArtifacts: OperationsReviewedAutomationArtifactRow[];
+  accountingRecordEvidence: OperationsAccountingRecordEvidenceRow[];
   evidencePackages: OperationsContinuityEvidencePackageRow[];
   closeCalendarRows: OperationsContinuityCloseCalendarRow[];
   closeCalendarError: string | null;
@@ -2165,6 +2168,9 @@ function buildFinancialOperationsOperatorQueueViewModel({
     ...reviewedAutomationArtifacts
       .filter(isOpenQueueItem)
       .map(mapReviewedAutomationArtifactQueueRow),
+    ...accountingRecordEvidence
+      .filter(isOpenQueueItem)
+      .map(mapAccountingRecordEvidenceQueueRow),
     ...evidencePackages
       .filter(isOpenQueueItem)
       .map((row) => ({
@@ -2510,6 +2516,32 @@ function mapReviewedAutomationArtifactQueueRow(
     routeHref: row.evidenceHref,
     routeLabel: row.evidenceRouteLabel,
     ariaLabel: `Financial Operations reviewed automation ${row.ariaLabel}`
+  };
+}
+
+function mapAccountingRecordEvidenceQueueRow(
+  row: OperationsAccountingRecordEvidenceRow
+): FinancialOperationsOperatorQueueRow {
+  const requiredEvidence = row.requiredEvidenceLabel === "Required evidence not specified"
+    ? row.requiredEvidenceLabel
+    : `Requires ${row.requiredEvidenceLabel}`;
+
+  return {
+    id: `accounting-record-evidence:${row.id}`,
+    kindLabel: "Accounting-record evidence",
+    title: row.label,
+    detail: `${row.detail}; ${requiredEvidence}`,
+    statusLabel: row.statusLabel,
+    statusTone: row.statusTone,
+    ownerLabel: "Accounting evidence operations",
+    dueLabel: "Before audit package sign-off",
+    evidenceLabel: row.evidenceLabel,
+    actionLabel: row.requiredEvidenceLabel === "Required evidence not specified"
+      ? "Retain required accounting-record evidence."
+      : `Retain ${row.requiredEvidenceLabel}.`,
+    routeHref: row.routeHref,
+    routeLabel: row.routeLabel,
+    ariaLabel: `Financial Operations accounting-record evidence ${row.ariaLabel}`
   };
 }
 

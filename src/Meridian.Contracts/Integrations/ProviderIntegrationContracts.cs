@@ -379,6 +379,21 @@ public sealed record IntegrationStagingRecordDto(
     ProviderIntegrationProcessingStatusDto Status,
     DateTimeOffset CreatedAt);
 
+public sealed record ProviderIntegrationStagingCapabilitySummaryDto(
+    ProviderCapabilityKindDto Capability,
+    int RecordCount,
+    int WarningCount);
+
+public sealed record ProviderIntegrationStagingReviewDto(
+    string ConnectionId,
+    IReadOnlyList<string> SyncRunIds,
+    IReadOnlyList<IntegrationStagingRecordDto> Records,
+    IReadOnlyList<ProviderIntegrationStagingCapabilitySummaryDto> CapabilitySummaries,
+    IReadOnlyList<ProviderIntegrationQuarantineIssueGroupDto> WarningGroups,
+    int TotalStagedRecords,
+    int ReadyForReconciliationCount,
+    int WarningRecordCount);
+
 public sealed record ProviderIntegrationSyncRunDto(
     string SyncRunId,
     string ManifestId,

@@ -15,8 +15,8 @@
 
 ## Route outcome
 - Final status: partial
-- Route assessment: aligned
-- Inferred lanes from changes: docs, provider
+- Route assessment: possible-misroute
+- Inferred lanes from changes: docs
 
 ## Telemetry
 - route_id: provider-integration
@@ -34,20 +34,14 @@
 - git diff: Changed-file evidence for handoff packet.
 
 ## Changes made
-- docs/architecture/provider-integration-manifest-runtime.md: Touched in current git diff.
 - docs/generated/repository-structure.md: Touched in current git diff.
-- docs/source/generated/source-hash-manifest.json: Touched in current git diff.
-- docs/source/generated/stale-docs.json: Touched in current git diff.
-- docs/source/generated/stale-docs.md: Touched in current git diff.
+- docs/status/TODO.md: Touched in current git diff.
 - docs/status/ai-handoff-checklist-report.json: Touched in current git diff.
 - docs/status/ai-inventory-report.json: Touched in current git diff.
 - docs/status/doc-health-dashboard.json: Touched in current git diff.
 - docs/status/doc-health-dashboard.md: Touched in current git diff.
 - docs/status/example-validation.md: Touched in current git diff.
 - docs/status/prompt-route-lint-report.json: Touched in current git diff.
-- src/Meridian.Application/README.md: Touched in current git diff.
-- src/Meridian.Contracts/README.md: Touched in current git diff.
-- src/Meridian.Ui.Shared/README.md: Touched in current git diff.
 
 ## Validation
 - [pass] python build/scripts/docs/prompt-route-linter.py --summary

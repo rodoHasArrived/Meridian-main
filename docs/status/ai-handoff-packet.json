@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-16T09:37:44.571270+00:00",
+  "generatedAt": "2026-06-16T11:36:51.480374+00:00",
   "scope": {
     "requested": "Docs automation generated handoff packet",
     "excluded": [
@@ -40,10 +40,9 @@
   "routeOutcome": {
     "finalValidationStatus": "partial",
     "routeAssessment": {
-      "status": "aligned",
+      "status": "possible-misroute",
       "inferredLanes": [
-        "docs",
-        "provider"
+        "docs"
       ]
     }
   },
@@ -70,23 +69,11 @@
   ],
   "changesMade": [
     {
-      "path": "docs/architecture/provider-integration-manifest-runtime.md",
-      "reason": "Touched in current git diff."
-    },
-    {
       "path": "docs/generated/repository-structure.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "docs/source/generated/source-hash-manifest.json",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "docs/source/generated/stale-docs.json",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "docs/source/generated/stale-docs.md",
+      "path": "docs/status/TODO.md",
       "reason": "Touched in current git diff."
     },
     {
@@ -111,18 +98,6 @@
     },
     {
       "path": "docs/status/prompt-route-lint-report.json",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/README.md",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Contracts/README.md",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/README.md",
       "reason": "Touched in current git diff."
     }
   ],

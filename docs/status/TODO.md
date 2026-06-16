@@ -84,14 +84,14 @@ Total items: **181**
 | `src/Meridian.Ui/dashboard/src/lib/price-alerts/types.ts` | 30 | `NOTE` | ❌ | note: string \| null; |
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 218 | `NOTE` | ❌ | note: "Coupon posted." |
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 238 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 3430 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 3441 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 304 | `NOTE` | ❌ | note: string \| null; |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 1713 | `NOTE` | ❌ | note: "Semi-annual fixed coupon projected from the reference coupon schedule." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 1733 | `NOTE` | ❌ | note: "Principal paydown carries a small expected-versus-actual variance for operator review." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 1753 | `NOTE` | ❌ | note: "Final coupon and principal repayment remain pending until trustee schedule confirmation." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 1775 | `NOTE` | ❌ | note: "Fixture coupon row used by browser workbench tests." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 1795 | `NOTE` | ❌ | note: "Fixture amortization row keeps schedule selection deterministic." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 7543 | `NOTE` | ❌ | note: event.sourceReason ?? (event.isCurrentProjection ? "Current schedule projection." : null) |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 1717 | `NOTE` | ❌ | note: "Semi-annual fixed coupon projected from the reference coupon schedule." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 1737 | `NOTE` | ❌ | note: "Principal paydown carries a small expected-versus-actual variance for operator review." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 1757 | `NOTE` | ❌ | note: "Final coupon and principal repayment remain pending until trustee schedule confirmation." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 1779 | `NOTE` | ❌ | note: "Fixture coupon row used by browser workbench tests." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 1799 | `NOTE` | ❌ | note: "Fixture amortization row keeps schedule selection deterministic." |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 7573 | `NOTE` | ❌ | note: event.sourceReason ?? (event.isCurrentProjection ? "Current schedule projection." : null) |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 287 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 990 | `NOTE` | ❌ | note: "Covered-call net curve requires the underlying cost basis which is not yet threaded through the API. The chart shows the short-call leg only." |
 | `src/Meridian.Ui/dashboard/src/screens/data-screen.security-master.ts` | 80 | `NOTE` | ❌ | note: string; |

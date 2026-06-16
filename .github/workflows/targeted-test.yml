@@ -107,6 +107,9 @@ jobs:
           if ($normalizedFilter -in @('*', 'Category!=Integration', 'Category!=Performance', 'Category!=Integration&Category!=Performance')) {
             throw "dotnet_filter '$filter' is too broad for Targeted Test. Provide a class, method, trait, or fully qualified name slice."
           }
+          if ($normalizedFilter -notmatch '(?<![!<>])(?:=|~)') {
+            throw "dotnet_filter '$filter' must include a positive class, method, trait, or fully qualified name selector."
+          }
 
           $props = @("/p:EnableWindowsTargeting=$env:ENABLE_WINDOWS_TARGETING")
           if ($env:ENABLE_FULL_WPF_BUILD -eq 'true') {

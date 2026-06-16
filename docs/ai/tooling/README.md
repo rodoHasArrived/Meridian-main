@@ -91,7 +91,8 @@ Use these for multi-agent, parallel, or route-aware work:
 - `.github/workflows/targeted-test.yml`
   - Manual GitHub-hosted proof lane for constrained local machines.
   - Use `dotnet_project` with a repo-relative test project under `tests/` and `dotnet_filter` with
-    the failing class, method, trait, or fully qualified name slice.
+    the failing class, method, trait, or fully qualified name slice. Negative-only filters are left
+    to normal CI because they do not identify the failing slice.
   - Inputs are constrained to repo-relative test project paths and normal `dotnet test --filter`
     expressions, not arbitrary shell commands.
 

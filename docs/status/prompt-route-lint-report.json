@@ -1,7 +1,7 @@
 {
   "valid": true,
   "rulesPath": "docs\\ai\\codex\\prompt-route-rules.json",
-  "generatedAt": "2026-06-16T09:37:44.129885+00:00",
+  "generatedAt": "2026-06-16T11:36:48.633456+00:00",
   "match": {
     "lane": "provider",
     "skill": "meridian-provider-builder",

@@ -1147,6 +1147,77 @@ describe("Operations Continuity view model", () => {
     });
   });
 
+  it("surfaces non-ready accounting-record evidence categories in the Financial Operations queue", () => {
+    const workflowWithAccountingEvidence: OperationsContinuityWorkflow = {
+      ...detail,
+      accountingRecordSummary: {
+        recordId: "accounting-record-2026-05",
+        isAuditReady: false,
+        completeCategoryCount: 1,
+        requiredCategoryCount: 2,
+        summary: "Accounting record still needs retained ledger evidence.",
+        evidenceCategories: [
+          {
+            key: "source-records",
+            label: "Retained source data",
+            isComplete: true,
+            status: "Broker statements and provider files are retained.",
+            routeHint: "/workstation/data/providers",
+            requiredEvidence: ["provider statement", "custodian activity file"],
+            evidenceLinks: []
+          },
+          {
+            key: "ledger-evidence",
+            label: "Journal and ledger evidence",
+            isComplete: false,
+            status: "Ledger validation is still required.",
+            routeHint: "/workstation/accounting/ledger",
+            requiredEvidence: ["journal preview", "posted ledger batch", "trial-balance support"],
+            evidenceLinks: []
+          }
+        ],
+        evidenceLinks: [],
+        auditPackReadiness: {
+          isComplete: false,
+          generatedInSeconds: 0,
+          slaTargetSeconds: 60,
+          slaMet: true,
+          missingEvidenceCategories: ["LedgerEvidence"],
+          warnings: ["Audit pack still needs ledger evidence."],
+          evidenceCategorySummaries: []
+        }
+      }
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail: workflowWithAccountingEvidence,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "accounting-record-evidence:source-records"))
+      .toBeUndefined();
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "accounting-record-evidence:ledger-evidence"))
+      .toMatchObject({
+        kindLabel: "Accounting-record evidence",
+        title: "Journal and ledger evidence",
+        detail: "Ledger validation is still required.; Requires journal preview, posted ledger batch, trial-balance support",
+        statusLabel: "Review required",
+        statusTone: "review",
+        ownerLabel: "Accounting evidence operations",
+        dueLabel: "Before audit package sign-off",
+        evidenceLabel: "No linked evidence",
+        actionLabel: "Retain journal preview, posted ledger batch, trial-balance support.",
+        routeHref: "/accounting/ledger"
+      });
+  });
+
   it("marks acknowledgeable checklist tasks with the shared command guard", () => {
     const acknowledgeableDetail: OperationsContinuityWorkflow = {
       ...detail,
