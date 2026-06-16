@@ -74,7 +74,7 @@ public sealed class ProviderIntegrationRestDryRunService
                 null,
                 "Map provider response fields to the required canonical fields before running a REST dry run.");
 
-            return new ProviderIntegrationDryRunResultDto(
+            var blockedResult = new ProviderIntegrationDryRunResultDto(
                 request.SyncRunId,
                 RawPayloadId: string.Empty,
                 request.Capability,
@@ -83,6 +83,8 @@ public sealed class ProviderIntegrationRestDryRunService
                 RecordsQuarantined: 0,
                 ProviderIntegrationProcessingStatusDto.Blocked,
                 [issue]);
+            await SaveSyncRunAsync(request, manifest, connection, endpoint.EndpointKey, null, blockedResult, ct).ConfigureAwait(false);
+            return blockedResult;
         }
 
         var capability = manifest.Capabilities.First(candidate => candidate.Capability == request.Capability);
@@ -228,7 +230,7 @@ public sealed class ProviderIntegrationRestDryRunService
             ? ProviderIntegrationProcessingStatusDto.Quarantined
             : ProviderIntegrationProcessingStatusDto.Validated;
 
-        return new ProviderIntegrationDryRunResultDto(
+        var result = new ProviderIntegrationDryRunResultDto(
             request.SyncRunId,
             firstPayloadId ?? string.Empty,
             request.Capability,
@@ -237,7 +239,35 @@ public sealed class ProviderIntegrationRestDryRunService
             quarantined,
             status,
             allIssues);
+        await SaveSyncRunAsync(request, manifest, connection, endpoint.EndpointKey, firstPayloadId, result, ct).ConfigureAwait(false);
+        return result;
     }
+
+    private Task SaveSyncRunAsync(
+        ProviderIntegrationRestDryRunRequestDto request,
+        ProviderIntegrationManifestDto manifest,
+        ProviderConnectionDto connection,
+        string endpointKey,
+        string? rawPayloadId,
+        ProviderIntegrationDryRunResultDto result,
+        CancellationToken ct)
+        => store.SaveSyncRunAsync(
+            new ProviderIntegrationSyncRunDto(
+                request.SyncRunId,
+                manifest.ManifestId,
+                connection.ConnectionId,
+                manifest.ProviderId,
+                request.Capability,
+                endpointKey,
+                request.RequestedAt,
+                request.RequestedAt,
+                result.Status,
+                result.RecordsReceived,
+                result.RecordsAccepted,
+                result.RecordsQuarantined,
+                rawPayloadId,
+                result.Issues),
+            ct);
 
     private static void ValidateRequestScope(
         ProviderIntegrationRestDryRunRequestDto request,

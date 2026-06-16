@@ -8,7 +8,8 @@ import {
   getPrivateCapitalCloseCockpit,
   getOperationsContinuityWorkflow,
   getOperationsContinuityWorkflows,
-  resolveOperationsContinuityBreakCase
+  resolveOperationsContinuityBreakCase,
+  submitOperationsContinuityApproval
 } from "@/lib/api";
 import { OperationsContinuityScreen } from "@/screens/operations-continuity-screen";
 import { OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID } from "@/screens/operations-continuity-screen.view-model";
@@ -26,7 +27,8 @@ vi.mock("@/lib/api", () => ({
   getPrivateCapitalCloseCockpit: vi.fn(),
   getOperationsContinuityWorkflows: vi.fn(),
   getOperationsContinuityWorkflow: vi.fn(),
-  resolveOperationsContinuityBreakCase: vi.fn()
+  resolveOperationsContinuityBreakCase: vi.fn(),
+  submitOperationsContinuityApproval: vi.fn()
 }));
 
 afterEach(() => {
@@ -55,6 +57,12 @@ beforeEach(() => {
     workflow: detail,
     blockers: [],
     message: "Checklist task acknowledged."
+  });
+  vi.mocked(submitOperationsContinuityApproval).mockResolvedValue({
+    success: true,
+    workflow: detail,
+    blockers: [],
+    message: "Workflow approval submitted."
   });
 });
 
@@ -1186,6 +1194,85 @@ describe("OperationsContinuityScreen", () => {
       );
     });
     expect(await screen.findByText("Checklist task acknowledged.")).toBeInTheDocument();
+  });
+
+  it("submits approval from the command spine with retained report-pack evidence", async () => {
+    const reportPackEvidence = {
+      evidenceId: "report-pack-submit-evidence",
+      label: "Report-pack readiness evidence",
+      route: "/workstation/reporting/report-packs/report-pack-2026-05/evidence",
+      source: "operations-continuity",
+      capturedAtUtc: "2026-05-08T16:00:00Z"
+    };
+    const approvalReadyDetail: OperationsContinuityWorkflow = {
+      ...detail,
+      breakCases: detail.breakCases.map((breakCase) => ({
+        ...breakCase,
+        status: "Resolved"
+      })),
+      approvals: [],
+      approvalState: "Pending",
+      reportPackReadiness: {
+        isReady: true,
+        reportPackId: "report-pack-2026-05",
+        blockingReason: null,
+        evidenceLinks: [reportPackEvidence]
+      },
+      closePackage: null
+    };
+    vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(approvalReadyDetail);
+
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(await screen.findByRole("button", { name: "Submit workflow approval for 2026-05" }));
+
+    await waitFor(() => {
+      expect(submitOperationsContinuityApproval).toHaveBeenCalledWith(
+        workflowId,
+        expect.objectContaining({
+          expectedVersion: 4,
+          actor: "browser-operator",
+          reviewer: "fund-controller",
+          rationale: "Submitted Approve Results approval from Operations Continuity command spine.",
+          reportPackId: "report-pack-2026-05",
+          correlationId: "browser-approval-submit:approve-results",
+          evidenceLinks: expect.arrayContaining([reportPackEvidence]),
+          checklistControlApprovals: [],
+          actionOrigin: "HumanOperator"
+        })
+      );
+    });
+    expect(await screen.findByText("Workflow approval submitted.")).toBeInTheDocument();
+  });
+
+  it("surfaces command-spine approval submission failures", async () => {
+    const approvalReadyDetail: OperationsContinuityWorkflow = {
+      ...detail,
+      breakCases: detail.breakCases.map((breakCase) => ({
+        ...breakCase,
+        status: "Resolved"
+      })),
+      approvals: [],
+      approvalState: "Pending",
+      reportPackReadiness: {
+        isReady: true,
+        reportPackId: "report-pack-2026-05",
+        blockingReason: null,
+        evidenceLinks: []
+      },
+      closePackage: null
+    };
+    vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(approvalReadyDetail);
+    vi.mocked(submitOperationsContinuityApproval).mockRejectedValueOnce(new Error("Approval submission version conflict."));
+
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(await screen.findByRole("button", { name: "Submit workflow approval for 2026-05" }));
+
+    const alert = await screen.findByRole("alert");
+    expect(within(alert).getByText("Approval submission version conflict.")).toBeInTheDocument();
   });
 
   it("posts break resolution with retained evidence and the shared workflow guard", async () => {

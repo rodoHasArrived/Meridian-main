@@ -83,6 +83,46 @@ public sealed class ProviderIntegrationContractsTests
         roundTrip.Should().BeEquivalentTo(readiness);
     }
 
+    [Fact]
+    public void ProviderIntegrationSyncRun_RoundTripsWithDryRunEvidence()
+    {
+        var syncRun = new ProviderIntegrationSyncRunDto(
+            "sync-run-1",
+            "manifest-custodian-abc-v1",
+            "connection-alpha",
+            "custodian-abc",
+            ProviderCapabilityKindDto.Positions,
+            "positions",
+            DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+            DateTimeOffset.Parse("2026-06-16T12:01:00Z"),
+            ProviderIntegrationProcessingStatusDto.Validated,
+            RecordsReceived: 50,
+            RecordsAccepted: 48,
+            RecordsQuarantined: 2,
+            RawPayloadId: "payload-1",
+            Issues:
+            [
+                new ValidationIssueDto(
+                    "required.missing",
+                    ProviderIntegrationIssueSeverityDto.Critical,
+                    "Required field 'security.cusip' is missing.",
+                    "security.cusip",
+                    "Map CUSIP, ISIN, ticker, or provider security id.")
+            ]);
+
+        var json = JsonSerializer.Serialize(
+            syncRun,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationSyncRunDto);
+        var roundTrip = JsonSerializer.Deserialize(
+            json,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationSyncRunDto);
+
+        json.Should().Contain("\"syncRunId\": \"sync-run-1\"");
+        json.Should().Contain("\"recordsAccepted\": 48");
+        json.Should().Contain("\"status\": \"Validated\"");
+        roundTrip.Should().BeEquivalentTo(syncRun);
+    }
+
     private static ProviderIntegrationManifestDto CreateManifest()
         => new(
             "manifest-custodian-abc-v1",

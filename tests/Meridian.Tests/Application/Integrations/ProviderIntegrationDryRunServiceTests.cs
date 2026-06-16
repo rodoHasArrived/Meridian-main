@@ -48,6 +48,14 @@ public sealed class ProviderIntegrationDryRunServiceTests : IDisposable
         result.Status.Should().Be(ProviderIntegrationProcessingStatusDto.Validated);
         result.Issues.Should().BeEmpty();
 
+        var syncRun = await store.GetSyncRunAsync(result.SyncRunId);
+        syncRun.Should().NotBeNull();
+        syncRun!.RecordsReceived.Should().Be(1);
+        syncRun.RecordsAccepted.Should().Be(1);
+        syncRun.RecordsQuarantined.Should().Be(0);
+        syncRun.RawPayloadId.Should().Be(result.RawPayloadId);
+        syncRun.EndpointKey.Should().Be("manual-csv-upload");
+
         var rawPayload = await store.GetRawPayloadAsync(result.SyncRunId, result.RawPayloadId);
         rawPayload.Should().NotBeNull();
         rawPayload!.RawPayload.GetProperty("recordCount").GetInt32().Should().Be(1);
@@ -91,6 +99,11 @@ public sealed class ProviderIntegrationDryRunServiceTests : IDisposable
             issue.TargetField == "security.cusip");
 
         (await store.ListStagingRecordsAsync(result.SyncRunId)).Should().BeEmpty();
+        var syncRun = await store.GetSyncRunAsync(result.SyncRunId);
+        syncRun.Should().NotBeNull();
+        syncRun!.Status.Should().Be(ProviderIntegrationProcessingStatusDto.Quarantined);
+        syncRun.RecordsQuarantined.Should().Be(1);
+        syncRun.Issues.Should().Contain(issue => issue.TargetField == "security.cusip");
         var quarantine = await store.ListQuarantinedRecordsAsync(result.SyncRunId);
         quarantine.Should().ContainSingle();
         quarantine.Single().ValidationErrors.Should().Contain(error => error.TargetField == "security.cusip");
@@ -150,6 +163,7 @@ public sealed class ProviderIntegrationDryRunServiceTests : IDisposable
             cts.Token);
 
         await act.Should().ThrowAsync<OperationCanceledException>();
+        (await store.GetSyncRunAsync("sync-run-1")).Should().BeNull();
         (await store.ListStagingRecordsAsync("sync-run-1")).Should().BeEmpty();
         (await store.ListQuarantinedRecordsAsync("sync-run-1")).Should().BeEmpty();
     }

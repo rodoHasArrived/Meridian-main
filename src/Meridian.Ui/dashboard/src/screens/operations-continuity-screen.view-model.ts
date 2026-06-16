@@ -14,6 +14,7 @@ import type {
   OperationsAccountingRecordEvidenceCategory,
   OperationsAccountingRecordSummary,
   OperationsBreakCase,
+  OperationsChecklistControlApproval,
   OperationsDashboardSummary,
   OperationsEvidenceLink,
   OperationsEvidencePackageSummary,
@@ -231,6 +232,16 @@ export interface FinancialOperationsCommandSpineRow {
   evidenceLabel: string;
   routeHref: string | null;
   routeLabel: string;
+  workflowId: string | null;
+  expectedWorkflowVersion: number | null;
+  submitApprovalReportPackId: string | null;
+  submitApprovalReviewer: string | null;
+  submitApprovalEvidenceLinks: OperationsEvidenceLink[];
+  submitApprovalChecklistControlApprovals: OperationsChecklistControlApproval[];
+  canSubmitApproval: boolean;
+  submitApprovalLabel: string;
+  submitApprovalDisabledReason: string | null;
+  submitApprovalAriaLabel: string;
   ariaLabel: string;
 }
 
@@ -822,7 +833,7 @@ export function buildOperationsContinuityScreenViewModel({
   const evidencePackages = buildEvidencePackageRows(effectiveDetail?.evidencePackages ?? []);
   const workflowApprovalHistory = buildWorkflowApprovalHistoryRows(effectiveDetail?.approvals ?? []);
   const dashboard = buildOperationsDashboardViewModel(effectiveDetail?.dashboardSummary ?? null, detailLoading);
-  const commandSpine = buildFinancialOperationsCommandSpineViewModel(dashboard, detailLoading);
+  const commandSpine = buildFinancialOperationsCommandSpineViewModel(dashboard, effectiveDetail, detailLoading);
   const reviewedAutomation = buildReviewedAutomationViewModel(effectiveDetail?.reviewedAutomation ?? null, detailLoading);
   const checklistSource = effectiveDetail?.closeChecklist ?? [];
   const checklist = buildChecklistRows(
@@ -1300,9 +1311,10 @@ function mapDashboardMetricRow(metric: OperationsDashboardSummary["metrics"][num
 
 function buildFinancialOperationsCommandSpineViewModel(
   dashboard: OperationsContinuityDashboardViewModel,
+  workflow: OperationsContinuityWorkflow | null,
   loading: boolean
 ): FinancialOperationsCommandSpineViewModel {
-  const rows = dashboard.metrics.map(mapFinancialOperationsCommandSpineRow);
+  const rows = dashboard.metrics.map((metric) => mapFinancialOperationsCommandSpineRow(metric, workflow));
 
   return {
     title: "Financial Operations command spine",
@@ -1317,8 +1329,17 @@ function buildFinancialOperationsCommandSpineViewModel(
 }
 
 function mapFinancialOperationsCommandSpineRow(
-  metric: OperationsContinuityDashboardMetricRow
+  metric: OperationsContinuityDashboardMetricRow,
+  workflow: OperationsContinuityWorkflow | null
 ): FinancialOperationsCommandSpineRow {
+  const submitApprovalDisabledReason = metric.id === "approve-results"
+    ? buildSubmitApprovalDisabledReason(workflow)
+    : "Only the Approve Results stage can submit workflow approval.";
+  const reportPackId = resolveApprovalReportPackId(workflow);
+  const reviewer = resolveApprovalReviewer(workflow);
+  const checklistControlApprovals = workflow?.closePackage?.checklistControlApprovals ?? [];
+  const evidenceLinks = collectSubmitApprovalEvidenceLinks(workflow);
+
   return {
     id: metric.id,
     stageLabel: metric.label,
@@ -1333,8 +1354,87 @@ function mapFinancialOperationsCommandSpineRow(
     evidenceLabel: metric.evidenceLabel,
     routeHref: metric.routeHref,
     routeLabel: metric.routeLabel,
+    workflowId: workflow?.workflowId ?? null,
+    expectedWorkflowVersion: workflow?.version ?? null,
+    submitApprovalReportPackId: reportPackId,
+    submitApprovalReviewer: reviewer,
+    submitApprovalEvidenceLinks: evidenceLinks,
+    submitApprovalChecklistControlApprovals: checklistControlApprovals,
+    canSubmitApproval: submitApprovalDisabledReason === null,
+    submitApprovalLabel: metric.id === "approve-results" ? "Submit approval" : "Open stage",
+    submitApprovalDisabledReason,
+    submitApprovalAriaLabel: metric.id === "approve-results"
+      ? `Submit workflow approval for ${workflow?.periodId ?? "selected period"}`
+      : `Submit workflow approval for ${metric.label}`,
     ariaLabel: `Financial Operations command ${metric.label}, ${metric.statusLabel}, ${metric.valueLabel}`
   };
+}
+
+function buildSubmitApprovalDisabledReason(workflow: OperationsContinuityWorkflow | null): string | null {
+  if (!workflow) {
+    return "Select a workflow before submitting approval.";
+  }
+
+  if (workflow.version === null || workflow.version === undefined) {
+    return "Workflow version is unavailable for approval submission.";
+  }
+
+  if (workflow.approvalState !== "Pending") {
+    return `Approval state is already ${splitEnumLabel(workflow.approvalState)}.`;
+  }
+
+  if (workflow.approvals.some((approval) => approval.status === "Submitted" || approval.status === "ReviewerAssigned" || approval.status === "Approved")) {
+    return "Workflow approval has already been submitted.";
+  }
+
+  if (workflow.breakCases.some((breakCase) => breakStatusTone(breakCase.status) !== "ready")) {
+    return "Resolve open reconciliation breaks before submitting approval.";
+  }
+
+  if (!resolveApprovalReportPackId(workflow)) {
+    return workflow.reportPackReadiness.blockingReason?.trim() || "Report-pack readiness is required before approval submission.";
+  }
+
+  if (!resolveApprovalReviewer(workflow)) {
+    return "Reviewer is required before approval submission.";
+  }
+
+  return null;
+}
+
+function resolveApprovalReportPackId(workflow: OperationsContinuityWorkflow | null): string | null {
+  return workflow?.reportPackReadiness.reportPackId?.trim()
+    || workflow?.closePackage?.reportPackId?.trim()
+    || null;
+}
+
+function resolveApprovalReviewer(workflow: OperationsContinuityWorkflow | null): string | null {
+  const pendingApprovalReviewer = workflow?.approvals
+    .find((approval) => approval.status !== "Approved" && approval.reviewer?.trim())
+    ?.reviewer?.trim();
+  if (pendingApprovalReviewer) {
+    return pendingApprovalReviewer;
+  }
+
+  return workflow?.closeChecklist
+    .map((task) => task.owner?.trim())
+    .find((owner): owner is string => Boolean(owner))
+    ?? null;
+}
+
+function collectSubmitApprovalEvidenceLinks(workflow: OperationsContinuityWorkflow | null): OperationsEvidenceLink[] {
+  if (!workflow) {
+    return [];
+  }
+
+  const links = [
+    ...workflow.reportPackReadiness.evidenceLinks,
+    ...workflow.evidenceLinks,
+    ...workflow.approvals.flatMap((approval) => approval.evidenceLinks)
+  ];
+  return links.filter((link, index, source) =>
+    source.findIndex((candidate) => candidate.evidenceId === link.evidenceId) === index
+  );
 }
 
 function compareDashboardMetrics(

@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import {
   acknowledgeOperationsContinuityChecklistTask,
   assignOperationsContinuityBreakCase,
-  resolveOperationsContinuityBreakCase
+  resolveOperationsContinuityBreakCase,
+  submitOperationsContinuityApproval
 } from "@/lib/api";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
@@ -186,50 +187,87 @@ const operationalDashboardColumns: DenseDataTableColumn<OperationsContinuityDash
   }
 ];
 
-const financialOperationsCommandSpineColumns: DenseDataTableColumn<FinancialOperationsCommandSpineRow>[] = [
-  {
-    id: "stage",
-    label: "Stage",
-    render: (row) => (
-      <span className="block min-w-0">
-        <span className="block font-semibold text-foreground">{row.stageLabel}</span>
-        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.detail}</span>
-      </span>
-    )
-  },
-  {
-    id: "command",
-    label: "Command",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
-        <span className="mt-1 block text-foreground">{row.commandLabel}</span>
-        <span className="block font-mono text-muted-foreground">{row.postureLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "guard",
-    label: "Guard / evidence",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <span className="block text-foreground">{row.guardLabel}</span>
-        <span className="block text-muted-foreground">{row.evidenceLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "route",
-    label: "Route",
-    render: (row) => row.routeHref ? (
-      <Link className="text-xs" to={row.routeHref} aria-label={`Open Financial Operations command stage ${row.stageLabel}`}>
-        {row.routeLabel}
-      </Link>
-    ) : (
-      <span className="text-xs text-muted-foreground">{row.routeLabel}</span>
-    )
-  }
-];
+interface FinancialOperationsCommandSpineColumnOptions {
+  pendingStageId: string | null;
+  onSubmitApproval: (row: FinancialOperationsCommandSpineRow) => void;
+}
+
+function buildFinancialOperationsCommandSpineColumns({
+  pendingStageId,
+  onSubmitApproval
+}: FinancialOperationsCommandSpineColumnOptions): DenseDataTableColumn<FinancialOperationsCommandSpineRow>[] {
+  return [
+    {
+      id: "stage",
+      label: "Stage",
+      render: (row) => (
+        <span className="block min-w-0">
+          <span className="block font-semibold text-foreground">{row.stageLabel}</span>
+          <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.detail}</span>
+        </span>
+      )
+    },
+    {
+      id: "command",
+      label: "Command",
+      render: (row) => (
+        <span className="block text-xs leading-5">
+          <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
+          <span className="mt-1 block text-foreground">{row.commandLabel}</span>
+          <span className="block font-mono text-muted-foreground">{row.postureLabel}</span>
+        </span>
+      )
+    },
+    {
+      id: "guard",
+      label: "Guard / evidence",
+      render: (row) => (
+        <span className="block text-xs leading-5">
+          <span className="block text-foreground">{row.guardLabel}</span>
+          <span className="block text-muted-foreground">{row.evidenceLabel}</span>
+        </span>
+      )
+    },
+    {
+      id: "route",
+      label: "Route / action",
+      render: (row) => {
+        const busy = pendingStageId === row.id;
+        const disabledReason = pendingStageId && !busy
+          ? "Wait for the active Financial Operations command to finish."
+          : row.submitApprovalDisabledReason;
+
+        return (
+          <span className="block text-xs leading-5">
+            {row.routeHref ? (
+              <Link className="link-subtle inline-flex" to={row.routeHref} aria-label={`Open Financial Operations command stage ${row.stageLabel}`}>
+                {row.routeLabel}
+              </Link>
+            ) : (
+              <span className="text-muted-foreground">{row.routeLabel}</span>
+            )}
+            {row.id === "approve-results" ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="mt-2"
+                busy={busy}
+                busyLabel="Submitting"
+                disabled={disabledReason !== null}
+                disabledReason={disabledReason}
+                aria-label={row.submitApprovalAriaLabel}
+                onClick={() => onSubmitApproval(row)}
+              >
+                {row.submitApprovalLabel}
+              </Button>
+            ) : null}
+          </span>
+        );
+      }
+    }
+  ];
+}
 
 const financialOperationsQueueColumns: DenseDataTableColumn<FinancialOperationsOperatorQueueRow>[] = [
   {
@@ -986,6 +1024,11 @@ export function OperationsContinuityScreen() {
     message: string | null;
     error: string | null;
   }>({ pendingTaskId: null, message: null, error: null });
+  const [approvalSubmitCommand, setApprovalSubmitCommand] = useState<{
+    pendingStageId: string | null;
+    message: string | null;
+    error: string | null;
+  }>({ pendingStageId: null, message: null, error: null });
 
   const runBreakCommand = useCallback(async (row: OperationsContinuityBreakCaseRow, kind: BreakCommandKind) => {
     const disabledReason = kind === "assign" ? row.assignDisabledReason : row.resolveDisabledReason;
@@ -1089,6 +1132,60 @@ export function OperationsContinuityScreen() {
       onRunCommand: (row, kind) => { void runBreakCommand(row, kind); }
     }),
     [breakCommand.pending, runBreakCommand]
+  );
+
+  const submitApprovalCommand = useCallback(async (row: FinancialOperationsCommandSpineRow) => {
+    if (
+      !row.workflowId ||
+      row.expectedWorkflowVersion === null ||
+      !row.submitApprovalReportPackId ||
+      !row.submitApprovalReviewer ||
+      row.submitApprovalDisabledReason !== null
+    ) {
+      setApprovalSubmitCommand({
+        pendingStageId: null,
+        message: null,
+        error: row.submitApprovalDisabledReason ?? "Approval submission command is unavailable."
+      });
+      return;
+    }
+
+    setApprovalSubmitCommand({ pendingStageId: row.id, message: null, error: null });
+
+    try {
+      const result = await submitOperationsContinuityApproval(row.workflowId, {
+        expectedVersion: row.expectedWorkflowVersion,
+        actor: "browser-operator",
+        reviewer: row.submitApprovalReviewer,
+        rationale: `Submitted ${row.stageLabel} approval from Operations Continuity command spine.`,
+        reportPackId: row.submitApprovalReportPackId,
+        correlationId: `browser-approval-submit:${row.id}`,
+        evidenceLinks: row.submitApprovalEvidenceLinks,
+        checklistControlApprovals: row.submitApprovalChecklistControlApprovals,
+        actionOrigin: "HumanOperator"
+      });
+
+      setApprovalSubmitCommand({
+        pendingStageId: null,
+        message: result.message?.trim() || "Workflow approval submitted through shared operations command.",
+        error: null
+      });
+      await vm.refresh();
+    } catch (err) {
+      setApprovalSubmitCommand({
+        pendingStageId: null,
+        message: null,
+        error: formatApprovalSubmitCommandError(err)
+      });
+    }
+  }, [vm.refresh]);
+
+  const financialOperationsCommandSpineColumns = useMemo(
+    () => buildFinancialOperationsCommandSpineColumns({
+      pendingStageId: approvalSubmitCommand.pendingStageId,
+      onSubmitApproval: (row) => { void submitApprovalCommand(row); }
+    }),
+    [approvalSubmitCommand.pendingStageId, submitApprovalCommand]
   );
 
   return (
@@ -1295,7 +1392,17 @@ export function OperationsContinuityScreen() {
               </Badge>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
+            {approvalSubmitCommand.error ? (
+              <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+                {approvalSubmitCommand.error}
+              </p>
+            ) : null}
+            {approvalSubmitCommand.message ? (
+              <p role="status" className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
+                {approvalSubmitCommand.message}
+              </p>
+            ) : null}
             <DenseDataTable
               columns={financialOperationsCommandSpineColumns}
               rows={vm.commandSpine.rows}
@@ -1857,4 +1964,12 @@ function formatBreakCommandError(err: unknown): string {
   }
 
   return "Break command failed.";
+}
+
+function formatApprovalSubmitCommandError(err: unknown): string {
+  if (err instanceof Error && err.message.trim().length > 0) {
+    return err.message;
+  }
+
+  return "Approval submission command failed.";
 }

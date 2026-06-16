@@ -87,6 +87,15 @@ public sealed class ProviderIntegrationRestDryRunServiceTests : IDisposable
         firstRawPayload.Should().NotBeNull();
         firstRawPayload!.RawPayload.GetProperty("positions")[0].GetProperty("position_id").GetString().Should().Be("POS-1");
 
+        var syncRun = await store.GetSyncRunAsync(result.SyncRunId);
+        syncRun.Should().NotBeNull();
+        syncRun!.EndpointKey.Should().Be("positions");
+        syncRun.RecordsReceived.Should().Be(2);
+        syncRun.RecordsAccepted.Should().Be(2);
+        syncRun.RawPayloadId.Should().Be(result.RawPayloadId);
+        (await store.ListSyncRunsAsync(connection.ConnectionId)).Should().ContainSingle()
+            .Which.SyncRunId.Should().Be(result.SyncRunId);
+
         var staged = await store.ListStagingRecordsAsync(result.SyncRunId);
         staged.Should().HaveCount(2);
         staged.Select(record => record.SourceRecordId).Should().BeEquivalentTo("POS-1", "POS-2");
@@ -131,6 +140,10 @@ public sealed class ProviderIntegrationRestDryRunServiceTests : IDisposable
         result.Issues.Should().Contain(issue =>
             issue.Code == "required.missing" &&
             issue.TargetField == "security.cusip");
+        var syncRun = await store.GetSyncRunAsync(result.SyncRunId);
+        syncRun.Should().NotBeNull();
+        syncRun!.Status.Should().Be(ProviderIntegrationProcessingStatusDto.Quarantined);
+        syncRun.RecordsQuarantined.Should().Be(1);
         (await store.ListStagingRecordsAsync(result.SyncRunId)).Should().BeEmpty();
         var quarantine = await store.ListQuarantinedRecordsAsync(result.SyncRunId);
         quarantine.Should().ContainSingle()
@@ -155,6 +168,7 @@ public sealed class ProviderIntegrationRestDryRunServiceTests : IDisposable
 
         await act.Should().ThrowAsync<OperationCanceledException>();
         transport.Requests.Should().BeEmpty();
+        (await store.GetSyncRunAsync("sync-run-rest-1")).Should().BeNull();
         (await store.ListStagingRecordsAsync("sync-run-rest-1")).Should().BeEmpty();
         (await store.ListQuarantinedRecordsAsync("sync-run-rest-1")).Should().BeEmpty();
     }

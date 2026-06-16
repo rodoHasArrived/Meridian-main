@@ -72,7 +72,7 @@ public sealed class ProviderIntegrationDryRunService
                 null,
                 "Map the uploaded file columns to the required canonical fields before running a dry run.");
 
-            return new ProviderIntegrationDryRunResultDto(
+            var blockedResult = new ProviderIntegrationDryRunResultDto(
                 request.SyncRunId,
                 payloadId,
                 request.Capability,
@@ -81,6 +81,8 @@ public sealed class ProviderIntegrationDryRunService
                 RecordsQuarantined: 0,
                 ProviderIntegrationProcessingStatusDto.Blocked,
                 [issue]);
+            await SaveSyncRunAsync(request, manifest, connection, payloadId, blockedResult, ct).ConfigureAwait(false);
+            return blockedResult;
         }
 
         var capability = manifest.Capabilities.FirstOrDefault(candidate => candidate.Capability == request.Capability);
@@ -169,7 +171,7 @@ public sealed class ProviderIntegrationDryRunService
             ? ProviderIntegrationProcessingStatusDto.Quarantined
             : ProviderIntegrationProcessingStatusDto.Validated;
 
-        return new ProviderIntegrationDryRunResultDto(
+        var result = new ProviderIntegrationDryRunResultDto(
             request.SyncRunId,
             payloadId,
             request.Capability,
@@ -178,7 +180,34 @@ public sealed class ProviderIntegrationDryRunService
             quarantined,
             status,
             allIssues);
+        await SaveSyncRunAsync(request, manifest, connection, payloadId, result, ct).ConfigureAwait(false);
+        return result;
     }
+
+    private Task SaveSyncRunAsync(
+        ManualCsvProviderIntegrationDryRunRequestDto request,
+        ProviderIntegrationManifestDto manifest,
+        ProviderConnectionDto connection,
+        string rawPayloadId,
+        ProviderIntegrationDryRunResultDto result,
+        CancellationToken ct)
+        => store.SaveSyncRunAsync(
+            new ProviderIntegrationSyncRunDto(
+                request.SyncRunId,
+                manifest.ManifestId,
+                connection.ConnectionId,
+                manifest.ProviderId,
+                request.Capability,
+                ManualCsvEndpointKey,
+                request.RequestedAt,
+                request.RequestedAt,
+                result.Status,
+                result.RecordsReceived,
+                result.RecordsAccepted,
+                result.RecordsQuarantined,
+                rawPayloadId,
+                result.Issues),
+            ct);
 
     private static void ValidateRequestScope(
         ManualCsvProviderIntegrationDryRunRequestDto request,

@@ -31,7 +31,7 @@ program:
     - Governed report packs
     - Shared browser and WPF operational record workflow
     - Financial Operations control center for reconciliation, exceptions, close support, workflow control, and audit evidence
-    - Shared Financial Record Explorers for accounting, portfolio, and security/instrument records
+    - Shared Financial Record Explorers for accounting, portfolio, security/instrument, and report-line provenance records
   deferred_lanes:
     - Backtesting Studio
     - Live-readiness beyond paper-first governance

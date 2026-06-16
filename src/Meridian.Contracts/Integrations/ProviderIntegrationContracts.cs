@@ -307,6 +307,22 @@ public sealed record IntegrationStagingRecordDto(
     ProviderIntegrationProcessingStatusDto Status,
     DateTimeOffset CreatedAt);
 
+public sealed record ProviderIntegrationSyncRunDto(
+    string SyncRunId,
+    string ManifestId,
+    string ConnectionId,
+    string ProviderId,
+    ProviderCapabilityKindDto Capability,
+    string EndpointKey,
+    DateTimeOffset StartedAt,
+    DateTimeOffset? CompletedAt,
+    ProviderIntegrationProcessingStatusDto Status,
+    int RecordsReceived,
+    int RecordsAccepted,
+    int RecordsQuarantined,
+    string? RawPayloadId,
+    IReadOnlyList<ValidationIssueDto> Issues);
+
 public sealed record ManualCsvProviderIntegrationDryRunRequestDto(
     string SyncRunId,
     string ManifestId,
@@ -362,4 +378,10 @@ public interface IProviderIntegrationManifestStore
     Task SaveStagingRecordAsync(IntegrationStagingRecordDto record, CancellationToken ct = default);
 
     Task<IReadOnlyList<IntegrationStagingRecordDto>> ListStagingRecordsAsync(string syncRunId, CancellationToken ct = default);
+
+    Task SaveSyncRunAsync(ProviderIntegrationSyncRunDto syncRun, CancellationToken ct = default);
+
+    Task<ProviderIntegrationSyncRunDto?> GetSyncRunAsync(string syncRunId, CancellationToken ct = default);
+
+    Task<IReadOnlyList<ProviderIntegrationSyncRunDto>> ListSyncRunsAsync(string connectionId, CancellationToken ct = default);
 }

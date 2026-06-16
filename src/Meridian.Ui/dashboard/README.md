@@ -151,7 +151,10 @@ draft/validate/post, reconciliation run, and approval submission so browser surf
 server-owned workflow transitions without adding local Financial Operations rules.
 The Operations Continuity screen projects that spine from shared dashboard metrics as read-only
 Receive Activity, Match Records, Resolve Exceptions, Approve Results, Produce Evidence, and Close
-Support rows with server-owned guard, evidence, and route labels.
+Support rows with server-owned guard, evidence, and route labels. The Approve Results row also
+exposes a guarded approval-submission command when the selected workflow has no open breaks,
+report-pack readiness includes a retained report-pack id, and reviewer ownership can be resolved
+from the shared workflow payload.
 The Operations Continuity screen also renders the shared Financial Operations operational
 dashboard. Receive Activity, Match Records, Resolve Exceptions, Approve Results, Produce Evidence,
 and Close Support metric state, retained evidence, route hints, and required actions come from the

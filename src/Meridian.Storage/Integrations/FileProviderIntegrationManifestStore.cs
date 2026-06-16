@@ -116,9 +116,44 @@ public sealed class FileProviderIntegrationManifestStore : IProviderIntegrationM
             ct);
     }
 
+    public Task SaveSyncRunAsync(ProviderIntegrationSyncRunDto syncRun, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(syncRun);
+        ArgumentException.ThrowIfNullOrWhiteSpace(syncRun.SyncRunId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(syncRun.ConnectionId);
+
+        return WriteAsync(
+            GetSyncRunPath(syncRun.SyncRunId),
+            syncRun,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationSyncRunDto,
+            ct);
+    }
+
+    public Task<ProviderIntegrationSyncRunDto?> GetSyncRunAsync(string syncRunId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(syncRunId);
+        return ReadAsync(GetSyncRunPath(syncRunId), ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationSyncRunDto, ct);
+    }
+
+    public async Task<IReadOnlyList<ProviderIntegrationSyncRunDto>> ListSyncRunsAsync(string connectionId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
+        var syncRuns = await ListAsync(
+            GetDirectory("sync-runs"),
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationSyncRunDto,
+            ct).ConfigureAwait(false);
+        return syncRuns
+            .Where(syncRun => StringComparer.Ordinal.Equals(syncRun.ConnectionId, connectionId))
+            .OrderByDescending(syncRun => syncRun.StartedAt)
+            .ThenBy(syncRun => syncRun.SyncRunId, StringComparer.Ordinal)
+            .ToArray();
+    }
+
     private string GetManifestPath(string manifestId) => Path.Combine(GetDirectory("manifests"), $"{HashSegment(manifestId)}.json");
 
     private string GetConnectionPath(string connectionId) => Path.Combine(GetDirectory("connections"), $"{HashSegment(connectionId)}.json");
+
+    private string GetSyncRunPath(string syncRunId) => Path.Combine(GetDirectory("sync-runs"), $"{HashSegment(syncRunId)}.json");
 
     private string GetSyncRunScopedPath(string category, string syncRunId, string recordId)
         => Path.Combine(GetSyncRunScopedDirectory(category, syncRunId), $"{HashSegment(recordId)}.json");

@@ -60,6 +60,29 @@ public sealed class FileProviderIntegrationManifestStoreTests : IDisposable
     public async Task SaveRawPayloadQuarantineAndStaging_KeepRunScopedEvidence()
     {
         var store = new FileProviderIntegrationManifestStore(_testRoot);
+        var syncRun = new ProviderIntegrationSyncRunDto(
+            "sync-run-1",
+            "manifest-custodian-abc-v1",
+            "connection-alpha",
+            "custodian-abc",
+            ProviderCapabilityKindDto.Positions,
+            "positions",
+            DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+            DateTimeOffset.Parse("2026-06-16T12:02:00Z"),
+            ProviderIntegrationProcessingStatusDto.Quarantined,
+            RecordsReceived: 2,
+            RecordsAccepted: 1,
+            RecordsQuarantined: 1,
+            RawPayloadId: "payload-1",
+            Issues:
+            [
+                new ValidationIssueDto(
+                    "position.security-id.missing",
+                    ProviderIntegrationIssueSeverityDto.Critical,
+                    "Security identifier is required.",
+                    "security",
+                    "Map CUSIP, ISIN, ticker, or provider security id.")
+            ]);
         var rawPayload = new RawIngestionPayloadDto(
             "payload-1",
             "custodian-abc",
@@ -102,14 +125,20 @@ public sealed class FileProviderIntegrationManifestStoreTests : IDisposable
             ProviderIntegrationProcessingStatusDto.Validated,
             DateTimeOffset.Parse("2026-06-16T12:02:00Z"));
 
+        await store.SaveSyncRunAsync(syncRun);
         await store.SaveRawPayloadAsync(rawPayload);
         await store.SaveQuarantinedRecordAsync(quarantineRecord);
         await store.SaveStagingRecordAsync(stagingRecord);
 
+        var reloadedSyncRun = await store.GetSyncRunAsync("sync-run-1");
+        var listedSyncRuns = await store.ListSyncRunsAsync("connection-alpha");
         var reloadedPayload = await store.GetRawPayloadAsync("sync-run-1", "payload-1");
         var quarantined = await store.ListQuarantinedRecordsAsync("sync-run-1");
         var staged = await store.ListStagingRecordsAsync("sync-run-1");
 
+        reloadedSyncRun.Should().BeEquivalentTo(syncRun);
+        listedSyncRuns.Should().ContainSingle()
+            .Which.SyncRunId.Should().Be("sync-run-1");
         reloadedPayload.Should().NotBeNull();
         reloadedPayload!.PayloadId.Should().Be(rawPayload.PayloadId);
         reloadedPayload.RawPayload.GetProperty("positions")[0].GetProperty("account_id").GetString().Should().Be("A1");

@@ -851,6 +851,16 @@ describe("Operations Continuity view model", () => {
       guardLabel: "Assign, escalate, or resolve open exceptions and retain resolution evidence.",
       routeHref: "/accounting/reconciliation"
     });
+    expect(vm.commandSpine.rows[3]).toMatchObject({
+      stageLabel: "Approve Results",
+      commandLabel: "Submit or decide approval",
+      canSubmitApproval: false,
+      submitApprovalLabel: "Submit approval",
+      submitApprovalDisabledReason: "Approval state is already Reviewer Assigned.",
+      submitApprovalReportPackId: null,
+      submitApprovalReviewer: "fund-controller",
+      submitApprovalAriaLabel: "Submit workflow approval for 2026-05"
+    });
     expect(vm.reviewedAutomation).toMatchObject({
       statusLabel: "Review Required",
       statusTone: "review",
@@ -1244,6 +1254,56 @@ describe("Operations Continuity view model", () => {
       evidenceHref: "/accounting/reconciliation/recon-break-factor-1",
       evidenceRouteLabel: "Open retained evidence",
       requiredActionsLabel: "Resolve or assign MBS factor reconciliation breaks and retain evidence."
+    });
+  });
+
+  it("enables approval submission command metadata after exceptions and report-pack readiness clear", () => {
+    const reportPackEvidence = {
+      evidenceId: "report-pack-submit-evidence",
+      label: "Report-pack readiness evidence",
+      route: "/workstation/reporting/report-packs/report-pack-2026-05/evidence",
+      source: "operations-continuity",
+      capturedAtUtc: "2026-05-08T16:00:00Z"
+    };
+    const approvalReadyDetail: OperationsContinuityWorkflow = {
+      ...detail,
+      breakCases: detail.breakCases.map((breakCase) => ({
+        ...breakCase,
+        status: "Resolved"
+      })),
+      approvals: [],
+      approvalState: "Pending",
+      reportPackReadiness: {
+        isReady: true,
+        reportPackId: "report-pack-2026-05",
+        blockingReason: null,
+        evidenceLinks: [reportPackEvidence]
+      },
+      closePackage: null
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail: approvalReadyDetail,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.commandSpine.rows[3]).toMatchObject({
+      id: "approve-results",
+      workflowId,
+      expectedWorkflowVersion: 4,
+      submitApprovalReportPackId: "report-pack-2026-05",
+      submitApprovalReviewer: "fund-controller",
+      submitApprovalEvidenceLinks: expect.arrayContaining([reportPackEvidence]),
+      submitApprovalChecklistControlApprovals: [],
+      canSubmitApproval: true,
+      submitApprovalDisabledReason: null
     });
   });
 

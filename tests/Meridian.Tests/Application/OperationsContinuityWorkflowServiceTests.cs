@@ -2167,6 +2167,57 @@ public sealed class OperationsContinuityWorkflowServiceTests
     }
 
     [Fact]
+    public async Task AssignBreakCaseAsync_ShouldRejectAlreadyClosedBreakWithoutAppendingAudit()
+    {
+        var service = CreateService(out var repository, out var auditStore);
+        var workflow = await CreateLedgerPostedWorkflowAsync(service);
+        var reconciled = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
+            workflow.Version,
+            "ops-user",
+            BreakCases: [CreateOpenCriticalBreak(workflow, "break-closed-assignment")]));
+        var resolved = await service.ResolveBreakCaseAsync(
+            workflow.WorkflowId,
+            "break-closed-assignment",
+            new OperationsResolveBreakCaseRequestDto(
+                reconciled.Workflow!.Version,
+                "ops-user",
+                ResolutionStatus: "Resolved",
+                Rationale: "Controller retained resolution evidence before assignment could continue.",
+                EvidenceLinks: [CreateEvidenceLink("break-closed-assignment-resolution", "Resolution evidence")]));
+        var timelineBeforeDuplicate = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+
+        var duplicate = await service.AssignBreakCaseAsync(
+            workflow.WorkflowId,
+            "break-closed-assignment",
+            new OperationsAssignBreakCaseRequestDto(
+                resolved.Workflow!.Version,
+                "ops-user",
+                Owner: "fund-controller",
+                Rationale: "Controller attempted to reassign the closed break.",
+                EscalationLevel: "Level 2",
+                EscalationReason: "Duplicate assignment attempt.",
+                EvidenceLinks: [CreateEvidenceLink("break-closed-assignment-duplicate", "Duplicate assignment evidence")]));
+
+        duplicate.Success.Should().BeFalse();
+        duplicate.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        duplicate.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "RECONCILIATION_BREAK_ALREADY_CLOSED" &&
+            blocker.Gate == OperationsGateKeyDto.Reconciliation);
+        var persisted = await repository.GetAsync(workflow.WorkflowId);
+        persisted.Should().NotBeNull();
+        persisted!.Version.Should().Be(resolved.Workflow.Version);
+        var breakCase = persisted.BreakCases.Single(static item => item.BreakId == "break-closed-assignment");
+        breakCase.Status.Should().Be("Resolved");
+        breakCase.Owner.Should().Be("ops-user");
+        breakCase.Owner.Should().NotBe("fund-controller");
+        breakCase.EscalationLevel.Should().BeNull();
+        breakCase.EvidenceLinks.Should().ContainSingle(link => link.EvidenceId == "break-closed-assignment-resolution");
+        breakCase.EvidenceLinks.Should().NotContain(link => link.EvidenceId == "break-closed-assignment-duplicate");
+        var timelineAfterDuplicate = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timelineAfterDuplicate.Should().HaveCount(timelineBeforeDuplicate.Count);
+    }
+
+    [Fact]
     public async Task AssignBreakCaseAsync_ShouldRejectAssistantOriginBeforeMutation()
     {
         var service = CreateService(out var repository, out var auditStore);

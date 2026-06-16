@@ -158,8 +158,9 @@ the store through the shared `Meridian.Contracts.Etl` contract.
 
 Provider integration manifests are Storage-owned durable configuration and evidence records. The
 file-backed integration store persists approved manifests, connection instances, raw payloads,
-quarantined records, and staging records under the resolved data root using `AtomicFileWriter` so
-mapping changes can replay retained source payloads without reacquiring provider data.
+quarantined records, staging records, and sync-run summaries under the resolved data root using
+`AtomicFileWriter` so monitoring can explain run status and mapping changes can replay retained
+source payloads without reacquiring provider data.
 
 ## Glossary
 
