@@ -4,12 +4,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import {
   acknowledgeOperationsContinuityChecklistTask,
+  approveOperationsContinuityWorkflow,
   assignOperationsContinuityBreakCase,
   closeOperationsContinuityWorkflow,
   getPrivateCapitalCloseCockpit,
   getOperationsContinuityWorkflow,
   getOperationsContinuityWorkflows,
   reopenOperationsContinuityWorkflow,
+  rejectOperationsContinuityWorkflow,
   resolveOperationsContinuityBreakCase,
   submitOperationsContinuityApproval
 } from "@/lib/api";
@@ -27,12 +29,14 @@ import type {
 
 vi.mock("@/lib/api", () => ({
   acknowledgeOperationsContinuityChecklistTask: vi.fn(),
+  approveOperationsContinuityWorkflow: vi.fn(),
   assignOperationsContinuityBreakCase: vi.fn(),
   closeOperationsContinuityWorkflow: vi.fn(),
   getPrivateCapitalCloseCockpit: vi.fn(),
   getOperationsContinuityWorkflows: vi.fn(),
   getOperationsContinuityWorkflow: vi.fn(),
   reopenOperationsContinuityWorkflow: vi.fn(),
+  rejectOperationsContinuityWorkflow: vi.fn(),
   resolveOperationsContinuityBreakCase: vi.fn(),
   submitOperationsContinuityApproval: vi.fn()
 }));
@@ -69,6 +73,18 @@ beforeEach(() => {
     workflow: detail,
     blockers: [],
     message: "Workflow approval submitted."
+  });
+  vi.mocked(approveOperationsContinuityWorkflow).mockResolvedValue({
+    success: true,
+    workflow: detail,
+    blockers: [],
+    message: "Workflow approval approved."
+  });
+  vi.mocked(rejectOperationsContinuityWorkflow).mockResolvedValue({
+    success: true,
+    workflow: detail,
+    blockers: [],
+    message: "Workflow approval rejected."
   });
   vi.mocked(closeOperationsContinuityWorkflow).mockResolvedValue({
     success: true,
@@ -1293,6 +1309,106 @@ describe("OperationsContinuityScreen", () => {
     expect(within(alert).getByText("Approval submission version conflict.")).toBeInTheDocument();
   });
 
+  it("approves workflow approval history rows with retained report-pack and checklist evidence", async () => {
+    const reportPackEvidence: OperationsEvidenceLink = {
+      evidenceId: "report-pack-approval-decision-evidence",
+      label: "Report-pack approval decision evidence",
+      route: "/workstation/reporting/report-packs/report-pack-2026-05/evidence",
+      source: "operations-continuity",
+      capturedAtUtc: "2026-05-10T17:25:00Z"
+    };
+    const approvalDecisionReadyDetail = createApprovalDecisionReadyDetail(reportPackEvidence);
+    vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(approvalDecisionReadyDetail);
+
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(await screen.findByRole("button", { name: "Approve workflow approval approval-close-2026-05" }));
+
+    await waitFor(() => {
+      expect(approveOperationsContinuityWorkflow).toHaveBeenCalledWith(
+        workflowId,
+        expect.objectContaining({
+          expectedVersion: 4,
+          actor: "browser-operator",
+          reviewer: "fund-controller",
+          rationale: "Approved workflow approval approval-close-2026-05 from Operations Continuity approval history.",
+          reportPackId: "report-pack-2026-05",
+          correlationId: "browser-approval-decision:approve:approval-close-2026-05",
+          evidenceLinks: expect.arrayContaining([reportPackEvidence]),
+          checklistControlApprovals: expect.arrayContaining([
+            {
+              taskId: "close-gate-brokeringest",
+              approvedBy: "operations-lead",
+              approvedAtUtc: "2026-05-10T17:00:00Z"
+            },
+            {
+              taskId: "close-gate-approval",
+              approvedBy: "fund-controller",
+              approvedAtUtc: "2026-05-10T17:30:00Z"
+            }
+          ]),
+          actionOrigin: "HumanOperator"
+        })
+      );
+    });
+    expect(await screen.findByText("Workflow approval approved.")).toBeInTheDocument();
+  });
+
+  it("rejects workflow approval history rows with reviewer evidence and reason code", async () => {
+    vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue({
+      ...detail,
+      approvalState: "ReviewerAssigned"
+    });
+
+    const user = userEvent.setup();
+    renderScreen();
+
+    const workflowApprovalHistory = await screen.findByRole("table", { name: "Operations continuity workflow approval history" });
+    expect(within(workflowApprovalHistory).getByText("Close workflow has unresolved ledger blockers.")).toBeInTheDocument();
+    const rejectButton = within(workflowApprovalHistory).getByRole("button", { name: "Reject workflow approval approval-close-2026-05" });
+    expect(rejectButton).toBeEnabled();
+    await user.click(rejectButton);
+
+    await waitFor(() => {
+      expect(rejectOperationsContinuityWorkflow).toHaveBeenCalledWith(
+        workflowId,
+        expect.objectContaining({
+          expectedVersion: 4,
+          actor: "browser-operator",
+          reviewer: "fund-controller",
+          rationale: "Rejected workflow approval approval-close-2026-05 from Operations Continuity approval history.",
+          reasonCode: "BrowserApprovalDecisionReview",
+          correlationId: "browser-approval-decision:reject:approval-close-2026-05",
+          evidenceLinks: expect.arrayContaining(detail.approvals[0]!.evidenceLinks),
+          actionOrigin: "HumanOperator"
+        })
+      );
+    });
+    expect(await screen.findByText("Workflow approval rejected.")).toBeInTheDocument();
+  });
+
+  it("surfaces workflow approval decision failures", async () => {
+    const reportPackEvidence: OperationsEvidenceLink = {
+      evidenceId: "report-pack-approval-decision-evidence",
+      label: "Report-pack approval decision evidence",
+      route: "/workstation/reporting/report-packs/report-pack-2026-05/evidence",
+      source: "operations-continuity",
+      capturedAtUtc: "2026-05-10T17:25:00Z"
+    };
+    const approvalDecisionReadyDetail = createApprovalDecisionReadyDetail(reportPackEvidence);
+    vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(approvalDecisionReadyDetail);
+    vi.mocked(approveOperationsContinuityWorkflow).mockRejectedValueOnce(new Error("Approval decision version conflict."));
+
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(await screen.findByRole("button", { name: "Approve workflow approval approval-close-2026-05" }));
+
+    const alert = await screen.findByRole("alert");
+    expect(within(alert).getByText("Approval decision version conflict.")).toBeInTheDocument();
+  });
+
   it("publishes the close package from the command spine with retained checklist-control approvals", async () => {
     const reportPackEvidence = {
       evidenceId: "report-pack-close-evidence",
@@ -1559,6 +1675,84 @@ function renderScreen() {
       </Routes>
     </MemoryRouter>
   );
+}
+
+function createApprovalDecisionReadyDetail(reportPackEvidence: OperationsEvidenceLink): OperationsContinuityWorkflow {
+  const approvalGates: OperationsGate[] = [
+    createPassedGate("BrokerIngest", "Broker intake", "2026-05-10T17:00:00Z", "operations-lead"),
+    createPassedGate("SecurityMaster", "Security Master", "2026-05-10T17:05:00Z", "security-master-lead"),
+    createPassedGate("LedgerPosting", "Ledger posting", "2026-05-10T17:10:00Z", "ledger-lead"),
+    createPassedGate("Reconciliation", "Reconciliation", "2026-05-10T17:20:00Z", "reconciliation-lead"),
+    {
+      gateKey: "Approval",
+      displayName: "Approval",
+      status: "InProgress",
+      isRequired: true,
+      description: "Reviewer decision is pending.",
+      blockers: [],
+      nextActions: [],
+      completedAtUtc: null,
+      completedBy: null
+    }
+  ];
+
+  return {
+    ...detail,
+    status: "ApprovalPending",
+    gates: approvalGates,
+    brokerIntakeState: "Complete",
+    securityMasterState: "Complete",
+    ledgerPostingState: "Complete",
+    reconciliationState: "Complete",
+    approvalState: "ReviewerAssigned",
+    breakCases: detail.breakCases.map((breakCase) => ({
+      ...breakCase,
+      status: "Resolved"
+    })),
+    approvals: [
+      {
+        approvalId: "approval-close-2026-05",
+        status: "ReviewerAssigned",
+        operator: "ops-user",
+        reviewer: "fund-controller",
+        rationale: "Pending final close sign-off against retained report-pack evidence.",
+        submittedAtUtc: "2026-05-10T17:30:00Z",
+        decidedAtUtc: null,
+        evidenceLinks: [reportPackEvidence]
+      }
+    ],
+    reportPackReadiness: {
+      isReady: true,
+      reportPackId: "report-pack-2026-05",
+      blockingReason: null,
+      evidenceLinks: [reportPackEvidence]
+    },
+    closeChecklist: [
+      createAcknowledgedCloseTask("close-gate-brokeringest", "BrokerIngest", "Broker ingest close gate", "operations-lead", 1, "2026-05-10T17:00:00Z"),
+      createAcknowledgedCloseTask("close-gate-securitymaster", "SecurityMaster", "Security Master close gate", "security-master-lead", 1, "2026-05-10T17:05:00Z"),
+      createAcknowledgedCloseTask("close-gate-ledgerposting", "LedgerPosting", "Ledger posting close gate", "ledger-lead", 1, "2026-05-10T17:10:00Z"),
+      createAcknowledgedCloseTask("close-gate-reconciliation", "Reconciliation", "Reconciliation close gate", "reconciliation-lead", 1, "2026-05-10T17:20:00Z"),
+      {
+        taskId: "close-gate-approval",
+        gate: "Approval",
+        label: "Approval close gate",
+        owner: "fund-controller",
+        requiredEvidence: "Reviewer approval and retained report-pack evidence.",
+        dueDate: "2026-05-10",
+        requiredApprovalCount: 2,
+        expiresOn: "2026-05-14",
+        status: "Pending",
+        blockingReason: null,
+        evidencePointer: reportPackEvidence.evidenceId,
+        remediationRoute: "/workstation/accounting/approvals",
+        canAcknowledge: false,
+        acknowledgedAtUtc: null,
+        acknowledgedBy: null
+      }
+    ],
+    closeReadiness: null,
+    closePackage: null
+  };
 }
 
 function createCloseReadyDetail(reportPackEvidence: OperationsEvidenceLink): OperationsContinuityWorkflow {

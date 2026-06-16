@@ -390,6 +390,24 @@ public sealed record ProviderIntegrationDryRunResultDto(
     ProviderIntegrationProcessingStatusDto Status,
     IReadOnlyList<ValidationIssueDto> Issues);
 
+public sealed record ProviderIntegrationActivationRequestDto(
+    string ManifestId,
+    string ConnectionId,
+    string ApprovedBy,
+    DateTimeOffset ApprovedAt,
+    string ApprovalEvidenceId,
+    string? ChangeReason);
+
+public sealed record ProviderIntegrationActivationResultDto(
+    bool Activated,
+    string ManifestId,
+    string ConnectionId,
+    ProviderIntegrationActivationStateDto ManifestState,
+    ProviderIntegrationActivationStateDto ConnectionState,
+    ProviderIntegrationActivationReadinessDto Readiness,
+    string? ApprovalEvidenceId,
+    string? Message);
+
 public interface IProviderIntegrationManifestStore
 {
     Task SaveManifestAsync(ProviderIntegrationManifestDto manifest, CancellationToken ct = default);

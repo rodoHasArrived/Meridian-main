@@ -45,7 +45,7 @@ or provider implementations.
   foundation, configuration envelope, tenant template, activation readiness/result, and
   extensibility catalog DTOs.
 - `Integrations/` - provider integration template catalog entry, manifest, endpoint, mapping,
-  validation, sync, activation-readiness, manual CSV and REST dry-run request, raw payload,
+  validation, sync, activation-readiness, activation request/result, manual CSV and REST dry-run request, raw payload,
   quarantine, staging, sync-run summary, and connection monitor contracts for no-code read-only
   provider setup, monitoring, activation evidence, and replayable ingestion.
 - `Monitoring/` - shared event-pipeline metrics contracts, snapshot payloads, and monitoring

@@ -417,15 +417,32 @@ export interface OperationsContinuityCloseCockpitApprovalRow {
 
 export interface OperationsContinuityWorkflowApprovalRow {
   id: string;
+  workflowId: string | null;
+  expectedWorkflowVersion: number | null;
   statusLabel: string;
   statusTone: OperationsContinuityTone;
   actorLabel: string;
   submittedLabel: string;
   decidedLabel: string;
   rationale: string;
+  reviewer: string | null;
   evidenceLabel: string;
   evidenceHref: string | null;
   evidenceRouteLabel: string;
+  decisionGuardLabel: string;
+  approveWorkflowReportPackId: string | null;
+  approveWorkflowEvidenceLinks: OperationsEvidenceLink[];
+  approveWorkflowChecklistControlApprovals: OperationsChecklistControlApproval[];
+  canApproveWorkflow: boolean;
+  approveWorkflowLabel: string;
+  approveWorkflowDisabledReason: string | null;
+  approveWorkflowAriaLabel: string;
+  rejectWorkflowEvidenceLinks: OperationsEvidenceLink[];
+  rejectWorkflowReasonCode: string;
+  canRejectWorkflow: boolean;
+  rejectWorkflowLabel: string;
+  rejectWorkflowDisabledReason: string | null;
+  rejectWorkflowAriaLabel: string;
   ariaLabel: string;
 }
 
@@ -845,7 +862,7 @@ export function buildOperationsContinuityScreenViewModel({
   );
   const reconciliationLanes = buildReconciliationLaneRows(effectiveDetail?.reconciliationLanes ?? []);
   const evidencePackages = buildEvidencePackageRows(effectiveDetail?.evidencePackages ?? []);
-  const workflowApprovalHistory = buildWorkflowApprovalHistoryRows(effectiveDetail?.approvals ?? []);
+  const workflowApprovalHistory = buildWorkflowApprovalHistoryRows(effectiveDetail);
   const dashboard = buildOperationsDashboardViewModel(effectiveDetail?.dashboardSummary ?? null, detailLoading);
   const commandSpine = buildFinancialOperationsCommandSpineViewModel(dashboard, effectiveDetail, detailLoading);
   const reviewedAutomation = buildReviewedAutomationViewModel(effectiveDetail?.reviewedAutomation ?? null, detailLoading);
@@ -1058,15 +1075,20 @@ function compareApprovalsByDecisionTime(
 }
 
 function buildWorkflowApprovalHistoryRows(
-  approvals: OperationsContinuityWorkflow["approvals"]
+  workflow: OperationsContinuityWorkflow | null
 ): OperationsContinuityWorkflowApprovalRow[] {
-  return [...approvals]
+  if (!workflow) {
+    return [];
+  }
+
+  return [...workflow.approvals]
     .sort(compareApprovalsByDecisionTime)
-    .map(mapWorkflowApprovalHistoryRow);
+    .map((approval) => mapWorkflowApprovalHistoryRow(approval, workflow));
 }
 
 function mapWorkflowApprovalHistoryRow(
-  approval: OperationsContinuityWorkflow["approvals"][number]
+  approval: OperationsContinuityWorkflow["approvals"][number],
+  workflow: OperationsContinuityWorkflow
 ): OperationsContinuityWorkflowApprovalRow {
   const reviewer = approval.reviewer?.trim();
   const operator = approval.operator?.trim();
@@ -1078,20 +1100,100 @@ function mapWorkflowApprovalHistoryRow(
   const statusLabelText = splitEnumLabel(approval.status);
   const evidenceHref = normalizeLocalWorkstationRoute(approval.evidenceLinks[0]?.route) ?? null;
   const evidenceCount = approval.evidenceLinks.length;
+  const approveWorkflowDisabledReason = buildApproveWorkflowDecisionDisabledReason(workflow, approval);
+  const rejectWorkflowDisabledReason = buildRejectWorkflowDecisionDisabledReason(workflow, approval);
+  const decisionGuardLabel = approveWorkflowDisabledReason ?? rejectWorkflowDisabledReason ?? "Approval decision guard clear";
 
   return {
     id: approval.approvalId,
+    workflowId: workflow.workflowId,
+    expectedWorkflowVersion: workflow.version ?? null,
     statusLabel: statusLabelText,
     statusTone: approvalStatusTone(approval.status),
     actorLabel,
     submittedLabel: approval.submittedAtUtc ? `Submitted ${formatDate(approval.submittedAtUtc)}` : "Submission time pending",
     decidedLabel: approval.decidedAtUtc ? `Decided ${formatDate(approval.decidedAtUtc)}` : "Decision pending",
     rationale: approval.rationale?.trim() || "Approval rationale pending.",
+    reviewer: reviewer ?? resolveApprovalReviewer(workflow),
     evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
     evidenceHref,
     evidenceRouteLabel: evidenceHref ? "Open approval evidence" : "No local evidence route",
+    decisionGuardLabel,
+    approveWorkflowReportPackId: resolveApprovalReportPackId(workflow),
+    approveWorkflowEvidenceLinks: collectApprovalDecisionEvidenceLinks(workflow, approval),
+    approveWorkflowChecklistControlApprovals: collectApprovalDecisionChecklistControlApprovals(workflow, approval),
+    canApproveWorkflow: approveWorkflowDisabledReason === null,
+    approveWorkflowLabel: "Approve",
+    approveWorkflowDisabledReason,
+    approveWorkflowAriaLabel: `Approve workflow approval ${approval.approvalId}`,
+    rejectWorkflowEvidenceLinks: collectRejectDecisionEvidenceLinks(workflow, approval),
+    rejectWorkflowReasonCode: "BrowserApprovalDecisionReview",
+    canRejectWorkflow: rejectWorkflowDisabledReason === null,
+    rejectWorkflowLabel: "Reject",
+    rejectWorkflowDisabledReason,
+    rejectWorkflowAriaLabel: `Reject workflow approval ${approval.approvalId}`,
     ariaLabel: `Workflow approval ${approval.approvalId}, ${statusLabelText}, ${actorLabel}`
   };
+}
+
+function buildApproveWorkflowDecisionDisabledReason(
+  workflow: OperationsContinuityWorkflow,
+  approval: OperationsContinuityWorkflow["approvals"][number]
+): string | null {
+  if (workflow.version === null || workflow.version === undefined) {
+    return "Workflow version is unavailable for approval decision.";
+  }
+
+  if (!isPendingWorkflowApprovalState(workflow.approvalState)) {
+    return `Approval state is already ${splitEnumLabel(workflow.approvalState)}.`;
+  }
+
+  if (!isPendingWorkflowApprovalState(approval.status)) {
+    return `Approval row is already ${splitEnumLabel(approval.status)}.`;
+  }
+
+  if (!approval.reviewer?.trim() && !resolveApprovalReviewer(workflow)) {
+    return "Reviewer is required before approval decision.";
+  }
+
+  if (!workflow.reportPackReadiness.isReady || !resolveApprovalReportPackId(workflow)) {
+    return workflow.reportPackReadiness.blockingReason?.trim()
+      || "A ready retained report pack is required before approval decision.";
+  }
+
+  const checklistControlApprovals = collectApprovalDecisionChecklistControlApprovals(workflow, approval);
+  if (checklistControlApprovals.length === 0) {
+    return "Checklist-control approvals are required before approval decision.";
+  }
+
+  return findIncompleteApprovalDecisionChecklistControlApproval(workflow, checklistControlApprovals);
+}
+
+function buildRejectWorkflowDecisionDisabledReason(
+  workflow: OperationsContinuityWorkflow,
+  approval: OperationsContinuityWorkflow["approvals"][number]
+): string | null {
+  if (workflow.version === null || workflow.version === undefined) {
+    return "Workflow version is unavailable for rejection.";
+  }
+
+  if (!isPendingWorkflowApprovalState(workflow.approvalState)) {
+    return `Approval state is already ${splitEnumLabel(workflow.approvalState)}.`;
+  }
+
+  if (!isPendingWorkflowApprovalState(approval.status)) {
+    return `Approval row is already ${splitEnumLabel(approval.status)}.`;
+  }
+
+  if (!approval.reviewer?.trim() && !resolveApprovalReviewer(workflow)) {
+    return "Reviewer is required before rejection.";
+  }
+
+  return null;
+}
+
+function isPendingWorkflowApprovalState(status: OperationsContinuityWorkflow["approvalState"]): boolean {
+  return status === "Submitted" || status === "ReviewerAssigned";
 }
 
 function buildNextActionViewModel({
@@ -1515,6 +1617,29 @@ function collectCloseWorkflowEvidenceLinks(workflow: OperationsContinuityWorkflo
   ]);
 }
 
+function collectApprovalDecisionEvidenceLinks(
+  workflow: OperationsContinuityWorkflow,
+  approval: OperationsContinuityWorkflow["approvals"][number]
+): OperationsEvidenceLink[] {
+  return distinctOperationsEvidenceLinks([
+    ...workflow.reportPackReadiness.evidenceLinks,
+    ...workflow.evidenceLinks,
+    ...approval.evidenceLinks,
+    ...(workflow.evidencePackages ?? []).flatMap((packageSummary) => packageSummary.evidenceLinks)
+  ]);
+}
+
+function collectRejectDecisionEvidenceLinks(
+  workflow: OperationsContinuityWorkflow,
+  approval: OperationsContinuityWorkflow["approvals"][number]
+): OperationsEvidenceLink[] {
+  return distinctOperationsEvidenceLinks([
+    ...approval.evidenceLinks,
+    ...workflow.evidenceLinks,
+    ...workflow.reportPackReadiness.evidenceLinks
+  ]);
+}
+
 function distinctOperationsEvidenceLinks(links: OperationsEvidenceLink[]): OperationsEvidenceLink[] {
   return links.filter((link, index, source) =>
     source.findIndex((candidate) => candidate.evidenceId === link.evidenceId) === index
@@ -1568,6 +1693,49 @@ function collectCloseWorkflowChecklistControlApprovals(
   );
 }
 
+function collectApprovalDecisionChecklistControlApprovals(
+  workflow: OperationsContinuityWorkflow,
+  approval: OperationsContinuityWorkflow["approvals"][number]
+): OperationsChecklistControlApproval[] {
+  const approvals = [...collectCloseWorkflowChecklistControlApprovals(workflow)];
+  const approvalTaskId = workflow.closeChecklist.find((task) => task.gate === "Approval")?.taskId ?? "close-gate-approval";
+  appendChecklistControlApproval(approvals, approvalTaskId, approval.operator, approval.submittedAtUtc);
+  appendChecklistControlApproval(approvals, approvalTaskId, approval.reviewer, approval.decidedAtUtc ?? approval.submittedAtUtc);
+
+  return distinctChecklistControlApprovals(approvals);
+}
+
+function appendChecklistControlApproval(
+  approvals: OperationsChecklistControlApproval[],
+  taskId: string | null | undefined,
+  approvedBy: string | null | undefined,
+  approvedAtUtc: string | null | undefined
+): void {
+  const cleanTaskId = taskId?.trim();
+  const cleanApprover = approvedBy?.trim();
+  const cleanTimestamp = approvedAtUtc?.trim();
+  if (!cleanTaskId || !cleanApprover || !cleanTimestamp) {
+    return;
+  }
+
+  approvals.push({
+    taskId: cleanTaskId,
+    approvedBy: cleanApprover,
+    approvedAtUtc: cleanTimestamp
+  });
+}
+
+function distinctChecklistControlApprovals(
+  approvals: OperationsChecklistControlApproval[]
+): OperationsChecklistControlApproval[] {
+  return approvals.filter((approval, index, source) =>
+    source.findIndex((candidate) =>
+      candidate.taskId.toLowerCase() === approval.taskId.toLowerCase()
+        && candidate.approvedBy.toLowerCase() === approval.approvedBy.toLowerCase()
+    ) === index
+  );
+}
+
 function findIncompleteCloseWorkflowChecklistControlApproval(
   workflow: OperationsContinuityWorkflow,
   approvals: OperationsChecklistControlApproval[]
@@ -1599,6 +1767,37 @@ function findIncompleteCloseWorkflowChecklistControlApproval(
       .length;
     if (retainedApprovalCount < requirement.requiredCount) {
       return `${requirement.label} requires ${requirement.requiredCount} retained checklist-control approval${requirement.requiredCount === 1 ? "" : "s"} before close package publication.`;
+    }
+  }
+
+  return null;
+}
+
+function findIncompleteApprovalDecisionChecklistControlApproval(
+  workflow: OperationsContinuityWorkflow,
+  approvals: OperationsChecklistControlApproval[]
+): string | null {
+  const requiredApprovals = new Map<string, { label: string; requiredCount: number }>();
+  workflow.gates
+    .filter((gate) => gate.status === "Passed" || gate.gateKey === "Approval")
+    .forEach((gate) => {
+      const checklistTask = workflow.closeChecklist.find((task) => task.gate === gate.gateKey);
+      const taskId = checklistTask?.taskId ?? `close-gate-${gate.gateKey.toLowerCase()}`;
+      requiredApprovals.set(taskId.toLowerCase(), {
+        label: checklistTask?.label ?? `${gateLabel(gate.gateKey)} close gate`,
+        requiredCount: gate.gateKey === "Approval" ? 2 : Math.max(checklistTask?.requiredApprovalCount ?? 1, 1)
+      });
+    });
+
+  for (const [taskId, requirement] of requiredApprovals) {
+    const retainedApprovalCount = approvals
+      .filter((approval) => approval.taskId.toLowerCase() === taskId)
+      .map((approval) => approval.approvedBy.trim().toLowerCase())
+      .filter(Boolean)
+      .filter((approver, index, source) => source.indexOf(approver) === index)
+      .length;
+    if (retainedApprovalCount < requirement.requiredCount) {
+      return `${requirement.label} requires ${requirement.requiredCount} retained checklist-control approval${requirement.requiredCount === 1 ? "" : "s"} before approval decision.`;
     }
   }
 

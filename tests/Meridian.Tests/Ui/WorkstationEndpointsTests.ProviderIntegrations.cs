@@ -316,6 +316,109 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationActivate_PersistsActiveState()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            var manifest = CreateProviderIntegrationActivationManifest();
+            var connection = CreateProviderIntegrationActivationConnection(manifest);
+            await store.SaveManifestAsync(manifest);
+            await store.SaveConnectionAsync(connection);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ManageProviders);
+            var client = app.GetTestClient();
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationActivate,
+                CreateProviderIntegrationActivationRequest(manifest, connection),
+                ServerJsonOptions);
+            var result = await response.Content.ReadFromJsonAsync<ProviderIntegrationActivationResultDto>(ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            result.Should().NotBeNull();
+            result!.Activated.Should().BeTrue();
+            result.ManifestState.Should().Be(ProviderIntegrationActivationStateDto.Active);
+            result.ConnectionState.Should().Be(ProviderIntegrationActivationStateDto.Active);
+            (await store.GetManifestAsync(manifest.ManifestId))!.State.Should().Be(ProviderIntegrationActivationStateDto.Active);
+            (await store.GetConnectionAsync(connection.ConnectionId))!.ApprovalEvidenceId.Should().Be("approval-evidence-endpoint-1");
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationActivate_ReturnsBlockedResultWhenReadinessFails()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            var manifest = CreateProviderIntegrationActivationManifest(missingQuantityMapping: true);
+            var connection = CreateProviderIntegrationActivationConnection(manifest);
+            await store.SaveManifestAsync(manifest);
+            await store.SaveConnectionAsync(connection);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ManageProviders);
+            var client = app.GetTestClient();
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationActivate,
+                CreateProviderIntegrationActivationRequest(manifest, connection),
+                ServerJsonOptions);
+            var result = await response.Content.ReadFromJsonAsync<ProviderIntegrationActivationResultDto>(ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            result.Should().NotBeNull();
+            result!.Activated.Should().BeFalse();
+            result.Readiness.Issues.Should().Contain(issue =>
+                issue.Code == "provider-manifest.required-mapping-missing" &&
+                issue.Severity == ProviderIntegrationIssueSeverityDto.Critical);
+            (await store.GetManifestAsync(manifest.ManifestId))!.State.Should().Be(ProviderIntegrationActivationStateDto.DryRunPassed);
+            (await store.GetConnectionAsync(connection.ConnectionId))!.State.Should().Be(ProviderIntegrationActivationStateDto.DryRunPassed);
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationActivate_RequiresConfigurePermission()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            var manifest = CreateProviderIntegrationActivationManifest();
+            var connection = CreateProviderIntegrationActivationConnection(manifest);
+            await store.SaveManifestAsync(manifest);
+            await store.SaveConnectionAsync(connection);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewConfig);
+            var client = app.GetTestClient();
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationActivate,
+                CreateProviderIntegrationActivationRequest(manifest, connection),
+                ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            (await store.GetManifestAsync(manifest.ManifestId))!.State.Should().Be(ProviderIntegrationActivationStateDto.DryRunPassed);
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ProviderIntegrationTemplates_RequireProviderReadPermission()
     {
         var testRoot = CreateProviderIntegrationTestRoot();
@@ -392,6 +495,7 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<IProviderIntegrationHttpTransport>(transport ?? new ProviderIntegrationEndpointTransport());
         services.AddSingleton<ProviderIntegrationRestDryRunService>();
         services.AddSingleton<ProviderIntegrationActivationReadinessService>();
+        services.AddSingleton<ProviderIntegrationActivationService>();
         services.AddSingleton<ProviderIntegrationMonitoringService>();
     }
 
@@ -646,6 +750,101 @@ public sealed partial class WorkstationEndpointsTests
             "operator@example.com",
             DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
             DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+            ApprovalEvidenceId: null);
+
+    private static ProviderIntegrationActivationRequestDto CreateProviderIntegrationActivationRequest(
+        ProviderIntegrationManifestDto manifest,
+        IntegrationProviderConnectionDto connection)
+        => new(
+            manifest.ManifestId,
+            connection.ConnectionId,
+            "approver@example.com",
+            DateTimeOffset.Parse("2026-06-16T14:00:00Z"),
+            "approval-evidence-endpoint-1",
+            "Approved from workstation endpoint test.");
+
+    private static ProviderIntegrationManifestDto CreateProviderIntegrationActivationManifest(
+        bool missingQuantityMapping = false)
+        => new(
+            "manifest-activation-endpoint-v1",
+            1,
+            "provider-alpha",
+            "Provider Alpha",
+            IntegrationTypeDto.Rest,
+            "production",
+            new ProviderIntegrationAuthConfigDto(
+                ProviderIntegrationAuthTypeDto.OAuth2,
+                "https://api.example.com/oauth/token",
+                ["positions.read"],
+                new Dictionary<string, string>()),
+            [
+                new ProviderCapabilityDto(
+                    ProviderCapabilityKindDto.Positions,
+                    Enabled: true,
+                    RequiresCertifiedAdapter: false,
+                    RequiredCanonicalFields: ["providerAccountId", "quantity", "asOf"])
+            ],
+            [],
+            missingQuantityMapping
+                ?
+                [
+                    ProviderIntegrationActivationMapping("providerAccountId"),
+                    ProviderIntegrationActivationMapping("asOf")
+                ]
+                :
+                [
+                    ProviderIntegrationActivationMapping("providerAccountId"),
+                    ProviderIntegrationActivationMapping("quantity"),
+                    ProviderIntegrationActivationMapping("asOf")
+                ],
+            new SyncScheduleDto(
+                "incremental",
+                "daily",
+                "06:00",
+                "America/New_York",
+                ProviderIntegrationCursorTypeDto.Timestamp,
+                "updated_at",
+                "monthly"),
+            [],
+            new ProviderIntegrationActivationPolicyDto(
+                RequiresAuthenticationTest: true,
+                RequiresEndpointTest: true,
+                RequiresDryRun: true,
+                RequiresApproval: true,
+                ProductionWriteCapabilitiesAllowed: false,
+                RequiredIssueCodes: []),
+            ProviderIntegrationActivationStateDto.DryRunPassed,
+            "operator@example.com",
+            DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+            ApprovedBy: null,
+            ApprovedAt: null,
+            ChangeReason: "Endpoint activation test manifest");
+
+    private static FieldMappingDto ProviderIntegrationActivationMapping(string targetField)
+        => new(
+            ProviderCapabilityKindDto.Positions,
+            $"$.{targetField.Replace('.', '_')}",
+            targetField,
+            null,
+            Required: true,
+            ProviderMappingConfidenceDto.Approved,
+            DefaultValue: null,
+            ConstantValue: null);
+
+    private static IntegrationProviderConnectionDto CreateProviderIntegrationActivationConnection(
+        ProviderIntegrationManifestDto manifest)
+        => new(
+            "connection-activation-endpoint",
+            manifest.ProviderId,
+            manifest.ManifestId,
+            "Provider Alpha Production",
+            manifest.Environment,
+            ProviderIntegrationActivationStateDto.DryRunPassed,
+            "vault://provider-credentials/provider-alpha/production",
+            [ProviderCapabilityKindDto.Positions],
+            "operator@example.com",
+            DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+            DateTimeOffset.Parse("2026-06-16T12:05:00Z"),
             ApprovalEvidenceId: null);
 
     private sealed class ProviderIntegrationEndpointTransport : IProviderIntegrationHttpTransport

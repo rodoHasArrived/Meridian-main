@@ -127,8 +127,8 @@ public sealed class DirectLendingOutboxDispatcherTests
 
         savedEntry.Should().NotBeNull();
         savedEntry!.Description.Should().Be("Prepayment penalty");
-        savedEntry.Lines.Should().ContainSingle(line => line.Account == "PenaltyReceivable" && line.Debit == 10_000m);
-        savedEntry.Lines.Should().ContainSingle(line => line.Account == "PenaltyIncome" && line.Credit == 10_000m);
+        savedEntry.Lines.Should().ContainSingle(line => line.AccountCode == "PenaltyReceivable" && line.DebitAmount == 10_000m);
+        savedEntry.Lines.Should().ContainSingle(line => line.AccountCode == "PenaltyIncome" && line.CreditAmount == 10_000m);
     }
 
     [Fact]
@@ -171,8 +171,8 @@ public sealed class DirectLendingOutboxDispatcherTests
 
         savedEntry.Should().NotBeNull();
         savedEntry!.Description.Should().Be("Write-off");
-        savedEntry.Lines.Should().ContainSingle(line => line.Account == "WriteOffExpense" && line.Debit == 7_500m);
-        savedEntry.Lines.Should().ContainSingle(line => line.Account == "LoanPrincipal" && line.Credit == 7_500m);
+        savedEntry.Lines.Should().ContainSingle(line => line.AccountCode == "WriteOffExpense" && line.DebitAmount == 7_500m);
+        savedEntry.Lines.Should().ContainSingle(line => line.AccountCode == "LoanPrincipal" && line.CreditAmount == 7_500m);
     }
 
     [Fact]
@@ -214,8 +214,8 @@ public sealed class DirectLendingOutboxDispatcherTests
         await InvokeProcessAsync(dispatcher, BuildJournalMessage(loanId, sourceEventId, sourceEvent.EventType, sourceEvent.EffectiveDate));
 
         savedEntry.Should().NotBeNull();
-        savedEntry!.Lines.Should().ContainSingle(line => line.Account == "PenaltyReceivable" && line.Debit == 25.5m);
-        savedEntry.Lines.Should().ContainSingle(line => line.Account == "PenaltyIncome" && line.Credit == 25.5m);
+        savedEntry!.Lines.Should().ContainSingle(line => line.AccountCode == "PenaltyReceivable" && line.DebitAmount == 25.5m);
+        savedEntry.Lines.Should().ContainSingle(line => line.AccountCode == "PenaltyIncome" && line.CreditAmount == 25.5m);
     }
 
     [Fact]

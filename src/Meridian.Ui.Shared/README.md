@@ -337,7 +337,9 @@ configure routing, review sequence, evidence expectations, scoped authority, tem
 and ledger controls without owning domain writes.
 `ExtensibilityConfigurationService` persists tenant-template bundles and activation attempts through
 `IExtensibilityConfigurationStore`. The default workstation registration uses
-`FileExtensibilityConfigurationStore` under `workstation/extensibility/configuration-bundles.json`.
+`FileExtensibilityConfigurationStore` under tenant-specific
+`workstation/extensibility/tenants/{tenantId}/configuration-bundles.json` snapshots resolved from
+the session-derived workstation tenant context.
 Activation fails closed when a tenant template or domain extension attempts to override core object
 identity, audit trail, or financial calculation integrity, and when bundled configuration envelopes
 are not already approved with retained approval actor/timestamp evidence. Successful activation marks

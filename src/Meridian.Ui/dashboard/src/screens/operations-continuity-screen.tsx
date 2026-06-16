@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   acknowledgeOperationsContinuityChecklistTask,
+  approveOperationsContinuityWorkflow,
   assignOperationsContinuityBreakCase,
   closeOperationsContinuityWorkflow,
   reopenOperationsContinuityWorkflow,
+  rejectOperationsContinuityWorkflow,
   resolveOperationsContinuityBreakCase,
   submitOperationsContinuityApproval
 } from "@/lib/api";
@@ -339,54 +341,107 @@ const financialOperationsQueueColumns: DenseDataTableColumn<FinancialOperationsO
   }
 ];
 
-const workflowApprovalHistoryColumns: DenseDataTableColumn<OperationsContinuityWorkflowApprovalRow>[] = [
-  {
-    id: "approval",
-    label: "Approval",
-    render: (row) => (
-      <span className="block min-w-0">
-        <span className="block font-mono text-xs font-semibold text-foreground">{row.id}</span>
-        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.rationale}</span>
-      </span>
-    )
-  },
-  {
-    id: "status",
-    label: "Status",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
-        <span className="mt-1 block text-muted-foreground">{row.decidedLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "actor",
-    label: "Actor / submitted",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <span className="block text-foreground">{row.actorLabel}</span>
-        <span className="block text-muted-foreground">{row.submittedLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "evidence",
-    label: "Evidence",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <span className="block text-foreground">{row.evidenceLabel}</span>
-        {row.evidenceHref ? (
-          <Link className="link-subtle mt-1 inline-flex" to={row.evidenceHref} aria-label={`Open approval evidence for workflow approval ${row.id}`}>
-            {row.evidenceRouteLabel}
-          </Link>
-        ) : (
-          <span className="mt-1 block text-muted-foreground">{row.evidenceRouteLabel}</span>
-        )}
-      </span>
-    )
-  }
-];
+function buildWorkflowApprovalHistoryColumns({
+  pendingDecision,
+  onRunDecision
+}: WorkflowApprovalHistoryColumnOptions): DenseDataTableColumn<OperationsContinuityWorkflowApprovalRow>[] {
+  return [
+    {
+      id: "approval",
+      label: "Approval",
+      render: (row) => (
+        <span className="block min-w-0">
+          <span className="block font-mono text-xs font-semibold text-foreground">{row.id}</span>
+          <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.rationale}</span>
+        </span>
+      )
+    },
+    {
+      id: "status",
+      label: "Status",
+      render: (row) => (
+        <span className="block text-xs leading-5">
+          <Badge variant={toneBadge[row.statusTone]}>{row.statusLabel}</Badge>
+          <span className="mt-1 block text-muted-foreground">{row.decidedLabel}</span>
+        </span>
+      )
+    },
+    {
+      id: "actor",
+      label: "Actor / submitted",
+      render: (row) => (
+        <span className="block text-xs leading-5">
+          <span className="block text-foreground">{row.actorLabel}</span>
+          <span className="block text-muted-foreground">{row.submittedLabel}</span>
+        </span>
+      )
+    },
+    {
+      id: "evidence",
+      label: "Evidence",
+      render: (row) => (
+        <span className="block text-xs leading-5">
+          <span className="block text-foreground">{row.evidenceLabel}</span>
+          {row.evidenceHref ? (
+            <Link className="link-subtle mt-1 inline-flex" to={row.evidenceHref} aria-label={`Open approval evidence for workflow approval ${row.id}`}>
+              {row.evidenceRouteLabel}
+            </Link>
+          ) : (
+            <span className="mt-1 block text-muted-foreground">{row.evidenceRouteLabel}</span>
+          )}
+        </span>
+      )
+    },
+    {
+      id: "decision",
+      label: "Decision",
+      render: (row) => {
+        const approveBusy = pendingDecision?.approvalId === row.id && pendingDecision.kind === "approve";
+        const rejectBusy = pendingDecision?.approvalId === row.id && pendingDecision.kind === "reject";
+        const approveDisabledReason = pendingDecision && !approveBusy
+          ? "Wait for the active approval decision command to finish."
+          : row.approveWorkflowDisabledReason;
+        const rejectDisabledReason = pendingDecision && !rejectBusy
+          ? "Wait for the active approval decision command to finish."
+          : row.rejectWorkflowDisabledReason;
+
+        return (
+          <span className="block text-xs leading-5">
+            <span className="block text-muted-foreground">{row.decisionGuardLabel}</span>
+            <span className="mt-2 flex flex-wrap gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                busy={approveBusy}
+                busyLabel="Approving"
+                disabled={approveDisabledReason !== null}
+                disabledReason={approveDisabledReason}
+                aria-label={row.approveWorkflowAriaLabel}
+                onClick={() => onRunDecision(row, "approve")}
+              >
+                {row.approveWorkflowLabel}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                busy={rejectBusy}
+                busyLabel="Rejecting"
+                disabled={rejectDisabledReason !== null}
+                disabledReason={rejectDisabledReason}
+                aria-label={row.rejectWorkflowAriaLabel}
+                onClick={() => onRunDecision(row, "reject")}
+              >
+                {row.rejectWorkflowLabel}
+              </Button>
+            </span>
+          </span>
+        );
+      }
+    }
+  ];
+}
 
 const reviewedAutomationArtifactColumns: DenseDataTableColumn<OperationsReviewedAutomationArtifactRow>[] = [
   {
@@ -485,6 +540,7 @@ const evidencePackageColumns: DenseDataTableColumn<OperationsContinuityEvidenceP
 ];
 
 type BreakCommandKind = "assign" | "resolve";
+type ApprovalDecisionKind = "approve" | "reject";
 
 interface ReopenWorkflowFormState {
   incidentId: string;
@@ -496,6 +552,11 @@ interface ReopenWorkflowFormState {
 interface BreakCaseColumnOptions {
   pendingBreakCommand: { breakId: string; kind: BreakCommandKind } | null;
   onRunCommand: (row: OperationsContinuityBreakCaseRow, kind: BreakCommandKind) => void;
+}
+
+interface WorkflowApprovalHistoryColumnOptions {
+  pendingDecision: { approvalId: string; kind: ApprovalDecisionKind } | null;
+  onRunDecision: (row: OperationsContinuityWorkflowApprovalRow, kind: ApprovalDecisionKind) => void;
 }
 
 function buildBreakCaseColumns({
@@ -1060,6 +1121,11 @@ export function OperationsContinuityScreen() {
     message: string | null;
     error: string | null;
   }>({ pendingStageId: null, message: null, error: null });
+  const [approvalDecisionCommand, setApprovalDecisionCommand] = useState<{
+    pending: { approvalId: string; kind: ApprovalDecisionKind } | null;
+    message: string | null;
+    error: string | null;
+  }>({ pending: null, message: null, error: null });
   const [closeWorkflowCommand, setCloseWorkflowCommand] = useState<{
     pendingStageId: string | null;
     message: string | null;
@@ -1227,6 +1293,74 @@ export function OperationsContinuityScreen() {
     }
   }, [vm.refresh]);
 
+  const runApprovalDecisionCommand = useCallback(async (row: OperationsContinuityWorkflowApprovalRow, kind: ApprovalDecisionKind) => {
+    const disabledReason = kind === "approve" ? row.approveWorkflowDisabledReason : row.rejectWorkflowDisabledReason;
+    if (
+      !row.workflowId ||
+      row.expectedWorkflowVersion === null ||
+      !row.reviewer ||
+      disabledReason !== null
+    ) {
+      setApprovalDecisionCommand({
+        pending: null,
+        message: null,
+        error: disabledReason ?? "Approval decision command is unavailable."
+      });
+      return;
+    }
+
+    if (kind === "approve" && !row.approveWorkflowReportPackId) {
+      setApprovalDecisionCommand({
+        pending: null,
+        message: null,
+        error: "Ready report-pack metadata is required before approval decision."
+      });
+      return;
+    }
+
+    setApprovalDecisionCommand({ pending: { approvalId: row.id, kind }, message: null, error: null });
+
+    try {
+      const result = kind === "approve"
+        ? await approveOperationsContinuityWorkflow(row.workflowId, {
+            expectedVersion: row.expectedWorkflowVersion,
+            actor: "browser-operator",
+            reviewer: row.reviewer,
+            rationale: `Approved workflow approval ${row.id} from Operations Continuity approval history.`,
+            reportPackId: row.approveWorkflowReportPackId,
+            correlationId: `browser-approval-decision:approve:${row.id}`,
+            evidenceLinks: row.approveWorkflowEvidenceLinks,
+            checklistControlApprovals: row.approveWorkflowChecklistControlApprovals,
+            actionOrigin: "HumanOperator"
+          })
+        : await rejectOperationsContinuityWorkflow(row.workflowId, {
+            expectedVersion: row.expectedWorkflowVersion,
+            actor: "browser-operator",
+            reviewer: row.reviewer,
+            rationale: `Rejected workflow approval ${row.id} from Operations Continuity approval history.`,
+            reasonCode: row.rejectWorkflowReasonCode,
+            correlationId: `browser-approval-decision:reject:${row.id}`,
+            evidenceLinks: row.rejectWorkflowEvidenceLinks,
+            actionOrigin: "HumanOperator"
+          });
+
+      setApprovalDecisionCommand({
+        pending: null,
+        message: result.message?.trim() || (kind === "approve"
+          ? "Workflow approval decision retained through shared operations command."
+          : "Workflow approval rejection retained through shared operations command."),
+        error: null
+      });
+      await vm.refresh();
+    } catch (err) {
+      setApprovalDecisionCommand({
+        pending: null,
+        message: null,
+        error: formatApprovalDecisionCommandError(err)
+      });
+    }
+  }, [vm.refresh]);
+
   const closeWorkflowCommandHandler = useCallback(async (row: FinancialOperationsCommandSpineRow) => {
     if (
       !row.workflowId ||
@@ -1337,6 +1471,14 @@ export function OperationsContinuityScreen() {
       submitApprovalCommand,
       closeWorkflowCommandHandler
     ]
+  );
+
+  const workflowApprovalHistoryDecisionColumns = useMemo(
+    () => buildWorkflowApprovalHistoryColumns({
+      pendingDecision: approvalDecisionCommand.pending,
+      onRunDecision: (row, kind) => { void runApprovalDecisionCommand(row, kind); }
+    }),
+    [approvalDecisionCommand.pending, runApprovalDecisionCommand]
   );
 
   return (
@@ -1582,9 +1724,19 @@ export function OperationsContinuityScreen() {
             </CardTitle>
             <CardDescription>Source-owned approval submissions, reviewer decisions, and retained approval evidence for the selected workflow.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
+            {approvalDecisionCommand.error ? (
+              <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+                {approvalDecisionCommand.error}
+              </p>
+            ) : null}
+            {approvalDecisionCommand.message ? (
+              <p role="status" className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
+                {approvalDecisionCommand.message}
+              </p>
+            ) : null}
             <DenseDataTable
-              columns={workflowApprovalHistoryColumns}
+              columns={workflowApprovalHistoryDecisionColumns}
               rows={vm.workflowApprovalHistory}
               getRowId={(row) => row.id}
               getRowAriaLabel={(row) => row.ariaLabel}
@@ -2200,6 +2352,14 @@ function formatApprovalSubmitCommandError(err: unknown): string {
   }
 
   return "Approval submission command failed.";
+}
+
+function formatApprovalDecisionCommandError(err: unknown): string {
+  if (err instanceof Error && err.message.trim().length > 0) {
+    return err.message;
+  }
+
+  return "Approval decision command failed.";
 }
 
 function formatCloseWorkflowCommandError(err: unknown): string {

@@ -575,6 +575,7 @@ public static class UiApiRoutes
     public const string WorkstationProviderIntegrationManifestReadiness = "/api/workstation/provider-integrations/manifests/{manifestId}/readiness";
     public const string WorkstationProviderIntegrationManualCsvDryRun = "/api/workstation/provider-integrations/dry-runs/manual-csv";
     public const string WorkstationProviderIntegrationRestDryRun = "/api/workstation/provider-integrations/dry-runs/rest";
+    public const string WorkstationProviderIntegrationActivate = "/api/workstation/provider-integrations/activate";
     public const string WorkstationProviderIntegrationConnectionMonitor = "/api/workstation/provider-integrations/connections/{connectionId}/monitor";
     public const string WorkstationGovernance = "/api/workstation/governance";
     public const string WorkstationAccounting = "/api/workstation/accounting";

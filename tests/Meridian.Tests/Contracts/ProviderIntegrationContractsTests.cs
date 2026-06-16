@@ -182,6 +182,50 @@ public sealed class ProviderIntegrationContractsTests
         roundTrip.Should().BeEquivalentTo(monitor);
     }
 
+    [Fact]
+    public void ProviderIntegrationActivation_RoundTripsWithApprovalEvidence()
+    {
+        var request = new ProviderIntegrationActivationRequestDto(
+            "manifest-custodian-abc-v1",
+            "connection-alpha",
+            "approver@example.com",
+            DateTimeOffset.Parse("2026-06-16T14:00:00Z"),
+            "approval-evidence-1",
+            "Approved after dry-run evidence review.");
+        var result = new ProviderIntegrationActivationResultDto(
+            Activated: true,
+            request.ManifestId,
+            request.ConnectionId,
+            ProviderIntegrationActivationStateDto.Active,
+            ProviderIntegrationActivationStateDto.Active,
+            new ProviderIntegrationActivationReadinessDto(
+                IsReady: true,
+                Issues: [],
+                RequiredEvidence: ["activation-approval", "dry-run-result"]),
+            request.ApprovalEvidenceId,
+            "Provider integration connection activated.");
+
+        var requestJson = JsonSerializer.Serialize(
+            request,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationActivationRequestDto);
+        var resultJson = JsonSerializer.Serialize(
+            result,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationActivationResultDto);
+        var requestRoundTrip = JsonSerializer.Deserialize(
+            requestJson,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationActivationRequestDto);
+        var resultRoundTrip = JsonSerializer.Deserialize(
+            resultJson,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationActivationResultDto);
+
+        requestJson.Should().Contain("\"approvalEvidenceId\"");
+        requestJson.Should().NotContain("\"ApprovalEvidenceId\"");
+        resultJson.Should().Contain("\"activated\": true");
+        resultJson.Should().Contain("\"manifestState\": \"Active\"");
+        requestRoundTrip.Should().BeEquivalentTo(request);
+        resultRoundTrip.Should().BeEquivalentTo(result);
+    }
+
     private static ProviderIntegrationManifestDto CreateManifest()
         => new(
             "manifest-custodian-abc-v1",

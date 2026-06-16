@@ -169,9 +169,11 @@ automation policy.
 The Financial Operations operator queue on that screen is also derived from workflow detail:
 reconciliation break cases, close checklist tasks, workflow approvals, and evidence-package
 readiness stay source-backed while React only groups the active work items for review.
-The same workflow approval payload also feeds a read-only approval-history table with submission
-timing, reviewer/operator attribution, rationale, status, and the first local retained approval
-evidence route, keeping approval history inspectable without browser-local approval state.
+The same workflow approval payload also feeds the approval-history table with submission timing,
+reviewer/operator attribution, rationale, status, and retained approval evidence routes. Pending
+rows expose guarded approve/reject commands only when the selected workflow supplies version,
+reviewer, report-pack, and checklist-control evidence required by the shared operations API; the
+server still owns permission, transition, audit, and evidence validation.
 It also renders the shared evidence-package table from the workflow detail payload: accounting
 record evidence, report-pack evidence, close-package manifest, and audit-support package rows show
 server-owned readiness, category completeness, retained evidence counts, local routes, and required

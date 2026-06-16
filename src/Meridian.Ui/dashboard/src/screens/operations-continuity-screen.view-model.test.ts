@@ -929,15 +929,25 @@ describe("Operations Continuity view model", () => {
     expect(vm.workflowApprovalHistory).toHaveLength(1);
     expect(vm.workflowApprovalHistory[0]).toMatchObject({
       id: "approval-close-2026-05",
+      workflowId,
+      expectedWorkflowVersion: 4,
       statusLabel: "Reviewer Assigned",
       statusTone: "review",
       actorLabel: "Reviewer fund-controller / Operator ops-user",
       submittedLabel: "Submitted May 08, 15:05 UTC",
       decidedLabel: "Decision pending",
       rationale: "Pending final ledger validation before close sign-off.",
+      reviewer: "fund-controller",
       evidenceLabel: "1 evidence link",
       evidenceHref: "/accounting/approvals",
-      evidenceRouteLabel: "Open approval evidence"
+      evidenceRouteLabel: "Open approval evidence",
+      decisionGuardLabel: "Close workflow has unresolved ledger blockers.",
+      approveWorkflowReportPackId: null,
+      canApproveWorkflow: false,
+      approveWorkflowDisabledReason: "Close workflow has unresolved ledger blockers.",
+      rejectWorkflowReasonCode: "BrowserApprovalDecisionReview",
+      canRejectWorkflow: true,
+      rejectWorkflowDisabledReason: null
     });
     expect(vm.financialOperationsQueue.items[4]).toMatchObject({
       kindLabel: "Evidence package",
@@ -1306,6 +1316,164 @@ describe("Operations Continuity view model", () => {
       submitApprovalChecklistControlApprovals: [],
       canSubmitApproval: true,
       submitApprovalDisabledReason: null
+    });
+  });
+
+  it("enables workflow approval decision metadata when report-pack and checklist evidence are retained", () => {
+    const reportPackEvidence: OperationsEvidenceLink = {
+      evidenceId: "report-pack-approval-decision-evidence",
+      label: "Report-pack approval decision evidence",
+      route: "/workstation/reporting/report-packs/report-pack-2026-05/evidence",
+      source: "operations-continuity",
+      capturedAtUtc: "2026-05-10T17:25:00Z"
+    };
+    const approvalGates: OperationsGate[] = [
+      {
+        ...gates[0],
+        status: "Passed",
+        completedAtUtc: "2026-05-10T17:00:00Z",
+        completedBy: "operations-lead"
+      },
+      {
+        ...gates[1],
+        status: "Passed",
+        blockers: [],
+        completedAtUtc: "2026-05-10T17:10:00Z",
+        completedBy: "ledger-lead"
+      },
+      {
+        gateKey: "Approval",
+        displayName: "Approval",
+        status: "InProgress",
+        isRequired: true,
+        description: "Reviewer decision is pending.",
+        blockers: [],
+        nextActions: [],
+        completedAtUtc: null,
+        completedBy: null
+      }
+    ];
+    const closeChecklist: OperationsCloseChecklistTask[] = [
+      {
+        taskId: "close-gate-brokeringest",
+        gate: "BrokerIngest",
+        label: "Broker ingest close gate",
+        owner: "operations-lead",
+        requiredEvidence: "Broker ingest evidence is retained.",
+        dueDate: "2026-05-10",
+        requiredApprovalCount: 1,
+        expiresOn: "2026-05-14",
+        status: "Done",
+        blockingReason: null,
+        evidencePointer: "broker-ingest-evidence",
+        remediationRoute: "/workstation/accounting/operations-continuity",
+        canAcknowledge: false,
+        acknowledgedAtUtc: "2026-05-10T17:00:00Z",
+        acknowledgedBy: "operations-lead"
+      },
+      {
+        taskId: "close-gate-ledgerposting",
+        gate: "LedgerPosting",
+        label: "Ledger posting close gate",
+        owner: "ledger-lead",
+        requiredEvidence: "Ledger posting evidence is retained.",
+        dueDate: "2026-05-10",
+        requiredApprovalCount: 1,
+        expiresOn: "2026-05-14",
+        status: "Done",
+        blockingReason: null,
+        evidencePointer: "ledger-posting-evidence",
+        remediationRoute: "/workstation/accounting/ledger",
+        canAcknowledge: false,
+        acknowledgedAtUtc: "2026-05-10T17:10:00Z",
+        acknowledgedBy: "ledger-lead"
+      },
+      {
+        taskId: "close-gate-approval",
+        gate: "Approval",
+        label: "Approval close gate",
+        owner: "fund-controller",
+        requiredEvidence: "Reviewer approval and retained report-pack evidence.",
+        dueDate: "2026-05-10",
+        requiredApprovalCount: 2,
+        expiresOn: "2026-05-14",
+        status: "Pending",
+        blockingReason: null,
+        evidencePointer: reportPackEvidence.evidenceId,
+        remediationRoute: "/workstation/accounting/approvals",
+        canAcknowledge: false,
+        acknowledgedAtUtc: null,
+        acknowledgedBy: null
+      }
+    ];
+    const approvalDecisionReadyDetail: OperationsContinuityWorkflow = {
+      ...detail,
+      status: "ApprovalPending",
+      gates: approvalGates,
+      ledgerPostingState: "Complete",
+      reconciliationState: "Complete",
+      approvalState: "ReviewerAssigned",
+      breakCases: [],
+      approvals: [
+        {
+          approvalId: "approval-close-2026-05",
+          status: "ReviewerAssigned",
+          operator: "ops-user",
+          reviewer: "fund-controller",
+          rationale: "Pending final close sign-off against retained report-pack evidence.",
+          submittedAtUtc: "2026-05-10T17:30:00Z",
+          decidedAtUtc: null,
+          evidenceLinks: [reportPackEvidence]
+        }
+      ],
+      reportPackReadiness: {
+        isReady: true,
+        reportPackId: "report-pack-2026-05",
+        blockingReason: null,
+        evidenceLinks: [reportPackEvidence]
+      },
+      closeChecklist,
+      closePackage: null
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail: approvalDecisionReadyDetail,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.workflowApprovalHistory[0]).toMatchObject({
+      id: "approval-close-2026-05",
+      workflowId,
+      expectedWorkflowVersion: 4,
+      reviewer: "fund-controller",
+      decisionGuardLabel: "Approval decision guard clear",
+      approveWorkflowReportPackId: "report-pack-2026-05",
+      approveWorkflowEvidenceLinks: expect.arrayContaining([reportPackEvidence]),
+      approveWorkflowChecklistControlApprovals: expect.arrayContaining([
+        {
+          taskId: "close-gate-brokeringest",
+          approvedBy: "operations-lead",
+          approvedAtUtc: "2026-05-10T17:00:00Z"
+        },
+        {
+          taskId: "close-gate-approval",
+          approvedBy: "fund-controller",
+          approvedAtUtc: "2026-05-10T17:30:00Z"
+        }
+      ]),
+      canApproveWorkflow: true,
+      approveWorkflowDisabledReason: null,
+      rejectWorkflowEvidenceLinks: expect.arrayContaining([reportPackEvidence]),
+      rejectWorkflowReasonCode: "BrowserApprovalDecisionReview",
+      canRejectWorkflow: true,
+      rejectWorkflowDisabledReason: null
     });
   });
 
