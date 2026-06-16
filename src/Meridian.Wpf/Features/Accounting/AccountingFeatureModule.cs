@@ -67,10 +67,13 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetService<IOperationsContinuityWorkflowService>()));
         services.TryAddSingleton<IAccountingPolicyService, AccountingPolicyService>();
         services.TryAddSingleton<IAccountingBasisProjectionService, AccountingBasisProjectionService>();
+        services.TryAddSingleton<IOperationalExceptionTriageService, OperationalExceptionTriageService>();
         services.TryAddSingleton<IAccountingJournalDraftService, AccountingJournalDraftService>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, QuickBooksFixtureAccountingProvider>());
         services.TryAddSingleton<AccountingSystemIntegrationService>();
         services.AddTransient<AccountingConfigureViewModel>();
+        services.AddTransient<OperationalExceptionTriageViewModel>();
+        services.AddTransient<OperationalExceptionTriagePage>();
         services.AddTransient<AccountingConfigurePage>();
         services.AddTransient<AccountingCloseViewModel>();
     }

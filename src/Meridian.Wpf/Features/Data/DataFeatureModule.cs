@@ -28,7 +28,7 @@ public sealed class DataFeatureModule : IDesktopFeatureModule
         ShellPageRegistryBuilder.Page<DataExportPage>("DataExport", "Data export", "Configure export jobs and deliver datasets.", "data", "Packaging", "\uEDE1", 50, ShellNavigationVisibilityTier.Primary, ["export", "package", "configure"], ["ExportPresets", "AnalysisExport"]),
         ShellPageRegistryBuilder.Page<DataSourcesPage>("DataSources", "Data sources", "Review source connectivity and feed coverage.", "data", "Operations Queue", "\uEC05", 60, ShellNavigationVisibilityTier.Secondary, ["sources", "connectivity", "review"], ["Provider", "ProviderHealth"]),
         ShellPageRegistryBuilder.Page<ProviderHealthPage>("ProviderHealth", "Provider health", "Inspect provider reachability, degraded states, and recovery guidance.", "data", "Operations Queue", "\uEB51", 65, ShellNavigationVisibilityTier.Secondary, ["provider health", "reachability"], ["Provider", "DataSources", "CollectionSessions", "DataQuality"]),
-        ShellPageRegistryBuilder.Page<DataQualityPage>("DataQuality", "Data quality", "Track validation signals, integrity issues, and remediation state.", "data", "Assurance", "\uE73E", 70, ShellNavigationVisibilityTier.Secondary, ["quality", "validation"], ["ProviderHealth", "ArchiveHealth", "Diagnostics"]),
+        ShellPageRegistryBuilder.Page<DataQualityPage>("DataQuality", "Data quality", "Track validation signals, integrity issues, and remediation state.", "data", "Assurance", "\uE73E", 70, ShellNavigationVisibilityTier.Secondary, ["quality", "validation"], ["ProviderHealth", "ArchiveHealth", "Diagnostics", "OperationalExceptions"]),
         ShellPageRegistryBuilder.Page<SecurityMasterPage>("SecurityMaster", "Security master", "Review reference data, listings, and security lifecycle readiness.", "data", "Assurance", "\uE72E", 80, ShellNavigationVisibilityTier.Secondary, ["reference data", "security"], ["SecurityInstrumentExplorer", "Symbols", "SymbolMapping", "DataQuality"]),
         ShellPageRegistryBuilder.Page<SymbolMappingPage>("SymbolMapping", "Symbol mapping", "Reconcile vendor symbols with Meridian identifiers.", "data", "Catalog", "\uE8AB", 90, ShellNavigationVisibilityTier.Secondary, ["mapping", "vendor", "reconcile"], ["Symbols", "SecurityMaster"]),
         ShellPageRegistryBuilder.Page<SymbolStoragePage>("SymbolStorage", "Symbol storage", "Review symbol persistence and storage layout.", "data", "Catalog", "\uEE94", 100, ShellNavigationVisibilityTier.Secondary, ["symbol storage", "persistence", "review"], ["Symbols", "Storage"]),
@@ -75,7 +75,8 @@ public sealed class DataFeatureModule : IDesktopFeatureModule
                     ShellPageRegistryBuilder.Pane("Provider", PaneDropAction.Replace),
                     ShellPageRegistryBuilder.Pane("Backfill", PaneDropAction.SplitRight),
                     ShellPageRegistryBuilder.Pane("Storage", PaneDropAction.SplitBelow),
-                    ShellPageRegistryBuilder.Pane("DataQuality", PaneDropAction.OpenTab)
+                    ShellPageRegistryBuilder.Pane("DataQuality", PaneDropAction.OpenTab),
+                    ShellPageRegistryBuilder.Pane("OperationalExceptions", PaneDropAction.OpenTab)
                 ],
                 PresetPanes: new Dictionary<string, IReadOnlyList<WorkspacePaneDefinition>>(StringComparer.OrdinalIgnoreCase),
                 ContextlessPanes: Array.Empty<WorkspacePaneDefinition>(),

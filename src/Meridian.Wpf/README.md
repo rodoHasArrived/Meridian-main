@@ -109,7 +109,12 @@ Backtesting flows.
 Fund Ledger reconciliation actions call the shared workstation reconciliation endpoints, refresh the
 queue from the shared break read model after review/resolve/dismiss, and keep the selected decision
 note, audit event, pending close sign-off posture, and contract-owned "Explain the Break" summary
-visible in the retained detail panel. The WPF queue projection carries the same source systems,
+visible in the retained detail panel.
+The desktop Operational Exception Triage page is a scoped queue for Meridian operational exceptions,
+starting with reconciliation and provider/data-quality cases. It projects severity, source workspace,
+affected account, portfolio, instrument, report, status, recommended action, evidence link, and
+audited history so Accounting, Portfolio, Reporting, and Data surfaces can deep-link into the same
+filtered exception review target without becoming a general-purpose ticketing system. The WPF queue projection carries the same source systems,
 probable cause, ledger impact, suggested next action, and evidence links as the browser Accounting
 detail so desktop operators do not rebuild reconciliation narratives locally. Statement-originated
 break rows also render the retained case SLA label and escalation posture from the shared
