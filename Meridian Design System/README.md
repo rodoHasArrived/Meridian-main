@@ -22,6 +22,7 @@ All visual design was reconstructed from the repository **rodoHasArrived/Meridia
   screen names treated as compatibility context rather than current top-level navigation.
 - Brand assets: `src/Meridian.Wpf/Assets/Brand/*.svg`
 - Icon library: `src/Meridian.Wpf/Assets/Icons/*.svg` (47 icons, 24×24, stroke-based, currentColor)
+- Provider integration workflow evidence: `/api/workstation/provider-integrations/*`, including setup, dry runs, sync runs, staging, identity resolution, promotion readiness, reconciliation handoff, handoff history, quarantine review, and replay routes.
 - Live screenshots: `docs/screenshots/*.png`
 
 You don't need access to the repo to use this design system — everything is copied into `assets/`.
@@ -37,7 +38,7 @@ You don't need access to the repo to use this design system — everything is co
 - **`preview/index.html`** — browsable catalogue for all preview review cards
 - **`preview/preview-common.css`** — shared preview navigation, focus, and accessible-heading utilities
 - **`preview/component-state-matrix.html`** — component states across operator state semantics
-- **`preview/screen-recipes.html`** — seven-workspace screen recipes for implementation handoff, including Reporting report-pack delivery and evidence readiness
+- **`preview/screen-recipes.html`** — seven-workspace screen recipes for implementation handoff, including Reporting report-pack delivery, provider reconciliation handoff, and evidence readiness
 - **`preview/reference-workbench.html`** — Security Master and schedule-heavy reference workbench recipe
 - **`preview/chart-table-standards.html`** — chart, dense-table, status-window, and row-detail standards
 - **`ui_kits/dashboard/`** — React component kit for the web dashboard
@@ -77,6 +78,7 @@ See `VISUAL_FOUNDATIONS.md`. In short:
 - **Shadows:** flat workstation offset shadows with inset highlights. Large poster shadows, glow, and elevation theatre are out.
 - **Layout:** masthead + left rail + dense content workbench. Uploaded references favor compact filters, selected-row detail panes, KPI-to-evidence flow, and horizontal status windows.
 - **Reference workbench:** Security Master, security detail, and cash-flow/factor schedule surfaces use a command deck, searchable master list, persistent selected detail frame, dense schedules, controls, notes, and audit evidence in one selected-security context.
+- **Provider integration workbench:** setup and Data/Settings handoffs show retained sync-run summaries, staging rows, identity resolution, promotion readiness, reconciliation handoff evidence, duplicate-handoff issues, and quarantine replay without mutating Portfolio, Security Master, Ledger, or Accounting records in the client.
 - **Motion:** 200ms ease transitions on hover/press. No bouncing. No parallax. Spinners only for async refresh.
 - **Typography:** Inter for primary UI, JetBrains Mono for primary data, Space Grotesk for display headings; IBM Plex Sans and IBM Plex Mono remain fallbacks. Numbers, identifiers, timestamps, prices, and row counts are always mono.
 

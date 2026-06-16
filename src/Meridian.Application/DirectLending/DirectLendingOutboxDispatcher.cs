@@ -10,11 +10,17 @@ namespace Meridian.Application.DirectLending;
 
 public sealed class DirectLendingOutboxDispatcher : BackgroundService
 {
+    private const int MinimumOutboxBatchSize = 1;
+    private const int MaximumOutboxBatchSize = 5000;
+    private const int MinimumOutboxPollIntervalSeconds = 1;
+    private const int MaximumOutboxPollIntervalSeconds = 3600;
+
     private readonly IDirectLendingOperationsStore _operationsStore;
     private readonly IDirectLendingCommandService _commandService;
     private readonly IDirectLendingQueryService _queryService;
     private readonly IAccountingPolicyService _accountingPolicyService;
-    private readonly DirectLendingOptions _options;
+    private readonly int _outboxBatchSize;
+    private readonly TimeSpan _outboxPollInterval;
     private readonly ILogger<DirectLendingOutboxDispatcher> _logger;
 
     public DirectLendingOutboxDispatcher(
@@ -28,7 +34,8 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
         _operationsStore = operationsStore;
         _commandService = commandService;
         _queryService = queryService;
-        _options = options;
+        _outboxBatchSize = NormalizeOutboxBatchSize(options.OutboxBatchSize);
+        _outboxPollInterval = NormalizeOutboxPollInterval(options.OutboxPollIntervalSeconds);
         _logger = logger;
         _accountingPolicyService = accountingPolicyService ?? new AccountingPolicyService();
     }
@@ -39,10 +46,10 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
         {
             try
             {
-                var messages = await _operationsStore.GetPendingOutboxMessagesAsync(_options.OutboxBatchSize, stoppingToken).ConfigureAwait(false);
+                var messages = await _operationsStore.GetPendingOutboxMessagesAsync(_outboxBatchSize, stoppingToken).ConfigureAwait(false);
                 if (messages.Count == 0)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(_options.OutboxPollIntervalSeconds), stoppingToken).ConfigureAwait(false);
+                    await Task.Delay(_outboxPollInterval, stoppingToken).ConfigureAwait(false);
                     continue;
                 }
 
@@ -66,10 +73,13 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Direct lending outbox polling failed; retrying in {DelaySeconds} seconds.", _options.OutboxPollIntervalSeconds);
+                _logger.LogError(
+                    ex,
+                    "Direct lending outbox polling failed; retrying in {DelaySeconds} seconds.",
+                    _outboxPollInterval.TotalSeconds);
                 try
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(_options.OutboxPollIntervalSeconds), stoppingToken).ConfigureAwait(false);
+                    await Task.Delay(_outboxPollInterval, stoppingToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
@@ -78,6 +88,15 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
             }
         }
     }
+
+    public static int NormalizeOutboxBatchSize(int configuredBatchSize)
+        => Math.Clamp(configuredBatchSize, MinimumOutboxBatchSize, MaximumOutboxBatchSize);
+
+    public static TimeSpan NormalizeOutboxPollInterval(int configuredPollIntervalSeconds)
+        => TimeSpan.FromSeconds(Math.Clamp(
+            configuredPollIntervalSeconds,
+            MinimumOutboxPollIntervalSeconds,
+            MaximumOutboxPollIntervalSeconds));
 
     private async Task ProcessAsync(DirectLendingOutboxMessage message, CancellationToken ct)
     {

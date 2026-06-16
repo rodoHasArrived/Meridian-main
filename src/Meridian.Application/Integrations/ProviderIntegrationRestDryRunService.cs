@@ -110,6 +110,7 @@ public sealed class ProviderIntegrationRestDryRunService
         string? firstPayloadId = null;
         string? cursor = null;
         var maxPages = request.MaxPages <= 0 ? 1 : request.MaxPages;
+        var dedupeValidator = new ProviderIntegrationStagingDedupeValidator();
 
         for (var page = 1; page <= maxPages; page++)
         {
@@ -170,14 +171,34 @@ public sealed class ProviderIntegrationRestDryRunService
                             ProviderIntegrationIssueSeverityDto.Critical,
                             $"Required field '{requiredField}' is missing.",
                             requiredField,
-                            "Map a provider response field, provide a constant, or configure a default value."));
+                        "Map a provider response field, provide a constant, or configure a default value."));
                     }
                 }
 
+                ProviderIntegrationMappedRecordValidation.AddValidationIssues(request.Capability, mappedRecord, rowIssues);
                 allIssues.AddRange(rowIssues);
                 var mappedElement = ToJsonElement(mappedRecord);
-                var sourceRecordId = ReadJsonString(mappedRecord, "sourceRecordId");
+                var sourceRecordId = ProviderIntegrationMappedRecordIdentity.ResolveSourceRecordId(request.Capability, mappedRecord);
                 var recordOrdinal = (accepted + quarantined + 1).ToString(CultureInfo.InvariantCulture);
+                var dedupeKey = ProviderIntegrationMappedRecordIdentity.BuildDedupeKey(
+                    connection.ConnectionId,
+                    request.Capability,
+                    recordOrdinal,
+                    sourceRecordId);
+
+                if (!rowIssues.Any(issue => issue.Severity == ProviderIntegrationIssueSeverityDto.Critical))
+                {
+                    var duplicateIssue = dedupeValidator.TryAccept(
+                        dedupeKey,
+                        request.Capability,
+                        ProviderIntegrationMappedRecordIdentity.ResolveSourceIdentityTargetField(request.Capability));
+                    if (duplicateIssue is not null)
+                    {
+                        rowIssues.Add(duplicateIssue);
+                        allIssues.Add(duplicateIssue);
+                    }
+                }
+
                 if (rowIssues.Any(issue => issue.Severity == ProviderIntegrationIssueSeverityDto.Critical))
                 {
                     quarantined++;
@@ -205,7 +226,7 @@ public sealed class ProviderIntegrationRestDryRunService
                         request.Capability,
                         payloadId,
                         sourceRecordId,
-                        BuildDedupeKey(connection.ConnectionId, request.Capability, recordOrdinal, sourceRecordId),
+                        dedupeKey,
                         mappedElement,
                         rowIssues.Where(issue => issue.Severity != ProviderIntegrationIssueSeverityDto.Critical).ToArray(),
                         ProviderIntegrationProcessingStatusDto.Validated,
@@ -561,22 +582,6 @@ public sealed class ProviderIntegrationRestDryRunService
         };
     }
 
-    private static string? ReadJsonString(JsonObject root, string targetField)
-    {
-        JsonNode? current = root;
-        foreach (var part in targetField.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-        {
-            if (current is not JsonObject currentObject ||
-                !currentObject.TryGetPropertyValue(part, out current) ||
-                current is null)
-            {
-                return null;
-            }
-        }
-
-        return current is JsonValue value && value.TryGetValue<string>(out var text) ? text : null;
-    }
-
     private static bool HasJsonPath(JsonObject root, string targetField)
     {
         JsonNode? current = root;
@@ -641,17 +646,6 @@ public sealed class ProviderIntegrationRestDryRunService
 
         return normalized;
     }
-
-    private static string BuildDedupeKey(
-        string connectionId,
-        ProviderCapabilityKindDto capability,
-        string ordinal,
-        string? sourceRecordId)
-        => string.Join(
-            ':',
-            connectionId,
-            capability.ToString(),
-            string.IsNullOrWhiteSpace(sourceRecordId) ? ordinal : sourceRecordId);
 
     private static JsonElement ToJsonElement<T>(T value)
     {

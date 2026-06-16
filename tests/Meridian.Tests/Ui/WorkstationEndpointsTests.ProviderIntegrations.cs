@@ -269,6 +269,39 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationSyncRuns_ReturnsRunHistory()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = await CreateSeededProviderIntegrationStoreAsync(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewConfig);
+            var client = app.GetTestClient();
+
+            var history = await client.GetFromJsonAsync<ProviderIntegrationSyncRunHistoryDto>(
+                $"{ProviderIntegrationSyncRunsRoute("connection-alpha")}?recentRunLimit=1",
+                ServerJsonOptions);
+
+            history.Should().NotBeNull();
+            history!.ConnectionId.Should().Be("connection-alpha");
+            history.TotalSyncRuns.Should().Be(2);
+            history.ReturnedSyncRuns.Should().Be(1);
+            history.LatestStartedAt.Should().Be(DateTimeOffset.Parse("2026-06-16T12:00:00Z"));
+            history.SyncRuns.Should().ContainSingle(run =>
+                run.SyncRunId == "sync-run-new" &&
+                run.DurableStagingRecordCount == 1 &&
+                run.DurableQuarantinedRecordCount == 2 &&
+                run.CriticalIssueCount == 1);
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ProviderIntegrationSyncPlan_ReturnsDueCapabilities()
     {
         var testRoot = CreateProviderIntegrationTestRoot();
@@ -752,6 +785,86 @@ public sealed partial class WorkstationEndpointsTests
             var client = app.GetTestClient();
 
             var response = await client.GetAsync(ProviderIntegrationPromotionReadinessRoute("connection-alpha"));
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationReconciliationHandoff_PersistsReadyRows()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = await CreatePromotionReadyProviderIntegrationStoreAsync(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ManageProviders);
+            var client = app.GetTestClient();
+            var request = new ProviderIntegrationReconciliationHandoffRequestDto(
+                "connection-alpha",
+                ["staging-ready"],
+                "operator@example.com",
+                DateTimeOffset.Parse("2026-06-16T13:00:00Z"),
+                "approval-provider-handoff-1",
+                "Approved for reconciliation staging handoff.",
+                RecentRunLimit: 10);
+
+            var result = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationReconciliationHandoff,
+                request,
+                ServerJsonOptions);
+            var handoff = await result.Content.ReadFromJsonAsync<ProviderIntegrationReconciliationHandoffResultDto>(ServerJsonOptions);
+            var history = await client.GetFromJsonAsync<ProviderIntegrationReconciliationHandoffHistoryDto>(
+                ProviderIntegrationReconciliationHandoffHistoryRoute("connection-alpha"),
+                ServerJsonOptions);
+
+            result.StatusCode.Should().Be(HttpStatusCode.OK);
+            handoff.Should().NotBeNull();
+            handoff!.Accepted.Should().BeTrue();
+            handoff.AcceptedRecordCount.Should().Be(1);
+            handoff.DuplicateRecordCount.Should().Be(0);
+            handoff.Records.Should().ContainSingle(record =>
+                record.StagingRecordId == "staging-ready" &&
+                record.PromotionTarget == "reconciliation-staging");
+            history.Should().NotBeNull();
+            history!.TotalRecords.Should().Be(1);
+            history.HandoffCount.Should().Be(1);
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationReconciliationHandoff_RequiresProviderConfigurePermission()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = await CreatePromotionReadyProviderIntegrationStoreAsync(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewConfig);
+            var client = app.GetTestClient();
+            var request = new ProviderIntegrationReconciliationHandoffRequestDto(
+                "connection-alpha",
+                ["staging-ready"],
+                "operator@example.com",
+                DateTimeOffset.Parse("2026-06-16T13:00:00Z"),
+                "approval-provider-handoff-1",
+                "Approved for reconciliation staging handoff.",
+                RecentRunLimit: 10);
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationReconciliationHandoff,
+                request,
+                ServerJsonOptions);
 
             response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         }
@@ -1369,6 +1482,28 @@ public sealed partial class WorkstationEndpointsTests
         }
     }
 
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationSyncRuns_RequiresProviderReadPermission()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = await CreateSeededProviderIntegrationStoreAsync(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewMarketData);
+            var client = app.GetTestClient();
+
+            var response = await client.GetAsync(ProviderIntegrationSyncRunsRoute("connection-alpha"));
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
     private static void RegisterProviderIntegrationEndpointServices(
         IServiceCollection services,
         IProviderIntegrationManifestStore store,
@@ -1390,6 +1525,7 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<ProviderIntegrationStagingReviewService>();
         services.AddSingleton<ProviderIntegrationIdentityResolutionPreviewService>();
         services.AddSingleton<ProviderIntegrationPromotionReadinessService>();
+        services.AddSingleton<ProviderIntegrationReconciliationHandoffService>();
         services.AddSingleton<ProviderIntegrationQuarantineReviewService>();
         services.AddSingleton<ProviderIntegrationQuarantineReplayService>();
     }
@@ -1438,6 +1574,39 @@ public sealed partial class WorkstationEndpointsTests
                 ]),
             stagingCount: 1,
             quarantineCount: 2).ConfigureAwait(false);
+        return store;
+    }
+
+    private static async Task<FileProviderIntegrationManifestStore> CreatePromotionReadyProviderIntegrationStoreAsync(string testRoot)
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var tenantStore = DefaultProviderIntegrationTenantStore(store);
+        var manifest = CreateProviderIntegrationEndpointManifest();
+        var connection = CreateProviderIntegrationEndpointConnection(manifest);
+        await tenantStore.SaveManifestAsync(manifest).ConfigureAwait(false);
+        await tenantStore.SaveConnectionAsync(connection).ConfigureAwait(false);
+        await tenantStore.SaveSyncRunAsync(CreateProviderIntegrationEndpointSyncRun(
+            "sync-run-ready",
+            manifest,
+            connection,
+            DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+            ProviderIntegrationProcessingStatusDto.Validated,
+            received: 1,
+            accepted: 1,
+            quarantined: 0,
+            issues: [])).ConfigureAwait(false);
+        await tenantStore.SaveStagingRecordAsync(new IntegrationStagingRecordDto(
+            "staging-ready",
+            "sync-run-ready",
+            connection.ConnectionId,
+            ProviderCapabilityKindDto.Positions,
+            "payload-ready",
+            "source-ready",
+            $"{connection.ConnectionId}:Positions:source-ready",
+            ProviderIntegrationEndpointJson("""{"providerAccountId":"A-100","internalAccountId":"internal-account-100","security":{"internalSecurityId":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"},"quantity":100,"asOf":"2026-06-16"}"""),
+            [],
+            ProviderIntegrationProcessingStatusDto.Validated,
+            DateTimeOffset.Parse("2026-06-16T12:00:00Z"))).ConfigureAwait(false);
         return store;
     }
 
@@ -1603,6 +1772,12 @@ public sealed partial class WorkstationEndpointsTests
             Uri.EscapeDataString(connectionId),
             StringComparison.Ordinal);
 
+    private static string ProviderIntegrationSyncRunsRoute(string connectionId)
+        => UiApiRoutes.WorkstationProviderIntegrationConnectionSyncRuns.Replace(
+            "{connectionId}",
+            Uri.EscapeDataString(connectionId),
+            StringComparison.Ordinal);
+
     private static string ProviderIntegrationSyncPlanRoute(string connectionId)
         => UiApiRoutes.WorkstationProviderIntegrationConnectionSyncPlan.Replace(
             "{connectionId}",
@@ -1629,6 +1804,12 @@ public sealed partial class WorkstationEndpointsTests
 
     private static string ProviderIntegrationPromotionReadinessRoute(string connectionId)
         => UiApiRoutes.WorkstationProviderIntegrationPromotionReadiness.Replace(
+            "{connectionId}",
+            Uri.EscapeDataString(connectionId),
+            StringComparison.Ordinal);
+
+    private static string ProviderIntegrationReconciliationHandoffHistoryRoute(string connectionId)
+        => UiApiRoutes.WorkstationProviderIntegrationReconciliationHandoffHistory.Replace(
             "{connectionId}",
             Uri.EscapeDataString(connectionId),
             StringComparison.Ordinal);

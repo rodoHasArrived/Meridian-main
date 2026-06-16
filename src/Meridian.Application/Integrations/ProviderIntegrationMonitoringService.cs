@@ -26,6 +26,63 @@ public sealed class ProviderIntegrationMonitoringService
         int recentRunLimit = DefaultRecentRunLimit,
         CancellationToken ct = default)
     {
+        var evidence = await BuildConnectionSyncRunEvidenceAsync(
+            tenantId,
+            connectionId,
+            recentRunLimit,
+            ct).ConfigureAwait(false);
+
+        return new ProviderIntegrationConnectionMonitorDto(
+            evidence.Connection.ConnectionId,
+            evidence.Connection.ManifestId,
+            evidence.Connection.ProviderId,
+            evidence.Manifest.DisplayName,
+            evidence.Connection.ConnectionName,
+            evidence.Connection.Environment,
+            evidence.Connection.State,
+            evidence.Connection.EnabledCapabilities,
+            evidence.RunEvidence.FirstOrDefault(),
+            evidence.RunEvidence,
+            evidence.RunEvidence.Sum(run => run.RecordsReceived),
+            evidence.RunEvidence.Sum(run => run.RecordsAccepted),
+            evidence.RunEvidence.Sum(run => run.RecordsQuarantined),
+            evidence.RunEvidence.Sum(run => run.DurableStagingRecordCount),
+            evidence.RunEvidence.Sum(run => run.DurableQuarantinedRecordCount),
+            evidence.RunEvidence.Any(run => run.CriticalIssueCount > 0));
+    }
+
+    public async Task<ProviderIntegrationSyncRunHistoryDto> GetConnectionSyncRunsAsync(
+        string connectionId,
+        int recentRunLimit = DefaultRecentRunLimit,
+        CancellationToken ct = default)
+        => await GetConnectionSyncRunsAsync(null, connectionId, recentRunLimit, ct).ConfigureAwait(false);
+
+    public async Task<ProviderIntegrationSyncRunHistoryDto> GetConnectionSyncRunsAsync(
+        string? tenantId,
+        string connectionId,
+        int recentRunLimit = DefaultRecentRunLimit,
+        CancellationToken ct = default)
+    {
+        var evidence = await BuildConnectionSyncRunEvidenceAsync(
+            tenantId,
+            connectionId,
+            recentRunLimit,
+            ct).ConfigureAwait(false);
+
+        return new ProviderIntegrationSyncRunHistoryDto(
+            evidence.Connection.ConnectionId,
+            evidence.RunEvidence,
+            evidence.TotalSyncRuns,
+            evidence.RunEvidence.Count,
+            evidence.RunEvidence.FirstOrDefault()?.StartedAt);
+    }
+
+    private async Task<ConnectionSyncRunEvidence> BuildConnectionSyncRunEvidenceAsync(
+        string? tenantId,
+        string connectionId,
+        int recentRunLimit,
+        CancellationToken ct)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
         ct.ThrowIfCancellationRequested();
 
@@ -34,9 +91,9 @@ public sealed class ProviderIntegrationMonitoringService
             ?? throw new KeyNotFoundException($"Provider integration connection '{connectionId}' was not found.");
         var manifest = await scopedStore.GetManifestAsync(connection.ManifestId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException($"Provider integration manifest '{connection.ManifestId}' was not found.");
-        var limit = NormalizeLimit(recentRunLimit);
-        var syncRuns = (await scopedStore.ListSyncRunsAsync(connection.ConnectionId, ct).ConfigureAwait(false))
-            .Take(limit)
+        var allSyncRuns = await scopedStore.ListSyncRunsAsync(connection.ConnectionId, ct).ConfigureAwait(false);
+        var syncRuns = allSyncRuns
+            .Take(NormalizeLimit(recentRunLimit))
             .ToArray();
 
         var runEvidence = new List<ProviderIntegrationSyncRunEvidenceDto>(syncRuns.Length);
@@ -48,23 +105,11 @@ public sealed class ProviderIntegrationMonitoringService
             runEvidence.Add(CreateRunEvidence(syncRun, stagingRecords.Count, quarantinedRecords.Count));
         }
 
-        return new ProviderIntegrationConnectionMonitorDto(
-            connection.ConnectionId,
-            connection.ManifestId,
-            connection.ProviderId,
-            manifest.DisplayName,
-            connection.ConnectionName,
-            connection.Environment,
-            connection.State,
-            connection.EnabledCapabilities,
-            runEvidence.FirstOrDefault(),
+        return new ConnectionSyncRunEvidence(
+            connection,
+            manifest,
             runEvidence,
-            runEvidence.Sum(run => run.RecordsReceived),
-            runEvidence.Sum(run => run.RecordsAccepted),
-            runEvidence.Sum(run => run.RecordsQuarantined),
-            runEvidence.Sum(run => run.DurableStagingRecordCount),
-            runEvidence.Sum(run => run.DurableQuarantinedRecordCount),
-            runEvidence.Any(run => run.CriticalIssueCount > 0));
+            allSyncRuns.Count);
     }
 
     private static ProviderIntegrationSyncRunEvidenceDto CreateRunEvidence(
@@ -108,4 +153,10 @@ public sealed class ProviderIntegrationMonitoringService
             : store is IProviderIntegrationTenantManifestStoreFactory factory
                 ? factory.ForTenant(tenantId)
                 : store;
+
+    private sealed record ConnectionSyncRunEvidence(
+        ProviderConnectionDto Connection,
+        ProviderIntegrationManifestDto Manifest,
+        IReadOnlyList<ProviderIntegrationSyncRunEvidenceDto> RunEvidence,
+        int TotalSyncRuns);
 }

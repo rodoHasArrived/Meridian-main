@@ -82,6 +82,36 @@ import type {
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
+  ManualCsvProviderIntegrationDryRunRequest,
+  ProviderIntegrationActivationReadiness,
+  ProviderIntegrationActivationRequest,
+  ProviderIntegrationActivationResult,
+  ProviderIntegrationConnectionMonitor,
+  ProviderIntegrationDryRunResult,
+  ProviderIntegrationManifest,
+  ProviderIntegrationOpenApiImportRequest,
+  ProviderIntegrationOpenApiImportResult,
+  ProviderIntegrationPromotionReadinessPreview,
+  ProviderIntegrationQuarantineReplayRequest,
+  ProviderIntegrationQuarantineReplayResult,
+  ProviderIntegrationQuarantineResolutionRequest,
+  ProviderIntegrationQuarantineResolutionResult,
+  ProviderIntegrationQuarantineReview,
+  ProviderIntegrationReconciliationHandoffHistory,
+  ProviderIntegrationReconciliationHandoffRequest,
+  ProviderIntegrationReconciliationHandoffResult,
+  ProviderIntegrationRestDryRunRequest,
+  ProviderIntegrationRunDueSyncRequest,
+  ProviderIntegrationRunDueSyncResult,
+  ProviderIntegrationSchemaDriftCheckRequest,
+  ProviderIntegrationSchemaDriftCheckResult,
+  ProviderIntegrationSetupSaveRequest,
+  ProviderIntegrationSetupSaveResult,
+  ProviderIntegrationStagingIdentityResolutionPreview,
+  ProviderIntegrationStagingReview,
+  ProviderIntegrationSyncPlan,
+  ProviderIntegrationSyncRunHistory,
+  ProviderIntegrationTemplateCatalogEntry,
   PromotionDecisionResult,
   PromotionEvaluationResult,
   PromotionRecord,
@@ -242,6 +272,7 @@ import {
   PORTFOLIO_API_ENDPOINTS,
   PLAID_API_ENDPOINTS,
   PROVIDER_API_ENDPOINTS,
+  PROVIDER_INTEGRATION_API_ENDPOINTS,
   PROVIDER_ROUTING_API_ENDPOINTS,
   PROMOTION_API_ENDPOINTS,
   QUALITY_API_ENDPOINTS,
@@ -276,6 +307,17 @@ import {
   promotionEvaluateEndpoint,
   providerCredentialEndpoint,
   providerVerifyEndpoint,
+  workstationProviderIntegrationConnectionMonitorEndpoint,
+  workstationProviderIntegrationConnectionRunDueSyncEndpoint,
+  workstationProviderIntegrationConnectionSyncPlanEndpoint,
+  workstationProviderIntegrationConnectionSyncRunsEndpoint,
+  workstationProviderIntegrationIdentityResolutionEndpoint,
+  workstationProviderIntegrationPromotionReadinessEndpoint,
+  workstationProviderIntegrationQuarantineReviewEndpoint,
+  workstationProviderIntegrationReadinessEndpoint,
+  workstationProviderIntegrationReconciliationHandoffHistoryEndpoint,
+  workstationProviderIntegrationStagingReviewEndpoint,
+  workstationProviderIntegrationTemplateEndpoint,
   providerRemoveEndpoint,
   providerTestEndpoint,
   qualityAnomalyAcknowledgeEndpoint,
@@ -2245,6 +2287,211 @@ export function getProviderRoutingTrustSnapshots(options: ApiRequestOptions = {}
 
 export function previewProviderRoute(request: ProviderRoutePreviewRequest, options: ApiRequestOptions = {}) {
   return postJson<ProviderRoutePreviewResponse>(PROVIDER_ROUTING_API_ENDPOINTS.preview, request, options);
+}
+
+export function getProviderIntegrationTemplates(options: ApiRequestOptions = {}) {
+  return getJson<ProviderIntegrationTemplateCatalogEntry[]>(PROVIDER_INTEGRATION_API_ENDPOINTS.templates, options);
+}
+
+export function getProviderIntegrationTemplate(manifestId: string, options: ApiRequestOptions = {}) {
+  return getJson<ProviderIntegrationManifest>(workstationProviderIntegrationTemplateEndpoint(manifestId), options);
+}
+
+export function importProviderIntegrationOpenApi(
+  request: ProviderIntegrationOpenApiImportRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationOpenApiImportResult>(
+    PROVIDER_INTEGRATION_API_ENDPOINTS.openApiImport,
+    request,
+    options
+  );
+}
+
+export function saveProviderIntegrationSetup(
+  request: ProviderIntegrationSetupSaveRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationSetupSaveResult>(PROVIDER_INTEGRATION_API_ENDPOINTS.setupSave, request, options);
+}
+
+export function getProviderIntegrationReadiness(
+  manifestId: string,
+  connectionId?: string | null,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationActivationReadiness>(
+    workstationProviderIntegrationReadinessEndpoint(manifestId, connectionId),
+    options
+  );
+}
+
+export function runManualCsvProviderIntegrationDryRun(
+  request: ManualCsvProviderIntegrationDryRunRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationDryRunResult>(
+    PROVIDER_INTEGRATION_API_ENDPOINTS.manualCsvDryRun,
+    request,
+    options
+  );
+}
+
+export function runRestProviderIntegrationDryRun(
+  request: ProviderIntegrationRestDryRunRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationDryRunResult>(PROVIDER_INTEGRATION_API_ENDPOINTS.restDryRun, request, options);
+}
+
+export function activateProviderIntegration(
+  request: ProviderIntegrationActivationRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationActivationResult>(PROVIDER_INTEGRATION_API_ENDPOINTS.activate, request, options);
+}
+
+export function getProviderIntegrationConnectionMonitor(
+  connectionId: string,
+  recentRunLimit?: number,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationConnectionMonitor>(
+    workstationProviderIntegrationConnectionMonitorEndpoint(connectionId, recentRunLimit),
+    options
+  );
+}
+
+export function getProviderIntegrationConnectionSyncRuns(
+  connectionId: string,
+  recentRunLimit?: number,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationSyncRunHistory>(
+    workstationProviderIntegrationConnectionSyncRunsEndpoint(connectionId, recentRunLimit),
+    options
+  );
+}
+
+export function getProviderIntegrationConnectionSyncPlan(
+  connectionId: string,
+  evaluatedAt?: string | null,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationSyncPlan>(
+    workstationProviderIntegrationConnectionSyncPlanEndpoint(connectionId, evaluatedAt),
+    options
+  );
+}
+
+export function runDueProviderIntegrationSync(
+  connectionId: string,
+  request: ProviderIntegrationRunDueSyncRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationRunDueSyncResult>(
+    workstationProviderIntegrationConnectionRunDueSyncEndpoint(connectionId),
+    request,
+    options
+  );
+}
+
+export function checkProviderIntegrationSchemaDrift(
+  request: ProviderIntegrationSchemaDriftCheckRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationSchemaDriftCheckResult>(
+    PROVIDER_INTEGRATION_API_ENDPOINTS.schemaDriftCheck,
+    request,
+    options
+  );
+}
+
+export function getProviderIntegrationStagingReview(
+  connectionId: string,
+  recentRunLimit?: number,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationStagingReview>(
+    workstationProviderIntegrationStagingReviewEndpoint(connectionId, recentRunLimit),
+    options
+  );
+}
+
+export function getProviderIntegrationIdentityResolution(
+  connectionId: string,
+  recentRunLimit?: number,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationStagingIdentityResolutionPreview>(
+    workstationProviderIntegrationIdentityResolutionEndpoint(connectionId, recentRunLimit),
+    options
+  );
+}
+
+export function getProviderIntegrationPromotionReadiness(
+  connectionId: string,
+  recentRunLimit?: number,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationPromotionReadinessPreview>(
+    workstationProviderIntegrationPromotionReadinessEndpoint(connectionId, recentRunLimit),
+    options
+  );
+}
+
+export function getProviderIntegrationReconciliationHandoffHistory(
+  connectionId: string,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationReconciliationHandoffHistory>(
+    workstationProviderIntegrationReconciliationHandoffHistoryEndpoint(connectionId),
+    options
+  );
+}
+
+export function createProviderIntegrationReconciliationHandoff(
+  request: ProviderIntegrationReconciliationHandoffRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationReconciliationHandoffResult>(
+    PROVIDER_INTEGRATION_API_ENDPOINTS.reconciliationHandoff,
+    request,
+    options
+  );
+}
+
+export function getProviderIntegrationQuarantineReview(
+  connectionId: string,
+  recentRunLimit?: number,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationQuarantineReview>(
+    workstationProviderIntegrationQuarantineReviewEndpoint(connectionId, recentRunLimit),
+    options
+  );
+}
+
+export function resolveProviderIntegrationQuarantineRecord(
+  request: ProviderIntegrationQuarantineResolutionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationQuarantineResolutionResult>(
+    PROVIDER_INTEGRATION_API_ENDPOINTS.quarantineResolve,
+    request,
+    options
+  );
+}
+
+export function replayProviderIntegrationQuarantineRecords(
+  request: ProviderIntegrationQuarantineReplayRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationQuarantineReplayResult>(
+    PROVIDER_INTEGRATION_API_ENDPOINTS.quarantineReplay,
+    request,
+    options
+  );
 }
 
 export function removeProvider(providerId: string) {

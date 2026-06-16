@@ -138,6 +138,104 @@ public sealed class ProviderIntegrationDryRunServiceTests : IDisposable
         mapped.GetProperty("transactionType").GetString().Should().Be("fee");
         mapped.GetProperty("amount").GetProperty("amount").GetDecimal().Should().Be(-25.75m);
         mapped.GetProperty("amount").GetProperty("currency").GetString().Should().Be("USD");
+        staged.Single().SourceRecordId.Should().Be("TX-1");
+        staged.Single().DedupeKey.Should().Contain("TX-1");
+    }
+
+    [Fact]
+    public async Task RunManualCsvDryRunAsync_StagesFixedIncomeSecurityMasterWithIdentifierLineage()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-fixed-income-security-master-v1")!;
+        var connection = CreateConnection(manifest, ProviderCapabilityKindDto.SecurityReferenceData);
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(connection);
+        var service = new ProviderIntegrationDryRunService(store);
+
+        var result = await service.RunManualCsvDryRunAsync(
+            CreateRequest(
+                manifest,
+                connection,
+                """
+                cusip,isin,ticker,issuer,description,coupon,maturity_date,currency,rating,sector,naic_designation
+                9128285M8,US9128285M81,UST,US Treasury,US Treasury Note,4.25,2031-06-16,usd,AA+,Government,1
+                """,
+                ProviderCapabilityKindDto.SecurityReferenceData));
+
+        result.RecordsAccepted.Should().Be(1);
+        result.RecordsQuarantined.Should().Be(0);
+        var staged = await store.ListStagingRecordsAsync(result.SyncRunId);
+        staged.Should().ContainSingle();
+        var mapped = staged.Single().MappedRecord;
+        mapped.GetProperty("security").GetProperty("cusip").GetString().Should().Be("9128285M8");
+        mapped.GetProperty("security").GetProperty("coupon").GetDecimal().Should().Be(4.25m);
+        mapped.GetProperty("security").GetProperty("maturityDate").GetString().Should().Be("2031-06-16");
+        mapped.GetProperty("security").GetProperty("currency").GetString().Should().Be("USD");
+        staged.Single().SourceRecordId.Should().Be("9128285M8");
+        staged.Single().DedupeKey.Should().Contain("9128285M8");
+    }
+
+    [Fact]
+    public async Task RunManualCsvDryRunAsync_QuarantinesDuplicateTransactionIdentity()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-manual-csv-upload-v1")!;
+        var connection = CreateConnection(manifest, ProviderCapabilityKindDto.Transactions);
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(connection);
+        var service = new ProviderIntegrationDryRunService(store);
+
+        var result = await service.RunManualCsvDryRunAsync(
+            CreateRequest(
+                manifest,
+                connection,
+                """
+                transaction_id,account_id,transaction_type,posting_date,amount,currency,cusip
+                TX-DUP,A-100,BUY,2026-06-16,25.75,usd,9128285M8
+                TX-DUP,A-100,BUY,2026-06-16,25.75,usd,9128285M8
+                """,
+                ProviderCapabilityKindDto.Transactions));
+
+        result.RecordsReceived.Should().Be(2);
+        result.RecordsAccepted.Should().Be(1);
+        result.RecordsQuarantined.Should().Be(1);
+        result.Status.Should().Be(ProviderIntegrationProcessingStatusDto.Quarantined);
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "duplicate.dedupe-key" &&
+            issue.TargetField == "providerTransactionId");
+        (await store.ListStagingRecordsAsync(result.SyncRunId)).Should().ContainSingle()
+            .Which.SourceRecordId.Should().Be("TX-DUP");
+        (await store.ListQuarantinedRecordsAsync(result.SyncRunId)).Should().ContainSingle()
+            .Which.ValidationErrors.Should().Contain(error => error.Code == "duplicate.dedupe-key");
+    }
+
+    [Fact]
+    public async Task RunManualCsvDryRunAsync_QuarantinesMoneyAmountWithoutCurrency()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var manifest = CreateMoneyValidationManifest();
+        var connection = CreateConnection(manifest);
+        await store.SaveManifestAsync(manifest);
+        await store.SaveConnectionAsync(connection);
+        var service = new ProviderIntegrationDryRunService(store);
+
+        var result = await service.RunManualCsvDryRunAsync(
+            CreateRequest(
+                manifest,
+                connection,
+                """
+                account_id,cusip,quantity,as_of,mkt_val,source_id
+                A-100,9128285M8,100,2026-06-16,1000.00,POS-1
+                """));
+
+        result.RecordsAccepted.Should().Be(0);
+        result.RecordsQuarantined.Should().Be(1);
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "money.currency.missing" &&
+            issue.TargetField == "marketValue.currency");
+        (await store.ListStagingRecordsAsync(result.SyncRunId)).Should().BeEmpty();
+        (await store.ListQuarantinedRecordsAsync(result.SyncRunId)).Should().ContainSingle()
+            .Which.ValidationErrors.Should().Contain(error => error.Code == "money.currency.missing");
     }
 
     [Fact]
@@ -280,6 +378,69 @@ public sealed class ProviderIntegrationDryRunServiceTests : IDisposable
             ApprovedBy: null,
             ApprovedAt: null,
             ChangeReason: "Initial manual CSV dry-run template");
+
+    private static ProviderIntegrationManifestDto CreateMoneyValidationManifest()
+        => CreateManifest() with
+        {
+            ManifestId = "manifest-manual-money-validation-v1",
+            FieldMappings =
+            [
+                new FieldMappingDto(
+                    ProviderCapabilityKindDto.Positions,
+                    "$.account_id",
+                    "providerAccountId",
+                    new TransformRuleDto("trim", new Dictionary<string, string>()),
+                    Required: true,
+                    ProviderMappingConfidenceDto.Approved,
+                    DefaultValue: null,
+                    ConstantValue: null),
+                new FieldMappingDto(
+                    ProviderCapabilityKindDto.Positions,
+                    "$.cusip",
+                    "security.cusip",
+                    new TransformRuleDto("uppercase", new Dictionary<string, string>()),
+                    Required: true,
+                    ProviderMappingConfidenceDto.Approved,
+                    DefaultValue: null,
+                    ConstantValue: null),
+                new FieldMappingDto(
+                    ProviderCapabilityKindDto.Positions,
+                    "$.quantity",
+                    "quantity",
+                    new TransformRuleDto("decimal", new Dictionary<string, string>()),
+                    Required: true,
+                    ProviderMappingConfidenceDto.Approved,
+                    DefaultValue: null,
+                    ConstantValue: null),
+                new FieldMappingDto(
+                    ProviderCapabilityKindDto.Positions,
+                    "$.as_of",
+                    "asOf",
+                    new TransformRuleDto("date", new Dictionary<string, string>()),
+                    Required: true,
+                    ProviderMappingConfidenceDto.Approved,
+                    DefaultValue: null,
+                    ConstantValue: null),
+                new FieldMappingDto(
+                    ProviderCapabilityKindDto.Positions,
+                    "$.mkt_val",
+                    "marketValue.amount",
+                    new TransformRuleDto("decimal", new Dictionary<string, string>()),
+                    Required: false,
+                    ProviderMappingConfidenceDto.Approved,
+                    DefaultValue: null,
+                    ConstantValue: null),
+                new FieldMappingDto(
+                    ProviderCapabilityKindDto.Positions,
+                    "$.source_id",
+                    "sourceRecordId",
+                    Transform: null,
+                    Required: false,
+                    ProviderMappingConfidenceDto.Approved,
+                    DefaultValue: null,
+                    ConstantValue: null)
+            ]
+        };
 
     private static ProviderConnectionDto CreateConnection(
         ProviderIntegrationManifestDto manifest,

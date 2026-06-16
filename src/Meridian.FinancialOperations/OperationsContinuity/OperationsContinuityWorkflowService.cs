@@ -1162,13 +1162,14 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             .ToArray();
         var closeReadiness = EvaluateCloseReadiness(workflow);
         var accountingRecordSummary = BuildAccountingRecordSummary(workflow, timeline, evidenceLinks);
+        var evidencePackages = BuildEvidencePackages(workflow, timeline, accountingRecordSummary, evidenceLinks);
         var dashboardSummary = BuildDashboardSummary(
             workflow,
             timeline,
             closeReadiness,
             accountingRecordSummary,
+            evidencePackages,
             evidenceLinks);
-        var evidencePackages = BuildEvidencePackages(workflow, timeline, accountingRecordSummary, evidenceLinks);
         var reviewedAutomation = BuildReviewedAutomationSummary(workflow, evidenceLinks);
 
         return new OperationsContinuityWorkflowDto(
@@ -1763,6 +1764,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         IReadOnlyList<OperationsTimelineEntryDto> timeline,
         OperationsCloseReadinessDto? closeReadiness,
         OperationsAccountingRecordSummaryDto? accountingRecordSummary,
+        IReadOnlyList<OperationsEvidencePackageSummaryDto> evidencePackages,
         IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks)
     {
         var unresolvedBreaks = workflow.BreakCases
@@ -1781,10 +1783,12 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             .SelectMany(static approval => approval.EvidenceLinks)
             .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var packageEvidence = workflow.ReportPackReadiness.EvidenceLinks
-            .Concat(workflow.ClosePackage?.EvidenceLinks ?? [])
+        var packageEvidence = evidencePackages
+            .SelectMany(static package => package.EvidenceLinks)
             .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        var closePackage = workflow.ClosePackage;
+        var periodLocked = workflow.IsClosed && closePackage is not null;
 
         var metrics = new[]
         {
@@ -1813,9 +1817,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                     : "Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.",
                 "/workstation/accounting/reconciliation",
                 reconciliationEvidence,
-                readyLaneCount == workflow.ReconciliationLanes.Count && workflow.ReconciliationLanes.Count > 0
-                    ? []
-                    : ["Complete source-backed reconciliation lanes before approval."]),
+                BuildMatchRecordsRequiredActions(workflow.ReconciliationLanes)),
             new OperationsDashboardMetricDto(
                 "resolve-exceptions",
                 "Resolve Exceptions",
@@ -1834,7 +1836,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                     .ToArray(),
                 unresolvedBreaks.Length == 0
                     ? []
-                    : ["Assign, escalate, or resolve open exceptions and retain resolution evidence."]),
+                    : BuildResolveExceptionsRequiredActions(unresolvedBreaks)),
             new OperationsDashboardMetricDto(
                 "approve-results",
                 "Approve Results",
@@ -1849,28 +1851,32 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 approvalEvidence,
                 workflow.ApprovalState == OperationsApprovalStateDto.Approved
                     ? []
-                    : ["Complete workflow approval and checklist-control approvals."]),
+                    : BuildApproveResultsRequiredActions(workflow)),
             new OperationsDashboardMetricDto(
                 "produce-evidence",
                 "Produce Evidence",
-                workflow.ClosePackage is not null
+                periodLocked
                     ? "Close package retained"
+                    : closePackage is not null
+                        ? "Reopened period lock pending"
                     : workflow.ReportPackReadiness.IsReady
                         ? "Report pack ready"
                         : "Evidence package pending",
-                workflow.ClosePackage is not null
+                periodLocked
                     ? EvidenceStatusDto.Ready
                     : workflow.ReportPackReadiness.IsReady
                         ? EvidenceStatusDto.ReviewRequired
                         : EvidenceStatusDto.Missing,
-                workflow.ClosePackage is not null
-                    ? $"Close package {workflow.ClosePackage.ClosePackageId} retained manifest {workflow.ClosePackage.RetainedManifestId}."
+                periodLocked
+                    ? $"Close package {closePackage!.ClosePackageId} retained manifest {closePackage.RetainedManifestId}."
+                    : closePackage is not null
+                        ? $"Close package {closePackage.ClosePackageId} remains retained, but reopened incident remediation must be closed again before evidence release."
                     : workflow.ReportPackReadiness.BlockingReason ?? "Report-pack and close-package evidence still need publication.",
                 "/workstation/reporting/report-packs",
                 packageEvidence,
-                workflow.ClosePackage is not null
+                periodLocked
                     ? []
-                    : ["Publish and retain the evidence package before period close."]),
+                    : BuildProduceEvidenceRequiredActions(evidencePackages, periodLocked)),
             new OperationsDashboardMetricDto(
                 "close-support",
                 "Close Support",
@@ -1879,14 +1885,16 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                     : closeReadiness.IsReadyToClose
                         ? "Ready to close"
                         : $"{closeReadiness.Score}% ready",
-                ResolveCloseSupportMetricStatus(closeReadiness, workflow.ClosePackage),
+                ResolveCloseSupportMetricStatus(closeReadiness, periodLocked),
                 closeReadiness?.Blockers.FirstOrDefault()?.Message ??
                     "Close checklist, period lock, and reopen evidence are governed by the shared workflow.",
                 "/workstation/accounting/operations-continuity",
-                workflow.ClosePackage?.EvidenceLinks ?? evidenceLinks,
-                closeReadiness is { IsReadyToClose: true } || workflow.ClosePackage is not null
+                periodLocked
+                    ? closePackage!.EvidenceLinks
+                    : evidenceLinks,
+                closeReadiness is { IsReadyToClose: true } || periodLocked
                     ? []
-                    : ["Clear close readiness blockers and retain period-lock or reopen evidence."])
+                    : BuildCloseSupportRequiredActions(closeReadiness, periodLocked))
         };
         var status = ResolveDashboardStatus(metrics);
         var readyCount = metrics.Count(static metric => metric.Status == EvidenceStatusDto.Ready);
@@ -1914,6 +1922,282 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 .ToArray());
     }
 
+    private static IReadOnlyList<string> BuildMatchRecordsRequiredActions(
+        IReadOnlyList<OperationsReconciliationLaneSummaryDto> lanes)
+    {
+        if (lanes.Count > 0 && lanes.All(static lane => lane.IsReady))
+        {
+            return [];
+        }
+
+        var laneActions = lanes
+            .Where(static lane => !lane.IsReady)
+            .SelectMany(static lane => lane.RequiredActions ?? [])
+            .ToArray();
+
+        return BuildCappedDashboardRequiredActions(
+            laneActions,
+            "Complete source-backed reconciliation lanes before approval.",
+            "reconciliation lane action");
+    }
+
+    private static IReadOnlyList<string> BuildResolveExceptionsRequiredActions(
+        IReadOnlyList<OperationsBreakCaseDto> unresolvedBreaks)
+    {
+        if (unresolvedBreaks.Count == 0)
+        {
+            return [];
+        }
+
+        var actions = new List<string>();
+        foreach (var breakCase in unresolvedBreaks)
+        {
+            AddDashboardRequiredAction(actions, breakCase.SuggestedAction);
+        }
+
+        var unassignedCount = unresolvedBreaks.Count(static breakCase => string.IsNullOrWhiteSpace(breakCase.Owner));
+        if (unassignedCount > 0)
+        {
+            AddDashboardRequiredAction(
+                actions,
+                $"Assign {FormatOpenExceptionCount(unassignedCount)} to an accountable owner.");
+        }
+
+        var escalatedBreaks = unresolvedBreaks
+            .Where(static breakCase => !string.IsNullOrWhiteSpace(breakCase.EscalationLevel))
+            .ToArray();
+        if (escalatedBreaks.Length > 0)
+        {
+            var firstEscalation = escalatedBreaks[0].EscalationLevel!.Trim();
+            var escalationReason = string.IsNullOrWhiteSpace(escalatedBreaks[0].EscalationReason)
+                ? string.Empty
+                : $": {escalatedBreaks[0].EscalationReason!.Trim()}";
+            AddDashboardRequiredAction(
+                actions,
+                $"Review {firstEscalation} escalation for {FormatOpenExceptionCount(escalatedBreaks.Length)}{escalationReason}.");
+        }
+
+        var blockedOutputs = unresolvedBreaks
+            .SelectMany(static breakCase => breakCase.BlockedOutputs ?? [])
+            .Where(static output => !string.IsNullOrWhiteSpace(output))
+            .Select(static output => output.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (blockedOutputs.Length > 0)
+        {
+            var outputSummary = string.Join(", ", blockedOutputs.Take(3));
+            if (blockedOutputs.Length > 3)
+            {
+                outputSummary = $"{outputSummary}, and {blockedOutputs.Length - 3} more";
+            }
+
+            AddDashboardRequiredAction(
+                actions,
+                $"Retain resolution evidence before releasing blocked output(s): {outputSummary}.");
+        }
+
+        return BuildCappedDashboardRequiredActions(
+            actions,
+            "Assign, escalate, or resolve open exceptions and retain resolution evidence.",
+            "exception action");
+    }
+
+    private static IReadOnlyList<string> BuildApproveResultsRequiredActions(
+        OperationsContinuityWorkflow workflow)
+    {
+        if (workflow.ApprovalState == OperationsApprovalStateDto.Approved)
+        {
+            return [];
+        }
+
+        var actions = new List<string>();
+        switch (workflow.ApprovalState)
+        {
+            case OperationsApprovalStateDto.Pending:
+                if (workflow.ReportPackReadiness.IsReady &&
+                    !string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId))
+                {
+                    AddDashboardRequiredAction(
+                        actions,
+                        $"Submit workflow approval for report pack {workflow.ReportPackReadiness.ReportPackId.Trim()} with reviewer and rationale.");
+                }
+                else
+                {
+                    AddDashboardRequiredAction(actions, workflow.ReportPackReadiness.BlockingReason);
+                    AddDashboardRequiredAction(actions, "Link a ready report pack before approval submission.");
+                }
+
+                AddChecklistControlApprovalActions(actions, workflow, includeApprovalGate: false, transitionLabel: "approval submission");
+                break;
+
+            case OperationsApprovalStateDto.Submitted:
+            case OperationsApprovalStateDto.ReviewerAssigned:
+                var reviewer = GetAssignedApprovalReviewer(workflow) ?? "the assigned reviewer";
+                AddDashboardRequiredAction(
+                    actions,
+                    $"Record approval decision from {reviewer} with retained rationale{ReadyReportPackSuffix(workflow)}");
+                AddChecklistControlApprovalActions(actions, workflow, includeApprovalGate: true, transitionLabel: "approval decision");
+                break;
+
+            case OperationsApprovalStateDto.Rejected:
+                var rejectionReviewer = GetLatestApprovalReviewer(workflow, OperationsApprovalStateDto.Rejected) ?? "the rejecting reviewer";
+                AddDashboardRequiredAction(
+                    actions,
+                    $"Resolve rejected approval from {rejectionReviewer} and resubmit with retained remediation evidence.");
+                if (!workflow.ReportPackReadiness.IsReady)
+                {
+                    AddDashboardRequiredAction(actions, workflow.ReportPackReadiness.BlockingReason);
+                    AddDashboardRequiredAction(actions, "Link a ready report pack before resubmission.");
+                }
+
+                AddChecklistControlApprovalActions(actions, workflow, includeApprovalGate: false, transitionLabel: "approval resubmission");
+                break;
+
+            default:
+                AddDashboardRequiredAction(actions, "Complete workflow approval and checklist-control approvals.");
+                break;
+        }
+
+        return BuildCappedDashboardRequiredActions(
+            actions,
+            "Complete workflow approval and checklist-control approvals.",
+            "approval action",
+            "approval workspace");
+    }
+
+    private static void AddChecklistControlApprovalActions(
+        List<string> actions,
+        OperationsContinuityWorkflow workflow,
+        bool includeApprovalGate,
+        string transitionLabel)
+    {
+        var requiredGates = workflow.Gates
+            .Where(gate => gate.Status == OperationsGateStatusDto.Passed ||
+                (includeApprovalGate && gate.GateKey == OperationsGateKeyDto.Approval))
+            .Select(static gate => gate.GateKey)
+            .Distinct()
+            .ToArray();
+
+        foreach (var gate in requiredGates)
+        {
+            var requiredApprovalCount = gate == OperationsGateKeyDto.Approval ? 2 : 1;
+            AddDashboardRequiredAction(
+                actions,
+                $"Retain {FormatChecklistApprovalCount(requiredApprovalCount)} for {DisplayName(gate)} close gate ({CloseChecklistTaskId(gate)}) before {transitionLabel}.");
+        }
+    }
+
+    private static string FormatChecklistApprovalCount(int requiredApprovalCount) =>
+        requiredApprovalCount == 1
+            ? "1 checklist-control approval"
+            : $"{requiredApprovalCount} checklist-control approvals";
+
+    private static string? GetAssignedApprovalReviewer(OperationsContinuityWorkflow workflow) =>
+        workflow.Approvals
+            .LastOrDefault(approval =>
+                (approval.Status is OperationsApprovalStateDto.Submitted or OperationsApprovalStateDto.ReviewerAssigned) &&
+                !string.IsNullOrWhiteSpace(approval.Reviewer))
+            ?.Reviewer?.Trim();
+
+    private static string? GetLatestApprovalReviewer(
+        OperationsContinuityWorkflow workflow,
+        OperationsApprovalStateDto approvalState) =>
+        workflow.Approvals
+            .LastOrDefault(approval => approval.Status == approvalState && !string.IsNullOrWhiteSpace(approval.Reviewer))
+            ?.Reviewer?.Trim();
+
+    private static string ReadyReportPackSuffix(OperationsContinuityWorkflow workflow) =>
+        workflow.ReportPackReadiness.IsReady &&
+        !string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId)
+            ? $" for report pack {workflow.ReportPackReadiness.ReportPackId.Trim()}."
+            : ".";
+
+    private static IReadOnlyList<string> BuildCloseSupportRequiredActions(
+        OperationsCloseReadinessDto? closeReadiness,
+        bool periodLocked)
+    {
+        if (periodLocked || closeReadiness is { IsReadyToClose: true })
+        {
+            return [];
+        }
+
+        var actions = closeReadiness?.Blockers
+            .Select(static blocker => string.IsNullOrWhiteSpace(blocker.Category)
+                ? blocker.Message
+                : $"Resolve {blocker.Category}: {blocker.Message}")
+            .ToArray() ?? [];
+
+        return BuildCappedDashboardRequiredActions(
+            actions,
+            "Clear close readiness blockers and retain period-lock or reopen evidence.",
+            "close-support action",
+            "operations continuity workspace");
+    }
+
+    private static IReadOnlyList<string> BuildProduceEvidenceRequiredActions(
+        IReadOnlyList<OperationsEvidencePackageSummaryDto> evidencePackages,
+        bool periodLocked)
+    {
+        if (periodLocked ||
+            evidencePackages.Count > 0 && evidencePackages.All(static package => package.IsReady))
+        {
+            return [];
+        }
+
+        var actions = evidencePackages
+            .Where(static package => !package.IsReady)
+            .SelectMany(static package => package.RequiredActions ?? [])
+            .ToArray();
+
+        return BuildCappedDashboardRequiredActions(
+            actions,
+            "Publish and retain the evidence package before period close.",
+            "evidence-package action",
+            "reporting evidence workspace");
+    }
+
+    private static IReadOnlyList<string> BuildCappedDashboardRequiredActions(
+        IEnumerable<string?> requiredActions,
+        string fallbackAction,
+        string actionLabel,
+        string overflowWorkspace = "reconciliation workspace")
+    {
+        var actions = requiredActions
+            .Where(static action => !string.IsNullOrWhiteSpace(action))
+            .Select(static action => action!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (actions.Length == 0)
+        {
+            return [fallbackAction];
+        }
+
+        const int maxDashboardRequiredActions = 6;
+        if (actions.Length <= maxDashboardRequiredActions)
+        {
+            return actions;
+        }
+
+        return actions
+            .Take(maxDashboardRequiredActions)
+            .Append($"Review {actions.Length - maxDashboardRequiredActions} additional {actionLabel}(s) in the {overflowWorkspace}.")
+            .ToArray();
+    }
+
+    private static void AddDashboardRequiredAction(List<string> actions, string? action)
+    {
+        if (string.IsNullOrWhiteSpace(action))
+        {
+            return;
+        }
+
+        actions.Add(action.Trim());
+    }
+
+    private static string FormatOpenExceptionCount(int count) =>
+        count == 1 ? "1 open exception" : $"{count} open exceptions";
+
     private static EvidenceStatusDto ResolveLaneMetricStatus(IReadOnlyList<OperationsReconciliationLaneSummaryDto> lanes)
     {
         if (lanes.Count == 0)
@@ -1933,9 +2217,9 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
 
     private static EvidenceStatusDto ResolveCloseSupportMetricStatus(
         OperationsCloseReadinessDto? closeReadiness,
-        OperationsClosePackagePublicationDto? closePackage)
+        bool periodLocked)
     {
-        if (closePackage is not null || closeReadiness is { IsReadyToClose: true })
+        if (periodLocked || closeReadiness is { IsReadyToClose: true })
         {
             return EvidenceStatusDto.Ready;
         }
@@ -2237,7 +2521,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             };
 
             return new OperationsCloseChecklistTaskDto(
-                $"close-gate-{gate.GateKey}".ToLowerInvariant(),
+                CloseChecklistTaskId(gate.GateKey),
                 gate.GateKey,
                 $"{DisplayName(gate.GateKey)} close gate",
                 gate.CompletedBy ?? "accounting-operator",
@@ -2254,6 +2538,9 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 gate.CompletedBy);
         }).ToArray();
     }
+
+    private static string CloseChecklistTaskId(OperationsGateKeyDto gate) =>
+        $"close-gate-{gate}".ToLowerInvariant();
 
     private static OperationsContinuityWorkflow CloneWorkflow(OperationsContinuityWorkflow workflow)
     {

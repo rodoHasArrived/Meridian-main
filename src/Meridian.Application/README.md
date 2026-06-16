@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-06-07
+last_reviewed: 2026-06-16
 ---
 
 # src/Meridian.Application
@@ -54,7 +54,18 @@ and UI presentation concerns in their owning layers.
   Storage-owned integration manifest store, parses operator-uploaded samples, applies configured
   field mappings and safe transforms, writes raw payload evidence, stages accepted records,
   quarantines rejected records, and saves sync-run summaries without promoting directly into
-  Portfolio, Security Master, or Ledger stores. When a workstation endpoint supplies tenant context,
+  Portfolio, Security Master, or Ledger stores. Staged record lineage prefers an explicit
+  `sourceRecordId` when configured, then falls back to capability-specific canonical identifiers
+  such as provider transaction id, provider account id, CUSIP/ISIN/security identifiers, and
+  account-security-as-of composites before using row ordinals. The dry-run and quarantine-replay
+  staging paths fail closed on duplicate dedupe keys inside the same run, quarantining later
+  duplicate records instead of letting repeated provider identities enter reconciliation staging.
+  They also quarantine mapped money values that have an amount without a currency, or an invalid
+  three-letter currency code, so financial values cannot reach reconciliation staging with
+  ambiguous denomination. Position and holding records that carry quantity, price, and market
+  value are also checked before staging; if `quantity * price.amount` differs from
+  `marketValue.amount` by more than one cent, the record stays in quarantine for operator review.
+  When a workstation endpoint supplies tenant context,
   setup, dry-run, readiness, activation, and monitoring services resolve a tenant-scoped
   provider-integration store before reading or writing manifests, connections, and retained
   evidence. The schema-drift service compares retained raw payloads against configured records
@@ -73,7 +84,7 @@ and UI presentation concerns in their owning layers.
   the same staging and quarantine boundary for accepted and rejected records. The default
   `HttpClient` transport supplies the concrete HTTP execution path while tests can still inject
   deterministic transports. The monitoring service composes
-  connection-level read models from durable sync-run summaries,
+  connection-level monitor and sync-run history read models from durable sync-run summaries,
   integration staging counts, quarantine counts, and retained validation issues so workstation
   surfaces can show dry-run evidence without reading storage internals. The staging review service
   returns accepted records, reconciliation-ready counts, validation warning groups, and capability
@@ -83,7 +94,12 @@ and UI presentation concerns in their owning layers.
   returns account/security review blockers before any canonical promotion. The promotion-readiness
   service composes that identity posture into a read-only reconciliation staging preview, labeling
   accepted rows as ready, review-required, or blocked without writing Portfolio, Security Master,
-  Ledger, or Accounting records. The quarantine
+  Ledger, or Accounting records. The reconciliation handoff service rechecks that readiness,
+  persists only operator-approved ready rows with approval evidence, actor, timestamp, and
+  account/security identity, and still leaves Portfolio, Security Master, Ledger, and Accounting
+  mutation to later reconciliation-owned promotion. Handoff requests are idempotent by staging
+  record, so retrying a row that already has handoff evidence is blocked and surfaced as a
+  retained-history review issue. The quarantine
   review service groups rejected records by operator-safe issue code and records durable review decisions
   without mutating the retained raw rejected records. The quarantine replay service remaps reviewed
   rejected records after mapping changes, writes a replay raw payload, stages accepted records, and
@@ -117,7 +133,10 @@ and UI presentation concerns in their owning layers.
   `DirectLendingSecurityMasterReferenceDto`; the projector re-resolves that reference through the
   authoritative Security Master query service and then stamps server-derived Security Master id,
   symbol, approval, provenance, active status, and direct-lending ledger-mapping evidence on central
-  ledger writes before the posting guard accepts direct-lending instrument lines.
+  ledger writes before the posting guard accepts direct-lending instrument lines. The outbox
+  dispatcher bounds environment-driven batch size and poll interval values before polling the
+  database-backed outbox, so an invalid override cannot disable the worker or turn it into a
+  zero-delay retry loop.
 - Financial Operations integration - application composition registers the
   `Meridian.FinancialOperations.OperationsContinuity` services that now own account-period
   continuity workflows, including the aggregate, command workflow service, status derivation,

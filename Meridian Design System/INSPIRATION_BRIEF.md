@@ -55,6 +55,13 @@ into Meridian UI.
    artifacts, delivery evidence packets, and private-capital report-output readiness from shared
    payloads. Design-system handoffs should show those records instead of a local-only packet wizard.
 
+9. **Separate provider readiness from accounting promotion.** Current provider-integration source
+   exposes setup, dry-run, sync-run, staging, identity-resolution, promotion-readiness,
+   reconciliation-handoff, handoff-history, quarantine-review, and replay records through shared
+   workstation routes. Design-system handoffs should show approval evidence, duplicate-handoff
+   blockers, and retained history while making clear that Portfolio, Security Master, Ledger, and
+   Accounting mutation remains a later reconciliation-owned action.
+
 ## Components this brief should influence
 
 - `workstation-frame`: full-page shell with masthead, rail, and content surface.
@@ -69,6 +76,8 @@ into Meridian UI.
   reporting records.
 - `status-window`: retained run, report-pack, delivery, queue, and audit status with owner,
   timestamp, next action, and evidence graph links.
+- `provider-handoff-panel`: connection, staged records, identity resolution, promotion readiness,
+  approval evidence, handoff history, and quarantine replay status for Data and Settings workflows.
 - `annotation-callout`: documentation-only marker for product guides and screenshot walkthroughs.
 
 ## Copy guidance derived from references
@@ -79,5 +88,8 @@ into Meridian UI.
   `Last updated 19:19:17`, `Matched`, `Partial`, `Ready for review`.
 - Report-pack text should distinguish `Published`, `report-ready`, retained manifest, and
   report-line provenance instead of treating publication as evidence completion.
+- Provider handoff text should distinguish `Ready`, `Review required`, `Blocked`, `Accepted`,
+  `Duplicate`, and `Retained history` instead of treating staged provider records as already
+  promoted accounting records.
 - Avoid instructional clutter in production surfaces. Product-guide pages may say "Click Send to
   desk"; the application should show a button named `Send to desk` plus a confirmation state.

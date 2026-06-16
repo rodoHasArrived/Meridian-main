@@ -579,12 +579,15 @@ public static class UiApiRoutes
     public const string WorkstationProviderIntegrationRestDryRun = "/api/workstation/provider-integrations/dry-runs/rest";
     public const string WorkstationProviderIntegrationActivate = "/api/workstation/provider-integrations/activate";
     public const string WorkstationProviderIntegrationConnectionMonitor = "/api/workstation/provider-integrations/connections/{connectionId}/monitor";
+    public const string WorkstationProviderIntegrationConnectionSyncRuns = "/api/workstation/provider-integrations/connections/{connectionId}/sync-runs";
     public const string WorkstationProviderIntegrationConnectionSyncPlan = "/api/workstation/provider-integrations/connections/{connectionId}/sync-plan";
     public const string WorkstationProviderIntegrationConnectionRunDueSync = "/api/workstation/provider-integrations/connections/{connectionId}/sync/run-due";
     public const string WorkstationProviderIntegrationSchemaDriftCheck = "/api/workstation/provider-integrations/schema-drift/check";
     public const string WorkstationProviderIntegrationStagingReview = "/api/workstation/provider-integrations/connections/{connectionId}/staging";
     public const string WorkstationProviderIntegrationIdentityResolution = "/api/workstation/provider-integrations/connections/{connectionId}/identity-resolution";
     public const string WorkstationProviderIntegrationPromotionReadiness = "/api/workstation/provider-integrations/connections/{connectionId}/promotion-readiness";
+    public const string WorkstationProviderIntegrationReconciliationHandoffHistory = "/api/workstation/provider-integrations/connections/{connectionId}/reconciliation-handoffs";
+    public const string WorkstationProviderIntegrationReconciliationHandoff = "/api/workstation/provider-integrations/reconciliation/handoff";
     public const string WorkstationProviderIntegrationQuarantineReview = "/api/workstation/provider-integrations/connections/{connectionId}/quarantine";
     public const string WorkstationProviderIntegrationQuarantineResolve = "/api/workstation/provider-integrations/quarantine/resolve";
     public const string WorkstationProviderIntegrationQuarantineReplay = "/api/workstation/provider-integrations/quarantine/replay";

@@ -130,7 +130,8 @@ blockers, the OpenAPI import route seeds tenant-scoped draft manifests from prov
 command routes execute manual CSV and REST validation through Application-owned services, the
 schema-drift check route compares retained raw payloads with manifest response and mapping paths,
 the sync-plan route reports due/manual/blocked capability state from schedule and retained run
-history, the run-due sync route starts due read-only REST/OpenAPI/hybrid capabilities through the
+history, the sync-run history route returns durable run evidence with staging and quarantine counts,
+the run-due sync route starts due read-only REST/OpenAPI/hybrid capabilities through the
 staging-first dry-run runtime, resolves configured endpoint dependencies from retained raw payload
 evidence, and the connection monitor route adapts durable sync-run, staging, quarantine, and
 validation evidence into browser/WPF-compatible payloads. The staging review route exposes accepted
@@ -140,12 +141,16 @@ route previews provider account and Security Master match posture for staged rec
 missing identifiers, unresolved securities, and review-required account mappings before
 reconciliation promotion. The promotion-readiness route composes that posture into ready,
 review-required, and blocked rows for the reconciliation-staging handoff while remaining read-only.
+The reconciliation-handoff route requires provider configuration permission, persists only
+operator-approved ready rows as handoff evidence, and exposes handoff history for the same
+connection without writing Portfolio, Security Master, Ledger, or Accounting stores. Duplicate
+handoff attempts for the same staged record are blocked and returned with operator-safe issue rows.
 Quarantine review routes expose grouped validation issues and persist operator review decisions without
 changing the retained rejected raw records. Quarantine replay routes remap records approved for
 replay after mapping changes and write accepted records back into integration staging or
 re-quarantine unresolved records. Setup, OpenAPI import, readiness, dry-run, activation, sync-plan,
-run-due sync, schema-drift, staging review, identity-resolution preview, promotion-readiness,
-quarantine review/replay, and monitor endpoints resolve the
+sync-run history, run-due sync, schema-drift, staging review, identity-resolution preview, promotion-readiness,
+reconciliation handoff, quarantine review/replay, and monitor endpoints resolve the
 authenticated workstation tenant before reading or writing stored manifests, connections, or
 retained run evidence. Import, dry-run, and run-due commands require provider/configuration permissions
 because they create manifests or retain raw payload, staging, quarantine, and sync-run evidence.
@@ -167,6 +172,9 @@ Provider connection and readiness services project provider setup metadata from 
 Integration credential catalog into shared rows. Browser and WPF provider surfaces should render
 credential fields, allowed environments, diagnostics, evidence, and recovery actions from those
 rows instead of maintaining provider-specific local forms.
+Symbol mapping endpoints under `/api/symbols/mappings` are tenant-scoped shared configuration
+routes: reads require `ViewConfig` or `ModifyConfig`, and upsert, delete, and CSV import mutations
+also require `ModifyConfig` before writing the shared symbol mapping configuration.
 Accounting-system endpoints are also registered as a shared endpoint group from `UiApiRoutes`.
 `Meridian.FinancialOperations.AccountingSystem.AccountingSystemIntegrationService` lists GL
 providers, uses QuickBooks Online when local OAuth client id, client secret, refresh token, and

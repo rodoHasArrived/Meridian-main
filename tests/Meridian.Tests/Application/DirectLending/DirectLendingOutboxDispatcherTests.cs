@@ -262,6 +262,68 @@ public sealed class DirectLendingOutboxDispatcherTests
         await operationsStore.DidNotReceiveWithAnyArgs().MarkOutboxFailedAsync(default, default!, default);
     }
 
+    [Theory]
+    [InlineData(-10, 1)]
+    [InlineData(0, 1)]
+    [InlineData(25, 25)]
+    [InlineData(10_000, 5000)]
+    public void NormalizeOutboxBatchSize_BoundsEnvironmentDrivenWorkerBatch(int configuredBatchSize, int expectedBatchSize)
+    {
+        DirectLendingOutboxDispatcher.NormalizeOutboxBatchSize(configuredBatchSize)
+            .Should().Be(expectedBatchSize);
+    }
+
+    [Theory]
+    [InlineData(-10, 1)]
+    [InlineData(0, 1)]
+    [InlineData(15, 15)]
+    [InlineData(10_000, 3600)]
+    public void NormalizeOutboxPollInterval_BoundsEnvironmentDrivenWorkerDelay(int configuredPollIntervalSeconds, int expectedSeconds)
+    {
+        DirectLendingOutboxDispatcher.NormalizeOutboxPollInterval(configuredPollIntervalSeconds)
+            .Should().Be(TimeSpan.FromSeconds(expectedSeconds));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenBatchConfigIsInvalid_ClaimsAtLeastOnePendingMessage()
+    {
+        var operationsStore = Substitute.For<IDirectLendingOperationsStore>();
+        var commandService = Substitute.For<IDirectLendingCommandService>();
+        var queryService = Substitute.For<IDirectLendingQueryService>();
+        using var cts = new CancellationTokenSource();
+
+        operationsStore
+            .GetPendingOutboxMessagesAsync(Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                cts.Cancel();
+                return Task.FromException<IReadOnlyList<DirectLendingOutboxMessage>>(
+                    new InvalidOperationException("Stop after first normalized poll."));
+            });
+
+        var dispatcher = new DirectLendingOutboxDispatcher(
+            operationsStore,
+            commandService,
+            queryService,
+            new DirectLendingOptions
+            {
+                OutboxBatchSize = 0,
+                OutboxPollIntervalSeconds = 0
+            },
+            NullLogger<DirectLendingOutboxDispatcher>.Instance);
+
+        var executeAsync = typeof(DirectLendingOutboxDispatcher)
+            .GetMethod("ExecuteAsync", BindingFlags.Instance | BindingFlags.NonPublic);
+        executeAsync.Should().NotBeNull();
+
+        var task = (Task)executeAsync!.Invoke(dispatcher, [cts.Token])!;
+        await task.ConfigureAwait(false);
+
+        await operationsStore.Received(1).GetPendingOutboxMessagesAsync(1, Arg.Any<CancellationToken>());
+        await operationsStore.DidNotReceiveWithAnyArgs().MarkOutboxProcessedAsync(default, default);
+        await operationsStore.DidNotReceiveWithAnyArgs().MarkOutboxFailedAsync(default, default!, default);
+    }
+
     private static async Task InvokeProcessAsync(DirectLendingOutboxDispatcher dispatcher, DirectLendingOutboxMessage message)
     {
         var processAsync = typeof(DirectLendingOutboxDispatcher).GetMethod("ProcessAsync", BindingFlags.Instance | BindingFlags.NonPublic);

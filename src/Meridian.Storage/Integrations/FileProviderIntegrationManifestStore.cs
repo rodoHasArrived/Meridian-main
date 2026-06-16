@@ -156,6 +156,31 @@ public sealed class FileProviderIntegrationManifestStore :
             ct);
     }
 
+    public Task SaveReconciliationHandoffRecordAsync(ProviderIntegrationReconciliationHandoffRecordDto record, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(record);
+        ArgumentException.ThrowIfNullOrWhiteSpace(record.ConnectionId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(record.HandoffId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(record.StagingRecordId);
+
+        return WriteAsync(
+            GetConnectionScopedPath("reconciliation-handoffs", record.ConnectionId, $"{record.HandoffId}-{record.StagingRecordId}"),
+            record,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationReconciliationHandoffRecordDto,
+            ct);
+    }
+
+    public Task<IReadOnlyList<ProviderIntegrationReconciliationHandoffRecordDto>> ListReconciliationHandoffRecordsAsync(
+        string connectionId,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(connectionId);
+        return ListAsync(
+            GetConnectionScopedDirectory("reconciliation-handoffs", connectionId),
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationReconciliationHandoffRecordDto,
+            ct);
+    }
+
     public Task SaveSyncRunAsync(ProviderIntegrationSyncRunDto syncRun, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(syncRun);
@@ -200,6 +225,12 @@ public sealed class FileProviderIntegrationManifestStore :
 
     private string GetSyncRunScopedDirectory(string category, string syncRunId)
         => Path.Combine(GetDirectory(category), HashSegment(syncRunId));
+
+    private string GetConnectionScopedPath(string category, string connectionId, string recordId)
+        => Path.Combine(GetConnectionScopedDirectory(category, connectionId), $"{HashSegment(recordId)}.json");
+
+    private string GetConnectionScopedDirectory(string category, string connectionId)
+        => Path.Combine(GetDirectory(category), HashSegment(connectionId));
 
     private string GetDirectory(string category)
     {

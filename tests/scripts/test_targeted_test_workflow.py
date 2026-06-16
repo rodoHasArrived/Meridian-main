@@ -56,6 +56,7 @@ class TargetedTestWorkflowTests(unittest.TestCase):
         self.assertIn("$filter,", self.workflow)
         self.assertNotIn("if ($filter -ne '')", self.workflow)
         self.assertIn("& dotnet @testArgs @props", self.workflow)
+        self.assertIn("if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }", self.workflow)
 
     def test_docs_show_remote_dispatch_examples_for_project_and_filter(self) -> None:
         for path in (WORKFLOW_README_PATH, START_README_PATH, ENGINEERING_README_PATH):

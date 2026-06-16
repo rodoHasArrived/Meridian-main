@@ -1687,7 +1687,8 @@ public sealed class OperationsContinuityWorkflow
             BuildReconciliationLaneActions(
                 definition.Label,
                 status,
-                shouldRefreshBreakPosture ? null : requested?.RequiredActions));
+                openBreaks,
+                refreshBreakDerivedPosture ? null : requested?.RequiredActions));
     }
 
     private void RefreshReconciliationLanePosture()
@@ -1714,19 +1715,102 @@ public sealed class OperationsContinuityWorkflow
     private static IReadOnlyList<string> BuildReconciliationLaneActions(
         string label,
         OperationsReconciliationLaneStatusDto status,
+        IReadOnlyList<OperationsBreakCaseDto> openBreaks,
         IReadOnlyList<string>? requestedActions)
     {
-        var actions = (requestedActions ?? [])
-            .Select(static action => action.Trim())
-            .Where(static action => action.Length > 0)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-        if (actions.Length > 0 || status == OperationsReconciliationLaneStatusDto.Ready)
+        var actions = new List<string>();
+        foreach (var action in requestedActions ?? [])
+        {
+            AddRequiredAction(actions, action);
+        }
+
+        if (status == OperationsReconciliationLaneStatusDto.Ready)
         {
             return actions;
         }
 
-        return [$"Resolve or assign {label.ToLowerInvariant()} breaks and retain evidence."];
+        foreach (var breakCase in openBreaks)
+        {
+            if (ShouldAddBreakSuggestedAction(breakCase))
+            {
+                AddRequiredAction(actions, breakCase.SuggestedAction);
+            }
+        }
+
+        var unassignedCount = openBreaks.Count(static breakCase => string.IsNullOrWhiteSpace(breakCase.Owner));
+        if (unassignedCount > 0)
+        {
+            AddRequiredAction(actions, $"Assign {FormatLaneBreakCount(label, unassignedCount)} to an accountable owner.");
+        }
+
+        var escalatedBreaks = openBreaks
+            .Where(static breakCase => !string.IsNullOrWhiteSpace(breakCase.EscalationLevel))
+            .ToArray();
+        if (escalatedBreaks.Length > 0)
+        {
+            var firstEscalation = escalatedBreaks[0].EscalationLevel!.Trim();
+            var escalationReason = string.IsNullOrWhiteSpace(escalatedBreaks[0].EscalationReason)
+                ? string.Empty
+                : $": {escalatedBreaks[0].EscalationReason!.Trim()}";
+            AddRequiredAction(actions, $"Review {firstEscalation} escalation for {FormatLaneBreakCount(label, escalatedBreaks.Length)}{escalationReason}.");
+        }
+
+        var blockedOutputs = openBreaks
+            .SelectMany(static breakCase => breakCase.BlockedOutputs ?? [])
+            .Select(static output => output.Trim())
+            .Where(static output => output.Length > 0)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (blockedOutputs.Length > 0)
+        {
+            var shownOutputs = blockedOutputs.Take(3).ToArray();
+            var remainingCount = blockedOutputs.Length - shownOutputs.Length;
+            var outputSummary = remainingCount == 0
+                ? string.Join(", ", shownOutputs)
+                : $"{string.Join(", ", shownOutputs)}, and {remainingCount} more";
+            AddRequiredAction(actions, $"Retain resolution evidence before releasing blocked output(s): {outputSummary}.");
+        }
+
+        if (actions.Count == 0)
+        {
+            AddRequiredAction(actions, $"Resolve or assign {label.ToLowerInvariant()} breaks and retain evidence.");
+        }
+
+        return actions;
+    }
+
+    private static void AddRequiredAction(List<string> actions, string? action)
+    {
+        if (string.IsNullOrWhiteSpace(action))
+        {
+            return;
+        }
+
+        var trimmed = action.Trim();
+        if (!actions.Contains(trimmed, StringComparer.OrdinalIgnoreCase))
+        {
+            actions.Add(trimmed);
+        }
+    }
+
+    private static bool ShouldAddBreakSuggestedAction(OperationsBreakCaseDto breakCase)
+    {
+        if (string.IsNullOrWhiteSpace(breakCase.SuggestedAction))
+        {
+            return false;
+        }
+
+        return string.IsNullOrWhiteSpace(breakCase.Owner) ||
+            !breakCase.SuggestedAction.TrimStart().StartsWith("Assign ", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string FormatLaneBreakCount(string label, int count)
+    {
+        var normalizedLabel = label.ToLowerInvariant();
+        return count == 1
+            ? $"1 {normalizedLabel} break"
+            : $"{count} {normalizedLabel} breaks";
     }
 
     private static bool BreakContains(OperationsBreakCaseDto breakCase, params string[] terms)

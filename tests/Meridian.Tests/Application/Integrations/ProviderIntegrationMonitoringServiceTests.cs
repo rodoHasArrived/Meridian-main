@@ -94,6 +94,20 @@ public sealed class ProviderIntegrationMonitoringServiceTests : IDisposable
         monitor.DurableStagingRecordCount.Should().Be(3);
         monitor.DurableQuarantinedRecordCount.Should().Be(2);
         monitor.HasCriticalIssues.Should().BeTrue();
+
+        var history = await service.GetConnectionSyncRunsAsync(connection.ConnectionId, recentRunLimit: 1);
+
+        history.ConnectionId.Should().Be(connection.ConnectionId);
+        history.TotalSyncRuns.Should().Be(2);
+        history.ReturnedSyncRuns.Should().Be(1);
+        history.LatestStartedAt.Should().Be(DateTimeOffset.Parse("2026-06-16T12:00:00Z"));
+        history.SyncRuns.Should().ContainSingle()
+            .Which.Should().Match<ProviderIntegrationSyncRunEvidenceDto>(run =>
+                run.SyncRunId == "sync-run-new" &&
+                run.DurableStagingRecordCount == 1 &&
+                run.DurableQuarantinedRecordCount == 2 &&
+                run.CriticalIssueCount == 1 &&
+                run.WarningIssueCount == 1);
     }
 
     [Fact]
@@ -125,6 +139,31 @@ public sealed class ProviderIntegrationMonitoringServiceTests : IDisposable
         await cts.CancelAsync();
 
         var act = () => service.GetConnectionMonitorAsync("connection-alpha", ct: cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [Fact]
+    public async Task GetConnectionSyncRunsAsync_ReturnsMissingConnectionFailure()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var service = new ProviderIntegrationMonitoringService(store);
+
+        var act = () => service.GetConnectionSyncRunsAsync("missing-connection");
+
+        await act.Should().ThrowAsync<KeyNotFoundException>()
+            .WithMessage("Provider integration connection 'missing-connection' was not found.");
+    }
+
+    [Fact]
+    public async Task GetConnectionSyncRunsAsync_ObservesCancellationBeforeReadingStore()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        var service = new ProviderIntegrationMonitoringService(store);
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+
+        var act = () => service.GetConnectionSyncRunsAsync("connection-alpha", ct: cts.Token);
 
         await act.Should().ThrowAsync<OperationCanceledException>();
     }

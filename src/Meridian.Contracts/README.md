@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-06-11
+last_reviewed: 2026-06-16
 ---
 
 # src/Meridian.Contracts
@@ -48,9 +48,9 @@ or provider implementations.
   validation, sync, OpenAPI import request/result, setup-save request/result,
   activation-readiness, activation request/result, manual CSV and REST dry-run request, raw
   payload, quarantine review/replay request/result, staging review, staging identity-resolution
-  preview, sync-run summary, tenant-store factory seam, connection monitor, and run-due sync
-  orchestration contracts for no-code read-only provider setup, monitoring, activation evidence,
-  scheduled execution, and replayable ingestion.
+  preview, promotion readiness, reconciliation handoff, sync-run summary/history, tenant-store factory
+  seam, connection monitor, and run-due sync orchestration contracts for no-code read-only provider
+  setup, monitoring, activation evidence, scheduled execution, and replayable ingestion.
 - `Monitoring/` - shared event-pipeline metrics contracts, snapshot payloads, and monitoring
   webhook sink contracts consumed by Application, Platform tracing/monitoring, diagnostics
   endpoints, WPF, and browser workstation services.
@@ -269,10 +269,12 @@ for no-code provider intake. They keep credentials as secret references, preserv
 quarantine, quarantine-review decisions, quarantine replay summaries, and staging identities, and
 expose template catalog entries, OpenAPI import requests/results, setup-save requests/results,
 manual CSV dry-run requests/results, schema-drift check requests/results, sync planning
-requests/results, run-due sync requests/results, promotion-readiness preview rows, activation
-state, mapping confidence, validation issues, endpoint definitions, and sync schedules as shared
-contracts before browser or WPF surfaces render setup, monitoring, reconciliation handoff, or
-scheduled execution state.
+requests/results, sync-run history payloads, run-due sync requests/results, promotion-readiness preview rows, durable
+reconciliation handoff request/result/history records, activation state, mapping confidence,
+validation issues, endpoint definitions, and sync schedules as shared contracts before browser or
+WPF surfaces render setup, monitoring, reconciliation handoff, or scheduled execution state.
+Handoff result payloads include duplicate-record counts so clients can show idempotent retry
+failures from retained history rather than issuing another downstream reconciliation input.
 `IProviderIntegrationTenantManifestStoreFactory`
 lets workstation-hosted services resolve a tenant-partitioned manifest store while preserving the
 existing global store contract for non-workstation callers. Activation-readiness

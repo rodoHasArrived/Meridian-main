@@ -796,6 +796,7 @@ export interface SettingsAlpacaConnectionPanel {
 
 export interface SettingsProviderConnectionRow {
   providerId: string;
+  integrationConnectionId: string;
   rowAnchorId: string;
   displayName: string;
   capabilityLabel: string;
@@ -1916,6 +1917,7 @@ function buildProviderConnectionRow(
       : ["Workflow impact not declared"];
   return {
     providerId: row.providerId,
+    integrationConnectionId: routingContext.connection?.connectionId ?? row.providerId,
     rowAnchorId: row.providerId === "alpaca" ? "alpaca-provider-setup" : `provider-${row.providerId}-connection`,
     displayName: row.displayName,
     capabilityLabel: providerCapabilityLabel(row.capability),
@@ -1973,6 +1975,7 @@ function buildProviderRoutingConnectionRow(
 
   return {
     providerId: connection.connectionId,
+    integrationConnectionId: connection.connectionId,
     rowAnchorId: `provider-${connection.connectionId}-connection`,
     displayName: connection.displayName,
     capabilityLabel: providerRoutingCapabilityLabel(routingContext.bindings, connection),

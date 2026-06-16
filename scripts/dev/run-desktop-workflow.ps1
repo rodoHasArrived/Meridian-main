@@ -1485,15 +1485,17 @@ try {
                 $desktopRestoreArgs = @(
                     Get-MeridianBuildArguments `
                         -IsolationKey $buildIsolationKey `
-                        -AdditionalProperties @("Configuration=$resolvedConfiguration") `
-                        -EnableFullWpfBuild
+                        -AdditionalProperties @("Configuration=$resolvedConfiguration", 'UseSharedCompilation=false') `
+                        -EnableFullWpfBuild `
+                        -MaxCpuCount 1
                 )
                 $desktopBuildArgs = @(
                     Get-MeridianBuildArguments `
                         -IsolationKey $buildIsolationKey `
                         -TargetFramework $resolvedFramework `
-                        -AdditionalProperties @("Configuration=$resolvedConfiguration") `
-                        -EnableFullWpfBuild
+                        -AdditionalProperties @("Configuration=$resolvedConfiguration", 'UseSharedCompilation=false') `
+                        -EnableFullWpfBuild `
+                        -MaxCpuCount 1
                 )
                 Write-Info "Restoring $resolvedProjectPath ..."
                 & dotnet restore $resolvedProjectPath --verbosity minimal @desktopRestoreArgs

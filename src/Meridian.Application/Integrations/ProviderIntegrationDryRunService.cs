@@ -104,6 +104,7 @@ public sealed class ProviderIntegrationDryRunService
         var allIssues = new List<ValidationIssueDto>();
         var accepted = 0;
         var quarantined = 0;
+        var dedupeValidator = new ProviderIntegrationStagingDedupeValidator();
 
         if (csvRecords.Count == 0)
         {
@@ -130,12 +131,33 @@ public sealed class ProviderIntegrationDryRunService
                         ProviderIntegrationIssueSeverityDto.Critical,
                         $"Required field '{requiredField}' is missing.",
                         requiredField,
-                        "Map a source column, provide a constant, or configure a default value."));
+                    "Map a source column, provide a constant, or configure a default value."));
                 }
             }
 
+            ProviderIntegrationMappedRecordValidation.AddValidationIssues(request.Capability, mappedRecord, rowIssues);
             allIssues.AddRange(rowIssues);
             var mappedElement = ToJsonElement(mappedRecord);
+            var sourceRecordId = ProviderIntegrationMappedRecordIdentity.ResolveSourceRecordId(request.Capability, mappedRecord);
+            var dedupeKey = ProviderIntegrationMappedRecordIdentity.BuildDedupeKey(
+                connection.ConnectionId,
+                request.Capability,
+                record.RowNumber,
+                sourceRecordId);
+
+            if (!rowIssues.Any(issue => issue.Severity == ProviderIntegrationIssueSeverityDto.Critical))
+            {
+                var duplicateIssue = dedupeValidator.TryAccept(
+                    dedupeKey,
+                    request.Capability,
+                    ProviderIntegrationMappedRecordIdentity.ResolveSourceIdentityTargetField(request.Capability));
+                if (duplicateIssue is not null)
+                {
+                    rowIssues.Add(duplicateIssue);
+                    allIssues.Add(duplicateIssue);
+                }
+            }
+
             var rawElement = ToJsonElement(record);
 
             if (rowIssues.Any(issue => issue.Severity == ProviderIntegrationIssueSeverityDto.Critical))
@@ -157,7 +179,6 @@ public sealed class ProviderIntegrationDryRunService
             }
 
             accepted++;
-            var sourceRecordId = ReadJsonString(mappedRecord, "sourceRecordId");
             await scopedStore.SaveStagingRecordAsync(
                 new IntegrationStagingRecordDto(
                     StableId("staging", request.SyncRunId, record.RowNumber.ToString(CultureInfo.InvariantCulture)),
@@ -166,7 +187,7 @@ public sealed class ProviderIntegrationDryRunService
                     request.Capability,
                     payloadId,
                     sourceRecordId,
-                    BuildDedupeKey(connection.ConnectionId, request.Capability, record.RowNumber, sourceRecordId),
+                    dedupeKey,
                     mappedElement,
                     rowIssues.Where(issue => issue.Severity != ProviderIntegrationIssueSeverityDto.Critical).ToArray(),
                     ProviderIntegrationProcessingStatusDto.Validated,
@@ -574,35 +595,6 @@ public sealed class ProviderIntegrationDryRunService
             _ => true
         };
     }
-
-    private static string? ReadJsonString(JsonObject root, string targetField)
-    {
-        JsonNode? current = root;
-        foreach (var part in targetField.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-        {
-            if (current is not JsonObject currentObject ||
-                !currentObject.TryGetPropertyValue(part, out current) ||
-                current is null)
-            {
-                return null;
-            }
-        }
-
-        return current is JsonValue value && value.TryGetValue<string>(out var text) ? text : null;
-    }
-
-    private static string BuildDedupeKey(
-        string connectionId,
-        ProviderCapabilityKindDto capability,
-        int rowNumber,
-        string? sourceRecordId)
-        => string.Join(
-            ':',
-            connectionId,
-            capability.ToString(),
-            string.IsNullOrWhiteSpace(sourceRecordId)
-                ? rowNumber.ToString(CultureInfo.InvariantCulture)
-                : sourceRecordId);
 
     private static JsonElement ToJsonElement<T>(T value)
     {

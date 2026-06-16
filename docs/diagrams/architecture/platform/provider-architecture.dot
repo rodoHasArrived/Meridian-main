@@ -1,6 +1,6 @@
 // Provider Architecture Diagram
 // Meridian current project stance
-// Last Updated: 2026-06-10
+// Last Updated: 2026-06-16
 //
 // This diagram shows provider integrations as source-evidence inputs to the
 // W1-W5 operational record baseline. Providers do not own ledger truth.
@@ -22,6 +22,8 @@ digraph ProviderArchitecture {
 
     SETTINGS [fillcolor="#c4b5fd",
       label="Provider setup surfaces\nBrowser Settings + WPF setup\nmetadata-driven fields"];
+    INTEGRATION_API [fillcolor="#c4b5fd",
+      label="Provider integration workstation APIs\ntemplates, setup, sync runs,\nstaging, quarantine, handoff"];
     CREDENTIALS [fillcolor="#ddd6fe",
       label="Credential handling\nlocal encrypted store,\nread-only env fallback,\nno tracked secrets"];
     HEALTH [fillcolor="#ddd6fe",
@@ -40,6 +42,8 @@ digraph ProviderArchitecture {
       label="IHistoricalDataProvider\nprovider-backed backfill"];
     SEARCH [shape=ellipse, fillcolor="#ddd6fe",
       label="ISymbolSearchProvider\nsymbol and identifier search"];
+    MANIFEST [fillcolor="#e9d5ff",
+      label="Provider integration manifests\ncapabilities, field mappings,\nreadiness and setup evidence"];
     CATALOG [fillcolor="#e9d5ff",
       label="Provider catalog metadata\nfields, capabilities,\nsource posture, setup evidence"];
   }
@@ -82,6 +86,10 @@ digraph ProviderArchitecture {
 
     RAW_EVIDENCE [shape=cylinder, fillcolor="#9ae6b4",
       label="Raw source evidence\npayloads retained exactly\nas received"];
+    STAGING [shape=cylinder, fillcolor="#9ae6b4",
+      label="Integration staging records\naccepted rows retained before\ncanonical store mutation"];
+    HANDOFFS [shape=cylinder, fillcolor="#9ae6b4",
+      label="Reconciliation handoff records\noperator approval evidence,\nselected staging ids,\nidempotent history"];
     NORMALIZED [fillcolor="#a7f3d0",
       label="Normalized operational records\ntransactions, positions,\nprices, cash, terms"];
     SECURITY_MASTER [fillcolor="#a7f3d0",
@@ -104,11 +112,16 @@ digraph ProviderArchitecture {
       label="Backtesting and live-readiness\nconsume provider data only when\nlinked to retained evidence,\npaper validation, or approvals"];
   }
 
+  SETTINGS -> INTEGRATION_API;
   SETTINGS -> CATALOG;
   SETTINGS -> CREDENTIALS;
+  INTEGRATION_API -> MANIFEST [label="template/setup/readiness"];
+  INTEGRATION_API -> STAGING [label="sync review + history"];
+  INTEGRATION_API -> HANDOFFS [label="approved reconciliation handoff"];
   CREDENTIALS -> HEALTH;
   HEALTH -> FAILOVER;
 
+  MANIFEST -> CATALOG;
   CATALOG -> MARKET;
   CATALOG -> HIST;
   CATALOG -> SEARCH;
@@ -124,7 +137,11 @@ digraph ProviderArchitecture {
   FAIL_CLOSED -> RECON [style=dashed, label="blocks trust"];
 
   SYMBOL_PROVIDERS -> SECURITY_MASTER;
-  RAW_EVIDENCE -> NORMALIZED;
+  RAW_EVIDENCE -> STAGING;
+  STAGING -> HANDOFFS [label="ready rows only"];
+  HANDOFFS -> RECON [label="reconciliation-staging target"];
+  STAGING -> NORMALIZED [style=dashed, label="after owned-domain gates"];
+  RAW_EVIDENCE -> NORMALIZED [style=dashed, label="legacy/direct ingest"];
   NORMALIZED -> SECURITY_MASTER;
   NORMALIZED -> RECON;
   SECURITY_MASTER -> RECON;

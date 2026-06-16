@@ -470,6 +470,51 @@ public sealed record ProviderIntegrationPromotionReadinessPreviewDto(
     int ReviewRequiredCount,
     int BlockedCount);
 
+public sealed record ProviderIntegrationReconciliationHandoffRecordDto(
+    string HandoffId,
+    string ConnectionId,
+    string SyncRunId,
+    string StagingRecordId,
+    ProviderCapabilityKindDto Capability,
+    string PromotionTarget,
+    string RequestedBy,
+    DateTimeOffset RequestedAt,
+    string ApprovalEvidenceId,
+    string? Note,
+    string? ProviderAccountId,
+    string? InternalAccountId,
+    string? InternalSecurityId,
+    string? SecurityRoute,
+    IReadOnlyList<ValidationIssueDto> Issues);
+
+public sealed record ProviderIntegrationReconciliationHandoffRequestDto(
+    string ConnectionId,
+    IReadOnlyList<string> StagingRecordIds,
+    string RequestedBy,
+    DateTimeOffset RequestedAt,
+    string ApprovalEvidenceId,
+    string? Note,
+    int? RecentRunLimit);
+
+public sealed record ProviderIntegrationReconciliationHandoffResultDto(
+    bool Accepted,
+    string? HandoffId,
+    string ConnectionId,
+    string PromotionTarget,
+    IReadOnlyList<ProviderIntegrationReconciliationHandoffRecordDto> Records,
+    int AcceptedRecordCount,
+    int RejectedRecordCount,
+    int DuplicateRecordCount,
+    IReadOnlyList<ValidationIssueDto> Issues,
+    string? Message);
+
+public sealed record ProviderIntegrationReconciliationHandoffHistoryDto(
+    string ConnectionId,
+    IReadOnlyList<ProviderIntegrationReconciliationHandoffRecordDto> Records,
+    int TotalRecords,
+    int HandoffCount,
+    DateTimeOffset? LastRequestedAt);
+
 public sealed record ProviderIntegrationSyncRunDto(
     string SyncRunId,
     string ManifestId,
@@ -520,6 +565,13 @@ public sealed record ProviderIntegrationConnectionMonitorDto(
     int DurableStagingRecordCount,
     int DurableQuarantinedRecordCount,
     bool HasCriticalIssues);
+
+public sealed record ProviderIntegrationSyncRunHistoryDto(
+    string ConnectionId,
+    IReadOnlyList<ProviderIntegrationSyncRunEvidenceDto> SyncRuns,
+    int TotalSyncRuns,
+    int ReturnedSyncRuns,
+    DateTimeOffset? LatestStartedAt);
 
 public sealed record ProviderIntegrationSyncPlanRequestDto(
     string ConnectionId,
@@ -719,6 +771,10 @@ public interface IProviderIntegrationManifestStore
     Task SaveStagingRecordAsync(IntegrationStagingRecordDto record, CancellationToken ct = default);
 
     Task<IReadOnlyList<IntegrationStagingRecordDto>> ListStagingRecordsAsync(string syncRunId, CancellationToken ct = default);
+
+    Task SaveReconciliationHandoffRecordAsync(ProviderIntegrationReconciliationHandoffRecordDto record, CancellationToken ct = default);
+
+    Task<IReadOnlyList<ProviderIntegrationReconciliationHandoffRecordDto>> ListReconciliationHandoffRecordsAsync(string connectionId, CancellationToken ct = default);
 
     Task SaveSyncRunAsync(ProviderIntegrationSyncRunDto syncRun, CancellationToken ct = default);
 

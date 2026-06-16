@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-11
+last_reviewed: 2026-06-16
 ---
 
 # src/Meridian.Storage
@@ -54,8 +54,8 @@ lookup paths, and evidence trails those layers rely on.
 - `Ledger/` - accounting journal storage, tax-lot policy inputs, and guardrails for instrument
   postings.
 - `Integrations/` - file-backed provider integration manifest, connection, raw payload,
-  quarantine, quarantine-review decision, quarantine replay payload, and staging-record persistence
-  for replayable no-code provider intake.
+  quarantine, quarantine-review decision, quarantine replay payload, staging-record, and
+  reconciliation-handoff evidence persistence for replayable no-code provider intake.
 - `SecurityMaster/` - reference-data stores that identify securities and preserve provenance.
 - `DirectLending/` - direct-lending state, events, workflow audit, and transactional ledger handoff.
 - `AssetOperations/` - read-model projections for operational terms, lifecycle, cash flow,
@@ -146,7 +146,9 @@ update and moves `visible_after` forward as a short lease before returning work 
 That keeps multiple hosted workers from processing the same message concurrently while still
 allowing abandoned messages to become visible again after the lease window. Outbox inserts are
 idempotent on `(topic, message_key)` so retried loan saves do not enqueue duplicate dispatcher work
-for the same domain event.
+for the same domain event. The Application-owned dispatcher also bounds configured batch size and
+poll interval values before calling this store so bad environment overrides cannot make the
+database-backed worker ineffective or spin in a tight retry loop.
 
 Asset Operations persistence stays separate from `security_master`. Its default schema is
 `asset_operations`, configured by `MERIDIAN_ASSET_OPERATIONS_CONNECTION_STRING` and

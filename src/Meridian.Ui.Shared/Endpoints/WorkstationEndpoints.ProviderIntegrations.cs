@@ -448,6 +448,61 @@ public static partial class WorkstationEndpoints
             UserPermission.ModifyConfig,
             UserPermission.AdminMaintenance);
 
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationConnectionSyncRuns), async (
+            string connectionId,
+            int? recentRunLimit,
+            HttpContext context) =>
+        {
+            if (!HasProviderIntegrationReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<ProviderIntegrationMonitoringService>();
+            if (service is null)
+            {
+                return Results.Problem(
+                    "Provider integration monitoring service is not registered.",
+                    statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            try
+            {
+                if (!TryResolveRequiredTenantId(context, out var tenantId))
+                {
+                    return Results.Problem("A tenant-scoped workstation request context is required.", statusCode: StatusCodes.Status403Forbidden);
+                }
+
+                var history = await service
+                    .GetConnectionSyncRunsAsync(
+                        tenantId,
+                        connectionId,
+                        recentRunLimit ?? 10,
+                        context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(history, jsonOptions);
+            }
+            catch (KeyNotFoundException)
+            {
+                return Results.NotFound(new { error = $"Provider integration connection '{connectionId}' was not found." });
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("GetWorkstationProviderIntegrationConnectionSyncRuns")
+        .Produces<ProviderIntegrationSyncRunHistoryDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireAnyPermission(
+            UserPermission.ViewConfig,
+            UserPermission.ManageProviders,
+            UserPermission.ModifyConfig,
+            UserPermission.AdminMaintenance);
+
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationConnectionSyncPlan), async (
             string connectionId,
             DateTimeOffset? evaluatedAt,
@@ -786,6 +841,109 @@ public static partial class WorkstationEndpoints
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireAnyPermission(
             UserPermission.ViewConfig,
+            UserPermission.ManageProviders,
+            UserPermission.ModifyConfig,
+            UserPermission.AdminMaintenance);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationReconciliationHandoffHistory), async (
+            string connectionId,
+            HttpContext context) =>
+        {
+            if (!HasProviderIntegrationReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<ProviderIntegrationReconciliationHandoffService>();
+            if (service is null)
+            {
+                return Results.Problem(
+                    "Provider integration reconciliation handoff service is not registered.",
+                    statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            try
+            {
+                if (!TryResolveRequiredTenantId(context, out var tenantId))
+                {
+                    return Results.Problem("A tenant-scoped workstation request context is required.", statusCode: StatusCodes.Status403Forbidden);
+                }
+
+                var history = await service
+                    .GetHistoryAsync(tenantId, connectionId, context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(history, jsonOptions);
+            }
+            catch (KeyNotFoundException)
+            {
+                return Results.NotFound(new { error = $"Provider integration connection '{connectionId}' was not found." });
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("GetWorkstationProviderIntegrationReconciliationHandoffHistory")
+        .Produces<ProviderIntegrationReconciliationHandoffHistoryDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireAnyPermission(
+            UserPermission.ViewConfig,
+            UserPermission.ManageProviders,
+            UserPermission.ModifyConfig,
+            UserPermission.AdminMaintenance);
+
+        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationReconciliationHandoff), async (
+            ProviderIntegrationReconciliationHandoffRequestDto request,
+            HttpContext context) =>
+        {
+            if (!HasProviderIntegrationConfigurePermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<ProviderIntegrationReconciliationHandoffService>();
+            if (service is null)
+            {
+                return Results.Problem(
+                    "Provider integration reconciliation handoff service is not registered.",
+                    statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            try
+            {
+                if (!TryResolveRequiredTenantId(context, out var tenantId))
+                {
+                    return Results.Problem("A tenant-scoped workstation request context is required.", statusCode: StatusCodes.Status403Forbidden);
+                }
+
+                var result = await service
+                    .HandoffAsync(tenantId, request, context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Results.NotFound(new { error = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("CreateWorkstationProviderIntegrationReconciliationHandoff")
+        .Produces<ProviderIntegrationReconciliationHandoffResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireAnyPermission(
             UserPermission.ManageProviders,
             UserPermission.ModifyConfig,
             UserPermission.AdminMaintenance);

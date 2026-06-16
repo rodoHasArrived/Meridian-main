@@ -6,7 +6,7 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-11
+last_reviewed: 2026-06-16
 ---
 
 # src/Meridian.Wpf
@@ -91,6 +91,15 @@ Manager health checks also use the same seam for deployable desktop clients; its
 path remains a local managed-process request because it uses the runtime-scoped shutdown token.
 Setup Wizard backend readiness checks also use the remote seam, so first-run workstation setup
 validates the configured remote host instead of issuing a page-local direct HTTP health probe.
+The Symbols page Security Master bridge also resolves selected tickers through the same remote
+client and shared workstation Security Master route instead of issuing page-local HTTP calls.
+Ticker Strip quote polling also uses the remote client for `/api/live/{symbol}/quote`, preserving
+the existing no-op offline behavior on non-success responses while keeping the service URL and HTTP
+client lifecycle centralized for deployable desktop workstations.
+After authentication and configuration initialization, WPF now starts the generic host lifecycle so
+shared `IHostedService` registrations, including database-backed projection and outbox workers from
+the shared composition graph, run under the desktop shell and stop through the existing host shutdown
+path on exit.
 Convention-based view-model wiring is handled by `Services/ViewModelViewResolver.cs`; shell pages
 that follow the `*Page` to `*ViewModel` naming convention can receive a DI-constructed DataContext
 without page-specific registration, while pages that set their own DataContext remain authoritative.

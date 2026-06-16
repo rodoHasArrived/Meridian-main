@@ -266,6 +266,21 @@ public sealed class AppServiceRegistrationTests
         });
     }
 
+    [Fact]
+    public void AppStartup_ShouldStartGenericHostServicesBeforeWpfBackgroundScheduler()
+    {
+        var source = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\App.xaml.cs"));
+
+        source.Should().Contain("await StartHostServicesAsync(ct);");
+        source.Should().Contain("await _host.StartAsync(ct).ConfigureAwait(false);");
+        source.Should().Contain("WPF hosted services started");
+        source.IndexOf("await StartHostServicesAsync(ct);", StringComparison.Ordinal)
+            .Should().BeLessThan(
+                source.IndexOf("await InitializeBackgroundServicesAsync();", StringComparison.Ordinal),
+                "DI-hosted database workers should start before WPF-local scheduler services");
+        source.Should().Contain("host.StopAsync(cts.Token)");
+    }
+
     private static ServiceProvider BuildServiceProvider()
     {
         RunMatUiAutomationFacade.EnsureApplicationResources();

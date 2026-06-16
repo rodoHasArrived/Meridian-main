@@ -398,6 +398,199 @@ export function buildUiImplementationDot({ fingerprint, appPages, pagesBySection
   return `${createAutogenHeader()}${lines.join('\n')}\n`;
 }
 
+function groupRegistryPagesByWorkspace(registryPages) {
+  const workspaceMap = new Map();
+  for (const page of registryPages) {
+    const workspaceName = workspaceDisplayName(page.workspaceId);
+    if (!workspaceMap.has(workspaceName)) {
+      workspaceMap.set(workspaceName, []);
+    }
+
+    workspaceMap.get(workspaceName).push(page);
+  }
+
+  return workspaceMap;
+}
+
+function countByVisibility(pages, visibilityTier) {
+  return pages.filter((page) => page.visibilityTier === visibilityTier).length;
+}
+
+export function buildWpfScreenSummaryDot({ fingerprint, registryPages }) {
+  const workspaceMap = groupRegistryPagesByWorkspace(registryPages);
+  const lines = [
+    'digraph WpfScreenSummary {',
+    '  graph [',
+    '    rankdir=LR,',
+    '    labelloc=t,',
+    '    label="Meridian WPF screen summary\\n(auto-generated from ShellPageRegistryBuilder + feature modules)",',
+    '    fontname="Segoe UI",',
+    '    fontsize=20,',
+    '    pad=0.4,',
+    '    nodesep=0.35,',
+    '    ranksep=0.85,',
+    '    bgcolor="#0f172a"',
+    '  ];',
+    '  node [fontname="Segoe UI", shape=box, style="rounded,filled", color="#475569", fontcolor="#e2e8f0", fillcolor="#1e293b"];',
+    '  edge [fontname="Segoe UI", color="#94a3b8", penwidth=1.3, arrowsize=0.8];',
+    '',
+    `  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: ${escapeLabel(fingerprint)}\\nWorkspaces: ${workspaceMap.size}\\nScreens: ${registryPages.length}"];`,
+    '  shell [shape=component, fillcolor="#0f766e", color="#2dd4bf", label="WPF Shell\\nMainWindow + MainPage"];',
+    '  catalog [shape=component, fillcolor="#7c3aed", color="#c4b5fd", label="ShellNavigationCatalog\\nworkspace + screen descriptors"];',
+    '  shell -> catalog [label="loads screen registry", color="#38bdf8"];',
+    '',
+  ];
+
+  let workspaceIndex = 0;
+  for (const [workspaceName, pages] of workspaceMap.entries()) {
+    workspaceIndex += 1;
+    const sectionCount = new Set(pages.map((page) => page.section)).size;
+    const launchpad = pages.find((page) => page.order === 0) ?? pages[0];
+    const nodeId = `workspace_${workspaceIndex}`;
+    lines.push(`  ${nodeId} [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="${escapeLabel(workspaceName)}\\n${pages.length} screens / ${sectionCount} sections\\nPrimary ${countByVisibility(pages, 'Primary')} | Secondary ${countByVisibility(pages, 'Secondary')} | Overflow ${countByVisibility(pages, 'Overflow')}\\nLaunchpad: ${escapeLabel(launchpad.title)} → ${escapeLabel(launchpad.pageType)}"];`);
+    lines.push(`  catalog -> ${nodeId};`);
+  }
+
+  lines.push('');
+  lines.push('  { rank=min; generated; shell; catalog; }');
+  lines.push('}');
+  return `${createAutogenHeader()}${lines.join('\n')}\n`;
+}
+
+export function buildWpfScreenCatalogDot({ fingerprint, registryPages }) {
+  const workspaceMap = groupRegistryPagesByWorkspace(registryPages);
+  const lines = [
+    'digraph WpfScreenCatalog {',
+    '  graph [',
+    '    rankdir=TB,',
+    '    labelloc=t,',
+    '    label="Meridian WPF screen catalog\\n(workspaces, sections, route tags, and page classes from live shell registry)",',
+    '    fontname="Segoe UI",',
+    '    fontsize=20,',
+    '    pad=0.4,',
+    '    nodesep=0.25,',
+    '    ranksep=0.55,',
+    '    bgcolor="#0f172a"',
+    '  ];',
+    '  node [fontname="Segoe UI", shape=box, style="rounded,filled", color="#475569", fontcolor="#e2e8f0", fillcolor="#1e293b"];',
+    '  edge [fontname="Segoe UI", color="#94a3b8", penwidth=1.1, arrowsize=0.7];',
+    '',
+    `  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: ${escapeLabel(fingerprint)}\\nScreens: ${registryPages.length}\\nSource: src/Meridian.Wpf shell registry"];`,
+    '  registry [shape=component, fillcolor="#0f766e", color="#2dd4bf", label="ShellPageRegistryBuilder\\nfeature modules + catalog partials"];',
+    '  generated -> registry [color="#38bdf8"];',
+    '',
+  ];
+
+  let workspaceIndex = 0;
+  for (const [workspaceName, pages] of workspaceMap.entries()) {
+    workspaceIndex += 1;
+    const workspaceId = `workspace_${workspaceIndex}`;
+    const sectionMap = new Map();
+    for (const page of pages) {
+      if (!sectionMap.has(page.section)) {
+        sectionMap.set(page.section, []);
+      }
+
+      sectionMap.get(page.section).push(page);
+    }
+
+    lines.push(`  subgraph cluster_${workspaceId} {`);
+    lines.push(`    label="${escapeLabel(workspaceName)} workspace";`);
+    lines.push('    color="#334155";');
+    lines.push('    style="rounded";');
+    lines.push(`    ${workspaceId} [shape=folder, fillcolor="#1d4ed8", color="#93c5fd", label="${escapeLabel(workspaceName)}\\n${pages.length} screens\\n${sectionMap.size} sections"];`);
+    lines.push(`    registry -> ${workspaceId} [color="#22d3ee"];`);
+
+    let sectionIndex = 0;
+    for (const [sectionName, sectionPages] of sectionMap.entries()) {
+      sectionIndex += 1;
+      const sectionId = `${workspaceId}_section_${sectionIndex}`;
+      lines.push(`    ${sectionId} [shape=folder, fillcolor="#172554", color="#93c5fd", label="${escapeLabel(sectionName)}\\n${sectionPages.length} screens"];`);
+      lines.push(`    ${workspaceId} -> ${sectionId};`);
+
+      for (const page of sectionPages) {
+        const nodeId = `${sectionId}_${page.tag}`;
+        const fill = page.visibilityTier === 'Primary'
+          ? '#1e293b'
+          : page.visibilityTier === 'Secondary'
+            ? '#312e81'
+            : '#431407';
+        lines.push(`    ${nodeId} [fillcolor="${fill}", label="${escapeLabel(page.title)}\\n${escapeLabel(page.tag)} → ${escapeLabel(page.pageType)}\\n${escapeLabel(page.visibilityTier)} | order ${page.order}"];`);
+        lines.push(`    ${sectionId} -> ${nodeId};`);
+      }
+    }
+
+    lines.push('  }');
+    lines.push('');
+  }
+
+  lines.push('  { rank=min; generated; registry; }');
+  lines.push('}');
+  return `${createAutogenHeader()}${lines.join('\n')}\n`;
+}
+
+export function buildWpfWorkspaceScreenDot({ fingerprint, workspaceName, pages }) {
+  const sectionMap = new Map();
+  for (const page of pages) {
+    if (!sectionMap.has(page.section)) {
+      sectionMap.set(page.section, []);
+    }
+
+    sectionMap.get(page.section).push(page);
+  }
+
+  const lines = [
+    `digraph Wpf${workspaceName.replace(/\s+/g, '')}Screens {`,
+    '  graph [',
+    '    rankdir=LR,',
+    '    labelloc=t,',
+    `    label="Meridian WPF ${escapeLabel(workspaceName)} screens\\n(auto-generated from live shell registry)",`,
+    '    fontname="Segoe UI",',
+    '    fontsize=20,',
+    '    pad=0.4,',
+    '    nodesep=0.35,',
+    '    ranksep=0.85,',
+    '    bgcolor="#0f172a"',
+    '  ];',
+    '  node [fontname="Segoe UI", shape=box, style="rounded,filled", color="#475569", fontcolor="#e2e8f0", fillcolor="#1e293b"];',
+    '  edge [fontname="Segoe UI", color="#94a3b8", penwidth=1.2, arrowsize=0.75];',
+    '',
+    `  generated [shape=note, fillcolor="#1d4ed8", color="#60a5fa", label="Source fingerprint: ${escapeLabel(fingerprint)}\\n${escapeLabel(workspaceName)} screens: ${pages.length}\\nSections: ${sectionMap.size}"];`,
+    `  workspace [shape=folder, fillcolor="#0f766e", color="#2dd4bf", label="${escapeLabel(workspaceName)} workspace\\nPrimary ${countByVisibility(pages, 'Primary')} | Secondary ${countByVisibility(pages, 'Secondary')} | Overflow ${countByVisibility(pages, 'Overflow')}"];`,
+    '  generated -> workspace [color="#38bdf8"];',
+    '',
+  ];
+
+  let sectionIndex = 0;
+  for (const [sectionName, sectionPages] of sectionMap.entries()) {
+    sectionIndex += 1;
+    const sectionId = `section_${sectionIndex}`;
+    lines.push(`  subgraph cluster_${sectionId} {`);
+    lines.push(`    label="${escapeLabel(sectionName)}";`);
+    lines.push('    color="#334155";');
+    lines.push('    style="rounded";');
+    lines.push(`    ${sectionId} [shape=folder, fillcolor="#172554", color="#93c5fd", label="${escapeLabel(sectionName)}\\n${sectionPages.length} screens"];`);
+    lines.push(`    workspace -> ${sectionId};`);
+
+    for (const page of sectionPages) {
+      const fill = page.visibilityTier === 'Primary'
+        ? '#1e293b'
+        : page.visibilityTier === 'Secondary'
+          ? '#312e81'
+          : '#431407';
+      lines.push(`    screen_${page.tag} [fillcolor="${fill}", label="${escapeLabel(page.title)}\\n${escapeLabel(page.tag)} → ${escapeLabel(page.pageType)}\\n${escapeLabel(page.visibilityTier)} | order ${page.order}"];`);
+      lines.push(`    ${sectionId} -> screen_${page.tag};`);
+    }
+
+    lines.push('  }');
+    lines.push('');
+  }
+
+  lines.push('  { rank=min; generated; workspace; }');
+  lines.push('}');
+  return `${createAutogenHeader()}${lines.join('\n')}\n`;
+}
+
 export async function readUiDiagramInputs(repoRoot) {
   const paths = {
     app: path.join(repoRoot, 'src', 'Meridian.Wpf', 'App.xaml.cs'),
@@ -451,12 +644,23 @@ export async function buildUiDiagramOutputs(repoRoot) {
   const appPages = parseTransientPages(contents.app);
   const mainWindowDeps = parseInjectedMembers(contents.mainWindow);
   const mainPageDeps = parseInjectedMembers(contents.mainPageCodeBehind);
+  const screenDiagramFiles = new Map();
+  for (const [workspaceName, pages] of groupRegistryPagesByWorkspace(registryPages).entries()) {
+    const workspaceSlug = workspaceName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    screenDiagramFiles.set(
+      `ui-wpf-screens-${workspaceSlug}.dot`,
+      buildWpfWorkspaceScreenDot({ fingerprint, workspaceName, pages }),
+    );
+  }
 
   return {
     fingerprint,
     files: new Map([
       ['ui-navigation-map.dot', buildUiNavigationDot({ fingerprint, navigationPages, workspacePages })],
       ['ui-implementation-flow.dot', buildUiImplementationDot({ fingerprint, appPages, pagesBySection, navigationPages, mainWindowDeps, mainPageDeps })],
+      ['ui-wpf-screen-summary.dot', buildWpfScreenSummaryDot({ fingerprint, registryPages })],
+      ['ui-wpf-screen-catalog.dot', buildWpfScreenCatalogDot({ fingerprint, registryPages })],
+      ...screenDiagramFiles,
     ]),
   };
 }

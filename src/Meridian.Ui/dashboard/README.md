@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-09
+last_reviewed: 2026-06-16
 ---
 
 # src/Meridian.Ui/dashboard
@@ -74,6 +74,18 @@ lists active or revoked assignments, grants principal authority with role, optio
 permission names, effective dates, approval-limit metadata, segregation-of-duties rule text,
 rationale, and correlation metadata, and revokes assignments with the current assignment version so
 optimistic-concurrency and audit evidence remain server-owned.
+The browser route catalog, endpoint helpers, DTO mirrors, and API client also expose the shared
+v0.19 provider-integration runtime for template catalog/detail, OpenAPI import, setup-save,
+activation-readiness, dry-runs, activation, monitor, sync-run history, sync planning, due-sync
+execution, schema-drift checks, staging review, identity resolution, promotion readiness,
+reconciliation handoff, quarantine review, quarantine resolution, and quarantine replay. Browser
+screens should consume those shared endpoints when binding setup and review panels instead of
+deriving provider runtime state locally.
+The Settings Provider Connection Center now loads the shared provider-integration monitor,
+sync-run history, sync plan, staging review, identity-resolution preview, promotion readiness,
+reconciliation-handoff history, and quarantine review on demand per routed connection. Retained
+staging, identity, quarantine, promotion, and handoff evidence stays service-owned while the browser
+surfaces the operator review posture beside credential and routing status.
 
 No-host browser previews must keep fixture data visibly labeled as demo data. The shell banner
 routes operators through the typed demo evidence path: watchlist, live quote evidence, trading

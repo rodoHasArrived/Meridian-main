@@ -87,7 +87,25 @@ duplicate resolution or reassignment commands so retained case evidence and audi
 mutated after closure. Break assignment, escalation, and resolution commands also refresh the
 derived reconciliation lane summaries so active-work queues, dashboards, and evidence tables do not
 show stale break counts, required actions, or retained assignment/resolution evidence after
-exception work.
+exception work. Lane required actions are derived from retained open break casework, including
+source suggested actions, unassigned owner counts, escalation state, and blocked output names, so
+MBS factor, income, bank, GL, and other reconciliation lanes keep exception-management guidance
+without browser-local reconstruction. The dashboard Match Records and Resolve Exceptions metrics
+roll those non-ready lane and open-break actions into the shared operational dashboard summary,
+capped for scanability, so operators see specific cash, income, MBS factor, bank, GL, owner,
+escalation, or blocked-output remediation work before approval instead of generic lane-completion
+or exception prompts. Approve Results actions are likewise derived from report-pack readiness,
+assigned reviewer state, approval history, and the same close checklist-control task IDs enforced by
+the workflow aggregate, so submission and reviewer-decision work stays traceable without UI-local
+approval rules. The same dashboard also derives Close Support actions from the close-readiness
+blocker categories, so provider freshness, ledger posting, reconciliation, reporting, approval, and
+period-lock work remain tied to the shared close checklist instead of a catch-all close prompt. The
+Produce Evidence metric also rolls up incomplete evidence-package actions from accounting-record,
+report-pack, close-manifest, audit-support, and period-lock packages so retained evidence work stays
+source-backed through the final dashboard stage. A governed reopen retains the prior close-package
+manifest as evidence, but the operational dashboard no longer treats that retained package as a
+current period lock; Produce Evidence remains in review until incident remediation is closed again
+with a new retained period-lock package.
 It also derives evidence-package summaries for accounting-record evidence, report-pack readiness,
 close-package manifests, audit-support packages, and period lock/reopen evidence from the same
 workflow, accounting-record, close-package, and retained timeline evidence. Package status and

@@ -217,6 +217,12 @@ Application and infrastructure seams:
   reconciliation promotion preview. It labels each staged record as ready for reconciliation,
   review-required, or blocked, and keeps the first accepted-record writer pointed at integration
   staging rather than Portfolio, Security Master, Ledger, or Accounting stores.
+- `ProviderIntegrationReconciliationHandoffService` persists operator-approved handoff evidence
+  only for rows that remain ready for reconciliation. It records selected staging record ids,
+  approval evidence, actor, timestamp, account/security identity, and the
+  `reconciliation-staging` target without mutating downstream canonical stores. Handoffs are
+  idempotent at the staging-record level: a row with retained handoff evidence is rejected on
+  retry and the operator is directed back to handoff history.
 - `ICanonicalFinancialDataWriter` promotes staged accepted records to the owned domain store only
   after reconciliation, identity, lineage, dedupe, and ownership gates pass.
 - `IIntegrationQuarantineService` stores rejected records, issue groups, suggested fixes, replay
@@ -247,6 +253,7 @@ quarantined_records
 integration_audit_events
 schema_drift_snapshots
 integration_staging_records
+reconciliation_handoff_records
 ```
 
 Durable local storage should use existing Meridian durability patterns such as WAL or
@@ -593,7 +600,7 @@ usable operator artifact and a replayable proof path.
 | 1. Manifest foundation | Persist draft provider templates and connection instances without secrets. | Manifest DTOs round-trip through source-generated JSON, credentials stay in the provider credential store, and activation readiness fails closed. |
 | 2. Dry-run runner | Execute manual CSV upload and one REST pull-mode endpoint without loading canonical stores. | Raw payload retention, record extraction, cursor pagination, durable sync-run summaries, and dry-run summary output work for manual CSV and one custodian-position sample provider. |
 | 3. Mapping and validation | Map one capability into canonical records and quarantine rejects. | Required-field mapping, safe transforms, validation issues, confidence scores, and replay from raw payload are tested. |
-| 4. Operator setup | Expose guided setup and review through shared workstation endpoints. | Template catalog, manifest detail, OpenAPI import, setup-save, activation-readiness, activation, manual CSV dry-run, REST dry-run, quarantine review, quarantine replay, and connection monitor endpoints now adapt starter manifests, tenant-scoped draft persistence, fail-closed blockers, active-state promotion, durable sync-run, staging, quarantine, review decisions, replay evidence, and validation evidence for WPF/browser consumers; setup screens and quarantine-review screens still need to surface draft state, tests, sync runs, and quarantine groups. |
+| 4. Operator setup | Expose guided setup and review through shared workstation endpoints. | Template catalog, manifest detail, OpenAPI import, setup-save, activation-readiness, activation, manual CSV dry-run, REST dry-run, quarantine review, quarantine replay, connection monitor, sync planning, sync-run history, staging review, identity-resolution preview, promotion readiness, and reconciliation-handoff endpoints now adapt starter manifests, tenant-scoped draft persistence, fail-closed blockers, active-state promotion, durable sync-run, staging, quarantine, review decisions, replay evidence, and validation evidence for WPF/browser consumers; the Settings Provider Connection Center now loads runtime evidence for routed connections, while full guided setup and quarantine-resolution screens still need to bind draft editing, tests, mapping preview, and replay actions. |
 | 5. Controlled load | Write accepted read-only records into integration staging and promote only after reconciliation. | Identity resolution, idempotent staging, downstream blockers, audit events, and reconciliation handoff are proven. |
 | 6. Template expansion and OpenAPI import | Add more templates without changing the runtime contract; OpenAPI import is now available as a draft-seeding backend capability. | OpenAPI import seeds endpoint and schema drafts; additional providers or file modes reuse the same manifest, mapping, validation, and activation seams. |
 | 7. Certified action boundary | Add controlled write capabilities only through certified adapters. | Sandbox tests, approval evidence, kill switch, idempotency, entitlement checks, and reconciliation are mandatory before production write activation. |
@@ -686,6 +693,22 @@ Minimum evidence for a read-only production activation:
 - Dry-run sync result.
 - Reconciliation impact statement when records feed close, accounting, or reporting.
 - Approver, timestamp, reason, and retained approval evidence.
+
+Staging source identity must not rely on row number when the mapped canonical record has a stronger
+identifier. The runtime first uses an explicit `sourceRecordId`, then capability-specific
+identifiers such as `providerTransactionId`, `providerAccountId`, security identifiers, or
+account-security-date composites. Row ordinals are only a last-resort fallback for records that do
+not expose a durable provider identity. This keeps retry, replay, quarantine review, promotion
+readiness, and reconciliation handoff evidence tied to the provider's own record identity whenever
+one exists. Duplicate dedupe keys within a dry run or replay are critical validation failures:
+the first valid record may stage, while later records with the same provider identity are
+quarantined for operator review before they can affect reconciliation staging.
+Mapped money objects also fail closed when an amount is present without a currency or when the
+currency is not a three-letter code, because accepted records must carry explicit denomination
+before reconciliation, accounting, reporting, or portfolio promotion.
+For positions and holdings, the first backend tolerance gate compares `quantity * price.amount`
+against `marketValue.amount` when all three values are mapped; records outside the one-cent
+tolerance are quarantined until the provider units, price, or market value are corrected.
 
 Minimum evidence for promotion of a new template:
 

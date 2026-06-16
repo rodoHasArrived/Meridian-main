@@ -69,6 +69,54 @@ public sealed class ProviderIntegrationQuarantineReplayServiceTests : IDisposabl
     }
 
     [Fact]
+    public async Task ReplayAsync_RequarantinesDuplicateReplayedProviderIdentity()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        await SeedQuarantineAsync(store, CreateReplayReadyManifest(), includeDuplicateRecord: true);
+        var service = new ProviderIntegrationQuarantineReplayService(store);
+
+        var result = await service.ReplayAsync(new ProviderIntegrationQuarantineReplayRequestDto(
+            "sync-run-replay-1",
+            "sync-run-quarantine-1",
+            "manifest-custodian-abc-v1",
+            "connection-alpha",
+            ProviderCapabilityKindDto.Positions,
+            ["quarantine-1", "quarantine-2"],
+            "operator@example.com",
+            DateTimeOffset.Parse("2026-06-16T12:30:00Z")));
+
+        result.RecordsReplayed.Should().Be(2);
+        result.RecordsAccepted.Should().Be(1);
+        result.RecordsRequarantined.Should().Be(1);
+        result.Status.Should().Be(ProviderIntegrationProcessingStatusDto.Quarantined);
+        result.Issues.Should().Contain(issue => issue.Code == "duplicate.dedupe-key");
+        (await store.ListStagingRecordsAsync(result.ReplaySyncRunId)).Should().ContainSingle()
+            .Which.SourceRecordId.Should().Be("POS-1");
+        (await store.ListQuarantinedRecordsAsync(result.ReplaySyncRunId)).Should().ContainSingle()
+            .Which.ValidationErrors.Should().Contain(error => error.Code == "duplicate.dedupe-key");
+    }
+
+    [Fact]
+    public async Task ReplayAsync_RequarantinesMoneyAmountWithoutCurrency()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        await SeedQuarantineAsync(store, CreateReplayReadyManifest(includeMarketValueWithoutCurrency: true));
+        var service = new ProviderIntegrationQuarantineReplayService(store);
+
+        var result = await service.ReplayAsync(CreateRequest());
+
+        result.RecordsAccepted.Should().Be(0);
+        result.RecordsRequarantined.Should().Be(1);
+        result.Status.Should().Be(ProviderIntegrationProcessingStatusDto.Quarantined);
+        result.Issues.Should().Contain(issue =>
+            issue.Code == "money.currency.missing" &&
+            issue.TargetField == "marketValue.currency");
+        (await store.ListStagingRecordsAsync(result.ReplaySyncRunId)).Should().BeEmpty();
+        (await store.ListQuarantinedRecordsAsync(result.ReplaySyncRunId)).Should().ContainSingle()
+            .Which.ValidationErrors.Should().Contain(error => error.Code == "money.currency.missing");
+    }
+
+    [Fact]
     public async Task ReplayAsync_ObservesCancellationBeforeEvidence()
     {
         var store = new FileProviderIntegrationManifestStore(testRoot);
@@ -98,7 +146,8 @@ public sealed class ProviderIntegrationQuarantineReplayServiceTests : IDisposabl
 
     private static async Task SeedQuarantineAsync(
         IProviderIntegrationManifestStore store,
-        ProviderIntegrationManifestDto manifest)
+        ProviderIntegrationManifestDto manifest,
+        bool includeDuplicateRecord = false)
     {
         await store.SaveManifestAsync(manifest).ConfigureAwait(false);
         await store.SaveConnectionAsync(CreateConnection()).ConfigureAwait(false);
@@ -142,9 +191,31 @@ public sealed class ProviderIntegrationQuarantineReplayServiceTests : IDisposabl
             ],
             ProviderIntegrationProcessingStatusDto.Quarantined,
             DateTimeOffset.Parse("2026-06-16T12:01:00Z"))).ConfigureAwait(false);
+        if (includeDuplicateRecord)
+        {
+            await store.SaveQuarantinedRecordAsync(new QuarantinedRecordDto(
+                "quarantine-2",
+                "sync-run-quarantine-1",
+                "connection-alpha",
+                ProviderCapabilityKindDto.Positions,
+                Json("""{"account_id":"A-100","quantity":"100","as_of_date":"2026-06-16","position_id":"POS-1"}"""),
+                MappedRecord: Json("""{"providerAccountId":"A-100","quantity":"100","asOf":"2026-06-16"}"""),
+                [
+                    new ValidationIssueDto(
+                        "required.missing",
+                        ProviderIntegrationIssueSeverityDto.Critical,
+                        "Required field 'security.cusip' is missing.",
+                        "security.cusip",
+                        "Map CUSIP, ISIN, ticker, or provider security id.")
+                ],
+                ProviderIntegrationProcessingStatusDto.Quarantined,
+                DateTimeOffset.Parse("2026-06-16T12:01:30Z"))).ConfigureAwait(false);
+        }
     }
 
-    private static ProviderIntegrationManifestDto CreateReplayReadyManifest(bool includeSecurityMapping = true)
+    private static ProviderIntegrationManifestDto CreateReplayReadyManifest(
+        bool includeSecurityMapping = true,
+        bool includeMarketValueWithoutCurrency = false)
     {
         var mappings = new List<FieldMappingDto>
         {
@@ -153,6 +224,19 @@ public sealed class ProviderIntegrationQuarantineReplayServiceTests : IDisposabl
             Mapping("$.as_of_date", "asOf", new TransformRuleDto("date", new Dictionary<string, string>())),
             Mapping("$.position_id", "sourceRecordId")
         };
+        if (includeMarketValueWithoutCurrency)
+        {
+            mappings.Add(new FieldMappingDto(
+                ProviderCapabilityKindDto.Positions,
+                "$.market_value",
+                "marketValue.amount",
+                new TransformRuleDto("decimal", new Dictionary<string, string>()),
+                Required: false,
+                ProviderMappingConfidenceDto.Approved,
+                DefaultValue: null,
+                ConstantValue: "1000.00"));
+        }
+
         if (includeSecurityMapping)
         {
             mappings.Add(new FieldMappingDto(

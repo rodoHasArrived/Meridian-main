@@ -229,6 +229,30 @@ export const PROVIDER_ROUTING_API_ENDPOINTS = {
   preview: UI_API_ROUTES.ProviderRoutingPreview
 } as const;
 
+export const PROVIDER_INTEGRATION_API_ENDPOINTS = {
+  templates: UI_API_ROUTES.WorkstationProviderIntegrationTemplates,
+  template: UI_API_ROUTES.WorkstationProviderIntegrationTemplateById,
+  openApiImport: UI_API_ROUTES.WorkstationProviderIntegrationOpenApiImport,
+  setupSave: UI_API_ROUTES.WorkstationProviderIntegrationSetupSave,
+  manifestReadiness: UI_API_ROUTES.WorkstationProviderIntegrationManifestReadiness,
+  manualCsvDryRun: UI_API_ROUTES.WorkstationProviderIntegrationManualCsvDryRun,
+  restDryRun: UI_API_ROUTES.WorkstationProviderIntegrationRestDryRun,
+  activate: UI_API_ROUTES.WorkstationProviderIntegrationActivate,
+  connectionMonitor: UI_API_ROUTES.WorkstationProviderIntegrationConnectionMonitor,
+  connectionSyncRuns: UI_API_ROUTES.WorkstationProviderIntegrationConnectionSyncRuns,
+  connectionSyncPlan: UI_API_ROUTES.WorkstationProviderIntegrationConnectionSyncPlan,
+  connectionRunDueSync: UI_API_ROUTES.WorkstationProviderIntegrationConnectionRunDueSync,
+  schemaDriftCheck: UI_API_ROUTES.WorkstationProviderIntegrationSchemaDriftCheck,
+  stagingReview: UI_API_ROUTES.WorkstationProviderIntegrationStagingReview,
+  identityResolution: UI_API_ROUTES.WorkstationProviderIntegrationIdentityResolution,
+  promotionReadiness: UI_API_ROUTES.WorkstationProviderIntegrationPromotionReadiness,
+  reconciliationHandoffHistory: UI_API_ROUTES.WorkstationProviderIntegrationReconciliationHandoffHistory,
+  reconciliationHandoff: UI_API_ROUTES.WorkstationProviderIntegrationReconciliationHandoff,
+  quarantineReview: UI_API_ROUTES.WorkstationProviderIntegrationQuarantineReview,
+  quarantineResolve: UI_API_ROUTES.WorkstationProviderIntegrationQuarantineResolve,
+  quarantineReplay: UI_API_ROUTES.WorkstationProviderIntegrationQuarantineReplay
+} as const;
+
 export const SYMBOL_API_ENDPOINTS = {
   symbols: UI_API_ROUTES.Symbols,
   statistics: UI_API_ROUTES.SymbolsStatistics,
@@ -290,6 +314,74 @@ export function providerCredentialEndpoint(providerId: string): string {
 
 export function providerVerifyEndpoint(providerId: string): string {
   return routeWithParam(UI_API_ROUTES.ProviderCredentialVerify, "providerId", providerId);
+}
+
+export function workstationProviderIntegrationTemplateEndpoint(manifestId: string): string {
+  return routeWithParam(PROVIDER_INTEGRATION_API_ENDPOINTS.template, "manifestId", manifestId);
+}
+
+export function workstationProviderIntegrationReadinessEndpoint(
+  manifestId: string,
+  connectionId?: string | null
+): string {
+  return `${routeWithParam(PROVIDER_INTEGRATION_API_ENDPOINTS.manifestReadiness, "manifestId", manifestId)}${queryString({ connectionId })}`;
+}
+
+export function workstationProviderIntegrationConnectionMonitorEndpoint(
+  connectionId: string,
+  recentRunLimit?: number
+): string {
+  return `${routeWithParam(PROVIDER_INTEGRATION_API_ENDPOINTS.connectionMonitor, "connectionId", connectionId)}${queryString({ recentRunLimit })}`;
+}
+
+export function workstationProviderIntegrationConnectionSyncRunsEndpoint(
+  connectionId: string,
+  recentRunLimit?: number
+): string {
+  return `${routeWithParam(PROVIDER_INTEGRATION_API_ENDPOINTS.connectionSyncRuns, "connectionId", connectionId)}${queryString({ recentRunLimit })}`;
+}
+
+export function workstationProviderIntegrationConnectionSyncPlanEndpoint(
+  connectionId: string,
+  evaluatedAt?: string | null
+): string {
+  return `${routeWithParam(PROVIDER_INTEGRATION_API_ENDPOINTS.connectionSyncPlan, "connectionId", connectionId)}${queryString({ evaluatedAt })}`;
+}
+
+export function workstationProviderIntegrationConnectionRunDueSyncEndpoint(connectionId: string): string {
+  return routeWithParam(PROVIDER_INTEGRATION_API_ENDPOINTS.connectionRunDueSync, "connectionId", connectionId);
+}
+
+export function workstationProviderIntegrationStagingReviewEndpoint(
+  connectionId: string,
+  recentRunLimit?: number
+): string {
+  return `${routeWithParam(PROVIDER_INTEGRATION_API_ENDPOINTS.stagingReview, "connectionId", connectionId)}${queryString({ recentRunLimit })}`;
+}
+
+export function workstationProviderIntegrationIdentityResolutionEndpoint(
+  connectionId: string,
+  recentRunLimit?: number
+): string {
+  return `${routeWithParam(PROVIDER_INTEGRATION_API_ENDPOINTS.identityResolution, "connectionId", connectionId)}${queryString({ recentRunLimit })}`;
+}
+
+export function workstationProviderIntegrationPromotionReadinessEndpoint(
+  connectionId: string,
+  recentRunLimit?: number
+): string {
+  return `${routeWithParam(PROVIDER_INTEGRATION_API_ENDPOINTS.promotionReadiness, "connectionId", connectionId)}${queryString({ recentRunLimit })}`;
+}
+
+export function workstationProviderIntegrationReconciliationHandoffHistoryEndpoint(connectionId: string): string {
+  return routeWithParam(PROVIDER_INTEGRATION_API_ENDPOINTS.reconciliationHandoffHistory, "connectionId", connectionId);
+}
+
+export function workstationProviderIntegrationQuarantineReviewEndpoint(
+  connectionId: string,
+  recentRunLimit?: number
+): string {
+  return `${routeWithParam(PROVIDER_INTEGRATION_API_ENDPOINTS.quarantineReview, "connectionId", connectionId)}${queryString({ recentRunLimit })}`;
 }
 
 export function workstationTradingReadinessEndpoint(fundAccountId?: string): string {
