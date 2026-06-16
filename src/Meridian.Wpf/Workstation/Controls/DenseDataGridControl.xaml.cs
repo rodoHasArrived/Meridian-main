@@ -5,6 +5,9 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
+using System.Reflection;
+using System.Text;
 using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.Workstation.Controls;
@@ -60,11 +63,52 @@ public partial class DenseDataGridControl : UserControl
             typeof(DenseDataGridControl),
             new PropertyMetadata("DenseDataGridEmptyState"));
 
+    public static readonly DependencyProperty FilterTargetProperty =
+        DependencyProperty.Register(
+            nameof(FilterTarget),
+            typeof(UIElement),
+            typeof(DenseDataGridControl),
+            new PropertyMetadata(null));
+
+    public static readonly DependencyProperty OpenSelectedDetailsCommandProperty =
+        DependencyProperty.Register(
+            nameof(OpenSelectedDetailsCommand),
+            typeof(ICommand),
+            typeof(DenseDataGridControl),
+            new PropertyMetadata(null));
+
+    public static readonly DependencyProperty CloseDetailsCommandProperty =
+        DependencyProperty.Register(
+            nameof(CloseDetailsCommand),
+            typeof(ICommand),
+            typeof(DenseDataGridControl),
+            new PropertyMetadata(null));
+
+    public static readonly DependencyProperty ClearFiltersCommandProperty =
+        DependencyProperty.Register(
+            nameof(ClearFiltersCommand),
+            typeof(ICommand),
+            typeof(DenseDataGridControl),
+            new PropertyMetadata(null));
+
+    public static readonly DependencyProperty JumpToRelatedRecordsCommandProperty =
+        DependencyProperty.Register(
+            nameof(JumpToRelatedRecordsCommand),
+            typeof(ICommand),
+            typeof(DenseDataGridControl),
+            new PropertyMetadata(null));
+
     private INotifyCollectionChanged? _observedRows;
 
     public DenseDataGridControl()
     {
         InitializeComponent();
+        CommandBindings.Add(new CommandBinding(DenseGridKeyboardCommands.FocusFilter, ExecuteFocusFilter, CanExecuteFocusFilter));
+        CommandBindings.Add(new CommandBinding(DenseGridKeyboardCommands.OpenSelectedDetails, ExecuteOpenSelectedDetails, CanExecuteOpenSelectedDetails));
+        CommandBindings.Add(new CommandBinding(DenseGridKeyboardCommands.CloseDetails, ExecuteCloseDetails, CanExecuteCloseDetails));
+        CommandBindings.Add(new CommandBinding(ApplicationCommands.Copy, ExecuteCopySelection, CanExecuteCopySelection));
+        CommandBindings.Add(new CommandBinding(DenseGridKeyboardCommands.ClearFilters, ExecuteClearFilters, CanExecuteClearFilters));
+        CommandBindings.Add(new CommandBinding(DenseGridKeyboardCommands.JumpToRelatedRecords, ExecuteJumpToRelatedRecords, CanExecuteJumpToRelatedRecords));
         Loaded += (_, _) => UpdateEmptyState();
         Unloaded += (_, _) => DetachRowsCollection();
     }
@@ -109,6 +153,36 @@ public partial class DenseDataGridControl : UserControl
     {
         get => (string)GetValue(EmptyAutomationIdProperty);
         set => SetValue(EmptyAutomationIdProperty, value);
+    }
+
+    public UIElement? FilterTarget
+    {
+        get => (UIElement?)GetValue(FilterTargetProperty);
+        set => SetValue(FilterTargetProperty, value);
+    }
+
+    public ICommand? OpenSelectedDetailsCommand
+    {
+        get => (ICommand?)GetValue(OpenSelectedDetailsCommandProperty);
+        set => SetValue(OpenSelectedDetailsCommandProperty, value);
+    }
+
+    public ICommand? CloseDetailsCommand
+    {
+        get => (ICommand?)GetValue(CloseDetailsCommandProperty);
+        set => SetValue(CloseDetailsCommandProperty, value);
+    }
+
+    public ICommand? ClearFiltersCommand
+    {
+        get => (ICommand?)GetValue(ClearFiltersCommandProperty);
+        set => SetValue(ClearFiltersCommandProperty, value);
+    }
+
+    public ICommand? JumpToRelatedRecordsCommand
+    {
+        get => (ICommand?)GetValue(JumpToRelatedRecordsCommandProperty);
+        set => SetValue(JumpToRelatedRecordsCommandProperty, value);
     }
 
     private static void OnTableChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -202,4 +276,145 @@ public partial class DenseDataGridControl : UserControl
             selectedItems.Add(selectedItem);
         }
     }
+
+    private void CanExecuteFocusFilter(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = FilterTarget is not null;
+        e.Handled = true;
+    }
+
+    private void ExecuteFocusFilter(object sender, ExecutedRoutedEventArgs e)
+    {
+        FilterTarget?.Focus();
+        e.Handled = true;
+    }
+
+    private void CanExecuteOpenSelectedDetails(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = CanExecute(OpenSelectedDetailsCommand, SelectedItem);
+        e.Handled = true;
+    }
+
+    private void ExecuteOpenSelectedDetails(object sender, ExecutedRoutedEventArgs e)
+    {
+        Execute(OpenSelectedDetailsCommand, SelectedItem);
+        e.Handled = true;
+    }
+
+    private void CanExecuteCloseDetails(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = CanExecute(CloseDetailsCommand, SelectedItem);
+        e.Handled = true;
+    }
+
+    private void ExecuteCloseDetails(object sender, ExecutedRoutedEventArgs e)
+    {
+        Execute(CloseDetailsCommand, SelectedItem);
+        e.Handled = true;
+    }
+
+    private void CanExecuteClearFilters(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = CanExecute(ClearFiltersCommand, null);
+        e.Handled = true;
+    }
+
+    private void ExecuteClearFilters(object sender, ExecutedRoutedEventArgs e)
+    {
+        Execute(ClearFiltersCommand, null);
+        e.Handled = true;
+    }
+
+    private void CanExecuteJumpToRelatedRecords(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = CanExecute(JumpToRelatedRecordsCommand, SelectedItem);
+        e.Handled = true;
+    }
+
+    private void ExecuteJumpToRelatedRecords(object sender, ExecutedRoutedEventArgs e)
+    {
+        Execute(JumpToRelatedRecordsCommand, SelectedItem);
+        e.Handled = true;
+    }
+
+    private void CanExecuteCopySelection(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = RowsList?.SelectedItems.Count > 0;
+        e.Handled = true;
+    }
+
+    private void ExecuteCopySelection(object sender, ExecutedRoutedEventArgs e)
+    {
+        var text = FormatSelectedRowsForClipboard();
+        if (!string.IsNullOrWhiteSpace(text))
+        {
+            Clipboard.SetText(text);
+        }
+
+        e.Handled = true;
+    }
+
+    internal string FormatSelectedRowsForClipboard()
+    {
+        if (RowsList is null || RowsList.SelectedItems.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var columns = Table?.Columns ?? Array.Empty<WorkstationTableColumnModel>();
+        var builder = new StringBuilder();
+        if (columns.Count > 0)
+        {
+            builder.AppendLine(string.Join("\t", columns.Select(column => column.Header)));
+        }
+
+        foreach (var selectedItem in RowsList.SelectedItems.Cast<object>())
+        {
+            builder.AppendLine(columns.Count == 0
+                ? Convert.ToString(selectedItem, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty
+                : string.Join("\t", columns.Select(column => FormatCellValue(selectedItem, column.BindingPath))));
+        }
+
+        return builder.ToString().TrimEnd('\r', '\n');
+    }
+
+    private static string FormatCellValue(object row, string bindingPath)
+    {
+        if (string.IsNullOrWhiteSpace(bindingPath))
+        {
+            return string.Empty;
+        }
+
+        var current = row;
+        foreach (var segment in bindingPath.Split('.'))
+        {
+            var property = current.GetType().GetProperty(segment, BindingFlags.Instance | BindingFlags.Public);
+            if (property is null)
+            {
+                return string.Empty;
+            }
+
+            var value = property.GetValue(current);
+            if (value is null)
+            {
+                return string.Empty;
+            }
+
+            current = value;
+        }
+
+        return Convert.ToString(current, System.Globalization.CultureInfo.CurrentCulture) ?? string.Empty;
+    }
+
+    private static bool CanExecute(ICommand? command, object? parameter)
+        => command is not null && command.CanExecute(parameter);
+
+    private static void Execute(ICommand? command, object? parameter)
+    {
+        if (command?.CanExecute(parameter) == true)
+        {
+            command.Execute(parameter);
+        }
+    }
+
 }

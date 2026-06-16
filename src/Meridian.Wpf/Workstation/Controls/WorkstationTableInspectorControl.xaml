@@ -92,6 +92,11 @@
                                                    SelectedItems="{Binding ElementName=Root, Path=SelectedItems}"
                                                    SelectionMode="{Binding ElementName=Root, Path=SelectionMode}"
                                                    EmptyContent="{Binding ElementName=Root, Path=EmptyContent}"
+                                                   FilterTarget="{Binding ElementName=Root, Path=FilterTarget}"
+                                                   OpenSelectedDetailsCommand="{Binding ElementName=Root, Path=OpenSelectedDetailsCommand}"
+                                                   CloseDetailsCommand="{Binding ElementName=Root, Path=CloseDetailsCommand}"
+                                                   ClearFiltersCommand="{Binding ElementName=Root, Path=ClearFiltersCommand}"
+                                                   JumpToRelatedRecordsCommand="{Binding ElementName=Root, Path=JumpToRelatedRecordsCommand}"
                                                    GridAutomationId="{Binding ElementName=Root, Path=GridAutomationId}"
                                                    EmptyAutomationId="{Binding ElementName=Root, Path=EmptyAutomationId}" />
                 </Border>

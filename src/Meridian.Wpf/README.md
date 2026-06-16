@@ -104,6 +104,11 @@ posture used by shared workstation continuity endpoints.
 The drill-in uses compact action-strip chrome, shared dense cash-ladder and cash-flow event tables,
 and right-side inspectors for the selected event, ladder bucket, continuity posture, and run actions;
 Security Master remains disabled until a symbol-linked cash-flow event is selected.
+Shared dense workstation grids centralize keyboard behavior in `DenseGridKeyboardCommands` and
+`DenseDataGridControl` rather than per-page key handlers. Grids and table-inspector compositions
+now expose reusable command hooks for Ctrl+F filter focus, Enter selected-row details, Escape detail
+closure, Ctrl+C selected-row copy, Ctrl+Shift+F filter clearing, and Ctrl+J related-record
+navigation; row traversal remains the virtualized list's native Up/Down/Page/Home/End behavior.
 Desktop backtest services register the Backtesting-owned `IBacktestPreflightService` implementation
 and attach it to the singleton `BacktestService`, so WPF strategy runs use the same date-range,
 replay-coverage, execution-model, and optional Security Master preflight checks as shared
