@@ -36,12 +36,59 @@ public sealed class ProviderIntegrationQuarantineReviewServiceTests : IDisposabl
         review.ConnectionId.Should().Be("connection-alpha");
         review.SyncRunIds.Should().ContainSingle().Which.Should().Be("sync-run-quarantine-1");
         review.TotalQuarantinedRecords.Should().Be(2);
+        review.PendingReviewRecordCount.Should().Be(2);
+        review.DecisionedRecordCount.Should().Be(0);
+        review.ReplayRequestedRecordCount.Should().Be(0);
+        review.IgnoredRecordCount.Should().Be(0);
+        review.CashPositionCandidateCount.Should().Be(0);
         review.CriticalIssueCount.Should().Be(2);
         review.WarningIssueCount.Should().Be(0);
         review.IssueGroups.Should().ContainSingle(group =>
             group.IssueCode == "position.security-id.missing" &&
             group.RecordCount == 2);
         review.Records.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task GetReviewAsync_ReportsLatestDecisionPostureForQuarantinedRecords()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        await SeedQuarantineAsync(store, connectionId: "connection-alpha", recordCount: 3);
+        await SaveDecisionAsync(
+            store,
+            decisionId: "decision-old-review",
+            quarantineRecordId: "quarantine-1",
+            action: ProviderIntegrationQuarantineResolutionActionDto.ReviewOnly,
+            reviewedAt: "2026-06-16T12:03:00Z");
+        await SaveDecisionAsync(
+            store,
+            decisionId: "decision-replay",
+            quarantineRecordId: "quarantine-1",
+            action: ProviderIntegrationQuarantineResolutionActionDto.ReplayAfterMappingChange,
+            reviewedAt: "2026-06-16T12:05:00Z");
+        await SaveDecisionAsync(
+            store,
+            decisionId: "decision-ignore",
+            quarantineRecordId: "quarantine-2",
+            action: ProviderIntegrationQuarantineResolutionActionDto.IgnoreProviderRecord,
+            reviewedAt: "2026-06-16T12:04:00Z");
+        await SaveDecisionAsync(
+            store,
+            decisionId: "decision-cash",
+            quarantineRecordId: "quarantine-3",
+            action: ProviderIntegrationQuarantineResolutionActionDto.MarkAsCashPosition,
+            reviewedAt: "2026-06-16T12:06:00Z");
+        var service = new ProviderIntegrationQuarantineReviewService(store);
+
+        var review = await service.GetReviewAsync("connection-alpha");
+
+        review.TotalQuarantinedRecords.Should().Be(3);
+        review.PendingReviewRecordCount.Should().Be(0);
+        review.DecisionedRecordCount.Should().Be(3);
+        review.ReplayRequestedRecordCount.Should().Be(1);
+        review.IgnoredRecordCount.Should().Be(1);
+        review.CashPositionCandidateCount.Should().Be(1);
+        review.Decisions.Should().HaveCount(4);
     }
 
     [Fact]
@@ -107,7 +154,8 @@ public sealed class ProviderIntegrationQuarantineReviewServiceTests : IDisposabl
 
     private static async Task SeedQuarantineAsync(
         IProviderIntegrationManifestStore store,
-        string connectionId)
+        string connectionId,
+        int recordCount = 2)
     {
         await store.SaveManifestAsync(CreateManifest()).ConfigureAwait(false);
         await store.SaveConnectionAsync(CreateConnection(connectionId)).ConfigureAwait(false);
@@ -121,9 +169,9 @@ public sealed class ProviderIntegrationQuarantineReviewServiceTests : IDisposabl
             DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
             DateTimeOffset.Parse("2026-06-16T12:02:00Z"),
             ProviderIntegrationProcessingStatusDto.Quarantined,
-            RecordsReceived: 2,
+            RecordsReceived: recordCount,
             RecordsAccepted: 0,
-            RecordsQuarantined: 2,
+            RecordsQuarantined: recordCount,
             RawPayloadId: "payload-1",
             Issues:
             [
@@ -134,7 +182,7 @@ public sealed class ProviderIntegrationQuarantineReviewServiceTests : IDisposabl
                     "security",
                     "Map CUSIP, ISIN, ticker, or provider security id.")
             ])).ConfigureAwait(false);
-        for (var index = 1; index <= 2; index++)
+        for (var index = 1; index <= recordCount; index++)
         {
             await store.SaveQuarantinedRecordAsync(new QuarantinedRecordDto(
                 $"quarantine-{index}",
@@ -155,6 +203,22 @@ public sealed class ProviderIntegrationQuarantineReviewServiceTests : IDisposabl
                 DateTimeOffset.Parse($"2026-06-16T12:0{index}:00Z"))).ConfigureAwait(false);
         }
     }
+
+    private static Task SaveDecisionAsync(
+        IProviderIntegrationManifestStore store,
+        string decisionId,
+        string quarantineRecordId,
+        ProviderIntegrationQuarantineResolutionActionDto action,
+        string reviewedAt)
+        => store.SaveQuarantineDecisionAsync(new ProviderIntegrationQuarantineDecisionDto(
+            decisionId,
+            "sync-run-quarantine-1",
+            quarantineRecordId,
+            "connection-alpha",
+            action,
+            "operator@example.com",
+            DateTimeOffset.Parse(reviewedAt),
+            $"{action} test decision."));
 
     private static ProviderIntegrationManifestDto CreateManifest()
         => new(

@@ -37,6 +37,19 @@ public sealed class ProviderConnectionEndpointsTests
     }
 
     [Fact]
+    public async Task GetProviderConnections_WithoutTenantScope_ReturnsForbidden()
+    {
+        await using var app = await CreateAppAsync(
+            _ => { },
+            UserPermission.ManageCredentials,
+            includeTenantScope: false);
+
+        var response = await app.GetTestClient().GetAsync("/api/providers/connections");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task PutProviderCredentials_SavesEncryptedCredentialAndReturnsMaskedStatus()
     {
         using var env = AlpacaEnvScope.Clear();
@@ -271,7 +284,8 @@ public sealed class ProviderConnectionEndpointsTests
 
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
-        UserPermission permissions = UserPermission.ManageCredentials)
+        UserPermission permissions = UserPermission.ManageCredentials,
+        bool includeTenantScope = true)
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "provider-connection-endpoints", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
@@ -297,7 +311,14 @@ public sealed class ProviderConnectionEndpointsTests
         var app = builder.Build();
         app.Use(async (context, next) =>
         {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "provider-ops";
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
+            if (includeTenantScope)
+            {
+                context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "provider-tenant";
+                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "provider-tenant";
+            }
+
             await next();
         });
         app.UseRateLimiter();

@@ -347,7 +347,12 @@ public sealed record ProviderIntegrationQuarantineReviewDto(
     IReadOnlyList<ProviderIntegrationQuarantineDecisionDto> Decisions,
     int TotalQuarantinedRecords,
     int CriticalIssueCount,
-    int WarningIssueCount);
+    int WarningIssueCount,
+    int PendingReviewRecordCount,
+    int DecisionedRecordCount,
+    int ReplayRequestedRecordCount,
+    int IgnoredRecordCount,
+    int CashPositionCandidateCount);
 
 public sealed record ProviderIntegrationQuarantineResolutionRequestDto(
     string ConnectionId,

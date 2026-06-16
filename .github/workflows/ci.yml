@@ -191,7 +191,7 @@ jobs:
           cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
 
       - name: Install dashboard dependencies
-        run: npm install --prefix src/Meridian.Ui/dashboard --include=optional
+        run: npm ci --prefix src/Meridian.Ui/dashboard --include=optional
 
       - name: Run dashboard tests
         run: npm --prefix src/Meridian.Ui/dashboard run test

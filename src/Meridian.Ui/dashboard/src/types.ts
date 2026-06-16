@@ -7202,6 +7202,11 @@ export interface ProviderIntegrationQuarantineReview {
   totalQuarantinedRecords: number;
   criticalIssueCount: number;
   warningIssueCount: number;
+  pendingReviewRecordCount: number;
+  decisionedRecordCount: number;
+  replayRequestedRecordCount: number;
+  ignoredRecordCount: number;
+  cashPositionCandidateCount: number;
 }
 
 export interface ProviderIntegrationQuarantineResolutionRequest {

@@ -171,7 +171,9 @@ endpoint instead of being fabricated by approval itself.
 Provider connection and readiness services project provider setup metadata from the Data
 Integration credential catalog into shared rows. Browser and WPF provider surfaces should render
 credential fields, allowed environments, diagnostics, evidence, and recovery actions from those
-rows instead of maintaining provider-specific local forms.
+rows instead of maintaining provider-specific local forms. Provider connection routes require the
+authenticated workstation tenant scope before listing, saving, verifying, or deleting credential
+state, and credential mutations still require `ManageCredentials`.
 Symbol mapping endpoints under `/api/symbols/mappings` are tenant-scoped shared configuration
 routes: reads require `ViewConfig` or `ModifyConfig`, and upsert, delete, and CSV import mutations
 also require `ModifyConfig` before writing the shared symbol mapping configuration.

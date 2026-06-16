@@ -50,7 +50,9 @@ or provider implementations.
   payload, quarantine review/replay request/result, staging review, staging identity-resolution
   preview, promotion readiness, reconciliation handoff, sync-run summary/history, tenant-store factory
   seam, connection monitor, and run-due sync orchestration contracts for no-code read-only provider
-  setup, monitoring, activation evidence, scheduled execution, and replayable ingestion.
+  setup, monitoring, activation evidence, scheduled execution, and replayable ingestion. Quarantine
+  review DTOs also carry pending, decisioned, replay-requested, ignored, and cash-position
+  candidate counts so clients can render operator review posture without recounting decisions.
 - `Monitoring/` - shared event-pipeline metrics contracts, snapshot payloads, and monitoring
   webhook sink contracts consumed by Application, Platform tracing/monitoring, diagnostics
   endpoints, WPF, and browser workstation services.

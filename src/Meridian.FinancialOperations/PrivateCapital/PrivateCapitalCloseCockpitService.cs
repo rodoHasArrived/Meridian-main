@@ -17,7 +17,7 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
         "Close-package manifest and period-lock readiness from retained workflow evidence",
         "Close-control checklist readiness for reversals, recurring journals, stale marks, and period lock or reopen evidence",
         "Approval history from workflow decisions and checklist-control approvals",
-        "Private-capital evidence package rollups for fund-event accounting, partner tie-outs, NAV support, and close audit",
+        "Private-capital evidence package rollups for fund-event accounting, expense/fee allocation, partner tie-outs, NAV support, and close audit",
         "NAV support packages with positions, cash, pricing, shadow NAV evidence, and administrator-versus-Meridian tie-out evidence",
         "Management-company operating records for expenses, fees, intercompany, budget, cash-plan, reimbursement, and bank/card evidence"
     ];
@@ -524,6 +524,12 @@ public sealed class PrivateCapitalCloseCockpitService : IPrivateCapitalCloseCock
                 "Retained fund-event accounting package for source activity, journal posting, capital-account roll-forward, and expense/fee allocation review.",
                 lanes,
                 ["data-receipt", "journal-posting", "capital-accounts", "expense-fee-allocation"]),
+            BuildEvidencePackage(
+                "private-capital:expense-fee-allocation",
+                "Expense, fee, and allocation evidence",
+                "Retained expense, fee, allocation, and management-company support evidence for close review.",
+                lanes,
+                ["expense-fee-allocation", "management-company-operations"]),
             BuildEvidencePackage(
                 "private-capital:partner-capital-tie-out",
                 "Partner capital tie-out evidence",

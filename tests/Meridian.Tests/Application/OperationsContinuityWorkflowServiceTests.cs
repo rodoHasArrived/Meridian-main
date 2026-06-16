@@ -455,13 +455,25 @@ public sealed class OperationsContinuityWorkflowServiceTests
             artifact.BlockedMaterialAction == "Cannot approve its own missing-support disposition.");
         posture.Workflow.ReviewedAutomation.RequiredActions.Should().Contain(
             "Review drafted report commentary and audit request lists against retained evidence before submission.");
-        posture.Workflow.EvidencePackages.Should().HaveCount(5);
+        posture.Workflow.EvidencePackages.Should().HaveCount(8);
         posture.Workflow.EvidencePackages.Should().Contain(package =>
             package.PackageId == posture.Workflow.AccountingRecordSummary!.RecordId &&
             package.Label == "Accounting record evidence" &&
             package.Status == EvidenceStatusDto.ReviewRequired &&
             package.CompleteCategoryCount == 5 &&
             package.RequiredCategoryCount == 8);
+        posture.Workflow.EvidencePackages.Should().Contain(package =>
+            package.Label == "Reconciliation coverage evidence" &&
+            package.Status == EvidenceStatusDto.Ready &&
+            package.CompleteCategoryCount == 7 &&
+            package.RequiredCategoryCount == 7 &&
+            package.Summary.Contains("cash, position, trade, income, MBS factor, bank, and GL", StringComparison.OrdinalIgnoreCase));
+        posture.Workflow.EvidencePackages.Should().Contain(package =>
+            package.Label == "Exception management evidence" &&
+            package.Status == EvidenceStatusDto.Ready &&
+            package.CompleteCategoryCount == 3 &&
+            package.RequiredCategoryCount == 3 &&
+            package.Summary.Contains("no open exception casework", StringComparison.OrdinalIgnoreCase));
         posture.Workflow.EvidencePackages.Should().Contain(package =>
             package.Label == "Report pack evidence" &&
             package.Status == EvidenceStatusDto.Ready &&
@@ -470,6 +482,12 @@ public sealed class OperationsContinuityWorkflowServiceTests
             package.Label == "Close package manifest" &&
             package.Status == EvidenceStatusDto.ReviewRequired &&
             package.RequiredActions.Contains("Publish the close package manifest and retain the evidence hash."));
+        posture.Workflow.EvidencePackages.Should().Contain(package =>
+            package.Label == "Approval history evidence" &&
+            package.Status == EvidenceStatusDto.Missing &&
+            package.CompleteCategoryCount == 0 &&
+            package.RequiredCategoryCount == 3 &&
+            package.RequiredActions.Contains("Submit workflow approval with reviewer, rationale, and report-pack evidence."));
         posture.Workflow.EvidencePackages.Should().Contain(package =>
             package.Label == "Period lock and reopen evidence" &&
             package.Status == EvidenceStatusDto.Missing &&
@@ -560,12 +578,28 @@ public sealed class OperationsContinuityWorkflowServiceTests
         closed.Workflow.DashboardSummary.Metrics.Should().Contain(metric =>
             metric.MetricId == "close-support" &&
             metric.Value == "Ready to close");
-        closed.Workflow.EvidencePackages.Should().HaveCount(5);
+        closed.Workflow.EvidencePackages.Should().HaveCount(8);
         closed.Workflow.EvidencePackages.Should().OnlyContain(package => package.Status == EvidenceStatusDto.Ready);
         closed.Workflow.EvidencePackages.Should().Contain(package =>
             package.Label == "Audit support package" &&
             package.IsReady &&
             package.CompleteCategoryCount == package.RequiredCategoryCount);
+        closed.Workflow.EvidencePackages.Should().Contain(package =>
+            package.Label == "Reconciliation coverage evidence" &&
+            package.IsReady &&
+            package.CompleteCategoryCount == 7 &&
+            package.RequiredCategoryCount == 7);
+        closed.Workflow.EvidencePackages.Should().Contain(package =>
+            package.Label == "Exception management evidence" &&
+            package.IsReady &&
+            package.CompleteCategoryCount == package.RequiredCategoryCount);
+        closed.Workflow.EvidencePackages.Should().Contain(package =>
+            package.Label == "Approval history evidence" &&
+            package.IsReady &&
+            package.CompleteCategoryCount == 3 &&
+            package.RequiredCategoryCount == 3 &&
+            package.EvidenceLinks.Any(link => link.EvidenceId == "report-pack-1") &&
+            package.Summary.Contains("retained checklist-control approval", StringComparison.OrdinalIgnoreCase));
         closed.Workflow.EvidencePackages.Should().Contain(package =>
             package.Label == "Period lock and reopen evidence" &&
             package.IsReady &&
@@ -2202,6 +2236,25 @@ public sealed class OperationsContinuityWorkflowServiceTests
         cashLane.EvidenceLinks.Should().Contain(link =>
             link.EvidenceId == "assignment-note" &&
             link.Label == "Controller assignment note");
+        assigned.Workflow.EvidencePackages.Should().Contain(package =>
+            package.Label == "Exception management evidence" &&
+            package.Status == EvidenceStatusDto.Blocked &&
+            package.CompleteCategoryCount == 2 &&
+            package.RequiredCategoryCount == 3 &&
+            package.EvidenceLinks.Any(link => link.EvidenceId == "assignment-note") &&
+            package.RequiredActions.Any(action =>
+                action.Contains("Review Level 2 escalation", StringComparison.OrdinalIgnoreCase) &&
+                action.Contains("Cash break aged beyond SLA", StringComparison.OrdinalIgnoreCase)));
+        assigned.Workflow.EvidencePackages.Should().Contain(package =>
+            package.Label == "Reconciliation coverage evidence" &&
+            package.Status == EvidenceStatusDto.Blocked &&
+            package.CompleteCategoryCount == 5 &&
+            package.RequiredCategoryCount == 7 &&
+            package.Summary.Contains("2 reconciliation lane", StringComparison.OrdinalIgnoreCase) &&
+            package.EvidenceLinks.Any(link => link.EvidenceId == "assignment-note") &&
+            package.RequiredActions.Any(action =>
+                action.Contains("Review Level 2 escalation", StringComparison.OrdinalIgnoreCase) &&
+                action.Contains("Cash break aged beyond SLA", StringComparison.OrdinalIgnoreCase)));
 
         var timelineAfter = await auditStore.GetTimelineAsync(workflow.WorkflowId);
         timelineAfter.Should().HaveCount(timelineBefore.Count + 1);
@@ -2516,6 +2569,17 @@ public sealed class OperationsContinuityWorkflowServiceTests
             .Contain(link => link.EvidenceId == "evidence:income" && link.Label == "Income reconciliation evidence")
             .And
             .Contain(link => link.EvidenceId == "evidence:mbs-factor" && link.Label == "MBS factor reconciliation evidence");
+        reconciled.Workflow.EvidencePackages.Should().Contain(package =>
+            package.PackageId == $"reconciliation-coverage:{workflow.FundAccountId:D}:{workflow.PeriodId}" &&
+            package.Label == "Reconciliation coverage evidence" &&
+            package.Status == EvidenceStatusDto.Blocked &&
+            package.CompleteCategoryCount == 0 &&
+            package.RequiredCategoryCount == 7 &&
+            package.EvidenceLinks.Any(link => link.EvidenceId == "reconciliation-run:finops-lanes") &&
+            package.EvidenceLinks.Any(link => link.EvidenceId == "evidence:cash") &&
+            package.EvidenceLinks.Any(link => link.EvidenceId == "evidence:income") &&
+            package.EvidenceLinks.Any(link => link.EvidenceId == "evidence:mbs-factor") &&
+            package.RequiredActions.Contains("Resolve MBS factor schedule before close."));
 
         static OperationsEvidenceLinkDto LaneEvidence(string laneId, string label) =>
             new(

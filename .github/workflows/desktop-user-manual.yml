@@ -11,14 +11,9 @@ on:
         description: Root directory for manual screenshots.
         required: false
         default: "artifacts/desktop-manuals/screenshots"
-      commit:
-        description: Commit and push results to the repository.
-        required: false
-        type: boolean
-        default: false
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: desktop-user-manual-${{ github.ref }}
@@ -43,7 +38,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v6.0.2
         with:
-          persist-credentials: ${{ inputs.commit }}
+          persist-credentials: false
           fetch-depth: 1
 
       - name: Set up .NET SDK
@@ -79,23 +74,7 @@ jobs:
           }
           scripts/dev/generate-desktop-user-manual.ps1 -OutputPath $outputPath -ScreenshotRoot $screenshotRoot
 
-      - name: Commit and push results
-        if: ${{ inputs.commit == true }}
-        shell: pwsh
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -- $env:WORKFLOW_OUTPUT_PATH $env:WORKFLOW_SCREENSHOT_ROOT
-          $changed = git diff --cached --name-only
-          if ($changed) {
-            git commit -m "chore: refresh desktop user manual [skip ci]"
-            git push
-          } else {
-            Write-Host "[INFO] No changes to commit."
-          }
-
       - name: Upload manual artifacts
-        if: ${{ inputs.commit != true }}
         uses: actions/upload-artifact@v7.0.1
         with:
           name: desktop-user-manual-${{ github.run_number }}

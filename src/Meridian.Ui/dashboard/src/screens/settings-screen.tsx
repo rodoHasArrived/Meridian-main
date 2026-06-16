@@ -28,6 +28,7 @@ import {
   listScopedAccessAssignments,
   putProviderCredentials,
   replayProviderIntegrationQuarantineRecords,
+  resolveProviderIntegrationQuarantineRecord,
   revokeScopedAccessAssignment,
   rollbackSecurityAssetProfile,
   testProviderConnection,
@@ -68,7 +69,11 @@ import type {
   OperationsCloseCalendar,
   OperationsCloseCalendarItem,
   ProviderIntegrationConnectionMonitor,
+  ProviderIntegrationProcessingStatus,
   ProviderIntegrationPromotionReadinessPreview,
+  ProviderIntegrationQuarantinedRecord,
+  ProviderIntegrationQuarantineDecision,
+  ProviderIntegrationQuarantineResolutionAction,
   ProviderIntegrationQuarantineReview,
   ProviderIntegrationReconciliationHandoffHistory,
   ProviderIntegrationStagingIdentityResolutionPreview,
@@ -1059,7 +1064,10 @@ export function SettingsScreen({
   const replayProviderRuntimeQuarantine = async (row: SettingsProviderConnectionRow) => {
     const stateKey = providerRuntimeStateKey(row);
     const currentState = providerRuntimeState[stateKey];
-    const replaySeed = currentState?.quarantine?.records[0] ?? null;
+    const replayEligibleRecords = currentState?.quarantine?.records.filter((record) =>
+      !providerRuntimeLatestQuarantineDecision(currentState.quarantine?.decisions, record)
+    ) ?? [];
+    const replaySeed = replayEligibleRecords[0] ?? null;
     const manifestId = currentState?.monitor?.manifestId ?? null;
     if (!currentState || !replaySeed || !manifestId) {
       setProviderRuntimeState((current) => ({
@@ -1067,14 +1075,14 @@ export function SettingsScreen({
         [stateKey]: {
           ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
           phase: "loaded",
-          message: "Quarantine replay is unavailable until runtime evidence includes monitor and quarantine records.",
+          message: "Quarantine replay is unavailable until runtime evidence includes monitor data and undecided quarantine records.",
           details: [],
         }
       }));
       return;
     }
 
-    const quarantineRecordIds = currentState.quarantine.records
+    const quarantineRecordIds = replayEligibleRecords
       .filter((record) => record.syncRunId === replaySeed.syncRunId && record.capability === replaySeed.capability)
       .map((record) => record.quarantineRecordId);
     const requestedAt = new Date();
@@ -1113,6 +1121,60 @@ export function SettingsScreen({
       await loadProviderRuntimeEvidence(row);
     } catch (error) {
       const display = describeApiError(error, "Provider integration quarantine replay failed.");
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: display.summary,
+          details: display.details
+        }
+      }));
+    }
+  };
+
+  const resolveProviderRuntimeQuarantineRecord = async (
+    row: SettingsProviderConnectionRow,
+    record: ProviderIntegrationQuarantinedRecord,
+    action: ProviderIntegrationQuarantineResolutionAction
+  ) => {
+    const stateKey = providerRuntimeStateKey(row);
+    const reviewedAt = new Date();
+    const actionLabel = providerRuntimeQuarantineActionLabel(action);
+
+    setProviderRuntimeState((current) => ({
+      ...current,
+      [stateKey]: {
+        ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+        phase: "loading",
+        message: `Recording ${actionLabel.toLowerCase()} decision for ${record.quarantineRecordId}.`,
+        details: []
+      }
+    }));
+
+    try {
+      const result = await resolveProviderIntegrationQuarantineRecord({
+        connectionId: row.integrationConnectionId,
+        syncRunId: record.syncRunId,
+        quarantineRecordId: record.quarantineRecordId,
+        action,
+        reviewedBy: session?.displayName ?? "settings-operator",
+        reviewedAt: reviewedAt.toISOString(),
+        note: providerRuntimeQuarantineActionNote(action)
+      });
+
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: result.message ?? `${actionLabel} decision recorded for ${record.quarantineRecordId}.`,
+          details: []
+        }
+      }));
+      await loadProviderRuntimeEvidence(row);
+    } catch (error) {
+      const display = describeApiError(error, `Provider integration quarantine ${actionLabel.toLowerCase()} decision failed.`);
       setProviderRuntimeState((current) => ({
         ...current,
         [stateKey]: {
@@ -3651,6 +3713,7 @@ export function SettingsScreen({
                         state={providerRuntimeState[providerRuntimeStateKey(row)] ?? emptyProviderRuntimeEvidenceState}
                         onLoad={() => void loadProviderRuntimeEvidence(row)}
                         onReplayQuarantine={() => void replayProviderRuntimeQuarantine(row)}
+                        onResolveQuarantineRecord={(record, action) => void resolveProviderRuntimeQuarantineRecord(row, record, action)}
                       />
                       {inlineProviderManagementEnabled ? (
                         <ProviderReadinessChecklist
@@ -5004,16 +5067,27 @@ function ProviderIntegrationRuntimePanel({
   row,
   state,
   onLoad,
-  onReplayQuarantine
+  onReplayQuarantine,
+  onResolveQuarantineRecord
 }: {
   row: SettingsProviderConnectionRow;
   state: ProviderRuntimeEvidenceState;
   onLoad: () => void;
   onReplayQuarantine: () => void;
+  onResolveQuarantineRecord: (
+    record: ProviderIntegrationQuarantinedRecord,
+    action: ProviderIntegrationQuarantineResolutionAction
+  ) => void;
 }) {
   const runs = providerRuntimeRuns(state);
   const latestRun = runs[0] ?? null;
   const issueGroups = state.quarantine?.issueGroups ?? [];
+  const quarantineRecords = state.quarantine?.records ?? [];
+  const quarantineDecisionCount = state.quarantine?.decisionedRecordCount ?? state.quarantine?.decisions.length ?? 0;
+  const pendingReviewRecordCount = state.quarantine?.pendingReviewRecordCount ?? Math.max(quarantineRecords.length - quarantineDecisionCount, 0);
+  const replayRequestedRecordCount = state.quarantine?.replayRequestedRecordCount ?? 0;
+  const ignoredRecordCount = state.quarantine?.ignoredRecordCount ?? 0;
+  const cashPositionCandidateCount = state.quarantine?.cashPositionCandidateCount ?? 0;
   const syncPlanItems = state.syncPlan?.items ?? [];
   const blockedSyncItems = state.syncPlan?.blockedCount ?? syncPlanItems.filter((item) => item.isBlocked).length;
   const dueSyncItems = state.syncPlan?.dueCount ?? syncPlanItems.filter((item) => item.isDue).length;
@@ -5032,7 +5106,10 @@ function ProviderIntegrationRuntimePanel({
   const totalRuns = state.syncRuns?.totalSyncRuns ?? runs.length;
   const returnedRuns = state.syncRuns?.returnedSyncRuns ?? runs.length;
   const loading = state.phase === "loading";
-  const quarantineReplayCount = state.quarantine?.records.length ?? 0;
+  const replayEligibleQuarantineRecords = quarantineRecords.filter((record) =>
+    !providerRuntimeLatestQuarantineDecision(state.quarantine?.decisions, record)
+  );
+  const quarantineReplayCount = replayEligibleQuarantineRecords.length;
   const canReplayQuarantine = !loading && quarantineReplayCount > 0 && Boolean(state.monitor?.manifestId);
   const actionLabel = state.phase === "loaded" || state.phase === "error" ? "Refresh runtime" : loading ? "Loading runtime" : "Load runtime";
 
@@ -5093,6 +5170,12 @@ function ProviderIntegrationRuntimePanel({
         />
         <SettingsFieldRow label="Staged retained" value={formatProviderRuntimeNumber(stagedCount)} tone={stagedCount > 0 ? "success" : "muted"} />
         <SettingsFieldRow label="Quarantine retained" value={formatProviderRuntimeNumber(durableQuarantinedCount)} tone={durableQuarantinedCount > 0 ? providerRuntimeIssueTone(criticalIssueCount, warningIssueCount) : "muted"} />
+        <SettingsFieldRow label="Decisioned records" value={formatProviderRuntimeNumber(quarantineDecisionCount)} tone={quarantineDecisionCount > 0 ? "success" : "muted"} />
+        <SettingsFieldRow
+          label="Review posture"
+          value={`${formatProviderRuntimeNumber(pendingReviewRecordCount)} pending / ${formatProviderRuntimeNumber(replayRequestedRecordCount)} replay / ${formatProviderRuntimeNumber(ignoredRecordCount)} ignored / ${formatProviderRuntimeNumber(cashPositionCandidateCount)} cash`}
+          tone={pendingReviewRecordCount > 0 ? "warning" : quarantineDecisionCount > 0 ? "success" : "muted"}
+        />
         <SettingsFieldRow
           label="Quarantine groups"
           value={`${formatProviderRuntimeNumber(issueGroups.length)} groups`}
@@ -5155,6 +5238,97 @@ function ProviderIntegrationRuntimePanel({
               </div>
             </div>
           ))}
+        </div>
+      ) : null}
+      {quarantineRecords.length > 0 ? (
+        <div className="mt-3 grid gap-2" aria-label={`${row.displayName} provider integration quarantine records`}>
+          {quarantineRecords.slice(0, 3).map((record) => {
+            const latestDecision = providerRuntimeLatestQuarantineDecision(state.quarantine?.decisions, record);
+            const hasRecordedDecision = Boolean(latestDecision);
+            const supportsCashDecision = record.capability === "Positions";
+
+            return (
+              <div key={record.quarantineRecordId} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant={providerRuntimeProcessingStatusVariant(record.status)}>{record.status}</Badge>
+                      <span className="font-mono text-[11px] text-foreground">{record.quarantineRecordId}</span>
+                    </div>
+                    <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
+                      {record.capability} · {formatProviderRuntimeUtcMinute(record.createdAt)} · {formatProviderRuntimeNumber(record.validationErrors.length)} issues
+                    </p>
+                    {latestDecision ? (
+                      <p className="mt-1 text-[11px] leading-4 text-success">
+                        Decision: {providerRuntimeQuarantineActionLabel(latestDecision.action)} by {latestDecision.reviewedBy} · {formatProviderRuntimeUtcMinute(latestDecision.reviewedAt)}
+                      </p>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-wrap justify-end gap-2">
+                    {hasRecordedDecision ? (
+                      <Badge variant="success">Decision recorded</Badge>
+                    ) : (
+                      <>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0"
+                          onClick={() => onResolveQuarantineRecord(record, "ReviewOnly")}
+                          disabled={loading}
+                          aria-label={`Review quarantine record ${record.quarantineRecordId} for ${row.displayName}`}
+                        >
+                          {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <MonitorCheck className="h-3.5 w-3.5" aria-hidden="true" />}
+                          Review
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0"
+                          onClick={() => onResolveQuarantineRecord(record, "ReplayAfterMappingChange")}
+                          disabled={loading}
+                          aria-label={`Mark quarantine record ${record.quarantineRecordId} for replay after mapping change for ${row.displayName}`}
+                        >
+                          {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />}
+                          Replay later
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0"
+                          onClick={() => onResolveQuarantineRecord(record, "IgnoreProviderRecord")}
+                          disabled={loading}
+                          aria-label={`Ignore quarantine record ${record.quarantineRecordId} for ${row.displayName}`}
+                        >
+                          {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />}
+                          Ignore
+                        </Button>
+                        {supportsCashDecision ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="shrink-0"
+                            onClick={() => onResolveQuarantineRecord(record, "MarkAsCashPosition")}
+                            disabled={loading}
+                            aria-label={`Mark quarantine record ${record.quarantineRecordId} as cash position for ${row.displayName}`}
+                          >
+                            {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />}
+                            Mark cash
+                          </Button>
+                        ) : null}
+                      </>
+                    )}
+                  </div>
+                </div>
+                {record.validationErrors[0] ? (
+                  <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{record.validationErrors[0].message}</p>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
       ) : null}
       {issueGroups.length > 0 ? (
@@ -5559,6 +5733,53 @@ function providerRuntimeRunVariant(run: ProviderIntegrationSyncRunEvidence): "ou
   if (run.recordsQuarantined > 0 || run.warningIssueCount > 0 || status.includes("review")) return "warning";
   if (status.includes("accepted") || status.includes("complete") || status.includes("success")) return "success";
   return "outline";
+}
+
+function providerRuntimeProcessingStatusVariant(status: ProviderIntegrationProcessingStatus): "outline" | "success" | "warning" | "danger" {
+  const normalized = status.toLowerCase();
+  if (normalized.includes("block")) return "danger";
+  if (normalized.includes("quarantine")) return "warning";
+  if (normalized.includes("validated") || normalized.includes("loaded") || normalized.includes("published")) return "success";
+  return "outline";
+}
+
+function providerRuntimeLatestQuarantineDecision(
+  decisions: readonly ProviderIntegrationQuarantineDecision[] | null | undefined,
+  record: ProviderIntegrationQuarantinedRecord
+): ProviderIntegrationQuarantineDecision | null {
+  const matching = (decisions ?? [])
+    .filter((decision) => decision.quarantineRecordId === record.quarantineRecordId && decision.syncRunId === record.syncRunId)
+    .sort((left, right) => providerRuntimeDateValue(right.reviewedAt) - providerRuntimeDateValue(left.reviewedAt));
+
+  return matching[0] ?? null;
+}
+
+function providerRuntimeQuarantineActionLabel(action: ProviderIntegrationQuarantineResolutionAction): string {
+  switch (action) {
+    case "ReplayAfterMappingChange":
+      return "Replay after mapping change";
+    case "IgnoreProviderRecord":
+      return "Ignore provider record";
+    case "MarkAsCashPosition":
+      return "Mark as cash position";
+    case "ReviewOnly":
+    default:
+      return "Review";
+  }
+}
+
+function providerRuntimeQuarantineActionNote(action: ProviderIntegrationQuarantineResolutionAction): string {
+  switch (action) {
+    case "ReplayAfterMappingChange":
+      return "Marked from the Settings Provider Connection Center for replay after mapping changes.";
+    case "IgnoreProviderRecord":
+      return "Ignored from the Settings Provider Connection Center after operator review.";
+    case "MarkAsCashPosition":
+      return "Marked from the Settings Provider Connection Center as a cash position candidate.";
+    case "ReviewOnly":
+    default:
+      return "Reviewed from the Settings Provider Connection Center runtime evidence panel.";
+  }
 }
 
 function providerRuntimeRunTone(run: ProviderIntegrationSyncRunEvidence): keyof typeof itemToneClass {

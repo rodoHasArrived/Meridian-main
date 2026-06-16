@@ -85,7 +85,11 @@ The Settings Provider Connection Center now loads the shared provider-integratio
 sync-run history, sync plan, staging review, identity-resolution preview, promotion readiness,
 reconciliation-handoff history, and quarantine review on demand per routed connection. Retained
 staging, identity, quarantine, promotion, and handoff evidence stays service-owned while the browser
-surfaces the operator review posture beside credential and routing status.
+surfaces the operator review posture beside credential and routing status. The runtime panel can
+record retained quarantine-record decisions for review-only, replay-after-mapping,
+ignore-provider-record, and mark-as-cash-position actions, trigger the shared quarantine replay
+endpoint for the currently retained quarantine batch, and show the backend-computed pending,
+decisioned, replay-requested, ignored, and cash-position posture counts after evidence reload.
 
 No-host browser previews must keep fixture data visibly labeled as demo data. The shell banner
 routes operators through the typed demo evidence path: watchlist, live quote evidence, trading

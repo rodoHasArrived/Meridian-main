@@ -329,7 +329,12 @@ public sealed class ProviderIntegrationContractsTests
             [decision],
             TotalQuarantinedRecords: 1,
             CriticalIssueCount: 1,
-            WarningIssueCount: 0);
+            WarningIssueCount: 0,
+            PendingReviewRecordCount: 0,
+            DecisionedRecordCount: 1,
+            ReplayRequestedRecordCount: 1,
+            IgnoredRecordCount: 0,
+            CashPositionCandidateCount: 0);
         var result = new ProviderIntegrationQuarantineResolutionResultDto(
             Resolved: true,
             record,
@@ -350,6 +355,7 @@ public sealed class ProviderIntegrationContractsTests
             ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationQuarantineResolutionResultDto);
 
         reviewJson.Should().Contain("\"issueGroups\"");
+        reviewJson.Should().Contain("\"replayRequestedRecordCount\": 1");
         reviewJson.Should().Contain("\"action\": \"ReplayAfterMappingChange\"");
         reviewJson.Should().NotContain("\"IssueGroups\"");
         resultJson.Should().Contain("\"resolved\": true");
@@ -361,6 +367,7 @@ public sealed class ProviderIntegrationContractsTests
             .Which.IssueCode.Should().Be("position.security-id.missing");
         reviewRoundTrip.Decisions.Should().ContainSingle()
             .Which.Action.Should().Be(ProviderIntegrationQuarantineResolutionActionDto.ReplayAfterMappingChange);
+        reviewRoundTrip.ReplayRequestedRecordCount.Should().Be(1);
         resultRoundTrip.Should().NotBeNull();
         resultRoundTrip!.Resolved.Should().BeTrue();
         resultRoundTrip.Record.RawRecord.GetProperty("account_id").GetString().Should().Be("A1");

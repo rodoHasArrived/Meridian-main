@@ -12,116 +12,557 @@
     {
       "name": "screenshot-catalog",
       "title": "Desktop Screenshot Catalog",
-      "description": "Refresh the committed WPF screenshot catalog used in repository documentation.",
+      "description": "Refresh the committed WPF screenshot catalog for every registered desktop application screen.",
       "purpose": "screenshots",
       "publish": {
         "directory": "docs/screenshots/desktop"
       },
       "steps": [
         {
-          "title": "Strategy Workspace",
-          "pageTag": "StrategyShell",
-          "captureName": "wpf-strategy-workspace",
-          "notes": "Validate that the shell loads cleanly and the Strategy workspace remains screenshot ready."
+          "title": "Trading Workspace",
+          "pageTag": "TradingShell",
+          "captureName": "wpf-trading-shell",
+          "notes": "Capture the Trading Workspace screen from the registered WPF shell catalog."
         },
         {
-          "title": "Providers",
-          "pageTag": "Provider",
-          "captureName": "wpf-providers",
-          "notes": "Capture the provider management surface."
-        },
-        {
-          "title": "Provider Health",
-          "pageTag": "ProviderHealth",
-          "captureName": "wpf-provider-health",
-          "notes": "Capture the provider health dashboard."
-        },
-        {
-          "title": "Backfill",
-          "pageTag": "Backfill",
-          "captureName": "wpf-backfill",
-          "blueprintChecklistIds": [
-            "desktop-screen-backfill-data-repair"
-          ],
-          "notes": "Capture the historical backfill workflow."
-        },
-        {
-          "title": "Live Data",
+          "title": "Live data",
           "pageTag": "LiveData",
           "captureName": "wpf-live-data",
-          "blueprintChecklistIds": [
-            "desktop-screen-live-market-data"
-          ],
-          "notes": "Capture the live data viewer."
+          "notes": "Capture the Live data screen from the registered WPF shell catalog."
         },
         {
-          "title": "Storage",
-          "pageTag": "Storage",
-          "captureName": "wpf-storage",
-          "notes": "Capture the storage management screen."
+          "title": "Order book",
+          "pageTag": "OrderBook",
+          "captureName": "wpf-order-book",
+          "notes": "Capture the Order book screen from the registered WPF shell catalog."
         },
         {
-          "title": "Data Quality",
-          "pageTag": "DataQuality",
-          "captureName": "wpf-data-quality",
-          "notes": "Capture the data quality workflow."
+          "title": "Position blotter",
+          "pageTag": "PositionBlotter",
+          "captureName": "wpf-position-blotter",
+          "notes": "Capture the Position blotter screen from the registered WPF shell catalog."
         },
         {
-          "title": "Data Browser",
-          "pageTag": "DataBrowser",
-          "captureName": "wpf-data-browser",
-          "notes": "Capture the archive browsing workflow."
+          "title": "Run risk",
+          "pageTag": "RunRisk",
+          "captureName": "wpf-run-risk",
+          "notes": "Capture the Run risk screen from the registered WPF shell catalog."
         },
         {
-          "title": "Strategy Runs",
-          "pageTag": "StrategyRuns",
-          "captureName": "wpf-strategy-runs",
-          "blueprintChecklistIds": [
-            "desktop-screen-strategy-runs"
-          ],
-          "notes": "Capture the strategy run browser."
+          "title": "Trading hours",
+          "pageTag": "TradingHours",
+          "captureName": "wpf-trading-hours",
+          "notes": "Capture the Trading hours screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Portfolio Workspace",
+          "pageTag": "PortfolioShell",
+          "captureName": "wpf-portfolio-shell",
+          "notes": "Capture the Portfolio Workspace screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Account portfolio",
+          "pageTag": "AccountPortfolio",
+          "captureName": "wpf-account-portfolio",
+          "notes": "Capture the Account portfolio screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Aggregate portfolio",
+          "pageTag": "AggregatePortfolio",
+          "captureName": "wpf-aggregate-portfolio",
+          "notes": "Capture the Aggregate portfolio screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Run portfolio",
+          "pageTag": "RunPortfolio",
+          "captureName": "wpf-run-portfolio",
+          "notes": "Capture the Run portfolio screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Portfolio explorer",
+          "pageTag": "PortfolioExplorer",
+          "captureName": "wpf-portfolio-explorer",
+          "notes": "Capture the Portfolio explorer screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Fund portfolio",
+          "pageTag": "FundPortfolio",
+          "captureName": "wpf-fund-portfolio",
+          "notes": "Capture the Fund portfolio screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Fund accounts",
+          "pageTag": "FundAccounts",
+          "captureName": "wpf-fund-accounts",
+          "notes": "Capture the Fund accounts screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Portfolio import",
+          "pageTag": "PortfolioImport",
+          "captureName": "wpf-portfolio-import",
+          "notes": "Capture the Portfolio import screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Direct lending",
+          "pageTag": "DirectLending",
+          "captureName": "wpf-direct-lending",
+          "notes": "Capture the Direct lending screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Accounting Workspace",
+          "pageTag": "AccountingShell",
+          "captureName": "wpf-accounting-shell",
+          "notes": "Capture the Accounting Workspace screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Entity setup",
+          "pageTag": "FundStructureSetup",
+          "captureName": "wpf-fund-structure-setup",
+          "notes": "Capture the Entity setup screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Fund operations",
+          "pageTag": "FundLedger",
+          "captureName": "wpf-fund-ledger",
+          "notes": "Capture the Fund operations screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Run ledger",
+          "pageTag": "RunLedger",
+          "captureName": "wpf-run-ledger",
+          "notes": "Capture the Run ledger screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Run cash flow",
+          "pageTag": "RunCashFlow",
+          "captureName": "wpf-run-cash-flow",
+          "notes": "Capture the Run cash flow screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Fund reconciliation",
+          "pageTag": "FundReconciliation",
+          "captureName": "wpf-fund-reconciliation",
+          "notes": "Capture the Fund reconciliation screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Fund banking",
+          "pageTag": "FundBanking",
+          "captureName": "wpf-fund-banking",
+          "notes": "Capture the Fund banking screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Fund cash and financing",
+          "pageTag": "FundCashFinancing",
+          "captureName": "wpf-fund-cash-financing",
+          "notes": "Capture the Fund cash and financing screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Accounting configure",
+          "pageTag": "FundAccountingConfigure",
+          "captureName": "wpf-fund-accounting-configure",
+          "notes": "Capture the Accounting configure screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Fund trial balance",
+          "pageTag": "FundTrialBalance",
+          "captureName": "wpf-fund-trial-balance",
+          "notes": "Capture the Fund trial balance screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Ledger explorer",
+          "pageTag": "LedgerExplorer",
+          "captureName": "wpf-ledger-explorer",
+          "notes": "Capture the Ledger explorer screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Fund audit trail",
+          "pageTag": "FundAuditTrail",
+          "captureName": "wpf-fund-audit-trail",
+          "notes": "Capture the Fund audit trail screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Security and instrument explorer",
+          "pageTag": "SecurityInstrumentExplorer",
+          "captureName": "wpf-security-instrument-explorer",
+          "notes": "Capture the Security and instrument explorer screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Reporting Workspace",
+          "pageTag": "ReportingShell",
+          "captureName": "wpf-reporting-shell",
+          "notes": "Capture the Reporting Workspace screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Fund report pack",
+          "pageTag": "FundReportPack",
+          "captureName": "wpf-fund-report-pack",
+          "notes": "Capture the Fund report pack screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Report run status",
+          "pageTag": "ReportRunStatus",
+          "captureName": "wpf-report-run-status",
+          "notes": "Capture the Report run status screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Reporting dashboard",
+          "pageTag": "Dashboard",
+          "captureName": "wpf-dashboard",
+          "notes": "Capture the Reporting dashboard screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Analysis export",
+          "pageTag": "AnalysisExport",
+          "captureName": "wpf-analysis-export",
+          "notes": "Capture the Analysis export screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Report-line provenance",
+          "pageTag": "ReportLineProvenanceExplorer",
+          "captureName": "wpf-report-line-provenance-explorer",
+          "notes": "Capture the Report-line provenance screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Analysis export wizard",
+          "pageTag": "AnalysisExportWizard",
+          "captureName": "wpf-analysis-export-wizard",
+          "notes": "Capture the Analysis export wizard screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Export presets",
+          "pageTag": "ExportPresets",
+          "captureName": "wpf-export-presets",
+          "notes": "Capture the Export presets screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Home",
+          "pageTag": "HomeWorkspace",
+          "captureName": "wpf-home-workspace",
+          "notes": "Capture the Home screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Strategy Workspace",
+          "pageTag": "StrategyShell",
+          "captureName": "wpf-strategy-shell",
+          "notes": "Capture the Strategy Workspace screen from the registered WPF shell catalog."
         },
         {
           "title": "Backtest",
           "pageTag": "Backtest",
           "captureName": "wpf-backtest",
-          "blueprintChecklistIds": [
-            "desktop-screen-historical-replay"
-          ],
-          "notes": "Capture the backtesting workflow."
+          "notes": "Capture the Backtest screen from the registered WPF shell catalog."
         },
         {
-          "title": "Reporting Dashboard",
-          "pageTag": "Dashboard",
-          "captureName": "wpf-dashboard",
-          "notes": "Capture the Reporting dashboard so the committed legacy screenshot remains covered by the active catalog."
+          "title": "Strategy runs",
+          "pageTag": "StrategyRuns",
+          "captureName": "wpf-strategy-runs",
+          "notes": "Capture the Strategy runs screen from the registered WPF shell catalog."
         },
         {
-          "title": "Quant Script",
+          "title": "Run detail",
+          "pageTag": "RunDetail",
+          "captureName": "wpf-run-detail",
+          "notes": "Capture the Run detail screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Charts",
+          "pageTag": "Charts",
+          "captureName": "wpf-charts",
+          "notes": "Capture the Charts screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Run scripts",
+          "pageTag": "RunMat",
+          "captureName": "wpf-run-mat",
+          "notes": "Capture the Run scripts screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Batch backtest",
+          "pageTag": "BatchBacktest",
+          "captureName": "wpf-batch-backtest",
+          "notes": "Capture the Batch backtest screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Advanced analytics",
+          "pageTag": "AdvancedAnalytics",
+          "captureName": "wpf-advanced-analytics",
+          "notes": "Capture the Advanced analytics screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Quant script",
           "pageTag": "QuantScript",
           "captureName": "wpf-quant-script",
-          "notes": "Capture the Quant Script workspace."
+          "notes": "Capture the Quant script screen from the registered WPF shell catalog."
         },
         {
-          "title": "Security Master",
+          "title": "Lean integration",
+          "pageTag": "LeanIntegration",
+          "captureName": "wpf-lean-integration",
+          "notes": "Capture the Lean integration screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Event replay",
+          "pageTag": "EventReplay",
+          "captureName": "wpf-event-replay",
+          "notes": "Capture the Event replay screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Watchlist",
+          "pageTag": "Watchlist",
+          "captureName": "wpf-watchlist",
+          "notes": "Capture the Watchlist screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Data Workspace",
+          "pageTag": "DataShell",
+          "captureName": "wpf-data-shell",
+          "notes": "Capture the Data Workspace screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Providers",
+          "pageTag": "Provider",
+          "captureName": "wpf-provider",
+          "notes": "Capture the Providers screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Backfill",
+          "pageTag": "Backfill",
+          "captureName": "wpf-backfill",
+          "notes": "Capture the Backfill screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Symbols",
+          "pageTag": "Symbols",
+          "captureName": "wpf-symbols",
+          "notes": "Capture the Symbols screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Storage",
+          "pageTag": "Storage",
+          "captureName": "wpf-storage",
+          "notes": "Capture the Storage screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Data export",
+          "pageTag": "DataExport",
+          "captureName": "wpf-data-export",
+          "notes": "Capture the Data export screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Data sources",
+          "pageTag": "DataSources",
+          "captureName": "wpf-data-sources",
+          "notes": "Capture the Data sources screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Provider health",
+          "pageTag": "ProviderHealth",
+          "captureName": "wpf-provider-health",
+          "notes": "Capture the Provider health screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Data quality",
+          "pageTag": "DataQuality",
+          "captureName": "wpf-data-quality",
+          "notes": "Capture the Data quality screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Security master",
           "pageTag": "SecurityMaster",
           "captureName": "wpf-security-master",
-          "blueprintChecklistIds": [
-            "desktop-screen-security-master"
-          ],
-          "notes": "Capture the security master surface."
+          "notes": "Capture the Security master screen from the registered WPF shell catalog."
         },
         {
-          "title": "Diagnostics",
-          "pageTag": "Diagnostics",
-          "captureName": "wpf-diagnostics",
-          "notes": "Capture the diagnostics page."
+          "title": "Symbol mapping",
+          "pageTag": "SymbolMapping",
+          "captureName": "wpf-symbol-mapping",
+          "notes": "Capture the Symbol mapping screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Symbol storage",
+          "pageTag": "SymbolStorage",
+          "captureName": "wpf-symbol-storage",
+          "notes": "Capture the Symbol storage screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Schedules",
+          "pageTag": "Schedules",
+          "captureName": "wpf-schedules",
+          "notes": "Capture the Schedules screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Collection sessions",
+          "pageTag": "CollectionSessions",
+          "captureName": "wpf-collection-sessions",
+          "notes": "Capture the Collection sessions screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Package manager",
+          "pageTag": "PackageManager",
+          "captureName": "wpf-package-manager",
+          "notes": "Capture the Package manager screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Data browser",
+          "pageTag": "DataBrowser",
+          "captureName": "wpf-data-browser",
+          "notes": "Capture the Data browser screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Data calendar",
+          "pageTag": "DataCalendar",
+          "captureName": "wpf-data-calendar",
+          "notes": "Capture the Data calendar screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Data sampling",
+          "pageTag": "DataSampling",
+          "captureName": "wpf-data-sampling",
+          "notes": "Capture the Data sampling screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Time series alignment",
+          "pageTag": "TimeSeriesAlignment",
+          "captureName": "wpf-time-series-alignment",
+          "notes": "Capture the Time series alignment screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Index subscription",
+          "pageTag": "IndexSubscription",
+          "captureName": "wpf-index-subscription",
+          "notes": "Capture the Index subscription screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Options",
+          "pageTag": "Options",
+          "captureName": "wpf-options",
+          "notes": "Capture the Options screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Add provider wizard",
+          "pageTag": "AddProviderWizard",
+          "captureName": "wpf-add-provider-wizard",
+          "notes": "Capture the Add provider wizard screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Archive health",
+          "pageTag": "ArchiveHealth",
+          "captureName": "wpf-archive-health",
+          "notes": "Capture the Archive health screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Storage optimization",
+          "pageTag": "StorageOptimization",
+          "captureName": "wpf-storage-optimization",
+          "notes": "Capture the Storage optimization screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Retention assurance",
+          "pageTag": "RetentionAssurance",
+          "captureName": "wpf-retention-assurance",
+          "notes": "Capture the Retention assurance screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Settings Workspace",
+          "pageTag": "SettingsShell",
+          "captureName": "wpf-settings-shell",
+          "notes": "Capture the Settings Workspace screen from the registered WPF shell catalog."
         },
         {
           "title": "Settings",
           "pageTag": "Settings",
           "captureName": "wpf-settings",
-          "notes": "Capture the settings page."
+          "notes": "Capture the Settings screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Credential management",
+          "pageTag": "CredentialManagement",
+          "captureName": "wpf-credential-management",
+          "notes": "Capture the Credential management screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "System health",
+          "pageTag": "SystemHealth",
+          "captureName": "wpf-system-health",
+          "notes": "Capture the System health screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Diagnostics",
+          "pageTag": "Diagnostics",
+          "captureName": "wpf-diagnostics",
+          "notes": "Capture the Diagnostics screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Service manager",
+          "pageTag": "ServiceManager",
+          "captureName": "wpf-service-manager",
+          "notes": "Capture the Service manager screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Admin maintenance",
+          "pageTag": "AdminMaintenance",
+          "captureName": "wpf-admin-maintenance",
+          "notes": "Capture the Admin maintenance screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Environment designer",
+          "pageTag": "EnvironmentDesigner",
+          "captureName": "wpf-environment-designer",
+          "notes": "Capture the Environment designer screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Messaging hub",
+          "pageTag": "MessagingHub",
+          "captureName": "wpf-messaging-hub",
+          "notes": "Capture the Messaging hub screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Notification center",
+          "pageTag": "NotificationCenter",
+          "captureName": "wpf-notification-center",
+          "notes": "Capture the Notification center screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Workflow library",
+          "pageTag": "WorkflowLibrary",
+          "captureName": "wpf-workflow-library",
+          "notes": "Capture the Workflow library screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Activity log",
+          "pageTag": "ActivityLog",
+          "captureName": "wpf-activity-log",
+          "notes": "Capture the Activity log screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Keyboard shortcuts",
+          "pageTag": "KeyboardShortcuts",
+          "captureName": "wpf-keyboard-shortcuts",
+          "notes": "Capture the Keyboard shortcuts screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Help and support",
+          "pageTag": "Help",
+          "captureName": "wpf-help",
+          "notes": "Capture the Help and support screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Setup wizard",
+          "pageTag": "SetupWizard",
+          "captureName": "wpf-setup-wizard",
+          "notes": "Capture the Setup wizard screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Workspace layouts",
+          "pageTag": "Workspaces",
+          "captureName": "wpf-workspaces",
+          "notes": "Capture the Workspace layouts screen from the registered WPF shell catalog."
+        },
+        {
+          "title": "Welcome",
+          "pageTag": "Welcome",
+          "captureName": "wpf-welcome",
+          "notes": "Capture the Welcome screen from the registered WPF shell catalog."
         }
       ]
     },
