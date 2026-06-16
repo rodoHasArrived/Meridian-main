@@ -488,12 +488,12 @@ public sealed class RunRiskViewModel : BindableBase
     {
         ResetAnalysisState();
         StatusText = $"Could not load risk analytics for run '{runId}'.";
-        RunActionStateTitle = "Risk load failed";
-        RunActionStateDetail = "Resolve the load error, then reopen a retained run before drilling into related pages.";
+        RunActionStateTitle = "Risk analytics unavailable";
+        RunActionStateDetail = "Resolve the loading issue, then reopen a retained run before drilling into related pages.";
         RiskEmptyStateTitle = "Risk analytics failed to load";
-        RiskEmptyStateDetail = $"The retained risk data could not be loaded: {exception.Message}";
-        AttributionEmptyStateTitle = "Attribution failed to load";
-        AttributionEmptyStateDetail = "Resolve the load error above, then reopen the run from the run browser.";
+        RiskEmptyStateDetail = $"The retained risk data is unavailable: {exception.Message}";
+        AttributionEmptyStateTitle = "Attribution unavailable";
+        AttributionEmptyStateDetail = "Resolve the loading issue above, then reopen the run from the run browser.";
     }
 
     private void ResetAnalysisState()

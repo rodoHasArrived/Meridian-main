@@ -10,7 +10,7 @@
       Background="{DynamicResource ConsoleBackgroundDarkBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
-      AutomationProperties.Name="Workspace Deep Page Host"
+      AutomationProperties.Name="Workspace detail page"
       AutomationProperties.AutomationId="WorkspaceDeepPageHostPage">
 
     <Page.Resources>
@@ -94,7 +94,7 @@
                                        Margin="0,4,0,0"
                                        Style="{StaticResource CardDescriptionStyle}"
                                        TextWrapping="Wrap"
-                                       Text="Shared workspace shell host" />
+                                       Text="Shared workspace detail panel" />
                         </StackPanel>
                     </Grid>
 

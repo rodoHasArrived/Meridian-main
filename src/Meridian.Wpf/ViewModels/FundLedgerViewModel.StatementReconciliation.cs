@@ -192,7 +192,7 @@ public sealed partial class FundLedgerViewModel
         }
 
         StatementDetailTitle = $"Statement run {SelectedStatementRun.RunId}";
-        StatementDetailSubtitle = $"Import {SelectedStatementRun.ImportId} · {SelectedStatementRun.StatusText} · {SelectedStatementRun.OpenExceptionCount:N0} open exception(s).";
+        StatementDetailSubtitle = $"Import {SelectedStatementRun.ImportId} · {SelectedStatementRun.StatusText} · {SelectedStatementRun.OpenExceptionCount:N0} open item(s).";
         if (SelectedStatementBreak is null)
         {
             StatementDisabledReasonText = "Select an unresolved statement break to enable case-action recovery links.";

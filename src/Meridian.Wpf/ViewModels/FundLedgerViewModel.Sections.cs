@@ -38,7 +38,7 @@ internal sealed class FundLedgerWorkbenchSectionViewModel : BindableBase
 {
     private string _currentWorkbenchModeText = "Overview Mode";
     private string _currentWorkbenchTitleText = "Overview Workbench";
-    private string _currentWorkbenchSubtitleText = "Fund-wide operating summary, liquidity posture, and exception pressure.";
+    private string _currentWorkbenchSubtitleText = "Fund-wide operating summary, liquidity posture, and review pressure.";
     private string _routeBannerTitleText = string.Empty;
     private string _routeBannerDetailText = string.Empty;
     private bool _hasRouteBanner;
@@ -199,7 +199,7 @@ public sealed class FundLedgerReconciliationSectionViewModel : BindableBase
     private string _operatorText = "desktop-user";
     private string _noteText = string.Empty;
     private string _detailTitle = "Select a break or run";
-    private string _detailSubtitle = "Choose a break queue item or reconciliation run to load exception detail.";
+    private string _detailSubtitle = "Choose a break queue item or reconciliation run to load break detail.";
     private string _detailStatusText = "Awaiting selection";
     private string _detailCoverageText = "Security coverage status appears here when a reconciliation item is selected.";
     private string _detailLifecycleText = "Select a break queue item to see detection, review, decision, and audit posture.";

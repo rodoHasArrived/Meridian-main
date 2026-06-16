@@ -77,7 +77,7 @@ Proof actions that carry shared Financial Record Explorer API hrefs map back to 
 `PortfolioExplorer`, `SecurityInstrumentExplorer`, or `ReportLineProvenanceExplorer` page tags so
 report-line drill-throughs stay route-compatible with the browser workstation.
 
-The desktop shell includes a first-launch and Settings entry point for a fixture-backed Demo / Sample Tour. Starting the tour enables `FixtureModeDetector` fixture mode, selects the connected fixture scenario, and walks operators through Data/provider status, Portfolio records, Accounting reconciliation, retained evidence/audit context, Reporting readiness, and Settings. The global fixture banner and the tour banner label the workflow as demo/sample data only so sample records remain visually distinct from provider-backed operational data.
+The desktop shell includes a first-launch and Settings entry point for a sample-data Demo / Sample Tour. Starting the tour enables `FixtureModeDetector` demo mode, selects the connected sample scenario, and walks operators through Data/provider status, Portfolio records, Accounting reconciliation, retained evidence/audit context, Reporting readiness, and Settings. The global demo banner and the tour banner label the workflow as demo/sample data only so sample records remain visually distinct from provider-backed operational data.
 
 Keep desktop support aligned with shared contracts and governance posture.
 Convention-based view-model wiring is handled by `Services/ViewModelViewResolver.cs`; shell pages

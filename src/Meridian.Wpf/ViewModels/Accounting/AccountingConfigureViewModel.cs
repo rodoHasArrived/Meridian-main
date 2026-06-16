@@ -751,7 +751,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
 
             ExternalGlStatusText = $"{reconciliation.ProviderId} evidence: {reconciliation.MatchedCount} matched, {reconciliation.BreakCount} review row(s).";
             PostingPostureText = reconciliation.PostingEnabled
-                ? "External GL posting/export is enabled by adapter policy."
+                ? "External GL posting/export is enabled by connection policy."
                 : reconciliation.PostingDisabledReason;
         }
         catch (Exception ex)
@@ -936,7 +936,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
 
         CapitalAccountCapabilityRows.ReplaceWith(
             workbench.LiveCapabilities
-                .Select(item => new AccountingWorkbenchRow(item, "Live", "v0.18 Capital Account Workbench slice", "Backed by shared DTO/service/endpoint and browser/WPF rows.", workbench.WorkbenchRoute))
+                .Select(item => new AccountingWorkbenchRow(item, "Live", "v0.18 Capital Account Workbench slice", "Backed by shared service records and browser/WPF rows.", workbench.WorkbenchRoute))
                 .Concat(workbench.PlannedCapabilities.Select(item => new AccountingWorkbenchRow(item, "Planned", "Deferred outside this narrow slice.", "Not represented as live runtime behavior.", string.Empty))));
 
         CapitalAccountWorkbenchStatusText =

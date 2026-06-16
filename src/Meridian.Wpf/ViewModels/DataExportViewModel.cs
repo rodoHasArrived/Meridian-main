@@ -925,7 +925,7 @@ public sealed class DataExportViewModel : BindableBase
 
         if (string.IsNullOrWhiteSpace(DatabaseHost))
         {
-            error = "Database host is required.";
+            error = "Database server is required.";
             return false;
         }
 

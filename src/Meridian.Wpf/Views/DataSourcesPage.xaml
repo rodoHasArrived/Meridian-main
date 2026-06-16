@@ -326,7 +326,7 @@
                                 </Grid.RowDefinitions>
 
                                 <StackPanel Grid.Row="0" Grid.Column="0">
-                                    <TextBlock Text="Host" Style="{StaticResource FormLabelStyle}" />
+                                    <TextBlock Text="Server" Style="{StaticResource FormLabelStyle}" />
                                     <TextBox x:Name="IBHostBox" Style="{StaticResource FormTextBoxStyle}" Text="{Binding IBHost, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
 

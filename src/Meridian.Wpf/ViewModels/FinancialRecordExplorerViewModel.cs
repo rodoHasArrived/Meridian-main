@@ -394,7 +394,7 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
             BlockedReason: "The shared financial record explorer endpoint is unavailable.",
             ScopeItems: [new("Source", "Unavailable", FinancialRecordExplorerTone.Danger)],
             SavedViews: [],
-            SummaryItems: [new("State", "Unavailable", "No source-backed DTO was returned.", FinancialRecordExplorerTone.Danger)],
+            SummaryItems: [new("State", "Unavailable", "No source-backed record set was returned.", FinancialRecordExplorerTone.Danger)],
             Filters: [],
             Columns: [],
             Rows: [],
@@ -407,7 +407,7 @@ public sealed class FinancialRecordExplorerViewModel : BindableBase, IDisposable
                     "Disabled until the shared explorer endpoint returns source-backed records.",
                     string.Empty,
                     IsEnabled: false,
-                    DisabledReason: "No source-backed financial record explorer DTO was returned.",
+                    DisabledReason: "No source-backed financial record set was returned.",
                     FinancialRecordExplorerTone.Danger)
             ],
             RecordGraph: new FinancialRecordExplorerRecordGraphDto([], []));

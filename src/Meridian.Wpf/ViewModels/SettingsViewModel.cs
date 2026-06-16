@@ -164,8 +164,8 @@ public sealed partial class SettingsViewModel : BindableBase
     public IRelayCommand StartDemoTourCommand { get; }
 
     public string DemoModeStatusText => FixtureModeDetector.Instance.IsFixtureMode
-        ? "Demo/sample mode is active. All tour records are fixture data and remain separate from provider-backed operational data."
-        : "Demo/sample mode is off. Start the tour to load safe fixture data and visibly distinguish it from live provider records.";
+        ? "Demo/sample mode is active. All tour records are sample data and remain separate from provider-backed operational data."
+        : "Demo/sample mode is off. Start the tour to load safe sample data and visibly distinguish it from live provider records.";
 
     private void StartDemoTour()
     {
@@ -173,7 +173,7 @@ public sealed partial class SettingsViewModel : BindableBase
         RaisePropertyChanged(nameof(DemoModeStatusText));
         _notificationService.ShowNotification(
             "Demo / sample tour",
-            "Fixture data is now active for the guided workflow. Live provider-backed operational data is not modified.",
+            "Sample data is now active for the guided workflow. Live provider-backed operational data is not modified.",
             NotificationType.Info,
             6000);
     }

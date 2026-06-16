@@ -258,7 +258,7 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
             ? "Meridian opened in a non-live environment. Validate workflows, data posture, and operator routes here before moving to production credentials or capital."
             : "Review the active operating context, shell mode, and readiness posture before taking live actions.";
         StartupBannerDetail = isNonLiveMode
-            ? "Start Demo / Sample Tour to follow fixture provider status, portfolio, reconciliation, audit, reporting, and Settings without touching live data."
+            ? "Start Demo / Sample Tour to follow sample provider status, portfolio, reconciliation, audit, reporting, and Settings without touching live data."
             : "Start Demo / Sample Tour to load clearly labeled sample data, or use Welcome for the full workstation briefing before live actions.";
         StartupBannerVisibility = Visibility.Visible;
 
@@ -528,7 +528,7 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         HideStartupBanner();
         _notificationService.ShowNotification(
             "Demo / sample mode active",
-            "Fixture data is loaded for the guided tour. Live provider-backed operational data remains visually separated by the demo banner.",
+            "Sample data is loaded for the guided tour. Live provider-backed operational data remains visually separated by the demo banner.",
             NotificationType.Info,
             6000);
     }

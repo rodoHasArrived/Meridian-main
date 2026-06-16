@@ -411,7 +411,7 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
             return new AccountPositionsEmptyState(
                 IsVisible: true,
                 Title: "Loading account positions",
-                Detail: "Waiting for the local workstation host to return this account's latest cash, exposure, and position snapshot.");
+                Detail: "Waiting for the local workstation service to return this account's latest cash, exposure, and position snapshot.");
         }
 
         if (!hasLoadedAccountSnapshot)
@@ -419,7 +419,7 @@ public sealed class AccountPortfolioViewModel : BindableBase, IDisposable
             return new AccountPositionsEmptyState(
                 IsVisible: true,
                 Title: "Account snapshot unavailable",
-                Detail: "Refresh after the local workstation host and brokerage sync are reachable; no current position rows were returned.");
+                Detail: "Refresh after the local workstation service and brokerage sync are reachable; no current position rows were returned.");
         }
 
         return new AccountPositionsEmptyState(

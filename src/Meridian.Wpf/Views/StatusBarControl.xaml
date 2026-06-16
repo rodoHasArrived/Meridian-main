@@ -37,10 +37,10 @@
             <Rectangle DockPanel.Dock="Left" Width="1" Margin="12,6"
                        Fill="{StaticResource StatusBarBorderBrush}" />
 
-            <!-- Pipeline queue pressure -->
+            <!-- Background work queue pressure -->
             <TextBlock x:Name="StatusBarPipelineQueueLabel"
                        DockPanel.Dock="Left"
-                       AutomationProperties.Name="Pipeline queue"
+                       AutomationProperties.Name="Background work queue"
                        VerticalAlignment="Center"
                        FontSize="11"
                        Foreground="{Binding PipelineQueueBrush}"
