@@ -20,7 +20,7 @@ public sealed partial class WorkstationEndpointsTests
     [InlineData("report-line-provenance")]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorers_ShouldReturnStableSharedShape(string explorerId)
     {
-        await using var app = await CreateAppAsync(RegisterFinancialRecordExplorerTestServices);
+        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
 
         var store = app.Services.GetRequiredService<IStrategyRepository>();
         await store.RecordRunAsync(BuildActivePaperRun("financial-record-explorer-run", withBreaks: false));
@@ -54,7 +54,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_ReportLineProvenanceExplorer_ShouldExposeEndToEndDrillThroughChain()
     {
-        await using var app = await CreateAppAsync(RegisterFinancialRecordExplorerTestServices);
+        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
         var client = app.GetTestClient();
         var workflow = app.Services.GetRequiredService<ReportPackWorkflowService>();
         var delivery = app.Services.GetRequiredService<ReportPackDeliveryService>();
@@ -158,7 +158,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorerUnknownId_ShouldReturnNotFound()
     {
-        await using var app = await CreateAppAsync(RegisterFinancialRecordExplorerTestServices);
+        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
         var response = await app.GetTestClient().GetAsync("/api/workstation/financial-record-explorers/not-real");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -167,7 +167,7 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorerSavedViews_ShouldPersistAndReloadForExplorer()
     {
-        await using var app = await CreateAppAsync(RegisterFinancialRecordExplorerTestServices);
+        await using var app = await CreateAppAsync(services => RegisterFinancialRecordExplorerTestServices(services));
         var client = app.GetTestClient();
 
         var saveResponse = await client.PostAsJsonAsync(
@@ -235,14 +235,19 @@ public sealed partial class WorkstationEndpointsTests
             view.GetProperty("label").GetString() == "Alpha-only ledger view");
     }
 
-    private static void RegisterFinancialRecordExplorerTestServices(IServiceCollection services, string? savedViewRoot = null)
+    private static void RegisterFinancialRecordExplorerTestServices(IServiceCollection services)
+        => RegisterFinancialRecordExplorerTestServices(
+            services,
+            Path.Combine(Path.GetTempPath(), "meridian-tests", "financial-record-explorers", Guid.NewGuid().ToString("N")));
+
+    private static void RegisterFinancialRecordExplorerTestServices(IServiceCollection services, string savedViewRoot)
     {
         RegisterRunReadServices(services);
         services.AddSingleton<ReportPackWorkflowService>();
         services.AddSingleton<ReportPackDeliveryService>();
         services.AddSingleton<IFinancialRecordExplorerSavedViewStore>(_ =>
             new FileFinancialRecordExplorerSavedViewStore(
-                savedViewRoot ?? Path.Combine(Path.GetTempPath(), "meridian-tests", "financial-record-explorers", Guid.NewGuid().ToString("N")),
+                savedViewRoot,
                 NullLogger<FileFinancialRecordExplorerSavedViewStore>.Instance));
         services.AddSingleton<FinancialRecordExplorerReadService>();
     }

@@ -57,7 +57,10 @@ and UI presentation concerns in their owning layers.
   Portfolio, Security Master, or Ledger stores. When a workstation endpoint supplies tenant context,
   setup, dry-run, readiness, activation, and monitoring services resolve a tenant-scoped
   provider-integration store before reading or writing manifests, connections, and retained
-  evidence. The REST dry-run service executes a
+  evidence. The schema-drift service compares retained raw payloads against configured records
+  paths, required response paths, and required mapping source paths, returning a pause
+  recommendation when critical provider-shape drift would make the capability unsafe to sync. The
+  REST dry-run service executes a
   configured read-only endpoint through an injectable transport, resolves path/query parameters,
   follows cursor pagination, retains raw responses before mapping, and uses the same staging and
   quarantine boundary for accepted and rejected records. The default `HttpClient` transport supplies

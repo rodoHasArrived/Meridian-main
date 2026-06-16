@@ -532,9 +532,11 @@ Every connection should expose a status read model:
 - Schema drift state.
 - Downstream blockers for accounting, reporting, portfolio, and close workflows.
 
-Schema drift detection compares the current response shape with the approved manifest shape and
-blocks affected capabilities when required fields, records paths, date formats, enum values, or
-pagination shape change unexpectedly.
+Schema drift detection compares retained raw payloads with the approved manifest shape. The first
+backend check resolves a stored raw payload and reports operator-safe drift issues when the
+configured records path, required response paths, or required mapping source paths are missing; any
+critical issue recommends pausing the affected capability before the next sync. Later drift checks
+should extend this same result model to date-format, enum-value, and pagination-shape changes.
 
 Operator messages should be business-readable:
 

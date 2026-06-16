@@ -127,13 +127,14 @@ Provider integration endpoints are registered under `/api/workstation/provider-i
 Template routes expose the Application-owned starter manifest pack, the setup-save command persists
 draft manifests and connection instances, activation-readiness routes surface fail-closed readiness
 blockers, the OpenAPI import route seeds tenant-scoped draft manifests from provider specs, dry-run
-command routes execute manual CSV and REST validation through Application-owned services, and the
-connection monitor route adapts durable sync-run, staging, quarantine, and validation evidence into
-browser/WPF-compatible payloads. Quarantine review routes expose grouped validation issues and
+command routes execute manual CSV and REST validation through Application-owned services, the
+schema-drift check route compares retained raw payloads with manifest response and mapping paths,
+and the connection monitor route adapts durable sync-run, staging, quarantine, and validation
+evidence into browser/WPF-compatible payloads. Quarantine review routes expose grouped validation issues and
 persist operator review decisions without changing the retained rejected raw records. Quarantine
 replay routes remap records approved for replay after mapping changes and write accepted records
 back into integration staging or re-quarantine unresolved records. Setup, OpenAPI import,
-readiness, dry-run, activation, quarantine review/replay, and monitor endpoints resolve the
+readiness, dry-run, activation, schema-drift, quarantine review/replay, and monitor endpoints resolve the
 authenticated workstation tenant before reading or writing stored manifests, connections, or
 retained run evidence. Import and dry-run commands require provider/configuration permissions
 because they create manifests or retain raw payload, staging, quarantine, and sync-run evidence.
@@ -1090,6 +1091,10 @@ corporate-action/factor component can be marked ready for close. Retained shadow
 breaks also keep the reconciliation
 component in review-required state so provider/custodian statement variances cannot close merely
 because the aggregate provider-ledger checks matched.
+Fund-account read and mutation routes require scoped authorization for explicit fund, account, and
+legal-entity identifiers before returning or changing account records. Unscoped account lists are
+reserved for admin maintenance so workstation callers cannot enumerate fund accounts across tenant
+or scoped-access boundaries by omitting filters.
 Operations Continuity reconciliation bridge payloads now also populate the shared cash, position,
 trade, income, MBS factor, bank, and GL support lane summaries from provider-ledger reconciliation
 detail, retained evidence, and open break materialization. Browser, WPF, and host callers should
