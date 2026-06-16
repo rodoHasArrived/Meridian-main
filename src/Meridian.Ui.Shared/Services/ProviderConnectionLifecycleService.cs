@@ -19,6 +19,7 @@ public sealed class ProviderConnectionLifecycleService
     private readonly ConfigStore _configStore;
     private readonly IHttpClientFactory? _httpClientFactory;
     private readonly IReadOnlyList<IAccountingSystemProvider> _accountingSystemProviders;
+    private readonly IProviderSetupRegistry _setupRegistry;
     private readonly ILogger<ProviderConnectionLifecycleService> _logger;
 
     public ProviderConnectionLifecycleService(
@@ -26,13 +27,15 @@ public sealed class ProviderConnectionLifecycleService
         ConfigStore configStore,
         ILogger<ProviderConnectionLifecycleService> logger,
         IHttpClientFactory? httpClientFactory = null,
-        IEnumerable<IAccountingSystemProvider>? accountingSystemProviders = null)
+        IEnumerable<IAccountingSystemProvider>? accountingSystemProviders = null,
+        IProviderSetupRegistry? setupRegistry = null)
     {
         _credentialStore = credentialStore ?? throw new ArgumentNullException(nameof(credentialStore));
         _configStore = configStore ?? throw new ArgumentNullException(nameof(configStore));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _httpClientFactory = httpClientFactory;
         _accountingSystemProviders = accountingSystemProviders?.ToArray() ?? [];
+        _setupRegistry = setupRegistry ?? new ProviderSetupRegistry(DefaultProviderSetupHandlers.Create());
     }
 
     public async Task<IReadOnlyList<ProviderConnectionRowDto>> GetConnectionsAsync(CancellationToken ct = default)
@@ -285,6 +288,8 @@ public sealed class ProviderConnectionLifecycleService
         var lastSuccessfulAt = status.LastSuccessfulAt ?? (metrics?.IsConnected == true ? metrics.Timestamp : null);
         var lastFailureAt = status.LastFailureAt ?? (metrics is { IsConnected: false, ConnectionFailures: > 0 } ? metrics.Timestamp : null);
 
+        var setupDescriptor = ResolveSetupDescriptor(descriptor);
+
         return new ProviderConnectionRowDto(
             ProviderId: descriptor.ProviderId,
             DisplayName: descriptor.DisplayName,
@@ -304,8 +309,8 @@ public sealed class ProviderConnectionLifecycleService
             AffectedWorkflows: descriptor.AffectedWorkflows ?? [],
             RecommendedAction: ResolveRecommendedAction(descriptor, status, health),
             ActionHref: descriptor.ResolvedActionHref,
-            CredentialFields: ProviderCredentialCatalog.BuildCredentialFields(descriptor),
-            EnvironmentOptions: ProviderCredentialCatalog.BuildEnvironmentOptions(descriptor));
+            CredentialFields: setupDescriptor.AcceptedCredentialFields,
+            EnvironmentOptions: setupDescriptor.EnvironmentOptions);
     }
 
     private static ProviderContinuityHealthDto ResolveHealth(
@@ -414,6 +419,10 @@ public sealed class ProviderConnectionLifecycleService
     private static ProviderCredentialCatalogEntry RequireDescriptor(string providerId)
         => ProviderCredentialCatalog.Find(providerId)
            ?? throw new ArgumentException($"Provider '{providerId}' is not in the provider credential catalog.", nameof(providerId));
+
+    private ProviderSetupDescriptor ResolveSetupDescriptor(ProviderCredentialCatalogEntry descriptor)
+        => _setupRegistry.Find(descriptor.ProviderId)?.Descriptor
+           ?? new GenericReadOnlyDataProviderSetupHandler(descriptor.ProviderId).Descriptor;
 
     private static string AlpacaTradingApiEndpoint(string environment)
         => environment.Equals(AlpacaCredentialEnvironment.LiveEnvironment, StringComparison.OrdinalIgnoreCase)
