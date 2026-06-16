@@ -942,6 +942,27 @@ const closeCockpit: PrivateCapitalCloseCockpit = {
       requiredActions: []
     },
     {
+      packageId: "private-capital:partner-capital-tie-out",
+      label: "Partner capital tie-out evidence package",
+      status: "Ready",
+      isReady: true,
+      summary: "Partner capital account tie-outs retain capital subledger, ledger, and investor statement evidence.",
+      routeHint: "/workstation/accounting/private-capital/capital-account-subledger",
+      completeCategoryCount: 3,
+      requiredCategoryCount: 3,
+      evidenceLinkCount: 2,
+      evidenceLinks: [
+        {
+          evidenceId: "partner-capital-tie-out-evidence",
+          label: "Partner capital tie-out evidence",
+          route: "/workstation/accounting/private-capital/capital-account-subledger/tie-outs",
+          source: "private-capital",
+          capturedAtUtc: "2026-05-10T18:06:00Z"
+        }
+      ],
+      requiredActions: []
+    },
+    {
       packageId: "private-capital:nav-support",
       label: "NAV support evidence package",
       status: "ReviewRequired",
@@ -961,6 +982,27 @@ const closeCockpit: PrivateCapitalCloseCockpit = {
         }
       ],
       requiredActions: ["Retain complete NAV support package evidence before close sign-off."]
+    },
+    {
+      packageId: "private-capital:close-approval-audit",
+      label: "Close approval and audit evidence",
+      status: "ReviewRequired",
+      isReady: false,
+      summary: "Close approval and audit evidence still need checklist-control approval and close-package manifest support.",
+      routeHint: "/workstation/accounting/operations-continuity",
+      completeCategoryCount: 2,
+      requiredCategoryCount: 4,
+      evidenceLinkCount: 1,
+      evidenceLinks: [
+        {
+          evidenceId: "close-approval-audit-evidence",
+          label: "Close approval audit evidence",
+          route: "/workstation/accounting/approvals",
+          source: "operations-continuity",
+          capturedAtUtc: "2026-05-10T18:12:00Z"
+        }
+      ],
+      requiredActions: ["Retain checklist-control approval and close-package manifest evidence before sign-off."]
     }
   ],
   blockers: [
@@ -1181,10 +1223,13 @@ describe("OperationsContinuityScreen", () => {
     expect(within(operatorQueue).getAllByText("NAV support package")).toHaveLength(2);
     expect(within(operatorQueue).getByText(/2\/4 components ready; review Pricing, Shadow NAV; \$1,250,000\.00 shadow NAV/)).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Retain NAV support package for positions, cash, pricing, and shadow NAV evidence.")).toBeInTheDocument();
-    expect(within(operatorQueue).getByText("Private-capital evidence package")).toBeInTheDocument();
+    expect(within(operatorQueue).getAllByText("Private-capital evidence package")).toHaveLength(2);
     expect(within(operatorQueue).getByText("NAV support evidence package")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("NAV support evidence package still needs pricing and shadow NAV support.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Retain complete NAV support package evidence before close sign-off.")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Close approval and audit evidence")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Close approval and audit evidence still need checklist-control approval and close-package manifest support.")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Retain checklist-control approval and close-package manifest evidence before sign-off.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Private-capital approval")).toBeInTheDocument();
     expect(within(operatorQueue).getByText(`2026-05 / ${fundAccountId}: Pending final ledger validation before close sign-off.`)).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Complete private-capital close approval")).toBeInTheDocument();
@@ -1232,6 +1277,8 @@ describe("OperationsContinuityScreen", () => {
       .toHaveAttribute("href", "/portfolio/nav");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: NAV support evidence package" }))
       .toHaveAttribute("href", "/portfolio/nav");
+    expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Close approval and audit evidence" }))
+      .toHaveAttribute("href", "/accounting/operations-continuity");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Report commentary draft" }))
       .toHaveAttribute("href", "/reporting/report-packs/automation-review");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Period lock and reopen evidence" }))
@@ -1276,12 +1323,21 @@ describe("OperationsContinuityScreen", () => {
     expect(within(cockpitWorkflows).getByText("72% ready")).toBeInTheDocument();
     const cockpitEvidencePackages = screen.getByRole("table", { name: "Private-capital close cockpit evidence packages" });
     expect(within(cockpitEvidencePackages).getByText("Fund-event accounting evidence")).toBeInTheDocument();
+    expect(within(cockpitEvidencePackages).getByText("Partner capital tie-out evidence package")).toBeInTheDocument();
     expect(within(cockpitEvidencePackages).getByText("NAV support evidence package")).toBeInTheDocument();
+    expect(within(cockpitEvidencePackages).getByText("Close approval and audit evidence")).toBeInTheDocument();
     expect(within(cockpitEvidencePackages).getByText("4/4 categories complete")).toBeInTheDocument();
+    expect(within(cockpitEvidencePackages).getByText("3/3 categories complete")).toBeInTheDocument();
     expect(within(cockpitEvidencePackages).getByText("1/3 categories complete")).toBeInTheDocument();
+    expect(within(cockpitEvidencePackages).getByText("2/4 categories complete")).toBeInTheDocument();
     expect(within(cockpitEvidencePackages).getByText("Retain complete NAV support package evidence before close sign-off.")).toBeInTheDocument();
+    expect(within(cockpitEvidencePackages).getByText("Retain checklist-control approval and close-package manifest evidence before sign-off.")).toBeInTheDocument();
+    expect(within(cockpitEvidencePackages).getByRole("link", { name: "Open retained evidence for package Partner capital tie-out evidence package" }))
+      .toHaveAttribute("href", "/accounting/private-capital/capital-account-subledger/tie-outs");
     expect(within(cockpitEvidencePackages).getByRole("link", { name: "Open retained evidence for package NAV support evidence package" }))
       .toHaveAttribute("href", "/portfolio/nav/support-package");
+    expect(within(cockpitEvidencePackages).getByRole("link", { name: "Open retained evidence for package Close approval and audit evidence" }))
+      .toHaveAttribute("href", "/accounting/approvals");
     expect(within(cockpitEvidencePackages).getByRole("link", { name: "Open evidence package Fund-event accounting evidence" }))
       .toHaveAttribute("href", "/accounting/private-capital/fund-events");
     const navSupportPackages = screen.getByRole("table", { name: "Private-capital close cockpit NAV support packages" });

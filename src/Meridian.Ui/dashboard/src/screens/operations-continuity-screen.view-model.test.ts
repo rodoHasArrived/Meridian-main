@@ -717,6 +717,27 @@ const closeCockpit: PrivateCapitalCloseCockpit = {
       requiredActions: []
     },
     {
+      packageId: "private-capital:partner-capital-tie-out",
+      label: "Partner capital tie-out evidence package",
+      status: "Ready",
+      isReady: true,
+      summary: "Partner capital account tie-outs retain capital subledger, ledger, and investor statement evidence.",
+      routeHint: "/workstation/accounting/private-capital/capital-account-subledger",
+      completeCategoryCount: 3,
+      requiredCategoryCount: 3,
+      evidenceLinkCount: 2,
+      evidenceLinks: [
+        {
+          evidenceId: "partner-capital-tie-out-evidence",
+          label: "Partner capital tie-out evidence",
+          route: "/workstation/accounting/private-capital/capital-account-subledger/tie-outs",
+          source: "private-capital",
+          capturedAtUtc: "2026-05-10T18:06:00Z"
+        }
+      ],
+      requiredActions: []
+    },
+    {
       packageId: "private-capital:nav-support",
       label: "NAV support evidence package",
       status: "ReviewRequired",
@@ -736,6 +757,27 @@ const closeCockpit: PrivateCapitalCloseCockpit = {
         }
       ],
       requiredActions: ["Retain complete NAV support package evidence before close sign-off."]
+    },
+    {
+      packageId: "private-capital:close-approval-audit",
+      label: "Close approval and audit evidence",
+      status: "ReviewRequired",
+      isReady: false,
+      summary: "Close approval and audit evidence still need checklist-control approval and close-package manifest support.",
+      routeHint: "/workstation/accounting/operations-continuity",
+      completeCategoryCount: 2,
+      requiredCategoryCount: 4,
+      evidenceLinkCount: 1,
+      evidenceLinks: [
+        {
+          evidenceId: "close-approval-audit-evidence",
+          label: "Close approval audit evidence",
+          route: "/workstation/accounting/approvals",
+          source: "operations-continuity",
+          capturedAtUtc: "2026-05-10T18:12:00Z"
+        }
+      ],
+      requiredActions: ["Retain checklist-control approval and close-package manifest evidence before sign-off."]
     }
   ],
   blockers: [
@@ -2057,7 +2099,7 @@ describe("Operations Continuity view model", () => {
       checklistLabel: "2 open checklist items",
       workflowHref: "/accounting/operations-continuity"
     });
-    expect(vm.closeCockpit.evidencePackages).toHaveLength(2);
+    expect(vm.closeCockpit.evidencePackages).toHaveLength(4);
     expect(vm.closeCockpit.evidencePackages[0]).toMatchObject({
       id: "private-capital:fund-event-accounting",
       statusLabel: "Ready",
@@ -2070,6 +2112,16 @@ describe("Operations Continuity view model", () => {
       requiredActionsLabel: "No required actions"
     });
     expect(vm.closeCockpit.evidencePackages[1]).toMatchObject({
+      id: "private-capital:partner-capital-tie-out",
+      label: "Partner capital tie-out evidence package",
+      statusLabel: "Ready",
+      statusTone: "ready",
+      readinessLabel: "3/3 categories complete",
+      evidenceLabel: "2 evidence links",
+      evidenceHref: "/accounting/private-capital/capital-account-subledger/tie-outs",
+      routeHref: "/accounting/private-capital/capital-account-subledger"
+    });
+    expect(vm.closeCockpit.evidencePackages[2]).toMatchObject({
       id: "private-capital:nav-support",
       statusLabel: "Review Required",
       statusTone: "review",
@@ -2079,6 +2131,17 @@ describe("Operations Continuity view model", () => {
       evidenceRouteLabel: "Open retained evidence",
       routeHref: "/portfolio/nav",
       requiredActionsLabel: "Retain complete NAV support package evidence before close sign-off."
+    });
+    expect(vm.closeCockpit.evidencePackages[3]).toMatchObject({
+      id: "private-capital:close-approval-audit",
+      label: "Close approval and audit evidence",
+      statusLabel: "Review Required",
+      statusTone: "review",
+      readinessLabel: "2/4 categories complete",
+      evidenceLabel: "1 evidence link",
+      evidenceHref: "/accounting/approvals",
+      routeHref: "/accounting/operations-continuity",
+      requiredActionsLabel: "Retain checklist-control approval and close-package manifest evidence before sign-off."
     });
     expect(vm.closeCockpit.approvalHistory).toHaveLength(1);
     expect(vm.closeCockpit.approvalHistory[0]).toMatchObject({
@@ -2158,6 +2221,18 @@ describe("Operations Continuity view model", () => {
       evidenceLabel: "1 evidence link",
       actionLabel: "Retain complete NAV support package evidence before close sign-off.",
       routeHref: "/portfolio/nav"
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-evidence-package:private-capital:close-approval-audit")).toMatchObject({
+      kindLabel: "Private-capital evidence package",
+      title: "Close approval and audit evidence",
+      detail: "Close approval and audit evidence still need checklist-control approval and close-package manifest support.",
+      statusLabel: "Review Required",
+      statusTone: "review",
+      ownerLabel: "Evidence operations",
+      dueLabel: "2/4 categories complete",
+      evidenceLabel: "1 evidence link",
+      actionLabel: "Retain checklist-control approval and close-package manifest evidence before sign-off.",
+      routeHref: "/accounting/operations-continuity"
     });
     expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-approval:approval-close-2026-05")).toMatchObject({
       kindLabel: "Private-capital approval",

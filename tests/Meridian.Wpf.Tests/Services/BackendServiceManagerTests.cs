@@ -45,7 +45,7 @@ public sealed class BackendServiceManagerTests
     }
 
     [Fact]
-    public async Task GetStatusAsync_WhenRemoteHealthFails_ReportsUnhealthy()
+    public async Task GetStatusAsync_WhenRemoteHealthFailsWithoutManagedInstall_ReportsUnhealthy()
     {
         var remoteClient = new FakeRemoteWorkstationClient { HealthEndpointResult = false };
         var manager = new BackendServiceManager(remoteClient, CreateAppDataDirectory());
@@ -54,7 +54,7 @@ public sealed class BackendServiceManagerTests
 
         status.IsHealthy.Should().BeFalse();
         status.IsRunning.Should().BeFalse();
-        status.StatusMessage.Should().Be("Backend is stopped.");
+        status.StatusMessage.Should().Be("Backend is not installed for lifecycle management yet.");
         remoteClient.HealthEndpointCallCount.Should().Be(1);
     }
 
