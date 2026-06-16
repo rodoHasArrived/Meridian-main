@@ -337,6 +337,101 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationRunDueSync_RetainsAndStagesDueRestCapability()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            var tenantStore = DefaultProviderIntegrationTenantStore(store);
+            var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-custodian-positions-v1")! with
+            {
+                State = ProviderIntegrationActivationStateDto.Active,
+                ApprovedBy = "approver@example.com",
+                ApprovedAt = DateTimeOffset.Parse("2026-06-16T09:00:00Z")
+            };
+            var connection = CreateProviderIntegrationRestConnection(manifest) with
+            {
+                State = ProviderIntegrationActivationStateDto.Active,
+                ApprovalEvidenceId = "approval-evidence-run-due"
+            };
+            await tenantStore.SaveManifestAsync(manifest);
+            await tenantStore.SaveConnectionAsync(connection);
+            var transport = new ProviderIntegrationEndpointTransport(
+                new ProviderIntegrationHttpResponse(
+                    200,
+                    new Dictionary<string, string>(),
+                    """
+                    {
+                      "positions": [
+                        {
+                          "account_id": "A-100",
+                          "cusip": "9128285M8",
+                          "quantity": "100",
+                          "currency": "usd",
+                          "as_of_date": "2026-06-16",
+                          "position_id": "POS-1"
+                        }
+                      ]
+                    }
+                    """));
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store, transport),
+                currentUserPermissions: UserPermission.ManageProviders);
+            var client = app.GetTestClient();
+
+            var response = await client.PostAsJsonAsync(
+                ProviderIntegrationRunDueSyncRoute(connection.ConnectionId),
+                CreateRunDueSyncRequest(connection),
+                ServerJsonOptions);
+            var result = await response.Content.ReadFromJsonAsync<ProviderIntegrationRunDueSyncResultDto>(ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            result.Should().NotBeNull();
+            result!.StartedCount.Should().Be(1);
+            result.SkippedCount.Should().Be(0);
+            var item = result.Items.Should().ContainSingle().Subject;
+            item.SyncRunId.Should().StartWith("run-due-");
+            item.DryRunResult.Should().NotBeNull();
+            item.DryRunResult!.RecordsAccepted.Should().Be(1);
+            transport.Requests.Should().ContainSingle()
+                .Which.Path.Should().Be("/v1/accounts/A-100/positions");
+            (await tenantStore.ListStagingRecordsAsync(item.SyncRunId!)).Should().ContainSingle();
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationRunDueSync_RequiresConfigurePermission()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-custodian-positions-v1")!;
+            var connection = CreateProviderIntegrationRestConnection(manifest);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewConfig);
+            var client = app.GetTestClient();
+
+            var response = await client.PostAsJsonAsync(
+                ProviderIntegrationRunDueSyncRoute(connection.ConnectionId),
+                CreateRunDueSyncRequest(connection),
+                ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ProviderIntegrationSchemaDriftCheck_ReturnsPauseRecommendation()
     {
         var testRoot = CreateProviderIntegrationTestRoot();
@@ -1041,6 +1136,7 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<ProviderIntegrationActivationService>();
         services.AddSingleton<ProviderIntegrationMonitoringService>();
         services.AddSingleton<ProviderIntegrationSyncPlanningService>();
+        services.AddSingleton<ProviderIntegrationSyncOrchestrationService>();
         services.AddSingleton<ProviderIntegrationSchemaDriftService>();
         services.AddSingleton<ProviderIntegrationQuarantineReviewService>();
         services.AddSingleton<ProviderIntegrationQuarantineReplayService>();
@@ -1261,6 +1357,12 @@ public sealed partial class WorkstationEndpointsTests
             Uri.EscapeDataString(connectionId),
             StringComparison.Ordinal);
 
+    private static string ProviderIntegrationRunDueSyncRoute(string connectionId)
+        => UiApiRoutes.WorkstationProviderIntegrationConnectionRunDueSync.Replace(
+            "{connectionId}",
+            Uri.EscapeDataString(connectionId),
+            StringComparison.Ordinal);
+
     private static string ProviderIntegrationQuarantineReviewRoute(string connectionId)
         => UiApiRoutes.WorkstationProviderIntegrationQuarantineReview.Replace(
             "{connectionId}",
@@ -1309,6 +1411,22 @@ public sealed partial class WorkstationEndpointsTests
             "operator@example.com",
             DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
             MaxPages: 1);
+
+    private static ProviderIntegrationRunDueSyncRequestDto CreateRunDueSyncRequest(
+        IntegrationProviderConnectionDto connection)
+        => new(
+            connection.ConnectionId,
+            DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+            "operator@example.com",
+            MaxPages: 1,
+            new Dictionary<string, IReadOnlyDictionary<string, string>>
+            {
+                [ProviderCapabilityKindDto.Positions.ToString()] = new Dictionary<string, string>
+                {
+                    ["accountId"] = "A-100"
+                }
+            },
+            new Dictionary<string, IReadOnlyDictionary<string, string>>());
 
     private static ProviderIntegrationSchemaDriftCheckRequestDto CreateProviderIntegrationSchemaDriftRequest(
         ProviderIntegrationManifestDto manifest,

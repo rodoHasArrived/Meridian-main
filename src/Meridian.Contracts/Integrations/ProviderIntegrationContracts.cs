@@ -458,6 +458,31 @@ public sealed record ProviderIntegrationSyncPlanDto(
     int DueCount,
     int BlockedCount);
 
+public sealed record ProviderIntegrationRunDueSyncRequestDto(
+    string ConnectionId,
+    DateTimeOffset RequestedAt,
+    string RequestedBy,
+    int MaxPages,
+    IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> PathParametersByCapability,
+    IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> QueryParametersByCapability);
+
+public sealed record ProviderIntegrationRunDueSyncItemResultDto(
+    ProviderCapabilityKindDto Capability,
+    string? EndpointKey,
+    bool Started,
+    bool Skipped,
+    string Reason,
+    string? SyncRunId,
+    ProviderIntegrationDryRunResultDto? DryRunResult,
+    IReadOnlyList<ValidationIssueDto> Issues);
+
+public sealed record ProviderIntegrationRunDueSyncResultDto(
+    string ConnectionId,
+    DateTimeOffset RequestedAt,
+    int StartedCount,
+    int SkippedCount,
+    IReadOnlyList<ProviderIntegrationRunDueSyncItemResultDto> Items);
+
 public sealed record ManualCsvProviderIntegrationDryRunRequestDto(
     string SyncRunId,
     string ManifestId,

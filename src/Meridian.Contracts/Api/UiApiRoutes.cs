@@ -580,6 +580,7 @@ public static class UiApiRoutes
     public const string WorkstationProviderIntegrationActivate = "/api/workstation/provider-integrations/activate";
     public const string WorkstationProviderIntegrationConnectionMonitor = "/api/workstation/provider-integrations/connections/{connectionId}/monitor";
     public const string WorkstationProviderIntegrationConnectionSyncPlan = "/api/workstation/provider-integrations/connections/{connectionId}/sync-plan";
+    public const string WorkstationProviderIntegrationConnectionRunDueSync = "/api/workstation/provider-integrations/connections/{connectionId}/sync/run-due";
     public const string WorkstationProviderIntegrationSchemaDriftCheck = "/api/workstation/provider-integrations/schema-drift/check";
     public const string WorkstationProviderIntegrationQuarantineReview = "/api/workstation/provider-integrations/connections/{connectionId}/quarantine";
     public const string WorkstationProviderIntegrationQuarantineResolve = "/api/workstation/provider-integrations/quarantine/resolve";

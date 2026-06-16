@@ -2049,6 +2049,18 @@ describe("Operations Continuity view model", () => {
       actionLabel: "Retain NAV support package for positions, cash, pricing, and shadow NAV evidence.",
       routeHref: "/portfolio/nav"
     });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-evidence-package:private-capital:nav-support")).toMatchObject({
+      kindLabel: "Private-capital evidence package",
+      title: "NAV support evidence package",
+      detail: "NAV support evidence package still needs pricing and shadow NAV support.",
+      statusLabel: "Review Required",
+      statusTone: "review",
+      ownerLabel: "Evidence operations",
+      dueLabel: "1/3 categories complete",
+      evidenceLabel: "1 evidence link",
+      actionLabel: "Retain complete NAV support package evidence before close sign-off.",
+      routeHref: "/portfolio/nav"
+    });
   });
 
   it("projects the source-backed close calendar for workflow control", () => {

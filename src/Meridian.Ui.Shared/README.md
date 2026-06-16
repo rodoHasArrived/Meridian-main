@@ -994,6 +994,12 @@ normalization use the Entities-owned `LedgerGroupingRules` policy rather than en
 Ledger mapping assignment mutations require an authenticated operator with `ManageDirectLending` or
 `AdminMaintenance`, and audit attribution must come from the resolved session actor rather than
 client-supplied request fields.
+Fund-structure graph, advisory, fund-operating, accounting, ledger-mapping, and cash-flow read
+routes also resolve the authenticated session before returning scoped structure data. Non-admin
+callers must provide an explicit organization, business, client, fund, sleeve, vehicle,
+investment-portfolio, legal-entity, or account scope that grants `ManageFundStructure`; unscoped
+structure reads are reserved for `AdminMaintenance` so shared browser and WPF clients cannot
+enumerate fund-structure records across tenant or scoped-access boundaries.
 Auth endpoints expose `/api/auth/role-profiles` as the governed write path for custom authority
 profiles. The Identity-owned file-backed role-profile store persists profile grants under the
 storage root, merges custom profiles into `/api/auth/roles`, and feeds `UserProfileRegistry` so

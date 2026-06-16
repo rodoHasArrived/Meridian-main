@@ -2141,6 +2141,9 @@ function buildFinancialOperationsOperatorQueueViewModel({
     ...closeCockpit.navSupportPackages
       .filter(isOpenQueueItem)
       .map(mapNavSupportPackageQueueRow),
+    ...closeCockpit.evidencePackages
+      .filter(isOpenQueueItem)
+      .map(mapCloseCockpitEvidencePackageQueueRow),
     ...(closeCockpitError && !loading
       ? [mapCloseCockpitErrorQueueRow(closeCockpitError, selectedSummary)]
       : []),
@@ -2378,6 +2381,26 @@ function mapNavSupportPackageQueueRow(
     routeHref: row.routeHref,
     routeLabel: row.routeLabel,
     ariaLabel: `Financial Operations NAV support package ${row.ariaLabel}`
+  };
+}
+
+function mapCloseCockpitEvidencePackageQueueRow(
+  row: OperationsContinuityEvidencePackageRow
+): FinancialOperationsOperatorQueueRow {
+  return {
+    id: `private-capital-evidence-package:${row.id}`,
+    kindLabel: "Private-capital evidence package",
+    title: row.label,
+    detail: row.summary,
+    statusLabel: row.statusLabel,
+    statusTone: row.statusTone,
+    ownerLabel: "Evidence operations",
+    dueLabel: row.readinessLabel,
+    evidenceLabel: row.evidenceLabel,
+    actionLabel: row.requiredActionsLabel,
+    routeHref: row.routeHref,
+    routeLabel: row.routeLabel,
+    ariaLabel: `Financial Operations private-capital evidence package ${row.ariaLabel}`
   };
 }
 

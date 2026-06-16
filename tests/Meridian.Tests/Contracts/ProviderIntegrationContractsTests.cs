@@ -569,6 +569,76 @@ public sealed class ProviderIntegrationContractsTests
         planRoundTrip.Should().BeEquivalentTo(plan);
     }
 
+    [Fact]
+    public void ProviderIntegrationRunDueSync_RoundTripsWithParameterBagsAndItemResults()
+    {
+        var request = new ProviderIntegrationRunDueSyncRequestDto(
+            "connection-alpha",
+            DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+            "operator@example.com",
+            MaxPages: 2,
+            new Dictionary<string, IReadOnlyDictionary<string, string>>
+            {
+                ["Positions"] = new Dictionary<string, string>
+                {
+                    ["accountId"] = "A-100"
+                }
+            },
+            new Dictionary<string, IReadOnlyDictionary<string, string>>
+            {
+                ["Positions"] = new Dictionary<string, string>
+                {
+                    ["asOf"] = "2026-06-16"
+                }
+            });
+        var dryRun = new ProviderIntegrationDryRunResultDto(
+            "run-due-abc",
+            "payload-1",
+            ProviderCapabilityKindDto.Positions,
+            RecordsReceived: 1,
+            RecordsAccepted: 1,
+            RecordsQuarantined: 0,
+            ProviderIntegrationProcessingStatusDto.Validated,
+            Issues: []);
+        var result = new ProviderIntegrationRunDueSyncResultDto(
+            request.ConnectionId,
+            request.RequestedAt,
+            StartedCount: 1,
+            SkippedCount: 0,
+            Items:
+            [
+                new ProviderIntegrationRunDueSyncItemResultDto(
+                    ProviderCapabilityKindDto.Positions,
+                    "positions",
+                    Started: true,
+                    Skipped: false,
+                    "started",
+                    dryRun.SyncRunId,
+                    dryRun,
+                    Issues: [])
+            ]);
+
+        var requestJson = JsonSerializer.Serialize(
+            request,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationRunDueSyncRequestDto);
+        var resultJson = JsonSerializer.Serialize(
+            result,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationRunDueSyncResultDto);
+        var requestRoundTrip = JsonSerializer.Deserialize(
+            requestJson,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationRunDueSyncRequestDto);
+        var resultRoundTrip = JsonSerializer.Deserialize(
+            resultJson,
+            ProviderIntegrationContractsJsonContext.Default.ProviderIntegrationRunDueSyncResultDto);
+
+        requestJson.Should().Contain("\"pathParametersByCapability\"");
+        requestJson.Should().Contain("\"accountId\": \"A-100\"");
+        resultJson.Should().Contain("\"startedCount\": 1");
+        resultJson.Should().Contain("\"dryRunResult\"");
+        requestRoundTrip.Should().BeEquivalentTo(request);
+        resultRoundTrip.Should().BeEquivalentTo(result);
+    }
+
     private static ProviderIntegrationManifestDto CreateManifest()
         => new(
             "manifest-custodian-abc-v1",

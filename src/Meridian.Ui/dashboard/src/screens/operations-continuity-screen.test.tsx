@@ -1181,6 +1181,10 @@ describe("OperationsContinuityScreen", () => {
     expect(within(operatorQueue).getAllByText("NAV support package")).toHaveLength(2);
     expect(within(operatorQueue).getByText(/2\/4 components ready; review Pricing, Shadow NAV; \$1,250,000\.00 shadow NAV/)).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Retain NAV support package for positions, cash, pricing, and shadow NAV evidence.")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Private-capital evidence package")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("NAV support evidence package")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("NAV support evidence package still needs pricing and shadow NAV support.")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Retain complete NAV support package evidence before close sign-off.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Period lock and reopen evidence")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Complete reopened incident remediation and close the period again with retained evidence.")).toBeInTheDocument();
     expect(within(operatorQueue).getAllByText("Command stage")).toHaveLength(4);
@@ -1205,6 +1209,8 @@ describe("OperationsContinuityScreen", () => {
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: NAV support" }))
       .toHaveAttribute("href", "/portfolio/nav");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: NAV support package" }))
+      .toHaveAttribute("href", "/portfolio/nav");
+    expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: NAV support evidence package" }))
       .toHaveAttribute("href", "/portfolio/nav");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Period lock and reopen evidence" }))
       .toHaveAttribute("href", "/accounting/operations-continuity");

@@ -547,6 +547,12 @@ public static class FundStructureEndpoints
                 ActiveOnly: ParseActiveOnly(q["activeOnly"]),
                 AsOf: ParseDateTimeOffset(q["asOf"]));
 
+            var scopeGuard = await RequireScopedFundStructureGraphReadAccessAsync(query, context).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
+
             var result = await service.GetOrganizationStructureAsync(query, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
@@ -566,6 +572,12 @@ public static class FundStructureEndpoints
                 NodeKind: ParseNodeKind(q["nodeKind"]),
                 ActiveOnly: ParseActiveOnly(q["activeOnly"]),
                 AsOf: ParseDateTimeOffset(q["asOf"]));
+
+            var scopeGuard = await RequireScopedFundStructureGraphReadAccessAsync(query, context).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
 
             var result = await service.GetFundStructureGraphAsync(query, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
@@ -587,6 +599,17 @@ public static class FundStructureEndpoints
                 InvestmentPortfolioId: ParseGuid(q["investmentPortfolioId"]),
                 ActiveOnly: ParseActiveOnly(q["activeOnly"]),
                 AsOf: ParseDateTimeOffset(q["asOf"]));
+
+            var scopeGuard = await RequireScopedFundStructureReadAccessAsync(
+                context,
+                (AccessScopeKindDto.InvestmentPortfolio, query.InvestmentPortfolioId),
+                (AccessScopeKindDto.Client, query.ClientId),
+                (AccessScopeKindDto.Business, query.BusinessId),
+                (AccessScopeKindDto.Organization, query.OrganizationId)).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
 
             var result = await service.GetAdvisoryViewAsync(query, context.RequestAborted).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
@@ -611,6 +634,19 @@ public static class FundStructureEndpoints
                 InvestmentPortfolioId: ParseGuid(q["investmentPortfolioId"]),
                 ActiveOnly: ParseActiveOnly(q["activeOnly"]),
                 AsOf: ParseDateTimeOffset(q["asOf"]));
+
+            var scopeGuard = await RequireScopedFundStructureReadAccessAsync(
+                context,
+                (AccessScopeKindDto.InvestmentPortfolio, query.InvestmentPortfolioId),
+                (AccessScopeKindDto.Vehicle, query.VehicleId),
+                (AccessScopeKindDto.Sleeve, query.SleeveId),
+                (AccessScopeKindDto.Fund, query.FundId),
+                (AccessScopeKindDto.Business, query.BusinessId),
+                (AccessScopeKindDto.Organization, query.OrganizationId)).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
 
             var result = await service.GetFundOperatingViewAsync(query, context.RequestAborted).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
@@ -638,6 +674,12 @@ public static class FundStructureEndpoints
                 ActiveOnly: ParseActiveOnly(q["activeOnly"]),
                 AsOf: ParseDateTimeOffset(q["asOf"]));
 
+            var scopeGuard = await RequireScopedAccountingStructureReadAccessAsync(query, context).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
+
             var result = await service.GetAccountingViewAsync(query, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions);
         })
@@ -663,6 +705,12 @@ public static class FundStructureEndpoints
                 LedgerReference: q["ledgerReference"].FirstOrDefault(),
                 ActiveOnly: ParseActiveOnly(q["activeOnly"]),
                 AsOf: asOf);
+
+            var scopeGuard = await RequireScopedAccountingStructureReadAccessAsync(query, context).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
 
             var accountingView = await service.GetAccountingViewAsync(query, context.RequestAborted).ConfigureAwait(false);
             var result = LedgerMappingWorkbenchService.Build(accountingView, asOf);
@@ -721,6 +769,12 @@ public static class FundStructureEndpoints
                 HistoricalDays: ParseInt(q["historicalDays"], 7),
                 ForecastDays: ParseInt(q["forecastDays"], 7),
                 BucketDays: ParseInt(q["bucketDays"], 7));
+
+            var scopeGuard = await RequireScopedGovernanceCashFlowReadAccessAsync(query, context).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
 
             var result = await service.GetCashFlowViewAsync(query, context.RequestAborted).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
@@ -2067,6 +2121,97 @@ public static class FundStructureEndpoints
 
     private static bool HasReportingReadPermission(HttpContext context)
         => EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewAnalytics, UserPermission.ManageStrategies, UserPermission.AdminMaintenance);
+
+    private static Task<IResult?> RequireScopedFundStructureGraphReadAccessAsync(
+        OrganizationStructureQuery query,
+        HttpContext context)
+        => RequireScopedFundStructureReadAccessAsync(
+            context,
+            MapFundStructureNodeScope(query.NodeKind, query.NodeId),
+            (AccessScopeKindDto.Business, query.BusinessId),
+            (AccessScopeKindDto.Organization, query.OrganizationId));
+
+    private static Task<IResult?> RequireScopedFundStructureGraphReadAccessAsync(
+        FundStructureQuery query,
+        HttpContext context)
+        => RequireScopedFundStructureReadAccessAsync(
+            context,
+            MapFundStructureNodeScope(query.NodeKind, query.NodeId),
+            (AccessScopeKindDto.Fund, query.FundId));
+
+    private static Task<IResult?> RequireScopedAccountingStructureReadAccessAsync(
+        AccountingStructureQuery query,
+        HttpContext context)
+        => RequireScopedFundStructureReadAccessAsync(
+            context,
+            (AccessScopeKindDto.InvestmentPortfolio, query.InvestmentPortfolioId),
+            (AccessScopeKindDto.Vehicle, query.VehicleId),
+            (AccessScopeKindDto.Sleeve, query.SleeveId),
+            (AccessScopeKindDto.Fund, query.FundId),
+            (AccessScopeKindDto.Client, query.ClientId),
+            (AccessScopeKindDto.Business, query.BusinessId),
+            (AccessScopeKindDto.Organization, query.OrganizationId));
+
+    private static Task<IResult?> RequireScopedGovernanceCashFlowReadAccessAsync(
+        GovernanceCashFlowQuery query,
+        HttpContext context)
+        => RequireScopedFundStructureReadAccessAsync(
+            context,
+            (AccessScopeKindDto.Account, query.AccountId),
+            (AccessScopeKindDto.InvestmentPortfolio, query.InvestmentPortfolioId),
+            (AccessScopeKindDto.Vehicle, query.VehicleId),
+            (AccessScopeKindDto.Sleeve, query.SleeveId),
+            (AccessScopeKindDto.Fund, query.FundId),
+            (AccessScopeKindDto.Client, query.ClientId),
+            (AccessScopeKindDto.Business, query.BusinessId),
+            (AccessScopeKindDto.Organization, query.OrganizationId));
+
+    private static async Task<IResult?> RequireScopedFundStructureReadAccessAsync(
+        HttpContext context,
+        params (AccessScopeKindDto Kind, Guid? Id)[] orderedScopes)
+    {
+        if (!EndpointAuthorization.TryGetPermissions(context, out _))
+        {
+            return Results.Unauthorized();
+        }
+
+        if (EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
+        {
+            return null;
+        }
+
+        var scope = orderedScopes.FirstOrDefault(static candidate => candidate.Id.HasValue);
+        if (!scope.Id.HasValue)
+        {
+            return EndpointHelpers.Forbidden();
+        }
+
+        var allowed = await EndpointAuthorization.HasScopedPermissionAsync(
+            context,
+            UserPermission.ManageFundStructure,
+            scope.Kind,
+            scope.Id.Value,
+            context.RequestAborted).ConfigureAwait(false);
+
+        return allowed ? null : EndpointHelpers.Forbidden();
+    }
+
+    private static (AccessScopeKindDto Kind, Guid? Id) MapFundStructureNodeScope(
+        FundStructureNodeKindDto? nodeKind,
+        Guid? nodeId)
+        => nodeKind switch
+        {
+            FundStructureNodeKindDto.Organization => (AccessScopeKindDto.Organization, nodeId),
+            FundStructureNodeKindDto.Business => (AccessScopeKindDto.Business, nodeId),
+            FundStructureNodeKindDto.Client => (AccessScopeKindDto.Client, nodeId),
+            FundStructureNodeKindDto.Fund => (AccessScopeKindDto.Fund, nodeId),
+            FundStructureNodeKindDto.Sleeve => (AccessScopeKindDto.Sleeve, nodeId),
+            FundStructureNodeKindDto.Vehicle => (AccessScopeKindDto.Vehicle, nodeId),
+            FundStructureNodeKindDto.InvestmentPortfolio => (AccessScopeKindDto.InvestmentPortfolio, nodeId),
+            FundStructureNodeKindDto.Entity => (AccessScopeKindDto.LegalEntity, nodeId),
+            FundStructureNodeKindDto.Account => (AccessScopeKindDto.Account, nodeId),
+            _ => (AccessScopeKindDto.Global, null)
+        };
 
     private static IResult? EnsureReportPackWorkflowAccess(
         HttpContext context,

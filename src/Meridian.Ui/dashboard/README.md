@@ -174,10 +174,11 @@ The Financial Operations operator queue on that screen is also derived from work
 shared close-calendar projection, and the private-capital close cockpit: reconciliation break cases,
 non-ready reconciliation lane posture, workflow blockers, close checklist tasks, close-calendar due
 items, non-ready private-capital proof lanes, NAV support packages, workflow approvals,
-evidence-package readiness, and non-ready Receive Activity, Match Records, Resolve Exceptions,
-Approve Results, Produce Evidence, and Close Support command stages stay source-backed while React
-only groups the active work items for review. If the close-calendar or private-capital close cockpit
-projection cannot load, the queue adds a blocked unavailable item so workflow control fails closed.
+workflow evidence-package readiness, close-cockpit evidence-package readiness, and non-ready Receive
+Activity, Match Records, Resolve Exceptions, Approve Results, Produce Evidence, and Close Support
+command stages stay source-backed while React only groups the active work items for review. If the
+close-calendar or private-capital close cockpit projection cannot load, the queue adds a blocked
+unavailable item so workflow control fails closed.
 The same workflow approval payload also feeds the approval-history table with submission timing,
 reviewer/operator attribution, rationale, status, and retained approval evidence routes. Pending
 rows expose guarded approve/reject commands only when the selected workflow supplies version,

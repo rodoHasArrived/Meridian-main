@@ -508,6 +508,65 @@ public static partial class WorkstationEndpoints
             UserPermission.ModifyConfig,
             UserPermission.AdminMaintenance);
 
+        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationConnectionRunDueSync), async (
+            string connectionId,
+            ProviderIntegrationRunDueSyncRequestDto request,
+            HttpContext context) =>
+        {
+            if (!HasProviderIntegrationConfigurePermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (!StringComparer.Ordinal.Equals(connectionId, request.ConnectionId))
+            {
+                return Results.BadRequest(new { error = "The route connection id must match the request connection id." });
+            }
+
+            var service = context.RequestServices.GetService<ProviderIntegrationSyncOrchestrationService>();
+            if (service is null)
+            {
+                return Results.Problem(
+                    "Provider integration sync-orchestration service is not registered.",
+                    statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            try
+            {
+                if (!TryResolveRequiredTenantId(context, out var tenantId))
+                {
+                    return Results.Problem("A tenant-scoped workstation request context is required.", statusCode: StatusCodes.Status403Forbidden);
+                }
+
+                var result = await service
+                    .RunDueAsync(tenantId, request, context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (KeyNotFoundException)
+            {
+                return Results.NotFound(new { error = $"Provider integration connection '{connectionId}' was not found." });
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("RunDueWorkstationProviderIntegrationSync")
+        .Produces<ProviderIntegrationRunDueSyncResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireAnyPermission(
+            UserPermission.ManageProviders,
+            UserPermission.ModifyConfig,
+            UserPermission.AdminMaintenance);
+
         group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationSchemaDriftCheck), async (
             ProviderIntegrationSchemaDriftCheckRequestDto request,
             HttpContext context) =>

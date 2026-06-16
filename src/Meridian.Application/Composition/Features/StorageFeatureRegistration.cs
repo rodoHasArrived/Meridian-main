@@ -109,6 +109,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ProviderIntegrationActivationService>();
         services.TryAddSingleton<ProviderIntegrationMonitoringService>();
         services.TryAddSingleton<ProviderIntegrationSyncPlanningService>();
+        services.TryAddSingleton<ProviderIntegrationSyncOrchestrationService>();
         services.TryAddSingleton<ProviderIntegrationSchemaDriftService>();
         services.TryAddSingleton<ProviderIntegrationQuarantineReviewService>();
         services.TryAddSingleton<ProviderIntegrationQuarantineReplayService>();
