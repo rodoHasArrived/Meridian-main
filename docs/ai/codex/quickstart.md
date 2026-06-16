@@ -14,36 +14,37 @@ still lives in `../assistant-workflow-contract.md`.
 2. Classify the request as orient, review, docs, browser, WPF, provider, storage, execution, roadmap,
    cleanup, or test work.
 3. Read `../navigation/README.md` and `../generated/repo-navigation.md` for large-repo routing.
-4. For stakeholder/product-scoped tasks, read `../product/meridian-design-document.md` before planning updates.
-5. Read the narrowest relevant Codex skill in `.codex/skills/`.
-6. For source edits under `src/**`, read the nearest `README.md` and identify the module in
+4. For architecture, domain, accounting, feature-generation, or broad implementation tasks, load the MDIF spine: `../../architecture/meridian-development-intelligence-framework.md`, the relevant `../../domain/*.md` dictionary pages, and the matching `../context/*.md` context pack.
+5. For stakeholder/product-scoped tasks, read `../../product/meridian-design-document.md` before planning updates.
+6. Read the narrowest relevant Codex skill in `.codex/skills/`.
+7. For source edits under `src/**`, read the nearest `README.md` and identify the module in
    `docs/source/data/source-modules.yml`.
-7. Choose the smallest validation lane from the task-to-proof matrix before editing.
+8. Choose the smallest validation lane from the task-to-proof matrix before editing.
    For local .NET tests, prefer
    `python build/python/cli/buildctl.py test --project <project> --filter "<filter>" --queue`
    so agent-triggered validation uses isolated outputs and avoids parallel test collisions.
    If local machine limits or MSBuild/package contention make that lane unreliable, plan to push
    the branch and dispatch GitHub Actions `Targeted Test` with the same project/filter or
    dashboard test file.
-8. Update the nearest docs or AI index when behavior, workflow, prompt, skill, or agent guidance
+9. Update the nearest docs or AI index when behavior, workflow, prompt, skill, or agent guidance
    changes.
 
-9. If more than one subsystem or AI surface is in scope, initialize
+10. If more than one subsystem or AI surface is in scope, initialize
    [`../parallel-task-manifest-template.md`](../parallel-task-manifest-template.md) first and keep
    each lane scoped to a unique file set.
-10. For AI/documentation updates:
+11. For AI/documentation updates:
     1) update `assistant-workflow-contract.md` when shared rules change,
     2) run `check-ai-inventory.py` / `check-codex-skills.py`,
     3) run `validate-docs-structure.py --top-level ai --summary` for narrow AI-doc metadata/structure proof,
     4) avoid direct edits to `docs/ai/generated/*` unless refreshing generation.
-11. For AI tooling or validator changes, read [`../tooling/README.md`](../tooling/README.md)
+12. For AI tooling or validator changes, read [`../tooling/README.md`](../tooling/README.md)
     before choosing scripts or broader maintenance lanes.
-12. Update `../documentation-inventory.md` for each rebuild batch so migration-state and audit trail remain current.
-13. For deterministic lane preflight (pilot), run:
+13. Update `../documentation-inventory.md` for each rebuild batch so migration-state and audit trail remain current.
+14. For deterministic lane preflight (pilot), run:
     `python3 build/scripts/docs/prompt-route-linter.py --prompt "<user prompt>"`.
-14. For deterministic lane handoff packets (pilot), run:
+15. For deterministic lane handoff packets (pilot), run:
     `python3 build/scripts/docs/handoff-packet-generator.py --route-json docs/status/prompt-route-lint-report.json --scope "<scope>" --next-lane "<lane>"`.
-15. For route schema v2, keep `docs/status/prompt-route-lint-report.json` and
+16. For route schema v2, keep `docs/status/prompt-route-lint-report.json` and
     `docs/status/ai-handoff-packet.json` as the canonical local evidence artifacts. The route
     artifact must include `modelRouteId`, validation requirements, required telemetry, and
     escalation triggers.
@@ -57,10 +58,13 @@ Load only enough context to route and validate the task.
 | Unknown subsystem | `../navigation/README.md`, `../generated/repo-navigation.md` | Full repo scans and broad plan families |
 | Source change | Nearest `src/**/README.md`, `docs/source/data/source-modules.yml` | Generated source docs unless a generator is in scope |
 | AI docs change | `../assistant-workflow-contract.md`, this page, `README.md` | Host-specific mirrors unless shared policy changes |
+| MDIF/domain/accounting task | `../../architecture/meridian-development-intelligence-framework.md`, `../../architecture/meridian-domain-model.md`, relevant `../../domain/*.md`, relevant `../context/*.md` | Broad generated exports until a snapshot is requested or needed |
 | WPF task | `.codex/AGENTS.md`, relevant WPF skill, nearest view model/tests | Broad WPF suites before focused filters |
 | Browser task | `.codex/skills/meridian-browser-workstation/SKILL.md`, package tests | WPF validation unless shared contracts changed |
 
 AI-doc proof lane defaults: `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/check-codex-skills.py --summary`, `python3 build/scripts/docs/validate-docs-structure.py --top-level ai --summary`, `python3 build/scripts/docs/repair-links.py --summary`, `git diff --check`
+
+MDIF/domain proof lane defaults: `make ai-mdif-context-check`, `python3 build/scripts/ai/meridian_context_exporter.py --check --summary`, `python3 build/scripts/docs/validate-docs-structure.py --top-level domain --summary`, `python3 build/scripts/docs/check-ai-inventory.py --summary`, `git diff --check`
 
 Hosted proof fallback: after pushing a branch, use `gh workflow run targeted-test.yml --ref <branch>`
 with `lane=dotnet` plus `dotnet_project`/`dotnet_filter`, or `lane=browser-dashboard` plus
@@ -114,6 +118,7 @@ and uses `MeridianBuildIsolationKey` output roots by default.
 | WPF view model, shell route, or desktop workflow | `.codex/AGENTS.md`, relevant WPF skill/checklist, desktop testing docs | Focused `tests/Meridian.Wpf.Tests` filter for the touched view model, shell route, or workflow script |
 | Provider adapter or provider workflow | Provider docs, `src/Meridian.ProviderSdk`, nearest adapter README | Focused provider tests or provider-validation script that covers the adapter and credential path |
 | Storage, WAL, or archival behavior | Storage docs and nearest `src/Meridian.Storage` README | Focused storage/WAL tests; avoid direct file writes outside WAL or `AtomicFileWriter` patterns |
+| MDIF, domain dictionary, or context pack | `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, `docs/ai/context/` | `make ai-mdif-context` when source docs changed; `make ai-mdif-context-check`; `python3 build/scripts/docs/validate-docs-structure.py --top-level domain --summary`; AI inventory checks when Codex-facing indexes change |
 | Docs-only change | Nearest docs index | `git diff --check -- <paths>` plus inventory checks when AI catalogs are affected |
 
 ## High-Traffic Skill Defaults

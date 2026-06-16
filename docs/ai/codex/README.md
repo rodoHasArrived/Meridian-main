@@ -22,7 +22,7 @@ For documentation work, start from the rebuilt canonical docs model:
 | [`prompt-execution-trace.md`](prompt-execution-trace.md) | One-page prompt-to-execution diagram and execution-path refinements |
 | [`self-improving-agents.md`](self-improving-agents.md) | Codex agent improvement loop, eval promotion rules, and graph/retrieval guardrails |
 | [`prompt-route-rules.json`](prompt-route-rules.json) | Schema v2 deterministic routing rules for lane, skill, mode, model route, validation floor, telemetry, and escalation triggers |
-| [`route-cards.md`](route-cards.md) | Compact subsystem cards with first docs, entrypoints, and validation lanes |
+| [`route-cards.md`](route-cards.md) | Compact subsystem cards with first docs, entrypoints, validation lanes, and MDIF/domain context routing |
 | [`../agent-handoff-checklist.md`](../agent-handoff-checklist.md) | Shared handoff format for multi-agent/lane transitions and context minimization |
 | [`../work-modes.md`](../work-modes.md) | Mode selection contract for context budget and escalation control |
 | [`../parallel-task-manifest-template.md`](../parallel-task-manifest-template.md) | Shared parallel-lane ownership manifest to prevent overlap and duplicate discovery |
@@ -35,6 +35,9 @@ For documentation work, start from the rebuilt canonical docs model:
 | [`.codex/prompts/`](../../../.codex/prompts) | Reusable desktop implementation, refactor, provider, diagnostics, resource, and test prompts |
 | [`.codex/checklists/`](../../../.codex/checklists) | Modularity, MVVM, resource, definition-of-done, and safe-refactor checklists |
 | [`tools/codex/`](../../../tools/codex) | Codex-focused PowerShell quality scans, desktop workspace generators, resource reviews, and refactor-plan helpers |
+| [`../../architecture/meridian-development-intelligence-framework.md`](../../architecture/meridian-development-intelligence-framework.md) | MDIF project constitution and context-loading contract for architecture, domain, accounting, and feature-generation work |
+| [`../../domain/README.md`](../../domain/README.md) | Domain dictionary lane for durable business nouns used by Codex development sessions |
+| [`../context/accounting-context.md`](../context/accounting-context.md) | Initial accounting context pack for Codex generation and review of accounting-impacting changes |
 
 ## Current Codex Agent Profiles
 
