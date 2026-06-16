@@ -4,6 +4,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:views="clr-namespace:Meridian.Wpf.Views"
+      xmlns:controls="clr-namespace:Meridian.Wpf.Controls"
       xmlns:copy="clr-namespace:Meridian.Wpf.Copy"
       mc:Ignorable="d"
       d:DesignHeight="900"
@@ -22,13 +23,18 @@
           AutomationProperties.AutomationId="WorkspaceHomeStrategyWorkbenchTemplate">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" MinHeight="200" />
         </Grid.RowDefinitions>
 
         <views:WorkspaceShellContextStripControl x:Name="ContextStrip"
                                                  ShellContext="{Binding ShellContext}" />
 
-        <ScrollViewer Grid.Row="1"
+        <controls:WorkspaceAttentionRibbon Grid.Row="1"
+                                           DataContext="{Binding AttentionRibbon}"
+                                           Margin="0,16,0,0" />
+
+        <ScrollViewer Grid.Row="2"
                       Margin="0,16,0,0"
                       VerticalScrollBarVisibility="Auto"
                       Padding="8,4,8,16"
