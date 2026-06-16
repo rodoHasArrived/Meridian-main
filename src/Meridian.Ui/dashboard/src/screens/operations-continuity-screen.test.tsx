@@ -1108,6 +1108,9 @@ describe("OperationsContinuityScreen", () => {
       .toHaveAttribute("href", `/accounting/exceptions?workflowId=${workflowId}&breakId=recon-break-42`);
     const reconciliationLaneCoverage = screen.getByRole("table", { name: "Operations continuity reconciliation lane coverage" });
     expect(within(reconciliationLaneCoverage).getByText("Cash reconciliation")).toBeInTheDocument();
+    expect(within(reconciliationLaneCoverage).getByText("Position reconciliation")).toBeInTheDocument();
+    expect(within(reconciliationLaneCoverage).getByText("Trade reconciliation")).toBeInTheDocument();
+    expect(within(reconciliationLaneCoverage).getByText("Income reconciliation")).toBeInTheDocument();
     expect(within(reconciliationLaneCoverage).getByText("MBS factor reconciliation")).toBeInTheDocument();
     expect(within(reconciliationLaneCoverage).getByText("Bank reconciliation")).toBeInTheDocument();
     expect(within(reconciliationLaneCoverage).getByText("GL reconciliation support")).toBeInTheDocument();
@@ -1162,6 +1165,9 @@ describe("OperationsContinuityScreen", () => {
     expect(within(dashboard).getByText("Receive Activity")).toBeInTheDocument();
     expect(within(dashboard).getByText("Match Records")).toBeInTheDocument();
     expect(within(dashboard).getByText("Resolve Exceptions")).toBeInTheDocument();
+    expect(within(dashboard).getByText("Approve Results")).toBeInTheDocument();
+    expect(within(dashboard).getByText("Produce Evidence")).toBeInTheDocument();
+    expect(within(dashboard).getByText("Close Support")).toBeInTheDocument();
     expect(within(dashboard).getByText("Close package retained")).toBeInTheDocument();
     expect(within(dashboard).getByText("Assign, escalate, or resolve open exceptions and retain resolution evidence.")).toBeInTheDocument();
     expect(getOperationsCloseCalendar).toHaveBeenCalledWith(

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +10,7 @@ using Meridian.Core.Config;
 using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Contracts;
 using Microsoft.Extensions.Logging;
 using WpfServices = Meridian.Wpf.Services;
 
@@ -100,20 +100,20 @@ public sealed class SetupWizardStateService : ISetupWizardStateService
     private readonly FirstRunService _firstRunService;
     private readonly BackendServiceManager _backendServiceManager;
     private readonly SetupWizardService _setupWizardService;
-    private readonly HttpClient _httpClient;
+    private readonly IRemoteWorkstationClient _remoteClient;
 
     public SetupWizardStateService(
         ConnectionService connectionService,
         FirstRunService firstRunService,
         BackendServiceManager backendServiceManager,
         SetupWizardService setupWizardService,
-        IHttpClientFactory httpClientFactory)
+        IRemoteWorkstationClient remoteClient)
     {
         _connectionService = connectionService;
         _firstRunService = firstRunService;
         _backendServiceManager = backendServiceManager;
         _setupWizardService = setupWizardService;
-        _httpClient = httpClientFactory.CreateClient(HttpClientNames.SetupWizard);
+        _remoteClient = remoteClient ?? throw new ArgumentNullException(nameof(remoteClient));
     }
 
     public IReadOnlyList<string> ProviderOptions => DefaultProviderOptions;
@@ -190,9 +190,9 @@ public sealed class SetupWizardStateService : ISetupWizardStateService
 
         try
         {
-            using var response = await _httpClient.GetAsync($"{_connectionService.ServiceUrl}/healthz", ct).ConfigureAwait(false);
+            var isHealthy = await _remoteClient.CheckHealthEndpointAsync(ct).ConfigureAwait(false);
             stopwatch.Stop();
-            if (response.IsSuccessStatusCode)
+            if (isHealthy)
             {
                 return new SetupWizardBackendCheckResult(
                     true,
@@ -204,7 +204,7 @@ public sealed class SetupWizardStateService : ISetupWizardStateService
 
             return new SetupWizardBackendCheckResult(
                 false,
-                $"Health check returned {response.StatusCode}",
+                "Health check failed",
                 0,
                 serviceStatus.StatusMessage,
                 _connectionService.ServiceUrl);

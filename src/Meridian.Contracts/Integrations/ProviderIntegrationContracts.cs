@@ -137,6 +137,16 @@ public enum ProviderIntegrationQuarantineResolutionActionDto
     MarkAsCashPosition = 3
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter<ProviderIntegrationIdentityResolutionStatusDto>))]
+public enum ProviderIntegrationIdentityResolutionStatusDto
+{
+    Resolved = 0,
+    ReviewRequired = 1,
+    MissingIdentifier = 2,
+    NotFound = 3,
+    NotConfigured = 4
+}
+
 public sealed record ProviderIntegrationAuthConfigDto(
     ProviderIntegrationAuthTypeDto Type,
     string? TokenUrl,
@@ -393,6 +403,42 @@ public sealed record ProviderIntegrationStagingReviewDto(
     int TotalStagedRecords,
     int ReadyForReconciliationCount,
     int WarningRecordCount);
+
+public sealed record ProviderIntegrationIdentityCandidateDto(
+    string IdentifierKind,
+    string IdentifierValue,
+    string? Provider,
+    int Priority,
+    ProviderIntegrationIdentityResolutionStatusDto Status,
+    string? InternalSecurityId,
+    string? DisplayName,
+    string? Route);
+
+public sealed record ProviderIntegrationStagingIdentityResolutionRowDto(
+    string StagingRecordId,
+    string SyncRunId,
+    ProviderCapabilityKindDto Capability,
+    string? ProviderAccountId,
+    ProviderIntegrationIdentityResolutionStatusDto AccountStatus,
+    string? InternalAccountId,
+    string? AccountResolutionNote,
+    ProviderIntegrationIdentityResolutionStatusDto SecurityStatus,
+    string? InternalSecurityId,
+    string? SecurityDisplayName,
+    string? SecurityRoute,
+    IReadOnlyList<ProviderIntegrationIdentityCandidateDto> SecurityCandidates,
+    IReadOnlyList<ValidationIssueDto> Issues);
+
+public sealed record ProviderIntegrationStagingIdentityResolutionPreviewDto(
+    string ConnectionId,
+    IReadOnlyList<string> SyncRunIds,
+    IReadOnlyList<ProviderIntegrationStagingIdentityResolutionRowDto> Rows,
+    int TotalRows,
+    int AccountReviewRequiredCount,
+    int MissingAccountIdentifierCount,
+    int SecurityResolvedCount,
+    int SecurityReviewRequiredCount,
+    int MissingSecurityIdentifierCount);
 
 public sealed record ProviderIntegrationSyncRunDto(
     string SyncRunId,

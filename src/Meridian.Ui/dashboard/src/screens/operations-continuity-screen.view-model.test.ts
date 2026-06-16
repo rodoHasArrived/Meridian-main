@@ -887,6 +887,22 @@ describe("Operations Continuity view model", () => {
       requiredActionsLabel: "Complete source-backed reconciliation lanes before approval.; Publish and retain the evidence package before period close."
     });
     expect(vm.dashboard.metrics).toHaveLength(6);
+    expect(vm.dashboard.metrics.map((metric) => metric.id)).toEqual([
+      "receive-activity",
+      "match-records",
+      "resolve-exceptions",
+      "approve-results",
+      "produce-evidence",
+      "close-support"
+    ]);
+    expect(vm.dashboard.metrics.map((metric) => metric.label)).toEqual([
+      "Receive Activity",
+      "Match Records",
+      "Resolve Exceptions",
+      "Approve Results",
+      "Produce Evidence",
+      "Close Support"
+    ]);
     expect(vm.dashboard.metrics[1]).toMatchObject({
       id: "match-records",
       label: "Match Records",
@@ -1469,6 +1485,15 @@ describe("Operations Continuity view model", () => {
       routeLabel: "Open break evidence"
     });
     expect(vm.reconciliationLanes).toHaveLength(7);
+    expect(vm.reconciliationLanes.map((lane) => lane.id)).toEqual([
+      "cash-reconciliation",
+      "position-reconciliation",
+      "trade-reconciliation",
+      "income-reconciliation",
+      "mbs-factor-reconciliation",
+      "bank-reconciliation",
+      "gl-reconciliation"
+    ]);
     expect(vm.reconciliationLanes[0]).toMatchObject({
       id: "cash-reconciliation",
       label: "Cash reconciliation",
@@ -1481,6 +1506,27 @@ describe("Operations Continuity view model", () => {
       routeHref: "/accounting/reconciliation",
       requiredActionsLabel: "No required actions"
     });
+    expect(vm.reconciliationLanes.find((lane) => lane.id === "position-reconciliation")).toMatchObject({
+      label: "Position reconciliation",
+      statusLabel: "Ready",
+      breakCountLabel: "No open breaks",
+      routeHref: "/accounting/reconciliation",
+      requiredActionsLabel: "No required actions"
+    });
+    expect(vm.reconciliationLanes.find((lane) => lane.id === "trade-reconciliation")).toMatchObject({
+      label: "Trade reconciliation",
+      statusLabel: "Ready",
+      breakCountLabel: "No open breaks",
+      routeHref: "/accounting/reconciliation",
+      requiredActionsLabel: "No required actions"
+    });
+    expect(vm.reconciliationLanes.find((lane) => lane.id === "income-reconciliation")).toMatchObject({
+      label: "Income reconciliation",
+      statusLabel: "Ready",
+      breakCountLabel: "No open breaks",
+      routeHref: "/accounting/reconciliation",
+      requiredActionsLabel: "No required actions"
+    });
     expect(vm.reconciliationLanes.find((lane) => lane.id === "mbs-factor-reconciliation")).toMatchObject({
       statusLabel: "Review Required",
       statusTone: "review",
@@ -1489,6 +1535,20 @@ describe("Operations Continuity view model", () => {
       evidenceHref: "/accounting/reconciliation/recon-break-factor-1",
       evidenceRouteLabel: "Open retained evidence",
       requiredActionsLabel: "Resolve or assign MBS factor reconciliation breaks and retain evidence."
+    });
+    expect(vm.reconciliationLanes.find((lane) => lane.id === "bank-reconciliation")).toMatchObject({
+      label: "Bank reconciliation",
+      statusLabel: "Ready",
+      breakCountLabel: "No open breaks",
+      routeHref: "/accounting/reconciliation",
+      requiredActionsLabel: "No required actions"
+    });
+    expect(vm.reconciliationLanes.find((lane) => lane.id === "gl-reconciliation")).toMatchObject({
+      label: "GL reconciliation support",
+      statusLabel: "Ready",
+      breakCountLabel: "No open breaks",
+      routeHref: "/accounting/ledger",
+      requiredActionsLabel: "No required actions"
     });
   });
 

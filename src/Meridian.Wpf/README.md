@@ -89,6 +89,8 @@ payload. Activity Log also loads `/api/logs` through that seam and keeps the loc
 indicator path when the remote host is unavailable or returns a non-success response. Service
 Manager health checks also use the same seam for deployable desktop clients; its graceful shutdown
 path remains a local managed-process request because it uses the runtime-scoped shutdown token.
+Setup Wizard backend readiness checks also use the remote seam, so first-run workstation setup
+validates the configured remote host instead of issuing a page-local direct HTTP health probe.
 Convention-based view-model wiring is handled by `Services/ViewModelViewResolver.cs`; shell pages
 that follow the `*Page` to `*ViewModel` naming convention can receive a DI-constructed DataContext
 without page-specific registration, while pages that set their own DataContext remain authoritative.

@@ -653,6 +653,60 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationIdentityResolution_ReturnsStagedMatchPosture()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = await CreateSeededProviderIntegrationStoreAsync(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewConfig);
+            var client = app.GetTestClient();
+
+            var preview = await client.GetFromJsonAsync<ProviderIntegrationStagingIdentityResolutionPreviewDto>(
+                $"{ProviderIntegrationIdentityResolutionRoute("connection-alpha")}?recentRunLimit=1",
+                ServerJsonOptions);
+
+            preview.Should().NotBeNull();
+            preview!.ConnectionId.Should().Be("connection-alpha");
+            preview.TotalRows.Should().Be(1);
+            preview.AccountReviewRequiredCount.Should().Be(1);
+            preview.MissingSecurityIdentifierCount.Should().Be(1);
+            preview.Rows.Should().ContainSingle(row =>
+                row.StagingRecordId == "staging-sync-run-new-0" &&
+                row.ProviderAccountId == "A-100" &&
+                row.SecurityStatus == ProviderIntegrationIdentityResolutionStatusDto.MissingIdentifier);
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationIdentityResolution_RequiresProviderReadPermission()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = await CreateSeededProviderIntegrationStoreAsync(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewMarketData);
+            var client = app.GetTestClient();
+
+            var response = await client.GetAsync(ProviderIntegrationIdentityResolutionRoute("connection-alpha"));
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ProviderIntegrationQuarantineReview_ReturnsIssueGroups()
     {
         var testRoot = CreateProviderIntegrationTestRoot();
@@ -1279,6 +1333,7 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<ProviderIntegrationSyncOrchestrationService>();
         services.AddSingleton<ProviderIntegrationSchemaDriftService>();
         services.AddSingleton<ProviderIntegrationStagingReviewService>();
+        services.AddSingleton<ProviderIntegrationIdentityResolutionPreviewService>();
         services.AddSingleton<ProviderIntegrationQuarantineReviewService>();
         services.AddSingleton<ProviderIntegrationQuarantineReplayService>();
     }
@@ -1506,6 +1561,12 @@ public sealed partial class WorkstationEndpointsTests
 
     private static string ProviderIntegrationStagingReviewRoute(string connectionId)
         => UiApiRoutes.WorkstationProviderIntegrationStagingReview.Replace(
+            "{connectionId}",
+            Uri.EscapeDataString(connectionId),
+            StringComparison.Ordinal);
+
+    private static string ProviderIntegrationIdentityResolutionRoute(string connectionId)
+        => UiApiRoutes.WorkstationProviderIntegrationIdentityResolution.Replace(
             "{connectionId}",
             Uri.EscapeDataString(connectionId),
             StringComparison.Ordinal);
