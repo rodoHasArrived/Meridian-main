@@ -1163,6 +1163,9 @@ describe("OperationsContinuityScreen", () => {
     expect(within(operatorQueue).getByText("recon-break-42")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("approval-close-2026-05")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("CashBalance / cash-balance-check; Level 2 at May 08, 15:20 UTC: Aged cash variance past controller SLA")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Reconciliation lane")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("MBS factor reconciliation")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("1 open break; MBS factor reconciliation has 1 open break requiring controller review.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Ledger posting controller check")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Close calendar")).toBeInTheDocument();
     expect(within(operatorQueue).getByText(`2026-05 / ${fundAccountId}: Ledger posting controller check`)).toBeInTheDocument();
@@ -1173,6 +1176,8 @@ describe("OperationsContinuityScreen", () => {
       .toHaveAttribute("href", "/accounting/reconciliation/recon-break-42/evidence");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: approval-close-2026-05" }))
       .toHaveAttribute("href", "/accounting/approvals");
+    expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: MBS factor reconciliation" }))
+      .toHaveAttribute("href", "/accounting/reconciliation");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Ledger posting controller check" }))
       .toHaveAttribute("href", "/accounting/ledger");
     expect(within(operatorQueue).getByRole("link", { name: `Open Financial Operations queue item: 2026-05 / ${fundAccountId}: Ledger posting controller check` }))

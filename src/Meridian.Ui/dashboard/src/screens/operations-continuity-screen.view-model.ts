@@ -983,6 +983,7 @@ export function buildOperationsContinuityScreenViewModel({
   );
   const financialOperationsQueue = buildFinancialOperationsOperatorQueueViewModel({
     breakCases,
+    reconciliationLanes,
     checklist,
     approvals: effectiveDetail?.approvals ?? [],
     evidencePackages,
@@ -2047,6 +2048,7 @@ function buildEvidencePackageRows(packages: OperationsEvidencePackageSummary[]):
 
 function buildFinancialOperationsOperatorQueueViewModel({
   breakCases,
+  reconciliationLanes,
   checklist,
   approvals,
   evidencePackages,
@@ -2056,6 +2058,7 @@ function buildFinancialOperationsOperatorQueueViewModel({
   loading
 }: {
   breakCases: OperationsContinuityBreakCaseRow[];
+  reconciliationLanes: OperationsContinuityReconciliationLaneRow[];
   checklist: OperationsContinuityChecklistRow[];
   approvals: OperationsContinuityWorkflow["approvals"];
   evidencePackages: OperationsContinuityEvidencePackageRow[];
@@ -2084,6 +2087,9 @@ function buildFinancialOperationsOperatorQueueViewModel({
         routeLabel: row.routeLabel,
         ariaLabel: `Financial Operations break ${row.ariaLabel}`
       })),
+    ...reconciliationLanes
+      .filter(isOpenQueueItem)
+      .map(mapReconciliationLaneQueueRow),
     ...checklist
       .filter(isOpenQueueItem)
       .map((row) => ({
@@ -2159,6 +2165,33 @@ function buildFinancialOperationsOperatorQueueViewModel({
       ? "Loading Financial Operations operator queue..."
       : "No open Financial Operations queue items are surfaced for the selected workflow.",
     items
+  };
+}
+
+function mapReconciliationLaneQueueRow(
+  row: OperationsContinuityReconciliationLaneRow
+): FinancialOperationsOperatorQueueRow {
+  const routeHref = row.routeHref ?? row.evidenceHref;
+  const routeLabel = row.routeHref
+    ? row.routeLabel
+    : row.evidenceHref
+      ? row.evidenceRouteLabel
+      : "No local route";
+
+  return {
+    id: `reconciliation-lane:${row.id}`,
+    kindLabel: "Reconciliation lane",
+    title: row.label,
+    detail: `${row.breakCountLabel}; ${row.summary}`,
+    statusLabel: row.statusLabel,
+    statusTone: row.statusTone,
+    ownerLabel: "Reconciliation operations",
+    dueLabel: row.breakCountLabel,
+    evidenceLabel: row.evidenceLabel,
+    actionLabel: row.requiredActionsLabel,
+    routeHref,
+    routeLabel,
+    ariaLabel: `Financial Operations reconciliation lane ${row.ariaLabel}`
   };
 }
 

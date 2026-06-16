@@ -925,9 +925,10 @@ describe("Operations Continuity view model", () => {
     expect(vm.financialOperationsQueue).toMatchObject({
       statusLabel: "Blocked",
       statusTone: "blocked",
-      summaryLabel: "7 open work items: 3 blocked, 4 review."
+      summaryLabel: "8 open work items: 3 blocked, 5 review."
     });
     expect(vm.financialOperationsQueue.items.map((item) => item.id)).toEqual([
+      "reconciliation-lane:mbs-factor-reconciliation",
       "checklist:close-gate-ledgerposting",
       "approval:approval-close-2026-05",
       "evidence-package:accounting-record-2026-05",
@@ -937,6 +938,17 @@ describe("Operations Continuity view model", () => {
       "evidence-package:period-lock-reopen:fund-alpha:2026-05"
     ]);
     expect(vm.financialOperationsQueue.items[0]).toMatchObject({
+      kindLabel: "Reconciliation lane",
+      title: "MBS factor reconciliation",
+      statusLabel: "Review Required",
+      statusTone: "review",
+      ownerLabel: "Reconciliation operations",
+      dueLabel: "1 open break",
+      evidenceLabel: "1 evidence link",
+      actionLabel: "Resolve or assign MBS factor reconciliation breaks and retain evidence.",
+      routeHref: "/accounting/reconciliation"
+    });
+    expect(vm.financialOperationsQueue.items[1]).toMatchObject({
       kindLabel: "Checklist",
       title: "Ledger posting controller check",
       statusLabel: "Pending",
@@ -945,7 +957,7 @@ describe("Operations Continuity view model", () => {
       evidenceLabel: "ledger-evidence-1",
       routeHref: "/accounting/ledger"
     });
-    expect(vm.financialOperationsQueue.items[1]).toMatchObject({
+    expect(vm.financialOperationsQueue.items[2]).toMatchObject({
       kindLabel: "Approval",
       title: "approval-close-2026-05",
       statusLabel: "Reviewer Assigned",
@@ -978,7 +990,7 @@ describe("Operations Continuity view model", () => {
       canRejectWorkflow: true,
       rejectWorkflowDisabledReason: null
     });
-    expect(vm.financialOperationsQueue.items[4]).toMatchObject({
+    expect(vm.financialOperationsQueue.items[5]).toMatchObject({
       kindLabel: "Evidence package",
       title: "Close package manifest",
       statusLabel: "Missing",
