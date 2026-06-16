@@ -14,6 +14,121 @@ public static partial class WorkstationEndpoints
 {
     private static void MapProviderIntegrationEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationTemplates), (
+            HttpContext context) =>
+        {
+            if (!HasProviderIntegrationReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var catalog = context.RequestServices.GetService<ProviderIntegrationTemplateCatalog>();
+            if (catalog is null)
+            {
+                return Results.Problem(
+                    "Provider integration template catalog is not registered.",
+                    statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            return Results.Json(catalog.ListEntries(), jsonOptions);
+        })
+        .WithName("ListWorkstationProviderIntegrationTemplates")
+        .Produces<IReadOnlyList<ProviderIntegrationTemplateCatalogEntryDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireAnyPermission(
+            UserPermission.ViewConfig,
+            UserPermission.ManageProviders,
+            UserPermission.ModifyConfig,
+            UserPermission.AdminMaintenance);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationTemplateById), (
+            string manifestId,
+            HttpContext context) =>
+        {
+            if (!HasProviderIntegrationReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var catalog = context.RequestServices.GetService<ProviderIntegrationTemplateCatalog>();
+            if (catalog is null)
+            {
+                return Results.Problem(
+                    "Provider integration template catalog is not registered.",
+                    statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            try
+            {
+                var manifest = catalog.GetManifest(manifestId);
+                return manifest is null
+                    ? Results.NotFound(new { error = $"Provider integration template '{manifestId}' was not found." })
+                    : Results.Json(manifest, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("GetWorkstationProviderIntegrationTemplate")
+        .Produces<ProviderIntegrationManifestDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireAnyPermission(
+            UserPermission.ViewConfig,
+            UserPermission.ManageProviders,
+            UserPermission.ModifyConfig,
+            UserPermission.AdminMaintenance);
+
+        group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationManifestReadiness), async (
+            string manifestId,
+            string? connectionId,
+            HttpContext context) =>
+        {
+            if (!HasProviderIntegrationReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<ProviderIntegrationActivationReadinessService>();
+            if (service is null)
+            {
+                return Results.Problem(
+                    "Provider integration activation-readiness service is not registered.",
+                    statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            try
+            {
+                var readiness = await service
+                    .EvaluateAsync(manifestId, connectionId, context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(readiness, jsonOptions);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Results.NotFound(new { error = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("GetWorkstationProviderIntegrationReadiness")
+        .Produces<ProviderIntegrationActivationReadinessDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireAnyPermission(
+            UserPermission.ViewConfig,
+            UserPermission.ManageProviders,
+            UserPermission.ModifyConfig,
+            UserPermission.AdminMaintenance);
+
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationConnectionMonitor), async (
             string connectionId,
             int? recentRunLimit,

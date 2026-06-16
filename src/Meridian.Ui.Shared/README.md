@@ -121,11 +121,11 @@ require a bank fund account, and apply the parsed lines through
 `IFundAccountService.IngestBankStatementAsync`; the imported bank data remains reconciliation
 evidence and does not post Meridian-owned ledger entries.
 
-Provider integration monitor endpoints are registered under
-`/api/workstation/provider-integrations/*`. The connection monitor route adapts the
-Application-owned provider integration monitoring service into a browser/WPF-compatible payload
-with recent sync-run evidence, durable staging counts, quarantine counts, and validation issues;
-it remains read-only and permission-gated until setup, dry-run, activation, and quarantine review
+Provider integration endpoints are registered under `/api/workstation/provider-integrations/*`.
+Template routes expose the Application-owned starter manifest pack, activation-readiness routes
+surface fail-closed readiness blockers, and the connection monitor route adapts durable sync-run,
+staging, quarantine, and validation evidence into browser/WPF-compatible payloads. These endpoints
+remain read-only and permission-gated until setup, dry-run, activation, and quarantine review
 commands are surfaced through the shared workstation API.
 `BankFeedTransportService` reuses that same import boundary for scheduled local-file and SFTP
 CSV pulls through `IEtlSourceReader`, and delegates Plaid API schedules to `IPlaidIngestionService`

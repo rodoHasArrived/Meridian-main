@@ -16,6 +16,68 @@ namespace Meridian.Tests.Ui;
 public sealed partial class WorkstationEndpointsTests
 {
     [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationTemplates_ReturnsStarterTemplatePack()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewConfig);
+            var client = app.GetTestClient();
+
+            var templates = await client.GetFromJsonAsync<IReadOnlyList<ProviderIntegrationTemplateCatalogEntryDto>>(
+                UiApiRoutes.WorkstationProviderIntegrationTemplates,
+                ServerJsonOptions);
+
+            templates.Should().NotBeNull();
+            templates!.Select(template => template.ManifestId).Should().BeEquivalentTo(
+                "template-manual-csv-upload-v1",
+                "template-custodian-positions-v1",
+                "template-brokerage-transactions-v1",
+                "template-fixed-income-security-master-v1");
+            templates.Should().Contain(template =>
+                template.ManifestId == "template-manual-csv-upload-v1" &&
+                template.IntegrationType == IntegrationTypeDto.ManualUpload &&
+                template.Capabilities.Contains(ProviderCapabilityKindDto.Positions) &&
+                template.Capabilities.Contains(ProviderCapabilityKindDto.Transactions));
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationTemplate_ReturnsManifestDetail()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewConfig);
+            var client = app.GetTestClient();
+
+            var manifest = await client.GetFromJsonAsync<ProviderIntegrationManifestDto>(
+                ProviderIntegrationTemplateRoute("template-custodian-positions-v1"),
+                ServerJsonOptions);
+
+            manifest.Should().NotBeNull();
+            manifest!.ManifestId.Should().Be("template-custodian-positions-v1");
+            manifest.IntegrationType.Should().Be(IntegrationTypeDto.Rest);
+            manifest.Endpoints.Should().Contain(endpoint => endpoint.EndpointKey == "accounts");
+            manifest.Endpoints.Should().Contain(endpoint => endpoint.EndpointKey == "positions");
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ProviderIntegrationMonitor_ReturnsLatestDurableEvidence()
     {
         var testRoot = CreateProviderIntegrationTestRoot();
@@ -44,6 +106,79 @@ public sealed partial class WorkstationEndpointsTests
             monitor.RecentRecordsAccepted.Should().Be(1);
             monitor.RecentRecordsQuarantined.Should().Be(2);
             monitor.HasCriticalIssues.Should().BeTrue();
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationReadiness_ReturnsActivationBlockers()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = await CreateSeededProviderIntegrationStoreAsync(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewConfig);
+            var client = app.GetTestClient();
+
+            var readiness = await client.GetFromJsonAsync<ProviderIntegrationActivationReadinessDto>(
+                $"{ProviderIntegrationReadinessRoute("manifest-custodian-abc-v1")}?connectionId=connection-alpha",
+                ServerJsonOptions);
+
+            readiness.Should().NotBeNull();
+            readiness!.IsReady.Should().BeFalse();
+            readiness.RequiredEvidence.Should().Contain("activation-approval");
+            readiness.Issues.Should().Contain(issue =>
+                issue.Code == "provider-manifest.required-mapping-missing" &&
+                issue.Severity == ProviderIntegrationIssueSeverityDto.Critical);
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationReadiness_ReturnsNotFoundForMissingManifest()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewConfig);
+            var client = app.GetTestClient();
+
+            var response = await client.GetAsync(ProviderIntegrationReadinessRoute("missing-manifest"));
+
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationTemplates_RequireProviderReadPermission()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewMarketData);
+            var client = app.GetTestClient();
+
+            var response = await client.GetAsync(UiApiRoutes.WorkstationProviderIntegrationTemplates);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         }
         finally
         {
@@ -99,7 +234,9 @@ public sealed partial class WorkstationEndpointsTests
         IServiceCollection services,
         IProviderIntegrationManifestStore store)
     {
-        services.AddSingleton(store);
+        services.AddSingleton<IProviderIntegrationManifestStore>(store);
+        services.AddSingleton<ProviderIntegrationTemplateCatalog>();
+        services.AddSingleton<ProviderIntegrationActivationReadinessService>();
         services.AddSingleton<ProviderIntegrationMonitoringService>();
     }
 
@@ -279,6 +416,18 @@ public sealed partial class WorkstationEndpointsTests
         => UiApiRoutes.WorkstationProviderIntegrationConnectionMonitor.Replace(
             "{connectionId}",
             Uri.EscapeDataString(connectionId),
+            StringComparison.Ordinal);
+
+    private static string ProviderIntegrationTemplateRoute(string manifestId)
+        => UiApiRoutes.WorkstationProviderIntegrationTemplateById.Replace(
+            "{manifestId}",
+            Uri.EscapeDataString(manifestId),
+            StringComparison.Ordinal);
+
+    private static string ProviderIntegrationReadinessRoute(string manifestId)
+        => UiApiRoutes.WorkstationProviderIntegrationManifestReadiness.Replace(
+            "{manifestId}",
+            Uri.EscapeDataString(manifestId),
             StringComparison.Ordinal);
 
     private static string CreateProviderIntegrationTestRoot()
