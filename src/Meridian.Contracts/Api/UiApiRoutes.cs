@@ -573,6 +573,8 @@ public static class UiApiRoutes
     public const string WorkstationProviderIntegrationTemplates = "/api/workstation/provider-integrations/templates";
     public const string WorkstationProviderIntegrationTemplateById = "/api/workstation/provider-integrations/templates/{manifestId}";
     public const string WorkstationProviderIntegrationManifestReadiness = "/api/workstation/provider-integrations/manifests/{manifestId}/readiness";
+    public const string WorkstationProviderIntegrationManualCsvDryRun = "/api/workstation/provider-integrations/dry-runs/manual-csv";
+    public const string WorkstationProviderIntegrationRestDryRun = "/api/workstation/provider-integrations/dry-runs/rest";
     public const string WorkstationProviderIntegrationConnectionMonitor = "/api/workstation/provider-integrations/connections/{connectionId}/monitor";
     public const string WorkstationGovernance = "/api/workstation/governance";
     public const string WorkstationAccounting = "/api/workstation/accounting";

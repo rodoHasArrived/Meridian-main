@@ -100,6 +100,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             new FileProviderIntegrationManifestStore(sp.GetRequiredService<StorageOptions>().RootPath));
         services.TryAddSingleton<ProviderIntegrationTemplateCatalog>();
         services.TryAddSingleton<ProviderIntegrationDryRunService>();
+        services.TryAddSingleton<IProviderIntegrationHttpTransport>(_ =>
+            new ProviderIntegrationHttpClientTransport(new HttpClient()));
+        services.TryAddSingleton<ProviderIntegrationRestDryRunService>();
         services.TryAddSingleton<ProviderIntegrationActivationReadinessService>();
         services.TryAddSingleton<ProviderIntegrationMonitoringService>();
         if (IsScopedAccessPostgresConfigured())

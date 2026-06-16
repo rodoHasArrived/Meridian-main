@@ -8,11 +8,14 @@ import {
   acknowledgeOperationsContinuityChecklistTask,
   assignOperationsContinuityBreakCase,
   closeOperationsContinuityWorkflow,
+  reopenOperationsContinuityWorkflow,
   resolveOperationsContinuityBreakCase,
   submitOperationsContinuityApproval
 } from "@/lib/api";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   useOperationsContinuityScreenViewModel,
   type FinancialOperationsCommandSpineRow,
@@ -482,6 +485,13 @@ const evidencePackageColumns: DenseDataTableColumn<OperationsContinuityEvidenceP
 ];
 
 type BreakCommandKind = "assign" | "resolve";
+
+interface ReopenWorkflowFormState {
+  incidentId: string;
+  justification: string;
+  approvalReference: string;
+  impactSummary: string;
+}
 
 interface BreakCaseColumnOptions {
   pendingBreakCommand: { breakId: string; kind: BreakCommandKind } | null;
@@ -1055,6 +1065,17 @@ export function OperationsContinuityScreen() {
     message: string | null;
     error: string | null;
   }>({ pendingStageId: null, message: null, error: null });
+  const [reopenWorkflowCommand, setReopenWorkflowCommand] = useState<{
+    pending: boolean;
+    message: string | null;
+    error: string | null;
+  }>({ pending: false, message: null, error: null });
+  const [reopenWorkflowForm, setReopenWorkflowForm] = useState<ReopenWorkflowFormState>({
+    incidentId: "",
+    justification: "",
+    approvalReference: "",
+    impactSummary: ""
+  });
 
   const runBreakCommand = useCallback(async (row: OperationsContinuityBreakCaseRow, kind: BreakCommandKind) => {
     const disabledReason = kind === "assign" ? row.assignDisabledReason : row.resolveDisabledReason;
@@ -1249,6 +1270,60 @@ export function OperationsContinuityScreen() {
       });
     }
   }, [vm.refresh]);
+
+  const reopenWorkflowCommandHandler = useCallback(async () => {
+    const formDisabledReason = buildReopenWorkflowFormDisabledReason(reopenWorkflowForm);
+    const disabledReason = vm.closeGovernance.reopenWorkflowDisabledReason ?? formDisabledReason;
+    if (
+      !vm.closeGovernance.workflowId ||
+      vm.closeGovernance.expectedWorkflowVersion === null ||
+      disabledReason !== null
+    ) {
+      setReopenWorkflowCommand({
+        pending: false,
+        message: null,
+        error: disabledReason ?? "Governed reopen command is unavailable."
+      });
+      return;
+    }
+
+    const incidentId = reopenWorkflowForm.incidentId.trim();
+    const approvalReference = reopenWorkflowForm.approvalReference.trim();
+    setReopenWorkflowCommand({ pending: true, message: null, error: null });
+
+    try {
+      const result = await reopenOperationsContinuityWorkflow(vm.closeGovernance.workflowId, {
+        expectedVersion: vm.closeGovernance.expectedWorkflowVersion,
+        actor: "browser-admin",
+        rationale: `Governed reopen requested from Operations Continuity close governance for ${vm.closeGovernance.lockLabel}.`,
+        incidentId,
+        isGovernedAdmin: true,
+        justification: reopenWorkflowForm.justification.trim(),
+        approvalReference,
+        impactSummary: reopenWorkflowForm.impactSummary.trim(),
+        correlationId: `browser-governed-reopen:${incidentId}`,
+        evidenceLinks: vm.closeGovernance.reopenWorkflowEvidenceLinks,
+        actionOrigin: "HumanOperator"
+      });
+
+      setReopenWorkflowCommand({
+        pending: false,
+        message: result.message?.trim() || "Governed reopen retained through shared operations command.",
+        error: null
+      });
+      await vm.refresh();
+    } catch (err) {
+      setReopenWorkflowCommand({
+        pending: false,
+        message: null,
+        error: formatReopenWorkflowCommandError(err)
+      });
+    }
+  }, [reopenWorkflowForm, vm.closeGovernance, vm.refresh]);
+
+  const reopenWorkflowDisabledReason = reopenWorkflowCommand.pending
+    ? "Wait for the active governed reopen command to finish."
+    : vm.closeGovernance.reopenWorkflowDisabledReason ?? buildReopenWorkflowFormDisabledReason(reopenWorkflowForm);
 
   const financialOperationsCommandSpineColumns = useMemo(
     () => buildFinancialOperationsCommandSpineColumns({
@@ -1908,7 +1983,7 @@ export function OperationsContinuityScreen() {
               </Badge>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <dl
               aria-label="Period close lock and reopen evidence"
               className="grid gap-3 text-xs leading-5 sm:grid-cols-2 lg:grid-cols-4"
@@ -1946,6 +2021,73 @@ export function OperationsContinuityScreen() {
                 <dd className="text-foreground">{vm.closeGovernance.commandGuardLabel}</dd>
               </div>
             </dl>
+            {reopenWorkflowCommand.error ? (
+              <p role="alert" className="rounded-md border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger">
+                {reopenWorkflowCommand.error}
+              </p>
+            ) : null}
+            {reopenWorkflowCommand.message ? (
+              <p role="status" className="rounded-md border border-success/30 bg-success/10 px-3 py-2 text-sm text-success">
+                {reopenWorkflowCommand.message}
+              </p>
+            ) : null}
+            <form
+              aria-label="Governed period reopen command"
+              className="border-t border-border/60 pt-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void reopenWorkflowCommandHandler();
+              }}
+            >
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="operations-reopen-incident-id">Incident id</Label>
+                  <Input
+                    id="operations-reopen-incident-id"
+                    value={reopenWorkflowForm.incidentId}
+                    onChange={(event) => setReopenWorkflowForm((current) => ({ ...current, incidentId: event.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="operations-reopen-approval-reference">Approval reference</Label>
+                  <Input
+                    id="operations-reopen-approval-reference"
+                    value={reopenWorkflowForm.approvalReference}
+                    onChange={(event) => setReopenWorkflowForm((current) => ({ ...current, approvalReference: event.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="operations-reopen-justification">Justification</Label>
+                  <Input
+                    id="operations-reopen-justification"
+                    value={reopenWorkflowForm.justification}
+                    onChange={(event) => setReopenWorkflowForm((current) => ({ ...current, justification: event.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="operations-reopen-impact-summary">Impact summary</Label>
+                  <Input
+                    id="operations-reopen-impact-summary"
+                    value={reopenWorkflowForm.impactSummary}
+                    onChange={(event) => setReopenWorkflowForm((current) => ({ ...current, impactSummary: event.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="mt-3 flex justify-end">
+                <Button
+                  type="submit"
+                  size="sm"
+                  variant="outline"
+                  busy={reopenWorkflowCommand.pending}
+                  busyLabel="Reopening"
+                  disabled={reopenWorkflowDisabledReason !== null}
+                  disabledReason={reopenWorkflowDisabledReason}
+                  aria-label={vm.closeGovernance.reopenWorkflowAriaLabel}
+                >
+                  {vm.closeGovernance.reopenWorkflowLabel}
+                </Button>
+              </div>
+            </form>
           </CardContent>
         </Card>
 
@@ -2066,4 +2208,32 @@ function formatCloseWorkflowCommandError(err: unknown): string {
   }
 
   return "Close package publication command failed.";
+}
+
+function buildReopenWorkflowFormDisabledReason(form: ReopenWorkflowFormState): string | null {
+  if (!form.incidentId.trim()) {
+    return "Incident id is required before governed reopen.";
+  }
+
+  if (!form.approvalReference.trim()) {
+    return "Approval reference is required before governed reopen.";
+  }
+
+  if (!form.justification.trim()) {
+    return "Justification is required before governed reopen.";
+  }
+
+  if (!form.impactSummary.trim()) {
+    return "Impact summary is required before governed reopen.";
+  }
+
+  return null;
+}
+
+function formatReopenWorkflowCommandError(err: unknown): string {
+  if (err instanceof Error && err.message.trim().length > 0) {
+    return err.message;
+  }
+
+  return "Governed reopen command failed.";
 }

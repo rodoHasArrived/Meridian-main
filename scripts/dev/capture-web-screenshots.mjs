@@ -355,7 +355,7 @@ async function main() {
   );
   const host = values.get("host") ?? "127.0.0.1";
   const port = Number(values.get("port") ?? "5173");
-  const timeoutMs = Number(values.get("timeout-ms") ?? "30000");
+  const timeoutMs = Number(values.get("timeout-ms") ?? "120000");
   const minBytes = Number(values.get("min-bytes") ?? "12000");
   const minTextLength = Number(values.get("min-text-length") ?? "80");
   const basePath = routeConfig.basePath ?? "/workstation";

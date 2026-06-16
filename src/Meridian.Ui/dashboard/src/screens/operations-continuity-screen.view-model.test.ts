@@ -1953,8 +1953,16 @@ describe("Operations Continuity view model", () => {
       closeAuditLabel: "Workflow Closed f4d29af8 / closehash-pa",
       closePackageLabel: "close-package-2026-05 / b5f6c7d8e9a0",
       reopenAuditLabel: "No governed reopen recorded",
-      commandGuardLabel: "Mutations must use the governed reopen command with incident metadata, justification, approval reference, and impact summary."
+      commandGuardLabel: "Mutations must use the governed reopen command with incident metadata, justification, approval reference, and impact summary.",
+      workflowId,
+      expectedWorkflowVersion: 4,
+      canReopenWorkflow: true,
+      reopenWorkflowDisabledReason: null,
+      reopenWorkflowAriaLabel: "Reopen governed period for 2026-05"
     });
+    expect(vm.closeGovernance.reopenWorkflowEvidenceLinks).toEqual(expect.arrayContaining([
+      expect.objectContaining({ evidenceId: "close-package-evidence-1" })
+    ]));
   });
 
   it("projects governed reopen evidence from the workflow timeline", () => {

@@ -362,6 +362,13 @@ export interface OperationsContinuityCloseGovernanceViewModel {
   reopenEvidenceLabel: string;
   reopenRationaleLabel: string;
   commandGuardLabel: string;
+  workflowId: string | null;
+  expectedWorkflowVersion: number | null;
+  reopenWorkflowEvidenceLinks: OperationsEvidenceLink[];
+  canReopenWorkflow: boolean;
+  reopenWorkflowLabel: string;
+  reopenWorkflowDisabledReason: string | null;
+  reopenWorkflowAriaLabel: string;
 }
 
 export interface OperationsContinuityCloseCockpitLaneRow {
@@ -2280,7 +2287,16 @@ function buildCloseGovernanceViewModel(
       reopenIncidentLabel: "No incident correlation",
       reopenEvidenceLabel: "No reopen evidence links",
       reopenRationaleLabel: "No reopen rationale recorded",
-      commandGuardLabel: "Workflow command availability is server-owned."
+      commandGuardLabel: "Workflow command availability is server-owned.",
+      workflowId: null,
+      expectedWorkflowVersion: null,
+      reopenWorkflowEvidenceLinks: [],
+      canReopenWorkflow: false,
+      reopenWorkflowLabel: "Reopen period",
+      reopenWorkflowDisabledReason: loading
+        ? "Workflow lock state is still loading."
+        : "Select a closed workflow before reopening a period.",
+      reopenWorkflowAriaLabel: "Reopen selected closed period"
     };
   }
 
@@ -2288,6 +2304,8 @@ function buildCloseGovernanceViewModel(
   const latestReopen = selectLatestTimelineEvent(workflow.timeline, "workflow-reopened");
   const closePackage = workflow.closePackage;
   const isClosed = workflow.status === "Closed";
+  const reopenWorkflowDisabledReason = buildReopenWorkflowDisabledReason(workflow);
+  const reopenWorkflowEvidenceLinks = collectReopenWorkflowEvidenceLinks(workflow);
   const statusLabel = isClosed ? "Locked" : latestReopen ? "Reopened" : "Open";
   const statusTone: OperationsContinuityTone = isClosed ? "ready" : latestReopen ? "review" : "neutral";
   const lockLabel = isClosed
@@ -2328,8 +2346,49 @@ function buildCloseGovernanceViewModel(
       ? `${latestReopen.references.length} reopen evidence link${latestReopen.references.length === 1 ? "" : "s"}`
       : "No reopen evidence links",
     reopenRationaleLabel: latestReopen?.rationale?.trim() || "No reopen rationale recorded",
-    commandGuardLabel
+    commandGuardLabel,
+    workflowId: workflow.workflowId,
+    expectedWorkflowVersion: workflow.version ?? null,
+    reopenWorkflowEvidenceLinks,
+    canReopenWorkflow: reopenWorkflowDisabledReason === null,
+    reopenWorkflowLabel: "Reopen period",
+    reopenWorkflowDisabledReason,
+    reopenWorkflowAriaLabel: `Reopen governed period for ${workflow.periodId || "selected period"}`
   };
+}
+
+function buildReopenWorkflowDisabledReason(workflow: OperationsContinuityWorkflow | null): string | null {
+  if (!workflow) {
+    return "Select a closed workflow before reopening a period.";
+  }
+
+  if (workflow.version === null || workflow.version === undefined) {
+    return "Workflow version is unavailable for governed reopen.";
+  }
+
+  if (workflow.status !== "Closed") {
+    return "Only closed workflows can be reopened through the governed reopen command.";
+  }
+
+  if (!workflow.closePackage) {
+    return "Close package evidence is required before reopening a locked period.";
+  }
+
+  return null;
+}
+
+function collectReopenWorkflowEvidenceLinks(workflow: OperationsContinuityWorkflow | null): OperationsEvidenceLink[] {
+  if (!workflow) {
+    return [];
+  }
+
+  return distinctOperationsEvidenceLinks([
+    ...(workflow.closePackage?.evidenceLinks ?? []),
+    ...workflow.evidenceLinks,
+    ...(workflow.evidencePackages ?? [])
+      .filter((packageSummary) => packageSummary.packageId.toLowerCase().includes("period-lock"))
+      .flatMap((packageSummary) => packageSummary.evidenceLinks)
+  ]);
 }
 
 function buildCloseCockpitQuery(workflow: OperationsContinuityWorkflowSummary): PrivateCapitalCloseCockpitQuery {

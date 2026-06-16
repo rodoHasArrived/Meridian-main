@@ -99,8 +99,7 @@ broad local scripts. The .NET lane requires a repo-relative test project under `
 non-empty `dotnet_filter`:
 
 ```bash
-gh workflow run targeted-test.yml --ref <branch> -f lane=dotnet -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
-gh workflow run targeted-test.yml --ref <branch> -f lane=browser-dashboard -f browser_script=test:vitest -f vitest_file=src/screens/<screen>.test.tsx
+gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
 ```
 
 ## 5) Response quality expectations

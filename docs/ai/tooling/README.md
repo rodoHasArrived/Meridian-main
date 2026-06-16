@@ -24,7 +24,7 @@ agent orchestration, prompt routing, repository navigation artifacts, or AI-main
 | Refresh repo-navigation artifacts | `build/scripts/docs/generate-ai-navigation.py` | `python build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --recent-changes-output docs/ai/generated/recent-changes.md --summary` |
 | Validate only AI-doc lifecycle metadata without repo-wide docs noise | `build/scripts/docs/validate-docs-structure.py` | `python build/scripts/docs/validate-docs-structure.py --top-level ai --summary` |
 | Run local .NET tests without parallel-output collisions | `build/python/cli/buildctl.py test` | `python build/python/cli/buildctl.py test --project <project> --filter "<filter>" --queue` |
-| Run tests on GitHub when local capacity blocks proof | `.github/workflows/targeted-test.yml` | `gh workflow run targeted-test.yml --ref <branch> -f lane=dotnet -f dotnet_project=<project> -f dotnet_filter="<filter>"` |
+| Run tests on GitHub when local capacity blocks proof | `.github/workflows/targeted-test.yml` | `gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=<project> -f dotnet_filter="<filter>"` |
 | Apply deterministic scoped text edits | `build/scripts/ai/ai-edit-tool.py` | Preview with `plan`, then apply the saved plan |
 | Build token-capped orientation packs | `build/scripts/ai/context-budget.py` | `python build/scripts/ai/context-budget.py --task "<task>" --target-file <path> --summary` |
 | Generate read-only Promptfoo eval artifacts | `build/scripts/ai/promptfoo-adapter.py` | `python build/scripts/ai/promptfoo-adapter.py --eval-id 1 --summary` |
@@ -90,10 +90,10 @@ Use these for multi-agent, parallel, or route-aware work:
 
 - `.github/workflows/targeted-test.yml`
   - Manual GitHub-hosted proof lane for constrained local machines.
-  - Use `lane=dotnet` with `dotnet_project` and `dotnet_filter`, or `lane=browser-dashboard` with
-    fixed dashboard npm scripts and optional Vitest file/name.
-  - Inputs are constrained to repo-relative project/test paths and fixed scripts, not arbitrary
-    shell commands.
+  - Use `dotnet_project` with a repo-relative test project under `tests/` and `dotnet_filter` with
+    the failing class, method, trait, or fully qualified name slice.
+  - Inputs are constrained to repo-relative test project paths and normal `dotnet test --filter`
+    expressions, not arbitrary shell commands.
 
 - `build/scripts/ai/ai-edit-tool.py`
   - Preview-first text rewrite tool for deterministic, reviewable repository edits.

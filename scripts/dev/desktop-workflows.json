@@ -91,6 +91,12 @@
           "notes": "Capture the backtesting workflow."
         },
         {
+          "title": "Reporting Dashboard",
+          "pageTag": "Dashboard",
+          "captureName": "wpf-dashboard",
+          "notes": "Capture the Reporting dashboard so the committed legacy screenshot remains covered by the active catalog."
+        },
+        {
           "title": "Quant Script",
           "pageTag": "QuantScript",
           "captureName": "wpf-quant-script",

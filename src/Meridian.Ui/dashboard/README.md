@@ -212,9 +212,10 @@ retained evidence route alongside the workflow or package route so audit evidenc
 reachable from the close cockpit tables.
 The period lock and reopen evidence panel stays read-only as well: locked/open/reopened posture,
 close audit hash, close package hash, reopen incident correlation, rationale, and retained reopen
-evidence are derived from the shared workflow status and timeline. Browser close/reopen command
-helpers call the shared operations-continuity endpoints and must not duplicate close-lock or
-governed-admin reopen rules in component state.
+evidence are derived from the shared workflow status and timeline. The panel can submit a governed
+reopen packet only when the selected workflow is closed and an operator enters incident id,
+approval reference, justification, and impact summary; the shared endpoint still owns actor,
+governed-admin permission, close-lock, and transition enforcement.
 The Operations Continuity detail view also renders the shared accounting-record summary from the
 workflow payload. Retained source records, normalized activity, reconciliation case history, ledger
 evidence, approvals, and report-pack lineage are displayed as server-owned evidence categories, not

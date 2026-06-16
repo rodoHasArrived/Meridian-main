@@ -45,7 +45,7 @@ python3 build/python/cli/buildctl.py build --project Meridian.sln --configuratio
   after a valid isolated build.
 - When local resource limits, package restore, or MSBuild/output locks make local proof unreliable,
   push the branch and dispatch GitHub Actions `Targeted Test` with the same repo-relative .NET test
-  project under `tests/` plus filter, or dashboard test file, before retrying broad local scripts.
+  project under `tests/` plus filter before retrying broad local scripts.
   Do not omit the .NET filter; the lane is designed to fail closed rather than run a whole test
   project.
 - Use broad suites only when the changed layer or release risk requires them.

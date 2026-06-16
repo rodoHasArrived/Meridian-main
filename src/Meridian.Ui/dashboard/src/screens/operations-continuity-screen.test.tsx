@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
@@ -9,6 +9,7 @@ import {
   getPrivateCapitalCloseCockpit,
   getOperationsContinuityWorkflow,
   getOperationsContinuityWorkflows,
+  reopenOperationsContinuityWorkflow,
   resolveOperationsContinuityBreakCase,
   submitOperationsContinuityApproval
 } from "@/lib/api";
@@ -31,6 +32,7 @@ vi.mock("@/lib/api", () => ({
   getPrivateCapitalCloseCockpit: vi.fn(),
   getOperationsContinuityWorkflows: vi.fn(),
   getOperationsContinuityWorkflow: vi.fn(),
+  reopenOperationsContinuityWorkflow: vi.fn(),
   resolveOperationsContinuityBreakCase: vi.fn(),
   submitOperationsContinuityApproval: vi.fn()
 }));
@@ -73,6 +75,12 @@ beforeEach(() => {
     workflow: detail,
     blockers: [],
     message: "Close package published."
+  });
+  vi.mocked(reopenOperationsContinuityWorkflow).mockResolvedValue({
+    success: true,
+    workflow: detail,
+    blockers: [],
+    message: "Governed reopen retained."
   });
 });
 
@@ -1350,6 +1358,55 @@ describe("OperationsContinuityScreen", () => {
     expect(within(alert).getByText("Close package publication version conflict.")).toBeInTheDocument();
   });
 
+  it("reopens a closed period from close governance with entered incident metadata", async () => {
+    const closeEvidence = {
+      evidenceId: "close-package-2026-05-manifest",
+      label: "Close package retained manifest",
+      route: "/workstation/accounting/operations-continuity/close-package-2026-05-manifest",
+      source: "operations-continuity",
+      capturedAtUtc: "2026-05-10T18:45:00Z"
+    };
+    const closedDetail = createClosedWorkflowDetail(closeEvidence);
+    vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(closedDetail);
+
+    const user = userEvent.setup();
+    renderScreen();
+
+    fireEvent.change(await screen.findByLabelText("Incident id"), {
+      target: { value: "incident-2026-05-close-restatement" }
+    });
+    fireEvent.change(screen.getByLabelText("Approval reference"), {
+      target: { value: "admin-approval-42" }
+    });
+    fireEvent.change(screen.getByLabelText("Justification"), {
+      target: { value: "Controller approved restatement remediation." }
+    });
+    fireEvent.change(screen.getByLabelText("Impact summary"), {
+      target: { value: "Ledger and report package will be regenerated with retained evidence." }
+    });
+    await user.click(screen.getByRole("button", { name: "Reopen governed period for 2026-05" }));
+
+    await waitFor(() => {
+      expect(reopenOperationsContinuityWorkflow).toHaveBeenCalledWith(
+        workflowId,
+        expect.objectContaining({
+          expectedVersion: 5,
+          actor: "browser-admin",
+          rationale: "Governed reopen requested from Operations Continuity close governance for Closed period is locked.",
+          incidentId: "incident-2026-05-close-restatement",
+          isGovernedAdmin: true,
+          justification: "Controller approved restatement remediation.",
+          approvalReference: "admin-approval-42",
+          impactSummary: "Ledger and report package will be regenerated with retained evidence.",
+          correlationId: "browser-governed-reopen:incident-2026-05-close-restatement",
+          evidenceLinks: expect.arrayContaining([closeEvidence]),
+          actionOrigin: "HumanOperator"
+        })
+      );
+    });
+    expect(await screen.findByText("Governed reopen retained.")).toBeInTheDocument();
+  });
+
   it("posts break resolution with retained evidence and the shared workflow guard", async () => {
     const user = userEvent.setup();
     renderScreen();
@@ -1630,6 +1687,56 @@ function createCloseReadyDetail(reportPackEvidence: OperationsEvidenceLink): Ope
           requiredActions: []
         }
       : null
+  };
+}
+
+function createClosedWorkflowDetail(closeEvidence: OperationsEvidenceLink): OperationsContinuityWorkflow {
+  const readyDetail = createCloseReadyDetail(closeEvidence);
+
+  return {
+    ...readyDetail,
+    status: "Closed",
+    version: 5,
+    timeline: [
+      ...readyDetail.timeline,
+      {
+        auditId: "f4d29af8-90dd-46c1-9d7a-6f7160d103bb",
+        occurredAtUtc: "2026-05-10T18:45:00Z",
+        workflowId,
+        fundAccountId,
+        periodId: "2026-05",
+        eventType: "workflow-closed",
+        fromState: "ReadyForClose",
+        toState: "Closed",
+        gate: "Approval",
+        fromGateStatus: "Passed",
+        toGateStatus: "Passed",
+        actor: "fund-controller",
+        rationale: "Controller sign-off after report pack and checklist evidence were retained.",
+        correlationId: "close-command-2026-05",
+        references: [closeEvidence],
+        previousHash: "readyhash-202605",
+        currentHash: "closehash-package-202605"
+      }
+    ],
+    closePackage: {
+      closePackageId: "close-package-2026-05",
+      reportPackId: "report-pack-2026-05",
+      retainedManifestId: "close-package-2026-05-manifest",
+      retainedManifestRoute: closeEvidence.route,
+      evidenceHash: "b5f6c7d8e9a00112233445566778899aabbccddeeff00112233445566778899",
+      publishedAtUtc: "2026-05-10T18:45:00Z",
+      publishedBy: "fund-controller",
+      signOffRationale: "Controller sign-off after report pack and checklist evidence were retained.",
+      evidenceLinks: [closeEvidence],
+      checklistControlApprovals: [
+        {
+          taskId: "close-gate-approval",
+          approvedBy: "fund-controller",
+          approvedAtUtc: "2026-05-10T17:45:00Z"
+        }
+      ]
+    }
   };
 }
 

@@ -85,8 +85,7 @@ npm --prefix src/Meridian.Ui/dashboard run build
 pwsh ./scripts/dev/desktop-dev.ps1
 pwsh ./scripts/dev/run-desktop.ps1 -Fixture
 pwsh ./scripts/dev/test-wpf-dev.ps1
-gh workflow run targeted-test.yml --ref <branch> -f lane=dotnet -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
-gh workflow run targeted-test.yml --ref <branch> -f lane=browser-dashboard -f browser_script=test:vitest -f vitest_file=src/screens/<screen>.test.tsx
+gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
 python3 build/scripts/ai-repo-updater.py known-errors
 ```
 

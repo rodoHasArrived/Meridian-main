@@ -44,7 +44,7 @@ Classify AI/doc changes in this rebuild model:
 | Compact context packets | [`agent-handoff-checklist.md`](agent-handoff-checklist.md), [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md), [`work-modes.md`](work-modes.md) | Required vs optional context split, validation-reuse tracking, and summarized evidence budgets |
 | AI tooling and validators | [`tooling/README.md`](tooling/README.md) | Script/tool selection, safe usage notes, and narrow proof lanes |
 | Local contention-aware .NET validation | [`tooling/README.md`](tooling/README.md) | `buildctl test` local lock, active-process checks, isolated outputs, and `.ai/validation-runs` evidence |
-| Hosted targeted testing | [GitHub workflows README](../../.github/workflows/README.md) | Manual `Targeted Test` workflow for .NET or browser proof when local capacity blocks validation |
+| Hosted targeted testing | [GitHub workflows README](../../.github/workflows/README.md) | Manual `Targeted Test` workflow for a selected .NET test project plus filter when local capacity blocks validation |
 | Fast repo orientation | [`navigation/README.md`](navigation/README.md) | [`generated/repo-navigation.md`](generated/repo-navigation.md) |
 | Source/roadmap documentation sync | [`../source/README.md`](../source/README.md), [`../roadmap/README.md`](../roadmap/README.md) | `build/scripts/docs/validate-source-readmes.py`, `build/scripts/docs/validate-roadmap-registry.py` |
 | Before any change | [`ai-known-errors.md`](ai-known-errors.md) | Prevention checklists |

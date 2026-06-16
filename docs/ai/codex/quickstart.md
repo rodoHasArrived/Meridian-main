@@ -33,7 +33,7 @@ still lives in `../assistant-workflow-contract.md`.
    so agent-triggered validation uses isolated outputs and avoids parallel test collisions.
    If local machine limits or MSBuild/package contention make that lane unreliable, plan to push
    the branch and dispatch GitHub Actions `Targeted Test` with the same repo-relative .NET test
-   project under `tests/` plus filter, or dashboard test file.
+   project under `tests/` plus filter.
 11. Update the nearest docs or AI index when behavior, workflow, prompt, skill, or agent guidance
    changes.
 
@@ -79,8 +79,7 @@ not paste raw file contents or broad command output unless the user asks for a t
 AI-doc proof lane defaults: `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/check-codex-skills.py --summary`, `python3 build/scripts/docs/validate-docs-structure.py --top-level ai --summary`, `python3 build/scripts/docs/repair-links.py --summary`, `git diff --check`
 
 Hosted proof fallback: after pushing a branch, use `gh workflow run targeted-test.yml --ref <branch>`
-with `lane=dotnet` plus a `tests/` `dotnet_project` and `dotnet_filter`, or `lane=browser-dashboard` plus
-`browser_script=test:vitest` and `vitest_file`, when local resources are the blocker.
+with a `tests/` `dotnet_project` and `dotnet_filter` when local resources are the blocker.
 
 Local .NET proof lane default: use `python build/python/cli/buildctl.py test` instead of raw
 `dotnet test` when another agent, shell, WPF validation, or desktop launch may be active. The

@@ -165,6 +165,157 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationManualCsvDryRun_RetainsAndStagesAcceptedRows()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-manual-csv-upload-v1")!;
+            var connection = CreateProviderIntegrationManualCsvConnection(manifest);
+            await store.SaveManifestAsync(manifest);
+            await store.SaveConnectionAsync(connection);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ManageProviders);
+            var client = app.GetTestClient();
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationManualCsvDryRun,
+                CreateManualCsvDryRunRequest(manifest, connection),
+                ServerJsonOptions);
+            var result = await response.Content.ReadFromJsonAsync<ProviderIntegrationDryRunResultDto>(ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            result.Should().NotBeNull();
+            result!.RecordsReceived.Should().Be(1);
+            result.RecordsAccepted.Should().Be(1);
+            result.RecordsQuarantined.Should().Be(0);
+            result.Status.Should().Be(ProviderIntegrationProcessingStatusDto.Validated);
+            (await store.GetRawPayloadAsync(result.SyncRunId, result.RawPayloadId)).Should().NotBeNull();
+            (await store.ListStagingRecordsAsync(result.SyncRunId)).Should().ContainSingle();
+            (await store.ListQuarantinedRecordsAsync(result.SyncRunId)).Should().BeEmpty();
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationManualCsvDryRun_ReturnsNotFoundForMissingManifest()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-manual-csv-upload-v1")!;
+            var connection = CreateProviderIntegrationManualCsvConnection(manifest);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ManageProviders);
+            var client = app.GetTestClient();
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationManualCsvDryRun,
+                CreateManualCsvDryRunRequest(manifest, connection),
+                ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationManualCsvDryRun_RequiresConfigurePermission()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-manual-csv-upload-v1")!;
+            var connection = CreateProviderIntegrationManualCsvConnection(manifest);
+            await store.SaveManifestAsync(manifest);
+            await store.SaveConnectionAsync(connection);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewConfig);
+            var client = app.GetTestClient();
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationManualCsvDryRun,
+                CreateManualCsvDryRunRequest(manifest, connection),
+                ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            (await store.GetSyncRunAsync("sync-run-manual-endpoint-1")).Should().BeNull();
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationRestDryRun_RetainsAndStagesAcceptedRows()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-custodian-positions-v1")!;
+            var connection = CreateProviderIntegrationRestConnection(manifest);
+            await store.SaveManifestAsync(manifest);
+            await store.SaveConnectionAsync(connection);
+            var transport = new ProviderIntegrationEndpointTransport(
+                new ProviderIntegrationHttpResponse(
+                    200,
+                    new Dictionary<string, string>(),
+                    """
+                    {
+                      "positions": [
+                        {
+                          "account_id": "A-100",
+                          "cusip": "9128285M8",
+                          "quantity": "100",
+                          "currency": "usd",
+                          "as_of_date": "2026-06-16",
+                          "position_id": "POS-1"
+                        }
+                      ]
+                    }
+                    """));
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store, transport),
+                currentUserPermissions: UserPermission.ManageProviders);
+            var client = app.GetTestClient();
+
+            var response = await client.PostAsJsonAsync(
+                UiApiRoutes.WorkstationProviderIntegrationRestDryRun,
+                CreateRestDryRunRequest(manifest, connection),
+                ServerJsonOptions);
+            var result = await response.Content.ReadFromJsonAsync<ProviderIntegrationDryRunResultDto>(ServerJsonOptions);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            result.Should().NotBeNull();
+            result!.RecordsReceived.Should().Be(1);
+            result.RecordsAccepted.Should().Be(1);
+            result.RecordsQuarantined.Should().Be(0);
+            transport.Requests.Should().ContainSingle()
+                .Which.Path.Should().Be("/v1/accounts/A-100/positions");
+            (await store.GetRawPayloadAsync(result.SyncRunId, result.RawPayloadId)).Should().NotBeNull();
+            (await store.ListStagingRecordsAsync(result.SyncRunId)).Should().ContainSingle();
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ProviderIntegrationTemplates_RequireProviderReadPermission()
     {
         var testRoot = CreateProviderIntegrationTestRoot();
@@ -232,10 +383,14 @@ public sealed partial class WorkstationEndpointsTests
 
     private static void RegisterProviderIntegrationEndpointServices(
         IServiceCollection services,
-        IProviderIntegrationManifestStore store)
+        IProviderIntegrationManifestStore store,
+        IProviderIntegrationHttpTransport? transport = null)
     {
         services.AddSingleton<IProviderIntegrationManifestStore>(store);
         services.AddSingleton<ProviderIntegrationTemplateCatalog>();
+        services.AddSingleton<ProviderIntegrationDryRunService>();
+        services.AddSingleton<IProviderIntegrationHttpTransport>(transport ?? new ProviderIntegrationEndpointTransport());
+        services.AddSingleton<ProviderIntegrationRestDryRunService>();
         services.AddSingleton<ProviderIntegrationActivationReadinessService>();
         services.AddSingleton<ProviderIntegrationMonitoringService>();
     }
@@ -429,6 +584,92 @@ public sealed partial class WorkstationEndpointsTests
             "{manifestId}",
             Uri.EscapeDataString(manifestId),
             StringComparison.Ordinal);
+
+    private static ManualCsvProviderIntegrationDryRunRequestDto CreateManualCsvDryRunRequest(
+        ProviderIntegrationManifestDto manifest,
+        IntegrationProviderConnectionDto connection)
+        => new(
+            "sync-run-manual-endpoint-1",
+            manifest.ManifestId,
+            connection.ConnectionId,
+            ProviderCapabilityKindDto.Positions,
+            "positions.csv",
+            """
+            account_id,cusip,quantity,as_of,source_id
+            A-100,9128285M8,100,2026-06-16,POS-1
+            """,
+            "operator@example.com",
+            DateTimeOffset.Parse("2026-06-16T12:00:00Z"));
+
+    private static ProviderIntegrationRestDryRunRequestDto CreateRestDryRunRequest(
+        ProviderIntegrationManifestDto manifest,
+        IntegrationProviderConnectionDto connection)
+        => new(
+            "sync-run-rest-endpoint-1",
+            manifest.ManifestId,
+            connection.ConnectionId,
+            ProviderCapabilityKindDto.Positions,
+            "positions",
+            new Dictionary<string, string> { ["accountId"] = "A-100" },
+            new Dictionary<string, string>(),
+            "operator@example.com",
+            DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+            MaxPages: 1);
+
+    private static IntegrationProviderConnectionDto CreateProviderIntegrationManualCsvConnection(
+        ProviderIntegrationManifestDto manifest)
+        => new(
+            "connection-manual-csv",
+            manifest.ProviderId,
+            manifest.ManifestId,
+            "Manual CSV Test",
+            "test",
+            ProviderIntegrationActivationStateDto.Draft,
+            "vault://provider-credentials/manual-csv/test",
+            [ProviderCapabilityKindDto.Positions],
+            "operator@example.com",
+            DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+            DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+            ApprovalEvidenceId: null);
+
+    private static IntegrationProviderConnectionDto CreateProviderIntegrationRestConnection(
+        ProviderIntegrationManifestDto manifest)
+        => new(
+            "connection-rest-custodian",
+            manifest.ProviderId,
+            manifest.ManifestId,
+            "Custodian REST Test",
+            "test",
+            ProviderIntegrationActivationStateDto.Draft,
+            "vault://provider-credentials/custodian-rest/test",
+            [ProviderCapabilityKindDto.Positions],
+            "operator@example.com",
+            DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+            DateTimeOffset.Parse("2026-06-16T12:00:00Z"),
+            ApprovalEvidenceId: null);
+
+    private sealed class ProviderIntegrationEndpointTransport : IProviderIntegrationHttpTransport
+    {
+        private readonly Queue<ProviderIntegrationHttpResponse> responses;
+
+        public ProviderIntegrationEndpointTransport(params ProviderIntegrationHttpResponse[] responses)
+        {
+            this.responses = new Queue<ProviderIntegrationHttpResponse>(responses);
+        }
+
+        public List<ProviderIntegrationHttpRequest> Requests { get; } = [];
+
+        public Task<ProviderIntegrationHttpResponse> SendAsync(
+            ProviderIntegrationHttpRequest request,
+            CancellationToken ct = default)
+        {
+            ct.ThrowIfCancellationRequested();
+            Requests.Add(request);
+            return Task.FromResult(responses.Count == 0
+                ? new ProviderIntegrationHttpResponse(500, new Dictionary<string, string>(), "{}")
+                : responses.Dequeue());
+        }
+    }
 
     private static string CreateProviderIntegrationTestRoot()
     {
