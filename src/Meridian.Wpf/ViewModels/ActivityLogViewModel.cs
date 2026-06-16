@@ -1,15 +1,15 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
+using Meridian.Contracts.Api;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using WpfServices = Meridian.Wpf.Services;
 
@@ -33,7 +33,7 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
     private static readonly SolidColorBrush InfoLevelForeground = CreateFrozenBrush(Color.FromRgb(88, 166, 255));
     private static readonly SolidColorBrush DebugLevelForeground = CreateFrozenBrush(Color.FromRgb(139, 148, 158));
 
-    private readonly HttpClient _httpClient = new();
+    private readonly IRemoteWorkstationClient _remoteClient;
     private readonly WpfServices.LoggingService _loggingService;
     private readonly WpfServices.NotificationService _notificationService;
 
@@ -41,7 +41,6 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
     private readonly DispatcherTimer _refreshTimer;
     private CancellationTokenSource? _cts;
 
-    private string _baseUrl;
     private string _levelFilter = "All";
     private string _categoryFilter = "All";
     private string _searchText = string.Empty;
@@ -194,11 +193,13 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
     public ActivityLogViewModel(
         WpfServices.StatusService statusService,
         WpfServices.LoggingService loggingService,
-        WpfServices.NotificationService notificationService)
+        WpfServices.NotificationService notificationService,
+        IRemoteWorkstationClient? remoteClient = null)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
-        _baseUrl = statusService.BaseUrl;
+        _remoteClient = remoteClient ?? WpfServices.WpfRemoteWorkstationClient.Instance;
+        _remoteClient.Configure(statusService.BaseUrl);
 
         ClearCommand = new RelayCommand(ExecuteClear, () => CanClearLog);
         RequestClearCommand = new RelayCommand(RequestClearConfirmation, () => CanClearLog && !IsClearConfirmationVisible);
@@ -350,39 +351,33 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
 
         try
         {
-            var response = await _httpClient.GetAsync(
-                $"{_baseUrl}/api/logs?limit=500", _cts.Token);
+            var response = await _remoteClient.GetWithResponseAsync<ActivityLogEntryDto[]>(
+                "/api/logs?limit=500",
+                _cts.Token);
 
-            if (response.IsSuccessStatusCode)
+            if (response.Success && response.Data is { Length: > 0 } logs)
             {
-                var json = await response.Content.ReadAsStringAsync(_cts.Token);
-                var data = JsonSerializer.Deserialize<JsonElement>(json);
+                var existingIds = _allLogs.Select(l => $"{l.RawTimestamp:O}_{l.Message}").ToHashSet();
 
-                if (data.ValueKind == JsonValueKind.Array)
+                foreach (var item in logs)
                 {
-                    var existingIds = _allLogs.Select(l => $"{l.RawTimestamp:O}_{l.Message}").ToHashSet();
-
-                    foreach (var item in data.EnumerateArray())
+                    var timestamp = item.Timestamp ?? DateTime.UtcNow;
+                    var level = string.IsNullOrWhiteSpace(item.Level) ? "Info" : item.Level;
+                    var category = string.IsNullOrWhiteSpace(item.Category) ? "System" : item.Category;
+                    var message = item.Message ?? string.Empty;
+                    var id = $"{timestamp:O}_{message}";
+                    if (!existingIds.Contains(id))
                     {
-                        var timestamp = item.TryGetProperty("timestamp", out var ts) ? ts.GetDateTime() : DateTime.UtcNow;
-                        var level = item.TryGetProperty("level", out var lv) ? lv.GetString() ?? "Info" : "Info";
-                        var category = item.TryGetProperty("category", out var cat) ? cat.GetString() ?? "System" : "System";
-                        var message = item.TryGetProperty("message", out var msg) ? msg.GetString() ?? "" : "";
-
-                        var id = $"{timestamp:O}_{message}";
-                        if (!existingIds.Contains(id))
+                        _allLogs.Add(new LogEntryModel
                         {
-                            _allLogs.Add(new LogEntryModel
-                            {
-                                RawTimestamp = timestamp,
-                                Timestamp = timestamp.ToString("HH:mm:ss"),
-                                Level = level,
-                                Category = category,
-                                Message = message,
-                                LevelBackground = GetLevelBackground(level),
-                                LevelForeground = GetLevelForeground(level)
-                            });
-                        }
+                            RawTimestamp = timestamp,
+                            Timestamp = timestamp.ToString("HH:mm:ss"),
+                            Level = level,
+                            Category = category,
+                            Message = message,
+                            LevelBackground = GetLevelBackground(level),
+                            LevelForeground = GetLevelForeground(level)
+                        });
                     }
                 }
 
@@ -640,6 +635,11 @@ public sealed class ActivityLogViewModel : BindableBase, IDisposable
     {
         Stop();
         _cts?.Dispose();
-        _httpClient.Dispose();
     }
+
+    private sealed record ActivityLogEntryDto(
+        DateTime? Timestamp,
+        string? Level,
+        string? Category,
+        string? Message);
 }
