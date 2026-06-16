@@ -480,6 +480,7 @@ Keep WPF views declarative and move loading, disabled, preview, empty-state, and
 behavior into view models. Do not duplicate product logic that belongs in shared UI services.
 When telemetry, latency, order-flow, or preview data is unavailable, show an explicit unmeasured or
 unavailable state rather than seeded sample numbers or plausible-looking derived metrics.
+Use `Controls/EmptyStatePanel` for reusable missing-data states; it supports title, explanation, severity, and up to two actions for provider setup, import, selection, freshness, reconciliation, reporting, and fixture-data recovery paths.
 
 ## Related docs
 

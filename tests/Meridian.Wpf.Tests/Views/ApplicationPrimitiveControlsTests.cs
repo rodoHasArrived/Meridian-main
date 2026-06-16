@@ -25,14 +25,20 @@ public sealed class ApplicationPrimitiveControlsTests
             {
                 Title = "No approvals queued",
                 Description = "The current fund has no retained approval work.",
+                Severity = "No reconciliation run",
+                SeverityTone = WorkspaceTone.Warning,
                 IconGlyph = "\uE946",
                 ActionText = "Refresh approvals",
                 ActionCommand = emptyAction,
+                SecondaryActionText = "Open setup",
+                SecondaryActionCommand = queueAction,
                 PanelAutomationId = "EmptyStateTest",
                 IconAutomationId = "EmptyStateIconTest",
                 TitleAutomationId = "EmptyStateTitleTest",
                 DescriptionAutomationId = "EmptyStateDescriptionTest",
-                ActionButtonAutomationId = "EmptyStateActionTest"
+                ActionButtonAutomationId = "EmptyStateActionTest",
+                SecondaryActionButtonAutomationId = "EmptyStateSecondaryActionTest",
+                SeverityAutomationId = "EmptyStateSeverityTest"
             };
             var iconButton = new IconTextButton
             {
@@ -102,8 +108,13 @@ public sealed class ApplicationPrimitiveControlsTests
                 AutomationProperties.GetAutomationId(Get<TextBlock>(emptyState, "TitleText")).Should().Be("EmptyStateTitleTest");
                 AutomationProperties.GetAutomationId(Get<TextBlock>(emptyState, "DescriptionText")).Should().Be("EmptyStateDescriptionTest");
                 AutomationProperties.GetAutomationId(Get<Button>(emptyState, "ActionButton")).Should().Be("EmptyStateActionTest");
+                AutomationProperties.GetAutomationId(Get<ToneBadge>(emptyState, "SeverityBadge")).Should().Be("EmptyStateSeverityTest");
+                AutomationProperties.GetAutomationId(Get<Button>(emptyState, "SecondaryActionButton")).Should().Be("EmptyStateSecondaryActionTest");
                 Get<TextBlock>(emptyState, "TitleText").Text.Should().Be("No approvals queued");
+                Get<ToneBadge>(emptyState, "SeverityBadge").Text.Should().Be("No reconciliation run");
+                Get<ToneBadge>(emptyState, "SeverityBadge").Tone.Should().Be(WorkspaceTone.Warning);
                 Get<Button>(emptyState, "ActionButton").Command.Should().BeSameAs(emptyAction);
+                Get<Button>(emptyState, "SecondaryActionButton").Command.Should().BeSameAs(queueAction);
 
                 AutomationProperties.GetAutomationId(iconButton).Should().Be("IconTextButtonTest");
                 AutomationProperties.GetName(iconButton).Should().Be("Refresh");
@@ -344,6 +355,8 @@ public sealed class ApplicationPrimitiveControlsTests
             try
             {
                 Get<Button>(emptyWithoutCommand, "ActionButton").Visibility.Should().Be(Visibility.Collapsed);
+                Get<Button>(emptyWithoutCommand, "SecondaryActionButton").Visibility.Should().Be(Visibility.Collapsed);
+                Get<ToneBadge>(emptyWithoutCommand, "SeverityBadge").Visibility.Should().Be(Visibility.Collapsed);
                 Get<Button>(emptyWithoutText, "ActionButton").Visibility.Should().Be(Visibility.Collapsed);
                 Get<Button>(queueWithoutCommand, "ActionButton").Visibility.Should().Be(Visibility.Collapsed);
                 Get<Button>(queueWithoutText, "ActionButton").Visibility.Should().Be(Visibility.Collapsed);
@@ -355,6 +368,18 @@ public sealed class ApplicationPrimitiveControlsTests
                 window.Close();
             }
         });
+    }
+
+    [Fact]
+    public void EmptyStateMessages_ShouldCoverCommonMissingDataCasesInPlainEnglish()
+    {
+        EmptyStateMessages.NoProviderConfigured.Title.Should().Be("No provider configured");
+        EmptyStateMessages.NoRecordsImported.Description.Should().Contain("Import records");
+        EmptyStateMessages.NoSelectedAccountOrPortfolio.Title.Should().Contain("account or portfolio");
+        EmptyStateMessages.StaleData.Description.Should().Contain("Refresh this view");
+        EmptyStateMessages.NoReconciliationRun.Title.Should().Contain("No reconciliation run");
+        EmptyStateMessages.NoReportsGenerated.Description.Should().Contain("Generate a governed report pack");
+        EmptyStateMessages.FixtureDataAvailable.Title.Should().Contain("Fixture data");
     }
 
     [Fact]

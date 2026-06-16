@@ -2,6 +2,7 @@
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:workstation="clr-namespace:Meridian.Wpf.Workstation.Controls"
+      xmlns:controls="clr-namespace:Meridian.Wpf.Controls"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
@@ -157,40 +158,19 @@
                 </workstation:WorkstationTableInspectorControl.TableHeaderContent>
 
                 <workstation:WorkstationTableInspectorControl.EmptyContent>
-                    <Border MinHeight="300"
-                            Padding="28"
-                            Background="{StaticResource ConsoleBackgroundLightBrush}"
-                            BorderBrush="{StaticResource ConsoleBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="8"
-                            Visibility="{Binding IsPositionsEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                            AutomationProperties.AutomationId="AggregatePositionsEmptyStatePanel"
-                            AutomationProperties.Name="{Binding PositionsEmptyStateTitle}">
-                        <StackPanel HorizontalAlignment="Center"
-                                    VerticalAlignment="Center"
-                                    MaxWidth="480">
-                            <TextBlock Text="{Binding PositionsEmptyStateTitle}"
-                                       FontSize="16"
-                                       FontWeight="SemiBold"
-                                       TextAlignment="Center"
-                                       TextWrapping="Wrap"
-                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                       AutomationProperties.AutomationId="AggregatePositionsEmptyStateTitle" />
-                            <TextBlock Margin="0,8,0,16"
-                                       Text="{Binding PositionsEmptyStateDetail}"
-                                       TextWrapping="Wrap"
-                                       TextAlignment="Center"
-                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                       AutomationProperties.AutomationId="AggregatePositionsEmptyStateDetail" />
-                            <Button Content="Refresh Portfolio"
-                                    Command="{Binding RefreshCommand}"
-                                    ToolTip="{Binding RefreshTooltip}"
-                                    ToolTipService.ShowOnDisabled="True"
-                                    HorizontalAlignment="Center"
-                                    MinWidth="140"
-                                    AutomationProperties.AutomationId="AggregatePositionsEmptyStateRefreshButton" />
-                        </StackPanel>
-                    </Border>
+                    <controls:EmptyStatePanel MinHeight="300"
+                                              Visibility="{Binding IsPositionsEmptyStateVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                              Title="{Binding PositionsEmptyStateTitle}"
+                                              Description="{Binding PositionsEmptyStateDetail}"
+                                              Severity="Selection needed"
+                                              SeverityTone="Warning"
+                                              IconGlyph="&#xE946;"
+                                              ActionText="Refresh Portfolio"
+                                              ActionCommand="{Binding RefreshCommand}"
+                                              PanelAutomationId="AggregatePositionsEmptyStatePanel"
+                                              TitleAutomationId="AggregatePositionsEmptyStateTitle"
+                                              DescriptionAutomationId="AggregatePositionsEmptyStateDetail"
+                                              ActionButtonAutomationId="AggregatePositionsEmptyStateRefreshButton" />
                 </workstation:WorkstationTableInspectorControl.EmptyContent>
 
                 <workstation:WorkstationTableInspectorControl.InspectorContent>
