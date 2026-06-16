@@ -39,6 +39,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Meridian\Meridian.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Application\Meridian.Application.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Modularity\Meridian.Modularity.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Audit\Meridian.Audit.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Backtesting\Meridian.Backtesting.csproj" />
     <ProjectReference Include="..\..\src\Meridian.Backtesting.Sdk\Meridian.Backtesting.Sdk.csproj" />
