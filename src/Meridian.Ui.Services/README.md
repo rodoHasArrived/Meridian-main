@@ -45,6 +45,10 @@ OMS/EMS integration API handlers are registered from `Services/Integrations/` an
 Settings configuration keeps the retained built-in profile id `research` for compatibility, but
 renders it as `Strategy` so browser and WPF settings surfaces do not reintroduce `Research` as a
 root workspace label.
+Desktop shell preferences now also carry WPF role layout preset selection, startup workspace,
+panel visibility, grid density, default filters, and shell density. Built-in role presets stay
+within the canonical visible workspace roots: Trading, Portfolio, Accounting, Reporting, Strategy,
+Data, and Settings.
 Setup wizard presets follow the same compatibility pattern: the retained `researcher` preset id
 remains available for callers, while the visible preset name is `Strategy Analyst`.
 Command palette workspace entries emit canonical page tags for visible roots; `Open Strategy

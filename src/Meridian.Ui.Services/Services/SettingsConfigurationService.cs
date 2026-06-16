@@ -29,6 +29,54 @@ public sealed class SettingsConfigurationService
 
     public event EventHandler<DesktopShellPreferences>? DesktopShellPreferencesChanged;
 
+    private static readonly IReadOnlyList<DesktopLayoutPreset> BuiltInDesktopLayoutPresets =
+    [
+        new DesktopLayoutPreset(
+            "portfolio-manager",
+            "Portfolio Manager",
+            "Starts in Portfolio with balanced review chrome, open-decision filters, and comfortable grids for allocation oversight.",
+            "Portfolio",
+            ShellDensityMode.Standard,
+            IsSummaryPanelVisible: true,
+            IsInspectorPanelVisible: true,
+            IsActivityPanelVisible: true,
+            "Comfortable",
+            "Open work"),
+        new DesktopLayoutPreset(
+            "fund-accountant",
+            "Fund Accountant",
+            "Starts in Accounting with dense reconciliation grids, retained evidence visible, and close-readiness filters.",
+            "Accounting",
+            ShellDensityMode.Compact,
+            IsSummaryPanelVisible: true,
+            IsInspectorPanelVisible: true,
+            IsActivityPanelVisible: true,
+            "Dense",
+            "Close blockers"),
+        new DesktopLayoutPreset(
+            "data-operator",
+            "Data Operator",
+            "Starts in Data with diagnostics and activity visible for provider health, ingestion, and exception triage.",
+            "Data",
+            ShellDensityMode.Compact,
+            IsSummaryPanelVisible: true,
+            IsInspectorPanelVisible: true,
+            IsActivityPanelVisible: true,
+            "Dense",
+            "Data exceptions"),
+        new DesktopLayoutPreset(
+            "evaluator-demo",
+            "Evaluator Demo",
+            "Starts in Reporting with simplified panels and demo-ready filters for guided stakeholder walkthroughs.",
+            "Reporting",
+            ShellDensityMode.Standard,
+            IsSummaryPanelVisible: true,
+            IsInspectorPanelVisible: false,
+            IsActivityPanelVisible: false,
+            "Comfortable",
+            "Demo highlights")
+    ];
+
     private SettingsConfigurationService()
     {
         // Seed built-in profiles
@@ -231,6 +279,43 @@ public sealed class SettingsConfigurationService
         return (int)Math.Round(requestsPerMinute, MidpointRounding.AwayFromZero);
     }
 
+    /// <summary>Gets built-in desktop role layout presets.</summary>
+    public IReadOnlyList<DesktopLayoutPreset> GetDesktopLayoutPresets() => BuiltInDesktopLayoutPresets;
+
+    public DesktopLayoutPreset GetDesktopLayoutPreset(string? presetId)
+        => BuiltInDesktopLayoutPresets.FirstOrDefault(preset => string.Equals(preset.Id, presetId, StringComparison.OrdinalIgnoreCase))
+            ?? BuiltInDesktopLayoutPresets[0];
+
+    public void ApplyDesktopLayoutPreset(string? presetId)
+    {
+        var preset = GetDesktopLayoutPreset(presetId);
+        SetDesktopShellPreferences(new DesktopShellPreferences(
+            preset.ShellDensityMode,
+            preset.Id,
+            preset.StartupWorkspace,
+            preset.IsSummaryPanelVisible,
+            preset.IsInspectorPanelVisible,
+            preset.IsActivityPanelVisible,
+            preset.GridDensity,
+            preset.DefaultFilterSet));
+    }
+
+    public void SetDesktopShellPreferences(DesktopShellPreferences preferences)
+    {
+        ArgumentNullException.ThrowIfNull(preferences);
+
+        lock (_desktopPreferencesGate)
+        {
+            EnsureDesktopShellPreferencesLoaded();
+            PersistDesktopShellPreferencesCore(preferences);
+            _desktopShellPreferences = preferences;
+        }
+
+        DesktopShellPreferencesChanged?.Invoke(this, preferences);
+    }
+
+    public void ResetDesktopShellPreferences() => SetDesktopShellPreferences(DesktopShellPreferences.Default);
+
     /// <summary>Gets all configuration profiles (built-in + custom).</summary>
     public IReadOnlyList<ConfigProfile> GetProfiles() => _profiles.AsReadOnly();
 
@@ -379,7 +464,7 @@ public sealed class SettingsConfigurationService
             var model = JsonSerializer.Deserialize<DesktopShellPreferencesStorageModel>(json, DesktopShellJsonOptions);
             _desktopShellPreferences = model is null
                 ? DesktopShellPreferences.Default
-                : new DesktopShellPreferences(ResolveShellDensityMode(model));
+                : ResolveDesktopShellPreferences(model);
         }
         catch
         {
@@ -402,12 +487,37 @@ public sealed class SettingsConfigurationService
 
         var model = new DesktopShellPreferencesStorageModel
         {
-            ShellDensityMode = preferences.ShellDensityMode.ToString()
+            ShellDensityMode = preferences.ShellDensityMode.ToString(),
+            SelectedLayoutPresetId = preferences.SelectedLayoutPresetId,
+            StartupWorkspace = preferences.StartupWorkspace,
+            IsSummaryPanelVisible = preferences.IsSummaryPanelVisible,
+            IsInspectorPanelVisible = preferences.IsInspectorPanelVisible,
+            IsActivityPanelVisible = preferences.IsActivityPanelVisible,
+            GridDensity = preferences.GridDensity,
+            DefaultFilterSet = preferences.DefaultFilterSet
         };
         var json = JsonSerializer.Serialize(model, DesktopShellJsonOptions);
         var temporaryPath = $"{path}.{Guid.NewGuid():N}.tmp";
         File.WriteAllText(temporaryPath, json, Encoding.UTF8);
         File.Move(temporaryPath, path, overwrite: true);
+    }
+
+    private static DesktopShellPreferences ResolveDesktopShellPreferences(DesktopShellPreferencesStorageModel model)
+    {
+        var densityMode = ResolveShellDensityMode(model);
+        var preset = BuiltInDesktopLayoutPresets.FirstOrDefault(candidate =>
+            string.Equals(candidate.Id, model.SelectedLayoutPresetId, StringComparison.OrdinalIgnoreCase));
+        var fallback = preset ?? BuiltInDesktopLayoutPresets[0];
+
+        return new DesktopShellPreferences(
+            densityMode,
+            string.IsNullOrWhiteSpace(model.SelectedLayoutPresetId) ? fallback.Id : model.SelectedLayoutPresetId!,
+            ResolveWorkspace(model.StartupWorkspace, fallback.StartupWorkspace),
+            model.IsSummaryPanelVisible ?? fallback.IsSummaryPanelVisible,
+            model.IsInspectorPanelVisible ?? fallback.IsInspectorPanelVisible,
+            model.IsActivityPanelVisible ?? fallback.IsActivityPanelVisible,
+            string.IsNullOrWhiteSpace(model.GridDensity) ? fallback.GridDensity : model.GridDensity!,
+            string.IsNullOrWhiteSpace(model.DefaultFilterSet) ? fallback.DefaultFilterSet : model.DefaultFilterSet!);
     }
 
     private static ShellDensityMode ResolveShellDensityMode(DesktopShellPreferencesStorageModel model)
@@ -424,6 +534,13 @@ public sealed class SettingsConfigurationService
             false => ShellDensityMode.Standard,
             null => ShellDensityMode.Standard
         };
+    }
+
+    private static string ResolveWorkspace(string? workspace, string fallback)
+    {
+        var allowed = new[] { "Trading", "Portfolio", "Accounting", "Reporting", "Strategy", "Data", "Settings" };
+        return allowed.FirstOrDefault(candidate => string.Equals(candidate, workspace, StringComparison.OrdinalIgnoreCase))
+            ?? fallback;
     }
 
     private static string GetDesktopPreferencesFilePath()
@@ -447,6 +564,20 @@ public sealed class SettingsConfigurationService
     private sealed class DesktopShellPreferencesStorageModel
     {
         public string? ShellDensityMode { get; init; }
+
+        public string? SelectedLayoutPresetId { get; init; }
+
+        public string? StartupWorkspace { get; init; }
+
+        public bool? IsSummaryPanelVisible { get; init; }
+
+        public bool? IsInspectorPanelVisible { get; init; }
+
+        public bool? IsActivityPanelVisible { get; init; }
+
+        public string? GridDensity { get; init; }
+
+        public string? DefaultFilterSet { get; init; }
 
         public bool? IsCompactMode { get; init; }
     }

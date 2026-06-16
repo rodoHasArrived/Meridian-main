@@ -82,7 +82,12 @@ Convention-based view-model wiring is handled by `Services/ViewModelViewResolver
 that follow the `*Page` to `*ViewModel` naming convention can receive a DI-constructed DataContext
 without page-specific registration, while pages that set their own DataContext remain authoritative.
 Runtime desktop capability toggles are declared by feature modules and surfaced in Settings through
-the feature capability gate. The Security Master page projects the workstation trust
+the feature capability gate. Settings also owns role-based WPF layout presets for Portfolio Manager,
+Fund Accountant, Data Operator, and Evaluator Demo personas. The selected preset and basic desktop
+layout preferences--startup workspace, panel visibility, grid density, default filters, and shell
+density--persist in the external desktop shell preferences file under the resolved local app-data
+path, and the visible reset-to-default action restores the Portfolio Manager baseline without
+changing the root navigation taxonomy. The Security Master page projects the workstation trust
 snapshot's `scheduleBook` and `openLotReadModel` payloads into operator-visible schedule, factor,
 provenance, and open-lot review sections.
 The Settings page also surfaces governed Security Master asset profiles for WPF operators. It lists

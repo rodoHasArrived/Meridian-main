@@ -63,6 +63,13 @@ public sealed partial class SettingsViewModel : BindableBase
     private string _writeBufferSize = "64";
     private bool _isMetricsEnabled = true;
     private bool _isDebugLoggingEnabled;
+    private string _selectedLayoutPresetId = DesktopShellPreferences.DefaultLayoutPresetId;
+    private string _startupWorkspace = DesktopShellPreferences.DefaultStartupWorkspace;
+    private bool _isSummaryPanelVisible = true;
+    private bool _isInspectorPanelVisible = true;
+    private bool _isActivityPanelVisible = true;
+    private string _gridDensity = DesktopShellPreferences.DefaultGridDensity;
+    private string _defaultFilterSet = DesktopShellPreferences.DefaultFilterSet;
     private string _apiBaseUrl = "http://localhost:8080";
     private string _statusRefreshInterval = "2";
 
@@ -95,6 +102,9 @@ public sealed partial class SettingsViewModel : BindableBase
             ShellDensityMode.Standard,
             ShellDensityMode.Compact
         ];
+        DesktopLayoutPresets = _settingsConfigService.GetDesktopLayoutPresets();
+        StartupWorkspaceOptions = ["Trading", "Portfolio", "Accounting", "Reporting", "Strategy", "Data", "Settings"];
+        GridDensityOptions = ["Comfortable", "Dense"];
 
         if (capabilityGate is not null)
         {
@@ -156,6 +166,9 @@ public sealed partial class SettingsViewModel : BindableBase
     public ObservableCollection<SettingsOperationsCloseCalendarRow> OperationsCloseCalendarRows { get; }
     public ObservableCollection<FeatureCapabilityToggleViewModel> CapabilityToggles { get; }
     public IReadOnlyList<ShellDensityMode> ShellDensityModes { get; }
+    public IReadOnlyList<DesktopLayoutPreset> DesktopLayoutPresets { get; }
+    public IReadOnlyList<string> StartupWorkspaceOptions { get; }
+    public IReadOnlyList<string> GridDensityOptions { get; }
 
     // ── Bindable Properties ───────────────────────────────────────────────────
 
@@ -277,12 +290,12 @@ public sealed partial class SettingsViewModel : BindableBase
 
             RaisePropertyChanged(nameof(ShellDensityDescriptionText));
 
-            if (_loadingDesktopPreferences)
+            if (_loadingDesktopPreferences || _isPopulatingConfig)
             {
                 return;
             }
 
-            _settingsConfigService.SetShellDensityMode(value);
+            PersistDesktopPreferences();
             MarkDirty();
         }
     }
@@ -290,6 +303,70 @@ public sealed partial class SettingsViewModel : BindableBase
     public string ShellDensityDescriptionText => SelectedShellDensityMode == ShellDensityMode.Compact
         ? "Compact trims duplicate chrome and above-fold padding in shared workstation shells."
         : "Standard keeps the full shell summary and spacing for review-heavy sessions.";
+
+    public string SelectedLayoutPresetId
+    {
+        get => _selectedLayoutPresetId;
+        set
+        {
+            if (!SetProperty(ref _selectedLayoutPresetId, value))
+            {
+                return;
+            }
+
+            RaisePropertyChanged(nameof(SelectedLayoutPreset));
+            RaisePropertyChanged(nameof(SelectedLayoutPresetDescription));
+
+            if (_loadingDesktopPreferences)
+            {
+                return;
+            }
+
+            ApplySelectedDesktopLayoutPreset(value);
+            MarkDirty();
+        }
+    }
+
+    public DesktopLayoutPreset SelectedLayoutPreset
+        => _settingsConfigService.GetDesktopLayoutPreset(SelectedLayoutPresetId);
+
+    public string SelectedLayoutPresetDescription => SelectedLayoutPreset.Description;
+
+    public string StartupWorkspace
+    {
+        get => _startupWorkspace;
+        set => SetDesktopPreferenceProperty(ref _startupWorkspace, value);
+    }
+
+    public bool IsSummaryPanelVisible
+    {
+        get => _isSummaryPanelVisible;
+        set => SetDesktopPreferenceProperty(ref _isSummaryPanelVisible, value);
+    }
+
+    public bool IsInspectorPanelVisible
+    {
+        get => _isInspectorPanelVisible;
+        set => SetDesktopPreferenceProperty(ref _isInspectorPanelVisible, value);
+    }
+
+    public bool IsActivityPanelVisible
+    {
+        get => _isActivityPanelVisible;
+        set => SetDesktopPreferenceProperty(ref _isActivityPanelVisible, value);
+    }
+
+    public string GridDensity
+    {
+        get => _gridDensity;
+        set => SetDesktopPreferenceProperty(ref _gridDensity, value);
+    }
+
+    public string DefaultFilterSet
+    {
+        get => _defaultFilterSet;
+        set => SetDesktopPreferenceProperty(ref _defaultFilterSet, value);
+    }
 
     /// <summary>
     /// Whether Windows notifications are enabled.
@@ -401,7 +478,7 @@ public sealed partial class SettingsViewModel : BindableBase
         _loadingDesktopPreferences = true;
         try
         {
-            SelectedShellDensityMode = _settingsConfigService.GetShellDensityMode();
+            ApplyDesktopPreferences(_settingsConfigService.GetDesktopShellPreferences());
         }
         finally
         {
@@ -644,6 +721,8 @@ public sealed partial class SettingsViewModel : BindableBase
             defaultConfig.Derivatives = existingConfig.Derivatives;
 
             await _configService.WriteConfigAsync(defaultConfig);
+            _settingsConfigService.ResetDesktopShellPreferences();
+            ApplyDesktopPreferences(_settingsConfigService.GetDesktopShellPreferences());
             await LoadConfigAsync(false);
             _notificationService.ShowNotification("Reset Complete", "Settings have been reset to defaults.", NotificationType.Success);
         }
@@ -700,7 +779,6 @@ public sealed partial class SettingsViewModel : BindableBase
             ApiBaseUrl = config.IBClientPortal?.BaseUrl ?? "http://localhost:8080";
             StatusRefreshInterval = settings.StatusRefreshIntervalSeconds.ToString();
             IsNotificationsEnabled = settings.NotificationsEnabled;
-            SelectedShellDensityMode = settings.CompactMode ? ShellDensityMode.Compact : ShellDensityMode.Standard;
             ThemeIndex = string.Equals(settings.Theme, "Dark", StringComparison.OrdinalIgnoreCase) ? 2 : string.Equals(settings.Theme, "Light", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
             AccentColorIndex = 0;
             MaxConcurrentDownloads = settings.MaxReconnectAttempts.ToString();
@@ -768,6 +846,72 @@ public sealed partial class SettingsViewModel : BindableBase
         return result;
     }
 
+    private void ApplySelectedDesktopLayoutPreset(string? presetId)
+    {
+        var preset = _settingsConfigService.GetDesktopLayoutPreset(presetId);
+        var preferences = new DesktopShellPreferences(
+            preset.ShellDensityMode,
+            preset.Id,
+            preset.StartupWorkspace,
+            preset.IsSummaryPanelVisible,
+            preset.IsInspectorPanelVisible,
+            preset.IsActivityPanelVisible,
+            preset.GridDensity,
+            preset.DefaultFilterSet);
+        _settingsConfigService.SetDesktopShellPreferences(preferences);
+        ApplyDesktopPreferences(preferences);
+    }
+
+    private void ApplyDesktopPreferences(DesktopShellPreferences preferences)
+    {
+        _loadingDesktopPreferences = true;
+        try
+        {
+            SelectedShellDensityMode = preferences.ShellDensityMode;
+            SelectedLayoutPresetId = preferences.SelectedLayoutPresetId;
+            StartupWorkspace = preferences.StartupWorkspace;
+            IsSummaryPanelVisible = preferences.IsSummaryPanelVisible;
+            IsInspectorPanelVisible = preferences.IsInspectorPanelVisible;
+            IsActivityPanelVisible = preferences.IsActivityPanelVisible;
+            GridDensity = preferences.GridDensity;
+            DefaultFilterSet = preferences.DefaultFilterSet;
+        }
+        finally
+        {
+            _loadingDesktopPreferences = false;
+        }
+    }
+
+    private void PersistDesktopPreferences()
+    {
+        if (_loadingDesktopPreferences || _isPopulatingConfig)
+        {
+            return;
+        }
+
+        _settingsConfigService.SetDesktopShellPreferences(new DesktopShellPreferences(
+            SelectedShellDensityMode,
+            SelectedLayoutPresetId,
+            StartupWorkspace,
+            IsSummaryPanelVisible,
+            IsInspectorPanelVisible,
+            IsActivityPanelVisible,
+            GridDensity,
+            DefaultFilterSet));
+    }
+
+    private bool SetDesktopPreferenceProperty<T>(ref T field, T value, string? propertyName = null)
+    {
+        if (!SetProperty(ref field, value, propertyName))
+        {
+            return false;
+        }
+
+        PersistDesktopPreferences();
+        MarkDirty();
+        return true;
+    }
+
     private bool CanSaveConfig() => HasUnsavedChanges && IsConfigValid;
     private void MarkDirty()
     {
@@ -792,7 +936,8 @@ public sealed partial class SettingsViewModel : BindableBase
                 ? 1
                 : 0;
         AccentColorIndex = 0;
-        SelectedShellDensityMode = defaultConfig.Settings?.CompactMode == true ? ShellDensityMode.Compact : ShellDensityMode.Standard;
+        _settingsConfigService.ResetDesktopShellPreferences();
+        ApplyDesktopPreferences(_settingsConfigService.GetDesktopShellPreferences());
         IsNotificationsEnabled = defaultConfig.Settings?.NotificationsEnabled ?? true;
         MaxConcurrentDownloads = "4";
         WriteBufferSize = "64";

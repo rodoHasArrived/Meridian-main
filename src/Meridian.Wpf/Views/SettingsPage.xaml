@@ -848,6 +848,85 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Role layout presets -->
+                <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                    <StackPanel>
+                        <TextBlock Text="Role Layout Presets" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,8" />
+                        <TextBlock Text="Choose a WPF workstation preset for common operating personas. Top-level navigation remains Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings."
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,16" />
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Preset" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
+                            <ComboBox Style="{StaticResource FormComboBoxStyle}"
+                                      ItemsSource="{Binding DesktopLayoutPresets}"
+                                      SelectedValuePath="Id"
+                                      SelectedValue="{Binding SelectedLayoutPresetId, Mode=TwoWay}"
+                                      AutomationProperties.AutomationId="SettingsRoleLayoutPresetCombo">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Description}"
+                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                                       FontSize="11"
+                                                       TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <TextBlock Text="{Binding SelectedLayoutPresetDescription}"
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       TextWrapping="Wrap"
+                                       Margin="0,8,0,0" />
+                        </StackPanel>
+
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                <TextBlock Text="Startup Workspace" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
+                                <ComboBox Style="{StaticResource FormComboBoxStyle}"
+                                          ItemsSource="{Binding StartupWorkspaceOptions}"
+                                          SelectedItem="{Binding StartupWorkspace, Mode=TwoWay}"
+                                          AutomationProperties.AutomationId="SettingsStartupWorkspaceCombo" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Grid Density" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
+                                <ComboBox Style="{StaticResource FormComboBoxStyle}"
+                                          ItemsSource="{Binding GridDensityOptions}"
+                                          SelectedItem="{Binding GridDensity, Mode=TwoWay}"
+                                          AutomationProperties.AutomationId="SettingsGridDensityCombo" />
+                            </StackPanel>
+                        </Grid>
+
+                        <StackPanel Margin="0,0,0,12">
+                            <TextBlock Text="Default Filters" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
+                            <TextBox Style="{StaticResource FormTextBoxStyle}"
+                                     Text="{Binding DefaultFilterSet, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     AutomationProperties.AutomationId="SettingsDefaultFiltersTextBox" />
+                        </StackPanel>
+
+                        <WrapPanel Margin="0,4,0,0">
+                            <CheckBox Content="Summary panel"
+                                      IsChecked="{Binding IsSummaryPanelVisible, Mode=TwoWay}"
+                                      Margin="0,0,16,8"
+                                      AutomationProperties.AutomationId="SettingsSummaryPanelToggle" />
+                            <CheckBox Content="Inspector panel"
+                                      IsChecked="{Binding IsInspectorPanelVisible, Mode=TwoWay}"
+                                      Margin="0,0,16,8"
+                                      AutomationProperties.AutomationId="SettingsInspectorPanelToggle" />
+                            <CheckBox Content="Activity panel"
+                                      IsChecked="{Binding IsActivityPanelVisible, Mode=TwoWay}"
+                                      Margin="0,0,16,8"
+                                      AutomationProperties.AutomationId="SettingsActivityPanelToggle" />
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
                 <!-- Appearance -->
                 <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
                     <StackPanel>
