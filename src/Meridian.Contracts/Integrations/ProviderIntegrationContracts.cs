@@ -346,6 +346,26 @@ public sealed record ProviderIntegrationQuarantineResolutionResultDto(
     ProviderIntegrationQuarantineDecisionDto Decision,
     string? Message);
 
+public sealed record ProviderIntegrationQuarantineReplayRequestDto(
+    string ReplaySyncRunId,
+    string SourceSyncRunId,
+    string ManifestId,
+    string ConnectionId,
+    ProviderCapabilityKindDto Capability,
+    IReadOnlyList<string> QuarantineRecordIds,
+    string RequestedBy,
+    DateTimeOffset RequestedAt);
+
+public sealed record ProviderIntegrationQuarantineReplayResultDto(
+    string ReplaySyncRunId,
+    string RawPayloadId,
+    ProviderCapabilityKindDto Capability,
+    int RecordsReplayed,
+    int RecordsAccepted,
+    int RecordsRequarantined,
+    ProviderIntegrationProcessingStatusDto Status,
+    IReadOnlyList<ValidationIssueDto> Issues);
+
 public sealed record IntegrationStagingRecordDto(
     string StagingRecordId,
     string SyncRunId,
