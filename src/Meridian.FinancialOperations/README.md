@@ -64,7 +64,10 @@ for cash, position, trade, income, MBS factor, bank, and GL support. The workflo
 ready/review/blocked posture from retained run evidence plus open reconciliation breaks so close
 operators can review reconciliation completeness without browser or endpoint-local rules. Lane
 classification uses structured break codes, sources, root-cause/output metadata, case correlation
-metadata, and retained evidence labels/routes instead of depending only on display strings.
+metadata, and retained evidence labels/routes instead of depending only on display strings. The
+bank reconciliation lane also recognizes retained payment confirmation, return, reversal, and
+cash-evidence break language so approved payment cash evidence stays a reconciliation input rather
+than live payment execution authority.
 The same workflow service now derives the source-backed Financial Operations operational dashboard
 from aggregate state. Its metrics cover Receive Activity, Match Records, Resolve Exceptions,
 Approve Results, Produce Evidence, and Close Support, including retained evidence, route hints, and

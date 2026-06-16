@@ -210,6 +210,9 @@ Application and infrastructure seams:
 - `IIntegrationStagingReviewService` exposes accepted, validation-passed records, warning groups,
   dedupe keys, and capability summaries so operators and reconciliation workflows can inspect the
   staging handoff before canonical promotion.
+- `ProviderIntegrationIdentityResolutionPreviewService` reads staged records, extracts provider
+  account ids and security identifiers, resolves active Security Master matches when that query
+  service is registered, and returns review-required issue rows without mutating canonical stores.
 - `ICanonicalFinancialDataWriter` promotes staged accepted records to the owned domain store only
   after reconciliation, identity, lineage, dedupe, and ownership gates pass.
 - `IIntegrationQuarantineService` stores rejected records, issue groups, suggested fixes, replay

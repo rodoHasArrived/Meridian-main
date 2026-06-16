@@ -47,10 +47,10 @@ or provider implementations.
 - `Integrations/` - provider integration template catalog entry, manifest, endpoint, mapping,
   validation, sync, OpenAPI import request/result, setup-save request/result,
   activation-readiness, activation request/result, manual CSV and REST dry-run request, raw
-  payload, quarantine review/replay request/result, staging review, sync-run summary,
-  tenant-store factory seam, connection monitor, and run-due sync orchestration contracts for
-  no-code read-only provider setup, monitoring, activation evidence, scheduled execution, and
-  replayable ingestion.
+  payload, quarantine review/replay request/result, staging review, staging identity-resolution
+  preview, sync-run summary, tenant-store factory seam, connection monitor, and run-due sync
+  orchestration contracts for no-code read-only provider setup, monitoring, activation evidence,
+  scheduled execution, and replayable ingestion.
 - `Monitoring/` - shared event-pipeline metrics contracts, snapshot payloads, and monitoring
   webhook sink contracts consumed by Application, Platform tracing/monitoring, diagnostics
   endpoints, WPF, and browser workstation services.

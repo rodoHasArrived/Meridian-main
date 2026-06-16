@@ -2459,6 +2459,50 @@ public sealed class OperationsContinuityWorkflowServiceTests
                 DateTimeOffset.UtcNow);
     }
 
+    [Fact]
+    public async Task RunReconciliationAsync_ShouldClassifyPaymentConfirmationEvidenceBreaksAsBankReconciliation()
+    {
+        var service = CreateService(out _, out _);
+        var workflow = await CreateLedgerPostedWorkflowAsync(service);
+
+        var reconciled = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
+            workflow.Version,
+            "cash-ops",
+            "Reviewed retained payment confirmation evidence for bank reconciliation",
+            BreakCases:
+            [
+                CreateFinancialOperationsLaneBreak(
+                    workflow,
+                    "payment-confirmation",
+                    "PAYMENT_CONFIRMATION_MISSING",
+                    "Payment confirmation",
+                    "High",
+                    "approved payment intent",
+                    "retained confirmation record missing",
+                    "PAYMENT",
+                    CreateEvidenceLink("evidence:payment-confirmation", "Payment confirmation evidence"),
+                    "Retain payment confirmation and return evidence for the approved payment intent.",
+                    rootCauseCode: "payment-confirmation-evidence-missing",
+                    blockedOutputs: ["Bank reconciliation support"])
+            ]));
+
+        reconciled.Success.Should().BeTrue();
+        var bankLane = reconciled.Workflow!.ReconciliationLanes.Should()
+            .ContainSingle(lane => lane.LaneId == "bank-reconciliation")
+            .Subject;
+        bankLane.Status.Should().Be(OperationsReconciliationLaneStatusDto.ReviewRequired);
+        bankLane.IsReady.Should().BeFalse();
+        bankLane.BreakCount.Should().Be(1);
+        bankLane.EvidenceLinks.Should().Contain(link =>
+            link.EvidenceId == "evidence:payment-confirmation" &&
+            link.Label == "Payment confirmation evidence");
+        bankLane.RequiredActions.Should().Contain(action =>
+            action.Contains("Resolve or assign bank reconciliation", StringComparison.OrdinalIgnoreCase));
+
+        reconciled.Workflow.ReconciliationLanes.Should()
+            .ContainSingle(lane => lane.LaneId == "cash-reconciliation" && lane.BreakCount == 0);
+    }
+
 
     [Fact]
     public async Task RunReconciliationAsync_WithSecurityAccountingIssues_ShouldReturnDeterministicSecurityMasterBlockerCode()

@@ -84,7 +84,16 @@ public sealed class OperationsContinuityWorkflow
             "bank-reconciliation",
             "Bank reconciliation",
             "/workstation/accounting/reconciliation",
-            breakCase => BreakContains(breakCase, "bank", "externalstatement", "external statement")),
+            breakCase => BreakContains(
+                breakCase,
+                "bank",
+                "externalstatement",
+                "external statement",
+                "payment confirmation",
+                "payment return",
+                "payment reversal",
+                "cash evidence",
+                "expected cash movement")),
         new(
             "gl-reconciliation",
             "GL reconciliation support",
