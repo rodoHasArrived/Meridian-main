@@ -580,7 +580,8 @@ const accounting: AccountingWorkspaceResponse = {
         tags: ["warehouse", "ledger", "reconciliation"],
         retainedManifestPath: "exports/reporting/fund-alpha/20260411160000/warehouse-ledger-facts.manifest.json",
         integrityHashSha256: "a".repeat(64),
-        integritySummary: `6 row(s), 9 field(s), and 18 source record(s) retained with SHA-256 ${"a".repeat(64)}.`
+        integritySummary: `6 row(s), 9 field(s), and 18 source record(s) retained with SHA-256 ${"a".repeat(64)}.`,
+        rowLineageCount: 6
       },
       {
         exportId: "investment-topn-contribution-analytics",
@@ -1571,7 +1572,7 @@ describe("ReportingScreen", () => {
     const regulatoryRow = screen.getByRole("listitem", { name: "Regulatory trial balance structured export" });
     expect(within(regulatoryRow).getByText("Regulatory")).toBeInTheDocument();
     expect(within(regulatoryRow).getByText("Csv")).toBeInTheDocument();
-    expect(within(regulatoryRow).getByText("12")).toBeInTheDocument();
+    expect(within(regulatoryRow).getAllByText("12")).toHaveLength(2);
     expect(regulatoryRow).toHaveTextContent("Dataset: fund-trial-balance");
     expect(regulatoryRow).toHaveTextContent("As of: 2026-04-11T16:00:00Z");
     expect(regulatoryRow).toHaveTextContent(
@@ -1617,6 +1618,8 @@ describe("ReportingScreen", () => {
     expect(warehouseRow).toHaveTextContent("Data warehouse and lakehouse ingestion");
     expect(warehouseRow).toHaveTextContent("Exports consolidated ledger snapshot facts for downstream warehouse loading");
     expect(warehouseRow).toHaveTextContent("Dataset: ledger-reconciliation-facts");
+    const warehouseLineageMetric = within(warehouseRow).getByText("Lineage").parentElement;
+    expect(warehouseLineageMetric).toHaveTextContent("6");
     expect(warehouseRow).toHaveTextContent(
       "API route: /api/workstation/reporting/structured-exports/warehouse-ledger-facts"
     );
@@ -3768,6 +3771,12 @@ describe("ReportingScreen", () => {
                 description: "board-pack.xlsx served through the XLS compatibility alias as the canonical XLSX workbook."
               }
             ],
+            lastDeliveryAccessExpiresAtUtc: "2026-05-17T20:15:00Z",
+            lastDeliveryAccessSummary: "Email-link package is available through the token-gated route /reporting/package/board.",
+            lastDeliveryChannelSummary: "EmailLink delivery to Board reporting committee via Board portal.",
+            lastDeliveryDownloadSummary: "3 artifact(s) retained as Pdf/Xlsx/Csv; manifest workstation/reporting/deliveries/board/manifest.json.",
+            lastDeliveryNotificationCount: 1,
+            lastDeliveryNotificationSummary: "1 notification retained: ReadyToSend via EmailLink.",
             versionStamp: "schedule-delivery-plan:sched-investor:board-reporting-committee:20260503080000:formats-3",
             lastDeliveryArtifactCount: 3,
             lastDeliveryIntegritySummary: "3 artifact(s) retained with SHA-256 checksums against publication evidence hash sha256:board-pack.",
@@ -4133,6 +4142,11 @@ describe("ReportingScreen", () => {
     });
     expect(boardPlan).toHaveTextContent("Will deliver Pdf/Xlsx/Csv by SecurePortal to Board reporting committee");
     expect(boardPlan).toHaveTextContent("Pdf, Xlsx, Csv");
+    expect(boardPlan).toHaveTextContent("May 17, 1:15 PM");
+    expect(boardPlan).toHaveTextContent("Email-link package is available through the token-gated route /reporting/package/board.");
+    expect(boardPlan).toHaveTextContent("EmailLink delivery to Board reporting committee via Board portal.");
+    expect(boardPlan).toHaveTextContent("3 artifact(s) retained as Pdf/Xlsx/Csv; manifest workstation/reporting/deliveries/board/manifest.json.");
+    expect(boardPlan).toHaveTextContent("1 notification retained: ReadyToSend via EmailLink.");
     expect(boardPlan).toHaveTextContent("3 artifacts with SHA-256");
     expect(boardPlan).toHaveTextContent("Restricted principals=Group:investor-relations");
     expect(boardPlan).toHaveTextContent("Allocator Quarterly · Northstar Capital · allocator-quarterly");
@@ -4155,6 +4169,11 @@ describe("ReportingScreen", () => {
       name: "Investor relations EmailLink scheduled delivery plan for sched-investor"
     });
     expect(investorPlan).toHaveTextContent("No retained delivery yet");
+    expect(investorPlan).toHaveTextContent("No retained access expiry");
+    expect(investorPlan).toHaveTextContent("No retained access summary");
+    expect(investorPlan).toHaveTextContent("No retained channel summary");
+    expect(investorPlan).toHaveTextContent("No retained download summary");
+    expect(investorPlan).toHaveTextContent("No retained notification proof");
     expect(investorPlan).toHaveTextContent("No retained artifact checksums");
     expect(investorPlan).toHaveTextContent("No retained delivery entitlement");
 

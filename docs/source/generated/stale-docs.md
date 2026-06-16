@@ -8,12 +8,13 @@ do_not_edit: true
 
 This report marks registered source modules whose code or README hashes differ from the reviewed baseline.
 
-- Stale modules: 10
+- Stale modules: 11
 - Removed module hash entries: 0
 
 | Module | Path | README | Reason |
 | --- | --- | --- | --- |
 | `SRC-CONTRACTS` | `src/Meridian.Contracts` | `src/Meridian.Contracts/README.md` | `source_hash_drift`, `readme_hash_drift` |
+| `SRC-DESIGN-DATA-INTEGRATION` | `src/Meridian.DataIntegration` | `src/Meridian.DataIntegration/README.md` | `source_hash_drift` |
 | `SRC-DESIGN-FINANCIAL-OPERATIONS` | `src/Meridian.FinancialOperations` | `src/Meridian.FinancialOperations/README.md` | `source_hash_drift`, `readme_hash_drift` |
 | `SRC-DESIGN-IDENTITY` | `src/Meridian.Identity` | `src/Meridian.Identity/README.md` | `source_hash_drift`, `readme_hash_drift` |
 | `SRC-DESIGN-REPORTING` | `src/Meridian.Reporting` | `src/Meridian.Reporting/README.md` | `source_hash_drift`, `readme_hash_drift` |

@@ -369,6 +369,11 @@ export interface ReportingScheduleDeliveryPlanRow {
   lastDeliveryLabel: string;
   lastDeliveryHref: string | null;
   lastDeliveryLinks: ReportingDeliveryAccessLinkRow[];
+  accessExpiryLabel: string;
+  accessSummaryLabel: string;
+  channelSummaryLabel: string;
+  downloadSummaryLabel: string;
+  notificationSummaryLabel: string;
   integrityLabel: string;
   integritySummary: string | null;
   entitlementLabel: string;
@@ -1761,6 +1766,13 @@ function buildScheduleDeliveryPlanRows(plans: ReportingScheduleDeliveryPlan[]): 
     lastDeliveryLabel: formatSchedulePlanLastDelivery(plan),
     lastDeliveryHref: plan.lastDeliverySecureLink ?? plan.lastDeliveryPackageRoute,
     lastDeliveryLinks: buildDeliveryAccessLinkRows(plan.lastDeliveryAccessLinks, `${plan.planId}-delivery-link`),
+    accessExpiryLabel: plan.lastDeliveryAccessExpiresAtUtc
+      ? formatTimestamp(plan.lastDeliveryAccessExpiresAtUtc)
+      : "No retained access expiry",
+    accessSummaryLabel: plan.lastDeliveryAccessSummary?.trim() || "No retained access summary",
+    channelSummaryLabel: plan.lastDeliveryChannelSummary?.trim() || "No retained channel summary",
+    downloadSummaryLabel: plan.lastDeliveryDownloadSummary?.trim() || "No retained download summary",
+    notificationSummaryLabel: plan.lastDeliveryNotificationSummary?.trim() || "No retained notification proof",
     integrityLabel: formatSchedulePlanIntegrity(plan),
     integritySummary: plan.lastDeliveryIntegritySummary ?? null,
     entitlementLabel: plan.lastDeliveryEntitlementScope?.trim() || "No retained delivery entitlement",
@@ -1864,12 +1876,16 @@ function formatTimestamp(value: string): string {
     return value;
   }
 
-  return timestamp.toLocaleString(undefined, {
+  const dateLabel = timestamp.toLocaleDateString(undefined, {
     month: "short",
-    day: "numeric",
+    day: "numeric"
+  });
+  const timeLabel = timestamp.toLocaleTimeString(undefined, {
     hour: "numeric",
     minute: "2-digit"
   });
+
+  return `${dateLabel}, ${timeLabel}`;
 }
 
 function artifactLabel(artifact: string): string {

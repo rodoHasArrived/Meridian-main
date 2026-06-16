@@ -1780,6 +1780,10 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                       <ReportingCutMetric label="Sources" value={structuredExport.sourceCount.toLocaleString()} />
                       <ReportingCutMetric label="Schema" value={`v${structuredExport.schemaVersion}`} />
                       <ReportingCutMetric label="Currency" value={structuredExport.currency} />
+                      <ReportingCutMetric
+                        label="Lineage"
+                        value={(structuredExport.rowLineageCount ?? structuredExport.rowCount).toLocaleString()}
+                      />
                     </dl>
                     <p className="mt-2 text-xs leading-5 text-muted-foreground">
                       {structuredExport.consumer} · {structuredExport.validationSummary ?? structuredExport.dataset}
@@ -2767,6 +2771,11 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                         <ReportingScheduleField label="As of" value={plan.nextAsOfLabel} />
                         <ReportingScheduleField label="Owner" value={plan.ownerLabel} />
                         <ReportingScheduleField label="Last delivery" value={plan.lastDeliveryLabel} />
+                        <ReportingScheduleField label="Access expiry" value={plan.accessExpiryLabel} />
+                        <ReportingScheduleField label="Access" value={plan.accessSummaryLabel} />
+                        <ReportingScheduleField label="Channel" value={plan.channelSummaryLabel} />
+                        <ReportingScheduleField label="Downloads" value={plan.downloadSummaryLabel} />
+                        <ReportingScheduleField label="Notifications" value={plan.notificationSummaryLabel} />
                         <ReportingScheduleField label="Artifact integrity" value={plan.integrityLabel} />
                         <ReportingScheduleField label="Entitlement" value={plan.entitlementLabel} />
                         <ReportingScheduleField label="Branding" value={plan.brandingLabel} />

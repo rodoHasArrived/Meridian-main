@@ -5,7 +5,7 @@ import {
   listCoveredCallRuns,
   previewCoveredCallChain,
   startCoveredCallBacktest
-} from "@/lib/api/covered-call";
+} from "@/lib/api/covered-call.api";
 
 describe("covered-call API client", () => {
   const fetchMock = vi.fn();

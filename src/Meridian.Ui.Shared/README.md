@@ -542,9 +542,9 @@ from the same source-backed workspace projection. The JSON payload includes stab
 culture-invariant string row values, data-dictionary fields, validation checks, readiness warnings,
 retained-path metadata, and deterministic version stamps so downstream regulatory, warehousing, and
 investment-decision consumers can ingest governed data without browser-local export shaping. Export
-descriptors also include a retained manifest path, deterministic SHA-256 integrity hash, and
-integrity summary so downstream consumers can bind JSON/CSV/XLSX downloads back to a stable manifest
-without deriving checksums from browser state. The
+descriptors also include a retained manifest path, deterministic SHA-256 integrity hash, integrity
+summary, and row-lineage count so downstream consumers can bind JSON/CSV/XLSX downloads back to a
+stable manifest without deriving checksums from browser state. The
 endpoint also accepts `format=json`, `format=csv`, or `format=xlsx` for every structured export;
 `format=xls` and `format=excel` are compatibility aliases that return the same canonical `.xlsx`
 workbook and MIME type instead of legacy BIFF content. XLSX workbooks retain Metadata,
@@ -616,9 +616,11 @@ evidence packet carries recipient and entitlement scope, approval chain, request
 publication manifest, report-line provenance, retained delivery evidence, branding-theme package
 contents, and restatement lineage for the Version 0.18 operational proof layer.
 Schedule delivery plan rows project explicit readiness
-blockers, the latest retained package artifact count, the integrity summary, and the schedule or
-last-package branding theme, so clients can show recipient/package readiness without fetching
-package manifests or inferring failure reasons from prose. The shared read model marks a scheduled target unready when the schedule is inactive,
+blockers, the latest retained package artifact count, download summary, access-expiry timestamp,
+access/channel summary, integrity summary, and the schedule or last-package branding theme, so clients can show
+recipient/package readiness without fetching package manifests or inferring failure reasons from prose. Schedule plan
+rows also carry the latest retained notification count and summary from the package evidence so clients can show whether
+email-link or secure-portal notification proof exists without opening the package manifest. The shared read model marks a scheduled target unready when the schedule is inactive,
 due without a successful retained package, configured with an incompatible delivery mode for its
 channel, or missing one of the requested artifact formats from the latest package. Package manifest reads are token-gated by
 `ReportPackDeliveryService`, using constant-time token comparison and shared GET routes for the
@@ -647,7 +649,8 @@ the governed catalog, and `ReportPackDeliveryService` stamps that policy into
 `ReportingRunDelivery.EntitlementScope` before storing the email-link or portal package.
 `ReportPackRunReadService` carries the latest retained package entitlement back onto
 `scheduleDeliveryPlans`, letting browser and desktop clients show the delivery audience lock beside
-artifact integrity, branding, and access-link rows without opening the package manifest first.
+artifact integrity, retained download summary, access expiry, access/channel summary, notification proof, branding, and
+access-link rows without opening the package manifest first.
 Schedule run results return delivery attempts and warnings so operators can distinguish generated
 reports from actually packaged email-link or portal deliveries.
 `ReportingRunCommandService` also runs approved built-in templates on demand through the same orchestration and run-store seam,

@@ -245,9 +245,10 @@ history also renders backend-owned access, channel, and download summaries for e
 secure-portal, evidence-vault, and internal-route packages instead of deriving recipient-facing
 copy from URL shape. When the shared package includes an access-expiry timestamp, React displays it
 beside the token-gated delivery link so operators can see when email-link or portal access closes.
-Schedule delivery-plan cards render the latest retained delivery entitlement scope from the shared
-plan payload beside artifact integrity, branding, and retained access links, so operators can verify
-private or restricted scheduled packages without opening the package manifest first.
+Schedule delivery-plan cards render the latest retained delivery access expiry, access/channel summary, and entitlement
+scope from the shared plan payload beside artifact integrity, retained download summary, notification proof, branding,
+and retained access links, so operators can verify private or restricted scheduled packages without
+opening the package manifest first.
 The Reporting workspace also renders shared `portfolioCuts` rows for fund, strategy, and tag
 reporting views. The browser shows exposure, cash, P&L, shadow-NAV, variance, source-count, and
 version stamp from the backend payload instead of recomputing those cuts in React.
@@ -305,10 +306,10 @@ React shows source counts, exposure, cash, P&L, readiness, version stamps, and b
 the payload instead of aggregating multi-fund state in the browser.
 It also renders shared `structuredExports` rows for regulatory, warehouse, and investment-decision
 outputs. The browser displays readiness, format, row/field/source counts, schema version, retained
-path, retained manifest path, SHA-256 integrity summary, raw SHA-256 hash, dataset id, as-of
-timestamp, version stamp, exact backend API route, and direct backend links from the contract. Each
-ready export exposes JSON, CSV, and XLSX download actions by normalizing the shared retained route's
-`format` query instead of building browser-local export payloads. Blocked
+path, retained manifest path, row-lineage count, SHA-256 integrity summary, raw SHA-256 hash,
+dataset id, as-of timestamp, version stamp, exact backend API route, and direct backend links from
+the contract. Each ready export exposes JSON, CSV, and XLSX download actions by normalizing the
+shared retained route's `format` query instead of building browser-local export payloads. Blocked
 exports stay visible with validation copy, but the browser renders contract-owned readiness blockers
 and disabled download controls without anchor `href` values until the backend marks the descriptor
 ready.
@@ -326,8 +327,9 @@ entering a theme id, firm name, colors, logo URI, footer, and disclaimer; the br
 shared `BrandingThemeOverride` contract for preview and generation and lets the backend normalize,
 validate, and retain the branded PDF/XLSX/CSV artifacts.
 It also renders shared `scheduleDeliveryPlans` rows for scheduled report packs, including recipient,
-channel, delivery mode, PDF/XLS/CSV formats, readiness, retained package links, latest artifact
-counts, checksum integrity summaries, schedule/package branding theme, and version stamps from the backend payload. Each ready
+channel, delivery mode, PDF/XLS/CSV formats, readiness, retained package links, access-expiry
+timestamps, retained download summaries, latest artifact counts, checksum integrity summaries,
+schedule/package branding theme, and version stamps from the backend payload. Each ready
 delivery-plan row can also run its owning schedule through the shared schedule-run endpoint and
 reports the returned run id, delivery count, recipient-specific delivery count, and target
 delivery mode in the common schedule status lane.

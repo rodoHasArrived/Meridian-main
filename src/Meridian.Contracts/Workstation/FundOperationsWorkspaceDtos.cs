@@ -379,7 +379,8 @@ public sealed record StructuredReportingExportDto(
     IReadOnlyList<string>? ReadinessBlockers = null,
     string? RetainedManifestPath = null,
     string? IntegrityHashSha256 = null,
-    string? IntegritySummary = null);
+    string? IntegritySummary = null,
+    int? RowLineageCount = null);
 
 public sealed record StructuredReportingExportColumnDto(
     string Name,
@@ -1024,6 +1025,12 @@ public sealed record ReportingScheduleDeliveryPlanDto(
     string? LastDeliveryPackageRoute = null,
     string? LastDeliverySecureLink = null,
     IReadOnlyList<ReportPackDeliveryAccessLinkDto>? LastDeliveryAccessLinks = null,
+    DateTimeOffset? LastDeliveryAccessExpiresAtUtc = null,
+    string? LastDeliveryAccessSummary = null,
+    string? LastDeliveryChannelSummary = null,
+    string? LastDeliveryDownloadSummary = null,
+    int LastDeliveryNotificationCount = 0,
+    string? LastDeliveryNotificationSummary = null,
     string? VersionStamp = null,
     int LastDeliveryArtifactCount = 0,
     string? LastDeliveryIntegritySummary = null,

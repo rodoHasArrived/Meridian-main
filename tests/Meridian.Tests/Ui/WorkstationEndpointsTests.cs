@@ -5955,6 +5955,7 @@ public sealed partial class WorkstationEndpointsTests
             lineage.RowNumber == 1 &&
             lineage.RowKey == "reporting-portfolio-cut:fund-alpha" &&
             lineage.RowHashSha256.Length == 64);
+        payload.Export.RowLineageCount.Should().Be(payload.RowLineage.Count);
         payload.Rows.Should().Contain(row =>
             row["cutId"] == "reporting-portfolio-cut:fund-alpha" &&
             row["grossExposure"] == "2500000" &&
@@ -6038,6 +6039,7 @@ public sealed partial class WorkstationEndpointsTests
         crossFundPayload.RowLineage!.Should().Contain(lineage =>
             lineage.RowKey == "reporting-cross-fund:company" &&
             lineage.RowHashSha256.Length == 64);
+        crossFundPayload.Export.RowLineageCount.Should().Be(crossFundPayload.RowLineage.Count);
         crossFundXlsxResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         crossFundXlsxResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         using (var workbook = new ZipArchive(new MemoryStream(await crossFundXlsxResponse.Content.ReadAsByteArrayAsync()), ZipArchiveMode.Read))

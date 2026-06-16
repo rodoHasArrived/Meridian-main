@@ -2571,6 +2571,8 @@ posted, reversals approved, recurring journals completed, capital-account roll-f
 valuation support attached, stale marks resolved, shadow NAV tied out, statements approved,
 packages delivered, and period locks or reopen evidence are retained.
 
+#### Evidence Vault
+
 The Evidence Vault should not be a passive document store. It should manage request lists by event,
 close, audit, tax, and report package; capture documents through upload, email, API, portal download,
 or SFTP; extract fields with confidence and review state; validate extracted values against expected
@@ -2603,7 +2605,7 @@ or supported to complete.
 
 The foundational product slice remains:
 
-# Data Operations + Reconciliation Foundation
+### Data Operations + Reconciliation Foundation
 
 This slice is no longer only a recommendation. It is the product baseline that W1-W5 prove through trusted data, paper validation, research continuity, ledger reconciliation, accounting records, approvals, multi-asset operational coverage, and governed reporting.
 

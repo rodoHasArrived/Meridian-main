@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api-errors";
@@ -868,14 +868,14 @@ describe("SettingsScreen", () => {
 
     const form = screen.getByRole("form", { name: "Grant scoped access assignment" });
     await waitFor(() => expect(within(form).getByLabelText("Role")).toHaveValue("Accounting"));
-    await user.type(within(form).getByLabelText("Scoped access principal id"), "fund-reviewer");
-    await user.type(within(form).getByLabelText("Scoped access scope id"), "fund-review");
-    await user.type(within(form).getByLabelText("Scoped access approval limit amount"), "250000");
-    await user.clear(within(form).getByLabelText("Scoped access approval limit currency"));
-    await user.type(within(form).getByLabelText("Scoped access approval limit currency"), "usd");
-    await user.type(within(form).getByLabelText("Scoped access segregation of duties rule"), "Requester cannot approve own payment request.");
-    await user.clear(within(form).getByLabelText("Scoped access rationale"));
-    await user.type(within(form).getByLabelText("Scoped access rationale"), "Grant fund close authority");
+    fireEvent.change(within(form).getByLabelText("Scoped access principal id"), { target: { value: "fund-reviewer" } });
+    fireEvent.change(within(form).getByLabelText("Scoped access scope id"), { target: { value: "fund-review" } });
+    fireEvent.change(within(form).getByLabelText("Scoped access approval limit amount"), { target: { value: "250000" } });
+    fireEvent.change(within(form).getByLabelText("Scoped access approval limit currency"), { target: { value: "usd" } });
+    fireEvent.change(within(form).getByLabelText("Scoped access segregation of duties rule"), {
+      target: { value: "Requester cannot approve own payment request." }
+    });
+    fireEvent.change(within(form).getByLabelText("Scoped access rationale"), { target: { value: "Grant fund close authority" } });
     await user.click(within(form).getByRole("button", { name: /Grant access/i }));
 
     expect(apiMocks.createScopedAccessAssignment).toHaveBeenCalledWith(expect.objectContaining({
@@ -946,17 +946,12 @@ describe("SettingsScreen", () => {
     );
 
     const form = screen.getByRole("form", { name: "Configure approval policy rule" });
-    await user.clear(within(form).getByLabelText("Approval policy reviewer role"));
-    await user.type(within(form).getByLabelText("Approval policy reviewer role"), "Controller");
-    await user.clear(within(form).getByLabelText("Approval policy required distinct approvals"));
-    await user.type(within(form).getByLabelText("Approval policy required distinct approvals"), "3");
-    await user.clear(within(form).getByLabelText("Approval policy evidence requirement"));
-    await user.type(
-      within(form).getByLabelText("Approval policy evidence requirement"),
-      "Controller packet and checklist control evidence."
-    );
-    await user.clear(within(form).getByLabelText("Approval policy rationale"));
-    await user.type(within(form).getByLabelText("Approval policy rationale"), "Tighten close approval accounting");
+    fireEvent.change(within(form).getByLabelText("Approval policy reviewer role"), { target: { value: "Controller" } });
+    fireEvent.change(within(form).getByLabelText("Approval policy required distinct approvals"), { target: { value: "3" } });
+    fireEvent.change(within(form).getByLabelText("Approval policy evidence requirement"), {
+      target: { value: "Controller packet and checklist control evidence." }
+    });
+    fireEvent.change(within(form).getByLabelText("Approval policy rationale"), { target: { value: "Tighten close approval accounting" } });
     await user.click(within(form).getByRole("button", { name: /Save policy/i }));
 
     expect(apiMocks.upsertOperationsApprovalPolicyRule).toHaveBeenCalledWith(expect.objectContaining({
@@ -1191,11 +1186,11 @@ describe("SettingsScreen", () => {
     );
 
     await user.click(screen.getByRole("button", { name: "Edit QuickBooks Online credentials" }));
-    await user.type(screen.getByLabelText("QuickBooks Online Client ID"), "qbo-client-id");
-    await user.type(screen.getByLabelText("QuickBooks Online Client secret"), "qbo-client-secret");
-    await user.type(screen.getByLabelText("QuickBooks Online Refresh token"), "qbo-refresh-token");
-    await user.type(screen.getByLabelText("QuickBooks Online Company realm ID"), "9130359087654321");
-    await user.type(screen.getByLabelText("QuickBooks Online Company name"), "Meridian-Dev");
+    fireEvent.change(screen.getByLabelText("QuickBooks Online Client ID"), { target: { value: "qbo-client-id" } });
+    fireEvent.change(screen.getByLabelText("QuickBooks Online Client secret"), { target: { value: "qbo-client-secret" } });
+    fireEvent.change(screen.getByLabelText("QuickBooks Online Refresh token"), { target: { value: "qbo-refresh-token" } });
+    fireEvent.change(screen.getByLabelText("QuickBooks Online Company realm ID"), { target: { value: "9130359087654321" } });
+    fireEvent.change(screen.getByLabelText("QuickBooks Online Company name"), { target: { value: "Meridian-Dev" } });
     await user.click(screen.getByRole("button", { name: "Save QuickBooks Online credentials" }));
 
     expect(apiMocks.putProviderCredentials).toHaveBeenCalledWith(
@@ -1266,7 +1261,7 @@ describe("SettingsScreen", () => {
       />
     );
 
-    await user.type(screen.getByLabelText("Search providers in connection center"), "polygon");
+    fireEvent.change(screen.getByLabelText("Search providers in connection center"), { target: { value: "polygon" } });
     expect(screen.getByText("Polygon.io")).toBeInTheDocument();
     expect(screen.queryByText("Alpaca")).toBeNull();
 

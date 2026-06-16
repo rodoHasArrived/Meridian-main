@@ -4130,6 +4130,12 @@ export interface ReportingScheduleDeliveryPlan {
   lastDeliveryPackageRoute: string | null;
   lastDeliverySecureLink: string | null;
   lastDeliveryAccessLinks?: ReportPackDeliveryAccessLink[] | null;
+  lastDeliveryAccessExpiresAtUtc?: string | null;
+  lastDeliveryAccessSummary?: string | null;
+  lastDeliveryChannelSummary?: string | null;
+  lastDeliveryDownloadSummary?: string | null;
+  lastDeliveryNotificationCount?: number;
+  lastDeliveryNotificationSummary?: string | null;
   versionStamp: string | null;
   lastDeliveryArtifactCount?: number;
   lastDeliveryIntegritySummary?: string | null;
@@ -4166,6 +4172,7 @@ export interface StructuredReportingExport {
   retainedManifestPath?: string | null;
   integrityHashSha256?: string | null;
   integritySummary?: string | null;
+  rowLineageCount?: number | null;
 }
 
 export interface StructuredReportingExportColumn {

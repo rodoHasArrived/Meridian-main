@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { PriceAlertsApi } from "@/lib/price-alerts/service";
 import { PRICE_ALERTS_POLL_INTERVAL_MS } from "@/lib/price-alerts/service";
 import { describeCondition } from "@/lib/price-alerts/evaluator";
-import type { PriceAlert, PriceAlertCondition, PriceAlertDraft, PriceAlertField, PriceAlertTrigger } from "@/lib/price-alerts/types";
+import type { PriceAlert, PriceAlertCondition, PriceAlertDraft, PriceAlertField, PriceAlertTrigger } from "@/lib/price-alerts";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type { MetricSnapshot } from "@/types";
 

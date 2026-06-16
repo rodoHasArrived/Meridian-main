@@ -21,7 +21,7 @@ import { Select } from "@/components/ui/select";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { usePriceAlerts } from "@/lib/price-alerts/service";
-import type { PriceAlertCondition, PriceAlertField } from "@/lib/price-alerts/types";
+import type { PriceAlertCondition, PriceAlertField } from "@/lib/price-alerts";
 import {
   usePriceAlertsScreenViewModel,
   type PriceAlertDetailAction,

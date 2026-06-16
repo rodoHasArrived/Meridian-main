@@ -817,7 +817,8 @@ public sealed class ReportPackRunReadService
             isReady ? [] : [blockedSummary],
             retainedManifestPath,
             integrityHash,
-            BuildStructuredExportIntegritySummary(rowCount, fieldCount, sourceCount, integrityHash));
+            BuildStructuredExportIntegritySummary(rowCount, fieldCount, sourceCount, integrityHash),
+            rowCount);
     }
 
     private static DateTimeOffset ResolveStructuredExportAsOf(
@@ -1756,6 +1757,12 @@ public sealed class ReportPackRunReadService
                     LastDeliveryPackageRoute: latestAttempt?.Package?.PortalRoute,
                     LastDeliverySecureLink: latestAttempt?.Package?.SecureLink,
                     LastDeliveryAccessLinks: latestAttempt?.Package?.AccessLinks,
+                    LastDeliveryAccessExpiresAtUtc: latestAttempt?.Package?.AccessExpiresAtUtc,
+                    LastDeliveryAccessSummary: latestAttempt?.Package?.DeliveryAccessSummary,
+                    LastDeliveryChannelSummary: latestAttempt?.Package?.DeliveryChannelSummary,
+                    LastDeliveryDownloadSummary: latestAttempt?.Package?.DownloadSummary,
+                    LastDeliveryNotificationCount: latestAttempt?.Package?.Notifications?.Count ?? 0,
+                    LastDeliveryNotificationSummary: BuildScheduleDeliveryPlanNotificationSummary(latestAttempt),
                     VersionStamp: BuildScheduleDeliveryPlanVersionStamp(schedule, distributionId, formats),
                     LastDeliveryArtifactCount: latestAttempt?.Package?.Artifacts.Count ?? 0,
                     LastDeliveryIntegritySummary: latestAttempt?.Package?.IntegritySummary,
@@ -1800,6 +1807,12 @@ public sealed class ReportPackRunReadService
                 LastDeliveryPackageRoute: latestAttempt?.Package?.PortalRoute,
                 LastDeliverySecureLink: latestAttempt?.Package?.SecureLink,
                 LastDeliveryAccessLinks: latestAttempt?.Package?.AccessLinks,
+                LastDeliveryAccessExpiresAtUtc: latestAttempt?.Package?.AccessExpiresAtUtc,
+                LastDeliveryAccessSummary: latestAttempt?.Package?.DeliveryAccessSummary,
+                LastDeliveryChannelSummary: latestAttempt?.Package?.DeliveryChannelSummary,
+                LastDeliveryDownloadSummary: latestAttempt?.Package?.DownloadSummary,
+                LastDeliveryNotificationCount: latestAttempt?.Package?.Notifications?.Count ?? 0,
+                LastDeliveryNotificationSummary: BuildScheduleDeliveryPlanNotificationSummary(latestAttempt),
                 VersionStamp: BuildScheduleDeliveryPlanVersionStamp(schedule, policy.DistributionId, formats),
                 LastDeliveryArtifactCount: latestAttempt?.Package?.Artifacts.Count ?? 0,
                 LastDeliveryIntegritySummary: latestAttempt?.Package?.IntegritySummary,
@@ -1814,6 +1827,20 @@ public sealed class ReportPackRunReadService
     {
         var entitlementScope = NormalizeOptional(latestAttempt?.Package?.DeliveryEvidencePacket?.EntitlementScope);
         return string.IsNullOrWhiteSpace(entitlementScope) ? null : entitlementScope;
+    }
+
+    private static string? BuildScheduleDeliveryPlanNotificationSummary(ReportPackDeliveryAttemptDto? latestAttempt)
+    {
+        var notifications = latestAttempt?.Package?.Notifications;
+        if (notifications is null || notifications.Count == 0)
+        {
+            return null;
+        }
+
+        var statusSummary = string.Join(
+            "; ",
+            notifications.Select(static notification => $"{notification.Status} via {notification.Channel}"));
+        return $"{notifications.Count} notification{(notifications.Count == 1 ? string.Empty : "s")} retained: {statusSummary}.";
     }
 
     private static string? ResolveScheduleBrandingThemeId(

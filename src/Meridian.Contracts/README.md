@@ -290,8 +290,8 @@ parsing token URLs locally. Delivery packages also carry `ReportPackDeliveryNoti
 rows that preserve the recipient, channel, subject, body, token-gated href, status, and expiry for
 email-link and secure-portal package notifications, so clients can show what was sent or published
 without fabricating outbox state from the secure URL. Token-gated email-link and secure-portal
-packages also carry an access-expiry timestamp so clients can display and enforce package availability from the shared
-contract. Keep those package fields shared so email-link, secure portal, evidence-vault, and
+packages also carry an access-expiry timestamp plus access and channel summaries so clients can display and enforce
+package availability from the shared contract. Keep those package fields shared so email-link, secure portal, evidence-vault, and
 internal-route distribution clients do not infer report package output or integrity from
 delivery-reference strings. The shared route catalog
 includes both the token-gated package manifest URL under
@@ -392,8 +392,9 @@ The same summary carries `StructuredReportingExportDto` descriptors for regulato
 warehouse ledger facts, investment portfolio-cut outputs, Top-N/contribution analytics outputs,
 and cross-fund consolidation outputs. Each descriptor carries retained artifact path, retained
 manifest path, deterministic SHA-256 integrity hash, integrity summary, schema/row/field/source
-counts, readiness, route, evidence, and version-stamp fields so downstream regulatory, warehouse,
-and investment consumers can prove exactly which governed export artifact was described.
+counts, row-lineage count, readiness, route, evidence, and version-stamp fields so downstream
+regulatory, warehouse, and investment consumers can prove exactly which governed export artifact
+was described.
 `StructuredReportingExportPayloadDto` returns stable column metadata, data-dictionary fields,
 validation checks, string-valued JSON rows, and optional row-lineage entries with one-based row
 numbers, stable row keys, and schema-ordered SHA-256 row hashes for downstream export consumers. The same endpoint
@@ -414,7 +415,8 @@ keeping client-facing packet styling tied to the governed contract rather than b
 format sets, email-link or secure-portal mode, readiness text, due/as-of posture, last retained
 delivery attempt metadata, latest package artifact counts, checksum integrity summaries, and
 version stamps plus the schedule or last-package branding theme. It also carries the last retained
-delivery entitlement scope from the package evidence packet so clients can show whether the latest
+download summary, access-expiry timestamp, package access/channel summaries, notification proof,
+and entitlement scope from the package evidence packet so clients can show whether the latest
 scheduled package was company-wide, private, or restricted to specific user/group/company
 principals. Delivery package `accessLinks` may include an `artifact-xls` compatibility link for
 retained XLSX workbook artifacts; it is a token-gated `format=xls` route that returns the canonical

@@ -395,6 +395,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             export.Purpose == StructuredReportingExportPurposeDto.Regulatory &&
             export.Format == GovernanceReportArtifactFormatDto.Csv &&
             export.RowCount == workspace.Ledger.TrialBalance.Count &&
+            export.RowLineageCount == export.RowCount &&
             export.IsReady);
         workspace.Reporting.StructuredExports.Should().Contain(export =>
             export.ExportId == "warehouse-ledger-facts" &&
@@ -402,6 +403,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             export.Format == GovernanceReportArtifactFormatDto.Json &&
             export.Dataset == "ledger-reconciliation-facts" &&
             export.RowCount == workspace.LedgerReconciliationSnapshot.Consolidated.Balances.Count &&
+            export.RowLineageCount == export.RowCount &&
             export.FieldCount == 9 &&
             export.Route.Contains("warehouse-ledger-facts", StringComparison.Ordinal) &&
             export.ValidationSummary!.Contains("downstream warehouse loading", StringComparison.Ordinal) &&
@@ -411,6 +413,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             export.Purpose == StructuredReportingExportPurposeDto.InvestmentDecision &&
             export.Format == GovernanceReportArtifactFormatDto.Xlsx &&
             export.RowCount == workspace.Reporting.PortfolioCuts!.Count &&
+            export.RowLineageCount == export.RowCount &&
             export.Route.Contains("fundProfileId=", StringComparison.Ordinal) &&
             export.Route.Contains("format=xlsx", StringComparison.Ordinal) &&
             export.VersionStamp!.StartsWith("structured-export:20260411160000", StringComparison.Ordinal));
@@ -419,6 +422,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             export.Purpose == StructuredReportingExportPurposeDto.InvestmentDecision &&
             export.Format == GovernanceReportArtifactFormatDto.Csv &&
             export.RowCount == workspace.Reporting.AnalyticsRows!.Count &&
+            export.RowLineageCount == export.RowCount &&
             export.FieldCount == 18 &&
             export.IsReady);
         workspace.Reporting.StructuredExports.Should().Contain(export =>
@@ -427,6 +431,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             export.Format == GovernanceReportArtifactFormatDto.Xlsx &&
             export.Route.Contains("format=xlsx", StringComparison.Ordinal) &&
             export.RowCount == workspace.Reporting.CrossFundConsolidations!.Count &&
+            export.RowLineageCount == export.RowCount &&
             export.SourceCount == companyConsolidation.SourceCount &&
             export.IsReady);
         var portfolioExport = await service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
@@ -440,6 +445,8 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             row["cutId"] == "fund:consolidated" &&
             row["totalPnl"] == "50" &&
             row["shadowNav"] == "2000");
+        portfolioExport.RowLineage.Should().NotBeNull();
+        portfolioExport.Export.RowLineageCount.Should().Be(portfolioExport.RowLineage!.Count);
         var warehouseExport = await service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
             fundProfileId,
             "warehouse-ledger-facts",
@@ -462,6 +469,8 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             row["accountName"] == "Cash" &&
             row["journalEntryCount"] == workspace.LedgerReconciliationSnapshot.Consolidated.JournalEntryCount.ToString() &&
             row["ledgerEntryCount"] == workspace.LedgerReconciliationSnapshot.Consolidated.LedgerEntryCount.ToString());
+        warehouseExport.RowLineage.Should().NotBeNull();
+        warehouseExport.Export.RowLineageCount.Should().Be(warehouseExport.RowLineage!.Count);
         var analyticsExport = await service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
             fundProfileId,
             "investment-topn-contribution-analytics",
@@ -478,6 +487,8 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             row["totalPnl"] == "60" &&
             row["contributionPercent"] == "120.0" &&
             row["heatMapIntensity"] == "85.7143");
+        analyticsExport.RowLineage.Should().NotBeNull();
+        analyticsExport.Export.RowLineageCount.Should().Be(analyticsExport.RowLineage!.Count);
         var crossFundExport = await service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
             fundProfileId,
             "cross-fund-consolidation",
@@ -489,6 +500,8 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             row["consolidationId"] == "cross-fund:company" &&
             row["fundCount"] == "2" &&
             row["sourceCount"] == "5");
+        crossFundExport.RowLineage.Should().NotBeNull();
+        crossFundExport.Export.RowLineageCount.Should().Be(crossFundExport.RowLineage!.Count);
         Func<Task> missingExport = () => service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
             fundProfileId,
             "missing-export",

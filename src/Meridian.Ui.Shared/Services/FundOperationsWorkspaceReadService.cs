@@ -3133,7 +3133,8 @@ public sealed class FundOperationsWorkspaceReadService
             isReady ? [] : [blockedSummary],
             retainedManifestPath,
             integrityHash,
-            BuildStructuredExportIntegritySummary(rowCount, fieldCount, sourceCount, integrityHash));
+            BuildStructuredExportIntegritySummary(rowCount, fieldCount, sourceCount, integrityHash),
+            rowCount);
     }
 
     private static IReadOnlyList<PortfolioReportingCutDto> BuildPortfolioReportingCuts(
