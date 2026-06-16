@@ -45,6 +45,18 @@ Before broad implementation, an AI session should:
 5. Generate or refresh an export with `build/scripts/ai/meridian_context_exporter.py` when a machine-readable snapshot is useful.
 6. Validate the change with the narrowest command that covers the touched files.
 
+## Self-Maintenance Contract
+
+MDIF stays useful only when source-of-truth docs, exports, and checks move together:
+
+1. Update the hand-authored source first: `docs/architecture/meridian-*.md`, `docs/domain/*.md`, `docs/ai/context/*.md`, or `docs/adr/*.md`.
+2. Regenerate snapshots with `make ai-mdif-context` or `python3 build/scripts/ai/meridian_context_exporter.py --summary`.
+3. Verify snapshots with `make ai-mdif-context-check` or `python3 build/scripts/ai/meridian_context_exporter.py --check --summary`. The check compares a source digest over MDIF architecture docs, domain dictionary pages, context packs, ADRs, and current project files.
+4. Run `python3 build/scripts/docs/validate-docs-structure.py --top-level domain --summary` when domain pages change.
+5. Run Codex/AI inventory checks when any Codex-facing or AI index changes.
+
+Generated exports are useful session inputs, not source-of-truth files. If the check reports a stale digest, update the hand-authored source or rerun the exporter rather than editing the generated JSON or Markdown by hand.
+
 ## Drift Prevention Rules
 
 - Prefer extending canonical domain and context files over adding one-off prompt text.

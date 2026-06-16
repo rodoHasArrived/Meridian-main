@@ -8,8 +8,18 @@ This directory is the default target for Meridian Development Intelligence Frame
 
 Generated exports are convenience artifacts for AI sessions. They are not canonical source-of-truth documents; update architecture, domain, ADR, and context-pack files first, then regenerate exports when needed.
 
-Example:
+Regenerate after changing MDIF architecture docs, `docs/domain/`, `docs/ai/context/`, ADRs, or project files:
 
 ```bash
+make ai-mdif-context
+# or
 python3 build/scripts/ai/meridian_context_exporter.py --markdown-output docs/ai/exports/LLM_CONTEXT.md --json-output docs/ai/exports/context.json --summary
+```
+
+Check whether the committed export is current without rewriting files:
+
+```bash
+make ai-mdif-context-check
+# or
+python3 build/scripts/ai/meridian_context_exporter.py --check --summary
 ```

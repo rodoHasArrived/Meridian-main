@@ -6,7 +6,7 @@
         ai-verify ai-report \
         ai-maintenance-light ai-maintenance-full \
         ai-arch-check ai-arch-check-summary ai-arch-check-json \
-        ai-codex-skills-check \
+        ai-codex-skills-check ai-mdif-context ai-mdif-context-check \
         ai-docs-freshness ai-docs-drift ai-docs-sync-report \
         ai-docs-map ai-docs-map-check ai-plan-checklists-check \
         ai-docs-archive ai-docs-archive-execute \
@@ -79,6 +79,16 @@ ai-arch-check-json: ## Architecture compliance check with JSON output (for CI / 
 ai-codex-skills-check: ## Validate Codex skill catalog, metadata, docs, and execution contract links
 	@echo "$(BLUE)Checking Codex skill consistency...$(NC)"
 	@python3 build/scripts/docs/check-codex-skills.py --summary
+
+ai-mdif-context: ## Regenerate MDIF/domain/context exports for AI coding sessions
+	@echo "$(BLUE)Regenerating MDIF context exports...$(NC)"
+	@python3 build/scripts/ai/meridian_context_exporter.py --summary
+	@echo "$(GREEN)MDIF context exports current$(NC)"
+
+ai-mdif-context-check: ## Check MDIF/domain/context exports are current
+	@echo "$(BLUE)Checking MDIF context exports...$(NC)"
+	@python3 build/scripts/ai/meridian_context_exporter.py --check --summary
+	@echo "$(GREEN)MDIF context exports are current$(NC)"
 
 ai-docs-freshness: ## Check staleness of AI documentation files
 	@echo "$(BLUE)Checking AI doc freshness...$(NC)"

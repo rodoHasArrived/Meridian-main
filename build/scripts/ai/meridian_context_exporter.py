@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import sys
 import xml.etree.ElementTree as ET
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
@@ -31,6 +33,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--markdown-output", type=Path, default=DEFAULT_MARKDOWN_OUTPUT, help="Markdown output path.")
     parser.add_argument("--json-output", type=Path, default=DEFAULT_JSON_OUTPUT, help="JSON output path.")
     parser.add_argument("--summary", action="store_true", help="Print a compact summary.")
+    parser.add_argument("--check", action="store_true", help="Validate that the existing JSON export is current without writing files.")
     return parser.parse_args()
 
 
@@ -85,11 +88,42 @@ def collect_docs(root: Path, pattern: str) -> list[dict[str, str]]:
     return docs
 
 
+def source_files(root: Path) -> list[Path]:
+    patterns = (
+        "docs/architecture/meridian-*.md",
+        "docs/domain/*.md",
+        "docs/ai/context/*.md",
+        "docs/adr/*.md",
+        "src/**/*.csproj",
+        "tests/**/*.csproj",
+    )
+    files: list[Path] = []
+    for pattern in patterns:
+        for path in root.glob(pattern):
+            if path.is_file() and not should_skip(path):
+                files.append(path)
+    return sorted(set(files))
+
+
+def digest_sources(root: Path, files: list[Path]) -> str:
+    digest = hashlib.sha256()
+    for path in files:
+        relative = rel(path, root)
+        digest.update(relative.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(path.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
 def build_payload(root: Path) -> dict[str, Any]:
     projects = discover_projects(root)
+    sources = source_files(root)
     return {
         "generatedAtUtc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "repository": root.name,
+        "sourceDigest": digest_sources(root, sources),
+        "sourceFiles": [rel(path, root) for path in sources],
         "mdif": {
             "constitution": collect_docs(root, "docs/architecture/meridian-*.md"),
             "domainDictionary": collect_docs(root, "docs/domain/*.md"),
@@ -115,6 +149,7 @@ def render_markdown(payload: dict[str, Any]) -> str:
         f"**Reviewed:** {payload['generatedAtUtc'][:10]}",
         "",
         f"Generated at: `{payload['generatedAtUtc']}`",
+        f"Source digest: `{payload['sourceDigest']}`",
         "",
         "## MDIF Sources",
         "",
@@ -143,21 +178,56 @@ def write_text(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
+def _load_existing_json(path: Path) -> dict[str, Any]:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise ValueError(f"Export not found: {path}") from exc
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Export is not valid JSON: {path}: {exc}") from exc
+
+
+def _print_summary(payload: dict[str, Any], verb: str) -> None:
+    counts = payload["counts"]
+    print(
+        f"{verb} "
+        f"{counts['projects']} projects, "
+        f"{counts['constitutionDocs']} constitution docs, "
+        f"{counts['domainDocs']} domain docs, "
+        f"{counts['contextPacks']} context packs, "
+        f"digest {payload['sourceDigest'][:12]}"
+    )
+
+
 def main() -> int:
     args = parse_args()
     root = args.root.resolve()
     payload = build_payload(root)
-    write_text(root / args.json_output, json.dumps(payload, indent=2) + "\n")
-    write_text(root / args.markdown_output, render_markdown(payload))
+    json_output = root / args.json_output
+    markdown_output = root / args.markdown_output
+
+    if args.check:
+        try:
+            existing = _load_existing_json(json_output)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        if existing.get("sourceDigest") != payload["sourceDigest"]:
+            print(
+                "MDIF context export is stale: "
+                f"expected digest {payload['sourceDigest']} but found {existing.get('sourceDigest', '<missing>')}. "
+                "Run build/scripts/ai/meridian_context_exporter.py --summary.",
+                file=sys.stderr,
+            )
+            return 1
+        if args.summary:
+            _print_summary(payload, "current")
+        return 0
+
+    write_text(json_output, json.dumps(payload, indent=2) + "\n")
+    write_text(markdown_output, render_markdown(payload))
     if args.summary:
-        counts = payload["counts"]
-        print(
-            "exported "
-            f"{counts['projects']} projects, "
-            f"{counts['constitutionDocs']} constitution docs, "
-            f"{counts['domainDocs']} domain docs, "
-            f"{counts['contextPacks']} context packs"
-        )
+        _print_summary(payload, "exported")
     return 0
 
 

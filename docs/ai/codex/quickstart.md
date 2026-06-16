@@ -64,7 +64,7 @@ Load only enough context to route and validate the task.
 
 AI-doc proof lane defaults: `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/check-codex-skills.py --summary`, `python3 build/scripts/docs/validate-docs-structure.py --top-level ai --summary`, `python3 build/scripts/docs/repair-links.py --summary`, `git diff --check`
 
-MDIF/domain proof lane defaults: `python3 build/scripts/ai/meridian_context_exporter.py --summary`, `python3 build/scripts/docs/validate-docs-structure.py --top-level domain --summary`, `python3 build/scripts/docs/check-ai-inventory.py --summary`, `git diff --check`
+MDIF/domain proof lane defaults: `make ai-mdif-context-check`, `python3 build/scripts/ai/meridian_context_exporter.py --check --summary`, `python3 build/scripts/docs/validate-docs-structure.py --top-level domain --summary`, `python3 build/scripts/docs/check-ai-inventory.py --summary`, `git diff --check`
 
 Hosted proof fallback: after pushing a branch, use `gh workflow run targeted-test.yml --ref <branch>`
 with `lane=dotnet` plus `dotnet_project`/`dotnet_filter`, or `lane=browser-dashboard` plus
@@ -118,7 +118,7 @@ and uses `MeridianBuildIsolationKey` output roots by default.
 | WPF view model, shell route, or desktop workflow | `.codex/AGENTS.md`, relevant WPF skill/checklist, desktop testing docs | Focused `tests/Meridian.Wpf.Tests` filter for the touched view model, shell route, or workflow script |
 | Provider adapter or provider workflow | Provider docs, `src/Meridian.ProviderSdk`, nearest adapter README | Focused provider tests or provider-validation script that covers the adapter and credential path |
 | Storage, WAL, or archival behavior | Storage docs and nearest `src/Meridian.Storage` README | Focused storage/WAL tests; avoid direct file writes outside WAL or `AtomicFileWriter` patterns |
-| MDIF, domain dictionary, or context pack | `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, `docs/ai/context/` | `python3 build/scripts/ai/meridian_context_exporter.py --summary`; `python3 build/scripts/docs/validate-docs-structure.py --top-level domain --summary`; AI inventory checks when Codex-facing indexes change |
+| MDIF, domain dictionary, or context pack | `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, `docs/ai/context/` | `make ai-mdif-context` when source docs changed; `make ai-mdif-context-check`; `python3 build/scripts/docs/validate-docs-structure.py --top-level domain --summary`; AI inventory checks when Codex-facing indexes change |
 | Docs-only change | Nearest docs index | `git diff --check -- <paths>` plus inventory checks when AI catalogs are affected |
 
 ## High-Traffic Skill Defaults

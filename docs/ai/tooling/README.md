@@ -27,7 +27,7 @@ agent orchestration, prompt routing, repository navigation artifacts, or AI-main
 | Run tests on GitHub when local capacity blocks proof | `.github/workflows/targeted-test.yml` | `gh workflow run targeted-test.yml --ref <branch> -f lane=dotnet -f dotnet_project=<project> -f dotnet_filter="<filter>"` |
 | Apply deterministic scoped text edits | `build/scripts/ai/ai-edit-tool.py` | Preview with `plan`, then apply the saved plan |
 | Build token-capped orientation packs | `build/scripts/ai/context-budget.py` | `python build/scripts/ai/context-budget.py --task "<task>" --target-file <path> --summary` |
-| Export MDIF project/domain/context snapshots | `build/scripts/ai/meridian_context_exporter.py` | `python3 build/scripts/ai/meridian_context_exporter.py --summary` |
+| Export or check MDIF project/domain/context snapshots | `build/scripts/ai/meridian_context_exporter.py`, `make ai-mdif-context`, `make ai-mdif-context-check` | `make ai-mdif-context-check` or `python3 build/scripts/ai/meridian_context_exporter.py --check --summary` |
 | Generate read-only Promptfoo eval artifacts | `build/scripts/ai/promptfoo-adapter.py` | `python build/scripts/ai/promptfoo-adapter.py --eval-id 1 --summary` |
 | Run broader AI maintenance audits | `build/scripts/ai-repo-updater.py`, `make/ai.mk`, `scripts/ai/*.sh` | Pick the narrowest `audit`, `verify`, or maintenance lane |
 | Run Codex-specific desktop quality scans | `tools/codex/*.ps1` | Use the nearest focused PowerShell tool, then report exact command/results |
@@ -102,6 +102,7 @@ Use these for multi-agent, parallel, or route-aware work:
   - Generates subsystem-aware, token-capped context packs from task text and touched files.
 - `build/scripts/ai/meridian_context_exporter.py`
   - Regenerates `docs/ai/exports/LLM_CONTEXT.md` and `docs/ai/exports/context.json` from MDIF architecture docs, `docs/domain/`, `docs/ai/context/`, ADRs, and current project files.
+  - Supports `--check --summary` for self-maintenance gates that compare the committed export digest to current MDIF/project sources without rewriting generated files.
 - `build/scripts/ai/promptfoo-adapter.py`
   - Converts selected canonical skill `evals.json` cases into a read-only Promptfoo
     `promptfooconfig.yaml`, `trace_output_provider.py`, `trace_outputs.json`, and
