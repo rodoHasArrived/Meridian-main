@@ -49,6 +49,8 @@ Each handoff should include:
 - `Optional context`: useful but not required follow-up references.
 - `Validation reuse`: prior validation evidence reused plus rerun triggers if touched files change.
 - `Assumptions`: unresolved assumptions that still need verification.
+- `Working memory delta`: active claims released or retained, codebase drift noticed, and merge
+  queue changes since the lane started.
 
 ## 4) Quality and Safety Gates
 
@@ -61,6 +63,8 @@ Each handoff should include:
 ## 4b) Parallel Lane Integration
 
 - [ ] Set an explicit integration order when lanes touch shared files, so merges land predictably.
+- [ ] Update [`working-memory.md`](working-memory.md) ledger fields before each lane starts editing
+      and before coordinator integration.
 - [ ] Merge lanes with the narrowest shared surface first; integrate doc/index lanes last.
 - [ ] Give each lane a rollback trigger and action so one bad lane can be reverted on its own.
 - [ ] Re-run shared validation (handoff, routing parity, contract drift) once after final integration.

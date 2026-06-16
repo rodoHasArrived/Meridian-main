@@ -10,10 +10,13 @@ Keep it short and route detailed work to the canonical Meridian guidance sources
 - `docs/start/README.md`, `docs/product/README.md`, `docs/engineering/README.md`, and `docs/operators/README.md` for rebuilt audience paths.
 - `docs/documentation-ownership.md` for documentation ownership, generated-doc, and archive rules.
 - `CLAUDE.md` for the full repository guide.
+- `.github/copilot-instructions.md` and `.github/agents/implementation-assurance-agent.md` for GitHub-hosted assistant mirrors that must stay aligned with shared development and validation rules.
+- `.github/workflows/README.md` for GitHub-hosted validation workflows, including manual targeted testing.
 - `.codex/skills/_shared/project-context.md` for current Codex project context.
 - `docs/ai/codex/quickstart.md` for the fastest Codex task startup path.
 - `docs/ai/codex/self-improving-agents.md` for Codex agent improvement, eval promotion, and graph-memory guardrails.
 - `docs/product/meridian-design-document.md` for the canonical stakeholder design framing.
+- `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-vision.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, and `docs/ai/context/README.md` for MDIF architecture, domain, and AI context packs before broad generation or architecture-sensitive work.
 - `docs/ai/navigation/README.md` and `docs/ai/generated/repo-navigation.md` for repo routing.
 - `docs/architecture/project-structure.md` and `docs/architecture/module-map.md` for structure and boundaries.
 - `docs/start/README.md` and `docs/engineering/README.md` for commands and validation.
@@ -37,12 +40,14 @@ Keep it short and route detailed work to the canonical Meridian guidance sources
 
 1. Run `git status --short` before editing and treat unrelated changes as user-owned.
 2. Route large-repo work through `docs/ai/navigation/README.md` and the generated repo map before broad recursive search.
-3. Read the nearest source README and `docs/source/data/source-modules.yml` before source edits under `src/**`.
-4. Prefer shared service/read-model seams before UI-specific forks.
-5. Use the narrowest validation command that covers the files changed.
-6. If local machine capacity, restore, or MSBuild locks block validation, push the branch and use the manual GitHub-hosted `Targeted Test` workflow before retrying broad local scripts.
-7. Update docs and AI indexes in the same change when behavior, workflow, prompt, skill, or agent guidance changes.
-8. For documentation rebuild work, update the new canonical audience path first, then archive or redirect older hand-authored material in reviewable batches.
+3. Load the relevant MDIF constitution, domain dictionary, and AI context pack before broad code generation, domain modeling, workflow design, or architecture-sensitive refactors.
+4. Read the nearest source README and `docs/source/data/source-modules.yml` before source edits under `src/**`.
+5. Prefer shared service/read-model seams before UI-specific forks.
+6. Use the narrowest validation command that covers the files changed.
+7. If local machine capacity, restore, or MSBuild locks block validation, push the branch and use the manual GitHub-hosted `Targeted Test` workflow before retrying broad local scripts.
+8. Update docs and AI indexes in the same change when behavior, workflow, prompt, skill, or agent guidance changes.
+9. For Codex development workflow changes, keep `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, `.github/agents/implementation-assurance-agent.md`, `.github/workflows/README.md`, `docs/engineering/README.md`, `docs/start/README.md`, `.codex/skills/_shared/*`, `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md` synchronized when they teach the same rule.
+10. For documentation rebuild work, update the new canonical audience path first, then archive or redirect older hand-authored material in reviewable batches.
 
 ## Command Discovery
 
@@ -55,10 +60,11 @@ Use maintained command references instead of copying command catalogs into this 
 - `docs/documentation-ownership.md`
 - `docs/ai/assistant-workflow-contract.md`
 
-For command discovery, start with:
+For command discovery in Windows/PowerShell, first use the direct commands below. GNU Make is an
+optional convenience wrapper in this repo; only run `make help` when `where.exe make` finds an
+installed `make`.
 
-```bash
-make help
+```powershell
 dotnet run --project src/Meridian/Meridian.csproj -- --help
-python3 build/python/cli/buildctl.py --help
+python build/python/cli/buildctl.py --help
 ```

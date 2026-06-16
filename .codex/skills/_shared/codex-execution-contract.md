@@ -11,12 +11,27 @@ Use this file as the Codex-only execution standard for Meridian skill runs. It c
 - For implementation tasks, identify whether docs, tests, catalogs, or generated metadata must
   move with the code change before editing.
 
+## Workflow Disclosure Gate
+
+- Tell the user the current working phase and why it matters at startup or orientation, before file
+  edits, during longer investigation or validation, when a blocker changes the plan, and before final
+  validation.
+- Keep updates concise: name the current phase, files or subsystem being inspected or changed, the
+  evidence being sought, and any blocker or scope change.
+- Summarize discoveries and next actions instead of pasting step-by-step command transcripts, raw
+  file dumps, or full audit logs unless the user explicitly asks for a detailed trace.
+
 ## Concurrent Work Gate
 
 - Split work only across disjoint files, projects, or subsystems.
 - Give every worker explicit ownership and assume other workers may be editing nearby files.
 - Keep one coordinator responsible for integration, conflict resolution, and final validation.
 - Avoid overlapping writes unless the overlap is deliberately sequenced.
+- For parallel implementation or a dirty changing worktree, maintain task-local working memory from
+  `docs/ai/working-memory.md`: active claims, inspected files, validated facts, open assumptions,
+  merge order, codebase drift, and validation reuse.
+- Refresh working memory before a lane starts editing, after validation, and whenever `git status`
+  changes unexpectedly.
 - For concurrent .NET validation, prefer isolated outputs:
 
 ```bash
@@ -49,6 +64,12 @@ python3 build/python/cli/buildctl.py build --project Meridian.sln --configuratio
   operator-facing behavior changes.
 - Prefer existing docs over new docs.
 - Put Codex-specific docs under `docs/ai/codex/`.
+- For shared development or validation workflow changes, keep the Codex-loaded baseline and mirrored
+  assistant surfaces aligned: `AGENTS.md`, `CLAUDE.md`, `.codex/AGENTS.md`,
+  `.codex/skills/_shared/project-context.md`, `.codex/skills/_shared/codex-execution-contract.md`,
+  `.github/copilot-instructions.md`, `.github/agents/implementation-assurance-agent.md`,
+  `.github/workflows/README.md`, `docs/engineering/README.md`, `docs/start/README.md`,
+  `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md`.
 - For registered `src/**` modules, use `docs/source/data/source-modules.yml` to identify the
   module README, update required docs when behavior changes, then run
   `python3 build/scripts/docs/validate-doc-hashes.py --summary`. If source/docs alignment was
@@ -64,7 +85,9 @@ python3 build/python/cli/buildctl.py build --project Meridian.sln --configuratio
 
 For AI tooling, Codex skill, Codex catalog, prompt, docs automation, or assistant-workflow changes:
 
-- Required: `make ai-verify`, `make ai-arch-check`, and the CI `Validate AI contract drift` step.
+- Required: run the direct Python/script checks that back the relevant Make targets. If GNU Make is
+  installed, `make ai-verify` and `make ai-arch-check` are acceptable wrappers. Confirm the CI
+  `Validate AI contract drift` step remains present.
 - Advisory: `make ai-audit*`, `make ai-report`, `make ai-docs-freshness`,
   `make ai-docs-drift`, `make ai-docs-sync-report`, `make ai-arch-check-summary`,
   `make ai-arch-check-json`.

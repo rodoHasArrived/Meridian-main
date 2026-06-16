@@ -311,6 +311,26 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                     Error: $"Cannot move break from {item.Status} to {request.Status}.");
             }
 
+            if (request.ActionOrigin != OperationsActionOriginDto.HumanOperator)
+            {
+                var validation = Invalid(
+                    item,
+                    "Reviewed automation cannot resolve or dismiss reconciliation breaks; a human operator approval is required.",
+                    ReconciliationBreakQueueTransitionErrorCode.MaterialActionRequiresHumanOperator,
+                    ["actionOrigin"],
+                    ReconciliationCaseLifecycleState.Resolved);
+                await AppendMaterialActionDeniedAuditAsync(
+                    item,
+                    request.ResolvedBy,
+                    request.ResolutionNote,
+                    commandId: null,
+                    correlationId: null,
+                    source: "reconciliation-break-resolve",
+                    validation.Error ?? "Material action requires human operator origin.",
+                    ct).ConfigureAwait(false);
+                return validation;
+            }
+
             var now = DateTimeOffset.UtcNow;
             var approval = _workflowService.Apply(item, new ReconciliationCaseTransitionCommand(request.BreakId, ReconciliationCaseTransitionAction.RequestApproval, request.ResolvedBy, request.OperatorRationale, ["resolution-note"]), now);
             if (approval.Status != ReconciliationBreakQueueTransitionStatus.Success || approval.Item is null)
@@ -396,6 +416,19 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             var validation = ValidateCaseworkCommand(item, command);
             if (validation is not null)
             {
+                if (validation.ErrorCode == ReconciliationBreakQueueTransitionErrorCode.MaterialActionRequiresHumanOperator)
+                {
+                    await AppendMaterialActionDeniedAuditAsync(
+                        item,
+                        command.Actor,
+                        command.Note,
+                        command.CommandId,
+                        command.CorrelationId,
+                        command.Source,
+                        validation.Error ?? "Material action requires human operator origin.",
+                        ct).ConfigureAwait(false);
+                }
+
                 return validation;
             }
 
@@ -512,7 +545,8 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
                     Status: request.Status,
                     Note: request.Note,
                     RootCauseCode: request.RootCauseCode,
-                    ResolutionCode: request.ResolutionCode);
+                    ResolutionCode: request.ResolutionCode,
+                    ActionOrigin: request.ActionOrigin);
                 var validation = ValidateCaseworkCommand(item, command);
                 if (validation is not null)
                 {
@@ -698,6 +732,43 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
         await AtomicFileWriter.AppendLinesAsync(_auditPath, [line], ct).ConfigureAwait(false);
     }
 
+    private async Task AppendMaterialActionDeniedAuditAsync(
+        ReconciliationBreakQueueItem item,
+        string actor,
+        string? note,
+        string? commandId,
+        string? correlationId,
+        string source,
+        string reason,
+        CancellationToken ct)
+        => await AppendAuditAsync(new ReconciliationBreakQueueAuditEvent(
+            EventId: Guid.NewGuid().ToString("N"),
+            BreakId: item.BreakId,
+            EventType: "MaterialActionDenied",
+            PreviousStatus: item.Status,
+            NewStatus: item.Status,
+            PreviousLifecycleState: item.LifecycleState,
+            NewLifecycleState: item.LifecycleState,
+            OccurredAt: DateTimeOffset.UtcNow,
+            AssignedTo: item.AssignedTo,
+            ReviewedBy: item.ReviewedBy,
+            ResolvedBy: item.ResolvedBy,
+            Note: note,
+            ExceptionRoute: item.ExceptionRoute,
+            ToleranceBand: item.ToleranceBand,
+            RequiredSignoffRole: item.RequiredSignoffRole,
+            SignoffStatus: item.SignoffStatus,
+            ExternalAccountId: item.ExternalAccountId,
+            CustodianId: item.CustodianId,
+            UpstreamSyncCursor: item.UpstreamSyncCursor,
+            Actor: actor,
+            BeforePayload: JsonSerializer.Serialize(item, _jsonOptions),
+            AfterPayload: JsonSerializer.Serialize(item, _jsonOptions),
+            CorrelationId: correlationId,
+            CommandId: commandId,
+            Source: source,
+            Reason: reason), ct).ConfigureAwait(false);
+
     private async Task<long> NextAuditSequenceAsync(CancellationToken ct)
     {
         if (!File.Exists(_auditPath))
@@ -738,7 +809,8 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             try
             {
                 var auditEvent = JsonSerializer.Deserialize<ReconciliationBreakQueueAuditEvent>(line, _jsonOptions);
-                if (!string.Equals(auditEvent?.CommandId, commandId, StringComparison.OrdinalIgnoreCase) ||
+                if (auditEvent is null ||
+                    !string.Equals(auditEvent.CommandId, commandId, StringComparison.OrdinalIgnoreCase) ||
                     string.IsNullOrWhiteSpace(auditEvent.AfterPayload))
                 {
                     continue;
@@ -774,10 +846,16 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
 
         return command.Action switch
         {
+            _ when RequiresHumanOrigin(command) && command.ActionOrigin != OperationsActionOriginDto.HumanOperator
+                => Invalid(item, "Reviewed automation cannot resolve, sign off, or reopen reconciliation cases; a human operator approval is required.", ReconciliationBreakQueueTransitionErrorCode.MaterialActionRequiresHumanOperator, ["actionOrigin"], RequestedLifecycle(command)),
             ReconciliationCaseworkAction.Assign when string.IsNullOrWhiteSpace(command.Assignee)
                 => Invalid(item, "Assignee is required.", ReconciliationBreakQueueTransitionErrorCode.MissingActor),
             ReconciliationCaseworkAction.TransitionStatus when command.Status is null
                 => Invalid(item, "Target lifecycle status is required.", ReconciliationBreakQueueTransitionErrorCode.IllegalTransition),
+            ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.Reopened && (!command.Privileged || string.IsNullOrWhiteSpace(command.Reason))
+                => Invalid(item, "Privileged reopen requires a reason.", ReconciliationBreakQueueTransitionErrorCode.MissingReason, ["reason"], command.Status),
+            ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.SignedOff && string.Equals(item.ResolvedBy, command.Actor, StringComparison.OrdinalIgnoreCase) && (!command.Privileged || string.IsNullOrWhiteSpace(command.Reason))
+                => Invalid(item, "Resolver and signer must be different operators unless privileged override and reason are supplied.", ReconciliationBreakQueueTransitionErrorCode.ResolverSignerConflict, ["reason"], command.Status),
             ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.Investigating && string.IsNullOrWhiteSpace(item.AssignedTo) && string.IsNullOrWhiteSpace(command.Assignee)
                 => Invalid(item, "Assignment is required before investigation.", ReconciliationBreakQueueTransitionErrorCode.MissingActor),
             ReconciliationCaseworkAction.TransitionStatus when command.Status == ReconciliationCaseLifecycleState.AwaitingEvidence && string.IsNullOrWhiteSpace(command.Note)
@@ -827,6 +905,20 @@ public sealed class FileReconciliationBreakQueueRepository : IReconciliationBrea
             _ => null
         };
     }
+
+    private static bool RequiresHumanOrigin(ReconciliationCaseworkCommand command)
+        => command.Action is ReconciliationCaseworkAction.Resolve or ReconciliationCaseworkAction.SignOff or ReconciliationCaseworkAction.Reopen ||
+           command is { Action: ReconciliationCaseworkAction.TransitionStatus, Status: ReconciliationCaseLifecycleState.Resolved or ReconciliationCaseLifecycleState.SignedOff or ReconciliationCaseLifecycleState.Reopened };
+
+    private static ReconciliationCaseLifecycleState? RequestedLifecycle(ReconciliationCaseworkCommand command)
+        => command.Action switch
+        {
+            ReconciliationCaseworkAction.Resolve => ReconciliationCaseLifecycleState.Resolved,
+            ReconciliationCaseworkAction.SignOff => ReconciliationCaseLifecycleState.SignedOff,
+            ReconciliationCaseworkAction.Reopen => ReconciliationCaseLifecycleState.Reopened,
+            ReconciliationCaseworkAction.TransitionStatus => command.Status,
+            _ => null
+        };
 
     private static ReconciliationBreakQueueTransitionResult Invalid(
         ReconciliationBreakQueueItem? item,

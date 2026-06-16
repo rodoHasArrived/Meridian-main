@@ -1,5 +1,6 @@
 using Meridian.Application.Config.Credentials;
 using Meridian.Application.Services;
+using Meridian.Application.UI;
 using Meridian.Core.Config;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
@@ -9,6 +10,7 @@ using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Adapters.Tiingo;
 using Serilog;
+using static Meridian.Application.Services.AutoConfigurationService;
 
 namespace Meridian.Application.Config;
 

@@ -15,6 +15,7 @@ import type {
   OperationsAccountingRecordSummary,
   OperationsBreakCase,
   OperationsDashboardSummary,
+  OperationsEvidenceLink,
   OperationsEvidencePackageSummary,
   OperationsReconciliationLaneSummary,
   OperationsCloseChecklistTask,
@@ -105,6 +106,14 @@ export interface OperationsContinuityChecklistRow {
   remediationHref: string | null;
   remediationLabel: string;
   acknowledgementLabel: string;
+  acknowledgementCommandPostureLabel: string;
+  acknowledgementGuardLabel: string;
+  workflowId: string | null;
+  expectedWorkflowVersion: number | null;
+  canAcknowledge: boolean;
+  acknowledgeLabel: string;
+  acknowledgeDisabledReason: string | null;
+  acknowledgeAriaLabel: string;
   ariaLabel: string;
 }
 
@@ -146,6 +155,22 @@ export interface OperationsContinuityBreakCaseRow {
   caseworkRouteLabel: string;
   commandPostureLabel: string;
   commandGuardLabel: string;
+  workflowId: string | null;
+  expectedWorkflowVersion: number | null;
+  assignmentOwner: string;
+  assignmentEscalationLevel: string | null;
+  assignmentEscalationReason: string | null;
+  assignmentDueDate: string | null;
+  canAssign: boolean;
+  assignLabel: string;
+  assignDisabledReason: string | null;
+  assignAriaLabel: string;
+  resolutionStatus: string;
+  resolutionEvidenceLinks: OperationsEvidenceLink[];
+  canResolve: boolean;
+  resolveLabel: string;
+  resolveDisabledReason: string | null;
+  resolveAriaLabel: string;
   routeHref: string | null;
   routeLabel: string;
   ariaLabel: string;
@@ -192,6 +217,30 @@ export interface OperationsContinuityDashboardViewModel {
   requiredActionsLabel: string;
   metricsEmptyText: string;
   metrics: OperationsContinuityDashboardMetricRow[];
+}
+
+export interface FinancialOperationsCommandSpineRow {
+  id: string;
+  stageLabel: string;
+  commandLabel: string;
+  postureLabel: string;
+  statusLabel: string;
+  statusTone: OperationsContinuityTone;
+  detail: string;
+  guardLabel: string;
+  evidenceLabel: string;
+  routeHref: string | null;
+  routeLabel: string;
+  ariaLabel: string;
+}
+
+export interface FinancialOperationsCommandSpineViewModel {
+  title: string;
+  summaryLabel: string;
+  statusLabel: string;
+  statusTone: OperationsContinuityTone;
+  emptyText: string;
+  rows: FinancialOperationsCommandSpineRow[];
 }
 
 export interface OperationsReviewedAutomationViewModel {
@@ -485,6 +534,7 @@ export interface OperationsContinuityScreenViewModel {
   workflowApprovalHistoryLabel: string;
   workflowApprovalHistoryEmptyText: string;
   dashboard: OperationsContinuityDashboardViewModel;
+  commandSpine: FinancialOperationsCommandSpineViewModel;
   reviewedAutomation: OperationsReviewedAutomationViewModel;
   financialOperationsQueue: FinancialOperationsOperatorQueueViewModel;
   workflowApprovalHistory: OperationsContinuityWorkflowApprovalRow[];
@@ -772,9 +822,14 @@ export function buildOperationsContinuityScreenViewModel({
   const evidencePackages = buildEvidencePackageRows(effectiveDetail?.evidencePackages ?? []);
   const workflowApprovalHistory = buildWorkflowApprovalHistoryRows(effectiveDetail?.approvals ?? []);
   const dashboard = buildOperationsDashboardViewModel(effectiveDetail?.dashboardSummary ?? null, detailLoading);
+  const commandSpine = buildFinancialOperationsCommandSpineViewModel(dashboard, detailLoading);
   const reviewedAutomation = buildReviewedAutomationViewModel(effectiveDetail?.reviewedAutomation ?? null, detailLoading);
   const checklistSource = effectiveDetail?.closeChecklist ?? [];
-  const checklist = buildChecklistRows(checklistSource);
+  const checklist = buildChecklistRows(
+    checklistSource,
+    effectiveDetail?.workflowId ?? null,
+    effectiveDetail?.version ?? null
+  );
   const financialOperationsQueue = buildFinancialOperationsOperatorQueueViewModel({
     breakCases,
     checklist,
@@ -840,6 +895,7 @@ export function buildOperationsContinuityScreenViewModel({
     workflowApprovalHistoryLabel: "Workflow approval history",
     workflowApprovalHistoryEmptyText: detailLoading ? "Loading workflow approval history..." : "No workflow approval history is surfaced for the selected workflow.",
     dashboard,
+    commandSpine,
     reviewedAutomation,
     financialOperationsQueue,
     workflowApprovalHistory,
@@ -1242,6 +1298,45 @@ function mapDashboardMetricRow(metric: OperationsDashboardSummary["metrics"][num
   };
 }
 
+function buildFinancialOperationsCommandSpineViewModel(
+  dashboard: OperationsContinuityDashboardViewModel,
+  loading: boolean
+): FinancialOperationsCommandSpineViewModel {
+  const rows = dashboard.metrics.map(mapFinancialOperationsCommandSpineRow);
+
+  return {
+    title: "Financial Operations command spine",
+    summaryLabel: `${dashboard.stageLabel}; ${dashboard.metricCountLabel}; ${dashboard.requiredActionsLabel}`,
+    statusLabel: loading ? "Loading" : dashboard.statusLabel,
+    statusTone: loading ? "neutral" : dashboard.statusTone,
+    emptyText: loading
+      ? "Loading Financial Operations command spine..."
+      : "No shared Financial Operations dashboard metrics are available for command routing.",
+    rows
+  };
+}
+
+function mapFinancialOperationsCommandSpineRow(
+  metric: OperationsContinuityDashboardMetricRow
+): FinancialOperationsCommandSpineRow {
+  return {
+    id: metric.id,
+    stageLabel: metric.label,
+    commandLabel: FINANCIAL_OPERATIONS_COMMAND_LABELS[metric.id] ?? "Review shared workflow command",
+    postureLabel: metric.valueLabel,
+    statusLabel: metric.statusLabel,
+    statusTone: metric.statusTone,
+    detail: metric.detail,
+    guardLabel: metric.requiredActionsLabel === "No required actions"
+      ? "Shared command guard clear"
+      : metric.requiredActionsLabel,
+    evidenceLabel: metric.evidenceLabel,
+    routeHref: metric.routeHref,
+    routeLabel: metric.routeLabel,
+    ariaLabel: `Financial Operations command ${metric.label}, ${metric.statusLabel}, ${metric.valueLabel}`
+  };
+}
+
 function compareDashboardMetrics(
   left: OperationsDashboardSummary["metrics"][number],
   right: OperationsDashboardSummary["metrics"][number]
@@ -1596,6 +1691,8 @@ function buildBreakCaseRows(
           })
         : null;
       const isReady = breakStatusTone(breakCase.status) === "ready";
+      const assignDisabledReason = buildBreakAssignDisabledReason(breakCase, workflowId, workflowVersion, ownerLabel);
+      const resolveDisabledReason = buildBreakResolveDisabledReason(breakCase, workflowId, workflowVersion, ownerLabel);
       return {
         id: breakCase.breakId,
         caseLabel: breakCase.breakId,
@@ -1629,11 +1726,81 @@ function buildBreakCaseRows(
         commandGuardLabel: workflowVersion === null
           ? "Workflow version pending"
           : `Expected workflow version ${workflowVersion}`,
+        workflowId,
+        expectedWorkflowVersion: workflowVersion,
+        assignmentOwner: "browser-operator",
+        assignmentEscalationLevel: breakCase.escalationLevel?.trim() || null,
+        assignmentEscalationReason: breakCase.escalationReason?.trim() || null,
+        assignmentDueDate: breakCase.dueDate,
+        canAssign: assignDisabledReason === null,
+        assignLabel: ownerLabel === "Unassigned" ? "Assign to me" : "Assigned",
+        assignDisabledReason,
+        assignAriaLabel: `Assign break ${breakCase.breakId} to browser operator`,
+        resolutionStatus: "Resolved",
+        resolutionEvidenceLinks: breakCase.evidenceLinks,
+        canResolve: resolveDisabledReason === null,
+        resolveLabel: isReady ? "Resolved" : "Resolve break",
+        resolveDisabledReason,
+        resolveAriaLabel: `Resolve break ${breakCase.breakId}`,
         routeHref: evidenceHref,
         routeLabel: evidenceHref ? "Open break evidence" : "No local route",
         ariaLabel: `${breakCase.breakId}, ${statusLabel}, ${ownerLabel}, ${slaLabel}, ${blockedOutputsLabel}`
       };
     });
+}
+
+function buildBreakAssignDisabledReason(
+  breakCase: OperationsBreakCase,
+  workflowId: string | null,
+  workflowVersion: number | null,
+  ownerLabel: string
+): string | null {
+  if (breakStatusTone(breakCase.status) === "ready") {
+    return "Break resolution has already been retained.";
+  }
+
+  if (ownerLabel !== "Unassigned") {
+    return `Break is already assigned to ${ownerLabel}.`;
+  }
+
+  if (!workflowId) {
+    return "Workflow id is unavailable for break assignment.";
+  }
+
+  if (workflowVersion === null) {
+    return "Workflow version is unavailable for break assignment.";
+  }
+
+  return null;
+}
+
+function buildBreakResolveDisabledReason(
+  breakCase: OperationsBreakCase,
+  workflowId: string | null,
+  workflowVersion: number | null,
+  ownerLabel: string
+): string | null {
+  if (breakStatusTone(breakCase.status) === "ready") {
+    return "Break resolution has already been retained.";
+  }
+
+  if (ownerLabel === "Unassigned") {
+    return "Assign the break before resolving it.";
+  }
+
+  if (breakCase.evidenceLinks.length === 0) {
+    return "Retained evidence is required before resolving the break.";
+  }
+
+  if (!workflowId) {
+    return "Workflow id is unavailable for break resolution.";
+  }
+
+  if (workflowVersion === null) {
+    return "Workflow version is unavailable for break resolution.";
+  }
+
+  return null;
 }
 
 function compareBreakCases(left: OperationsBreakCase, right: OperationsBreakCase): number {
@@ -1758,7 +1925,11 @@ function selectLatestTimelineEvent(
     .sort((left, right) => right.occurredAtUtc.localeCompare(left.occurredAtUtc))[0] ?? null;
 }
 
-function buildChecklistRows(tasks: OperationsCloseChecklistTask[]): OperationsContinuityChecklistRow[] {
+function buildChecklistRows(
+  tasks: OperationsCloseChecklistTask[],
+  workflowId: string | null,
+  workflowVersion: number | null
+): OperationsContinuityChecklistRow[] {
   return tasks.map((task) => {
     const remediationHref = normalizeLocalWorkstationRoute(task.remediationRoute) ?? null;
     const acknowledged = task.acknowledgedAtUtc
@@ -1766,6 +1937,12 @@ function buildChecklistRows(tasks: OperationsCloseChecklistTask[]): OperationsCo
       : task.canAcknowledge
         ? "Ready for acknowledgement"
         : task.blockingReason?.trim() || "Acknowledgement blocked until required evidence is complete";
+    const commandPosture = task.acknowledgedAtUtc || (isChecklistTaskReady(task) && !task.canAcknowledge)
+      ? "Acknowledgement retained"
+      : workflowId && task.canAcknowledge
+        ? "Acknowledgement command ready"
+        : "Acknowledgement blocked";
+    const acknowledgeDisabledReason = buildChecklistAcknowledgeDisabledReason(task, workflowId, workflowVersion);
 
     return {
       id: task.taskId,
@@ -1784,9 +1961,43 @@ function buildChecklistRows(tasks: OperationsCloseChecklistTask[]): OperationsCo
       remediationHref,
       remediationLabel: remediationHref ? "Open remediation" : "No remediation route",
       acknowledgementLabel: acknowledged,
+      acknowledgementCommandPostureLabel: commandPosture,
+      acknowledgementGuardLabel: workflowVersion === null
+        ? "Workflow version pending"
+        : `Expected workflow version ${workflowVersion}`,
+      workflowId,
+      expectedWorkflowVersion: workflowVersion,
+      canAcknowledge: acknowledgeDisabledReason === null,
+      acknowledgeLabel: task.acknowledgedAtUtc ? "Acknowledged" : "Acknowledge",
+      acknowledgeDisabledReason,
+      acknowledgeAriaLabel: `Acknowledge close checklist task ${task.label || gateLabel(task.gate)}`,
       ariaLabel: `${task.label || gateLabel(task.gate)} checklist task, ${splitEnumLabel(task.status || "Unknown")}, ${task.owner?.trim() || "owner pending"}`
     };
   });
+}
+
+function buildChecklistAcknowledgeDisabledReason(
+  task: OperationsCloseChecklistTask,
+  workflowId: string | null,
+  workflowVersion: number | null
+): string | null {
+  if (task.acknowledgedAtUtc) {
+    return "Checklist acknowledgement has already been retained.";
+  }
+
+  if (!task.canAcknowledge) {
+    return task.blockingReason?.trim() || "Required evidence must be complete before acknowledgement.";
+  }
+
+  if (!workflowId) {
+    return "Workflow id is unavailable for the checklist acknowledgement command.";
+  }
+
+  if (workflowVersion === null) {
+    return "Workflow version is unavailable for the checklist acknowledgement command.";
+  }
+
+  return null;
 }
 
 function buildCloseGovernanceViewModel(
@@ -1893,6 +2104,15 @@ const FINANCIAL_OPERATIONS_DASHBOARD_METRIC_ORDER = [
   "produce-evidence",
   "close-support"
 ];
+
+const FINANCIAL_OPERATIONS_COMMAND_LABELS: Record<string, string> = {
+  "receive-activity": "Start/import/normalize activity",
+  "match-records": "Run reconciliation and refresh posture",
+  "resolve-exceptions": "Assign, escalate, or resolve breaks",
+  "approve-results": "Submit or decide approval",
+  "produce-evidence": "Open evidence package routes",
+  "close-support": "Review checklist and close readiness"
+};
 
 const FINANCIAL_OPERATIONS_EVIDENCE_PACKAGE_ORDER = [
   "accounting-record",

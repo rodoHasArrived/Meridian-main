@@ -685,6 +685,8 @@ const closeWorkflow: OperationsContinuityWorkflow = {
   closeReadiness: {
     isReadyToClose: false,
     severity: "Critical",
+    score: 42,
+    components: [],
     blockers: [
       {
         code: "SOURCE_FILE_MISSING",
@@ -2144,6 +2146,8 @@ describe("accounting-screen view model", () => {
       closeReadiness: {
         isReadyToClose: true,
         severity: "Ready",
+        score: 100,
+        components: [],
         blockers: [],
         nextActions: []
       },

@@ -1,0 +1,57 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace Meridian.Contracts.Integrations;
+
+[JsonSourceGenerationOptions(
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    PropertyNameCaseInsensitive = true,
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    WriteIndented = true)]
+[JsonSerializable(typeof(IntegrationTypeDto))]
+[JsonSerializable(typeof(ProviderCapabilityKindDto))]
+[JsonSerializable(typeof(ProviderIntegrationActivationStateDto))]
+[JsonSerializable(typeof(ProviderIntegrationProcessingStatusDto))]
+[JsonSerializable(typeof(ProviderIntegrationAuthTypeDto))]
+[JsonSerializable(typeof(ProviderIntegrationHttpMethodDto))]
+[JsonSerializable(typeof(ProviderIntegrationPaginationTypeDto))]
+[JsonSerializable(typeof(ProviderIntegrationCursorTypeDto))]
+[JsonSerializable(typeof(ProviderMappingConfidenceDto))]
+[JsonSerializable(typeof(ProviderIntegrationIssueSeverityDto))]
+[JsonSerializable(typeof(ProviderIntegrationAuthConfigDto))]
+[JsonSerializable(typeof(ProviderCapabilityDto))]
+[JsonSerializable(typeof(IReadOnlyList<ProviderCapabilityDto>))]
+[JsonSerializable(typeof(EndpointDependencyDto))]
+[JsonSerializable(typeof(EndpointPaginationDto))]
+[JsonSerializable(typeof(EndpointResponseShapeDto))]
+[JsonSerializable(typeof(EndpointDefinitionDto))]
+[JsonSerializable(typeof(IReadOnlyList<EndpointDefinitionDto>))]
+[JsonSerializable(typeof(TransformRuleDto))]
+[JsonSerializable(typeof(FieldMappingDto))]
+[JsonSerializable(typeof(IReadOnlyList<FieldMappingDto>))]
+[JsonSerializable(typeof(ValidationRuleDto))]
+[JsonSerializable(typeof(IReadOnlyList<ValidationRuleDto>))]
+[JsonSerializable(typeof(SyncScheduleDto))]
+[JsonSerializable(typeof(ProviderIntegrationActivationPolicyDto))]
+[JsonSerializable(typeof(ProviderIntegrationActivationIssueDto))]
+[JsonSerializable(typeof(IReadOnlyList<ProviderIntegrationActivationIssueDto>))]
+[JsonSerializable(typeof(ProviderIntegrationActivationReadinessDto))]
+[JsonSerializable(typeof(ProviderIntegrationTemplateCatalogEntryDto))]
+[JsonSerializable(typeof(IReadOnlyList<ProviderIntegrationTemplateCatalogEntryDto>))]
+[JsonSerializable(typeof(ProviderIntegrationManifestDto))]
+[JsonSerializable(typeof(IReadOnlyList<ProviderIntegrationManifestDto>))]
+[JsonSerializable(typeof(ProviderConnectionDto))]
+[JsonSerializable(typeof(IReadOnlyList<ProviderConnectionDto>))]
+[JsonSerializable(typeof(RawIngestionPayloadDto))]
+[JsonSerializable(typeof(ValidationIssueDto))]
+[JsonSerializable(typeof(IReadOnlyList<ValidationIssueDto>))]
+[JsonSerializable(typeof(QuarantinedRecordDto))]
+[JsonSerializable(typeof(IReadOnlyList<QuarantinedRecordDto>))]
+[JsonSerializable(typeof(IntegrationStagingRecordDto))]
+[JsonSerializable(typeof(IReadOnlyList<IntegrationStagingRecordDto>))]
+[JsonSerializable(typeof(ManualCsvProviderIntegrationDryRunRequestDto))]
+[JsonSerializable(typeof(ProviderIntegrationDryRunResultDto))]
+[JsonSerializable(typeof(IReadOnlyDictionary<string, string>))]
+[JsonSerializable(typeof(Dictionary<string, string>))]
+[JsonSerializable(typeof(JsonElement))]
+public sealed partial class ProviderIntegrationContractsJsonContext : JsonSerializerContext;

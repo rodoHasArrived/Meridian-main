@@ -53,6 +53,8 @@ lookup paths, and evidence trails those layers rely on.
   the contracts-owned `ICanonicalSymbolRegistry` over the symbol registry store.
 - `Ledger/` - accounting journal storage, tax-lot policy inputs, and guardrails for instrument
   postings.
+- `Integrations/` - file-backed provider integration manifest, connection, raw payload,
+  quarantine, and staging-record persistence for replayable no-code provider intake.
 - `SecurityMaster/` - reference-data stores that identify securities and preserve provenance.
 - `DirectLending/` - direct-lending state, events, workflow audit, and transactional ledger handoff.
 - `AssetOperations/` - read-model projections for operational terms, lifecycle, cash flow,
@@ -118,6 +120,11 @@ and a non-empty idempotency key before the write can reach Postgres. Partial fun
 also include fund event id, fund event type, and capital account id so private-capital postings can
 be reconstructed from durable journal evidence.
 
+Ledger period close writes also fail closed for reviewed automation. `PostgresLedgerBookService`
+rejects assistant or automation-origin close requests before saving the period status, period-close
+event, or operator inbox sign-off work item so period locks remain human-approved accounting
+records.
+
 Ledger tax-lot state is stored as account-scoped policy records plus open-lot records in the ledger
 schema. The storage layer keeps the FIFO/LIFO/HIFO/SpecificId policy inputs and open-lot balances;
 relief projection, approval workflow, and tax-reporting exports remain outside this project.
@@ -148,6 +155,11 @@ composition.
 ETL local job definitions are also Storage-owned. The JSON-backed `EtlJobDefinitionStore` writes
 operator-created ETL definitions under the storage root using `AtomicFileWriter`; Application wires
 the store through the shared `Meridian.Contracts.Etl` contract.
+
+Provider integration manifests are Storage-owned durable configuration and evidence records. The
+file-backed integration store persists approved manifests, connection instances, raw payloads,
+quarantined records, and staging records under the resolved data root using `AtomicFileWriter` so
+mapping changes can replay retained source payloads without reacquiring provider data.
 
 ## Glossary
 

@@ -823,6 +823,34 @@ describe("Operations Continuity view model", () => {
       requiredActionsLabel: "Complete source-backed reconciliation lanes before approval.",
       routeHref: "/accounting/reconciliation"
     });
+    expect(vm.commandSpine).toMatchObject({
+      statusLabel: "Missing",
+      statusTone: "blocked",
+      summaryLabel: "Core flow: Resolve Exceptions; 2/6 metrics ready; Complete source-backed reconciliation lanes before approval.; Publish and retain the evidence package before period close."
+    });
+    expect(vm.commandSpine.rows.map((row) => row.id)).toEqual([
+      "receive-activity",
+      "match-records",
+      "resolve-exceptions",
+      "approve-results",
+      "produce-evidence",
+      "close-support"
+    ]);
+    expect(vm.commandSpine.rows[0]).toMatchObject({
+      stageLabel: "Receive Activity",
+      commandLabel: "Start/import/normalize activity",
+      postureLabel: "Complete",
+      statusLabel: "Ready",
+      guardLabel: "Shared command guard clear",
+      routeHref: "/accounting"
+    });
+    expect(vm.commandSpine.rows[2]).toMatchObject({
+      stageLabel: "Resolve Exceptions",
+      commandLabel: "Assign, escalate, or resolve breaks",
+      statusLabel: "Review Required",
+      guardLabel: "Assign, escalate, or resolve open exceptions and retain resolution evidence.",
+      routeHref: "/accounting/reconciliation"
+    });
     expect(vm.reviewedAutomation).toMatchObject({
       statusLabel: "Review Required",
       statusTone: "review",
@@ -949,6 +977,11 @@ describe("Operations Continuity view model", () => {
       remediationHref: "/accounting/ledger",
       remediationLabel: "Open remediation",
       acknowledgementLabel: "Ledger validation is still required.",
+      acknowledgementCommandPostureLabel: "Acknowledgement blocked",
+      acknowledgementGuardLabel: "Expected workflow version 4",
+      canAcknowledge: false,
+      acknowledgeLabel: "Acknowledge",
+      acknowledgeDisabledReason: "Ledger validation is still required.",
       statusLabel: "Pending",
       statusTone: "review"
     });
@@ -979,6 +1012,47 @@ describe("Operations Continuity view model", () => {
       closeAuditLabel: "No close audit event",
       reopenAuditLabel: "No governed reopen recorded",
       commandGuardLabel: "Close and reopen command decisions remain enforced by the shared workflow API."
+    });
+  });
+
+  it("marks acknowledgeable checklist tasks with the shared command guard", () => {
+    const acknowledgeableDetail: OperationsContinuityWorkflow = {
+      ...detail,
+      closeChecklist: [
+        {
+          ...detail.closeChecklist[0]!,
+          status: "Ready",
+          blockingReason: null,
+          canAcknowledge: true,
+          acknowledgedAtUtc: null,
+          acknowledgedBy: null
+        }
+      ]
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail: acknowledgeableDetail,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.checklist[0]).toMatchObject({
+      id: "close-gate-ledgerposting",
+      acknowledgementLabel: "Ready for acknowledgement",
+      acknowledgementCommandPostureLabel: "Acknowledgement command ready",
+      acknowledgementGuardLabel: "Expected workflow version 4",
+      workflowId,
+      expectedWorkflowVersion: 4,
+      canAcknowledge: true,
+      acknowledgeLabel: "Acknowledge",
+      acknowledgeDisabledReason: null,
+      acknowledgeAriaLabel: "Acknowledge close checklist task Ledger posting controller check"
     });
   });
 
@@ -1138,6 +1212,14 @@ describe("Operations Continuity view model", () => {
       caseworkRouteLabel: "Open casework",
       commandPostureLabel: "Resolution retained",
       commandGuardLabel: "Expected workflow version 4",
+      workflowId,
+      expectedWorkflowVersion: 4,
+      canAssign: false,
+      assignLabel: "Assigned",
+      assignDisabledReason: "Break resolution has already been retained.",
+      canResolve: false,
+      resolveLabel: "Resolved",
+      resolveDisabledReason: "Break resolution has already been retained.",
       routeHref: "/accounting/reconciliation/recon-break-42/evidence",
       routeLabel: "Open break evidence"
     });
@@ -1319,6 +1401,15 @@ describe("Operations Continuity view model", () => {
       caseworkRouteLabel: "Open casework",
       commandPostureLabel: "Assignment and escalation ready",
       commandGuardLabel: "Expected workflow version 4",
+      workflowId,
+      expectedWorkflowVersion: 4,
+      assignmentOwner: "browser-operator",
+      canAssign: true,
+      assignLabel: "Assign to me",
+      assignDisabledReason: null,
+      canResolve: false,
+      resolveLabel: "Resolve break",
+      resolveDisabledReason: "Assign the break before resolving it.",
       routeHref: null,
       routeLabel: "No local route"
     });
@@ -1379,6 +1470,7 @@ describe("Operations Continuity view model", () => {
     expect(vm.gatesEmptyText).toBe("Loading selected workflow gates...");
     expect(vm.blockersEmptyText).toBe("Loading selected workflow blockers...");
     expect(vm.checklistEmptyText).toBe("Loading selected workflow checklist...");
+    expect(vm.commandSpine.emptyText).toBe("Loading Financial Operations command spine...");
     expect(vm.financialOperationsQueue.emptyText).toBe("Loading Financial Operations operator queue...");
     expect(vm.timelineEmptyText).toBe("Loading workflow timeline.");
   });
@@ -1580,6 +1672,20 @@ describe("Operations Continuity view model", () => {
       evidenceCountLabel: "2/2 evidence pointers",
       dueSoonLabel: "No open due dates",
       statusTone: "ready"
+    });
+    expect(vm.checklist[0]).toMatchObject({
+      id: "close-gate-ledgerposting",
+      acknowledgementLabel: "Acknowledged by fund-controller at May 09, 15:30 UTC",
+      acknowledgementCommandPostureLabel: "Acknowledgement retained",
+      acknowledgementGuardLabel: "Expected workflow version 4",
+      canAcknowledge: false,
+      acknowledgeLabel: "Acknowledged",
+      acknowledgeDisabledReason: "Checklist acknowledgement has already been retained."
+    });
+    expect(vm.checklist[1]).toMatchObject({
+      id: "close-gate-reportpack",
+      acknowledgementCommandPostureLabel: "Acknowledgement retained",
+      acknowledgementGuardLabel: "Expected workflow version 4"
     });
   });
 

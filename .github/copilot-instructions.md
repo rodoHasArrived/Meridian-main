@@ -18,7 +18,8 @@ For each task, follow this sequence:
 6. Select a mode from `docs/ai/work-modes.md` before implementation; escalate only when risk or scope increases.
 7. For concurrent lanes, initialize `docs/ai/parallel-task-manifest-template.md` before edits to keep ownership boundaries explicit.
 8. If the task needs AI validators, routing tools, or maintenance scripts, load `docs/ai/tooling/README.md` instead of rediscovering command lanes ad hoc.
-9. Summarize what changed, why, and how it was validated.
+9. For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load MDIF: `docs/architecture/meridian-development-intelligence-framework.md`, `docs/architecture/meridian-vision.md`, `docs/architecture/meridian-domain-model.md`, `docs/domain/README.md`, and `docs/ai/context/README.md`.
+10. Summarize what changed, why, and how it was validated.
 
 **No mobile development lane:** do not create mobile applications, mobile-specific product
 surfaces, native iOS/Android clients, MAUI clients, React Native clients, Flutter clients, or
@@ -125,6 +126,7 @@ Relevant examples:
 
 - [`CLAUDE.md`](../CLAUDE.md) — comprehensive project context, architecture, conventions
 - [`docs/ai/README.md`](../docs/ai/README.md) — master AI resource index with reading order by task type
+- [`docs/architecture/meridian-development-intelligence-framework.md`](../docs/architecture/meridian-development-intelligence-framework.md) — MDIF context spine for broad generation and architecture-sensitive work
 - [`docs/ai/ai-known-errors.md`](../docs/ai/ai-known-errors.md) — mandatory error prevention registry
 - [`docs/ai/copilot/instructions.md`](../docs/ai/copilot/instructions.md) — compact Copilot host guide and routing links
 - [`docs/ai/tooling/README.md`](../docs/ai/tooling/README.md) — shared AI validator and script index

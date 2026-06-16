@@ -1,3 +1,5 @@
+using Meridian.Contracts.Workstation;
+
 namespace Meridian.Identity.Auth;
 
 public enum AccessPrincipalKindDto
@@ -61,14 +63,16 @@ public sealed record UserAccessAssignmentCreateRequestDto(
     decimal? ApprovalLimitAmount = null,
     string? ApprovalLimitCurrency = null,
     string? SegregationOfDutiesRule = null,
-    string? CorrelationId = null);
+    string? CorrelationId = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record UserAccessAssignmentRevokeRequestDto(
     Guid AssignmentId,
     long ExpectedVersion,
     string RequestedBy,
     string Rationale,
-    string? CorrelationId = null);
+    string? CorrelationId = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record UserAccessAssignmentQueryDto(
     string? PrincipalId = null,

@@ -73,10 +73,10 @@ different work:
 - [`_shared/project-context.md`](_shared/project-context.md) — current product framing, solution
   map, key abstractions, and review guardrails
 - [`_shared/codex-execution-contract.md`](_shared/codex-execution-contract.md) — Codex-only
-  execution gates for safe concurrency, narrow validation, cosmetic-churn avoidance, docs sync,
-  AI tooling gates, and final response shape
+  execution gates for workflow disclosure, safe concurrency, narrow validation, cosmetic-churn
+  avoidance, docs sync, AI tooling gates, and final response shape
 - [`docs/ai/codex/quickstart.md`](../../docs/ai/codex/quickstart.md) — first-10-minutes Codex task
-  routing, proof matrix, read budget, and dirty-worktree protocol
+  routing, workflow disclosure startup, proof matrix, read budget, and dirty-worktree protocol
 - [`docs/ai/codex/route-cards.md`](../../docs/ai/codex/route-cards.md) — compact subsystem cards
   for owner projects, first docs, entrypoints, and validation lanes
 - [`docs/ai/codex/README.md`](../../docs/ai/codex/README.md) — Codex-specific AI docs index,
@@ -102,6 +102,9 @@ different work:
 - Treat `src/Meridian.Wpf/` as the active desktop app operator UI path. Keep
   `src/Meridian.Ui/dashboard/` and `/workstation/` as retained browser workstation surfaces unless
   the user explicitly asks for browser workstation work.
+- For browser workstation visual or interaction checks, keep package tests as the proof baseline
+  and use the Codex Browser plugin only for scoped unauthenticated local routes or file-backed
+  previews that need rendered-state evidence.
 - Keep skill descriptions and product examples centered on the W1-W5 operational record baseline:
   data confidence, retained source evidence, reconciliation, approvals, accounting records,
   multi-asset operational coverage, and governed reports. Treat Backtesting Studio, live-readiness,
@@ -115,6 +118,8 @@ different work:
 - For Codex-only implementation workflow changes, keep the edit in `.codex/skills/`, preserve
   disjoint-worker ownership, run narrow validation first, skip purposeless cosmetic churn, and keep
   code/doc evidence paired in the final response.
+- Keep workflow disclosure concise and Codex-local: state phase, scope, evidence, blockers, and
+  validation intent without emitting full command transcripts unless requested.
 - Treat `make ai-verify`, `make ai-arch-check`, and the CI `Validate AI contract drift` step as
   required gates for AI/tooling changes. Keep `ai-audit*`, `ai-report`, docs-drift/freshness, and
   archive/maintenance targets as advisory or reporting lanes unless a task explicitly promotes them.

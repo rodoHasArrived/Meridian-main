@@ -244,6 +244,8 @@ const closeDetail: OperationsContinuityWorkflow = {
   closeReadiness: {
     isReadyToClose: true,
     severity: "Ready",
+    score: 100,
+    components: [],
     blockers: [],
     nextActions: []
   },

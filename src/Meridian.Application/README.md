@@ -42,6 +42,16 @@ and UI presentation concerns in their owning layers.
   export service now lives in `Meridian.DataIntegration.Etl`. The ETL job-definition store and
   SFTP publisher port contracts live in `Meridian.Contracts.Etl`, and the local JSON-backed
   job-definition store implementation lives in `Meridian.Storage.Etl`.
+- `Integrations/` - provider integration template catalog, dry-run orchestration, and activation
+  readiness. The catalog seeds the first no-code template pack for manual CSV upload, custodian
+  positions, brokerage transactions, and fixed income security master. The manual CSV dry-run
+  service consumes contract-owned manifests and the Storage-owned integration manifest store, parses
+  operator-uploaded samples, applies configured field mappings and safe transforms, writes raw
+  payload evidence, stages accepted records, and quarantines rejected records without promoting
+  directly into Portfolio, Security Master, or Ledger stores. The activation-readiness service
+  evaluates those manifests before enablement, blocking unresolved required mappings, missing
+  approval evidence, and order-preview/place/cancel capabilities unless they use a certified
+  provider adapter with production-write activation policy.
 - Canonicalization composition consumes `Meridian.DataIntegration.Canonicalization` contracts,
   provider condition-code mapping, venue normalization, parity metrics, the default
   `EventCanonicalizer`, and the Data Integration-owned `CanonicalizingPublisher` decorator.

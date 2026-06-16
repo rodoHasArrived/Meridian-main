@@ -38,6 +38,11 @@ evidence expectations, but they must attach to these objects instead of replacin
 | Domain extensions | Tenant object attributes and descriptors | Layer around stable objects without ungoverned identity. |
 | Tenant templates | Profile bundles for onboarding | Activate governed configuration; do not create separate products. |
 
+For no-code provider setup, integration configuration should compile into a versioned
+`ProviderIntegrationManifest` executed by a generic connector runtime with raw payload retention,
+mapping, validation, quarantine, and activation gates. See the
+[Provider Integration Manifest Runtime](provider-integration-manifest-runtime.md) blueprint.
+
 ## Governed Foundations
 
 These foundations are intentionally not fully configurable:

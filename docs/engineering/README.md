@@ -95,11 +95,14 @@ dotnet build Meridian.WebWorkstation.slnf -c Debug --no-restore /p:EnableWindows
 pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/dev/validate-wpf-dev.ps1 -Restore
 pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Development
 pwsh ./scripts/dev/run-desktop.ps1 -LaunchMode Production -BuildOnly
-make desktop-test-dev
 dotnet restore tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
 dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release --no-restore /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:WindowsPackageType=None
 dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj -c Release --no-restore --filter "Category!=Integration" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
 ```
+
+If GNU Make is installed, `make desktop-test-dev` is a convenience wrapper for the WPF development
+validation script. In Windows shells where `where.exe make` finds nothing, use the `pwsh` command
+above directly.
 
 Use `-AllowConcurrentDotnet` only when the active repo-owned build/test processes have been
 inspected and intentional overlap is acceptable. The validation script serializes WPF builds by

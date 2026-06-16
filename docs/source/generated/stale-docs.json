@@ -11,17 +11,19 @@
     "version": "1.0.0"
   },
   "source_hash_manifest": "docs/source/generated/source-hash-manifest.json",
-  "stale_count": 13,
+  "stale_count": 14,
   "stale_modules": [
     {
       "module_id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
       "reasons": [
-        "source_hash_drift"
+        "source_hash_drift",
+        "readme_hash_drift"
       ],
       "recommended_actions": [
         "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
+        "review README changes and rerender generated blocks if needed",
         "run validate-doc-hashes.py --write only after the docs/code alignment review is complete"
       ]
     },
@@ -111,6 +113,20 @@
       "module_id": "SRC-STORAGE",
       "path": "src/Meridian.Storage",
       "readme": "src/Meridian.Storage/README.md",
+      "reasons": [
+        "source_hash_drift",
+        "readme_hash_drift"
+      ],
+      "recommended_actions": [
+        "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
+        "review README changes and rerender generated blocks if needed",
+        "run validate-doc-hashes.py --write only after the docs/code alignment review is complete"
+      ]
+    },
+    {
+      "module_id": "SRC-STRATEGIES",
+      "path": "src/Meridian.Strategies",
+      "readme": "src/Meridian.Strategies/README.md",
       "reasons": [
         "source_hash_drift",
         "readme_hash_drift"

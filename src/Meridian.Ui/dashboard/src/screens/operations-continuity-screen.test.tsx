@@ -3,9 +3,12 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import {
+  acknowledgeOperationsContinuityChecklistTask,
+  assignOperationsContinuityBreakCase,
   getPrivateCapitalCloseCockpit,
   getOperationsContinuityWorkflow,
-  getOperationsContinuityWorkflows
+  getOperationsContinuityWorkflows,
+  resolveOperationsContinuityBreakCase
 } from "@/lib/api";
 import { OperationsContinuityScreen } from "@/screens/operations-continuity-screen";
 import { OPERATIONS_CONTINUITY_WORKFLOW_DETAIL_PANEL_ID } from "@/screens/operations-continuity-screen.view-model";
@@ -18,9 +21,12 @@ import type {
 } from "@/types";
 
 vi.mock("@/lib/api", () => ({
+  acknowledgeOperationsContinuityChecklistTask: vi.fn(),
+  assignOperationsContinuityBreakCase: vi.fn(),
   getPrivateCapitalCloseCockpit: vi.fn(),
   getOperationsContinuityWorkflows: vi.fn(),
-  getOperationsContinuityWorkflow: vi.fn()
+  getOperationsContinuityWorkflow: vi.fn(),
+  resolveOperationsContinuityBreakCase: vi.fn()
 }));
 
 afterEach(() => {
@@ -32,6 +38,24 @@ beforeEach(() => {
   vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([summary]);
   vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(detail);
   vi.mocked(getPrivateCapitalCloseCockpit).mockResolvedValue(closeCockpit);
+  vi.mocked(assignOperationsContinuityBreakCase).mockResolvedValue({
+    success: true,
+    workflow: detail,
+    blockers: [],
+    message: "Break assignment retained."
+  });
+  vi.mocked(resolveOperationsContinuityBreakCase).mockResolvedValue({
+    success: true,
+    workflow: detail,
+    blockers: [],
+    message: "Break resolution retained."
+  });
+  vi.mocked(acknowledgeOperationsContinuityChecklistTask).mockResolvedValue({
+    success: true,
+    workflow: detail,
+    blockers: [],
+    message: "Checklist task acknowledged."
+  });
 });
 
 const workflowId = "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6";
@@ -944,6 +968,8 @@ describe("OperationsContinuityScreen", () => {
     expect(within(checklist).getByText("Validated journal draft, retained ledger hash, and controller approval evidence.")).toBeInTheDocument();
     expect(within(checklist).getByText("ledger-evidence-1")).toBeInTheDocument();
     expect(within(checklist).getByText("2 control approvals required")).toBeInTheDocument();
+    expect(within(checklist).getByText("Acknowledgement blocked")).toBeInTheDocument();
+    expect(within(checklist).getByText("Expected workflow version 4")).toBeInTheDocument();
     expect(within(checklist).getByRole("link", { name: "Open remediation for Ledger posting controller check" }))
       .toHaveAttribute("href", "/accounting/ledger");
     expect(await screen.findByText("Ledger Draft Blocked")).toBeInTheDocument();
@@ -1022,6 +1048,16 @@ describe("OperationsContinuityScreen", () => {
     expect(within(dashboard).getByText("Resolve Exceptions")).toBeInTheDocument();
     expect(within(dashboard).getByText("Close package retained")).toBeInTheDocument();
     expect(within(dashboard).getByText("Assign, escalate, or resolve open exceptions and retain resolution evidence.")).toBeInTheDocument();
+    const commandSpine = screen.getByRole("table", { name: "Financial Operations command spine" });
+    expect(within(commandSpine).getByText("Start/import/normalize activity")).toBeInTheDocument();
+    expect(within(commandSpine).getByText("Run reconciliation and refresh posture")).toBeInTheDocument();
+    expect(within(commandSpine).getByText("Assign, escalate, or resolve breaks")).toBeInTheDocument();
+    expect(within(commandSpine).getByText("Submit or decide approval")).toBeInTheDocument();
+    expect(within(commandSpine).getByText("Open evidence package routes")).toBeInTheDocument();
+    expect(within(commandSpine).getByText("Review checklist and close readiness")).toBeInTheDocument();
+    expect(within(commandSpine).getAllByText("Shared command guard clear")).toHaveLength(2);
+    expect(within(commandSpine).getByRole("link", { name: "Open Financial Operations command stage Resolve Exceptions" }))
+      .toHaveAttribute("href", "/accounting/reconciliation");
     const reviewedAutomation = screen.getByRole("list", { name: "Reviewed automation summary" });
     expect(within(reviewedAutomation).getByText("Stage: Report commentary and audit request list draft review")).toBeInTheDocument();
     expect(within(reviewedAutomation).getByText("Human review required")).toBeInTheDocument();
@@ -1111,6 +1147,146 @@ describe("OperationsContinuityScreen", () => {
 
     const nextAction = screen.getByRole("link", { name: "Open operations continuity next action: Resolve Ledger Posting blockers" });
     expect(nextAction).toHaveAttribute("href", "/accounting");
+  });
+
+  it("posts close checklist acknowledgement with the shared workflow guard", async () => {
+    const acknowledgeableDetail: OperationsContinuityWorkflow = {
+      ...detail,
+      closeChecklist: [
+        {
+          ...detail.closeChecklist[0]!,
+          status: "Ready",
+          blockingReason: null,
+          canAcknowledge: true,
+          acknowledgedAtUtc: null,
+          acknowledgedBy: null
+        }
+      ]
+    };
+    vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(acknowledgeableDetail);
+
+    const user = userEvent.setup();
+    renderScreen();
+
+    const acknowledge = await screen.findByRole("button", {
+      name: "Acknowledge close checklist task Ledger posting controller check"
+    });
+    await user.click(acknowledge);
+
+    await waitFor(() => {
+      expect(acknowledgeOperationsContinuityChecklistTask).toHaveBeenCalledWith(
+        workflowId,
+        "close-gate-ledgerposting",
+        {
+          expectedVersion: 4,
+          actor: "browser-operator",
+          rationale: "Acknowledged close checklist task Ledger posting controller check after retained evidence review.",
+          correlationId: "browser-checklist:close-gate-ledgerposting"
+        }
+      );
+    });
+    expect(await screen.findByText("Checklist task acknowledged.")).toBeInTheDocument();
+  });
+
+  it("posts break resolution with retained evidence and the shared workflow guard", async () => {
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(await screen.findByRole("button", { name: "Resolve break recon-break-42" }));
+
+    await waitFor(() => {
+      expect(resolveOperationsContinuityBreakCase).toHaveBeenCalledWith(
+        workflowId,
+        "recon-break-42",
+        {
+          expectedVersion: 4,
+          actor: "browser-operator",
+          resolutionStatus: "Resolved",
+          rationale: "Resolved break recon-break-42 after retained evidence review.",
+          correlationId: "browser-break-resolve:recon-break-42",
+          evidenceLinks: detail.breakCases[0]!.evidenceLinks,
+          actionOrigin: "HumanOperator"
+        }
+      );
+    });
+    expect(await screen.findByText("Break resolution retained.")).toBeInTheDocument();
+  });
+
+  it("posts break assignment for unassigned exceptions with the shared workflow guard", async () => {
+    const unassignedDetail: OperationsContinuityWorkflow = {
+      ...detail,
+      breakCases: [
+        {
+          ...detail.breakCases[0]!,
+          owner: null
+        }
+      ]
+    };
+    vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(unassignedDetail);
+
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(await screen.findByRole("button", { name: "Assign break recon-break-42 to browser operator" }));
+
+    await waitFor(() => {
+      expect(assignOperationsContinuityBreakCase).toHaveBeenCalledWith(
+        workflowId,
+        "recon-break-42",
+        {
+          expectedVersion: 4,
+          actor: "browser-operator",
+          owner: "browser-operator",
+          rationale: "Assigned break recon-break-42 from Operations Continuity exception management.",
+          escalationLevel: "Level 2",
+          escalationReason: "Aged cash variance past controller SLA",
+          dueDate: "2026-05-09",
+          correlationId: "browser-break-assign:recon-break-42",
+          actionOrigin: "HumanOperator"
+        }
+      );
+    });
+    expect(await screen.findByText("Break assignment retained.")).toBeInTheDocument();
+  });
+
+  it("surfaces break command failures", async () => {
+    vi.mocked(resolveOperationsContinuityBreakCase).mockRejectedValueOnce(new Error("Break version conflict."));
+
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(await screen.findByRole("button", { name: "Resolve break recon-break-42" }));
+
+    const alert = await screen.findByRole("alert");
+    expect(within(alert).getByText("Break version conflict.")).toBeInTheDocument();
+  });
+
+  it("surfaces close checklist acknowledgement command failures", async () => {
+    const acknowledgeableDetail: OperationsContinuityWorkflow = {
+      ...detail,
+      closeChecklist: [
+        {
+          ...detail.closeChecklist[0]!,
+          status: "Ready",
+          blockingReason: null,
+          canAcknowledge: true,
+          acknowledgedAtUtc: null,
+          acknowledgedBy: null
+        }
+      ]
+    };
+    vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(acknowledgeableDetail);
+    vi.mocked(acknowledgeOperationsContinuityChecklistTask).mockRejectedValueOnce(new Error("Workflow version conflict."));
+
+    const user = userEvent.setup();
+    renderScreen();
+
+    await user.click(await screen.findByRole("button", {
+      name: "Acknowledge close checklist task Ledger posting controller check"
+    }));
+
+    const alert = await screen.findByRole("alert");
+    expect(within(alert).getByText("Workflow version conflict.")).toBeInTheDocument();
   });
 
   it("opens a different workflow detail when the operator selects a row", async () => {

@@ -975,7 +975,10 @@ configured `roleProfileName` accounts use the stored permissions after login. Au
 also pass through the Identity-owned company id attached to user profiles so Reporting access
 policies can evaluate company principals from session state. Keep this module as the
 endpoint/read-model adapter; do not reintroduce session, profile, role-profile, or company
-persistence state here.
+persistence state here. Scoped access grant and revoke endpoints preserve explicit action-origin
+metadata and return bad-request responses for assistant or automation-origin authority changes
+before the Identity service writes a new assignment, revokes an assignment, or advances an
+assignment version.
 Operations Continuity endpoints expose
 `/api/workstation/operations/continuity/approval-policy-matrix` as the shared configuration read
 model for approval governance. The endpoint is read-permission protected and returns the
@@ -1026,6 +1029,9 @@ workflow service.
 ledger book service. They keep trial balance, signed period-locked report totals, revenue,
 expense, realized net income, accrual-basis adjustment impact, prior-period variance,
 open-break count, and signoff posture server-derived for browser and WPF accounting surfaces.
+The close command preserves the authenticated workstation actor and explicit action-origin
+metadata; assistant or automation-origin requests are rejected by the shared ledger service before a
+period-lock state, close event, or operator inbox sign-off item is written.
 `/api/ledger/reports/trial-balance` and `/api/ledger/reports/pnl-summary` aggregate those
 closed-period summaries across a selected book, fund, node, accounting basis, and date range for
 regulatory, investor, and internal reporting surfaces.
@@ -1079,7 +1085,8 @@ but approval, posting, publication, payment release, and evidence-retention deci
 commands. Operations Continuity endpoints trust the authenticated session for actor, reviewer, and
 governed-admin fields while preserving explicit `ActionOrigin` values on material commands, so
 Financial Operations can reject assistant or automation origins before ledger posting, approval,
-close-package publication, or governed reopen commands mutate the operating record.
+close-package publication, governed reopen, or reconciliation case resolve/sign-off/reopen commands
+mutate the operating record.
 `WorkstationWorkflowSummaryService` also consumes Operations Continuity evidence-package summaries
 when building the Accounting workspace home state. A closed workflow with a non-ready package,
 including period-lock and reopen evidence, remains in review-required posture instead of being
