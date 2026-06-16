@@ -57,6 +57,24 @@ public sealed class FileProviderIntegrationManifestStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task ForTenant_PartitionsManifestAndConnectionState()
+    {
+        var rootStore = new FileProviderIntegrationManifestStore(_testRoot);
+        var alphaStore = ((IProviderIntegrationTenantManifestStoreFactory)rootStore).ForTenant("tenant-alpha");
+        var betaStore = ((IProviderIntegrationTenantManifestStoreFactory)rootStore).ForTenant("tenant-beta");
+        var manifest = CreateManifest();
+        var connection = CreateConnection();
+
+        await alphaStore.SaveManifestAsync(manifest);
+        await alphaStore.SaveConnectionAsync(connection);
+
+        (await alphaStore.GetManifestAsync(manifest.ManifestId)).Should().BeEquivalentTo(manifest);
+        (await alphaStore.GetConnectionAsync(connection.ConnectionId)).Should().BeEquivalentTo(connection);
+        (await betaStore.GetManifestAsync(manifest.ManifestId)).Should().BeNull();
+        (await betaStore.GetConnectionAsync(connection.ConnectionId)).Should().BeNull();
+    }
+
+    [Fact]
     public async Task SaveRawPayloadQuarantineAndStaging_KeepRunScopedEvidence()
     {
         var store = new FileProviderIntegrationManifestStore(_testRoot);

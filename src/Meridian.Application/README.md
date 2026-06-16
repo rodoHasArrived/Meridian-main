@@ -48,7 +48,10 @@ and UI presentation concerns in their owning layers.
   service consumes contract-owned manifests and the Storage-owned integration manifest store, parses
   operator-uploaded samples, applies configured field mappings and safe transforms, writes raw
   payload evidence, stages accepted records, quarantines rejected records, and saves sync-run
-  summaries without promoting directly into Portfolio, Security Master, or Ledger stores. The REST dry-run service executes a
+  summaries without promoting directly into Portfolio, Security Master, or Ledger stores. When a
+  workstation endpoint supplies tenant context, dry-run, readiness, activation, and monitoring
+  services resolve a tenant-scoped provider-integration store before reading or writing manifests,
+  connections, and retained evidence. The REST dry-run service executes a
   configured read-only endpoint through an injectable transport, resolves path/query parameters,
   follows cursor pagination, retains raw responses before mapping, and uses the same staging and
   quarantine boundary for accepted and rejected records. The default `HttpClient` transport supplies

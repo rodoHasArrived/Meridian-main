@@ -125,7 +125,9 @@ Provider integration endpoints are registered under `/api/workstation/provider-i
 Template routes expose the Application-owned starter manifest pack, activation-readiness routes
 surface fail-closed readiness blockers, dry-run command routes execute manual CSV and REST
 validation through Application-owned services, and the connection monitor route adapts durable
-sync-run, staging, quarantine, and validation evidence into browser/WPF-compatible payloads. Dry
+sync-run, staging, quarantine, and validation evidence into browser/WPF-compatible payloads.
+Readiness, dry-run, activation, and monitor endpoints resolve the authenticated workstation tenant
+before reading or writing stored manifests, connections, or retained run evidence. Dry
 runs require provider/configuration permissions because they retain raw payload, staging,
 quarantine, and sync-run evidence. The activation command persists active manifest and connection
 state only after Application readiness passes with retained approval evidence; setup save screens

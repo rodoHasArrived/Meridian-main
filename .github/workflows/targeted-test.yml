@@ -37,7 +37,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: targeted-test-${{ github.ref }}-${{ inputs.runner }}-${{ inputs.dotnet_project }}-${{ inputs.dotnet_filter }}
+  group: targeted-test-${{ github.ref }}-${{ inputs.runner }}-${{ github.run_id }}
   cancel-in-progress: false
 
 env:

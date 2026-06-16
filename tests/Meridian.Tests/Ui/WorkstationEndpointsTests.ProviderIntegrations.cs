@@ -15,6 +15,8 @@ namespace Meridian.Tests.Ui;
 
 public sealed partial class WorkstationEndpointsTests
 {
+    private const string DefaultProviderIntegrationTenantId = "tenant-test";
+
     [Fact]
     public async Task MapWorkstationEndpoints_ProviderIntegrationTemplates_ReturnsStarterTemplatePack()
     {
@@ -143,6 +145,42 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationReadiness_UsesRequestTenantPartition()
+    {
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            var alphaStore = ((IProviderIntegrationTenantManifestStoreFactory)store).ForTenant("tenant-alpha");
+            var manifest = CreateProviderIntegrationEndpointManifest();
+            var connection = CreateProviderIntegrationEndpointConnection(manifest);
+            await alphaStore.SaveManifestAsync(manifest);
+            await alphaStore.SaveConnectionAsync(connection);
+            await using var alphaApp = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewConfig,
+                currentUserCompanyId: "tenant-alpha");
+            await using var betaApp = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ViewConfig,
+                currentUserCompanyId: "tenant-beta");
+            var alphaClient = alphaApp.GetTestClient();
+            var betaClient = betaApp.GetTestClient();
+            var route = $"{ProviderIntegrationReadinessRoute(manifest.ManifestId)}?connectionId={Uri.EscapeDataString(connection.ConnectionId)}";
+
+            var alphaResponse = await alphaClient.GetAsync(route);
+            var betaResponse = await betaClient.GetAsync(route);
+
+            alphaResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            betaResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ProviderIntegrationReadiness_ReturnsNotFoundForMissingManifest()
     {
         var testRoot = CreateProviderIntegrationTestRoot();
@@ -171,10 +209,11 @@ public sealed partial class WorkstationEndpointsTests
         try
         {
             var store = new FileProviderIntegrationManifestStore(testRoot);
+            var tenantStore = DefaultProviderIntegrationTenantStore(store);
             var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-manual-csv-upload-v1")!;
             var connection = CreateProviderIntegrationManualCsvConnection(manifest);
-            await store.SaveManifestAsync(manifest);
-            await store.SaveConnectionAsync(connection);
+            await tenantStore.SaveManifestAsync(manifest);
+            await tenantStore.SaveConnectionAsync(connection);
             await using var app = await CreateAppAsync(
                 services => RegisterProviderIntegrationEndpointServices(services, store),
                 currentUserPermissions: UserPermission.ManageProviders);
@@ -192,9 +231,9 @@ public sealed partial class WorkstationEndpointsTests
             result.RecordsAccepted.Should().Be(1);
             result.RecordsQuarantined.Should().Be(0);
             result.Status.Should().Be(ProviderIntegrationProcessingStatusDto.Validated);
-            (await store.GetRawPayloadAsync(result.SyncRunId, result.RawPayloadId)).Should().NotBeNull();
-            (await store.ListStagingRecordsAsync(result.SyncRunId)).Should().ContainSingle();
-            (await store.ListQuarantinedRecordsAsync(result.SyncRunId)).Should().BeEmpty();
+            (await tenantStore.GetRawPayloadAsync(result.SyncRunId, result.RawPayloadId)).Should().NotBeNull();
+            (await tenantStore.ListStagingRecordsAsync(result.SyncRunId)).Should().ContainSingle();
+            (await tenantStore.ListQuarantinedRecordsAsync(result.SyncRunId)).Should().BeEmpty();
         }
         finally
         {
@@ -236,10 +275,11 @@ public sealed partial class WorkstationEndpointsTests
         try
         {
             var store = new FileProviderIntegrationManifestStore(testRoot);
+            var tenantStore = DefaultProviderIntegrationTenantStore(store);
             var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-manual-csv-upload-v1")!;
             var connection = CreateProviderIntegrationManualCsvConnection(manifest);
-            await store.SaveManifestAsync(manifest);
-            await store.SaveConnectionAsync(connection);
+            await tenantStore.SaveManifestAsync(manifest);
+            await tenantStore.SaveConnectionAsync(connection);
             await using var app = await CreateAppAsync(
                 services => RegisterProviderIntegrationEndpointServices(services, store),
                 currentUserPermissions: UserPermission.ViewConfig);
@@ -251,7 +291,7 @@ public sealed partial class WorkstationEndpointsTests
                 ServerJsonOptions);
 
             response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-            (await store.GetSyncRunAsync("sync-run-manual-endpoint-1")).Should().BeNull();
+            (await tenantStore.GetSyncRunAsync("sync-run-manual-endpoint-1")).Should().BeNull();
         }
         finally
         {
@@ -266,10 +306,11 @@ public sealed partial class WorkstationEndpointsTests
         try
         {
             var store = new FileProviderIntegrationManifestStore(testRoot);
+            var tenantStore = DefaultProviderIntegrationTenantStore(store);
             var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-custodian-positions-v1")!;
             var connection = CreateProviderIntegrationRestConnection(manifest);
-            await store.SaveManifestAsync(manifest);
-            await store.SaveConnectionAsync(connection);
+            await tenantStore.SaveManifestAsync(manifest);
+            await tenantStore.SaveConnectionAsync(connection);
             var transport = new ProviderIntegrationEndpointTransport(
                 new ProviderIntegrationHttpResponse(
                     200,
@@ -306,8 +347,8 @@ public sealed partial class WorkstationEndpointsTests
             result.RecordsQuarantined.Should().Be(0);
             transport.Requests.Should().ContainSingle()
                 .Which.Path.Should().Be("/v1/accounts/A-100/positions");
-            (await store.GetRawPayloadAsync(result.SyncRunId, result.RawPayloadId)).Should().NotBeNull();
-            (await store.ListStagingRecordsAsync(result.SyncRunId)).Should().ContainSingle();
+            (await tenantStore.GetRawPayloadAsync(result.SyncRunId, result.RawPayloadId)).Should().NotBeNull();
+            (await tenantStore.ListStagingRecordsAsync(result.SyncRunId)).Should().ContainSingle();
         }
         finally
         {
@@ -322,10 +363,11 @@ public sealed partial class WorkstationEndpointsTests
         try
         {
             var store = new FileProviderIntegrationManifestStore(testRoot);
+            var tenantStore = DefaultProviderIntegrationTenantStore(store);
             var manifest = CreateProviderIntegrationActivationManifest();
             var connection = CreateProviderIntegrationActivationConnection(manifest);
-            await store.SaveManifestAsync(manifest);
-            await store.SaveConnectionAsync(connection);
+            await tenantStore.SaveManifestAsync(manifest);
+            await tenantStore.SaveConnectionAsync(connection);
             await using var app = await CreateAppAsync(
                 services => RegisterProviderIntegrationEndpointServices(services, store),
                 currentUserPermissions: UserPermission.ManageProviders);
@@ -342,8 +384,8 @@ public sealed partial class WorkstationEndpointsTests
             result!.Activated.Should().BeTrue();
             result.ManifestState.Should().Be(ProviderIntegrationActivationStateDto.Active);
             result.ConnectionState.Should().Be(ProviderIntegrationActivationStateDto.Active);
-            (await store.GetManifestAsync(manifest.ManifestId))!.State.Should().Be(ProviderIntegrationActivationStateDto.Active);
-            (await store.GetConnectionAsync(connection.ConnectionId))!.ApprovalEvidenceId.Should().Be("approval-evidence-endpoint-1");
+            (await tenantStore.GetManifestAsync(manifest.ManifestId))!.State.Should().Be(ProviderIntegrationActivationStateDto.Active);
+            (await tenantStore.GetConnectionAsync(connection.ConnectionId))!.ApprovalEvidenceId.Should().Be("approval-evidence-endpoint-1");
         }
         finally
         {
@@ -358,10 +400,11 @@ public sealed partial class WorkstationEndpointsTests
         try
         {
             var store = new FileProviderIntegrationManifestStore(testRoot);
+            var tenantStore = DefaultProviderIntegrationTenantStore(store);
             var manifest = CreateProviderIntegrationActivationManifest(missingQuantityMapping: true);
             var connection = CreateProviderIntegrationActivationConnection(manifest);
-            await store.SaveManifestAsync(manifest);
-            await store.SaveConnectionAsync(connection);
+            await tenantStore.SaveManifestAsync(manifest);
+            await tenantStore.SaveConnectionAsync(connection);
             await using var app = await CreateAppAsync(
                 services => RegisterProviderIntegrationEndpointServices(services, store),
                 currentUserPermissions: UserPermission.ManageProviders);
@@ -379,8 +422,8 @@ public sealed partial class WorkstationEndpointsTests
             result.Readiness.Issues.Should().Contain(issue =>
                 issue.Code == "provider-manifest.required-mapping-missing" &&
                 issue.Severity == ProviderIntegrationIssueSeverityDto.Critical);
-            (await store.GetManifestAsync(manifest.ManifestId))!.State.Should().Be(ProviderIntegrationActivationStateDto.DryRunPassed);
-            (await store.GetConnectionAsync(connection.ConnectionId))!.State.Should().Be(ProviderIntegrationActivationStateDto.DryRunPassed);
+            (await tenantStore.GetManifestAsync(manifest.ManifestId))!.State.Should().Be(ProviderIntegrationActivationStateDto.DryRunPassed);
+            (await tenantStore.GetConnectionAsync(connection.ConnectionId))!.State.Should().Be(ProviderIntegrationActivationStateDto.DryRunPassed);
         }
         finally
         {
@@ -395,10 +438,11 @@ public sealed partial class WorkstationEndpointsTests
         try
         {
             var store = new FileProviderIntegrationManifestStore(testRoot);
+            var tenantStore = DefaultProviderIntegrationTenantStore(store);
             var manifest = CreateProviderIntegrationActivationManifest();
             var connection = CreateProviderIntegrationActivationConnection(manifest);
-            await store.SaveManifestAsync(manifest);
-            await store.SaveConnectionAsync(connection);
+            await tenantStore.SaveManifestAsync(manifest);
+            await tenantStore.SaveConnectionAsync(connection);
             await using var app = await CreateAppAsync(
                 services => RegisterProviderIntegrationEndpointServices(services, store),
                 currentUserPermissions: UserPermission.ViewConfig);
@@ -410,7 +454,7 @@ public sealed partial class WorkstationEndpointsTests
                 ServerJsonOptions);
 
             response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-            (await store.GetManifestAsync(manifest.ManifestId))!.State.Should().Be(ProviderIntegrationActivationStateDto.DryRunPassed);
+            (await tenantStore.GetManifestAsync(manifest.ManifestId))!.State.Should().Be(ProviderIntegrationActivationStateDto.DryRunPassed);
         }
         finally
         {
@@ -502,12 +546,13 @@ public sealed partial class WorkstationEndpointsTests
     private static async Task<FileProviderIntegrationManifestStore> CreateSeededProviderIntegrationStoreAsync(string testRoot)
     {
         var store = new FileProviderIntegrationManifestStore(testRoot);
+        var tenantStore = DefaultProviderIntegrationTenantStore(store);
         var manifest = CreateProviderIntegrationEndpointManifest();
         var connection = CreateProviderIntegrationEndpointConnection(manifest);
-        await store.SaveManifestAsync(manifest).ConfigureAwait(false);
-        await store.SaveConnectionAsync(connection).ConfigureAwait(false);
+        await tenantStore.SaveManifestAsync(manifest).ConfigureAwait(false);
+        await tenantStore.SaveConnectionAsync(connection).ConfigureAwait(false);
         await SaveProviderIntegrationEndpointRunAsync(
-            store,
+            tenantStore,
             CreateProviderIntegrationEndpointSyncRun(
                 "sync-run-old",
                 manifest,
@@ -521,7 +566,7 @@ public sealed partial class WorkstationEndpointsTests
             stagingCount: 2,
             quarantineCount: 0).ConfigureAwait(false);
         await SaveProviderIntegrationEndpointRunAsync(
-            store,
+            tenantStore,
             CreateProviderIntegrationEndpointSyncRun(
                 "sync-run-new",
                 manifest,
@@ -546,7 +591,7 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     private static async Task SaveProviderIntegrationEndpointRunAsync(
-        FileProviderIntegrationManifestStore store,
+        IProviderIntegrationManifestStore store,
         ProviderIntegrationSyncRunDto syncRun,
         int stagingCount,
         int quarantineCount)
@@ -869,6 +914,10 @@ public sealed partial class WorkstationEndpointsTests
                 : responses.Dequeue());
         }
     }
+
+    private static IProviderIntegrationManifestStore DefaultProviderIntegrationTenantStore(
+        FileProviderIntegrationManifestStore store)
+        => ((IProviderIntegrationTenantManifestStoreFactory)store).ForTenant(DefaultProviderIntegrationTenantId);
 
     private static string CreateProviderIntegrationTestRoot()
     {

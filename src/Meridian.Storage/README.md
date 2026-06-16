@@ -160,7 +160,9 @@ Provider integration manifests are Storage-owned durable configuration and evide
 file-backed integration store persists approved manifests, connection instances, raw payloads,
 quarantined records, staging records, and sync-run summaries under the resolved data root using
 `AtomicFileWriter` so monitoring can explain run status and mapping changes can replay retained
-source payloads without reacquiring provider data.
+source payloads without reacquiring provider data. Workstation-hosted flows can request a
+tenant-scoped store partition so provider manifests, connections, dry-run evidence, and activation
+state remain isolated by the authenticated tenant session.
 
 ## Glossary
 
