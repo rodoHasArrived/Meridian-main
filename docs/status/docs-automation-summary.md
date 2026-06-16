@@ -6,20 +6,20 @@
 
 | Script | Status | Duration (s) | Output |
 |--------|--------|--------------|--------|
-| `scan-todos` | `success` | `21.999` | `docs/status/TODO.md` |
-| `validate-docs-structure` | `success` | `5.290` | `-` |
-| `generate-structure-docs` | `success` | `5.337` | `docs/generated/repository-structure.md` |
-| `generate-health-dashboard` | `success` | `18.789` | `docs/status/doc-health-dashboard.md` |
-| `validate-examples` | `success` | `10.174` | `docs/status/example-validation.md` |
-| `check-ai-inventory` | `success` | `12.090` | `docs/status/ai-inventory-report.md` |
-| `check-ai-handoff-strict` | `success` | `3.655` | `docs/status/ai-handoff-checklist-report.md` |
-| `check-ai-contract-drift` | `success` | `6.338` | `-` |
-| `prompt-route-linter` | `success` | `2.164` | `docs/status/prompt-route-lint-report.json` |
-| `handoff-packet-generator` | `success` | `6.969` | `docs/status/ai-handoff-packet.json` |
-| `check-handoff-packet-schema` | `success` | `2.719` | `-` |
-| `check-ai-routing-parity` | `success` | `2.335` | `-` |
-| `check-mode-escalation` | `success` | `15.508` | `-` |
-| `generate-coverage` | `failed` | `7858.217` | `docs/status/coverage-report.md` |
+| `scan-todos` | `success` | `18.378` | `docs/status/TODO.md` |
+| `validate-docs-structure` | `success` | `3.468` | `-` |
+| `generate-structure-docs` | `success` | `6.376` | `docs/generated/repository-structure.md` |
+| `generate-health-dashboard` | `success` | `9.724` | `docs/status/doc-health-dashboard.md` |
+| `validate-examples` | `success` | `1.420` | `docs/status/example-validation.md` |
+| `check-ai-inventory` | `success` | `4.257` | `docs/status/ai-inventory-report.md` |
+| `check-ai-handoff-strict` | `success` | `4.597` | `docs/status/ai-handoff-checklist-report.md` |
+| `check-ai-contract-drift` | `success` | `2.276` | `-` |
+| `prompt-route-linter` | `success` | `3.947` | `docs/status/prompt-route-lint-report.json` |
+| `handoff-packet-generator` | `success` | `2.887` | `docs/status/ai-handoff-packet.json` |
+| `check-handoff-packet-schema` | `success` | `1.220` | `-` |
+| `check-ai-routing-parity` | `success` | `1.075` | `-` |
+| `check-mode-escalation` | `success` | `1.553` | `-` |
+| `generate-coverage` | `failed` | `1605.401` | `docs/status/coverage-report.md` |
 
 ## Failures
 

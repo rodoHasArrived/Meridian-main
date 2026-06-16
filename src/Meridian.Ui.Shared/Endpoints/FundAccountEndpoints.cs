@@ -170,7 +170,7 @@ public static class FundAccountEndpoints
                 return scopeGuard;
             }
 
-                        try
+            try
             {
                 var result = await service.UpdateCustodianDetailsAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
                 return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
@@ -200,7 +200,7 @@ public static class FundAccountEndpoints
                 return scopeGuard;
             }
 
-                        try
+            try
             {
                 var result = await service.UpdateBankDetailsAsync(accountId, request, context.RequestAborted).ConfigureAwait(false);
                 return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
@@ -408,6 +408,12 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/close-readiness", async (Guid accountId, HttpContext context) =>
         {
+            var scopeGuard = await RequireScopedAccountAccessAsync(accountId, context).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
+
             var closeReadiness = ResolveFundAccountCloseReadinessService(context);
             if (closeReadiness is null)
                 return FundAccountCloseReadinessUnavailable();
@@ -464,6 +470,12 @@ public static class FundAccountEndpoints
 
         group.MapPost("/{accountId:guid}/balance-snapshots", async (Guid accountId, JsonElement body, HttpContext context) =>
         {
+            var scopeGuard = await RequireScopedAccountAccessAsync(accountId, context).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
+
             var service = ResolveManagementService(context);
             if (service is null)
                 return ServiceUnavailable();
@@ -471,8 +483,10 @@ public static class FundAccountEndpoints
             var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.RecordAccountBalanceSnapshotRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
+            if (request.AccountId != accountId)
+                return AccountRouteMismatch();
 
-                        try
+            try
             {
                 var result = await service.RecordBalanceSnapshotAsync(request, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
@@ -488,6 +502,12 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/balance-snapshots", async (Guid accountId, HttpContext context) =>
         {
+            var scopeGuard = await RequireScopedAccountAccessAsync(accountId, context).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
+
             var queryService = ResolveQueryService(context);
             if (queryService is null)
                 return ServiceUnavailable();
@@ -504,6 +524,12 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/balance-snapshots/latest", async (Guid accountId, HttpContext context) =>
         {
+            var scopeGuard = await RequireScopedAccountAccessAsync(accountId, context).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
+
             var queryService = ResolveQueryService(context);
             if (queryService is null)
                 return ServiceUnavailable();
@@ -519,6 +545,12 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/sync-history", async (Guid accountId, HttpContext context) =>
         {
+            var scopeGuard = await RequireScopedAccountAccessAsync(accountId, context).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
+
             var queryService = ResolveQueryService(context);
             if (queryService is null)
                 return ServiceUnavailable();
@@ -532,6 +564,12 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/readiness", async (Guid accountId, HttpContext context) =>
         {
+            var scopeGuard = await RequireScopedAccountAccessAsync(accountId, context).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
+
             var queryService = ResolveQueryService(context);
             if (queryService is null)
                 return ServiceUnavailable();
@@ -547,6 +585,12 @@ public static class FundAccountEndpoints
 
         group.MapPost("/{accountId:guid}/custodian-statements", async (Guid accountId, JsonElement body, HttpContext context) =>
         {
+            var scopeGuard = await RequireScopedAccountAccessAsync(accountId, context).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
+
             var service = ResolveManagementService(context);
             if (service is null)
                 return ServiceUnavailable();
@@ -554,8 +598,10 @@ public static class FundAccountEndpoints
             var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.IngestCustodianStatementRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
+            if (request.AccountId != accountId || request.Lines.Any(line => line.AccountId != accountId))
+                return AccountRouteMismatch();
 
-                        try
+            try
             {
                 var result = await service.IngestCustodianStatementAsync(request, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
@@ -571,6 +617,12 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/custodian-positions", async (Guid accountId, HttpContext context) =>
         {
+            var scopeGuard = await RequireScopedAccountAccessAsync(accountId, context).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
+
             var queryService = ResolveQueryService(context);
             if (queryService is null)
                 return ServiceUnavailable();
@@ -587,6 +639,12 @@ public static class FundAccountEndpoints
 
         group.MapPost("/{accountId:guid}/bank-statements", async (Guid accountId, JsonElement body, HttpContext context) =>
         {
+            var scopeGuard = await RequireScopedAccountAccessAsync(accountId, context).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
+
             var service = ResolveManagementService(context);
             if (service is null)
                 return ServiceUnavailable();
@@ -594,8 +652,10 @@ public static class FundAccountEndpoints
             var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.IngestBankStatementRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
+            if (request.AccountId != accountId || request.Lines.Any(line => line.AccountId != accountId))
+                return AccountRouteMismatch();
 
-                        try
+            try
             {
                 var result = await service.IngestBankStatementAsync(request, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
@@ -611,6 +671,12 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/bank-statement-lines", async (Guid accountId, HttpContext context) =>
         {
+            var scopeGuard = await RequireScopedAccountAccessAsync(accountId, context).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
+
             var queryService = ResolveQueryService(context);
             if (queryService is null)
                 return ServiceUnavailable();
@@ -629,6 +695,12 @@ public static class FundAccountEndpoints
 
         group.MapPost("/{accountId:guid}/reconcile", async (Guid accountId, JsonElement body, HttpContext context) =>
         {
+            var scopeGuard = await RequireScopedAccountAccessAsync(accountId, context).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
+
             var service = ResolveManagementService(context);
             if (service is null)
                 return ServiceUnavailable();
@@ -636,6 +708,8 @@ public static class FundAccountEndpoints
             var request = JsonSerializer.Deserialize(body.GetRawText(), FundStructureContractsJsonContext.Default.ReconcileAccountRequest);
             if (request is null)
                 return Results.Problem("Request body is required.", statusCode: StatusCodes.Status400BadRequest);
+            if (request.AccountId != accountId)
+                return AccountRouteMismatch();
 
             var result = await service.ReconcileAccountAsync(request, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(result, jsonOptions, statusCode: StatusCodes.Status201Created);
@@ -646,6 +720,12 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/reconciliation-runs", async (Guid accountId, HttpContext context) =>
         {
+            var scopeGuard = await RequireScopedAccountAccessAsync(accountId, context).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
+
             var queryService = ResolveQueryService(context);
             if (queryService is null)
                 return ServiceUnavailable();
@@ -659,6 +739,12 @@ public static class FundAccountEndpoints
 
         group.MapGet("/{accountId:guid}/reconciliation-queue-status", async (Guid accountId, HttpContext context) =>
         {
+            var scopeGuard = await RequireScopedAccountAccessAsync(accountId, context).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
+
             var queryService = ResolveQueryService(context);
             if (queryService is null)
                 return ServiceUnavailable();
@@ -693,6 +779,12 @@ public static class FundAccountEndpoints
             if (queryService is null)
                 return ServiceUnavailable();
 
+            var scopeGuard = await RequireScopedReconciliationRunAccessAsync(runId, queryService, context).ConfigureAwait(false);
+            if (scopeGuard is not null)
+            {
+                return scopeGuard;
+            }
+
             var results = await queryService.GetReconciliationResultsAsync(runId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(results, jsonOptions);
         })
@@ -708,6 +800,11 @@ public static class FundAccountEndpoints
         backfillAttempted = ex.BackfillAttempted,
         detail = ex.Message
     }, statusCode: StatusCodes.Status409Conflict);
+
+    private static IResult AccountRouteMismatch() =>
+        Results.Problem(
+            "The accountId in the request body must match the accountId route value.",
+            statusCode: StatusCodes.Status400BadRequest);
 
     private static IAccountManagementService? ResolveManagementService(HttpContext context) =>
         context.RequestServices.GetService<IAccountManagementService>()
@@ -827,6 +924,24 @@ public static class FundAccountEndpoints
 
     private static Task<IResult?> RequireScopedAccountAccessAsync(Guid accountId, HttpContext context)
         => RequireScopedFundAccountAccessAsync(AccessScopeKindDto.Account, accountId, context);
+
+    private static async Task<IResult?> RequireScopedReconciliationRunAccessAsync(
+        Guid runId,
+        IAccountQueryService queryService,
+        HttpContext context)
+    {
+        var accounts = await queryService.ListAccountsAsync(null, null, null, context.RequestAborted).ConfigureAwait(false);
+        foreach (var account in accounts)
+        {
+            var runs = await queryService.GetReconciliationRunsAsync(account.AccountId, context.RequestAborted).ConfigureAwait(false);
+            if (runs.Any(run => run.ReconciliationRunId == runId))
+            {
+                return await RequireScopedAccountAccessAsync(account.AccountId, context).ConfigureAwait(false);
+            }
+        }
+
+        return Results.NotFound();
+    }
 
     private static async Task<IResult?> RequireScopedFundAccountAccessAsync(
         AccessScopeKindDto scopeKind,

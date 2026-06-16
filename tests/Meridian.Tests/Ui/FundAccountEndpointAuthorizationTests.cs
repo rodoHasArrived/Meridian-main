@@ -101,6 +101,126 @@ public sealed class FundAccountEndpointAuthorizationTests
         denied.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task OperationalAccountRoutes_ShouldRequireScopedAccountAccess()
+    {
+        var fundId = Guid.NewGuid();
+        var allowedAccountId = Guid.NewGuid();
+        var deniedAccountId = Guid.NewGuid();
+        await using var app = await CreateAppAsync(
+            [
+                BuildAccount(allowedAccountId, fundId, "ALLOWED-OPS"),
+                BuildAccount(deniedAccountId, fundId, "DENIED-OPS")
+            ],
+            [(AccessScopeKindDto.Account, allowedAccountId)]);
+
+        var client = app.GetTestClient();
+        var managementService = app.Services.GetRequiredService<IAccountManagementService>();
+        var deniedRun = await managementService.ReconcileAccountAsync(new ReconcileAccountRequest(
+            deniedAccountId,
+            new DateOnly(2026, 6, 16),
+            "endpoint-auth-test"));
+        var deniedRoutes = new[]
+        {
+            $"/api/fund-accounts/{deniedAccountId:D}/close-readiness",
+            $"/api/fund-accounts/{deniedAccountId:D}/balance-snapshots",
+            $"/api/fund-accounts/{deniedAccountId:D}/balance-snapshots/latest",
+            $"/api/fund-accounts/{deniedAccountId:D}/sync-history",
+            $"/api/fund-accounts/{deniedAccountId:D}/readiness",
+            $"/api/fund-accounts/{deniedAccountId:D}/custodian-positions?asOfDate=2026-06-16",
+            $"/api/fund-accounts/{deniedAccountId:D}/bank-statement-lines",
+            $"/api/fund-accounts/{deniedAccountId:D}/reconciliation-runs",
+            $"/api/fund-accounts/{deniedAccountId:D}/reconciliation-queue-status",
+            $"/api/fund-accounts/reconciliation-runs/{deniedRun.ReconciliationRunId:D}/results"
+        };
+
+        foreach (var route in deniedRoutes)
+        {
+            using var response = await client.GetAsync(route);
+            response.StatusCode.Should().Be(HttpStatusCode.Forbidden, route);
+        }
+    }
+
+    [Fact]
+    public async Task OperationalWriteRoutes_ShouldRejectMismatchedBodyAccountId()
+    {
+        var fundId = Guid.NewGuid();
+        var routeAccountId = Guid.NewGuid();
+        var bodyAccountId = Guid.NewGuid();
+        await using var app = await CreateAppAsync(
+            [BuildAccount(routeAccountId, fundId, "ROUTE-OPS")],
+            [(AccessScopeKindDto.Account, routeAccountId)]);
+        var client = app.GetTestClient();
+
+        var balance = await client.PostAsJsonAsync(
+            $"/api/fund-accounts/{routeAccountId:D}/balance-snapshots",
+            new RecordAccountBalanceSnapshotRequest(
+                bodyAccountId,
+                new DateOnly(2026, 6, 16),
+                "USD",
+                100m,
+                "endpoint-auth-test"));
+        var custodian = await client.PostAsJsonAsync(
+            $"/api/fund-accounts/{routeAccountId:D}/custodian-statements",
+            new IngestCustodianStatementRequest(
+                Guid.NewGuid(),
+                bodyAccountId,
+                new DateOnly(2026, 6, 16),
+                "Custodian",
+                "csv",
+                null,
+                [
+                    new CustodianPositionLineDto(
+                        Guid.NewGuid(),
+                        Guid.NewGuid(),
+                        bodyAccountId,
+                        new DateOnly(2026, 6, 16),
+                        "AAPL",
+                        "Ticker",
+                        10m,
+                        1_000m,
+                        "USD",
+                        "Apple Inc.",
+                        "Equity",
+                        IsShort: false)
+                ],
+                "endpoint-auth-test"));
+        var bank = await client.PostAsJsonAsync(
+            $"/api/fund-accounts/{routeAccountId:D}/bank-statements",
+            new IngestBankStatementRequest(
+                Guid.NewGuid(),
+                bodyAccountId,
+                new DateOnly(2026, 6, 16),
+                "Bank",
+                null,
+                [
+                    new BankStatementLineDto(
+                        Guid.NewGuid(),
+                        Guid.NewGuid(),
+                        bodyAccountId,
+                        new DateOnly(2026, 6, 16),
+                        new DateOnly(2026, 6, 16),
+                        100m,
+                        "USD",
+                        "Deposit",
+                        "Capital contribution",
+                        "BANK-001",
+                        100m)
+                ],
+                "endpoint-auth-test"));
+        var reconcile = await client.PostAsJsonAsync(
+            $"/api/fund-accounts/{routeAccountId:D}/reconcile",
+            new ReconcileAccountRequest(
+                bodyAccountId,
+                new DateOnly(2026, 6, 16),
+                "endpoint-auth-test"));
+
+        balance.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        custodian.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        bank.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        reconcile.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
     private static async Task<WebApplication> CreateAppAsync(
         IReadOnlyList<CreateAccountRequest> accounts,
         IReadOnlyCollection<(AccessScopeKindDto Kind, Guid Id)> allowedScopes,

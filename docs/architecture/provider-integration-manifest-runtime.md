@@ -207,8 +207,11 @@ Application and infrastructure seams:
   and business-rule gates.
 - `IProviderIdentityResolutionService` matches accounts, securities, orders, transactions, tax lots,
   portfolios, and legal entities.
-- `ICanonicalFinancialDataWriter` writes accepted records to the owned domain store or routes them to
-  existing services.
+- `IIntegrationStagingReviewService` exposes accepted, validation-passed records, warning groups,
+  dedupe keys, and capability summaries so operators and reconciliation workflows can inspect the
+  staging handoff before canonical promotion.
+- `ICanonicalFinancialDataWriter` promotes staged accepted records to the owned domain store only
+  after reconciliation, identity, lineage, dedupe, and ownership gates pass.
 - `IIntegrationQuarantineService` stores rejected records, issue groups, suggested fixes, replay
   state, and reviewer decisions.
 - `IProviderSchemaDriftDetector` compares the latest response shape against the approved manifest

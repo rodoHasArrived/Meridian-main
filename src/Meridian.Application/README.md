@@ -75,8 +75,10 @@ and UI presentation concerns in their owning layers.
   deterministic transports. The monitoring service composes
   connection-level read models from durable sync-run summaries,
   integration staging counts, quarantine counts, and retained validation issues so workstation
-  surfaces can show dry-run evidence without reading storage internals. The quarantine review
-  service groups rejected records by operator-safe issue code and records durable review decisions
+  surfaces can show dry-run evidence without reading storage internals. The staging review service
+  returns accepted records, reconciliation-ready counts, validation warning groups, and capability
+  summaries from durable staging records without promoting them to canonical stores. The quarantine
+  review service groups rejected records by operator-safe issue code and records durable review decisions
   without mutating the retained raw rejected records. The quarantine replay service remaps reviewed
   rejected records after mapping changes, writes a replay raw payload, stages accepted records, and
   re-quarantines records that still fail validation. The activation-readiness service evaluates

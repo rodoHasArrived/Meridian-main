@@ -133,11 +133,14 @@ the sync-plan route reports due/manual/blocked capability state from schedule an
 history, the run-due sync route starts due read-only REST/OpenAPI/hybrid capabilities through the
 staging-first dry-run runtime, resolves configured endpoint dependencies from retained raw payload
 evidence, and the connection monitor route adapts durable sync-run, staging, quarantine, and
-validation evidence into browser/WPF-compatible payloads. Quarantine review routes expose grouped validation issues and
-persist operator review decisions without changing the retained rejected raw records. Quarantine
-replay routes remap records approved for replay after mapping changes and write accepted records
-back into integration staging or re-quarantine unresolved records. Setup, OpenAPI import,
-readiness, dry-run, activation, sync-plan, run-due sync, schema-drift, quarantine review/replay, and monitor endpoints resolve the
+validation evidence into browser/WPF-compatible payloads. The staging review route exposes accepted
+staging records, reconciliation-ready counts, warning groups, and capability summaries without
+promoting those records to Portfolio, Security Master, Ledger, or Accounting stores. Quarantine
+review routes expose grouped validation issues and persist operator review decisions without
+changing the retained rejected raw records. Quarantine replay routes remap records approved for
+replay after mapping changes and write accepted records back into integration staging or
+re-quarantine unresolved records. Setup, OpenAPI import, readiness, dry-run, activation, sync-plan,
+run-due sync, schema-drift, staging review, quarantine review/replay, and monitor endpoints resolve the
 authenticated workstation tenant before reading or writing stored manifests, connections, or
 retained run evidence. Import, dry-run, and run-due commands require provider/configuration permissions
 because they create manifests or retain raw payload, staging, quarantine, and sync-run evidence.
@@ -1103,7 +1106,11 @@ because the aggregate provider-ledger checks matched.
 Fund-account read and mutation routes require scoped authorization for explicit fund, account, and
 legal-entity identifiers before returning or changing account records. Unscoped account lists are
 reserved for admin maintenance so workstation callers cannot enumerate fund accounts across tenant
-or scoped-access boundaries by omitting filters.
+or scoped-access boundaries by omitting filters. Account-scoped operational evidence routes,
+including close readiness, balances, sync history, statements, positions, bank lines, and
+reconciliation runs/results, resolve the owning account before returning or mutating data; write
+payloads must match the route account id so callers cannot authorize one account in the URL while
+submitting another account in the request body.
 Operations Continuity reconciliation bridge payloads now also populate the shared cash, position,
 trade, income, MBS factor, bank, and GL support lane summaries from provider-ledger reconciliation
 detail, retained evidence, and open break materialization. Browser, WPF, and host callers should

@@ -35,7 +35,7 @@
         "docs/status/todo-scan-results.json"
       ],
       "return_code": 0,
-      "duration_seconds": 21.999,
+      "duration_seconds": 18.378,
       "status": "success",
       "output_file": "docs/status/TODO.md",
       "error": null
@@ -48,7 +48,7 @@
         "--summary"
       ],
       "return_code": 0,
-      "duration_seconds": 5.29,
+      "duration_seconds": 3.468,
       "status": "success",
       "output_file": null,
       "error": null
@@ -62,7 +62,7 @@
         "docs/generated/repository-structure.md"
       ],
       "return_code": 0,
-      "duration_seconds": 5.337,
+      "duration_seconds": 6.376,
       "status": "success",
       "output_file": "docs/generated/repository-structure.md",
       "error": null
@@ -78,7 +78,7 @@
         "docs/status/doc-health-dashboard.json"
       ],
       "return_code": 0,
-      "duration_seconds": 18.789,
+      "duration_seconds": 9.724,
       "status": "success",
       "output_file": "docs/status/doc-health-dashboard.md",
       "error": null
@@ -92,7 +92,7 @@
         "docs/status/example-validation.md"
       ],
       "return_code": 0,
-      "duration_seconds": 10.174,
+      "duration_seconds": 1.42,
       "status": "success",
       "output_file": "docs/status/example-validation.md",
       "error": null
@@ -108,7 +108,7 @@
         "docs/status/ai-inventory-report.json"
       ],
       "return_code": 0,
-      "duration_seconds": 12.09,
+      "duration_seconds": 4.257,
       "status": "success",
       "output_file": "docs/status/ai-inventory-report.md",
       "error": null
@@ -125,7 +125,7 @@
         "docs/status/ai-handoff-checklist-report.json"
       ],
       "return_code": 0,
-      "duration_seconds": 3.655,
+      "duration_seconds": 4.597,
       "status": "success",
       "output_file": "docs/status/ai-handoff-checklist-report.md",
       "error": null
@@ -149,7 +149,7 @@
         "docs/ai/assistant-workflow-contract.md"
       ],
       "return_code": 0,
-      "duration_seconds": 6.338,
+      "duration_seconds": 2.276,
       "status": "success",
       "output_file": null,
       "error": null
@@ -166,7 +166,7 @@
         "docs/status/prompt-route-lint-report.json"
       ],
       "return_code": 0,
-      "duration_seconds": 2.164,
+      "duration_seconds": 3.947,
       "status": "success",
       "output_file": "docs/status/prompt-route-lint-report.json",
       "error": null
@@ -201,7 +201,7 @@
         "docs/status/ai-handoff-packet.json"
       ],
       "return_code": 0,
-      "duration_seconds": 6.969,
+      "duration_seconds": 2.887,
       "status": "success",
       "output_file": "docs/status/ai-handoff-packet.json",
       "error": null
@@ -216,7 +216,7 @@
         "--summary"
       ],
       "return_code": 0,
-      "duration_seconds": 2.719,
+      "duration_seconds": 1.22,
       "status": "success",
       "output_file": null,
       "error": null
@@ -229,7 +229,7 @@
         "--summary"
       ],
       "return_code": 0,
-      "duration_seconds": 2.335,
+      "duration_seconds": 1.075,
       "status": "success",
       "output_file": null,
       "error": null
@@ -244,7 +244,7 @@
         "--summary"
       ],
       "return_code": 0,
-      "duration_seconds": 15.508,
+      "duration_seconds": 1.553,
       "status": "success",
       "output_file": null,
       "error": null
@@ -258,7 +258,7 @@
         "docs/status/coverage-report.md"
       ],
       "return_code": 1,
-      "duration_seconds": 7858.217,
+      "duration_seconds": 1605.401,
       "status": "failed",
       "output_file": "docs/status/coverage-report.md",
       "error": "Error: failed to build coverage report: [WinError 1921] The name of the file cannot be resolved by the system: 'D:\\\\Meridian-main\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools'"
