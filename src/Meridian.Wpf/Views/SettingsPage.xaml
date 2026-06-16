@@ -39,6 +39,47 @@
                     </StackPanel>
                 </Border>
 
+                <Border Style="{StaticResource CardStyle}"
+                        Margin="0,0,0,16"
+                        BorderBrush="{StaticResource InfoColorBrush}"
+                        AutomationProperties.AutomationId="SettingsDemoSampleModeCard">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{StaticResource IconData}"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="18"
+                                           Foreground="{StaticResource InfoColorBrush}"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="Demo / Sample Mode"
+                                           Style="{StaticResource CardHeaderStyle}"
+                                           Margin="8,0,0,0" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding DemoModeStatusText}"
+                                       Margin="0,8,0,0"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Text="Tour order: Data/provider status → Portfolio records → Accounting reconciliation → Evidence/audit context → Reporting readiness → Settings."
+                                       Margin="0,6,0,0"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource InfoColorBrush}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button Grid.Column="1"
+                                Content="Start Demo / Sample Tour"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Command="{Binding StartDemoTourCommand}"
+                                VerticalAlignment="Center"
+                                Margin="16,0,0,0"
+                                AutomationProperties.AutomationId="SettingsStartDemoTourButton" />
+                    </Grid>
+                </Border>
+
                 <TabControl Margin="0,0,0,24"
                             Background="Transparent"
                             BorderThickness="0"
