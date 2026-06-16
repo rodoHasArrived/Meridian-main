@@ -98,6 +98,14 @@ public sealed record WorkspaceShellState(
     bool HasPrimaryContext = true,
     string? ActiveRunId = null);
 
+public enum ShellCommandPaletteExecutionKind
+{
+    SafeNavigation,
+    NonDestructiveAction,
+    StateChangingAction,
+    DestructiveAction
+}
+
 public sealed record ShellCommandPaletteEntry(
     string PageTag,
     string Title,
@@ -105,16 +113,58 @@ public sealed record ShellCommandPaletteEntry(
     string WorkspaceTitle,
     string SectionLabel,
     string Glyph,
-    string VisibilityLabel)
+    string VisibilityLabel,
+    string DisplayName,
+    IReadOnlyList<string> Keywords,
+    string Workspace,
+    string Description,
+    ShellCommandPaletteExecutionKind ExecutionKind,
+    bool RequiresConfirmation,
+    string? ConfirmationPrompt = null)
 {
+    public ShellCommandPaletteEntry(
+        string PageTag,
+        string Title,
+        string Subtitle,
+        string WorkspaceTitle,
+        string SectionLabel,
+        string Glyph,
+        string VisibilityLabel)
+        : this(
+            PageTag,
+            Title,
+            Subtitle,
+            WorkspaceTitle,
+            SectionLabel,
+            Glyph,
+            VisibilityLabel,
+            DisplayName: Title,
+            Keywords: Array.Empty<string>(),
+            Workspace: WorkspaceTitle,
+            Description: Subtitle,
+            ExecutionKind: ShellCommandPaletteExecutionKind.SafeNavigation,
+            RequiresConfirmation: false)
+    {
+    }
+
     public string MetaLine
     {
         get
         {
-            var parts = new[] { SectionLabel, VisibilityLabel }
+            var parts = new[] { SectionLabel, VisibilityLabel, ExecutionLabel }
                 .Where(static part => !string.IsNullOrWhiteSpace(part));
 
             return string.Join(" · ", parts);
         }
     }
+
+    public string ExecutionLabel => ExecutionKind switch
+    {
+        ShellCommandPaletteExecutionKind.NonDestructiveAction => "Safe action",
+        ShellCommandPaletteExecutionKind.StateChangingAction => "Confirmation required",
+        ShellCommandPaletteExecutionKind.DestructiveAction => "Destructive",
+        _ => string.Empty
+    };
+
+    public bool IsRiskCommand => ExecutionKind is ShellCommandPaletteExecutionKind.StateChangingAction or ShellCommandPaletteExecutionKind.DestructiveAction;
 }

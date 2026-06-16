@@ -170,6 +170,43 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
+    public void CommandPaletteQuery_IncludesGlobalCommandMetadataForOperationalFlows()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.CommandPaletteQuery = "provider health";
+
+            var providerHealth = vm.CommandPalettePages.Should().ContainSingle(command => command.PageTag == "ProviderHealth").Subject;
+            providerHealth.DisplayName.Should().Be("Open provider health");
+            providerHealth.Keywords.Should().Contain(["provider", "health", "recovery"]);
+            providerHealth.Workspace.Should().Be("data");
+            providerHealth.Description.Should().Contain("reachability");
+            providerHealth.ExecutionKind.Should().Be(ShellCommandPaletteExecutionKind.NonDestructiveAction);
+            providerHealth.RequiresConfirmation.Should().BeFalse();
+        });
+    }
+
+    [Fact]
+    public void CommandPaletteQuery_DistinguishesDestructiveCommandsAndRequiresConfirmation()
+    {
+        WpfTestThread.Run(() =>
+        {
+            using var vm = CreateMainPageViewModel();
+
+            vm.CommandPaletteQuery = "clear activity";
+
+            var clearLog = vm.CommandPalettePages.Should().ContainSingle(command => command.PageTag == "ActivityLog").Subject;
+            clearLog.ExecutionKind.Should().Be(ShellCommandPaletteExecutionKind.DestructiveAction);
+            clearLog.RequiresConfirmation.Should().BeTrue();
+            clearLog.IsRiskCommand.Should().BeTrue();
+            clearLog.ExecutionLabel.Should().Be("Destructive");
+            clearLog.ConfirmationPrompt.Should().Contain("cannot be undone");
+        });
+    }
+
+    [Fact]
     public void ShellNavigationCatalog_CoversEveryRegisteredPage()
     {
         WpfTestThread.Run(() =>
