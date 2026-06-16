@@ -17,6 +17,7 @@ Current local project path: `D:\Meridian-main`.
 | Operators | [Operators](operators/README.md) | Provider setup, workstation launch, runbooks, deployment, troubleshooting, and support artifacts. |
 | First-time contributors | [Start](start/README.md) | Fast local orientation, setup, launch, and first safe validation commands. |
 | AI assistants | [AI](ai/README.md) | Agent workflow contracts, repo navigation, Codex/Claude/Copilot guidance, prompts, skills, and inventory checks. |
+| Domain modelers | [Domain Dictionary](domain/README.md) | Business nouns, relationships, rules, examples, and expansion notes for AI-assisted development. |
 
 ## Canonical Sources
 
@@ -30,6 +31,7 @@ Current local project path: `D:\Meridian-main`.
 | Roadmap registry | [Roadmap Registry](roadmap/README.md) and `docs/roadmap/data/*.yml` |
 | Source module registry | [Source Documentation Mesh](source/README.md) and `docs/source/data/*.yml` |
 | Architecture and module boundaries | [Engineering](engineering/README.md), [Project Structure](architecture/project-structure.md), and [Module Map](architecture/module-map.md) |
+| Domain dictionary | [Domain](domain/README.md) and [Meridian Domain Model](architecture/meridian-domain-model.md) |
 | Build, test, and run commands | [Engineering](engineering/README.md), [Start](start/README.md), and [HELP](HELP.md) |
 | Generated documentation policy | [Generated Documentation](generated/README.md) |
 | AI workflow policy | [Provider-Agnostic AI Development Contract](ai/assistant-workflow-contract.md) |
@@ -41,6 +43,7 @@ Current local project path: `D:\Meridian-main`.
 - `engineering/` is the developer and coding-agent lane.
 - `operators/` is the runbook, setup, troubleshooting, and support lane.
 - `reference/` remains the lookup lane for API, environment, schema, and glossary material.
+- `domain/` is the business dictionary lane for durable Meridian nouns, relationships, and rules.
 - `ai/`, `roadmap/`, `source/`, and `generated/` remain specialized controlled documentation systems.
 - `archive/docs/` is the destination for superseded plans, stale audits, old status snapshots, historical experiments, and one-off brainstorms.
 
