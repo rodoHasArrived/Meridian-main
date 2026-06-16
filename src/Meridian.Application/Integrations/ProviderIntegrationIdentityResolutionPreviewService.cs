@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Meridian.Contracts.Api;
 using Meridian.Contracts.Integrations;
 using Meridian.Contracts.SecurityMaster;
+using UiApiRoutes = Meridian.Contracts.Api.UiApiRoutes;
 
 namespace Meridian.Application.Integrations;
 
@@ -90,7 +90,7 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
             _ => "Provider account id is missing from the staged record."
         };
 
-        var securityCandidates = BuildSecurityCandidates(connection, record.MappedRecord);
+        IReadOnlyList<ProviderIntegrationIdentityCandidateDto> securityCandidates = BuildSecurityCandidates(connection, record.MappedRecord);
         var internalSecurityId = TryReadString(record.MappedRecord, "security.internalSecurityId");
         var resolvedSecurity = TryBuildInternalSecurityCandidate(internalSecurityId);
         ProviderIntegrationIdentityResolutionStatusDto securityStatus;
