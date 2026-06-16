@@ -34,7 +34,7 @@ matching module before it expands through the older flat page folders.
 
 ## Important workflows
 
-Application startup now shows `StartupWindow` before the main shell. The startup view model validates
+Application startup now shows `StartupWindow` before the main shell. After authentication, the main shell defaults to `HomeWorkspace`, a source-backed WPF launch checkpoint that groups provider health, data freshness, reconciliation, approvals, accounting/reporting readiness, and recent activity before operators enter deeper task workspaces. The startup view model validates
 credentials through the Identity-owned `UserProfileRegistry` and `LoginSessionService`, keeps the
 desktop session in `DesktopAuthenticationSession`, and opens `MainWindow` only after a configured
 operator signs in or an unconfigured optional-development session is explicitly accepted. WPF reads

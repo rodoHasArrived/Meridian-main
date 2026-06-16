@@ -9,6 +9,7 @@ public static class DesktopFeatureModuleRegistry
 {
     private static readonly IDesktopFeatureModule[] Modules =
     [
+        new Home.HomeFeatureModule(),
         new Trading.TradingFeatureModule(),
         new Portfolio.PortfolioFeatureModule(),
         new Accounting.AccountingFeatureModule(),

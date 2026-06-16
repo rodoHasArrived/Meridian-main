@@ -102,7 +102,7 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
-    public void ActivateShell_WhenHistoryIsEmpty_NavigatesToStrategyWorkspace()
+    public void ActivateShell_WhenHistoryIsEmpty_NavigatesToHomeWorkspace()
     {
         WpfTestThread.Run(() =>
         {
@@ -110,8 +110,8 @@ public sealed class MainShellViewModelTests
 
             vm.ActivateShell();
 
-            vm.CurrentPageTag.Should().Be("StrategyShell");
-            vm.CurrentPageTitle.Should().Be("Strategy Workspace");
+            vm.CurrentPageTag.Should().Be("HomeWorkspace");
+            vm.CurrentPageTitle.Should().Be("Home");
             vm.BackButtonVisibility.Should().Be(Visibility.Collapsed);
         });
     }
