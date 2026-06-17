@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { appendTrigger, loadPriceAlertState, savePriceAlertState, updateAlert, type StorageLike } from "./storage";
-import { PRICE_ALERT_MAX_TRIGGER_HISTORY, PRICE_ALERT_STORAGE_KEY, type PriceAlert, type PriceAlertStorageState, type PriceAlertTrigger } from "./types";
+import {
+  PRICE_ALERT_MAX_TRIGGER_HISTORY,
+  PRICE_ALERT_STORAGE_KEY,
+  type PriceAlert,
+  type PriceAlertStorageState,
+  type PriceAlertTrigger
+} from "@/lib/price-alerts";
 
 class MemoryStorage implements StorageLike {
   private readonly map = new Map<string, string>();

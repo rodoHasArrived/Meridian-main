@@ -711,6 +711,14 @@ public sealed class ReportTemplateRegistryService
                 continue;
             }
 
+            if (IsFormulaFunctionIdentifier(identifier)
+                && nextToken < expression.Length
+                && expression[nextToken] == '(')
+            {
+                position = nextToken + 1;
+                continue;
+            }
+
             rowReferences.Add(identifier);
         }
 
@@ -804,6 +812,15 @@ public sealed class ReportTemplateRegistryService
 
     private static bool IsIdentifierPart(char value) =>
         char.IsLetterOrDigit(value) || value is '_' or '-' or '.';
+
+    private static bool IsFormulaFunctionIdentifier(string identifier) =>
+        string.Equals(identifier, "abs", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "min", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "max", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "safeDivide", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "percent", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "basisPoints", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(identifier, "round", StringComparison.OrdinalIgnoreCase);
 
     private static IReadOnlyList<string> FindFormulaCycles(IReadOnlyDictionary<string, HashSet<string>> dependencies)
     {
@@ -1130,13 +1147,20 @@ public sealed class ReportPackWorkflowService
     public ReportPackWorkflowRecordDto Submit(Guid reportId, string actor, string role, string? note = null) =>
         TransitionCore(reportId, ReportPackWorkflowStateDto.InReview, actor, role, note);
 
-    public ReportPackWorkflowRecordDto Transition(Guid reportId, ReportPackWorkflowStateDto target, string actor, string role, string? note = null)
+    public ReportPackWorkflowRecordDto Transition(
+        Guid reportId,
+        ReportPackWorkflowStateDto target,
+        string actor,
+        string role,
+        string? note = null,
+        OperationsActionOriginDto actionOrigin = OperationsActionOriginDto.HumanOperator)
     {
         if (target == ReportPackWorkflowStateDto.Published)
         {
             throw new InvalidOperationException("Report pack publication requires sign-off, evidence hash, and retained manifest metadata.");
         }
 
+        EnsureHumanOriginForMaterialTransition(target, actionOrigin);
         return TransitionCore(reportId, target, actor, role, note);
     }
 
@@ -1185,8 +1209,17 @@ public sealed class ReportPackWorkflowService
         return Reject(reportId, request.Reason, request.Actor, request.ActorRole, request.EvidenceLinks);
     }
 
-    public ReportPackWorkflowRecordDto Restate(Guid reportId, string actor, string role, string reasonCode, string approver, Guid priorVersionReportId, IReadOnlyList<ReportPackChangedLineDto> changedLines)
+    public ReportPackWorkflowRecordDto Restate(
+        Guid reportId,
+        string actor,
+        string role,
+        string reasonCode,
+        string approver,
+        Guid priorVersionReportId,
+        IReadOnlyList<ReportPackChangedLineDto> changedLines,
+        OperationsActionOriginDto actionOrigin = OperationsActionOriginDto.HumanOperator)
     {
+        EnsureHumanOrigin(actionOrigin, "restate reports");
         if (string.IsNullOrWhiteSpace(reasonCode)) throw new ArgumentException("reasonCode is required");
         if (changedLines.Count == 0) throw new ArgumentException("changedLines are required");
         var linesWithoutEvidence = changedLines
@@ -1224,8 +1257,10 @@ public sealed class ReportPackWorkflowService
         string retainedManifestPath,
         IReadOnlyList<ReportPackEvidenceLinkDto> evidenceLinks,
         string? note = null,
-        ReportBrandingThemeDto? brandingTheme = null)
+        ReportBrandingThemeDto? brandingTheme = null,
+        OperationsActionOriginDto actionOrigin = OperationsActionOriginDto.HumanOperator)
     {
+        EnsureHumanOrigin(actionOrigin, "publish reports");
         ArgumentException.ThrowIfNullOrWhiteSpace(signedOffBy);
         ArgumentException.ThrowIfNullOrWhiteSpace(evidenceHash);
         ArgumentException.ThrowIfNullOrWhiteSpace(manifestId);
@@ -1258,6 +1293,33 @@ public sealed class ReportPackWorkflowService
         _records[reportId] = next;
         PersistRecords();
         return next;
+    }
+
+    private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
+    {
+        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        {
+            throw new InvalidOperationException(
+                $"Reviewed automation cannot {action}; a human operator approval is required.");
+        }
+    }
+
+    private static void EnsureHumanOriginForMaterialTransition(
+        ReportPackWorkflowStateDto target,
+        OperationsActionOriginDto actionOrigin)
+    {
+        switch (target)
+        {
+            case ReportPackWorkflowStateDto.Approved:
+                EnsureHumanOrigin(actionOrigin, "approve reports");
+                break;
+            case ReportPackWorkflowStateDto.Restated:
+                EnsureHumanOrigin(actionOrigin, "restate reports");
+                break;
+            case ReportPackWorkflowStateDto.Archived:
+                EnsureHumanOrigin(actionOrigin, "archive reports");
+                break;
+        }
     }
 
     public IReadOnlyList<ReportPackWorkflowRecordDto> GetHistory(string period, string fundAccountId) =>

@@ -58,7 +58,54 @@ public sealed class OperationsContinuityDtoContractTests
                     CompletedBy: null)
             ],
             Timeline: [],
-            BreakCases: [],
+            BreakCases:
+            [
+                new OperationsBreakCaseDto(
+                    BreakId: "break-cash-1",
+                    CheckId: "cash-reconciliation",
+                    Category: "Cash",
+                    Severity: "Critical",
+                    Status: "Open",
+                    Owner: "fund-controller",
+                    DueDate: new DateOnly(2026, 5, 21),
+                    ExpectedSource: "Custodian statement",
+                    ActualSource: "Meridian ledger",
+                    ExpectedAmount: 1000m,
+                    ActualAmount: 975m,
+                    Variance: -25m,
+                    SecurityId: null,
+                    Symbol: null,
+                    SuggestedAction: "Resolve cash variance before close package approval.",
+                    EvidenceLinks:
+                    [
+                        new OperationsEvidenceLinkDto(
+                            "ev-break-1",
+                            "Break packet",
+                            "/evidence/break-1",
+                            "reconciliation",
+                            DateTimeOffset.UtcNow)
+                    ],
+                    CorrelationKeys: new OperationsContinuityCorrelationKeysDto(
+                        RunId: "recon-run-2026-05",
+                        FundAccountId: null,
+                        PortfolioSnapshotId: null,
+                        LedgerBatchId: "ledger-batch-2026-05",
+                        LedgerPostingGroupId: null,
+                        ReconciliationCaseId: "case-cash-1"),
+                    EscalationLevel: "Controller",
+                    EscalationReason: "Aged past SLA warning",
+                    EscalatedAtUtc: new DateTimeOffset(2026, 5, 20, 12, 0, 0, TimeSpan.Zero),
+                    SlaState: "Breached",
+                    SlaDueAtUtc: new DateTimeOffset(2026, 5, 20, 11, 0, 0, TimeSpan.Zero),
+                    Materiality: 25m,
+                    RootCauseCode: "BANK_CASH_TIMING",
+                    ApprovalState: "PendingControllerReview",
+                    BlockedOutputs:
+                    [
+                        "close-package",
+                        "investor-statement"
+                    ])
+            ],
             LedgerPreview: null,
             Approvals: [],
             ReportPackReadiness: new OperationsReportPackReadinessDto(
@@ -146,7 +193,37 @@ public sealed class OperationsContinuityDtoContractTests
                         EvidenceLinks: [],
                         RequiredEvidence: ["reconciliation run", "break-case decision history", "resolved exception evidence"])
                 ],
-                EvidenceLinks: []));
+                EvidenceLinks: []),
+            ReviewedAutomation: new OperationsReviewedAutomationSummaryDto(
+                SummaryId: "reviewed-automation",
+                Stage: "Suggested matches require review",
+                Status: EvidenceStatusDto.ReviewRequired,
+                RequiresHumanReview: true,
+                Summary: "Automation output is retained as suggested support only.",
+                AllowedUseCases:
+                [
+                    "Suggest reconciliation matches",
+                    "Summarize retained evidence"
+                ],
+                ProhibitedActions:
+                [
+                    "Approve its own work",
+                    "Post material journals without approval",
+                    "Erase evidence"
+                ],
+                EvidenceLinks:
+                [
+                    new OperationsEvidenceLinkDto(
+                        "ev-automation-1",
+                        "Suggested match review",
+                        "/evidence/automation-review",
+                        "reviewed-automation",
+                        DateTimeOffset.UtcNow)
+                ],
+                RequiredActions:
+                [
+                    "Route the suggestion to a human reviewer."
+                ]));
 
         var json = JsonSerializer.Serialize(dto, options);
         var actual = JsonSerializer.Deserialize<OperationsContinuityWorkflowDto>(json, options);
@@ -154,6 +231,17 @@ public sealed class OperationsContinuityDtoContractTests
         actual.Should().NotBeNull();
         actual!.Status.Should().Be(OperationsWorkflowStatusDto.ReconciliationActive);
         actual.EvidenceLinks.Should().ContainSingle(link => link.EvidenceId == "ev-close-1");
+        actual.BreakCases.Should().ContainSingle();
+        var breakCase = actual.BreakCases.Single();
+        breakCase.Owner.Should().Be("fund-controller");
+        breakCase.SlaState.Should().Be("Breached");
+        breakCase.SlaDueAtUtc.Should().Be(new DateTimeOffset(2026, 5, 20, 11, 0, 0, TimeSpan.Zero));
+        breakCase.Materiality.Should().Be(25m);
+        breakCase.RootCauseCode.Should().Be("BANK_CASH_TIMING");
+        breakCase.ApprovalState.Should().Be("PendingControllerReview");
+        breakCase.BlockedOutputs.Should().Contain("close-package");
+        breakCase.BlockedOutputs.Should().Contain("investor-statement");
+        breakCase.CorrelationKeys!.ReconciliationCaseId.Should().Be("case-cash-1");
         actual.ReportPackReadiness.IsReady.Should().BeFalse();
         actual.ReportPackReadiness.ReportPackId.Should().Be("report-pack-2026-05");
         actual.CloseReadiness.Should().NotBeNull();
@@ -163,8 +251,143 @@ public sealed class OperationsContinuityDtoContractTests
         actual.AccountingRecordSummary!.RequiredCategoryCount.Should().Be(8);
         actual.AccountingRecordSummary.EvidenceCategories.Should().ContainSingle(category => category.Key == "reconciliation-case-history");
         actual.AccountingRecordSummary.EvidenceCategories.Single().RequiredEvidence.Should().Contain("break-case decision history");
+        actual.ReviewedAutomation.Should().NotBeNull();
+        actual.ReviewedAutomation!.Stage.Should().Be("Suggested matches require review");
+        actual.ReviewedAutomation.RequiresHumanReview.Should().BeTrue();
+        actual.ReviewedAutomation.AllowedUseCases.Should().Contain("Summarize retained evidence");
+        actual.ReviewedAutomation.ProhibitedActions.Should().Contain("Erase evidence");
+        actual.ReviewedAutomation.EvidenceLinks.Should().ContainSingle(link => link.EvidenceId == "ev-automation-1");
         actual.Blockers.Should().ContainSingle(blocker => blocker.EvidenceLinks.Any(link => link.EvidenceId == "ev-pack-1"));
         actual.NextActions.Should().ContainSingle(action => action.Code == "prepare-report-pack");
+    }
+
+    [Fact]
+    public void GovernanceLifecycleProjectionDto_FinancialOperationsQueueInputs_ShouldDefaultAndRoundTrip()
+    {
+        var options = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+        options.Converters.Add(new JsonStringEnumConverter());
+
+        var legacyProjection = new GovernanceLifecycleProjectionDto(
+            DecisionPosture: "Pending review",
+            SignoffPosture: "Approval pending",
+            CloseReadiness: "Blocked",
+            AuditTraceability: "Evidence pending");
+
+        legacyProjection.EvidenceReferences.Should().BeEmpty();
+        legacyProjection.AuditReferences.Should().BeEmpty();
+        legacyProjection.EvidencePackages.Should().BeEmpty();
+        legacyProjection.ReconciliationLanes.Should().BeEmpty();
+        legacyProjection.BreakCases.Should().BeEmpty();
+        legacyProjection.CloseChecklist.Should().BeEmpty();
+        legacyProjection.Approvals.Should().BeEmpty();
+
+        var evidence = new OperationsEvidenceLinkDto(
+            "ev-finops-queue",
+            "Financial Operations queue packet",
+            "/api/workstation/operations/continuity/evidence/ev-finops-queue",
+            "operations-continuity",
+            new DateTimeOffset(2026, 5, 8, 14, 20, 0, TimeSpan.Zero));
+        var projection = legacyProjection with
+        {
+            EvidencePackages =
+            [
+                new OperationsEvidencePackageSummaryDto(
+                    "period-lock-reopen:2026-05",
+                    "Period lock and reopen evidence",
+                    EvidenceStatusDto.Missing,
+                    false,
+                    "Period lock evidence is not complete.",
+                    "OperationsContinuity",
+                    1,
+                    2,
+                    1,
+                    [evidence],
+                    ["Close the workflow"])
+            ],
+            ReconciliationLanes =
+            [
+                new OperationsReconciliationLaneSummaryDto(
+                    "mbs-factor-reconciliation",
+                    "MBS factor reconciliation",
+                    OperationsReconciliationLaneStatusDto.ReviewRequired,
+                    false,
+                    1,
+                    "MBS factor reconciliation has one open break.",
+                    "FundReconciliation",
+                    [evidence],
+                    ["Resolve or assign MBS factor breaks"])
+            ],
+            BreakCases =
+            [
+                new OperationsBreakCaseDto(
+                    "break-finops-factor",
+                    "mbs-factor-check",
+                    "MbsFactor",
+                    "Warning",
+                    "InReview",
+                    "fund-controller",
+                    new DateOnly(2026, 5, 9),
+                    "custodian",
+                    "ledger",
+                    125_000m,
+                    124_500m,
+                    -500m,
+                    null,
+                    "MBS",
+                    "Resolve factor variance and retain custodian factor evidence.",
+                    [evidence],
+                    new OperationsContinuityCorrelationKeysDto(
+                        RunId: "run-finops-queue",
+                        ReconciliationCaseId: "case-finops-factor"),
+                    EscalationLevel: "Level 2",
+                    SlaState: "Warning",
+                    BlockedOutputs: ["Report-pack release"])
+            ],
+            CloseChecklist =
+            [
+                new OperationsCloseChecklistTaskDto(
+                    "close-gate-reconciliation",
+                    OperationsGateKeyDto.Reconciliation,
+                    "Reconciliation close gate",
+                    "accounting-operator",
+                    "Evidence link and gate completion audit",
+                    1,
+                    new DateOnly(2026, 5, 15),
+                    new DateOnly(2026, 5, 10),
+                    "Pending",
+                    null,
+                    "ev-finops-queue",
+                    "OperationsContinuity",
+                    false,
+                    null,
+                    null)
+            ],
+            Approvals =
+            [
+                new OperationsApprovalDto(
+                    "approval-finops-queue",
+                    OperationsApprovalStateDto.ReviewerAssigned,
+                    "fund-ops",
+                    "controller",
+                    "Controller review is pending.",
+                    new DateTimeOffset(2026, 5, 9, 16, 0, 0, TimeSpan.Zero),
+                    null,
+                    [evidence])
+            ]
+        };
+
+        var json = JsonSerializer.Serialize(projection, options);
+        var actual = JsonSerializer.Deserialize<GovernanceLifecycleProjectionDto>(json, options);
+
+        actual.Should().NotBeNull();
+        actual!.EvidencePackages.Should().ContainSingle(package => package.PackageId == "period-lock-reopen:2026-05");
+        actual.ReconciliationLanes.Should().ContainSingle(lane => lane.LaneId == "mbs-factor-reconciliation" && lane.BreakCount == 1);
+        actual.BreakCases.Should().ContainSingle(breakCase => breakCase.BlockedOutputs!.Contains("Report-pack release"));
+        actual.CloseChecklist.Should().ContainSingle(task => task.TaskId == "close-gate-reconciliation");
+        actual.Approvals.Should().ContainSingle(approval => approval.Status == OperationsApprovalStateDto.ReviewerAssigned);
     }
 
     [Fact]

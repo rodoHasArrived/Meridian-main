@@ -59,6 +59,36 @@ public sealed class ConfigDirectLendingAuthorizationTests : IDisposable
         response.StatusCode.Should().NotBe(HttpStatusCode.Forbidden);
     }
 
+    [Fact]
+    public async Task SymbolMappingsRead_WithoutConfigPermission_IsRejected()
+    {
+        var response = await _unauthenticatedClient.GetAsync("/api/symbols/mappings");
+        response.StatusCode.Should().BeOneOf(HttpStatusCode.Unauthorized, HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task SymbolMappingsRead_WithViewConfigPermission_IsAllowedThrough()
+    {
+        using var client = _fixture.CreatePermittedClient(UserPermission.ViewConfig);
+        var response = await client.GetAsync("/api/symbols/mappings");
+        response.StatusCode.Should().NotBe(HttpStatusCode.Unauthorized);
+        response.StatusCode.Should().NotBe(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task SymbolMappingsMutation_WithViewConfigOnly_IsForbidden()
+    {
+        using var client = _fixture.CreatePermittedClient(UserPermission.ViewConfig);
+        var content = new StringContent(
+            "{\"canonicalSymbol\":\"MSFT\",\"alpacaSymbol\":\"MSFT\"}",
+            Encoding.UTF8,
+            "application/json");
+
+        var response = await client.PostAsync("/api/symbols/mappings", content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     // ── Direct lending: negative path ────────────────────────────────────────
 
     [Fact]
@@ -99,6 +129,12 @@ public sealed class ConfigDirectLendingAuthorizationTests : IDisposable
     [InlineData("POST", "/api/config/symbols")]
     [InlineData("GET", "/api/config/derivatives")]
     [InlineData("POST", "/api/config/derivatives")]
+    // Representative routes owned by SymbolMappingEndpoints.
+    [InlineData("GET", "/api/symbols/mappings")]
+    [InlineData("GET", "/api/symbols/mappings/{symbol}")]
+    [InlineData("POST", "/api/symbols/mappings")]
+    [InlineData("POST", "/api/symbols/mappings/import")]
+    [InlineData("DELETE", "/api/symbols/mappings/{symbol}")]
     // Representative routes owned by DirectLendingEndpoints.
     [InlineData("POST", "/api/loans/")]
     [InlineData("POST", "/api/loans/{loanId:guid}/drawdowns")]
@@ -117,6 +153,35 @@ public sealed class ConfigDirectLendingAuthorizationTests : IDisposable
         endpoint!.Metadata.GetMetadata<EndpointAuthorizationMetadata>()
             .Should().NotBeNull($"{method} {route} must attach a permission requirement");
     }
+
+    [Theory]
+    [InlineData("GET", "/api/symbols/mappings", UserPermission.ViewConfig)]
+    [InlineData("GET", "/api/symbols/mappings/{symbol}", UserPermission.ViewConfig)]
+    [InlineData("POST", "/api/symbols/mappings", UserPermission.ModifyConfig)]
+    [InlineData("POST", "/api/symbols/mappings/import", UserPermission.ModifyConfig)]
+    [InlineData("DELETE", "/api/symbols/mappings/{symbol}", UserPermission.ModifyConfig)]
+    public void SymbolMappingRoute_RequiresTenantScopeAndConfigPermission(
+        string method,
+        string route,
+        UserPermission expectedPermission)
+    {
+        var endpoint = FindEndpoint(method, route);
+
+        endpoint.Should().NotBeNull($"the {method} {route} route should be mapped");
+        endpoint!.Metadata.GetMetadata<WorkstationTenantScopeMetadata>()
+            .Should().NotBeNull($"{method} {route} must require an authenticated tenant scope");
+        endpoint.Metadata.GetMetadata<EndpointAuthorizationMetadata>()!
+            .Permissions.Should().Contain(expectedPermission);
+    }
+
+    private RouteEndpoint? FindEndpoint(string method, string route)
+        => _fixture.Services
+            .GetRequiredService<EndpointDataSource>()
+            .Endpoints
+            .OfType<RouteEndpoint>()
+            .FirstOrDefault(candidate =>
+                NormalizeRoute(candidate.RoutePattern.RawText) == route &&
+                MatchesMethod(candidate, method));
 
     private static string NormalizeRoute(string? rawRoute)
     {

@@ -44,6 +44,14 @@ the shared workstation host while delegating identity state to `Meridian.Identit
 keeps the existing global role checks for compatibility and adds scoped authorization helpers so
 governance-core routes can require a permission on a specific organization, fund, portfolio, legal
 entity, or account.
+`LoginSessionMiddleware` now also attaches a request tenant scope through
+`CurrentTenantIdKey`, currently derived from the authenticated company id until tenant ids diverge
+from company ids. `IWorkstationTenantContextAccessor` is the shared endpoint/service seam for
+resolving actor, company, tenant, role profile, and permission context; production endpoint work
+should use that accessor instead of reparsing `HttpContext.Items` or trusting client-supplied actor
+and company fields. The `/api/workstation` route group also requires that tenant scope before any
+workstation endpoint handler runs, so browser and WPF clients must operate through an authenticated
+tenant-scoped session rather than relying on client-supplied organization fields.
 
 Preserve cross-surface compatibility when evolving shared read models. Keep ledger/reconciliation
 source-of-truth services authoritative. `SecurityMasterWorkbenchQueryService` is published under
@@ -58,14 +66,23 @@ concurrent branches that both modify the root coordinator or the shared
 `WorkstationEndpointsTests.cs` test body. For operations-continuity and reconciliation endpoint
 changes, start with focused `MapWorkstationEndpoints_OperationsContinuity` /
 `MapWorkstationEndpoints_Reconciliation` filters before broad workstation endpoint validation.
+Operations Continuity workflow list, detail, timeline, break-list, ledger-preview, close-readiness,
+approval-policy, and close-calendar reads require the shared operations-continuity read permission
+because those payloads expose Financial Operations evidence, blockers, assignments, and period-close
+posture.
+`FundOperationsWorkspaceReadService` passes Operations Continuity reviewed-automation posture through
+the shared governance lifecycle projection so browser and WPF report-pack handoff surfaces render
+the same automation guardrails and retained review evidence.
 Financial Record Explorer endpoints are registered from `WorkstationEndpoints.FinancialRecordExplorers.cs`
 under `/api/workstation/financial-record-explorers/{explorerId}` for `ledger`, `portfolio`, and
 `security-instrument`, and `report-line-provenance`. `FinancialRecordExplorerReadService` composes
 source-backed strategy run ledger, portfolio, Security Master, report-pack line provenance,
 delivery history, evidence, reconciliation, reporting, and audit projections into the shared DTO,
 while `FileFinancialRecordExplorerSavedViewStore` persists operator-created views under the
-workstation data root. Missing projections return empty or blocked DTO state with disabled actions
-and reasons, not synthetic operational balances.
+workstation data root. Saved views are keyed by the authenticated workstation tenant and explorer
+id, so operator filters created in one tenant do not appear in another tenant's Financial Record
+Explorer session. Missing projections return empty or blocked DTO state with disabled actions and
+reasons, not synthetic operational balances.
 Reference-data endpoint groups for bonds, options, equity, futures, FX spot, crypto, deposits,
 certificates of deposit, commodities, swaps, and money-market funds adapt `Meridian.Instruments` services
 to shared browser/WPF routes. Keep those endpoints as permission and HTTP adapters; instrument
@@ -83,6 +100,19 @@ template, status, trigger, retry attempts, section counts, linked lineage, artif
 actions, plus structured generated report-writer grid metadata when a run retained
 `report-writer://.../grids/{gridId}` artifacts. This keeps report-run audit/version cards and
 generated no-code grid evidence source-backed across browser and desktop clients.
+Report-pack delivery package access stays server-owned: email-link manifests use
+`/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/package`, secure-portal
+manifests use `/portal/reporting/packages/{packageId}`, and retained artifact downloads use the
+delivery artifact route. Those routes validate the retained package token and expiry before
+returning package manifests or PDF/XLSX/CSV bytes, so browser and WPF clients should render the
+provided access links instead of reconstructing or bypassing delivery access.
+Report-pack evidence packets also summarize matching delivery attempts as delivery-record and
+delivery-evidence-packet nodes that route to the canonical `report-pack-delivery` packet, so the
+parent Operational Evidence Graph shows delivery coverage without duplicating package internals in
+browser or WPF clients. Delivery package nodes carry typed attempt/package metadata, and Evidence
+Vault manifest export uses that metadata for `ReportPackDeliveryAttemptId` and
+`ReportPackDeliveryPackageId` linkage before falling back to older summary parsing, keeping vault
+search resilient when operator copy changes.
 Data upload intake endpoints are registered under `/api/workstation/data/uploads/*`. The template
 route serves the contract-owned catalog, and the preview route accepts bounded CSV uploads,
 retains the source file under the resolved workstation upload root, and returns schema issues plus
@@ -92,6 +122,41 @@ ledger/accounting records. Bank-statement CSV import uses
 require a bank fund account, and apply the parsed lines through
 `IFundAccountService.IngestBankStatementAsync`; the imported bank data remains reconciliation
 evidence and does not post Meridian-owned ledger entries.
+
+Provider integration endpoints are registered under `/api/workstation/provider-integrations/*`.
+Template routes expose the Application-owned starter manifest pack, the setup-save command persists
+draft manifests and connection instances, activation-readiness routes surface fail-closed readiness
+blockers, the OpenAPI import route seeds tenant-scoped draft manifests from provider specs, dry-run
+command routes execute manual CSV and REST validation through Application-owned services, the
+schema-drift check route compares retained raw payloads with manifest response and mapping paths,
+the sync-plan route reports due/manual/blocked capability state from schedule and retained run
+history, the sync-run history route returns durable run evidence with staging and quarantine counts,
+the run-due sync route starts due read-only REST/OpenAPI/hybrid capabilities through the
+staging-first dry-run runtime, resolves configured endpoint dependencies from retained raw payload
+evidence, and the connection monitor route adapts durable sync-run, staging, quarantine, and
+validation evidence into browser/WPF-compatible payloads. The staging review route exposes accepted
+staging records, reconciliation-ready counts, warning groups, and capability summaries without
+promoting those records to Portfolio, Security Master, Ledger, or Accounting stores. The identity-resolution
+route previews provider account and Security Master match posture for staged records, including
+missing identifiers, unresolved securities, and review-required account mappings before
+reconciliation promotion. The promotion-readiness route composes that posture into ready,
+review-required, and blocked rows for the reconciliation-staging handoff while remaining read-only.
+The reconciliation-handoff route requires provider configuration permission, persists only
+operator-approved ready rows as handoff evidence, and exposes handoff history for the same
+connection without writing Portfolio, Security Master, Ledger, or Accounting stores. Duplicate
+handoff attempts for the same staged record are blocked and returned with operator-safe issue rows.
+Quarantine review routes expose grouped validation issues and persist operator review decisions without
+changing the retained rejected raw records. Quarantine replay routes remap records approved for
+replay after mapping changes and write accepted records back into integration staging or
+re-quarantine unresolved records. Setup, OpenAPI import, readiness, dry-run, activation, sync-plan,
+sync-run history, run-due sync, schema-drift, staging review, identity-resolution preview, promotion-readiness,
+reconciliation handoff, quarantine review/replay, and monitor endpoints resolve the
+authenticated workstation tenant before reading or writing stored manifests, connections, or
+retained run evidence. Import, dry-run, and run-due commands require provider/configuration permissions
+because they create manifests or retain raw payload, staging, quarantine, and sync-run evidence.
+The activation command persists active manifest and connection state only after Application
+readiness passes with retained approval evidence; setup screens and quarantine review screens still
+need to be surfaced through the shared workstation API.
 `BankFeedTransportService` reuses that same import boundary for scheduled local-file and SFTP
 CSV pulls through `IEtlSourceReader`, and delegates Plaid API schedules to `IPlaidIngestionService`
 so API feeds stay server-owned and ledger posting remains gated by Meridian approvals.
@@ -99,19 +164,29 @@ Plaid endpoints are registered as their own shared endpoint group from `UiApiRou
 and mutation access resolved from the workstation session. The shared Plaid workstation service
 keeps link-token creation, public-token exchange, item sync, webhook retention, and sandbox
 transfer gating server-owned so browser and WPF clients do not handle Plaid access tokens or
-duplicate bank evidence ingestion rules.
+duplicate bank evidence ingestion rules. Sandbox transfer authorization now verifies the approved
+Meridian payment record directly through `IBankingService.GetPaymentAsync`; retained bank
+confirmation, return, reversal, or failure evidence is recorded separately through the Banking
+endpoint instead of being fabricated by approval itself.
 Provider connection and readiness services project provider setup metadata from the Data
 Integration credential catalog into shared rows. Browser and WPF provider surfaces should render
 credential fields, allowed environments, diagnostics, evidence, and recovery actions from those
-rows instead of maintaining provider-specific local forms.
+rows instead of maintaining provider-specific local forms. Provider connection routes require the
+authenticated workstation tenant scope before listing, saving, verifying, or deleting credential
+state, and credential mutations still require `ManageCredentials`.
+Symbol mapping endpoints under `/api/symbols/mappings` are tenant-scoped shared configuration
+routes: reads require `ViewConfig` or `ModifyConfig`, and upsert, delete, and CSV import mutations
+also require `ModifyConfig` before writing the shared symbol mapping configuration.
 Accounting-system endpoints are also registered as a shared endpoint group from `UiApiRoutes`.
 `Meridian.FinancialOperations.AccountingSystem.AccountingSystemIntegrationService` lists GL
 providers, uses QuickBooks Online when local OAuth client id, client secret, refresh token, and
 company realm id config are present, falls back to `quickbooks-fixture` otherwise, retains the
 latest import in process, and compares external trial-balance evidence against Meridian-owned
-ledger truth when the ledger store is available. UI Shared maps the endpoint group and registers the
-Data Integration-owned credential-backed connection store; it does not own GL evidence reconciliation
-or QuickBooks credential-persistence mapping.
+ledger truth when the ledger store is available. The reconciliation response carries provider-side
+refs, Meridian ledger refs, and package posture for external import, Meridian ledger support, and
+the GL tie-out; UI Shared maps the endpoint group and registers the Data Integration-owned
+credential-backed connection store, but it does not own GL evidence reconciliation or QuickBooks
+credential-persistence mapping.
 The Data Integration-owned QuickBooks Online lane refreshes access through the server-side token
 exchange seam and imports chart-of-accounts, journal-entry, and trial-balance evidence as read-only
 reconciliation input.
@@ -183,9 +258,16 @@ clients a single server-owned evidence-coverage model instead of a flat link lis
 must reinterpret.
 Payment-intent evidence is also server-owned: fund-event and capital-account projections surface
 payment intent readiness, retained cash evidence, settlement references, and a dedicated
-`payment-intent` evidence packet with requester, approval-chain, expected-cash, bank/cash evidence,
-reconciliation, audit-history, and execution-deferred nodes. This layer documents cash-movement
-intent and proof; live treasury payment execution remains outside the shared UI service boundary.
+`payment-intent` evidence packet with requester, payee, account scope, business purpose,
+approval policy, retained source evidence, expected-cash, bank/cash evidence with retaining
+operator attribution, reconciliation,
+audit-history, and execution-deferred nodes. Bank/cash artifact refs carry capture channel/source
+reference plus extracted amount, currency, date, settlement reference, transaction id, and status
+fields validated against the expected cash movement, and explicit payment/settlement evidence links
+must match the current intent before they satisfy readiness or appear as workflow bank/reconciliation
+proof. Retained return, reversal, rejection, void, or failed-payment evidence is classified as
+cash-evidence when it references the current intent. This layer documents cash-movement intent and
+proof; live treasury payment execution remains outside the shared UI service boundary.
 Projections expose the event-level record collection as an empty list when
 no fund events qualify, keeping browser and desktop consumers on the same non-null contract.
 Posted private-capital fund events inherit the owning ledger book's base currency through
@@ -205,8 +287,10 @@ fund-event id is absent instead of sending clients an empty aggregate to interpr
 `/api/ledger/private-capital/fund-event-command-center` wraps the same source-backed event record
 with command-center lanes for evidence, workflow, ledger impact, capital-account impact, treasury
 expectation, reconciliation, report usage, delivery, tax support, and audit history plus retained
-support packages. It requires `fundEventId`, returns 400 when the selector is missing, and returns
-404 when the event is absent.
+support packages. The support package rows cover operational evidence, payment intent, report
+output, delivery, tax support, and audit support readiness, with review-required actions when
+retained package evidence is missing. It requires `fundEventId`, returns 400 when the selector is
+missing, and returns 404 when the event is absent.
 `PrivateCapitalCapitalAccountSubledgerBuilder` also groups those event-level records with the
 running capital-account subledger, ledger impacts, report outputs, retained evidence, approval
 queue, posted/published counts, and validation issues into a capital-account-level record.
@@ -248,7 +332,10 @@ should render that shared coverage instead of deriving their own lifecycle label
 Generated reporting-run deliveries also retain a `ReportingRunDelivery` evidence packet with
 recipient scope, source report-writer artifacts, delivery artifact checksums, dataset/template
 version, and request history so scheduled no-code report packs have the same audit-facing delivery
-lineage as published governed report packs. Delivery packages expose structured access links for
+lineage as published governed report packs. When the generated run manifest carries a resolved
+`ReportAccessPolicyDto`, the evidence packet uses that policy for its entitlement scope so
+restricted group/company and private scheduled report-writer packs do not lose their audience lock
+at delivery time. Delivery packages expose structured access links for
 the token-gated email link or secure portal route, operator route, retained manifest path, and each
 artifact download; schedule delivery-plan projections carry the latest package links forward so
 operator clients can render the actual retained delivery options without parsing secure-link strings.
@@ -256,12 +343,13 @@ Their generated CSV/HTML/PDF artifacts include
 manifest-owned report-writer grid metadata rows plus any manifest-owned rendered grid columns,
 rows, warnings, lineage, data-dictionary fields, and validation checks. Generated XLSX packages include a
 `ReportWriterGrids` worksheet with grid id, title, kind, artifact URI, dimension count, metric
-count, and formula count plus `ReportWriterGridRows`, `ReportWriterDictionary`, and
+count, formula count, and validation summary counts plus `ReportWriterGridRows`, `ReportWriterDictionary`, and
 `ReportWriterValidation` worksheets for rendered row values, output field lineage, generated field
 flags, and row-count/source-lineage checks. Reporting
 schedules can persist optional dataset rows and pass them into scheduled runs, allowing scheduled
 no-code packs to deliver source-backed pivot, Top-N, contribution, and formula output when a
-governed dataset snapshot is supplied. `ReportWriterDatasetSourceService` also resolves retained
+governed dataset snapshot is supplied. Individual retained grids can also be exported as JSON, CSV,
+XLS/XLSX, or PDF from the same policy-aware run artifact. `ReportWriterDatasetSourceService` also resolves retained
 portfolio cuts, Top-N/contribution analytics, and cross-fund consolidation rows when ad-hoc or
 scheduled report-writer execution omits dataset rows, so approved templates can run from retained
 Meridian evidence instead of requiring pasted operator data.
@@ -282,7 +370,9 @@ configure routing, review sequence, evidence expectations, scoped authority, tem
 and ledger controls without owning domain writes.
 `ExtensibilityConfigurationService` persists tenant-template bundles and activation attempts through
 `IExtensibilityConfigurationStore`. The default workstation registration uses
-`FileExtensibilityConfigurationStore` under `workstation/extensibility/configuration-bundles.json`.
+`FileExtensibilityConfigurationStore` under tenant-specific
+`workstation/extensibility/tenants/{tenantId}/configuration-bundles.json` snapshots resolved from
+the session-derived workstation tenant context.
 Activation fails closed when a tenant template or domain extension attempts to override core object
 identity, audit trail, or financial calculation integrity, and when bundled configuration envelopes
 are not already approved with retained approval actor/timestamp evidence. Successful activation marks
@@ -368,7 +458,8 @@ fields, metric source mappings, formula dependencies, and saved filter lineage s
 previews can display the same audit trace as retained exports. Template governance validation now
 blocks report-writer formulas that reference unknown metrics/formulas, unsupported `total(...)`
 fields, or self/forward/circular formula dependencies before those templates can enter review or
-approval.
+approval, while recognizing supported helpers such as `safeDivide(...)`, `percent(...)`,
+`basisPoints(...)`, and `round(...)` as functions instead of missing row fields.
 Browser and WPF clients should render that shared
 template state instead of treating built-in templates as the full authoring workflow.
 Template definitions and report-pack workflow records now carry shared access policies for
@@ -395,12 +486,16 @@ Approved custom report-writer templates carry their saved grid definitions into 
 catalog as well. Generic ad-hoc and scheduled runs now retain `report-writer://.../grids/{gridId}`
 artifacts and audit the grid count, so pivot, Top-N, contribution, and custom-formula grids remain
 visible in run evidence after publication or schedule execution instead of existing only in the
-template preview response. `ReportWriterGridArtifactService` serves those retained grids through
+template preview response. Reporting manifests and workstation run projections also retain the
+resolved report-writer dataset source id, label, row count, and generated-grid validation summaries
+when ad-hoc or scheduled automation uses a governed source-backed dataset. `ReportWriterGridArtifactService` serves those retained grids through
 `/api/fund-structure/reporting/runs/{runId}/report-writer-grids/{gridId}` as JSON by default, with
-`format=csv` and `format=xlsx` downloads for operators that need direct grid extracts from a
-governed run artifact. JSON and XLSX downloads enrich the retained render with a data dictionary
-for every output column plus validation checks for row-count, column coverage, source-field lineage,
-and render warnings, while CSV stays a flat grid extract for downstream ingestion. Those retained
+`format=csv`, `format=pdf`, and `format=xlsx` downloads for operators that need direct grid extracts
+or allocator-ready grid previews from a governed run artifact; `format=xls` and `format=excel` are
+compatibility aliases for the same canonical `.xlsx` workbook. JSON, PDF, and XLSX downloads enrich
+the retained render with a data dictionary or lineage summary plus validation checks for row-count,
+column coverage, source-field lineage, and render warnings, while CSV stays a flat grid extract for
+downstream ingestion. Those retained
 grid downloads evaluate the source template access policy at read time, so private, restricted
 user/group/company, and company-wide report audiences are enforced for JSON, CSV, and XLSX artifact
 retrieval.
@@ -417,6 +512,20 @@ instead of only fields already placed in a saved grid. Contribution grid renders
 server-generated `contributionPercent` and `contributionAbsPercent` columns, allowing clients to show
 signed and absolute percentage-of-P&L breakdowns for offsetting winners and laggards without
 recalculating contribution math.
+`ReportWriterDatasetSourceService` also projects those retained report-writer datasets as
+`reportWriterDatasetSources` for both `ReportPackRunReadService` and
+`FundOperationsWorkspaceReadService` Reporting summaries. The projection includes a combined source,
+dedicated portfolio-cut, Top-N/contribution analytics, cross-fund consolidation sources, and a
+certified operational data-mart source that enriches retained rows with row-lineage keys, lineage
+manifest pointers, evidence-index links, source run ids, validation state, reconciliation state,
+certification posture, and permitted consumers. Each source carries its own field catalog plus
+source-backed rows that ad-hoc previews can post to the shared render endpoint, so clients only
+fall back to synthetic preview rows when the operator intentionally selects a fixture or pasted
+dataset.
+`ReportingRunCommandService` and `ReportingScheduleService` honor the same source ids through
+optional `datasetSourceId` request fields, resolving retained portfolio-cut, Top-N/contribution, or
+cross-fund rows server-side for approved report-writer templates when explicit `datasetRows` are not
+provided.
 The template projection also carries registry-owned audit and version-control metadata, including
 based-on version, created/updated/submitted/approved/rejected actors and timestamps, decision
 rationale, approval reference, validation issues, and retained template audit events, so clients do
@@ -431,7 +540,8 @@ rows for true template, schedule, attempt, approval, publication, evidence-bundl
 drilldown status instead of reintroducing fixture rows in workstation bootstrap payloads. Generic
 run audit trails are exposed through `/api/fund-structure/reporting/runs/{runId}/audit` with the
 same governed template access policy used by retained grid artifacts, so private or restricted run
-actors, timestamps, and notes do not leak through audit drilldowns.
+actors, timestamps, notes, and report-writer dataset source evidence do not leak through audit
+drilldowns.
 The same payload also carries `AccessAudit`, an aggregate user/group/company access summary with
 visible and hidden counts for templates, report packs, schedules, delivery attempts, and structured
 exports plus generic denial reasons. Clients should render that service-owned proof when explaining
@@ -461,7 +571,10 @@ liquidity text, and links single-run strategy cuts to `/api/portfolio/{runId}/ca
 cash-ladder evidence. Fresh source snapshots inside the server live freshness window are emitted as
 `LiveLinked`; older retained snapshots remain `SourceBacked` until they cross the 24-hour stale
 threshold. Rows fail closed as `Blocked` when no fund account or portfolio run source backs the
-reporting view.
+reporting view. Each row also includes `FreshnessPolicy` evidence with the evaluated-at timestamp,
+source age, live/stale thresholds, classification booleans, and reason text so browser and desktop
+clients can explain freshness decisions while keeping the classification owned by the shared read
+service.
 It also projects `pnlSlices` for daily, weekly, monthly, and yearly P&L from retained portfolio run
 timestamps. Each row carries realized/unrealized/current/prior/change values, source counts,
 readiness text, a shared `/api/workstation/reporting?pnlSlice=...` route, and deterministic version
@@ -483,17 +596,26 @@ consolidation outputs, and serves `/api/fund-structure/reporting/structured-expo
 from the same source-backed workspace projection. The JSON payload includes stable column metadata,
 culture-invariant string row values, data-dictionary fields, validation checks, readiness warnings,
 retained-path metadata, and deterministic version stamps so downstream regulatory, warehousing, and
-investment-decision consumers can ingest governed data without browser-local export shaping. The
+investment-decision consumers can ingest governed data without browser-local export shaping. Export
+descriptors also include a retained manifest path, deterministic SHA-256 integrity hash, integrity
+summary, and row-lineage count so downstream consumers can bind JSON/CSV/XLSX downloads back to a
+stable manifest without deriving checksums from browser state. The
 endpoint also accepts `format=json`, `format=csv`, or `format=xlsx` for every structured export;
-XLSX workbooks retain Metadata, DataDictionary, and Validation worksheets beside the schema-ordered
-data sheet. This includes the data-warehouse ledger-facts descriptor whose default retained format
-is JSON, so users and downstream jobs can download schema-ordered row files directly.
+`format=xls` and `format=excel` are compatibility aliases that return the same canonical `.xlsx`
+workbook and MIME type instead of legacy BIFF content. XLSX workbooks retain Metadata,
+DataDictionary, Validation, and RowLineage worksheets beside the schema-ordered data sheet,
+including request actor, company, report groups, generated-at audit metadata, stable row keys, and
+schema-ordered SHA-256 row hashes. JSON, CSV, and XLSX responses also set
+`X-Meridian-Export-*` headers so flat file downloads are user/timestamp stamped without changing
+the row schema. This includes the
+data-warehouse ledger-facts descriptor whose default retained format is JSON, so users and
+downstream jobs can download schema-ordered row files directly.
 `FundOperationsWorkspaceReadService` also exposes built-in report branding themes and fund-profile
 context through the reporting summary, validates custom branding overrides with normalized theme ids
-and hex colors, persists the selected theme on generated report-pack snapshots and manifests, and
-applies the same theme to generated HTML, PDF text, and the XLSX `Branding` worksheet. That keeps
-logos, colors, footer copy, disclaimers, and firm identity attached to the retained package artifact
-instead of the browser view.
+and hex colors, echoes the selected theme from report-pack previews, persists the selected theme on
+generated report-pack snapshots and manifests, and applies the same theme to generated HTML, PDF
+text, and the XLSX `Branding` worksheet. That keeps logos, colors, footer copy, disclaimers, and
+firm identity attached to the retained package artifact instead of the browser view.
 `ReportPackWorkflowService` can also retain that selected `ReportBrandingThemeDto` on the
 publication manifest, so downstream delivery packages use publication-approved branding metadata
 rather than accepting delivery-time restyling. Published report-pack delivery XLSX artifacts keep
@@ -504,12 +626,18 @@ styling metadata in the delivered workbook itself.
 distribution policies, and delivery attempts so browser and desktop clients can show which scheduled
 packs will deliver by email link, secure portal, evidence vault, or internal route without
 duplicating delivery-policy logic.
+Delivery-package access links also include an `artifact-xls` compatibility link whenever a retained
+XLSX workbook artifact exists; the route uses `format=xls` while returning the canonical XLSX bytes
+and MIME type, keeping scheduled PDF/XLS/CSV packs source-owned without legacy BIFF generation.
 `FundOperationsWorkspaceReadService` emits live portfolio reporting view readiness blockers for
 blocked or stale source snapshots, so clients render the same fail-closed explanation when tick-linked
 reporting cannot prove current source evidence. The live-view projection also emits market tick
 timestamp, tick age, safe tick sequence, provider label, tick freshness summary, and a live-link flag
 so browser and desktop reporting surfaces can distinguish true live-linked portfolio telemetry from
-retained source-backed snapshots.
+retained source-backed snapshots. It also emits the freshness policy evidence used to classify the
+view, including source age and the live/stale threshold seconds. Browser auto-refresh should call
+the shared portfolio refresh route and then render these emitted fields; freshness classification
+remains owned by this service.
 `ReportPackDeliveryService` persists delivery and delivery-failure attempts under the resolved
 workstation data root at `workstation/reporting/report-pack-deliveries.json`; published and
 restated workflow records can therefore show real delivery history, retry attempts, recipient
@@ -520,34 +648,69 @@ summaries, publication manifest fields, publication evidence links, retained lin
 publication-approved branding metadata, stakeholder delivery evidence packets, secure email-link or
 portal URLs, service-owned delivery access/channel/download summaries, and delivery-mode inference
 for portal, vault, and internal-route channels; callers can override the mode and requested formats
-in `ReportPackDeliveryRequestDto`. Token-gated package and artifact retrieval also enforce the
+in `ReportPackDeliveryRequestDto`.
+`ReportPackWorkflowActionRequestDto`, `ReportPackRestateRequestDto`,
+`ReportPackPublishRequestDto`, `ReportPackDeliveryRequestDto`, and
+`ReportPackDeliveryFailureRequestDto` carry reviewed-automation action origin metadata, and the
+shared workflow/delivery services reject assistant or automation-origin approval, restatement,
+archival, publication, stakeholder package creation, and delivery-failure recording before retained
+outputs, changed report lines, or delivery attempts are written.
+Email-link and secure-portal packages also retain
+`ReportPackDeliveryNotificationDto` rows with recipient, subject, body, package href, token posture,
+status, creation time, and expiry so operator clients can display the notification/outbox proof
+without reconstructing it from the package URL. Token-gated package and artifact retrieval also enforce the
 package `AccessExpiresAtUtc` timestamp when present, keeping email-link and secure-portal delivery
 windows shared-service owned.
 Generated package downloads rebuild CSV, XLSX, HTML, and PDF artifacts from that retained package
 metadata, so recipients receive report-line provenance, publication evidence, selected branding, and
-restatement lineage in the downloaded files instead of package identifiers only. The shared delivery
+restatement lineage in the downloaded files instead of package identifiers only. XLSX packages keep
+the Branding worksheet, while HTML and PDF package renderers apply the selected theme colors plus
+recipient-visible firm, logo, footer, and disclaimer text so styled client packets are not metadata-only.
+The shared delivery
 evidence packet carries recipient and entitlement scope, approval chain, request history,
 publication manifest, report-line provenance, retained delivery evidence, branding-theme package
 contents, and restatement lineage for the Version 0.18 operational proof layer.
 Schedule delivery plan rows project explicit readiness
-blockers, the latest retained package artifact count, and the integrity summary, so clients can
-show recipient/package readiness without fetching package manifests or inferring failure reasons
-from prose. The shared read model marks a scheduled target unready when the schedule is inactive,
+blockers, the latest retained package artifact count, download summary, access-expiry timestamp,
+access/channel summary, integrity summary, and the schedule or last-package branding theme, so clients can show
+recipient/package readiness without fetching package manifests or inferring failure reasons from prose. Schedule plan
+rows also carry the latest retained notification count and summary from the package evidence so clients can show whether
+email-link or secure-portal notification proof exists without opening the package manifest. The same projection carries
+latest retained report-writer dataset and generated/rendered grid summaries, so scheduled custom reports expose their
+source-backed no-code output from the delivery-plan row. The shared read model marks a scheduled target unready when the schedule is inactive,
 due without a successful retained package, configured with an incompatible delivery mode for its
 channel, or missing one of the requested artifact formats from the latest package. Package manifest reads are token-gated by
 `ReportPackDeliveryService`, using constant-time token comparison and shared GET routes for the
-email-link package URL and `/portal/reporting/packages/{packageId}`. Per-artifact package downloads
+email-link package URL and `/portal/reporting/packages/{packageId}`. Email-link and secure-portal
+package URLs render a recipient-readable HTML package page by default, including branding, package
+integrity, artifact downloads, and notification proof; `format=json` returns the same token-gated
+package manifest for API clients. Per-artifact package downloads
 reuse the same package token and expose generated PDF/XLSX/CSV content through
 `/api/fund-structure/reporting/packs/{reportId}/deliveries/{attemptId}/artifacts/{artifactName}`,
 so clients open artifact `DownloadRoute` values from the retained package instead of synthesizing
 delivery file routes. `ReportingScheduleService`
 persists operator-managed schedule records at `workstation/reporting/reporting-schedules.json`,
 normalizes configured distribution targets, runs due schedules through `IReportingOrchestrationService`,
-advances next due/as-of dates, and asks `ReportPackDeliveryService` to package the latest published or
-restated report pack for each target. If no published report-pack workflow exists for the scheduled
-template, the delivery service packages the generated reporting run itself with token-gated
+advances next due/as-of dates, and asks `ReportPackDeliveryService` to package the generated
+reporting run for each target instead of falling back to an older published pack with the same
+template id. The delivery service packages the scheduled run itself with token-gated
 PDF/XLSX/CSV artifacts, a deterministic reporting-run package id, retained source artifact
-provenance, and `ReportingRunId`/template/schedule metadata on `ReportPackDeliveryPackageDto`.
+provenance, report-writer dataset-source evidence, and `ReportingRunId`/template/schedule metadata
+on `ReportPackDeliveryPackageDto`.
+Those schedule records can also persist a selected `BrandingThemeId` or custom
+`BrandingThemeOverride`; scheduled generated-run manifests and delivery packages carry that
+normalized theme forward so recurring no-code report-writer deliveries preserve the same firm
+identity, colors, footer, and disclaimer metadata as one-off branded report-pack generation.
+Retained report-writer grid artifact downloads also read the manifest branding theme: PDF grid
+artifacts use the selected firm name, primary color, logo reference, footer, and disclaimer, while
+XLSX grid artifacts include a Branding worksheet with the normalized theme fields.
+Generated scheduled-run manifests also carry the approved template access policy resolved through
+the governed catalog, and `ReportPackDeliveryService` stamps that policy into
+`ReportingRunDelivery.EntitlementScope` before storing the email-link or portal package.
+`ReportPackRunReadService` carries the latest retained package entitlement back onto
+`scheduleDeliveryPlans`, letting browser and desktop clients show the delivery audience lock beside
+artifact integrity, retained download summary, access expiry, access/channel summary, notification proof, report-writer
+dataset/grid evidence, branding, and access-link rows without opening the package manifest first.
 Schedule run results return delivery attempts and warnings so operators can distinguish generated
 reports from actually packaged email-link or portal deliveries.
 `ReportingRunCommandService` also runs approved built-in templates on demand through the same orchestration and run-store seam,
@@ -566,7 +729,13 @@ summary on the governance lifecycle projection so Fund Ledger report-pack handof
 same evidence categories, readiness count, and route hints as the browser continuity detail without
 recomputing close evidence locally. The category rows include required evidence labels, so browser
 and WPF clients render document, export, restatement, approval, ledger, reconciliation, normalized
-activity, and source-record requirements from shared contracts. The shared
+activity, and source-record requirements from shared contracts. The same projection now carries
+active Operations Continuity evidence packages and the cash, position, trade, income, MBS factor,
+bank, and GL reconciliation lane summaries for Fund Ledger handoff, keeping WPF package and lane
+rows source-backed by `IOperationsContinuityWorkflowService`. It also forwards active
+Operations Continuity break cases, close-checklist tasks, and approval rows so browser and WPF
+Financial Operations queues can show exception, close-support, and sign-off work from the same
+shared lifecycle projection. The shared
 fund-structure endpoints expose report-pack workflow creation,
 validation, submission, approval, review rejection, publication, restatement, history, and archival
 routes backed by shared contracts; review rejection is valid from `InReview`, records the reason,
@@ -637,18 +806,27 @@ validation errors and Evidence Workbench node source labels follow the same word
 the contract-owned type names.
 The file-backed Evidence Vault now stores more than manifest retention: retained local artifact
 refs with file paths are copied into a vault bundle with content hash, size, source route, and
-canonical subject metadata, while route-only artifacts stay as manifest references. The vault write
-boundary rejects every retained artifact reference, copied or route-only, that omits canonical
-subject linkage, lacks an addressable path/route, or uses unsupported subject kinds, so retained
-statement/report/approval/screenshot artifacts cannot become orphan evidence. This keeps
-packet/report/statement/screenshot/approval evidence retention server-owned instead of
-client-local.
+canonical subject metadata, while route-only artifacts stay as manifest references. Copied vault
+artifacts also preserve optional capture channel/source details and extracted fields with
+confidence, reviewer state, expected value, validation status, and linked record identity so
+retained document evidence can prove how upload/email/API/portal/SFTP intake was reviewed against
+expected records. `/api/workstation/evidence/vault/intake` is the shared API intake route for that
+same vault model: it accepts bounded base64 document payloads, validates optional SHA-256
+expectations, stores the artifact under `_vault`, writes a searchable manifest and vault identity,
+and returns the retained artifact hash, capture metadata, extraction fields, and manifest route.
+The vault write boundary rejects every retained artifact reference, copied or
+route-only, that omits canonical subject linkage, lacks an addressable path/route, or uses
+unsupported subject kinds, so retained statement/report/approval/screenshot artifacts cannot become
+orphan evidence. This keeps packet/report/statement/screenshot/approval evidence retention
+server-owned instead of client-local.
 Manifest export also freezes grouped request lists and the underlying support request rows from
 packet completeness: missing and stale evidence, blocking work items, and unresolved validation
 issues are written into both the retained manifest and `_vault` identity index with target kind,
 target id, highest severity, evidence kinds, and blocked outputs. This gives close, audit, tax,
 report-package, and operator review workflows a durable request-list surface without rebuilding it
-in browser or WPF clients.
+in browser or WPF clients. `/api/workstation/evidence/vault/request-lists` lists those frozen
+request-list groups from retained vault identities with request-list, target, status, subject, and
+limit filters, returning vault/manifest metadata beside the matching support request rows.
 Retained vault bundles are also first-class Evidence Workbench subjects through the
 `evidence-vault` subject kind: the shared contributor projects the retained manifest and each
 copied artifact into the same packet graph, preserving hashes, source routes, and canonical subject
@@ -657,11 +835,14 @@ The shared Audit Trail Explorer service projects retained execution, promotion, 
 Operations Continuity close/reconciliation/approval timeline records into contract-owned timeline rows and exposes `/api/execution/audit/search` with
 server-side text, run, actor, symbol, action, outcome, correlation, normalized object, related
 object, time-window, and limit filters. Timeline ordering is deterministic by occurrence time and
-audit id, and text search includes related-object ids and evidence routes so close, reconciliation,
-approval, promotion, and control evidence can be found through the same endpoint. Manual override
-audit rows resolve to operator-action objects keyed by `overrideId`, while circuit breaker rows
-resolve to execution-control objects with direct control routes, so operations review can
-distinguish who staged a live override from who opened or closed a trading halt.
+audit id, and text search includes related-object ids, evidence routes, source ledger, hash, and
+ledger-status fields so close, reconciliation, approval, promotion, and control evidence can be
+found through the same endpoint. Manual override audit rows resolve to operator-action objects keyed
+by `overrideId`, while circuit breaker rows resolve to execution-control objects with direct control
+routes, so operations review can distinguish who staged a live override from who opened or closed a
+trading halt. Execution audit rows publish WAL-backed event hashes, and Operations Continuity rows
+publish their retained previous/current hash chain, giving the shared audit explorer a v0.18
+operator action ledger posture without moving write ownership into UI clients.
 Use that shared service for browser and WPF audit search rather than client-local timeline
 normalization.
 The Security Master workstation workbench also exposes a shared Instrument Passport at
@@ -814,6 +995,11 @@ or the persisted delivery record store, and the contributor projects recipient, 
 delivery-packet, publication manifest, line provenance, approval chain, branding theme, restatement
 lineage, reporting-run source, and audit-history nodes into the same packet, graph, validation,
 vault lookup, and manifest-export endpoints used by the browser and WPF surfaces.
+Direct Evidence Vault intake now also promotes non-ready extraction fields into the same frozen
+support-request and request-list index used by manifest export. Uploaded documents that arrive with
+missing, blocked, stale, or review-required extracted fields retain the file bytes, capture metadata,
+field review posture, support requests, and close/audit/tax/report-package/event request-list
+grouping in the vault identity, so operators can follow up without interpreting raw intake manifests.
 Statement reconciliation mutation endpoints trust the authenticated workstation session actor for
 statement-run intake and reconcile commands. Client-supplied `ImportedBy` or reconcile actor values
 are treated as untrusted payload hints and are replaced at the shared endpoint boundary before the
@@ -828,6 +1014,12 @@ normalization use the Entities-owned `LedgerGroupingRules` policy rather than en
 Ledger mapping assignment mutations require an authenticated operator with `ManageDirectLending` or
 `AdminMaintenance`, and audit attribution must come from the resolved session actor rather than
 client-supplied request fields.
+Fund-structure graph, advisory, fund-operating, accounting, ledger-mapping, and cash-flow read
+routes also resolve the authenticated session before returning scoped structure data. Non-admin
+callers must provide an explicit organization, business, client, fund, sleeve, vehicle,
+investment-portfolio, legal-entity, or account scope that grants `ManageFundStructure`; unscoped
+structure reads are reserved for `AdminMaintenance` so shared browser and WPF clients cannot
+enumerate fund-structure records across tenant or scoped-access boundaries.
 Auth endpoints expose `/api/auth/role-profiles` as the governed write path for custom authority
 profiles. The Identity-owned file-backed role-profile store persists profile grants under the
 storage root, merges custom profiles into `/api/auth/roles`, and feeds `UserProfileRegistry` so
@@ -835,7 +1027,10 @@ configured `roleProfileName` accounts use the stored permissions after login. Au
 also pass through the Identity-owned company id attached to user profiles so Reporting access
 policies can evaluate company principals from session state. Keep this module as the
 endpoint/read-model adapter; do not reintroduce session, profile, role-profile, or company
-persistence state here.
+persistence state here. Scoped access grant and revoke endpoints preserve explicit action-origin
+metadata and return bad-request responses for assistant or automation-origin authority changes
+before the Identity service writes a new assignment, revokes an assignment, or advances an
+assignment version.
 Operations Continuity endpoints expose
 `/api/workstation/operations/continuity/approval-policy-matrix` as the shared configuration read
 model for approval governance. The endpoint is read-permission protected and returns the
@@ -886,6 +1081,9 @@ workflow service.
 ledger book service. They keep trial balance, signed period-locked report totals, revenue,
 expense, realized net income, accrual-basis adjustment impact, prior-period variance,
 open-break count, and signoff posture server-derived for browser and WPF accounting surfaces.
+The close command preserves the authenticated workstation actor and explicit action-origin
+metadata; assistant or automation-origin requests are rejected by the shared ledger service before a
+period-lock state, close event, or operator inbox sign-off item is written.
 `/api/ledger/reports/trial-balance` and `/api/ledger/reports/pnl-summary` aggregate those
 closed-period summaries across a selected book, fund, node, accounting basis, and date range for
 regulatory, investor, and internal reporting surfaces.
@@ -895,7 +1093,9 @@ validates GL account, balance, currency, Security Master, typed evidence attachm
 treasury context, and version state before save or approval submission. Draft save remains
 permissive for in-progress work, but approval submission requires retained source evidence and, for
 private-capital entry types, retry-safe fund-event/capital-account context so browser and WPF
-clients do not present process-local accounting work as durable ledger evidence. The workbench
+clients do not present process-local accounting work as durable ledger evidence. Approval
+submission also rejects assistant or automation-origin requests before the submitted record and
+audit event are written, preserving reviewed automation as a draft/suggestion lane. The workbench
 response includes the shared private-capital activity projection, which skips incomplete fund-event
 drafts and surfaces ledger-impact, projection, and report-output readiness warnings instead of
 inventing capital-account, GL-impact, or stakeholder-package rows. The read-only
@@ -918,6 +1118,14 @@ corporate-action/factor component can be marked ready for close. Retained shadow
 breaks also keep the reconciliation
 component in review-required state so provider/custodian statement variances cannot close merely
 because the aggregate provider-ledger checks matched.
+Fund-account read and mutation routes require scoped authorization for explicit fund, account, and
+legal-entity identifiers before returning or changing account records. Unscoped account lists are
+reserved for admin maintenance so workstation callers cannot enumerate fund accounts across tenant
+or scoped-access boundaries by omitting filters. Account-scoped operational evidence routes,
+including close readiness, balances, sync history, statements, positions, bank lines, and
+reconciliation runs/results, resolve the owning account before returning or mutating data; write
+payloads must match the route account id so callers cannot authorize one account in the URL while
+submitting another account in the request body.
 Operations Continuity reconciliation bridge payloads now also populate the shared cash, position,
 trade, income, MBS factor, bank, and GL support lane summaries from provider-ledger reconciliation
 detail, retained evidence, and open break materialization. Browser, WPF, and host callers should
@@ -929,11 +1137,23 @@ serializes the core Receive Activity, Match Records, Resolve Exceptions, Approve
 Evidence, and Close Support metrics with retained evidence, route hints, and required actions so
 browser and WPF clients do not build dashboard posture from local fragments.
 `WorkstationWorkflowSummaryService` also emits a Financial Operations `Reviewed automation`
-evidence badge from source-backed intake, reconciliation, ledger, approval, and close-package
-states. The badge is advisory control evidence only: shared callers may surface automation review,
-classification, extraction, matching, summary, draft, and flag posture, but approval, posting,
-publication, payment release, and evidence-retention decisions remain server-owned governed
-commands.
+evidence badge from the contract-owned `OperationsReviewedAutomationSummaryDto` when workflow
+detail provides it, falling back to source-backed intake, reconciliation, ledger, approval, and
+close-package states for older payloads. Shared callers may surface automation review,
+classification, extraction, matching, summary, draft, and flag posture as reviewed-output artifacts,
+but approval, posting, publication, payment release, and evidence-retention decisions remain server-owned governed
+commands. Operations Continuity endpoints trust the authenticated session for actor, reviewer, and
+governed-admin fields while preserving explicit `ActionOrigin` values on material commands, so
+Financial Operations can reject assistant or automation origins before ledger posting, approval,
+close-package publication, governed reopen, or reconciliation case resolve/sign-off/reopen commands
+mutate the operating record.
+`WorkstationWorkflowSummaryService` also consumes Operations Continuity evidence-package summaries
+when building the Accounting workspace home state. A closed workflow with a non-ready package,
+including period-lock and reopen evidence, remains in review-required posture instead of being
+reported as fully evidence-produced, and the shared evidence badges roll up package readiness plus
+period-lock status for browser and WPF callers. Close-readiness blockers and non-ready retained
+packages move the shared `Core flow` badge to `Close Support` so clients do not infer that final
+evidence production is complete while close support work remains.
 The same detail payload serializes Financial Operations evidence-package summaries for
 accounting-record evidence, report-pack evidence, close-package manifests, and audit-support
 packages. Shared endpoint callers receive status, category completeness, retained evidence counts,

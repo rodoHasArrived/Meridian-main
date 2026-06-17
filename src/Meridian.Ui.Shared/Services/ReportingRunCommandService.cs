@@ -59,6 +59,7 @@ public sealed class ReportingRunCommandService
             ? BuildDefaultJobId(templateId, requestedAtUtc)
             : request.JobId.Trim();
         var datasetRows = ResolveDatasetRows(request, template, accessContext);
+        var datasetSourceEvidence = ResolveDatasetSourceEvidence(request, template);
 
         var manifest = await _orchestrationService.ExecuteAsync(
             new ReportingJobContract(
@@ -69,7 +70,10 @@ public sealed class ReportingRunCommandService
                 request.MaxRetries,
                 actor,
                 requestedAtUtc,
-                DatasetRows: datasetRows),
+                DatasetRows: datasetRows,
+                ReportWriterDatasetSourceId: datasetSourceEvidence.SourceId,
+                ReportWriterDatasetSourceLabel: datasetSourceEvidence.Label,
+                AccessPolicy: template.AccessPolicy),
             cancellationToken).ConfigureAwait(false);
 
         return new ReportingRunResultDto(ProjectRun(manifest, _orchestrationService.GetAudit(manifest.RunId), template));
@@ -133,7 +137,10 @@ public sealed class ReportingRunCommandService
                     manifest.Status == ReportingRunStatus.Draft ? null : "Only draft reporting runs can be submitted.",
                     false)
             ],
-            GeneratedReportWriterGrids: BuildGeneratedReportWriterGrids(manifest, template).ToArray());
+            GeneratedReportWriterGrids: BuildGeneratedReportWriterGrids(manifest, template).ToArray(),
+            ReportWriterDatasetSourceId: manifest.ReportWriterDatasetSourceId,
+            ReportWriterDatasetSourceLabel: manifest.ReportWriterDatasetSourceLabel,
+            ReportWriterDatasetRowCount: manifest.ReportWriterDatasetRowCount);
 
     private static IEnumerable<WorkstationGeneratedReportWriterGridPayload> BuildGeneratedReportWriterGrids(
         ReportingOutputManifest manifest,
@@ -143,6 +150,7 @@ public sealed class ReportingRunCommandService
         {
             foreach (var grid in manifest.ReportWriterGrids)
             {
+                var validation = BuildGeneratedGridValidationSummary(grid.GridId, manifest.RenderedReportWriterGrids);
                 yield return new WorkstationGeneratedReportWriterGridPayload(
                     grid.GridId,
                     grid.Title,
@@ -150,7 +158,11 @@ public sealed class ReportingRunCommandService
                     grid.Artifact,
                     grid.DimensionCount,
                     grid.MetricCount,
-                    grid.FormulaCount);
+                    grid.FormulaCount,
+                    validation.Summary,
+                    validation.Passed,
+                    validation.Warning,
+                    validation.Failed);
             }
 
             yield break;
@@ -173,6 +185,7 @@ public sealed class ReportingRunCommandService
             if (templateGrids.TryGetValue(gridId, out var grid))
             {
                 var dimensionCount = (grid.RowFields?.Count ?? 0) + (grid.ColumnFields?.Count ?? 0);
+                var validation = BuildGeneratedGridValidationSummary(grid.GridId, manifest.RenderedReportWriterGrids);
                 yield return new WorkstationGeneratedReportWriterGridPayload(
                     grid.GridId.Trim(),
                     string.IsNullOrWhiteSpace(grid.Title) ? grid.GridId.Trim() : grid.Title.Trim(),
@@ -180,10 +193,15 @@ public sealed class ReportingRunCommandService
                     artifact,
                     dimensionCount,
                     grid.Metrics?.Count ?? 0,
-                    grid.Formulas?.Count ?? 0);
+                    grid.Formulas?.Count ?? 0,
+                    validation.Summary,
+                    validation.Passed,
+                    validation.Warning,
+                    validation.Failed);
                 continue;
             }
 
+            var generatedValidation = BuildGeneratedGridValidationSummary(gridId, manifest.RenderedReportWriterGrids);
             yield return new WorkstationGeneratedReportWriterGridPayload(
                 gridId,
                 gridId,
@@ -191,9 +209,76 @@ public sealed class ReportingRunCommandService
                 artifact,
                 0,
                 0,
-                0);
+                0,
+                generatedValidation.Summary,
+                generatedValidation.Passed,
+                generatedValidation.Warning,
+                generatedValidation.Failed);
         }
     }
+
+    private static (string? Summary, int? Passed, int? Warning, int? Failed) BuildGeneratedGridValidationSummary(
+        string gridId,
+        System.Collections.Immutable.ImmutableArray<ReportWriterGridRenderDto> renderedGrids)
+    {
+        if (renderedGrids.IsDefaultOrEmpty)
+        {
+            return (null, null, null, null);
+        }
+
+        var renderedGrid = renderedGrids.FirstOrDefault(grid =>
+            string.Equals(grid.GridId, gridId, StringComparison.OrdinalIgnoreCase));
+        if (renderedGrid is null)
+        {
+            return (null, null, null, null);
+        }
+
+        var checks = ResolveReportWriterGridValidationChecks(renderedGrid);
+        if (checks.Count == 0)
+        {
+            return (null, null, null, null);
+        }
+
+        var passed = checks.Count(static check => string.Equals(check.Status, "Passed", StringComparison.OrdinalIgnoreCase));
+        var warning = checks.Count(static check => string.Equals(check.Status, "Warning", StringComparison.OrdinalIgnoreCase));
+        var failed = checks.Count - passed - warning;
+        var summary = failed > 0
+            ? $"{passed} passed / {checks.Count} checks, {failed} failed"
+            : warning > 0
+                ? $"{passed} passed / {checks.Count} checks, {warning} review"
+                : $"{passed} passed / {checks.Count} checks";
+        return (summary, passed, warning, failed);
+    }
+
+    private static IReadOnlyList<ReportWriterGridValidationCheckDto> ResolveReportWriterGridValidationChecks(
+        ReportWriterGridRenderDto grid) =>
+        grid.ValidationChecks is { Count: > 0 }
+            ? grid.ValidationChecks
+            :
+            [
+                new ReportWriterGridValidationCheckDto(
+                    "row-count",
+                    grid.Lineage is null || grid.Lineage.OutputRowCount == grid.Rows.Count ? "Passed" : "Failed",
+                    grid.Lineage is null
+                        ? $"Rendered {grid.Rows.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} row(s); no lineage row count was retained."
+                        : $"Rendered {grid.Rows.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} row(s); lineage expected {grid.Lineage.OutputRowCount.ToString(System.Globalization.CultureInfo.InvariantCulture)}."),
+                new ReportWriterGridValidationCheckDto(
+                    "column-dictionary",
+                    "Passed",
+                    $"Dictionary covers {grid.Columns.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} of {grid.Columns.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} rendered column(s)."),
+                new ReportWriterGridValidationCheckDto(
+                    "source-field-lineage",
+                    grid.Lineage is { SourceFields.Count: > 0 } ? "Passed" : "Warning",
+                    grid.Lineage is { SourceFields.Count: > 0 }
+                        ? $"Lineage retains {grid.Lineage.SourceFields.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} source field(s)."
+                        : "No source field lineage was retained with this grid."),
+                new ReportWriterGridValidationCheckDto(
+                    "warnings",
+                    grid.Warnings.Count == 0 ? "Passed" : "Warning",
+                    grid.Warnings.Count == 0
+                        ? "No render warnings were retained."
+                        : $"{grid.Warnings.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} render warning(s) retained: {string.Join("; ", grid.Warnings)}")
+            ];
 
     private static string? ExtractReportWriterGridId(string artifact)
     {
@@ -229,9 +314,38 @@ public sealed class ReportingRunCommandService
             return request.DatasetRows;
         }
 
-        var resolvedRows = _datasetSourceService.BuildDatasetRows(accessContext);
+        var resolvedRows = _datasetSourceService.BuildDatasetRowsForSource(request.DatasetSourceId, accessContext);
         return resolvedRows.Count == 0 ? request.DatasetRows : resolvedRows;
     }
+
+    private DatasetSourceEvidence ResolveDatasetSourceEvidence(
+        ReportingRunRequestDto request,
+        ReportingTemplateMetadata template)
+    {
+        if (template.ReportWriterGrids is not { Count: > 0 })
+        {
+            return new DatasetSourceEvidence(null, null);
+        }
+
+        if (request.DatasetRows is { Count: > 0 })
+        {
+            return new DatasetSourceEvidence("custom-request-dataset", "Custom request dataset");
+        }
+
+        if (_datasetSourceService is null)
+        {
+            return new DatasetSourceEvidence(null, null);
+        }
+
+        var sourceId = string.IsNullOrWhiteSpace(request.DatasetSourceId)
+            ? "retained-reporting-rows"
+            : request.DatasetSourceId.Trim();
+        return new DatasetSourceEvidence(
+            sourceId,
+            ReportWriterDatasetSourceService.GetKnownDatasetSourceLabel(sourceId) ?? sourceId);
+    }
+
+    private sealed record DatasetSourceEvidence(string? SourceId, string? Label);
 
     private static string NormalizeToken(string value)
     {

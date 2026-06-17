@@ -1,6 +1,6 @@
 // Fund Operations Reconciliation Diagram
 // Meridian current project stance
-// Last Updated: 2026-06-10
+// Last Updated: 2026-06-16
 //
 // This diagram shows the current accounting/fund-ops reconciliation loop across
 // workstation views, reconciliation services, the F# reconciliation engine, and
@@ -27,6 +27,8 @@ digraph FundOpsReconciliation {
                 label="IWorkstationReconciliationApiClient\nreview / resolve / dismiss"];
     WORKSTATION_API [fillcolor="#c4b5fd",
                      label="WorkstationEndpoints\n/api/workstation/reconciliation/*\n/api/workstation/runs/*"];
+    PROVIDER_HANDOFF_API [fillcolor="#c4b5fd",
+                          label="Provider integration handoff endpoints\n/api/workstation/provider-integrations/*\nready staging rows + history"];
   }
 
   subgraph cluster_workbench {
@@ -37,6 +39,8 @@ digraph FundOpsReconciliation {
 
     WORKBENCH [fillcolor="#93c5fd",
                label="FundReconciliationWorkbenchService\ncompose snapshot + break queue\noperator actions"];
+    HANDOFF_SERVICE [fillcolor="#93c5fd",
+                     label="ProviderIntegrationReconciliationHandoffService\nvalidate readiness,\nretain approval evidence"];
     RUN_WORKSPACE [fillcolor="#bfdbfe",
                    label="StrategyRunWorkspaceService\nrecorded runs + active run context"];
     RECON_READ [fillcolor="#bfdbfe",
@@ -63,6 +67,8 @@ digraph FundOpsReconciliation {
                    label="LedgerInterop.ReconcilePortfolioLedgerChecks\nF# reconciliation rules"];
     BANK_SOURCE [fillcolor="#d1fae5",
                  label="IBankTransactionSource\noptional bank transaction feed"];
+    PROVIDER_STAGING [fillcolor="#d1fae5",
+                      label="Provider integration staging\naccepted provider rows,\nidentity/account routing,\nreconciliation-staging target"];
   }
 
   subgraph cluster_state {
@@ -75,11 +81,15 @@ digraph FundOpsReconciliation {
                label="StrategyRunStore\nrun metrics + ledger inputs"];
     RECON_REPO [shape=cylinder, fillcolor="#fecaca",
                 label="IReconciliationRunRepository\nsummary, detail, break queue,\nhistory per run"];
+    HANDOFF_HISTORY [shape=cylinder, fillcolor="#fecaca",
+                     label="Reconciliation handoff records\nhandoff id, staging id,\napproval evidence,\nactor + timestamp"];
   }
 
   GOVERNANCE_UI -> WORKBENCH [label="open workspace"];
   GOVERNANCE_UI -> API_CLIENT [label="review / resolve / dismiss"];
   API_CLIENT -> WORKSTATION_API [label="HTTP calls"];
+  GOVERNANCE_UI -> PROVIDER_HANDOFF_API [style=dashed,
+                                         label="approve provider rows for recon"];
 
   WORKBENCH -> RECON_READ [label="build snapshot"];
   WORKBENCH -> FUND_ACCOUNT [label="account-run details"];
@@ -90,6 +100,11 @@ digraph FundOpsReconciliation {
   WORKSTATION_API -> RUN_SERVICE [label="create run / get detail / history"];
   WORKSTATION_API -> RECON_REPO [style=dashed, color="#2b6cb0",
                                  label="break queue reads"];
+  PROVIDER_HANDOFF_API -> HANDOFF_SERVICE [label="handoff + history"];
+  HANDOFF_SERVICE -> PROVIDER_STAGING [label="read readiness rows"];
+  HANDOFF_SERVICE -> HANDOFF_HISTORY [label="persist retained evidence"];
+  HANDOFF_HISTORY -> RECON_REPO [style=dashed, color="#ed8936",
+                                 label="source evidence for cases"];
 
   RUN_SERVICE -> RUN_READ [label="load strategy run"];
   RUN_SERVICE -> PROJECTION [label="build checks"];

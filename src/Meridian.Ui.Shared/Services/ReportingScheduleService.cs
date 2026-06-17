@@ -148,6 +148,15 @@ public sealed class ReportingScheduleService
             var datasetRows = request.DatasetRows is null
                 ? existing?.DatasetRows
                 : request.DatasetRows;
+            var datasetSourceId = request.DatasetSourceId is null
+                ? existing?.DatasetSourceId
+                : NormalizeDatasetSourceId(request.DatasetSourceId);
+            var brandingThemeOverride = request.BrandingThemeOverride ?? existing?.BrandingThemeOverride;
+            var brandingThemeId = request.BrandingThemeOverride is not null
+                ? NormalizeDatasetSourceId(request.BrandingThemeOverride.ThemeId)
+                : request.BrandingThemeId is null
+                    ? existing?.BrandingThemeId
+                    : NormalizeDatasetSourceId(request.BrandingThemeId);
             var record = new ReportingScheduleRecordDto(
                 scheduleId,
                 request.TemplateId.Trim(),
@@ -164,7 +173,10 @@ public sealed class ReportingScheduleService
                 existing?.RunCount ?? 0,
                 string.IsNullOrWhiteSpace(request.Description) ? existing?.Description : request.Description.Trim(),
                 deliveryTargets,
-                datasetRows);
+                datasetRows,
+                datasetSourceId,
+                brandingThemeId,
+                brandingThemeOverride);
             _schedules[record.ScheduleId] = record;
             PersistSchedules();
             return record;
@@ -253,6 +265,8 @@ public sealed class ReportingScheduleService
 
         var actor = string.IsNullOrWhiteSpace(requestedBy) ? schedule.RequestedBy : requestedBy.Trim();
         var datasetRows = ResolveDatasetRows(schedule);
+        var datasetSourceEvidence = ResolveDatasetSourceEvidence(schedule);
+        var accessPolicy = ResolveTemplateAccessPolicy(schedule.TemplateId);
         var contract = new ReportingJobContract(
             schedule.ScheduleId,
             schedule.TemplateId,
@@ -263,7 +277,12 @@ public sealed class ReportingScheduleService
             DateTimeOffset.UtcNow,
             schedule.CronExpression,
             schedule.ScheduleId,
-            datasetRows);
+            datasetRows,
+            datasetSourceEvidence.SourceId,
+            datasetSourceEvidence.Label,
+            BrandingThemeId: ResolveBrandingThemeId(schedule),
+            BrandingTheme: schedule.BrandingThemeOverride,
+            AccessPolicy: accessPolicy);
         var manifest = await _orchestrationService.ExecuteAsync(contract, ct).ConfigureAwait(false);
         var run = ProjectRun(manifest, _orchestrationService.GetAudit(manifest.RunId));
         var advanced = AdvanceSchedule(schedule, manifest);
@@ -299,8 +318,7 @@ public sealed class ReportingScheduleService
         {
             try
             {
-                var attempt = _deliveryService.DeliverLatestForTemplate(schedule.TemplateId, target, actor)
-                    ?? _deliveryService.DeliverReportingRun(manifest, target, actor);
+                var attempt = _deliveryService.DeliverReportingRun(manifest, target, actor);
                 attempts.Add(attempt);
             }
             catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or KeyNotFoundException)
@@ -325,7 +343,7 @@ public sealed class ReportingScheduleService
             return schedule.DatasetRows;
         }
 
-        var resolvedRows = _datasetSourceService.BuildDatasetRows();
+        var resolvedRows = _datasetSourceService.BuildDatasetRowsForSource(schedule.DatasetSourceId);
         return resolvedRows.Count == 0 ? schedule.DatasetRows : resolvedRows;
     }
 
@@ -347,7 +365,38 @@ public sealed class ReportingScheduleService
             manifest.FailureReason,
             DrilldownLinks: [],
             NextActions: [],
-            GeneratedReportWriterGrids: BuildGeneratedReportWriterGrids(manifest).ToArray());
+            GeneratedReportWriterGrids: BuildGeneratedReportWriterGrids(manifest).ToArray(),
+            ReportWriterDatasetSourceId: manifest.ReportWriterDatasetSourceId,
+            ReportWriterDatasetSourceLabel: manifest.ReportWriterDatasetSourceLabel,
+            ReportWriterDatasetRowCount: manifest.ReportWriterDatasetRowCount);
+
+    private DatasetSourceEvidence ResolveDatasetSourceEvidence(ReportingScheduleRecordDto schedule)
+    {
+        var template = _governedTemplateCatalog?.Get(schedule.TemplateId);
+        if (template?.ReportWriterGrids is not { Count: > 0 })
+        {
+            return new DatasetSourceEvidence(null, null);
+        }
+
+        if (schedule.DatasetRows is { Count: > 0 })
+        {
+            return new DatasetSourceEvidence("custom-schedule-dataset", "Custom schedule dataset");
+        }
+
+        if (_datasetSourceService is null)
+        {
+            return new DatasetSourceEvidence(null, null);
+        }
+
+        var sourceId = string.IsNullOrWhiteSpace(schedule.DatasetSourceId)
+            ? "retained-reporting-rows"
+            : schedule.DatasetSourceId.Trim();
+        return new DatasetSourceEvidence(
+            sourceId,
+            ReportWriterDatasetSourceService.GetKnownDatasetSourceLabel(sourceId) ?? sourceId);
+    }
+
+    private sealed record DatasetSourceEvidence(string? SourceId, string? Label);
 
     private IEnumerable<WorkstationGeneratedReportWriterGridPayload> BuildGeneratedReportWriterGrids(
         ReportingOutputManifest manifest)
@@ -356,6 +405,7 @@ public sealed class ReportingScheduleService
         {
             foreach (var grid in manifest.ReportWriterGrids)
             {
+                var validation = BuildGeneratedGridValidationSummary(grid.GridId, manifest.RenderedReportWriterGrids);
                 yield return new WorkstationGeneratedReportWriterGridPayload(
                     grid.GridId,
                     grid.Title,
@@ -363,7 +413,11 @@ public sealed class ReportingScheduleService
                     grid.Artifact,
                     grid.DimensionCount,
                     grid.MetricCount,
-                    grid.FormulaCount);
+                    grid.FormulaCount,
+                    validation.Summary,
+                    validation.Passed,
+                    validation.Warning,
+                    validation.Failed);
             }
 
             yield break;
@@ -386,6 +440,7 @@ public sealed class ReportingScheduleService
             if (templateGrids.TryGetValue(gridId, out var grid))
             {
                 var dimensionCount = (grid.RowFields?.Count ?? 0) + (grid.ColumnFields?.Count ?? 0);
+                var validation = BuildGeneratedGridValidationSummary(grid.GridId, manifest.RenderedReportWriterGrids);
                 yield return new WorkstationGeneratedReportWriterGridPayload(
                     grid.GridId.Trim(),
                     string.IsNullOrWhiteSpace(grid.Title) ? grid.GridId.Trim() : grid.Title.Trim(),
@@ -393,10 +448,15 @@ public sealed class ReportingScheduleService
                     artifact,
                     dimensionCount,
                     grid.Metrics?.Count ?? 0,
-                    grid.Formulas?.Count ?? 0);
+                    grid.Formulas?.Count ?? 0,
+                    validation.Summary,
+                    validation.Passed,
+                    validation.Warning,
+                    validation.Failed);
                 continue;
             }
 
+            var generatedValidation = BuildGeneratedGridValidationSummary(gridId, manifest.RenderedReportWriterGrids);
             yield return new WorkstationGeneratedReportWriterGridPayload(
                 gridId,
                 gridId,
@@ -404,9 +464,76 @@ public sealed class ReportingScheduleService
                 artifact,
                 0,
                 0,
-                0);
+                0,
+                generatedValidation.Summary,
+                generatedValidation.Passed,
+                generatedValidation.Warning,
+                generatedValidation.Failed);
         }
     }
+
+    private static (string? Summary, int? Passed, int? Warning, int? Failed) BuildGeneratedGridValidationSummary(
+        string gridId,
+        System.Collections.Immutable.ImmutableArray<ReportWriterGridRenderDto> renderedGrids)
+    {
+        if (renderedGrids.IsDefaultOrEmpty)
+        {
+            return (null, null, null, null);
+        }
+
+        var renderedGrid = renderedGrids.FirstOrDefault(grid =>
+            string.Equals(grid.GridId, gridId, StringComparison.OrdinalIgnoreCase));
+        if (renderedGrid is null)
+        {
+            return (null, null, null, null);
+        }
+
+        var checks = ResolveReportWriterGridValidationChecks(renderedGrid);
+        if (checks.Count == 0)
+        {
+            return (null, null, null, null);
+        }
+
+        var passed = checks.Count(static check => string.Equals(check.Status, "Passed", StringComparison.OrdinalIgnoreCase));
+        var warning = checks.Count(static check => string.Equals(check.Status, "Warning", StringComparison.OrdinalIgnoreCase));
+        var failed = checks.Count - passed - warning;
+        var summary = failed > 0
+            ? $"{passed} passed / {checks.Count} checks, {failed} failed"
+            : warning > 0
+                ? $"{passed} passed / {checks.Count} checks, {warning} review"
+                : $"{passed} passed / {checks.Count} checks";
+        return (summary, passed, warning, failed);
+    }
+
+    private static IReadOnlyList<ReportWriterGridValidationCheckDto> ResolveReportWriterGridValidationChecks(
+        ReportWriterGridRenderDto grid) =>
+        grid.ValidationChecks is { Count: > 0 }
+            ? grid.ValidationChecks
+            :
+            [
+                new ReportWriterGridValidationCheckDto(
+                    "row-count",
+                    grid.Lineage is null || grid.Lineage.OutputRowCount == grid.Rows.Count ? "Passed" : "Failed",
+                    grid.Lineage is null
+                        ? $"Rendered {grid.Rows.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} row(s); no lineage row count was retained."
+                        : $"Rendered {grid.Rows.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} row(s); lineage expected {grid.Lineage.OutputRowCount.ToString(System.Globalization.CultureInfo.InvariantCulture)}."),
+                new ReportWriterGridValidationCheckDto(
+                    "column-dictionary",
+                    "Passed",
+                    $"Dictionary covers {grid.Columns.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} of {grid.Columns.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} rendered column(s)."),
+                new ReportWriterGridValidationCheckDto(
+                    "source-field-lineage",
+                    grid.Lineage is { SourceFields.Count: > 0 } ? "Passed" : "Warning",
+                    grid.Lineage is { SourceFields.Count: > 0 }
+                        ? $"Lineage retains {grid.Lineage.SourceFields.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} source field(s)."
+                        : "No source field lineage was retained with this grid."),
+                new ReportWriterGridValidationCheckDto(
+                    "warnings",
+                    grid.Warnings.Count == 0 ? "Passed" : "Warning",
+                    grid.Warnings.Count == 0
+                        ? "No render warnings were retained."
+                        : $"{grid.Warnings.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} render warning(s) retained: {string.Join("; ", grid.Warnings)}")
+            ];
 
     private static string? ExtractReportWriterGridId(string artifact)
     {
@@ -474,6 +601,32 @@ public sealed class ReportingScheduleService
         if (templateId.StartsWith("audit", StringComparison.OrdinalIgnoreCase)) return ReportingTemplateFamily.AuditPackage.ToString();
         if (templateId.StartsWith("certified", StringComparison.OrdinalIgnoreCase)) return ReportingTemplateFamily.CertifiedDataset.ToString();
         return ReportingTemplateFamily.CustomReport.ToString();
+    }
+
+    private static string? NormalizeDatasetSourceId(string? sourceId)
+    {
+        var normalized = sourceId?.Trim();
+        return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
+    }
+
+    private static string? ResolveBrandingThemeId(ReportingScheduleRecordDto schedule) =>
+        NormalizeDatasetSourceId(schedule.BrandingThemeOverride?.ThemeId) ?? NormalizeDatasetSourceId(schedule.BrandingThemeId);
+
+    private ReportAccessPolicyDto? ResolveTemplateAccessPolicy(string templateId)
+    {
+        if (_governedTemplateCatalog is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return _governedTemplateCatalog.Get(templateId).AccessPolicy;
+        }
+        catch (KeyNotFoundException)
+        {
+            return null;
+        }
     }
 
     private static IReadOnlyList<ReportingScheduleDeliveryTargetDto>? NormalizeDeliveryTargets(

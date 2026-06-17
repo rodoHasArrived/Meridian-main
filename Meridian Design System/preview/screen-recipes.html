@@ -49,12 +49,12 @@
       <article class="screen-recipe-card">
         <div class="screen-recipe-title"><b>Accounting</b><span>Reconciliation and Security Master</span></div>
         <div class="screen-recipe-body">
-          <div class="screen-recipe-block"><div class="k">Layout</div><div class="v">Queue toolbar, grouped reconciliation table, reference-workbench command deck, master list, selected security detail, bottom status window.</div></div>
-          <div class="screen-recipe-block"><div class="k">Primary evidence</div><div class="v">Break age, account, ledger ID, canonical identifiers, asset class, cash-flow/factor schedule rows, override counts, owner, last update.</div></div>
-          <div class="screen-recipe-block"><div class="k">Operator actions</div><div class="v">Assign owner, mark reviewed, open ledger, inspect security, export packet, import reference data, refresh conflicts, gate bulk edits.</div></div>
-          <div class="screen-recipe-block"><div class="k">States</div><div class="v">Pending, observe, critical aging, selected break, selected security, hidden overrides, disabled bulk edit, empty queue, error loading audit.</div></div>
+          <div class="screen-recipe-block"><div class="k">Layout</div><div class="v">Queue toolbar, grouped reconciliation table, reference-workbench command deck, master list, selected security detail, close-continuity status window.</div></div>
+          <div class="screen-recipe-block"><div class="k">Primary evidence</div><div class="v">Break age, account, ledger ID, canonical identifiers, asset class, cash-flow/factor schedule rows, owner, escalation, blocked output, retained evidence, last update.</div></div>
+          <div class="screen-recipe-block"><div class="k">Operator actions</div><div class="v">Assign owner, review escalation, retain resolution evidence, mark reviewed, open ledger, inspect security, export packet, import reference data, refresh conflicts, gate bulk edits.</div></div>
+          <div class="screen-recipe-block"><div class="k">States</div><div class="v">Pending, observe, critical aging, unassigned break, escalated break, blocked output, selected security, disabled bulk edit, empty queue, error loading audit.</div></div>
           <div class="screen-recipe-block"><div class="k">Primitives</div><div class="v">toolbar-strip, dense-table, reference-workbench, status-window, row-detail-panel, entity-summary.</div></div>
-          <div class="screen-recipe-block"><div class="k">Empty/error</div><div class="v">No reconciliation breaks. No securities match filters. Audit load failed. Retry with the same selected account and filter set.</div></div>
+          <div class="screen-recipe-block"><div class="k">Empty/error</div><div class="v">No reconciliation breaks. No securities match filters. Audit load failed. Handoff blocked until open breaks are assigned and resolution evidence is retained.</div></div>
         </div>
       </article>
 
@@ -85,24 +85,24 @@
       <article class="screen-recipe-card">
         <div class="screen-recipe-title"><b>Data</b><span>Provider quality console</span></div>
         <div class="screen-recipe-body">
-          <div class="screen-recipe-block"><div class="k">Layout</div><div class="v">Provider status strip, symbol filters, quality table, coverage chart, selected-provider inspector.</div></div>
-          <div class="screen-recipe-block"><div class="k">Primary evidence</div><div class="v">Provider readiness, latency, gap count, stale symbols, coverage windows, backfill status, archive health.</div></div>
-          <div class="screen-recipe-block"><div class="k">Operator actions</div><div class="v">Run validation, start backfill, export coverage, open archive health, calibrate provider.</div></div>
-          <div class="screen-recipe-block"><div class="k">States</div><div class="v">Healthy provider, observe latency, critical offline, pending backfill, stale coverage, selected symbol.</div></div>
-          <div class="screen-recipe-block"><div class="k">Primitives</div><div class="v">toolbar-strip, dense-table, status-window, chart-standard-card, state-matrix-row.</div></div>
-          <div class="screen-recipe-block"><div class="k">Empty/error</div><div class="v">No symbols selected. Add symbols or import a watchlist. Provider validation failed with setup reason.</div></div>
+          <div class="screen-recipe-block"><div class="k">Layout</div><div class="v">Provider status strip, symbol filters, sync-run summary, staging-review table, identity-resolution inspector, promotion-readiness panel.</div></div>
+          <div class="screen-recipe-block"><div class="k">Primary evidence</div><div class="v">Provider readiness, latency, gap count, stale symbols, sync run, staged record, account/security identity, readiness status, quarantine count, archive health.</div></div>
+          <div class="screen-recipe-block"><div class="k">Operator actions</div><div class="v">Run validation, start backfill, review staging rows, resolve identity blockers, preview promotion readiness, export coverage, open archive health, calibrate provider.</div></div>
+          <div class="screen-recipe-block"><div class="k">States</div><div class="v">Healthy provider, observe latency, critical offline, pending backfill, stale coverage, ready staged row, review-required identity, blocked promotion, selected symbol.</div></div>
+          <div class="screen-recipe-block"><div class="k">Primitives</div><div class="v">toolbar-strip, dense-table, status-window, entity-summary, chart-standard-card, state-matrix-row.</div></div>
+          <div class="screen-recipe-block"><div class="k">Empty/error</div><div class="v">No symbols selected. Add symbols or import a watchlist. Provider validation failed with setup reason. Staged rows are not ready for reconciliation handoff.</div></div>
         </div>
       </article>
 
       <article class="screen-recipe-card">
         <div class="screen-recipe-title"><b>Settings</b><span>Provider and workstation setup</span></div>
         <div class="screen-recipe-body">
-          <div class="screen-recipe-block"><div class="k">Layout</div><div class="v">Settings rail, configuration form, validation panel, saved-state summary, credential readiness inspector.</div></div>
-          <div class="screen-recipe-block"><div class="k">Primary evidence</div><div class="v">Config path, data root, credential status, provider setup, last validation, restart requirement.</div></div>
-          <div class="screen-recipe-block"><div class="k">Operator actions</div><div class="v">Validate credentials, save config, test connectivity, reset local state, open diagnostics.</div></div>
-          <div class="screen-recipe-block"><div class="k">States</div><div class="v">Healthy config, observe restart, critical credential failure, pending save, disabled save, empty optional value.</div></div>
+          <div class="screen-recipe-block"><div class="k">Layout</div><div class="v">Settings rail, configuration form, validation panel, saved-state summary, credential readiness inspector, provider-integration handoff history.</div></div>
+          <div class="screen-recipe-block"><div class="k">Primary evidence</div><div class="v">Config path, data root, credential status, provider setup, sync-run history, approval evidence ID, handoff ID, duplicate/not-ready issue, restart requirement.</div></div>
+          <div class="screen-recipe-block"><div class="k">Operator actions</div><div class="v">Validate credentials, save config, test connectivity, approve reconciliation handoff, review retained handoff history, replay quarantine, reset local state, open diagnostics.</div></div>
+          <div class="screen-recipe-block"><div class="k">States</div><div class="v">Healthy config, observe restart, critical credential failure, pending save, disabled save, empty optional value, handoff accepted, handoff duplicate, handoff not ready.</div></div>
           <div class="screen-recipe-block"><div class="k">Primitives</div><div class="v">entity-summary, state-matrix-banner, toolbar-chip, status-window, state-disabled.</div></div>
-          <div class="screen-recipe-block"><div class="k">Empty/error</div><div class="v">No credential stored. Add provider credentials. Save failed. Show config path and validation reason.</div></div>
+          <div class="screen-recipe-block"><div class="k">Empty/error</div><div class="v">No credential stored. Add provider credentials. Save failed. Show config path and validation reason. No handoff records retained for this connection.</div></div>
         </div>
       </article>
     </section>

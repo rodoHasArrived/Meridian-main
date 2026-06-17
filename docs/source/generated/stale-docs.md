@@ -8,7 +8,11 @@ do_not_edit: true
 
 This report marks registered source modules whose code or README hashes differ from the reviewed baseline.
 
-- Stale modules: 0
+- Stale modules: 3
 - Removed module hash entries: 0
 
-- No stale source docs detected.
+| Module | Path | README | Reason |
+| --- | --- | --- | --- |
+| `SRC-DESIGN-FINANCIAL-OPERATIONS` | `src/Meridian.FinancialOperations` | `src/Meridian.FinancialOperations/README.md` | `source_hash_drift`, `readme_hash_drift` |
+| `SRC-UI` | `src/Meridian.Ui` | `src/Meridian.Ui/README.md` | `source_hash_drift` |
+| `SRC-UI-DASHBOARD` | `src/Meridian.Ui/dashboard` | `src/Meridian.Ui/dashboard/README.md` | `source_hash_drift`, `readme_hash_drift` |

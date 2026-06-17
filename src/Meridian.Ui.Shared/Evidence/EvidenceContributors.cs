@@ -9,6 +9,7 @@ using Meridian.Strategies.Services;
 using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
+using System.Globalization;
 using static Meridian.Ui.Shared.Evidence.EvidenceContributionHelpers;
 
 namespace Meridian.Ui.Shared.Evidence;
@@ -451,7 +452,11 @@ public sealed class ReportPackEvidenceContributor : IEvidenceContributor
                 generatedAt: snapshot.GeneratedAt,
                 hash: artifact.ChecksumSha256)).ToArray());
 
-        return new EvidenceContribution([node], [], [], [nodeId], snapshot.Warnings);
+        var nodes = new List<EvidenceNodeDto> { node };
+        var edges = new List<EvidenceEdgeDto>();
+        AddReportPackDeliverySummary(context.Subject, snapshot.ReportId, nodeId, nodes, edges);
+
+        return new EvidenceContribution(nodes, edges, [], [nodeId], snapshot.Warnings);
     }
 
     private static EvidenceStatusDto MapReportPackStatus(FundReportPackSnapshotDto snapshot)
@@ -473,6 +478,126 @@ public sealed class ReportPackEvidenceContributor : IEvidenceContributor
         => status == GovernanceReportPackStatusDto.Unknown
             ? "legacy"
             : status.ToString();
+
+    private void AddReportPackDeliverySummary(
+        EvidenceSubjectDto subject,
+        Guid reportId,
+        string reportPackNodeId,
+        List<EvidenceNodeDto> nodes,
+        List<EvidenceEdgeDto> edges)
+    {
+        if (!string.Equals(subject.SubjectKind, EvidenceSubjectResolver.ReportPackKind, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var attempts = ListReportPackDeliveryAttempts(_services, reportId, 50);
+        if (attempts.Count == 0)
+        {
+            return;
+        }
+
+        var latest = attempts[0];
+        var deliverySubjectId = BuildReportPackDeliverySubjectId(latest);
+        var deliveryRecordId = NodeId(subject, $"delivery-record-{latest.AttemptId:N}");
+        nodes.Add(Node(
+            subject,
+            deliveryRecordId,
+            "delivery-record",
+            MapDeliveryAttemptStatus(latest.State),
+            $"Latest delivery attempt {latest.AttemptNumber} for {latest.Recipient} is {latest.State} through {latest.Channel}; {attempts.Count} report-pack delivery attempt(s) are retained.",
+            "ReportPackDeliveryService",
+            latest.AttemptedAtUtc,
+            artifacts:
+            [
+                Artifact(
+                    $"{deliveryRecordId}:packet",
+                    "report-pack-delivery-packet-route",
+                    route: BuildReportPackDeliveryPacketRoute(deliverySubjectId),
+                    generatedAt: latest.AttemptedAtUtc,
+                    retained: true) with
+                {
+                    CanonicalSubjectKind = EvidenceSubjectResolver.ReportPackDeliveryKind,
+                    CanonicalSubjectId = deliverySubjectId
+                }
+            ],
+            workItemIds: latest.State == ReportPackDeliveryStateDto.Delivered
+                ? []
+                : [$"report-pack-delivery:{latest.State.ToString().ToLowerInvariant()}:{latest.AttemptId:N}"]));
+        edges.Add(new EvidenceEdgeDto(reportPackNodeId, deliveryRecordId, "delivered-by", "Report-pack output is tied to the latest retained delivery attempt."));
+
+        var packet = latest.Package?.DeliveryEvidencePacket;
+        if (latest.Package is null && packet is null)
+        {
+            return;
+        }
+
+        var packetId = NodeId(subject, $"delivery-evidence-packet-{latest.AttemptId:N}");
+        nodes.Add(Node(
+            subject,
+            packetId,
+            "delivery-evidence-packet",
+            packet is null ? EvidenceStatusDto.Missing : EvidenceStatusDto.Ready,
+            packet is null
+                ? $"Delivery attempt {latest.AttemptNumber} has no retained delivery evidence packet."
+                : $"{packet.PacketKind} retained {packet.RecipientList.Count} recipient(s), {packet.PackageContents.Count} content item(s), and {packet.DeliveryEvidence.Count} delivery evidence link(s).",
+            "ReportPackDeliveryService",
+            packet?.DeliveredAtUtc ?? latest.Package?.CreatedAtUtc ?? latest.AttemptedAtUtc,
+            artifacts:
+            [
+                Artifact(
+                    $"{packetId}:packet",
+                    "report-pack-delivery-packet-route",
+                    route: BuildReportPackDeliveryPacketRoute(deliverySubjectId),
+                    generatedAt: packet?.DeliveredAtUtc ?? latest.Package?.CreatedAtUtc ?? latest.AttemptedAtUtc,
+                    retained: true) with
+                {
+                    CanonicalSubjectKind = EvidenceSubjectResolver.ReportPackDeliveryKind,
+                    CanonicalSubjectId = deliverySubjectId
+                }
+            ],
+            workItemIds: packet?.AuditEventReferences ?? []));
+        edges.Add(new EvidenceEdgeDto(deliveryRecordId, packetId, "proves", "Delivery evidence packet provides the retained recipient, package, channel, and audit metadata."));
+    }
+
+    private static IReadOnlyList<ReportPackDeliveryAttemptDto> ListReportPackDeliveryAttempts(
+        IServiceProvider services,
+        Guid reportId,
+        int limit)
+    {
+        var service = services.GetService<ReportPackDeliveryService>();
+        if (service is not null)
+        {
+            return service.GetHistory(reportId, limit);
+        }
+
+        var store = services.GetService<IReportPackDeliveryRecordStore>();
+        if (store is null)
+        {
+            return [];
+        }
+
+        return store.Load()
+            .Where(attempt => attempt.ReportId == reportId)
+            .OrderByDescending(static attempt => attempt.AttemptedAtUtc)
+            .ThenBy(static attempt => attempt.DistributionId, StringComparer.OrdinalIgnoreCase)
+            .Take(Math.Clamp(limit, 1, 500))
+            .ToArray();
+    }
+
+    private static EvidenceStatusDto MapDeliveryAttemptStatus(ReportPackDeliveryStateDto state)
+        => state switch
+        {
+            ReportPackDeliveryStateDto.Delivered => EvidenceStatusDto.Ready,
+            ReportPackDeliveryStateDto.Failed or ReportPackDeliveryStateDto.Blocked => EvidenceStatusDto.Blocked,
+            _ => EvidenceStatusDto.ReviewRequired
+        };
+
+    private static string BuildReportPackDeliverySubjectId(ReportPackDeliveryAttemptDto attempt)
+        => $"{attempt.ReportId:D}:{attempt.AttemptId:D}";
+
+    private static string BuildReportPackDeliveryPacketRoute(string deliverySubjectId)
+        => $"/api/workstation/evidence/subjects/{EvidenceSubjectResolver.ReportPackDeliveryKind}/{Uri.EscapeDataString(deliverySubjectId)}/packet";
 }
 
 public sealed class ReportPackDeliveryEvidenceContributor : IEvidenceContributor
@@ -516,7 +641,10 @@ public sealed class ReportPackDeliveryEvidenceContributor : IEvidenceContributor
             "ReportPackDeliveryService",
             attempt.AttemptedAtUtc,
             artifacts: BuildAttemptEvidenceArtifacts(context.Subject, attempt, rootId),
-            workItemIds: BuildDeliveryWorkItems(attempt)));
+            workItemIds: BuildDeliveryWorkItems(attempt)) with
+        {
+            Metadata = BuildDeliveryNodeMetadata(attempt, attempt.Package)
+        });
         required.Add(rootId);
 
         var recipientId = NodeId(context.Subject, "recipient");
@@ -581,7 +709,10 @@ public sealed class ReportPackDeliveryEvidenceContributor : IEvidenceContributor
                     generatedAt: package.CreatedAtUtc,
                     hash: package.PublicationEvidenceHash,
                     retained: !string.IsNullOrWhiteSpace(package.SecureLink))
-            ]));
+            ]) with
+        {
+            Metadata = BuildDeliveryNodeMetadata(attempt, package)
+        });
         edges.Add(new EvidenceEdgeDto(rootId, packageId, "retains", "Delivery record retains the package manifest and secure package route."));
         required.Add(packageId);
 
@@ -624,7 +755,10 @@ public sealed class ReportPackDeliveryEvidenceContributor : IEvidenceContributor
                 : $"{packet.PacketKind} binds {packet.PackageContents.Count} package content item(s), {packet.SupportEvidenceIds.Count} support evidence id(s), and {packet.RequestHistory.Count} request-history entry(s).",
             "ReportPackDeliveryService",
             packet?.DeliveredAtUtc ?? package.CreatedAtUtc,
-            artifacts: packet is null ? [] : BuildDeliveryEvidencePacketArtifacts(context.Subject, evidencePacketId, packet)));
+            artifacts: packet is null ? [] : BuildDeliveryEvidencePacketArtifacts(context.Subject, evidencePacketId, packet)) with
+        {
+            Metadata = BuildDeliveryNodeMetadata(attempt, package)
+        });
         edges.Add(new EvidenceEdgeDto(packageId, evidencePacketId, "proves", "Delivery evidence packet binds recipient, entitlement, approval, content, and request history."));
         required.Add(evidencePacketId);
 
@@ -814,6 +948,23 @@ public sealed class ReportPackDeliveryEvidenceContributor : IEvidenceContributor
         var evidenceCount = attempt.EvidenceLinks?.Count ?? 0;
         var note = string.IsNullOrWhiteSpace(attempt.Note) ? "No operator note." : attempt.Note;
         return $"Attempt {attempt.AttemptNumber} was requested by {attempt.Actor}; {evidenceCount} delivery evidence link(s) retained. {note}";
+    }
+
+    private static IReadOnlyDictionary<string, string> BuildDeliveryNodeMetadata(
+        ReportPackDeliveryAttemptDto attempt,
+        ReportPackDeliveryPackageDto? package)
+    {
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["reportPackDeliveryAttemptId"] = attempt.AttemptId.ToString("D")
+        };
+
+        if (!string.IsNullOrWhiteSpace(package?.PackageId))
+        {
+            metadata["reportPackDeliveryPackageId"] = package.PackageId;
+        }
+
+        return metadata;
     }
 
     private static string BuildAuditSummary(
@@ -1951,14 +2102,7 @@ public sealed class PaymentIntentEvidenceContributor : IEvidenceContributor
             BuildExpectedCashSummary(workflow.ExpectedCashMovement),
             "ManualJournalEntryWorkbenchService",
             DateFrom(workflow.ExpectedCashMovement.EffectiveDate),
-            artifacts:
-            [
-                Artifact(
-                    $"{expectedCashId}:workbench-route",
-                    "payment-intent-workbench-route",
-                    route: workflow.WorkbenchRoute,
-                    generatedAt: generatedAt)
-            ]));
+            artifacts: BuildExpectedCashArtifacts(workflow.ExpectedCashMovement, workflow.WorkbenchRoute, expectedCashId, generatedAt)));
         edges.Add(new EvidenceEdgeDto(rootId, expectedCashId, "expects", "Expected cash movement documents the amount, direction, date, and settlement reference before execution."));
         required.Add(expectedCashId);
 
@@ -1989,7 +2133,7 @@ public sealed class PaymentIntentEvidenceContributor : IEvidenceContributor
                 : $"{workflow.BankEvidence.Count} bank/cash evidence item(s) support this payment intent.",
             "ManualJournalEntryWorkbenchService",
             workflow.BankEvidence.Select(static evidence => evidence.RecordedAtUtc).Where(static value => value.HasValue).DefaultIfEmpty(workflow.RequestedAtUtc).Max(),
-            artifacts: BuildBankEvidenceArtifacts(workflow.BankEvidence, bankEvidenceId, generatedAt),
+            artifacts: BuildBankEvidenceArtifacts(workflow.BankEvidence, workflow.ExpectedCashMovement, bankEvidenceId, generatedAt),
             workItemIds: bankStatus == EvidenceStatusDto.Ready ? [] : [$"payment-intent-cash-evidence:{workflow.PaymentIntentId}"]));
         edges.Add(new EvidenceEdgeDto(rootId, bankEvidenceId, "supported-by", "Retained bank and cash evidence supports the expected movement without initiating payment execution."));
         required.Add(bankEvidenceId);
@@ -2262,7 +2406,32 @@ public sealed class PaymentIntentEvidenceContributor : IEvidenceContributor
     }
 
     private static string BuildExpectedCashSummary(PaymentIntentExpectedCashMovementDto movement)
-        => $"{movement.Direction} {movement.Amount} {movement.Currency} is expected on {movement.EffectiveDate:yyyy-MM-dd} for {movement.Purpose}; settlement reference {movement.SettlementReference ?? "not attached"}.";
+        => $"{movement.Direction} {movement.Amount} {movement.Currency} is expected on {movement.EffectiveDate:yyyy-MM-dd} for {movement.Purpose}; payee {movement.Payee ?? "not assigned"}; scope {movement.AccountScope ?? "not assigned"}; approval policy {movement.ApprovalPolicy ?? "not assigned"}; source evidence {movement.SourceEvidenceLinks.Count} link(s); settlement reference {movement.SettlementReference ?? "not attached"}.";
+
+    private static IReadOnlyList<EvidenceArtifactRefDto> BuildExpectedCashArtifacts(
+        PaymentIntentExpectedCashMovementDto movement,
+        string workbenchRoute,
+        string nodeId,
+        DateTimeOffset generatedAt)
+    {
+        var artifacts = new List<EvidenceArtifactRefDto>
+        {
+            Artifact(
+                $"{nodeId}:workbench-route",
+                "payment-intent-workbench-route",
+                route: workbenchRoute,
+                generatedAt: generatedAt)
+        };
+
+        artifacts.AddRange(movement.SourceEvidenceLinks
+            .Select((link, index) => BuildRouteOrPathArtifact(
+                $"{nodeId}:source-evidence-{index + 1}",
+                "payment-intent-source-evidence",
+                link,
+                generatedAt)));
+
+        return artifacts;
+    }
 
     private static IReadOnlyList<string> BuildWorkflowWorkItemIds(PaymentIntentWorkflowDto workflow)
         => workflow.Status == PaymentIntentWorkflowStatusDto.ExecutionDeferred
@@ -2284,15 +2453,241 @@ public sealed class PaymentIntentEvidenceContributor : IEvidenceContributor
 
     private static IReadOnlyList<EvidenceArtifactRefDto> BuildBankEvidenceArtifacts(
         IReadOnlyList<PaymentIntentBankEvidenceDto> bankEvidence,
+        PaymentIntentExpectedCashMovementDto expectedCashMovement,
         string nodeId,
         DateTimeOffset generatedAt)
         => bankEvidence
             .Select((evidence, index) => BuildRouteOrPathArtifact(
-                $"{nodeId}:{SanitizeNodePart(evidence.EvidenceId)}-{index + 1}",
-                evidence.EvidenceKind,
-                evidence.EvidenceRoute,
-                evidence.RecordedAtUtc ?? generatedAt))
+                    $"{nodeId}:{SanitizeNodePart(evidence.EvidenceId)}-{index + 1}",
+                    evidence.EvidenceKind,
+                    evidence.EvidenceRoute,
+                    evidence.RecordedAtUtc ?? generatedAt) with
+                {
+                    Capture = BuildBankEvidenceCapture(evidence),
+                    ExtractedFields = BuildBankEvidenceExtractedFields(evidence, expectedCashMovement)
+                })
             .ToArray();
+
+    private static EvidenceArtifactCaptureDto BuildBankEvidenceCapture(PaymentIntentBankEvidenceDto evidence)
+        => new(
+            ResolveBankEvidenceCaptureChannel(evidence),
+            FirstNonEmpty(evidence.TransactionType, evidence.EvidenceKind),
+            evidence.RecordedAtUtc,
+            null,
+            FirstNonEmpty(evidence.ExternalRef, evidence.BankTransactionId?.ToString("D"), evidence.EvidenceId),
+            null);
+
+    private static IReadOnlyList<EvidenceArtifactExtractionFieldDto> BuildBankEvidenceExtractedFields(
+        PaymentIntentBankEvidenceDto evidence,
+        PaymentIntentExpectedCashMovementDto expectedCashMovement)
+    {
+        var fields = new List<EvidenceArtifactExtractionFieldDto>
+        {
+            BuildExtractedField(
+                "evidenceStatus",
+                evidence.Status,
+                null,
+                MapBankEvidenceStatus(evidence),
+                "payment-intent-bank-evidence",
+                evidence.EvidenceId,
+                "Payment-intent bank evidence status retained from the cash-evidence workflow."),
+            BuildExtractedField(
+                "evidenceKind",
+                evidence.EvidenceKind,
+                null,
+                EvidenceStatusDto.Ready,
+                "payment-intent-bank-evidence",
+                evidence.EvidenceId,
+                "Payment-intent bank evidence kind retained from the cash-evidence workflow.")
+        };
+
+        if (!string.IsNullOrWhiteSpace(evidence.TransactionType))
+        {
+            fields.Add(BuildExtractedField(
+                "transactionType",
+                evidence.TransactionType,
+                null,
+                EvidenceStatusDto.Ready,
+                "payment-intent-bank-evidence",
+                evidence.EvidenceId,
+                "Bank transaction type retained from the cash-evidence workflow."));
+        }
+
+        if (evidence.BankTransactionId.HasValue)
+        {
+            var transactionId = evidence.BankTransactionId.Value.ToString("D");
+            fields.Add(BuildExtractedField(
+                "bankTransactionId",
+                transactionId,
+                null,
+                EvidenceStatusDto.Ready,
+                "bank-transaction",
+                transactionId,
+                "Bank transaction id retained as payment-intent cash evidence."));
+        }
+
+        if (evidence.Amount.HasValue)
+        {
+            fields.Add(BuildExtractedField(
+                "amount",
+                FormatDecimal(evidence.Amount.Value),
+                FormatDecimal(expectedCashMovement.Amount),
+                ResolveExpectedFieldStatus(FormatDecimal(evidence.Amount.Value), FormatDecimal(expectedCashMovement.Amount)),
+                "payment-intent",
+                expectedCashMovement.PaymentIntentId,
+                "Bank evidence amount checked against the expected cash movement."));
+        }
+
+        if (!string.IsNullOrWhiteSpace(evidence.Currency))
+        {
+            fields.Add(BuildExtractedField(
+                "currency",
+                evidence.Currency,
+                expectedCashMovement.Currency,
+                ResolveExpectedFieldStatus(evidence.Currency, expectedCashMovement.Currency),
+                "payment-intent",
+                expectedCashMovement.PaymentIntentId,
+                "Bank evidence currency checked against the expected cash movement."));
+        }
+
+        if (evidence.EffectiveDate.HasValue)
+        {
+            fields.Add(BuildExtractedField(
+                "effectiveDate",
+                evidence.EffectiveDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                expectedCashMovement.EffectiveDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                ResolveExpectedFieldStatus(
+                    evidence.EffectiveDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    expectedCashMovement.EffectiveDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
+                "payment-intent",
+                expectedCashMovement.PaymentIntentId,
+                "Bank evidence effective date checked against the expected cash movement."));
+        }
+
+        if (!string.IsNullOrWhiteSpace(evidence.ExternalRef))
+        {
+            fields.Add(BuildExtractedField(
+                "externalReference",
+                evidence.ExternalRef,
+                expectedCashMovement.SettlementReference,
+                ResolveExpectedFieldStatus(evidence.ExternalRef, expectedCashMovement.SettlementReference),
+                "settlement-reference",
+                evidence.ExternalRef,
+                "Bank evidence external reference checked against the expected settlement reference."));
+        }
+
+        return fields;
+    }
+
+    private static EvidenceArtifactExtractionFieldDto BuildExtractedField(
+        string fieldName,
+        string? extractedValue,
+        string? expectedValue,
+        EvidenceStatusDto validationStatus,
+        string linkedRecordKind,
+        string linkedRecordId,
+        string validationMessage)
+        => new(
+            fieldName,
+            string.IsNullOrWhiteSpace(extractedValue) ? null : extractedValue.Trim(),
+            string.IsNullOrWhiteSpace(expectedValue) ? null : expectedValue.Trim(),
+            ConfidenceFor(validationStatus),
+            ReviewStateFor(validationStatus),
+            validationStatus,
+            validationMessage,
+            linkedRecordKind,
+            linkedRecordId);
+
+    private static EvidenceStatusDto ResolveExpectedFieldStatus(string? extractedValue, string? expectedValue)
+    {
+        if (string.IsNullOrWhiteSpace(extractedValue))
+        {
+            return EvidenceStatusDto.Missing;
+        }
+
+        if (!string.IsNullOrWhiteSpace(expectedValue) &&
+            !string.Equals(extractedValue.Trim(), expectedValue.Trim(), StringComparison.OrdinalIgnoreCase))
+        {
+            return EvidenceStatusDto.ReviewRequired;
+        }
+
+        return EvidenceStatusDto.Ready;
+    }
+
+    private static EvidenceStatusDto MapBankEvidenceStatus(PaymentIntentBankEvidenceDto evidence)
+    {
+        if (ContainsAny(evidence.Status, "returned", "failed", "blocked", "rejected"))
+        {
+            return EvidenceStatusDto.Blocked;
+        }
+
+        return ContainsAny(evidence.Status, "missing", "pending", "needed") ||
+               ContainsAny(evidence.EvidenceKind, "missing", "pending")
+            ? EvidenceStatusDto.ReviewRequired
+            : EvidenceStatusDto.Ready;
+    }
+
+    private static string ResolveBankEvidenceCaptureChannel(PaymentIntentBankEvidenceDto evidence)
+    {
+        var value = string.Join(
+            ' ',
+            evidence.EvidenceKind,
+            evidence.EvidenceRoute,
+            evidence.TransactionType,
+            evidence.ExternalRef);
+
+        if (ContainsAny(value, "sftp"))
+        {
+            return "SFTP";
+        }
+
+        if (ContainsAny(value, "email"))
+        {
+            return "Email";
+        }
+
+        if (ContainsAny(value, "portal"))
+        {
+            return "Portal";
+        }
+
+        return evidence.BankTransactionId.HasValue || IsApiEvidenceRoute(evidence.EvidenceRoute) || ContainsAny(value, "plaid")
+            ? "API"
+            : "Upload";
+    }
+
+    private static bool IsApiEvidenceRoute(string? value)
+        => !string.IsNullOrWhiteSpace(value) &&
+           (value.Contains("/api/", StringComparison.OrdinalIgnoreCase) ||
+            value.StartsWith("api:", StringComparison.OrdinalIgnoreCase));
+
+    private static decimal? ConfidenceFor(EvidenceStatusDto status)
+        => status switch
+        {
+            EvidenceStatusDto.Ready => 1m,
+            EvidenceStatusDto.Blocked => 1m,
+            EvidenceStatusDto.ReviewRequired => 0.75m,
+            EvidenceStatusDto.Missing => null,
+            EvidenceStatusDto.Stale => 0.5m,
+            _ => null
+        };
+
+    private static string ReviewStateFor(EvidenceStatusDto status)
+        => status switch
+        {
+            EvidenceStatusDto.Ready => "Reviewed",
+            EvidenceStatusDto.Blocked => "Blocked",
+            EvidenceStatusDto.ReviewRequired => "NeedsReview",
+            EvidenceStatusDto.Missing => "Missing",
+            EvidenceStatusDto.Stale => "Stale",
+            _ => "Unknown"
+        };
+
+    private static string FormatDecimal(decimal value)
+        => value.ToString("0.#############################", CultureInfo.InvariantCulture);
+
+    private static string? FirstNonEmpty(params string?[] values)
+        => values.FirstOrDefault(static value => !string.IsNullOrWhiteSpace(value))?.Trim();
 
     private static IReadOnlyList<EvidenceArtifactRefDto> BuildReconciliationArtifacts(
         IReadOnlyList<PaymentIntentReconciliationLinkDto> links,

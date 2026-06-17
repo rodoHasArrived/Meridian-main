@@ -92,13 +92,22 @@ jobs:
 
       - name: Run non-integration tests
         run: |
-          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=core" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
-          dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=fsharp" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
-          dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=ui" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
-          dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=backtesting" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
-          dotnet test tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=directlending" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
-          dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=fundstructure" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
-          dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj -c Release --no-restore --filter "Category!=Integration&Category!=Performance" --logger "trx;LogFilePrefix=quantscript" --results-directory artifacts/test-results/dotnet /p:EnableWindowsTargeting=true
+          python3 build/scripts/ci/run-dotnet-ci-tests.py \
+            --configuration Release \
+            --filter "Category!=Integration&Category!=Performance" \
+            --results-dir artifacts/test-results/dotnet \
+            --summary-output artifacts/test-results/dotnet/ci-dotnet-test-summary.md \
+            --json-output artifacts/test-results/dotnet/ci-dotnet-test-summary.json
+
+      - name: Publish .NET test summary
+        if: always()
+        run: |
+          SUMMARY_PATH=artifacts/test-results/dotnet/ci-dotnet-test-summary.md
+          if [ -f "$SUMMARY_PATH" ]; then
+            cat "$SUMMARY_PATH" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No .NET test summary was produced." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Validate status docs delivery claims
         run: |
@@ -143,7 +152,7 @@ jobs:
           python3 build/scripts/docs/check-validation-floor.py --summary-json docs/status/docs-automation-summary.json --route-json docs/status/prompt-route-lint-report.json --summary
 
       - name: Upload .NET test results
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v7.0.1
         with:
           name: ci-dotnet-${{ github.run_number }}
@@ -191,7 +200,7 @@ jobs:
           cache-dependency-path: src/Meridian.Ui/dashboard/package-lock.json
 
       - name: Install dashboard dependencies
-        run: npm install --prefix src/Meridian.Ui/dashboard --include=optional
+        run: npm ci --prefix src/Meridian.Ui/dashboard --include=optional
 
       - name: Run dashboard tests
         run: npm --prefix src/Meridian.Ui/dashboard run test

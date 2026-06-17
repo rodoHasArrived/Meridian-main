@@ -476,7 +476,7 @@ public sealed class CashFlowViewModel : BindableBase
         ResetCashFlowState();
         StatusText = $"Could not load cash-flow data for run '{runId}'.";
         RunActionStateTitle = "Cash-flow load failed";
-        RunActionStateDetail = $"Resolve the load error before opening cash-flow drill-ins: {exception.Message}";
+        RunActionStateDetail = $"Resolve the loading issue before opening cash-flow drill-ins: {exception.Message}";
         ApplyContinuity(null);
         NotifyRunCommandsChanged();
         RaiseCashFlowStateChanged();

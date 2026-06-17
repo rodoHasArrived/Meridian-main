@@ -10,7 +10,7 @@ import {
 } from "@/lib/workstation-endpoints";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { getReportPackDistributions } from "@/lib/reporting-distributions";
-import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportPackDeliveryAccessLink, ReportWriterAggregateFunction, ReportWriterFilterOperator, ReportingScheduleDeliveryPlan, ReportingScheduleDeliveryTarget, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowEvidenceLink, ReportingWorkflowLineProvenance, ReportingWorkflowRecord } from "@/types";
+import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportPackDeliveryAccessLink, ReportWriterAggregateFunction, ReportWriterDatasetSource, ReportWriterFilterOperator, ReportingScheduleDeliveryPlan, ReportingScheduleDeliveryTarget, ReportingRunStatusProjection, ReportingScheduleRecord, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowEvidenceLink, ReportingWorkflowLineProvenance, ReportingWorkflowRecord } from "@/types";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
 export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
@@ -139,6 +139,28 @@ export interface ReportingChipViewModel {
   value: string;
 }
 
+export interface ReportingAccessAuditCountRow {
+  id: string;
+  label: string;
+  visibleLabel: string;
+  hiddenLabel: string;
+  hasHidden: boolean;
+}
+
+export interface ReportingAccessAuditViewModel {
+  evaluationScope: string;
+  summary: string;
+  principalScopes: string[];
+  scopeLabel: string;
+  hiddenTotalLabel: string;
+  postureLabel: string;
+  postureVariant: ReportingBadgeVariant;
+  countRows: ReportingAccessAuditCountRow[];
+  denialReasons: string[];
+  hasDenialReasons: boolean;
+  ariaLabel: string;
+}
+
 export interface ReportingTemplateRow {
   id: string;
   templateName: string;
@@ -265,6 +287,7 @@ export interface ReportingRunStatusRow {
   generatedGridNames: string[];
   generatedGridArtifacts: ReportingGeneratedGridArtifactRow[];
   hasGeneratedGrids: boolean;
+  datasetSourceLabel: string;
   lineageSummary: string;
   auditSummary: string;
   failureReason: string | null;
@@ -279,6 +302,8 @@ export interface ReportingGeneratedGridArtifactRow {
   label: string;
   jsonHref: string;
   csvHref: string;
+  pdfHref: string;
+  xlsHref: string;
   xlsxHref: string;
 }
 
@@ -319,6 +344,7 @@ export interface ReportingScheduleRow {
   runCountLabel: string;
   description: string;
   deliveryTargetLabel: string;
+  datasetSourceLabel: string;
   canPause: boolean;
   canResume: boolean;
   ariaLabel: string;
@@ -328,6 +354,7 @@ export interface ReportingScheduleDeliveryPlanRow {
   id: string;
   scheduleId: string;
   templateId: string;
+  distributionId: string;
   recipient: string;
   recipientRole: string;
   channel: string;
@@ -343,8 +370,17 @@ export interface ReportingScheduleDeliveryPlanRow {
   lastDeliveryLabel: string;
   lastDeliveryHref: string | null;
   lastDeliveryLinks: ReportingDeliveryAccessLinkRow[];
+  accessExpiryLabel: string;
+  accessSummaryLabel: string;
+  channelSummaryLabel: string;
+  downloadSummaryLabel: string;
+  notificationSummaryLabel: string;
+  reportWriterDatasetSummaryLabel: string;
+  reportWriterGridSummaryLabel: string;
   integrityLabel: string;
   integritySummary: string | null;
+  entitlementLabel: string;
+  brandingLabel: string;
   versionStamp: string | null;
   ariaLabel: string;
 }
@@ -520,6 +556,7 @@ export interface ReportingScreenViewModel {
   workbenchChips: ReportingChipViewModel[];
   queueChips: ReportingChipViewModel[];
   packTargetChips: ReportingChipViewModel[];
+  accessAudit: ReportingAccessAuditViewModel;
   templateRows: ReportingTemplateRow[];
   runStatusRows: ReportingRunStatusRow[];
   hasRunStatusRows: boolean;
@@ -659,6 +696,7 @@ export function useReportingScreenViewModel(
       workbenchChips: buildWorkbenchChips("0 profiles", "0", "0"),
       queueChips: buildQueueChips("0 visible", "0", "0", "Export profiles"),
       packTargetChips: buildPackTargetChips("0", "No profile selected"),
+      accessAudit: buildReportingAccessAudit(null),
       templateRows: [],
       runStatusRows: [],
       hasRunStatusRows: false,
@@ -786,8 +824,9 @@ export function useReportingScreenViewModel(
   });
   const templateRows = buildTemplateRows(reporting.templates ?? []);
   const runStatusRows = buildRunStatusRows(reporting.recentRuns ?? []);
-  const scheduleRows = buildScheduleRows(reporting.schedules ?? []);
+  const scheduleRows = buildScheduleRows(reporting.schedules ?? [], reporting.reportWriterDatasetSources ?? []);
   const scheduleDeliveryPlanRows = buildScheduleDeliveryPlanRows(reporting.scheduleDeliveryPlans ?? []);
+  const accessAudit = buildReportingAccessAudit(reporting);
 
   return {
     title: "Report packs",
@@ -805,6 +844,7 @@ export function useReportingScreenViewModel(
     workbenchChips: buildWorkbenchChips(countLabel, packTargetCountLabel, recommendedCountLabel),
     queueChips: buildQueueChips(visibleCountLabel, recommendedCountLabel, packTargetCountLabel, listLabel),
     packTargetChips: buildPackTargetChips(packTargetCountLabel, statusTitle),
+    accessAudit,
     templateRows,
     runStatusRows,
     hasRunStatusRows: runStatusRows.length > 0,
@@ -1552,6 +1592,7 @@ function buildRunStatusRows(runs: ReportingRunStatusProjection[]): ReportingRunS
       generatedGridNames: buildGeneratedGridNames(run),
       generatedGridArtifacts: buildGeneratedGridArtifactRows(run),
       hasGeneratedGrids: (run.generatedReportWriterGrids?.length ?? 0) > 0,
+      datasetSourceLabel: buildRunDatasetSourceLabel(run),
       lineageSummary: `${run.lineageLinkedSections}/${run.sectionCount} sections linked`,
       auditSummary: run.auditActions.length > 0 ? run.auditActions.join(" → ") : "No audit actions",
       failureReason: run.failureReason,
@@ -1563,6 +1604,20 @@ function buildRunStatusRows(runs: ReportingRunStatusProjection[]): ReportingRunS
   });
 }
 
+function buildRunDatasetSourceLabel(run: ReportingRunStatusProjection): string {
+  const sourceLabel = run.reportWriterDatasetSourceLabel?.trim();
+  const sourceId = run.reportWriterDatasetSourceId?.trim();
+  const rowCount = run.reportWriterDatasetRowCount;
+  if (!sourceLabel && !sourceId && rowCount == null) {
+    return "No report-writer dataset retained";
+  }
+
+  const baseLabel = sourceLabel || sourceId || "Report-writer dataset";
+  return rowCount == null
+    ? baseLabel
+    : `${baseLabel} (${rowCount} row${rowCount === 1 ? "" : "s"})`;
+}
+
 function buildGeneratedGridLabel(run: ReportingRunStatusProjection): string {
   const grids = run.generatedReportWriterGrids ?? [];
   if (grids.length === 0) {
@@ -1570,7 +1625,12 @@ function buildGeneratedGridLabel(run: ReportingRunStatusProjection): string {
   }
 
   const formulaCount = grids.reduce((total, grid) => total + Math.max(0, grid.formulaCount), 0);
-  return `${grids.length} generated grid${grids.length === 1 ? "" : "s"} with ${formulaCount} formula${formulaCount === 1 ? "" : "s"}`;
+  const validationCount = grids.reduce((total, grid) => total + Math.max(0, grid.validationPassedCount ?? 0) + Math.max(0, grid.validationWarningCount ?? 0) + Math.max(0, grid.validationFailedCount ?? 0), 0);
+  const validationIssues = grids.reduce((total, grid) => total + Math.max(0, grid.validationWarningCount ?? 0) + Math.max(0, grid.validationFailedCount ?? 0), 0);
+  const validationSummary = validationCount > 0
+    ? `; validation ${validationCount - validationIssues} passed / ${validationCount} checks${validationIssues > 0 ? `, ${validationIssues} review` : ""}`
+    : "";
+  return `${grids.length} generated grid${grids.length === 1 ? "" : "s"} with ${formulaCount} formula${formulaCount === 1 ? "" : "s"}${validationSummary}`;
 }
 
 function buildGeneratedGridNames(run: ReportingRunStatusProjection): string[] {
@@ -1581,19 +1641,27 @@ function buildGeneratedGridNames(run: ReportingRunStatusProjection): string[] {
       `${grid.metricCount}m`,
       `${grid.formulaCount}f`
     ].join("/");
-    return `${title} (${grid.kind}, ${counts})`;
+    const validationSummary = grid.validationSummary?.trim();
+    return validationSummary
+      ? `${title} (${grid.kind}, ${counts}, validation ${validationSummary})`
+      : `${title} (${grid.kind}, ${counts})`;
   });
 }
 
 function buildGeneratedGridArtifactRows(run: ReportingRunStatusProjection): ReportingGeneratedGridArtifactRow[] {
   return (run.generatedReportWriterGrids ?? []).map((grid) => {
     const title = grid.title?.trim() || grid.gridId;
-    const label = `${title} (${grid.kind})`;
+    const validationSummary = grid.validationSummary?.trim();
+    const label = validationSummary
+      ? `${title} (${grid.kind}, validation ${validationSummary})`
+      : `${title} (${grid.kind})`;
     return {
       id: `${run.runId}-${grid.gridId}`,
       label,
       jsonHref: reportingRunReportWriterGridEndpoint(run.runId, grid.gridId),
       csvHref: reportingRunReportWriterGridEndpoint(run.runId, grid.gridId, "csv"),
+      pdfHref: reportingRunReportWriterGridEndpoint(run.runId, grid.gridId, "pdf"),
+      xlsHref: reportingRunReportWriterGridEndpoint(run.runId, grid.gridId, "xls"),
       xlsxHref: reportingRunReportWriterGridEndpoint(run.runId, grid.gridId, "xlsx")
     };
   });
@@ -1649,7 +1717,10 @@ function buildRunActionRows(run: ReportingRunStatusProjection): ReportingRunActi
   }));
 }
 
-function buildScheduleRows(schedules: ReportingScheduleRecord[]): ReportingScheduleRow[] {
+function buildScheduleRows(
+  schedules: ReportingScheduleRecord[],
+  datasetSources: ReportWriterDatasetSource[]
+): ReportingScheduleRow[] {
   return schedules.map((schedule) => ({
     id: schedule.scheduleId,
     templateId: schedule.templateId,
@@ -1662,6 +1733,7 @@ function buildScheduleRows(schedules: ReportingScheduleRecord[]): ReportingSched
     runCountLabel: `${schedule.runCount} run${schedule.runCount === 1 ? "" : "s"}`,
     description: schedule.description?.trim() || "No schedule note",
     deliveryTargetLabel: formatScheduleDeliveryTargets(schedule.deliveryTargets),
+    datasetSourceLabel: formatScheduleDatasetSource(schedule.datasetSourceId, datasetSources),
     canPause: schedule.state === "Active",
     canResume: schedule.state === "Paused",
     ariaLabel: `${schedule.scheduleId} ${schedule.templateId} reporting schedule is ${schedule.state}`
@@ -1682,6 +1754,7 @@ function buildScheduleDeliveryPlanRows(plans: ReportingScheduleDeliveryPlan[]): 
     id: plan.planId,
     scheduleId: plan.scheduleId,
     templateId: plan.templateId,
+    distributionId: plan.distributionId,
     recipient: plan.recipient,
     recipientRole: plan.recipientRole,
     channel: plan.channel,
@@ -1697,11 +1770,45 @@ function buildScheduleDeliveryPlanRows(plans: ReportingScheduleDeliveryPlan[]): 
     lastDeliveryLabel: formatSchedulePlanLastDelivery(plan),
     lastDeliveryHref: plan.lastDeliverySecureLink ?? plan.lastDeliveryPackageRoute,
     lastDeliveryLinks: buildDeliveryAccessLinkRows(plan.lastDeliveryAccessLinks, `${plan.planId}-delivery-link`),
+    accessExpiryLabel: plan.lastDeliveryAccessExpiresAtUtc
+      ? formatTimestamp(plan.lastDeliveryAccessExpiresAtUtc)
+      : "No retained access expiry",
+    accessSummaryLabel: plan.lastDeliveryAccessSummary?.trim() || "No retained access summary",
+    channelSummaryLabel: plan.lastDeliveryChannelSummary?.trim() || "No retained channel summary",
+    downloadSummaryLabel: plan.lastDeliveryDownloadSummary?.trim() || "No retained download summary",
+    notificationSummaryLabel: plan.lastDeliveryNotificationSummary?.trim() || "No retained notification proof",
+    reportWriterDatasetSummaryLabel: plan.lastDeliveryReportWriterDatasetSummary?.trim() || "No retained report-writer dataset",
+    reportWriterGridSummaryLabel: plan.lastDeliveryReportWriterGridSummary?.trim() || "No retained report-writer grids",
     integrityLabel: formatSchedulePlanIntegrity(plan),
     integritySummary: plan.lastDeliveryIntegritySummary ?? null,
+    entitlementLabel: plan.lastDeliveryEntitlementScope?.trim() || "No retained delivery entitlement",
+    brandingLabel: formatSchedulePlanBranding(plan),
     versionStamp: plan.versionStamp,
     ariaLabel: `${plan.recipient} ${plan.deliveryMode} scheduled delivery plan for ${plan.scheduleId}`
   }));
+}
+
+function formatSchedulePlanBranding(plan: ReportingScheduleDeliveryPlan): string {
+  if (plan.brandingTheme) {
+    return `${plan.brandingTheme.name} · ${plan.brandingTheme.firmName} · ${plan.brandingTheme.themeId}`;
+  }
+
+  return plan.brandingThemeId?.trim() || "Default theme";
+}
+
+function formatScheduleDatasetSource(
+  datasetSourceId: string | null | undefined,
+  datasetSources: ReportWriterDatasetSource[]
+): string {
+  const normalizedSourceId = datasetSourceId?.trim();
+  if (!normalizedSourceId) {
+    return "Default retained dataset";
+  }
+
+  const source = datasetSources.find((candidate) =>
+    candidate.sourceId.localeCompare(normalizedSourceId, undefined, { sensitivity: "base" }) === 0);
+
+  return source ? `${source.label} (${source.rowCount})` : normalizedSourceId;
 }
 
 function buildDeliveryAccessLinkRows(
@@ -1775,12 +1882,16 @@ function formatTimestamp(value: string): string {
     return value;
   }
 
-  return timestamp.toLocaleString(undefined, {
+  const dateLabel = timestamp.toLocaleDateString(undefined, {
     month: "short",
-    day: "numeric",
+    day: "numeric"
+  });
+  const timeLabel = timestamp.toLocaleTimeString(undefined, {
     hour: "numeric",
     minute: "2-digit"
   });
+
+  return `${dateLabel}, ${timeLabel}`;
 }
 
 function artifactLabel(artifact: string): string {
@@ -1885,6 +1996,75 @@ function buildPackTargetChips(
     { label: "Recipients", value: packTargetCountLabel },
     { label: "Inspector", value: statusTitle }
   ];
+}
+
+function buildReportingAccessAudit(reporting: GovernanceReportingSummary | null): ReportingAccessAuditViewModel {
+  const audit = reporting?.accessAudit ?? null;
+  if (!audit) {
+    return {
+      evaluationScope: "Unavailable",
+      summary: "Reporting access audit evidence is not available for this payload.",
+      principalScopes: ["scope:unavailable"],
+      scopeLabel: "scope:unavailable",
+      hiddenTotalLabel: "0 hidden",
+      postureLabel: "Unknown",
+      postureVariant: "outline",
+      countRows: buildAccessAuditCountRows(),
+      denialReasons: ["The server did not include aggregate access-audit counts for this Reporting payload."],
+      hasDenialReasons: true,
+      ariaLabel: "Reporting access audit unavailable"
+    };
+  }
+
+  const hiddenTotal =
+    audit.hiddenTemplateCount +
+    audit.hiddenReportPackCount +
+    audit.hiddenScheduleCount +
+    audit.hiddenDeliveryAttemptCount +
+    audit.hiddenStructuredExportCount;
+  const principalScopes = audit.principalScopes.length > 0 ? audit.principalScopes : ["scope:anonymous"];
+  const postureLabel = hiddenTotal > 0 ? "Scoped" : "Fully visible";
+
+  return {
+    evaluationScope: audit.evaluationScope,
+    summary: audit.summary,
+    principalScopes,
+    scopeLabel: principalScopes.join(" · "),
+    hiddenTotalLabel: `${hiddenTotal} hidden`,
+    postureLabel,
+    postureVariant: hiddenTotal > 0 ? "warning" : "success",
+    countRows: buildAccessAuditCountRows(audit),
+    denialReasons: audit.denialReasons,
+    hasDenialReasons: audit.denialReasons.length > 0,
+    ariaLabel: `${audit.evaluationScope} reporting access audit: ${hiddenTotal} hidden object${hiddenTotal === 1 ? "" : "s"}`
+  };
+}
+
+function buildAccessAuditCountRows(
+  audit?: GovernanceReportingSummary["accessAudit"] | null
+): ReportingAccessAuditCountRow[] {
+  return [
+    buildAccessAuditCountRow("templates", "Templates", audit?.visibleTemplateCount ?? 0, audit?.hiddenTemplateCount ?? 0),
+    buildAccessAuditCountRow("report-packs", "Report packs", audit?.visibleReportPackCount ?? 0, audit?.hiddenReportPackCount ?? 0),
+    buildAccessAuditCountRow("schedules", "Schedules", audit?.visibleScheduleCount ?? 0, audit?.hiddenScheduleCount ?? 0),
+    buildAccessAuditCountRow("deliveries", "Deliveries", audit?.visibleDeliveryAttemptCount ?? 0, audit?.hiddenDeliveryAttemptCount ?? 0),
+    buildAccessAuditCountRow("structured-exports", "Structured exports", audit?.visibleStructuredExportCount ?? 0, audit?.hiddenStructuredExportCount ?? 0)
+  ];
+}
+
+function buildAccessAuditCountRow(
+  id: string,
+  label: string,
+  visibleCount: number,
+  hiddenCount: number
+): ReportingAccessAuditCountRow {
+  return {
+    id,
+    label,
+    visibleLabel: `${visibleCount} visible`,
+    hiddenLabel: `${hiddenCount} hidden`,
+    hasHidden: hiddenCount > 0
+  };
 }
 
 function buildWorkflowTaskPanel({

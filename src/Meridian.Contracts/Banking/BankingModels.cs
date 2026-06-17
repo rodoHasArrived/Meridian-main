@@ -1,3 +1,5 @@
+using Meridian.Contracts.Workstation;
+
 namespace Meridian.Contracts.Banking;
 
 // ---------------------------------------------------------------------------
@@ -38,12 +40,25 @@ public sealed record PendingPaymentDto(
 /// <summary>Approve a pending payment request.</summary>
 public sealed record ApprovePaymentRequest(
     string? ReviewNotes,
-    string? ReviewedBy);
+    string? ReviewedBy,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 /// <summary>Reject a pending payment request.</summary>
 public sealed record RejectPaymentRequest(
     string Reason,
-    string? ReviewedBy);
+    string? ReviewedBy,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+
+/// <summary>Record retained bank-side evidence for an approved Meridian payment intent.</summary>
+public sealed record RecordPaymentBankEvidenceRequest(
+    string EvidenceType,
+    DateOnly? TransactionDate = null,
+    DateOnly? SettlementDate = null,
+    decimal? Amount = null,
+    string? Currency = null,
+    string? ExternalRef = null,
+    string? RecordedBy = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 // ---------------------------------------------------------------------------
 // Bank transaction records
@@ -66,7 +81,8 @@ public sealed record BankTransactionDto(
     string Currency,
     string? ExternalRef,
     DateTimeOffset RecordedAt,
-    bool IsVoided);
+    bool IsVoided,
+    string? RecordedBy = null);
 
 // ---------------------------------------------------------------------------
 // Bank transaction seeding (development / demo use)

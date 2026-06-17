@@ -3,6 +3,7 @@ import {
   exportEvidenceManifest,
   getEvidencePacket,
   getEvidenceSubjects,
+  listEvidenceVaultRequestLists,
   validateEvidencePacket
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
@@ -29,6 +30,8 @@ import type {
   EvidenceSlaAssessment,
   EvidenceStatus,
   EvidenceSubject,
+  EvidenceVaultRequestListEntry,
+  EvidenceVaultRequestListQuery,
   WorkflowAction
 } from "@/types";
 
@@ -37,6 +40,7 @@ export interface EvidenceWorkbenchServices {
   getPacket: (subjectKind: string, subjectId: string, options?: ApiRequestOptions) => Promise<EvidencePacket>;
   validatePacket: (subjectKind: string, subjectId: string, options?: ApiRequestOptions) => Promise<EvidenceCompleteness>;
   exportManifest: (subjectKind: string, subjectId: string, options?: ApiRequestOptions) => Promise<EvidencePacketExportResponse>;
+  listRequestLists?: (query: EvidenceVaultRequestListQuery, options?: ApiRequestOptions) => Promise<EvidenceVaultRequestListEntry[]>;
 }
 
 export interface EvidenceNodeGroupViewModel {
@@ -286,6 +290,8 @@ export interface EvidenceVaultArtifactRowViewModel {
   hashLabel: string;
   sourceLabel: string;
   canonicalSubjectLabel: string;
+  captureLabel: string;
+  extractionLabel: string;
   retainedLabel: string;
   ariaLabel: string;
 }
@@ -319,6 +325,29 @@ export interface EvidenceVaultSupportRequestRowViewModel {
   ariaLabel: string;
 }
 
+export interface EvidenceVaultRequestListIndexPanelViewModel {
+  title: string;
+  description: string;
+  summaryLabel: string;
+  scopeLabel: string;
+  hasRows: boolean;
+  rows: EvidenceVaultRequestListIndexRowViewModel[];
+  emptyTitle: string;
+  emptyDetail: string;
+}
+
+export interface EvidenceVaultRequestListIndexRowViewModel extends EvidenceVaultRequestListRowViewModel {
+  vaultLabel: string;
+  subjectLabel: string;
+  openRequestCountLabel: string;
+  retainedLabel: string;
+  manifestHref: string | null;
+  manifestLabel: string | null;
+  manifestAriaLabel: string | null;
+  supportRequestSummaryLabel: string;
+  supportRequestRows: EvidenceVaultSupportRequestRowViewModel[];
+}
+
 export interface EvidenceWorkbenchViewModel {
   selectedSubjectKind: string | null;
   selectedSubjectId: string | null;
@@ -349,6 +378,7 @@ export interface EvidenceWorkbenchViewModel {
   generatedLabel: string;
   assurancePanel: EvidenceAssurancePanelViewModel;
   proofChainPanel: EvidenceProofChainPanelViewModel;
+  requestListPanel: EvidenceVaultRequestListIndexPanelViewModel;
   lineagePanel: EvidenceLineagePanelViewModel;
   nodeGroups: EvidenceNodeGroupViewModel[];
   hasPacketActions: boolean;
@@ -382,10 +412,23 @@ const defaultServices: EvidenceWorkbenchServices = {
   getSubjects: getEvidenceSubjects,
   getPacket: getEvidencePacket,
   validatePacket: validateEvidencePacket,
-  exportManifest: (subjectKind, subjectId, options) => exportEvidenceManifest(subjectKind, subjectId, { includeWarnings: true }, options)
+  exportManifest: (subjectKind, subjectId, options) => exportEvidenceManifest(subjectKind, subjectId, { includeWarnings: true }, options),
+  listRequestLists: listEvidenceVaultRequestLists
 };
 
 const noopReloadEvidence = () => {};
+
+function buildEvidenceVaultRequestListQuery(
+  subjectKind: string | null,
+  subjectId: string | null
+): EvidenceVaultRequestListQuery {
+  return {
+    subjectKind: subjectKind || null,
+    subjectId: subjectId || null,
+    status: "Open",
+    maxResults: subjectKind && subjectId ? 25 : 10
+  };
+}
 
 export function useEvidenceWorkbenchViewModel(
   search: string,
@@ -396,6 +439,7 @@ export function useEvidenceWorkbenchViewModel(
   const selectedSubjectId = params.get("subjectId");
   const [subjects, setSubjects] = useState<EvidenceSubject[]>([]);
   const [packet, setPacket] = useState<EvidencePacket | null>(null);
+  const [requestLists, setRequestLists] = useState<EvidenceVaultRequestListEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<EvidenceWorkbenchErrorState | null>(null);
   const [exportBusy, setExportBusy] = useState(false);
@@ -424,6 +468,7 @@ export function useEvidenceWorkbenchViewModel(
     setLoading(true);
     setError(null);
     setPacket(null);
+    setRequestLists([]);
     setExportResult(null);
     setValidationResult(null);
     setExportBusy(false);
@@ -431,11 +476,18 @@ export function useEvidenceWorkbenchViewModel(
 
     const load = async () => {
       try {
-        const subjectList = await services.getSubjects({ signal: controller.signal });
+        const requestListQuery = buildEvidenceVaultRequestListQuery(selectedSubjectKind, selectedSubjectId);
+        const listRequestLists: NonNullable<EvidenceWorkbenchServices["listRequestLists"]> =
+          services.listRequestLists ?? (() => Promise.resolve([]));
+        const [subjectList, requestListEntries] = await Promise.all([
+          services.getSubjects({ signal: controller.signal }),
+          listRequestLists(requestListQuery, { signal: controller.signal })
+        ]);
         if (requestRevisionRef.current !== revision) {
           return;
         }
         setSubjects(subjectList);
+        setRequestLists(requestListEntries);
 
         if (selectedSubjectKind && selectedSubjectId) {
           const nextPacket = await services.getPacket(selectedSubjectKind, selectedSubjectId, { signal: controller.signal });
@@ -552,6 +604,7 @@ export function useEvidenceWorkbenchViewModel(
     error,
     subjects,
     packet,
+    requestLists,
     exportBusy,
     exportResult,
     validateBusy,
@@ -570,6 +623,7 @@ export function buildEvidenceWorkbenchViewModel(input: {
   error: EvidenceWorkbenchErrorState | null;
   subjects: EvidenceSubject[];
   packet: EvidencePacket | null;
+  requestLists?: EvidenceVaultRequestListEntry[];
   exportBusy: boolean;
   exportResult: EvidencePacketExportResponse | null;
   validateBusy: boolean;
@@ -645,6 +699,12 @@ export function buildEvidenceWorkbenchViewModel(input: {
     generatedLabel: input.packet ? formatDate(input.packet.generatedAt) : "Not generated",
     assurancePanel: buildEvidenceAssurancePanel(completeness),
     proofChainPanel: buildEvidenceProofChainPanel(input.packet?.proofChain ?? null),
+    requestListPanel: buildEvidenceVaultRequestListIndexPanel(
+      input.requestLists ?? [],
+      hasSelection,
+      input.selectedSubjectKind,
+      input.selectedSubjectId
+    ),
     lineagePanel: buildEvidenceLineagePanel(input.packet?.edges ?? [], input.packet?.subject ?? null),
     nodeGroups: groupNodes(input.packet?.nodes ?? []),
     hasPacketActions: packetActions.length > 0,
@@ -702,6 +762,60 @@ export function buildEvidenceProofChainPanel(
       : "No proof-chain coverage",
     hasLayers: rows.length > 0,
     rows
+  };
+}
+
+function buildEvidenceVaultRequestListIndexPanel(
+  entries: EvidenceVaultRequestListEntry[],
+  hasSelection: boolean,
+  selectedSubjectKind: string | null,
+  selectedSubjectId: string | null
+): EvidenceVaultRequestListIndexPanelViewModel {
+  const rows = entries.map(buildVaultRequestListIndexRow);
+  const scopeLabel = hasSelection && selectedSubjectKind && selectedSubjectId
+    ? `${formatKind(selectedSubjectKind)} ${selectedSubjectId}`
+    : "All evidence subjects";
+  const summaryLabel = rows.length === 0
+    ? "No open request lists"
+    : rows.length === 1
+      ? "1 open request list"
+      : `${rows.length} open request lists`;
+
+  return {
+    title: "Evidence Vault request lists",
+    description: "Frozen support requests retained by Evidence Vault manifests and indexed by the shared workstation API.",
+    summaryLabel,
+    scopeLabel,
+    hasRows: rows.length > 0,
+    rows,
+    emptyTitle: hasSelection ? "No open request lists for this subject" : "No open request lists returned",
+    emptyDetail: hasSelection
+      ? "Retained support requests for the selected subject will appear here after an evidence manifest export freezes them."
+      : "Open close, audit, tax, report-package, and operator support requests will appear here after retained vault identities are available."
+  };
+}
+
+function buildVaultRequestListIndexRow(entry: EvidenceVaultRequestListEntry): EvidenceVaultRequestListIndexRowViewModel {
+  const base = buildVaultRequestListRow(entry);
+  const manifestHref = normalizeManifestRoute(entry.manifestRoute);
+  const supportRequestRows = (entry.supportRequests ?? []).map(buildVaultSupportRequestRow);
+  const openRequestCountLabel = entry.openRequestCount === 1
+    ? "1 open request"
+    : `${entry.openRequestCount} open requests`;
+  return {
+    ...base,
+    vaultLabel: entry.vaultId,
+    subjectLabel: `${formatKind(entry.subjectKind)} ${entry.subjectId}`,
+    openRequestCountLabel,
+    retainedLabel: `Retained ${formatDate(entry.retainedAt)}`,
+    manifestHref,
+    manifestLabel: manifestHref ? "Open manifest" : null,
+    manifestAriaLabel: manifestHref ? `Open retained manifest for request list ${entry.requestListId}` : null,
+    supportRequestSummaryLabel: supportRequestRows.length === 1
+      ? "1 support request"
+      : `${supportRequestRows.length} support requests`,
+    supportRequestRows,
+    ariaLabel: `${base.ariaLabel}. ${openRequestCountLabel}; vault ${entry.vaultId}; subject ${entry.subjectKind}/${entry.subjectId}`
   };
 }
 
@@ -1195,6 +1309,8 @@ function buildExportResultViewModel(result: EvidencePacketExportResponse | null)
 function buildVaultArtifactRow(artifact: NonNullable<EvidencePacketExportResponse["vaultIdentity"]>["artifacts"][number]): EvidenceVaultArtifactRowViewModel {
   const sourceLabel = artifact.sourceRoute ?? artifact.sourcePath ?? "No source";
   const canonicalSubjectLabel = formatCanonicalSubject(artifact.canonicalSubjectKind, artifact.canonicalSubjectId) ?? "No canonical subject";
+  const captureLabel = formatVaultArtifactCapture(artifact.capture);
+  const extractionLabel = formatVaultArtifactExtraction(artifact.extractedFields ?? []);
   return {
     id: artifact.artifactId,
     kind: formatKind(artifact.kind),
@@ -1203,9 +1319,37 @@ function buildVaultArtifactRow(artifact: NonNullable<EvidencePacketExportRespons
     hashLabel: artifact.contentHashSha256,
     sourceLabel,
     canonicalSubjectLabel,
+    captureLabel,
+    extractionLabel,
     retainedLabel: `Retained ${formatDate(artifact.retainedAt)}`,
-    ariaLabel: `${formatKind(artifact.kind)} retained vault artifact ${artifact.artifactId}, ${formatBytes(artifact.sizeBytes)}, ${canonicalSubjectLabel}`
+    ariaLabel: `${formatKind(artifact.kind)} retained vault artifact ${artifact.artifactId}, ${formatBytes(artifact.sizeBytes)}, ${canonicalSubjectLabel}, ${captureLabel}, ${extractionLabel}`
   };
+}
+
+function formatVaultArtifactCapture(
+  capture: NonNullable<EvidencePacketExportResponse["vaultIdentity"]>["artifacts"][number]["capture"]
+): string {
+  if (!capture) {
+    return "No capture metadata";
+  }
+
+  const channel = formatKind(capture.captureChannel);
+  const source = capture.sourceSystem ?? "unknown source";
+  const received = capture.receivedAt ? `received ${formatDate(capture.receivedAt)}` : "received time unknown";
+  const reference = capture.sourceReference ? `reference ${capture.sourceReference}` : "no source reference";
+  return `${channel} via ${source}; ${received}; ${reference}`;
+}
+
+function formatVaultArtifactExtraction(
+  fields: NonNullable<EvidencePacketExportResponse["vaultIdentity"]>["artifacts"][number]["extractedFields"]
+): string {
+  if (!fields || fields.length === 0) {
+    return "No extracted fields";
+  }
+
+  const validatedCount = fields.filter((field) => field.validationStatus === "Ready").length;
+  const reviewedCount = fields.filter((field) => field.reviewState.toLowerCase() === "reviewed").length;
+  return `${fields.length} extracted ${fields.length === 1 ? "field" : "fields"}; ${validatedCount} validated; ${reviewedCount} reviewed`;
 }
 
 function buildVaultRequestListRow(requestList: EvidenceRequestList): EvidenceVaultRequestListRowViewModel {

@@ -137,6 +137,11 @@
                                 Orientation="Horizontal"
                                 VerticalAlignment="Center"
                                 Margin="16,0,0,0">
+                        <Button Content="Start Demo / Sample Tour"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Command="{Binding StartDemoTourCommand}"
+                                AutomationProperties.AutomationId="StartupStartDemoTourButton"
+                                Margin="0,0,8,0" />
                         <Button Content="Open Welcome"
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 Command="{Binding NavigateCommand}"
@@ -145,6 +150,47 @@
                         <Button Content="Dismiss"
                                 Style="{StaticResource GhostButtonStyle}"
                                 Command="{Binding DismissStartupBannerCommand}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Border x:Name="DemoTourBanner"
+                    Visibility="{Binding DemoTourVisibility}"
+                    Padding="14,10"
+                    Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                    BorderBrush="{StaticResource InfoColorBrush}"
+                    BorderThickness="0,0,0,1"
+                    AutomationProperties.Name="Demo sample mode guided tour"
+                    AutomationProperties.AutomationId="DemoTourBanner">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{Binding DemoTourStepText}"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                        <TextBlock Text="{Binding DemoTourDetail}"
+                                   Margin="0,3,0,0"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                   TextWrapping="Wrap" />
+                        <TextBlock Text="DEMO / SAMPLE DATA ONLY — not provider-backed operational records."
+                                   Margin="0,5,0,0"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource InfoColorBrush}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                        <Button Content="Next"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Command="{Binding NextDemoTourStepCommand}"
+                                AutomationProperties.AutomationId="DemoTourNextButton"
+                                Margin="0,0,8,0" />
+                        <Button Content="End Tour"
+                                Style="{StaticResource GhostButtonStyle}"
+                                Command="{Binding EndDemoTourCommand}"
+                                AutomationProperties.AutomationId="DemoTourEndButton" />
                     </StackPanel>
                 </Grid>
             </Border>

@@ -11,6 +11,47 @@
     "version": "1.0.0"
   },
   "source_hash_manifest": "docs/source/generated/source-hash-manifest.json",
-  "stale_count": 0,
-  "stale_modules": []
+  "stale_count": 3,
+  "stale_modules": [
+    {
+      "module_id": "SRC-DESIGN-FINANCIAL-OPERATIONS",
+      "path": "src/Meridian.FinancialOperations",
+      "readme": "src/Meridian.FinancialOperations/README.md",
+      "reasons": [
+        "source_hash_drift",
+        "readme_hash_drift"
+      ],
+      "recommended_actions": [
+        "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
+        "review README changes and rerender generated blocks if needed",
+        "run validate-doc-hashes.py --write only after the docs/code alignment review is complete"
+      ]
+    },
+    {
+      "module_id": "SRC-UI",
+      "path": "src/Meridian.Ui",
+      "readme": "src/Meridian.Ui/README.md",
+      "reasons": [
+        "source_hash_drift"
+      ],
+      "recommended_actions": [
+        "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
+        "run validate-doc-hashes.py --write only after the docs/code alignment review is complete"
+      ]
+    },
+    {
+      "module_id": "SRC-UI-DASHBOARD",
+      "path": "src/Meridian.Ui/dashboard",
+      "readme": "src/Meridian.Ui/dashboard/README.md",
+      "reasons": [
+        "source_hash_drift",
+        "readme_hash_drift"
+      ],
+      "recommended_actions": [
+        "review source changes and update the nearest README, TODOs, diagrams, or registry if behavior changed",
+        "review README changes and rerender generated blocks if needed",
+        "run validate-doc-hashes.py --write only after the docs/code alignment review is complete"
+      ]
+    }
+  ]
 }

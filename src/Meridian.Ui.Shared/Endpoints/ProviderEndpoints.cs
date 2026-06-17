@@ -45,6 +45,7 @@ public static class ProviderEndpoints
     public static void MapProviderEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("").WithTags("Providers");
+        group.RequireWorkstationTenantScope();
 
         // Get all data sources
         group.MapGet(UiApiRoutes.ConfigDataSources, (ConfigStore store) =>

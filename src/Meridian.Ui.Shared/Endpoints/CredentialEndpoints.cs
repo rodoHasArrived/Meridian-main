@@ -18,6 +18,7 @@ public static class CredentialEndpoints
     public static void MapCredentialEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("").WithTags("Credentials");
+        group.RequireWorkstationTenantScope();
 
         group.MapGet(global::Meridian.Contracts.Api.UiApiRoutes.Credentials, async (
             HttpContext context,

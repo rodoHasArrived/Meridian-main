@@ -923,6 +923,8 @@ export interface ManualJournalPaymentIntentWorkflowRowViewModel {
   statusTone: "outline" | "success" | "warning" | "danger";
   requestedLabel: string;
   expectedCashLabel: string;
+  requestMetadataLabel: string;
+  sourceEvidenceLabel: string;
   approvalLabel: string;
   bankEvidenceLabel: string;
   reconciliationLabel: string;
@@ -955,6 +957,7 @@ export interface ManualJournalPaymentIntentBankEvidenceViewModel {
   amountLabel: string;
   effectiveDateLabel: string;
   recordedLabel: string;
+  recorderLabel: string;
   referenceLabel: string;
   evidenceRouteLabel: string;
 }
@@ -1109,6 +1112,9 @@ export interface CapitalAccountWorkbenchAuditDrillThroughRowViewModel {
   relatedLabel: string;
 }
 
+export type CapitalAccountWorkbenchFundEventCommandRowViewModel =
+  ManualJournalPrivateCapitalFundEventLedgerRecordViewModel;
+
 export interface CapitalAccountWorkbenchViewModel {
   title: string;
   description: string;
@@ -1125,6 +1131,7 @@ export interface CapitalAccountWorkbenchViewModel {
   allocationRules: CapitalAccountWorkbenchAllocationRuleRowViewModel[];
   statementLineage: CapitalAccountWorkbenchStatementLineageRowViewModel[];
   auditDrillThroughs: CapitalAccountWorkbenchAuditDrillThroughRowViewModel[];
+  fundEventCommandRows: CapitalAccountWorkbenchFundEventCommandRowViewModel[];
   validationIssues: AccountingConfigurationIssueViewModel[];
   liveCapabilities: string[];
   plannedCapabilities: string[];
@@ -3152,6 +3159,7 @@ function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | n
       allocationRules: [],
       statementLineage: [],
       auditDrillThroughs: [],
+      fundEventCommandRows: [],
       validationIssues: [],
       liveCapabilities: [],
       plannedCapabilities: []
@@ -3201,6 +3209,7 @@ function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | n
     allocationRules: workbench.allocationRules.map(buildCapitalAccountAllocationRuleRow),
     statementLineage: workbench.statementLineage.map(buildCapitalAccountStatementLineageRow),
     auditDrillThroughs: workbench.auditDrillThroughs.map(buildCapitalAccountAuditDrillThroughRow),
+    fundEventCommandRows: buildCapitalAccountFundEventCommandRows(workbench),
     validationIssues: workbench.validationIssues.map<AccountingConfigurationIssueViewModel>((issue, index) => ({
       id: `${issue.code}-${index}`,
       label: issue.code,
@@ -3211,6 +3220,30 @@ function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | n
     liveCapabilities: workbench.liveCapabilities,
     plannedCapabilities: workbench.plannedCapabilities
   };
+}
+
+function buildCapitalAccountFundEventCommandRows(
+  workbench: CapitalAccountWorkbench
+): CapitalAccountWorkbenchFundEventCommandRowViewModel[] {
+  const seen = new Set<string>();
+  const rows: CapitalAccountWorkbenchFundEventCommandRowViewModel[] = [];
+
+  for (const account of workbench.investorAccounts) {
+    for (const record of account.fundEventRecords) {
+      if (seen.has(record.fundEventId)) {
+        continue;
+      }
+
+      seen.add(record.fundEventId);
+      rows.push(buildManualJournalPrivateCapitalFundEventLedgerRecordRow(
+        record,
+        workbench.fundProfileId,
+        workbench.ledgerBookId
+      ));
+    }
+  }
+
+  return rows;
 }
 
 function buildCapitalAccountInvestorAccountRow(
@@ -3719,6 +3752,13 @@ function buildManualJournalPaymentIntentWorkflowRow(
       movement.effectiveDate,
       movement.settlementReference ?? "no settlement"
     ].join(" / "),
+    requestMetadataLabel: [
+      `payee ${movement.payee ?? "not assigned"}`,
+      `scope ${movement.accountScope ?? "not assigned"}`,
+      `purpose ${movement.businessPurpose ?? movement.purpose}`,
+      `policy ${movement.approvalPolicy ?? "not assigned"}`
+    ].join(" / "),
+    sourceEvidenceLabel: `${(movement.sourceEvidenceLinks ?? []).length.toLocaleString()} source evidence link(s)`,
     approvalLabel: `${approvedCount.toLocaleString()}/${workflow.approvalChain.length.toLocaleString()} approved`,
     bankEvidenceLabel: `${bankConfirmedCount.toLocaleString()} confirmed / ${bankRetainedCount.toLocaleString()} retained / ${bankReturnedCount.toLocaleString()} returned`,
     reconciliationLabel: `${reconciliationReadyCount.toLocaleString()}/${workflow.reconciliationLinks.length.toLocaleString()} reconciliation ready`,
@@ -3746,6 +3786,7 @@ function buildManualJournalPaymentIntentWorkflowRow(
         : "No amount",
       effectiveDateLabel: item.effectiveDate ?? "No effective date",
       recordedLabel: item.recordedAtUtc ? formatDateTimeLabel(item.recordedAtUtc) : "No recorded timestamp",
+      recorderLabel: item.recordedBy ? `Recorded by ${item.recordedBy}` : "No retained recorder",
       referenceLabel: [
         item.bankTransactionId ? `bank ${item.bankTransactionId}` : null,
         item.transactionType ?? null,

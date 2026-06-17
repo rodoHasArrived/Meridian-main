@@ -23,10 +23,15 @@ Use the documentation front door and audience paths for current guidance:
 - [Source Documentation Mesh](docs/source/README.md)
 - [AI Guide](docs/ai/README.md)
 - [Documentation Ownership Contract](docs/documentation-ownership.md)
+- [Developer setup](docs/developer/setup.md)
+- [Build/test/run](docs/developer/build-test-run.md)
+- [Standalone publish](docs/developer/publish-standalone-exe.md)
+- [Cleanup and maintenance](docs/operations/cleanup-and-maintenance.md)
+- [Design system usage](docs/design/design-system-usage.md)
 
 ## Current Product Direction
 
-The active delivery focus is the W1-W5 operational record baseline:
+The closed W1-W5 operational record baseline remains the delivery foundation:
 
 - trusted data confidence and retained source evidence,
 - research and paper-first validation,
@@ -36,7 +41,9 @@ The active delivery focus is the W1-W5 operational record baseline:
 - governed report packs and export evidence,
 - visible operator navigation limited to `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
 
-Deferred unless the roadmap explicitly reopens them: broad Backtesting Studio expansion, live-readiness beyond paper-first governance, full treasury payment execution, enterprise risk, client portal, no-code workflow design, mobile applications, and other lanes that do not directly strengthen the operational-record workflow.
+Current productization targets are `W5X-FREX-001` shared Financial Record Explorers and `W5X-FINOPS-001` Financial Operations control center. They use the closed W1-W5 evidence baseline without claiming the complete explorer suite or control center is already shipped.
+
+Deferred unless the roadmap explicitly reopens them: broad Backtesting Studio expansion, live-readiness beyond paper-first governance, full treasury payment execution, full alternative asset operations, forecasting and scenario engines, enterprise risk, client portal, no-code workflow design, mobile applications, and other lanes that do not directly strengthen the operational-record workflow.
 
 ## Repository Map
 

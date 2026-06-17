@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-10
+last_reviewed: 2026-06-16
 ---
 
 # src/Meridian.FinancialOperations
@@ -32,7 +32,7 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `OperationsContinuity/OperationsWorkflowAuditHashing.cs` - append-only workflow audit hash creation and chain validation.
 - `OperationsContinuity/OperationsApprovalPolicyMatrixService.cs` - server-owned approval-policy matrix, governed rule upsert validation, audit-event construction, and file-backed policy persistence.
 - `OperationsContinuity/OperationsCloseCalendarService.cs` - account-close calendar projection, governed due-date/owner overrides, and audit-event construction backed by Financial Operations policy.
-- `PrivateCapital/PrivateCapitalCloseCockpitService.cs` - private-capital close cockpit proof projection for partner capital tie-outs, expense/fee/allocation review, management-company operating records, NAV support packages, administrator-versus-Meridian shadow NAV tie-outs, close-package evidence, approval history, and period-lock readiness.
+- `PrivateCapital/PrivateCapitalCloseCockpitService.cs` - private-capital close cockpit proof projection for partner capital tie-outs, expense/fee/allocation review, management-company operating records, NAV support packages, administrator-versus-Meridian shadow NAV tie-outs, close-control checklist evidence, close-package evidence, approval history, and period-lock readiness.
 - `AccountingClose/` - deterministic journal posting, trial-balance projection, roll-forward,
   FX translation, source-linked audit rows, and period-close evidence gates.
 - `Ledger/AccountingPolicyService.cs` - accounting-basis policy creation, resolution, listing,
@@ -62,34 +62,100 @@ Statement reconciliation also lives here. Broker/custodian statement intake, map
 Operations Continuity reconciliation runs retain the canonical Financial Operations lane coverage
 for cash, position, trade, income, MBS factor, bank, and GL support. The workflow aggregate derives
 ready/review/blocked posture from retained run evidence plus open reconciliation breaks so close
-operators can review reconciliation completeness without browser or endpoint-local rules.
+operators can review reconciliation completeness without browser or endpoint-local rules. Lane
+classification uses structured break codes, sources, root-cause/output metadata, case correlation
+metadata, and retained evidence labels/routes instead of depending only on display strings. The
+bank reconciliation lane also recognizes retained payment confirmation, return, reversal, and
+cash-evidence break language so approved payment cash evidence stays a reconciliation input rather
+than live payment execution authority.
 The same workflow service now derives the source-backed Financial Operations operational dashboard
 from aggregate state. Its metrics cover Receive Activity, Match Records, Resolve Exceptions,
 Approve Results, Produce Evidence, and Close Support, including retained evidence, route hints, and
 required actions so UI surfaces consume a shared core-flow rollup instead of reconstructing
 dashboard state locally.
-It also derives evidence-package summaries for accounting-record evidence, report-pack readiness,
-close-package manifests, and audit-support packages from the same workflow, accounting-record,
-close-package, and retained timeline evidence. Package status and required actions remain Financial
-Operations-owned instead of being recalculated by endpoint or browser tables.
+It also derives the reviewed-automation summary from aggregate state and enforces the action-origin
+guard for material commands. Automation-origin and assistant-origin requests may carry suggestions,
+summaries, drafts, flags, and retained review evidence, but Security Master override approval,
+ledger posting, reconciliation break assignment, escalation, and resolution, approval submission or
+decision, close-package publication, and governed reopen commands fail closed unless the request
+origin is a human operator. Critical or material
+reconciliation breaks also require retained resolution evidence before the aggregate can clear the
+exception and advance approval posture. When report-pack evidence is ready but not yet submitted for
+approval, the same summary surfaces report-commentary and audit-request-list drafts as review-only
+work so publication remains behind human approval. Already closed reconciliation breaks reject
+duplicate resolution or reassignment commands so retained case evidence and audit history cannot be
+mutated after closure. Break assignment, escalation, and resolution commands also refresh the
+derived reconciliation lane summaries so active-work queues, dashboards, and evidence tables do not
+show stale break counts, required actions, or retained assignment/resolution evidence after
+exception work. Lane required actions are derived from retained open break casework, including
+source suggested actions, unassigned owner counts, escalation state, and blocked output names, so
+MBS factor, income, bank, GL, and other reconciliation lanes keep exception-management guidance
+without browser-local reconstruction. The dashboard Match Records and Resolve Exceptions metrics
+roll those non-ready lane and open-break actions into the shared operational dashboard summary,
+capped for scanability, so operators see specific cash, income, MBS factor, bank, GL, owner,
+escalation, or blocked-output remediation work before approval instead of generic lane-completion
+or exception prompts. Approve Results actions are likewise derived from report-pack readiness,
+assigned reviewer state, approval history, and the same close checklist-control task IDs enforced by
+the workflow aggregate, so submission and reviewer-decision work stays traceable without UI-local
+approval rules. The same dashboard also derives Close Support actions from the close-readiness
+blocker categories, so provider freshness, ledger posting, reconciliation, reporting, approval, and
+period-lock work remain tied to the shared close checklist instead of a catch-all close prompt. The
+Produce Evidence metric also rolls up incomplete evidence-package actions from accounting-record,
+reconciliation-coverage, exception-management, report-pack, close-manifest, approval-history,
+audit-support, and period-lock packages so retained evidence work stays source-backed through the
+final dashboard stage. A governed
+reopen retains the prior close-package manifest as evidence, but the operational dashboard no longer
+treats that retained package as a current period lock; Produce Evidence remains in review until
+incident remediation is closed again with a new retained period-lock package.
+It also derives evidence-package summaries for accounting-record evidence, reconciliation coverage,
+exception-management casework, report-pack readiness, close-package manifests, approval history,
+audit-support packages, and period lock/reopen evidence from the same workflow, accounting-record,
+close-package, lane, and retained timeline evidence. The reconciliation-coverage evidence package
+makes cash, position, trade, income, MBS factor, bank, and GL support lane completeness visible as a
+first-class audit package. The exception-management evidence package makes reconciliation-run case
+inventory, open exception posture, assignment/escalation evidence, and resolution evidence visible
+as a first-class audit package. The approval-history evidence package makes workflow
+submission, reviewer decision, and retained checklist-control approvals visible as a first-class
+evidence package before audit release. Package status and required actions remain Financial
+Operations-owned instead of being recalculated by endpoint or browser tables. Close-package evidence
+hashes are computed by the workflow aggregate from the published package identifiers, report pack,
+retained evidence links, and checklist-control approvals; request-supplied hashes are compatibility
+input only and are not trusted as retained audit evidence.
 Private-capital close cockpit proof also lives here. `PrivateCapitalCloseCockpitService` composes
 the shared private-capital activity projection with Operations Continuity workflow detail to derive
 data receipt, reconciliation, journal posting, capital-account, partner-capital tie-out,
 expense/fee/allocation, management-company operating records, NAV support, valuation, reporting,
-delivery, close-package, and period-lock lanes plus approval history and NAV support package rows.
+delivery, close-control checklist, close-package, and period-lock lanes plus approval history and
+NAV support package rows. The journal lane requires every source-backed fund-event record in the
+close scope to be posted with ledger impact before it can pass. The close-control lane requires
+retained checklist evidence and required control approvals for reversal approval, recurring-journal
+completion, stale-mark resolution, and period lock or governed reopen proof before a closed workflow
+can make the cockpit ready. Reporting, delivery, and partner-capital tie-out lanes require approved
+report outputs and retained delivery manifests, so published but unapproved statements cannot make a
+close package ready. Approval history includes workflow approvals, checklist-control approvals,
+governed reopen approvals retained from the workflow timeline, fund-event approvals, and governed
+report-output decisions so close reviewers can trace source, journal, report, NAV, period-reopen,
+and administrator-tie-out approval evidence from one shared cockpit.
+It also publishes explicit private-capital evidence package summaries for fund-event accounting,
+expense/fee/allocation review, partner capital tie-outs, NAV support, and close approval/audit
+evidence so operator surfaces can inspect package completeness without rebuilding lane rules
+locally.
 The management-company lane is read-only proof for retained expense allocation, management-fee,
 intercompany, bank/card, budget or cash-plan, and reimbursement evidence; missing source support
 keeps the lane in review instead of inventing ERP-like balances. The NAV support lane now requires
 retained administrator NAV evidence tied against Meridian shadow NAV within tolerance before close
 readiness can pass. UI Shared maps the route and WPF registers the contract, but Financial
-Operations owns the readiness rules and retained evidence posture.
+Operations owns the readiness rules and retained evidence posture. The close cockpit consumes the
+workflow-owned period-lock/reopen evidence package as authoritative period-lock proof, so a closed
+workflow with a close package still remains in review when governed reopen remediation has not been
+re-locked with retained evidence.
 
 Portfolio-vs-ledger reconciliation engine behavior also lives here. The engine enriches
 portfolio/ledger candidates with the contracts-owned Security Master query surface and classifies
 matches and breaks through the F# ledger reconciliation kernel instead of Application-local
 service/logging ownership.
 
-Accounting-system GL evidence integration lives here as provider-neutral Financial Operations behavior. The integration service lists accounting-system providers, chooses configured QuickBooks Online evidence when available, falls back to the read-only fixture provider when live company evidence is not configured, retains latest imports by provider/fund/book, and reconciles external trial-balance rows against Meridian-owned ledger totals when a ledger store is available. UI Shared maps endpoints and supplies credential-backed provider registration, but it does not own GL evidence reconciliation or posting-disable posture.
+Accounting-system GL evidence integration lives here as provider-neutral Financial Operations behavior. The integration service lists accounting-system providers, chooses configured QuickBooks Online evidence when available, falls back to the read-only fixture provider when live company evidence is not configured, retains latest imports by provider/fund/book, and reconciles external trial-balance rows against Meridian-owned ledger totals when a ledger store is available. Reconciliation rows retain both provider-side evidence refs and Meridian ledger-entry, journal-entry, period, and source refs; the summary also publishes external-import, Meridian-ledger, and tie-out evidence package posture so close support can distinguish missing ledger proof from unresolved GL breaks. The tie-out evidence package classifies missing-external, missing-Meridian, and variance breaks into operator required actions for assignment, retained provider support, ledger remediation, and close approval evidence. UI Shared maps endpoints and supplies credential-backed provider registration, but it does not own GL evidence reconciliation or posting-disable posture.
 
 Accounting close projections live here as deterministic Financial Operations behavior. Journal
 posting, FX translation, trial-balance, roll-forward, source-linked audit, and close evidence gates
@@ -108,7 +174,19 @@ before browser, WPF, storage, or reporting surfaces inspect them.
 Payment approval and bank-transaction records also live here. `IBankingService` publishes the
 approval workflow and `IBankTransactionSource` evidence surface used by reconciliation, Plaid
 workstation flows, and Direct Lending tests without making Direct Lending own bank-side
-transaction state.
+transaction state. Approval and rejection requests carry the reviewed-automation action origin so
+assistant or automation-origin drafts can be rejected before payment approval state changes. Payment
+approval no longer records bank-side transactions by itself; retained bank confirmation, return,
+reversal, or failure evidence is recorded through an explicit bank-evidence command after approval,
+and that bank-side transaction retains the operator that recorded the evidence. The bank-evidence
+command also carries reviewed-automation action origin and rejects assistant or automation-origin
+requests before the cash-evidence record is retained. This keeps payment work in the
+request/approval/cash-evidence lane rather than treating approval as live payment execution.
+Operations Continuity also projects reviewed-automation output artifacts for extraction, match
+suggestion, journal draft, report commentary, audit request list, missing-support, and evidence
+summary review stages. These artifacts are review rows backed by retained workflow evidence; they
+do not create a path for assistant-origin posting, approval, payment release, report publication, or
+evidence deletion.
 
 ## Diagrams
 
@@ -148,7 +226,7 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 
 ### API and contract notes
 
-`IOperationsContinuityWorkflowService` publishes account-period close workflow commands and reads. `IOperationsContinuityRepository`, `IOperationsWorkflowAuditStore`, `IOperationsContinuityWorkflowStartCommitStore`, and `IOperationsContinuityTransactionalCommitStore` publish workflow persistence and transactional audit/ledger commit contracts. `IOperationsApprovalPolicyMatrixService` publishes the policy matrix consumed by shared workstation endpoints. `IOperationsCloseCalendarService` publishes close-calendar reads and governed item upserts. `IPrivateCapitalCloseCockpitService` is implemented here to publish the contract-owned close cockpit projection while endpoints remain in UI Shared. Accounting-close services publish journal posting, FX translation, trial-balance, roll-forward, and evidence-gate projections. `IAccountingPolicyService` and `IAccountingBasisProjectionService` publish accounting-basis policy lookup and ledger write metadata projection for application workflows. `LedgerTextJournalReportService` publishes CLI-facing text-journal parsing and report rendering. `AccountingSystemIntegrationService` publishes provider listing, import preview/latest import, and latest external-GL reconciliation reads over `IAccountingSystemProvider` contracts. `IBankingService` publishes payment approval and bank-transaction workflows over `Meridian.Contracts.Banking` DTOs. `IStatementRunWorkflowService`, `IStatementReconciliationService`, `IStatementReconciliationOrchestrator`, `IStatementValidationService`, and reconciliation repository contracts publish statement intake, validation, matching, persistence, and casework orchestration for commands and UI services. DTOs remain in `Meridian.Contracts.Workstation`, `Meridian.Contracts.AccountingSystem`, `Meridian.Contracts.Banking`, and `Meridian.Contracts.Ledger`; authorization roles and permissions come from `Meridian.Identity.Auth`; durable local writes use `Meridian.Storage.Archival.AtomicFileWriter` and banking persistence uses `Meridian.Storage.Banking`.
+`IOperationsContinuityWorkflowService` publishes account-period close workflow commands and reads. `IOperationsContinuityRepository`, `IOperationsWorkflowAuditStore`, `IOperationsContinuityWorkflowStartCommitStore`, and `IOperationsContinuityTransactionalCommitStore` publish workflow persistence and transactional audit/ledger commit contracts. `IOperationsApprovalPolicyMatrixService` publishes the policy matrix consumed by shared workstation endpoints. `IOperationsCloseCalendarService` publishes close-calendar reads and governed item upserts. `IPrivateCapitalCloseCockpitService` is implemented here to publish the contract-owned close cockpit projection while endpoints remain in UI Shared. Accounting-close services publish journal posting, FX translation, trial-balance, roll-forward, and evidence-gate projections. `IAccountingPolicyService` and `IAccountingBasisProjectionService` publish accounting-basis policy lookup and ledger write metadata projection for application workflows. `LedgerTextJournalReportService` publishes CLI-facing text-journal parsing and report rendering. `AccountingSystemIntegrationService` publishes provider listing, import preview/latest import, and latest external-GL reconciliation reads over `IAccountingSystemProvider` contracts. `IBankingService` publishes payment approval records, direct payment lookup, explicit bank-evidence recording, and bank-transaction evidence workflows over `Meridian.Contracts.Banking` DTOs. `IStatementRunWorkflowService`, `IStatementReconciliationService`, `IStatementReconciliationOrchestrator`, `IStatementValidationService`, and reconciliation repository contracts publish statement intake, validation, matching, persistence, and casework orchestration for commands and UI services. DTOs remain in `Meridian.Contracts.Workstation`, `Meridian.Contracts.AccountingSystem`, `Meridian.Contracts.Banking`, and `Meridian.Contracts.Ledger`; authorization roles and permissions come from `Meridian.Identity.Auth`; durable local writes use `Meridian.Storage.Archival.AtomicFileWriter` and banking persistence uses `Meridian.Storage.Banking`.
 
 ### Migration and archive notes
 

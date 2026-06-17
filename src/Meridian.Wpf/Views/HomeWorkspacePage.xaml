@@ -1,0 +1,113 @@
+<Page x:Class="Meridian.Wpf.Views.HomeWorkspacePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:controls="clr-namespace:Meridian.Wpf.Controls"
+      mc:Ignorable="d"
+      d:DesignHeight="900"
+      d:DesignWidth="1400"
+      Loaded="OnLoaded"
+      Background="{DynamicResource ConsoleBackgroundBrush}"
+      AutomationProperties.AutomationId="HomeWorkspacePage"
+      AutomationProperties.Name="Home workspace">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+        <StackPanel MaxWidth="1400">
+            <Border Style="{StaticResource WorkstationPageBandStyle}" Padding="24" Margin="0,0,0,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="Home" Style="{StaticResource PageTitleStyle}" />
+                        <TextBlock Text="Start here for provider health, data freshness, reconciliation, approvals, accounting/reporting readiness, and recent activity before opening deep task workspaces."
+                                   Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                        <TextBlock Text="{Binding SummaryText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,12,0,0" />
+                        <TextBlock Text="{Binding GeneratedAtText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,4,0,0" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="Refresh" Command="{Binding RefreshCommand}" Padding="18,8" VerticalAlignment="Top" />
+                </Grid>
+            </Border>
+
+            <ItemsControl ItemsSource="{Binding Sections}" AutomationProperties.AutomationId="HomeWorkspaceSections">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Style="{StaticResource WorkstationTablePanelStyle}" Width="430" MinHeight="230" Margin="0,0,16,16" Padding="16">
+                            <StackPanel>
+                                <controls:SectionHeaderBar Title="{Binding Title}" Subtitle="{Binding Description}" BadgeText="Readiness" BadgeTone="Info" />
+                                <ItemsControl ItemsSource="{Binding Items}" Margin="0,12,0,0">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="{StaticResource ConsoleBorderBrush}" BorderThickness="0,0,0,1" Padding="0,8">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                                                        <TextBlock Text="{Binding Detail}" TextWrapping="Wrap" Style="{StaticResource CardDescriptionStyle}" Margin="0,3,0,0" />
+                                                    </StackPanel>
+                                                    <controls:ToneBadge Grid.Column="1" Text="{Binding StatusLabel}" Tone="{Binding Tone}" Margin="12,0,0,0" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Border Style="{StaticResource WorkstationPageBandStyle}" Padding="18" Margin="0,4,0,16">
+                <StackPanel>
+                    <TextBlock Text="Open root workspace" Style="{StaticResource CardHeaderStyle}" />
+                    <ItemsControl ItemsSource="{Binding WorkspaceNavigationItems}" Margin="0,12,0,0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Command="{Binding NavigateCommand}" Margin="0,0,10,10" Padding="14,10" MinWidth="150">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding Detail}" TextWrapping="Wrap" FontSize="11" Opacity="0.75" />
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource WorkstationTablePanelStyle}" Padding="18">
+                <StackPanel>
+                    <TextBlock Text="Recent activity" Style="{StaticResource CardHeaderStyle}" />
+                    <ItemsControl ItemsSource="{Binding RecentActivity}" Margin="0,10,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="180" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding WorkspaceTitle}" FontWeight="SemiBold" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Detail}" TextWrapping="Wrap" />
+                                    <controls:ToneBadge Grid.Column="2" Text="{Binding Label}" Tone="{Binding Tone}" Margin="12,0,0,0" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

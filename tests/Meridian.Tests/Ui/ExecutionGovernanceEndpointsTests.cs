@@ -167,7 +167,12 @@ public sealed class ExecutionGovernanceEndpointsTests
             entry.AuditId == "audit-order-submitted" &&
             entry.ObjectKind == "Order" &&
             entry.ObjectId == "order-live-1" &&
-            entry.RelatedObjectIds!.Contains("run-live"));
+            entry.RelatedObjectIds!.Contains("run-live") &&
+            entry.ActionLedgerSource == "ExecutionAuditTrail" &&
+            entry.ActionLedgerSequence == 2 &&
+            entry.CurrentActionHash != null &&
+            entry.CurrentActionHash.Length == 64 &&
+            entry.ActionLedgerStatus == "WalRetained");
     }
 
     [Fact]

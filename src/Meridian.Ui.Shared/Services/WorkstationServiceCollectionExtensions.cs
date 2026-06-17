@@ -72,7 +72,9 @@ public static class WorkstationServiceCollectionExtensions
         });
 
         services.AddHttpClient();
+        services.AddHttpContextAccessor();
         services.AddMemoryCache();
+        services.TryAddScoped<IWorkstationTenantContextAccessor, HttpContextWorkstationTenantContextAccessor>();
         services.TryAddSingleton<IRolePermissionProfileStore, FileRolePermissionProfileStore>();
         services.TryAddSingleton<IUserAccountStore, FileUserAccountStore>();
         if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING")))
@@ -150,6 +152,11 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton(BrokerageConnectionOptions.RobinhoodFromEnvironment());
         services.TryAddSingleton<BrokerageConnectionService>();
         services.TryAddSingleton<AlpacaBrokerageConnectionService>();
+        foreach (var handler in DefaultProviderSetupHandlers.Create())
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IProviderSetupHandler), handler));
+        }
+        services.TryAddSingleton<IProviderSetupRegistry, ProviderSetupRegistry>();
         services.TryAddSingleton<ProviderConnectionLifecycleService>();
         services.TryAddSingleton<ProviderReadinessService>();
         services.TryAddSingleton<IQuickBooksOnlineConnectionStore, QuickBooksOnlineProviderCredentialConnectionStore>();

@@ -654,6 +654,9 @@ export interface UserAccessAssignment {
   revokedAtUtc?: string | null;
   revocationReason?: string | null;
   lastAuditId?: string | null;
+  approvalLimitAmount?: number | null;
+  approvalLimitCurrency?: string | null;
+  segregationOfDutiesRule?: string | null;
 }
 
 export interface UserAccessAssignmentCreateRequest {
@@ -668,6 +671,9 @@ export interface UserAccessAssignmentCreateRequest {
   effectiveTo?: string | null;
   requestedBy: string;
   rationale: string;
+  approvalLimitAmount?: number | null;
+  approvalLimitCurrency?: string | null;
+  segregationOfDutiesRule?: string | null;
   correlationId?: string | null;
 }
 
@@ -700,6 +706,9 @@ export interface UserAccessAssignmentAuditEvent {
   permissionNames: string[];
   permissionMask: number;
   version: number;
+  approvalLimitAmount?: number | null;
+  approvalLimitCurrency?: string | null;
+  segregationOfDutiesRule?: string | null;
 }
 
 export interface UserAccessAssignmentMutationResult {
@@ -1349,6 +1358,33 @@ export interface OperationsEvidencePackageSummary {
   requiredActions?: string[] | null;
 }
 
+export interface OperationsReviewedAutomationSummary {
+  summaryId: string;
+  stage: string;
+  status: EvidenceStatus;
+  requiresHumanReview: boolean;
+  summary: string;
+  allowedUseCases: string[];
+  prohibitedActions: string[];
+  evidenceLinks: OperationsEvidenceLink[];
+  requiredActions?: string[] | null;
+  artifacts?: OperationsReviewedAutomationArtifact[] | null;
+}
+
+export interface OperationsReviewedAutomationArtifact {
+  artifactId: string;
+  artifactKind: string;
+  title: string;
+  status: EvidenceStatus;
+  requiresHumanReview: boolean;
+  confidencePercent?: number | null;
+  sourceSummary: string;
+  suggestedOperatorAction: string;
+  blockedMaterialAction: string;
+  evidenceLinks: OperationsEvidenceLink[];
+  reviewChecklist?: string[] | null;
+}
+
 export interface OperationsContinuityWorkflow extends OperationsContinuityWorkflowSummary {
   brokerIntakeState: OperationsBrokerIntakeState;
   securityMasterState: OperationsSecurityMasterState;
@@ -1365,10 +1401,149 @@ export interface OperationsContinuityWorkflow extends OperationsContinuityWorkfl
   closePackage: OperationsClosePackagePublication | null;
   dashboardSummary?: OperationsDashboardSummary | null;
   evidencePackages?: OperationsEvidencePackageSummary[] | null;
+  reviewedAutomation?: OperationsReviewedAutomationSummary | null;
   accountingRecordSummary?: OperationsAccountingRecordSummary | null;
   reconciliationLanes?: OperationsReconciliationLaneSummary[] | null;
   evidenceLinks: OperationsEvidenceLink[];
   blockers: OperationsWorkflowBlocker[];
+}
+
+export type OperationsActionOrigin =
+  | "HumanOperator"
+  | "AutomationSuggestion"
+  | "AssistantDraft"
+  | "AutomationAssistant";
+
+export interface OperationsStartWorkflowRequest {
+  fundAccountId: string;
+  periodId: string;
+  securityMasterSnapshotId?: string | null;
+  brokerSource?: string | null;
+  actor: string;
+  rationale?: string | null;
+  correlationId?: string | null;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+}
+
+export interface OperationsTransitionRequest {
+  expectedVersion: number;
+  actor: string;
+  rationale?: string | null;
+  correlationId?: string | null;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+  evidenceReferenceIds?: string[] | null;
+}
+
+export interface OperationsGatePostureRequest extends OperationsTransitionRequest {
+  providerAccountLinked?: boolean | null;
+  providerSyncStale?: boolean | null;
+  securityCoverageIssueCount?: number | null;
+  securityAccountingIssueCount?: number | null;
+  ledgerPreviewAvailable?: boolean | null;
+  ledgerDraftBalanced?: boolean | null;
+  ledgerPostingValidated?: boolean | null;
+  openCriticalBreakCount?: number | null;
+  openNonCriticalBreakCount?: number | null;
+  reportPackReady?: boolean | null;
+  reportPackId?: string | null;
+  providerRequiredCapabilityGaps?: string[] | null;
+  providerDegradedCapabilityGaps?: string[] | null;
+}
+
+export interface OperationsSecurityMasterResolveRequest {
+  expectedVersion: number;
+  actor: string;
+  rationale?: string | null;
+  correlationId?: string | null;
+  unresolvedInstrumentCount?: number;
+  overrideRequestCount?: number;
+  overridesApproved?: boolean;
+  missingAccountingTermCount?: number;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+}
+
+export interface OperationsSecurityMasterOverrideApprovalRequest {
+  expectedVersion: number;
+  actor: string;
+  overrideId: string;
+  rationale: string;
+  policyReference: string;
+  expiresOn?: string | null;
+  correlationId?: string | null;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+  actionOrigin?: OperationsActionOrigin | null;
+}
+
+export interface OperationsLedgerDraftRequest {
+  expectedVersion: number;
+  actor: string;
+  previewId: string;
+  isBalanced: boolean;
+  rationale?: string | null;
+  correlationId?: string | null;
+  hasSecurityMasterProvenance?: boolean;
+  hasIdempotencyKey?: boolean;
+  ledgerBatchId?: string | null;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+  hasSecurityMasterApproval?: boolean;
+  hasLedgerMappings?: boolean;
+}
+
+export interface OperationsLedgerValidationRequest {
+  expectedVersion: number;
+  actor: string;
+  isBalanced: boolean;
+  periodOpen: boolean;
+  hasDuplicatePostingCandidate?: boolean;
+  rationale?: string | null;
+  correlationId?: string | null;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+}
+
+export interface OperationsLedgerPostRequest {
+  expectedVersion: number;
+  actor: string;
+  ledgerBatchId: string;
+  postingKind: string;
+  periodOpen: boolean;
+  hasValidatedJournal?: boolean;
+  hasDuplicatePostingCandidate?: boolean;
+  rationale?: string | null;
+  correlationId?: string | null;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+  journalCandidate?: Record<string, unknown> | null;
+  actionOrigin?: OperationsActionOrigin | null;
+}
+
+export interface OperationsReconciliationRunRequest {
+  expectedVersion: number;
+  actor: string;
+  rationale?: string | null;
+  correlationId?: string | null;
+  breakCases?: OperationsBreakCase[] | null;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+  securityCoverageIssueCount?: number | null;
+  securityAccountingIssueCount?: number | null;
+  expectedAccountingEventCount?: number | null;
+  expectedJournalPreviewCount?: number | null;
+  sourceRunId?: string | null;
+  reconciliationRunId?: string | null;
+  bankEntityId?: string | null;
+  amountTolerance?: number | null;
+  maxAsOfDriftMinutes?: number | null;
+  reconciliationLanes?: OperationsReconciliationLaneSummary[] | null;
+}
+
+export interface OperationsSubmitApprovalRequest {
+  expectedVersion: number;
+  actor: string;
+  reviewer: string;
+  rationale: string;
+  reportPackId: string;
+  correlationId?: string | null;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+  checklistControlApprovals?: OperationsChecklistControlApproval[] | null;
+  actionOrigin?: OperationsActionOrigin | null;
 }
 
 export interface OperationsApprovalDecisionRequest {
@@ -1380,6 +1555,7 @@ export interface OperationsApprovalDecisionRequest {
   correlationId?: string | null;
   evidenceLinks?: OperationsEvidenceLink[] | null;
   checklistControlApprovals?: OperationsChecklistControlApproval[] | null;
+  actionOrigin?: OperationsActionOrigin | null;
 }
 
 export interface OperationsRejectWorkflowRequest {
@@ -1390,6 +1566,7 @@ export interface OperationsRejectWorkflowRequest {
   reasonCode: string;
   correlationId?: string | null;
   evidenceLinks?: OperationsEvidenceLink[] | null;
+  actionOrigin?: OperationsActionOrigin | null;
 }
 
 export interface OperationsAssignBreakCaseRequest {
@@ -1402,6 +1579,17 @@ export interface OperationsAssignBreakCaseRequest {
   dueDate?: string | null;
   correlationId?: string | null;
   evidenceLinks?: OperationsEvidenceLink[] | null;
+  actionOrigin?: OperationsActionOrigin | null;
+}
+
+export interface OperationsResolveBreakCaseRequest {
+  expectedVersion: number;
+  actor: string;
+  resolutionStatus: string;
+  rationale: string;
+  correlationId?: string | null;
+  evidenceLinks?: OperationsEvidenceLink[] | null;
+  actionOrigin?: OperationsActionOrigin | null;
 }
 
 export interface OperationsCloseWorkflowRequest {
@@ -1416,6 +1604,7 @@ export interface OperationsCloseWorkflowRequest {
   closePackageManifestId?: string | null;
   closePackageEvidenceHash?: string | null;
   closePackageRetainedManifestRoute?: string | null;
+  actionOrigin?: OperationsActionOrigin | null;
 }
 
 export interface OperationsReopenWorkflowRequest {
@@ -1429,6 +1618,14 @@ export interface OperationsReopenWorkflowRequest {
   impactSummary?: string | null;
   correlationId?: string | null;
   evidenceLinks?: OperationsEvidenceLink[] | null;
+  actionOrigin?: OperationsActionOrigin | null;
+}
+
+export interface OperationsChecklistAcknowledgeRequest {
+  expectedVersion: number;
+  actor: string;
+  rationale: string;
+  correlationId?: string | null;
 }
 
 export interface OperationsTransitionResult {
@@ -1478,8 +1675,22 @@ export interface OperationsChecklistControlApproval {
 export interface OperationsCloseReadiness {
   isReadyToClose: boolean;
   severity: string;
+  score: number;
+  components: OperationsCloseReadinessComponent[];
   blockers: OperationsCloseReadinessBlocker[];
   nextActions: OperationsNextAction[];
+}
+
+export interface OperationsCloseReadinessComponent {
+  key: string;
+  label: string;
+  score: number;
+  weight: number;
+  isReady: boolean;
+  severity: string;
+  blockingReason: string | null;
+  gate: OperationsGateKey | null;
+  routeHint: string | null;
 }
 
 export interface OperationsCloseReadinessBlocker {
@@ -1631,6 +1842,29 @@ export interface EvidenceArtifactRef {
   retained: boolean;
   canonicalSubjectKind?: string | null;
   canonicalSubjectId?: string | null;
+  capture?: EvidenceArtifactCapture | null;
+  extractedFields?: EvidenceArtifactExtractionField[];
+}
+
+export interface EvidenceArtifactCapture {
+  captureChannel: string;
+  sourceSystem: string | null;
+  receivedAt: string | null;
+  receivedBy: string | null;
+  sourceReference: string | null;
+  receiptHash: string | null;
+}
+
+export interface EvidenceArtifactExtractionField {
+  fieldName: string;
+  extractedValue: string | null;
+  expectedValue: string | null;
+  confidenceScore: number | null;
+  reviewState: string;
+  validationStatus: EvidenceStatus;
+  validationMessage: string | null;
+  linkedRecordKind: string | null;
+  linkedRecordId: string | null;
 }
 
 export interface EvidenceNode {
@@ -1643,6 +1877,7 @@ export interface EvidenceNode {
   summary: string;
   artifactRefs: EvidenceArtifactRef[];
   relatedWorkItemIds: string[];
+  metadata?: Record<string, string> | null;
 }
 
 export interface EvidenceEdge {
@@ -1833,6 +2068,8 @@ export interface EvidenceVaultArtifact {
   sourceRoute: string | null;
   canonicalSubjectKind: string | null;
   canonicalSubjectId: string | null;
+  capture?: EvidenceArtifactCapture | null;
+  extractedFields?: EvidenceArtifactExtractionField[];
 }
 
 export interface EvidenceSupportRequest {
@@ -1860,6 +2097,26 @@ export interface EvidenceRequestList {
   evidenceKinds: string[];
   blockedOutputs: string[];
   summary: string;
+}
+
+export interface EvidenceVaultRequestListQuery {
+  requestListKind?: string | null;
+  targetKind?: string | null;
+  targetId?: string | null;
+  status?: string | null;
+  subjectKind?: string | null;
+  subjectId?: string | null;
+  maxResults?: number | null;
+}
+
+export interface EvidenceVaultRequestListEntry extends EvidenceRequestList {
+  openRequestCount: number;
+  vaultId: string;
+  subjectKind: string;
+  subjectId: string;
+  manifestRoute: string;
+  retainedAt: string;
+  supportRequests: EvidenceSupportRequest[];
 }
 
 export interface EvidenceLifecycleMetadata {
@@ -2304,6 +2561,7 @@ export type AccountingSystemReconciliationStatus =
   | "MissingExternal"
   | "MissingMeridian"
   | "ReviewRequired";
+export type AccountingSystemEvidencePackageStatus = "Ready" | "ReviewRequired" | "Missing";
 
 export interface AccountingSystemProvider {
   providerId: string;
@@ -2424,6 +2682,18 @@ export interface AccountingSystemReconciliationRow {
   variance: number;
   detail: string;
   evidenceRef: string | null;
+  externalEvidenceReferences?: string[];
+  meridianEvidenceReferences?: string[];
+  evidenceReferences?: string[];
+}
+
+export interface AccountingSystemReconciliationEvidencePackage {
+  packageId: string;
+  label: string;
+  status: AccountingSystemEvidencePackageStatus;
+  evidenceReferenceCount: number;
+  evidenceReferences: string[];
+  requiredActions: string[];
 }
 
 export interface AccountingSystemReconciliationSummary {
@@ -2444,6 +2714,7 @@ export interface AccountingSystemReconciliationSummary {
   postingDisabledReason: string;
   rows: AccountingSystemReconciliationRow[];
   evidenceReferences: string[];
+  evidencePackages?: AccountingSystemReconciliationEvidencePackage[];
 }
 
 export interface BrokerageHouseholdAccount {
@@ -3231,6 +3502,17 @@ export interface PortfolioReportingCut {
   versionStamp: string | null;
 }
 
+export interface PortfolioReportingLiveViewFreshnessPolicy {
+  policyName: string;
+  evaluatedAtUtc: string;
+  sourceAgeSeconds: number | null;
+  liveLinkWindowSeconds: number;
+  staleWindowSeconds: number;
+  isWithinLiveLinkWindow: boolean;
+  isBeyondStaleWindow: boolean;
+  reason: string;
+}
+
 export interface PortfolioReportingLiveView {
   viewId: string;
   label: string;
@@ -3260,6 +3542,7 @@ export interface PortfolioReportingLiveView {
   marketDataProvider?: string | null;
   tickFreshnessSummary?: string | null;
   isMarketTickLinked?: boolean;
+  freshnessPolicy?: PortfolioReportingLiveViewFreshnessPolicy | null;
 }
 
 export interface PortfolioReportingPnlSlice {
@@ -3388,6 +3671,28 @@ export interface ReportingTemplateGridFieldMetadata {
   dataType: string;
   dataset: string;
   description?: string | null;
+}
+
+export interface ReportWriterDatasetSource {
+  sourceId: string;
+  label: string;
+  description: string;
+  rowCount: number;
+  fields: ReportingTemplateGridFieldMetadata[];
+  rows: Record<string, string>[];
+  tags?: string[] | null;
+  certificationState?: string | null;
+  validationState?: string | null;
+  reconciliationState?: string | null;
+  refreshCadence?: string | null;
+  owner?: string | null;
+  version?: string | null;
+  releaseApproval?: string | null;
+  lineageManifest?: string | null;
+  sourceRunIds?: string[] | null;
+  permittedConsumers?: string[] | null;
+  rowLineageKeyField?: string | null;
+  evidenceIndexField?: string | null;
 }
 
 export interface ReportingTemplateGridMetricMetadata {
@@ -3642,6 +3947,11 @@ export interface ReportingRunStatusProjection {
   drilldownLinks?: ReportingRunDrilldownLink[];
   nextActions?: ReportingRunNextAction[];
   generatedReportWriterGrids?: ReportingGeneratedReportWriterGrid[] | null;
+  reportWriterDatasetSourceId?: string | null;
+  reportWriterDatasetSourceLabel?: string | null;
+  reportWriterDatasetRowCount?: number | null;
+  brandingThemeId?: string | null;
+  brandingTheme?: ReportBrandingTheme | null;
 }
 
 export interface ReportingGeneratedReportWriterGrid {
@@ -3652,6 +3962,10 @@ export interface ReportingGeneratedReportWriterGrid {
   dimensionCount: number;
   metricCount: number;
   formulaCount: number;
+  validationSummary?: string | null;
+  validationPassedCount?: number | null;
+  validationWarningCount?: number | null;
+  validationFailedCount?: number | null;
 }
 
 export interface ReportingRunDrilldownLink {
@@ -3733,6 +4047,35 @@ export interface FundReportPackGenerateRequest {
   brandingThemeOverride?: ReportBrandingTheme | null;
 }
 
+export interface FundReportPackPreviewRequest {
+  fundProfileId: string;
+  reportKind?: GovernanceReportKind;
+  asOf?: string | null;
+  currency?: string | null;
+  brandingThemeId?: string | null;
+  brandingThemeOverride?: ReportBrandingTheme | null;
+}
+
+export interface FundReportAssetClassSection {
+  assetClass: string;
+  total: number;
+}
+
+export interface FundReportPackPreview {
+  reportId: string;
+  fundProfileId: string;
+  displayName: string;
+  reportKind: GovernanceReportKind;
+  currency: string;
+  asOf: string;
+  generatedAt: string;
+  totalNetAssets: number;
+  trialBalanceLineCount: number;
+  assetClassSectionCount: number;
+  assetClassSections: FundReportAssetClassSection[];
+  brandingTheme?: ReportBrandingTheme | null;
+}
+
 export interface FundReportPackArtifact {
   artifactKind: string;
   format: GovernanceReportArtifactFormat;
@@ -3785,6 +4128,21 @@ export interface ReportPackDeliveryAccessLink {
   requiresToken: boolean;
   expiresAtUtc?: string | null;
   description?: string | null;
+}
+
+export interface ReportPackDeliveryNotification {
+  notificationId: string;
+  channel: string;
+  recipient: string;
+  recipientRole: string;
+  deliveryMode: ReportPackDeliveryMode;
+  subject: string;
+  body: string;
+  href: string;
+  requiresToken: boolean;
+  createdAtUtc: string;
+  expiresAtUtc?: string | null;
+  status: string;
 }
 
 export interface ReportPackDeliveryRecipient {
@@ -3855,9 +4213,13 @@ export interface ReportPackDeliveryPackage {
   downloadSummary?: string | null;
   accessExpiresAtUtc?: string | null;
   accessLinks?: ReportPackDeliveryAccessLink[] | null;
+  notifications?: ReportPackDeliveryNotification[] | null;
   sourceArtifacts?: string[] | null;
   generatedReportWriterGrids?: ReportingGeneratedReportWriterGrid[] | null;
   renderedReportWriterGrids?: ReportWriterGridRender[] | null;
+  reportWriterDatasetSourceId?: string | null;
+  reportWriterDatasetSourceLabel?: string | null;
+  reportWriterDatasetRowCount?: number | null;
   lineProvenance?: ReportingWorkflowLineProvenance[] | null;
   deliveryEvidencePacket?: ReportPackDeliveryEvidencePacket | null;
   brandingTheme?: ReportBrandingTheme | null;
@@ -3889,6 +4251,7 @@ export interface ReportPackDeliveryRequest {
   evidenceLinks?: ReportingWorkflowEvidenceLink[] | null;
   formats?: GovernanceReportArtifactFormat[] | null;
   deliveryMode?: ReportPackDeliveryMode | null;
+  actionOrigin?: OperationsActionOrigin | null;
 }
 
 export interface ReportPackDeliveryFailureRequest extends ReportPackDeliveryRequest {
@@ -3930,9 +4293,23 @@ export interface ReportingScheduleDeliveryPlan {
   lastDeliveryPackageRoute: string | null;
   lastDeliverySecureLink: string | null;
   lastDeliveryAccessLinks?: ReportPackDeliveryAccessLink[] | null;
+  lastDeliveryAccessExpiresAtUtc?: string | null;
+  lastDeliveryAccessSummary?: string | null;
+  lastDeliveryChannelSummary?: string | null;
+  lastDeliveryDownloadSummary?: string | null;
+  lastDeliveryNotificationCount?: number;
+  lastDeliveryNotificationSummary?: string | null;
+  lastDeliveryGeneratedReportWriterGridCount?: number;
+  lastDeliveryRenderedReportWriterGridCount?: number;
+  lastDeliveryReportWriterDatasetSummary?: string | null;
+  lastDeliveryReportWriterGridSummary?: string | null;
   versionStamp: string | null;
   lastDeliveryArtifactCount?: number;
   lastDeliveryIntegritySummary?: string | null;
+  readinessBlockers?: string[] | null;
+  brandingThemeId?: string | null;
+  brandingTheme?: ReportBrandingTheme | null;
+  lastDeliveryEntitlementScope?: string | null;
 }
 
 export type StructuredReportingExportPurpose = "Regulatory" | "DataWarehouse" | "InvestmentDecision";
@@ -3959,6 +4336,10 @@ export interface StructuredReportingExport {
   versionStamp: string | null;
   tags: string[] | null;
   readinessBlockers?: string[] | null;
+  retainedManifestPath?: string | null;
+  integrityHashSha256?: string | null;
+  integritySummary?: string | null;
+  rowLineageCount?: number | null;
 }
 
 export interface StructuredReportingExportColumn {
@@ -3981,6 +4362,12 @@ export interface StructuredReportingExportValidationCheck {
   detail: string;
 }
 
+export interface StructuredReportingExportRowLineage {
+  rowNumber: number;
+  rowKey: string;
+  rowHashSha256: string;
+}
+
 export interface StructuredReportingExportPayload {
   export: StructuredReportingExport;
   columns: StructuredReportingExportColumn[];
@@ -3989,6 +4376,10 @@ export interface StructuredReportingExportPayload {
   generatedAtUtc: string;
   dataDictionary?: StructuredReportingExportDataDictionaryField[] | null;
   validationChecks?: StructuredReportingExportValidationCheck[] | null;
+  generatedByPrincipalId?: string | null;
+  generatedForCompanyId?: string | null;
+  generatedForGroupPrincipalIds?: string[] | null;
+  rowLineage?: StructuredReportingExportRowLineage[] | null;
 }
 
 export interface ReportingScheduleRecord {
@@ -4008,6 +4399,9 @@ export interface ReportingScheduleRecord {
   description: string | null;
   deliveryTargets?: ReportingScheduleDeliveryTarget[] | null;
   datasetRows?: Record<string, string>[] | null;
+  datasetSourceId?: string | null;
+  brandingThemeId?: string | null;
+  brandingThemeOverride?: ReportBrandingTheme | null;
 }
 
 export interface ReportingScheduleUpsertRequest {
@@ -4022,6 +4416,9 @@ export interface ReportingScheduleUpsertRequest {
   state?: string;
   deliveryTargets?: ReportingScheduleDeliveryTarget[] | null;
   datasetRows?: Record<string, string>[] | null;
+  datasetSourceId?: string | null;
+  brandingThemeId?: string | null;
+  brandingThemeOverride?: ReportBrandingTheme | null;
 }
 
 export interface ReportingScheduleRunResult {
@@ -4043,6 +4440,7 @@ export interface ReportingRunRequest {
   jobId?: string | null;
   requestedBy?: string | null;
   datasetRows?: Record<string, string>[] | null;
+  datasetSourceId?: string | null;
 }
 
 export interface ReportingRunResult {
@@ -4065,6 +4463,9 @@ export interface ReportingRunAuditTrail {
   trigger: string;
   attemptCount: number;
   entries: ReportingRunAuditEntry[];
+  reportWriterDatasetSourceId?: string | null;
+  reportWriterDatasetSourceLabel?: string | null;
+  reportWriterDatasetRowCount?: number | null;
 }
 
 export interface ReportingWorkflowEvidenceLink {
@@ -4180,6 +4581,7 @@ export interface AccountingReportingSummary {
   portfolioCuts?: PortfolioReportingCut[];
   structuredExports?: StructuredReportingExport[];
   brandingThemes?: ReportBrandingTheme[];
+  reportWriterDatasetSources?: ReportWriterDatasetSource[];
   livePortfolioViews?: PortfolioReportingLiveView[];
   crossFundConsolidations?: CrossFundReportingConsolidation[];
   pnlSlices?: PortfolioReportingPnlSlice[];
@@ -4948,6 +5350,11 @@ export interface PaymentIntentExpectedCashMovement {
   capitalAccountId?: string | null;
   investorId?: string | null;
   purpose: string;
+  payee?: string | null;
+  accountScope?: string | null;
+  businessPurpose?: string | null;
+  approvalPolicy?: string | null;
+  sourceEvidenceLinks?: string[] | null;
 }
 
 export interface PaymentIntentApprovalStep {
@@ -4972,6 +5379,7 @@ export interface PaymentIntentBankEvidence {
   recordedAtUtc?: string | null;
   externalRef?: string | null;
   evidenceRoute?: string | null;
+  recordedBy?: string | null;
 }
 
 export interface PaymentIntentReconciliationLink {
@@ -5240,6 +5648,7 @@ export interface PrivateCapitalCloseCockpit {
   plannedCapabilities: string[];
   approvalHistory?: PrivateCapitalCloseCockpitApproval[] | null;
   navSupportPackages?: PrivateCapitalNavSupportPackage[] | null;
+  evidencePackages?: OperationsEvidencePackageSummary[] | null;
 }
 
 export interface PrivateCapitalCapitalAccountSubledger {
@@ -6497,6 +6906,718 @@ export interface ProviderRoutingTrustSnapshot {
   isCertificationFresh: boolean;
   signals: string[];
   decision?: unknown;
+}
+
+export type ProviderIntegrationType =
+  | "Rest"
+  | "OpenApiRest"
+  | "GraphQl"
+  | "Webhook"
+  | "SftpFile"
+  | "ManualUpload"
+  | "Hybrid"
+  | "StreamingTemplate"
+  | "CertifiedTradingAdapter";
+
+export type ProviderIntegrationCapabilityKind =
+  | "Accounts"
+  | "Balances"
+  | "Positions"
+  | "Holdings"
+  | "Transactions"
+  | "TaxLots"
+  | "SecurityReferenceData"
+  | "MarketPrices"
+  | "CorporateActions"
+  | "Documents"
+  | "Alerts"
+  | "Events"
+  | "OrderPreview"
+  | "OrderPlacement"
+  | "OrderCancellation"
+  | "OrderStatus"
+  | "Executions";
+
+export type ProviderIntegrationActivationState =
+  | "Draft"
+  | "Tested"
+  | "DryRunPassed"
+  | "PendingApproval"
+  | "Active"
+  | "Paused"
+  | "Failed"
+  | "Retired";
+
+export type ProviderIntegrationProcessingStatus =
+  | "Received"
+  | "Parsed"
+  | "Mapped"
+  | "Validated"
+  | "Quarantined"
+  | "Loaded"
+  | "Published"
+  | "Blocked";
+
+export type ProviderIntegrationAuthType =
+  | "None"
+  | "ApiKey"
+  | "BearerToken"
+  | "OAuth2"
+  | "ClientCredentials"
+  | "Basic"
+  | "Certificate"
+  | "CustomHeader";
+
+export type ProviderIntegrationHttpMethod = "Get" | "Post" | "Put" | "Patch" | "Delete";
+export type ProviderIntegrationPaginationType = "None" | "PageNumber" | "Offset" | "Cursor" | "NextUrl";
+
+export type ProviderIntegrationCursorType =
+  | "None"
+  | "Timestamp"
+  | "Date"
+  | "CursorToken"
+  | "PageNumber"
+  | "Offset"
+  | "Watermark"
+  | "FullSnapshot";
+
+export type ProviderMappingConfidence = "Low" | "Medium" | "High" | "Approved";
+export type ProviderIntegrationIssueSeverity = "Info" | "Warning" | "Critical";
+
+export type ProviderIntegrationQuarantineResolutionAction =
+  | "ReviewOnly"
+  | "ReplayAfterMappingChange"
+  | "IgnoreProviderRecord"
+  | "MarkAsCashPosition";
+
+export type ProviderIntegrationIdentityResolutionStatus =
+  | "Resolved"
+  | "ReviewRequired"
+  | "MissingIdentifier"
+  | "NotFound"
+  | "NotConfigured";
+
+export type ProviderIntegrationPromotionReadinessStatus =
+  | "ReadyForReconciliation"
+  | "ReviewRequired"
+  | "Blocked";
+
+export interface ProviderIntegrationValidationIssue {
+  code: string;
+  severity: ProviderIntegrationIssueSeverity;
+  message: string;
+  targetField?: string | null;
+  suggestedFix?: string | null;
+}
+
+export interface ProviderIntegrationAuthConfig {
+  type: ProviderIntegrationAuthType;
+  tokenUrl?: string | null;
+  scopes: string[];
+  metadata: Record<string, string>;
+}
+
+export interface ProviderIntegrationCapability {
+  capability: ProviderIntegrationCapabilityKind;
+  enabled: boolean;
+  requiresCertifiedAdapter: boolean;
+  requiredCanonicalFields: string[];
+}
+
+export interface ProviderIntegrationEndpointDependency {
+  endpointKey: string;
+  outputPath: string;
+  parameterName: string;
+}
+
+export interface ProviderIntegrationEndpointPagination {
+  type: ProviderIntegrationPaginationType;
+  cursorPath?: string | null;
+  cursorParam?: string | null;
+  nextUrlPath?: string | null;
+  pageSize?: number | null;
+}
+
+export interface ProviderIntegrationEndpointResponseShape {
+  recordsPath: string;
+  schemaFingerprint?: string | null;
+  requiredPaths: string[];
+}
+
+export interface ProviderIntegrationEndpointDefinition {
+  endpointKey: string;
+  capability: ProviderIntegrationCapabilityKind;
+  method: ProviderIntegrationHttpMethod;
+  path: string;
+  headers: Record<string, string>;
+  query: Record<string, string>;
+  requestBodyTemplate?: string | null;
+  dependsOn?: ProviderIntegrationEndpointDependency | null;
+  pagination: ProviderIntegrationEndpointPagination;
+  response: ProviderIntegrationEndpointResponseShape;
+}
+
+export interface ProviderIntegrationTransformRule {
+  type: string;
+  parameters: Record<string, string>;
+}
+
+export interface ProviderIntegrationFieldMapping {
+  capability: ProviderIntegrationCapabilityKind;
+  sourcePath: string;
+  targetField: string;
+  transform?: ProviderIntegrationTransformRule | null;
+  required: boolean;
+  confidence: ProviderMappingConfidence;
+  defaultValue?: string | null;
+  constantValue?: string | null;
+}
+
+export interface ProviderIntegrationValidationRule {
+  capability: ProviderIntegrationCapabilityKind;
+  ruleCode: string;
+  severity: ProviderIntegrationIssueSeverity;
+  message: string;
+  targetFields: string[];
+}
+
+export interface ProviderIntegrationSyncSchedule {
+  mode: string;
+  frequency: string;
+  time?: string | null;
+  timezone: string;
+  cursorType: ProviderIntegrationCursorType;
+  cursorField?: string | null;
+  fullRefreshFrequency?: string | null;
+}
+
+export interface ProviderIntegrationActivationPolicy {
+  requiresAuthenticationTest: boolean;
+  requiresEndpointTest: boolean;
+  requiresDryRun: boolean;
+  requiresApproval: boolean;
+  productionWriteCapabilitiesAllowed: boolean;
+  requiredIssueCodes: string[];
+}
+
+export interface ProviderIntegrationActivationIssue {
+  code: string;
+  severity: ProviderIntegrationIssueSeverity;
+  message: string;
+  capability?: ProviderIntegrationCapabilityKind | null;
+  suggestedFix?: string | null;
+}
+
+export interface ProviderIntegrationActivationReadiness {
+  isReady: boolean;
+  issues: ProviderIntegrationActivationIssue[];
+  requiredEvidence: string[];
+}
+
+export interface ProviderIntegrationTemplateCatalogEntry {
+  manifestId: string;
+  providerId: string;
+  displayName: string;
+  integrationType: ProviderIntegrationType;
+  capabilities: ProviderIntegrationCapabilityKind[];
+  summary: string;
+  requiresCredentials: boolean;
+}
+
+export interface ProviderIntegrationManifest {
+  manifestId: string;
+  manifestVersion: number;
+  providerId: string;
+  displayName: string;
+  integrationType: ProviderIntegrationType;
+  environment: string;
+  auth: ProviderIntegrationAuthConfig;
+  capabilities: ProviderIntegrationCapability[];
+  endpoints: ProviderIntegrationEndpointDefinition[];
+  fieldMappings: ProviderIntegrationFieldMapping[];
+  sync: ProviderIntegrationSyncSchedule;
+  validationRules: ProviderIntegrationValidationRule[];
+  activation: ProviderIntegrationActivationPolicy;
+  state: ProviderIntegrationActivationState;
+  createdBy: string;
+  createdAt: string;
+  approvedBy?: string | null;
+  approvedAt?: string | null;
+  changeReason?: string | null;
+}
+
+export interface ProviderIntegrationConnection {
+  connectionId: string;
+  providerId: string;
+  manifestId: string;
+  connectionName: string;
+  environment: string;
+  state: ProviderIntegrationActivationState;
+  credentialSecretRef: string;
+  enabledCapabilities: ProviderIntegrationCapabilityKind[];
+  ownerUserId: string;
+  createdAt: string;
+  updatedAt: string;
+  approvalEvidenceId?: string | null;
+}
+
+export interface ProviderIntegrationQuarantinedRecord {
+  quarantineRecordId: string;
+  syncRunId: string;
+  connectionId: string;
+  capability: ProviderIntegrationCapabilityKind;
+  rawRecord: unknown;
+  mappedRecord?: unknown | null;
+  validationErrors: ProviderIntegrationValidationIssue[];
+  status: ProviderIntegrationProcessingStatus;
+  createdAt: string;
+}
+
+export interface ProviderIntegrationQuarantineIssueGroup {
+  issueCode: string;
+  severity: ProviderIntegrationIssueSeverity;
+  targetField?: string | null;
+  message: string;
+  suggestedFix?: string | null;
+  recordCount: number;
+}
+
+export interface ProviderIntegrationQuarantineDecision {
+  decisionId: string;
+  syncRunId: string;
+  quarantineRecordId: string;
+  connectionId: string;
+  action: ProviderIntegrationQuarantineResolutionAction;
+  reviewedBy: string;
+  reviewedAt: string;
+  note?: string | null;
+}
+
+export interface ProviderIntegrationQuarantineReview {
+  connectionId: string;
+  syncRunIds: string[];
+  records: ProviderIntegrationQuarantinedRecord[];
+  issueGroups: ProviderIntegrationQuarantineIssueGroup[];
+  decisions: ProviderIntegrationQuarantineDecision[];
+  totalQuarantinedRecords: number;
+  criticalIssueCount: number;
+  warningIssueCount: number;
+  pendingReviewRecordCount: number;
+  decisionedRecordCount: number;
+  replayRequestedRecordCount: number;
+  ignoredRecordCount: number;
+  cashPositionCandidateCount: number;
+}
+
+export interface ProviderIntegrationQuarantineResolutionRequest {
+  connectionId: string;
+  syncRunId: string;
+  quarantineRecordId: string;
+  action: ProviderIntegrationQuarantineResolutionAction;
+  reviewedBy: string;
+  reviewedAt: string;
+  note?: string | null;
+}
+
+export interface ProviderIntegrationQuarantineResolutionResult {
+  resolved: boolean;
+  record: ProviderIntegrationQuarantinedRecord;
+  decision: ProviderIntegrationQuarantineDecision;
+  message?: string | null;
+}
+
+export interface ProviderIntegrationQuarantineReplayRequest {
+  replaySyncRunId: string;
+  sourceSyncRunId: string;
+  manifestId: string;
+  connectionId: string;
+  capability: ProviderIntegrationCapabilityKind;
+  quarantineRecordIds: string[];
+  requestedBy: string;
+  requestedAt: string;
+}
+
+export interface ProviderIntegrationQuarantineReplayResult {
+  replaySyncRunId: string;
+  rawPayloadId: string;
+  capability: ProviderIntegrationCapabilityKind;
+  recordsReplayed: number;
+  recordsAccepted: number;
+  recordsRequarantined: number;
+  status: ProviderIntegrationProcessingStatus;
+  issues: ProviderIntegrationValidationIssue[];
+}
+
+export interface ProviderIntegrationStagingRecord {
+  stagingRecordId: string;
+  syncRunId: string;
+  connectionId: string;
+  capability: ProviderIntegrationCapabilityKind;
+  rawPayloadId: string;
+  sourceRecordId?: string | null;
+  dedupeKey: string;
+  mappedRecord: unknown;
+  validationWarnings: ProviderIntegrationValidationIssue[];
+  status: ProviderIntegrationProcessingStatus;
+  createdAt: string;
+}
+
+export interface ProviderIntegrationStagingCapabilitySummary {
+  capability: ProviderIntegrationCapabilityKind;
+  recordCount: number;
+  warningCount: number;
+}
+
+export interface ProviderIntegrationStagingReview {
+  connectionId: string;
+  syncRunIds: string[];
+  records: ProviderIntegrationStagingRecord[];
+  capabilitySummaries: ProviderIntegrationStagingCapabilitySummary[];
+  warningGroups: ProviderIntegrationQuarantineIssueGroup[];
+  totalStagedRecords: number;
+  readyForReconciliationCount: number;
+  warningRecordCount: number;
+}
+
+export interface ProviderIntegrationIdentityCandidate {
+  identifierKind: string;
+  identifierValue: string;
+  provider?: string | null;
+  priority: number;
+  status: ProviderIntegrationIdentityResolutionStatus;
+  internalSecurityId?: string | null;
+  displayName?: string | null;
+  route?: string | null;
+}
+
+export interface ProviderIntegrationStagingIdentityResolutionRow {
+  stagingRecordId: string;
+  syncRunId: string;
+  capability: ProviderIntegrationCapabilityKind;
+  providerAccountId?: string | null;
+  accountStatus: ProviderIntegrationIdentityResolutionStatus;
+  internalAccountId?: string | null;
+  accountResolutionNote?: string | null;
+  securityStatus: ProviderIntegrationIdentityResolutionStatus;
+  internalSecurityId?: string | null;
+  securityDisplayName?: string | null;
+  securityRoute?: string | null;
+  securityCandidates: ProviderIntegrationIdentityCandidate[];
+  issues: ProviderIntegrationValidationIssue[];
+}
+
+export interface ProviderIntegrationStagingIdentityResolutionPreview {
+  connectionId: string;
+  syncRunIds: string[];
+  rows: ProviderIntegrationStagingIdentityResolutionRow[];
+  totalRows: number;
+  accountReviewRequiredCount: number;
+  missingAccountIdentifierCount: number;
+  securityResolvedCount: number;
+  securityReviewRequiredCount: number;
+  missingSecurityIdentifierCount: number;
+}
+
+export interface ProviderIntegrationPromotionReadinessRow {
+  stagingRecordId: string;
+  syncRunId: string;
+  capability: ProviderIntegrationCapabilityKind;
+  promotionTarget: string;
+  status: ProviderIntegrationPromotionReadinessStatus;
+  providerAccountId?: string | null;
+  internalAccountId?: string | null;
+  internalSecurityId?: string | null;
+  securityDisplayName?: string | null;
+  securityRoute?: string | null;
+  issues: ProviderIntegrationValidationIssue[];
+}
+
+export interface ProviderIntegrationPromotionReadinessPreview {
+  connectionId: string;
+  syncRunIds: string[];
+  rows: ProviderIntegrationPromotionReadinessRow[];
+  totalRows: number;
+  readyForReconciliationCount: number;
+  reviewRequiredCount: number;
+  blockedCount: number;
+}
+
+export interface ProviderIntegrationReconciliationHandoffRecord {
+  handoffId: string;
+  connectionId: string;
+  syncRunId: string;
+  stagingRecordId: string;
+  capability: ProviderIntegrationCapabilityKind;
+  promotionTarget: string;
+  requestedBy: string;
+  requestedAt: string;
+  approvalEvidenceId: string;
+  note?: string | null;
+  providerAccountId?: string | null;
+  internalAccountId?: string | null;
+  internalSecurityId?: string | null;
+  securityRoute?: string | null;
+  issues: ProviderIntegrationValidationIssue[];
+}
+
+export interface ProviderIntegrationReconciliationHandoffRequest {
+  connectionId: string;
+  stagingRecordIds: string[];
+  requestedBy: string;
+  requestedAt: string;
+  approvalEvidenceId: string;
+  note?: string | null;
+  recentRunLimit?: number | null;
+}
+
+export interface ProviderIntegrationReconciliationHandoffResult {
+  accepted: boolean;
+  handoffId?: string | null;
+  connectionId: string;
+  promotionTarget: string;
+  records: ProviderIntegrationReconciliationHandoffRecord[];
+  acceptedRecordCount: number;
+  rejectedRecordCount: number;
+  duplicateRecordCount: number;
+  issues: ProviderIntegrationValidationIssue[];
+  message?: string | null;
+}
+
+export interface ProviderIntegrationReconciliationHandoffHistory {
+  connectionId: string;
+  records: ProviderIntegrationReconciliationHandoffRecord[];
+  totalRecords: number;
+  handoffCount: number;
+  lastRequestedAt?: string | null;
+}
+
+export interface ProviderIntegrationSyncRunEvidence {
+  syncRunId: string;
+  capability: ProviderIntegrationCapabilityKind;
+  endpointKey: string;
+  startedAt: string;
+  completedAt?: string | null;
+  status: ProviderIntegrationProcessingStatus;
+  recordsReceived: number;
+  recordsAccepted: number;
+  recordsQuarantined: number;
+  durableStagingRecordCount: number;
+  durableQuarantinedRecordCount: number;
+  criticalIssueCount: number;
+  warningIssueCount: number;
+  rawPayloadId?: string | null;
+  issues: ProviderIntegrationValidationIssue[];
+}
+
+export interface ProviderIntegrationConnectionMonitor {
+  connectionId: string;
+  manifestId: string;
+  providerId: string;
+  displayName: string;
+  connectionName: string;
+  environment: string;
+  state: ProviderIntegrationActivationState;
+  enabledCapabilities: ProviderIntegrationCapabilityKind[];
+  lastSyncRun?: ProviderIntegrationSyncRunEvidence | null;
+  recentSyncRuns: ProviderIntegrationSyncRunEvidence[];
+  recentRecordsReceived: number;
+  recentRecordsAccepted: number;
+  recentRecordsQuarantined: number;
+  durableStagingRecordCount: number;
+  durableQuarantinedRecordCount: number;
+  hasCriticalIssues: boolean;
+}
+
+export interface ProviderIntegrationSyncRunHistory {
+  connectionId: string;
+  syncRuns: ProviderIntegrationSyncRunEvidence[];
+  totalSyncRuns: number;
+  returnedSyncRuns: number;
+  latestStartedAt?: string | null;
+}
+
+export interface ProviderIntegrationSyncPlanItem {
+  capability: ProviderIntegrationCapabilityKind;
+  endpointKey?: string | null;
+  scheduleMode: string;
+  frequency: string;
+  timezone: string;
+  lastSuccessfulSyncAt?: string | null;
+  nextEligibleSyncAt?: string | null;
+  isDue: boolean;
+  isBlocked: boolean;
+  reason: string;
+  issues: ProviderIntegrationValidationIssue[];
+}
+
+export interface ProviderIntegrationSyncPlan {
+  connectionId: string;
+  manifestId: string;
+  providerId: string;
+  connectionName: string;
+  connectionState: ProviderIntegrationActivationState;
+  evaluatedAt: string;
+  items: ProviderIntegrationSyncPlanItem[];
+  dueCount: number;
+  blockedCount: number;
+}
+
+export interface ProviderIntegrationRunDueSyncRequest {
+  connectionId: string;
+  requestedAt: string;
+  requestedBy: string;
+  maxPages: number;
+  pathParametersByCapability: Record<string, Record<string, string>>;
+  queryParametersByCapability: Record<string, Record<string, string>>;
+}
+
+export interface ProviderIntegrationDryRunResult {
+  syncRunId: string;
+  rawPayloadId: string;
+  capability: ProviderIntegrationCapabilityKind;
+  recordsReceived: number;
+  recordsAccepted: number;
+  recordsQuarantined: number;
+  status: ProviderIntegrationProcessingStatus;
+  issues: ProviderIntegrationValidationIssue[];
+}
+
+export interface ProviderIntegrationRunDueSyncItemResult {
+  capability: ProviderIntegrationCapabilityKind;
+  endpointKey?: string | null;
+  started: boolean;
+  skipped: boolean;
+  reason: string;
+  syncRunId?: string | null;
+  dryRunResult?: ProviderIntegrationDryRunResult | null;
+  issues: ProviderIntegrationValidationIssue[];
+}
+
+export interface ProviderIntegrationRunDueSyncResult {
+  connectionId: string;
+  requestedAt: string;
+  startedCount: number;
+  skippedCount: number;
+  items: ProviderIntegrationRunDueSyncItemResult[];
+}
+
+export interface ManualCsvProviderIntegrationDryRunRequest {
+  syncRunId: string;
+  manifestId: string;
+  connectionId: string;
+  capability: ProviderIntegrationCapabilityKind;
+  fileName: string;
+  csvContent: string;
+  requestedBy: string;
+  requestedAt: string;
+}
+
+export interface ProviderIntegrationRestDryRunRequest {
+  syncRunId: string;
+  manifestId: string;
+  connectionId: string;
+  capability: ProviderIntegrationCapabilityKind;
+  endpointKey: string;
+  pathParameters: Record<string, string>;
+  queryParameters: Record<string, string>;
+  requestedBy: string;
+  requestedAt: string;
+  maxPages: number;
+}
+
+export interface ProviderIntegrationOpenApiImportRequest {
+  manifestId: string;
+  providerId: string;
+  displayName: string;
+  environment: string;
+  authType: ProviderIntegrationAuthType;
+  tokenUrl?: string | null;
+  scopes: string[];
+  capabilities: ProviderIntegrationCapabilityKind[];
+  openApiDocumentJson: string;
+  importedBy: string;
+  importedAt: string;
+  changeReason?: string | null;
+}
+
+export interface ProviderIntegrationOpenApiImportResult {
+  imported: boolean;
+  manifest: ProviderIntegrationManifest;
+  readiness: ProviderIntegrationActivationReadiness;
+  issues: ProviderIntegrationValidationIssue[];
+  message?: string | null;
+}
+
+export interface ProviderIntegrationSchemaDriftIssue {
+  code: string;
+  severity: ProviderIntegrationIssueSeverity;
+  capability: ProviderIntegrationCapabilityKind;
+  endpointKey: string;
+  jsonPath: string;
+  message: string;
+  suggestedFix: string;
+}
+
+export interface ProviderIntegrationSchemaDriftCheckRequest {
+  manifestId: string;
+  connectionId: string;
+  capability: ProviderIntegrationCapabilityKind;
+  endpointKey: string;
+  syncRunId: string;
+  rawPayloadId: string;
+  checkedBy: string;
+  checkedAt: string;
+}
+
+export interface ProviderIntegrationSchemaDriftCheckResult {
+  manifestId: string;
+  connectionId: string;
+  capability: ProviderIntegrationCapabilityKind;
+  endpointKey: string;
+  syncRunId: string;
+  rawPayloadId: string;
+  driftDetected: boolean;
+  shouldPauseCapability: boolean;
+  recordsInspected: number;
+  issues: ProviderIntegrationSchemaDriftIssue[];
+}
+
+export interface ProviderIntegrationSetupSaveRequest {
+  manifest: ProviderIntegrationManifest;
+  connection: ProviderIntegrationConnection;
+  savedBy: string;
+  savedAt: string;
+  changeReason?: string | null;
+}
+
+export interface ProviderIntegrationSetupSaveResult {
+  saved: boolean;
+  manifestId: string;
+  connectionId: string;
+  manifestState: ProviderIntegrationActivationState;
+  connectionState: ProviderIntegrationActivationState;
+  readiness: ProviderIntegrationActivationReadiness;
+  approvalEvidenceId?: string | null;
+  message?: string | null;
+}
+
+export interface ProviderIntegrationActivationRequest {
+  manifestId: string;
+  connectionId: string;
+  approvedBy: string;
+  approvedAt: string;
+  approvalEvidenceId: string;
+  changeReason?: string | null;
+}
+
+export interface ProviderIntegrationActivationResult {
+  activated: boolean;
+  manifestId: string;
+  connectionId: string;
+  manifestState: ProviderIntegrationActivationState;
+  connectionState: ProviderIntegrationActivationState;
+  readiness: ProviderIntegrationActivationReadiness;
+  message?: string | null;
 }
 
 export interface ProviderRoutePreviewRequest {

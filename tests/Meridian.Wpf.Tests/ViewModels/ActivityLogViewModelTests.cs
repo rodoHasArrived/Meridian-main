@@ -1,4 +1,6 @@
+using Meridian.Contracts.Api;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
@@ -33,6 +35,75 @@ public sealed class ActivityLogViewModelTests
             viewModel.LatestLogTimeText.Should().Be("15:00:00");
             viewModel.LatestLogSummary.Should().Be("Error / Backfill: Backfill retry failed");
             viewModel.ActiveFilterSummary.Should().Be("Showing every retained entry");
+        });
+    }
+
+    [Fact]
+    public void StartAsync_LoadsRemoteLogsThroughRemoteWorkstationClient()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var remoteClient = new FakeRemoteWorkstationClient
+            {
+                ActivityLogs =
+                [
+                    new ActivityLogEntryDto(
+                        new DateTime(2026, 6, 16, 12, 0, 0, DateTimeKind.Utc),
+                        "Warning",
+                        "Storage",
+                        "Remote lease recovered")
+                ]
+            };
+            using var viewModel = CreateViewModel(remoteClient);
+
+            await viewModel.StartAsync();
+            viewModel.Stop();
+
+            remoteClient.ConfiguredServiceUrl.Should().NotBeNullOrWhiteSpace();
+            remoteClient.LastGetEndpoint.Should().Be("/api/logs?limit=500");
+            viewModel.FilteredLogs.Should().ContainSingle();
+            viewModel.FilteredLogs[0].Message.Should().Be("Remote lease recovered");
+            viewModel.ActivityPostureTitle.Should().Be("Warnings present");
+        });
+    }
+
+    [Fact]
+    public void StartAsync_WhenRemoteClientReturnsNonSuccess_FailsClosedToLocalOfflineIndicator()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var notifications = WpfServices.NotificationService.Instance;
+            notifications.ClearHistory();
+            var remoteClient = new FakeRemoteWorkstationClient { IsSuccess = false };
+            using var viewModel = CreateViewModel(remoteClient);
+
+            await viewModel.StartAsync();
+            viewModel.Stop();
+
+            remoteClient.LastGetEndpoint.Should().Be("/api/logs?limit=500");
+            viewModel.FilteredLogs.Should().ContainSingle();
+            viewModel.FilteredLogs[0].Message.Should().Contain("[Offline]");
+            viewModel.ActivityPostureTitle.Should().Be("Warnings present");
+
+            notifications.ClearHistory();
+        });
+    }
+
+    [Fact]
+    public void StartAsync_ForwardsCancellationToRemoteWorkstationClient()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var remoteClient = new FakeRemoteWorkstationClient();
+            using var viewModel = CreateViewModel(remoteClient);
+            using var cts = new CancellationTokenSource();
+            cts.Cancel();
+
+            await viewModel.StartAsync(cts.Token);
+            viewModel.Stop();
+
+            remoteClient.LastCancellationWasRequested.Should().BeTrue();
+            viewModel.FilteredLogs.Should().BeEmpty();
         });
     }
 
@@ -262,11 +333,12 @@ public sealed class ActivityLogViewModelTests
         });
     }
 
-    private static ActivityLogViewModel CreateViewModel()
+    private static ActivityLogViewModel CreateViewModel(IRemoteWorkstationClient? remoteClient = null)
         => new(
             WpfServices.StatusService.Instance,
             WpfServices.LoggingService.Instance,
-            WpfServices.NotificationService.Instance);
+            WpfServices.NotificationService.Instance,
+            remoteClient);
 
     private static string GetRepositoryFilePath(string relativePath)
     {
@@ -283,5 +355,74 @@ public sealed class ActivityLogViewModelTests
         }
 
         throw new DirectoryNotFoundException($"Could not locate repository file '{relativePath}' from '{AppContext.BaseDirectory}'.");
+    }
+
+    private sealed class FakeRemoteWorkstationClient : IRemoteWorkstationClient
+    {
+        public string BaseUrl { get; private set; } = "http://localhost:8080";
+        public string? ConfiguredServiceUrl { get; private set; }
+        public string? LastGetEndpoint { get; private set; }
+        public bool LastCancellationWasRequested { get; private set; }
+        public bool IsSuccess { get; init; } = true;
+        public ActivityLogEntryDto[]? ActivityLogs { get; init; }
+
+        public void Configure(string serviceUrl, int timeoutSeconds = 30, int backfillTimeoutMinutes = 60)
+        {
+            ConfiguredServiceUrl = serviceUrl;
+            BaseUrl = serviceUrl;
+        }
+
+        public Task<bool> CheckHealthEndpointAsync(CancellationToken ct = default) => Task.FromResult(true);
+
+        public Task<ServiceHealthResult> CheckHealthAsync(CancellationToken ct = default)
+            => Task.FromResult(new ServiceHealthResult { IsReachable = true, IsConnected = true });
+
+        public Task<StatusResponse?> GetStatusAsync(CancellationToken ct = default)
+            => Task.FromResult<StatusResponse?>(null);
+
+        public Task<ApiResponse<StatusResponse>> GetStatusWithResponseAsync(CancellationToken ct = default)
+            => Task.FromResult(new ApiResponse<StatusResponse> { Success = true });
+
+        public Task<T?> GetAsync<T>(string endpoint, CancellationToken ct = default) where T : class
+            => Task.FromResult<T?>(null);
+
+        public Task<ApiResponse<T>> GetWithResponseAsync<T>(string endpoint, CancellationToken ct = default)
+            where T : class
+        {
+            LastGetEndpoint = endpoint;
+            LastCancellationWasRequested = ct.IsCancellationRequested;
+            if (ct.IsCancellationRequested)
+            {
+                return Task.FromException<ApiResponse<T>>(new OperationCanceledException(ct));
+            }
+
+            if (!IsSuccess)
+            {
+                return Task.FromResult(new ApiResponse<T> { Success = false });
+            }
+
+            return ActivityLogs is T typed
+                ? Task.FromResult(ApiResponse<T>.Ok(typed))
+                : Task.FromResult(new ApiResponse<T> { Success = false });
+        }
+
+        public Task<T?> PostAsync<T>(string endpoint, object? body = null, CancellationToken ct = default)
+            where T : class
+            => Task.FromResult<T?>(null);
+
+        public Task<ApiResponse<T>> PostWithResponseAsync<T>(
+            string endpoint,
+            object? body = null,
+            CancellationToken ct = default)
+            where T : class
+            => Task.FromResult(new ApiResponse<T> { Success = false });
+
+        public Task<ApiResponse<T>> DeleteWithResponseAsync<T>(string endpoint, CancellationToken ct = default)
+            where T : class
+            => Task.FromResult(new ApiResponse<T> { Success = false });
+
+        public void Dispose()
+        {
+        }
     }
 }

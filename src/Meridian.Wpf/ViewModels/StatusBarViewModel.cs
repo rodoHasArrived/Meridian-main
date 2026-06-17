@@ -287,7 +287,7 @@ public sealed class StatusBarViewModel : BindableBase, IDisposable
             var utilizationPercent = (currentQueueSize / (double)pipeline.QueueCapacity) * 100.0;
             return string.Create(
                 CultureInfo.InvariantCulture,
-                $"Queue: {currentQueueSize:N0}/{pipeline.QueueCapacity:N0} ({utilizationPercent:0}%)");
+                $"Background work: {currentQueueSize:N0}/{pipeline.QueueCapacity:N0} ({utilizationPercent:0}%)");
         }
 
         var utilization = NormalizeQueueUtilization(pipeline.QueueUtilization);

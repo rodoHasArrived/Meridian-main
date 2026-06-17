@@ -84,6 +84,9 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                 var renderedReportWriterGrids = ReportWriterGridEngine
                     .RenderGrids(template.ReportWriterGrids, contract.DatasetRows)
                     .ToImmutableArray();
+                var reportWriterDatasetRowCount = template.ReportWriterGrids is { Count: > 0 }
+                    ? contract.DatasetRows?.Count ?? 0
+                    : (int?)null;
 
                 var manifest = new ReportingOutputManifest(
                     runId,
@@ -102,14 +105,20 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                     contract.Trigger,
                     contract.ScheduleId,
                     ReportWriterGrids: BuildReportWriterGridArtifactMetadata(runId, template).ToImmutableArray(),
-                    RenderedReportWriterGrids: renderedReportWriterGrids);
+                    RenderedReportWriterGrids: renderedReportWriterGrids,
+                    ReportWriterDatasetSourceId: NormalizeOptional(contract.ReportWriterDatasetSourceId),
+                    ReportWriterDatasetSourceLabel: NormalizeOptional(contract.ReportWriterDatasetSourceLabel),
+                    ReportWriterDatasetRowCount: reportWriterDatasetRowCount,
+                    BrandingThemeId: NormalizeOptional(contract.BrandingThemeId),
+                    BrandingTheme: contract.BrandingTheme,
+                    AccessPolicy: contract.AccessPolicy);
 
                 manifests[runId] = manifest;
                 AppendAudit(
                     runId,
                     "RunGenerated",
                     contract.RequestedBy,
-                    $"trigger={contract.Trigger}; attempt={attempt}; lineageSections={sections.Length}; reportWriterGrids={gridArtifacts.Length}; renderedReportWriterRows={renderedReportWriterGrids.Sum(static grid => grid.Rows.Count)}");
+                    $"trigger={contract.Trigger}; attempt={attempt}; lineageSections={sections.Length}; reportWriterGrids={gridArtifacts.Length}; reportWriterDatasetSource={manifest.ReportWriterDatasetSourceId ?? "none"}; reportWriterDatasetRows={manifest.ReportWriterDatasetRowCount?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "n/a"}; renderedReportWriterRows={renderedReportWriterGrids.Sum(static grid => grid.Rows.Count)}");
                 await PersistAsync(manifest, cancellationToken).ConfigureAwait(false);
                 return manifest;
             }
@@ -131,7 +140,13 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                     attempt,
                     contract.Trigger,
                     contract.ScheduleId,
-                    ex.Message);
+                    ex.Message,
+                    ReportWriterDatasetSourceId: NormalizeOptional(contract.ReportWriterDatasetSourceId),
+                    ReportWriterDatasetSourceLabel: NormalizeOptional(contract.ReportWriterDatasetSourceLabel),
+                    ReportWriterDatasetRowCount: contract.DatasetRows?.Count,
+                    BrandingThemeId: NormalizeOptional(contract.BrandingThemeId),
+                    BrandingTheme: contract.BrandingTheme,
+                    AccessPolicy: contract.AccessPolicy);
                 manifests[runId] = failed;
                 AppendAudit(runId, "RunFailed", contract.RequestedBy, $"attempt={attempt}; error={ex.Message}");
                 await PersistAsync(failed, cancellationToken).ConfigureAwait(false);
@@ -273,6 +288,12 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
 
     private static string BuildRunId(ReportingJobContract contract)
         => $"{contract.JobId}-{contract.AsOfDate:yyyyMMdd}";
+
+    private static string? NormalizeOptional(string? value)
+    {
+        var normalized = value?.Trim();
+        return string.IsNullOrWhiteSpace(normalized) ? null : normalized;
+    }
 }
 
 public sealed class DeterministicReportingSectionRenderer : IReportingSectionRenderer

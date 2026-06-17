@@ -209,7 +209,8 @@ public sealed record CloseLedgerPeriodRequest(
     string ClosedBy,
     string? Notes = null,
     string RequiredSignoffRole = "Fund Controller",
-    string ToleranceProfileId = "standard-recon-tolerance");
+    string ToleranceProfileId = "standard-recon-tolerance",
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record LedgerPeriodTrialBalanceLineDto(
     string AccountName,

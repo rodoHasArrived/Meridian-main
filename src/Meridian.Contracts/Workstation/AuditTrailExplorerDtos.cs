@@ -41,7 +41,12 @@ public sealed record AuditTrailTimelineEntryDto(
     string? Message = null,
     IReadOnlyDictionary<string, string>? Metadata = null,
     IReadOnlyList<string>? RelatedObjectIds = null,
-    string? EvidenceRoute = null);
+    string? EvidenceRoute = null,
+    string? ActionLedgerSource = null,
+    int? ActionLedgerSequence = null,
+    string? PreviousActionHash = null,
+    string? CurrentActionHash = null,
+    string? ActionLedgerStatus = null);
 
 /// <summary>
 /// Result contract for cross-object audit trail search.

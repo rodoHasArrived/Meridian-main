@@ -67,6 +67,7 @@ Avoid:
 | Selected row detail | Entity + action evidence | "T326117E183 · Pending · Settles 29 Apr 26" |
 | Product-guide callout | Action label + outcome | "Send to desk opens the quote request review." |
 | Delivery evidence | Workflow object + retained proof | "Delivered. Evidence packet: ReportingRunDelivery." |
+| Provider handoff | Approved row + retained proof | "Handoff retained. Evidence: approval-provider-handoff-1." |
 
 ## Image-inspired workflow copy
 
@@ -79,6 +80,10 @@ Meridian copy should stay terse:
   action.
 - Reporting copy names the server-owned object: report pack, delivery attempt, retained manifest,
   report-line provenance, report output, and evidence packet.
+- Provider integration copy names the server-owned workflow object: setup draft, dry run, sync run,
+  staged record, identity resolution, promotion readiness, reconciliation handoff, retained history,
+  quarantine review, and replay. Copy should say "handoff retained" only after server evidence is
+  persisted.
 - In docs or walkthrough previews, callouts may say "Click Send to desk". In the application,
   the button should simply be named "Send to desk" and the resulting state should explain what
   happened.
@@ -103,3 +108,4 @@ Meridian copy should stay terse:
 - "Ledger", "Security master", "Reconciliation"
 - "Provider readiness", "Wave N delivery"
 - "Report-pack delivery", "Retained manifest", "Report-line provenance", "Report output evidence"
+- "Provider integration", "Promotion readiness", "Reconciliation handoff", "Quarantine replay"

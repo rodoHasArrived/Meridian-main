@@ -523,7 +523,7 @@ public sealed class LeanIntegrationViewModel : BindableBase, IDisposable
             }
         }
         catch (OperationCanceledException) { SyncStatusText = "Cancelled"; }
-        catch (Exception ex) { SyncStatusText = $"Error: {ex.Message}"; }
+        catch (Exception ex) { SyncStatusText = $"Needs attention: {ex.Message}"; }
         finally { IsSyncEnabled = true; }
     }
 
@@ -670,7 +670,7 @@ public sealed class LeanIntegrationViewModel : BindableBase, IDisposable
                 : "Failed to save auto-export settings";
         }
         catch (OperationCanceledException) { AutoExportStatusText = "Cancelled"; }
-        catch (Exception ex) { AutoExportStatusText = $"Error: {ex.Message}"; }
+        catch (Exception ex) { AutoExportStatusText = $"Needs attention: {ex.Message}"; }
         finally { _isAutoExportBusy = false; }
     }
 
@@ -708,7 +708,7 @@ public sealed class LeanIntegrationViewModel : BindableBase, IDisposable
             IsMappingTableVisible = SymbolMappings.Count > 0;
         }
         catch (OperationCanceledException) { MappingStatusText = "Cancelled"; }
-        catch (Exception ex) { MappingStatusText = $"Error: {ex.Message}"; }
+        catch (Exception ex) { MappingStatusText = $"Needs attention: {ex.Message}"; }
     }
 
     // ── Results Ingestion ─────────────────────────────────────────────────────────
@@ -742,7 +742,7 @@ public sealed class LeanIntegrationViewModel : BindableBase, IDisposable
             }
         }
         catch (OperationCanceledException) { IngestStatusText = "Cancelled"; }
-        catch (Exception ex) { IngestStatusText = $"Error: {ex.Message}"; }
+        catch (Exception ex) { IngestStatusText = $"Needs attention: {ex.Message}"; }
         finally { _isIngestBusy = false; }
     }
 

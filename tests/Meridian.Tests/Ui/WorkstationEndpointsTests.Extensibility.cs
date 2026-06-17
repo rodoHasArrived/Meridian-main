@@ -75,6 +75,34 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task MapWorkstationEndpoints_ExtensibilityTenantTemplates_ShouldPartitionByRequestTenant()
+    {
+        var store = new InMemoryExtensibilityConfigurationStore();
+        await using var alphaApp = await CreateAppAsync(
+            services => RegisterExtensibilityEndpointTestServices(services, store),
+            currentUserPermissions: UserPermission.ModifyConfig,
+            currentUserCompanyId: "tenant-alpha");
+        await using var betaApp = await CreateAppAsync(
+            services => RegisterExtensibilityEndpointTestServices(services, store),
+            currentUserPermissions: UserPermission.ModifyConfig,
+            currentUserCompanyId: "tenant-beta");
+        var alphaClient = alphaApp.GetTestClient();
+        var betaClient = betaApp.GetTestClient();
+        var bundle = CreateExtensibilityTenantTemplate("template-shared", "Alpha only administrator");
+
+        var saveResponse = await alphaClient.PutAsJsonAsync(ExtensibilityTenantTemplateRoute("template-shared"), bundle);
+        var betaList = await betaClient.GetFromJsonAsync<TenantTemplateConfigurationBundleDto[]>(
+            UiApiRoutes.WorkstationExtensibilityTenantTemplates,
+            ServerJsonOptions);
+        var betaReadiness = await betaClient.GetAsync(ExtensibilityTenantTemplateReadinessRoute("template-shared"));
+
+        saveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        betaList.Should().NotBeNull();
+        betaList.Should().BeEmpty();
+        betaReadiness.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
     public async Task MapWorkstationEndpoints_ExtensibilityTenantTemplates_ShouldConflictWhenGovernedFoundationsWouldBeBypassed()
     {
         await using var app = await CreateAppAsync(
@@ -194,6 +222,14 @@ public sealed partial class WorkstationEndpointsTests
 
     private static void RegisterExtensibilityEndpointTestServices(IServiceCollection services)
         => services.AddExtensibilityCatalog();
+
+    private static void RegisterExtensibilityEndpointTestServices(
+        IServiceCollection services,
+        IExtensibilityConfigurationStore store)
+    {
+        services.AddSingleton(store);
+        services.AddExtensibilityCatalog();
+    }
 
     private static string ExtensibilityTenantTemplateRoute(string tenantTemplateId)
         => UiApiRoutes.WorkstationExtensibilityTenantTemplateById.Replace("{tenantTemplateId}", Uri.EscapeDataString(tenantTemplateId));

@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.Banking;
 using Meridian.Contracts.Banking;
 
@@ -85,7 +86,7 @@ public sealed class PaymentApprovalTests
     // ------------------------------------------------------------------
 
     [Fact]
-    public async Task ApprovePaymentAsync_ShouldMarkApprovedAndRecordBankTransaction()
+    public async Task ApprovePaymentAsync_ShouldMarkApprovedWithoutRecordingBankTransaction()
     {
         var service = BuildService();
         var entityId = Guid.NewGuid();
@@ -108,9 +109,173 @@ public sealed class PaymentApprovalTests
         var stillPending = await service.GetPendingPaymentsAsync(entityId);
         stillPending.Should().BeEmpty();
 
-        // A bank transaction should be recorded
         var txns = await service.GetBankTransactionsAsync(entityId);
-        txns.Should().ContainSingle(t => t.TransactionType == "ApprovedPayment" && t.Amount == 10_000m);
+        txns.Should().BeEmpty("approval records Meridian intent and reviewer state; bank evidence is retained separately");
+
+        var reloaded = await service.GetPaymentAsync(pending.PendingPaymentId);
+        reloaded.Should().NotBeNull();
+        reloaded!.Status.Should().Be(PaymentApprovalStatus.Approved);
+    }
+
+    [Fact]
+    public async Task RecordPaymentBankEvidenceAsync_ShouldRetainBankConfirmationAndReturnAfterApproval()
+    {
+        var service = BuildService();
+        var entityId = Guid.NewGuid();
+
+        var pending = await service.InitiatePaymentAsync(
+            entityId,
+            new InitiatePaymentRequest(10_000m, new DateOnly(2026, 1, 10), ExternalRef: "payment-intent-1", Notes: null));
+        await service.ApprovePaymentAsync(
+            pending.PendingPaymentId,
+            new ApprovePaymentRequest(ReviewNotes: "Approved by treasurer", ReviewedBy: "treasurer@example.com"));
+
+        var confirmation = await service.RecordPaymentBankEvidenceAsync(
+            pending.PendingPaymentId,
+            new RecordPaymentBankEvidenceRequest(
+                "BankConfirmation",
+                TransactionDate: new DateOnly(2026, 1, 11),
+                SettlementDate: new DateOnly(2026, 1, 12),
+                Amount: 10_000m,
+                Currency: "usd",
+                ExternalRef: "bank-confirmation-1",
+                RecordedBy: "cash-ops@example.com"));
+        var returned = await service.RecordPaymentBankEvidenceAsync(
+            pending.PendingPaymentId,
+            new RecordPaymentBankEvidenceRequest(
+                "BankReturn",
+                TransactionDate: new DateOnly(2026, 1, 13),
+                SettlementDate: new DateOnly(2026, 1, 13),
+                ExternalRef: "bank-return-1",
+                RecordedBy: "treasury-reviewer@example.com"));
+
+        confirmation.Should().NotBeNull();
+        confirmation!.TransactionType.Should().Be("BankConfirmation");
+        confirmation.Currency.Should().Be("USD");
+        confirmation.ExternalRef.Should().Be("bank-confirmation-1");
+        confirmation.RecordedBy.Should().Be("cash-ops@example.com");
+        confirmation.IsVoided.Should().BeFalse();
+        returned.Should().NotBeNull();
+        returned!.TransactionType.Should().Be("BankReturn");
+        returned.RecordedBy.Should().Be("treasury-reviewer@example.com");
+        returned.IsVoided.Should().BeTrue();
+
+        var txns = await service.GetBankTransactionsAsync(entityId);
+        txns.Should().HaveCount(2);
+        txns.Should().Contain(t =>
+            t.TransactionType == "BankConfirmation" &&
+            t.Amount == 10_000m &&
+            t.RecordedBy == "cash-ops@example.com");
+        txns.Should().Contain(t =>
+            t.TransactionType == "BankReturn" &&
+            t.ExternalRef == "bank-return-1" &&
+            t.RecordedBy == "treasury-reviewer@example.com");
+    }
+
+    [Fact]
+    public async Task RecordPaymentBankEvidenceAsync_ShouldIgnoreBlankRecordedBy()
+    {
+        var service = BuildService();
+        var entityId = Guid.NewGuid();
+
+        var pending = await service.InitiatePaymentAsync(
+            entityId,
+            new InitiatePaymentRequest(10_000m, new DateOnly(2026, 1, 10), ExternalRef: "payment-intent-1", Notes: null));
+        await service.ApprovePaymentAsync(
+            pending.PendingPaymentId,
+            new ApprovePaymentRequest(ReviewNotes: "Approved by treasurer", ReviewedBy: "treasurer@example.com"));
+
+        var confirmation = await service.RecordPaymentBankEvidenceAsync(
+            pending.PendingPaymentId,
+            new RecordPaymentBankEvidenceRequest(
+                "BankConfirmation",
+                RecordedBy: "   "));
+
+        confirmation.Should().NotBeNull();
+        confirmation!.RecordedBy.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task RecordPaymentBankEvidenceAsync_ShouldRequireApprovedPayment()
+    {
+        var service = BuildService();
+        var entityId = Guid.NewGuid();
+
+        var pending = await service.InitiatePaymentAsync(
+            entityId,
+            new InitiatePaymentRequest(10_000m, new DateOnly(2026, 1, 10), ExternalRef: "payment-intent-1", Notes: null));
+
+        var act = () => service.RecordPaymentBankEvidenceAsync(
+            pending.PendingPaymentId,
+            new RecordPaymentBankEvidenceRequest("BankConfirmation"));
+
+        var ex = await Assert.ThrowsAsync<BankingException>(act);
+        ex.Message.Should().Contain("must be approved before bank confirmation");
+    }
+
+    [Fact]
+    public async Task RecordPaymentBankEvidenceAsync_ShouldRejectReviewedAutomationOriginBeforeCashEvidenceMutation()
+    {
+        var service = BuildService();
+        var entityId = Guid.NewGuid();
+
+        var pending = await service.InitiatePaymentAsync(
+            entityId,
+            new InitiatePaymentRequest(10_000m, new DateOnly(2026, 1, 10), ExternalRef: "payment-intent-automation", Notes: null));
+        await service.ApprovePaymentAsync(
+            pending.PendingPaymentId,
+            new ApprovePaymentRequest(ReviewNotes: "Approved by treasurer", ReviewedBy: "treasurer@example.com"));
+
+        var act = () => service.RecordPaymentBankEvidenceAsync(
+            pending.PendingPaymentId,
+            new RecordPaymentBankEvidenceRequest(
+                "BankConfirmation",
+                TransactionDate: new DateOnly(2026, 1, 11),
+                SettlementDate: new DateOnly(2026, 1, 12),
+                Amount: 10_000m,
+                Currency: "usd",
+                ExternalRef: "assistant-bank-confirmation-1",
+                RecordedBy: "reviewed-automation",
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft));
+
+        var ex = await Assert.ThrowsAsync<BankingException>(act);
+        ex.Message.Should().Contain("Reviewed automation cannot record bank evidence");
+
+        var approved = await service.GetPaymentAsync(pending.PendingPaymentId);
+        approved.Should().NotBeNull();
+        approved!.Status.Should().Be(PaymentApprovalStatus.Approved);
+
+        var txns = await service.GetBankTransactionsAsync(entityId);
+        txns.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ApprovePaymentAsync_ShouldRejectReviewedAutomationOriginBeforeRelease()
+    {
+        var service = BuildService();
+        var entityId = Guid.NewGuid();
+
+        var pending = await service.InitiatePaymentAsync(
+            entityId,
+            new InitiatePaymentRequest(10_000m, new DateOnly(2026, 1, 10), ExternalRef: "ext-assistant-1", Notes: null));
+
+        var act = () => service.ApprovePaymentAsync(
+            pending.PendingPaymentId,
+            new ApprovePaymentRequest(
+                ReviewNotes: "Assistant draft approval",
+                ReviewedBy: "reviewed-automation",
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft));
+
+        var ex = await Assert.ThrowsAsync<BankingException>(act);
+        ex.Message.Should().Contain("Reviewed automation cannot approve payment requests");
+
+        var stillPending = await service.GetPendingPaymentsAsync(entityId);
+        stillPending.Should().ContainSingle(item =>
+            item.PendingPaymentId == pending.PendingPaymentId &&
+            item.Status == PaymentApprovalStatus.Pending);
+
+        var txns = await service.GetBankTransactionsAsync(entityId);
+        txns.Should().BeEmpty();
     }
 
     [Fact]
@@ -160,6 +325,37 @@ public sealed class PaymentApprovalTests
         rejected.ReviewNotes.Should().Be("Insufficient funds");
         rejected.ReviewedBy.Should().Be("ops@example.com");
         rejected.ReviewedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task RejectPaymentAsync_ShouldRejectReviewedAutomationOriginBeforeMutation()
+    {
+        var service = BuildService();
+        var entityId = Guid.NewGuid();
+
+        var pending = await service.InitiatePaymentAsync(
+            entityId,
+            new InitiatePaymentRequest(3_000m, new DateOnly(2026, 2, 15), ExternalRef: "ext-reject-automation", Notes: null));
+
+        var act = () => service.RejectPaymentAsync(
+            pending.PendingPaymentId,
+            new RejectPaymentRequest(
+                Reason: "Assistant draft rejection",
+                ReviewedBy: "reviewed-automation",
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft));
+
+        var ex = await Assert.ThrowsAsync<BankingException>(act);
+        ex.Message.Should().Contain("Reviewed automation cannot reject payments");
+
+        var stillPending = await service.GetPendingPaymentsAsync(entityId);
+        stillPending.Should().ContainSingle(item =>
+            item.PendingPaymentId == pending.PendingPaymentId &&
+            item.Status == PaymentApprovalStatus.Pending &&
+            item.ReviewedAt == null &&
+            item.ReviewedBy == null);
+
+        var txns = await service.GetBankTransactionsAsync(entityId);
+        txns.Should().BeEmpty();
     }
 
     [Fact]

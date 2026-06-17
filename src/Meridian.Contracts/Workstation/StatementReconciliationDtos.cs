@@ -190,7 +190,13 @@ public sealed record StatementBreakDto(
     string? Owner = null,
     DateTimeOffset? LastObservedAtUtc = null,
     string? RecommendedAction = null,
-    string? EvidenceLink = null);
+    string? EvidenceLink = null,
+    DateTimeOffset? SlaDueAtUtc = null,
+    DateTimeOffset? SlaWarningAtUtc = null,
+    DateTimeOffset? SlaBreachedAtUtc = null,
+    string? SlaState = null,
+    string? EscalationLabel = null,
+    string? EscalationReason = null);
 
 /// <summary>
 /// Operator case opened to investigate and close one or more statement reconciliation breaks.

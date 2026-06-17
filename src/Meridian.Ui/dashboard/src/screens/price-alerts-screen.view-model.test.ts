@@ -16,7 +16,7 @@ import {
   sortPriceAlerts,
   validatePriceAlertForm
 } from "./price-alerts-screen.view-model";
-import type { PriceAlert, PriceAlertTrigger } from "@/lib/price-alerts/types";
+import type { PriceAlert, PriceAlertTrigger } from "@/lib/price-alerts";
 
 describe("validatePriceAlertForm", () => {
   it("flags an empty symbol", () => {

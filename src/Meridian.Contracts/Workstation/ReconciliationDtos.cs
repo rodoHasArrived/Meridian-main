@@ -525,7 +525,8 @@ public sealed record ReconciliationCaseworkCommand(
     IReadOnlyList<string>? EvidenceLinks = null,
     bool Privileged = false,
     ReconciliationCaseLifecycleState? StatusTransition = null,
-    IReadOnlyList<string>? Mentions = null);
+    IReadOnlyList<string>? Mentions = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record ReconciliationBulkCaseworkRequest(
     IReadOnlyList<string> BreakIds,
@@ -544,7 +545,8 @@ public sealed record ReconciliationBulkCaseworkRequest(
     string? Note = null,
     string? RootCauseCode = null,
     string? ResolutionCode = null,
-    int MaxCaseCount = 100);
+    int MaxCaseCount = 100,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record ReconciliationBulkCaseworkCaseResult(
     string BreakId,
@@ -679,7 +681,8 @@ public sealed record ResolveReconciliationBreakRequest(
     ReconciliationBreakQueueStatus Status,
     string ResolvedBy,
     string ResolutionNote,
-    string OperatorRationale);
+    string OperatorRationale,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 /// <summary>
 /// Canonical schema version metadata for reconciliation ingress/egress payloads.

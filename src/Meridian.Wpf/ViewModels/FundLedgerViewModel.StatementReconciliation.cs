@@ -192,7 +192,7 @@ public sealed partial class FundLedgerViewModel
         }
 
         StatementDetailTitle = $"Statement run {SelectedStatementRun.RunId}";
-        StatementDetailSubtitle = $"Import {SelectedStatementRun.ImportId} · {SelectedStatementRun.StatusText} · {SelectedStatementRun.OpenExceptionCount:N0} open exception(s).";
+        StatementDetailSubtitle = $"Import {SelectedStatementRun.ImportId} · {SelectedStatementRun.StatusText} · {SelectedStatementRun.OpenExceptionCount:N0} open item(s).";
         if (SelectedStatementBreak is null)
         {
             StatementDisabledReasonText = "Select an unresolved statement break to enable case-action recovery links.";
@@ -214,7 +214,7 @@ public sealed partial class FundLedgerViewModel
         }
 
         StatementDetailTitle = $"Break {SelectedStatementBreak.BreakId}";
-        StatementDetailSubtitle = $"{SelectedStatementBreak.BreakTypeLabel} · {SelectedStatementBreak.StatusLabel} · {SelectedStatementBreak.DeltaText}.";
+        StatementDetailSubtitle = $"{SelectedStatementBreak.BreakTypeLabel} · {SelectedStatementBreak.StatusLabel} · {SelectedStatementBreak.DeltaText} · {SelectedStatementBreak.SlaLabel}.";
         StatementDisabledReasonText = string.IsNullOrWhiteSpace(SelectedStatementBreak.OwnerLabel) || SelectedStatementBreak.OwnerLabel == "Unassigned"
             ? "Assign an owner before close sign-off; evidence and comment actions remain available."
             : "Case actions are available from the shared reconciliation break endpoints.";
@@ -306,6 +306,9 @@ public sealed partial class FundLedgerViewModel
             FormatDateTimeText(item.LastObservedAtUtc ?? item.CreatedAtUtc),
             string.IsNullOrWhiteSpace(item.RecommendedAction) ? "Review and resolve" : item.RecommendedAction!,
             string.IsNullOrWhiteSpace(item.EvidenceLink) ? $"/api/workstation/reconciliation/statement-breaks#{Uri.EscapeDataString(item.BreakId ?? string.Empty)}" : item.EvidenceLink!,
+            BuildStatementBreakSlaLabel(item),
+            string.IsNullOrWhiteSpace(item.EscalationLabel) ? "Escalation pending" : item.EscalationLabel!,
+            string.IsNullOrWhiteSpace(item.EscalationReason) ? "Assign ownership and retain resolution evidence before close sign-off." : item.EscalationReason!,
             blocked ? WorkstationReadinessTone.Blocked : WorkstationReadinessTone.EvidenceLinked,
             blocked ? WorkspaceTone.Danger : WorkspaceTone.Success);
     }
@@ -344,11 +347,44 @@ public sealed partial class FundLedgerViewModel
             EvidenceLinks:
             [
                 new WorkstationEvidenceLinkModel("Statement break evidence", row.EvidenceLink, "shared workstation endpoint", row.LastObservedText),
+                new WorkstationEvidenceLinkModel("Statement break escalation", row.EvidenceLink, row.SlaLabel, row.EscalationLabel),
                 new WorkstationEvidenceLinkModel("Case actions", primaryAction.TargetRoute, "reconciliation casework", row.OwnerLabel)
             ],
             RecoveryActions: actions.Select(action => new WorkstationRecoveryActionModel(action.Label, string.IsNullOrWhiteSpace(action.DisabledReason) ? row.RecommendedAction : action.DisabledReason, action.TargetRoute)).ToArray(),
-            SignoffRequirement: new WorkstationSignoffRequirementModel("Fund operations reviewer", row.OwnerLabel == "Unassigned" ? "Owner required" : "Review required", StatementDisabledReasonText));
+            SignoffRequirement: new WorkstationSignoffRequirementModel("Fund operations reviewer", row.OwnerLabel == "Unassigned" ? "Owner required" : row.EscalationLabel, row.EscalationReason));
     }
+
+    private static string BuildStatementBreakSlaLabel(StatementBreakDto item)
+    {
+        var state = string.IsNullOrWhiteSpace(item.SlaState) ? "NotStarted" : item.SlaState!;
+        if (item.SlaBreachedAtUtc.HasValue)
+        {
+            return $"{FormatStatementSlaState(state)} · breached {FormatDateTimeText(item.SlaBreachedAtUtc.Value)}";
+        }
+
+        if (item.SlaDueAtUtc.HasValue)
+        {
+            return $"{FormatStatementSlaState(state)} · due {FormatDateTimeText(item.SlaDueAtUtc.Value)}";
+        }
+
+        if (item.SlaWarningAtUtc.HasValue)
+        {
+            return $"{FormatStatementSlaState(state)} · warning {FormatDateTimeText(item.SlaWarningAtUtc.Value)}";
+        }
+
+        return FormatStatementSlaState(state);
+    }
+
+    private static string FormatStatementSlaState(string state)
+        => state switch
+        {
+            "NotStarted" => "Not started",
+            "OnTrack" => "On track",
+            "Warning" => "Warning",
+            "Breached" => "Breached",
+            "Stopped" => "Stopped",
+            _ => state
+        };
 
     private static string FormatDateTimeText(string? value)
         => FormatDateTimeText(ParseDateTimeOffset(value));

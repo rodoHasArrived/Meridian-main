@@ -257,6 +257,8 @@ public partial class App : System.Windows.Application
 
         // Shared API infrastructure
         services.AddSingleton<ApiClientService>(_ => ApiClientService.Instance);
+        services.AddSingleton<WpfServices.WpfRemoteWorkstationClient>(_ => WpfServices.WpfRemoteWorkstationClient.Instance);
+        services.AddSingleton<IRemoteWorkstationClient>(sp => sp.GetRequiredService<WpfServices.WpfRemoteWorkstationClient>());
 
         // ── Fixture mode service (offline mock data) ────────────────────────
         services.AddSingleton<Meridian.Ui.Services.Services.FixtureDataService>(_ => Meridian.Ui.Services.Services.FixtureDataService.Instance);
@@ -281,6 +283,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IStatusService>(sp => sp.GetRequiredService<WpfServices.ApiStatusService>());
         services.AddSingleton<WpfServices.StatusService>(_ => WpfServices.StatusService.Instance);
         services.AddSingleton<WpfServices.FirstRunService>(_ => WpfServices.FirstRunService.Instance);
+        services.AddSingleton<WpfServices.DemoTourService>(_ => WpfServices.DemoTourService.Instance);
         services.AddSingleton<UserProfileRegistry>();
         services.AddSingleton<LoginSessionService>();
         services.AddSingleton<WpfServices.DesktopAuthenticationSession>();
@@ -350,6 +353,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<WpfServices.IWorkstationReconciliationApiClient, WpfServices.WorkstationReconciliationApiClient>();
         services.AddSingleton<WpfServices.IWorkstationSecurityMasterApiClient, WpfServices.WorkstationSecurityMasterApiClient>();
         services.AddSingleton<WpfServices.ISecurityAssetProfileWorkflowClient, WpfServices.SecurityAssetProfileWorkflowClient>();
+        services.AddSingleton<WpfServices.IOperationsControlCenterClient, WpfServices.OperationsControlCenterClient>();
         services.AddSingleton<WpfServices.IWorkstationStrategyBriefingApiClient, WpfServices.WorkstationStrategyBriefingApiClient>();
         services.AddSingleton<WpfServices.IWorkstationOperatorInboxApiClient, WpfServices.WorkstationOperatorInboxApiClient>();
         services.AddSingleton<WpfServices.IStrategyBriefingWorkspaceService, WpfServices.StrategyBriefingWorkspaceService>();
@@ -662,6 +666,10 @@ public partial class App : System.Windows.Application
             // Initialize and validate configuration
             await InitializeConfigurationAsync();
 
+            // Start hosted services registered through shared composition, including
+            // database-backed projection, outbox, and worker services.
+            await StartHostServicesAsync(ct);
+
             // Initialize theme service
             if (Current.MainWindow is MainWindow mainWindow)
             {
@@ -716,6 +724,26 @@ public partial class App : System.Windows.Application
                     "Failed to display startup error notification",
                     notificationEx);
             }
+        }
+    }
+
+    private async Task StartHostServicesAsync(CancellationToken ct = default)
+    {
+        if (_host is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await _host.StartAsync(ct).ConfigureAwait(false);
+            WpfServices.LoggingService.Instance.LogInfo("WPF hosted services started");
+        }
+        catch (Exception ex)
+        {
+            WpfServices.LoggingService.Instance.LogWarning(
+                "WPF hosted services failed to start; continuing with reduced database-backed worker processing",
+                ("Error", ex.Message));
         }
     }
 
@@ -1120,7 +1148,7 @@ public partial class App : System.Windows.Application
             try
             {
                 _ = WpfServices.NotificationService.Instance.NotifyErrorAsync(
-                    "Application Error",
+                    "Workstation needs attention",
                     ex.Message);
             }
             catch (Exception notifyEx)

@@ -854,7 +854,7 @@
                     <Border Grid.Column="1" Style="{StaticResource CardStyle}">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
-                                <TextBlock Text="Promotion Pipeline" Style="{StaticResource CardHeaderStyle}" />
+                                <TextBlock Text="Promotion Readiness" Style="{StaticResource CardHeaderStyle}" />
                                 <Border Style="{StaticResource InfoBadgeInlineStyle}"
                                         Margin="10,0,0,0"
                                         VerticalAlignment="Center">

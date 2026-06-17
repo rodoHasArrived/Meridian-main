@@ -190,6 +190,19 @@ public sealed record PortfolioReportingCutDto(
     string? VersionStamp = null);
 
 /// <summary>
+/// Server-owned freshness policy evidence for a portfolio reporting live view.
+/// </summary>
+public sealed record PortfolioReportingLiveViewFreshnessPolicyDto(
+    string PolicyName,
+    DateTimeOffset EvaluatedAtUtc,
+    int? SourceAgeSeconds,
+    int LiveLinkWindowSeconds,
+    int StaleWindowSeconds,
+    bool IsWithinLiveLinkWindow,
+    bool IsBeyondStaleWindow,
+    string Reason);
+
+/// <summary>
 /// Reporting-owned pointer to live portfolio summary, liquidity, and cash-ladder evidence.
 /// </summary>
 public sealed record PortfolioReportingLiveViewDto(
@@ -220,7 +233,8 @@ public sealed record PortfolioReportingLiveViewDto(
     long? MarketTickSequence = null,
     string? MarketDataProvider = null,
     string? TickFreshnessSummary = null,
-    bool IsMarketTickLinked = false);
+    bool IsMarketTickLinked = false,
+    PortfolioReportingLiveViewFreshnessPolicyDto? FreshnessPolicy = null);
 
 [JsonConverter(typeof(JsonStringEnumConverter<PortfolioReportingPnlSlicePeriodDto>))]
 public enum PortfolioReportingPnlSlicePeriodDto
@@ -362,7 +376,11 @@ public sealed record StructuredReportingExportDto(
     string? EvidenceRoute = null,
     string? VersionStamp = null,
     IReadOnlyList<string>? Tags = null,
-    IReadOnlyList<string>? ReadinessBlockers = null);
+    IReadOnlyList<string>? ReadinessBlockers = null,
+    string? RetainedManifestPath = null,
+    string? IntegrityHashSha256 = null,
+    string? IntegritySummary = null,
+    int? RowLineageCount = null);
 
 public sealed record StructuredReportingExportColumnDto(
     string Name,
@@ -381,6 +399,11 @@ public sealed record StructuredReportingExportValidationCheckDto(
     string Status,
     string Detail);
 
+public sealed record StructuredReportingExportRowLineageDto(
+    int RowNumber,
+    string RowKey,
+    string RowHashSha256);
+
 public sealed record StructuredReportingExportPayloadDto(
     StructuredReportingExportDto Export,
     IReadOnlyList<StructuredReportingExportColumnDto> Columns,
@@ -388,7 +411,11 @@ public sealed record StructuredReportingExportPayloadDto(
     IReadOnlyList<string> Warnings,
     DateTimeOffset GeneratedAtUtc,
     IReadOnlyList<StructuredReportingExportDataDictionaryFieldDto>? DataDictionary = null,
-    IReadOnlyList<StructuredReportingExportValidationCheckDto>? ValidationChecks = null);
+    IReadOnlyList<StructuredReportingExportValidationCheckDto>? ValidationChecks = null,
+    string? GeneratedByPrincipalId = null,
+    string? GeneratedForCompanyId = null,
+    IReadOnlyList<string>? GeneratedForGroupPrincipalIds = null,
+    IReadOnlyList<StructuredReportingExportRowLineageDto>? RowLineage = null);
 
 public sealed record StructuredReportingExportRequestDto(
     string FundProfileId,
@@ -418,6 +445,7 @@ public sealed record FundReportingSummaryDto(
     string? FundProfileId = null,
     IReadOnlyList<ReportingScheduleDeliveryPlanDto>? ScheduleDeliveryPlans = null,
     FinancialRecordExplorerDto? ReportLineProvenanceExplorer = null,
+    IReadOnlyList<WorkstationReportWriterDatasetSourcePayload>? ReportWriterDatasetSources = null,
     WorkstationReportAccessAuditSummaryDto? AccessAudit = null);
 
 /// <summary>
@@ -449,7 +477,9 @@ public sealed record FundReportPackPreviewRequestDto(
     string FundProfileId,
     GovernanceReportKindDto ReportKind = GovernanceReportKindDto.TrialBalance,
     DateTimeOffset? AsOf = null,
-    string? Currency = null);
+    string? Currency = null,
+    string? BrandingThemeId = null,
+    ReportBrandingThemeDto? BrandingThemeOverride = null);
 
 /// <summary>
 /// Asset-class total included in a report-pack preview.
@@ -490,7 +520,8 @@ public sealed record FundReportPackPreviewDto(
     decimal TotalNetAssets,
     int TrialBalanceLineCount,
     int AssetClassSectionCount,
-    IReadOnlyList<FundReportAssetClassSectionDto> AssetClassSections);
+    IReadOnlyList<FundReportAssetClassSectionDto> AssetClassSections,
+    ReportBrandingThemeDto? BrandingTheme = null);
 
 /// <summary>
 /// Request to generate and persist an immutable governed report pack.
@@ -825,6 +856,20 @@ public sealed record ReportPackDeliveryAccessLinkDto(
     DateTimeOffset? ExpiresAtUtc = null,
     string? Description = null);
 
+public sealed record ReportPackDeliveryNotificationDto(
+    string NotificationId,
+    string Channel,
+    string Recipient,
+    string RecipientRole,
+    ReportPackDeliveryModeDto DeliveryMode,
+    string Subject,
+    string Body,
+    string Href,
+    bool RequiresToken,
+    DateTimeOffset CreatedAtUtc,
+    DateTimeOffset? ExpiresAtUtc = null,
+    string Status = "Ready");
+
 public sealed record ReportPackDeliveryRecipientDto(
     string DistributionId,
     string Recipient,
@@ -905,7 +950,11 @@ public sealed record ReportPackDeliveryPackageDto(
     DateTimeOffset? AccessExpiresAtUtc = null,
     IReadOnlyList<ReportPackDeliveryAccessLinkDto>? AccessLinks = null,
     IReadOnlyList<WorkstationGeneratedReportWriterGridPayload>? GeneratedReportWriterGrids = null,
-    IReadOnlyList<ReportWriterGridRenderDto>? RenderedReportWriterGrids = null);
+    IReadOnlyList<ReportWriterGridRenderDto>? RenderedReportWriterGrids = null,
+    IReadOnlyList<ReportPackDeliveryNotificationDto>? Notifications = null,
+    string? ReportWriterDatasetSourceId = null,
+    string? ReportWriterDatasetSourceLabel = null,
+    int? ReportWriterDatasetRowCount = null);
 
 public sealed record ReportPackDeliveryAttemptDto(
     Guid AttemptId,
@@ -931,7 +980,8 @@ public sealed record ReportPackDeliveryRequestDto(
     string? Note = null,
     IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null,
     IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null,
-    ReportPackDeliveryModeDto? DeliveryMode = null);
+    ReportPackDeliveryModeDto? DeliveryMode = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record ReportPackDeliveryFailureRequestDto(
     string DistributionId,
@@ -939,7 +989,8 @@ public sealed record ReportPackDeliveryFailureRequestDto(
     string? Actor = null,
     string? DeliveryReference = null,
     string? Note = null,
-    IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+    IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 
 public sealed record ReportPackDeliveryHistoryDto(
     Guid ReportId,
@@ -974,10 +1025,23 @@ public sealed record ReportingScheduleDeliveryPlanDto(
     string? LastDeliveryPackageRoute = null,
     string? LastDeliverySecureLink = null,
     IReadOnlyList<ReportPackDeliveryAccessLinkDto>? LastDeliveryAccessLinks = null,
+    DateTimeOffset? LastDeliveryAccessExpiresAtUtc = null,
+    string? LastDeliveryAccessSummary = null,
+    string? LastDeliveryChannelSummary = null,
+    string? LastDeliveryDownloadSummary = null,
+    int LastDeliveryNotificationCount = 0,
+    string? LastDeliveryNotificationSummary = null,
+    int LastDeliveryGeneratedReportWriterGridCount = 0,
+    int LastDeliveryRenderedReportWriterGridCount = 0,
+    string? LastDeliveryReportWriterDatasetSummary = null,
+    string? LastDeliveryReportWriterGridSummary = null,
     string? VersionStamp = null,
     int LastDeliveryArtifactCount = 0,
     string? LastDeliveryIntegritySummary = null,
-    IReadOnlyList<string>? ReadinessBlockers = null);
+    IReadOnlyList<string>? ReadinessBlockers = null,
+    string? BrandingThemeId = null,
+    ReportBrandingThemeDto? BrandingTheme = null,
+    string? LastDeliveryEntitlementScope = null);
 
 [JsonConverter(typeof(JsonStringEnumConverter<ReportingScheduleStateDto>))]
 public enum ReportingScheduleStateDto
@@ -1003,7 +1067,10 @@ public sealed record ReportingScheduleRecordDto(
     int RunCount = 0,
     string? Description = null,
     IReadOnlyList<ReportingScheduleDeliveryTargetDto>? DeliveryTargets = null,
-    IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null);
+    IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null,
+    string? DatasetSourceId = null,
+    string? BrandingThemeId = null,
+    ReportBrandingThemeDto? BrandingThemeOverride = null);
 
 public sealed record ReportingScheduleUpsertRequestDto(
     string ScheduleId,
@@ -1016,7 +1083,10 @@ public sealed record ReportingScheduleUpsertRequestDto(
     string? Description = null,
     ReportingScheduleStateDto State = ReportingScheduleStateDto.Active,
     IReadOnlyList<ReportingScheduleDeliveryTargetDto>? DeliveryTargets = null,
-    IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null);
+    IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null,
+    string? DatasetSourceId = null,
+    string? BrandingThemeId = null,
+    ReportBrandingThemeDto? BrandingThemeOverride = null);
 
 public sealed record ReportingScheduleRunResultDto(
     ReportingScheduleRecordDto Schedule,
@@ -1034,7 +1104,8 @@ public sealed record ReportingRunRequestDto(
     int MaxRetries = 0,
     string? JobId = null,
     string? RequestedBy = null,
-    IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null);
+    IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null,
+    string? DatasetSourceId = null);
 
 public sealed record ReportingRunResultDto(
     WorkstationReportingRunPayload Run);
@@ -1053,7 +1124,10 @@ public sealed record ReportingRunAuditTrailDto(
     string Status,
     string Trigger,
     int AttemptCount,
-    IReadOnlyList<ReportingRunAuditEntryDto> Entries);
+    IReadOnlyList<ReportingRunAuditEntryDto> Entries,
+    string? ReportWriterDatasetSourceId = null,
+    string? ReportWriterDatasetSourceLabel = null,
+    int? ReportWriterDatasetRowCount = null);
 
 /// <summary>
 /// Shared governed report-pack workflow states. The W4 happy-path lifecycle is
@@ -1347,7 +1421,11 @@ public sealed record ReportPackPublishRequestDto(
     string RetainedManifestPath,
     IReadOnlyList<ReportPackEvidenceLinkDto> EvidenceLinks,
     string? Note = null,
-    ReportBrandingThemeDto? BrandingTheme = null);
+    ReportBrandingThemeDto? BrandingTheme = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+/// <summary>Optional action-origin metadata for report-pack workflow commands that historically used an empty body.</summary>
+public sealed record ReportPackWorkflowActionRequestDto(
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 /// <summary>Request payload for rejecting an in-review report pack with reviewer metadata and supporting evidence.</summary>
 public sealed record ReportPackRejectRequestDto(
     string Reason,
@@ -1379,7 +1457,8 @@ public sealed record ReportPackRestateRequestDto(
     string ReasonCode,
     Guid PriorVersionReportId,
     IReadOnlyList<ReportPackChangedLineDto> ChangedLines,
-    string? Approver = null);
+    string? Approver = null,
+    OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 public sealed record ReportPackWorkflowRecordDto(
     Guid ReportId,
     string FundProfileId,

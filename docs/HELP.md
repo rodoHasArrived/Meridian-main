@@ -213,6 +213,12 @@ The commands below are generated from `docs/status/workflow-manifest.json`.
 - Commands:
   - `pwsh ./scripts/dev/validate-wpf-dev.ps1 -Restore`
 
+#### `targeted-test`
+
+- Owners: @developer-experience, @ci-platform
+- Commands:
+  - `gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"`
+
 #### `robinhood-options-smoke`
 
 - Owners: @desktop-shell, @provider-infra

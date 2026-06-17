@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Workstation;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Application.FundStructure;
 using Meridian.Identity.Auth;
@@ -98,6 +99,144 @@ public sealed class ScopedAccessServiceTests
 
         await staleWrite.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("*already been revoked*");
+    }
+
+    [Fact]
+    public async Task CreateAsync_GovernedAuthorityMetadata_RetainsApprovalLimitAndSegregationRule()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(CreateAsync_GovernedAuthorityMetadata_RetainsApprovalLimitAndSegregationRule));
+        var store = new FileScopedAccessAssignmentStore(Path.Combine(artifacts.RootPath, "governance", "user-access-assignments.json"));
+        var service = new ScopedAccessService(store);
+
+        var result = await service.CreateAsync(
+            new UserAccessAssignmentCreateRequestDto(
+                PrincipalId: "payment-approver",
+                PrincipalKind: AccessPrincipalKindDto.User,
+                ScopeKind: AccessScopeKindDto.Global,
+                ScopeId: null,
+                Role: nameof(UserRole.Accounting),
+                RoleProfileName: "Payment Approval",
+                PermissionNames: [nameof(UserPermission.ManageDirectLending)],
+                EffectiveFrom: DateTimeOffset.UtcNow.AddMinutes(-1),
+                EffectiveTo: null,
+                RequestedBy: "admin",
+                Rationale: "Authorize payment requests below treasury policy threshold.",
+                ApprovalLimitAmount: 100_000m,
+                ApprovalLimitCurrency: "usd",
+                SegregationOfDutiesRule: "Requester cannot approve own payment request."),
+            actor: "admin");
+
+        result.Assignment.ApprovalLimitAmount.Should().Be(100_000m);
+        result.Assignment.ApprovalLimitCurrency.Should().Be("USD");
+        result.Assignment.SegregationOfDutiesRule.Should().Be("Requester cannot approve own payment request.");
+        result.AuditEvent.ApprovalLimitAmount.Should().Be(100_000m);
+        result.AuditEvent.ApprovalLimitCurrency.Should().Be("USD");
+        result.AuditEvent.SegregationOfDutiesRule.Should().Be("Requester cannot approve own payment request.");
+
+        var reloaded = await service.QueryAsync(new UserAccessAssignmentQueryDto(PrincipalId: "payment-approver"));
+        reloaded.Should().ContainSingle()
+            .Which.SegregationOfDutiesRule.Should().Be("Requester cannot approve own payment request.");
+    }
+
+    [Fact]
+    public async Task CreateAsync_AssistantOrigin_RejectsBeforePersistingAuthority()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(CreateAsync_AssistantOrigin_RejectsBeforePersistingAuthority));
+        var store = new FileScopedAccessAssignmentStore(Path.Combine(artifacts.RootPath, "governance", "user-access-assignments.json"));
+        var service = new ScopedAccessService(store);
+
+        var act = () => service.CreateAsync(
+            new UserAccessAssignmentCreateRequestDto(
+                PrincipalId: "assistant-created-admin",
+                PrincipalKind: AccessPrincipalKindDto.User,
+                ScopeKind: AccessScopeKindDto.Global,
+                ScopeId: null,
+                Role: nameof(UserRole.Admin),
+                RoleProfileName: null,
+                PermissionNames: [nameof(UserPermission.ManageUsers)],
+                EffectiveFrom: DateTimeOffset.UtcNow.AddMinutes(-1),
+                EffectiveTo: null,
+                RequestedBy: "assistant-agent",
+                Rationale: "Assistant drafted an authority grant.",
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft),
+            actor: "admin");
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Reviewed automation cannot grant scoped access assignments*");
+
+        var assignments = await service.QueryAsync(new UserAccessAssignmentQueryDto(
+            PrincipalId: "assistant-created-admin",
+            IncludeRevoked: true));
+        assignments.Should().BeEmpty("assistant-origin authority grants must fail before persistence");
+    }
+
+    [Fact]
+    public async Task RevokeAsync_AutomationOrigin_RejectsBeforeMutatingAuthority()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(RevokeAsync_AutomationOrigin_RejectsBeforeMutatingAuthority));
+        var store = new FileScopedAccessAssignmentStore(Path.Combine(artifacts.RootPath, "governance", "user-access-assignments.json"));
+        var service = new ScopedAccessService(store);
+        var result = await service.CreateAsync(
+            new UserAccessAssignmentCreateRequestDto(
+                PrincipalId: "close-reviewer",
+                PrincipalKind: AccessPrincipalKindDto.User,
+                ScopeKind: AccessScopeKindDto.Global,
+                ScopeId: null,
+                Role: nameof(UserRole.Accounting),
+                RoleProfileName: null,
+                PermissionNames: [nameof(UserPermission.ViewTrades)],
+                EffectiveFrom: DateTimeOffset.UtcNow.AddMinutes(-1),
+                EffectiveTo: null,
+                RequestedBy: "admin",
+                Rationale: "Temporary close review authority."),
+            actor: "admin");
+
+        var act = () => service.RevokeAsync(
+            new UserAccessAssignmentRevokeRequestDto(
+                result.Assignment.AssignmentId,
+                ExpectedVersion: result.Assignment.Version,
+                RequestedBy: "automation-agent",
+                Rationale: "Automation requested authority revocation.",
+                ActionOrigin: OperationsActionOriginDto.AutomationAssistant),
+            actor: "admin");
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Reviewed automation cannot revoke scoped access assignments*");
+
+        var assignments = await service.QueryAsync(new UserAccessAssignmentQueryDto(
+            PrincipalId: "close-reviewer",
+            IncludeRevoked: true));
+        var assignment = assignments.Should().ContainSingle().Subject;
+        assignment.Version.Should().Be(result.Assignment.Version);
+        assignment.RevokedAtUtc.Should().BeNull();
+        assignment.RevokedBy.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CreateAsync_ApprovalLimitWithoutCurrency_IsRejected()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(CreateAsync_ApprovalLimitWithoutCurrency_IsRejected));
+        var store = new FileScopedAccessAssignmentStore(Path.Combine(artifacts.RootPath, "governance", "user-access-assignments.json"));
+        var service = new ScopedAccessService(store);
+
+        var act = () => service.CreateAsync(
+            new UserAccessAssignmentCreateRequestDto(
+                PrincipalId: "payment-approver",
+                PrincipalKind: AccessPrincipalKindDto.User,
+                ScopeKind: AccessScopeKindDto.Global,
+                ScopeId: null,
+                Role: nameof(UserRole.Accounting),
+                RoleProfileName: null,
+                PermissionNames: [nameof(UserPermission.ManageDirectLending)],
+                EffectiveFrom: DateTimeOffset.UtcNow.AddMinutes(-1),
+                EffectiveTo: null,
+                RequestedBy: "admin",
+                Rationale: "Invalid threshold metadata.",
+                ApprovalLimitAmount: 100_000m),
+            actor: "admin");
+
+        await act.Should().ThrowAsync<ArgumentException>()
+            .WithMessage("*ApprovalLimitCurrency is required*");
     }
 
     [Fact]

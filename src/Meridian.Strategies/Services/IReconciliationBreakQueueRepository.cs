@@ -71,7 +71,8 @@ public enum ReconciliationBreakQueueTransitionErrorCode : byte
     MissingResolutionCode = 8,
     ResolverSignerConflict = 9,
     ConcurrencyConflict = 10,
-    InvalidTaxonomy = 11
+    InvalidTaxonomy = 11,
+    MaterialActionRequiresHumanOperator = 12
 }
 
 public sealed record ReconciliationCaseValidationProblem(

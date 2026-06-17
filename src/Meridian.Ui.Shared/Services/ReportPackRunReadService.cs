@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using Meridian.Contracts.Api;
 using Meridian.Reporting;
 using Meridian.Contracts.Workstation;
@@ -208,6 +210,10 @@ public sealed class ReportPackRunReadService
         var crossFundConsolidations = BuildCrossFundConsolidations(portfolioCuts);
         var pnlSlices = BuildPortfolioReportingPnlSlices(portfolioCuts);
         var analyticsRows = BuildPortfolioReportingAnalyticsRows(portfolioCuts);
+        var reportWriterDatasetSources = BuildReportWriterDatasetSources(
+            portfolioCuts,
+            analyticsRows,
+            crossFundConsolidations);
         var structuredExports = BuildStructuredReportingExports(
             selectedFundProfileId,
             workflowRecords,
@@ -263,6 +269,7 @@ public sealed class ReportPackRunReadService
             AnalyticsRows: analyticsRows,
             StructuredExports: structuredExports,
             BrandingThemes: BuiltInReportBrandingThemes,
+            ReportWriterDatasetSources: reportWriterDatasetSources,
             AccessAudit: accessAudit);
     }
 
@@ -294,13 +301,26 @@ public sealed class ReportPackRunReadService
             warnings,
             DateTimeOffset.UtcNow,
             BuildStructuredExportDataDictionary(columns),
-            BuildStructuredExportValidationChecks(descriptor, columns, rows));
+            BuildStructuredExportValidationChecks(descriptor, columns, rows),
+            GeneratedByPrincipalId: accessContext?.ActorPrincipalId,
+            GeneratedForCompanyId: accessContext?.CompanyId,
+            GeneratedForGroupPrincipalIds: accessContext?.GroupPrincipalIds?.ToArray() ?? [],
+            RowLineage: BuildStructuredExportRowLineage(descriptor.ExportId, columns, rows));
     }
 
     public IReadOnlyList<IReadOnlyDictionary<string, string>> BuildReportWriterDatasetRows(
         ReportAccessQueryContext? accessContext = null,
         int recentRunLimit = DefaultRecentRunLimit) =>
         ReportWriterDatasetSourceService.BuildDatasetRows(BuildPayload(accessContext, recentRunLimit));
+
+    private static IReadOnlyList<WorkstationReportWriterDatasetSourcePayload> BuildReportWriterDatasetSources(
+        IReadOnlyList<PortfolioReportingCutDto> portfolioCuts,
+        IReadOnlyList<PortfolioReportingAnalyticsRowDto> analyticsRows,
+        IReadOnlyList<CrossFundReportingConsolidationDto> crossFundConsolidations) =>
+        ReportWriterDatasetSourceService.BuildDatasetSources(
+            portfolioCuts,
+            analyticsRows,
+            crossFundConsolidations);
 
     public static ReportPackDistributionPolicy ResolveDistributionPolicy(string distributionId)
     {
@@ -436,8 +456,22 @@ public sealed class ReportPackRunReadService
                 TickFreshnessSummary: cut.SourceCount > 0
                     ? "Source-backed tick snapshot is retained from report-pack line provenance."
                     : "No market tick snapshot is available for this reporting live view.",
-                IsMarketTickLinked: false))
+                IsMarketTickLinked: false,
+                FreshnessPolicy: BuildRetainedPortfolioFreshnessPolicy(cut)))
             .ToArray();
+
+    private static PortfolioReportingLiveViewFreshnessPolicyDto BuildRetainedPortfolioFreshnessPolicy(PortfolioReportingCutDto cut)
+        => new(
+            PolicyName: "RetainedReportPackProvenance",
+            EvaluatedAtUtc: cut.AsOf,
+            SourceAgeSeconds: cut.SourceCount > 0 ? 0 : null,
+            LiveLinkWindowSeconds: 300,
+            StaleWindowSeconds: 86_400,
+            IsWithinLiveLinkWindow: false,
+            IsBeyondStaleWindow: false,
+            Reason: cut.SourceCount > 0
+                ? "Retained report-pack provenance is source-backed and not classified as live-linked market telemetry."
+                : "No retained portfolio reporting provenance is available, so freshness fails closed.");
 
     internal static IReadOnlyList<CrossFundReportingConsolidationDto> BuildCrossFundConsolidations(
         IReadOnlyList<PortfolioReportingCutDto> portfolioCuts)
@@ -741,6 +775,22 @@ public sealed class ReportPackRunReadService
         string blockedSummary,
         IReadOnlyList<string> tags)
     {
+        var retainedPath = BuildStructuredExportRetainedPath(fundProfileId, exportId, asOf, format);
+        var retainedManifestPath = BuildStructuredExportRetainedManifestPath(fundProfileId, exportId, asOf);
+        var versionStamp = $"reporting-structured-export:{exportId}:{asOf.UtcDateTime:yyyyMMddHHmmss}:rows-{rowCount}:sources-{sourceCount}:schema-{StructuredReportingExportSchemaVersion}";
+        var integrityHash = BuildStructuredExportIntegrityHash(
+            exportId,
+            dataset,
+            consumer,
+            currency,
+            asOf,
+            rowCount,
+            fieldCount,
+            sourceCount,
+            retainedPath,
+            retainedManifestPath,
+            versionStamp);
+
         return new StructuredReportingExportDto(
             exportId,
             label,
@@ -755,16 +805,20 @@ public sealed class ReportPackRunReadService
             currency,
             asOf,
             isReady,
-            BuildStructuredExportRetainedPath(fundProfileId, exportId, asOf, format),
+            retainedPath,
             BuildStructuredExportRoute(exportId, asOf, currency),
             UiApiRoutes.WorkstationReporting,
             isReady
                 ? $"{readySummary} {rowCount} row(s), {fieldCount} field(s), and {sourceCount} source record(s) are ready."
                 : blockedSummary,
             UiApiRoutes.FundReportPacks,
-            $"reporting-structured-export:{exportId}:{asOf.UtcDateTime:yyyyMMddHHmmss}:rows-{rowCount}:sources-{sourceCount}:schema-{StructuredReportingExportSchemaVersion}",
+            versionStamp,
             tags,
-            isReady ? [] : [blockedSummary]);
+            isReady ? [] : [blockedSummary],
+            retainedManifestPath,
+            integrityHash,
+            BuildStructuredExportIntegritySummary(rowCount, fieldCount, sourceCount, integrityHash),
+            rowCount);
     }
 
     private static DateTimeOffset ResolveStructuredExportAsOf(
@@ -797,6 +851,47 @@ public sealed class ReportPackRunReadService
         };
         return $"vault/reporting/structured-exports/{fundProfileId}/{exportId}/{asOf.UtcDateTime:yyyyMMddHHmmss}.{extension}";
     }
+
+    private static string BuildStructuredExportRetainedManifestPath(
+        string fundProfileId,
+        string exportId,
+        DateTimeOffset asOf) =>
+        $"vault/reporting/structured-exports/{fundProfileId}/{exportId}/{asOf.UtcDateTime:yyyyMMddHHmmss}.manifest.json";
+
+    private static string BuildStructuredExportIntegrityHash(
+        string exportId,
+        string dataset,
+        string consumer,
+        string currency,
+        DateTimeOffset asOf,
+        int rowCount,
+        int fieldCount,
+        int sourceCount,
+        string retainedPath,
+        string retainedManifestPath,
+        string versionStamp)
+    {
+        var input = string.Join('|',
+            exportId,
+            dataset,
+            consumer,
+            currency,
+            asOf.UtcDateTime.ToString("O", CultureInfo.InvariantCulture),
+            rowCount.ToString(CultureInfo.InvariantCulture),
+            fieldCount.ToString(CultureInfo.InvariantCulture),
+            sourceCount.ToString(CultureInfo.InvariantCulture),
+            retainedPath,
+            retainedManifestPath,
+            versionStamp);
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(input))).ToLowerInvariant();
+    }
+
+    private static string BuildStructuredExportIntegritySummary(
+        int rowCount,
+        int fieldCount,
+        int sourceCount,
+        string integrityHash) =>
+        $"{rowCount.ToString(CultureInfo.InvariantCulture)} row(s), {fieldCount.ToString(CultureInfo.InvariantCulture)} field(s), and {sourceCount.ToString(CultureInfo.InvariantCulture)} source record(s) retained with SHA-256 {integrityHash}.";
 
     private static string BuildStructuredExportRoute(
         string exportId,
@@ -1091,6 +1186,50 @@ public sealed class ReportPackRunReadService
                 ? $"Structured export is backed by {descriptor.SourceCount.ToString(CultureInfo.InvariantCulture)} source record(s)."
                 : "No source records are linked to this structured export.")
     ];
+
+    private static IReadOnlyList<StructuredReportingExportRowLineageDto> BuildStructuredExportRowLineage(
+        string exportId,
+        IReadOnlyList<StructuredReportingExportColumnDto> columns,
+        IReadOnlyList<IReadOnlyDictionary<string, string?>> rows) =>
+        rows
+            .Select((row, index) => new StructuredReportingExportRowLineageDto(
+                index + 1,
+                ResolveStructuredExportRowKey(row, index),
+                ComputeStructuredExportRowHash(exportId, columns, row)))
+            .ToArray();
+
+    private static string ResolveStructuredExportRowKey(
+        IReadOnlyDictionary<string, string?> row,
+        int index)
+    {
+        foreach (var key in new[] { "cutId", "analyticsId", "consolidationId", "accountName", "scope", "label" })
+        {
+            if (row.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return $"row-{(index + 1).ToString(CultureInfo.InvariantCulture)}";
+    }
+
+    private static string ComputeStructuredExportRowHash(
+        string exportId,
+        IReadOnlyList<StructuredReportingExportColumnDto> columns,
+        IReadOnlyDictionary<string, string?> row)
+    {
+        var builder = new StringBuilder();
+        builder.Append(exportId);
+        foreach (var column in columns)
+        {
+            builder.Append('|');
+            builder.Append(column.Name);
+            builder.Append('=');
+            builder.Append(row.TryGetValue(column.Name, out var value) ? value : string.Empty);
+        }
+
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()))).ToLowerInvariant();
+    }
 
     private static IReadOnlyList<string> BuildPortfolioCutTags(
         IReadOnlyList<ReportPackWorkflowRecordDto> records,
@@ -1618,9 +1757,22 @@ public sealed class ReportPackRunReadService
                     LastDeliveryPackageRoute: latestAttempt?.Package?.PortalRoute,
                     LastDeliverySecureLink: latestAttempt?.Package?.SecureLink,
                     LastDeliveryAccessLinks: latestAttempt?.Package?.AccessLinks,
+                    LastDeliveryAccessExpiresAtUtc: latestAttempt?.Package?.AccessExpiresAtUtc,
+                    LastDeliveryAccessSummary: latestAttempt?.Package?.DeliveryAccessSummary,
+                    LastDeliveryChannelSummary: latestAttempt?.Package?.DeliveryChannelSummary,
+                    LastDeliveryDownloadSummary: latestAttempt?.Package?.DownloadSummary,
+                    LastDeliveryNotificationCount: latestAttempt?.Package?.Notifications?.Count ?? 0,
+                    LastDeliveryNotificationSummary: BuildScheduleDeliveryPlanNotificationSummary(latestAttempt),
+                    LastDeliveryGeneratedReportWriterGridCount: latestAttempt?.Package?.GeneratedReportWriterGrids?.Count ?? 0,
+                    LastDeliveryRenderedReportWriterGridCount: latestAttempt?.Package?.RenderedReportWriterGrids?.Count ?? 0,
+                    LastDeliveryReportWriterDatasetSummary: BuildScheduleDeliveryPlanReportWriterDatasetSummary(latestAttempt),
+                    LastDeliveryReportWriterGridSummary: BuildScheduleDeliveryPlanReportWriterGridSummary(latestAttempt),
                     VersionStamp: BuildScheduleDeliveryPlanVersionStamp(schedule, distributionId, formats),
                     LastDeliveryArtifactCount: latestAttempt?.Package?.Artifacts.Count ?? 0,
-                    LastDeliveryIntegritySummary: latestAttempt?.Package?.IntegritySummary);
+                    LastDeliveryIntegritySummary: latestAttempt?.Package?.IntegritySummary,
+                    BrandingThemeId: ResolveScheduleBrandingThemeId(schedule, latestAttempt),
+                    BrandingTheme: latestAttempt?.Package?.BrandingTheme ?? schedule.BrandingThemeOverride,
+                    LastDeliveryEntitlementScope: ResolveLastDeliveryEntitlementScope(latestAttempt));
             }
 
             if (fallbackPlan is not null)
@@ -1659,11 +1811,115 @@ public sealed class ReportPackRunReadService
                 LastDeliveryPackageRoute: latestAttempt?.Package?.PortalRoute,
                 LastDeliverySecureLink: latestAttempt?.Package?.SecureLink,
                 LastDeliveryAccessLinks: latestAttempt?.Package?.AccessLinks,
+                LastDeliveryAccessExpiresAtUtc: latestAttempt?.Package?.AccessExpiresAtUtc,
+                LastDeliveryAccessSummary: latestAttempt?.Package?.DeliveryAccessSummary,
+                LastDeliveryChannelSummary: latestAttempt?.Package?.DeliveryChannelSummary,
+                LastDeliveryDownloadSummary: latestAttempt?.Package?.DownloadSummary,
+                LastDeliveryNotificationCount: latestAttempt?.Package?.Notifications?.Count ?? 0,
+                LastDeliveryNotificationSummary: BuildScheduleDeliveryPlanNotificationSummary(latestAttempt),
+                LastDeliveryGeneratedReportWriterGridCount: latestAttempt?.Package?.GeneratedReportWriterGrids?.Count ?? 0,
+                LastDeliveryRenderedReportWriterGridCount: latestAttempt?.Package?.RenderedReportWriterGrids?.Count ?? 0,
+                LastDeliveryReportWriterDatasetSummary: BuildScheduleDeliveryPlanReportWriterDatasetSummary(latestAttempt),
+                LastDeliveryReportWriterGridSummary: BuildScheduleDeliveryPlanReportWriterGridSummary(latestAttempt),
                 VersionStamp: BuildScheduleDeliveryPlanVersionStamp(schedule, policy.DistributionId, formats),
                 LastDeliveryArtifactCount: latestAttempt?.Package?.Artifacts.Count ?? 0,
                 LastDeliveryIntegritySummary: latestAttempt?.Package?.IntegritySummary,
-                ReadinessBlockers: readiness.Blockers);
+                ReadinessBlockers: readiness.Blockers,
+                BrandingThemeId: ResolveScheduleBrandingThemeId(schedule, latestAttempt),
+                BrandingTheme: latestAttempt?.Package?.BrandingTheme ?? schedule.BrandingThemeOverride,
+                LastDeliveryEntitlementScope: ResolveLastDeliveryEntitlementScope(latestAttempt));
         }
+    }
+
+    private static string? ResolveLastDeliveryEntitlementScope(ReportPackDeliveryAttemptDto? latestAttempt)
+    {
+        var entitlementScope = NormalizeOptional(latestAttempt?.Package?.DeliveryEvidencePacket?.EntitlementScope);
+        return string.IsNullOrWhiteSpace(entitlementScope) ? null : entitlementScope;
+    }
+
+    private static string? BuildScheduleDeliveryPlanNotificationSummary(ReportPackDeliveryAttemptDto? latestAttempt)
+    {
+        var notifications = latestAttempt?.Package?.Notifications;
+        if (notifications is null || notifications.Count == 0)
+        {
+            return null;
+        }
+
+        var statusSummary = string.Join(
+            "; ",
+            notifications.Select(static notification => $"{notification.Status} via {notification.Channel}"));
+        return $"{notifications.Count} notification{(notifications.Count == 1 ? string.Empty : "s")} retained: {statusSummary}.";
+    }
+
+    private static string? BuildScheduleDeliveryPlanReportWriterDatasetSummary(ReportPackDeliveryAttemptDto? latestAttempt)
+    {
+        var package = latestAttempt?.Package;
+        if (package is null)
+        {
+            return null;
+        }
+
+        var label = NormalizeOptional(package.ReportWriterDatasetSourceLabel)
+            ?? NormalizeOptional(package.ReportWriterDatasetSourceId)
+            ?? (package.ReportWriterDatasetRowCount.HasValue ? "Custom report-writer dataset" : null);
+        if (string.IsNullOrWhiteSpace(label))
+        {
+            return null;
+        }
+
+        return package.ReportWriterDatasetRowCount.HasValue
+            ? $"{label} ({package.ReportWriterDatasetRowCount.Value} row{(package.ReportWriterDatasetRowCount.Value == 1 ? string.Empty : "s")})"
+            : label;
+    }
+
+    private static string? BuildScheduleDeliveryPlanReportWriterGridSummary(ReportPackDeliveryAttemptDto? latestAttempt)
+    {
+        var package = latestAttempt?.Package;
+        var generatedGrids = package?.GeneratedReportWriterGrids ?? [];
+        var renderedGrids = package?.RenderedReportWriterGrids ?? [];
+        if (generatedGrids.Count == 0 && renderedGrids.Count == 0)
+        {
+            return null;
+        }
+
+        var generatedSummary = generatedGrids.Count == 0
+            ? null
+            : "generated: " + string.Join(", ", generatedGrids.Select(FormatGeneratedReportWriterGrid));
+        var renderedSummary = renderedGrids.Count == 0
+            ? null
+            : "rendered: " + string.Join(", ", renderedGrids.Select(FormatRenderedReportWriterGrid));
+        var details = string.Join("; ", new[] { generatedSummary, renderedSummary }.Where(static item => !string.IsNullOrWhiteSpace(item)));
+        var prefix = $"{generatedGrids.Count} generated / {renderedGrids.Count} rendered report-writer grid{(generatedGrids.Count + renderedGrids.Count == 1 ? string.Empty : "s")}";
+        return string.IsNullOrWhiteSpace(details) ? prefix : $"{prefix}: {details}.";
+    }
+
+    private static string FormatGeneratedReportWriterGrid(WorkstationGeneratedReportWriterGridPayload grid)
+    {
+        var validation = NormalizeOptional(grid.ValidationSummary);
+        var title = NormalizeOptional(grid.Title) ?? grid.GridId;
+        return validation is null
+            ? $"{title} ({grid.Kind}, {grid.DimensionCount}d/{grid.MetricCount}m/{grid.FormulaCount}f)"
+            : $"{title} ({grid.Kind}, {grid.DimensionCount}d/{grid.MetricCount}m/{grid.FormulaCount}f, validation {validation})";
+    }
+
+    private static string FormatRenderedReportWriterGrid(ReportWriterGridRenderDto grid)
+    {
+        var title = NormalizeOptional(grid.Title) ?? grid.GridId;
+        return $"{title} ({grid.Rows.Count}r/{grid.Columns.Count}c)";
+    }
+
+    private static string? ResolveScheduleBrandingThemeId(
+        ReportingScheduleRecordDto schedule,
+        ReportPackDeliveryAttemptDto? latestAttempt)
+    {
+        var packageThemeId = NormalizeOptional(latestAttempt?.Package?.BrandingTheme?.ThemeId);
+        if (!string.IsNullOrWhiteSpace(packageThemeId))
+        {
+            return packageThemeId;
+        }
+
+        var overrideThemeId = NormalizeOptional(schedule.BrandingThemeOverride?.ThemeId);
+        return string.IsNullOrWhiteSpace(overrideThemeId) ? NormalizeOptional(schedule.BrandingThemeId) : overrideThemeId;
     }
 
     private static ReportPackDeliveryAttemptDto? FindLatestScheduleDeliveryAttempt(
@@ -1951,7 +2207,10 @@ public sealed class ReportPackRunReadService
                 FailureReason: manifest.FailureReason,
                 DrilldownLinks: BuildGenericRunDrilldownLinks(manifest).ToArray(),
                 NextActions: BuildGenericRunNextActions(manifest).ToArray(),
-                GeneratedReportWriterGrids: BuildGeneratedReportWriterGrids(manifest, template).ToArray()),
+                GeneratedReportWriterGrids: BuildGeneratedReportWriterGrids(manifest, template).ToArray(),
+                ReportWriterDatasetSourceId: manifest.ReportWriterDatasetSourceId,
+                ReportWriterDatasetSourceLabel: manifest.ReportWriterDatasetSourceLabel,
+                ReportWriterDatasetRowCount: manifest.ReportWriterDatasetRowCount),
             run.UpdatedAtUtc);
     }
 
@@ -1996,6 +2255,7 @@ public sealed class ReportPackRunReadService
         {
             foreach (var grid in manifest.ReportWriterGrids)
             {
+                var validation = BuildGeneratedGridValidationSummary(grid.GridId, manifest.RenderedReportWriterGrids);
                 yield return new WorkstationGeneratedReportWriterGridPayload(
                     grid.GridId,
                     grid.Title,
@@ -2003,7 +2263,11 @@ public sealed class ReportPackRunReadService
                     grid.Artifact,
                     grid.DimensionCount,
                     grid.MetricCount,
-                    grid.FormulaCount);
+                    grid.FormulaCount,
+                    validation.Summary,
+                    validation.Passed,
+                    validation.Warning,
+                    validation.Failed);
             }
 
             yield break;
@@ -2025,6 +2289,7 @@ public sealed class ReportPackRunReadService
 
             if (templateGrids.TryGetValue(gridId, out var grid))
             {
+                var validation = BuildGeneratedGridValidationSummary(grid.GridId, manifest.RenderedReportWriterGrids);
                 yield return new WorkstationGeneratedReportWriterGridPayload(
                     grid.GridId,
                     grid.Title,
@@ -2032,10 +2297,15 @@ public sealed class ReportPackRunReadService
                     artifact,
                     grid.DimensionCount,
                     grid.MetricCount,
-                    grid.FormulaCount);
+                    grid.FormulaCount,
+                    validation.Summary,
+                    validation.Passed,
+                    validation.Warning,
+                    validation.Failed);
                 continue;
             }
 
+            var generatedValidation = BuildGeneratedGridValidationSummary(gridId, manifest.RenderedReportWriterGrids);
             yield return new WorkstationGeneratedReportWriterGridPayload(
                 gridId,
                 gridId,
@@ -2043,9 +2313,76 @@ public sealed class ReportPackRunReadService
                 artifact,
                 0,
                 0,
-                0);
+                0,
+                generatedValidation.Summary,
+                generatedValidation.Passed,
+                generatedValidation.Warning,
+                generatedValidation.Failed);
         }
     }
+
+    private static (string? Summary, int? Passed, int? Warning, int? Failed) BuildGeneratedGridValidationSummary(
+        string gridId,
+        System.Collections.Immutable.ImmutableArray<ReportWriterGridRenderDto> renderedGrids)
+    {
+        if (renderedGrids.IsDefaultOrEmpty)
+        {
+            return (null, null, null, null);
+        }
+
+        var renderedGrid = renderedGrids.FirstOrDefault(grid =>
+            string.Equals(grid.GridId, gridId, StringComparison.OrdinalIgnoreCase));
+        if (renderedGrid is null)
+        {
+            return (null, null, null, null);
+        }
+
+        var checks = ResolveReportWriterGridValidationChecks(renderedGrid);
+        if (checks.Count == 0)
+        {
+            return (null, null, null, null);
+        }
+
+        var passed = checks.Count(static check => string.Equals(check.Status, "Passed", StringComparison.OrdinalIgnoreCase));
+        var warning = checks.Count(static check => string.Equals(check.Status, "Warning", StringComparison.OrdinalIgnoreCase));
+        var failed = checks.Count - passed - warning;
+        var summary = failed > 0
+            ? $"{passed} passed / {checks.Count} checks, {failed} failed"
+            : warning > 0
+                ? $"{passed} passed / {checks.Count} checks, {warning} review"
+                : $"{passed} passed / {checks.Count} checks";
+        return (summary, passed, warning, failed);
+    }
+
+    private static IReadOnlyList<ReportWriterGridValidationCheckDto> ResolveReportWriterGridValidationChecks(
+        ReportWriterGridRenderDto grid) =>
+        grid.ValidationChecks is { Count: > 0 }
+            ? grid.ValidationChecks
+            :
+            [
+                new ReportWriterGridValidationCheckDto(
+                    "row-count",
+                    grid.Lineage is null || grid.Lineage.OutputRowCount == grid.Rows.Count ? "Passed" : "Failed",
+                    grid.Lineage is null
+                        ? $"Rendered {grid.Rows.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} row(s); no lineage row count was retained."
+                        : $"Rendered {grid.Rows.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} row(s); lineage expected {grid.Lineage.OutputRowCount.ToString(System.Globalization.CultureInfo.InvariantCulture)}."),
+                new ReportWriterGridValidationCheckDto(
+                    "column-dictionary",
+                    "Passed",
+                    $"Dictionary covers {grid.Columns.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} of {grid.Columns.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} rendered column(s)."),
+                new ReportWriterGridValidationCheckDto(
+                    "source-field-lineage",
+                    grid.Lineage is { SourceFields.Count: > 0 } ? "Passed" : "Warning",
+                    grid.Lineage is { SourceFields.Count: > 0 }
+                        ? $"Lineage retains {grid.Lineage.SourceFields.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} source field(s)."
+                        : "No source field lineage was retained with this grid."),
+                new ReportWriterGridValidationCheckDto(
+                    "warnings",
+                    grid.Warnings.Count == 0 ? "Passed" : "Warning",
+                    grid.Warnings.Count == 0
+                        ? "No render warnings were retained."
+                        : $"{grid.Warnings.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)} render warning(s) retained: {string.Join("; ", grid.Warnings)}")
+            ];
 
     private static string? ExtractReportWriterGridId(string artifact)
     {

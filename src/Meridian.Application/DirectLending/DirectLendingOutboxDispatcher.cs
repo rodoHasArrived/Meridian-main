@@ -10,11 +10,17 @@ namespace Meridian.Application.DirectLending;
 
 public sealed class DirectLendingOutboxDispatcher : BackgroundService
 {
+    private const int MinimumOutboxBatchSize = 1;
+    private const int MaximumOutboxBatchSize = 5000;
+    private const int MinimumOutboxPollIntervalSeconds = 1;
+    private const int MaximumOutboxPollIntervalSeconds = 3600;
+
     private readonly IDirectLendingOperationsStore _operationsStore;
     private readonly IDirectLendingCommandService _commandService;
     private readonly IDirectLendingQueryService _queryService;
     private readonly IAccountingPolicyService _accountingPolicyService;
-    private readonly DirectLendingOptions _options;
+    private readonly int _outboxBatchSize;
+    private readonly TimeSpan _outboxPollInterval;
     private readonly ILogger<DirectLendingOutboxDispatcher> _logger;
 
     public DirectLendingOutboxDispatcher(
@@ -28,7 +34,8 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
         _operationsStore = operationsStore;
         _commandService = commandService;
         _queryService = queryService;
-        _options = options;
+        _outboxBatchSize = NormalizeOutboxBatchSize(options.OutboxBatchSize);
+        _outboxPollInterval = NormalizeOutboxPollInterval(options.OutboxPollIntervalSeconds);
         _logger = logger;
         _accountingPolicyService = accountingPolicyService ?? new AccountingPolicyService();
     }
@@ -39,10 +46,10 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
         {
             try
             {
-                var messages = await _operationsStore.GetPendingOutboxMessagesAsync(_options.OutboxBatchSize, stoppingToken).ConfigureAwait(false);
+                var messages = await _operationsStore.GetPendingOutboxMessagesAsync(_outboxBatchSize, stoppingToken).ConfigureAwait(false);
                 if (messages.Count == 0)
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(_options.OutboxPollIntervalSeconds), stoppingToken).ConfigureAwait(false);
+                    await Task.Delay(_outboxPollInterval, stoppingToken).ConfigureAwait(false);
                     continue;
                 }
 
@@ -66,10 +73,13 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Direct lending outbox polling failed; retrying in {DelaySeconds} seconds.", _options.OutboxPollIntervalSeconds);
+                _logger.LogError(
+                    ex,
+                    "Direct lending outbox polling failed; retrying in {DelaySeconds} seconds.",
+                    _outboxPollInterval.TotalSeconds);
                 try
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(_options.OutboxPollIntervalSeconds), stoppingToken).ConfigureAwait(false);
+                    await Task.Delay(_outboxPollInterval, stoppingToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
@@ -78,6 +88,15 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
             }
         }
     }
+
+    public static int NormalizeOutboxBatchSize(int configuredBatchSize)
+        => Math.Clamp(configuredBatchSize, MinimumOutboxBatchSize, MaximumOutboxBatchSize);
+
+    public static TimeSpan NormalizeOutboxPollInterval(int configuredPollIntervalSeconds)
+        => TimeSpan.FromSeconds(Math.Clamp(
+            configuredPollIntervalSeconds,
+            MinimumOutboxPollIntervalSeconds,
+            MaximumOutboxPollIntervalSeconds));
 
     private async Task ProcessAsync(DirectLendingOutboxMessage message, CancellationToken ct)
     {
@@ -148,15 +167,16 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
         switch (sourceEvent.EventType)
         {
             case "loan.drawdown-booked":
-                var drawdownAmount = payload.RootElement.GetProperty("amount").GetDecimal();
+                var drawdownAmount = GetRequiredDecimal(payload.RootElement, "amount", "Amount");
                 description = "Drawdown funding";
                 lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "LoanPrincipal", drawdownAmount, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "Cash", 0m, drawdownAmount, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 break;
 
             case "loan.daily-accrual-posted":
-                var interest = payload.RootElement.GetProperty("interestAmount").GetDecimal();
-                var commitmentFee = payload.RootElement.GetProperty("commitmentFeeAmount").GetDecimal();
+                var interest = GetRequiredDecimal(payload.RootElement, "interestAmount", "InterestAmount");
+                var commitmentFee = GetRequiredDecimal(payload.RootElement, "commitmentFeeAmount", "CommitmentFeeAmount");
+                var penalty = GetDecimal(payload.RootElement, "penaltyAmount", "PenaltyAmount");
                 description = "Daily accrual";
                 if (interest > 0m)
                 {
@@ -169,31 +189,37 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
                     lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "CommitmentFeeReceivable", commitmentFee, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                     lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "CommitmentFeeIncome", 0m, commitmentFee, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 }
+
+                if (penalty > 0m)
+                {
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "PenaltyReceivable", penalty, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                    lines.Add(new JournalLineDto(Guid.NewGuid(), lines.Count + 1, "PenaltyIncome", 0m, penalty, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
+                }
                 break;
 
             case "loan.mixed-payment-applied":
-                var paymentAmount = payload.RootElement.GetProperty("amount").GetDecimal();
+                var paymentAmount = GetRequiredDecimal(payload.RootElement, "amount", "Amount");
                 description = "Mixed payment";
                 lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "Cash", paymentAmount, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "LoanAndAccrualsClearing", 0m, paymentAmount, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 break;
 
             case "loan.fee-assessed":
-                var feeAmount = payload.RootElement.GetProperty("amount").GetDecimal();
+                var feeAmount = GetRequiredDecimal(payload.RootElement, "amount", "Amount");
                 description = "Fee assessment";
                 lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "FeeReceivable", feeAmount, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "FeeIncome", 0m, feeAmount, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 break;
 
             case "loan.write-off-applied":
-                var writeOffAmount = payload.RootElement.GetProperty("Amount").GetDecimal();
+                var writeOffAmount = GetRequiredDecimal(payload.RootElement, "appliedAmount", "AppliedAmount", "amount", "Amount");
                 description = "Write-off";
                 lines.Add(new JournalLineDto(Guid.NewGuid(), 1, "WriteOffExpense", writeOffAmount, 0m, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 lines.Add(new JournalLineDto(Guid.NewGuid(), 2, "LoanPrincipal", 0m, writeOffAmount, contract.CurrentTerms.BaseCurrency, lineDimensionsJson));
                 break;
 
             case "loan.prepayment-penalty-charged":
-                var prepaymentPenaltyAmount = payload.RootElement.GetProperty("PenaltyAmount").GetDecimal();
+                var prepaymentPenaltyAmount = GetRequiredDecimal(payload.RootElement, "penaltyAmount", "PenaltyAmount");
                 description = "Prepayment penalty";
                 if (prepaymentPenaltyAmount > 0m)
                 {
@@ -223,6 +249,32 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
             lines);
 
         await _operationsStore.SaveJournalEntryAsync(entry, ct).ConfigureAwait(false);
+    }
+
+    private static decimal GetDecimal(JsonElement root, params string[] propertyNames)
+    {
+        foreach (var propertyName in propertyNames)
+        {
+            if (root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Number)
+            {
+                return value.GetDecimal();
+            }
+        }
+
+        return 0m;
+    }
+
+    private static decimal GetRequiredDecimal(JsonElement root, params string[] propertyNames)
+    {
+        foreach (var propertyName in propertyNames)
+        {
+            if (root.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Number)
+            {
+                return value.GetDecimal();
+            }
+        }
+
+        throw new InvalidOperationException($"Direct lending outbox payload is missing numeric property '{propertyNames[0]}'.");
     }
 
     private sealed record DirectLendingOutboxEnvelope(

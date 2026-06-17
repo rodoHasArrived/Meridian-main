@@ -29,6 +29,7 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
     private readonly DesktopAuthenticationSession _authenticationSession;
     private readonly DispatcherTimer _clipboardBannerTimer;
     private readonly DispatcherTimer _startupBannerTimer;
+    private readonly WpfServices.DemoTourService _demoTourService;
 
     private IReadOnlyList<string> _pendingClipboardSymbols = [];
     private Visibility _authenticatedSessionVisibility = Visibility.Collapsed;
@@ -45,6 +46,9 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
     private Visibility _clipboardBannerVisibility = Visibility.Collapsed;
     private string _clipboardBannerText = string.Empty;
     private bool _startupExperienceShown;
+    private Visibility _demoTourVisibility = Visibility.Collapsed;
+    private string _demoTourStepText = string.Empty;
+    private string _demoTourDetail = string.Empty;
 
     public MainWindowViewModel(
         IConnectionService connectionService,
@@ -55,7 +59,8 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         WpfServices.WatchlistService watchlistService,
         FixtureModeDetector fixtureModeDetector,
         DesktopAuthenticationSession authenticationSession,
-        IStatusService statusService)
+        IStatusService statusService,
+        WpfServices.DemoTourService? demoTourService = null)
     {
         _connectionService = connectionService ?? throw new ArgumentNullException(nameof(connectionService));
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
@@ -65,6 +70,7 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         _watchlistService = watchlistService ?? throw new ArgumentNullException(nameof(watchlistService));
         _fixtureModeDetector = fixtureModeDetector ?? throw new ArgumentNullException(nameof(fixtureModeDetector));
         _authenticationSession = authenticationSession ?? throw new ArgumentNullException(nameof(authenticationSession));
+        _demoTourService = demoTourService ?? WpfServices.DemoTourService.Instance;
 
         StatusBar = new StatusBarViewModel(statusService, notificationService);
 
@@ -75,6 +81,9 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         LogoutCommand = new RelayCommand(Logout, CanLogout);
         AddClipboardSymbolsCommand = new AsyncRelayCommand(AddPendingSymbolsToWatchlistAsync, () => _pendingClipboardSymbols.Count > 0);
         DismissStartupBannerCommand = new RelayCommand(HideStartupBanner);
+        StartDemoTourCommand = new RelayCommand(StartDemoTour);
+        NextDemoTourStepCommand = new RelayCommand(NextDemoTourStep, () => _demoTourService.CanMoveNext);
+        EndDemoTourCommand = new RelayCommand(EndDemoTour);
         DismissClipboardBannerCommand = new RelayCommand(HideClipboardBanner);
 
         _startupBannerTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(18) };
@@ -83,6 +92,7 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         _clipboardBannerTimer.Tick += OnClipboardBannerTimerTick;
 
         _fixtureModeDetector.ModeChanged += OnFixtureModeChanged;
+        _demoTourService.TourChanged += OnDemoTourChanged;
         RefreshAuthenticationState();
         UpdateFixtureModeBanner();
     }
@@ -104,6 +114,12 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
     public IAsyncRelayCommand AddClipboardSymbolsCommand { get; }
 
     public IRelayCommand DismissStartupBannerCommand { get; }
+
+    public IRelayCommand StartDemoTourCommand { get; }
+
+    public IRelayCommand NextDemoTourStepCommand { get; }
+
+    public IRelayCommand EndDemoTourCommand { get; }
 
     public IRelayCommand DismissClipboardBannerCommand { get; }
 
@@ -173,6 +189,25 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         private set => SetProperty(ref _startupBannerDetail, value);
     }
 
+
+    public Visibility DemoTourVisibility
+    {
+        get => _demoTourVisibility;
+        private set => SetProperty(ref _demoTourVisibility, value);
+    }
+
+    public string DemoTourStepText
+    {
+        get => _demoTourStepText;
+        private set => SetProperty(ref _demoTourStepText, value);
+    }
+
+    public string DemoTourDetail
+    {
+        get => _demoTourDetail;
+        private set => SetProperty(ref _demoTourDetail, value);
+    }
+
     public Visibility ClipboardBannerVisibility
     {
         get => _clipboardBannerVisibility;
@@ -223,8 +258,8 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
             ? "Meridian opened in a non-live environment. Validate workflows, data posture, and operator routes here before moving to production credentials or capital."
             : "Review the active operating context, shell mode, and readiness posture before taking live actions.";
         StartupBannerDetail = isNonLiveMode
-            ? "Use Welcome for the full workstation briefing, confirm the mode banner, and keep live-provider changes gated until the environment is intentionally switched."
-            : "Use Welcome for the full workstation briefing, then move through Trading, Portfolio, Accounting, Reporting, Strategy, Data, or Settings from the same governed shell.";
+            ? "Start Demo / Sample Tour to follow sample provider status, portfolio, reconciliation, audit, reporting, and Settings without touching live data."
+            : "Start Demo / Sample Tour to load clearly labeled sample data, or use Welcome for the full workstation briefing before live actions.";
         StartupBannerVisibility = Visibility.Visible;
 
         _startupBannerTimer.Stop();
@@ -432,6 +467,7 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
         _clipboardBannerTimer.Stop();
         _clipboardBannerTimer.Tick -= OnClipboardBannerTimerTick;
         _fixtureModeDetector.ModeChanged -= OnFixtureModeChanged;
+        _demoTourService.TourChanged -= OnDemoTourChanged;
         StatusBar.Dispose();
     }
 
@@ -484,6 +520,35 @@ public sealed class MainWindowViewModel : BindableBase, IDisposable
     private void OnFixtureModeChanged(object? sender, EventArgs e)
     {
         UpdateFixtureModeBanner();
+    }
+
+    private void StartDemoTour()
+    {
+        _demoTourService.StartTour();
+        HideStartupBanner();
+        _notificationService.ShowNotification(
+            "Demo / sample mode active",
+            "Sample data is loaded for the guided tour. Live provider-backed operational data remains visually separated by the demo banner.",
+            NotificationType.Info,
+            6000);
+    }
+
+    private void NextDemoTourStep()
+    {
+        _demoTourService.MoveNext();
+    }
+
+    private void EndDemoTour()
+    {
+        _demoTourService.EndTour();
+    }
+
+    private void OnDemoTourChanged(object? sender, EventArgs e)
+    {
+        DemoTourVisibility = _demoTourService.IsTourActive ? Visibility.Visible : Visibility.Collapsed;
+        DemoTourStepText = _demoTourService.CurrentStepText;
+        DemoTourDetail = _demoTourService.CurrentStepDetail;
+        NextDemoTourStepCommand.NotifyCanExecuteChanged();
     }
 
     private void OnClipboardBannerTimerTick(object? sender, EventArgs e)

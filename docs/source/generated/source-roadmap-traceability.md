@@ -47,14 +47,14 @@ do_not_edit: true
 | `SRC-DESIGN-FINANCIAL-OPERATIONS` | Meridian Financial Operations design module | `W5X-FINOPS-001` | Financial operations control center |
 | `SRC-DESIGN-IDENTITY` | Meridian Identity design module | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-DESIGN-INSTRUMENTS` | Meridian Instruments design module | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
-| `SRC-DESIGN-INSTRUMENTS` | Meridian Instruments design module | `W5-MULTIASSET-001` | - |
+| `SRC-DESIGN-INSTRUMENTS` | Meridian Instruments design module | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
 | `SRC-DESIGN-PLATFORM` | Meridian Platform design module | `W1-DATA-001` | Provider trust gate and data confidence baseline |
 | `SRC-DESIGN-PLATFORM` | Meridian Platform design module | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-DESIGN-PORTFOLIO-RECORDS` | Meridian Portfolio Records design module | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `SRC-DESIGN-PORTFOLIO-RECORDS` | Meridian Portfolio Records design module | `W5-ACCT-001` | Accounting records and operational evidence |
-| `SRC-DESIGN-PORTFOLIO-RECORDS` | Meridian Portfolio Records design module | `W5-MULTIASSET-001` | - |
+| `SRC-DESIGN-PORTFOLIO-RECORDS` | Meridian Portfolio Records design module | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
 | `SRC-DESIGN-REFERENCE-DATA` | Meridian Reference Data design module | `W1-DATA-001` | Provider trust gate and data confidence baseline |
-| `SRC-DESIGN-REFERENCE-DATA` | Meridian Reference Data design module | `W5-MULTIASSET-001` | - |
+| `SRC-DESIGN-REFERENCE-DATA` | Meridian Reference Data design module | `W5-MASSET-001` | Multi-asset operational coverage proof lane |
 | `SRC-DESIGN-REPORTING` | Meridian Reporting design module | `W4-RPT-001` | Governed report pack readiness |
 | `SRC-DESIGN-REPORTING` | Meridian Reporting design module | `W5-ACCT-001` | Accounting records and operational evidence |
 | `SRC-DESIGN-WORKFLOW` | Meridian Workflow design module | `W3-CONT-001` | Research to paper continuity |

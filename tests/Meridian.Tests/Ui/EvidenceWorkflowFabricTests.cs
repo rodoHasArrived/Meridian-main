@@ -741,8 +741,32 @@ public sealed class EvidenceWorkflowFabricTests
         packet.Nodes.Single(node => node.Kind == "payment-intent").Status.Should().Be(EvidenceStatusDto.Ready);
         packet.Nodes.Single(node => node.Kind == "execution-deferred")
             .Summary.Contains("Full payment execution is explicitly deferred", StringComparison.OrdinalIgnoreCase).Should().BeTrue();
-        packet.Nodes.Single(node => node.Kind == "bank-cash-evidence")
-            .ArtifactRefs.Should().Contain(artifact => artifact.Kind == "retained-cash-evidence");
+        var expectedCashNode = packet.Nodes.Single(node => node.Kind == "expected-cash-movement");
+        expectedCashNode.Summary.Should().Contain("payee fund:fund-alpha");
+        expectedCashNode.Summary.Should().Contain("approval policy Controller approval retained before execution-deferred reliance");
+        expectedCashNode.ArtifactRefs.Should().Contain(artifact => artifact.Kind == "payment-intent-source-evidence");
+        var bankCashNode = packet.Nodes.Single(node => node.Kind == "bank-cash-evidence");
+        var bankCashArtifact = bankCashNode.ArtifactRefs.Should()
+            .ContainSingle(artifact => artifact.Kind == "retained-cash-evidence")
+            .Which;
+        bankCashArtifact.Capture.Should().NotBeNull();
+        bankCashArtifact.Capture!.CaptureChannel.Should().Be("Upload");
+        bankCashArtifact.Capture.SourceReference.Should().Be("settlement:fund-alpha:capital-call:20260630");
+        bankCashArtifact.ExtractedFields.Should().ContainSingle(field =>
+            field.FieldName == "amount" &&
+            field.ExtractedValue == "100" &&
+            field.ExpectedValue == "100" &&
+            field.ConfidenceScore == 1m &&
+            field.ReviewState == "Reviewed" &&
+            field.ValidationStatus == EvidenceStatusDto.Ready &&
+            field.LinkedRecordKind == "payment-intent" &&
+            field.LinkedRecordId == "payment:fund-alpha:capital-call:20260630");
+        bankCashArtifact.ExtractedFields.Should().ContainSingle(field =>
+            field.FieldName == "externalReference" &&
+            field.ExtractedValue == "settlement:fund-alpha:capital-call:20260630" &&
+            field.ExpectedValue == "settlement:fund-alpha:capital-call:20260630" &&
+            field.ValidationStatus == EvidenceStatusDto.Ready &&
+            field.LinkedRecordKind == "settlement-reference");
         packet.Completeness.Status.Should().Be(EvidenceStatusDto.Ready);
         packet.Completeness.ValidationIssues.Should().NotContain(issue => issue.Code == "orphan-evidence");
         packet.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Source)
@@ -864,9 +888,12 @@ public sealed class EvidenceWorkflowFabricTests
     public async Task ReportPackEvidenceContributor_DuringReportPackReview_UsesNeutralSourceSystemLabel()
     {
         var reportId = Guid.NewGuid();
+        var attemptId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var deliveryAttempt = BuildReportPackDeliveryAttempt(reportId, attemptId, DateTimeOffset.UtcNow);
         var subject = Subject(EvidenceSubjectResolver.ReportPackKind, reportId.ToString("D"));
         using var provider = new ServiceCollection()
             .AddSingleton<IGovernanceReportPackRepository>(new InMemoryReportPackRepository(BuildReportPackSnapshot(reportId)))
+            .AddSingleton<IReportPackDeliveryRecordStore>(new InMemoryReportPackDeliveryRecordStore([deliveryAttempt]))
             .BuildServiceProvider();
         var contributor = new ReportPackEvidenceContributor(provider);
 
@@ -877,6 +904,29 @@ public sealed class EvidenceWorkflowFabricTests
             node.SourceSystem == "report-pack-repository");
         contribution.Nodes.Should().NotContain(node =>
             node.SourceSystem.Contains("Governance", StringComparison.OrdinalIgnoreCase));
+        var deliverySubjectId = $"{reportId:D}:{attemptId:D}";
+        contribution.Nodes.Should().Contain(node =>
+            node.Kind == "delivery-record" &&
+            node.Status == EvidenceStatusDto.Ready &&
+            node.ArtifactRefs.Any(artifact =>
+                artifact.CanonicalSubjectKind == EvidenceSubjectResolver.ReportPackDeliveryKind &&
+                artifact.CanonicalSubjectId == deliverySubjectId &&
+                artifact.Route!.Contains(Uri.EscapeDataString(deliverySubjectId), StringComparison.OrdinalIgnoreCase)));
+        contribution.Nodes.Should().Contain(node =>
+            node.Kind == "delivery-evidence-packet" &&
+            node.RelatedWorkItemIds.Contains("investor-monthly-statement-202606:1:RunGenerated"));
+        contribution.Edges.Should().Contain(edge =>
+            edge.Relationship == "delivered-by" &&
+            edge.FromId == $"{EvidenceSubjectResolver.ReportPackKind}:{reportId:D}:report-pack");
+
+        var graph = new EvidenceGraphService(
+            new EvidenceSubjectResolver(provider),
+            new EvidenceTemplateRegistry(),
+            [contributor],
+            NullLogger<EvidenceGraphService>.Instance);
+        var packet = await graph.GetPacketAsync(EvidenceSubjectResolver.ReportPackKind, reportId.ToString("D"));
+        packet!.ProofChain.Layers.Single(layer => layer.Layer == EvidenceProofChainLayerKindDto.Delivery)
+            .EvidenceKinds.Should().Contain("delivery-record");
     }
 
     [Fact]
@@ -1063,7 +1113,11 @@ public sealed class EvidenceWorkflowFabricTests
         var packet = await packetResponse.Content.ReadFromJsonAsync<EvidencePacketDto>(ServerJsonOptions);
         packet.Should().NotBeNull();
         packet!.Subject.SubjectKind.Should().Be(EvidenceSubjectResolver.ReportPackDeliveryKind);
-        packet.Nodes.Should().Contain(node => node.Kind == "delivery-package");
+        var deliveryPackageNode = packet.Nodes.Should()
+            .ContainSingle(node => node.Kind == "delivery-package")
+            .Which;
+        deliveryPackageNode.Metadata.Should().Contain("reportPackDeliveryAttemptId", attemptId.ToString("D"));
+        deliveryPackageNode.Metadata.Should().Contain("reportPackDeliveryPackageId", "pkg-board-1");
         packet.Nodes.Should().Contain(node => node.Kind == "delivery-evidence-packet");
         packet.Nodes.Should().Contain(node => node.Kind == "audit-history");
         packet.Nodes.Should().Contain(node => node.Kind == "publication-manifest");
@@ -1116,6 +1170,23 @@ public sealed class EvidenceWorkflowFabricTests
         vaultSearchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var vaultMatches = await vaultSearchResponse.Content.ReadFromJsonAsync<IReadOnlyList<EvidenceVaultIdentityDto>>(ServerJsonOptions);
         vaultMatches.Should().ContainSingle(match =>
+            match.SubjectKind == EvidenceSubjectResolver.ReportPackDeliveryKind &&
+            match.SubjectId == subjectId &&
+            match.VaultId == export.VaultIdentity.VaultId);
+
+        var packageSearchResponse = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/search",
+            new EvidenceVaultLookupRequestDto(
+                null,
+                null,
+                null,
+                null,
+                null,
+                ReportPackDeliveryPackageId: "pkg-board-1"),
+            ServerJsonOptions);
+        packageSearchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var packageMatches = await packageSearchResponse.Content.ReadFromJsonAsync<IReadOnlyList<EvidenceVaultIdentityDto>>(ServerJsonOptions);
+        packageMatches.Should().ContainSingle(match =>
             match.SubjectKind == EvidenceSubjectResolver.ReportPackDeliveryKind &&
             match.SubjectId == subjectId &&
             match.VaultId == export.VaultIdentity.VaultId);
@@ -1276,6 +1347,56 @@ public sealed class EvidenceWorkflowFabricTests
     }
 
     [Fact]
+    public async Task FileEvidenceArtifactStore_DuringReportPackDeliveryExport_UsesTypedPackageMetadataForVaultLinkage()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var reportId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        var attemptId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var subjectId = $"{reportId:D}:{attemptId:D}";
+        var subject = Subject(EvidenceSubjectResolver.ReportPackDeliveryKind, subjectId);
+        var deliveryPackage = Node(
+            subject,
+            $"{EvidenceSubjectResolver.ReportPackDeliveryKind}:{subjectId}:delivery-package",
+            "delivery-package",
+            EvidenceStatusDto.Ready) with
+        {
+            Summary = "Delivery package metadata is retained without embedding the package id in prose.",
+            Metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["reportPackDeliveryAttemptId"] = attemptId.ToString("D"),
+                ["reportPackDeliveryPackageId"] = "pkg-metadata-only"
+            }
+        };
+        var packet = new EvidencePacketDto(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes: [deliveryPackage],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(100, EvidenceStatusDto.Ready, [deliveryPackage.EvidenceId], [deliveryPackage.EvidenceId], [], [], []),
+            Actions: [],
+            Warnings: []);
+
+        var response = await store.WriteManifestAsync(packet, new EvidencePacketExportRequest("controller", "metadata linkage"));
+
+        var manifestPath = Path.Combine(root, response.ManifestPath.Replace('/', Path.DirectorySeparatorChar));
+        var manifestJson = await File.ReadAllTextAsync(manifestPath);
+        manifestJson.Should().Contain("\"reportPackDeliveryAttemptId\": \"22222222-2222-2222-2222-222222222222\"");
+        manifestJson.Should().Contain("\"reportPackDeliveryPackageId\": \"pkg-metadata-only\"");
+        var matches = await store.FindByLinkageAsync(new EvidenceVaultLookupRequestDto(
+            null,
+            null,
+            null,
+            null,
+            null,
+            ReportPackDeliveryPackageId: "pkg-metadata-only"));
+        matches.Should().ContainSingle(match =>
+            match.SubjectKind == EvidenceSubjectResolver.ReportPackDeliveryKind &&
+            match.SubjectId == subjectId &&
+            match.VaultId == response.VaultIdentity!.VaultId);
+    }
+
+    [Fact]
     public async Task FileEvidenceArtifactStore_DuringManifestExport_FreezesSupportRequestListForMissingAndBlockedEvidence()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "evidence-store", Guid.NewGuid().ToString("N"));
@@ -1372,6 +1493,18 @@ public sealed class EvidenceWorkflowFabricTests
         indexedIdentity!.SupportRequests.Should().BeEquivalentTo(
             response.VaultIdentity.SupportRequests,
             options => options.WithStrictOrdering());
+
+        var requestListIndex = await store.ListRequestListsAsync(new EvidenceVaultRequestListQueryDto(
+            RequestListKind: "AuditRequestList",
+            TargetKind: "audit",
+            TargetId: "close-2026-05",
+            Status: "Open"));
+        var indexedRequestList = requestListIndex.Should().ContainSingle().Subject;
+        indexedRequestList.VaultId.Should().Be(response.VaultIdentity.VaultId);
+        indexedRequestList.ManifestRoute.Should().Be(response.VaultIdentity.ManifestRoute);
+        indexedRequestList.OpenRequestCount.Should().Be(2);
+        indexedRequestList.SupportRequests.Should().HaveCount(2);
+        indexedRequestList.SupportRequests.Should().Contain(request => request.RequestKind == "MissingEvidence");
     }
 
     [Fact]
@@ -1487,7 +1620,39 @@ public sealed class EvidenceWorkflowFabricTests
             statementHash,
             Retained: true,
             CanonicalSubjectKind: EvidenceSubjectResolver.ReportPackKind,
-            CanonicalSubjectId: "close-2026-05");
+            CanonicalSubjectId: "close-2026-05")
+        {
+            Capture = new EvidenceArtifactCaptureDto(
+                "Upload",
+                "Evidence Vault upload",
+                new DateTimeOffset(2026, 5, 28, 14, 30, 0, TimeSpan.Zero),
+                "ops-user",
+                "portal-upload:broker-statement:close-2026-05",
+                statementHash),
+            ExtractedFields =
+            [
+                new EvidenceArtifactExtractionFieldDto(
+                    "cashAmount",
+                    "0",
+                    "0",
+                    0.98m,
+                    "Reviewed",
+                    EvidenceStatusDto.Ready,
+                    "Extracted cash amount tied to the expected normalized cash record.",
+                    "reconciliation-case",
+                    "case:close-2026-05:cash"),
+                new EvidenceArtifactExtractionFieldDto(
+                    "tradeDate",
+                    "2026-05-28",
+                    "2026-05-28",
+                    0.95m,
+                    "Reviewed",
+                    EvidenceStatusDto.Ready,
+                    "Extracted trade date matched the expected source record.",
+                    "report-line",
+                    "report-line:close-2026-05:statement")
+            ]
+        };
         var packet = new EvidencePacketDto(
             Subject: subject,
             GeneratedAt: DateTimeOffset.UtcNow,
@@ -1509,6 +1674,23 @@ public sealed class EvidenceWorkflowFabricTests
         retained.SourceRoute.Should().Be("/api/workstation/reconciliation/statement-runs/import-1");
         retained.CanonicalSubjectKind.Should().Be(EvidenceSubjectResolver.ReportPackKind);
         retained.CanonicalSubjectId.Should().Be("close-2026-05");
+        retained.Capture.Should().NotBeNull();
+        retained.Capture!.CaptureChannel.Should().Be("Upload");
+        retained.Capture.SourceReference.Should().Be("portal-upload:broker-statement:close-2026-05");
+        retained.ExtractedFields.Should().HaveCount(2);
+        retained.ExtractedFields.Should().ContainSingle(field =>
+            field.FieldName == "cashAmount" &&
+            field.ExtractedValue == "0" &&
+            field.ExpectedValue == "0" &&
+            field.ConfidenceScore == 0.98m &&
+            field.ReviewState == "Reviewed" &&
+            field.ValidationStatus == EvidenceStatusDto.Ready &&
+            field.LinkedRecordKind == "reconciliation-case" &&
+            field.LinkedRecordId == "case:close-2026-05:cash");
+        retained.ExtractedFields.Should().ContainSingle(field =>
+            field.FieldName == "tradeDate" &&
+            field.LinkedRecordKind == "report-line" &&
+            field.LinkedRecordId == "report-line:close-2026-05:statement");
         var retainedPath = Path.Combine(root, retained.RelativePath.Replace('/', Path.DirectorySeparatorChar));
         File.Exists(retainedPath).Should().BeTrue();
         (await File.ReadAllBytesAsync(retainedPath)).Should().Equal(statementBytes);
@@ -1518,6 +1700,20 @@ public sealed class EvidenceWorkflowFabricTests
         manifestJson.Should().Contain("\"storageKind\": \"file-bundle\"");
         manifestJson.Should().Contain("\"artifacts\": [");
         manifestJson.Should().Contain("\"relativePath\": \"workstation/evidence/_vault/");
+        manifestJson.Should().Contain("\"captureChannel\": \"Upload\"");
+        manifestJson.Should().Contain("\"confidenceScore\": 0.98");
+        manifestJson.Should().Contain("\"expectedValue\": \"0\"");
+        manifestJson.Should().Contain("\"linkedRecordKind\": \"report-line\"");
+
+        var indexPath = Path.Combine(root, "workstation", "evidence", "_vault", $"{response.VaultIdentity.VaultId}.json");
+        var indexJson = await File.ReadAllTextAsync(indexPath);
+        var indexedIdentity = JsonSerializer.Deserialize<EvidenceVaultIdentityDto>(indexJson, ServerJsonOptions);
+        indexedIdentity.Should().NotBeNull();
+        var indexedArtifact = indexedIdentity!.Artifacts.Should().ContainSingle().Which;
+        indexedArtifact.Capture.Should().BeEquivalentTo(retained.Capture);
+        indexedArtifact.ExtractedFields.Should().BeEquivalentTo(
+            retained.ExtractedFields,
+            options => options.WithStrictOrdering());
     }
 
     [Fact]
@@ -1812,6 +2008,108 @@ public sealed class EvidenceWorkflowFabricTests
     }
 
     [Fact]
+    public async Task FileEvidenceArtifactStore_DuringVaultApiIntake_RetainsCapturedDocumentWithReviewMetadata()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-intake-store-{Guid.NewGuid():N}");
+        var store = new FileEvidenceArtifactStore(root, NullLogger<FileEvidenceArtifactStore>.Instance);
+        var subjectId = "payment:fund-alpha:capital-call:20260630";
+        var bytes = Encoding.UTF8.GetBytes("settlement_id,amount,currency\r\nsettle-001,1250.00,USD\r\n");
+        var expectedHash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+
+        var response = await store.WriteIntakeArtifactAsync(new EvidenceVaultIntakeRequestDto(
+            SubjectKind: EvidenceSubjectResolver.PaymentIntentKind,
+            SubjectId: subjectId,
+            IntakeChannel: "api",
+            FileName: "settlement-proof.csv",
+            ContentBase64: Convert.ToBase64String(bytes),
+            ContentType: "text/csv",
+            SourceSystem: "bank-api",
+            SourceReference: "api://bank/settlements/settle-001",
+            ReceivedBy: "fund-controller",
+            ExpectedContentHashSha256: $"sha256:{expectedHash}",
+            ExtractedFields:
+            [
+                new EvidenceArtifactExtractionFieldDto(
+                    FieldName: "amount",
+                    ExtractedValue: "1250.00",
+                    ExpectedValue: "1250.00",
+                    ConfidenceScore: 0.99m,
+                    ReviewState: "Ready",
+                    ValidationStatus: EvidenceStatusDto.Ready,
+                    ValidationMessage: null,
+                    LinkedRecordKind: "payment-intent",
+                    LinkedRecordId: subjectId),
+                new EvidenceArtifactExtractionFieldDto(
+                    FieldName: "auditSupportReference",
+                    ExtractedValue: null,
+                    ExpectedValue: "audit-support:capital-call-20260630",
+                    ConfidenceScore: 0.42m,
+                    ReviewState: "Missing",
+                    ValidationStatus: EvidenceStatusDto.Missing,
+                    ValidationMessage: "Audit support reference is missing from the Evidence Vault intake.",
+                    LinkedRecordKind: "payment-intent",
+                    LinkedRecordId: subjectId)
+            ],
+            Linkage: new EvidenceSubjectLinkageDto(
+                $"payment-intent/{subjectId}",
+                null,
+                null,
+                null,
+                null)));
+
+        response.SubjectKind.Should().Be(EvidenceSubjectResolver.PaymentIntentKind);
+        response.SubjectId.Should().Be(subjectId);
+        response.ContentHashSha256.Should().Be(expectedHash);
+        response.Capture.CaptureChannel.Should().Be("api");
+        response.Capture.SourceSystem.Should().Be("bank-api");
+        response.ExtractedFields.Should().Contain(field =>
+            field.FieldName == "amount" &&
+            field.LinkedRecordId == subjectId &&
+            field.ValidationStatus == EvidenceStatusDto.Ready);
+        response.VaultIdentity.SupportRequests.Should().ContainSingle(request =>
+            request.RequestKind == "ValidationIssue" &&
+            request.EvidenceKind == "vault-intake" &&
+            request.Severity == EvidenceValidationSeverityDto.Critical &&
+            request.BlockedOutput == $"payment-intent/{subjectId}" &&
+            request.Summary.Contains("Audit support reference is missing", StringComparison.Ordinal));
+        response.VaultIdentity.RequestLists.Should().ContainSingle(requestList =>
+            requestList.RequestListKind == "AuditRequestList" &&
+            requestList.Status == "Open" &&
+            requestList.RequestCount == 1);
+
+        var retainedPath = Path.Combine(root, response.RelativePath.Replace('/', Path.DirectorySeparatorChar));
+        File.Exists(retainedPath).Should().BeTrue();
+        (await File.ReadAllBytesAsync(retainedPath)).Should().Equal(bytes);
+
+        var identity = await store.TryGetVaultIdentityAsync(response.VaultIdentity.VaultId);
+        identity.Should().NotBeNull();
+        var artifact = identity!.Artifacts.Should().ContainSingle().Subject;
+        artifact.ContentHashSha256.Should().Be(expectedHash);
+        artifact.Capture!.ReceivedBy.Should().Be("fund-controller");
+        artifact.ExtractedFields.Should().Contain(field => field.FieldName == "amount");
+        identity.RequestLists.Should().BeEquivalentTo(response.VaultIdentity.RequestLists);
+        identity.SupportRequests.Should().BeEquivalentTo(response.VaultIdentity.SupportRequests);
+
+        var matches = await store.FindByLinkageAsync(new EvidenceVaultLookupRequestDto(
+            $"payment-intent/{subjectId}",
+            null,
+            null,
+            null,
+            null));
+        matches.Should().ContainSingle(match => match.VaultId == response.VaultIdentity.VaultId);
+
+        var requestLists = await store.ListRequestListsAsync(new EvidenceVaultRequestListQueryDto(
+            RequestListKind: "AuditRequestList",
+            TargetKind: "audit",
+            TargetId: subjectId,
+            Status: "Open"));
+        requestLists.Should().ContainSingle(entry =>
+            entry.VaultId == response.VaultIdentity.VaultId &&
+            entry.OpenRequestCount == 1 &&
+            entry.SupportRequests.Count == 1);
+    }
+
+    [Fact]
     public async Task EvidenceEndpoints_VaultSearch_FindsBundlesByRunReportPackAndReconciliationCase()
     {
         var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-search-{Guid.NewGuid():N}");
@@ -1841,6 +2139,123 @@ public sealed class EvidenceWorkflowFabricTests
         matches!.Should().ContainSingle();
         matches[0].SubjectKind.Should().Be("report-pack");
         matches[0].SubjectId.Should().Be("current");
+    }
+
+    [Fact]
+    public async Task EvidenceEndpoints_VaultIntake_RetainsUploadedEvidenceAndRejectsInvalidPayload()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-intake-endpoint-{Guid.NewGuid():N}");
+        await using var app = await CreateEvidenceAppAsync(root);
+        var client = app.GetTestClient();
+        var subjectId = "payment:fund-alpha:capital-call:20260630";
+        var bytes = Encoding.UTF8.GetBytes("settlement_id,amount,currency\r\nsettle-001,1250.00,USD\r\n");
+
+        var response = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/intake",
+            new EvidenceVaultIntakeRequestDto(
+                SubjectKind: EvidenceSubjectResolver.PaymentIntentKind,
+                SubjectId: subjectId,
+                IntakeChannel: "api",
+                FileName: "settlement-proof.csv",
+                ContentBase64: Convert.ToBase64String(bytes),
+                ContentType: "text/csv",
+                SourceSystem: "bank-api",
+                SourceReference: "api://bank/settlements/settle-001",
+                ReceivedBy: "fund-controller",
+                ExpectedContentHashSha256: null,
+                ExtractedFields:
+                [
+                    new EvidenceArtifactExtractionFieldDto(
+                        FieldName: "currency",
+                        ExtractedValue: "USD",
+                        ExpectedValue: "USD",
+                        ConfidenceScore: 0.97m,
+                        ReviewState: "Ready",
+                        ValidationStatus: EvidenceStatusDto.Ready,
+                        ValidationMessage: null,
+                        LinkedRecordKind: "payment-intent",
+                        LinkedRecordId: subjectId)
+                ],
+                Linkage: new EvidenceSubjectLinkageDto(
+                    $"payment-intent/{subjectId}",
+                    null,
+                    null,
+                    null,
+                    null)),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var intake = await response.Content.ReadFromJsonAsync<EvidenceVaultIntakeResponseDto>(ServerJsonOptions);
+        intake.Should().NotBeNull();
+        intake!.VaultIdentity.StorageKind.Should().Be("file-bundle");
+        intake.VaultIdentity.Artifacts.Should().ContainSingle(artifact =>
+            artifact.ContentHashSha256 == intake.ContentHashSha256 &&
+            artifact.Capture!.SourceSystem == "bank-api");
+
+        var manifestJson = await client.GetStringAsync(intake.VaultIdentity.ManifestRoute);
+        manifestJson.Should().Contain("\"captureChannel\": \"api\"");
+        manifestJson.Should().Contain("\"file-bundle\"");
+        manifestJson.Should().Contain("settlement-proof.csv");
+
+        var searchResponse = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/search",
+            new EvidenceVaultLookupRequestDto(
+                $"payment-intent/{subjectId}",
+                null,
+                null,
+                null,
+                null),
+            ServerJsonOptions);
+        searchResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var matches = await searchResponse.Content.ReadFromJsonAsync<IReadOnlyList<EvidenceVaultIdentityDto>>(ServerJsonOptions);
+        matches.Should().NotBeNull();
+        matches!.Should().ContainSingle(match => match.VaultId == intake.VaultIdentity.VaultId);
+
+        var invalidResponse = await client.PostAsJsonAsync(
+            "/api/workstation/evidence/vault/intake",
+            new EvidenceVaultIntakeRequestDto(
+                SubjectKind: EvidenceSubjectResolver.PaymentIntentKind,
+                SubjectId: subjectId,
+                IntakeChannel: "api",
+                FileName: "settlement-proof.csv",
+                ContentBase64: "not-base64"),
+            ServerJsonOptions);
+        invalidResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var error = await invalidResponse.Content.ReadFromJsonAsync<EvidenceEndpointErrorDto>(ServerJsonOptions);
+        error!.Code.Should().Be("invalid-evidence-vault-intake");
+    }
+
+    [Fact]
+    public async Task EvidenceEndpoints_VaultRequestLists_ReturnsFrozenSupportRequestIndex()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"evidence-vault-request-lists-{Guid.NewGuid():N}");
+        await using var app = await CreateEvidenceAppAsync(root);
+        var client = app.GetTestClient();
+        var store = app.Services.GetRequiredService<IEvidenceArtifactStore>();
+        var subject = Subject(EvidenceSubjectResolver.ReportPackKind, "close-2026-05");
+        var export = await store.WriteManifestAsync(
+            BlockedAuditSupportPacket(subject),
+            new EvidencePacketExportRequest("operator", "seed request-list index"));
+
+        var response = await client.GetAsync(
+            "/api/workstation/evidence/vault/request-lists?targetKind=audit&targetId=close-2026-05&status=Open");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var entries = await response.Content.ReadFromJsonAsync<IReadOnlyList<EvidenceVaultRequestListEntryDto>>(ServerJsonOptions);
+        entries.Should().NotBeNull();
+        var entry = entries!.Should().ContainSingle().Subject;
+        entry.VaultId.Should().Be(export.VaultIdentity!.VaultId);
+        entry.SubjectKind.Should().Be(EvidenceSubjectResolver.ReportPackKind);
+        entry.SubjectId.Should().Be("close-2026-05");
+        entry.RequestListKind.Should().Be("AuditRequestList");
+        entry.OpenRequestCount.Should().Be(2);
+        entry.ManifestRoute.Should().Be(export.VaultIdentity.ManifestRoute);
+        entry.SupportRequests.Should().Contain(request =>
+            request.RequestKind == "BlockedWorkItem" &&
+            request.WorkItemId == "audit-request:close-2026-05");
+
+        var invalidResponse = await client.GetAsync("/api/workstation/evidence/vault/request-lists?maxResults=0");
+        invalidResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     private static EvidenceGraphService CreateGraphService(IReadOnlyList<IEvidenceContributor> contributors)
@@ -2164,7 +2579,12 @@ public sealed class EvidenceWorkflowFabricTests
                 fundEvent.FundEventType,
                 fundEvent.CapitalAccountId,
                 fundEvent.InvestorId,
-                "Capital call for Fund Alpha LP"),
+                "Capital call for Fund Alpha LP",
+                "fund:fund-alpha",
+                "fund:fund-alpha / capital-account:fund-alpha:lp-1 / investor:lp-1",
+                "Capital call for Fund Alpha LP",
+                "Controller approval retained before execution-deferred reliance",
+                ["/evidence/fund-alpha/bank-cash-capital-call.pdf"]),
             PrivateCapitalActivityRouteBuilder.BuildPaymentIntentEvidenceRoute(fundEvent.PaymentIntentId!),
             PrivateCapitalActivityRouteBuilder.BuildPaymentIntentWorkbenchRoute("fund-alpha", null, fundEvent.PaymentIntentId!),
             ApprovalChain:
@@ -2389,6 +2809,44 @@ public sealed class EvidenceWorkflowFabricTests
             Summary: $"{kind} evidence",
             ArtifactRefs: artifacts ?? [],
             RelatedWorkItemIds: workItemIds ?? []);
+
+    private static EvidencePacketDto BlockedAuditSupportPacket(EvidenceSubjectDto subject)
+        => new(
+            Subject: subject,
+            GeneratedAt: DateTimeOffset.UtcNow,
+            Nodes:
+            [
+                Node(subject, "source-node", "source-document", EvidenceStatusDto.Ready),
+                Node(
+                    subject,
+                    "audit-support",
+                    "audit-history",
+                    EvidenceStatusDto.Missing,
+                    workItemIds: ["audit-request:close-2026-05"])
+            ],
+            Edges: [],
+            Completeness: new EvidenceCompletenessDto(
+                50,
+                EvidenceStatusDto.Blocked,
+                ["source-node", "audit-support"],
+                ["source-node"],
+                ["audit-support"],
+                [],
+                ["audit-request:close-2026-05"])
+            {
+                ValidationIssues =
+                [
+                    new EvidenceValidationIssueDto(
+                        Code: "missing-required-evidence",
+                        Severity: EvidenceValidationSeverityDto.Critical,
+                        Message: "Audit support package is missing.",
+                        EvidenceId: "audit-support",
+                        EvidenceKind: "audit-history",
+                        SourceSystem: "test")
+                ]
+            },
+            Actions: [],
+            Warnings: []);
 
     private static FundReportPackSnapshotDto BuildReportPackSnapshot(Guid reportId)
     {

@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -270,6 +271,14 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         fundLiveView.State.Should().Be(PortfolioReportingLiveViewStateDto.SourceBacked);
         fundLiveView.SourceCount.Should().Be(3);
         fundLiveView.SourceAsOfUtc.Should().Be(new DateTimeOffset(2026, 4, 11, 14, 30, 0, TimeSpan.Zero));
+        fundLiveView.FreshnessPolicy.Should().NotBeNull();
+        fundLiveView.FreshnessPolicy!.PolicyName.Should().Be("LivePortfolioView");
+        fundLiveView.FreshnessPolicy.SourceAgeSeconds.Should().Be(5400);
+        fundLiveView.FreshnessPolicy.LiveLinkWindowSeconds.Should().Be(300);
+        fundLiveView.FreshnessPolicy.StaleWindowSeconds.Should().Be(86400);
+        fundLiveView.FreshnessPolicy.IsWithinLiveLinkWindow.Should().BeFalse();
+        fundLiveView.FreshnessPolicy.IsBeyondStaleWindow.Should().BeFalse();
+        fundLiveView.FreshnessPolicy.Reason.Should().Contain("outside the live-link window");
         fundLiveView.ReadinessBlockers.Should().BeEmpty();
         fundLiveView.Route.Should().Be("/api/workstation/portfolio/summary?fundAccountId=all&strategyId=all&entity=portfolio");
         fundLiveView.LiquiditySummary.Should().Contain("pending settlement");
@@ -300,12 +309,93 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             row.Scope == CrossFundReportingConsolidationScopeDto.Entity &&
             row.EntityCount == 1 &&
             row.AccountCount == 1);
+        workspace.Reporting.ReportWriterDatasetSources.Should().NotBeNull();
+        workspace.Reporting.ReportWriterDatasetSources!.Select(static source => source.SourceId).Should().Contain(
+            [
+                "retained-reporting-rows",
+                "portfolio-reporting-cuts",
+                "topn-contribution-analytics",
+                "cross-fund-consolidation",
+                "certified-operational-data-mart"
+            ]);
+        var reportWriterSource = workspace.Reporting.ReportWriterDatasetSources!.Should()
+            .ContainSingle(static source => source.SourceId == "retained-reporting-rows")
+            .Subject;
+        reportWriterSource.SourceId.Should().Be("retained-reporting-rows");
+        reportWriterSource.RowCount.Should().Be(
+            workspace.Reporting.PortfolioCuts!.Count
+            + workspace.Reporting.AnalyticsRows!.Count
+            + workspace.Reporting.CrossFundConsolidations!.Count);
+        var expectedGrossExposure = workspace.CashFinancing.GrossExposure.ToString(CultureInfo.InvariantCulture);
+        reportWriterSource.Rows.Any(IsExpectedPortfolioDatasetRow).Should().BeTrue();
+        reportWriterSource.Rows.Any(IsExpectedAnalyticsDatasetRow).Should().BeTrue();
+        reportWriterSource.Rows.Any(IsExpectedCrossFundDatasetRow).Should().BeTrue();
+        var reportWriterFieldNames = reportWriterSource.Fields.Select(static field => field.Name).ToArray();
+        reportWriterFieldNames.Should().Contain("grossExposure");
+        reportWriterFieldNames.Should().Contain("contributionPercent");
+        reportWriterFieldNames.Should().Contain("shadowNav");
+
+        var portfolioDatasetSource = workspace.Reporting.ReportWriterDatasetSources!.Should()
+            .ContainSingle(static source => source.SourceId == "portfolio-reporting-cuts")
+            .Subject;
+        portfolioDatasetSource.RowCount.Should().Be(workspace.Reporting.PortfolioCuts!.Count);
+        portfolioDatasetSource.Rows.All(static row => HasDataset(row, "portfolio-cut")).Should().BeTrue();
+
+        var analyticsDatasetSource = workspace.Reporting.ReportWriterDatasetSources!.Should()
+            .ContainSingle(static source => source.SourceId == "topn-contribution-analytics")
+            .Subject;
+        analyticsDatasetSource.RowCount.Should().Be(workspace.Reporting.AnalyticsRows!.Count);
+        analyticsDatasetSource.Rows.All(static row => HasDataset(row, "portfolio-analytics")).Should().BeTrue();
+
+        var crossFundDatasetSource = workspace.Reporting.ReportWriterDatasetSources!.Should()
+            .ContainSingle(static source => source.SourceId == "cross-fund-consolidation")
+            .Subject;
+        crossFundDatasetSource.RowCount.Should().Be(workspace.Reporting.CrossFundConsolidations!.Count);
+        crossFundDatasetSource.Rows.All(static row => HasDataset(row, "cross-fund-consolidation")).Should().BeTrue();
+
+        var certifiedMartSource = workspace.Reporting.ReportWriterDatasetSources!.Should()
+            .ContainSingle(static source => source.SourceId == "certified-operational-data-mart")
+            .Subject;
+        certifiedMartSource.CertificationState.Should().Be("SourceBacked");
+        certifiedMartSource.ValidationState.Should().Be("Passed");
+        certifiedMartSource.ReconciliationState.Should().Be("Linked");
+        certifiedMartSource.LineageManifest.Should().Contain("datasetSourceId=certified-operational-data-mart");
+        certifiedMartSource.SourceRunIds.Should().NotBeNullOrEmpty();
+        certifiedMartSource.PermittedConsumers.Should().Contain("DataWarehouse");
+        var hasCertifiedMartEvidenceRow = certifiedMartSource.Rows.Any(static row =>
+            row.TryGetValue("rowLineageKey", out var rowLineageKey) &&
+            rowLineageKey.Contains("certified-operational-data-mart:portfolio-cut:", StringComparison.Ordinal) &&
+            row.TryGetValue("evidenceIndex", out var evidenceIndex) &&
+            evidenceIndex.Contains("/api/workstation/evidence/search", StringComparison.Ordinal) &&
+            row.TryGetValue("certificationState", out var certificationState) &&
+            certificationState == "SourceBacked");
+        hasCertifiedMartEvidenceRow.Should().BeTrue("certified operational data mart rows should retain lineage and evidence search metadata");
+
+        static bool HasDataset(IReadOnlyDictionary<string, string> row, string expectedDataset) =>
+            row.TryGetValue("dataset", out var dataset) && dataset == expectedDataset;
+
+        bool IsExpectedPortfolioDatasetRow(IReadOnlyDictionary<string, string> row) =>
+            row.TryGetValue("dataset", out var dataset) && dataset == "portfolio-cut" &&
+            row.TryGetValue("cutId", out var cutId) && cutId == "fund:consolidated" &&
+            row.TryGetValue("grossExposure", out var grossExposure) && grossExposure == expectedGrossExposure &&
+            row.TryGetValue("totalPnl", out var totalPnl) && totalPnl == "50";
+
+        static bool IsExpectedAnalyticsDatasetRow(IReadOnlyDictionary<string, string> row) =>
+            row.TryGetValue("dataset", out var dataset) && dataset == "portfolio-analytics" &&
+            row.TryGetValue("analyticsId", out var analyticsId) && analyticsId == "analytics:topwinner:security:aapl" &&
+            row.TryGetValue("contributionPercent", out var contributionPercent) && contributionPercent == "120";
+
+        static bool IsExpectedCrossFundDatasetRow(IReadOnlyDictionary<string, string> row) =>
+            row.TryGetValue("dataset", out var dataset) && dataset == "cross-fund-consolidation" &&
+            row.TryGetValue("consolidationId", out var consolidationId) && consolidationId == "cross-fund:company" &&
+            row.TryGetValue("totalPnl", out var totalPnl) && totalPnl == "95";
         workspace.Reporting.StructuredExports.Should().NotBeNull();
         workspace.Reporting.StructuredExports!.Should().Contain(export =>
             export.ExportId == "regulatory-trial-balance" &&
             export.Purpose == StructuredReportingExportPurposeDto.Regulatory &&
             export.Format == GovernanceReportArtifactFormatDto.Csv &&
             export.RowCount == workspace.Ledger.TrialBalance.Count &&
+            export.RowLineageCount == export.RowCount &&
             export.IsReady);
         workspace.Reporting.StructuredExports.Should().Contain(export =>
             export.ExportId == "warehouse-ledger-facts" &&
@@ -313,6 +403,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             export.Format == GovernanceReportArtifactFormatDto.Json &&
             export.Dataset == "ledger-reconciliation-facts" &&
             export.RowCount == workspace.LedgerReconciliationSnapshot.Consolidated.Balances.Count &&
+            export.RowLineageCount == export.RowCount &&
             export.FieldCount == 9 &&
             export.Route.Contains("warehouse-ledger-facts", StringComparison.Ordinal) &&
             export.ValidationSummary!.Contains("downstream warehouse loading", StringComparison.Ordinal) &&
@@ -322,6 +413,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             export.Purpose == StructuredReportingExportPurposeDto.InvestmentDecision &&
             export.Format == GovernanceReportArtifactFormatDto.Xlsx &&
             export.RowCount == workspace.Reporting.PortfolioCuts!.Count &&
+            export.RowLineageCount == export.RowCount &&
             export.Route.Contains("fundProfileId=", StringComparison.Ordinal) &&
             export.Route.Contains("format=xlsx", StringComparison.Ordinal) &&
             export.VersionStamp!.StartsWith("structured-export:20260411160000", StringComparison.Ordinal));
@@ -330,6 +422,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             export.Purpose == StructuredReportingExportPurposeDto.InvestmentDecision &&
             export.Format == GovernanceReportArtifactFormatDto.Csv &&
             export.RowCount == workspace.Reporting.AnalyticsRows!.Count &&
+            export.RowLineageCount == export.RowCount &&
             export.FieldCount == 18 &&
             export.IsReady);
         workspace.Reporting.StructuredExports.Should().Contain(export =>
@@ -338,6 +431,7 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             export.Format == GovernanceReportArtifactFormatDto.Xlsx &&
             export.Route.Contains("format=xlsx", StringComparison.Ordinal) &&
             export.RowCount == workspace.Reporting.CrossFundConsolidations!.Count &&
+            export.RowLineageCount == export.RowCount &&
             export.SourceCount == companyConsolidation.SourceCount &&
             export.IsReady);
         var portfolioExport = await service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
@@ -351,6 +445,8 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             row["cutId"] == "fund:consolidated" &&
             row["totalPnl"] == "50" &&
             row["shadowNav"] == "2000");
+        portfolioExport.RowLineage.Should().NotBeNull();
+        portfolioExport.Export.RowLineageCount.Should().Be(portfolioExport.RowLineage!.Count);
         var warehouseExport = await service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
             fundProfileId,
             "warehouse-ledger-facts",
@@ -373,6 +469,8 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             row["accountName"] == "Cash" &&
             row["journalEntryCount"] == workspace.LedgerReconciliationSnapshot.Consolidated.JournalEntryCount.ToString() &&
             row["ledgerEntryCount"] == workspace.LedgerReconciliationSnapshot.Consolidated.LedgerEntryCount.ToString());
+        warehouseExport.RowLineage.Should().NotBeNull();
+        warehouseExport.Export.RowLineageCount.Should().Be(warehouseExport.RowLineage!.Count);
         var analyticsExport = await service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
             fundProfileId,
             "investment-topn-contribution-analytics",
@@ -389,6 +487,8 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             row["totalPnl"] == "60" &&
             row["contributionPercent"] == "120.0" &&
             row["heatMapIntensity"] == "85.7143");
+        analyticsExport.RowLineage.Should().NotBeNull();
+        analyticsExport.Export.RowLineageCount.Should().Be(analyticsExport.RowLineage!.Count);
         var crossFundExport = await service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
             fundProfileId,
             "cross-fund-consolidation",
@@ -400,6 +500,8 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             row["consolidationId"] == "cross-fund:company" &&
             row["fundCount"] == "2" &&
             row["sourceCount"] == "5");
+        crossFundExport.RowLineage.Should().NotBeNull();
+        crossFundExport.Export.RowLineageCount.Should().Be(crossFundExport.RowLineage!.Count);
         Func<Task> missingExport = () => service.GetStructuredReportingExportAsync(new StructuredReportingExportRequestDto(
             fundProfileId,
             "missing-export",
@@ -436,6 +538,11 @@ public sealed class FundOperationsWorkspaceReadServiceTests
         liveView.State.Should().Be(PortfolioReportingLiveViewStateDto.Blocked);
         liveView.SourceCount.Should().Be(0);
         liveView.SourceAsOfUtc.Should().BeNull();
+        liveView.FreshnessPolicy.Should().NotBeNull();
+        liveView.FreshnessPolicy!.SourceAgeSeconds.Should().BeNull();
+        liveView.FreshnessPolicy.IsWithinLiveLinkWindow.Should().BeFalse();
+        liveView.FreshnessPolicy.IsBeyondStaleWindow.Should().BeFalse();
+        liveView.FreshnessPolicy.Reason.Should().Contain("fails closed");
         liveView.TelemetrySummary.Should().Contain("No source-backed portfolio records");
         liveView.ReadinessBlockers.Should().ContainSingle(blocker =>
             blocker.Contains("No source-backed portfolio records", StringComparison.Ordinal));
@@ -494,6 +601,11 @@ public sealed class FundOperationsWorkspaceReadServiceTests
             .Which;
         fundLiveView.State.Should().Be(PortfolioReportingLiveViewStateDto.LiveLinked);
         fundLiveView.SourceAsOfUtc.Should().Be(new DateTimeOffset(2026, 4, 11, 15, 55, 0, TimeSpan.Zero));
+        fundLiveView.FreshnessPolicy.Should().NotBeNull();
+        fundLiveView.FreshnessPolicy!.SourceAgeSeconds.Should().Be(300);
+        fundLiveView.FreshnessPolicy.IsWithinLiveLinkWindow.Should().BeTrue();
+        fundLiveView.FreshnessPolicy.IsBeyondStaleWindow.Should().BeFalse();
+        fundLiveView.FreshnessPolicy.Reason.Should().Contain("inside the 5-minute live-link window");
         fundLiveView.TelemetrySummary.Should().Contain("Live-linked portfolio telemetry is current through");
         fundLiveView.ReadinessBlockers.Should().BeEmpty();
 

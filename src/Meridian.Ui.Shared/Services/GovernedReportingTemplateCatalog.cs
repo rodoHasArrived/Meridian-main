@@ -92,6 +92,7 @@ public sealed class GovernedReportingTemplateCatalog : IReportingTemplateCatalog
                 .Add("lifecycleStatus", record.Status.ToString())
                 .Add("isBuiltIn", record.IsBuiltIn.ToString())
                 .Add("gridCount", (definition.Grids?.Count ?? 0).ToString()),
-            definition.Grids);
+            definition.Grids,
+            definition.AccessPolicy);
     }
 }

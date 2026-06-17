@@ -4,6 +4,9 @@ import assert from 'node:assert/strict';
 import {
   buildUiImplementationDot,
   buildUiNavigationDot,
+  buildWpfScreenCatalogDot,
+  buildWpfScreenSummaryDot,
+  buildWpfWorkspaceScreenDot,
   parseMainPageXaml,
   parseNavigationService,
   parsePagesFile,
@@ -55,6 +58,58 @@ test('parsers extract sections, navigation tags, and workspace labels', () => {
   assert.deepEqual(parsePagesFile(pagesContent), [{ section: 'Primary navigation pages', pageType: 'DashboardPage' }]);
   assert.deepEqual(parseNavigationService(navContent), [{ group: 'Primary navigation', tag: 'Dashboard', pageType: 'DashboardPage' }]);
   assert.deepEqual(parseMainPageXaml(xamlContent), [{ workspace: 'MONITOR', tag: 'Dashboard', label: 'Dashboard' }]);
+});
+
+test('screen diagrams summarize workspace sections and screen metadata', () => {
+  const registryPages = [
+    {
+      pageType: 'TradingWorkspaceShellPage',
+      tag: 'TradingShell',
+      title: 'Trading Workspace',
+      subtitle: 'Monitor markets.',
+      workspaceId: 'trading',
+      section: 'Desk',
+      order: 0,
+      visibilityTier: 'Primary',
+    },
+    {
+      pageType: 'OrderBookPage',
+      tag: 'OrderBook',
+      title: 'Order book',
+      subtitle: 'Review depth.',
+      workspaceId: 'trading',
+      section: 'Market Feed',
+      order: 20,
+      visibilityTier: 'Primary',
+    },
+    {
+      pageType: 'ProviderHealthPage',
+      tag: 'ProviderHealth',
+      title: 'Provider health',
+      subtitle: 'Inspect readiness.',
+      workspaceId: 'data',
+      section: 'Operations Queue',
+      order: 65,
+      visibilityTier: 'Secondary',
+    },
+  ];
+
+  const summary = buildWpfScreenSummaryDot({ fingerprint: 'abc123fingerprint', registryPages });
+  const catalog = buildWpfScreenCatalogDot({ fingerprint: 'abc123fingerprint', registryPages });
+  const workspace = buildWpfWorkspaceScreenDot({
+    fingerprint: 'abc123fingerprint',
+    workspaceName: 'Trading',
+    pages: registryPages.filter((page) => page.workspaceId === 'trading'),
+  });
+
+  assert.match(summary, /Meridian WPF screen summary/);
+  assert.match(summary, /Trading\\n2 screens \/ 2 sections\\nPrimary 2 \| Secondary 0 \| Overflow 0/);
+  assert.match(summary, /Launchpad: Trading Workspace → TradingWorkspaceShellPage/);
+  assert.match(catalog, /Meridian WPF screen catalog/);
+  assert.match(catalog, /Order book\\nOrderBook → OrderBookPage\\nPrimary \| order 20/);
+  assert.match(catalog, /Provider health\\nProviderHealth → ProviderHealthPage\\nSecondary \| order 65/);
+  assert.match(workspace, /Meridian WPF Trading screens/);
+  assert.match(workspace, /Trading workspace\\nPrimary 2 \| Secondary 0 \| Overflow 0/);
 });
 
 test('registry parser extracts current shell page descriptors', () => {

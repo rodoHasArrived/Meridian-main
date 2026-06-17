@@ -46,7 +46,8 @@ public sealed record ReportingTemplateMetadata(
     string Version,
     ImmutableArray<string> Sections,
     ImmutableDictionary<string, string> Tags,
-    IReadOnlyList<ReportWriterGridDefinitionDto>? ReportWriterGrids = null);
+    IReadOnlyList<ReportWriterGridDefinitionDto>? ReportWriterGrids = null,
+    ReportAccessPolicyDto? AccessPolicy = null);
 
 public sealed record ReportingLineageReference(
     string SectionId,
@@ -67,7 +68,13 @@ public sealed record ReportingOutputManifest(
     string? ScheduleId = null,
     string? FailureReason = null,
     ImmutableArray<ReportingRunReportWriterGridArtifact> ReportWriterGrids = default,
-    ImmutableArray<ReportWriterGridRenderDto> RenderedReportWriterGrids = default);
+    ImmutableArray<ReportWriterGridRenderDto> RenderedReportWriterGrids = default,
+    string? ReportWriterDatasetSourceId = null,
+    string? ReportWriterDatasetSourceLabel = null,
+    int? ReportWriterDatasetRowCount = null,
+    string? BrandingThemeId = null,
+    ReportBrandingThemeDto? BrandingTheme = null,
+    ReportAccessPolicyDto? AccessPolicy = null);
 
 public sealed record ReportingRunReportWriterGridArtifact(
     string GridId,
@@ -95,7 +102,12 @@ public sealed record ReportingJobContract(
     DateTimeOffset RequestedAtUtc,
     string? CronExpression = null,
     string? ScheduleId = null,
-    IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null);
+    IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null,
+    string? ReportWriterDatasetSourceId = null,
+    string? ReportWriterDatasetSourceLabel = null,
+    string? BrandingThemeId = null,
+    ReportBrandingThemeDto? BrandingTheme = null,
+    ReportAccessPolicyDto? AccessPolicy = null);
 
 public sealed record ReportingScheduleContract(
     string ScheduleId,

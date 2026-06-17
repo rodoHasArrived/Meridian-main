@@ -1,4 +1,4 @@
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildParameterPanelState,
@@ -449,7 +449,6 @@ describe("Quant Lab view model helpers", () => {
   });
 
   it("ignores stale parameter extraction responses after the source changes", async () => {
-    vi.useFakeTimers();
     const firstRequest = createDeferred<QuantParametersResponse>();
     const secondRequest = createDeferred<QuantParametersResponse>();
     const services: QuantLabServices = {
@@ -465,18 +464,12 @@ describe("Quant Lab view model helpers", () => {
     await act(async () => {
       result.current.setSource("PrintMetric(\"first\", firstLookback);");
     });
-    await act(async () => {
-      vi.advanceTimersByTime(600);
-    });
-    expect(services.extractParameters).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(services.extractParameters).toHaveBeenCalledTimes(1));
 
     await act(async () => {
       result.current.setSource("PrintMetric(\"second\", includeFees ? 1 : 0);");
     });
-    await act(async () => {
-      vi.advanceTimersByTime(600);
-    });
-    expect(services.extractParameters).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(services.extractParameters).toHaveBeenCalledTimes(2));
 
     await act(async () => {
       firstRequest.resolve({ parameters: [{ ...numberParameter, name: "firstLookback", label: "First lookback" }] });

@@ -1,4 +1,6 @@
 using System.IO;
+using System.Text.Json;
+using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Tests.Views;
 
@@ -50,6 +52,50 @@ public sealed class DesktopWorkflowScriptTests
     }
 
     [Fact]
+    public void DesktopScreenshotCatalog_ShouldIncludeEveryRegisteredShellPage()
+    {
+        var workflowCatalog = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\desktop-workflows.json"));
+        using var document = JsonDocument.Parse(workflowCatalog);
+
+        var screenshotWorkflow = document.RootElement
+            .GetProperty("workflows")
+            .EnumerateArray()
+            .Single(workflow =>
+                string.Equals(
+                    workflow.GetProperty("name").GetString(),
+                    "screenshot-catalog",
+                    StringComparison.Ordinal));
+
+        var screenshotSteps = screenshotWorkflow
+            .GetProperty("steps")
+            .EnumerateArray()
+            .Select(step => new
+            {
+                PageTag = step.GetProperty("pageTag").GetString() ?? string.Empty,
+                CaptureName = step.GetProperty("captureName").GetString() ?? string.Empty
+            })
+            .ToArray();
+
+        var registeredPageTags = ShellNavigationCatalog.Pages
+            .Select(page => page.PageTag)
+            .OrderBy(pageTag => pageTag, StringComparer.Ordinal)
+            .ToArray();
+        var catalogPageTags = screenshotSteps
+            .Select(step => step.PageTag)
+            .OrderBy(pageTag => pageTag, StringComparer.Ordinal)
+            .ToArray();
+
+        catalogPageTags.Should().Equal(registeredPageTags);
+
+        screenshotSteps
+            .GroupBy(step => step.CaptureName, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() > 1)
+            .Select(group => group.Key)
+            .Should()
+            .BeEmpty("each registered WPF screen needs a distinct committed screenshot file");
+    }
+
+    [Fact]
     public void RunDesktopWorkflowScript_ShouldRestoreAndBuildWithMatchingIsolationArguments()
     {
         var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\run-desktop-workflow.ps1"));
@@ -57,7 +103,8 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain("$buildIsolationKey = if ($SkipBuild) { '' } else { New-MeridianBuildIsolationKey");
         script.Should().Contain("$desktopRestoreArgs = @(");
         script.Should().Contain("$desktopBuildArgs = @(");
-        script.Should().Contain("-AdditionalProperties @(\"Configuration=$resolvedConfiguration\")");
+        script.Should().Contain("-AdditionalProperties @(\"Configuration=$resolvedConfiguration\", 'UseSharedCompilation=false')");
+        script.Should().Contain("-MaxCpuCount 1");
         script.Should().Contain("& dotnet restore $resolvedProjectPath --verbosity minimal @desktopRestoreArgs");
         script.Should().Contain("& dotnet build $resolvedProjectPath -c $resolvedConfiguration --no-restore --verbosity minimal @desktopBuildArgs");
 

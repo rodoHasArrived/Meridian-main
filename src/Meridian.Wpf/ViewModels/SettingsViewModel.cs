@@ -31,6 +31,8 @@ public sealed partial class SettingsViewModel : BindableBase
     private readonly WpfServices.StatusService _statusService;
     private readonly SettingsConfigurationService _settingsConfigService;
     private readonly WpfServices.ISecurityAssetProfileWorkflowClient? _assetProfileClient;
+    private readonly WpfServices.IOperationsControlCenterClient? _operationsControlClient;
+    private readonly WpfServices.DemoTourService _demoTourService;
 
     private string _configPath = string.Empty;
     private string _configStatusText = "Valid";
@@ -71,18 +73,24 @@ public sealed partial class SettingsViewModel : BindableBase
         WpfServices.StatusService statusService,
         IFeatureCapabilityGate? capabilityGate = null,
         IEnumerable<FeatureCapabilityDescriptor>? capabilityDescriptors = null,
-        WpfServices.ISecurityAssetProfileWorkflowClient? assetProfileClient = null)
+        WpfServices.ISecurityAssetProfileWorkflowClient? assetProfileClient = null,
+        WpfServices.IOperationsControlCenterClient? operationsControlClient = null,
+        WpfServices.DemoTourService? demoTourService = null)
     {
         _configService = configService;
         _notificationService = notificationService;
         _statusService = statusService;
         _settingsConfigService = SettingsConfigurationService.Instance;
         _assetProfileClient = assetProfileClient;
+        _operationsControlClient = operationsControlClient;
+        _demoTourService = demoTourService ?? WpfServices.DemoTourService.Instance;
         StoredCredentials = new ObservableCollection<CredentialDisplayInfo>();
         RecentActivity = new ObservableCollection<SettingsActivityItem>();
         AssetProfileRows = new ObservableCollection<SettingsAssetProfileRow>();
         AssetProfileFieldInputs = new ObservableCollection<SettingsAssetProfileFieldInput>();
         AssetProfileLineageEvents = new ObservableCollection<string>();
+        OperationsApprovalPolicyRows = new ObservableCollection<SettingsOperationsApprovalPolicyRow>();
+        OperationsCloseCalendarRows = new ObservableCollection<SettingsOperationsCloseCalendarRow>();
         CapabilityToggles = new ObservableCollection<FeatureCapabilityToggleViewModel>(
             BuildCapabilityToggles(capabilityGate, capabilityDescriptors));
         ShellDensityModes =
@@ -102,6 +110,7 @@ public sealed partial class SettingsViewModel : BindableBase
         ManageCredentialsCommand = new RelayCommand(() => WpfServices.NavigationService.Instance.NavigateTo("CredentialManagement"));
         RunSetupWizardCommand = new RelayCommand(() => WpfServices.NavigationService.Instance.NavigateTo("SetupWizard"));
         ConfigureProviderCredentialCommand = new RelayCommand(() => WpfServices.NavigationService.Instance.NavigateTo("AddProviderWizard"));
+        StartDemoTourCommand = new RelayCommand(StartDemoTour);
 
         // Credential commands
         TestCredentialCommand = new RelayCommand<string>(TestCredential);
@@ -133,6 +142,11 @@ public sealed partial class SettingsViewModel : BindableBase
         LoadAssetProfileLineageCommand = new AsyncRelayCommand(LoadAssetProfileLineageAsync, CanLoadAssetProfileLineage);
         RollbackAssetProfileCommand = new AsyncRelayCommand(RollbackAssetProfileAsync, CanRollbackAssetProfile);
         CreateProfileBackedSecurityCommand = new AsyncRelayCommand(CreateProfileBackedSecurityAsync, CanCreateProfileBackedSecurity);
+        RefreshOperationsControlCommand = new AsyncRelayCommand(RefreshOperationsControlAsync, CanUseOperationsControl);
+        if (_operationsControlClient is null)
+        {
+            SetOperationsControlUnavailableState();
+        }
     }
 
     // ── Collections ───────────────────────────────────────────────────────────
@@ -142,8 +156,27 @@ public sealed partial class SettingsViewModel : BindableBase
     public ObservableCollection<SettingsAssetProfileRow> AssetProfileRows { get; }
     public ObservableCollection<SettingsAssetProfileFieldInput> AssetProfileFieldInputs { get; }
     public ObservableCollection<string> AssetProfileLineageEvents { get; }
+    public ObservableCollection<SettingsOperationsApprovalPolicyRow> OperationsApprovalPolicyRows { get; }
+    public ObservableCollection<SettingsOperationsCloseCalendarRow> OperationsCloseCalendarRows { get; }
     public ObservableCollection<FeatureCapabilityToggleViewModel> CapabilityToggles { get; }
     public IReadOnlyList<ShellDensityMode> ShellDensityModes { get; }
+
+    public IRelayCommand StartDemoTourCommand { get; }
+
+    public string DemoModeStatusText => FixtureModeDetector.Instance.IsFixtureMode
+        ? "Demo/sample mode is active. All tour records are sample data and remain separate from provider-backed operational data."
+        : "Demo/sample mode is off. Start the tour to load safe sample data and visibly distinguish it from live provider records.";
+
+    private void StartDemoTour()
+    {
+        _demoTourService.StartTour();
+        RaisePropertyChanged(nameof(DemoModeStatusText));
+        _notificationService.ShowNotification(
+            "Demo / sample tour",
+            "Sample data is now active for the guided workflow. Live provider-backed operational data is not modified.",
+            NotificationType.Info,
+            6000);
+    }
 
     // ── Bindable Properties ───────────────────────────────────────────────────
 
@@ -364,6 +397,7 @@ public sealed partial class SettingsViewModel : BindableBase
     public IAsyncRelayCommand LoadAssetProfileLineageCommand { get; }
     public IAsyncRelayCommand RollbackAssetProfileCommand { get; }
     public IAsyncRelayCommand CreateProfileBackedSecurityCommand { get; }
+    public IAsyncRelayCommand RefreshOperationsControlCommand { get; }
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -378,6 +412,7 @@ public sealed partial class SettingsViewModel : BindableBase
         RefreshStoragePreview("BySymbol", "gzip");
         RefreshProfiles();
         _ = RefreshAssetProfilesAsync();
+        _ = RefreshOperationsControlAsync();
         LoadRecentActivity();
         UpdateSystemStatus();
     }

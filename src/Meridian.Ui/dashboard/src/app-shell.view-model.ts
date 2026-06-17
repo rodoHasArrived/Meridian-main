@@ -1257,6 +1257,13 @@ const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
         description: "Package approved accounting evidence into retained audit packets and report-ready outputs.",
         href: WORKSTATION_ROUTE_CATALOG.reportingEvidence,
         matchPath: WORKSTATION_ROUTE_CATALOG.reportingEvidence
+      },
+      {
+        id: "close-support",
+        label: "Close Support",
+        description: "Review close checklists, period locks, governed reopen evidence, and retained close packages.",
+        href: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
+        matchPath: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity
       }
     ]
   }
@@ -1402,6 +1409,8 @@ function buildWorkflowContinuityStepStatus(
     case "ledger":
     case "reconciliation":
       return buildReconciliationContinuityStatus(context);
+    case "close-support":
+      return buildCloseSupportContinuityStatus(context);
     case "produce-evidence":
     case "evidence":
     case "evidence-review":
@@ -1451,7 +1460,8 @@ const financialOperationsStepOrder: Record<string, number> = {
   "match-records": 1,
   "resolve-exceptions": 2,
   "approve-results": 3,
-  "produce-evidence": 4
+  "produce-evidence": 4,
+  "close-support": 5
 };
 
 function buildFinancialOperationsWorkflowStepStatus(
@@ -1519,7 +1529,8 @@ function resolveFinancialOperationsActiveStepIndex(summary: WorkspaceWorkflowSum
   if (nextAction.includes("match records")) return 1;
   if (nextAction.includes("resolve exceptions")) return 2;
   if (nextAction.includes("approve results")) return 3;
-  if (nextAction.includes("close readiness") || nextAction.includes("evidence packet") || nextAction.includes("produce evidence")) return 4;
+  if (nextAction.includes("close support") || nextAction.includes("close readiness") || nextAction.includes("evidence package")) return 5;
+  if (nextAction.includes("evidence packet") || nextAction.includes("produce evidence")) return 4;
 
   const coreFlow = normalizeWorkflowText(getWorkflowEvidenceValue(summary, "Core flow"));
   if (coreFlow.includes("receive activity")) return 0;
@@ -1527,12 +1538,13 @@ function resolveFinancialOperationsActiveStepIndex(summary: WorkspaceWorkflowSum
   if (coreFlow.includes("resolve exceptions")) return 2;
   if (coreFlow.includes("approve results")) return 3;
   if (coreFlow.includes("produce evidence")) return 4;
+  if (coreFlow.includes("close support")) return 5;
 
   const status = normalizeWorkflowText(summary.statusLabel);
   if (status.includes("not started")) return 0;
   if (status.includes("exception")) return 2;
   if (status.includes("approval")) return 3;
-  if (status.includes("close readiness")) return 4;
+  if (status.includes("close readiness") || status.includes("evidence package")) return 5;
   return 1;
 }
 
@@ -1551,7 +1563,18 @@ function buildFinancialOperationsActiveStepLabel(stepId: string, summary: Worksp
       return approval && approval !== "Approved" ? "Approval pending" : "Approve";
     }
     case "produce-evidence":
-      return normalizeWorkflowText(summary.statusLabel).includes("close readiness") ? "Close blocked" : "Evidence";
+      return "Evidence";
+    case "close-support": {
+      const status = normalizeWorkflowText(summary.statusLabel);
+      if (status.includes("evidence package")) return "Package review";
+      if (status.includes("close readiness")) return "Close blocked";
+
+      const periodLock = getWorkflowEvidenceValue(summary, "Period lock");
+      if (periodLock && periodLock !== "Not projected") return periodLock;
+
+      const close = getWorkflowEvidenceValue(summary, "Close");
+      return close && close !== "Pending" ? close : "Close review";
+    }
     default:
       return summary.nextAction?.label ?? "Review";
   }
@@ -1689,6 +1712,12 @@ function buildGovernedReportContinuityStatus({ payload }: WorkflowContinuityStat
   return distributions.length > 0
     ? { label: pendingCount > 0 ? `${pendingCount} pending` : `${distributions.length} recipients`, tone: pendingCount > 0 ? "review" : "ready" }
     : { label: "Needs recipient", tone: "review" };
+}
+
+function buildCloseSupportContinuityStatus({ payload }: WorkflowContinuityStatusContext): WorkflowContinuityStepStatus {
+  return payload.accounting
+    ? { label: "Review", tone: "review" }
+    : { label: "Waiting", tone: "pending" };
 }
 
 interface OperatorFocusCandidate extends AppShellOperatorFocusItem {

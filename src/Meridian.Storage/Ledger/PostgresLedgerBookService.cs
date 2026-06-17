@@ -219,6 +219,7 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
+        EnsureHumanOrigin(request.ActionOrigin, "close ledger periods");
 
         var current = await _store.GetPeriodAsync(periodId, ct).ConfigureAwait(false)
             ?? throw new LedgerBookNotFoundException($"Ledger period '{periodId}' was not found.");
@@ -274,6 +275,15 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         }
 
         return new LedgerPeriodCloseResultDto(MapPeriod(saved, book), summary, workItem);
+    }
+
+    private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
+    {
+        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        {
+            throw new LedgerBookValidationException(
+                $"Reviewed automation cannot {action}; a human operator approval is required.");
+        }
     }
 
     private async Task<LedgerBookRecord> RequireBookAsync(Guid ledgerBookId, CancellationToken ct)

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  getOperationsCloseCalendar,
   getPrivateCapitalCloseCockpit,
   getOperationsContinuityWorkflow,
   getOperationsContinuityWorkflows,
@@ -7,14 +8,18 @@ import {
   type PrivateCapitalCloseCockpitQuery
 } from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
-import { normalizeLocalWorkstationRoute } from "@/lib/workspace";
+import { normalizeLocalWorkstationRoute, workstationRouteWithQuery } from "@/lib/workspace";
 import type {
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
   OperationsAccountingRecordEvidenceCategory,
   OperationsAccountingRecordSummary,
   OperationsBreakCase,
+  OperationsChecklistControlApproval,
+  OperationsCloseCalendar,
+  OperationsCloseCalendarItem,
   OperationsDashboardSummary,
+  OperationsEvidenceLink,
   OperationsEvidencePackageSummary,
   OperationsReconciliationLaneSummary,
   OperationsCloseChecklistTask,
@@ -23,6 +28,7 @@ import type {
   OperationsGateKey,
   OperationsGateStatus,
   OperationsNextAction,
+  OperationsReviewedAutomationArtifact,
   OperationsTimelineEntry,
   OperationsWorkflowBlocker,
   OperationsWorkflowStatus,
@@ -75,6 +81,8 @@ export interface OperationsContinuityBlockerRow {
   severityLabel: string;
   severityTone: OperationsContinuityTone;
   evidenceLabel: string;
+  evidenceHref: string | null;
+  evidenceRouteLabel: string;
   ariaLabel: string;
 }
 
@@ -104,6 +112,14 @@ export interface OperationsContinuityChecklistRow {
   remediationHref: string | null;
   remediationLabel: string;
   acknowledgementLabel: string;
+  acknowledgementCommandPostureLabel: string;
+  acknowledgementGuardLabel: string;
+  workflowId: string | null;
+  expectedWorkflowVersion: number | null;
+  canAcknowledge: boolean;
+  acknowledgeLabel: string;
+  acknowledgeDisabledReason: string | null;
+  acknowledgeAriaLabel: string;
   ariaLabel: string;
 }
 
@@ -136,9 +152,33 @@ export interface OperationsContinuityBreakCaseRow {
   rootCauseLabel: string;
   symbolLabel: string;
   evidenceLabel: string;
+  evidenceHref: string | null;
+  evidenceRouteLabel: string;
   approvalLabel: string;
   blockedOutputsLabel: string;
   actionLabel: string;
+  caseworkHref: string | null;
+  caseworkRouteLabel: string;
+  commandPostureLabel: string;
+  commandGuardLabel: string;
+  workflowId: string | null;
+  expectedWorkflowVersion: number | null;
+  assignmentOwner: string;
+  assignmentEscalationLevel: string | null;
+  assignmentEscalationReason: string | null;
+  assignmentDueDate: string | null;
+  canAssign: boolean;
+  assignLabel: string;
+  assignDisabledReason: string | null;
+  assignAriaLabel: string;
+  resolutionStatus: string;
+  resolutionEvidenceLinks: OperationsEvidenceLink[];
+  canResolve: boolean;
+  resolveLabel: string;
+  resolveDisabledReason: string | null;
+  resolveAriaLabel: string;
+  routeHref: string | null;
+  routeLabel: string;
   ariaLabel: string;
 }
 
@@ -150,6 +190,8 @@ export interface OperationsContinuityReconciliationLaneRow {
   breakCountLabel: string;
   summary: string;
   evidenceLabel: string;
+  evidenceHref: string | null;
+  evidenceRouteLabel: string;
   routeHref: string | null;
   routeLabel: string;
   requiredActionsLabel: string;
@@ -183,6 +225,105 @@ export interface OperationsContinuityDashboardViewModel {
   metrics: OperationsContinuityDashboardMetricRow[];
 }
 
+export interface FinancialOperationsCommandSpineRow {
+  id: string;
+  stageLabel: string;
+  commandLabel: string;
+  postureLabel: string;
+  statusLabel: string;
+  statusTone: OperationsContinuityTone;
+  detail: string;
+  guardLabel: string;
+  evidenceLabel: string;
+  routeHref: string | null;
+  routeLabel: string;
+  workflowId: string | null;
+  expectedWorkflowVersion: number | null;
+  submitApprovalReportPackId: string | null;
+  submitApprovalReviewer: string | null;
+  submitApprovalEvidenceLinks: OperationsEvidenceLink[];
+  submitApprovalChecklistControlApprovals: OperationsChecklistControlApproval[];
+  canSubmitApproval: boolean;
+  submitApprovalLabel: string;
+  submitApprovalDisabledReason: string | null;
+  submitApprovalAriaLabel: string;
+  closeWorkflowReportPackId: string | null;
+  closeWorkflowEvidenceLinks: OperationsEvidenceLink[];
+  closeWorkflowChecklistControlApprovals: OperationsChecklistControlApproval[];
+  canCloseWorkflow: boolean;
+  closeWorkflowLabel: string;
+  closeWorkflowDisabledReason: string | null;
+  closeWorkflowAriaLabel: string;
+  ariaLabel: string;
+}
+
+export interface FinancialOperationsCommandSpineViewModel {
+  title: string;
+  summaryLabel: string;
+  statusLabel: string;
+  statusTone: OperationsContinuityTone;
+  emptyText: string;
+  rows: FinancialOperationsCommandSpineRow[];
+}
+
+export interface OperationsReviewedAutomationViewModel {
+  title: string;
+  statusLabel: string;
+  statusTone: OperationsContinuityTone;
+  stageLabel: string;
+  reviewLabel: string;
+  summaryLabel: string;
+  allowedUseCasesLabel: string;
+  prohibitedActionsLabel: string;
+  evidenceLabel: string;
+  requiredActionsLabel: string;
+  artifactsEmptyText: string;
+  artifacts: OperationsReviewedAutomationArtifactRow[];
+}
+
+export interface OperationsReviewedAutomationArtifactRow {
+  id: string;
+  kindLabel: string;
+  title: string;
+  statusLabel: string;
+  statusTone: OperationsContinuityTone;
+  reviewLabel: string;
+  confidenceLabel: string;
+  sourceSummary: string;
+  evidenceLabel: string;
+  evidenceHref: string | null;
+  evidenceRouteLabel: string;
+  suggestedActionLabel: string;
+  blockedActionLabel: string;
+  checklistLabel: string;
+  ariaLabel: string;
+}
+
+export interface FinancialOperationsOperatorQueueRow {
+  id: string;
+  kindLabel: string;
+  title: string;
+  detail: string;
+  statusLabel: string;
+  statusTone: OperationsContinuityTone;
+  ownerLabel: string;
+  dueLabel: string;
+  evidenceLabel: string;
+  actionLabel: string;
+  routeHref: string | null;
+  routeLabel: string;
+  ariaLabel: string;
+}
+
+export interface FinancialOperationsOperatorQueueViewModel {
+  title: string;
+  summaryLabel: string;
+  statusLabel: string;
+  statusTone: OperationsContinuityTone;
+  emptyText: string;
+  items: FinancialOperationsOperatorQueueRow[];
+}
+
 export interface OperationsContinuityEvidencePackageRow {
   id: string;
   label: string;
@@ -191,6 +332,8 @@ export interface OperationsContinuityEvidencePackageRow {
   readinessLabel: string;
   summary: string;
   evidenceLabel: string;
+  evidenceHref: string | null;
+  evidenceRouteLabel: string;
   requiredActionsLabel: string;
   routeHref: string | null;
   routeLabel: string;
@@ -226,6 +369,48 @@ export interface OperationsContinuityCloseGovernanceViewModel {
   reopenEvidenceLabel: string;
   reopenRationaleLabel: string;
   commandGuardLabel: string;
+  workflowId: string | null;
+  expectedWorkflowVersion: number | null;
+  reopenWorkflowEvidenceLinks: OperationsEvidenceLink[];
+  canReopenWorkflow: boolean;
+  reopenWorkflowLabel: string;
+  reopenWorkflowDisabledReason: string | null;
+  reopenWorkflowAriaLabel: string;
+}
+
+export interface OperationsContinuityCloseCalendarRow {
+  id: string;
+  periodLabel: string;
+  statusLabel: string;
+  statusTone: OperationsContinuityTone;
+  dueLabel: string;
+  taskLabel: string;
+  ownerLabel: string;
+  readinessLabel: string;
+  readinessTone: OperationsContinuityTone;
+  blockerLabel: string;
+  checklistLabel: string;
+  approvalLabel: string;
+  routeHref: string | null;
+  routeLabel: string;
+  ariaLabel: string;
+}
+
+export interface OperationsContinuityCloseCalendarViewModel {
+  title: string;
+  statusLabel: string;
+  statusTone: OperationsContinuityTone;
+  summaryLabel: string;
+  scopeLabel: string;
+  freshnessLabel: string;
+  itemCountLabel: string;
+  blockerCountLabel: string;
+  checklistCountLabel: string;
+  approvalCountLabel: string;
+  nextDueLabel: string;
+  errorText: string | null;
+  emptyText: string;
+  rows: OperationsContinuityCloseCalendarRow[];
 }
 
 export interface OperationsContinuityCloseCockpitLaneRow {
@@ -265,8 +450,41 @@ export interface OperationsContinuityCloseCockpitApprovalRow {
   decidedLabel: string;
   rationale: string;
   evidenceLabel: string;
+  evidenceHref: string | null;
+  evidenceRouteLabel: string;
   workflowHref: string | null;
   routeLabel: string;
+  ariaLabel: string;
+}
+
+export interface OperationsContinuityWorkflowApprovalRow {
+  id: string;
+  workflowId: string | null;
+  expectedWorkflowVersion: number | null;
+  statusLabel: string;
+  statusTone: OperationsContinuityTone;
+  actorLabel: string;
+  submittedLabel: string;
+  decidedLabel: string;
+  rationale: string;
+  reviewer: string | null;
+  evidenceLabel: string;
+  evidenceHref: string | null;
+  evidenceRouteLabel: string;
+  decisionGuardLabel: string;
+  approveWorkflowReportPackId: string | null;
+  approveWorkflowEvidenceLinks: OperationsEvidenceLink[];
+  approveWorkflowChecklistControlApprovals: OperationsChecklistControlApproval[];
+  canApproveWorkflow: boolean;
+  approveWorkflowLabel: string;
+  approveWorkflowDisabledReason: string | null;
+  approveWorkflowAriaLabel: string;
+  rejectWorkflowEvidenceLinks: OperationsEvidenceLink[];
+  rejectWorkflowReasonCode: string;
+  canRejectWorkflow: boolean;
+  rejectWorkflowLabel: string;
+  rejectWorkflowDisabledReason: string | null;
+  rejectWorkflowAriaLabel: string;
   ariaLabel: string;
 }
 
@@ -308,10 +526,12 @@ export interface OperationsContinuityCloseCockpitViewModel {
   errorText: string | null;
   lanesEmptyText: string;
   workflowsEmptyText: string;
+  evidencePackagesEmptyText: string;
   approvalHistoryEmptyText: string;
   navSupportPackagesEmptyText: string;
   lanes: OperationsContinuityCloseCockpitLaneRow[];
   workflows: OperationsContinuityCloseCockpitWorkflowRow[];
+  evidencePackages: OperationsContinuityEvidencePackageRow[];
   approvalHistory: OperationsContinuityCloseCockpitApprovalRow[];
   navSupportPackages: OperationsContinuityNavSupportPackageRow[];
 }
@@ -395,7 +615,13 @@ export interface OperationsContinuityScreenViewModel {
   reconciliationLanesEmptyText: string;
   evidencePackagesLabel: string;
   evidencePackagesEmptyText: string;
+  workflowApprovalHistoryLabel: string;
+  workflowApprovalHistoryEmptyText: string;
   dashboard: OperationsContinuityDashboardViewModel;
+  commandSpine: FinancialOperationsCommandSpineViewModel;
+  reviewedAutomation: OperationsReviewedAutomationViewModel;
+  financialOperationsQueue: FinancialOperationsOperatorQueueViewModel;
+  workflowApprovalHistory: OperationsContinuityWorkflowApprovalRow[];
   breakCases: OperationsContinuityBreakCaseRow[];
   reconciliationLanes: OperationsContinuityReconciliationLaneRow[];
   evidencePackages: OperationsContinuityEvidencePackageRow[];
@@ -405,6 +631,7 @@ export interface OperationsContinuityScreenViewModel {
   checklist: OperationsContinuityChecklistRow[];
   closeGovernance: OperationsContinuityCloseGovernanceViewModel;
   closePackage: OperationsContinuityClosePackageViewModel;
+  closeCalendar: OperationsContinuityCloseCalendarViewModel;
   closeCockpit: OperationsContinuityCloseCockpitViewModel;
   accountingRecordLabel: string;
   accountingRecordSummary: OperationsAccountingRecordSummaryViewModel;
@@ -426,6 +653,10 @@ export interface OperationsContinuityScreenServices {
     query?: PrivateCapitalCloseCockpitQuery,
     options?: ApiRequestOptions
   ) => Promise<PrivateCapitalCloseCockpit>;
+  getCloseCalendar?: (
+    filters?: { fundAccountId?: string; periodId?: string },
+    options?: ApiRequestOptions
+  ) => Promise<OperationsCloseCalendar>;
 }
 
 export interface BuildOperationsContinuityScreenViewModelOptions {
@@ -434,6 +665,9 @@ export interface BuildOperationsContinuityScreenViewModelOptions {
   detail: OperationsContinuityWorkflow | null;
   loading: boolean;
   detailLoading: boolean;
+  closeCalendar?: OperationsCloseCalendar | null;
+  closeCalendarLoading?: boolean;
+  closeCalendarError?: string | null;
   closeCockpit?: PrivateCapitalCloseCockpit | null;
   closeCockpitLoading?: boolean;
   closeCockpitError?: string | null;
@@ -446,6 +680,7 @@ export interface BuildOperationsContinuityScreenViewModelOptions {
 const defaultServices: OperationsContinuityScreenServices = {
   listWorkflows: (filters = {}, options = {}) => getOperationsContinuityWorkflows(filters, options),
   getWorkflow: (workflowId: string, options = {}) => getOperationsContinuityWorkflow(workflowId, options),
+  getCloseCalendar: (filters = {}, options = {}) => getOperationsCloseCalendar(filters, options),
   getCloseCockpit: (query = {}, options = {}) => getPrivateCapitalCloseCockpit(query, options)
 };
 
@@ -457,6 +692,9 @@ export function useOperationsContinuityScreenViewModel(
   const [detail, setDetail] = useState<OperationsContinuityWorkflow | null>(null);
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [closeCalendar, setCloseCalendar] = useState<OperationsCloseCalendar | null>(null);
+  const [closeCalendarLoading, setCloseCalendarLoading] = useState(false);
+  const [closeCalendarError, setCloseCalendarError] = useState<string | null>(null);
   const [closeCockpit, setCloseCockpit] = useState<PrivateCapitalCloseCockpit | null>(null);
   const [closeCockpitLoading, setCloseCockpitLoading] = useState(false);
   const [closeCockpitError, setCloseCockpitError] = useState<string | null>(null);
@@ -465,9 +703,11 @@ export function useOperationsContinuityScreenViewModel(
   const mountedRef = useRef(true);
   const listRevisionRef = useRef(0);
   const detailRevisionRef = useRef(0);
+  const closeCalendarRevisionRef = useRef(0);
   const closeCockpitRevisionRef = useRef(0);
   const listAbortRef = useRef<AbortController | null>(null);
   const detailAbortRef = useRef<AbortController | null>(null);
+  const closeCalendarAbortRef = useRef<AbortController | null>(null);
   const closeCockpitAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -477,9 +717,11 @@ export function useOperationsContinuityScreenViewModel(
       mountedRef.current = false;
       listRevisionRef.current += 1;
       detailRevisionRef.current += 1;
+      closeCalendarRevisionRef.current += 1;
       closeCockpitRevisionRef.current += 1;
       listAbortRef.current?.abort();
       detailAbortRef.current?.abort();
+      closeCalendarAbortRef.current?.abort();
       closeCockpitAbortRef.current?.abort();
     };
   }, []);
@@ -492,9 +734,11 @@ export function useOperationsContinuityScreenViewModel(
     const revision = listRevisionRef.current + 1;
     listRevisionRef.current = revision;
     detailRevisionRef.current += 1;
+    closeCalendarRevisionRef.current += 1;
     closeCockpitRevisionRef.current += 1;
     listAbortRef.current?.abort();
     detailAbortRef.current?.abort();
+    closeCalendarAbortRef.current?.abort();
     closeCockpitAbortRef.current?.abort();
     const controller = new AbortController();
     listAbortRef.current = controller;
@@ -591,6 +835,47 @@ export function useOperationsContinuityScreenViewModel(
       return;
     }
 
+    const revision = closeCalendarRevisionRef.current + 1;
+    closeCalendarRevisionRef.current = revision;
+    closeCalendarAbortRef.current?.abort();
+    const controller = new AbortController();
+    closeCalendarAbortRef.current = controller;
+    setCloseCalendarLoading(true);
+    setCloseCalendarError(null);
+
+    const filters = closeCockpitScope ? buildCloseCalendarQuery(closeCockpitScope) : {};
+    const getCloseCalendar = services.getCloseCalendar ?? defaultServices.getCloseCalendar!;
+
+    getCloseCalendar(filters, { signal: controller.signal })
+      .then((calendar) => {
+        if (!mountedRef.current || closeCalendarRevisionRef.current !== revision) {
+          return;
+        }
+
+        setCloseCalendar(calendar);
+      })
+      .catch((err) => {
+        if (!isAbortError(err) && mountedRef.current && closeCalendarRevisionRef.current === revision) {
+          setCloseCalendar(null);
+          setCloseCalendarError(formatError(err, "Operations close calendar could not be loaded."));
+        }
+      })
+      .finally(() => {
+        if (mountedRef.current && closeCalendarRevisionRef.current === revision) {
+          setCloseCalendarLoading(false);
+        }
+
+        if (closeCalendarAbortRef.current === controller) {
+          closeCalendarAbortRef.current = null;
+        }
+      });
+  }, [closeCockpitScope, loading, services]);
+
+  useEffect(() => {
+    if (loading) {
+      return;
+    }
+
     const revision = closeCockpitRevisionRef.current + 1;
     closeCockpitRevisionRef.current = revision;
     closeCockpitAbortRef.current?.abort();
@@ -637,6 +922,9 @@ export function useOperationsContinuityScreenViewModel(
     detail,
     loading,
     detailLoading,
+    closeCalendar,
+    closeCalendarLoading,
+    closeCalendarError,
     closeCockpit,
     closeCockpitLoading,
     closeCockpitError,
@@ -644,7 +932,7 @@ export function useOperationsContinuityScreenViewModel(
     detailError,
     refresh,
     selectWorkflow
-  }), [closeCockpit, closeCockpitError, closeCockpitLoading, detail, detailError, detailLoading, error, loading, refresh, selectWorkflow, selectedWorkflowId, workflows]);
+  }), [closeCalendar, closeCalendarError, closeCalendarLoading, closeCockpit, closeCockpitError, closeCockpitLoading, detail, detailError, detailLoading, error, loading, refresh, selectWorkflow, selectedWorkflowId, workflows]);
 }
 
 export function buildOperationsContinuityScreenViewModel({
@@ -653,6 +941,9 @@ export function buildOperationsContinuityScreenViewModel({
   detail,
   loading,
   detailLoading,
+  closeCalendar = null,
+  closeCalendarLoading = false,
+  closeCalendarError = null,
   closeCockpit = null,
   closeCockpitLoading = false,
   closeCockpitError = null,
@@ -671,30 +962,63 @@ export function buildOperationsContinuityScreenViewModel({
     detailError
   });
   const blockers = buildBlockerRows(effectiveDetail?.blockers ?? collectGateBlockers(gateSource));
-  const breakCases = buildBreakCaseRows(effectiveDetail?.breakCases ?? []);
+  const breakCases = buildBreakCaseRows(
+    effectiveDetail?.breakCases ?? [],
+    effectiveDetail?.workflowId ?? null,
+    effectiveDetail?.version ?? null
+  );
   const reconciliationLanes = buildReconciliationLaneRows(effectiveDetail?.reconciliationLanes ?? []);
   const evidencePackages = buildEvidencePackageRows(effectiveDetail?.evidencePackages ?? []);
+  const workflowApprovalHistory = buildWorkflowApprovalHistoryRows(effectiveDetail);
   const dashboard = buildOperationsDashboardViewModel(effectiveDetail?.dashboardSummary ?? null, detailLoading);
-  const checklistSource = effectiveDetail?.closeChecklist ?? [];
-  const checklist = buildChecklistRows(checklistSource);
+  const commandSpine = buildFinancialOperationsCommandSpineViewModel(dashboard, effectiveDetail, detailLoading);
+  const reviewedAutomation = buildReviewedAutomationViewModel(effectiveDetail?.reviewedAutomation ?? null, detailLoading);
   const accountingRecordSummary = buildAccountingRecordSummaryViewModel(
     effectiveDetail?.accountingRecordSummary ?? null,
     detailLoading
   );
   const accountingRecordEvidence = buildAccountingRecordEvidenceRows(effectiveDetail?.accountingRecordSummary ?? null);
-  const timeline = buildTimelineRows(effectiveDetail?.timeline ?? []);
-  const gates = gateSource.map(mapGateRow);
-  const rows = workflows.map((workflow) => mapWorkflowRow(workflow, selectedSummary?.workflowId ?? null));
-  const selectedDetail = selectedSummary
-    ? buildDetailPanel(selectedSummary, effectiveDetail, blockers.length)
-    : null;
+  const checklistSource = effectiveDetail?.closeChecklist ?? [];
+  const checklist = buildChecklistRows(
+    checklistSource,
+    effectiveDetail?.workflowId ?? null,
+    effectiveDetail?.version ?? null
+  );
+  const closeCalendarPanel = buildCloseCalendarViewModel(
+    closeCalendar,
+    closeCalendarLoading,
+    closeCalendarError,
+    selectedSummary
+  );
   const closeCockpitPanel = buildCloseCockpitViewModel(
     closeCockpit,
     closeCockpitLoading,
     closeCockpitError,
     selectedSummary
   );
-
+  const financialOperationsQueue = buildFinancialOperationsOperatorQueueViewModel({
+    breakCases,
+    reconciliationLanes,
+    blockers,
+    checklist,
+    commandSpineRows: commandSpine.rows,
+    approvals: effectiveDetail?.approvals ?? [],
+    reviewedAutomationArtifacts: reviewedAutomation.artifacts,
+    accountingRecordEvidence,
+    evidencePackages,
+    closeCalendarRows: closeCalendarPanel.rows,
+    closeCalendarError,
+    closeCockpit: closeCockpitPanel,
+    closeCockpitError,
+    selectedSummary,
+    loading: detailLoading || closeCalendarLoading || closeCockpitLoading
+  });
+  const timeline = buildTimelineRows(effectiveDetail?.timeline ?? []);
+  const gates = gateSource.map(mapGateRow);
+  const rows = workflows.map((workflow) => mapWorkflowRow(workflow, selectedSummary?.workflowId ?? null));
+  const selectedDetail = selectedSummary
+    ? buildDetailPanel(selectedSummary, effectiveDetail, blockers.length)
+    : null;
   return {
     title: "Operations continuity",
     subtitle: "Track account-period close workflows from broker intake through Security Master coverage, ledger posting, reconciliation, approval, and close evidence.",
@@ -732,7 +1056,13 @@ export function buildOperationsContinuityScreenViewModel({
     reconciliationLanesEmptyText: detailLoading ? "Loading reconciliation lane coverage..." : "No reconciliation lane coverage is surfaced for the selected workflow.",
     evidencePackagesLabel: "Evidence packages",
     evidencePackagesEmptyText: detailLoading ? "Loading evidence packages..." : "No evidence packages are surfaced for the selected workflow.",
+    workflowApprovalHistoryLabel: "Workflow approval history",
+    workflowApprovalHistoryEmptyText: detailLoading ? "Loading workflow approval history..." : "No workflow approval history is surfaced for the selected workflow.",
     dashboard,
+    commandSpine,
+    reviewedAutomation,
+    financialOperationsQueue,
+    workflowApprovalHistory,
     breakCases,
     reconciliationLanes,
     evidencePackages,
@@ -742,6 +1072,7 @@ export function buildOperationsContinuityScreenViewModel({
     checklist,
     closeGovernance: buildCloseGovernanceViewModel(effectiveDetail, detailLoading),
     closePackage: buildClosePackageViewModel(effectiveDetail?.closePackage ?? null, detailLoading),
+    closeCalendar: closeCalendarPanel,
     closeCockpit: closeCockpitPanel,
     accountingRecordLabel: "Accounting record evidence",
     accountingRecordSummary,
@@ -866,6 +1197,128 @@ function compareApprovalsByDecisionTime(
   return rightTime.localeCompare(leftTime);
 }
 
+function buildWorkflowApprovalHistoryRows(
+  workflow: OperationsContinuityWorkflow | null
+): OperationsContinuityWorkflowApprovalRow[] {
+  if (!workflow) {
+    return [];
+  }
+
+  return [...workflow.approvals]
+    .sort(compareApprovalsByDecisionTime)
+    .map((approval) => mapWorkflowApprovalHistoryRow(approval, workflow));
+}
+
+function mapWorkflowApprovalHistoryRow(
+  approval: OperationsContinuityWorkflow["approvals"][number],
+  workflow: OperationsContinuityWorkflow
+): OperationsContinuityWorkflowApprovalRow {
+  const reviewer = approval.reviewer?.trim();
+  const operator = approval.operator?.trim();
+  const actors = [
+    reviewer ? `Reviewer ${reviewer}` : null,
+    operator ? `Operator ${operator}` : null
+  ].filter((value): value is string => value !== null);
+  const actorLabel = actors.length === 0 ? "Approval actor pending" : actors.join(" / ");
+  const statusLabelText = splitEnumLabel(approval.status);
+  const evidenceHref = normalizeLocalWorkstationRoute(approval.evidenceLinks[0]?.route) ?? null;
+  const evidenceCount = approval.evidenceLinks.length;
+  const approveWorkflowDisabledReason = buildApproveWorkflowDecisionDisabledReason(workflow, approval);
+  const rejectWorkflowDisabledReason = buildRejectWorkflowDecisionDisabledReason(workflow, approval);
+  const decisionGuardLabel = approveWorkflowDisabledReason ?? rejectWorkflowDisabledReason ?? "Approval decision guard clear";
+
+  return {
+    id: approval.approvalId,
+    workflowId: workflow.workflowId,
+    expectedWorkflowVersion: workflow.version ?? null,
+    statusLabel: statusLabelText,
+    statusTone: approvalStatusTone(approval.status),
+    actorLabel,
+    submittedLabel: approval.submittedAtUtc ? `Submitted ${formatDate(approval.submittedAtUtc)}` : "Submission time pending",
+    decidedLabel: approval.decidedAtUtc ? `Decided ${formatDate(approval.decidedAtUtc)}` : "Decision pending",
+    rationale: approval.rationale?.trim() || "Approval rationale pending.",
+    reviewer: reviewer ?? resolveApprovalReviewer(workflow),
+    evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
+    evidenceHref,
+    evidenceRouteLabel: evidenceHref ? "Open approval evidence" : "No local evidence route",
+    decisionGuardLabel,
+    approveWorkflowReportPackId: resolveApprovalReportPackId(workflow),
+    approveWorkflowEvidenceLinks: collectApprovalDecisionEvidenceLinks(workflow, approval),
+    approveWorkflowChecklistControlApprovals: collectApprovalDecisionChecklistControlApprovals(workflow, approval),
+    canApproveWorkflow: approveWorkflowDisabledReason === null,
+    approveWorkflowLabel: "Approve",
+    approveWorkflowDisabledReason,
+    approveWorkflowAriaLabel: `Approve workflow approval ${approval.approvalId}`,
+    rejectWorkflowEvidenceLinks: collectRejectDecisionEvidenceLinks(workflow, approval),
+    rejectWorkflowReasonCode: "BrowserApprovalDecisionReview",
+    canRejectWorkflow: rejectWorkflowDisabledReason === null,
+    rejectWorkflowLabel: "Reject",
+    rejectWorkflowDisabledReason,
+    rejectWorkflowAriaLabel: `Reject workflow approval ${approval.approvalId}`,
+    ariaLabel: `Workflow approval ${approval.approvalId}, ${statusLabelText}, ${actorLabel}`
+  };
+}
+
+function buildApproveWorkflowDecisionDisabledReason(
+  workflow: OperationsContinuityWorkflow,
+  approval: OperationsContinuityWorkflow["approvals"][number]
+): string | null {
+  if (workflow.version === null || workflow.version === undefined) {
+    return "Workflow version is unavailable for approval decision.";
+  }
+
+  if (!isPendingWorkflowApprovalState(workflow.approvalState)) {
+    return `Approval state is already ${splitEnumLabel(workflow.approvalState)}.`;
+  }
+
+  if (!isPendingWorkflowApprovalState(approval.status)) {
+    return `Approval row is already ${splitEnumLabel(approval.status)}.`;
+  }
+
+  if (!approval.reviewer?.trim() && !resolveApprovalReviewer(workflow)) {
+    return "Reviewer is required before approval decision.";
+  }
+
+  if (!workflow.reportPackReadiness.isReady || !resolveApprovalReportPackId(workflow)) {
+    return workflow.reportPackReadiness.blockingReason?.trim()
+      || "A ready retained report pack is required before approval decision.";
+  }
+
+  const checklistControlApprovals = collectApprovalDecisionChecklistControlApprovals(workflow, approval);
+  if (checklistControlApprovals.length === 0) {
+    return "Checklist-control approvals are required before approval decision.";
+  }
+
+  return findIncompleteApprovalDecisionChecklistControlApproval(workflow, checklistControlApprovals);
+}
+
+function buildRejectWorkflowDecisionDisabledReason(
+  workflow: OperationsContinuityWorkflow,
+  approval: OperationsContinuityWorkflow["approvals"][number]
+): string | null {
+  if (workflow.version === null || workflow.version === undefined) {
+    return "Workflow version is unavailable for rejection.";
+  }
+
+  if (!isPendingWorkflowApprovalState(workflow.approvalState)) {
+    return `Approval state is already ${splitEnumLabel(workflow.approvalState)}.`;
+  }
+
+  if (!isPendingWorkflowApprovalState(approval.status)) {
+    return `Approval row is already ${splitEnumLabel(approval.status)}.`;
+  }
+
+  if (!approval.reviewer?.trim() && !resolveApprovalReviewer(workflow)) {
+    return "Reviewer is required before rejection.";
+  }
+
+  return null;
+}
+
+function isPendingWorkflowApprovalState(status: OperationsContinuityWorkflow["approvalState"]): boolean {
+  return status === "Submitted" || status === "ReviewerAssigned";
+}
+
 function buildNextActionViewModel({
   workflow,
   gates,
@@ -978,23 +1431,30 @@ function mapGateRow(gate: OperationsGate): OperationsContinuityGateRow {
 }
 
 function buildBlockerRows(blockers: OperationsWorkflowBlocker[]): OperationsContinuityBlockerRow[] {
-  return blockers.map((blocker, index) => ({
-    id: `${blocker.code}:${index}`,
-    code: blocker.code,
-    message: blocker.message,
-    gateLabel: blocker.gate ? gateLabel(blocker.gate) : "Workflow",
-    severityLabel: blocker.severity || "Review",
-    severityTone: severityTone(blocker.severity),
-    evidenceLabel: blocker.evidenceLinks.length === 0 ? "No linked evidence" : `${blocker.evidenceLinks.length} evidence link${blocker.evidenceLinks.length === 1 ? "" : "s"}`,
-    ariaLabel: `${blocker.code}, ${blocker.severity || "Review"} blocker for ${blocker.gate ? gateLabel(blocker.gate) : "workflow"}`
-  }));
+  return blockers.map((blocker, index) => {
+    const evidenceHref = normalizeLocalWorkstationRoute(blocker.evidenceLinks[0]?.route) ?? null;
+
+    return {
+      id: `${blocker.code}:${index}`,
+      code: blocker.code,
+      message: blocker.message,
+      gateLabel: blocker.gate ? gateLabel(blocker.gate) : "Workflow",
+      severityLabel: blocker.severity || "Review",
+      severityTone: severityTone(blocker.severity),
+      evidenceLabel: blocker.evidenceLinks.length === 0 ? "No linked evidence" : `${blocker.evidenceLinks.length} evidence link${blocker.evidenceLinks.length === 1 ? "" : "s"}`,
+      evidenceHref,
+      evidenceRouteLabel: evidenceHref ? "Open blocker evidence" : "No local evidence route",
+      ariaLabel: `${blocker.code}, ${blocker.severity || "Review"} blocker for ${blocker.gate ? gateLabel(blocker.gate) : "workflow"}`
+    };
+  });
 }
 
 function buildReconciliationLaneRows(lanes: OperationsReconciliationLaneSummary[]): OperationsContinuityReconciliationLaneRow[] {
   return [...lanes]
     .sort(compareReconciliationLanes)
     .map((lane) => {
-      const href = normalizeLocalWorkstationRoute(lane.routeHint) ?? null;
+      const routeHref = normalizeLocalWorkstationRoute(lane.routeHint) ?? null;
+      const evidenceHref = normalizeLocalWorkstationRoute(lane.evidenceLinks[0]?.route) ?? null;
       const evidenceCount = lane.evidenceLinks.length;
       const actions = (lane.requiredActions ?? [])
         .map((action) => action.trim())
@@ -1008,8 +1468,10 @@ function buildReconciliationLaneRows(lanes: OperationsReconciliationLaneSummary[
         breakCountLabel: lane.breakCount === 0 ? "No open breaks" : `${lane.breakCount} open break${lane.breakCount === 1 ? "" : "s"}`,
         summary: lane.summary?.trim() || "No reconciliation lane summary returned.",
         evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
-        routeHref: href,
-        routeLabel: href ? "Open lane" : "No local route",
+        evidenceHref,
+        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local evidence route",
+        routeHref,
+        routeLabel: routeHref ? "Open lane" : "No local route",
         requiredActionsLabel: actions.length === 0 ? "No required actions" : actions.join("; "),
         ariaLabel: `${lane.label || lane.laneId}, ${evidenceStatusLabel(lane.status)}, ${lane.breakCount} open breaks`
       };
@@ -1092,6 +1554,385 @@ function mapDashboardMetricRow(metric: OperationsDashboardSummary["metrics"][num
   };
 }
 
+function buildFinancialOperationsCommandSpineViewModel(
+  dashboard: OperationsContinuityDashboardViewModel,
+  workflow: OperationsContinuityWorkflow | null,
+  loading: boolean
+): FinancialOperationsCommandSpineViewModel {
+  const rows = dashboard.metrics.map((metric) => mapFinancialOperationsCommandSpineRow(metric, workflow));
+
+  return {
+    title: "Financial Operations command spine",
+    summaryLabel: `${dashboard.stageLabel}; ${dashboard.metricCountLabel}; ${dashboard.requiredActionsLabel}`,
+    statusLabel: loading ? "Loading" : dashboard.statusLabel,
+    statusTone: loading ? "neutral" : dashboard.statusTone,
+    emptyText: loading
+      ? "Loading Financial Operations command spine..."
+      : "No shared Financial Operations dashboard metrics are available for command routing.",
+    rows
+  };
+}
+
+function mapFinancialOperationsCommandSpineRow(
+  metric: OperationsContinuityDashboardMetricRow,
+  workflow: OperationsContinuityWorkflow | null
+): FinancialOperationsCommandSpineRow {
+  const submitApprovalDisabledReason = metric.id === "approve-results"
+    ? buildSubmitApprovalDisabledReason(workflow)
+    : "Only the Approve Results stage can submit workflow approval.";
+  const closeWorkflowDisabledReason = metric.id === "produce-evidence"
+    ? buildCloseWorkflowDisabledReason(workflow)
+    : "Only the Produce Evidence stage can publish the close package.";
+  const reportPackId = resolveApprovalReportPackId(workflow);
+  const reviewer = resolveApprovalReviewer(workflow);
+  const checklistControlApprovals = workflow?.closePackage?.checklistControlApprovals ?? [];
+  const evidenceLinks = collectSubmitApprovalEvidenceLinks(workflow);
+  const closeChecklistControlApprovals = collectCloseWorkflowChecklistControlApprovals(workflow);
+  const closeEvidenceLinks = collectCloseWorkflowEvidenceLinks(workflow);
+
+  return {
+    id: metric.id,
+    stageLabel: metric.label,
+    commandLabel: FINANCIAL_OPERATIONS_COMMAND_LABELS[metric.id] ?? "Review shared workflow command",
+    postureLabel: metric.valueLabel,
+    statusLabel: metric.statusLabel,
+    statusTone: metric.statusTone,
+    detail: metric.detail,
+    guardLabel: metric.requiredActionsLabel === "No required actions"
+      ? "Shared command guard clear"
+      : metric.requiredActionsLabel,
+    evidenceLabel: metric.evidenceLabel,
+    routeHref: metric.routeHref,
+    routeLabel: metric.routeLabel,
+    workflowId: workflow?.workflowId ?? null,
+    expectedWorkflowVersion: workflow?.version ?? null,
+    submitApprovalReportPackId: reportPackId,
+    submitApprovalReviewer: reviewer,
+    submitApprovalEvidenceLinks: evidenceLinks,
+    submitApprovalChecklistControlApprovals: checklistControlApprovals,
+    canSubmitApproval: submitApprovalDisabledReason === null,
+    submitApprovalLabel: metric.id === "approve-results" ? "Submit approval" : "Open stage",
+    submitApprovalDisabledReason,
+    submitApprovalAriaLabel: metric.id === "approve-results"
+      ? `Submit workflow approval for ${workflow?.periodId ?? "selected period"}`
+      : `Submit workflow approval for ${metric.label}`,
+    closeWorkflowReportPackId: reportPackId,
+    closeWorkflowEvidenceLinks: closeEvidenceLinks,
+    closeWorkflowChecklistControlApprovals: closeChecklistControlApprovals,
+    canCloseWorkflow: closeWorkflowDisabledReason === null,
+    closeWorkflowLabel: metric.id === "produce-evidence" ? "Publish close package" : "Open stage",
+    closeWorkflowDisabledReason,
+    closeWorkflowAriaLabel: metric.id === "produce-evidence"
+      ? `Publish close package for ${workflow?.periodId ?? "selected period"}`
+      : `Publish close package for ${metric.label}`,
+    ariaLabel: `Financial Operations command ${metric.label}, ${metric.statusLabel}, ${metric.valueLabel}`
+  };
+}
+
+function buildSubmitApprovalDisabledReason(workflow: OperationsContinuityWorkflow | null): string | null {
+  if (!workflow) {
+    return "Select a workflow before submitting approval.";
+  }
+
+  if (workflow.version === null || workflow.version === undefined) {
+    return "Workflow version is unavailable for approval submission.";
+  }
+
+  if (workflow.approvalState !== "Pending") {
+    return `Approval state is already ${splitEnumLabel(workflow.approvalState)}.`;
+  }
+
+  if (workflow.approvals.some((approval) => approval.status === "Submitted" || approval.status === "ReviewerAssigned" || approval.status === "Approved")) {
+    return "Workflow approval has already been submitted.";
+  }
+
+  if (workflow.breakCases.some((breakCase) => breakStatusTone(breakCase.status) !== "ready")) {
+    return "Resolve open reconciliation breaks before submitting approval.";
+  }
+
+  if (!resolveApprovalReportPackId(workflow)) {
+    return workflow.reportPackReadiness.blockingReason?.trim() || "Report-pack readiness is required before approval submission.";
+  }
+
+  if (!resolveApprovalReviewer(workflow)) {
+    return "Reviewer is required before approval submission.";
+  }
+
+  return null;
+}
+
+function buildCloseWorkflowDisabledReason(workflow: OperationsContinuityWorkflow | null): string | null {
+  if (!workflow) {
+    return "Select a workflow before publishing a close package.";
+  }
+
+  if (workflow.version === null || workflow.version === undefined) {
+    return "Workflow version is unavailable for close package publication.";
+  }
+
+  if (workflow.status === "Closed" || workflow.closePackage) {
+    return "Close package has already been published.";
+  }
+
+  if (!workflow.closeReadiness) {
+    return "Close readiness is required before publishing a close package.";
+  }
+
+  if (!workflow.closeReadiness.isReadyToClose) {
+    return workflow.closeReadiness.blockers[0]?.message?.trim()
+      || "Close readiness blockers must be cleared before publishing a close package.";
+  }
+
+  if (workflow.approvalState !== "Approved") {
+    return "Workflow approval must be approved before publishing a close package.";
+  }
+
+  if (!workflow.reportPackReadiness.isReady || !resolveApprovalReportPackId(workflow)) {
+    return workflow.reportPackReadiness.blockingReason?.trim()
+      || "A ready retained report pack is required before publishing a close package.";
+  }
+
+  const approvals = collectCloseWorkflowChecklistControlApprovals(workflow);
+  if (approvals.length === 0) {
+    return "Checklist-control approvals are required before publishing a close package.";
+  }
+
+  return findIncompleteCloseWorkflowChecklistControlApproval(workflow, approvals);
+}
+
+function resolveApprovalReportPackId(workflow: OperationsContinuityWorkflow | null): string | null {
+  return workflow?.reportPackReadiness.reportPackId?.trim()
+    || workflow?.closePackage?.reportPackId?.trim()
+    || null;
+}
+
+function resolveApprovalReviewer(workflow: OperationsContinuityWorkflow | null): string | null {
+  const pendingApprovalReviewer = workflow?.approvals
+    .find((approval) => approval.status !== "Approved" && approval.reviewer?.trim())
+    ?.reviewer?.trim();
+  if (pendingApprovalReviewer) {
+    return pendingApprovalReviewer;
+  }
+
+  return workflow?.closeChecklist
+    .map((task) => task.owner?.trim())
+    .find((owner): owner is string => Boolean(owner))
+    ?? null;
+}
+
+function collectSubmitApprovalEvidenceLinks(workflow: OperationsContinuityWorkflow | null): OperationsEvidenceLink[] {
+  if (!workflow) {
+    return [];
+  }
+
+  const links = [
+    ...workflow.reportPackReadiness.evidenceLinks,
+    ...workflow.evidenceLinks,
+    ...workflow.approvals.flatMap((approval) => approval.evidenceLinks)
+  ];
+  return distinctOperationsEvidenceLinks(links);
+}
+
+function collectCloseWorkflowEvidenceLinks(workflow: OperationsContinuityWorkflow | null): OperationsEvidenceLink[] {
+  if (!workflow) {
+    return [];
+  }
+
+  return distinctOperationsEvidenceLinks([
+    ...workflow.reportPackReadiness.evidenceLinks,
+    ...workflow.evidenceLinks,
+    ...(workflow.evidencePackages ?? []).flatMap((packageSummary) => packageSummary.evidenceLinks),
+    ...workflow.approvals.flatMap((approval) => approval.evidenceLinks)
+  ]);
+}
+
+function collectApprovalDecisionEvidenceLinks(
+  workflow: OperationsContinuityWorkflow,
+  approval: OperationsContinuityWorkflow["approvals"][number]
+): OperationsEvidenceLink[] {
+  return distinctOperationsEvidenceLinks([
+    ...workflow.reportPackReadiness.evidenceLinks,
+    ...workflow.evidenceLinks,
+    ...approval.evidenceLinks,
+    ...(workflow.evidencePackages ?? []).flatMap((packageSummary) => packageSummary.evidenceLinks)
+  ]);
+}
+
+function collectRejectDecisionEvidenceLinks(
+  workflow: OperationsContinuityWorkflow,
+  approval: OperationsContinuityWorkflow["approvals"][number]
+): OperationsEvidenceLink[] {
+  return distinctOperationsEvidenceLinks([
+    ...approval.evidenceLinks,
+    ...workflow.evidenceLinks,
+    ...workflow.reportPackReadiness.evidenceLinks
+  ]);
+}
+
+function distinctOperationsEvidenceLinks(links: OperationsEvidenceLink[]): OperationsEvidenceLink[] {
+  return links.filter((link, index, source) =>
+    source.findIndex((candidate) => candidate.evidenceId === link.evidenceId) === index
+  );
+}
+
+function collectCloseWorkflowChecklistControlApprovals(
+  workflow: OperationsContinuityWorkflow | null
+): OperationsChecklistControlApproval[] {
+  if (!workflow) {
+    return [];
+  }
+
+  if (workflow.closePackage?.checklistControlApprovals.length) {
+    return workflow.closePackage.checklistControlApprovals;
+  }
+
+  const approvals: OperationsChecklistControlApproval[] = [];
+  const appendApproval = (taskId: string | null | undefined, approvedBy: string | null | undefined, approvedAtUtc: string | null | undefined) => {
+    const cleanTaskId = taskId?.trim();
+    const cleanApprover = approvedBy?.trim();
+    const cleanTimestamp = approvedAtUtc?.trim();
+    if (!cleanTaskId || !cleanApprover || !cleanTimestamp) {
+      return;
+    }
+
+    approvals.push({
+      taskId: cleanTaskId,
+      approvedBy: cleanApprover,
+      approvedAtUtc: cleanTimestamp
+    });
+  };
+
+  workflow.closeChecklist.forEach((task) => {
+    appendApproval(task.taskId, task.acknowledgedBy, task.acknowledgedAtUtc);
+  });
+
+  const approvalTaskId = workflow.closeChecklist.find((task) => task.gate === "Approval")?.taskId ?? "close-gate-approval";
+  workflow.approvals
+    .filter((approval) => approval.status === "Approved")
+    .forEach((approval) => {
+      appendApproval(approvalTaskId, approval.operator, approval.submittedAtUtc);
+      appendApproval(approvalTaskId, approval.reviewer, approval.decidedAtUtc);
+    });
+
+  return approvals.filter((approval, index, source) =>
+    source.findIndex((candidate) =>
+      candidate.taskId.toLowerCase() === approval.taskId.toLowerCase()
+        && candidate.approvedBy.toLowerCase() === approval.approvedBy.toLowerCase()
+    ) === index
+  );
+}
+
+function collectApprovalDecisionChecklistControlApprovals(
+  workflow: OperationsContinuityWorkflow,
+  approval: OperationsContinuityWorkflow["approvals"][number]
+): OperationsChecklistControlApproval[] {
+  const approvals = [...collectCloseWorkflowChecklistControlApprovals(workflow)];
+  const approvalTaskId = workflow.closeChecklist.find((task) => task.gate === "Approval")?.taskId ?? "close-gate-approval";
+  appendChecklistControlApproval(approvals, approvalTaskId, approval.operator, approval.submittedAtUtc);
+  appendChecklistControlApproval(approvals, approvalTaskId, approval.reviewer, approval.decidedAtUtc ?? approval.submittedAtUtc);
+
+  return distinctChecklistControlApprovals(approvals);
+}
+
+function appendChecklistControlApproval(
+  approvals: OperationsChecklistControlApproval[],
+  taskId: string | null | undefined,
+  approvedBy: string | null | undefined,
+  approvedAtUtc: string | null | undefined
+): void {
+  const cleanTaskId = taskId?.trim();
+  const cleanApprover = approvedBy?.trim();
+  const cleanTimestamp = approvedAtUtc?.trim();
+  if (!cleanTaskId || !cleanApprover || !cleanTimestamp) {
+    return;
+  }
+
+  approvals.push({
+    taskId: cleanTaskId,
+    approvedBy: cleanApprover,
+    approvedAtUtc: cleanTimestamp
+  });
+}
+
+function distinctChecklistControlApprovals(
+  approvals: OperationsChecklistControlApproval[]
+): OperationsChecklistControlApproval[] {
+  return approvals.filter((approval, index, source) =>
+    source.findIndex((candidate) =>
+      candidate.taskId.toLowerCase() === approval.taskId.toLowerCase()
+        && candidate.approvedBy.toLowerCase() === approval.approvedBy.toLowerCase()
+    ) === index
+  );
+}
+
+function findIncompleteCloseWorkflowChecklistControlApproval(
+  workflow: OperationsContinuityWorkflow,
+  approvals: OperationsChecklistControlApproval[]
+): string | null {
+  const requiredApprovals = new Map<string, { label: string; requiredCount: number }>();
+  workflow.closeChecklist
+    .filter((task) => task.requiredApprovalCount > 0)
+    .forEach((task) => {
+      requiredApprovals.set(task.taskId.toLowerCase(), {
+        label: task.label,
+        requiredCount: task.requiredApprovalCount
+      });
+    });
+
+  const approvalTaskId = workflow.closeChecklist.find((task) => task.gate === "Approval")?.taskId ?? "close-gate-approval";
+  if (workflow.approvalState === "Approved" && !requiredApprovals.has(approvalTaskId.toLowerCase())) {
+    requiredApprovals.set(approvalTaskId.toLowerCase(), {
+      label: "Approval close gate",
+      requiredCount: 2
+    });
+  }
+
+  for (const [taskId, requirement] of requiredApprovals) {
+    const retainedApprovalCount = approvals
+      .filter((approval) => approval.taskId.toLowerCase() === taskId)
+      .map((approval) => approval.approvedBy.trim().toLowerCase())
+      .filter(Boolean)
+      .filter((approver, index, source) => source.indexOf(approver) === index)
+      .length;
+    if (retainedApprovalCount < requirement.requiredCount) {
+      return `${requirement.label} requires ${requirement.requiredCount} retained checklist-control approval${requirement.requiredCount === 1 ? "" : "s"} before close package publication.`;
+    }
+  }
+
+  return null;
+}
+
+function findIncompleteApprovalDecisionChecklistControlApproval(
+  workflow: OperationsContinuityWorkflow,
+  approvals: OperationsChecklistControlApproval[]
+): string | null {
+  const requiredApprovals = new Map<string, { label: string; requiredCount: number }>();
+  workflow.gates
+    .filter((gate) => gate.status === "Passed" || gate.gateKey === "Approval")
+    .forEach((gate) => {
+      const checklistTask = workflow.closeChecklist.find((task) => task.gate === gate.gateKey);
+      const taskId = checklistTask?.taskId ?? `close-gate-${gate.gateKey.toLowerCase()}`;
+      requiredApprovals.set(taskId.toLowerCase(), {
+        label: checklistTask?.label ?? `${gateLabel(gate.gateKey)} close gate`,
+        requiredCount: gate.gateKey === "Approval" ? 2 : Math.max(checklistTask?.requiredApprovalCount ?? 1, 1)
+      });
+    });
+
+  for (const [taskId, requirement] of requiredApprovals) {
+    const retainedApprovalCount = approvals
+      .filter((approval) => approval.taskId.toLowerCase() === taskId)
+      .map((approval) => approval.approvedBy.trim().toLowerCase())
+      .filter(Boolean)
+      .filter((approver, index, source) => source.indexOf(approver) === index)
+      .length;
+    if (retainedApprovalCount < requirement.requiredCount) {
+      return `${requirement.label} requires ${requirement.requiredCount} retained checklist-control approval${requirement.requiredCount === 1 ? "" : "s"} before approval decision.`;
+    }
+  }
+
+  return null;
+}
+
 function compareDashboardMetrics(
   left: OperationsDashboardSummary["metrics"][number],
   right: OperationsDashboardSummary["metrics"][number]
@@ -1103,11 +1944,103 @@ function compareDashboardMetrics(
   return normalizedLeft - normalizedRight || left.label.localeCompare(right.label);
 }
 
+function buildReviewedAutomationViewModel(
+  reviewedAutomation: NonNullable<OperationsContinuityWorkflow["reviewedAutomation"]> | null,
+  loading: boolean
+): OperationsReviewedAutomationViewModel {
+  if (!reviewedAutomation) {
+    return {
+      title: "Reviewed automation",
+      statusLabel: loading ? "Loading" : "Missing",
+      statusTone: loading ? "neutral" : "review",
+      stageLabel: loading ? "Loading review stage" : "Review stage unavailable",
+      reviewLabel: loading ? "Review state pending" : "No reviewed automation posture returned",
+      summaryLabel: loading
+        ? "Loading reviewed automation posture from the shared operations API."
+        : "The shared operations API did not return reviewed automation posture.",
+      allowedUseCasesLabel: loading ? "Loading allowed uses" : "No allowed use cases returned",
+      prohibitedActionsLabel: loading ? "Loading prohibited actions" : "No prohibited actions returned",
+      evidenceLabel: "No retained review evidence",
+      requiredActionsLabel: loading ? "Loading required actions" : "Return reviewed automation posture before relying on local automation state.",
+      artifactsEmptyText: loading ? "Loading reviewed automation output queue..." : "No reviewed automation output queue returned.",
+      artifacts: []
+    };
+  }
+
+  const requiredActions = (reviewedAutomation.requiredActions ?? [])
+    .map((action) => action.trim())
+    .filter(Boolean);
+  const evidenceCount = reviewedAutomation.evidenceLinks.length;
+  const artifacts = buildReviewedAutomationArtifactRows(reviewedAutomation.artifacts ?? []);
+
+  return {
+    title: "Reviewed automation",
+    statusLabel: evidenceStatusLabel(reviewedAutomation.status),
+    statusTone: reviewedAutomation.requiresHumanReview
+      ? evidenceStatusTone(reviewedAutomation.status)
+      : reviewedAutomation.status === "Ready"
+        ? "ready"
+        : evidenceStatusTone(reviewedAutomation.status),
+    stageLabel: `Stage: ${reviewedAutomation.stage?.trim() || "Stage pending"}`,
+    reviewLabel: reviewedAutomation.requiresHumanReview ? "Human review required" : "Human review complete",
+    summaryLabel: reviewedAutomation.summary?.trim() || "No reviewed automation summary returned.",
+    allowedUseCasesLabel: formatReviewedAutomationList(reviewedAutomation.allowedUseCases, "No allowed use cases returned"),
+    prohibitedActionsLabel: formatReviewedAutomationList(reviewedAutomation.prohibitedActions, "No prohibited actions returned"),
+    evidenceLabel: evidenceCount === 0 ? "No retained review evidence" : `${evidenceCount} retained review evidence link${evidenceCount === 1 ? "" : "s"}`,
+    requiredActionsLabel: requiredActions.length === 0 ? "No required actions" : requiredActions.join("; "),
+    artifactsEmptyText: "No reviewed automation outputs are queued for this workflow stage.",
+    artifacts
+  };
+}
+
+function buildReviewedAutomationArtifactRows(artifacts: OperationsReviewedAutomationArtifact[]): OperationsReviewedAutomationArtifactRow[] {
+  return artifacts.map((artifact) => {
+    const evidenceCount = artifact.evidenceLinks.length;
+    const evidenceHref = normalizeLocalWorkstationRoute(artifact.evidenceLinks[0]?.route) ?? null;
+    const checklist = (artifact.reviewChecklist ?? [])
+      .map((item) => item.trim())
+      .filter(Boolean);
+    const title = artifact.title?.trim() || "Reviewed automation output";
+    const kindLabel = artifact.artifactKind?.trim() || "Automation output";
+    return {
+      id: artifact.artifactId,
+      kindLabel,
+      title,
+      statusLabel: evidenceStatusLabel(artifact.status),
+      statusTone: artifact.requiresHumanReview ? evidenceStatusTone(artifact.status) : "ready",
+      reviewLabel: artifact.requiresHumanReview ? "Human review required" : "Review complete",
+      confidenceLabel: formatReviewedAutomationConfidence(artifact.confidencePercent),
+      sourceSummary: artifact.sourceSummary?.trim() || "No source summary returned.",
+      evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
+      evidenceHref,
+      evidenceRouteLabel: evidenceHref ? "Open reviewed automation evidence" : "No local evidence route",
+      suggestedActionLabel: artifact.suggestedOperatorAction?.trim() || "No suggested operator action returned.",
+      blockedActionLabel: artifact.blockedMaterialAction?.trim() || "No blocked material action returned.",
+      checklistLabel: checklist.length === 0 ? "No review checklist returned" : checklist.join("; "),
+      ariaLabel: `${kindLabel} ${title}, ${evidenceStatusLabel(artifact.status)}, ${artifact.requiresHumanReview ? "human review required" : "review complete"}`
+    };
+  });
+}
+
+function formatReviewedAutomationList(values: string[], fallback: string): string {
+  const normalized = values
+    .map((value) => value.trim())
+    .filter(Boolean);
+  return normalized.length === 0 ? fallback : normalized.join(", ");
+}
+
+function formatReviewedAutomationConfidence(value: number | null | undefined): string {
+  return typeof value === "number" && Number.isFinite(value)
+    ? `${Math.round(value)}% confidence`
+    : "Confidence not scored";
+}
+
 function buildEvidencePackageRows(packages: OperationsEvidencePackageSummary[]): OperationsContinuityEvidencePackageRow[] {
   return [...packages]
     .sort(compareEvidencePackages)
     .map((packageDto) => {
       const routeHref = normalizeLocalWorkstationRoute(packageDto.routeHint) ?? null;
+      const evidenceHref = normalizeLocalWorkstationRoute(packageDto.evidenceLinks[0]?.route) ?? null;
       const evidenceCount = Math.max(packageDto.evidenceLinkCount, packageDto.evidenceLinks.length);
       const actions = (packageDto.requiredActions ?? [])
         .map((action) => action.trim())
@@ -1121,12 +2054,526 @@ function buildEvidencePackageRows(packages: OperationsEvidencePackageSummary[]):
         readinessLabel: `${packageDto.completeCategoryCount}/${packageDto.requiredCategoryCount} categories complete`,
         summary: packageDto.summary?.trim() || "No evidence package summary returned.",
         evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
+        evidenceHref,
+        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local evidence route",
         requiredActionsLabel: actions.length === 0 ? "No required actions" : actions.join("; "),
         routeHref,
         routeLabel: routeHref ? "Open package" : "No local route",
         ariaLabel: `${packageDto.label || packageDto.packageId}, ${evidenceStatusLabel(packageDto.status)}, ${packageDto.completeCategoryCount} of ${packageDto.requiredCategoryCount} categories complete`
       };
     });
+}
+
+function buildFinancialOperationsOperatorQueueViewModel({
+  breakCases,
+  reconciliationLanes,
+  blockers,
+  checklist,
+  commandSpineRows,
+  approvals,
+  reviewedAutomationArtifacts,
+  accountingRecordEvidence,
+  evidencePackages,
+  closeCalendarRows,
+  closeCalendarError,
+  closeCockpit,
+  closeCockpitError,
+  selectedSummary,
+  loading
+}: {
+  breakCases: OperationsContinuityBreakCaseRow[];
+  reconciliationLanes: OperationsContinuityReconciliationLaneRow[];
+  blockers: OperationsContinuityBlockerRow[];
+  checklist: OperationsContinuityChecklistRow[];
+  commandSpineRows: FinancialOperationsCommandSpineRow[];
+  approvals: OperationsContinuityWorkflow["approvals"];
+  reviewedAutomationArtifacts: OperationsReviewedAutomationArtifactRow[];
+  accountingRecordEvidence: OperationsAccountingRecordEvidenceRow[];
+  evidencePackages: OperationsContinuityEvidencePackageRow[];
+  closeCalendarRows: OperationsContinuityCloseCalendarRow[];
+  closeCalendarError: string | null;
+  closeCockpit: OperationsContinuityCloseCockpitViewModel;
+  closeCockpitError: string | null;
+  selectedSummary: OperationsContinuityWorkflowSummary | null;
+  loading: boolean;
+}): FinancialOperationsOperatorQueueViewModel {
+  const items: FinancialOperationsOperatorQueueRow[] = [
+    ...breakCases
+      .filter(isOpenQueueItem)
+      .map((row) => ({
+        id: `break:${row.id}`,
+        kindLabel: "Break",
+        title: row.caseLabel,
+        detail: `${row.categoryLabel}; ${row.escalationLabel}`,
+        statusLabel: row.statusLabel,
+        statusTone: row.statusTone,
+        ownerLabel: row.ownerLabel,
+        dueLabel: row.slaLabel !== "SLA not recorded" ? row.slaLabel : row.dueLabel,
+        evidenceLabel: row.evidenceLabel,
+        actionLabel: row.blockedOutputsLabel === "No blocked outputs"
+          ? row.actionLabel
+          : `${row.actionLabel}; ${row.blockedOutputsLabel}`,
+        routeHref: row.routeHref,
+        routeLabel: row.routeLabel,
+        ariaLabel: `Financial Operations break ${row.ariaLabel}`
+      })),
+    ...reconciliationLanes
+      .filter(isOpenQueueItem)
+      .map(mapReconciliationLaneQueueRow),
+    ...blockers
+      .map(mapWorkflowBlockerQueueRow)
+      .filter(isOpenQueueItem),
+    ...checklist
+      .filter(isOpenQueueItem)
+      .map((row) => ({
+        id: `checklist:${row.id}`,
+        kindLabel: "Checklist",
+        title: row.label,
+        detail: row.requiredEvidence,
+        statusLabel: row.statusLabel,
+        statusTone: row.statusTone,
+        ownerLabel: row.ownerLabel,
+        dueLabel: row.dueLabel,
+        evidenceLabel: row.evidenceLabel,
+        actionLabel: row.acknowledgementLabel,
+        routeHref: row.remediationHref,
+        routeLabel: row.remediationLabel,
+        ariaLabel: `Financial Operations checklist ${row.ariaLabel}`
+      })),
+    ...closeCalendarRows
+      .map(mapCloseCalendarQueueRow)
+      .filter(isOpenQueueItem),
+    ...(closeCalendarError && !loading
+      ? [mapCloseCalendarErrorQueueRow(closeCalendarError, selectedSummary)]
+      : []),
+    ...closeCockpit.lanes
+      .filter(isOpenQueueItem)
+      .map(mapCloseCockpitLaneQueueRow),
+    ...closeCockpit.navSupportPackages
+      .filter(isOpenQueueItem)
+      .map(mapNavSupportPackageQueueRow),
+    ...closeCockpit.evidencePackages
+      .filter(isOpenQueueItem)
+      .map(mapCloseCockpitEvidencePackageQueueRow),
+    ...closeCockpit.approvalHistory
+      .filter(isOpenQueueItem)
+      .map(mapCloseCockpitApprovalQueueRow),
+    ...(closeCockpitError && !loading
+      ? [mapCloseCockpitErrorQueueRow(closeCockpitError, selectedSummary)]
+      : []),
+    ...[...approvals]
+      .sort(compareApprovalsByDecisionTime)
+      .map(mapApprovalQueueRow)
+      .filter(isOpenQueueItem),
+    ...reviewedAutomationArtifacts
+      .filter(isOpenQueueItem)
+      .map(mapReviewedAutomationArtifactQueueRow),
+    ...accountingRecordEvidence
+      .filter(isOpenQueueItem)
+      .map(mapAccountingRecordEvidenceQueueRow),
+    ...evidencePackages
+      .filter(isOpenQueueItem)
+      .map((row) => ({
+        id: `evidence-package:${row.id}`,
+        kindLabel: "Evidence package",
+        title: row.label,
+        detail: row.summary,
+        statusLabel: row.statusLabel,
+        statusTone: row.statusTone,
+        ownerLabel: "Evidence operations",
+        dueLabel: row.readinessLabel,
+        evidenceLabel: row.evidenceLabel,
+        actionLabel: row.requiredActionsLabel,
+        routeHref: row.routeHref,
+        routeLabel: row.routeLabel,
+        ariaLabel: `Financial Operations evidence package ${row.ariaLabel}`
+      })),
+    ...commandSpineRows
+      .filter(isOpenQueueItem)
+      .map((row) => ({
+        id: `command-stage:${row.id}`,
+        kindLabel: "Command stage",
+        title: row.stageLabel,
+        detail: `${row.commandLabel}; ${row.detail}`,
+        statusLabel: row.statusLabel,
+        statusTone: row.statusTone,
+        ownerLabel: commandStageOwnerLabel(row),
+        dueLabel: row.postureLabel,
+        evidenceLabel: row.evidenceLabel,
+        actionLabel: row.guardLabel === "Shared command guard clear" ? row.commandLabel : row.guardLabel,
+        routeHref: row.routeHref,
+        routeLabel: row.routeLabel,
+        ariaLabel: `Financial Operations command stage ${row.ariaLabel}`
+      }))
+  ];
+
+  const blockedCount = items.filter((item) => item.statusTone === "blocked").length;
+  const reviewCount = items.length - blockedCount;
+  const statusTone: OperationsContinuityTone = loading
+    ? "neutral"
+    : blockedCount > 0
+      ? "blocked"
+      : items.length > 0
+        ? "review"
+        : "ready";
+
+  return {
+    title: "Financial Operations operator queue",
+    summaryLabel: loading
+      ? "Loading source-backed Financial Operations work items."
+      : items.length === 0
+        ? "No open Financial Operations work items are surfaced for the selected workflow."
+        : `${items.length} open work item${items.length === 1 ? "" : "s"}: ${blockedCount} blocked, ${reviewCount} review.`,
+    statusLabel: loading
+      ? "Loading"
+      : items.length === 0
+        ? "Clear"
+        : blockedCount > 0
+          ? "Blocked"
+          : "Review",
+    statusTone,
+    emptyText: loading
+      ? "Loading Financial Operations operator queue..."
+      : "No open Financial Operations queue items are surfaced for the selected workflow.",
+    items
+  };
+}
+
+function mapWorkflowBlockerQueueRow(row: OperationsContinuityBlockerRow): FinancialOperationsOperatorQueueRow {
+  const routeHref = row.evidenceHref ?? "/accounting/operations-continuity";
+  const routeLabel = row.evidenceHref ? row.evidenceRouteLabel : "Open operations continuity";
+
+  return {
+    id: `workflow-blocker:${row.id}`,
+    kindLabel: "Workflow blocker",
+    title: row.code,
+    detail: `${row.gateLabel}: ${row.message}`,
+    statusLabel: row.severityLabel,
+    statusTone: row.severityTone,
+    ownerLabel: "Operations control",
+    dueLabel: `${row.gateLabel} gate`,
+    evidenceLabel: row.evidenceLabel,
+    actionLabel: `Resolve ${row.gateLabel} blocker and retain evidence.`,
+    routeHref,
+    routeLabel,
+    ariaLabel: `Financial Operations workflow blocker ${row.ariaLabel}`
+  };
+}
+
+function mapReconciliationLaneQueueRow(
+  row: OperationsContinuityReconciliationLaneRow
+): FinancialOperationsOperatorQueueRow {
+  const routeHref = row.routeHref ?? row.evidenceHref;
+  const routeLabel = row.routeHref
+    ? row.routeLabel
+    : row.evidenceHref
+      ? row.evidenceRouteLabel
+      : "No local route";
+
+  return {
+    id: `reconciliation-lane:${row.id}`,
+    kindLabel: "Reconciliation lane",
+    title: row.label,
+    detail: `${row.breakCountLabel}; ${row.summary}`,
+    statusLabel: row.statusLabel,
+    statusTone: row.statusTone,
+    ownerLabel: "Reconciliation operations",
+    dueLabel: row.breakCountLabel,
+    evidenceLabel: row.evidenceLabel,
+    actionLabel: row.requiredActionsLabel,
+    routeHref,
+    routeLabel,
+    ariaLabel: `Financial Operations reconciliation lane ${row.ariaLabel}`
+  };
+}
+
+function commandStageOwnerLabel(row: FinancialOperationsCommandSpineRow): string {
+  switch (row.id) {
+    case "receive-activity":
+      return "Intake operations";
+    case "match-records":
+      return "Reconciliation operations";
+    case "resolve-exceptions":
+      return "Exception management";
+    case "approve-results":
+      return "Approval control";
+    case "produce-evidence":
+      return "Evidence operations";
+    case "close-support":
+      return "Close operations";
+    default:
+      return "Financial Operations control";
+  }
+}
+
+function mapCloseCalendarErrorQueueRow(
+  error: string,
+  selectedSummary: OperationsContinuityWorkflowSummary | null
+): FinancialOperationsOperatorQueueRow {
+  const scopeLabel = selectedSummary
+    ? `${selectedSummary.periodId} / ${selectedSummary.fundAccountId}`
+    : "Selected close scope";
+
+  return {
+    id: "close-calendar:error",
+    kindLabel: "Close calendar",
+    title: `${scopeLabel}: Close calendar unavailable`,
+    detail: "Close-calendar projection could not be loaded from the shared operations API.",
+    statusLabel: "Unavailable",
+    statusTone: "blocked",
+    ownerLabel: "Operations control",
+    dueLabel: "Next due task unavailable",
+    evidenceLabel: "Close calendar evidence unavailable",
+    actionLabel: error,
+    routeHref: "/accounting/operations-continuity",
+    routeLabel: "Open operations continuity",
+    ariaLabel: `Financial Operations close calendar unavailable for ${scopeLabel}: ${error}`
+  };
+}
+
+function mapCloseCalendarQueueRow(
+  row: OperationsContinuityCloseCalendarRow
+): FinancialOperationsOperatorQueueRow {
+  const title = `${row.periodLabel}: ${row.taskLabel}`;
+  const routeLabel = row.routeHref ? row.routeLabel : "No local route";
+
+  return {
+    id: `close-calendar:${row.id}`,
+    kindLabel: "Close calendar",
+    title,
+    detail: `${row.blockerLabel}; ${row.checklistLabel}; ${row.approvalLabel}`,
+    statusLabel: row.readinessLabel,
+    statusTone: row.readinessTone,
+    ownerLabel: row.ownerLabel,
+    dueLabel: row.dueLabel,
+    evidenceLabel: `Calendar status: ${row.statusLabel}`,
+    actionLabel: row.readinessTone === "blocked"
+      ? "Resolve close-calendar blockers before approval or close lock."
+      : "Complete the next close-calendar task before producing close evidence.",
+    routeHref: row.routeHref,
+    routeLabel,
+    ariaLabel: `Financial Operations close calendar ${row.ariaLabel}, next task ${row.taskLabel}`
+  };
+}
+
+function mapCloseCockpitLaneQueueRow(
+  row: OperationsContinuityCloseCockpitLaneRow
+): FinancialOperationsOperatorQueueRow {
+  const actionLabel = row.requiredActionsLabel === "No required actions"
+    ? `Review ${row.label} and retain private-capital close evidence.`
+    : row.requiredActionsLabel;
+
+  return {
+    id: `private-capital-proof-lane:${row.id}`,
+    kindLabel: "Private-capital proof lane",
+    title: row.label,
+    detail: row.summary,
+    statusLabel: row.statusLabel,
+    statusTone: row.statusTone,
+    ownerLabel: privateCapitalProofLaneOwnerLabel(row),
+    dueLabel: "Before close approval",
+    evidenceLabel: row.evidenceLabel,
+    actionLabel,
+    routeHref: row.routeHref,
+    routeLabel: row.routeLabel,
+    ariaLabel: `Financial Operations private-capital proof lane ${row.ariaLabel}`
+  };
+}
+
+function mapNavSupportPackageQueueRow(
+  row: OperationsContinuityNavSupportPackageRow
+): FinancialOperationsOperatorQueueRow {
+  const actionLabel = row.requiredActionsLabel === "No required actions"
+    ? "Review the NAV support package and retain shadow NAV evidence."
+    : row.requiredActionsLabel;
+
+  return {
+    id: `nav-support-package:${row.id}`,
+    kindLabel: "NAV support package",
+    title: row.label,
+    detail: `${row.componentSummaryLabel}; ${row.shadowNavLabel}; ${row.summary}`,
+    statusLabel: row.statusLabel,
+    statusTone: row.statusTone,
+    ownerLabel: "NAV support operations",
+    dueLabel: "Before NAV package sign-off",
+    evidenceLabel: row.evidenceLabel,
+    actionLabel,
+    routeHref: row.routeHref,
+    routeLabel: row.routeLabel,
+    ariaLabel: `Financial Operations NAV support package ${row.ariaLabel}`
+  };
+}
+
+function mapCloseCockpitEvidencePackageQueueRow(
+  row: OperationsContinuityEvidencePackageRow
+): FinancialOperationsOperatorQueueRow {
+  return {
+    id: `private-capital-evidence-package:${row.id}`,
+    kindLabel: "Private-capital evidence package",
+    title: row.label,
+    detail: row.summary,
+    statusLabel: row.statusLabel,
+    statusTone: row.statusTone,
+    ownerLabel: "Evidence operations",
+    dueLabel: row.readinessLabel,
+    evidenceLabel: row.evidenceLabel,
+    actionLabel: row.requiredActionsLabel,
+    routeHref: row.routeHref,
+    routeLabel: row.routeLabel,
+    ariaLabel: `Financial Operations private-capital evidence package ${row.ariaLabel}`
+  };
+}
+
+function mapCloseCockpitErrorQueueRow(
+  error: string,
+  selectedSummary: OperationsContinuityWorkflowSummary | null
+): FinancialOperationsOperatorQueueRow {
+  const scopeLabel = selectedSummary
+    ? `${selectedSummary.periodId} / ${selectedSummary.fundAccountId}`
+    : "Selected close scope";
+
+  return {
+    id: "private-capital-close-cockpit:error",
+    kindLabel: "Private-capital close cockpit",
+    title: `${scopeLabel}: Private-capital close cockpit unavailable`,
+    detail: "Private-capital proof-lane and NAV-support projection could not be loaded from the shared operations API.",
+    statusLabel: "Unavailable",
+    statusTone: "blocked",
+    ownerLabel: "Operations control",
+    dueLabel: "Close cockpit unavailable",
+    evidenceLabel: "Private-capital close evidence unavailable",
+    actionLabel: error,
+    routeHref: "/accounting/operations-continuity",
+    routeLabel: "Open operations continuity",
+    ariaLabel: `Financial Operations private-capital close cockpit unavailable for ${scopeLabel}: ${error}`
+  };
+}
+
+function privateCapitalProofLaneOwnerLabel(row: OperationsContinuityCloseCockpitLaneRow): string {
+  switch (row.id) {
+    case "nav-support":
+      return "NAV support operations";
+    case "close-package":
+      return "Evidence operations";
+    case "period-lock":
+      return "Operations control";
+    default:
+      return "Private-capital operations";
+  }
+}
+
+function mapApprovalQueueRow(
+  approval: OperationsContinuityWorkflow["approvals"][number]
+): FinancialOperationsOperatorQueueRow {
+  const reviewer = approval.reviewer?.trim();
+  const operator = approval.operator?.trim();
+  const actorLabel = reviewer
+    ? `Reviewer ${reviewer}`
+    : operator
+      ? `Operator ${operator}`
+      : "Approval owner pending";
+  const routeHref = normalizeLocalWorkstationRoute(approval.evidenceLinks[0]?.route) ?? null;
+  const evidenceCount = approval.evidenceLinks.length;
+  const statusLabelText = splitEnumLabel(approval.status);
+
+  return {
+    id: `approval:${approval.approvalId}`,
+    kindLabel: "Approval",
+    title: approval.approvalId,
+    detail: approval.rationale?.trim() || "Approval rationale pending.",
+    statusLabel: statusLabelText,
+    statusTone: approvalStatusTone(approval.status),
+    ownerLabel: actorLabel,
+    dueLabel: approval.decidedAtUtc
+      ? `Decided ${formatDate(approval.decidedAtUtc)}`
+      : approval.submittedAtUtc
+        ? `Submitted ${formatDate(approval.submittedAtUtc)}`
+        : "Approval timing pending",
+    evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
+    actionLabel: approval.status === "Approved" ? "Approval completed" : "Complete workflow approval",
+    routeHref,
+    routeLabel: routeHref ? "Open approval evidence" : "No local route",
+    ariaLabel: `Financial Operations approval ${approval.approvalId}, ${statusLabelText}, ${actorLabel}`
+  };
+}
+
+function mapReviewedAutomationArtifactQueueRow(
+  row: OperationsReviewedAutomationArtifactRow
+): FinancialOperationsOperatorQueueRow {
+  return {
+    id: `reviewed-automation:${row.id}`,
+    kindLabel: "Reviewed automation",
+    title: row.title,
+    detail: `${row.kindLabel}: ${row.sourceSummary}; ${row.confidenceLabel}`,
+    statusLabel: row.statusLabel,
+    statusTone: row.statusTone,
+    ownerLabel: "Automation review",
+    dueLabel: row.reviewLabel,
+    evidenceLabel: row.evidenceLabel,
+    actionLabel: row.blockedActionLabel === "No blocked material action returned."
+      ? row.suggestedActionLabel
+      : `${row.suggestedActionLabel}; ${row.blockedActionLabel}`,
+    routeHref: row.evidenceHref,
+    routeLabel: row.evidenceRouteLabel,
+    ariaLabel: `Financial Operations reviewed automation ${row.ariaLabel}`
+  };
+}
+
+function mapAccountingRecordEvidenceQueueRow(
+  row: OperationsAccountingRecordEvidenceRow
+): FinancialOperationsOperatorQueueRow {
+  const requiredEvidence = row.requiredEvidenceLabel === "Required evidence not specified"
+    ? row.requiredEvidenceLabel
+    : `Requires ${row.requiredEvidenceLabel}`;
+
+  return {
+    id: `accounting-record-evidence:${row.id}`,
+    kindLabel: "Accounting-record evidence",
+    title: row.label,
+    detail: `${row.detail}; ${requiredEvidence}`,
+    statusLabel: row.statusLabel,
+    statusTone: row.statusTone,
+    ownerLabel: "Accounting evidence operations",
+    dueLabel: "Before audit package sign-off",
+    evidenceLabel: row.evidenceLabel,
+    actionLabel: row.requiredEvidenceLabel === "Required evidence not specified"
+      ? "Retain required accounting-record evidence."
+      : `Retain ${row.requiredEvidenceLabel}.`,
+    routeHref: row.routeHref,
+    routeLabel: row.routeLabel,
+    ariaLabel: `Financial Operations accounting-record evidence ${row.ariaLabel}`
+  };
+}
+
+function mapCloseCockpitApprovalQueueRow(
+  row: OperationsContinuityCloseCockpitApprovalRow
+): FinancialOperationsOperatorQueueRow {
+  const routeHref = row.evidenceHref ?? row.workflowHref;
+  const routeLabel = row.evidenceHref
+    ? row.evidenceRouteLabel
+    : row.workflowHref
+      ? row.routeLabel
+      : "No local route";
+
+  return {
+    id: `private-capital-approval:${row.id}`,
+    kindLabel: "Private-capital approval",
+    title: row.id,
+    detail: `${row.workflowLabel}: ${row.rationale}`,
+    statusLabel: row.statusLabel,
+    statusTone: row.statusTone,
+    ownerLabel: row.actorLabel,
+    dueLabel: row.decidedLabel,
+    evidenceLabel: row.evidenceLabel,
+    actionLabel: row.statusLabel === "Approved" ? "Approval completed" : "Complete private-capital close approval",
+    routeHref,
+    routeLabel,
+    ariaLabel: `Financial Operations private-capital approval ${row.ariaLabel}`
+  };
+}
+
+function isOpenQueueItem(item: { statusTone: OperationsContinuityTone }): boolean {
+  return item.statusTone !== "ready";
 }
 
 function compareEvidencePackages(
@@ -1158,10 +2605,34 @@ function evidencePackageOrderKey(packageDto: OperationsEvidencePackageSummary): 
     return "audit-support";
   }
 
+  if (text.includes("period-lock-reopen") || text.includes("period lock") || text.includes("reopen evidence")) {
+    return "period-lock-reopen";
+  }
+
+  if (text.includes("fund-event-accounting") || text.includes("fund-event accounting")) {
+    return "fund-event-accounting";
+  }
+
+  if (text.includes("partner-capital-tie-out") || text.includes("partner capital tie-out")) {
+    return "partner-capital-tie-out";
+  }
+
+  if (text.includes("nav-support") || text.includes("nav support")) {
+    return "nav-support";
+  }
+
+  if (text.includes("close-approval-audit") || text.includes("close approval")) {
+    return "close-approval-audit";
+  }
+
   return packageDto.packageId;
 }
 
-function buildBreakCaseRows(breakCases: OperationsBreakCase[]): OperationsContinuityBreakCaseRow[] {
+function buildBreakCaseRows(
+  breakCases: OperationsBreakCase[],
+  workflowId: string | null,
+  workflowVersion: number | null
+): OperationsContinuityBreakCaseRow[] {
   return [...breakCases]
     .sort(compareBreakCases)
     .map((breakCase) => {
@@ -1179,6 +2650,16 @@ function buildBreakCaseRows(breakCases: OperationsBreakCase[]): OperationsContin
       const approvalLabel = buildApprovalLabel(breakCase);
       const blockedOutputsLabel = buildBlockedOutputsLabel(breakCase);
       const evidenceCount = breakCase.evidenceLinks.length;
+      const evidenceHref = normalizeLocalWorkstationRoute(breakCase.evidenceLinks[0]?.route) ?? null;
+      const caseworkHref = workflowId
+        ? workstationRouteWithQuery("accountingExceptions", {
+            workflowId,
+            breakId: breakCase.breakId
+          })
+        : null;
+      const isReady = breakStatusTone(breakCase.status) === "ready";
+      const assignDisabledReason = buildBreakAssignDisabledReason(breakCase, workflowId, workflowVersion, ownerLabel);
+      const resolveDisabledReason = buildBreakResolveDisabledReason(breakCase, workflowId, workflowVersion, ownerLabel);
       return {
         id: breakCase.breakId,
         caseLabel: breakCase.breakId,
@@ -1197,12 +2678,96 @@ function buildBreakCaseRows(breakCases: OperationsBreakCase[]): OperationsContin
         rootCauseLabel,
         symbolLabel,
         evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} retained evidence link${evidenceCount === 1 ? "" : "s"}`,
+        evidenceHref,
+        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local evidence route",
         approvalLabel,
         blockedOutputsLabel,
         actionLabel,
+        caseworkHref,
+        caseworkRouteLabel: caseworkHref ? "Open casework" : "No local casework route",
+        commandPostureLabel: isReady
+          ? "Resolution retained"
+          : ownerLabel === "Unassigned"
+            ? "Assignment and escalation ready"
+            : "Resolution command ready",
+        commandGuardLabel: workflowVersion === null
+          ? "Workflow version pending"
+          : `Expected workflow version ${workflowVersion}`,
+        workflowId,
+        expectedWorkflowVersion: workflowVersion,
+        assignmentOwner: "browser-operator",
+        assignmentEscalationLevel: breakCase.escalationLevel?.trim() || null,
+        assignmentEscalationReason: breakCase.escalationReason?.trim() || null,
+        assignmentDueDate: breakCase.dueDate,
+        canAssign: assignDisabledReason === null,
+        assignLabel: ownerLabel === "Unassigned" ? "Assign to me" : "Assigned",
+        assignDisabledReason,
+        assignAriaLabel: `Assign break ${breakCase.breakId} to browser operator`,
+        resolutionStatus: "Resolved",
+        resolutionEvidenceLinks: breakCase.evidenceLinks,
+        canResolve: resolveDisabledReason === null,
+        resolveLabel: isReady ? "Resolved" : "Resolve break",
+        resolveDisabledReason,
+        resolveAriaLabel: `Resolve break ${breakCase.breakId}`,
+        routeHref: evidenceHref,
+        routeLabel: evidenceHref ? "Open break evidence" : "No local route",
         ariaLabel: `${breakCase.breakId}, ${statusLabel}, ${ownerLabel}, ${slaLabel}, ${blockedOutputsLabel}`
       };
     });
+}
+
+function buildBreakAssignDisabledReason(
+  breakCase: OperationsBreakCase,
+  workflowId: string | null,
+  workflowVersion: number | null,
+  ownerLabel: string
+): string | null {
+  if (breakStatusTone(breakCase.status) === "ready") {
+    return "Break resolution has already been retained.";
+  }
+
+  if (ownerLabel !== "Unassigned") {
+    return `Break is already assigned to ${ownerLabel}.`;
+  }
+
+  if (!workflowId) {
+    return "Workflow id is unavailable for break assignment.";
+  }
+
+  if (workflowVersion === null) {
+    return "Workflow version is unavailable for break assignment.";
+  }
+
+  return null;
+}
+
+function buildBreakResolveDisabledReason(
+  breakCase: OperationsBreakCase,
+  workflowId: string | null,
+  workflowVersion: number | null,
+  ownerLabel: string
+): string | null {
+  if (breakStatusTone(breakCase.status) === "ready") {
+    return "Break resolution has already been retained.";
+  }
+
+  if (ownerLabel === "Unassigned") {
+    return "Assign the break before resolving it.";
+  }
+
+  if (breakCase.evidenceLinks.length === 0) {
+    return "Retained evidence is required before resolving the break.";
+  }
+
+  if (!workflowId) {
+    return "Workflow id is unavailable for break resolution.";
+  }
+
+  if (workflowVersion === null) {
+    return "Workflow version is unavailable for break resolution.";
+  }
+
+  return null;
 }
 
 function compareBreakCases(left: OperationsBreakCase, right: OperationsBreakCase): number {
@@ -1327,7 +2892,11 @@ function selectLatestTimelineEvent(
     .sort((left, right) => right.occurredAtUtc.localeCompare(left.occurredAtUtc))[0] ?? null;
 }
 
-function buildChecklistRows(tasks: OperationsCloseChecklistTask[]): OperationsContinuityChecklistRow[] {
+function buildChecklistRows(
+  tasks: OperationsCloseChecklistTask[],
+  workflowId: string | null,
+  workflowVersion: number | null
+): OperationsContinuityChecklistRow[] {
   return tasks.map((task) => {
     const remediationHref = normalizeLocalWorkstationRoute(task.remediationRoute) ?? null;
     const acknowledged = task.acknowledgedAtUtc
@@ -1335,6 +2904,12 @@ function buildChecklistRows(tasks: OperationsCloseChecklistTask[]): OperationsCo
       : task.canAcknowledge
         ? "Ready for acknowledgement"
         : task.blockingReason?.trim() || "Acknowledgement blocked until required evidence is complete";
+    const commandPosture = task.acknowledgedAtUtc || (isChecklistTaskReady(task) && !task.canAcknowledge)
+      ? "Acknowledgement retained"
+      : workflowId && task.canAcknowledge
+        ? "Acknowledgement command ready"
+        : "Acknowledgement blocked";
+    const acknowledgeDisabledReason = buildChecklistAcknowledgeDisabledReason(task, workflowId, workflowVersion);
 
     return {
       id: task.taskId,
@@ -1353,9 +2928,43 @@ function buildChecklistRows(tasks: OperationsCloseChecklistTask[]): OperationsCo
       remediationHref,
       remediationLabel: remediationHref ? "Open remediation" : "No remediation route",
       acknowledgementLabel: acknowledged,
+      acknowledgementCommandPostureLabel: commandPosture,
+      acknowledgementGuardLabel: workflowVersion === null
+        ? "Workflow version pending"
+        : `Expected workflow version ${workflowVersion}`,
+      workflowId,
+      expectedWorkflowVersion: workflowVersion,
+      canAcknowledge: acknowledgeDisabledReason === null,
+      acknowledgeLabel: task.acknowledgedAtUtc ? "Acknowledged" : "Acknowledge",
+      acknowledgeDisabledReason,
+      acknowledgeAriaLabel: `Acknowledge close checklist task ${task.label || gateLabel(task.gate)}`,
       ariaLabel: `${task.label || gateLabel(task.gate)} checklist task, ${splitEnumLabel(task.status || "Unknown")}, ${task.owner?.trim() || "owner pending"}`
     };
   });
+}
+
+function buildChecklistAcknowledgeDisabledReason(
+  task: OperationsCloseChecklistTask,
+  workflowId: string | null,
+  workflowVersion: number | null
+): string | null {
+  if (task.acknowledgedAtUtc) {
+    return "Checklist acknowledgement has already been retained.";
+  }
+
+  if (!task.canAcknowledge) {
+    return task.blockingReason?.trim() || "Required evidence must be complete before acknowledgement.";
+  }
+
+  if (!workflowId) {
+    return "Workflow id is unavailable for the checklist acknowledgement command.";
+  }
+
+  if (workflowVersion === null) {
+    return "Workflow version is unavailable for the checklist acknowledgement command.";
+  }
+
+  return null;
 }
 
 function buildCloseGovernanceViewModel(
@@ -1377,7 +2986,16 @@ function buildCloseGovernanceViewModel(
       reopenIncidentLabel: "No incident correlation",
       reopenEvidenceLabel: "No reopen evidence links",
       reopenRationaleLabel: "No reopen rationale recorded",
-      commandGuardLabel: "Workflow command availability is server-owned."
+      commandGuardLabel: "Workflow command availability is server-owned.",
+      workflowId: null,
+      expectedWorkflowVersion: null,
+      reopenWorkflowEvidenceLinks: [],
+      canReopenWorkflow: false,
+      reopenWorkflowLabel: "Reopen period",
+      reopenWorkflowDisabledReason: loading
+        ? "Workflow lock state is still loading."
+        : "Select a closed workflow before reopening a period.",
+      reopenWorkflowAriaLabel: "Reopen selected closed period"
     };
   }
 
@@ -1385,6 +3003,8 @@ function buildCloseGovernanceViewModel(
   const latestReopen = selectLatestTimelineEvent(workflow.timeline, "workflow-reopened");
   const closePackage = workflow.closePackage;
   const isClosed = workflow.status === "Closed";
+  const reopenWorkflowDisabledReason = buildReopenWorkflowDisabledReason(workflow);
+  const reopenWorkflowEvidenceLinks = collectReopenWorkflowEvidenceLinks(workflow);
   const statusLabel = isClosed ? "Locked" : latestReopen ? "Reopened" : "Open";
   const statusTone: OperationsContinuityTone = isClosed ? "ready" : latestReopen ? "review" : "neutral";
   const lockLabel = isClosed
@@ -1425,11 +3045,59 @@ function buildCloseGovernanceViewModel(
       ? `${latestReopen.references.length} reopen evidence link${latestReopen.references.length === 1 ? "" : "s"}`
       : "No reopen evidence links",
     reopenRationaleLabel: latestReopen?.rationale?.trim() || "No reopen rationale recorded",
-    commandGuardLabel
+    commandGuardLabel,
+    workflowId: workflow.workflowId,
+    expectedWorkflowVersion: workflow.version ?? null,
+    reopenWorkflowEvidenceLinks,
+    canReopenWorkflow: reopenWorkflowDisabledReason === null,
+    reopenWorkflowLabel: "Reopen period",
+    reopenWorkflowDisabledReason,
+    reopenWorkflowAriaLabel: `Reopen governed period for ${workflow.periodId || "selected period"}`
   };
 }
 
+function buildReopenWorkflowDisabledReason(workflow: OperationsContinuityWorkflow | null): string | null {
+  if (!workflow) {
+    return "Select a closed workflow before reopening a period.";
+  }
+
+  if (workflow.version === null || workflow.version === undefined) {
+    return "Workflow version is unavailable for governed reopen.";
+  }
+
+  if (workflow.status !== "Closed") {
+    return "Only closed workflows can be reopened through the governed reopen command.";
+  }
+
+  if (!workflow.closePackage) {
+    return "Close package evidence is required before reopening a locked period.";
+  }
+
+  return null;
+}
+
+function collectReopenWorkflowEvidenceLinks(workflow: OperationsContinuityWorkflow | null): OperationsEvidenceLink[] {
+  if (!workflow) {
+    return [];
+  }
+
+  return distinctOperationsEvidenceLinks([
+    ...(workflow.closePackage?.evidenceLinks ?? []),
+    ...workflow.evidenceLinks,
+    ...(workflow.evidencePackages ?? [])
+      .filter((packageSummary) => packageSummary.packageId.toLowerCase().includes("period-lock"))
+      .flatMap((packageSummary) => packageSummary.evidenceLinks)
+  ]);
+}
+
 function buildCloseCockpitQuery(workflow: OperationsContinuityWorkflowSummary): PrivateCapitalCloseCockpitQuery {
+  return {
+    fundAccountId: workflow.fundAccountId,
+    periodId: workflow.periodId
+  };
+}
+
+function buildCloseCalendarQuery(workflow: OperationsContinuityWorkflowSummary): { fundAccountId: string; periodId: string } {
   return {
     fundAccountId: workflow.fundAccountId,
     periodId: workflow.periodId
@@ -1463,12 +3131,146 @@ const FINANCIAL_OPERATIONS_DASHBOARD_METRIC_ORDER = [
   "close-support"
 ];
 
+const FINANCIAL_OPERATIONS_COMMAND_LABELS: Record<string, string> = {
+  "receive-activity": "Start/import/normalize activity",
+  "match-records": "Run reconciliation and refresh posture",
+  "resolve-exceptions": "Assign, escalate, or resolve breaks",
+  "approve-results": "Submit or decide approval",
+  "produce-evidence": "Open evidence package routes",
+  "close-support": "Review checklist and close readiness"
+};
+
 const FINANCIAL_OPERATIONS_EVIDENCE_PACKAGE_ORDER = [
   "accounting-record",
   "report-pack",
   "close-package",
-  "audit-support"
+  "audit-support",
+  "period-lock-reopen",
+  "fund-event-accounting",
+  "partner-capital-tie-out",
+  "nav-support",
+  "close-approval-audit"
 ];
+
+function buildCloseCalendarViewModel(
+  calendar: OperationsCloseCalendar | null,
+  loading: boolean,
+  error: string | null,
+  selectedSummary: OperationsContinuityWorkflowSummary | null
+): OperationsContinuityCloseCalendarViewModel {
+  if (!calendar) {
+    return {
+      title: "Close calendar",
+      statusLabel: loading ? "Loading" : error ? "Unavailable" : "No calendar",
+      statusTone: error ? "blocked" : "neutral",
+      summaryLabel: loading
+        ? "Loading close calendar tasks from the shared operations API."
+        : error
+          ? "Close calendar evidence is unavailable."
+          : "No close calendar data is available for this workstation context.",
+      scopeLabel: selectedSummary
+        ? `Selected ${selectedSummary.periodId} / ${selectedSummary.fundAccountId}`
+        : "No close scope selected",
+      freshnessLabel: "Projection pending",
+      itemCountLabel: "No calendar items",
+      blockerCountLabel: "No blockers loaded",
+      checklistCountLabel: "No checklist posture loaded",
+      approvalCountLabel: "No approval posture loaded",
+      nextDueLabel: loading
+        ? "Next due task loading"
+        : error
+          ? "Next due task unavailable"
+          : "No dated close-calendar tasks",
+      errorText: error,
+      emptyText: loading
+        ? "Loading close calendar items..."
+        : error
+          ? "Close calendar items could not be loaded."
+          : "No close calendar items returned by the shared operations API.",
+      rows: []
+    };
+  }
+
+  const rows = [...calendar.items]
+    .sort(compareCloseCalendarItems)
+    .map(mapCloseCalendarRow);
+  const readyCount = calendar.items.filter((item) => item.isReadyToClose).length;
+  const blockerCount = calendar.items.reduce((total, item) => total + item.blockerCount, 0);
+  const openChecklistCount = calendar.items.reduce((total, item) => total + item.openChecklistCount, 0);
+  const requiredApprovalCount = calendar.items.reduce((total, item) => total + item.requiredApprovalCount, 0);
+  const completedApprovalCount = calendar.items.reduce((total, item) => total + item.completedApprovalCount, 0);
+  const nextDueItem = [...calendar.items]
+    .filter((item) => Boolean(item.nextDueDate))
+    .sort(compareCloseCalendarItems)[0] ?? null;
+  const statusTone: OperationsContinuityTone = blockerCount > 0
+    ? "blocked"
+    : readyCount === calendar.items.length && calendar.items.length > 0
+      ? "ready"
+      : "review";
+  const statusLabel = statusTone === "ready"
+    ? "Ready"
+    : statusTone === "blocked"
+      ? "Blocked"
+      : "Review required";
+
+  return {
+    title: "Close calendar",
+    statusLabel,
+    statusTone,
+    summaryLabel: `${readyCount}/${calendar.items.length} calendar item${calendar.items.length === 1 ? "" : "s"} ready; ${openChecklistCount} open checklist item${openChecklistCount === 1 ? "" : "s"}.`,
+    scopeLabel: selectedSummary
+      ? `Selected ${selectedSummary.periodId} / ${selectedSummary.fundAccountId}`
+      : "All close calendar scopes",
+    freshnessLabel: `Generated ${formatDate(calendar.generatedAtUtc)}`,
+    itemCountLabel: `${calendar.items.length} calendar item${calendar.items.length === 1 ? "" : "s"}`,
+    blockerCountLabel: blockerCount === 0 ? "No blockers" : `${blockerCount} blocker${blockerCount === 1 ? "" : "s"}`,
+    checklistCountLabel: openChecklistCount === 0 ? "Checklist clear" : `${openChecklistCount} open checklist item${openChecklistCount === 1 ? "" : "s"}`,
+    approvalCountLabel: requiredApprovalCount === 0
+      ? "No approvals required"
+      : `${completedApprovalCount}/${requiredApprovalCount} approval${requiredApprovalCount === 1 ? "" : "s"} complete`,
+    nextDueLabel: nextDueItem
+      ? `Next due ${formatDateOnly(nextDueItem.nextDueDate)}: ${nextDueItem.nextDueLabel?.trim() || nextDueItem.nextDueTaskId || "close task"}`
+      : "No dated close-calendar tasks",
+    errorText: error,
+    emptyText: "No close calendar items returned by the shared operations API.",
+    rows
+  };
+}
+
+function mapCloseCalendarRow(item: OperationsCloseCalendarItem): OperationsContinuityCloseCalendarRow {
+  const routeHref = normalizeLocalWorkstationRoute(item.route) ?? null;
+  const statusText = statusLabel(item.status);
+  const readinessTone: OperationsContinuityTone = item.isReadyToClose
+    ? "ready"
+    : item.blockerCount > 0
+      ? "blocked"
+      : severityTone(item.readinessSeverity);
+  const readinessLabel = item.readinessScore === null || item.readinessScore === undefined
+    ? item.isReadyToClose
+      ? "Ready to close"
+      : "Readiness not measured"
+    : `${formatPercent(item.readinessScore)} ready`;
+
+  return {
+    id: item.workflowId,
+    periodLabel: `${item.periodId} / ${item.fundAccountId}`,
+    statusLabel: statusText,
+    statusTone: statusTone(item.status),
+    dueLabel: item.nextDueDate ? formatDateOnly(item.nextDueDate) : "No due date",
+    taskLabel: item.nextDueLabel?.trim() || item.nextDueTaskId || "No open close task",
+    ownerLabel: item.nextDueOwner?.trim() || "Owner pending",
+    readinessLabel,
+    readinessTone,
+    blockerLabel: item.blockerCount === 0 ? "No blockers" : `${item.blockerCount} blocker${item.blockerCount === 1 ? "" : "s"}`,
+    checklistLabel: item.openChecklistCount === 0 ? "Checklist clear" : `${item.openChecklistCount} open checklist item${item.openChecklistCount === 1 ? "" : "s"}`,
+    approvalLabel: item.requiredApprovalCount === 0
+      ? "No approvals required"
+      : `${item.completedApprovalCount}/${item.requiredApprovalCount} approval${item.requiredApprovalCount === 1 ? "" : "s"} complete`,
+    routeHref,
+    routeLabel: routeHref ? "Open workflow" : "No local route",
+    ariaLabel: `${item.periodId} close calendar, ${statusText}, ${readinessLabel}, ${item.blockerCount} blockers`
+  };
+}
 
 function buildCloseCockpitViewModel(
   cockpit: PrivateCapitalCloseCockpit | null,
@@ -1522,6 +3324,11 @@ function buildCloseCockpitViewModel(
         : error
           ? "Private-capital close workflows could not be loaded."
           : "No private-capital close workflows returned by the shared operations API.",
+      evidencePackagesEmptyText: loading
+        ? "Loading private-capital evidence packages..."
+        : error
+          ? "Private-capital evidence packages could not be loaded."
+          : "No private-capital evidence packages returned by the shared operations API.",
       approvalHistoryEmptyText: loading
         ? "Loading private-capital approval history..."
         : error
@@ -1534,6 +3341,7 @@ function buildCloseCockpitViewModel(
           : "No NAV support packages returned by the shared operations API.",
       lanes: [],
       workflows: [],
+      evidencePackages: [],
       approvalHistory: [],
       navSupportPackages: []
     };
@@ -1547,6 +3355,7 @@ function buildCloseCockpitViewModel(
   const approvalHistory = [...(cockpit.approvalHistory ?? [])]
     .sort(compareCloseCockpitApprovals)
     .map(mapCloseCockpitApprovalRow);
+  const evidencePackages = buildEvidencePackageRows(cockpit.evidencePackages ?? []);
   const navSupportPackages = [...(cockpit.navSupportPackages ?? [])]
     .sort(compareNavSupportPackages)
     .map(mapNavSupportPackageRow);
@@ -1575,10 +3384,12 @@ function buildCloseCockpitViewModel(
     errorText: error,
     lanesEmptyText: "No private-capital cockpit lanes returned by the shared operations API.",
     workflowsEmptyText: "No private-capital close workflows returned by the shared operations API.",
+    evidencePackagesEmptyText: "No private-capital evidence packages returned by the shared operations API.",
     approvalHistoryEmptyText: "No private-capital approval history returned by the shared operations API.",
     navSupportPackagesEmptyText: "No NAV support packages returned by the shared operations API.",
     lanes,
     workflows,
+    evidencePackages,
     approvalHistory,
     navSupportPackages
   };
@@ -1658,6 +3469,7 @@ function mapCloseCockpitApprovalRow(
   approval: PrivateCapitalCloseCockpitApproval
 ): OperationsContinuityCloseCockpitApprovalRow {
   const workflowHref = normalizeLocalWorkstationRoute(approval.workflowRoute) ?? null;
+  const evidenceHref = normalizeLocalWorkstationRoute(approval.evidenceLinks[0]?.route) ?? null;
   const evidenceCount = Math.max(approval.evidenceLinkCount, approval.evidenceLinks.length);
   const operator = approval.operator?.trim();
   const reviewer = approval.reviewer?.trim();
@@ -1676,6 +3488,8 @@ function mapCloseCockpitApprovalRow(
     decidedLabel: decidedAt ? formatDate(decidedAt) : "Decision time pending",
     rationale: approval.rationale?.trim() || "No approval rationale returned.",
     evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
+    evidenceHref,
+    evidenceRouteLabel: evidenceHref ? "Open evidence" : "No local evidence route",
     workflowHref,
     routeLabel: workflowHref ? "Open workflow" : "No local route",
     ariaLabel: `${approval.periodId} approval ${approval.approvalId}, ${splitEnumLabel(approval.status)}`
@@ -1788,6 +3602,15 @@ function compareCloseCockpitWorkflows(
 ): number {
   return right.updatedAtUtc.localeCompare(left.updatedAtUtc)
     || right.periodId.localeCompare(left.periodId)
+    || left.workflowId.localeCompare(right.workflowId);
+}
+
+function compareCloseCalendarItems(left: OperationsCloseCalendarItem, right: OperationsCloseCalendarItem): number {
+  const leftDue = left.nextDueDate ?? "9999-12-31";
+  const rightDue = right.nextDueDate ?? "9999-12-31";
+  return leftDue.localeCompare(rightDue)
+    || left.periodId.localeCompare(right.periodId)
+    || left.fundAccountId.localeCompare(right.fundAccountId)
     || left.workflowId.localeCompare(right.workflowId);
 }
 
@@ -2187,6 +4010,22 @@ function formatDate(value: string | null | undefined): string {
   const hour = date.getUTCHours().toString().padStart(2, "0");
   const minute = date.getUTCMinutes().toString().padStart(2, "0");
   return `${month} ${day}, ${hour}:${minute} UTC`;
+}
+
+function formatDateOnly(value: string | null | undefined): string {
+  if (!value) {
+    return "No due date";
+  }
+
+  const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00:00Z` : value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  const month = date.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
+  const day = date.getUTCDate().toString().padStart(2, "0");
+  const year = date.getUTCFullYear();
+  return `${month} ${day}, ${year}`;
 }
 
 function formatDecimal(value: number | null | undefined): string {

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Security.Cryptography;
 using System.Text;
@@ -183,6 +184,7 @@ public sealed class ReportPackDeliveryService
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.DistributionId);
+        EnsureHumanOrigin(request.ActionOrigin, "publish reports");
         var actor = ResolveActor(request.Actor, fallbackActor);
         return AppendAttempt(
             reportId,
@@ -195,6 +197,15 @@ public sealed class ReportPackDeliveryService
             request.EvidenceLinks,
             request.Formats,
             request.DeliveryMode);
+    }
+
+    private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
+    {
+        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        {
+            throw new InvalidOperationException(
+                $"Reviewed automation cannot {action}; a human operator approval is required.");
+        }
     }
 
     public ReportPackDeliveryAttemptDto? DeliverLatestForTemplate(
@@ -282,6 +293,7 @@ public sealed class ReportPackDeliveryService
         ArgumentNullException.ThrowIfNull(request);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.DistributionId);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.FailureReason);
+        EnsureHumanOrigin(request.ActionOrigin, "record delivery failures");
         var actor = ResolveActor(request.Actor, fallbackActor);
         return AppendAttempt(
             reportId,
@@ -458,7 +470,8 @@ public sealed class ReportPackDeliveryService
             DeliveryChannelSummary: BuildDeliveryChannelSummary(mode, policy),
             DownloadSummary: BuildDeliveryDownloadSummary(artifacts, retainedManifestPath),
             AccessExpiresAtUtc: accessExpiresAtUtc,
-            AccessLinks: BuildDeliveryAccessLinks(mode, secureLink, portalRoute, retainedManifestPath, accessExpiresAtUtc, artifacts));
+            AccessLinks: BuildDeliveryAccessLinks(mode, secureLink, portalRoute, retainedManifestPath, accessExpiresAtUtc, artifacts),
+            Notifications: BuildDeliveryNotifications(mode, policy, packageId, secureLink, portalRoute, createdAtUtc, accessExpiresAtUtc));
     }
 
     private static ReportPackDeliveryPackageDto BuildDeliveryPackage(
@@ -530,17 +543,22 @@ public sealed class ReportPackDeliveryService
             ReportingRunAttemptCount: manifest.AttemptCount,
             ReportingRunSectionCount: manifest.Sections.Length,
             ReportingRunLineageLinkedSections: manifest.Sections.Count(static section => section.Lineage is not null),
+            BrandingTheme: manifest.BrandingTheme,
             DeliveryAccessSummary: BuildDeliveryAccessSummary(mode, secureLink, portalRoute),
             DeliveryChannelSummary: BuildDeliveryChannelSummary(mode, policy),
             DownloadSummary: BuildDeliveryDownloadSummary(artifacts, retainedManifestPath),
             AccessExpiresAtUtc: accessExpiresAtUtc,
             AccessLinks: BuildDeliveryAccessLinks(mode, secureLink, portalRoute, retainedManifestPath, accessExpiresAtUtc, artifacts),
-            GeneratedReportWriterGrids: ProjectGeneratedReportWriterGrids(manifest.ReportWriterGrids),
+            GeneratedReportWriterGrids: ProjectGeneratedReportWriterGrids(manifest.ReportWriterGrids, manifest.RenderedReportWriterGrids),
             RenderedReportWriterGrids: manifest.RenderedReportWriterGrids.IsDefaultOrEmpty
                 ? []
                 : manifest.RenderedReportWriterGrids
                     .Select(EnrichReportWriterGridRender)
-                    .ToArray());
+                    .ToArray(),
+            Notifications: BuildDeliveryNotifications(mode, policy, packageId, secureLink, portalRoute, createdAtUtc, accessExpiresAtUtc),
+            ReportWriterDatasetSourceId: manifest.ReportWriterDatasetSourceId,
+            ReportWriterDatasetSourceLabel: manifest.ReportWriterDatasetSourceLabel,
+            ReportWriterDatasetRowCount: manifest.ReportWriterDatasetRowCount);
     }
 
     private static DateTimeOffset BuildAccessExpiry(DateTimeOffset createdAtUtc) =>
@@ -630,9 +648,103 @@ public sealed class ReportPackDeliveryService
                 RequiresToken: true,
                 ExpiresAtUtc: accessExpiresAtUtc,
                 Description: $"{artifact.ArtifactName} retained as {artifact.ContentType} with SHA-256 checksum {artifact.ChecksumSha256}."));
+
+            if (artifact.Format == GovernanceReportArtifactFormatDto.Xlsx)
+            {
+                links.Add(new ReportPackDeliveryAccessLinkDto(
+                    "artifact-xls",
+                    "XLS compatibility download",
+                    BuildArtifactFormatAliasRoute(artifact.DownloadRoute!, "xls"),
+                    RequiresToken: true,
+                    ExpiresAtUtc: accessExpiresAtUtc,
+                    Description: $"{artifact.ArtifactName} served through the XLS compatibility alias as the canonical XLSX workbook."));
+            }
         }
 
         return links;
+    }
+
+    private static IReadOnlyList<ReportPackDeliveryNotificationDto> BuildDeliveryNotifications(
+        ReportPackDeliveryModeDto deliveryMode,
+        ReportPackRunReadService.ReportPackDistributionPolicy policy,
+        string packageId,
+        string secureLink,
+        string portalRoute,
+        DateTimeOffset createdAtUtc,
+        DateTimeOffset accessExpiresAtUtc)
+    {
+        var href = string.IsNullOrWhiteSpace(secureLink) ? portalRoute : secureLink;
+        return deliveryMode switch
+        {
+            ReportPackDeliveryModeDto.EmailLink =>
+            [
+                new ReportPackDeliveryNotificationDto(
+                    $"delivery-notification:{packageId}:email-link",
+                    "EmailLink",
+                    policy.Recipient,
+                    policy.RecipientRole,
+                    deliveryMode,
+                    $"Report package available for {policy.Recipient}",
+                    $"A token-gated report package is ready for {policy.Recipient} via {policy.Channel}. Access expires at {accessExpiresAtUtc:O}.",
+                    href,
+                    RequiresToken: true,
+                    createdAtUtc,
+                    ExpiresAtUtc: accessExpiresAtUtc,
+                    Status: "ReadyToSend")
+            ],
+            ReportPackDeliveryModeDto.SecurePortal =>
+            [
+                new ReportPackDeliveryNotificationDto(
+                    $"delivery-notification:{packageId}:secure-portal",
+                    "SecurePortal",
+                    policy.Recipient,
+                    policy.RecipientRole,
+                    deliveryMode,
+                    $"Secure portal package published for {policy.Recipient}",
+                    $"A secure portal package is published for {policy.Recipient} via {policy.Channel}. Access expires at {accessExpiresAtUtc:O}.",
+                    href,
+                    RequiresToken: true,
+                    createdAtUtc,
+                    ExpiresAtUtc: accessExpiresAtUtc,
+                    Status: "PortalPublished")
+            ],
+            ReportPackDeliveryModeDto.EvidenceVault =>
+            [
+                new ReportPackDeliveryNotificationDto(
+                    $"delivery-notification:{packageId}:evidence-vault",
+                    "EvidenceVault",
+                    policy.Recipient,
+                    policy.RecipientRole,
+                    deliveryMode,
+                    $"Evidence vault package retained for {policy.Recipient}",
+                    $"The retained report package manifest is available for {policy.Recipient} via {policy.Channel}.",
+                    href,
+                    RequiresToken: false,
+                    createdAtUtc,
+                    Status: "Retained")
+            ],
+            _ =>
+            [
+                new ReportPackDeliveryNotificationDto(
+                    $"delivery-notification:{packageId}:internal-route",
+                    "InternalRoute",
+                    policy.Recipient,
+                    policy.RecipientRole,
+                    deliveryMode,
+                    $"Internal report package route available for {policy.Recipient}",
+                    $"The internal report package route is available for {policy.Recipient} via {policy.Channel}.",
+                    href,
+                    RequiresToken: false,
+                    createdAtUtc,
+                    Status: "Internal")
+            ]
+        };
+    }
+
+    private static string BuildArtifactFormatAliasRoute(string downloadRoute, string format)
+    {
+        var separator = downloadRoute.Contains('?', StringComparison.Ordinal) ? "&" : "?";
+        return $"{downloadRoute}{separator}format={Uri.EscapeDataString(format)}";
     }
 
     private static ReportPackDeliveryEvidencePacketDto BuildReportingRunDeliveryEvidencePacket(
@@ -671,7 +783,7 @@ public sealed class ReportPackDeliveryService
                     policy.RecipientRole,
                     policy.Channel)
             ],
-            EntitlementScope: ReportAccessModeDto.CompanyWide.ToString(),
+            EntitlementScope: BuildEntitlementScope(manifest.AccessPolicy),
             ApprovalChain: [],
             DatasetVersion: manifest.RunId,
             TemplateVersion: manifest.TemplateId,
@@ -1161,6 +1273,7 @@ public sealed class ReportPackDeliveryService
                 artifact.Format,
                 artifact.ContentType,
                 artifact.RetainedPath,
+                package.BrandingTheme,
                 artifact.VersionStamp);
 
     private static byte[] BuildDeliveryArtifactContent(
@@ -1213,8 +1326,8 @@ public sealed class ReportPackDeliveryService
         {
             GovernanceReportArtifactFormatDto.Csv => BuildDeliveryArtifactCsv(rows),
             GovernanceReportArtifactFormatDto.Xlsx => XlsxWorkbookWriter.CreateWorkbook(BuildDeliveryArtifactWorksheets(rows, brandingTheme)),
-            GovernanceReportArtifactFormatDto.Html => BuildDeliveryArtifactHtml(rows),
-            GovernanceReportArtifactFormatDto.Pdf => BuildDeliveryArtifactPdf(rows),
+            GovernanceReportArtifactFormatDto.Html => BuildDeliveryArtifactHtml(rows, brandingTheme),
+            GovernanceReportArtifactFormatDto.Pdf => BuildDeliveryArtifactPdf(rows, brandingTheme),
             _ => JsonSerializer.SerializeToUtf8Bytes(rows.ToDictionary(static row => row.Key, static row => row.Value))
         };
     }
@@ -1272,9 +1385,10 @@ public sealed class ReportPackDeliveryService
             format,
             contentType,
             retainedPath,
+            manifest.BrandingTheme,
             versionStamp);
 
-        var gridRows = BuildReportingRunGridArtifactRows(manifest.ReportWriterGrids);
+        var gridRows = BuildReportingRunGridArtifactRows(manifest.ReportWriterGrids, manifest.RenderedReportWriterGrids);
         var renderedGridRows = BuildReportingRunRenderedGridArtifactRows(manifest.RenderedReportWriterGrids);
         var renderedGridDictionaryRows = BuildReportingRunGridDataDictionaryArtifactRows(manifest.RenderedReportWriterGrids);
         var renderedGridValidationRows = BuildReportingRunGridValidationArtifactRows(manifest.RenderedReportWriterGrids);
@@ -1296,8 +1410,8 @@ public sealed class ReportPackDeliveryService
                     rows.Select(static row => (IReadOnlyList<object?>)[row.Key, row.Value]).ToArray()),
                 new XlsxWorksheet(
                     "ReportWriterGrids",
-                    ["Grid ID", "Title", "Kind", "Artifact", "Dimensions", "Metrics", "Formulas"],
-                    BuildReportingRunGridWorksheetRows(manifest.ReportWriterGrids)),
+                    ["Grid ID", "Title", "Kind", "Artifact", "Dimensions", "Metrics", "Formulas", "Validation", "Passed", "Warnings", "Failed"],
+                    BuildReportingRunGridWorksheetRows(manifest.ReportWriterGrids, manifest.RenderedReportWriterGrids)),
                 new XlsxWorksheet(
                     "ReportWriterGridRows",
                     ["Kind", "Grid ID", "Row Key", "Field", "Value"],
@@ -1311,8 +1425,8 @@ public sealed class ReportPackDeliveryService
                     ["Grid ID", "Check", "Status", "Detail"],
                     BuildReportingRunGridValidationWorksheetRows(manifest.RenderedReportWriterGrids))
             ]),
-            GovernanceReportArtifactFormatDto.Html => BuildDeliveryArtifactHtml(allRows),
-            GovernanceReportArtifactFormatDto.Pdf => BuildDeliveryArtifactPdf(allRows),
+            GovernanceReportArtifactFormatDto.Html => BuildDeliveryArtifactHtml(allRows, manifest.BrandingTheme),
+            GovernanceReportArtifactFormatDto.Pdf => BuildDeliveryArtifactPdf(allRows, manifest.BrandingTheme),
             _ => JsonSerializer.SerializeToUtf8Bytes(allRows.ToDictionary(static row => row.Key, static row => row.Value))
         };
     }
@@ -1336,6 +1450,7 @@ public sealed class ReportPackDeliveryService
         GovernanceReportArtifactFormatDto format,
         string contentType,
         string retainedPath,
+        ReportBrandingThemeDto? brandingTheme,
         string versionStamp)
     {
         var rows = BuildReportingRunDeliveryArtifactRows(
@@ -1355,6 +1470,7 @@ public sealed class ReportPackDeliveryService
             format,
             contentType,
             retainedPath,
+            brandingTheme,
             versionStamp);
 
         var gridRows = BuildReportingRunGridArtifactRows(generatedReportWriterGrids);
@@ -1379,7 +1495,7 @@ public sealed class ReportPackDeliveryService
                     rows.Select(static row => (IReadOnlyList<object?>)[row.Key, row.Value]).ToArray()),
                 new XlsxWorksheet(
                     "ReportWriterGrids",
-                    ["Grid ID", "Title", "Kind", "Artifact", "Dimensions", "Metrics", "Formulas"],
+                    ["Grid ID", "Title", "Kind", "Artifact", "Dimensions", "Metrics", "Formulas", "Validation", "Passed", "Warnings", "Failed"],
                     BuildReportingRunGridWorksheetRows(generatedReportWriterGrids)),
                 new XlsxWorksheet(
                     "ReportWriterGridRows",
@@ -1394,8 +1510,8 @@ public sealed class ReportPackDeliveryService
                     ["Grid ID", "Check", "Status", "Detail"],
                     BuildReportingRunGridValidationWorksheetRows(renderedReportWriterGrids))
             ]),
-            GovernanceReportArtifactFormatDto.Html => BuildDeliveryArtifactHtml(allRows),
-            GovernanceReportArtifactFormatDto.Pdf => BuildDeliveryArtifactPdf(allRows),
+            GovernanceReportArtifactFormatDto.Html => BuildDeliveryArtifactHtml(allRows, brandingTheme),
+            GovernanceReportArtifactFormatDto.Pdf => BuildDeliveryArtifactPdf(allRows, brandingTheme),
             _ => JsonSerializer.SerializeToUtf8Bytes(allRows.ToDictionary(static row => row.Key, static row => row.Value))
         };
     }
@@ -1533,6 +1649,7 @@ public sealed class ReportPackDeliveryService
         GovernanceReportArtifactFormatDto format,
         string contentType,
         string retainedPath,
+        ReportBrandingThemeDto? brandingTheme,
         string versionStamp) =>
     [
         new("packageId", packageId),
@@ -1551,18 +1668,27 @@ public sealed class ReportPackDeliveryService
         new("format", format.ToString()),
         new("contentType", contentType),
         new("retainedPath", retainedPath),
+        new("brandingThemeId", manifest.BrandingTheme?.ThemeId ?? manifest.BrandingThemeId ?? ""),
+        new("brandingThemeName", manifest.BrandingTheme?.Name ?? ""),
+        new("brandingFirmName", manifest.BrandingTheme?.FirmName ?? ""),
+        new("brandingPrimaryColor", manifest.BrandingTheme?.PrimaryColor ?? ""),
+        new("brandingAccentColor", manifest.BrandingTheme?.AccentColor ?? ""),
+        new("brandingLogoUri", manifest.BrandingTheme?.LogoUri ?? ""),
+        new("brandingFooterText", manifest.BrandingTheme?.FooterText ?? ""),
+        new("brandingDisclaimer", manifest.BrandingTheme?.Disclaimer ?? ""),
         new("versionStamp", versionStamp)
     ];
 
     private static IReadOnlyList<KeyValuePair<string, string>> BuildReportingRunGridArtifactRows(
-        System.Collections.Immutable.ImmutableArray<ReportingRunReportWriterGridArtifact> grids)
+        System.Collections.Immutable.ImmutableArray<ReportingRunReportWriterGridArtifact> grids,
+        System.Collections.Immutable.ImmutableArray<ReportWriterGridRenderDto> renderedGrids)
     {
         if (grids.IsDefaultOrEmpty)
         {
             return [];
         }
 
-        var rows = new List<KeyValuePair<string, string>>(grids.Length * 7 + 1)
+        var rows = new List<KeyValuePair<string, string>>(grids.Length * 11 + 1)
         {
             new("generatedReportWriterGridCount", grids.Length.ToString(System.Globalization.CultureInfo.InvariantCulture))
         };
@@ -1577,6 +1703,11 @@ public sealed class ReportPackDeliveryService
             rows.Add(new($"{prefix}.dimensionCount", grid.DimensionCount.ToString(System.Globalization.CultureInfo.InvariantCulture)));
             rows.Add(new($"{prefix}.metricCount", grid.MetricCount.ToString(System.Globalization.CultureInfo.InvariantCulture)));
             rows.Add(new($"{prefix}.formulaCount", grid.FormulaCount.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            var validation = BuildGeneratedGridValidationSummary(grid.GridId, renderedGrids);
+            rows.Add(new($"{prefix}.validationSummary", validation.Summary ?? ""));
+            rows.Add(new($"{prefix}.validationPassedCount", validation.Passed?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? ""));
+            rows.Add(new($"{prefix}.validationWarningCount", validation.Warning?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? ""));
+            rows.Add(new($"{prefix}.validationFailedCount", validation.Failed?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? ""));
         }
 
         return rows;
@@ -1590,7 +1721,7 @@ public sealed class ReportPackDeliveryService
             return [];
         }
 
-        var rows = new List<KeyValuePair<string, string>>(grids.Count * 7 + 1)
+        var rows = new List<KeyValuePair<string, string>>(grids.Count * 11 + 1)
         {
             new("generatedReportWriterGridCount", grids.Count.ToString(System.Globalization.CultureInfo.InvariantCulture))
         };
@@ -1605,6 +1736,10 @@ public sealed class ReportPackDeliveryService
             rows.Add(new($"{prefix}.dimensionCount", grid.DimensionCount.ToString(System.Globalization.CultureInfo.InvariantCulture)));
             rows.Add(new($"{prefix}.metricCount", grid.MetricCount.ToString(System.Globalization.CultureInfo.InvariantCulture)));
             rows.Add(new($"{prefix}.formulaCount", grid.FormulaCount.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            rows.Add(new($"{prefix}.validationSummary", grid.ValidationSummary ?? ""));
+            rows.Add(new($"{prefix}.validationPassedCount", grid.ValidationPassedCount?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? ""));
+            rows.Add(new($"{prefix}.validationWarningCount", grid.ValidationWarningCount?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? ""));
+            rows.Add(new($"{prefix}.validationFailedCount", grid.ValidationFailedCount?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? ""));
         }
 
         return rows;
@@ -1683,7 +1818,8 @@ public sealed class ReportPackDeliveryService
     }
 
     private static IReadOnlyList<IReadOnlyList<object?>> BuildReportingRunGridWorksheetRows(
-        System.Collections.Immutable.ImmutableArray<ReportingRunReportWriterGridArtifact> grids)
+        System.Collections.Immutable.ImmutableArray<ReportingRunReportWriterGridArtifact> grids,
+        System.Collections.Immutable.ImmutableArray<ReportWriterGridRenderDto> renderedGrids)
     {
         if (grids.IsDefaultOrEmpty)
         {
@@ -1691,16 +1827,24 @@ public sealed class ReportPackDeliveryService
         }
 
         return grids
-            .Select(static grid => (IReadOnlyList<object?>)
-            [
-                grid.GridId,
-                grid.Title,
-                grid.Kind,
-                grid.Artifact,
-                grid.DimensionCount,
-                grid.MetricCount,
-                grid.FormulaCount
-            ])
+            .Select(grid =>
+            {
+                var validation = BuildGeneratedGridValidationSummary(grid.GridId, renderedGrids);
+                return (IReadOnlyList<object?>)
+                [
+                    grid.GridId,
+                    grid.Title,
+                    grid.Kind,
+                    grid.Artifact,
+                    grid.DimensionCount,
+                    grid.MetricCount,
+                    grid.FormulaCount,
+                    validation.Summary,
+                    validation.Passed,
+                    validation.Warning,
+                    validation.Failed
+                ];
+            })
             .ToArray();
     }
 
@@ -1721,7 +1865,11 @@ public sealed class ReportPackDeliveryService
                 grid.Artifact,
                 grid.DimensionCount,
                 grid.MetricCount,
-                grid.FormulaCount
+                grid.FormulaCount,
+                grid.ValidationSummary,
+                grid.ValidationPassedCount,
+                grid.ValidationWarningCount,
+                grid.ValidationFailedCount
             ])
             .ToArray();
     }
@@ -2040,7 +2188,8 @@ public sealed class ReportPackDeliveryService
     }
 
     private static IReadOnlyList<WorkstationGeneratedReportWriterGridPayload> ProjectGeneratedReportWriterGrids(
-        System.Collections.Immutable.ImmutableArray<ReportingRunReportWriterGridArtifact> grids)
+        System.Collections.Immutable.ImmutableArray<ReportingRunReportWriterGridArtifact> grids,
+        System.Collections.Immutable.ImmutableArray<ReportWriterGridRenderDto> renderedGrids)
     {
         if (grids.IsDefaultOrEmpty)
         {
@@ -2048,15 +2197,56 @@ public sealed class ReportPackDeliveryService
         }
 
         return grids
-            .Select(static grid => new WorkstationGeneratedReportWriterGridPayload(
-                grid.GridId,
-                grid.Title,
-                grid.Kind,
-                grid.Artifact,
-                grid.DimensionCount,
-                grid.MetricCount,
-                grid.FormulaCount))
+            .Select(grid =>
+            {
+                var validation = BuildGeneratedGridValidationSummary(grid.GridId, renderedGrids);
+                return new WorkstationGeneratedReportWriterGridPayload(
+                    grid.GridId,
+                    grid.Title,
+                    grid.Kind,
+                    grid.Artifact,
+                    grid.DimensionCount,
+                    grid.MetricCount,
+                    grid.FormulaCount,
+                    validation.Summary,
+                    validation.Passed,
+                    validation.Warning,
+                    validation.Failed);
+            })
             .ToArray();
+    }
+
+    private static (string? Summary, int? Passed, int? Warning, int? Failed) BuildGeneratedGridValidationSummary(
+        string gridId,
+        System.Collections.Immutable.ImmutableArray<ReportWriterGridRenderDto> renderedGrids)
+    {
+        if (renderedGrids.IsDefaultOrEmpty)
+        {
+            return (null, null, null, null);
+        }
+
+        var renderedGrid = renderedGrids.FirstOrDefault(grid =>
+            string.Equals(grid.GridId, gridId, StringComparison.OrdinalIgnoreCase));
+        if (renderedGrid is null)
+        {
+            return (null, null, null, null);
+        }
+
+        var checks = ResolveReportWriterGridValidationChecks(renderedGrid);
+        if (checks.Count == 0)
+        {
+            return (null, null, null, null);
+        }
+
+        var passed = checks.Count(static check => string.Equals(check.Status, "Passed", StringComparison.OrdinalIgnoreCase));
+        var warning = checks.Count(static check => string.Equals(check.Status, "Warning", StringComparison.OrdinalIgnoreCase));
+        var failed = checks.Count - passed - warning;
+        var summary = failed > 0
+            ? $"{passed} passed / {checks.Count} checks, {failed} failed"
+            : warning > 0
+                ? $"{passed} passed / {checks.Count} checks, {warning} review"
+                : $"{passed} passed / {checks.Count} checks";
+        return (summary, passed, warning, failed);
     }
 
     private static IReadOnlyList<KeyValuePair<string, string>> BuildReportingRunDeliveryArtifactRows(
@@ -2076,6 +2266,7 @@ public sealed class ReportPackDeliveryService
         GovernanceReportArtifactFormatDto format,
         string contentType,
         string retainedPath,
+        ReportBrandingThemeDto? brandingTheme,
         string versionStamp) =>
     [
         new("packageId", packageId),
@@ -2094,6 +2285,14 @@ public sealed class ReportPackDeliveryService
         new("format", format.ToString()),
         new("contentType", contentType),
         new("retainedPath", retainedPath),
+        new("brandingThemeId", brandingTheme?.ThemeId ?? ""),
+        new("brandingThemeName", brandingTheme?.Name ?? ""),
+        new("brandingFirmName", brandingTheme?.FirmName ?? ""),
+        new("brandingPrimaryColor", brandingTheme?.PrimaryColor ?? ""),
+        new("brandingAccentColor", brandingTheme?.AccentColor ?? ""),
+        new("brandingLogoUri", brandingTheme?.LogoUri ?? ""),
+        new("brandingFooterText", brandingTheme?.FooterText ?? ""),
+        new("brandingDisclaimer", brandingTheme?.Disclaimer ?? ""),
         new("versionStamp", versionStamp)
     ];
 
@@ -2138,12 +2337,50 @@ public sealed class ReportPackDeliveryService
             : value;
     }
 
-    private static byte[] BuildDeliveryArtifactHtml(IReadOnlyList<KeyValuePair<string, string>> rows)
+    private static byte[] BuildDeliveryArtifactHtml(
+        IReadOnlyList<KeyValuePair<string, string>> rows,
+        ReportBrandingThemeDto? brandingTheme)
     {
+        var primaryColor = NormalizeHtmlColor(brandingTheme?.PrimaryColor, "#1F4E79");
+        var accentColor = NormalizeHtmlColor(brandingTheme?.AccentColor, "#2F9E8F");
+        var textColor = NormalizeHtmlColor(brandingTheme?.TextColor, "#111827");
+        var backgroundColor = NormalizeHtmlColor(brandingTheme?.BackgroundColor, "#FFFFFF");
+        var firmName = string.IsNullOrWhiteSpace(brandingTheme?.FirmName)
+            ? "Meridian"
+            : brandingTheme.FirmName.Trim();
         var builder = new StringBuilder();
         builder.AppendLine("<!doctype html>");
-        builder.AppendLine("<html lang=\"en\"><head><meta charset=\"utf-8\"><title>Report Pack Delivery Artifact</title></head><body>");
-        builder.AppendLine("<h1>Report Pack Delivery Artifact</h1>");
+        builder.AppendLine("<html lang=\"en\"><head><meta charset=\"utf-8\"><title>Report Pack Delivery Artifact</title>");
+        builder.Append("<style>:root{color:")
+            .Append(textColor)
+            .Append(";background:")
+            .Append(backgroundColor)
+            .Append("}body{font-family:Arial,sans-serif;margin:0;background:")
+            .Append(backgroundColor)
+            .Append(";color:")
+            .Append(textColor)
+            .Append("}.brand-header{border-top:8px solid ")
+            .Append(primaryColor)
+            .Append(";padding:24px 32px 18px}.brand-kicker{color:")
+            .Append(accentColor)
+            .Append(";font-size:12px;text-transform:uppercase;letter-spacing:.12em}.brand-footer{border-top:2px solid ")
+            .Append(accentColor)
+            .Append(";margin:24px 32px 0;padding:12px 0 24px;font-size:12px}table{border-collapse:collapse;margin:0 32px 24px;width:calc(100% - 64px)}th{background:")
+            .Append(primaryColor)
+            .Append(";color:")
+            .Append(backgroundColor)
+            .Append("}td,th{border:1px solid #d0d5dd;padding:8px;text-align:left;vertical-align:top}</style></head><body>");
+        builder.Append("<header class=\"brand-header\"><div class=\"brand-kicker\">")
+            .Append(EscapeHtml(firmName))
+            .Append("</div><h1>Report Pack Delivery Artifact</h1>");
+        if (!string.IsNullOrWhiteSpace(brandingTheme?.LogoUri))
+        {
+            builder.Append("<p>Logo: ")
+                .Append(EscapeHtml(brandingTheme.LogoUri.Trim()))
+                .Append("</p>");
+        }
+
+        builder.AppendLine("</header>");
         builder.AppendLine("<table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>");
         foreach (var row in rows)
         {
@@ -2154,8 +2391,44 @@ public sealed class ReportPackDeliveryService
                 .AppendLine("</td></tr>");
         }
 
-        builder.AppendLine("</tbody></table></body></html>");
+        builder.AppendLine("</tbody></table>");
+        if (!string.IsNullOrWhiteSpace(brandingTheme?.FooterText) || !string.IsNullOrWhiteSpace(brandingTheme?.Disclaimer))
+        {
+            builder.Append("<footer class=\"brand-footer\">");
+            if (!string.IsNullOrWhiteSpace(brandingTheme.FooterText))
+            {
+                builder.Append("<div>")
+                    .Append(EscapeHtml(brandingTheme.FooterText.Trim()))
+                    .Append("</div>");
+            }
+
+            if (!string.IsNullOrWhiteSpace(brandingTheme.Disclaimer))
+            {
+                builder.Append("<div>")
+                    .Append(EscapeHtml(brandingTheme.Disclaimer.Trim()))
+                    .Append("</div>");
+            }
+
+            builder.AppendLine("</footer>");
+        }
+
+        builder.AppendLine("</body></html>");
         return Encoding.UTF8.GetBytes(builder.ToString());
+    }
+
+    private static string NormalizeHtmlColor(string? value, string fallback)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return fallback;
+        }
+
+        var normalized = value.Trim();
+        return normalized.Length == 7
+               && normalized[0] == '#'
+               && normalized.Skip(1).All(Uri.IsHexDigit)
+            ? normalized
+            : fallback;
     }
 
     private static string EscapeHtml(string value) =>
@@ -2165,12 +2438,22 @@ public sealed class ReportPackDeliveryService
             .Replace(">", "&gt;", StringComparison.Ordinal)
             .Replace("\"", "&quot;", StringComparison.Ordinal);
 
-    private static byte[] BuildDeliveryArtifactPdf(IReadOnlyList<KeyValuePair<string, string>> rows)
+    private static byte[] BuildDeliveryArtifactPdf(
+        IReadOnlyList<KeyValuePair<string, string>> rows,
+        ReportBrandingThemeDto? brandingTheme)
     {
         var content = new StringBuilder();
+        var (red, green, blue) = NormalizePdfColor(brandingTheme?.PrimaryColor);
+        content.AppendLine($"{red} {green} {blue} rg");
+        content.AppendLine("72 742 468 34 re f");
         content.AppendLine("BT");
+        content.AppendLine("/F1 12 Tf");
+        content.AppendLine("1 1 1 rg");
+        content.AppendLine("1 0 0 1 84 764 Tm");
+        content.AppendLine($"({EscapePdfText(string.IsNullOrWhiteSpace(brandingTheme?.FirmName) ? "Meridian" : brandingTheme.FirmName.Trim())}) Tj");
+        content.AppendLine("0 0 0 rg");
         content.AppendLine("/F1 10 Tf");
-        var y = 760;
+        var y = 724;
         foreach (var row in rows.Take(40))
         {
             content.AppendLine($"1 0 0 1 72 {y} Tm");
@@ -2178,8 +2461,32 @@ public sealed class ReportPackDeliveryService
             y -= 14;
         }
 
+        if (!string.IsNullOrWhiteSpace(brandingTheme?.FooterText))
+        {
+            content.AppendLine("1 0 0 1 72 42 Tm");
+            content.AppendLine($"({EscapePdfText(brandingTheme.FooterText.Trim())}) Tj");
+        }
+
+        if (!string.IsNullOrWhiteSpace(brandingTheme?.Disclaimer))
+        {
+            content.AppendLine("1 0 0 1 72 28 Tm");
+            content.AppendLine($"({EscapePdfText(brandingTheme.Disclaimer.Trim())}) Tj");
+        }
+
         content.AppendLine("ET");
         return BuildSinglePagePdf(content.ToString());
+    }
+
+    private static (string Red, string Green, string Blue) NormalizePdfColor(string? value)
+    {
+        var normalized = NormalizeHtmlColor(value, "#1F4E79");
+        var red = Convert.ToInt32(normalized.Substring(1, 2), 16) / 255m;
+        var green = Convert.ToInt32(normalized.Substring(3, 2), 16) / 255m;
+        var blue = Convert.ToInt32(normalized.Substring(5, 2), 16) / 255m;
+        return (
+            red.ToString("0.###", CultureInfo.InvariantCulture),
+            green.ToString("0.###", CultureInfo.InvariantCulture),
+            blue.ToString("0.###", CultureInfo.InvariantCulture));
     }
 
     private static string EscapePdfText(string value) =>

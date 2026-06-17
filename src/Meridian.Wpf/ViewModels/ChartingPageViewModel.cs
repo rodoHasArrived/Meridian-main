@@ -260,7 +260,7 @@ public sealed class ChartingPageViewModel : BindableBase
         catch (Exception)
         {
             ChartSetupTitle = "Symbol list unavailable";
-            ChartSetupDetail = "Open Data > Symbols or retry after the local host is available.";
+            ChartSetupDetail = "Open Data > Symbols or retry after the local workstation service is available.";
             RefreshSetupState();
         }
     }

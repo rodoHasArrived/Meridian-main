@@ -7,6 +7,7 @@ import {
   exportEvidenceManifest,
   getEvidencePacket,
   getEvidenceSubjects,
+  listEvidenceVaultRequestLists,
   validateEvidencePacket
 } from "@/lib/api";
 import { EvidenceWorkbenchScreen } from "@/screens/evidence-workbench-screen";
@@ -27,6 +28,7 @@ import type {
   EvidencePacket,
   EvidencePacketExportResponse,
   EvidenceSubject,
+  EvidenceVaultRequestListEntry,
   WorkflowAction
 } from "@/types";
 
@@ -34,11 +36,13 @@ vi.mock("@/lib/api", () => ({
   getEvidenceSubjects: vi.fn(),
   getEvidencePacket: vi.fn(),
   validateEvidencePacket: vi.fn(),
-  exportEvidenceManifest: vi.fn()
+  exportEvidenceManifest: vi.fn(),
+  listEvidenceVaultRequestLists: vi.fn()
 }));
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(listEvidenceVaultRequestLists).mockResolvedValue([]);
 });
 
 afterEach(() => {
@@ -190,6 +194,55 @@ const completeness: EvidenceCompleteness = {
   }
 };
 
+const vaultRequestListEntry: EvidenceVaultRequestListEntry = {
+  requestListId: "request-list:auditrequestlist:audit:close-2026-05",
+  requestListKind: "AuditRequestList",
+  targetKind: "audit",
+  targetId: "close-2026-05",
+  highestSeverity: "Critical",
+  status: "Open",
+  requestCount: 2,
+  openRequestCount: 2,
+  requestIds: [
+    "support-request:missingevidence:audit-support",
+    "support-request:blockedworkitem:audit-request"
+  ],
+  evidenceKinds: ["audit-history", "source-document"],
+  blockedOutputs: ["report-pack/close-2026-05"],
+  summary: "audit/close-2026-05 has 2 frozen requests; 2 open requests remain.",
+  vaultId: "ev-request-list-demo",
+  subjectKind: subject.subjectKind,
+  subjectId: subject.subjectId,
+  manifestRoute: "/workstation/evidence/strategy-run/run-1/manifest.json",
+  retainedAt: "2026-05-09T12:35:00Z",
+  supportRequests: [
+    {
+      requestId: "support-request:missingevidence:audit-support",
+      requestKind: "MissingEvidence",
+      evidenceId: "audit-support",
+      evidenceKind: "audit-history",
+      severity: "Critical",
+      status: "Open",
+      summary: "Audit support package is missing.",
+      sourceSystem: "test",
+      workItemId: "audit-request:close-2026-05",
+      blockedOutput: "report-pack/close-2026-05"
+    },
+    {
+      requestId: "support-request:blockedworkitem:audit-request",
+      requestKind: "BlockedWorkItem",
+      evidenceId: "source-node",
+      evidenceKind: "source-document",
+      severity: "Warning",
+      status: "Open",
+      summary: "Audit request work item blocks close publication.",
+      sourceSystem: "test",
+      workItemId: "audit-request:close-2026-05",
+      blockedOutput: "report-pack/close-2026-05"
+    }
+  ]
+};
+
 const evidenceActions: WorkflowAction[] = [
   {
     actionId: "workflow.evidence.open-packet",
@@ -324,6 +377,7 @@ describe("Evidence Workbench view model", () => {
       error: null,
       subjects: [subject],
       packet,
+      requestLists: [vaultRequestListEntry],
       exportBusy: false,
       exportResult: null,
       validateBusy: false,
@@ -380,6 +434,35 @@ describe("Evidence Workbench view model", () => {
       readyLabel: "0 ready nodes",
       missingLabel: "1 missing node",
       kindsLabel: "No evidence kinds"
+    });
+    expect(vm.requestListPanel).toMatchObject({
+      title: "Evidence Vault request lists",
+      summaryLabel: "1 open request list",
+      scopeLabel: "Strategy Run run-1",
+      hasRows: true
+    });
+    expect(vm.requestListPanel.rows[0]).toMatchObject({
+      requestListKindLabel: "Audit Request List",
+      targetLabel: "Audit close-2026-05",
+      highestSeverityLabel: "Critical",
+      highestSeverityTone: "danger",
+      statusLabel: "Open",
+      requestCountLabel: "2 support requests",
+      openRequestCountLabel: "2 open requests",
+      evidenceKindsLabel: "Audit History, Source Document",
+      blockedOutputsLabel: "report-pack/close-2026-05",
+      subjectLabel: "Strategy Run run-1",
+      vaultLabel: "ev-request-list-demo",
+      manifestHref: "/workstation/evidence/strategy-run/run-1/manifest.json",
+      retainedLabel: "Retained May 9, 12:35 UTC",
+      supportRequestSummaryLabel: "2 support requests"
+    });
+    expect(vm.requestListPanel.rows[0]?.supportRequestRows[0]).toMatchObject({
+      requestKindLabel: "Missing Evidence",
+      evidenceLabel: "audit-support",
+      severityLabel: "Critical",
+      statusLabel: "Open",
+      workItemLabel: "audit-request:close-2026-05"
     });
     expect(vm.generatedLabel).toBe("May 9, 12:30 UTC");
     expect(vm.missingEvidence).toEqual(["strategy-run:run-1:ledger"]);
@@ -1049,7 +1132,28 @@ describe("Evidence Workbench view model", () => {
               sourcePath: "C:/statement.csv",
               sourceRoute: "/api/workstation/reconciliation/statement-runs/import-1",
               canonicalSubjectKind: "report",
-              canonicalSubjectId: "report-pack-1"
+              canonicalSubjectId: "report-pack-1",
+              capture: {
+                captureChannel: "Upload",
+                sourceSystem: "Evidence Vault upload",
+                receivedAt: "2026-05-09T12:30:00Z",
+                receivedBy: "ops-user",
+                sourceReference: "portal-upload:broker-statement",
+                receiptHash: "a".repeat(64)
+              },
+              extractedFields: [
+                {
+                  fieldName: "cashAmount",
+                  extractedValue: "0",
+                  expectedValue: "0",
+                  confidenceScore: 0.98,
+                  reviewState: "Reviewed",
+                  validationStatus: "Ready",
+                  validationMessage: "Cash amount matched.",
+                  linkedRecordKind: "reconciliation-case",
+                  linkedRecordId: "case-1"
+                }
+              ]
             }
           ],
           requestLists: [
@@ -1120,6 +1224,8 @@ describe("Evidence Workbench view model", () => {
           hashLabel: "a".repeat(64),
           sourceLabel: "/api/workstation/reconciliation/statement-runs/import-1",
           canonicalSubjectLabel: "Report report-pack-1",
+          captureLabel: "Upload via Evidence Vault upload; received May 9, 12:30 UTC; reference portal-upload:broker-statement",
+          extractionLabel: "1 extracted field; 1 validated; 1 reviewed",
           retainedLabel: "Retained May 9, 12:36 UTC"
         })
       ],
@@ -1211,7 +1317,28 @@ describe("EvidenceWorkbenchScreen", () => {
             sourcePath: null,
             sourceRoute: "/api/workstation/reconciliation/statement-runs/import-1",
             canonicalSubjectKind: "report",
-            canonicalSubjectId: "report-pack-1"
+            canonicalSubjectId: "report-pack-1",
+            capture: {
+              captureChannel: "Upload",
+              sourceSystem: "Evidence Vault upload",
+              receivedAt: "2026-05-09T12:30:00Z",
+              receivedBy: "ops-user",
+              sourceReference: "portal-upload:broker-statement",
+              receiptHash: "b".repeat(64)
+            },
+            extractedFields: [
+              {
+                fieldName: "cashAmount",
+                extractedValue: "0",
+                expectedValue: "0",
+                confidenceScore: 0.98,
+                reviewState: "Reviewed",
+                validationStatus: "Ready",
+                validationMessage: "Cash amount matched.",
+                linkedRecordKind: "reconciliation-case",
+                linkedRecordId: "case-1"
+              }
+            ]
           }
         ],
         requestLists: [
@@ -1247,6 +1374,7 @@ describe("EvidenceWorkbenchScreen", () => {
     };
     vi.mocked(getEvidenceSubjects).mockResolvedValue([subject]);
     vi.mocked(getEvidencePacket).mockResolvedValue(packet);
+    vi.mocked(listEvidenceVaultRequestLists).mockResolvedValue([vaultRequestListEntry]);
     vi.mocked(validateEvidencePacket).mockResolvedValue(validation);
     vi.mocked(exportEvidenceManifest).mockResolvedValue(exportResponse);
     const user = userEvent.setup();
@@ -1254,6 +1382,26 @@ describe("EvidenceWorkbenchScreen", () => {
     renderEvidenceRoute("/reporting/evidence?subjectKind=strategy-run&subjectId=run-1");
 
     expect(await screen.findByText("Momentum strategy run")).toBeInTheDocument();
+    expect(listEvidenceVaultRequestLists).toHaveBeenCalledWith(
+      {
+        subjectKind: "strategy-run",
+        subjectId: "run-1",
+        status: "Open",
+        maxResults: 25
+      },
+      expect.objectContaining({ signal: expect.any(Object) })
+    );
+    const requestListPanel = screen.getByRole("region", { name: "Evidence Vault request lists" });
+    expect(requestListPanel).toHaveTextContent("1 open request list");
+    expect(requestListPanel).toHaveTextContent("Strategy Run run-1");
+    expect(requestListPanel).toHaveTextContent("Audit close-2026-05");
+    expect(requestListPanel).toHaveTextContent("2 open requests");
+    expect(requestListPanel).toHaveTextContent("ev-request-list-demo");
+    expect(requestListPanel).toHaveTextContent("Audit support package is missing.");
+    expect(screen.getByRole("link", { name: /open retained manifest for request list/i })).toHaveAttribute(
+      "href",
+      "/workstation/evidence/strategy-run/run-1/manifest.json"
+    );
     expect(screen.getByText("Missing evidence")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Operational Evidence Graph" })).toHaveTextContent(
       "4/9 layers, 44% coverage"
@@ -1306,16 +1454,18 @@ describe("EvidenceWorkbenchScreen", () => {
     expect(screen.getByText("Broker Statement")).toBeInTheDocument();
     expect(screen.getByText("workstation/evidence/_vault/ev-abcdefabcdefabcdefabcdef/artifacts/broker-statement.csv")).toBeInTheDocument();
     expect(screen.getByText("Report report-pack-1")).toBeInTheDocument();
+    expect(screen.getByText("Upload via Evidence Vault upload; received May 9, 12:30 UTC; reference portal-upload:broker-statement")).toBeInTheDocument();
+    expect(screen.getByText("1 extracted field; 1 validated; 1 reviewed")).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Evidence vault request lists" })).toBeInTheDocument();
-    expect(screen.getByText("Audit Request List")).toBeInTheDocument();
-    expect(screen.getByText("Audit close-2026-05")).toBeInTheDocument();
+    expect(screen.getAllByText("Audit Request List").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText("Audit close-2026-05").length).toBeGreaterThanOrEqual(2);
     expect(screen.getByText("audit/close-2026-05 has 1 frozen request; 1 open request remains.")).toBeInTheDocument();
     expect(screen.getAllByText("Audit History").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("list", { name: "Evidence vault support requests" })).toBeInTheDocument();
-    expect(screen.getByText("Missing Evidence")).toBeInTheDocument();
-    expect(screen.getByText("audit-support")).toBeInTheDocument();
-    expect(screen.getByText("Audit support package is missing.")).toBeInTheDocument();
-    expect(screen.getByText("audit-request:close-2026-05")).toBeInTheDocument();
+    expect(screen.getAllByText("Missing Evidence").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("audit-support").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Audit support package is missing.").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("audit-request:close-2026-05").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByRole("link", { name: /open retained evidence manifest/i })).toHaveAttribute(
       "href",
       "/workstation/evidence/strategy-run/run-1/manifest.json"

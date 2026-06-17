@@ -256,7 +256,7 @@ export MERIDIAN_SECURITY_MASTER_SCHEMA="security_master"
 **Files:**
 | File | Purpose |
 |------|---------|
-| `Application/SecurityMaster/ISecurityMasterService.cs` | Command service (create, amend, deactivate) |
+| `Application/SecurityMaster/SecurityMasterService.cs` | Command service (create, amend, deactivate) |
 | `Application/SecurityMaster/ISecurityMasterQueryService.cs` | Query service (get, search, history) |
 | `Storage/SecurityMaster/ISecurityMasterEventStore.cs` | Event store (append, load) |
 | `Storage/SecurityMaster/PostgresSecurityMasterStore.cs` | PostgreSQL implementation |

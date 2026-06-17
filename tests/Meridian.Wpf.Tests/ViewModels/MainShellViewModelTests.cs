@@ -102,7 +102,7 @@ public sealed class MainShellViewModelTests
     }
 
     [Fact]
-    public void ActivateShell_WhenHistoryIsEmpty_NavigatesToStrategyWorkspace()
+    public void ActivateShell_WhenHistoryIsEmpty_NavigatesToHomeWorkspace()
     {
         WpfTestThread.Run(() =>
         {
@@ -110,8 +110,8 @@ public sealed class MainShellViewModelTests
 
             vm.ActivateShell();
 
-            vm.CurrentPageTag.Should().Be("StrategyShell");
-            vm.CurrentPageTitle.Should().Be("Strategy Workspace");
+            vm.CurrentPageTag.Should().Be("HomeWorkspace");
+            vm.CurrentPageTitle.Should().Be("Home");
             vm.BackButtonVisibility.Should().Be(Visibility.Collapsed);
         });
     }
@@ -1470,5 +1470,77 @@ public sealed class MainShellViewModelTests
 
             return Task.FromResult(_inbox);
         }
+    }
+}
+
+public sealed class DemoTourServiceTests
+{
+    [Fact]
+    public void StartTour_EnablesFixtureModeAndNavigatesOrderedDemoWorkflow()
+    {
+        var navigationService = NavigationService.Instance;
+        navigationService.ResetForTests();
+        navigationService.Initialize(new Frame());
+        var detector = FixtureModeDetector.Instance;
+        detector.SetFixtureMode(false);
+        detector.UpdateBackendReachability(true);
+        var service = new DemoTourService(detector, navigationService);
+
+        service.StartTour();
+
+        detector.IsFixtureMode.Should().BeTrue();
+        service.CurrentStepText.Should().Contain("1 of 6");
+        service.CurrentStep!.PageTag.Should().Be("DataShell");
+        navigationService.GetBreadcrumbs().First().PageTag.Should().Be("DataShell");
+
+        service.MoveNext();
+        service.CurrentStep!.PageTag.Should().Be("PortfolioShell");
+        service.MoveNext();
+        service.CurrentStep!.PageTag.Should().Be("FundReconciliation");
+        service.MoveNext();
+        service.CurrentStep!.PageTag.Should().Be("FundAuditTrail");
+        service.MoveNext();
+        service.CurrentStep!.PageTag.Should().Be("ReportingShell");
+        service.MoveNext();
+        service.CurrentStep!.PageTag.Should().Be("SettingsShell");
+        service.CanMoveNext.Should().BeFalse();
+    }
+
+    [Fact]
+    public void MainWindowStartDemoTourCommand_ShowsTourBannerAndSampleModeCopy()
+    {
+        var vm = MainShellViewModelTestsCreate.CreateMainWindowViewModelForDemoTour();
+
+        vm.StartDemoTourCommand.Execute(null);
+
+        vm.DemoTourVisibility.Should().Be(Visibility.Visible);
+        vm.DemoTourStepText.Should().Contain("Data/provider status");
+        vm.FixtureModeBannerVisibility.Should().Be(Visibility.Visible);
+        FixtureModeDetector.Instance.ModeLabel.Should().Contain("Demo data mode");
+    }
+}
+
+internal static class MainShellViewModelTestsCreate
+{
+    public static MainWindowViewModel CreateMainWindowViewModelForDemoTour()
+    {
+        var navigationService = NavigationService.Instance;
+        navigationService.ResetForTests();
+        navigationService.Initialize(new Frame());
+        var detector = FixtureModeDetector.Instance;
+        detector.SetFixtureMode(false);
+        detector.UpdateBackendReachability(true);
+        var demoTour = new DemoTourService(detector, navigationService);
+        return new MainWindowViewModel(
+            ConnectionService.Instance,
+            navigationService,
+            NotificationService.Instance,
+            MessagingService.Instance,
+            ThemeService.Instance,
+            WatchlistService.Instance,
+            detector,
+            DesktopAuthenticationSessionTests.CreateSession("Development"),
+            Substitute.For<IStatusService>(),
+            demoTour);
     }
 }

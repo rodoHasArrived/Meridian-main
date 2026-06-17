@@ -10,6 +10,17 @@ public sealed record FundPrivateCapitalCloseLaneRow(
     string SourceTarget,
     bool IsReady);
 
+public sealed record FundPrivateCapitalEvidencePackageRow(
+    string PackageId,
+    string Label,
+    string StatusLabel,
+    string Summary,
+    string CategoryLabel,
+    string EvidenceLabel,
+    string RequiredActionsLabel,
+    string SourceTarget,
+    bool IsReady);
+
 public sealed record FundPrivateCapitalNavSupportPackageRow(
     string PackageId,
     string Label,

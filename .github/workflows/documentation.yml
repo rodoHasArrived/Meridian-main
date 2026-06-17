@@ -57,7 +57,7 @@ jobs:
           python-version: "3.12"
 
       - name: Run docs rules engine
-        run: python3 build/scripts/docs/rules-engine.py --summary
+        run: python3 build/scripts/docs/rules-engine.py --rules build/rules/doc-rules.yaml --summary
 
       - name: Validate examples
         run: python3 build/scripts/docs/validate-examples.py --summary
@@ -66,10 +66,17 @@ jobs:
         run: python3 build/scripts/docs/check-ai-inventory.py --summary
 
       - name: Check AI handoff
-        run: python3 build/scripts/docs/check-ai-handoff.py --summary
+        run: python3 build/scripts/docs/check-ai-handoff.py
 
       - name: Check AI contract drift
-        run: python3 build/scripts/docs/check-ai-contract-drift.py --summary
+        run: >
+          python3 build/scripts/docs/check-ai-contract-drift.py
+          --canonical docs/ai/contract-policy.json
+          --mirror docs/ai/copilot/contract-policy.mirror.json
+          --mirror docs/ai/claude/contract-policy.mirror.json
+          --routing-rules docs/ai/codex/prompt-route-rules.json
+          --routing-host-doc docs/ai/codex/README.md
+          --routing-host-doc docs/ai/assistant-workflow-contract.md
 
   regenerate-docs:
     runs-on: ubuntu-latest
@@ -90,7 +97,7 @@ jobs:
           node-version: "24"
 
       - name: Install diagram dependencies
-        run: npm install --no-fund --no-audit
+        run: npm ci --no-fund --no-audit
 
       - name: Run docs automation profile
         run: |
@@ -113,6 +120,7 @@ jobs:
           sudo apt-get install -y graphviz plantuml
 
       - name: Render UML diagrams
+        continue-on-error: true
         run: |
           plantuml -tpng docs/diagrams/uml/*.puml
           plantuml -tsvg docs/diagrams/uml/*.puml

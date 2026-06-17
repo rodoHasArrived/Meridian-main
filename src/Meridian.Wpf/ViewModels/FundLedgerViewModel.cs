@@ -82,6 +82,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private string _selectedLedgerEquityBalanceText = "-";
     private FundReportPackPreviewDto? _reportPackPreview;
     private GovernanceLifecycleProjectionDto? _accountingLifecycle;
+    private PrivateCapitalCloseCockpitDto? _privateCapitalCloseCockpit;
 
     public FundLedgerViewModel(
         FundLedgerReadService fundLedgerReadService,
@@ -190,9 +191,17 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     public ObservableCollection<FundReportAssetClassSectionDto> ReportPackAssetSections => _collectionsSection.ReportPackAssetSections;
 
+    public ObservableCollection<FundFinancialOperationsQueueRow> FinancialOperationsQueueItems => _collectionsSection.FinancialOperationsQueueItems;
+
     public ObservableCollection<FundAccountingRecordEvidenceCategoryRow> AccountingRecordEvidenceCategories => _collectionsSection.AccountingRecordEvidenceCategories;
 
+    public ObservableCollection<FundOperationsEvidencePackageRow> OperationsEvidencePackages => _collectionsSection.OperationsEvidencePackages;
+
+    public ObservableCollection<FundOperationsReconciliationLaneRow> OperationsReconciliationLanes => _collectionsSection.OperationsReconciliationLanes;
+
     public ObservableCollection<FundPrivateCapitalCloseLaneRow> PrivateCapitalCloseLanes => _collectionsSection.PrivateCapitalCloseLanes;
+
+    public ObservableCollection<FundPrivateCapitalEvidencePackageRow> PrivateCapitalEvidencePackages => _collectionsSection.PrivateCapitalEvidencePackages;
 
     public ObservableCollection<FundPrivateCapitalNavSupportPackageRow> PrivateCapitalNavSupportPackages => _collectionsSection.PrivateCapitalNavSupportPackages;
 
@@ -592,6 +601,18 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         private set => SetFundLedgerSectionProperty(WorkbenchSection.ReportPackSnapshotWarningText, text => WorkbenchSection.ReportPackSnapshotWarningText = text, value);
     }
 
+    public string FinancialOperationsQueueStatusText
+    {
+        get => WorkbenchSection.FinancialOperationsQueueStatusText;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.FinancialOperationsQueueStatusText, text => WorkbenchSection.FinancialOperationsQueueStatusText = text, value);
+    }
+
+    public string FinancialOperationsQueueSummaryText
+    {
+        get => WorkbenchSection.FinancialOperationsQueueSummaryText;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.FinancialOperationsQueueSummaryText, text => WorkbenchSection.FinancialOperationsQueueSummaryText = text, value);
+    }
+
     public string AccountingRecordStatusText
     {
         get => WorkbenchSection.AccountingRecordStatusText;
@@ -632,6 +653,12 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     {
         get => WorkbenchSection.PrivateCapitalCloseBlockerText;
         private set => SetFundLedgerSectionProperty(WorkbenchSection.PrivateCapitalCloseBlockerText, text => WorkbenchSection.PrivateCapitalCloseBlockerText = text, value);
+    }
+
+    public WorkstationStateModel ReviewedAutomationState
+    {
+        get => WorkbenchSection.ReviewedAutomationState;
+        private set => SetFundLedgerSectionProperty(WorkbenchSection.ReviewedAutomationState, state => WorkbenchSection.ReviewedAutomationState = state, value);
     }
 
     public WorkstationStateModel ReportPackReadinessState
@@ -974,12 +1001,19 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         CashFinancingHighlights.Clear();
         AuditTrail.Clear();
         ReportPackAssetSections.Clear();
+        FinancialOperationsQueueItems.Clear();
         AccountingRecordEvidenceCategories.Clear();
+        OperationsEvidencePackages.Clear();
+        OperationsReconciliationLanes.Clear();
         PrivateCapitalCloseLanes.Clear();
+        PrivateCapitalEvidencePackages.Clear();
         PrivateCapitalNavSupportPackages.Clear();
         PrivateCapitalCloseApprovals.Clear();
         _reportPackPreview = null;
         _accountingLifecycle = null;
+        _privateCapitalCloseCockpit = null;
+        FinancialOperationsQueueStatusText = "Queue pending";
+        FinancialOperationsQueueSummaryText = "Load Operations Continuity and close cockpit evidence to inspect active Financial Operations work items.";
         AccountingRecordStatusText = "Accounting-record evidence is waiting for fund context.";
         AccountingRecordSummaryText = "Load Operations Continuity detail to inspect retained source records, normalized activity, reconciliation cases, ledger evidence, approvals, and report-pack lineage.";
         AccountingRecordEvidenceText = "0/8 evidence categories complete; 60 sec target not measured";
@@ -992,6 +1026,11 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         PrivateCapitalCloseSummaryText = "Load the close cockpit to inspect partner capital tie-outs, NAV support, approval history, close-package evidence, and period-lock readiness.";
         PrivateCapitalCloseEvidenceText = "0 evidence links";
         PrivateCapitalCloseBlockerText = "No source-backed close cockpit has been loaded.";
+        ReviewedAutomationState = WorkstationStateModel.Empty(
+            "Reviewed automation pending",
+            "Load Operations Continuity detail to inspect shared automation review posture.",
+            "Open Operations Continuity",
+            "OperationsContinuity");
         PrivateCapitalCloseReadinessState = WorkstationStateModel.Empty(
             "Close cockpit waiting for fund context",
             "Select a fund profile to inspect source-backed private-capital close lanes, NAV support packages, approval history, and period-lock readiness.",
@@ -1791,6 +1830,41 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     {
         var summary = _accountingLifecycle?.AccountingRecordSummary;
         AccountingRecordEvidenceCategories.Clear();
+        OperationsEvidencePackages.Clear();
+        OperationsReconciliationLanes.Clear();
+        ReviewedAutomationState = BuildReviewedAutomationState(_accountingLifecycle?.ReviewedAutomation);
+
+        foreach (var package in _accountingLifecycle?.EvidencePackages ?? [])
+        {
+            OperationsEvidencePackages.Add(new FundOperationsEvidencePackageRow(
+                PackageId: package.PackageId,
+                Label: package.Label,
+                StatusLabel: FormatEvidenceStatusLabel(package.Status),
+                Summary: package.Summary,
+                CategoryLabel: FormatEvidencePackageCategoryLabel(package.CompleteCategoryCount, package.RequiredCategoryCount),
+                EvidenceLabel: FormatEvidenceCount(CountEvidenceLinks(package)),
+                RequiredActionsLabel: FormatRequiredActions(package.RequiredActions),
+                SourceTarget: MapAccountingRecordRouteTarget(package.RouteHint),
+                EvidenceSubject: BuildOperationsEvidencePackageSubject(package.PackageId),
+                EvidenceSubjectTarget: BuildOperationsEvidencePackageSubjectTarget(package.PackageId),
+                IsReady: package.IsReady));
+        }
+
+        foreach (var lane in _accountingLifecycle?.ReconciliationLanes ?? [])
+        {
+            OperationsReconciliationLanes.Add(new FundOperationsReconciliationLaneRow(
+                LaneId: lane.LaneId,
+                Label: lane.Label,
+                StatusLabel: FormatReconciliationLaneStatusLabel(lane.Status),
+                Summary: lane.Summary,
+                BreaksLabel: FormatBreakCount(lane.BreakCount),
+                EvidenceLabel: FormatEvidenceCount(CountEvidenceLinks(lane)),
+                RequiredActionsLabel: FormatRequiredActions(lane.RequiredActions),
+                SourceTarget: MapAccountingRecordRouteTarget(lane.RouteHint),
+                EvidenceSubject: BuildOperationsReconciliationLaneSubject(lane.LaneId),
+                EvidenceSubjectTarget: BuildOperationsReconciliationLaneSubjectTarget(lane.LaneId),
+                IsReady: lane.IsReady));
+        }
 
         if (summary is null)
         {
@@ -1802,6 +1876,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                 AccountingRecordSummaryText,
                 "Open Operations Continuity",
                 "OperationsContinuity");
+            UpdateFinancialOperationsQueuePresentation();
             return;
         }
 
@@ -1832,11 +1907,210 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             : summary.Summary;
         AccountingRecordEvidenceText = BuildAccountingRecordEvidenceText(summary);
         AccountingRecordReadinessState = BuildAccountingRecordReadinessState(summary);
+        UpdateFinancialOperationsQueuePresentation();
+    }
+
+    private void UpdateFinancialOperationsQueuePresentation()
+    {
+        FinancialOperationsQueueItems.Clear();
+
+        var lifecycle = _accountingLifecycle;
+        if (lifecycle is not null)
+        {
+            foreach (var breakCase in lifecycle.BreakCases.Where(static item => !IsBreakCaseClosed(item)))
+            {
+                var blockedOutputs = breakCase.BlockedOutputs?
+                    .Where(static output => !string.IsNullOrWhiteSpace(output))
+                    .ToArray() ?? [];
+                var escalation = string.IsNullOrWhiteSpace(breakCase.EscalationLevel)
+                    ? "No escalation recorded"
+                    : string.IsNullOrWhiteSpace(breakCase.EscalationReason)
+                        ? breakCase.EscalationLevel!
+                        : $"{breakCase.EscalationLevel}: {breakCase.EscalationReason}";
+                var action = string.IsNullOrWhiteSpace(breakCase.SuggestedAction)
+                    ? blockedOutputs.Length == 0 ? "Resolve or assign the reconciliation break." : $"Unblock {string.Join(", ", blockedOutputs)}."
+                    : breakCase.SuggestedAction!;
+                var route = breakCase.EvidenceLinks.FirstOrDefault()?.Route;
+
+                FinancialOperationsQueueItems.Add(new FundFinancialOperationsQueueRow(
+                    QueueId: $"break:{breakCase.BreakId}",
+                    KindLabel: "Break",
+                    Label: breakCase.BreakId,
+                    StatusLabel: FormatQueueStatusLabel(breakCase.Status),
+                    Detail: $"{breakCase.Category} / {breakCase.CheckId}; {escalation}",
+                    OwnerLabel: string.IsNullOrWhiteSpace(breakCase.Owner) ? "Unassigned" : breakCase.Owner!,
+                    TimingLabel: BuildBreakCaseTimingLabel(breakCase),
+                    EvidenceLabel: FormatEvidenceCount(breakCase.EvidenceLinks.Count),
+                    ActionLabel: action,
+                    SourceTarget: MapAccountingRecordRouteTarget(route),
+                    IsBlocked: IsBreakCaseBlocked(breakCase)));
+            }
+
+            foreach (var task in lifecycle.CloseChecklist.Where(static item => !IsChecklistTaskComplete(item)))
+            {
+                FinancialOperationsQueueItems.Add(new FundFinancialOperationsQueueRow(
+                    QueueId: $"checklist:{task.TaskId}",
+                    KindLabel: "Checklist",
+                    Label: string.IsNullOrWhiteSpace(task.Label) ? task.Gate.ToString() : task.Label,
+                    StatusLabel: FormatQueueStatusLabel(task.Status),
+                    Detail: string.IsNullOrWhiteSpace(task.RequiredEvidence) ? "Required evidence pending." : task.RequiredEvidence,
+                    OwnerLabel: string.IsNullOrWhiteSpace(task.Owner) ? "Owner pending" : task.Owner,
+                    TimingLabel: BuildChecklistTimingLabel(task),
+                    EvidenceLabel: string.IsNullOrWhiteSpace(task.EvidencePointer) ? "Evidence pointer pending" : task.EvidencePointer!,
+                    ActionLabel: string.IsNullOrWhiteSpace(task.BlockingReason)
+                        ? task.CanAcknowledge ? "Ready for acknowledgement" : "Complete checklist evidence and approvals."
+                        : task.BlockingReason!,
+                    SourceTarget: MapAccountingRecordRouteTarget(task.RemediationRoute),
+                    IsBlocked: IsChecklistTaskBlocked(task)));
+            }
+
+            foreach (var approval in lifecycle.Approvals
+                .Where(static item => item.Status is not OperationsApprovalStateDto.Approved)
+                .OrderByDescending(static item => item.DecidedAtUtc ?? item.SubmittedAtUtc ?? DateTimeOffset.MinValue))
+            {
+                var route = approval.EvidenceLinks.FirstOrDefault()?.Route;
+                FinancialOperationsQueueItems.Add(new FundFinancialOperationsQueueRow(
+                    QueueId: $"approval:{approval.ApprovalId}",
+                    KindLabel: "Approval",
+                    Label: approval.ApprovalId,
+                    StatusLabel: FormatQueueStatusLabel(approval.Status.ToString()),
+                    Detail: string.IsNullOrWhiteSpace(approval.Rationale) ? "Approval rationale pending." : approval.Rationale!,
+                    OwnerLabel: BuildApprovalOwnerLabel(approval.Operator, approval.Reviewer),
+                    TimingLabel: BuildApprovalTimingLabel(approval.SubmittedAtUtc, approval.DecidedAtUtc),
+                    EvidenceLabel: FormatEvidenceCount(approval.EvidenceLinks.Count),
+                    ActionLabel: approval.Status is OperationsApprovalStateDto.Rejected
+                        ? "Resolve rejection before close sign-off."
+                        : "Complete workflow approval.",
+                    SourceTarget: MapAccountingRecordRouteTarget(route ?? "approval"),
+                    IsBlocked: approval.Status is OperationsApprovalStateDto.Rejected));
+            }
+
+            foreach (var lane in lifecycle.ReconciliationLanes.Where(static item => !item.IsReady || item.BreakCount > 0))
+            {
+                FinancialOperationsQueueItems.Add(new FundFinancialOperationsQueueRow(
+                    QueueId: $"reconciliation-lane:{lane.LaneId}",
+                    KindLabel: "Reconciliation",
+                    Label: string.IsNullOrWhiteSpace(lane.Label) ? lane.LaneId : lane.Label,
+                    StatusLabel: FormatReconciliationLaneStatusLabel(lane.Status),
+                    Detail: string.IsNullOrWhiteSpace(lane.Summary) ? "Reconciliation lane requires review." : lane.Summary,
+                    OwnerLabel: "Accounting operations",
+                    TimingLabel: FormatBreakCount(lane.BreakCount),
+                    EvidenceLabel: FormatEvidenceCount(CountEvidenceLinks(lane)),
+                    ActionLabel: FormatRequiredActions(lane.RequiredActions),
+                    SourceTarget: MapAccountingRecordRouteTarget(lane.RouteHint),
+                    IsBlocked: lane.Status is OperationsReconciliationLaneStatusDto.Blocked or OperationsReconciliationLaneStatusDto.Missing));
+            }
+
+            foreach (var package in lifecycle.EvidencePackages.Where(static item => !item.IsReady))
+            {
+                FinancialOperationsQueueItems.Add(new FundFinancialOperationsQueueRow(
+                    QueueId: $"evidence-package:{package.PackageId}",
+                    KindLabel: "Evidence package",
+                    Label: string.IsNullOrWhiteSpace(package.Label) ? package.PackageId : package.Label,
+                    StatusLabel: FormatEvidenceStatusLabel(package.Status),
+                    Detail: string.IsNullOrWhiteSpace(package.Summary) ? "Evidence package requires review." : package.Summary,
+                    OwnerLabel: "Evidence operations",
+                    TimingLabel: FormatEvidencePackageCategoryLabel(package.CompleteCategoryCount, package.RequiredCategoryCount),
+                    EvidenceLabel: FormatEvidenceCount(CountEvidenceLinks(package)),
+                    ActionLabel: FormatRequiredActions(package.RequiredActions),
+                    SourceTarget: MapAccountingRecordRouteTarget(package.RouteHint),
+                    IsBlocked: IsEvidenceStatusBlocked(package.Status)));
+            }
+        }
+
+        var cockpit = _privateCapitalCloseCockpit;
+        if (cockpit is not null)
+        {
+            foreach (var lane in cockpit.Lanes.Where(static item => !item.IsReady))
+            {
+                FinancialOperationsQueueItems.Add(new FundFinancialOperationsQueueRow(
+                    QueueId: $"private-capital-lane:{lane.LaneId}",
+                    KindLabel: "Private-capital close",
+                    Label: string.IsNullOrWhiteSpace(lane.Label) ? lane.LaneId : lane.Label,
+                    StatusLabel: FormatEvidenceStatusLabel(lane.Status),
+                    Detail: string.IsNullOrWhiteSpace(lane.Summary) ? "Private-capital close lane requires review." : lane.Summary,
+                    OwnerLabel: "Fund operations",
+                    TimingLabel: "Close lane",
+                    EvidenceLabel: FormatEvidenceCount(CountEvidenceLinks(lane)),
+                    ActionLabel: FormatRequiredActions(lane.RequiredActions),
+                    SourceTarget: MapPrivateCapitalCloseRouteTarget(lane.Route),
+                    IsBlocked: IsEvidenceStatusBlocked(lane.Status)));
+            }
+
+            foreach (var package in cockpit.EvidencePackages.Where(static item => !item.IsReady))
+            {
+                FinancialOperationsQueueItems.Add(new FundFinancialOperationsQueueRow(
+                    QueueId: $"private-capital-package:{package.PackageId}",
+                    KindLabel: "Private-capital package",
+                    Label: string.IsNullOrWhiteSpace(package.Label) ? package.PackageId : package.Label,
+                    StatusLabel: FormatEvidenceStatusLabel(package.Status),
+                    Detail: string.IsNullOrWhiteSpace(package.Summary) ? "Private-capital evidence package requires review." : package.Summary,
+                    OwnerLabel: "Fund operations",
+                    TimingLabel: FormatEvidencePackageCategoryLabel(package.CompleteCategoryCount, package.RequiredCategoryCount),
+                    EvidenceLabel: FormatEvidenceCount(CountEvidenceLinks(package)),
+                    ActionLabel: FormatRequiredActions(package.RequiredActions),
+                    SourceTarget: MapPrivateCapitalCloseRouteTarget(package.RouteHint),
+                    IsBlocked: IsEvidenceStatusBlocked(package.Status)));
+            }
+
+            foreach (var package in cockpit.NavSupportPackages.Where(static item => !item.IsReady))
+            {
+                FinancialOperationsQueueItems.Add(new FundFinancialOperationsQueueRow(
+                    QueueId: $"nav-support:{package.PackageId}",
+                    KindLabel: "NAV support",
+                    Label: string.IsNullOrWhiteSpace(package.Label) ? package.PackageId : package.Label,
+                    StatusLabel: FormatEvidenceStatusLabel(package.Status),
+                    Detail: string.IsNullOrWhiteSpace(package.Summary) ? "NAV support package requires review." : package.Summary,
+                    OwnerLabel: "Fund operations",
+                    TimingLabel: FormatNavSupportComponentLabel(package.Components),
+                    EvidenceLabel: FormatEvidenceCount(CountEvidenceLinks(package)),
+                    ActionLabel: FormatRequiredActions(package.RequiredActions),
+                    SourceTarget: MapPrivateCapitalCloseRouteTarget(package.Route),
+                    IsBlocked: IsEvidenceStatusBlocked(package.Status)));
+            }
+
+            foreach (var approval in cockpit.ApprovalHistory
+                .Where(static item => item.Status is not OperationsApprovalStateDto.Approved)
+                .OrderByDescending(static item => item.DecidedAtUtc ?? item.SubmittedAtUtc ?? DateTimeOffset.MinValue))
+            {
+                FinancialOperationsQueueItems.Add(new FundFinancialOperationsQueueRow(
+                    QueueId: $"private-capital-approval:{approval.ApprovalId}",
+                    KindLabel: "Private-capital approval",
+                    Label: approval.ApprovalId,
+                    StatusLabel: FormatQueueStatusLabel(approval.Status.ToString()),
+                    Detail: string.IsNullOrWhiteSpace(approval.Rationale) ? "Approval rationale pending." : approval.Rationale!,
+                    OwnerLabel: BuildApprovalOwnerLabel(approval.Operator, approval.Reviewer),
+                    TimingLabel: BuildApprovalTimingLabel(approval.SubmittedAtUtc, approval.DecidedAtUtc),
+                    EvidenceLabel: FormatEvidenceCount(CountEvidenceLinks(approval)),
+                    ActionLabel: approval.Status is OperationsApprovalStateDto.Rejected
+                        ? "Resolve rejection before close sign-off."
+                        : "Complete private-capital approval.",
+                    SourceTarget: MapPrivateCapitalCloseRouteTarget(approval.WorkflowRoute),
+                    IsBlocked: approval.Status is OperationsApprovalStateDto.Rejected));
+            }
+        }
+
+        var itemCount = FinancialOperationsQueueItems.Count;
+        var blockedCount = FinancialOperationsQueueItems.Count(static item => item.IsBlocked);
+        if (itemCount == 0)
+        {
+            FinancialOperationsQueueStatusText = lifecycle is null && cockpit is null ? "Queue pending" : "Clear";
+            FinancialOperationsQueueSummaryText = lifecycle is null && cockpit is null
+                ? "Load Operations Continuity and close cockpit evidence to inspect active Financial Operations work items."
+                : "No active Financial Operations queue items are surfaced for the selected fund.";
+            return;
+        }
+
+        FinancialOperationsQueueStatusText = $"{itemCount:N0} active item{(itemCount == 1 ? string.Empty : "s")}";
+        FinancialOperationsQueueSummaryText =
+            $"{blockedCount:N0} blocked, {itemCount - blockedCount:N0} review item{(itemCount - blockedCount == 1 ? string.Empty : "s")} across reconciliation, close checklist, approvals, evidence packages, NAV support, and private-capital close.";
     }
 
     private void ApplyPrivateCapitalCloseCockpit(PrivateCapitalCloseCockpitDto? cockpit)
     {
+        _privateCapitalCloseCockpit = cockpit;
         PrivateCapitalCloseLanes.Clear();
+        PrivateCapitalEvidencePackages.Clear();
         PrivateCapitalNavSupportPackages.Clear();
         PrivateCapitalCloseApprovals.Clear();
 
@@ -1851,6 +2125,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                 PrivateCapitalCloseSummaryText,
                 "Open Operations Close",
                 "OperationsClose");
+            UpdateFinancialOperationsQueuePresentation();
             return;
         }
 
@@ -1865,6 +2140,20 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                 RequiredActionsLabel: FormatRequiredActions(lane.RequiredActions),
                 SourceTarget: MapPrivateCapitalCloseRouteTarget(lane.Route),
                 IsReady: lane.IsReady));
+        }
+
+        foreach (var package in cockpit.EvidencePackages)
+        {
+            PrivateCapitalEvidencePackages.Add(new FundPrivateCapitalEvidencePackageRow(
+                PackageId: package.PackageId,
+                Label: package.Label,
+                StatusLabel: FormatEvidenceStatusLabel(package.Status),
+                Summary: package.Summary,
+                CategoryLabel: FormatEvidencePackageCategoryLabel(package.CompleteCategoryCount, package.RequiredCategoryCount),
+                EvidenceLabel: FormatEvidenceCount(CountEvidenceLinks(package)),
+                RequiredActionsLabel: FormatRequiredActions(package.RequiredActions),
+                SourceTarget: MapPrivateCapitalCloseRouteTarget(package.RouteHint),
+                IsReady: package.IsReady));
         }
 
         foreach (var package in cockpit.NavSupportPackages)
@@ -1899,10 +2188,11 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             ? "Ready to close"
             : FormatEvidenceStatusLabel(cockpit.OverallStatus);
         PrivateCapitalCloseSummaryText =
-            $"{cockpit.ReadyLaneCount}/{cockpit.Lanes.Count} close lanes ready; {cockpit.BlockedLaneCount} blocked or missing; {cockpit.WorkflowCount} workflow(s), {cockpit.FundEventCount} fund event(s), {cockpit.CapitalAccountCount} capital account(s), {cockpit.ReportOutputCount} report output(s).";
+            $"{cockpit.ReadyLaneCount}/{cockpit.Lanes.Count} close lanes ready; {cockpit.BlockedLaneCount} blocked or missing; {cockpit.EvidencePackages.Count} evidence package(s); {cockpit.WorkflowCount} workflow(s), {cockpit.FundEventCount} fund event(s), {cockpit.CapitalAccountCount} capital account(s), {cockpit.ReportOutputCount} report output(s).";
         PrivateCapitalCloseEvidenceText = FormatEvidenceCount(CountCloseEvidenceLinks(cockpit));
         PrivateCapitalCloseBlockerText = BuildPrivateCapitalCloseBlockerText(cockpit);
         PrivateCapitalCloseReadinessState = BuildPrivateCapitalCloseReadinessState(cockpit);
+        UpdateFinancialOperationsQueuePresentation();
     }
 
     private static WorkstationStateModel BuildPrivateCapitalCloseReadinessState(PrivateCapitalCloseCockpitDto cockpit)
@@ -1949,6 +2239,13 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
                 MapPrivateCapitalCloseRouteTarget(lane.Route),
                 lane.LaneId,
                 lane.Summary))
+            .Concat(cockpit.EvidencePackages
+                .Where(static package => CountEvidenceLinks(package) > 0)
+                .Select(package => new WorkstationEvidenceLinkModel(
+                    package.Label,
+                    MapPrivateCapitalCloseRouteTarget(package.RouteHint),
+                    package.PackageId,
+                    package.Summary)))
             .Concat(cockpit.NavSupportPackages
                 .Where(static package => CountEvidenceLinks(package) > 0)
                 .Select(package => new WorkstationEvidenceLinkModel(
@@ -1998,7 +2295,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         return new WorkstationStateModel(
             kind,
             isReady ? "Private-capital close ready" : $"Private-capital close {statusLabel.ToLowerInvariant()}",
-            $"{cockpit.ReadyLaneCount}/{cockpit.Lanes.Count} close lanes ready; {cockpit.BlockedLaneCount} blocked or missing; {cockpit.NavSupportPackages.Count} NAV support package(s); {cockpit.ApprovalHistory.Count} approval event(s).",
+            $"{cockpit.ReadyLaneCount}/{cockpit.Lanes.Count} close lanes ready; {cockpit.BlockedLaneCount} blocked or missing; {cockpit.EvidencePackages.Count} evidence package(s); {cockpit.NavSupportPackages.Count} NAV support package(s); {cockpit.ApprovalHistory.Count} approval event(s).",
             actionPosture.Label,
             actionPosture.Target,
             FormatEvidenceCount(evidenceCount),
@@ -2034,6 +2331,137 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             : "No blockers were returned, but at least one close lane is not ready.";
     }
 
+    private static bool IsBreakCaseClosed(OperationsBreakCaseDto breakCase)
+    {
+        var status = breakCase.Status.Trim();
+        return status.Equals("Resolved", StringComparison.OrdinalIgnoreCase) ||
+            status.Equals("Dismissed", StringComparison.OrdinalIgnoreCase) ||
+            status.Equals("Matched", StringComparison.OrdinalIgnoreCase) ||
+            status.Equals("SignedOff", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsBreakCaseBlocked(OperationsBreakCaseDto breakCase)
+    {
+        var status = breakCase.Status.Trim();
+        var severity = breakCase.Severity.Trim();
+        return status.Equals("Blocked", StringComparison.OrdinalIgnoreCase) ||
+            status.Equals("AwaitingEvidence", StringComparison.OrdinalIgnoreCase) ||
+            severity.Equals("Critical", StringComparison.OrdinalIgnoreCase) ||
+            severity.Equals("Error", StringComparison.OrdinalIgnoreCase) ||
+            breakCase.BlockedOutputs is { Count: > 0 };
+    }
+
+    private static string BuildBreakCaseTimingLabel(OperationsBreakCaseDto breakCase)
+    {
+        if (!string.IsNullOrWhiteSpace(breakCase.SlaState) && breakCase.SlaDueAtUtc.HasValue)
+        {
+            return $"SLA {FormatQueueStatusLabel(breakCase.SlaState!)} due {FormatQueueTimestamp(breakCase.SlaDueAtUtc)}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(breakCase.SlaState))
+        {
+            return $"SLA {FormatQueueStatusLabel(breakCase.SlaState!)}";
+        }
+
+        return breakCase.DueDate.HasValue
+            ? $"Due {FormatQueueDate(breakCase.DueDate)}"
+            : "No due date";
+    }
+
+    private static bool IsChecklistTaskComplete(OperationsCloseChecklistTaskDto task)
+    {
+        var status = task.Status.Trim();
+        return status.Equals("Done", StringComparison.OrdinalIgnoreCase) ||
+            status.Equals("Complete", StringComparison.OrdinalIgnoreCase) ||
+            status.Equals("Completed", StringComparison.OrdinalIgnoreCase) ||
+            status.Equals("Acknowledged", StringComparison.OrdinalIgnoreCase) ||
+            task.AcknowledgedAtUtc.HasValue;
+    }
+
+    private static bool IsChecklistTaskBlocked(OperationsCloseChecklistTaskDto task)
+    {
+        var status = task.Status.Trim();
+        return status.Equals("Blocked", StringComparison.OrdinalIgnoreCase) ||
+            status.Equals("Expired", StringComparison.OrdinalIgnoreCase) ||
+            !string.IsNullOrWhiteSpace(task.BlockingReason);
+    }
+
+    private static string BuildChecklistTimingLabel(OperationsCloseChecklistTaskDto task)
+    {
+        var due = task.DueDate.HasValue ? $"Due {FormatQueueDate(task.DueDate)}" : "No due date";
+        var expires = task.ExpiresOn.HasValue ? $"expires {FormatQueueDate(task.ExpiresOn)}" : "no expiration";
+        return $"{due}; {expires}";
+    }
+
+    private static string BuildApprovalOwnerLabel(string? operatorLabel, string? reviewerLabel)
+    {
+        if (!string.IsNullOrWhiteSpace(reviewerLabel))
+        {
+            return $"Reviewer {reviewerLabel}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(operatorLabel))
+        {
+            return $"Operator {operatorLabel}";
+        }
+
+        return "Approval owner pending";
+    }
+
+    private static string BuildApprovalTimingLabel(DateTimeOffset? submittedAt, DateTimeOffset? decidedAt)
+    {
+        if (decidedAt.HasValue)
+        {
+            return $"Decided {FormatQueueTimestamp(decidedAt)}";
+        }
+
+        if (submittedAt.HasValue)
+        {
+            return $"Submitted {FormatQueueTimestamp(submittedAt)}";
+        }
+
+        return "Approval timing pending";
+    }
+
+    private static bool IsEvidenceStatusBlocked(EvidenceStatusDto status)
+        => status is EvidenceStatusDto.Blocked or EvidenceStatusDto.Missing;
+
+    private static string FormatQueueDate(DateOnly? value)
+        => value.HasValue
+            ? value.Value.ToString("MMM d, yyyy", System.Globalization.CultureInfo.InvariantCulture)
+            : "No date";
+
+    private static string FormatQueueTimestamp(DateTimeOffset? value)
+        => value.HasValue
+            ? value.Value.UtcDateTime.ToString("MMM d, HH:mm 'UTC'", System.Globalization.CultureInfo.InvariantCulture)
+            : "No timestamp";
+
+    private static string FormatQueueStatusLabel(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return "Status pending";
+        }
+
+        var text = value.Trim().Replace('_', ' ').Replace('-', ' ');
+        var builder = new System.Text.StringBuilder(text.Length + 8);
+        for (var index = 0; index < text.Length; index++)
+        {
+            var current = text[index];
+            if (index > 0 &&
+                char.IsUpper(current) &&
+                !char.IsWhiteSpace(text[index - 1]) &&
+                (char.IsLower(text[index - 1]) || index + 1 < text.Length && char.IsLower(text[index + 1])))
+            {
+                builder.Append(' ');
+            }
+
+            builder.Append(current);
+        }
+
+        return builder.ToString();
+    }
+
     private static string FormatEvidenceStatusLabel(EvidenceStatusDto status)
         => status switch
         {
@@ -2041,11 +2469,22 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             _ => status.ToString()
         };
 
+    private static string FormatReconciliationLaneStatusLabel(OperationsReconciliationLaneStatusDto status)
+        => status switch
+        {
+            OperationsReconciliationLaneStatusDto.ReviewRequired => "Review Required",
+            _ => status.ToString()
+        };
+
     private static string FormatEvidenceCount(int count)
         => $"{count:N0} evidence link{(count == 1 ? string.Empty : "s")}";
 
+    private static string FormatBreakCount(int count)
+        => $"{count:N0} open break{(count == 1 ? string.Empty : "s")}";
+
     private static int CountCloseEvidenceLinks(PrivateCapitalCloseCockpitDto cockpit)
         => cockpit.Lanes.Sum(static lane => CountEvidenceLinks(lane)) +
+            cockpit.EvidencePackages.Sum(static package => CountEvidenceLinks(package)) +
             cockpit.NavSupportPackages.Sum(static package => CountEvidenceLinks(package)) +
             cockpit.ApprovalHistory.Sum(static approval => CountEvidenceLinks(approval));
 
@@ -2055,12 +2494,18 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private static int CountEvidenceLinks(PrivateCapitalNavSupportPackageDto package)
         => Math.Max(package.EvidenceLinkCount, package.EvidenceLinks.Count);
 
+    private static int CountEvidenceLinks(OperationsEvidencePackageSummaryDto package)
+        => Math.Max(package.EvidenceLinkCount, package.EvidenceLinks.Count);
+
+    private static int CountEvidenceLinks(OperationsReconciliationLaneSummaryDto lane)
+        => lane.EvidenceLinks.Count;
+
     private static int CountEvidenceLinks(PrivateCapitalCloseCockpitApprovalDto approval)
         => Math.Max(approval.EvidenceLinkCount, approval.EvidenceLinks.Count);
 
-    private static string FormatRequiredActions(IReadOnlyList<string> requiredActions)
+    private static string FormatRequiredActions(IReadOnlyList<string>? requiredActions)
     {
-        var actions = requiredActions
+        var actions = (requiredActions ?? [])
             .Where(static action => !string.IsNullOrWhiteSpace(action))
             .ToArray();
         return actions.Length == 0
@@ -2081,6 +2526,9 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             ? $"{readyCount}/{components.Count} components ready"
             : $"{readyCount}/{components.Count} components ready; review {string.Join(", ", reviewComponents)}";
     }
+
+    private static string FormatEvidencePackageCategoryLabel(int completeCategoryCount, int requiredCategoryCount)
+        => $"{completeCategoryCount:N0}/{requiredCategoryCount:N0} categories complete";
 
     private static string FormatShadowNavLabel(decimal? shadowNav, string? currency)
     {
@@ -2136,6 +2584,141 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
             ? "audit pack complete"
             : $"{readiness.MissingEvidenceCategories.Count} audit-pack categor{(readiness.MissingEvidenceCategories.Count == 1 ? "y" : "ies")} missing";
         return $"{summary.CompleteCategoryCount}/{summary.RequiredCategoryCount} evidence categories complete; {readinessLabel}; generated in {readiness.GeneratedInSeconds:F3}s, {readiness.SlaTargetSeconds}s target {(readiness.SlaMet ? "met" : "missed")}";
+    }
+
+    private static WorkstationStateModel BuildReviewedAutomationState(OperationsReviewedAutomationSummaryDto? reviewedAutomation)
+    {
+        if (reviewedAutomation is null)
+        {
+            return WorkstationStateModel.Empty(
+                "Reviewed automation unavailable",
+                "Operations Continuity has not returned reviewed automation posture for this fund context.",
+                "Open Operations Continuity",
+                "OperationsContinuity");
+        }
+
+        var requiresReview = reviewedAutomation.RequiresHumanReview ||
+            reviewedAutomation.Status is EvidenceStatusDto.ReviewRequired or EvidenceStatusDto.Stale;
+        var statusLabel = FormatEvidenceStatusLabel(reviewedAutomation.Status);
+        var kind = reviewedAutomation.Status switch
+        {
+            EvidenceStatusDto.Ready when !reviewedAutomation.RequiresHumanReview => WorkstationStateKind.Ready,
+            EvidenceStatusDto.Stale => WorkstationStateKind.Stale,
+            EvidenceStatusDto.Unknown => WorkstationStateKind.Empty,
+            EvidenceStatusDto.Blocked or EvidenceStatusDto.Missing => WorkstationStateKind.Blocked,
+            _ => requiresReview ? WorkstationStateKind.Stale : WorkstationStateKind.Blocked
+        };
+        var readinessTone = reviewedAutomation.Status switch
+        {
+            EvidenceStatusDto.Ready when !reviewedAutomation.RequiresHumanReview => WorkstationReadinessTone.EvidenceLinked,
+            EvidenceStatusDto.Stale => WorkstationReadinessTone.Stale,
+            EvidenceStatusDto.Blocked or EvidenceStatusDto.Missing => WorkstationReadinessTone.Blocked,
+            _ => requiresReview ? WorkstationReadinessTone.SignoffRequired : WorkstationReadinessTone.Neutral
+        };
+        var tone = reviewedAutomation.Status switch
+        {
+            EvidenceStatusDto.Ready when !reviewedAutomation.RequiresHumanReview => WorkspaceTone.Success,
+            EvidenceStatusDto.Blocked or EvidenceStatusDto.Missing => WorkspaceTone.Danger,
+            EvidenceStatusDto.ReviewRequired or EvidenceStatusDto.Stale => WorkspaceTone.Warning,
+            _ => requiresReview ? WorkspaceTone.Warning : WorkspaceTone.Neutral
+        };
+        var actionPosture = new WorkstationActionPostureModel(
+            requiresReview ? "Review automation" : "Review retained evidence",
+            "Open Operations Continuity to inspect reviewed automation posture, retained evidence, and material-action guardrails.",
+            "OperationsContinuity",
+            "Accounting operator",
+            readinessTone,
+            tone);
+        var evidenceLinks = reviewedAutomation.EvidenceLinks
+            .Where(static link => !string.IsNullOrWhiteSpace(link.EvidenceId))
+            .Select(link => new WorkstationEvidenceLinkModel(
+                string.IsNullOrWhiteSpace(link.Label) ? link.EvidenceId : link.Label,
+                MapReviewedAutomationRouteTarget(link.Route),
+                link.EvidenceId,
+                string.IsNullOrWhiteSpace(link.Source) ? "Reviewed automation evidence" : link.Source!))
+            .Take(6)
+            .ToArray();
+        var recoveryActions = reviewedAutomation.RequiredActions
+            .Where(static action => !string.IsNullOrWhiteSpace(action))
+            .Select(static action => new WorkstationRecoveryActionModel(
+                action,
+                "Review generated commentary, audit requests, retained evidence, and guardrails before material Financial Operations action.",
+                "OperationsContinuity"))
+            .Take(3)
+            .ToArray();
+
+        if (requiresReview && recoveryActions.Length == 0)
+        {
+            recoveryActions =
+            [
+                new WorkstationRecoveryActionModel(
+                    "Review automation evidence",
+                    "Review generated commentary, audit requests, retained evidence, and guardrails before approval, posting, publication, payment release, or evidence deletion.",
+                    "OperationsContinuity")
+            ];
+        }
+
+        var stage = string.IsNullOrWhiteSpace(reviewedAutomation.Stage)
+            ? "Reviewed automation"
+            : reviewedAutomation.Stage;
+        var summary = string.IsNullOrWhiteSpace(reviewedAutomation.Summary)
+            ? "Shared reviewed automation posture returned without summary text."
+            : reviewedAutomation.Summary;
+        var allowed = FormatReviewedAutomationList(reviewedAutomation.AllowedUseCases, "No allowed use cases returned");
+        var prohibited = FormatReviewedAutomationList(reviewedAutomation.ProhibitedActions, "No prohibited actions returned");
+        var required = FormatRequiredActions(reviewedAutomation.RequiredActions);
+
+        return new WorkstationStateModel(
+            kind,
+            requiresReview ? $"Reviewed automation {statusLabel.ToLowerInvariant()}" : "Reviewed automation retained",
+            $"{stage}: {summary} Allowed: {allowed}. Prohibited: {prohibited}. Required: {required}.",
+            actionPosture.Label,
+            actionPosture.Target,
+            evidenceLinks.Length == 0 ? "No retained review evidence" : $"{evidenceLinks.Length} retained review evidence link{(evidenceLinks.Length == 1 ? string.Empty : "s")}",
+            "\uE9D9",
+            tone,
+            readinessTone,
+            actionPosture,
+            evidenceLinks,
+            recoveryActions,
+            new WorkstationSignoffRequirementModel(
+                "Accounting operator",
+                requiresReview ? "Human review required" : "Human review retained",
+                "Automation remains advisory; material Financial Operations actions require human operator origin.",
+                requiresReview ? WorkspaceTone.Warning : WorkspaceTone.Success));
+    }
+
+    private static string FormatReviewedAutomationList(IReadOnlyList<string>? values, string fallback)
+    {
+        var items = (values ?? [])
+            .Where(static value => !string.IsNullOrWhiteSpace(value))
+            .Select(static value => value.Trim())
+            .ToArray();
+
+        if (items.Length == 0)
+        {
+            return fallback;
+        }
+
+        const int visibleLimit = 5;
+        if (items.Length <= visibleLimit)
+        {
+            return string.Join(", ", items);
+        }
+
+        return $"{string.Join(", ", items.Take(visibleLimit))}, +{items.Length - visibleLimit} more";
+    }
+
+    private static string MapReviewedAutomationRouteTarget(string? route)
+    {
+        if (string.IsNullOrWhiteSpace(route))
+        {
+            return "OperationsContinuity";
+        }
+
+        return route.Contains("evidence", StringComparison.OrdinalIgnoreCase)
+            ? "EvidenceWorkbench"
+            : MapAccountingRecordRouteTarget(route);
     }
 
     private static WorkstationStateModel BuildAccountingRecordReadinessState(OperationsAccountingRecordSummaryDto summary)
@@ -2231,6 +2814,24 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private static string BuildAccountingRecordEvidenceSubjectTarget(string? recordId)
         => $"EvidenceWorkbench:{BuildAccountingRecordEvidenceSubject(recordId)}";
 
+    private static string BuildOperationsEvidencePackageSubject(string? packageId)
+    {
+        var id = string.IsNullOrWhiteSpace(packageId) ? "current" : packageId.Trim();
+        return $"operations-evidence-package/{id}";
+    }
+
+    private static string BuildOperationsEvidencePackageSubjectTarget(string? packageId)
+        => $"EvidenceWorkbench:{BuildOperationsEvidencePackageSubject(packageId)}";
+
+    private static string BuildOperationsReconciliationLaneSubject(string? laneId)
+    {
+        var id = string.IsNullOrWhiteSpace(laneId) ? "current" : laneId.Trim();
+        return $"operations-reconciliation-lane/{id}";
+    }
+
+    private static string BuildOperationsReconciliationLaneSubjectTarget(string? laneId)
+        => $"EvidenceWorkbench:{BuildOperationsReconciliationLaneSubject(laneId)}";
+
     private WorkstationStateModel BuildReportPackReadinessState(
         string reportOwner,
         string? readiness,
@@ -2315,8 +2916,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     private static (string Mode, string Title, string Subtitle) DescribeWorkbench(FundOperationsTab tab) => tab switch
     {
-        FundOperationsTab.Overview => ("Overview Mode", "Overview Workbench", "Fund-wide operating summary, liquidity posture, and exception pressure."),
-        FundOperationsTab.Reconciliation => ("Reconciliation Mode", "Reconciliation Workbench", "Exception queue, operator ownership, stale-snapshot checks, and break resolution."),
+        FundOperationsTab.Overview => ("Overview Mode", "Overview Workbench", "Fund-wide operating summary, liquidity posture, and review pressure."),
+        FundOperationsTab.Reconciliation => ("Reconciliation Mode", "Reconciliation Workbench", "Break queue, operator ownership, stale-snapshot checks, and resolution."),
         FundOperationsTab.ReportPack => ("Reporting Mode", "Report Pack Workbench", "Reporting preview, handoff readiness, and sign-off posture for accounting artifacts."),
         FundOperationsTab.AuditTrail => ("Accounting Mode", "Audit Trail Workbench", "Recent journal and reconciliation evidence for operator review and traceability."),
         FundOperationsTab.Portfolio => ("Accounting Mode", "Portfolio Accounting Workbench", "Fund-scoped positions, security coverage, and exposure review inside Accounting."),

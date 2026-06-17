@@ -17,6 +17,7 @@ public sealed class ReportWriterGridArtifactService
     private const string JsonContentType = "application/json";
     private const string CsvContentType = "text/csv";
     private const string XlsxContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    private const string PdfContentType = "application/pdf";
 
     private readonly IReportingOrchestrationService _orchestrationService;
     private readonly GovernedReportingTemplateCatalog? _governedTemplateCatalog;
@@ -37,19 +38,10 @@ public sealed class ReportWriterGridArtifactService
         ArgumentException.ThrowIfNullOrWhiteSpace(runId);
         ArgumentException.ThrowIfNullOrWhiteSpace(gridId);
 
-        var manifest = _orchestrationService.GetManifest(runId.Trim())
-            ?? throw new KeyNotFoundException($"Reporting run '{runId}' was not found.");
+        var manifest = GetManifest(runId);
         EnsureTemplateAccess(manifest.TemplateId, accessContext);
 
-        if (manifest.RenderedReportWriterGrids.IsDefaultOrEmpty)
-        {
-            throw new KeyNotFoundException($"Reporting run '{runId}' has no rendered report-writer grids.");
-        }
-
-        var grid = manifest.RenderedReportWriterGrids
-            .FirstOrDefault(grid => string.Equals(grid.GridId, gridId.Trim(), StringComparison.OrdinalIgnoreCase))
-            ?? throw new KeyNotFoundException($"Report-writer grid '{gridId}' was not found for reporting run '{runId}'.");
-        return EnrichGridArtifact(grid);
+        return GetGrid(manifest, runId, gridId);
     }
 
     public ReportWriterGridArtifactContent GetArtifact(
@@ -60,7 +52,12 @@ public sealed class ReportWriterGridArtifactService
         ReportAccessQueryContext? accessContext = null)
     {
         ArgumentNullException.ThrowIfNull(jsonOptions);
-        var grid = GetGrid(runId, gridId, accessContext);
+        ArgumentException.ThrowIfNullOrWhiteSpace(runId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(gridId);
+
+        var manifest = GetManifest(runId);
+        EnsureTemplateAccess(manifest.TemplateId, accessContext);
+        var grid = GetGrid(manifest, runId, gridId);
         var normalizedFormat = NormalizeFormat(format);
         var safeRunId = SanitizeFileName(runId);
         var safeGridId = SanitizeFileName(grid.GridId);
@@ -73,12 +70,36 @@ public sealed class ReportWriterGridArtifactService
             "xlsx" => new ReportWriterGridArtifactContent(
                 $"{safeRunId}-{safeGridId}.xlsx",
                 XlsxContentType,
-                BuildXlsx(grid)),
+                BuildXlsx(grid, manifest.BrandingTheme)),
+            "pdf" => new ReportWriterGridArtifactContent(
+                $"{safeRunId}-{safeGridId}.pdf",
+                PdfContentType,
+                BuildPdf(grid, manifest.BrandingTheme)),
             _ => new ReportWriterGridArtifactContent(
                 $"{safeRunId}-{safeGridId}.json",
                 JsonContentType,
                 JsonSerializer.SerializeToUtf8Bytes(grid, jsonOptions))
         };
+    }
+
+    private ReportingOutputManifest GetManifest(string runId) =>
+        _orchestrationService.GetManifest(runId.Trim())
+        ?? throw new KeyNotFoundException($"Reporting run '{runId}' was not found.");
+
+    private static ReportWriterGridRenderDto GetGrid(
+        ReportingOutputManifest manifest,
+        string runId,
+        string gridId)
+    {
+        if (manifest.RenderedReportWriterGrids.IsDefaultOrEmpty)
+        {
+            throw new KeyNotFoundException($"Reporting run '{runId}' has no rendered report-writer grids.");
+        }
+
+        var grid = manifest.RenderedReportWriterGrids
+            .FirstOrDefault(grid => string.Equals(grid.GridId, gridId.Trim(), StringComparison.OrdinalIgnoreCase))
+            ?? throw new KeyNotFoundException($"Report-writer grid '{gridId}' was not found for reporting run '{runId}'.");
+        return EnrichGridArtifact(grid);
     }
 
     private void EnsureTemplateAccess(string templateId, ReportAccessQueryContext? accessContext)
@@ -108,7 +129,7 @@ public sealed class ReportWriterGridArtifactService
         return Encoding.UTF8.GetBytes(builder.ToString());
     }
 
-    private static byte[] BuildXlsx(ReportWriterGridRenderDto grid)
+    private static byte[] BuildXlsx(ReportWriterGridRenderDto grid, ReportBrandingThemeDto? brandingTheme)
     {
         var headers = grid.Columns.Select(static column => column.Key).ToArray();
         var rows = grid.Rows
@@ -133,8 +154,83 @@ public sealed class ReportWriterGridArtifactService
             new XlsxWorksheet(
                 "Validation",
                 ["Check", "Status", "Detail"],
-                BuildValidationRows(grid))
+                BuildValidationRows(grid)),
+            new XlsxWorksheet(
+                "Branding",
+                ["Field", "Value"],
+                BuildBrandingRows(brandingTheme))
         ]);
+    }
+
+    private static byte[] BuildPdf(ReportWriterGridRenderDto grid, ReportBrandingThemeDto? brandingTheme)
+    {
+        var headers = grid.Columns.Select(static column => column.Key).ToArray();
+        var content = new StringBuilder();
+        var (red, green, blue) = NormalizePdfColor(brandingTheme?.PrimaryColor);
+        content.AppendLine($"{red} {green} {blue} rg");
+        content.AppendLine("72 742 468 34 re f");
+        content.AppendLine("BT");
+        content.AppendLine("/F1 12 Tf");
+        content.AppendLine("1 1 1 rg");
+        content.AppendLine("1 0 0 1 84 764 Tm");
+        content.AppendLine($"({EscapePdfText(BuildPdfHeader(grid, brandingTheme))}) Tj");
+        content.AppendLine("0 0 0 rg");
+        content.AppendLine("/F1 9 Tf");
+        var y = 724;
+        if (brandingTheme is not null)
+        {
+            AppendPdfLine(content, $"Branding theme {brandingTheme.ThemeId} | {brandingTheme.Name} | {brandingTheme.FirmName}", ref y);
+            if (!string.IsNullOrWhiteSpace(brandingTheme.LogoUri))
+            {
+                AppendPdfLine(content, $"Logo {brandingTheme.LogoUri.Trim()}", ref y);
+            }
+        }
+
+        AppendPdfLine(content, $"Grid {grid.GridId} | {grid.Kind} | rows {grid.Rows.Count} | columns {grid.Columns.Count}", ref y);
+        if (grid.Lineage is not null)
+        {
+            AppendPdfLine(
+                content,
+                $"Lineage input {grid.Lineage.InputRowCount} | filtered {grid.Lineage.FilteredInputRowCount} | output {grid.Lineage.OutputRowCount}",
+                ref y);
+        }
+
+        if (grid.Warnings.Count > 0)
+        {
+            AppendPdfLine(content, $"Warnings {grid.Warnings.Count}: {string.Join("; ", grid.Warnings.Take(2))}", ref y);
+        }
+
+        AppendPdfLine(content, string.Join(" | ", headers), ref y);
+        foreach (var row in grid.Rows.Take(28))
+        {
+            var values = headers.Select(header => row.Values.TryGetValue(header, out var value) ? value : "");
+            AppendPdfLine(content, string.Join(" | ", values), ref y);
+        }
+
+        if (grid.Rows.Count > 28)
+        {
+            AppendPdfLine(content, $"... {grid.Rows.Count - 28} additional row(s) retained in JSON/CSV/XLSX exports.", ref y);
+        }
+
+        if (!string.IsNullOrWhiteSpace(brandingTheme?.FooterText))
+        {
+            AppendPdfLine(content, brandingTheme.FooterText.Trim(), ref y);
+        }
+
+        if (!string.IsNullOrWhiteSpace(brandingTheme?.Disclaimer))
+        {
+            AppendPdfLine(content, brandingTheme.Disclaimer.Trim(), ref y);
+        }
+
+        content.AppendLine("ET");
+        return BuildSinglePagePdf(content.ToString());
+    }
+
+    private static void AppendPdfLine(StringBuilder content, string value, ref int y)
+    {
+        content.AppendLine($"1 0 0 1 72 {y} Tm");
+        content.AppendLine($"({EscapePdfText(TruncatePdfLine(value))}) Tj");
+        y -= 14;
     }
 
     private static IReadOnlyList<IReadOnlyList<object?>> BuildLineageRows(ReportWriterGridRenderDto grid)
@@ -190,6 +286,33 @@ public sealed class ReportWriterGridArtifactService
                 check.Detail
             ])
             .ToArray();
+
+    private static IReadOnlyList<IReadOnlyList<object?>> BuildBrandingRows(ReportBrandingThemeDto? brandingTheme)
+    {
+        if (brandingTheme is null)
+        {
+            return
+            [
+                new object?[] { "themeId", "" },
+                new object?[] { "status", "No branding theme retained on the reporting run manifest." }
+            ];
+        }
+
+        return
+        [
+            new object?[] { "themeId", brandingTheme.ThemeId },
+            new object?[] { "name", brandingTheme.Name },
+            new object?[] { "firmName", brandingTheme.FirmName },
+            new object?[] { "primaryColor", brandingTheme.PrimaryColor },
+            new object?[] { "accentColor", brandingTheme.AccentColor },
+            new object?[] { "textColor", brandingTheme.TextColor },
+            new object?[] { "backgroundColor", brandingTheme.BackgroundColor },
+            new object?[] { "logoUri", brandingTheme.LogoUri },
+            new object?[] { "footerText", brandingTheme.FooterText },
+            new object?[] { "disclaimer", brandingTheme.Disclaimer },
+            new object?[] { "isBuiltIn", brandingTheme.IsBuiltIn ? "true" : "false" }
+        ];
+    }
 
     private static ReportWriterGridRenderDto EnrichGridArtifact(ReportWriterGridRenderDto grid)
     {
@@ -340,11 +463,92 @@ public sealed class ReportWriterGridArtifactService
             : value;
     }
 
+    private static string TruncatePdfLine(string value) =>
+        value.Length <= 110 ? value : string.Concat(value.AsSpan(0, 107), "...");
+
+    private static string BuildPdfHeader(ReportWriterGridRenderDto grid, ReportBrandingThemeDto? brandingTheme) =>
+        brandingTheme is null
+            ? grid.Title
+            : $"{brandingTheme.FirmName} - {grid.Title}";
+
+    private static (string Red, string Green, string Blue) NormalizePdfColor(string? value)
+    {
+        var normalized = NormalizeHexColor(value, "#1F4E79");
+        var red = Convert.ToInt32(normalized.Substring(1, 2), 16) / 255m;
+        var green = Convert.ToInt32(normalized.Substring(3, 2), 16) / 255m;
+        var blue = Convert.ToInt32(normalized.Substring(5, 2), 16) / 255m;
+        return (
+            red.ToString("0.###", CultureInfo.InvariantCulture),
+            green.ToString("0.###", CultureInfo.InvariantCulture),
+            blue.ToString("0.###", CultureInfo.InvariantCulture));
+    }
+
+    private static string NormalizeHexColor(string? value, string fallback)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return fallback;
+        }
+
+        var normalized = value.Trim();
+        return normalized.Length == 7
+               && normalized[0] == '#'
+               && normalized.Skip(1).All(Uri.IsHexDigit)
+            ? normalized
+            : fallback;
+    }
+
+    private static string EscapePdfText(string value) =>
+        value
+            .Replace("\\", "\\\\", StringComparison.Ordinal)
+            .Replace("(", "\\(", StringComparison.Ordinal)
+            .Replace(")", "\\)", StringComparison.Ordinal);
+
+    private static byte[] BuildSinglePagePdf(string contentStream)
+    {
+        var objects = new[]
+        {
+            "<< /Type /Catalog /Pages 2 0 R >>",
+            "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+            "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+            $"<< /Length {Encoding.ASCII.GetByteCount(contentStream)} >>\nstream\n{contentStream}\nendstream"
+        };
+
+        var builder = new StringBuilder();
+        var offsets = new List<int>(objects.Length + 1) { 0 };
+        builder.AppendLine("%PDF-1.4");
+        for (var index = 0; index < objects.Length; index++)
+        {
+            offsets.Add(Encoding.ASCII.GetByteCount(builder.ToString()));
+            builder.AppendLine($"{index + 1} 0 obj");
+            builder.AppendLine(objects[index]);
+            builder.AppendLine("endobj");
+        }
+
+        var xrefOffset = Encoding.ASCII.GetByteCount(builder.ToString());
+        builder.AppendLine("xref");
+        builder.AppendLine($"0 {objects.Length + 1}");
+        builder.AppendLine("0000000000 65535 f ");
+        foreach (var offset in offsets.Skip(1))
+        {
+            builder.AppendLine($"{offset:0000000000} 00000 n ");
+        }
+
+        builder.AppendLine("trailer");
+        builder.AppendLine($"<< /Size {objects.Length + 1} /Root 1 0 R >>");
+        builder.AppendLine("startxref");
+        builder.AppendLine(xrefOffset.ToString(CultureInfo.InvariantCulture));
+        builder.AppendLine("%%EOF");
+        return Encoding.ASCII.GetBytes(builder.ToString());
+    }
+
     private static string NormalizeFormat(string? format) =>
         format?.Trim().ToLowerInvariant() switch
         {
             "csv" => "csv",
             "xlsx" or "xls" or "excel" => "xlsx",
+            "pdf" => "pdf",
             _ => "json"
         };
 

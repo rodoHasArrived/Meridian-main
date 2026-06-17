@@ -8,9 +8,13 @@ namespace Meridian.Ui.Shared.Services;
 
 public interface IFinancialRecordExplorerSavedViewStore
 {
-    Task<IReadOnlyList<FinancialRecordExplorerSavedViewDto>> LoadAsync(string explorerId, CancellationToken ct = default);
+    Task<IReadOnlyList<FinancialRecordExplorerSavedViewDto>> LoadAsync(
+        string tenantId,
+        string explorerId,
+        CancellationToken ct = default);
 
     Task<FinancialRecordExplorerSavedViewDto> SaveAsync(
+        string tenantId,
         string explorerId,
         FinancialRecordExplorerSavedViewDto savedView,
         CancellationToken ct = default);
@@ -37,17 +41,22 @@ public sealed class FileFinancialRecordExplorerSavedViewStore : IFinancialRecord
     }
 
     public async Task<IReadOnlyList<FinancialRecordExplorerSavedViewDto>> LoadAsync(
+        string tenantId,
         string explorerId,
         CancellationToken ct = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
         ArgumentException.ThrowIfNullOrWhiteSpace(explorerId);
+        var normalizedTenantId = NormalizeTenantId(tenantId);
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
             var snapshot = await LoadCoreAsync(ct).ConfigureAwait(false);
             return snapshot.Views
-                .Where(view => string.Equals(view.ExplorerId, explorerId, StringComparison.OrdinalIgnoreCase))
+                .Where(view =>
+                    string.Equals(view.TenantId, normalizedTenantId, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(view.ExplorerId, explorerId, StringComparison.OrdinalIgnoreCase))
                 .Select(static view => view.SavedView)
                 .OrderBy(static view => view.Label, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
@@ -59,12 +68,15 @@ public sealed class FileFinancialRecordExplorerSavedViewStore : IFinancialRecord
     }
 
     public async Task<FinancialRecordExplorerSavedViewDto> SaveAsync(
+        string tenantId,
         string explorerId,
         FinancialRecordExplorerSavedViewDto savedView,
         CancellationToken ct = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
         ArgumentException.ThrowIfNullOrWhiteSpace(explorerId);
         ArgumentNullException.ThrowIfNull(savedView);
+        var normalizedTenantId = NormalizeTenantId(tenantId);
 
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -72,10 +84,12 @@ public sealed class FileFinancialRecordExplorerSavedViewStore : IFinancialRecord
             var snapshot = await LoadCoreAsync(ct).ConfigureAwait(false);
             var retained = snapshot.Views
                 .Where(view =>
+                    !string.Equals(view.TenantId, normalizedTenantId, StringComparison.OrdinalIgnoreCase) ||
                     !string.Equals(view.ExplorerId, explorerId, StringComparison.OrdinalIgnoreCase) ||
                     !string.Equals(view.SavedView.ViewId, savedView.ViewId, StringComparison.OrdinalIgnoreCase))
-                .Append(new FinancialRecordExplorerSavedViewRecord(explorerId, savedView with { IsSystem = false, IsActive = false }))
-                .OrderBy(static view => view.ExplorerId, StringComparer.OrdinalIgnoreCase)
+                .Append(new FinancialRecordExplorerSavedViewRecord(normalizedTenantId, explorerId, savedView with { IsSystem = false, IsActive = false }))
+                .OrderBy(static view => view.TenantId, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(static view => view.ExplorerId, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(static view => view.SavedView.Label, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
@@ -134,9 +148,13 @@ public sealed class FileFinancialRecordExplorerSavedViewStore : IFinancialRecord
             FinancialRecordExplorerSavedViewJsonContext.Default.FinancialRecordExplorerSavedViewSnapshot);
         await AtomicFileWriter.WriteAsync(_snapshotPath, json, ct).ConfigureAwait(false);
     }
+
+    private static string NormalizeTenantId(string tenantId)
+        => tenantId.Trim().ToLowerInvariant();
 }
 
 internal sealed record FinancialRecordExplorerSavedViewRecord(
+    string TenantId,
     string ExplorerId,
     FinancialRecordExplorerSavedViewDto SavedView);
 

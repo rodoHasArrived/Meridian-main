@@ -53,7 +53,9 @@ public static partial class WorkstationEndpoints
 
     public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
-        var group = app.MapGroup("/api/workstation").WithTags("Workstation");
+        var group = app.MapGroup("/api/workstation")
+            .WithTags("Workstation")
+            .RequireWorkstationTenantScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSession), async (HttpContext context) =>
         {
@@ -96,6 +98,7 @@ public static partial class WorkstationEndpoints
         MapFinancialRecordExplorerEndpoints(group, jsonOptions);
         MapFamilyOfficeEndpoints(group);
         MapDataUploadEndpoints(group, jsonOptions);
+        MapProviderIntegrationEndpoints(group, jsonOptions);
 
         group.MapGet("/workflow-summary", async (
             bool? hasOperatingContext,
@@ -404,6 +407,7 @@ public static partial class WorkstationEndpoints
                 var payload = service.GetStructuredReportingExport(
                     exportId,
                     BuildReportAccessQueryContext(context));
+                ApplyWorkstationStructuredExportAuditHeaders(context, payload);
 
                 if (IsWorkstationStructuredCsvRequest(format))
                 {
@@ -6209,6 +6213,38 @@ public static partial class WorkstationEndpoints
             HasGlobalOverride: EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance));
     }
 
+    private static void ApplyWorkstationStructuredExportAuditHeaders(
+        HttpContext context,
+        StructuredReportingExportPayloadDto payload)
+    {
+        context.Response.Headers["X-Meridian-Export-Id"] = payload.Export.ExportId;
+        context.Response.Headers["X-Meridian-Export-Generated-At"] = payload.GeneratedAtUtc.ToString("O");
+        if (!string.IsNullOrWhiteSpace(payload.GeneratedByPrincipalId))
+        {
+            context.Response.Headers["X-Meridian-Export-Generated-By"] = payload.GeneratedByPrincipalId;
+        }
+
+        if (!string.IsNullOrWhiteSpace(payload.GeneratedForCompanyId))
+        {
+            context.Response.Headers["X-Meridian-Export-Company"] = payload.GeneratedForCompanyId;
+        }
+
+        if (payload.GeneratedForGroupPrincipalIds is { Count: > 0 })
+        {
+            context.Response.Headers["X-Meridian-Export-Groups"] = string.Join(",", payload.GeneratedForGroupPrincipalIds);
+        }
+
+        if (!string.IsNullOrWhiteSpace(payload.Export.VersionStamp))
+        {
+            context.Response.Headers["X-Meridian-Export-Version"] = payload.Export.VersionStamp;
+        }
+
+        if (!string.IsNullOrWhiteSpace(payload.Export.IntegrityHashSha256))
+        {
+            context.Response.Headers["X-Meridian-Export-Sha256"] = payload.Export.IntegrityHashSha256;
+        }
+    }
+
     private static object BuildAccountingControlCenterPayload(
         IReadOnlyList<ReconciliationBreakQueueItem> breakQueue,
         WorkstationReportingPayload reporting)
@@ -7734,7 +7770,11 @@ public static partial class WorkstationEndpoints
             new XlsxWorksheet(
                 "Validation",
                 ["Check", "Status", "Detail"],
-                BuildWorkstationStructuredExportValidationRows(payload))
+                BuildWorkstationStructuredExportValidationRows(payload)),
+            new XlsxWorksheet(
+                "RowLineage",
+                ["Row", "Row key", "SHA-256"],
+                BuildWorkstationStructuredExportRowLineageRows(payload))
         ]);
     }
 
@@ -7756,7 +7796,11 @@ public static partial class WorkstationEndpoints
         ["retainedPath", payload.Export.RetainedPath],
         ["route", payload.Export.Route],
         ["versionStamp", payload.Export.VersionStamp],
-        ["generatedAtUtc", payload.GeneratedAtUtc]
+        ["generatedAtUtc", payload.GeneratedAtUtc],
+        ["generatedByPrincipalId", payload.GeneratedByPrincipalId],
+        ["generatedForCompanyId", payload.GeneratedForCompanyId],
+        ["generatedForGroups", string.Join(";", payload.GeneratedForGroupPrincipalIds ?? [])],
+        ["rowLineageCount", payload.RowLineage?.Count ?? 0]
     ];
 
     private static IReadOnlyList<IReadOnlyList<object?>> BuildWorkstationStructuredExportDataDictionaryRows(
@@ -7790,6 +7834,17 @@ public static partial class WorkstationEndpoints
                 check.CheckId,
                 check.Status,
                 check.Detail
+            ])
+            .ToArray();
+
+    private static IReadOnlyList<IReadOnlyList<object?>> BuildWorkstationStructuredExportRowLineageRows(
+        StructuredReportingExportPayloadDto payload) =>
+        (payload.RowLineage ?? [])
+            .Select(static row => (IReadOnlyList<object?>)
+            [
+                row.RowNumber,
+                row.RowKey,
+                row.RowHashSha256
             ])
             .ToArray();
 

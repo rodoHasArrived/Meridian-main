@@ -1,6 +1,6 @@
 // Workstation Delivery Diagram
 // Meridian current project stance
-// Last Updated: 2026-06-10
+// Last Updated: 2026-06-16
 //
 // This diagram shows how the browser workstation, WPF workstation, and
 // desktop-local API seams converge on shared read models and operational
@@ -29,6 +29,8 @@ digraph WorkstationDelivery {
                label="Desktop-local API host\nlocalhost-only /api/*\nSwagger + retained workstation routes"];
     API_SURFACE [fillcolor="#c4b5fd",
                  label="Shared workstation + portfolio routes\n/api/workstation/*\n/api/portfolio/*\n/api/strategies/*\n/api/security-master/*\n/api/reporting/*"];
+    PROVIDER_INTEGRATION_API [fillcolor="#c4b5fd",
+                              label="Provider integration routes\nsync history, staging review,\nidentity resolution,\nreconciliation handoff,\nquarantine replay"];
   }
 
   subgraph cluster_delivery {
@@ -55,6 +57,8 @@ digraph WorkstationDelivery {
                     label="ISecurityMasterQueryService\nsecurity detail / history / identity\neconomic definition"];
     RECONCILIATION_NOTE [shape=note, fillcolor="#feebc8",
                          label="Reconciliation + break-queue review\nunder /api/workstation/reconciliation/*\n(see fund-ops-reconciliation.dot)"];
+    PROVIDER_HANDOFF [fillcolor="#bfdbfe",
+                      label="ProviderIntegrationReconciliationHandoffService\npersist approved staging rows\nfor reconciliation-staging"];
   }
 
   subgraph cluster_state {
@@ -67,12 +71,15 @@ digraph WorkstationDelivery {
                label="StrategyRunStore\nbacktest / paper / live runs"];
     SECURITY_STATE [shape=cylinder, fillcolor="#fecaca",
                     label="Security Master projections\ncache + backing store"];
+    INTEGRATION_STATE [shape=cylinder, fillcolor="#fecaca",
+                       label="Provider integration store\nsync runs, staging records,\nquarantine, handoff history"];
   }
 
   BROWSER_SURFACE -> API_SURFACE [label="browser API calls"];
   WPF_SURFACES -> WPF_WORKSPACE [label="desktop pages"];
   WEB_SHELL -> API_SURFACE [label="localhost requests"];
   API_SURFACE -> WORKSTATION_ENDPOINTS [label="route groups"];
+  API_SURFACE -> PROVIDER_INTEGRATION_API [label="provider integration group"];
   WPF_SURFACES -> SECURITY_QUERY [style=dashed, color="#2b6cb0",
                                   label="security assurance cards"];
 
@@ -83,6 +90,10 @@ digraph WorkstationDelivery {
   WORKSTATION_ENDPOINTS -> CASH_FLOW [label="cash-flow projections"];
   WORKSTATION_ENDPOINTS -> SECURITY_QUERY [label="security master detail"];
   WORKSTATION_ENDPOINTS -> RECONCILIATION_NOTE [style=dashed, color="#ed8936"];
+  PROVIDER_INTEGRATION_API -> PROVIDER_HANDOFF [label="POST handoff / GET history"];
+  PROVIDER_INTEGRATION_API -> INTEGRATION_STATE [label="monitor + sync-run history"];
+  PROVIDER_HANDOFF -> RECONCILIATION_NOTE [style=dashed, color="#ed8936",
+                                           label="approved staging evidence"];
 
   RUN_READ -> PORTFOLIO_READ [label="portfolio summaries"];
   RUN_READ -> LEDGER_READ [label="ledger summaries"];
@@ -93,6 +104,7 @@ digraph WorkstationDelivery {
   RUN_READ -> RUN_STORE [label="read run entries"];
   CASH_FLOW -> RUN_STORE [label="iterate cash-flow metrics"];
   SECURITY_QUERY -> SECURITY_STATE [label="query projections"];
+  PROVIDER_HANDOFF -> INTEGRATION_STATE [label="save retained evidence"];
 
   subgraph cluster_legend {
     label="Legend";

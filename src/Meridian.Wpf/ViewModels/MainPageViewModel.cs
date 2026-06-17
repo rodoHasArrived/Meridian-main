@@ -23,7 +23,7 @@ namespace Meridian.Wpf.ViewModels;
 public sealed class MainPageViewModel : BindableBase, IDisposable
 {
     private const string DefaultWorkspace = "strategy";
-    private const string DefaultPageTag = "StrategyShell";
+    private const string DefaultPageTag = "HomeWorkspace";
 
     private readonly INavigationService _navigationService;
     private readonly NavigationService? _wpfNavigationService;
@@ -48,8 +48,8 @@ public sealed class MainPageViewModel : BindableBase, IDisposable
 
     private string _currentWorkspace = DefaultWorkspace;
     private string _currentPageTag = DefaultPageTag;
-    private string _currentPageTitle = "Strategy Workspace";
-    private string _currentPageSubtitle = "Configure backtests, review runs, and monitor strategy outcomes.";
+    private string _currentPageTitle = "Home";
+    private string _currentPageSubtitle = "Review operational readiness before opening deep task workspaces.";
     private bool _tickerStripVisible;
     private WorkstationOperatingContext? _selectedOperatingContext;
     private BoundedWindowMode _selectedWindowMode = BoundedWindowMode.DockFloat;

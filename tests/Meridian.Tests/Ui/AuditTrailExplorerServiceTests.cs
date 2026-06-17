@@ -111,6 +111,11 @@ public sealed class AuditTrailExplorerServiceTests
             entry.ObjectId.Should().Be("ovr-live-1");
             entry.RelatedObjectIds.Should().Contain(["run-live", "corr-override", "AAPL", "AllowLivePromotion", "strategy-alpha"]);
             entry.EvidenceRoute.Should().Be("/api/execution/controls/manual-overrides/ovr-live-1/clear");
+            entry.ActionLedgerSource.Should().Be("ExecutionAuditTrail");
+            entry.ActionLedgerSequence.Should().Be(1);
+            entry.CurrentActionHash.Should().HaveLength(64);
+            entry.PreviousActionHash.Should().BeNull();
+            entry.ActionLedgerStatus.Should().Be("WalRetained");
         }
         finally
         {
@@ -259,8 +264,14 @@ public sealed class AuditTrailExplorerServiceTests
         entry.Action.Should().Be("reconciliation-run");
         entry.Actor.Should().Be("ops-user");
         entry.RelatedObjectIds.Should().Contain([workflowId.ToString("D"), fundAccountId.ToString("D"), "ledger-batch-1"]);
+        entry.Metadata.Should().ContainKey("previousHash").WhoseValue.Should().Be("prev");
         entry.Metadata.Should().ContainKey("currentHash").WhoseValue.Should().Be("hash");
         entry.EvidenceRoute.Should().Be("/api/workstation/operations/continuity/reconciliation/case-closed");
+        entry.ActionLedgerSource.Should().Be("OperationsContinuityTimeline");
+        entry.ActionLedgerSequence.Should().Be(1);
+        entry.PreviousActionHash.Should().Be("prev");
+        entry.CurrentActionHash.Should().Be("hash");
+        entry.ActionLedgerStatus.Should().Be("HashChained");
     }
 
     [Fact]

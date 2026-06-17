@@ -24,6 +24,25 @@ public sealed record ProviderCredentialSaveRequest(
     string? Actor = null,
     IReadOnlyDictionary<string, string>? Metadata = null);
 
+public sealed class ProviderCredentialValidationException : Exception
+{
+    public ProviderCredentialValidationException(string providerId, IReadOnlyList<string> unknownFields)
+        : base(BuildMessage(providerId, unknownFields))
+    {
+        ProviderId = providerId;
+        UnknownFields = unknownFields;
+    }
+
+    public string ProviderId { get; }
+
+    public IReadOnlyList<string> UnknownFields { get; }
+
+    private static string BuildMessage(string providerId, IReadOnlyList<string> unknownFields)
+        => unknownFields.Count == 0
+            ? $"Credential fields are invalid for provider '{providerId}'."
+            : $"Credential fields are not recognized for provider '{providerId}': {string.Join(", ", unknownFields)}.";
+}
+
 public sealed record ProviderCredentialVerificationUpdate(
     string ProviderId,
     bool Success,

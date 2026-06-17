@@ -8,6 +8,7 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Contracts;
 
 namespace Meridian.Wpf.Services;
 
@@ -21,11 +22,19 @@ public sealed class BackendServiceManager : BackendServiceManagerBase
     private static readonly Lazy<BackendServiceManager> _instance = new(() => new BackendServiceManager());
     private const int DefaultDesktopPort = 8080;
     private readonly HttpClient _httpClient;
+    private readonly IRemoteWorkstationClient _remoteClient;
 
     public static BackendServiceManager Instance => _instance.Value;
 
     private BackendServiceManager()
+        : this(WpfRemoteWorkstationClient.Instance)
     {
+    }
+
+    internal BackendServiceManager(IRemoteWorkstationClient remoteClient, string? appDataDirectory = null)
+        : base(appDataDirectory)
+    {
+        _remoteClient = remoteClient ?? throw new ArgumentNullException(nameof(remoteClient));
         _httpClient = new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(5)
@@ -269,8 +278,7 @@ public sealed class BackendServiceManager : BackendServiceManagerBase
     {
         try
         {
-            var response = await _httpClient.GetAsync($"{ConnectionService.Instance.ServiceUrl}/healthz", ct);
-            return response.IsSuccessStatusCode;
+            return await _remoteClient.CheckHealthEndpointAsync(ct).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OutOfMemoryException and not OperationCanceledException)
         {

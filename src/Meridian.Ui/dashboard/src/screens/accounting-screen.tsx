@@ -67,6 +67,7 @@ import type {
 } from "@/screens/accounting-screen.view-model";
 import type {
   AccountingSystemImportDetail,
+  AccountingSystemReconciliationEvidencePackage,
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
   AccountingWorkspaceResponse,
@@ -390,6 +391,12 @@ const accountingSystemStatusVariant = {
   ReviewRequired: "warning"
 } as const;
 
+const accountingSystemEvidencePackageVariant = {
+  Ready: "success",
+  ReviewRequired: "warning",
+  Missing: "danger"
+} as const;
+
 function AccountingSystemReconciliationPanel({
   providers,
   importDetail,
@@ -413,6 +420,7 @@ function AccountingSystemReconciliationPanel({
   const quickBooksProvider = providers.find((provider) => provider.providerId === "quickbooks");
   const selectedCompanyLabel = activeProvider?.connection?.companyName ?? activeProvider?.connection?.companyId ?? null;
   const rows = reconciliation?.rows.slice(0, 5) ?? [];
+  const evidencePackages = reconciliation?.evidencePackages?.slice(0, 4) ?? [];
 
   return (
     <Card className="panel-surface" role="region" aria-label="External GL reconciliation">
@@ -487,11 +495,19 @@ function AccountingSystemReconciliationPanel({
             <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3 text-sm">
               <div className="font-semibold text-foreground">Posting/export</div>
               <p className="mt-2 text-xs leading-5 text-muted-foreground">{reconciliation.postingDisabledReason}</p>
-              <div className="mt-3 space-y-1">
-                {reconciliation.evidenceReferences.map((evidence) => (
-                  <div key={evidence} className="truncate font-mono text-[11px] text-muted-foreground">{evidence}</div>
-                ))}
-              </div>
+              {evidencePackages.length > 0 ? (
+                <div className="mt-3 space-y-2" aria-label="External GL evidence packages">
+                  {evidencePackages.map((evidencePackage) => (
+                    <AccountingSystemEvidencePackageRow key={evidencePackage.packageId} evidencePackage={evidencePackage} />
+                  ))}
+                </div>
+              ) : (
+                <div className="mt-3 space-y-1" aria-label="External GL evidence references">
+                  {reconciliation.evidenceReferences.map((evidence) => (
+                    <div key={evidence} className="truncate font-mono text-[11px] text-muted-foreground">{evidence}</div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         ) : (
@@ -501,6 +517,35 @@ function AccountingSystemReconciliationPanel({
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function AccountingSystemEvidencePackageRow({
+  evidencePackage
+}: {
+  evidencePackage: AccountingSystemReconciliationEvidencePackage;
+}) {
+  const requiredActions = evidencePackage.requiredActions.slice(0, 2);
+
+  return (
+    <div className="rounded-md border border-border/60 bg-background/40 px-2.5 py-2">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="truncate text-xs font-semibold text-foreground">{evidencePackage.label}</div>
+          <div className="mt-1 text-[11px] text-muted-foreground">{evidencePackage.evidenceReferenceCount} retained evidence ref(s)</div>
+        </div>
+        <Badge variant={accountingSystemEvidencePackageVariant[evidencePackage.status]}>{evidencePackage.status}</Badge>
+      </div>
+      {requiredActions.length > 0 ? (
+        <ul className="mt-2 list-disc space-y-1 pl-4 text-[11px] leading-4 text-muted-foreground">
+          {requiredActions.map((action) => (
+            <li key={action}>{action}</li>
+          ))}
+        </ul>
+      ) : evidencePackage.evidenceReferences[0] ? (
+        <div className="mt-2 truncate font-mono text-[11px] text-muted-foreground">{evidencePackage.evidenceReferences[0]}</div>
+      ) : null}
+    </div>
   );
 }
 
@@ -3754,6 +3799,79 @@ function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWorkbenchV
           </div>
         ) : null}
 
+        {view.fundEventCommandRows.length > 0 ? (
+          <section className="space-y-2" aria-labelledby="capital-account-fund-event-command-heading">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h4 id="capital-account-fund-event-command-heading" className="text-sm font-semibold text-foreground">Fund-event command centers</h4>
+              <Badge variant="outline">{view.fundEventCommandRows.length.toLocaleString()} events</Badge>
+            </div>
+            <div className="overflow-x-auto rounded-md border border-border/70">
+              <table className="w-full min-w-[940px] text-sm" aria-label="Capital-account fund-event command centers">
+                <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
+                  <tr>
+                    <th className="px-3 py-2 text-left">Fund event</th>
+                    <th className="px-3 py-2 text-left">Readiness</th>
+                    <th className="px-3 py-2 text-left">Evidence</th>
+                    <th className="px-3 py-2 text-left">Routes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {view.fundEventCommandRows.map((row) => (
+                    <tr key={row.id} className="border-t border-border/60 align-top">
+                      <td className="px-3 py-2">
+                        <div className="font-semibold text-foreground">{row.title}</div>
+                        <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{row.subtitle}</div>
+                        <div className="mt-1 text-xs text-muted-foreground">{row.memoLabel}</div>
+                        <div className="mt-1 font-mono text-xs text-muted-foreground">{row.netActivityLabel}</div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <Badge variant={row.readinessTone} dot>{row.readinessLabel}</Badge>
+                        <div className="mt-1 text-xs text-muted-foreground">{row.readinessReasonLabel}</div>
+                        <div className="mt-1 text-xs text-muted-foreground">{row.nextActionLabel}</div>
+                      </td>
+                      <td className="px-3 py-2 text-xs text-muted-foreground">
+                        <div>{row.evidenceLabel}</div>
+                        <div className="mt-1">{row.subledgerLabel}</div>
+                        <div className="mt-1">{row.ledgerImpactLabel}</div>
+                        <div className="mt-1">{row.reportOutputLabel}</div>
+                      </td>
+                      <td className="px-3 py-2">
+                        <a
+                          className="block break-all font-mono text-[11px] text-primary hover:underline"
+                          href={row.commandCenterRouteLabel}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Open capital-account fund-event command center for ${row.title}`}
+                        >
+                          {row.commandCenterRouteLabel}
+                        </a>
+                        <a
+                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                          href={row.activityRouteLabel}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Open capital-account fund-event activity for ${row.title}`}
+                        >
+                          {row.activityRouteLabel}
+                        </a>
+                        <a
+                          className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
+                          href={row.evidenceRouteLabel}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Open capital-account fund-event evidence for ${row.title}`}
+                        >
+                          {row.evidenceRouteLabel}
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        ) : null}
+
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
           <section className="space-y-2" aria-labelledby="capital-account-investor-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -4021,7 +4139,11 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                         <div className="mt-1 text-xs text-muted-foreground">{intent.readinessReasonLabel}</div>
                         <div className="mt-1 text-[11px] text-muted-foreground">{intent.executionDeferredLabel}</div>
                       </td>
-                      <td className="px-3 py-2 font-mono text-xs">{intent.expectedCashLabel}</td>
+                      <td className="px-3 py-2 text-xs">
+                        <div className="font-mono">{intent.expectedCashLabel}</div>
+                        <div className="mt-1 text-[11px] text-muted-foreground">{intent.requestMetadataLabel}</div>
+                        <div className="mt-1 text-[11px] text-muted-foreground">{intent.sourceEvidenceLabel}</div>
+                      </td>
                       <td className="px-3 py-2 text-xs">{intent.approvalLabel}</td>
                       <td className="px-3 py-2 text-xs">
                         <div>{intent.bankEvidenceLabel}</div>
@@ -4056,6 +4178,8 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                     <div>
                       <div className="break-all font-mono text-xs text-foreground">{intent.title}</div>
                       <div className="mt-1 text-xs text-muted-foreground">{intent.expectedCashLabel}</div>
+                      <div className="mt-1 text-[11px] text-muted-foreground">{intent.requestMetadataLabel}</div>
+                      <div className="mt-1 text-[11px] text-muted-foreground">{intent.sourceEvidenceLabel}</div>
                     </div>
                     <Badge variant={intent.statusTone} dot>{intent.statusLabel}</Badge>
                   </div>
@@ -4105,6 +4229,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                               <div className="mt-1 font-mono text-[11px] text-muted-foreground">{item.amountLabel} / {item.effectiveDateLabel}</div>
                               <div className="mt-1 text-[11px] text-muted-foreground">{item.referenceLabel}</div>
                               <div className="mt-1 text-[11px] text-muted-foreground">{item.recordedLabel}</div>
+                              <div className="mt-1 text-[11px] text-muted-foreground">{item.recorderLabel}</div>
                               {item.evidenceRouteLabel !== "No bank evidence route" ? (
                                 <a
                                   className="mt-1 block break-all font-mono text-[11px] text-primary hover:underline"
