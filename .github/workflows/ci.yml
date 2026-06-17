@@ -92,7 +92,6 @@ jobs:
 
       - name: Run non-integration tests
         run: |
-<<<<<<< ours
           python3 build/scripts/ci/run-dotnet-ci-tests.py \
             --configuration Release \
             --filter "Category!=Integration&Category!=Performance" \
@@ -109,26 +108,6 @@ jobs:
           else
             echo "No .NET test summary was produced." >> "$GITHUB_STEP_SUMMARY"
           fi
-=======
-          set -euo pipefail
-          COMMON_TEST_ARGS=(
-            -c Release
-            --no-restore
-            --filter "Category!=Integration&Category!=Performance"
-            --results-directory artifacts/test-results/dotnet
-            --blame-hang
-            --blame-hang-timeout
-            5m
-            /p:EnableWindowsTargeting=true
-          )
-          dotnet test tests/Meridian.Tests/Meridian.Tests.csproj "${COMMON_TEST_ARGS[@]}" --logger "trx;LogFilePrefix=core"
-          dotnet test tests/Meridian.FSharp.Tests/Meridian.FSharp.Tests.fsproj "${COMMON_TEST_ARGS[@]}" --logger "trx;LogFilePrefix=fsharp"
-          dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj "${COMMON_TEST_ARGS[@]}" --logger "trx;LogFilePrefix=ui"
-          dotnet test tests/Meridian.Backtesting.Tests/Meridian.Backtesting.Tests.csproj "${COMMON_TEST_ARGS[@]}" --logger "trx;LogFilePrefix=backtesting"
-          dotnet test tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj "${COMMON_TEST_ARGS[@]}" --logger "trx;LogFilePrefix=directlending"
-          dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj "${COMMON_TEST_ARGS[@]}" --logger "trx;LogFilePrefix=fundstructure"
-          dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj "${COMMON_TEST_ARGS[@]}" --logger "trx;LogFilePrefix=quantscript"
->>>>>>> theirs
 
       - name: Validate status docs delivery claims
         run: |
@@ -172,11 +151,7 @@ jobs:
         run: |
           python3 build/scripts/docs/check-validation-floor.py --summary-json docs/status/docs-automation-summary.json --route-json docs/status/prompt-route-lint-report.json --summary
 
-<<<<<<< ours
-      - name: Upload .NET test results
-=======
       - name: Upload .NET evidence artifacts
->>>>>>> theirs
         if: always()
         uses: actions/upload-artifact@v7.0.1
         with:

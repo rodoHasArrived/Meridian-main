@@ -18,6 +18,7 @@ on:
       - "scripts/generate-diagrams.mjs"
       - "scripts/lib/ui-diagram-generator.mjs"
       - "src/Meridian.Wpf/**"
+      - "tests/Meridian.Wpf.Tests/**"
       - "package.json"
       - ".github/workflows/documentation.yml"
   push:
@@ -29,6 +30,7 @@ on:
       - "scripts/generate-diagrams.mjs"
       - "scripts/lib/ui-diagram-generator.mjs"
       - "src/Meridian.Wpf/**"
+      - "tests/Meridian.Wpf.Tests/**"
       - "package.json"
       - ".github/workflows/documentation.yml"
 
@@ -97,7 +99,7 @@ jobs:
           node-version: "24"
 
       - name: Install diagram dependencies
-        run: npm ci --no-fund --no-audit
+        run: npm install --no-fund --no-audit
 
       - name: Run docs automation profile
         run: |

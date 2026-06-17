@@ -1155,7 +1155,11 @@ export interface ManualJournalEntryWorkbenchViewModel {
   securitySearchStatusText: string;
   attachmentDraft: ManualJournalEvidenceAttachmentDraft;
   totalsLabel: string;
+  totalDebitsLabel: string;
+  totalCreditsLabel: string;
   imbalanceLabel: string;
+  balanceStatusLabel: string;
+  balanceStatusTone: "success" | "warning";
   treasuryContextLabel: string;
   privateCapitalActivity: ManualJournalPrivateCapitalActivityViewModel;
   validationIssues: AccountingConfigurationIssueViewModel[];
@@ -1165,7 +1169,7 @@ export interface ManualJournalEntryWorkbenchViewModel {
   canSubmit: boolean;
   submitDisabledReason: string | null;
   refresh: () => Promise<void>;
-  updateHeader: (field: keyof Pick<ManualJournalEntryDraft, "memo" | "currency" | "fundProfileId" | "entityId" | "fundNodeId" | "periodId">, value: string) => void;
+  updateHeader: (field: keyof Pick<ManualJournalEntryDraft, "memo" | "currency" | "fundProfileId" | "entityId" | "fundNodeId" | "periodId" | "accountingDate">, value: string) => void;
   selectDraft: (journalEntryId: string) => void;
   selectLine: (lineId: string) => void;
   updateLine: (lineId: string, patch: Partial<ManualJournalEntryLine>) => void;
@@ -1175,6 +1179,7 @@ export interface ManualJournalEntryWorkbenchViewModel {
   selectSecurity: (lineId: string, security: SecurityMasterEntry) => void;
   clearSecurity: (lineId: string) => void;
   addLine: (side: AccountingTemplateLineSide) => void;
+  removeLine: (lineId: string) => void;
   updateAttachmentDraft: (patch: Partial<ManualJournalEvidenceAttachmentDraft>) => void;
   addAttachment: () => void;
   removeAttachment: (attachmentId: string) => void;
@@ -1266,6 +1271,45 @@ export interface ReconciliationStatementRunsViewState {
   rows: ReconciliationStatementRunRowViewModel[];
   tabs: ReconciliationRunDetailTabViewModel[];
 }
+
+export interface ReconciliationComparisonRowViewModel {
+  id: string;
+  statementTitle: string;
+  statementMeta: string;
+  statementValue: string;
+  ledgerTitle: string;
+  ledgerMeta: string;
+  ledgerValue: string;
+  statusLabel: string;
+  statusTone: "success" | "warning";
+}
+
+export interface ReconciliationComparisonViewState {
+  title: string;
+  subtitle: string;
+  statementHeading: string;
+  ledgerHeading: string;
+  matchedBadgeLabel: string;
+  openBadgeLabel: string;
+  statementBalanceLabel: string;
+  ledgerBalanceLabel: string;
+  varianceLabel: string;
+  varianceTone: "success" | "warning";
+  rows: ReconciliationComparisonRowViewModel[];
+  ariaLabel: string;
+}
+
+type StatementRunSummaryWithMetadata = StatementRunSummary & {
+  brokerCustodian?: string | null;
+  account?: string | null;
+  period?: string | null;
+  status?: string | null;
+  validationIssueCount?: number | null;
+  matchCount?: number | null;
+  breakCount?: number | null;
+  caseCount?: number | null;
+  importedAtUtc?: string | null;
+};
 
 export interface AccountingCashFlowRowViewModel {
   id: string;
@@ -2848,8 +2892,10 @@ export function useManualJournalEntryWorkbenchViewModel(
 
   const updateLine = useCallback<ManualJournalEntryWorkbenchViewModel["updateLine"]>((lineId, patch) => {
     setDraft((current) => ({
-      ...current,
-      lines: current.lines.map((line) => line.lineId === lineId ? { ...line, ...patch } : line)
+      ...withManualJournalTotals({
+        ...current,
+        lines: current.lines.map((line) => line.lineId === lineId ? { ...line, ...patch } : line)
+      })
     }));
   }, []);
 
@@ -2891,9 +2937,24 @@ export function useManualJournalEntryWorkbenchViewModel(
 
   const addLine = useCallback((side: AccountingTemplateLineSide) => {
     const line = createManualJournalEntryLine(side, draft.currency, accountOptions[0]?.value ?? "");
-    setDraft((current) => ({ ...current, lines: [...current.lines, line] }));
+    setDraft((current) => withManualJournalTotals({ ...current, lines: [...current.lines, line] }));
     setSelectedLineId(line.lineId);
   }, [accountOptions, draft.currency]);
+
+  const removeLine = useCallback<ManualJournalEntryWorkbenchViewModel["removeLine"]>((lineId) => {
+    setDraft((current) => {
+      if (current.lines.length <= 2) {
+        return current;
+      }
+
+      const nextLines = current.lines.filter((line) => line.lineId !== lineId);
+      if (selectedLineId === lineId) {
+        setSelectedLineId(nextLines[0]?.lineId ?? "line-1");
+      }
+
+      return withManualJournalTotals({ ...current, lines: nextLines });
+    });
+  }, [selectedLineId]);
 
   const updateAttachmentDraft = useCallback<ManualJournalEntryWorkbenchViewModel["updateAttachmentDraft"]>((patch) => {
     setAttachmentDraft((current) => ({ ...current, ...patch }));
@@ -2951,7 +3012,7 @@ export function useManualJournalEntryWorkbenchViewModel(
     setValidateBusy(true);
     setError(null);
     try {
-      applyServerDraft(await services.validateDraft({ draft, actor: "browser-user", correlationId: "manual-je-validate" }));
+      applyServerDraft(await services.validateDraft({ draft: withManualJournalTotals(draft), actor: "browser-user", correlationId: "manual-je-validate" }));
     } catch (err) {
       setError(describeApiError(err, "Manual journal entry validation failed."));
     } finally {
@@ -2963,7 +3024,7 @@ export function useManualJournalEntryWorkbenchViewModel(
     setSaveBusy(true);
     setError(null);
     try {
-      applyServerDraft(await services.saveDraft({ draft, actor: "browser-user", correlationId: "manual-je-save" }));
+      applyServerDraft(await services.saveDraft({ draft: withManualJournalTotals(draft), actor: "browser-user", correlationId: "manual-je-save" }));
     } catch (err) {
       setError(describeApiError(err, "Manual journal entry draft could not be saved."));
     } finally {
@@ -2974,12 +3035,13 @@ export function useManualJournalEntryWorkbenchViewModel(
   const submit = useCallback(async () => {
     setSubmitBusy(true);
     setError(null);
+    const draftForSubmit = withManualJournalTotals(draft);
     try {
       applyServerDraft(await services.submitApproval({
-        journalEntryId: draft.journalEntryId,
-        fundProfileId: draft.fundProfileId,
+        journalEntryId: draftForSubmit.journalEntryId,
+        fundProfileId: draftForSubmit.fundProfileId,
         actor: "browser-user",
-        version: draft.version,
+        version: draftForSubmit.version,
         correlationId: "manual-je-submit"
       }));
     } catch (err) {
@@ -3026,8 +3088,10 @@ export function useManualJournalEntryWorkbenchViewModel(
 
     return [...serverIssues, ...localBadges];
   }, [draft.evidenceAttachments, draft.lines, draft.validationIssues]);
-  const hasEvidence = (draft.evidenceLinks?.length ?? 0) > 0 || (draft.evidenceAttachments?.length ?? 0) > 0;
-  const canSubmit = draft.validationIssues.every((issue) => issue.severity !== "Critical") && Math.abs(draft.imbalance) === 0 && draft.lines.length >= 2 && hasEvidence;
+  const balancedDraft = withManualJournalTotals(draft);
+  const hasEvidence = (balancedDraft.evidenceLinks?.length ?? 0) > 0 || (balancedDraft.evidenceAttachments?.length ?? 0) > 0;
+  const canSubmit = balancedDraft.validationIssues.every((issue) => issue.severity !== "Critical") && Math.abs(balancedDraft.imbalance) === 0 && balancedDraft.lines.length >= 2 && hasEvidence;
+  const balanceStatusLabel = Math.abs(balancedDraft.imbalance) === 0 ? "Balanced" : "Out by " + formatCurrency(Math.abs(balancedDraft.imbalance));
   const treasuryContextLabel = formatManualJournalTreasuryContext(draft);
   const privateCapitalActivity = useMemo(
     () => buildManualJournalPrivateCapitalActivityView(workbench?.privateCapitalActivity ?? null),
@@ -3047,7 +3111,7 @@ export function useManualJournalEntryWorkbenchViewModel(
     loading,
     errorText: error?.summary ?? null,
     statusLabel: `${draft.status} v${draft.version}`,
-    draft,
+    draft: balancedDraft,
     drafts: workbench?.drafts ?? [],
     accountOptions,
     selectedLineId,
@@ -3057,8 +3121,12 @@ export function useManualJournalEntryWorkbenchViewModel(
     securitySearchErrorText: securitySearchError?.summary ?? null,
     securitySearchStatusText,
     attachmentDraft,
-    totalsLabel: `Debits ${formatCurrency(draft.totalDebits)} / Credits ${formatCurrency(draft.totalCredits)}`,
-    imbalanceLabel: `Imbalance ${formatCurrency(draft.imbalance)}`,
+    totalsLabel: `Debits ${formatCurrency(balancedDraft.totalDebits)} / Credits ${formatCurrency(balancedDraft.totalCredits)}`,
+    totalDebitsLabel: formatCurrency(balancedDraft.totalDebits),
+    totalCreditsLabel: formatCurrency(balancedDraft.totalCredits),
+    imbalanceLabel: `Imbalance ${formatCurrency(balancedDraft.imbalance)}`,
+    balanceStatusLabel,
+    balanceStatusTone: Math.abs(balancedDraft.imbalance) === 0 ? "success" : "warning",
     treasuryContextLabel,
     privateCapitalActivity,
     validationIssues,
@@ -3078,6 +3146,7 @@ export function useManualJournalEntryWorkbenchViewModel(
     selectSecurity,
     clearSecurity,
     addLine,
+    removeLine,
     updateAttachmentDraft,
     addAttachment,
     removeAttachment,
@@ -4068,6 +4137,22 @@ function createManualJournalEntryDraft(
   };
 }
 
+function withManualJournalTotals(draft: ManualJournalEntryDraft): ManualJournalEntryDraft {
+  const totalDebits = draft.lines
+    .filter((line) => line.side === "Debit")
+    .reduce((sum, line) => sum + (Number.isFinite(line.amount) ? line.amount : 0), 0);
+  const totalCredits = draft.lines
+    .filter((line) => line.side === "Credit")
+    .reduce((sum, line) => sum + (Number.isFinite(line.amount) ? line.amount : 0), 0);
+
+  return {
+    ...draft,
+    totalDebits,
+    totalCredits,
+    imbalance: totalDebits - totalCredits
+  };
+}
+
 function formatManualJournalTreasuryContext(draft: ManualJournalEntryDraft): string {
   const context = draft.treasuryContext;
   if (!context) {
@@ -4463,6 +4548,15 @@ export function useAccountingReconciliationViewModel(
     }),
     [reconciliationQueue, selectedRunId, statementRuns, statementRunsError, statementRunsLoading]
   );
+  const comparisonView = useMemo(
+    () => buildReconciliationComparisonViewState({
+      statementRuns,
+      fallbackQueue: reconciliationQueue,
+      selectedRunId,
+      cashFlow: data?.cashFlow ?? null
+    }),
+    [data?.cashFlow, reconciliationQueue, selectedRunId, statementRuns]
+  );
   const exceptionWorkbench = useMemo(
     () => buildOperationalExceptionWorkbenchState({
       reconciliationQueue,
@@ -4570,6 +4664,7 @@ export function useAccountingReconciliationViewModel(
     detailView,
     queuePanelView,
     statementRunsView,
+    comparisonView,
     exceptionWorkbench,
     refreshStatementRuns,
     transactionLabView,
@@ -4764,6 +4859,13 @@ interface ReconciliationStatementRunsBuildInput {
   error: ApiErrorDisplay | null;
 }
 
+interface ReconciliationComparisonBuildInput {
+  statementRuns: StatementRunSummary[];
+  fallbackQueue: AccountingWorkspaceResponse["reconciliationQueue"];
+  selectedRunId: string | null;
+  cashFlow: AccountingCashFlowSummary | null;
+}
+
 export function buildReconciliationStatementRunsViewState({
   statementRuns,
   fallbackQueue,
@@ -4772,9 +4874,9 @@ export function buildReconciliationStatementRunsViewState({
   error
 }: ReconciliationStatementRunsBuildInput): ReconciliationStatementRunsViewState {
   const detailPanelId = "statement-run-detail-tabs";
-  const fallbackRows = statementRuns.length > 0
+  const fallbackRows: StatementRunSummaryWithMetadata[] = statementRuns.length > 0
     ? []
-    : fallbackQueue.map((item): StatementRunSummary => ({
+    : fallbackQueue.map((item): StatementRunSummaryWithMetadata => ({
       runId: item.runId,
       importId: item.runId,
       startedAtUtc: item.lastUpdated,
@@ -4788,7 +4890,7 @@ export function buildReconciliationStatementRunsViewState({
       caseCount: item.openBreakCount,
       importedAtUtc: item.lastUpdated
     }));
-  const sourceRows = statementRuns.length > 0 ? statementRuns : fallbackRows;
+  const sourceRows: StatementRunSummaryWithMetadata[] = statementRuns.length > 0 ? statementRuns : fallbackRows;
   const effectiveSelectedRunId = selectedRunId ?? sourceRows[0]?.runId ?? null;
   const rows = sourceRows.map((run) => buildStatementRunRow(run, effectiveSelectedRunId, detailPanelId));
   const selected = sourceRows.find((run) => run.runId === effectiveSelectedRunId) ?? null;
@@ -4816,8 +4918,86 @@ export function buildReconciliationStatementRunsViewState({
   };
 }
 
+export function buildReconciliationComparisonViewState({
+  statementRuns,
+  fallbackQueue,
+  selectedRunId,
+  cashFlow
+}: ReconciliationComparisonBuildInput): ReconciliationComparisonViewState {
+  const fallbackRows: StatementRunSummaryWithMetadata[] = statementRuns.length > 0
+    ? []
+    : fallbackQueue.map((item): StatementRunSummaryWithMetadata => ({
+      runId: item.runId,
+      importId: item.runId,
+      startedAtUtc: item.lastUpdated,
+      completedAtUtc: item.lastUpdated,
+      positionMatches: 0,
+      cashMatches: Math.max(item.breakCount - item.openBreakCount, 0),
+      transactionMatches: 0,
+      openExceptionCount: item.openBreakCount,
+      brokerCustodian: item.strategyName,
+      account: item.mode.toUpperCase(),
+      period: item.lastUpdated,
+      status: item.reconciliationStatus,
+      breakCount: item.breakCount,
+      caseCount: item.openBreakCount,
+      importedAtUtc: item.lastUpdated
+    }));
+  const sourceRows: StatementRunSummaryWithMetadata[] = statementRuns.length > 0 ? statementRuns : fallbackRows;
+  const effectiveSelectedRunId = selectedRunId ?? sourceRows[0]?.runId ?? null;
+  const sortedRows = [
+    ...sourceRows.filter((row) => row.runId === effectiveSelectedRunId),
+    ...sourceRows.filter((row) => row.runId !== effectiveSelectedRunId)
+  ].slice(0, 4);
+  const rows = sortedRows.map((run, index): ReconciliationComparisonRowViewModel => {
+    const matchCount = run.matchCount ?? run.positionMatches + run.cashMatches + run.transactionMatches;
+    const openCount = run.openExceptionCount;
+    const statusLabel = run.status ?? (openCount > 0 ? "Open" : "Matched");
+    const brokerCustodian = run.brokerCustodian?.trim() || `Statement ${index + 1}`;
+    const account = run.account?.trim() || run.importId;
+    const period = run.period?.trim() || run.completedAtUtc || run.startedAtUtc;
+    const queueMatch = fallbackQueue.find((item) => item.runId === run.runId);
+    const ledgerTitle = queueMatch?.strategyName ?? "Meridian ledger";
+    const ledgerMeta = [
+      run.runId,
+      matchCount.toLocaleString() + " matched",
+      openCount > 0 ? openCount.toLocaleString() + " open" : "no open breaks"
+    ].join(" · ");
+
+    return {
+      id: run.runId,
+      statementTitle: brokerCustodian,
+      statementMeta: `${period} · ${account}`,
+      statementValue: index === 0 && cashFlow ? formatCurrency(cashFlow.totalCash) : `${matchCount.toLocaleString()} matched`,
+      ledgerTitle,
+      ledgerMeta,
+      ledgerValue: index === 0 && cashFlow ? formatCurrency(cashFlow.totalLedgerCash) : (openCount > 0 ? `${openCount.toLocaleString()} open` : "Matched"),
+      statusLabel,
+      statusTone: openCount > 0 || statusLabel === "BreaksOpen" || statusLabel === "SecurityCoverageOpen" ? "warning" : "success"
+    };
+  });
+  const matchedCount = sourceRows.reduce((total, run) => total + (run.matchCount ?? run.positionMatches + run.cashMatches + run.transactionMatches), 0);
+  const openCount = sourceRows.reduce((total, run) => total + run.openExceptionCount, 0);
+  const variance = cashFlow?.netVariance ?? 0;
+
+  return {
+    title: "Cash reconciliation - broker statement vs. ledger",
+    subtitle: cashFlow?.summary ?? "Broker and custodian statements are compared with Meridian ledger balances from shared reconciliation read models.",
+    statementHeading: "Statement",
+    ledgerHeading: "Ledger",
+    matchedBadgeLabel: `${matchedCount.toLocaleString()} matched`,
+    openBadgeLabel: `${openCount.toLocaleString()} open`,
+    statementBalanceLabel: cashFlow ? formatCurrency(cashFlow.totalCash) : "Not loaded",
+    ledgerBalanceLabel: cashFlow ? formatCurrency(cashFlow.totalLedgerCash) : "Not loaded",
+    varianceLabel: variance === 0 ? "Balanced" : `Out by ${formatCurrency(Math.abs(variance))}`,
+    varianceTone: variance === 0 ? "success" : "warning",
+    rows,
+    ariaLabel: "Cash reconciliation broker statement versus ledger comparison"
+  };
+}
+
 function buildStatementRunRow(
-  run: StatementRunSummary,
+  run: StatementRunSummaryWithMetadata,
   selectedRunId: string | null,
   detailPanelId: string
 ): ReconciliationStatementRunRowViewModel {

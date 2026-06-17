@@ -22,11 +22,11 @@
     },
     {
       "path": "docs/roadmap/data/roadmap-items.yml",
-      "sha256": "ba20cadaef69b05ca997590f23fa470d65c3c0100d7b1a3e9d5857e04fdd0a66"
+      "sha256": "17e3d06faff0a9f641538faa6b1b1817461f199e89458642766f8b597267b7be"
     },
     {
       "path": "docs/roadmap/data/stage-gates.yml",
-      "sha256": "c69a57863dfd9b8de76aec47cc1c667f97a1094a0fd631a18ceace2131329777"
+      "sha256": "b8961e83ecb02ab54dfe12dc4b16b294aac9efe7015be016e0a844af82166d0a"
     }
   ],
   "outputs": [

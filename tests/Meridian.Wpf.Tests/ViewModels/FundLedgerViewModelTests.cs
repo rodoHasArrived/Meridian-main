@@ -918,10 +918,18 @@ public sealed class FundLedgerViewModelTests
         var codeBehind = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\FundLedgerPage.xaml.cs"));
 
         xaml.Should().Contain("Header=\"Match Items\"");
+        xaml.Should().Contain("ReconciliationMatchItemsWorkbench");
+        xaml.Should().Contain("CASH RECONCILIATION - SOURCE DATA VS. LEDGER");
         xaml.Should().Contain("ReconciliationEntryMatchGrid");
         xaml.Should().Contain("ItemsSource=\"{Binding ReconciliationEntryRows}\"");
         xaml.Should().Contain("ReconciliationSourceMatchGrid");
         xaml.Should().Contain("ItemsSource=\"{Binding ReconciliationSourceDataRows}\"");
+        xaml.Should().Contain("Text=\"Statement\"");
+        xaml.Should().Contain("Text=\"Ledger\"");
+        xaml.Should().Contain("Statement Balance");
+        xaml.Should().Contain("Ledger Balance");
+        xaml.Should().Contain("Out By");
+        xaml.Should().Contain("Text=\"{Binding ReconciliationDetailBreakAmountText}\"");
         xaml.Should().Contain("IsEnabled=\"{Binding CanMatchSelectedReconciliationItems}\"");
         xaml.Should().Contain("AutomationProperties.AutomationId=\"ReconciliationMatchSelectedItemsButton\"");
         codeBehind.Should().Contain("MatchSelectedReconciliationItemsAsync");
@@ -934,6 +942,8 @@ public sealed class FundLedgerViewModelTests
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\FundLedgerPage.xaml"));
 
         xaml.Should().Contain("StatementReconciliationWorkbench");
+        xaml.Should().Contain("FundReconciliationStatementLedgerComparison");
+        xaml.Should().Contain("Cash Reconciliation - Broker Statement vs. Ledger");
         xaml.Should().Contain("StatementRuns");
         xaml.Should().Contain("StatementValidationIssues");
         xaml.Should().Contain("StatementUnresolvedBreaks");
@@ -1318,7 +1328,7 @@ public sealed class FundLedgerViewModelTests
                     row.StatusLabel == "Review Required" &&
                     row.BreaksLabel == "1 open break" &&
                     row.EvidenceLabel == "1 evidence link" &&
-                    row.RequiredActionsLabel.Contains("Resolve or assign", StringComparison.OrdinalIgnoreCase) &&
+                    row.RequiredActionsLabel.Contains("Resolve factor variance", StringComparison.OrdinalIgnoreCase) &&
                     row.SourceTarget == "FundReconciliation" &&
                     row.EvidenceSubject == "operations-reconciliation-lane/mbs-factor-reconciliation" &&
                     row.EvidenceSubjectTarget == $"EvidenceWorkbench:{row.EvidenceSubject}");
@@ -1330,13 +1340,20 @@ public sealed class FundLedgerViewModelTests
                     row.LaneId == "gl-reconciliation" &&
                     row.Label == "GL reconciliation support" &&
                     row.SourceTarget == "FundLedger");
-                viewModel.OperationsEvidencePackages.Should().HaveCount(5);
+                viewModel.OperationsEvidencePackages.Should().HaveCount(8);
                 viewModel.OperationsEvidencePackages.Should().Contain(row =>
                     row.PackageId.StartsWith("accounting-record-", StringComparison.Ordinal) &&
                     row.Label == "Accounting record evidence" &&
                     row.SourceTarget == "OperationsContinuity" &&
                     row.EvidenceSubject.StartsWith("operations-evidence-package/accounting-record-", StringComparison.Ordinal) &&
                     row.EvidenceSubjectTarget == $"EvidenceWorkbench:{row.EvidenceSubject}");
+                viewModel.OperationsEvidencePackages.Should().Contain(row =>
+                    row.PackageId.StartsWith("reconciliation-coverage:", StringComparison.Ordinal) &&
+                    row.Label == "Reconciliation coverage evidence" &&
+                    row.StatusLabel == "Review Required" &&
+                    row.CategoryLabel == "6/7 categories complete" &&
+                    row.RequiredActionsLabel.Contains("Resolve factor variance", StringComparison.OrdinalIgnoreCase) &&
+                    row.SourceTarget == "FundReconciliation");
                 viewModel.OperationsEvidencePackages.Should().Contain(row =>
                     row.PackageId.StartsWith("period-lock-reopen:", StringComparison.Ordinal) &&
                     row.Label == "Period lock and reopen evidence" &&

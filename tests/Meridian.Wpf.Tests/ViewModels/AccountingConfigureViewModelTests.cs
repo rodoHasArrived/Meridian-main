@@ -400,6 +400,11 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         xaml.Should().Contain("AccountingConfigureRefreshButton");
         xaml.Should().Contain("AccountingConfigureSeedBaselineButton");
         xaml.Should().Contain("AccountingConfigureActivateButton");
+        xaml.Should().Contain("ManualJournalDoubleEntryWorkbench");
+        xaml.Should().Contain("MANUAL JOURNAL ENTRY - BALANCED DOUBLE-ENTRY");
+        xaml.Should().Contain("ManualJournalDoubleEntryGrid");
+        xaml.Should().Contain("ManualJournalDebitAmountPreview");
+        xaml.Should().Contain("ManualJournalCreditAmountPreview");
         xaml.Should().Contain("ManualJournalFundEventLedgerRecordGrid");
         xaml.Should().Contain("ManualJournalCapitalAccountGrid");
         xaml.Should().Contain("ManualJournalCapitalAccountSubledgerGrid");

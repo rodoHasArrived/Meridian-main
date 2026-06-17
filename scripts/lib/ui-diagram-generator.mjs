@@ -700,6 +700,427 @@ async function writeFileIfChanged(filePath, contents) {
   return true;
 }
 
+const WPF_SCREEN_TRACKER_BASELINE_DATE = '2026-06-17';
+
+function splitMarkdownTableRow(line) {
+  return line
+    .trim()
+    .replace(/^\|/, '')
+    .replace(/\|$/, '')
+    .split('|')
+    .map((cell) => cell.trim());
+}
+
+function stripMarkdown(value) {
+  return value
+    .replace(/`/g, '')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/&mdash;|—/g, '-')
+    .trim();
+}
+
+function escapeMarkdownCell(value) {
+  return String(value ?? '')
+    .replace(/\r?\n/g, ' ')
+    .replace(/\|/g, '\\|');
+}
+
+function parseScreenshotIndex(markdown) {
+  const rows = new Map();
+  const lines = markdown.split(/\r?\n/);
+  for (const line of lines) {
+    if (!line.startsWith('|') || line.includes('---')) {
+      continue;
+    }
+
+    const cells = splitMarkdownTableRow(line);
+    if (cells.length < 8 || cells[2] === 'Page tag') {
+      continue;
+    }
+
+    const tag = stripMarkdown(cells[2]);
+    if (!tag) {
+      continue;
+    }
+
+    const screenshotCell = cells[3];
+    const pathMatch = screenshotCell.match(/\]\(([^)]+\.png)\)/i);
+    const relativePath = pathMatch?.[1] ?? null;
+    const repoRelativePath = relativePath
+      ? path.posix.join('docs/screenshots/desktop', relativePath.replace(/^\.\//, ''))
+      : null;
+    const dateMatch = cells[4].match(/\d{4}-\d{2}-\d{2}/);
+    rows.set(tag.toLowerCase(), {
+      workspace: stripMarkdown(cells[0]),
+      screen: stripMarkdown(cells[1]),
+      pageTag: tag,
+      screenshotCell: stripMarkdown(screenshotCell),
+      screenshotPath: repoRelativePath,
+      screenshotExists: false,
+      refreshedDate: dateMatch?.[0] ?? null,
+      fixtureMode: stripMarkdown(cells[5]),
+      missingReason: stripMarkdown(cells[6]),
+      ownerNote: stripMarkdown(cells[7]),
+    });
+  }
+
+  return rows;
+}
+
+async function resolveScreenshotFileState(screenshotRows, repoRoot) {
+  for (const row of screenshotRows.values()) {
+    if (!row.screenshotPath) {
+      row.screenshotExists = false;
+      continue;
+    }
+
+    try {
+      const absolutePath = path.join(repoRoot, ...row.screenshotPath.split('/'));
+      const stat = await fs.stat(absolutePath);
+      row.screenshotExists = stat.isFile();
+    } catch {
+      row.screenshotExists = false;
+    }
+  }
+}
+
+async function readWpfTestSources(repoRoot) {
+  const testsRoot = path.join(repoRoot, 'tests', 'Meridian.Wpf.Tests');
+  try {
+    const testPaths = await listFilesRecursive(testsRoot, (filePath) => filePath.endsWith('.cs'));
+    const entries = await Promise.all(
+      testPaths.sort((left, right) => left.localeCompare(right)).map(async (filePath) => ({
+        path: path.relative(repoRoot, filePath).replaceAll(path.sep, '/'),
+        content: await fs.readFile(filePath, 'utf8'),
+      })),
+    );
+    return entries;
+  } catch {
+    return [];
+  }
+}
+
+function inferViewModelName(pageType) {
+  return pageType.endsWith('Page')
+    ? `${pageType.slice(0, -'Page'.length)}ViewModel`
+    : `${pageType}ViewModel`;
+}
+
+function findTestReferences(page, testSources) {
+  const signals = [
+    page.pageType,
+    inferViewModelName(page.pageType),
+    page.tag.length >= 5 ? page.tag : null,
+  ].filter(Boolean);
+  const references = [];
+
+  for (const source of testSources) {
+    if (signals.some((signal) => source.content.includes(signal))) {
+      references.push(source.path);
+    }
+  }
+
+  return references;
+}
+
+function screenTrackerStatus(screen) {
+  if (!screen.screenshotIndexRow) {
+    return 'needs-screenshot-index';
+  }
+
+  if (!screen.screenshotPath || !screen.screenshotExists) {
+    return 'needs-screenshot';
+  }
+
+  if (screen.testReferences.length === 0) {
+    return 'needs-test-reference';
+  }
+
+  return 'evidence-current';
+}
+
+function screenTrackerTasks(screen) {
+  const tasks = [
+    {
+      done: true,
+      text: `Registered in the WPF shell registry as ${screen.pageTag} (${screen.pageType}).`,
+    },
+  ];
+
+  if (!screen.screenshotIndexRow) {
+    tasks.push({
+      done: false,
+      text: `Add ${screen.pageTag} to docs/screenshots/desktop/README.md with TBI coverage or committed PNG evidence.`,
+    });
+  } else if (!screen.screenshotPath) {
+    tasks.push({
+      done: false,
+      text: `Capture a fixture-mode desktop screenshot for ${screen.pageTag} or record an explicit non-capture decision.`,
+    });
+  } else if (!screen.screenshotExists) {
+    tasks.push({
+      done: false,
+      text: `Fix the screenshot index path or commit the missing PNG at ${screen.screenshotPath}.`,
+    });
+  } else {
+    tasks.push({
+      done: true,
+      text: `Screenshot evidence is committed at ${screen.screenshotPath}${screen.refreshedDate ? ` (${screen.refreshedDate})` : ''}.`,
+    });
+  }
+
+  if (screen.testReferences.length === 0) {
+    tasks.push({
+      done: false,
+      text: `Add or link WPF route/view-model test evidence for ${screen.pageTag}; the scanner found no test reference to ${screen.pageType}, ${inferViewModelName(screen.pageType)}, or the page tag.`,
+    });
+  } else {
+    const references = screen.testReferences.slice(0, 3).join(', ');
+    const suffix = screen.testReferences.length > 3 ? `, +${screen.testReferences.length - 3} more` : '';
+    tasks.push({
+      done: true,
+      text: `WPF route/view-model test reference found in ${references}${suffix}.`,
+    });
+  }
+
+  return tasks;
+}
+
+function statusLabel(status) {
+  const labels = new Map([
+    ['evidence-current', 'Evidence current'],
+    ['needs-test-reference', 'Needs test reference'],
+    ['needs-screenshot', 'Needs screenshot'],
+    ['needs-screenshot-index', 'Needs screenshot index row'],
+  ]);
+  return labels.get(status) ?? status;
+}
+
+function mermaidTaskLabel(value) {
+  return value
+    .replace(/[:,]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function slug(value) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'item';
+}
+
+function buildGantt(screenGroups) {
+  const lines = [
+    '```mermaid',
+    'gantt',
+    '    title WPF screen development evidence tracker',
+    '    dateFormat  YYYY-MM-DD',
+    '    axisFormat  %b %d',
+  ];
+
+  for (const [workspaceName, screens] of screenGroups.entries()) {
+    lines.push(`    section ${mermaidTaskLabel(workspaceName)}`);
+    for (const screen of screens) {
+      const modifiers = [];
+      if (screen.status === 'evidence-current') {
+        modifiers.push('done');
+      } else {
+        if (screen.visibilityTier === 'Primary') {
+          modifiers.push('crit');
+        }
+        modifiers.push('active');
+      }
+
+      const startDate = screen.refreshedDate ?? WPF_SCREEN_TRACKER_BASELINE_DATE;
+      const duration = screen.status === 'evidence-current'
+        ? '1d'
+        : screen.status === 'needs-test-reference'
+          ? '2d'
+          : '3d';
+      const taskId = `${slug(screen.workspace)}-${slug(screen.pageTag)}`.replaceAll('-', '_');
+      const label = `${screen.title} ${screen.status === 'evidence-current' ? 'evidence' : statusLabel(screen.status)}`;
+      lines.push(`    ${mermaidTaskLabel(label)} :${modifiers.join(', ')}, ${taskId}, ${startDate}, ${duration}`);
+    }
+  }
+
+  lines.push('```');
+  return lines.join('\n');
+}
+
+function buildScreenTrackerMarkdown({ fingerprint, summary, screenGroups }) {
+  const lines = [
+    '<!--',
+    'generated: true',
+    'generator: scripts/generate-diagrams.mjs --tracker-only',
+    'generator_version: 1.0.0',
+    'render_contract: meridian.generated-docs.v1',
+    'inputs:',
+    '  - src/Meridian.Wpf/Features/**/*.cs',
+    '  - src/Meridian.Wpf/Models/ShellNavigationCatalog*.cs',
+    '  - src/Meridian.Wpf/Shell/Services/ShellPageRegistryBuilder.cs',
+    '  - docs/screenshots/desktop/README.md',
+    '  - tests/Meridian.Wpf.Tests/**/*.cs',
+    'do_not_edit: true',
+    '-->',
+    '# WPF Screen Development Tracker',
+    '',
+    'This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.',
+    '',
+    `- Source fingerprint: \`${fingerprint}\``,
+    `- Baseline date for open Gantt tasks: \`${WPF_SCREEN_TRACKER_BASELINE_DATE}\``,
+    `- Registered WPF screens: \`${summary.screenCount}\``,
+    `- Open automated tasks: \`${summary.openTaskCount}\``,
+    '',
+    '## Workspace Summary',
+    '',
+    '| Workspace | Screens | Primary | Secondary | Overflow | Screenshot evidence | Test references | Open tasks |',
+    '| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |',
+  ];
+
+  for (const workspace of summary.workspaces) {
+    lines.push(`| ${escapeMarkdownCell(workspace.name)} | ${workspace.screenCount} | ${workspace.primaryCount} | ${workspace.secondaryCount} | ${workspace.overflowCount} | ${workspace.screenshotCount} | ${workspace.testReferenceCount} | ${workspace.openTaskCount} |`);
+  }
+
+  lines.push(
+    '',
+    '## Gantt Chart',
+    '',
+    'The Mermaid Gantt view uses deterministic evidence buckets, not delivery promises. Completed items have committed screenshot and test-reference evidence; active items show the next generated proof task.',
+    '',
+    buildGantt(screenGroups),
+    '',
+    '## Automated Screen TODOs',
+    '',
+  );
+
+  for (const [workspaceName, screens] of screenGroups.entries()) {
+    lines.push(`### ${workspaceName}`);
+    lines.push('');
+
+    for (const screen of screens) {
+      lines.push(`#### ${screen.title} (\`${screen.pageTag}\`)`);
+      lines.push('');
+      lines.push(`- Workspace section: \`${screen.section}\`; visibility: \`${screen.visibilityTier}\`; page class: \`${screen.pageType}\`.`);
+      lines.push(`- Status: \`${statusLabel(screen.status)}\`.`);
+      for (const task of screen.tasks) {
+        lines.push(`- [${task.done ? 'x' : ' '}] ${task.text}`);
+      }
+      lines.push('');
+    }
+  }
+
+  return `${lines.join('\n').trimEnd()}\n`;
+}
+
+function buildScreenTrackerJson({ fingerprint, summary, screens }) {
+  return `${JSON.stringify({
+    schema: {
+      id: 'meridian.wpf-screen-development-tracker',
+      version: '1.0.0',
+    },
+    generator: {
+      name: 'scripts/generate-diagrams.mjs --tracker-only',
+      version: '1.0.0',
+    },
+    sourceFingerprint: fingerprint,
+    baselineDate: WPF_SCREEN_TRACKER_BASELINE_DATE,
+    summary,
+    screens,
+  }, null, 2)}\n`;
+}
+
+export async function buildWpfScreenTrackerOutputs(repoRoot) {
+  const contents = await readUiDiagramInputs(repoRoot);
+  const screenshotIndexPath = path.join(repoRoot, 'docs', 'screenshots', 'desktop', 'README.md');
+  const screenshotIndex = await fs.readFile(screenshotIndexPath, 'utf8');
+  const testSources = await readWpfTestSources(repoRoot);
+  const fingerprint = createFingerprint([
+    contents.registrySources,
+    screenshotIndex,
+    ...testSources.map((source) => `${source.path}\n${source.content}`),
+  ]);
+  const screenshotRows = parseScreenshotIndex(screenshotIndex);
+  await resolveScreenshotFileState(screenshotRows, repoRoot);
+  const registryPages = parseShellPageDescriptors(contents.registrySources);
+
+  const screenGroups = new Map();
+  const screens = [];
+  for (const page of registryPages) {
+    const workspaceName = workspaceDisplayName(page.workspaceId);
+    const screenshotRow = screenshotRows.get(page.tag.toLowerCase()) ?? null;
+    const screen = {
+      workspace: workspaceName,
+      pageTag: page.tag,
+      title: page.title,
+      section: page.section,
+      visibilityTier: page.visibilityTier,
+      order: page.order,
+      pageType: page.pageType,
+      screenshotIndexRow: Boolean(screenshotRow),
+      screenshotPath: screenshotRow?.screenshotPath ?? null,
+      screenshotExists: screenshotRow?.screenshotExists ?? false,
+      refreshedDate: screenshotRow?.refreshedDate ?? null,
+      fixtureMode: screenshotRow?.fixtureMode ?? null,
+      screenshotGap: screenshotRow?.missingReason ?? 'No screenshot index row was found for this registered page tag.',
+      testReferences: findTestReferences(page, testSources),
+    };
+    screen.status = screenTrackerStatus(screen);
+    screen.tasks = screenTrackerTasks(screen);
+    screen.openTaskCount = screen.tasks.filter((task) => !task.done).length;
+
+    if (!screenGroups.has(workspaceName)) {
+      screenGroups.set(workspaceName, []);
+    }
+
+    screenGroups.get(workspaceName).push(screen);
+    screens.push(screen);
+  }
+
+  const workspaces = [...screenGroups.entries()].map(([name, workspaceScreens]) => ({
+    name,
+    screenCount: workspaceScreens.length,
+    primaryCount: countByVisibility(workspaceScreens, 'Primary'),
+    secondaryCount: countByVisibility(workspaceScreens, 'Secondary'),
+    overflowCount: countByVisibility(workspaceScreens, 'Overflow'),
+    screenshotCount: workspaceScreens.filter((screen) => screen.screenshotExists).length,
+    testReferenceCount: workspaceScreens.filter((screen) => screen.testReferences.length > 0).length,
+    openTaskCount: workspaceScreens.reduce((total, screen) => total + screen.openTaskCount, 0),
+  }));
+  const summary = {
+    screenCount: screens.length,
+    workspaceCount: workspaces.length,
+    screenshotCount: screens.filter((screen) => screen.screenshotExists).length,
+    testReferenceCount: screens.filter((screen) => screen.testReferences.length > 0).length,
+    openTaskCount: screens.reduce((total, screen) => total + screen.openTaskCount, 0),
+    statusCounts: screens.reduce((counts, screen) => {
+      counts[screen.status] = (counts[screen.status] ?? 0) + 1;
+      return counts;
+    }, {}),
+    workspaces,
+  };
+
+  return {
+    fingerprint,
+    summary,
+    markdown: buildScreenTrackerMarkdown({ fingerprint, summary, screenGroups }),
+    json: buildScreenTrackerJson({ fingerprint, summary, screens }),
+  };
+}
+
+export async function generateWpfScreenTracker({ repoRoot }) {
+  const statusDir = path.join(repoRoot, 'docs', 'status');
+  const markdownPath = path.join(statusDir, 'wpf-screen-development-tracker.md');
+  const jsonPath = path.join(statusDir, 'wpf-screen-development-tracker.json');
+  const outputs = await buildWpfScreenTrackerOutputs(repoRoot);
+  const markdownChanged = await writeFileIfChanged(markdownPath, outputs.markdown);
+  const jsonChanged = await writeFileIfChanged(jsonPath, outputs.json);
+  return {
+    markdownPath,
+    jsonPath,
+    markdownChanged,
+    jsonChanged,
+    summary: outputs.summary,
+  };
+}
+
 export async function renderDotFile(viz, dotPath) {
   const dotSource = await fs.readFile(dotPath, 'utf8');
   const renderResult = viz.renderString(dotSource, { format: 'svg', engine: 'dot' });
