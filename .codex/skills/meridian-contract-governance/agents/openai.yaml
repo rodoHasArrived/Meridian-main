@@ -1,4 +1,4 @@
 interface:
-  display_name: "Meridian Contract Governance"
+  display_name: "Govern Contracts"
   short_description: "Trace shared contract impact"
   default_prompt: "Use $meridian-contract-governance to map this Meridian contract change across services, UI surfaces, tests, and docs."

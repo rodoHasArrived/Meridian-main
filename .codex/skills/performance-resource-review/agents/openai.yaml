@@ -1,4 +1,4 @@
 interface:
-  display_name: "Performance Resource Review"
+  display_name: "Review Resource Risk"
   short_description: "Review Meridian changes for resource risk"
   default_prompt: "Use $performance-resource-review to scan this Meridian change for memory, CPU, I/O, rendering, concurrency, and lifecycle risks."

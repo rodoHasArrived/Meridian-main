@@ -1,4 +1,4 @@
 interface:
-  display_name: "Modular Desktop MVVM"
+  display_name: "Build Desktop MVVM"
   short_description: "Implement modular WPF MVVM workstation changes"
   default_prompt: "Use $modular-desktop-mvvm to implement this Meridian desktop change with reusable MVVM modules, tests, and resource guardrails."

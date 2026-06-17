@@ -1,4 +1,4 @@
 interface:
-  display_name: "Diagnostics Audit Timeline"
+  display_name: "Build Audit Timelines"
   short_description: "Build diagnostics and audit timelines"
   default_prompt: "Use $diagnostics-audit-timeline to implement diagnostics panels, audit timelines, evidence trails, and operator triage surfaces."
