@@ -1,4 +1,4 @@
 interface:
-  display_name: "Research Data Acquisition"
+  display_name: "Acquire Research Data"
   short_description: "Build research data acquisition workflows"
   default_prompt: "Use $research-data-acquisition to add a research-data acquisition flow with provider reuse, cancellation, paging, lineage, and tests."
