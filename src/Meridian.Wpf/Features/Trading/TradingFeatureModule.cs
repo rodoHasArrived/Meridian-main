@@ -30,6 +30,7 @@ public sealed class TradingFeatureModule : IDesktopFeatureModule
         services.AddTransient<TradingWorkspaceShellStateProvider>();
         services.AddTransient<TradingWorkspaceShellViewModel>();
         services.AddTransient<TradingWorkspaceShellPage>();
+        services.AddTransient<RunRiskViewModel>();
     }
 
     public IReadOnlyList<ShellPageDescriptor> DescribePages() => Pages;

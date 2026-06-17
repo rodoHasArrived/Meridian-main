@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Meridian.Application.FundStructure;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
 using Meridian.Contracts.Ledger;
@@ -8,6 +9,7 @@ using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.PrivateCapital;
+using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Ui.Shared.Services;
@@ -33,6 +35,31 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.AddTransient<AccountingWorkspaceShellStateProvider>();
         services.AddTransient<AccountingWorkspaceShellViewModel>();
         services.AddTransient<AccountingWorkspaceShellPage>();
+        services.AddSingleton(sp => new InMemoryFundAccountService(
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Meridian",
+                "fund-accounts.json")));
+        services.AddSingleton<IFundAccountService>(sp => sp.GetRequiredService<InMemoryFundAccountService>());
+        services.AddSingleton<IFundStructureService>(sp => new InMemoryFundStructureService(
+            sp.GetRequiredService<IFundAccountService>(),
+            sharedDataAccessService: null,
+            securityMasterQueryService: sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+            persistencePath: Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Meridian",
+                "fund-structure.json")));
+        services.AddSingleton<FundStructureSetupWorkflowService>();
+        services.AddSingleton<FundAccountReadService>();
+        services.AddSingleton<FundLedgerReadService>();
+        services.AddSingleton<ReconciliationReadService>();
+        services.AddSingleton<CashFinancingReadService>();
+        services.AddSingleton<IWorkstationReconciliationApiClient, WorkstationReconciliationApiClient>();
+        services.AddSingleton<IWorkstationSecurityMasterApiClient, WorkstationSecurityMasterApiClient>();
+        services.AddSingleton<ISecurityAssetProfileWorkflowClient, SecurityAssetProfileWorkflowClient>();
+        services.AddSingleton<IOperationsControlCenterClient, OperationsControlCenterClient>();
+        services.AddSingleton<IFundReconciliationWorkbenchService, FundReconciliationWorkbenchService>();
+        services.AddSingleton<IStatementReconciliationWorkbenchService, StatementReconciliationWorkbenchService>();
         services.TryAddSingleton<AccountingPostingService>();
         services.TryAddSingleton<TrialBalanceProjectionService>();
         services.TryAddSingleton<MonthEndCloseStateMachine>();
@@ -73,6 +100,11 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.AddTransient<AccountingConfigureViewModel>();
         services.AddTransient<AccountingConfigurePage>();
         services.AddTransient<AccountingCloseViewModel>();
+        services.AddTransient<FundStructureSetupViewModel>();
+        services.AddTransient<FundAccountsViewModel>();
+        services.AddTransient<FundLedgerViewModel>();
+        services.AddTransient<FinancialRecordExplorerViewModel>();
+        services.AddTransient<AccountPortfolioViewModel>();
     }
 
     public IReadOnlyList<ShellPageDescriptor> DescribePages() => Capability.Pages;
