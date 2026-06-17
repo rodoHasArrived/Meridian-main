@@ -21,6 +21,7 @@ import {
   buildOperationalExceptionWorkbenchState,
   buildReconciliationDetailActions,
   buildReconciliationQueuePanelViewState,
+  buildReconciliationComparisonViewState,
   buildReconciliationStatementRunsViewState,
   buildReconciliationDetailViewState,
   buildReconciliationNarrative,
@@ -1877,6 +1878,19 @@ describe("accounting-screen view model", () => {
     const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
     await waitFor(() => expect(result.current.draft.journalEntryId).toBe("manual-je-1"));
 
+    expect(result.current.totalDebitsLabel).toBe("$100");
+    expect(result.current.totalCreditsLabel).toBe("$100");
+    expect(result.current.balanceStatusLabel).toBe("Balanced");
+    act(() => result.current.updateLine("line-debit", { amount: 125 }));
+    expect(result.current.totalDebitsLabel).toBe("$125");
+    expect(result.current.totalCreditsLabel).toBe("$100");
+    expect(result.current.balanceStatusLabel).toBe("Out by $25");
+    expect(result.current.canSubmit).toBe(false);
+    act(() => result.current.updateLine("line-credit", { amount: 125 }));
+    expect(result.current.totalDebitsLabel).toBe("$125");
+    expect(result.current.totalCreditsLabel).toBe("$125");
+    expect(result.current.balanceStatusLabel).toBe("Balanced");
+
     expect(result.current.getLineBadges("line-debit").map((badge) => badge.label)).toContain("Blocked");
     expect(result.current.privateCapitalActivity.statusLabel).toBe("1 fund events / 1 capital accounts");
     expect(result.current.privateCapitalActivity.summaryCards).toEqual(expect.arrayContaining([
@@ -2348,6 +2362,61 @@ describe("accounting-screen view model", () => {
       "Evidence"
     ]);
     expect(state.tabs.every((tab) => !tab.disabled)).toBe(true);
+  });
+
+  it("derives the compact reconciliation comparison from statement and cash-flow evidence", () => {
+    const state = buildReconciliationComparisonViewState({
+      statementRuns: [
+        {
+          runId: "statement-run-1",
+          importId: "import-1",
+          startedAtUtc: "2026-05-01T00:00:00Z",
+          completedAtUtc: "2026-05-01T00:03:00Z",
+          positionMatches: 8,
+          cashMatches: 3,
+          transactionMatches: 13,
+          openExceptionCount: 2,
+          brokerCustodian: "Northern Trust",
+          account: "Fund A - Prime",
+          period: "2026-04",
+          status: "ReviewRequired",
+          validationIssueCount: 4,
+          breakCount: 2,
+          caseCount: 1,
+          importedAtUtc: "2026-05-01T00:04:00Z"
+        }
+      ],
+      fallbackQueue: reconciliationQueue,
+      selectedRunId: "statement-run-1",
+      cashFlow: {
+        totalCash: 120000,
+        totalLedgerCash: 120500,
+        netVariance: 500,
+        totalFinancing: 1400,
+        runsWithCashSignals: 4,
+        runsWithCashVariance: 1,
+        tone: "warning",
+        summary: "Cash-flow coverage is available for 4 runs; 1 run needs variance review."
+      }
+    });
+
+    expect(state).toMatchObject({
+      title: "Cash reconciliation - broker statement vs. ledger",
+      statementHeading: "Statement",
+      ledgerHeading: "Ledger",
+      matchedBadgeLabel: "24 matched",
+      openBadgeLabel: "2 open",
+      statementBalanceLabel: "$120,000",
+      ledgerBalanceLabel: "$120,500",
+      varianceLabel: "Out by $500",
+      varianceTone: "warning"
+    });
+    expect(state.rows[0]).toMatchObject({
+      statementTitle: "Northern Trust",
+      statementValue: "$120,000",
+      ledgerValue: "$120,500",
+      statusTone: "warning"
+    });
   });
 
   it("derives reconciliation detail queue row state and empty inspector copy", () => {

@@ -237,29 +237,185 @@
                 </TabItem>
 
                 <TabItem Header="Manual Journals">
-                    <Grid Margin="0,16,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="390" />
-                            <ColumnDefinition Width="16" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Style="{StaticResource SectionCardStyle}">
+                    <StackPanel Margin="0,16,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="500" />
+                                <ColumnDefinition Width="16" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                        <Border Grid.Column="0"
+                                Style="{StaticResource SectionCardStyle}"
+                                AutomationProperties.AutomationId="ManualJournalDoubleEntryWorkbench"
+                                AutomationProperties.Name="Manual journal double-entry workbench">
                             <StackPanel>
-                                <TextBlock Text="Journal Draft" Style="{StaticResource CardHeaderStyle}" />
-                                <TextBlock Text="Entry Type" Style="{StaticResource MetricLabelStyle}" Margin="0,14,0,4" />
-                                <ComboBox ItemsSource="{Binding ManualJournalEntryTypeOptions}" SelectedItem="{Binding SelectedEntryType, Mode=TwoWay}" />
-                                <TextBlock Text="Memo" Style="{StaticResource MetricLabelStyle}" Margin="0,14,0,4" />
-                                <TextBox Text="{Binding DraftMemo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                <TextBlock Text="Amount" Style="{StaticResource MetricLabelStyle}" Margin="0,12,0,4" />
-                                <TextBox Text="{Binding DraftAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                <TextBlock Text="Currency" Style="{StaticResource MetricLabelStyle}" Margin="0,12,0,4" />
-                                <TextBox Text="{Binding DraftCurrency, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                <TextBlock Text="Debit Account" Style="{StaticResource MetricLabelStyle}" Margin="0,12,0,4" />
-                                <TextBox Text="{Binding DraftDebitAccountPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                <TextBlock Text="Credit Account" Style="{StaticResource MetricLabelStyle}" Margin="0,12,0,4" />
-                                <TextBox Text="{Binding DraftCreditAccountPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                <TextBlock Text="Accounting Basis" Style="{StaticResource MetricLabelStyle}" Margin="0,12,0,4" />
-                                <ComboBox ItemsSource="{Binding AccountingBasisOptions}" SelectedItem="{Binding SelectedAccountingBasis, Mode=TwoWay}" />
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="MANUAL JOURNAL ENTRY - BALANCED DOUBLE-ENTRY" Style="{StaticResource CardHeaderStyle}" />
+                                        <TextBlock Text="{Binding ManualJournalStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <Border Grid.Column="1"
+                                            Margin="10,0,0,0"
+                                            Padding="8,4"
+                                            CornerRadius="6"
+                                            BorderBrush="{StaticResource SuccessColorBrush}"
+                                            BorderThickness="1"
+                                            Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                            VerticalAlignment="Top">
+                                        <TextBlock Text="{Binding ManualJournalDraftBalanceBadgeText}"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource SuccessColorBrush}" />
+                                    </Border>
+                                </Grid>
+
+                                <Border BorderBrush="{StaticResource BorderSubtleBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="12"
+                                        Margin="0,14,0,0"
+                                        Background="{StaticResource ConsoleBackgroundLightBrush}">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1*" />
+                                            <ColumnDefinition Width="1*" />
+                                            <ColumnDefinition Width="1.4*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,10">
+                                            <TextBlock Text="Date" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBox Text="{Binding ManualJournalDraftDateText}" IsReadOnly="True" Margin="0,4,0,0" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,8,10">
+                                            <TextBlock Text="Reference" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBox Text="{Binding ManualJournalDraftReferenceText}" IsReadOnly="True" Margin="0,4,0,0" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,10">
+                                            <TextBlock Text="Memo" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBox Text="{Binding DraftMemo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,8,0">
+                                            <TextBlock Text="Entry Type" Style="{StaticResource MetricLabelStyle}" />
+                                            <ComboBox ItemsSource="{Binding ManualJournalEntryTypeOptions}" SelectedItem="{Binding SelectedEntryType, Mode=TwoWay}" Margin="0,4,0,0" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,8,0">
+                                            <TextBlock Text="Basis" Style="{StaticResource MetricLabelStyle}" />
+                                            <ComboBox ItemsSource="{Binding AccountingBasisOptions}" SelectedItem="{Binding SelectedAccountingBasis, Mode=TwoWay}" Margin="0,4,0,0" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="1" Grid.Column="2">
+                                            <TextBlock Text="Currency" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBox Text="{Binding DraftCurrency, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,0" />
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+
+                                <Border BorderBrush="{StaticResource BorderSubtleBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="0"
+                                        Margin="0,14,0,0"
+                                        Background="{StaticResource ConsoleBackgroundLightBrush}">
+                                    <Grid AutomationProperties.AutomationId="ManualJournalDoubleEntryGrid"
+                                          AutomationProperties.Name="Manual journal double-entry grid">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="2*" />
+                                            <ColumnDefinition Width="1*" />
+                                            <ColumnDefinition Width="1*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Row="0" Grid.Column="0" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,1,1" Padding="10,8" Background="{StaticResource ConsoleBackgroundMediumBrush}">
+                                            <TextBlock Text="ACCOUNT" Style="{StaticResource MetricLabelStyle}" />
+                                        </Border>
+                                        <Border Grid.Row="0" Grid.Column="1" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,1,1" Padding="10,8" Background="{StaticResource ConsoleBackgroundMediumBrush}">
+                                            <TextBlock Text="DEBIT" Style="{StaticResource MetricLabelStyle}" HorizontalAlignment="Right" />
+                                        </Border>
+                                        <Border Grid.Row="0" Grid.Column="2" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,0,1" Padding="10,8" Background="{StaticResource ConsoleBackgroundMediumBrush}">
+                                            <TextBlock Text="CREDIT" Style="{StaticResource MetricLabelStyle}" HorizontalAlignment="Right" />
+                                        </Border>
+
+                                        <Border Grid.Row="1" Grid.Column="0" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,1,1" Padding="10,8">
+                                            <TextBox Text="{Binding DraftDebitAccountPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </Border>
+                                        <Border Grid.Row="1" Grid.Column="1" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,1,1" Padding="10,8">
+                                            <TextBox Text="{Binding DraftAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                     HorizontalContentAlignment="Right"
+                                                     AutomationProperties.AutomationId="ManualJournalDebitAmountPreview" />
+                                        </Border>
+                                        <Border Grid.Row="1" Grid.Column="2" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,0,1" Padding="10,8">
+                                            <TextBlock Text="0.00" Style="{StaticResource MetricValueMonoStyle}" HorizontalAlignment="Right" />
+                                        </Border>
+
+                                        <Border Grid.Row="2" Grid.Column="0" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,1,1" Padding="10,8">
+                                            <TextBox Text="{Binding DraftCreditAccountPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </Border>
+                                        <Border Grid.Row="2" Grid.Column="1" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,1,1" Padding="10,8">
+                                            <TextBlock Text="0.00" Style="{StaticResource MetricValueMonoStyle}" HorizontalAlignment="Right" />
+                                        </Border>
+                                        <Border Grid.Row="2" Grid.Column="2" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,0,1" Padding="10,8">
+                                            <TextBox Text="{Binding DraftAmount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                     HorizontalContentAlignment="Right"
+                                                     AutomationProperties.AutomationId="ManualJournalCreditAmountPreview" />
+                                        </Border>
+
+                                        <Border Grid.Row="3" Grid.Column="0" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,1,0" Padding="10,8" Background="{StaticResource ConsoleBackgroundMediumBrush}">
+                                            <TextBlock Text="TOTALS" Style="{StaticResource MetricLabelStyle}" />
+                                        </Border>
+                                        <Border Grid.Row="3" Grid.Column="1" BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="0,0,1,0" Padding="10,8" Background="{StaticResource ConsoleBackgroundMediumBrush}">
+                                            <TextBlock Text="{Binding DraftAmount}" Style="{StaticResource MetricValueMonoStyle}" HorizontalAlignment="Right" />
+                                        </Border>
+                                        <Border Grid.Row="3" Grid.Column="2" Padding="10,8" Background="{StaticResource ConsoleBackgroundMediumBrush}">
+                                            <TextBlock Text="{Binding DraftAmount}" Style="{StaticResource MetricValueMonoStyle}" HorizontalAlignment="Right" />
+                                        </Border>
+                                    </Grid>
+                                </Border>
+
+                                <Border BorderBrush="{StaticResource BorderSubtleBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="10"
+                                        Margin="0,12,0,0"
+                                        Background="{StaticResource ConsoleBackgroundMediumBrush}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="Totals" Style="{StaticResource MetricLabelStyle}" />
+                                            <TextBlock Text="{Binding ManualJournalDraftBalanceText}"
+                                                       Style="{StaticResource CardHeaderStyle}"
+                                                       Margin="0,4,0,0" />
+                                        </StackPanel>
+                                        <Border Grid.Column="1"
+                                                Padding="8,4"
+                                                CornerRadius="6"
+                                                BorderBrush="{StaticResource SuccessColorBrush}"
+                                                BorderThickness="1"
+                                                Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding ManualJournalDraftBalanceBadgeText}"
+                                                       FontSize="11"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource SuccessColorBrush}" />
+                                        </Border>
+                                    </Grid>
+                                </Border>
+
                                 <TextBlock Text="Evidence Link" Style="{StaticResource MetricLabelStyle}" Margin="0,12,0,4" />
                                 <TextBox Text="{Binding DraftEvidenceLink, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                 <WrapPanel Margin="0,16,0,0">
@@ -358,7 +514,8 @@
                                 </DataGrid>
                             </StackPanel>
                         </Border>
-                    </Grid>
+                        </Grid>
+                    </StackPanel>
                 </TabItem>
 
                 <TabItem Header="Capital Account Workbench">

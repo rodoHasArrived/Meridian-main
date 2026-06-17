@@ -6,6 +6,7 @@
   "scripts": {
     "generate-icons": "node build/node/generate-icons.mjs",
     "generate-diagrams": "node scripts/generate-diagrams.mjs",
+    "generate-wpf-screen-tracker": "node scripts/generate-diagrams.mjs --tracker-only",
     "ui:dashboard:install": "npm --prefix src/Meridian.Ui/dashboard install",
     "ui:dashboard:build": "npm --prefix src/Meridian.Ui/dashboard run build",
     "ui:dashboard:test": "npm --prefix src/Meridian.Ui/dashboard run test"

@@ -384,13 +384,27 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public string DraftCurrency
     {
         get => _draftCurrency;
-        set => SetProperty(ref _draftCurrency, value);
+        set
+        {
+            if (SetProperty(ref _draftCurrency, value))
+            {
+                RaisePropertyChanged(nameof(ManualJournalDraftBalanceText));
+                RaisePropertyChanged(nameof(ManualJournalDraftBalanceBadgeText));
+            }
+        }
     }
 
     public decimal DraftAmount
     {
         get => _draftAmount;
-        set => SetProperty(ref _draftAmount, value);
+        set
+        {
+            if (SetProperty(ref _draftAmount, value))
+            {
+                RaisePropertyChanged(nameof(ManualJournalDraftBalanceText));
+                RaisePropertyChanged(nameof(ManualJournalDraftBalanceBadgeText));
+            }
+        }
     }
 
     public string DraftDebitAccountPath
@@ -430,6 +444,22 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     }
 
     public bool CanSubmitManualJournal => _selectedDraft is { Version: > 0 };
+
+    public string ManualJournalDraftReferenceText
+        => _selectedDraft?.JournalEntryId.ToString("D") ?? "New draft";
+
+    public string ManualJournalDraftDateText
+        => (_selectedDraft?.AccountingDate ?? DateOnly.FromDateTime(DateTime.UtcNow)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    public string ManualJournalDraftBalanceText
+        => _selectedDraft is { } draft
+            ? $"{draft.TotalDebits:0.##} / {draft.TotalCredits:0.##} {draft.Currency}"
+            : $"{DraftAmount:0.##} / {DraftAmount:0.##} {DraftCurrency}";
+
+    public string ManualJournalDraftBalanceBadgeText
+        => _selectedDraft is { } draft && draft.TotalDebits != draft.TotalCredits
+            ? $"Out by {Math.Abs(draft.TotalDebits - draft.TotalCredits):0.##} {draft.Currency}"
+            : "Balanced";
 
     public async Task LoadAsync(CancellationToken ct = default)
         => await RefreshAsync(ct).ConfigureAwait(false);
@@ -627,6 +657,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             await LoadManualJournalWorkbenchAsync(ct).ConfigureAwait(false);
             ManualJournalStatusText = $"Draft {saved.JournalEntryId:D} saved as {saved.Status}; {saved.ValidationIssues.Count} validation issue(s).";
             RaisePropertyChanged(nameof(CanSubmitManualJournal));
+            RaiseManualJournalDraftComputedProperties();
         }
         catch (Exception ex)
         {
@@ -680,6 +711,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
             await LoadManualJournalWorkbenchAsync(ct).ConfigureAwait(false);
             ManualJournalStatusText = $"Draft submitted for approval as {submitted.ApprovalId}.";
             RaisePropertyChanged(nameof(CanSubmitManualJournal));
+            RaiseManualJournalDraftComputedProperties();
         }
         catch (Exception ex)
         {
@@ -818,6 +850,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         ClearRows();
         StatusText = "Select a fund-linked context to unlock Accounting Configure.";
         RaisePropertyChanged(nameof(CanSubmitManualJournal));
+        RaiseManualJournalDraftComputedProperties();
     }
 
     private void ApplyConfiguration(AccountingConfigurationWorkspaceDto workspace)
@@ -862,6 +895,15 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         _selectedDraft ??= workbench.Drafts.FirstOrDefault();
         ManualJournalStatusText = BuildManualJournalStatusText(workbench);
         RaisePropertyChanged(nameof(CanSubmitManualJournal));
+        RaiseManualJournalDraftComputedProperties();
+    }
+
+    private void RaiseManualJournalDraftComputedProperties()
+    {
+        RaisePropertyChanged(nameof(ManualJournalDraftReferenceText));
+        RaisePropertyChanged(nameof(ManualJournalDraftDateText));
+        RaisePropertyChanged(nameof(ManualJournalDraftBalanceText));
+        RaisePropertyChanged(nameof(ManualJournalDraftBalanceBadgeText));
     }
 
     private async Task LoadCapitalAccountWorkbenchAsync(CancellationToken ct)

@@ -8,7 +8,7 @@ import json
 import os
 from pathlib import Path
 
-from common import EXCLUDE_DIRS, Finding, emit_findings, load_data, repo_path, repo_root, sha256_file, sha256_text, write_text_if_changed
+from common import EXCLUDE_DIRS, Finding, emit_findings, load_data, repo_path, repo_root, sha256_file, sha256_manifest_file, sha256_text, write_text_if_changed
 
 HASH_MANIFEST = Path("docs/source/generated/source-hash-manifest.json")
 SOURCE_SUFFIXES = {
@@ -98,7 +98,7 @@ def validate_generated_manifests(root: Path) -> list[Finding]:
                 if not path.exists():
                     findings.append(Finding("error", repo_path(manifest_path, root), f"{section} path is missing: {entry['path']}"))
                     continue
-                actual = sha256_file(path)
+                actual = sha256_manifest_file(path)
                 if actual != entry.get("sha256"):
                     findings.append(Finding("error", entry["path"], f"{section} hash mismatch; rerun the owning renderer"))
     return findings

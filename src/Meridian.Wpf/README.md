@@ -510,7 +510,8 @@ unavailable state rather than seeded sample numbers or plausible-looking derived
 
 ## Related docs
 
-- `docs/status/desktop-application-screens.md` - registry-backed screen inventory for the WPF desktop application, including workspace, page tag, visibility tier, implementation status, gaps, and available desktop screenshot evidence.
+- `docs/status/wpf-screen-development-tracker.md` - generated WPF screen Gantt chart and automated per-screen TODO checklist derived from the shell registry, desktop screenshot index, and WPF test references.
+- `docs/screenshots/desktop/README.md` - maintained desktop screenshot evidence index consumed by the generated screen tracker.
 - `src/Meridian.Ui.Shared/README.md`
 - `docs/development/wpf-implementation-notes.md`
 - `docs/source/generated/source-module-index.md`

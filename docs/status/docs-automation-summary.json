@@ -35,7 +35,7 @@
         "docs/status/todo-scan-results.json"
       ],
       "return_code": 0,
-      "duration_seconds": 18.378,
+      "duration_seconds": 68.65,
       "status": "success",
       "output_file": "docs/status/TODO.md",
       "error": null
@@ -48,7 +48,7 @@
         "--summary"
       ],
       "return_code": 0,
-      "duration_seconds": 3.468,
+      "duration_seconds": 0.796,
       "status": "success",
       "output_file": null,
       "error": null
@@ -62,7 +62,7 @@
         "docs/generated/repository-structure.md"
       ],
       "return_code": 0,
-      "duration_seconds": 6.376,
+      "duration_seconds": 6.714,
       "status": "success",
       "output_file": "docs/generated/repository-structure.md",
       "error": null
@@ -78,7 +78,7 @@
         "docs/status/doc-health-dashboard.json"
       ],
       "return_code": 0,
-      "duration_seconds": 9.724,
+      "duration_seconds": 7.437,
       "status": "success",
       "output_file": "docs/status/doc-health-dashboard.md",
       "error": null
@@ -92,7 +92,7 @@
         "docs/status/example-validation.md"
       ],
       "return_code": 0,
-      "duration_seconds": 1.42,
+      "duration_seconds": 0.565,
       "status": "success",
       "output_file": "docs/status/example-validation.md",
       "error": null
@@ -108,7 +108,7 @@
         "docs/status/ai-inventory-report.json"
       ],
       "return_code": 0,
-      "duration_seconds": 4.257,
+      "duration_seconds": 0.49,
       "status": "success",
       "output_file": "docs/status/ai-inventory-report.md",
       "error": null
@@ -125,7 +125,7 @@
         "docs/status/ai-handoff-checklist-report.json"
       ],
       "return_code": 0,
-      "duration_seconds": 4.597,
+      "duration_seconds": 0.274,
       "status": "success",
       "output_file": "docs/status/ai-handoff-checklist-report.md",
       "error": null
@@ -149,7 +149,7 @@
         "docs/ai/assistant-workflow-contract.md"
       ],
       "return_code": 0,
-      "duration_seconds": 2.276,
+      "duration_seconds": 0.279,
       "status": "success",
       "output_file": null,
       "error": null
@@ -166,7 +166,7 @@
         "docs/status/prompt-route-lint-report.json"
       ],
       "return_code": 0,
-      "duration_seconds": 3.947,
+      "duration_seconds": 0.251,
       "status": "success",
       "output_file": "docs/status/prompt-route-lint-report.json",
       "error": null
@@ -201,7 +201,7 @@
         "docs/status/ai-handoff-packet.json"
       ],
       "return_code": 0,
-      "duration_seconds": 2.887,
+      "duration_seconds": 0.462,
       "status": "success",
       "output_file": "docs/status/ai-handoff-packet.json",
       "error": null
@@ -216,7 +216,7 @@
         "--summary"
       ],
       "return_code": 0,
-      "duration_seconds": 1.22,
+      "duration_seconds": 0.282,
       "status": "success",
       "output_file": null,
       "error": null
@@ -229,7 +229,7 @@
         "--summary"
       ],
       "return_code": 0,
-      "duration_seconds": 1.075,
+      "duration_seconds": 0.375,
       "status": "success",
       "output_file": null,
       "error": null
@@ -244,7 +244,7 @@
         "--summary"
       ],
       "return_code": 0,
-      "duration_seconds": 1.553,
+      "duration_seconds": 0.728,
       "status": "success",
       "output_file": null,
       "error": null
@@ -258,10 +258,10 @@
         "docs/status/coverage-report.md"
       ],
       "return_code": 1,
-      "duration_seconds": 1605.401,
+      "duration_seconds": 306.781,
       "status": "failed",
       "output_file": "docs/status/coverage-report.md",
-      "error": "Error: failed to build coverage report: [WinError 1921] The name of the file cannot be resolved by the system: 'D:\\\\Meridian-main\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools'"
+      "error": "Error: failed to build coverage report: [WinError 1921] The name of the file cannot be resolved by the system: 'D:\\\\Meridian-main\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\.tmp\\\\pr1922\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools\\\\src\\\\Meridian.Ui\\\\dashboard\\\\node_modules\\\\meridian-tools'"
     }
   ]
 }

@@ -48,6 +48,7 @@ import type {
   CorporateActionsViewState,
   CorporateActionRowViewModel,
   ReconciliationBreakRowViewModel,
+  ReconciliationComparisonViewState,
   ReconciliationQueuePanelViewState,
   ReconciliationQueueRunRowViewModel,
   ReconciliationStatementRunRowViewModel,
@@ -396,6 +397,65 @@ const accountingSystemEvidencePackageVariant = {
   Missing: "danger"
 } as const;
 
+function ReconciliationComparisonPanel({ view }: { view: ReconciliationComparisonViewState }) {
+  return (
+    <section className="accounting-reference-panel" data-appearance="light" aria-label={view.ariaLabel}>
+      <div className="accounting-reference-heading">
+        <div className="min-w-0">
+          <p className="accounting-reference-kicker">{view.title}</p>
+          <p className="accounting-reference-subtitle">{view.subtitle}</p>
+        </div>
+        <div className="accounting-reference-badges" aria-label="Reconciliation match status">
+          <span className="accounting-reference-badge accounting-reference-badge-success">{view.matchedBadgeLabel}</span>
+          <span className="accounting-reference-badge accounting-reference-badge-warning">{view.openBadgeLabel}</span>
+        </div>
+      </div>
+
+      <div className="accounting-reconciliation-grid">
+        <div className="accounting-reconciliation-column-heading">
+          <span>{view.statementHeading}</span>
+        </div>
+        <div className="accounting-reconciliation-column-heading">
+          <span>{view.ledgerHeading}</span>
+        </div>
+        {view.rows.map((row) => (
+          <div key={row.id} className="contents">
+            <div className={cn("accounting-reconciliation-cell", row.statusTone === "success" ? "is-matched" : "is-open")}>
+              <div className="min-w-0">
+                <div className="accounting-reconciliation-title">{row.statementTitle}</div>
+                <div className="accounting-reconciliation-meta">{row.statementMeta}</div>
+              </div>
+              <div className="accounting-reconciliation-value">{row.statementValue}</div>
+            </div>
+            <div className={cn("accounting-reconciliation-cell", row.statusTone === "success" ? "is-matched" : "is-open")}>
+              <div className="min-w-0">
+                <div className="accounting-reconciliation-title">{row.ledgerTitle}</div>
+                <div className="accounting-reconciliation-meta">{row.ledgerMeta}</div>
+              </div>
+              <div className="accounting-reconciliation-value">{row.ledgerValue}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="accounting-balance-strip">
+        <div>
+          <span>Statement balance</span>
+          <strong>{view.statementBalanceLabel}</strong>
+        </div>
+        <div>
+          <span>Ledger balance</span>
+          <strong>{view.ledgerBalanceLabel}</strong>
+        </div>
+        <div className={cn("accounting-reference-balance-badge", view.varianceTone === "success" ? "is-balanced" : "is-out")}>
+          <span aria-hidden="true" />
+          {view.varianceLabel}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function AccountingSystemReconciliationPanel({
   providers,
   importDetail,
@@ -420,6 +480,9 @@ function AccountingSystemReconciliationPanel({
   const selectedCompanyLabel = activeProvider?.connection?.companyName ?? activeProvider?.connection?.companyId ?? null;
   const rows = reconciliation?.rows.slice(0, 5) ?? [];
   const evidencePackages = reconciliation?.evidencePackages?.slice(0, 4) ?? [];
+  const statementBalance = reconciliation ? reconciliation.totalExternalDebits - reconciliation.totalExternalCredits : 0;
+  const ledgerBalance = reconciliation ? reconciliation.totalMeridianDebits - reconciliation.totalMeridianCredits : 0;
+  const varianceBalance = statementBalance - ledgerBalance;
 
   return (
     <Card className="panel-surface" role="region" aria-label="External GL reconciliation">
@@ -461,35 +524,66 @@ function AccountingSystemReconciliationPanel({
           <AccountingValue label="Break rows" value={String(reconciliation?.breakCount ?? 0)} />
         </div>
         {reconciliation ? (
-          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_18rem]">
-            <div className="overflow-hidden rounded-md border border-border/70">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                  <tr>
-                    <th className="px-3 py-2 font-medium">Account</th>
-                    <th className="px-3 py-2 text-right font-medium">External</th>
-                    <th className="px-3 py-2 text-right font-medium">Meridian</th>
-                    <th className="px-3 py-2 text-right font-medium">Variance</th>
-                    <th className="px-3 py-2 font-medium">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row) => (
-                    <tr key={row.rowId} className="border-t border-border/60">
-                      <td className="px-3 py-2">
-                        <span className="block font-semibold text-foreground">{row.accountName}</span>
-                        <span className="block font-mono text-[11px] text-muted-foreground">{row.accountCode}</span>
-                      </td>
-                      <td className="px-3 py-2 text-right font-mono">{formatGlAmount(row.externalDebit - row.externalCredit, row.currency)}</td>
-                      <td className="px-3 py-2 text-right font-mono">{formatGlAmount(row.meridianDebit - row.meridianCredit, row.currency)}</td>
-                      <td className="px-3 py-2 text-right font-mono">{formatGlAmount(row.variance, row.currency)}</td>
-                      <td className="px-3 py-2">
-                        <Badge variant={accountingSystemStatusVariant[row.status]}>{row.status}</Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_19rem]">
+            <div className="overflow-hidden rounded-md border border-border/70 bg-background/70 shadow-sm">
+              <div className="border-b border-border/70 bg-secondary/35 px-4 py-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    Cash reconciliation - broker statement vs. ledger
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="success">{reconciliation.matchedCount} matched</Badge>
+                    <Badge variant={reconciliation.breakCount > 0 ? "warning" : "success"}>{reconciliation.breakCount} open</Badge>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 border-b border-border/70 bg-secondary/20 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <div className="border-r border-border/70 px-4 py-2">Statement</div>
+                <div className="px-4 py-2">Ledger</div>
+              </div>
+              <div>
+                {rows.map((row) => {
+                  const isMatched = row.status === "Matched";
+                  return (
+                    <div key={row.rowId} className="grid min-h-[4.65rem] grid-cols-2 border-b border-border/60 last:border-b-0">
+                      <div className={cn("border-r border-l-4 border-border/70 px-4 py-3", isMatched ? "border-l-success bg-background/50" : "border-l-warning bg-warning/5")}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-semibold text-foreground">{row.accountName}</div>
+                            <div className="mt-1 truncate font-mono text-[11px] text-muted-foreground">{row.accountCode} · {row.evidenceRef}</div>
+                          </div>
+                          <div className="shrink-0 whitespace-nowrap text-right font-mono text-sm tabular-nums text-foreground">
+                            {formatGlAmount(row.externalDebit - row.externalCredit, row.currency)}
+                          </div>
+                        </div>
+                      </div>
+                      <div className={cn("px-4 py-3", isMatched ? "border-l-4 border-l-success bg-background/50" : "border-l-4 border-l-warning bg-warning/5")}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="truncate text-sm font-semibold text-foreground">{row.accountName}</div>
+                            <div className="mt-1 truncate font-mono text-[11px] text-muted-foreground">Meridian ledger · {row.accountCode}</div>
+                          </div>
+                          <div className="shrink-0 text-right">
+                            <div className="whitespace-nowrap font-mono text-sm tabular-nums text-foreground">
+                              {formatGlAmount(row.meridianDebit - row.meridianCredit, row.currency)}
+                            </div>
+                            <Badge className="mt-1" variant={accountingSystemStatusVariant[row.status]}>{row.status}</Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="grid gap-3 border-t border-border/80 bg-secondary/30 px-4 py-3 text-sm sm:grid-cols-[1fr_1fr_auto]">
+                <AccountingValue label="Statement balance" value={formatGlAmount(statementBalance, rows[0]?.currency ?? "USD")} />
+                <AccountingValue label="Ledger balance" value={formatGlAmount(ledgerBalance, rows[0]?.currency ?? "USD")} />
+                <div className="flex items-center justify-start sm:justify-end">
+                  <Badge variant={varianceBalance === 0 ? "success" : "warning"} dot>
+                    {varianceBalance === 0 ? "Balanced" : `Out by ${formatGlAmount(Math.abs(varianceBalance), rows[0]?.currency ?? "USD")}`}
+                  </Badge>
+                </div>
+              </div>
             </div>
             <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3 text-sm">
               <div className="font-semibold text-foreground">Posting/export</div>
@@ -1609,6 +1703,10 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
             <a className="workspace-section-jump" href="#accounting-actions">Actions</a>
           </div>
         <section className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+          <div className="xl:col-span-2">
+            <ReconciliationComparisonPanel view={reconciliation.comparisonView} />
+          </div>
+
           <Card className="panel-surface xl:col-span-2">
             <CardHeader>
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -4763,6 +4861,7 @@ function ManualJournalLineBadges({ badges }: { badges: ReturnType<ManualJournalE
 
 function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWorkbenchViewModel }) {
   const selectedLine = view.draft.lines.find((line) => line.lineId === view.selectedLineId) ?? view.draft.lines[0] ?? null;
+  const nextLineSide = view.draft.totalDebits <= view.draft.totalCredits ? "Debit" : "Credit";
 
   return (
     <section className="workspace-section-band" aria-labelledby="manual-je-heading">
@@ -4804,21 +4903,23 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
         </div>
       ) : null}
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(15rem,0.32fr)_minmax(0,1fr)]">
-        <div className="space-y-4">
-          <Card className="panel-surface">
-            <CardHeader>
-              <CardTitle className="text-base">Draft queue</CardTitle>
-              <CardDescription>Saved manual JE drafts and submitted approval records from the shared workbench API.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
+      <div className="grid gap-4 xl:grid-cols-[minmax(14rem,0.28fr)_minmax(0,1fr)]">
+        <aside className="space-y-4">
+          <section className="accounting-draft-rail" data-appearance="light" aria-label="Manual journal draft queue">
+            <div className="accounting-reference-heading">
+              <div>
+                <p className="accounting-reference-kicker">Draft queue</p>
+                <p className="accounting-reference-subtitle">Saved drafts and approval records</p>
+              </div>
+            </div>
+            <div className="space-y-2">
               {view.drafts.length > 0 ? view.drafts.map((draft) => (
                 <button
                   key={draft.journalEntryId}
                   type="button"
                   className={cn(
-                    "w-full rounded-md border px-3 py-2 text-left text-sm transition hover:border-primary/50 hover:bg-primary/10",
-                    draft.journalEntryId === view.draft.journalEntryId ? "border-primary/60 bg-primary/10" : "border-border/70 bg-secondary/20"
+                    "accounting-draft-button",
+                    draft.journalEntryId === view.draft.journalEntryId && "is-active"
                   )}
                   onClick={() => view.selectDraft(draft.journalEntryId)}
                 >
@@ -4832,124 +4933,161 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                   No saved drafts yet. Save the current entry to add it to the queue.
                 </p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </section>
 
           <ManualJournalPrivateCapitalActivityPanel activity={view.privateCapitalActivity} />
-        </div>
+        </aside>
 
-        <Card className="panel-surface">
-          <CardHeader>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <CardTitle className="text-base">Journal entry draft</CardTitle>
-                <CardDescription>Header context and line details are validated by the shared ledger API before approval.</CardDescription>
+        <div className="space-y-4">
+          <section className="accounting-reference-panel accounting-journal-panel" data-appearance="light" aria-label="Manual journal entry - balanced double-entry">
+            <div className="accounting-reference-heading">
+              <div className="min-w-0">
+                <p className="accounting-reference-kicker">Manual journal entry - balanced double-entry</p>
+                <p className="accounting-reference-subtitle">{view.draft.entryType} / {view.treasuryContextLabel}</p>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <AccountingChip label="Totals" value={view.totalsLabel} />
-                <AccountingChip label="Balance" value={view.imbalanceLabel} />
-                <AccountingChip label="Treasury" value={view.treasuryContextLabel} />
+              <div className={cn("accounting-reference-balance-badge", view.balanceStatusTone === "success" ? "is-balanced" : "is-out")}>
+                <span aria-hidden="true" />
+                {view.balanceStatusLabel}
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-3 md:grid-cols-3">
-              <label className="space-y-1 text-sm">
-                <span className="text-xs font-semibold uppercase text-muted-foreground">Memo</span>
+
+            <div className="accounting-journal-header-grid">
+              <label>
+                <span>Date</span>
                 <input
-                  className="min-h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                  type="date"
+                  value={view.draft.accountingDate}
+                  onChange={(event) => view.updateHeader("accountingDate", event.target.value)}
+                />
+              </label>
+              <label>
+                <span>Reference</span>
+                <input
+                  readOnly
+                  className="font-mono"
+                  value={view.draft.journalEntryId}
+                />
+              </label>
+              <label className="md:col-span-2 xl:col-span-1">
+                <span>Memo</span>
+                <input
                   value={view.draft.memo}
                   onChange={(event) => view.updateHeader("memo", event.target.value)}
                 />
               </label>
-              <label className="space-y-1 text-sm">
-                <span className="text-xs font-semibold uppercase text-muted-foreground">Fund profile</span>
-                <input
-                  className="min-h-10 w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-sm"
-                  value={view.draft.fundProfileId}
-                  onChange={(event) => view.updateHeader("fundProfileId", event.target.value)}
-                />
+              <label>
+                <span>Fund profile</span>
+                <input className="font-mono" value={view.draft.fundProfileId} onChange={(event) => view.updateHeader("fundProfileId", event.target.value)} />
               </label>
-              <label className="space-y-1 text-sm">
-                <span className="text-xs font-semibold uppercase text-muted-foreground">Currency</span>
-                <input
-                  className="min-h-10 w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-sm"
-                  value={view.draft.currency}
-                  onChange={(event) => view.updateHeader("currency", event.target.value.toUpperCase())}
-                />
+              <label>
+                <span>Period</span>
+                <input className="font-mono" value={view.draft.periodId ?? ""} onChange={(event) => view.updateHeader("periodId", event.target.value)} />
               </label>
-              <label className="space-y-1 text-sm">
-                <span className="text-xs font-semibold uppercase text-muted-foreground">Entity</span>
-                <input className="min-h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm" value={view.draft.entityId ?? ""} onChange={(event) => view.updateHeader("entityId", event.target.value)} />
-              </label>
-              <label className="space-y-1 text-sm">
-                <span className="text-xs font-semibold uppercase text-muted-foreground">Fund node</span>
-                <input className="min-h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm" value={view.draft.fundNodeId ?? ""} onChange={(event) => view.updateHeader("fundNodeId", event.target.value)} />
-              </label>
-              <label className="space-y-1 text-sm">
-                <span className="text-xs font-semibold uppercase text-muted-foreground">Period</span>
-                <input className="min-h-10 w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-sm" value={view.draft.periodId ?? ""} onChange={(event) => view.updateHeader("periodId", event.target.value)} />
+              <label>
+                <span>Currency</span>
+                <input className="font-mono" value={view.draft.currency} onChange={(event) => view.updateHeader("currency", event.target.value.toUpperCase())} />
               </label>
             </div>
 
-            <div className="overflow-x-auto rounded-md border border-border/70">
-              <table className="w-full min-w-[920px] text-sm">
-                <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
+            <div className="accounting-journal-table-wrap">
+              <table className="accounting-journal-table">
+                <thead>
                   <tr>
-                    <th className="px-3 py-2 text-left">Side</th>
-                    <th className="px-3 py-2 text-left">Amount</th>
-                    <th className="px-3 py-2 text-left">GL account</th>
-                    <th className="px-3 py-2 text-left">Security Master</th>
-                    <th className="px-3 py-2 text-left">Description</th>
+                    <th>Account</th>
+                    <th>Debit</th>
+                    <th>Credit</th>
+                    <th>Support</th>
+                    <th aria-label="Line actions" />
                   </tr>
                 </thead>
                 <tbody>
                   {view.draft.lines.map((line) => {
                     const badges = view.getLineBadges(line.lineId);
+                    const isDebit = line.side === "Debit";
                     return (
-                      <tr key={line.lineId} className={cn("border-t border-border/60 align-top", line.lineId === view.selectedLineId ? "bg-primary/10" : "bg-background/30")}>
-                        <td className="px-3 py-2">
-                          <select className="min-h-9 w-full rounded border border-border bg-background px-2" value={line.side} onChange={(event) => view.updateLine(line.lineId, { side: event.target.value as typeof line.side })} onFocus={() => view.selectLine(line.lineId)}>
-                            <option value="Debit">Debit</option>
-                            <option value="Credit">Credit</option>
-                          </select>
-                          {badges.length > 0 ? <ManualJournalLineBadges badges={badges} /> : null}
-                        </td>
-                        <td className="px-3 py-2">
-                          <input className="min-h-9 w-full rounded border border-border bg-background px-2 font-mono" type="number" value={line.amount} onChange={(event) => view.updateLine(line.lineId, { amount: Number(event.target.value) })} onFocus={() => view.selectLine(line.lineId)} />
-                        </td>
-                        <td className="px-3 py-2">
-                          <select className="min-h-9 w-full rounded border border-border bg-background px-2" value={line.accountPath} onChange={(event) => view.updateLine(line.lineId, { accountPath: event.target.value })} onFocus={() => view.selectLine(line.lineId)}>
+                      <tr key={line.lineId} className={cn(line.lineId === view.selectedLineId && "is-selected")}>
+                        <td>
+                          <select value={line.accountPath} onChange={(event) => view.updateLine(line.lineId, { accountPath: event.target.value })} onFocus={() => view.selectLine(line.lineId)} aria-label={`GL account for line ${line.lineId}`}>
                             <option value="">Select GL account</option>
                             {view.accountOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                           </select>
+                          {badges.length > 0 ? <ManualJournalLineBadges badges={badges} /> : null}
                         </td>
-                        <td className="px-3 py-2">
+                        <td>
+                          <input
+                            aria-label={`Debit amount for line ${line.lineId}`}
+                            className="text-right font-mono"
+                            type="number"
+                            value={isDebit ? line.amount : 0}
+                            onChange={(event) => view.updateLine(line.lineId, { side: "Debit", amount: parseJournalAmount(event.target.value) })}
+                            onFocus={() => view.selectLine(line.lineId)}
+                          />
+                        </td>
+                        <td>
+                          <input
+                            aria-label={`Credit amount for line ${line.lineId}`}
+                            className="text-right font-mono"
+                            type="number"
+                            value={isDebit ? 0 : line.amount}
+                            onChange={(event) => view.updateLine(line.lineId, { side: "Credit", amount: parseJournalAmount(event.target.value) })}
+                            onFocus={() => view.selectLine(line.lineId)}
+                          />
+                        </td>
+                        <td>
                           <button
                             type="button"
-                            className="min-h-9 w-full rounded border border-border bg-background px-2 text-left text-xs"
+                            className="accounting-journal-support-button"
                             onClick={() => view.selectLine(line.lineId)}
                           >
                             <span className="block truncate font-semibold text-foreground">{line.securityDisplayName || "Choose security"}</span>
                             <span className="block truncate font-mono text-[11px] text-muted-foreground">{line.securityId || "No Security Master reference"}</span>
                           </button>
+                          <input
+                            className="mt-2"
+                            aria-label={`Description for line ${line.lineId}`}
+                            value={line.description ?? ""}
+                            onChange={(event) => view.updateLine(line.lineId, { description: event.target.value })}
+                            onFocus={() => view.selectLine(line.lineId)}
+                          />
                         </td>
-                        <td className="px-3 py-2">
-                          <input className="min-h-9 w-full rounded border border-border bg-background px-2" value={line.description ?? ""} onChange={(event) => view.updateLine(line.lineId, { description: event.target.value })} onFocus={() => view.selectLine(line.lineId)} />
+                        <td>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            aria-label={`Remove journal line ${line.lineId}`}
+                            disabled={view.draft.lines.length <= 2}
+                            disabledReason={view.draft.lines.length <= 2 ? "A balanced journal entry needs at least two lines." : null}
+                            onClick={() => view.removeLine(line.lineId)}
+                          >
+                            <X className="h-3.5 w-3.5" aria-hidden="true" />
+                          </Button>
                         </td>
                       </tr>
                     );
                   })}
+                  <tr className="accounting-journal-total-row">
+                    <td>Totals</td>
+                    <td>{view.totalDebitsLabel}</td>
+                    <td>{view.totalCreditsLabel}</td>
+                    <td colSpan={2}>{view.imbalanceLabel}</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" onClick={() => view.addLine("Debit")}>Add debit</Button>
-              <Button size="sm" variant="outline" onClick={() => view.addLine("Credit")}>Add credit</Button>
+            <div className="accounting-journal-footer">
+              <Button size="sm" variant="outline" onClick={() => view.addLine(nextLineSide)}>
+                + Add line
+              </Button>
+              <div className={cn("accounting-reference-balance-badge", view.balanceStatusTone === "success" ? "is-balanced" : "is-out")}>
+                <span aria-hidden="true" />
+                {view.balanceStatusLabel}
+              </div>
             </div>
+          </section>
 
-            <div className="rounded-md border border-border/70 bg-secondary/20 p-3">
+          <div className="rounded-md border border-border/70 bg-secondary/20 p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <h4 className="text-sm font-semibold text-foreground">Source evidence</h4>
@@ -5009,10 +5147,10 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                   </p>
                 )}
               </div>
-            </div>
+          </div>
 
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,0.55fr)_minmax(0,0.45fr)]">
-              <div className="rounded-md border border-border/70 bg-secondary/20 p-3">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,0.55fr)_minmax(0,0.45fr)]">
+            <div className="rounded-md border border-border/70 bg-secondary/20 p-3">
                 <h4 className="text-sm font-semibold text-foreground">Validation</h4>
                 <div className="mt-3 space-y-2">
                   {view.validationIssues.length > 0 ? view.validationIssues.map((issue) => (
@@ -5027,8 +5165,8 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                     </p>
                   )}
                 </div>
-              </div>
-              <div className="rounded-md border border-border/70 bg-secondary/20 p-3">
+            </div>
+            <div className="rounded-md border border-border/70 bg-secondary/20 p-3">
                 <h4 className="text-sm font-semibold text-foreground">Selected line</h4>
                 {selectedLine ? (
                   <div className="mt-3 space-y-3 text-sm">
@@ -5077,13 +5215,17 @@ function ManualJournalEntryWorkbenchPanel({ view }: { view: ManualJournalEntryWo
                 ) : (
                   <p className="mt-3 text-sm text-muted-foreground">Select a line to inspect attribution.</p>
                 )}
-              </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </section>
   );
+}
+
+function parseJournalAmount(value: string): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationViewModel }) {

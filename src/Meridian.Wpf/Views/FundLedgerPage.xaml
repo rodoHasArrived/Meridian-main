@@ -959,7 +959,7 @@
                                 </Border>
 
                                 <Border Style="{StaticResource CardStyle}" Margin="0,0,0,16" AutomationProperties.AutomationId="StatementReconciliationWorkbench">
-                                    <Grid>
+                                    <Grid AutomationProperties.AutomationId="FundReconciliationStatementLedgerComparison">
                                         <Grid.RowDefinitions>
                                             <RowDefinition Height="Auto" />
                                             <RowDefinition Height="Auto" />
@@ -978,7 +978,8 @@
                                                     <ColumnDefinition Width="Auto" />
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel>
-                                                    <TextBlock Text="Statement Run Evidence" Style="{StaticResource CardHeaderStyle}" />
+                                                    <TextBlock Text="Cash Reconciliation - Broker Statement vs. Ledger" Style="{StaticResource CardHeaderStyle}" />
+                                                    <TextBlock Text="Statement Run Evidence" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,4,0,0" />
                                                     <TextBlock Text="{Binding StatementStatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" TextWrapping="Wrap" />
                                                 </StackPanel>
                                                 <Button Grid.Column="1"
@@ -1384,8 +1385,11 @@
                                                 SelectedIndex="{Binding SelectedReconciliationDetailTabIndex, Mode=TwoWay}"
                                                 TabIndex="30">
                                         <TabItem Header="Match Items">
-                                            <Grid Margin="0,8,0,0">
+                                            <Grid Margin="0,8,0,0"
+                                                  AutomationProperties.AutomationId="ReconciliationMatchItemsWorkbench"
+                                                  AutomationProperties.Name="Cash reconciliation source data versus ledger workbench">
                                                 <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
                                                     <RowDefinition Height="Auto" />
                                                     <RowDefinition Height="*" />
                                                     <RowDefinition Height="Auto" />
@@ -1396,21 +1400,77 @@
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
 
-                                                <TextBlock Grid.Row="0"
+                                                <Border Grid.Row="0"
+                                                        Grid.ColumnSpan="3"
+                                                        BorderBrush="{StaticResource BorderSubtleBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="8"
+                                                        Padding="12"
+                                                        Margin="0,0,0,12"
+                                                        Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                                        AutomationProperties.Name="Broker statement versus ledger reconciliation summary">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel>
+                                                            <TextBlock Text="CASH RECONCILIATION - SOURCE DATA VS. LEDGER"
+                                                                       Style="{StaticResource CardHeaderStyle}" />
+                                                            <TextBlock Text="{Binding ReconciliationDetailStatusText}"
+                                                                       Style="{StaticResource CardDescriptionStyle}"
+                                                                       Margin="0,4,0,0"
+                                                                       TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                        <WrapPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                                            <Border BorderBrush="{StaticResource SuccessColorBrush}"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="6"
+                                                                    Padding="10,6"
+                                                                    Margin="0,0,8,0">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="Matched" FontSize="10" Foreground="{StaticResource SuccessColorBrush}" />
+                                                                    <TextBlock Text="{Binding ReconciliationDetailMatchedText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource SuccessColorBrush}" />
+                                                                </StackPanel>
+                                                            </Border>
+                                                            <Border BorderBrush="{StaticResource WarningColorBrush}"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="6"
+                                                                    Padding="10,6"
+                                                                    Margin="0,0,8,0">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="Open" FontSize="10" Foreground="{StaticResource WarningColorBrush}" />
+                                                                    <TextBlock Text="{Binding ReconciliationDetailBreaksText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource WarningColorBrush}" />
+                                                                </StackPanel>
+                                                            </Border>
+                                                            <Border BorderBrush="{StaticResource WarningColorBrush}"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="6"
+                                                                    Padding="10,6">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="Out By" FontSize="10" Foreground="{StaticResource WarningColorBrush}" />
+                                                                    <TextBlock Text="{Binding ReconciliationDetailBreakAmountText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource WarningColorBrush}" />
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </WrapPanel>
+                                                    </Grid>
+                                                </Border>
+
+                                                <TextBlock Grid.Row="1"
                                                            Grid.Column="0"
-                                                           Text="Ledger Entries"
+                                                           Text="Statement"
                                                            Style="{StaticResource CardHeaderStyle}"
                                                            Margin="0,0,0,8" />
-                                                <TextBlock Grid.Row="0"
+                                                <TextBlock Grid.Row="1"
                                                            Grid.Column="2"
-                                                           Text="Source Data"
+                                                           Text="Ledger"
                                                            Style="{StaticResource CardHeaderStyle}"
                                                            Margin="0,0,0,8" />
 
-                                                <DataGrid x:Name="ReconciliationEntryMatchGrid"
-                                                          Grid.Row="1"
+                                                <DataGrid x:Name="ReconciliationSourceMatchGrid"
+                                                          Grid.Row="2"
                                                           Grid.Column="0"
-                                                          ItemsSource="{Binding ReconciliationEntryRows}"
+                                                          ItemsSource="{Binding ReconciliationSourceDataRows}"
                                                           AutoGenerateColumns="False"
                                                           CanUserAddRows="False"
                                                           HeadersVisibility="Column"
@@ -1420,19 +1480,19 @@
                                                           TabIndex="31">
                                                     <DataGrid.Columns>
                                                         <DataGridCheckBoxColumn Header="" Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="44" />
-                                                        <DataGridTextColumn Header="Entry" Binding="{Binding CheckLabel}" Width="*" IsReadOnly="True" />
+                                                        <DataGridTextColumn Header="Source Row" Binding="{Binding CheckLabel}" Width="*" IsReadOnly="True" />
                                                         <DataGridTextColumn Header="Source" Binding="{Binding SourceLabel}" Width="110" IsReadOnly="True" />
                                                         <DataGridTextColumn Header="Amount" Binding="{Binding AmountText}" Width="105" ElementStyle="{StaticResource RightAlignedCellStyle}" IsReadOnly="True" />
                                                         <DataGridTextColumn Header="As Of" Binding="{Binding AsOfText}" Width="130" IsReadOnly="True" />
                                                     </DataGrid.Columns>
                                                 </DataGrid>
 
-                                                <GridSplitter Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource BorderSubtleBrush}" />
+                                                <GridSplitter Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource BorderSubtleBrush}" />
 
-                                                <DataGrid x:Name="ReconciliationSourceMatchGrid"
-                                                          Grid.Row="1"
+                                                <DataGrid x:Name="ReconciliationEntryMatchGrid"
+                                                          Grid.Row="2"
                                                           Grid.Column="2"
-                                                          ItemsSource="{Binding ReconciliationSourceDataRows}"
+                                                          ItemsSource="{Binding ReconciliationEntryRows}"
                                                           AutoGenerateColumns="False"
                                                           CanUserAddRows="False"
                                                           HeadersVisibility="Column"
@@ -1442,14 +1502,14 @@
                                                           TabIndex="32">
                                                     <DataGrid.Columns>
                                                         <DataGridCheckBoxColumn Header="" Binding="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="44" />
-                                                        <DataGridTextColumn Header="Source Row" Binding="{Binding CheckLabel}" Width="*" IsReadOnly="True" />
+                                                        <DataGridTextColumn Header="Entry" Binding="{Binding CheckLabel}" Width="*" IsReadOnly="True" />
                                                         <DataGridTextColumn Header="Source" Binding="{Binding SourceLabel}" Width="110" IsReadOnly="True" />
                                                         <DataGridTextColumn Header="Amount" Binding="{Binding AmountText}" Width="105" ElementStyle="{StaticResource RightAlignedCellStyle}" IsReadOnly="True" />
                                                         <DataGridTextColumn Header="As Of" Binding="{Binding AsOfText}" Width="130" IsReadOnly="True" />
                                                     </DataGrid.Columns>
                                                 </DataGrid>
 
-                                                <DockPanel Grid.Row="2" Grid.ColumnSpan="3" Margin="0,12,0,0">
+                                                <DockPanel Grid.Row="3" Grid.ColumnSpan="3" Margin="0,12,0,0">
                                                     <Button DockPanel.Dock="Right"
                                                             Content="Match As Reconciled"
                                                             Click="OnMatchSelectedReconciliationItemsClick"
@@ -1458,10 +1518,24 @@
                                                             Margin="12,0,0,0"
                                                             TabIndex="33"
                                                             AutomationProperties.AutomationId="ReconciliationMatchSelectedItemsButton" />
-                                                    <TextBlock Text="{Binding ReconciliationMatchSelectionText}"
-                                                               Style="{StaticResource CardDescriptionStyle}"
-                                                               VerticalAlignment="Center"
-                                                               TextWrapping="Wrap" />
+                                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                        <Border BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,8,0">
+                                                            <StackPanel>
+                                                                <TextBlock Text="Statement Balance" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                                <TextBlock Text="Selected source rows" FontSize="12" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                            </StackPanel>
+                                                        </Border>
+                                                        <Border BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,8,0">
+                                                            <StackPanel>
+                                                                <TextBlock Text="Ledger Balance" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                                <TextBlock Text="Selected ledger entries" FontSize="12" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                            </StackPanel>
+                                                        </Border>
+                                                        <TextBlock Text="{Binding ReconciliationMatchSelectionText}"
+                                                                   Style="{StaticResource CardDescriptionStyle}"
+                                                                   VerticalAlignment="Center"
+                                                                   TextWrapping="Wrap" />
+                                                    </StackPanel>
                                                 </DockPanel>
                                             </Grid>
                                         </TabItem>

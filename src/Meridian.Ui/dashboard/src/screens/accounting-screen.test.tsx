@@ -1578,6 +1578,8 @@ describe("AccountingScreen", () => {
 
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toHaveTextContent("Journal entry workbench");
     expect(screen.getByRole("heading", { name: "Manual journal entry workbench" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Manual journal entry - balanced double-entry" })).toHaveTextContent("Totals");
+    expect(screen.getByDisplayValue("2026-06-30")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Manual close adjustment")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Microsoft Corp./ })).toBeInTheDocument();
     expect(screen.getByText("Controller support package")).toBeInTheDocument();
@@ -1924,6 +1926,11 @@ describe("AccountingScreen", () => {
   it("renders reconciliation strong panels with view-model presentation state", async () => {
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
+    const comparison = screen.getByRole("region", { name: "Cash reconciliation broker statement versus ledger comparison" });
+    expect(comparison).toHaveTextContent("Cash reconciliation - broker statement vs. ledger");
+    expect(comparison).toHaveTextContent("Statement balance");
+    expect(comparison).toHaveTextContent("Ledger balance");
+    expect(comparison).toHaveTextContent("Out by $500");
     expect(screen.getAllByRole("table", { name: "Reconciliation runs" })).toHaveLength(1);
     expect(screen.queryByRole("link", { name: "Open Accounting reconciliation workstream" })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Reconciliation detail for Paper Index Mean Reversion" })).toBeInTheDocument();

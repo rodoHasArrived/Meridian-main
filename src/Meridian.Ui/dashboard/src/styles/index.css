@@ -3952,6 +3952,394 @@ body,
   padding: 2rem 0.75rem;
 }
 
+@layer components {
+  .accounting-reference-panel,
+  .accounting-draft-rail {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+    border: 1px solid #d8dde5;
+    border-radius: 8px;
+    background: #f3f5f8;
+    color: #20242a;
+    padding: 1rem;
+    box-shadow: 0 1px 2px rgba(21, 35, 48, 0.08);
+  }
+
+  .accounting-journal-panel {
+    padding: 1.125rem;
+  }
+
+  .accounting-reference-heading {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .accounting-reference-kicker {
+    margin: 0;
+    color: #65717f;
+    font-size: 0.75rem;
+    font-weight: 760;
+    line-height: 1.25;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .accounting-reference-subtitle {
+    margin: 0.25rem 0 0;
+    color: #65717f;
+    font-size: 0.875rem;
+    line-height: 1.35;
+  }
+
+  .accounting-reference-badges {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  .accounting-reference-badge,
+  .accounting-reference-balance-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.5rem;
+    border: 1px solid #cbd4de;
+    border-radius: 5px;
+    background: #ffffff;
+    padding: 0.125rem 0.5rem;
+    color: #343a42;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.6875rem;
+    font-weight: 760;
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .accounting-reference-badge-success,
+  .accounting-reference-balance-badge.is-balanced {
+    border-color: #2f8f79;
+    background: #e8f6f1;
+    color: #23715f;
+  }
+
+  .accounting-reference-badge-warning {
+    border-color: #b88939;
+    background: #fbf3df;
+    color: #8a6420;
+  }
+
+  .accounting-reference-balance-badge {
+    gap: 0.375rem;
+    min-height: 2rem;
+    padding-inline: 0.75rem;
+  }
+
+  .accounting-reference-balance-badge span[aria-hidden="true"] {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 999px;
+    background: currentColor;
+  }
+
+  .accounting-reference-balance-badge.is-out {
+    border-color: #b25367;
+    background: #fae8ed;
+    color: #963c50;
+  }
+
+  .accounting-reconciliation-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: hidden;
+    border: 1px solid #d8dde5;
+    border-radius: 7px;
+    background: #ffffff;
+  }
+
+  .accounting-reconciliation-column-heading {
+    min-width: 0;
+    border-bottom: 1px solid #d8dde5;
+    background: #f6f8fb;
+    padding: 0.65rem 0.875rem;
+    color: #65717f;
+    font-size: 0.6875rem;
+    font-weight: 760;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .accounting-reconciliation-column-heading:first-child {
+    border-right: 1px solid #d8dde5;
+  }
+
+  .accounting-reconciliation-cell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    min-height: 4.7rem;
+    align-items: start;
+    gap: 0.75rem;
+    border-bottom: 1px solid #d8dde5;
+    border-left: 4px solid #cbd4de;
+    padding: 0.75rem 0.875rem;
+    background: #ffffff;
+  }
+
+  .accounting-reconciliation-cell:nth-child(odd) {
+    border-right: 1px solid #d8dde5;
+  }
+
+  .accounting-reconciliation-cell.is-matched {
+    border-left-color: #2f8f79;
+  }
+
+  .accounting-reconciliation-cell.is-open {
+    border-left-color: #b88939;
+    background: #fcf8ed;
+  }
+
+  .accounting-reconciliation-title {
+    overflow: hidden;
+    color: #20242a;
+    font-size: 0.875rem;
+    font-weight: 640;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .accounting-reconciliation-meta {
+    overflow: hidden;
+    margin-top: 0.5rem;
+    color: #65717f;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.75rem;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .accounting-reconciliation-value {
+    color: #20242a;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.875rem;
+    line-height: 1.25;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .accounting-balance-strip {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) max-content;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid #d8dde5;
+    border-radius: 7px;
+    background: #f6f8fb;
+    padding: 0.875rem 1rem;
+  }
+
+  .accounting-balance-strip span {
+    display: block;
+    color: #65717f;
+    font-size: 0.6875rem;
+    font-weight: 760;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .accounting-balance-strip strong {
+    display: block;
+    margin-top: 0.4rem;
+    color: #20242a;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 0.95rem;
+    font-weight: 640;
+  }
+
+  .accounting-draft-button {
+    width: 100%;
+    border: 1px solid #d8dde5;
+    border-radius: 6px;
+    background: #ffffff;
+    padding: 0.75rem;
+    text-align: left;
+    transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
+  }
+
+  .accounting-draft-button:hover,
+  .accounting-draft-button.is-active {
+    border-color: #176fa3;
+    background: #f1f7fb;
+    box-shadow: inset 3px 0 0 #176fa3;
+  }
+
+  .accounting-journal-header-grid {
+    display: grid;
+    grid-template-columns: minmax(9rem, 0.75fr) minmax(9rem, 0.75fr) minmax(16rem, 1.6fr);
+    gap: 0.75rem 1rem;
+    border: 1px solid #d8dde5;
+    border-radius: 7px;
+    background: #f6f8fb;
+    padding: 0.875rem 1rem;
+  }
+
+  .accounting-journal-header-grid label,
+  .accounting-journal-table label {
+    display: grid;
+    min-width: 0;
+    gap: 0.35rem;
+  }
+
+  .accounting-journal-header-grid span {
+    color: #65717f;
+    font-size: 0.6875rem;
+    font-weight: 760;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .accounting-journal-header-grid input,
+  .accounting-journal-table input,
+  .accounting-journal-table select {
+    min-width: 0;
+    min-height: 2.25rem;
+    width: 100%;
+    border: 1px solid #d8dde5;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #20242a;
+    padding: 0 0.65rem;
+    font-size: 0.875rem;
+    outline: none;
+  }
+
+  .accounting-journal-header-grid input:focus,
+  .accounting-journal-table input:focus,
+  .accounting-journal-table select:focus {
+    border-color: #176fa3;
+    box-shadow: 0 0 0 2px rgba(23, 111, 163, 0.16);
+  }
+
+  .accounting-journal-table-wrap {
+    overflow: auto;
+    border: 1px solid #d8dde5;
+    border-radius: 7px;
+    background: #ffffff;
+  }
+
+  .accounting-journal-table {
+    width: 100%;
+    min-width: 58rem;
+    border-collapse: separate;
+    border-spacing: 0;
+    color: #20242a;
+    font-size: 0.875rem;
+  }
+
+  .accounting-journal-table th {
+    border-bottom: 1px solid #d8dde5;
+    background: #ffffff;
+    padding: 0.7rem 0.875rem;
+    color: #65717f;
+    font-size: 0.6875rem;
+    font-weight: 760;
+    letter-spacing: 0.08em;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  .accounting-journal-table td {
+    border-bottom: 1px solid #d8dde5;
+    padding: 0.55rem 0.875rem;
+    vertical-align: top;
+  }
+
+  .accounting-journal-table th:nth-child(2),
+  .accounting-journal-table th:nth-child(3),
+  .accounting-journal-table td:nth-child(2),
+  .accounting-journal-table td:nth-child(3) {
+    width: 10rem;
+    text-align: right;
+  }
+
+  .accounting-journal-table tr.is-selected td {
+    background: #f1f7fb;
+  }
+
+  .accounting-journal-support-button {
+    display: block;
+    width: 100%;
+    border: 1px solid #d8dde5;
+    border-radius: 6px;
+    background: #ffffff;
+    padding: 0.5rem 0.65rem;
+    text-align: left;
+  }
+
+  .accounting-journal-support-button:hover {
+    border-color: #176fa3;
+    background: #f1f7fb;
+  }
+
+  .accounting-journal-total-row td {
+    border-top: 2px solid #aab5c2;
+    background: #f6f8fb;
+    color: #20242a;
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-weight: 700;
+  }
+
+  .accounting-journal-total-row td:first-child {
+    color: #65717f;
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .accounting-journal-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border: 1px solid #d8dde5;
+    border-radius: 7px;
+    background: #ffffff;
+    padding: 0.75rem 1rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .accounting-reference-heading,
+  .accounting-journal-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .accounting-reference-badges {
+    justify-content: flex-start;
+  }
+
+  .accounting-reconciliation-grid,
+  .accounting-balance-strip,
+  .accounting-journal-header-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .accounting-reconciliation-column-heading:first-child,
+  .accounting-reconciliation-cell:nth-child(odd) {
+    border-right: 0;
+  }
+}
+
 @media (max-width: 1100px) {
   .workstation-shell,
   .data-management-frame,

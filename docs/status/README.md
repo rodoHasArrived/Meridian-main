@@ -37,11 +37,13 @@ This folder remains a migration source for status snapshots and generated report
   - `metrics-dashboard.md`
   - `rules-report.md`
   - `TODO.md`
+  - `wpf-screen-development-tracker.md`
 - Include generated JSON artifacts as read-only outputs unless generator contracts change:
   - `workflow-validation-summary.json`
   - `program-state-summary.json`
   - `docs-automation-summary.json`
   - `doc-health-dashboard.json`
+  - `wpf-screen-development-tracker.json`
   - `workflow-manifest.json`
   - `todo-scan-results.json`
   - `workstation-cockpit-acceptance-matrix.json`

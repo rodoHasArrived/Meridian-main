@@ -168,7 +168,9 @@ public sealed class DesktopWorkflowScriptTests
         script.Should().Contain("$workflowName = if ([string]::IsNullOrWhiteSpace($Profile)) { 'screenshot-catalog' } else { $Profile }");
         script.Should().Contain("'-Workflow', $workflowName");
         script.Should().Contain("'-Profile', $workflowName");
-        script.Should().Contain("'-OutputRoot', 'artifacts/desktop-workflows'");
+        script.Should().Contain("capture-{0}-{1}");
+        script.Should().Contain("'-OutputRoot', $workflowArtifactRoot");
+        script.Should().NotContain("'-OutputRoot', 'artifacts/desktop-workflows'");
         script.Should().Contain("'-ScreenshotDirectory', $screenshotDirectory");
         script.Should().Contain("if ($PSBoundParameters.ContainsKey('ProjectPath'))");
         script.Should().Contain("if ($PSBoundParameters.ContainsKey('Configuration'))");
