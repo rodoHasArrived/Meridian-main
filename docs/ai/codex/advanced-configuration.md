@@ -294,7 +294,18 @@ default key, secret, and token filters before your include or exclude rules.
 ## Hooks
 
 Codex can load lifecycle hooks from `hooks.json` or inline `[hooks]` tables next to active config
-layers. Common locations are:
+layers. Hooks are enabled by default; use `hooks` as the canonical feature key when a config needs
+to be explicit:
+
+```toml
+[features]
+hooks = true
+```
+
+Set `[features].hooks = false` only when disabling all non-managed hooks is the intended behavior.
+The older `codex_hooks` key is a deprecated alias and should not be used in Meridian guidance.
+
+Common hook locations are:
 
 - `~/.codex/hooks.json`
 - `~/.codex/config.toml`
@@ -302,7 +313,35 @@ layers. Common locations are:
 - `<repo>/.codex/config.toml`
 
 Project-local hooks load only for trusted project `.codex/` layers. User-level hooks are independent
-of project trust.
+of project trust. Matching hook handlers from user, project, managed, session, and plugin sources all
+run; higher-precedence config layers do not replace lower-precedence hook definitions. If the same
+layer contains both `hooks.json` and inline hooks, Codex merges them and warns. Prefer one
+representation per layer.
+
+Before a non-managed command hook can run, Codex requires review and trust of the exact hook
+definition. Changed hooks receive a new trust hash and are skipped until reviewed again. Use
+`/hooks` in the CLI to inspect hook sources, trust changed hooks, or disable individual
+non-managed hooks. Managed hooks from system, MDM, cloud, or `requirements.toml` policy are trusted
+by policy and cannot be disabled from the user hook browser.
+
+Hook events currently include:
+
+| Event | Scope | Typical Meridian use |
+| --- | --- | --- |
+| `SessionStart` | thread start, resume, clear, or compact | Add compact repository startup context. |
+| `SubagentStart` | subagent start | Give a specialist lane extra repo-local context. |
+| `UserPromptSubmit` | before the prompt enters the model | Detect accidental secret paste, missing intent, risky ambiguity, or decision gaps. |
+| `PreToolUse` | before supported shell, patch, or MCP calls | Block or rewrite risky supported tool input. |
+| `PermissionRequest` | before an approval prompt | Auto-allow or deny known policy cases. |
+| `PostToolUse` | after supported tool output | Add review context or stop normal processing of risky output. |
+| `PreCompact` / `PostCompact` | compaction lifecycle | Preserve compact handoff state. |
+| `SubagentStop` | subagent stop | Ask a specialist lane for one more focused pass. |
+| `Stop` | turn stop | Continue a turn for a final validation or summary pass. |
+
+Matchers are regex strings. For `PreToolUse`, `PermissionRequest`, and `PostToolUse`, matchers filter
+tool names such as `Bash`, `apply_patch`, `Edit`, `Write`, or MCP tool names. For
+`SessionStart`, matchers filter `startup`, `resume`, `clear`, or `compact`; for compact hooks they
+filter `manual` or `auto`. `UserPromptSubmit` and `Stop` ignore matchers.
 
 Inline TOML hooks use the same event structure as `hooks.json`:
 
@@ -317,8 +356,56 @@ timeout = 30
 statusMessage = "Checking Bash command"
 ```
 
-If the same layer contains both `hooks.json` and inline hooks, Codex loads both and warns. Prefer one
-representation per layer.
+For Windows-compatible repo-local hooks, add `command_windows` and resolve scripts from the git root
+instead of a relative working directory:
+
+```toml
+[[hooks.PreToolUse]]
+matcher = "^Bash$"
+
+[[hooks.PreToolUse.hooks]]
+type = "command"
+command = '/usr/bin/python3 "$(git rev-parse --show-toplevel)/.codex/hooks/pre_tool_use_policy.py"'
+command_windows = "pwsh -NoProfile -ExecutionPolicy Bypass -Command \"$root = git rev-parse --show-toplevel; py -3 (Join-Path $root '.codex/hooks/pre_tool_use_policy.py')\""
+timeout = 30
+statusMessage = "Checking Bash command"
+```
+
+Every command hook receives one JSON object on stdin with shared fields such as `session_id`,
+`transcript_path`, `cwd`, `hook_event_name`, and `model`. Turn-scoped hooks also include `turn_id`
+and `permission_mode`. Tool hooks include `tool_name`, `tool_input`, and, after execution,
+`tool_response`.
+
+Only `type = "command"` handlers run today. `prompt`, `agent`, and `async = true` handlers are parsed
+but skipped. Hook timeouts are in seconds; omitted timeouts default to 600 seconds.
+
+Command hook output is event-specific. The safest portable shape for adding model-visible context is
+`hookSpecificOutput.additionalContext` with the matching `hookEventName`. Supported blocking
+decisions include `permissionDecision = "deny"` for `PreToolUse`, `decision.behavior = "deny"` for
+`PermissionRequest`, `decision = "block"` or exit code `2` for `UserPromptSubmit`, `SubagentStop`,
+and `Stop`, and `continue = false` for supported post-processing stop cases. Do not return fields
+that the event does not support; Codex reports those as hook failures and continues or fails closed
+according to the event.
+
+Use hooks to detect missing intent, risky ambiguity, or unresolved implementation decisions; do not
+make hooks choose product or architecture tradeoffs. When a hook asks the model to clarify instead of
+continuing, the model should ask one concise question with two or three concrete options and, when
+useful, an open free-form option. The options should name the implementation impact, such as
+"minimal docs-only update", "implementation plus focused tests", or "pause for design first", so the
+user can decide quickly.
+
+Meridian defaults:
+
+- Keep `.codex/config.toml` explicit with `[features].hooks = true`.
+- Do not add project-local executable hooks unless the scripts are reviewed, deterministic,
+  repository-relative, and safe to run on every trusted clone.
+- Keep clarification hooks simple: flag ambiguity and guide the model to ask option-based questions;
+  let the model and repository evidence handle the actual implementation tradeoffs.
+- Prefer user-level hooks for personal notifications, telemetry, or machine-specific paths.
+- Prefer managed hooks for organization-wide enforcement.
+- Prefer plugin-bundled hooks only when the plugin owns both the hook and its script lifecycle.
+- Document any project-local hook in this guide, `docs/ai/codex/README.md`, and the nearest
+  validation or trust-review runbook before enabling it.
 
 ## Project Root Detection
 

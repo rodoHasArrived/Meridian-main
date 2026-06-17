@@ -77,7 +77,9 @@ Financial Record Explorer endpoints are registered from `WorkstationEndpoints.Fi
 under `/api/workstation/financial-record-explorers/{explorerId}` for `ledger`, `portfolio`, and
 `security-instrument`, and `report-line-provenance`. `FinancialRecordExplorerReadService` composes
 source-backed strategy run ledger, portfolio, Security Master, report-pack line provenance,
-delivery history, evidence, reconciliation, reporting, and audit projections into the shared DTO,
+delivery history, evidence, reconciliation, reporting, and audit projections into the shared DTO.
+The report-line provenance builder emits an explicit instrument -> position or transaction ->
+reconciliation -> journal -> report-line -> evidence/audit chain using retained provenance fields,
 while `FileFinancialRecordExplorerSavedViewStore` persists operator-created views under the
 workstation data root. Saved views are keyed by the authenticated workstation tenant and explorer
 id, so operator filters created in one tenant do not appear in another tenant's Financial Record
@@ -155,8 +157,9 @@ authenticated workstation tenant before reading or writing stored manifests, con
 retained run evidence. Import, dry-run, and run-due commands require provider/configuration permissions
 because they create manifests or retain raw payload, staging, quarantine, and sync-run evidence.
 The activation command persists active manifest and connection state only after Application
-readiness passes with retained approval evidence; setup screens and quarantine review screens still
-need to be surfaced through the shared workstation API.
+readiness passes with retained approval evidence. Richer setup-editing screens still need to bind
+draft editing, endpoint tests, mapping preview, and corrective mapping/data-rule actions through the
+shared workstation API.
 `BankFeedTransportService` reuses that same import boundary for scheduled local-file and SFTP
 CSV pulls through `IEtlSourceReader`, and delegates Plaid API schedules to `IPlaidIngestionService`
 so API feeds stay server-owned and ledger posting remains gated by Meridian approvals.

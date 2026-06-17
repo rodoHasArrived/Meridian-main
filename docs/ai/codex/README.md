@@ -16,7 +16,7 @@ For documentation work, start from the rebuilt canonical docs model:
 
 | Surface | Purpose |
 | --- | --- |
-| [`.codex/config.toml`](../../../.codex/config.toml) | Repository-local Codex sandbox, approval, search, skill loading, and bounded subagent role defaults |
+| [`.codex/config.toml`](../../../.codex/config.toml) | Repository-local Codex sandbox, approval, search, hook feature flag, skill loading, and bounded subagent role defaults |
 | [`quickstart.md`](quickstart.md) | First-10-minutes Codex task routing, workflow disclosure startup, proof matrix, and dirty-worktree protocol |
 | [`advanced-configuration.md`](advanced-configuration.md) | Advanced Codex local-client configuration patterns for profiles, providers, sandboxes, hooks, telemetry, notifications, and TUI options |
 | [`prompt-execution-trace.md`](prompt-execution-trace.md) | One-page prompt-to-execution diagram and execution-path refinements |
@@ -61,7 +61,10 @@ notifications, telemetry, and personal model preferences in user-level config.
 | `meridian-brainstorm.toml` | Generate Meridian-native product and architecture ideas |
 | `meridian-browser-workstation.toml` | Route and implement browser workstation TypeScript/React tasks |
 | `meridian-cleanup.toml` | Clean up code and docs without behavior changes |
+| `meridian-code-architecture.toml` | Check architecture conformance, module boundaries, dependencies, and ADR/source-doc alignment |
 | `meridian-code-review.toml` | Review changes for bugs, regressions, and architecture drift |
+| `meridian-contract-governance.toml` | Trace shared contract impact across services, UI surfaces, tests, and docs |
+| `meridian-codex-skill-builder.toml` | Package Codex skills with scripts, evals, profiles, catalogs, and route coverage |
 | `meridian-docs.toml` | Maintain documentation and AI guidance |
 | `meridian-implementation-assurance.toml` | Verify implementation completeness, evidence, docs sync, and guardrails |
 | `meridian-provider-builder.toml` | Build or extend ProviderSdk-compliant data providers |
@@ -122,7 +125,10 @@ matrix facts plus domain experience, familiar programs, preferences, and testing
 | `meridian-brainstorm` | Generate Meridian-native product and architecture ideas |
 | `meridian-browser-workstation` | Route and implement browser workstation TypeScript/React tasks |
 | `meridian-cleanup` | Clean up code and docs without behavior changes |
+| `meridian-code-architecture` | Review architecture conformance, module boundaries, dependencies, and ADR/source-doc alignment |
 | `meridian-code-review` | Review changes for bugs, regressions, and architecture drift |
+| `meridian-contract-governance` | Trace shared contract impact across services, UI surfaces, tests, and docs |
+| `meridian-codex-skill-builder` | Package Codex skills with scripts, evals, profiles, catalogs, and route coverage |
 | `meridian-docs` | Maintain Meridian documentation with repo-grounded evidence |
 | `meridian-implementation-assurance` | Implement, certify, and improve changes with scope control, requirement-to-evidence traceability, explicit validation, and docs sync |
 | `meridian-provider-builder` | Build and extend provider integrations |
@@ -151,6 +157,9 @@ route by task phase:
 | Orient | `meridian-repo-navigation` | Route first, name owner files/docs, then exit. |
 | Ideate | `meridian-brainstorm` | Generate product or architecture options, not a build spec. |
 | Plan | `meridian-blueprint` | Turn one selected idea into an implementation-ready design. |
+| Architecture | `meridian-code-architecture` | Check module boundaries, dependency direction, ADR/source-doc alignment, and public seams. |
+| Contract governance | `meridian-contract-governance` | Trace DTO, route, provider-interface, and read-model impact across consumers. |
+| Codex skill builder | `meridian-codex-skill-builder` | Create or audit Codex skill packages with scripts, evals, profiles, catalogs, and routes. |
 | Implement or verify | `meridian-implementation-assurance` | Build or certify work with evidence, docs sync, and gates. |
 | Review | `meridian-code-review` | Findings first; no patching unless explicitly requested. |
 | Docs | `meridian-docs` | Update docs, guidance, and indexes with current repo evidence. |
@@ -204,6 +213,7 @@ python3 build/scripts/docs/check-validation-floor.py --summary-json docs/status/
 python3 build/scripts/docs/check-mode-escalation.py --route-json docs/status/prompt-route-lint-report.json --summary-json docs/status/docs-automation-summary.json --summary
 python3 build/scripts/docs/check-ai-routing-parity.py --summary
 python3 build/scripts/docs/validate-skill-packages.py
+python3 .codex/skills/meridian-implementation-assurance/scripts/skill_script_advisor.py audit --skill meridian-implementation-assurance --summary
 python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run --json
 git diff --check
 ```
@@ -255,6 +265,17 @@ Local helper surfaces:
 - `tools/codex/` holds Codex-focused PowerShell scanners and generators used for desktop quality
   reports and reviewable implementation planning.
 
+## Lifecycle Hooks
+
+Codex lifecycle hooks are documented in
+[`advanced-configuration.md`](advanced-configuration.md#hooks). Meridian keeps hook support enabled
+in `.codex/config.toml` with `[features].hooks = true`, but does not enable a repository-local
+command hook until the script has an owner, a validation lane, repository-relative path handling,
+and a Codex `/hooks` trust-review note. Use user-level hooks for personal notifications or
+machine-local telemetry, managed hooks for organization policy, and project hooks only for
+repository-safe guardrails such as prompt secret checks, deterministic validation reminders, or
+task-stop evidence checks.
+
 ## Maintenance Rules
 
 - Keep Codex-only guidance in `.codex/skills/` and this `docs/ai/codex/` index.
@@ -291,6 +312,8 @@ Local helper surfaces:
 - Keep every current Codex skill structured around `Use When`, `Do Not Use When`, `Workflow`,
   `Handoffs`, `Validation`, and `Output Standards`, with trigger and non-trigger examples.
 - Keep `agents/openai.yaml` present for every current Codex skill.
+- Use `skill_script_advisor.py` before adding or optimizing bundled skill scripts; keep new helpers
+  under the owning skill's `scripts/`, mention them in `SKILL.md`, and run a representative command.
 - Keep `.agents/skills/` and `.claude/skills/` as host-neutral mirrors; do not widen Codex-only
   structure changes into portable packages unless the workflow itself is shared.
 - Skip purposeless cosmetic churn unless it fixes canonical naming, broken docs, accessibility,

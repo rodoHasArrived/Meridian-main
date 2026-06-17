@@ -40,7 +40,10 @@ These repo-local skills are the primary Meridian skill set for current AI work:
 | `meridian-brainstorm` | Generate Meridian-native product and architecture ideas |
 | `meridian-browser-workstation` | Implement and review browser workstation TypeScript/React changes |
 | `meridian-cleanup` | Clean code and docs without changing observable behavior |
+| `meridian-code-architecture` | Review architecture conformance, module boundaries, dependencies, and ADR/source-doc alignment |
 | `meridian-code-review` | Review changes for bugs, regressions, and architecture drift |
+| `meridian-contract-governance` | Trace shared contract impact across services, UI surfaces, tests, and docs |
+| `meridian-codex-skill-builder` | Package Codex skills with scripts, evals, profiles, catalogs, and route coverage |
 | `meridian-docs` | Maintain Meridian documentation with repo-grounded evidence |
 | `meridian-implementation-assurance` | Implement, certify, and improve work with scope control, requirement-to-evidence traceability, explicit validation, and docs sync |
 | `meridian-provider-builder` | Build and extend providers with the right contracts |

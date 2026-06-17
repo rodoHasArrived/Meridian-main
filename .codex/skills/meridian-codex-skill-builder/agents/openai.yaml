@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meridian Codex Skill Builder"
+  short_description: "Package Codex skills with evals"
+  default_prompt: "Use $meridian-codex-skill-builder to create or audit a Meridian Codex skill package with scripts, evals, routing, and catalog coverage."

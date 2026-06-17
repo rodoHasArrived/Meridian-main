@@ -1,7 +1,7 @@
 {
   "_comment": "Accepted baseline pass rates per eval scenario. If a run drops more than 10 percentage points below baseline, run_evals.py will warn. Update 'accepted_pass_rate' after a verified strong run.",
-  "_last_updated": "2026-03-29",
-  "_update_instructions": "Run `python3 scripts/run_evals.py --summary`, verify output quality manually, then update accepted_pass_rate to match the verified run's pass_rate per eval_id.",
+  "_last_updated": "2026-06-17",
+  "_update_instructions": "Run `python scripts/run_evals.py --all --summary --json --live-run` from an isolated worktree or scratch clone, verify output quality manually, then update accepted_pass_rate to match the verified run's pass_rate per eval_id.",
   "skill_name": "meridian-implementation-assurance",
   "baselines": [
     {
@@ -12,7 +12,7 @@
     },
     {
       "eval_id": 2,
-      "description": "Scenario B — new feature with missing docs, cross-link required",
+      "description": "Scenario B - new feature with missing docs, cross-link required",
       "accepted_pass_rate": 0.80,
       "total_assertions": 5
     },

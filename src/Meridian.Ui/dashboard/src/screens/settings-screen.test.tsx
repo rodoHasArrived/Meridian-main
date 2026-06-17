@@ -46,8 +46,11 @@ const apiMocks = vi.hoisted(() => ({
   revokeAlpacaConnection: vi.fn(),
   testProviderConnection: vi.fn(),
   putProviderCredentials: vi.fn(),
+  createProviderIntegrationReconciliationHandoff: vi.fn(),
+  importProviderIntegrationOpenApi: vi.fn(),
   replayProviderIntegrationQuarantineRecords: vi.fn(),
   resolveProviderIntegrationQuarantineRecord: vi.fn(),
+  runDueProviderIntegrationSync: vi.fn(),
   verifyProviderConnection: vi.fn(),
   deleteProviderCredentials: vi.fn(),
   getProviderIntegrationConnectionMonitor: vi.fn(),
@@ -78,8 +81,11 @@ vi.mock("@/lib/api", async (importActual) => ({
   revokeAlpacaConnection: apiMocks.revokeAlpacaConnection,
   testProviderConnection: apiMocks.testProviderConnection,
   putProviderCredentials: apiMocks.putProviderCredentials,
+  createProviderIntegrationReconciliationHandoff: apiMocks.createProviderIntegrationReconciliationHandoff,
+  importProviderIntegrationOpenApi: apiMocks.importProviderIntegrationOpenApi,
   replayProviderIntegrationQuarantineRecords: apiMocks.replayProviderIntegrationQuarantineRecords,
   resolveProviderIntegrationQuarantineRecord: apiMocks.resolveProviderIntegrationQuarantineRecord,
+  runDueProviderIntegrationSync: apiMocks.runDueProviderIntegrationSync,
   verifyProviderConnection: apiMocks.verifyProviderConnection,
   deleteProviderCredentials: apiMocks.deleteProviderCredentials,
   getProviderIntegrationConnectionMonitor: apiMocks.getProviderIntegrationConnectionMonitor,
@@ -481,8 +487,11 @@ describe("SettingsScreen", () => {
     apiMocks.revokeAlpacaConnection.mockReset();
     apiMocks.testProviderConnection.mockReset();
     apiMocks.putProviderCredentials.mockReset();
+    apiMocks.createProviderIntegrationReconciliationHandoff.mockReset();
+    apiMocks.importProviderIntegrationOpenApi.mockReset();
     apiMocks.replayProviderIntegrationQuarantineRecords.mockReset();
     apiMocks.resolveProviderIntegrationQuarantineRecord.mockReset();
+    apiMocks.runDueProviderIntegrationSync.mockReset();
     apiMocks.verifyProviderConnection.mockReset();
     apiMocks.deleteProviderCredentials.mockReset();
     apiMocks.getProviderIntegrationConnectionMonitor.mockReset();
@@ -1398,6 +1407,13 @@ describe("SettingsScreen", () => {
         }
       ]
     };
+    const emptyHandoff: ProviderIntegrationReconciliationHandoffHistory = {
+      connectionId: "provider-reference",
+      totalRecords: 0,
+      handoffCount: 0,
+      lastRequestedAt: null,
+      records: []
+    };
     apiMocks.getProviderIntegrationConnectionMonitor.mockResolvedValue(monitor);
     apiMocks.getProviderIntegrationConnectionSyncPlan.mockResolvedValue(syncPlan);
     apiMocks.getProviderIntegrationConnectionSyncRuns.mockResolvedValue(syncRuns);
@@ -1406,12 +1422,61 @@ describe("SettingsScreen", () => {
     apiMocks.getProviderIntegrationQuarantineReview
       .mockResolvedValue(quarantine)
       .mockResolvedValueOnce(quarantine)
+      .mockResolvedValueOnce(quarantine)
       .mockResolvedValueOnce(reviewedQuarantine)
       .mockResolvedValueOnce(reviewedQuarantine)
       .mockResolvedValueOnce(replayQuarantine)
       .mockResolvedValueOnce(ignoredQuarantine);
-    apiMocks.getProviderIntegrationReconciliationHandoffHistory.mockResolvedValue(handoff);
+    apiMocks.getProviderIntegrationReconciliationHandoffHistory
+      .mockResolvedValue(handoff)
+      .mockResolvedValueOnce(emptyHandoff);
     apiMocks.getProviderIntegrationStagingReview.mockResolvedValue(staging);
+    apiMocks.importProviderIntegrationOpenApi.mockResolvedValue({
+      imported: true,
+      manifest: {
+        manifestId: "draft-polygon-openapi-v1",
+        integrationType: "OpenApiRest",
+        endpoints: [{ endpointKey: "positions" }, { endpointKey: "accounts" }],
+        state: "Draft"
+      },
+      readiness: {
+        isReady: false,
+        requiredEvidence: ["endpoint-test-required"],
+        issues: []
+      },
+      issues: [],
+      message: "OpenAPI import draft manifest saved."
+    });
+    apiMocks.runDueProviderIntegrationSync.mockResolvedValue({
+      connectionId: "provider-reference",
+      requestedAt: "2026-06-16T12:45:00Z",
+      startedCount: 1,
+      skippedCount: 0,
+      items: [
+        {
+          capability: "Positions",
+          endpointKey: "positions",
+          started: true,
+          skipped: false,
+          reason: "due",
+          syncRunId: "run-due-positions-1",
+          dryRunResult: null,
+          issues: []
+        }
+      ]
+    });
+    apiMocks.createProviderIntegrationReconciliationHandoff.mockResolvedValue({
+      accepted: true,
+      handoffId: "handoff-settings-1",
+      connectionId: "provider-reference",
+      promotionTarget: "reconciliation-staging",
+      records: handoff.records,
+      acceptedRecordCount: 1,
+      rejectedRecordCount: 0,
+      duplicateRecordCount: 0,
+      issues: [],
+      message: "Reconciliation handoff created."
+    });
     apiMocks.replayProviderIntegrationQuarantineRecords.mockResolvedValue({
       replaySyncRunId: "provider-replay-provider-reference-20260616",
       rawPayloadId: "raw-replay-1",
@@ -1475,7 +1540,7 @@ describe("SettingsScreen", () => {
     expect(within(panel).getByText("1 rows")).toBeInTheDocument();
     expect(within(panel).getByText("1 review required")).toBeInTheDocument();
     expect(within(panel).getByText("1 ready / 0 blocked")).toBeInTheDocument();
-    expect(within(panel).getByText("1 handoffs")).toBeInTheDocument();
+    expect(within(panel).getByText("0 handoffs")).toBeInTheDocument();
     expect(within(panel).getByText("sync-positions-2")).toBeInTheDocument();
     expect(within(panel).getByText("quarantine-position-1")).toBeInTheDocument();
     expect(within(panel).getByText("quarantine-position-3")).toBeInTheDocument();
@@ -1484,6 +1549,41 @@ describe("SettingsScreen", () => {
     expect(within(panel).getByText("Daily provider position sync is due.")).toBeInTheDocument();
     expect(within(panel).getByText("stage-position-1")).toBeInTheDocument();
     expect(within(panel).getByText(/US Treasury 2031/)).toBeInTheDocument();
+
+    const openApiForm = within(panel).getByRole("form", { name: "Polygon.io OpenAPI import draft" });
+    await user.click(within(openApiForm).getByRole("button", { name: "Import OpenAPI draft manifest for Polygon.io" }));
+
+    await waitFor(() => {
+      expect(apiMocks.importProviderIntegrationOpenApi).toHaveBeenCalledWith(expect.objectContaining({
+        manifestId: "draft-polygon-openapi-v1",
+        providerId: "polygon",
+        displayName: "Polygon.io OpenAPI",
+        environment: "paper",
+        authType: "OAuth2",
+        capabilities: ["Positions"],
+        importedBy: "Andrew Rowden",
+        importedAt: expect.any(String),
+        changeReason: "Imported from the Settings Provider Connection Center."
+      }));
+    });
+    expect(await within(openApiForm).findByText("OpenAPI import draft manifest saved.")).toBeInTheDocument();
+    expect(within(openApiForm).getByText("2 endpoints seeded.")).toBeInTheDocument();
+
+    await user.click(within(panel).getByRole("button", {
+      name: "Create reconciliation handoff for 1 provider integration staging rows for Polygon.io"
+    }));
+
+    await waitFor(() => {
+      expect(apiMocks.createProviderIntegrationReconciliationHandoff).toHaveBeenCalledWith(expect.objectContaining({
+        connectionId: "provider-reference",
+        stagingRecordIds: ["stage-position-1"],
+        requestedBy: "Andrew Rowden",
+        requestedAt: expect.any(String),
+        approvalEvidenceId: expect.stringMatching(/^settings-provider-handoff-provider-reference-/),
+        note: "Approved from the Settings Provider Connection Center promotion readiness panel.",
+        recentRunLimit: 5
+      }));
+    });
 
     await user.click(within(panel).getByRole("button", {
       name: "Review quarantine record quarantine-position-1 for Polygon.io"
@@ -1568,6 +1668,19 @@ describe("SettingsScreen", () => {
       }));
     });
     expect(await within(panel).findByText("Decision: Ignore provider record by Andrew Rowden · Jun 16, 12:44 UTC")).toBeInTheDocument();
+
+    await user.click(within(panel).getByRole("button", { name: "Run due provider integration sync for Polygon.io" }));
+
+    await waitFor(() => {
+      expect(apiMocks.runDueProviderIntegrationSync).toHaveBeenCalledWith("provider-reference", expect.objectContaining({
+        connectionId: "provider-reference",
+        requestedBy: "Andrew Rowden",
+        requestedAt: expect.any(String),
+        maxPages: 2,
+        pathParametersByCapability: {},
+        queryParametersByCapability: {}
+      }));
+    });
   });
 
   it("supports inline provider edit, test, save, verify, and clear actions", async () => {

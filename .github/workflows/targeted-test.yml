@@ -130,7 +130,10 @@ jobs:
             '--logger',
             'trx;LogFilePrefix=targeted',
             '--results-directory',
-            'artifacts/test-results/targeted-dotnet'
+            'artifacts/test-results/targeted-dotnet',
+            '--blame-hang',
+            '--blame-hang-timeout',
+            '10m'
           )
 
           & dotnet @testArgs @props
@@ -154,7 +157,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: targeted-test-dotnet-${{ github.run_number }}
+          name: targeted-test-dotnet-${{ github.run_number }}-${{ github.run_attempt }}
           path: |
             artifacts/test-results/targeted-dotnet/
           if-no-files-found: ignore

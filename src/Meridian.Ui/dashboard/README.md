@@ -86,10 +86,12 @@ sync-run history, sync plan, staging review, identity-resolution preview, promot
 reconciliation-handoff history, and quarantine review on demand per routed connection. Retained
 staging, identity, quarantine, promotion, and handoff evidence stays service-owned while the browser
 surfaces the operator review posture beside credential and routing status. The runtime panel can
-record retained quarantine-record decisions for review-only, replay-after-mapping,
-ignore-provider-record, and mark-as-cash-position actions, trigger the shared quarantine replay
-endpoint for the currently retained quarantine batch, and show the backend-computed pending,
-decisioned, replay-requested, ignored, and cash-position posture counts after evidence reload.
+seed an OpenAPI draft manifest, run due read-only sync capabilities, create reconciliation handoff
+evidence for unhanded promotion-ready staging rows, record retained quarantine-record decisions for
+review-only, replay-after-mapping, ignore-provider-record, and mark-as-cash-position actions, trigger
+the shared quarantine replay endpoint for the currently retained quarantine batch, and show the
+backend-computed pending, decisioned, replay-requested, ignored, and cash-position posture counts
+after evidence reload.
 
 No-host browser previews must keep fixture data visibly labeled as demo data. The shell banner
 routes operators through the typed demo evidence path: watchlist, live quote evidence, trading
@@ -138,7 +140,10 @@ state.
 DTO. Accounting loads the `ledger` and Accounting-hosted `security-instrument` explorers from
 `/api/workstation/financial-record-explorers/{explorerId}`, Portfolio loads `portfolio`, Reporting
 renders the shared `report-line-provenance` explorer from the reporting payload, and Data links to
-the existing Security Master lane instead of restoring the old static Data workbench.
+the existing Security Master lane instead of restoring the old static Data workbench. Reporting
+renders the server-provided report-line chain for instrument, position or transaction,
+reconciliation, journal, report line, evidence, and audit links; React must not rebuild that
+lineage locally.
 Saved views post back through the shared saved-view endpoint only after a material filter/search
 change, and blocked or empty DTOs keep proof actions disabled with the server-provided reason.
 Operations Continuity close-checklist fields mirror the shared workstation DTO, including required

@@ -1,0 +1,14 @@
+{
+  "skill_name": "meridian-codex-skill-builder",
+  "last_updated": "2026-06-17",
+  "baselines": [
+    {
+      "eval_id": 1,
+      "accepted_status": "pass"
+    },
+    {
+      "eval_id": 2,
+      "accepted_status": "pass"
+    }
+  ]
+}

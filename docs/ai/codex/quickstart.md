@@ -59,6 +59,11 @@ still lives in `../assistant-workflow-contract.md`.
     `docs/status/ai-handoff-packet.json` as the canonical local evidence artifacts. The route
     artifact must include `modelRouteId`, validation requirements, required telemetry, and
     escalation triggers.
+20. For Codex lifecycle hooks, use [`advanced-configuration.md`](advanced-configuration.md) as the
+    canonical reference. Keep hooks enabled with `[features].hooks = true`, but add executable
+    project hooks only after script review, repository-relative path checks, and Codex `/hooks`
+    trust review. Hooks may flag missing intent or ambiguity, but clarification should be a concise
+    model question with two or three concrete options instead of a hidden hook decision.
 
 ## Read Budget
 
@@ -72,6 +77,7 @@ not paste raw file contents or broad command output unless the user asks for a t
 | Broad generation or architecture-sensitive work | `../../architecture/meridian-development-intelligence-framework.md`, `../../architecture/meridian-vision.md`, `../../architecture/meridian-domain-model.md`, `../../domain/README.md`, `../context/README.md` | Full feature packs or generated exports until scope is clear |
 | Source change | Nearest `src/**/README.md`, `docs/source/data/source-modules.yml` | Generated source docs unless a generator is in scope |
 | AI docs change | `../assistant-workflow-contract.md`, this page, `README.md` | Host-specific mirrors unless shared policy changes |
+| Codex hook config | `advanced-configuration.md`, `.codex/config.toml` | Executable hook scripts before trust and validation ownership are defined |
 | Parallel or concurrent implementation | `../working-memory.md`, `../parallel-task-manifest-template.md`, `../agent-handoff-checklist.md` | Broad logs, overlapping writes, and stale validation reuse |
 | WPF task | `.codex/AGENTS.md`, relevant WPF skill, nearest view model/tests | Broad WPF suites before focused filters |
 | Browser task | `.codex/skills/meridian-browser-workstation/SKILL.md`, package tests; Codex Browser plugin for unauthenticated rendered-route inspection when the task is visual or interactive | WPF validation unless shared contracts changed; signed-in browser flows or secret entry |

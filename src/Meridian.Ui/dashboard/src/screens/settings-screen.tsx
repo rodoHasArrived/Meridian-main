@@ -11,6 +11,7 @@ import { WorkspaceFilterBar, WorkspaceTabStrip } from "@/components/meridian/wor
 import {
   approveSecurityAssetProfile,
   assignLedgerMapping,
+  createProviderIntegrationReconciliationHandoff,
   createRolePermissionProfile,
   createScopedAccessAssignment,
   createSecurityMasterEntry,
@@ -25,12 +26,14 @@ import {
   getProviderIntegrationReconciliationHandoffHistory,
   getProviderIntegrationStagingReview,
   getSecurityAssetProfileLineage,
+  importProviderIntegrationOpenApi,
   listScopedAccessAssignments,
   putProviderCredentials,
   replayProviderIntegrationQuarantineRecords,
   resolveProviderIntegrationQuarantineRecord,
   revokeScopedAccessAssignment,
   rollbackSecurityAssetProfile,
+  runDueProviderIntegrationSync,
   testProviderConnection,
   upsertOperationsApprovalPolicyRule,
   upsertOperationsCloseCalendarItem,
@@ -68,7 +71,10 @@ import type {
   OperationsApprovalPolicyMatrixRow,
   OperationsCloseCalendar,
   OperationsCloseCalendarItem,
+  ProviderIntegrationAuthType,
+  ProviderIntegrationCapabilityKind,
   ProviderIntegrationConnectionMonitor,
+  ProviderIntegrationOpenApiImportResult,
   ProviderIntegrationProcessingStatus,
   ProviderIntegrationPromotionReadinessPreview,
   ProviderIntegrationQuarantinedRecord,
@@ -268,6 +274,23 @@ interface ProviderRuntimeEvidenceState {
   promotion: ProviderIntegrationPromotionReadinessPreview | null;
   handoff: ProviderIntegrationReconciliationHandoffHistory | null;
   quarantine: ProviderIntegrationQuarantineReview | null;
+}
+
+interface ProviderOpenApiImportState {
+  manifestId: string;
+  displayName: string;
+  environment: string;
+  authType: ProviderIntegrationAuthType;
+  tokenUrl: string;
+  scopes: string;
+  capabilities: string;
+  openApiDocumentJson: string;
+  changeReason: string;
+  busy: boolean;
+  result: ProviderIntegrationOpenApiImportResult | null;
+  message: string | null;
+  details: string[];
+  tone: "default" | "success" | "danger" | "warning";
 }
 
 const emptyProviderRuntimeEvidenceState: ProviderRuntimeEvidenceState = {
@@ -553,6 +576,7 @@ export function SettingsScreen({
   const [providerSort, setProviderSort] = useState<"risk" | "name">("risk");
   const [providerInlineState, setProviderInlineState] = useState<Record<string, ProviderInlineState>>({});
   const [providerRuntimeState, setProviderRuntimeState] = useState<Record<string, ProviderRuntimeEvidenceState>>({});
+  const [providerOpenApiImportState, setProviderOpenApiImportState] = useState<Record<string, ProviderOpenApiImportState>>({});
   const ledgerMappingDraft = useMemo(
     () => buildLedgerMappingAssignmentDraft(ledgerMappingWorkbench),
     [ledgerMappingWorkbench]
@@ -950,6 +974,26 @@ export function SettingsScreen({
     });
   }, [inlineProviderManagementEnabled, providerRowIdsSignature]);
 
+  useEffect(() => {
+    if (allProviderRows.length === 0) {
+      return;
+    }
+
+    setProviderOpenApiImportState((current) => {
+      let changed = false;
+      const next = { ...current };
+      for (const row of allProviderRows) {
+        const stateKey = providerRuntimeStateKey(row);
+        if (next[stateKey]) {
+          continue;
+        }
+        next[stateKey] = createProviderOpenApiImportState(row);
+        changed = true;
+      }
+      return changed ? next : current;
+    });
+  }, [providerRowIdsSignature]);
+
   const filteredProviderGroups = useMemo(() => {
     const search = providerSearch.trim().toLowerCase();
     return vm.providerConnectionCenter.groups.map((group) => {
@@ -1059,6 +1103,197 @@ export function SettingsScreen({
         quarantine: providerRuntimeValue(quarantineResult)
       }
     }));
+  };
+
+  const updateProviderOpenApiImportState = (
+    row: SettingsProviderConnectionRow,
+    updater: (state: ProviderOpenApiImportState) => ProviderOpenApiImportState
+  ) => {
+    const stateKey = providerRuntimeStateKey(row);
+    setProviderOpenApiImportState((current) => ({
+      ...current,
+      [stateKey]: updater(current[stateKey] ?? createProviderOpenApiImportState(row))
+    }));
+  };
+
+  const submitProviderOpenApiImport = async (row: SettingsProviderConnectionRow) => {
+    const stateKey = providerRuntimeStateKey(row);
+    const formState = providerOpenApiImportState[stateKey] ?? createProviderOpenApiImportState(row);
+    const importedAt = new Date();
+    const capabilities = parseProviderOpenApiCapabilities(formState.capabilities);
+
+    if (!formState.manifestId.trim() || !formState.openApiDocumentJson.trim() || capabilities.length === 0) {
+      updateProviderOpenApiImportState(row, (state) => ({
+        ...state,
+        message: "Manifest id, capability list, and OpenAPI JSON are required before importing a draft.",
+        details: [],
+        tone: "warning"
+      }));
+      return;
+    }
+
+    updateProviderOpenApiImportState(row, (state) => ({
+      ...state,
+      busy: true,
+      message: "Importing OpenAPI draft manifest.",
+      details: [],
+      tone: "default"
+    }));
+
+    try {
+      const result = await importProviderIntegrationOpenApi({
+        manifestId: formState.manifestId.trim(),
+        providerId: row.providerId,
+        displayName: formState.displayName.trim() || row.displayName,
+        environment: formState.environment.trim() || "paper",
+        authType: formState.authType,
+        tokenUrl: formState.tokenUrl.trim() || null,
+        scopes: formState.scopes.split(",").map((scope) => scope.trim()).filter(Boolean),
+        capabilities,
+        openApiDocumentJson: formState.openApiDocumentJson,
+        importedBy: session?.displayName ?? "settings-operator",
+        importedAt: importedAt.toISOString(),
+        changeReason: formState.changeReason.trim() || "Imported from the Settings Provider Connection Center."
+      });
+
+      updateProviderOpenApiImportState(row, (state) => ({
+        ...state,
+        busy: false,
+        result,
+        message: result.message ?? `OpenAPI draft imported for ${result.manifest.manifestId}.`,
+        details: [
+          `${result.manifest.endpoints.length} endpoints seeded.`,
+          `${result.readiness.requiredEvidence.length} readiness evidence requirements.`,
+          ...result.issues.map((issue) => issue.message)
+        ],
+        tone: result.readiness.isReady && result.issues.length === 0 ? "success" : "warning"
+      }));
+    } catch (error) {
+      const display = describeApiError(error, "Provider integration OpenAPI import failed.");
+      updateProviderOpenApiImportState(row, (state) => ({
+        ...state,
+        busy: false,
+        message: display.summary,
+        details: display.details,
+        tone: "danger"
+      }));
+    }
+  };
+
+  const runProviderRuntimeDueSync = async (row: SettingsProviderConnectionRow) => {
+    const stateKey = providerRuntimeStateKey(row);
+    const requestedAt = new Date();
+
+    setProviderRuntimeState((current) => ({
+      ...current,
+      [stateKey]: {
+        ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+        phase: "loading",
+        message: "Provider integration due-sync is running.",
+        details: []
+      }
+    }));
+
+    try {
+      const result = await runDueProviderIntegrationSync(row.integrationConnectionId, {
+        connectionId: row.integrationConnectionId,
+        requestedAt: requestedAt.toISOString(),
+        requestedBy: session?.displayName ?? "settings-operator",
+        maxPages: 2,
+        pathParametersByCapability: {},
+        queryParametersByCapability: {}
+      });
+
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: `Due-sync completed: ${result.startedCount} started / ${result.skippedCount} skipped.`,
+          details: result.items.flatMap((item) => item.issues.map((issue) => issue.message))
+        }
+      }));
+      await loadProviderRuntimeEvidence(row);
+    } catch (error) {
+      const display = describeApiError(error, "Provider integration due-sync failed.");
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: display.summary,
+          details: display.details
+        }
+      }));
+    }
+  };
+
+  const createProviderRuntimeHandoff = async (row: SettingsProviderConnectionRow) => {
+    const stateKey = providerRuntimeStateKey(row);
+    const currentState = providerRuntimeState[stateKey];
+    const readyRows = currentState?.promotion?.rows.filter((promotionRow) => promotionRow.status === "ReadyForReconciliation") ?? [];
+    const alreadyHandedOff = new Set((currentState?.handoff?.records ?? []).map((record) => record.stagingRecordId));
+    const stagingRecordIds = readyRows
+      .map((promotionRow) => promotionRow.stagingRecordId)
+      .filter((stagingRecordId) => !alreadyHandedOff.has(stagingRecordId));
+    const requestedAt = new Date();
+
+    if (stagingRecordIds.length === 0) {
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: "No promotion-ready staging rows are available for reconciliation handoff.",
+          details: []
+        }
+      }));
+      return;
+    }
+
+    setProviderRuntimeState((current) => ({
+      ...current,
+      [stateKey]: {
+        ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+        phase: "loading",
+        message: "Creating provider integration reconciliation handoff.",
+        details: []
+      }
+    }));
+
+    try {
+      const result = await createProviderIntegrationReconciliationHandoff({
+        connectionId: row.integrationConnectionId,
+        stagingRecordIds,
+        requestedBy: session?.displayName ?? "settings-operator",
+        requestedAt: requestedAt.toISOString(),
+        approvalEvidenceId: providerRuntimeHandoffEvidenceId(row.integrationConnectionId, requestedAt),
+        note: "Approved from the Settings Provider Connection Center promotion readiness panel.",
+        recentRunLimit: 5
+      });
+
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: `Reconciliation handoff ${result.accepted ? "created" : "reviewed"}: ${result.acceptedRecordCount} accepted / ${result.duplicateRecordCount} duplicate.`,
+          details: result.issues.map((issue) => issue.message)
+        }
+      }));
+      await loadProviderRuntimeEvidence(row);
+    } catch (error) {
+      const display = describeApiError(error, "Provider integration reconciliation handoff failed.");
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: display.summary,
+          details: display.details
+        }
+      }));
+    }
   };
 
   const replayProviderRuntimeQuarantine = async (row: SettingsProviderConnectionRow) => {
@@ -3711,7 +3946,12 @@ export function SettingsScreen({
                       <ProviderIntegrationRuntimePanel
                         row={row}
                         state={providerRuntimeState[providerRuntimeStateKey(row)] ?? emptyProviderRuntimeEvidenceState}
+                        openApiImportState={providerOpenApiImportState[providerRuntimeStateKey(row)] ?? createProviderOpenApiImportState(row)}
+                        onOpenApiImportStateChange={(updater) => updateProviderOpenApiImportState(row, updater)}
+                        onImportOpenApi={() => void submitProviderOpenApiImport(row)}
                         onLoad={() => void loadProviderRuntimeEvidence(row)}
+                        onRunDueSync={() => void runProviderRuntimeDueSync(row)}
+                        onCreateHandoff={() => void createProviderRuntimeHandoff(row)}
                         onReplayQuarantine={() => void replayProviderRuntimeQuarantine(row)}
                         onResolveQuarantineRecord={(record, action) => void resolveProviderRuntimeQuarantineRecord(row, record, action)}
                       />
@@ -5066,13 +5306,23 @@ function ProviderInlineActionPanel({
 function ProviderIntegrationRuntimePanel({
   row,
   state,
+  openApiImportState,
+  onOpenApiImportStateChange,
+  onImportOpenApi,
   onLoad,
+  onRunDueSync,
+  onCreateHandoff,
   onReplayQuarantine,
   onResolveQuarantineRecord
 }: {
   row: SettingsProviderConnectionRow;
   state: ProviderRuntimeEvidenceState;
+  openApiImportState: ProviderOpenApiImportState;
+  onOpenApiImportStateChange: (updater: (state: ProviderOpenApiImportState) => ProviderOpenApiImportState) => void;
+  onImportOpenApi: () => void;
   onLoad: () => void;
+  onRunDueSync: () => void;
+  onCreateHandoff: () => void;
   onReplayQuarantine: () => void;
   onResolveQuarantineRecord: (
     record: ProviderIntegrationQuarantinedRecord,
@@ -5111,6 +5361,12 @@ function ProviderIntegrationRuntimePanel({
   );
   const quarantineReplayCount = replayEligibleQuarantineRecords.length;
   const canReplayQuarantine = !loading && quarantineReplayCount > 0 && Boolean(state.monitor?.manifestId);
+  const canRunDueSync = !loading && Boolean(state.syncPlan) && dueSyncItems > 0 && blockedSyncItems === 0;
+  const alreadyHandedOff = new Set((state.handoff?.records ?? []).map((record) => record.stagingRecordId));
+  const handoffReadyCount = (state.promotion?.rows ?? [])
+    .filter((promotionRow) => promotionRow.status === "ReadyForReconciliation" && !alreadyHandedOff.has(promotionRow.stagingRecordId))
+    .length;
+  const canCreateHandoff = !loading && handoffReadyCount > 0;
   const actionLabel = state.phase === "loaded" || state.phase === "error" ? "Refresh runtime" : loading ? "Loading runtime" : "Load runtime";
 
   return (
@@ -5129,6 +5385,32 @@ function ProviderIntegrationRuntimePanel({
           <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{row.integrationConnectionId}</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            onClick={onRunDueSync}
+            disabled={!canRunDueSync}
+            disabledReason={!state.syncPlan ? "Load runtime evidence before running due sync." : blockedSyncItems > 0 ? "Blocked sync-plan items must be resolved before due sync." : dueSyncItems === 0 ? "No due sync-plan items are available." : undefined}
+            aria-label={`Run due provider integration sync for ${row.displayName}`}
+          >
+            {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Activity className="h-3.5 w-3.5" aria-hidden="true" />}
+            Run due sync
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            onClick={onCreateHandoff}
+            disabled={!canCreateHandoff}
+            disabledReason={!state.promotion ? "Load promotion readiness before creating a handoff." : handoffReadyCount === 0 ? "No unhanded promotion-ready staging rows are available." : undefined}
+            aria-label={`Create reconciliation handoff for ${handoffReadyCount} provider integration staging rows for ${row.displayName}`}
+          >
+            {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <GitBranch className="h-3.5 w-3.5" aria-hidden="true" />}
+            Hand off ready
+          </Button>
           <Button
             type="button"
             variant="outline"
@@ -5155,6 +5437,12 @@ function ProviderIntegrationRuntimePanel({
           </Button>
         </div>
       </div>
+      <ProviderOpenApiImportForm
+        row={row}
+        state={openApiImportState}
+        onStateChange={onOpenApiImportStateChange}
+        onSubmit={onImportOpenApi}
+      />
       <dl className="mt-3 grid gap-2 sm:grid-cols-2">
         <SettingsFieldRow
           label="Last sync"
@@ -5378,6 +5666,162 @@ function ProviderIntegrationRuntimePanel({
         </div>
       ) : null}
     </section>
+  );
+}
+
+function ProviderOpenApiImportForm({
+  row,
+  state,
+  onStateChange,
+  onSubmit
+}: {
+  row: SettingsProviderConnectionRow;
+  state: ProviderOpenApiImportState;
+  onStateChange: (updater: (state: ProviderOpenApiImportState) => ProviderOpenApiImportState) => void;
+  onSubmit: () => void;
+}) {
+  const updateField = <K extends keyof ProviderOpenApiImportState>(
+    field: K,
+    value: ProviderOpenApiImportState[K]
+  ) => {
+    onStateChange((current) => ({
+      ...current,
+      [field]: value,
+      message: null,
+      details: [],
+      tone: "default"
+    }));
+  };
+
+  return (
+    <form
+      className="mt-3 grid gap-3 rounded-md border border-border/60 bg-background/35 px-3 py-3"
+      aria-label={`${row.displayName} OpenAPI import draft`}
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit();
+      }}
+      noValidate
+    >
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h6 className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground">OpenAPI import draft</h6>
+          <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
+            Seed a draft manifest through the shared import endpoint; readiness, mapping, and runtime evidence stay service-owned.
+          </p>
+        </div>
+        <Button
+          type="submit"
+          variant="outline"
+          size="sm"
+          className="shrink-0"
+          disabled={state.busy}
+          busy={state.busy}
+          busyLabel="Importing OpenAPI"
+          aria-label={`Import OpenAPI draft manifest for ${row.displayName}`}
+        >
+          <Save className="h-3.5 w-3.5" aria-hidden="true" />
+          Import draft
+        </Button>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2">
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Manifest ID
+          <Input
+            value={state.manifestId}
+            onChange={(event) => updateField("manifestId", event.target.value)}
+            disabled={state.busy}
+            aria-label={`${row.displayName} OpenAPI manifest id`}
+          />
+        </label>
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Display name
+          <Input
+            value={state.displayName}
+            onChange={(event) => updateField("displayName", event.target.value)}
+            disabled={state.busy}
+            aria-label={`${row.displayName} OpenAPI display name`}
+          />
+        </label>
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Environment
+          <Input
+            value={state.environment}
+            onChange={(event) => updateField("environment", event.target.value)}
+            disabled={state.busy}
+            aria-label={`${row.displayName} OpenAPI environment`}
+          />
+        </label>
+        <FilterSelect
+          label="Auth type"
+          value={state.authType}
+          onChange={(value) => updateField("authType", value as ProviderIntegrationAuthType)}
+          options={PROVIDER_OPEN_API_AUTH_OPTIONS}
+        />
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Capabilities
+          <Input
+            value={state.capabilities}
+            onChange={(event) => updateField("capabilities", event.target.value)}
+            disabled={state.busy}
+            aria-label={`${row.displayName} OpenAPI capabilities`}
+          />
+        </label>
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          OAuth token URL
+          <Input
+            value={state.tokenUrl}
+            onChange={(event) => updateField("tokenUrl", event.target.value)}
+            disabled={state.busy}
+            aria-label={`${row.displayName} OpenAPI token URL`}
+          />
+        </label>
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Scopes
+          <Input
+            value={state.scopes}
+            onChange={(event) => updateField("scopes", event.target.value)}
+            disabled={state.busy}
+            aria-label={`${row.displayName} OpenAPI scopes`}
+          />
+        </label>
+        <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+          Change reason
+          <Input
+            value={state.changeReason}
+            onChange={(event) => updateField("changeReason", event.target.value)}
+            disabled={state.busy}
+            aria-label={`${row.displayName} OpenAPI change reason`}
+          />
+        </label>
+      </div>
+      <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
+        OpenAPI JSON
+        <textarea
+          className="min-h-24 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-xs text-foreground outline-none focus:border-primary"
+          value={state.openApiDocumentJson}
+          onChange={(event) => updateField("openApiDocumentJson", event.target.value)}
+          disabled={state.busy}
+          aria-label={`${row.displayName} OpenAPI JSON`}
+          spellCheck={false}
+        />
+      </label>
+      {state.message ? (
+        <div role={state.tone === "danger" ? "alert" : "status"} className={cn("text-xs", itemToneClass[state.tone])}>
+          <div>{state.message}</div>
+          {state.result ? (
+            <div className="mt-1 text-[11px] text-muted-foreground">
+              {state.result.manifest.integrationType} · {state.result.manifest.state} · {state.result.readiness.isReady ? "Ready" : "Readiness review"}
+            </div>
+          ) : null}
+          {state.details.length > 0 ? (
+            <ul className="mt-1 list-disc space-y-1 pl-4 text-[11px] text-muted-foreground">
+              {state.details.map((detail) => <li key={detail}>{detail}</li>)}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+    </form>
   );
 }
 
@@ -5607,6 +6051,53 @@ function providerRuntimeReplaySyncRunId(connectionId: string, requestedAt: Date)
   return `provider-replay-${normalizedConnection}-${suffix}`;
 }
 
+function providerRuntimeHandoffEvidenceId(connectionId: string, requestedAt: Date): string {
+  const suffix = requestedAt.toISOString().replace(/[^0-9A-Za-z]/g, "").toLowerCase();
+  const normalizedConnection = (connectionId || "connection").replace(/[^0-9A-Za-z-]/g, "-").toLowerCase();
+  return `settings-provider-handoff-${normalizedConnection}-${suffix}`;
+}
+
+function createProviderOpenApiImportState(row: SettingsProviderConnectionRow): ProviderOpenApiImportState {
+  const normalizedProvider = (row.providerId || row.integrationConnectionId || "provider")
+    .replace(/[^0-9A-Za-z-]/g, "-")
+    .replace(/-+/g, "-")
+    .toLowerCase();
+  const capability = row.capabilityGroup === "accounting" ? "Transactions" : "Positions";
+
+  return {
+    manifestId: `draft-${normalizedProvider}-openapi-v1`,
+    displayName: `${row.displayName} OpenAPI`,
+    environment: providerOpenApiEnvironment(row.environmentLabel),
+    authType: "OAuth2",
+    tokenUrl: "",
+    scopes: "",
+    capabilities: capability,
+    openApiDocumentJson: PROVIDER_OPEN_API_SAMPLE_DOCUMENT,
+    changeReason: "Imported from the Settings Provider Connection Center.",
+    busy: false,
+    result: null,
+    message: null,
+    details: [],
+    tone: "default"
+  };
+}
+
+function providerOpenApiEnvironment(environmentLabel: string): string {
+  const normalized = environmentLabel.trim().toLowerCase();
+  return normalized && normalized !== "not set" ? normalized : "paper";
+}
+
+function parseProviderOpenApiCapabilities(value: string): ProviderIntegrationCapabilityKind[] {
+  const allowed = new Set<ProviderIntegrationCapabilityKind>(PROVIDER_OPEN_API_CAPABILITIES);
+  const capabilities = value
+    .split(",")
+    .map((capability) => capability.trim())
+    .filter((capability): capability is ProviderIntegrationCapabilityKind =>
+      allowed.has(capability as ProviderIntegrationCapabilityKind));
+
+  return Array.from(new Set(capabilities));
+}
+
 function providerRuntimeValue<T>(result: PromiseSettledResult<T>): T | null {
   return result.status === "fulfilled" ? result.value : null;
 }
@@ -5828,6 +6319,41 @@ function padProviderRuntimeUtc(value: number): string {
 }
 
 const PROVIDER_RUNTIME_UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+const PROVIDER_OPEN_API_AUTH_OPTIONS: { value: ProviderIntegrationAuthType; label: string }[] = [
+  { value: "OAuth2", label: "OAuth2" },
+  { value: "ApiKey", label: "API key" },
+  { value: "BearerToken", label: "Bearer token" },
+  { value: "ClientCredentials", label: "Client credentials" },
+  { value: "Basic", label: "Basic" },
+  { value: "None", label: "None" }
+];
+
+const PROVIDER_OPEN_API_CAPABILITIES: ProviderIntegrationCapabilityKind[] = [
+  "Accounts",
+  "Balances",
+  "Positions",
+  "Holdings",
+  "Transactions",
+  "TaxLots",
+  "SecurityReferenceData",
+  "MarketPrices",
+  "CorporateActions",
+  "Documents",
+  "Alerts",
+  "Events",
+  "OrderPreview",
+  "OrderPlacement",
+  "OrderCancellation",
+  "OrderStatus",
+  "Executions"
+];
+
+const PROVIDER_OPEN_API_SAMPLE_DOCUMENT = `{
+  "openapi": "3.0.3",
+  "info": { "title": "Provider API", "version": "draft" },
+  "paths": {}
+}`;
 
 function recentEventsVariant(state: "ready" | "empty" | "unavailable"): "default" | "outline" | "danger" {
   if (state === "unavailable") return "danger";

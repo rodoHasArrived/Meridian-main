@@ -18,7 +18,10 @@ Last verified against `README.md`, `docs/roadmap/data/*.yml`,
 | `meridian-brainstorm` | [`SKILL.md`](meridian-brainstorm/SKILL.md) | Generate Meridian-native product and architecture ideas |
 | `meridian-browser-workstation` | [`SKILL.md`](meridian-browser-workstation/SKILL.md) | Implement and review browser workstation TypeScript/React changes |
 | `meridian-cleanup` | [`SKILL.md`](meridian-cleanup/SKILL.md) | Clean up code and docs without behavior changes |
+| `meridian-code-architecture` | [`SKILL.md`](meridian-code-architecture/SKILL.md) | Review architecture conformance, module boundaries, dependencies, and ADR/source-doc alignment |
 | `meridian-code-review` | [`SKILL.md`](meridian-code-review/SKILL.md) | Review changes for bugs, regressions, and architecture drift |
+| `meridian-contract-governance` | [`SKILL.md`](meridian-contract-governance/SKILL.md) | Trace shared contract impact across services, UI surfaces, tests, and docs |
+| `meridian-codex-skill-builder` | [`SKILL.md`](meridian-codex-skill-builder/SKILL.md) | Package Codex skills with scripts, evals, profiles, catalogs, and route coverage |
 | `meridian-docs` | [`SKILL.md`](meridian-docs/SKILL.md) | Maintain Meridian documentation with repo-grounded evidence |
 | `meridian-implementation-assurance` | [`SKILL.md`](meridian-implementation-assurance/SKILL.md) | Implement, certify, and improve changes with scope control, requirement-to-evidence traceability, explicit validation, and docs sync |
 | `meridian-provider-builder` | [`SKILL.md`](meridian-provider-builder/SKILL.md) | Build and extend provider integrations |
@@ -47,6 +50,9 @@ different work:
 | Orient | `meridian-repo-navigation` | Route first, name owner files/docs, then exit. |
 | Ideate | `meridian-brainstorm` | Generate options and tradeoffs; do not write specs. |
 | Plan | `meridian-blueprint` | Turn one selected idea into a code-ready design. |
+| Architecture | `meridian-code-architecture` | Check module boundaries, dependency direction, ADR/source-doc alignment, and public seams. |
+| Contract governance | `meridian-contract-governance` | Trace DTO, route, provider-interface, and read-model impact across consumers. |
+| Codex skill builder | `meridian-codex-skill-builder` | Create or audit Codex skill packages with scripts, evals, profiles, catalogs, and routes. |
 | Implement or verify | `meridian-implementation-assurance` | Build or certify work with evidence and docs sync. |
 | Review | `meridian-code-review` | Findings first; no implementation unless asked. |
 | Docs | `meridian-docs` | Update docs, guidance, and indexes with current repo evidence. |

@@ -279,7 +279,7 @@ public sealed class ProviderConnectionLifecycleService
         return normalized;
     }
 
-    private static ProviderConnectionRowDto BuildRow(
+    private ProviderConnectionRowDto BuildRow(
         ProviderCredentialCatalogEntry descriptor,
         ProviderCredentialStoreStatus status,
         ProviderMetrics? metrics)

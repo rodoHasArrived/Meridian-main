@@ -57,8 +57,39 @@ Every self-improving agent change must leave a compact record with:
 - feedback source, judge rubric, or reviewer notes
 - candidate diff scope and expected improvement
 - eval commands, aggregate score, threshold, and retry count
+- script audit or scaffold evidence when bundled skill helpers change
 - promoted baseline files or manual follow-up reason
 - updated docs, catalogs, and rollback notes
+
+## Script Resource Improvements
+
+When a skill improvement adds or optimizes bundled scripts, use the owning skill's `scripts/`
+directory rather than a one-off repo root helper. Start with:
+
+```bash
+python .codex/skills/meridian-implementation-assurance/scripts/skill_script_advisor.py audit --skill <skill> --summary
+```
+
+Add a new script only when the task is repeated, fragile, validation-critical, or cheaper to keep as
+deterministic code than prose. If a script is justified, scaffold it with the advisor, replace the
+template body with task-specific logic, mention the script in the skill's `SKILL.md`, and run the
+script directly before promoting the skill baseline.
+
+## Hook-Based Feedback
+
+Codex lifecycle hooks can feed this loop when the feedback is deterministic and safe to run on a
+trusted clone. Good candidates are `UserPromptSubmit` checks for accidental secret paste or
+ambiguous intent, `SessionStart` context loaders, `Stop` validation reminders, and `SubagentStop`
+prompts that ask a specialist lane for one more focused pass. Keep hook scripts small,
+repository-relative, and owned by the same docs or validation lane that consumes their output.
+Clarification hooks should tell the model to ask one concise question with two or three concrete
+options, plus a free-form escape hatch when needed, rather than encoding the implementation choice in
+the hook.
+
+Do not use project-local hooks as a hidden agent-improvement mechanism. A hook that changes model
+context, blocks prompts, continues turns, or rewrites supported tool input must be documented in
+`advanced-configuration.md`, reviewed through Codex `/hooks`, and covered by the same eval or
+validation evidence required for prompt, skill, or profile changes.
 
 ## Graph And Retrieval Guardrails
 

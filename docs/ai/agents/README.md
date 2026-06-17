@@ -68,7 +68,10 @@ in user-level Codex config.
 | `meridian-brainstorm.toml` | Generate Meridian-native product and architecture ideas |
 | `meridian-browser-workstation.toml` | Route and implement browser workstation TypeScript/React tasks |
 | `meridian-cleanup.toml` | Clean up code and docs without behavior changes |
+| `meridian-code-architecture.toml` | Check architecture conformance, module boundaries, dependencies, and ADR/source-doc alignment |
 | `meridian-code-review.toml` | Review changes for bugs, regressions, and architecture drift |
+| `meridian-contract-governance.toml` | Trace shared contract impact across services, UI surfaces, tests, and docs |
+| `meridian-codex-skill-builder.toml` | Package Codex skills with scripts, evals, profiles, catalogs, and route coverage |
 | `meridian-docs.toml` | Maintain documentation and AI guidance |
 | `meridian-implementation-assurance.toml` | Verify implementation completeness, evidence, docs sync, and guardrails |
 | `meridian-provider-builder.toml` | Build or extend ProviderSdk-compliant data providers |

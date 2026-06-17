@@ -50,6 +50,91 @@ public sealed class FinancialRecordExplorerViewModelTests
         presentation.ExplorerActions[0].IsEnabled.Should().BeFalse();
     }
 
+    [Fact]
+    public void BuildPresentation_ReportLineProvenanceChain_ShouldCarryInstrumentActivityAndAuditLinks()
+    {
+        const string instrumentHref = "/api/workstation/security-master/securities/11111111-1111-1111-1111-111111111111";
+        const string activityHref = "/api/workstation/evidence/subjects/provider-event/provider-event-position-aapl/packet";
+        const string auditHref = "/api/workstation/evidence/subjects/report-line/ledger-evidence-1/packet";
+        var selected = new FinancialRecordExplorerSelectedRecordDto(
+            "report-line:test:cash",
+            "Report line",
+            "trial-balance.cash",
+            "2026-03 - board-pack v1",
+            "Governed report line with retained instrument, position, reconciliation, journal, report, evidence, and audit links.",
+            FinancialRecordExplorerTone.Success,
+            Fields:
+            [
+                new("Instrument", "11111111-1111-1111-1111-111111111111", instrumentHref, FinancialRecordExplorerTone.Success),
+                new("Position / transaction", "provider-event-position-aapl", activityHref, FinancialRecordExplorerTone.Info),
+                new("Evidence and audit links", "ledger-evidence-1", auditHref, FinancialRecordExplorerTone.Info)
+            ],
+            ProofActions:
+            [
+                new("open-instrument", "Open instrument", "Open retained instrument evidence.", instrumentHref, Tone: FinancialRecordExplorerTone.Success),
+                new("open-position-transaction", "Open position/transaction evidence", "Open retained position or transaction evidence.", activityHref, Tone: FinancialRecordExplorerTone.Info),
+                new("open-evidence-audit-links", "Open evidence and audit links", "Open retained audit packet.", auditHref, Tone: FinancialRecordExplorerTone.Info)
+            ],
+            UsedIn: [],
+            Impacts:
+            [
+                new("instrument", "Instrument", "Instrument identity anchors the report line.", instrumentHref, FinancialRecordExplorerTone.Success),
+                new("position-transaction", "Position / transaction", "Provider event feeds reconciliation before journal support.", activityHref, FinancialRecordExplorerTone.Info),
+                new("evidence-audit-links", "Evidence and audit links", "Evidence id anchors the retained audit packet.", auditHref, FinancialRecordExplorerTone.Info)
+            ],
+            FullRecordHref: "/api/workstation/financial-record-explorers/portfolio?lineKey=trial-balance.cash&sourceId=position-aapl");
+        var dto = new FinancialRecordExplorerDto(
+            "report-line-provenance",
+            "Report-Line Provenance Explorer",
+            "Review retained report-line proof chains.",
+            "Source-backed",
+            IsBlocked: false,
+            BlockedReason: string.Empty,
+            ScopeItems: [new("Report packs", "1")],
+            SavedViews: [new("system-report-line-provenance-default", "Report lines", "Default view.", IsSystem: true, IsActive: true, Filters: [])],
+            SummaryItems: [new("Report lines", "1", "Governed report lines with retained provenance.")],
+            Filters: [],
+            Columns:
+            [
+                new("lineKey", "Report Line", Width: 200),
+                new("instrument", "Instrument", Width: 160),
+                new("activity", "Position / Transaction", Width: 190)
+            ],
+            Rows:
+            [
+                new(
+                    "report-line:test:cash",
+                    "report-line",
+                    "trial-balance.cash",
+                    "position:position-aapl",
+                    "Published",
+                    FinancialRecordExplorerTone.Success,
+                    Cells:
+                    [
+                        new("lineKey", "trial-balance.cash"),
+                        new("instrument", "11111111-1111-1111-1111-111111111111", LinkHref: instrumentHref),
+                        new("activity", "provider-event-position-aapl", LinkHref: activityHref)
+                    ],
+                    selected)
+            ],
+            SelectedRecord: selected,
+            ProofActions: [],
+            RecordGraph: new FinancialRecordExplorerRecordGraphDto([], []));
+
+        var presentation = FinancialRecordExplorerViewModel.BuildPresentation(dto);
+        var inspector = FinancialRecordExplorerViewModel.BuildRecordInspector(dto.SelectedRecord!);
+        var actions = dto.SelectedRecord!.ProofActions
+            .Select(FinancialRecordExplorerViewModel.FinancialRecordExplorerActionModel.FromDto)
+            .ToArray();
+
+        presentation.Table.Columns.Select(static column => column.BindingPath)
+            .Should().Contain(["Cells[instrument]", "Cells[activity]"]);
+        presentation.Rows.Single().Cells["activity"].Should().Be("provider-event-position-aapl");
+        inspector.Facts.Select(static fact => fact.Label).Should().Contain(
+            ["Instrument", "Position / transaction", "Evidence and audit links"]);
+        actions.Select(static action => action.TargetPageTag).Should().Contain(["SecurityMaster", "FundAuditTrail"]);
+    }
+
     [Theory]
     [InlineData("LedgerExplorer", "ledger")]
     [InlineData("PortfolioExplorer", "portfolio")]
@@ -84,6 +169,9 @@ public sealed class FinancialRecordExplorerViewModelTests
     [InlineData("/api/workstation/reconciliation/runs/recon-run-1", "FundReconciliation")]
     [InlineData("/api/ledger/journal-entry-workbench?ledgerEntryId=ledger-entry-1", "FundAccountingConfigure")]
     [InlineData("/api/workstation/evidence/subjects/approval/approval-1/packet", "FundAuditTrail")]
+    [InlineData("/api/workstation/evidence/subjects/report-line/ledger-evidence-1/packet", "FundAuditTrail")]
+    [InlineData("/api/workstation/evidence/subjects/provider-event/provider-event-position-aapl/packet", "FundAuditTrail")]
+    [InlineData("/api/workstation/security-master/securities/11111111-1111-1111-1111-111111111111", "SecurityMaster")]
     [InlineData("/api/workstation/evidence/subjects/report-pack-delivery/report%3Aattempt/graph", "FundAuditTrail")]
     public void ProofActions_ReportLineProvenanceDrillThroughRoutes_ShouldMapToShellPageTags(string href, string expectedPageTag)
     {

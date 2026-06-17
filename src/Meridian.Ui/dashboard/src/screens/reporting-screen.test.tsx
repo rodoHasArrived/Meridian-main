@@ -1078,10 +1078,13 @@ function withReportLineProvenanceExplorer(): AccountingWorkspaceResponse {
 }
 
 function createReportLineProvenanceExplorer(): FinancialRecordExplorerDto {
-  const sourceHref = "/api/workstation/financial-record-explorers/ledger?lineKey=trial-balance.cash&sourceId=ledger-entry-1&evidenceId=ledger-evidence-1&runId=run-1";
+  const sourceHref = "/api/workstation/financial-record-explorers/portfolio?lineKey=trial-balance.cash&sourceId=position-aapl&evidenceId=ledger-evidence-1&runId=run-1";
+  const instrumentHref = "/api/workstation/security-master/securities/11111111-1111-1111-1111-111111111111";
+  const activityHref = "/api/workstation/evidence/subjects/provider-event/provider-event-position-aapl/packet";
   const reconciliationHref = "/api/workstation/reconciliation/runs/recon-run-1";
   const journalHref = "/api/workstation/runs/run-1/ledger/journal?ledgerEntryId=ledger-entry-1";
   const approvalHref = "/api/workstation/evidence/subjects/approval/approval-1/packet";
+  const auditHref = "/api/workstation/evidence/subjects/report-line/ledger-evidence-1/packet";
   const deliveryHref = "/api/fund-structure/reporting/packs/11111111-1111-1111-1111-111111111111/deliveries";
   const deliveryGraphHref = "/api/workstation/evidence/subjects/report-pack-delivery/11111111-1111-1111-1111-111111111111%3A22222222-2222-2222-2222-222222222222/graph";
   const restatementHref = "/evidence/restatement-evidence-1";
@@ -1089,8 +1092,8 @@ function createReportLineProvenanceExplorer(): FinancialRecordExplorerDto {
   return {
     explorerId: "report-line-provenance",
     title: "Report-Line Provenance Explorer",
-    description: "Drill from governed report lines into retained source records, reconciliations, journals, approvals, delivery history, and restatement evidence.",
-    sourceState: "1 governed report line across 1 report pack retains source, reconciliation, journal, approval, delivery, and restatement drill-through evidence.",
+    description: "Drill from governed report lines into retained instruments, positions or transactions, reconciliations, journals, reports, evidence, and audit links.",
+    sourceState: "1 governed report line across 1 report pack retains instrument, position or transaction, reconciliation, journal, report, evidence, and audit drill-through links.",
     isBlocked: false,
     blockedReason: "",
     scopeItems: [
@@ -1112,11 +1115,14 @@ function createReportLineProvenanceExplorer(): FinancialRecordExplorerDto {
     ],
     summaryItems: [
       { label: "Report lines", value: "1", detail: "Governed report lines with retained provenance.", tone: "Success" },
+      { label: "Instruments", value: "1", detail: "Lines linked to retained Security Master or instrument definition evidence.", tone: "Default" },
+      { label: "Positions / transactions", value: "1", detail: "Lines linked to provider positions, transactions, source sessions, or retained source rows.", tone: "Default" },
       { label: "Source records", value: "1", detail: "Distinct retained source records linked to report lines.", tone: "Default" },
       { label: "Reconciliations", value: "1", detail: "Lines linked to reconciliation runs or break cases.", tone: "Default" },
       { label: "Journals", value: "1", detail: "Lines with ledger or journal drill-through evidence.", tone: "Default" },
       { label: "Approvals", value: "1", detail: "Line-level and workflow approval evidence.", tone: "Default" },
       { label: "Deliveries", value: "1", detail: "Retained report-pack delivery attempts and packages.", tone: "Success" },
+      { label: "Audit links", value: "1", detail: "Lines with retained evidence ids that route to audit packets.", tone: "Default" },
       { label: "Restatements", value: "1", detail: "Changed report lines with restatement evidence.", tone: "Warning" }
     ],
     filters: [
@@ -1128,6 +1134,8 @@ function createReportLineProvenanceExplorer(): FinancialRecordExplorerDto {
       { columnId: "report", header: "Report Pack", cellKind: "text", width: 190, isRightAligned: false },
       { columnId: "value", header: "Value", cellKind: "money", width: 110, isRightAligned: true },
       { columnId: "source", header: "Source", cellKind: "text", width: 170, isRightAligned: false },
+      { columnId: "instrument", header: "Instrument", cellKind: "text", width: 160, isRightAligned: false },
+      { columnId: "activity", header: "Position / Transaction", cellKind: "text", width: 190, isRightAligned: false },
       { columnId: "reconciliation", header: "Reconciliation", cellKind: "text", width: 140, isRightAligned: false },
       { columnId: "journal", header: "Journal", cellKind: "text", width: 120, isRightAligned: false },
       { columnId: "approval", header: "Approval", cellKind: "text", width: 120, isRightAligned: false },
@@ -1139,14 +1147,16 @@ function createReportLineProvenanceExplorer(): FinancialRecordExplorerDto {
         recordId: "report-line:11111111111111111111111111111111:trial-balance-cash:0",
         recordType: "report-line",
         label: "trial-balance.cash",
-        source: "ledger:ledger-entry-1",
+        source: "position:position-aapl",
         status: "Restated",
         tone: "Warning",
         cells: [
           { columnId: "lineKey", displayValue: "trial-balance.cash", rawValue: "", tone: "Default", linkHref: sourceHref },
           { columnId: "report", displayValue: "2026-03 - board-pack v1", rawValue: "", tone: "Default", linkHref: deliveryHref },
           { columnId: "value", displayValue: "100.00", rawValue: "", tone: "Default", linkHref: "" },
-          { columnId: "source", displayValue: "ledger:ledger-entry-1", rawValue: "", tone: "Default", linkHref: sourceHref },
+          { columnId: "source", displayValue: "position:position-aapl", rawValue: "", tone: "Default", linkHref: sourceHref },
+          { columnId: "instrument", displayValue: "11111111-1111-1111-1111-111111111111", rawValue: "", tone: "Success", linkHref: instrumentHref },
+          { columnId: "activity", displayValue: "provider-event-position-aapl", rawValue: "", tone: "Info", linkHref: activityHref },
           { columnId: "reconciliation", displayValue: "matched", rawValue: "", tone: "Success", linkHref: reconciliationHref },
           { columnId: "journal", displayValue: "ledger-entry-1", rawValue: "", tone: "Info", linkHref: journalHref },
           { columnId: "approval", displayValue: "approval-1", rawValue: "", tone: "Success", linkHref: approvalHref },
@@ -1161,18 +1171,24 @@ function createReportLineProvenanceExplorer(): FinancialRecordExplorerDto {
           description: "Governed report line with retained source, reconciliation, journal, approval, delivery, and restatement drill-through evidence.",
           tone: "Warning",
           fields: [
-            { label: "Source record", value: "ledger:ledger-entry-1", detail: sourceHref, tone: "Default" },
+            { label: "Source record", value: "position:position-aapl", detail: sourceHref, tone: "Default" },
+            { label: "Instrument", value: "11111111-1111-1111-1111-111111111111", detail: instrumentHref, tone: "Success" },
+            { label: "Position / transaction", value: "provider-event-position-aapl", detail: activityHref, tone: "Info" },
             { label: "Reconciliation", value: "matched", detail: reconciliationHref, tone: "Success" },
             { label: "Journal", value: "ledger-entry-1", detail: journalHref, tone: "Info" },
             { label: "Approval", value: "approval-1", detail: approvalHref, tone: "Success" },
+            { label: "Evidence and audit links", value: "ledger-evidence-1", detail: auditHref, tone: "Info" },
             { label: "Delivery history", value: "Delivered #1", detail: "board-delivery-202603", tone: "Success" },
             { label: "Restatement", value: "1 changed line", detail: "source-correction", tone: "Warning" }
           ],
           proofActions: [
             { actionId: "open-source-record", label: "Open source record", description: "Open retained source record.", href: sourceHref, isEnabled: true, disabledReason: "", tone: "Info" },
+            { actionId: "open-instrument", label: "Open instrument", description: "Open retained instrument evidence.", href: instrumentHref, isEnabled: true, disabledReason: "", tone: "Success" },
+            { actionId: "open-position-transaction", label: "Open position/transaction evidence", description: "Open retained position or transaction evidence.", href: activityHref, isEnabled: true, disabledReason: "", tone: "Info" },
             { actionId: "open-reconciliation", label: "Open reconciliation", description: "Open reconciliation run.", href: reconciliationHref, isEnabled: true, disabledReason: "", tone: "Info" },
             { actionId: "open-journal", label: "Open journal", description: "Open ledger journal.", href: journalHref, isEnabled: true, disabledReason: "", tone: "Info" },
             { actionId: "open-approval-evidence", label: "Open approval evidence", description: "Open approval evidence.", href: approvalHref, isEnabled: true, disabledReason: "", tone: "Success" },
+            { actionId: "open-evidence-audit-links", label: "Open evidence and audit links", description: "Open evidence and audit links.", href: auditHref, isEnabled: true, disabledReason: "", tone: "Info" },
             { actionId: "open-delivery-history", label: "Open delivery history", description: "Open delivery history.", href: deliveryHref, isEnabled: true, disabledReason: "", tone: "Success" },
             { actionId: "open-delivery-evidence-graph", label: "Open delivery evidence graph", description: "Open delivery evidence graph.", href: deliveryGraphHref, isEnabled: true, disabledReason: "", tone: "Info" },
             { actionId: "open-restatement-evidence", label: "Open restatement evidence", description: "Open restatement evidence.", href: restatementHref, isEnabled: true, disabledReason: "", tone: "Warning" }
@@ -1183,10 +1199,13 @@ function createReportLineProvenanceExplorer(): FinancialRecordExplorerDto {
           ],
           impacts: [
             { relationshipId: "source-record", label: "Source record", description: "Source record supports the report line value.", href: sourceHref, tone: "Info" },
+            { relationshipId: "instrument", label: "Instrument", description: "Instrument identity anchors this report line.", href: instrumentHref, tone: "Success" },
+            { relationshipId: "position-transaction", label: "Position / transaction", description: "Provider event feeds reconciliation before journal support.", href: activityHref, tone: "Info" },
             { relationshipId: "reconciliation", label: "Reconciliation", description: "Reconciliation outcome is matched.", href: reconciliationHref, tone: "Success" },
             { relationshipId: "journal", label: "Journal", description: "Ledger entry supports this line.", href: journalHref, tone: "Info" },
             { relationshipId: "approval", label: "Approval", description: "Approval is retained as line evidence.", href: approvalHref, tone: "Success" },
             { relationshipId: "delivery-history", label: "Delivery history", description: "Delivery evidence carries the line.", href: deliveryGraphHref, tone: "Success" },
+            { relationshipId: "evidence-audit-links", label: "Evidence and audit links", description: "Evidence id anchors the retained audit packet for this report line.", href: auditHref, tone: "Info" },
             { relationshipId: "restatement-evidence", label: "Restatement evidence", description: "Restatement evidence exists for this report line.", href: restatementHref, tone: "Warning" }
           ],
           fullRecordHref: sourceHref
@@ -1199,11 +1218,21 @@ function createReportLineProvenanceExplorer(): FinancialRecordExplorerDto {
     ],
     recordGraph: {
       nodes: [
+        { nodeId: "rel:report-line:11111111111111111111111111111111:trial-balance-cash:0:instrument", label: "Instrument", nodeType: "instrument", tone: "Success", href: instrumentHref },
+        { nodeId: "rel:report-line:11111111111111111111111111111111:trial-balance-cash:0:position-transaction", label: "Position / transaction", nodeType: "position-transaction", tone: "Info", href: activityHref },
+        { nodeId: "rel:report-line:11111111111111111111111111111111:trial-balance-cash:0:reconciliation", label: "Reconciliation", nodeType: "reconciliation", tone: "Success", href: reconciliationHref },
+        { nodeId: "rel:report-line:11111111111111111111111111111111:trial-balance-cash:0:journal", label: "Journal", nodeType: "journal", tone: "Info", href: journalHref },
         { nodeId: "report-line:11111111111111111111111111111111:trial-balance-cash:0", label: "trial-balance.cash", nodeType: "report-line", tone: "Warning", href: sourceHref },
-        { nodeId: "rel:report-pack:11111111-1111-1111-1111-111111111111", label: "Published report pack", nodeType: "relationship", tone: "Warning", href: deliveryHref }
+        { nodeId: "rel:report-line:11111111111111111111111111111111:trial-balance-cash:0:report-pack:11111111-1111-1111-1111-111111111111", label: "Published report pack", nodeType: "report-pack:11111111-1111-1111-1111-111111111111", tone: "Warning", href: deliveryHref },
+        { nodeId: "rel:report-line:11111111111111111111111111111111:trial-balance-cash:0:evidence-audit-links", label: "Evidence and audit links", nodeType: "evidence-audit-links", tone: "Info", href: auditHref }
       ],
       edges: [
-        { sourceNodeId: "report-line:11111111111111111111111111111111:trial-balance-cash:0", targetNodeId: "rel:report-pack:11111111-1111-1111-1111-111111111111", label: "used in", tone: "Warning" }
+        { sourceNodeId: "rel:report-line:11111111111111111111111111111111:trial-balance-cash:0:instrument", targetNodeId: "rel:report-line:11111111111111111111111111111111:trial-balance-cash:0:position-transaction", label: "feeds", tone: "Info" },
+        { sourceNodeId: "rel:report-line:11111111111111111111111111111111:trial-balance-cash:0:position-transaction", targetNodeId: "rel:report-line:11111111111111111111111111111111:trial-balance-cash:0:reconciliation", label: "reconciles", tone: "Success" },
+        { sourceNodeId: "rel:report-line:11111111111111111111111111111111:trial-balance-cash:0:reconciliation", targetNodeId: "rel:report-line:11111111111111111111111111111111:trial-balance-cash:0:journal", label: "posts", tone: "Info" },
+        { sourceNodeId: "rel:report-line:11111111111111111111111111111111:trial-balance-cash:0:journal", targetNodeId: "report-line:11111111111111111111111111111111:trial-balance-cash:0", label: "reports", tone: "Warning" },
+        { sourceNodeId: "report-line:11111111111111111111111111111111:trial-balance-cash:0", targetNodeId: "rel:report-line:11111111111111111111111111111111:trial-balance-cash:0:report-pack:11111111-1111-1111-1111-111111111111", label: "included in", tone: "Warning" },
+        { sourceNodeId: "rel:report-line:11111111111111111111111111111111:trial-balance-cash:0:report-pack:11111111-1111-1111-1111-111111111111", targetNodeId: "rel:report-line:11111111111111111111111111111111:trial-balance-cash:0:evidence-audit-links", label: "retains audit", tone: "Info" }
       ]
     }
   };
@@ -1359,18 +1388,32 @@ describe("ReportingScreen", () => {
     expect(within(explorer).getByText("Report-line provenance")).toBeInTheDocument();
     expect(within(explorer).getByRole("link", { name: "trial-balance.cash" })).toHaveAttribute(
       "href",
-      "/api/workstation/financial-record-explorers/ledger?lineKey=trial-balance.cash&sourceId=ledger-entry-1&evidenceId=ledger-evidence-1&runId=run-1"
+      "/api/workstation/financial-record-explorers/portfolio?lineKey=trial-balance.cash&sourceId=position-aapl&evidenceId=ledger-evidence-1&runId=run-1"
     );
+    expect(within(explorer).getByText("Instruments")).toBeInTheDocument();
+    expect(within(explorer).getByText("Positions / transactions")).toBeInTheDocument();
     expect(within(explorer).getByText("Source records")).toBeInTheDocument();
     expect(within(explorer).getByText("Reconciliations")).toBeInTheDocument();
     expect(within(explorer).getByText("Journals")).toBeInTheDocument();
     expect(within(explorer).getByText("Approvals")).toBeInTheDocument();
+    expect(within(explorer).getByText("Audit links")).toBeInTheDocument();
     expect(within(explorer).getByText("Restatements")).toBeInTheDocument();
+    expect(within(explorer).getAllByText("Instrument").length).toBeGreaterThan(0);
+    expect(within(explorer).getAllByText("Position / transaction").length).toBeGreaterThan(0);
     expect(within(explorer).getAllByText("Published report pack").length).toBeGreaterThan(0);
+    expect(within(explorer).getAllByText("Evidence and audit links").length).toBeGreaterThan(0);
     expect(within(explorer).getByText("Restatement evidence")).toBeInTheDocument();
     expect(within(explorer).getByRole("link", { name: "Open source record" })).toHaveAttribute(
       "href",
-      expect.stringContaining("/api/workstation/financial-record-explorers/ledger")
+      expect.stringContaining("/api/workstation/financial-record-explorers/portfolio")
+    );
+    expect(within(explorer).getByRole("link", { name: "Open instrument" })).toHaveAttribute(
+      "href",
+      "/api/workstation/security-master/securities/11111111-1111-1111-1111-111111111111"
+    );
+    expect(within(explorer).getByRole("link", { name: "Open position/transaction evidence" })).toHaveAttribute(
+      "href",
+      "/api/workstation/evidence/subjects/provider-event/provider-event-position-aapl/packet"
     );
     expect(within(explorer).getByRole("link", { name: "Open reconciliation" })).toHaveAttribute(
       "href",
@@ -1383,6 +1426,10 @@ describe("ReportingScreen", () => {
     expect(within(explorer).getByRole("link", { name: "Open approval evidence" })).toHaveAttribute(
       "href",
       "/api/workstation/evidence/subjects/approval/approval-1/packet"
+    );
+    expect(within(explorer).getByRole("link", { name: "Open evidence and audit links" })).toHaveAttribute(
+      "href",
+      "/api/workstation/evidence/subjects/report-line/ledger-evidence-1/packet"
     );
     expect(within(explorer).getByRole("link", { name: "Open delivery history" })).toHaveAttribute(
       "href",

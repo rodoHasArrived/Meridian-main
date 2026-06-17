@@ -75,7 +75,10 @@ Empty or blocked source DTOs remain visible as disabled action states with serve
 rather than desktop-local placeholder balances.
 Proof actions that carry shared Financial Record Explorer API hrefs map back to `LedgerExplorer`,
 `PortfolioExplorer`, `SecurityInstrumentExplorer`, or `ReportLineProvenanceExplorer` page tags so
-report-line drill-throughs stay route-compatible with the browser workstation.
+report-line drill-throughs stay route-compatible with the browser workstation. Report-line
+provenance rows also carry shared instrument, position or transaction, reconciliation, journal,
+report-line, evidence, and audit-link actions that WPF maps through the same view-model route
+resolver instead of desktop-local lineage rules.
 
 The desktop shell includes a first-launch and Settings entry point for a sample-data Demo / Sample Tour. Starting the tour enables `FixtureModeDetector` demo mode, selects the connected sample scenario, and walks operators through Data/provider status, Portfolio records, Accounting reconciliation, retained evidence/audit context, Reporting readiness, and Settings. The global demo banner and the tour banner label the workflow as demo/sample data only so sample records remain visually distinct from provider-backed operational data.
 

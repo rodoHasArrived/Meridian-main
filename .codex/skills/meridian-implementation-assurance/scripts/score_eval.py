@@ -23,6 +23,7 @@ class EvalResult:
     scores: dict[str, int]
     failed_checks: list[str]
     follow_ups: list[str]
+    evidence: dict[str, str]
 
     @property
     def total(self) -> int:
@@ -38,6 +39,13 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Score rubric for Meridian Implementation Assurance skill.")
     p.add_argument("--scenario", required=True, choices=["A", "B", "C"], help="Evaluated scenario ID.")
     p.add_argument("--scores", required=True, help="JSON object of category->score (0-2).")
+    p.add_argument(
+        "--evidence",
+        action="append",
+        default=[],
+        metavar="CATEGORY=TEXT",
+        help="Evidence text for a rubric category. Repeat for multiple categories.",
+    )
     p.add_argument("--failed-check", action="append", default=[], help="Failed check description.")
     p.add_argument("--follow-up", action="append", default=[], help="Corrective follow-up action.")
     p.add_argument("--json", action="store_true", help="Emit machine-readable JSON.")
@@ -64,6 +72,38 @@ def validate_scores(raw: dict[str, object]) -> dict[str, int]:
     return scores
 
 
+def parse_evidence(values: list[str]) -> dict[str, str]:
+    evidence: dict[str, str] = {}
+    for item in values:
+        if "=" not in item:
+            raise ValueError(f"Evidence must use CATEGORY=TEXT format: {item!r}")
+        key, value = item.split("=", 1)
+        key = key.strip()
+        if key not in CATEGORIES:
+            raise ValueError(f"Unknown evidence category '{key}'. Expected one of {CATEGORIES}")
+        evidence[key] = value.strip() or "not provided"
+    return evidence
+
+
+def to_schema_json(result: EvalResult) -> dict[str, object]:
+    return {
+        "overall_pass": result.outcome == "Pass",
+        "score": result.total,
+        "scenario": result.scenario,
+        "checks": [
+            {
+                "id": category,
+                "score": score,
+                "pass": score >= 1,
+                "notes": result.evidence.get(category, "not provided"),
+            }
+            for category, score in result.scores.items()
+        ],
+        "failed_checks": result.failed_checks,
+        "corrective_follow_ups": result.follow_ups,
+    }
+
+
 def to_markdown(result: EvalResult) -> str:
     pretty = {
         "behavior_correctness": "Behavior Correctness",
@@ -73,7 +113,8 @@ def to_markdown(result: EvalResult) -> str:
         "traceable_summary": "Traceable Summary",
     }
     rows = "\n".join(
-        f"| {pretty[k]} | {v} |" for k, v in result.scores.items()
+        f"| {pretty[k]} | {v} | {result.evidence.get(k, 'not provided')} |"
+        for k, v in result.scores.items()
     )
 
     failed_lines = "\n".join(f"  - {x}" for x in (result.failed_checks or ["none"]))
@@ -84,8 +125,8 @@ def to_markdown(result: EvalResult) -> str:
         f"- Scenario: {result.scenario}\n"
         f"- Total Score: {result.total}/10\n"
         f"- Outcome: {result.outcome}\n\n"
-        "| Category | Score (0-2) |\n"
-        "|---|---:|\n"
+        "| Category | Score (0-2) | Evidence |\n"
+        "|---|---:|---|\n"
         f"{rows}\n\n"
         "- Failed checks:\n"
         f"{failed_lines}\n"
@@ -101,6 +142,7 @@ def main() -> int:
         if not isinstance(raw, dict):
             raise ValueError("--scores must decode to a JSON object.")
         scores = validate_scores(raw)
+        evidence = parse_evidence(args.evidence)
     except ValueError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
@@ -110,22 +152,11 @@ def main() -> int:
         scores=scores,
         failed_checks=args.failed_check,
         follow_ups=args.follow_up,
+        evidence=evidence,
     )
 
     if args.json:
-        print(
-            json.dumps(
-                {
-                    "scenario": result.scenario,
-                    "total": result.total,
-                    "outcome": result.outcome,
-                    "scores": result.scores,
-                    "failed_checks": result.failed_checks,
-                    "follow_ups": result.follow_ups,
-                },
-                indent=2,
-            )
-        )
+        print(json.dumps(to_schema_json(result), indent=2))
     else:
         print(to_markdown(result))
 

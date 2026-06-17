@@ -60,8 +60,8 @@ public sealed partial class WorkstationEndpointsTests
         var delivery = app.Services.GetRequiredService<ReportPackDeliveryService>();
         var line = new ReportPackLineProvenanceDto(
             LineKey: "trial-balance.cash",
-            SourceKind: "ledger",
-            SourceId: "ledger-entry-1",
+            SourceKind: "position",
+            SourceId: "position-aapl",
             EvidenceId: "ledger-evidence-1",
             RunId: "run-1",
             LedgerEntryId: "ledger-entry-1",
@@ -69,8 +69,8 @@ public sealed partial class WorkstationEndpointsTests
             ReportValue: "100.00",
             SourceSessionId: "provider-session-1",
             ReconciliationRunId: "recon-run-1",
-            ProviderEventId: "provider-event-1",
-            SecurityMasterId: "security-master-1",
+            ProviderEventId: "provider-event-position-aapl",
+            SecurityMasterId: "11111111-1111-1111-1111-111111111111",
             SecurityDefinitionId: "security-definition-1",
             ReconciliationOutcome: "matched",
             ApprovalId: "approval-1");
@@ -131,19 +131,22 @@ public sealed partial class WorkstationEndpointsTests
         explorer!.ExplorerId.Should().Be("report-line-provenance");
         explorer.Rows.Should().ContainSingle();
         explorer.SummaryItems.Select(static item => item.Label).Should().Contain(
-            ["Report lines", "Source records", "Reconciliations", "Journals", "Approvals", "Deliveries", "Restatements"]);
+            ["Report lines", "Instruments", "Positions / transactions", "Source records", "Reconciliations", "Journals", "Approvals", "Deliveries", "Audit links", "Restatements"]);
         var row = explorer.Rows.Single();
         row.Label.Should().Be("trial-balance.cash");
         row.Status.Should().Be("Restated");
         row.Detail.Fields.Select(static field => field.Label).Should().Contain(
-            ["Source record", "Reconciliation", "Journal", "Approval", "Delivery history", "Restatement"]);
+            ["Source record", "Instrument", "Position / transaction", "Reconciliation", "Journal", "Approval", "Evidence and audit links", "Delivery history", "Restatement"]);
 
         var actions = row.Detail.ProofActions.ToDictionary(static action => action.ActionId, StringComparer.OrdinalIgnoreCase);
         actions.Values.Should().OnlyContain(static action => action.IsEnabled);
-        actions["open-source-record"].Href.Should().Contain("/api/workstation/financial-record-explorers/ledger");
+        actions["open-source-record"].Href.Should().Contain("/api/workstation/financial-record-explorers/portfolio");
+        actions["open-instrument"].Href.Should().Contain("/api/workstation/security-master/securities/11111111-1111-1111-1111-111111111111");
+        actions["open-position-transaction"].Href.Should().Contain("/api/workstation/evidence/subjects/provider-event/provider-event-position-aapl/packet");
         actions["open-reconciliation"].Href.Should().Contain("/api/workstation/reconciliation/runs/recon-run-1");
         actions["open-journal"].Href.Should().Contain("/api/workstation/runs/run-1/ledger/journal");
         actions["open-approval-evidence"].Href.Should().Contain("/api/workstation/evidence/subjects/approval/approval-1/packet");
+        actions["open-evidence-audit-links"].Href.Should().Contain("/api/workstation/evidence/subjects/report-line/ledger-evidence-1/packet");
         actions["open-delivery-history"].Href.Should().Contain($"/api/fund-structure/reporting/packs/{published.ReportId:D}/deliveries");
         actions["open-delivery-evidence-graph"].Href.Should().Contain("/api/workstation/evidence/subjects/report-pack-delivery/");
         actions["open-delivery-evidence-graph"].Href.Should().Contain(Uri.EscapeDataString($"{published.ReportId:D}:{attempt.AttemptId:D}"));
@@ -151,8 +154,11 @@ public sealed partial class WorkstationEndpointsTests
         row.Detail.UsedIn.Select(static relationship => relationship.Label).Should().Contain(
             ["Published report pack", "Delivery history", "Delivery evidence graph", "Restatement record"]);
         row.Detail.Impacts.Select(static relationship => relationship.Label).Should().Contain(
-            ["Source record", "Reconciliation", "Journal", "Approval", "Delivery history", "Restatement evidence"]);
-        explorer.RecordGraph.Nodes.Select(static node => node.Label).Should().Contain("trial-balance.cash");
+            ["Source record", "Instrument", "Position / transaction", "Reconciliation", "Journal", "Approval", "Delivery history", "Evidence and audit links", "Restatement evidence"]);
+        explorer.RecordGraph.Nodes.Select(static node => node.Label).Should().Contain(
+            ["Instrument", "Position / transaction", "Reconciliation", "Journal", "trial-balance.cash", "Published report pack", "Evidence and audit links"]);
+        explorer.RecordGraph.Edges.Select(static edge => edge.Label).Should().Contain(
+            ["feeds", "reconciles", "posts", "reports", "included in", "retains audit"]);
     }
 
     [Fact]
@@ -257,13 +263,14 @@ public sealed partial class WorkstationEndpointsTests
         string[] evidenceIds =
         [
             "ledger-evidence-1",
+            "position-aapl",
             "ledger-entry-1",
             "run-1",
             "provider-session-1",
             "recon-case-1",
             "recon-run-1",
-            "provider-event-1",
-            "security-master-1",
+            "provider-event-position-aapl",
+            "11111111-1111-1111-1111-111111111111",
             "security-definition-1",
             "approval-1"
         ];

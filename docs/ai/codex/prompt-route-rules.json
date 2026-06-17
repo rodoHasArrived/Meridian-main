@@ -58,6 +58,127 @@
       }
     },
     {
+      "id": "architecture-boundary",
+      "description": "Route architecture conformance, module-boundary, and dependency-map requests to the code architecture lane.",
+      "matchWeighted": {
+        "architecture": 2.5,
+        "module architecture": 2.5,
+        "module boundary": 2.5,
+        "boundary drift": 3.0,
+        "dependency map": 2.0,
+        "adr": 1.5,
+        "source-doc": 1.5,
+        "layer violation": 2.0
+      },
+      "route": {
+        "lane": "architecture",
+        "skill": "meridian-code-architecture",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Architecture prompts need module-map, source-doc, ADR, and dependency evidence before implementation or review.",
+        "validationFloor": [
+          "python .codex/skills/meridian-code-architecture/scripts/architecture_surface.py --path <path> --summary",
+          "python build/scripts/docs/check-codex-skills.py --summary"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "architecture-surface",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "architecture assessment changes shared contracts",
+          "dependency evidence shows layer violation",
+          "source-doc or ADR alignment is missing"
+        ]
+      }
+    },
+    {
+      "id": "contract-governance",
+      "description": "Route DTO, API route, provider interface, and shared read-model impact requests to contract governance.",
+      "matchWeighted": {
+        "contract": 2.5,
+        "dto": 2.0,
+        "api route": 2.0,
+        "read model": 2.0,
+        "provider interface": 2.0,
+        "contract impact": 3.0,
+        "shared payload": 2.0,
+        "compatibility": 1.5
+      },
+      "route": {
+        "lane": "contract-governance",
+        "skill": "meridian-contract-governance",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Shared contract prompts must trace services, browser, WPF, tests, docs, and compatibility before implementation.",
+        "validationFloor": [
+          "python .codex/skills/meridian-contract-governance/scripts/contract_impact.py --path <path> --summary",
+          "python build/scripts/docs/check-codex-skills.py --summary"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "contract-impact",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "contract change is breaking or removal",
+          "browser and WPF consumers diverge",
+          "consumer tests or docs are missing"
+        ]
+      }
+    },
+    {
+      "id": "codex-skill-builder",
+      "description": "Route Codex skill package, eval, script, metadata, profile, and route coverage work to the skill builder lane.",
+      "matchWeighted": {
+        "codex skill": 3.0,
+        "skill package": 2.5,
+        "openai.yaml": 2.0,
+        "skill eval": 2.5,
+        "run_evals.py": 2.0,
+        "agent profile": 1.5,
+        "prompt-route": 1.5,
+        "skill_script_advisor": 2.0
+      },
+      "route": {
+        "lane": "codex-skill-builder",
+        "skill": "meridian-codex-skill-builder",
+        "mode": "Standard",
+        "modelRouteId": "implementation-balanced",
+        "rationale": "Codex skill package work must keep SKILL.md, metadata, scripts, evals, profiles, catalogs, and route rules aligned.",
+        "validationFloor": [
+          "python .codex/skills/meridian-codex-skill-builder/scripts/skill_package_audit.py --skill <skill> --summary",
+          "python build/scripts/docs/check-codex-skills.py --summary",
+          "python build/scripts/docs/check-ai-inventory.py --summary"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "skill-package-audit",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "selected_model",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "skill behavior is shared across hosts",
+          "eval or script helper changes deterministic validation",
+          "catalog or route coverage is incomplete"
+        ]
+      }
+    },
+    {
       "id": "docs-maintenance",
       "description": "Route docs/index updates to the docs lane.",
       "matchWeighted": {

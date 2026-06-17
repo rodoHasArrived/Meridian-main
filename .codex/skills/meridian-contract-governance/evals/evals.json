@@ -1,0 +1,58 @@
+{
+  "skill_name": "meridian-contract-governance",
+  "last_updated": "2026-06-17",
+  "evals": [
+    {
+      "id": 1,
+      "description": "Workstation bootstrap DTO impact maps consumers and validation commands",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/contract_impact.py",
+        "--path",
+        "src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs",
+        "--json"
+      ],
+      "prompt": "Use $meridian-contract-governance to map WorkstationBootstrapDtos impact across services, browser, WPF, tests, and docs.",
+      "assertions": [
+        "Must classify the contract surface",
+        "Must report consumer categories",
+        "Must include validation commands"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "summary.target_count": 1
+        }
+      }
+    },
+    {
+      "id": 2,
+      "description": "Workflow action contract impact maps shared UI service consumers",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/contract_impact.py",
+        "--path",
+        "src/Meridian.Ui.Shared/Workflows/WorkflowActionIds.cs",
+        "--json"
+      ],
+      "prompt": "Use $meridian-contract-governance to trace WorkflowActionIds through consumers, tests, and docs before changing it.",
+      "assertions": [
+        "Must identify the inspected contract",
+        "Must map likely service and UI consumers",
+        "Must provide a validation plan"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass"
+        },
+        "json_min": {
+          "summary.target_count": 1
+        }
+      }
+    }
+  ]
+}

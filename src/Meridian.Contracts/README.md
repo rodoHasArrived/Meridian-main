@@ -166,7 +166,10 @@ approve-result and NAV-support evidence without rebuilding it from timeline, clo
 report-output fragments.
 Financial Record Explorer DTOs under `Workstation/FinancialRecordExplorerDtos.cs` define the shared
 ledger, portfolio, Security & Instrument, and report-line provenance explorer contract consumed by
-both browser and WPF.
+both browser and WPF. The report-line provenance payload uses the same row, proof-action,
+relationship, and graph DTOs to expose the retained instrument, position or transaction,
+reconciliation, journal, report-line, evidence, and audit-link chain without adding browser- or
+desktop-specific contract shapes.
 Private-capital command-center DTOs in `Ledger/AccountingConfigurationDtos.cs` compose a single
 fund event into evidence, workflow, ledger-impact, capital-account-impact, treasury expectation,
 reconciliation, report-usage, delivery-record, tax-support, and audit-history lanes so clients can

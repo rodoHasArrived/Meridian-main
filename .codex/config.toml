@@ -59,6 +59,11 @@ project_root_markers = ["Meridian.sln", ".git"]
 ################################################################################
 
 [features]
+# Keep Codex lifecycle hooks available for trusted project, user, managed, or
+# plugin layers. Actual command hook handlers must live in hooks.json or inline
+# [hooks] tables and still require the normal Codex trust review before running.
+hooks = true
+
 # Meridian keeps many reusable specialist profiles in .codex/agents. Enable the
 # stable multi-agent surface while keeping concurrency bounded below.
 multi_agent = true
@@ -119,6 +124,15 @@ config_file = "agents/meridian-cleanup.toml"
 
 [agents."meridian-code-review"]
 config_file = "agents/meridian-code-review.toml"
+
+[agents."meridian-code-architecture"]
+config_file = "agents/meridian-code-architecture.toml"
+
+[agents."meridian-contract-governance"]
+config_file = "agents/meridian-contract-governance.toml"
+
+[agents."meridian-codex-skill-builder"]
+config_file = "agents/meridian-codex-skill-builder.toml"
 
 [agents."meridian-docs"]
 config_file = "agents/meridian-docs.toml"
