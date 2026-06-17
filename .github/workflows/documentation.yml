@@ -97,7 +97,7 @@ jobs:
           node-version: "24"
 
       - name: Install diagram dependencies
-        run: npm ci --no-fund --no-audit
+        run: npm install --no-fund --no-audit
 
       - name: Run docs automation profile
         run: |
