@@ -1,6 +1,6 @@
 # Repository Structure
 
-> Auto-generated on 2026-06-16 18:19:12 UTC. Do not edit manually.
+> Auto-generated on 2026-06-17 01:13:03 UTC. Do not edit manually.
 
 ```text
 pr1926
@@ -610,6 +610,7 @@ pr1926
 │   │   ├── roadmap-source-docs.yml
 │   │   ├── roadmap-tools-manual.yml
 │   │   ├── robinhood-options-smoke.yml
+│   │   ├── targeted-test.yml
 │   │   ├── web-screenshot-capture.yml
 │   │   ├── windows-desktop-build.yml
 │   │   ├── wpf-dev-validation.yml
@@ -786,11 +787,13 @@ pr1926
 │       │   ├── ai_edit_tool.py
 │       │   ├── context-budget.py
 │       │   ├── context_budget.py
+│       │   ├── meridian_context_exporter.py
 │       │   ├── promptfoo-adapter.py
 │       │   └── promptfoo_adapter.py
 │       ├── ci
 │       │   ├── check-warning-suppressions.py
-│       │   └── check-workflow-hygiene.py
+│       │   ├── check-workflow-hygiene.py
+│       │   └── run-dotnet-ci-tests.py
 │       ├── docs
 │       │   ├── tests
 │       │   │   ├── test_check_ai_handoff.py
@@ -873,6 +876,7 @@ pr1926
 │       │   ├── ArtifactRetention.psm1
 │       │   └── BuildNotification.psm1
 │       ├── publish
+│       │   ├── generate-sbom.ps1
 │       │   ├── measure-size.ps1
 │       │   ├── publish.ps1
 │       │   └── publish.sh
@@ -946,6 +950,7 @@ pr1926
 │   │   ├── 015-strategy-execution-contract.md
 │   │   ├── 016-custody-cash-reconciliation-break-typing.md
 │   │   ├── 016-platform-architecture-migration.md
+│   │   ├── 017-modular-operational-monolith.md
 │   │   ├── _template.md
 │   │   └── README.md
 │   ├── ai
@@ -971,10 +976,18 @@ pr1926
 │   │   │   ├── README.md
 │   │   │   ├── route-cards.md
 │   │   │   └── self-improving-agents.md
+│   │   ├── context
+│   │   │   ├── accounting-context.md
+│   │   │   ├── operational-evidence-context.md
+│   │   │   └── README.md
 │   │   ├── copilot
 │   │   │   ├── ai-sync-workflow.md
 │   │   │   ├── contract-policy.mirror.json
 │   │   │   └── instructions.md
+│   │   ├── exports
+│   │   │   ├── context.json
+│   │   │   ├── LLM_CONTEXT.md
+│   │   │   └── README.md
 │   │   ├── generated
 │   │   │   ├── recent-changes.md
 │   │   │   ├── repo-navigation.json
@@ -997,7 +1010,8 @@ pr1926
 │   │   ├── model-routing-telemetry.md
 │   │   ├── parallel-task-manifest-template.md
 │   │   ├── README.md
-│   │   └── work-modes.md
+│   │   ├── work-modes.md
+│   │   └── working-memory.md
 │   ├── api
 │   │   ├── oms-ems-integration.md
 │   │   └── README.md
@@ -1027,11 +1041,15 @@ pr1926
 │   │   ├── extension-points.md
 │   │   ├── layer-boundaries.md
 │   │   ├── ledger-architecture.md
+│   │   ├── meridian-development-intelligence-framework.md
+│   │   ├── meridian-domain-model.md
+│   │   ├── meridian-vision.md
 │   │   ├── module-map.md
 │   │   ├── mvvm-guidelines.md
 │   │   ├── operator-observability-dashboard.md
 │   │   ├── overview.md
 │   │   ├── project-structure.md
+│   │   ├── provider-integration-manifest-runtime.md
 │   │   ├── provider-management.md
 │   │   ├── README.md
 │   │   ├── runtime-component-state-boundaries.md
@@ -1169,7 +1187,34 @@ pr1926
 │   │   │   ├── ui-implementation-flow.svg
 │   │   │   ├── ui-navigation-map.dot
 │   │   │   ├── ui-navigation-map.png
-│   │   │   └── ui-navigation-map.svg
+│   │   │   ├── ui-navigation-map.svg
+│   │   │   ├── ui-wpf-screen-catalog.dot
+│   │   │   ├── ui-wpf-screen-catalog.png
+│   │   │   ├── ui-wpf-screen-catalog.svg
+│   │   │   ├── ui-wpf-screen-summary.dot
+│   │   │   ├── ui-wpf-screen-summary.png
+│   │   │   ├── ui-wpf-screen-summary.svg
+│   │   │   ├── ui-wpf-screens-accounting.dot
+│   │   │   ├── ui-wpf-screens-accounting.png
+│   │   │   ├── ui-wpf-screens-accounting.svg
+│   │   │   ├── ui-wpf-screens-data.dot
+│   │   │   ├── ui-wpf-screens-data.png
+│   │   │   ├── ui-wpf-screens-data.svg
+│   │   │   ├── ui-wpf-screens-portfolio.dot
+│   │   │   ├── ui-wpf-screens-portfolio.png
+│   │   │   ├── ui-wpf-screens-portfolio.svg
+│   │   │   ├── ui-wpf-screens-reporting.dot
+│   │   │   ├── ui-wpf-screens-reporting.png
+│   │   │   ├── ui-wpf-screens-reporting.svg
+│   │   │   ├── ui-wpf-screens-settings.dot
+│   │   │   ├── ui-wpf-screens-settings.png
+│   │   │   ├── ui-wpf-screens-settings.svg
+│   │   │   ├── ui-wpf-screens-strategy.dot
+│   │   │   ├── ui-wpf-screens-strategy.png
+│   │   │   ├── ui-wpf-screens-strategy.svg
+│   │   │   ├── ui-wpf-screens-trading.dot
+│   │   │   ├── ui-wpf-screens-trading.png
+│   │   │   └── ui-wpf-screens-trading.svg
 │   │   ├── uml
 │   │   │   ├── Activity Diagram - Data Collection Process Flow.png
 │   │   │   ├── Activity Diagram - Data Collection Process Flow.svg
@@ -1272,32 +1317,52 @@ pr1926
 │   │   ├── ui-implementation-flow.svg
 │   │   ├── ui-navigation-map.dot
 │   │   ├── ui-navigation-map.png
-│   │   └── ui-navigation-map.svg
+│   │   ├── ui-navigation-map.svg
+│   │   ├── ui-wpf-screen-catalog.dot
+│   │   ├── ui-wpf-screen-catalog.png
+│   │   ├── ui-wpf-screen-catalog.svg
+│   │   ├── ui-wpf-screen-summary.dot
+│   │   ├── ui-wpf-screen-summary.png
+│   │   ├── ui-wpf-screen-summary.svg
+│   │   ├── ui-wpf-screens-accounting.dot
+│   │   ├── ui-wpf-screens-accounting.png
+│   │   ├── ui-wpf-screens-accounting.svg
+│   │   ├── ui-wpf-screens-data.dot
+│   │   ├── ui-wpf-screens-data.png
+│   │   ├── ui-wpf-screens-data.svg
+│   │   ├── ui-wpf-screens-portfolio.dot
+│   │   ├── ui-wpf-screens-portfolio.png
+│   │   ├── ui-wpf-screens-portfolio.svg
+│   │   ├── ui-wpf-screens-reporting.dot
+│   │   ├── ui-wpf-screens-reporting.png
+│   │   ├── ui-wpf-screens-reporting.svg
+│   │   ├── ui-wpf-screens-settings.dot
+│   │   ├── ui-wpf-screens-settings.png
+│   │   ├── ui-wpf-screens-settings.svg
+│   │   ├── ui-wpf-screens-strategy.dot
+│   │   ├── ui-wpf-screens-strategy.png
+│   │   ├── ui-wpf-screens-strategy.svg
+│   │   ├── ui-wpf-screens-trading.dot
+│   │   ├── ui-wpf-screens-trading.png
+│   │   └── ui-wpf-screens-trading.svg
 │   ├── docfx
 │   │   ├── api
 │   │   │   └── index.md
 │   │   ├── filterConfig.yml
 │   │   └── README.md
+│   ├── domain
+│   │   ├── fund-event.md
+│   │   ├── operational-evidence-graph.md
+│   │   ├── README.md
+│   │   └── security.md
 │   ├── engineering
+│   │   ├── free-development-tools.md
 │   │   ├── practical-csharp-wpf-financial-markets.md
 │   │   ├── README.md
 │   │   └── wpf-perf-uiux-audit-2026-06-14.md
 │   ├── evaluations
-│   │   ├── 2026-03-brainstorm-next-frontier.md
-│   │   ├── assembly-performance-opportunities.md
-│   │   ├── competitive-analysis-2026-03.md
-│   │   ├── data-quality-monitoring-evaluation.md
-│   │   ├── desktop-platform-improvements-implementation-guide.md
-│   │   ├── high-value-low-cost-improvements-brainstorm.md
-│   │   ├── historical-data-providers-evaluation.md
-│   │   ├── ingestion-orchestration-evaluation.md
-│   │   ├── nautilus-inspired-restructuring-proposal.md
-│   │   ├── operational-readiness-evaluation.md
-│   │   ├── quant-script-blueprint-brainstorm.md
-│   │   ├── README.md
-│   │   ├── realtime-streaming-architecture-evaluation.md
-│   │   ├── storage-architecture-evaluation.md
-│   │   └── windows-desktop-provider-configurability-assessment.md
+│   │   ├── evaluation-archive-migration-2026-06-16.md
+│   │   └── README.md
 │   ├── examples
 │   │   ├── agent-improvement-loop
 │   │   │   ├── agent_improvement_loop.ipynb
@@ -1448,6 +1513,7 @@ pr1926
 │   │   ├── waves-2-4-operator-readiness-addendum.md
 │   │   └── web-ui-development-pivot.md
 │   ├── product
+│   │   ├── implementation-todo-list.md
 │   │   ├── meridian-design-document.md
 │   │   └── README.md
 │   ├── prompts
@@ -1673,6 +1739,8 @@ pr1926
 │   │   ├── ai-handoff-packet.md
 │   │   ├── ai-inventory-report.json
 │   │   ├── ai-inventory-report.md
+│   │   ├── api-contract-coverage-dashboard.json
+│   │   ├── api-contract-coverage-dashboard.md
 │   │   ├── api-docs-report.md
 │   │   ├── badge-sync-report.md
 │   │   ├── broker-phase-promotion-checklist-template.md
@@ -1686,17 +1754,25 @@ pr1926
 │   │   ├── docs-automation-summary.json
 │   │   ├── docs-automation-summary.md
 │   │   ├── EVALUATIONS_AND_AUDITS.md
+│   │   ├── evidence-continuity-dashboard.json
+│   │   ├── evidence-continuity-dashboard.md
 │   │   ├── example-validation.md
 │   │   ├── FEATURE_INVENTORY.md
 │   │   ├── FULL_IMPLEMENTATION_TODO.md
 │   │   ├── fund-ops-persistence-cutover-status.md
 │   │   ├── governance-handoff-evidence-bundle.md
+│   │   ├── governance-readiness-dashboard.json
+│   │   ├── governance-readiness-dashboard.md
 │   │   ├── ibkr-provider-inventory.md
 │   │   ├── IMPROVEMENTS.md
 │   │   ├── kernel-readiness-dashboard.md
 │   │   ├── link-repair-report.md
 │   │   ├── metrics-dashboard.md
 │   │   ├── OPPORTUNITY_SCAN.md
+│   │   ├── paper-replay-reliability-dashboard.json
+│   │   ├── paper-replay-reliability-dashboard.md
+│   │   ├── pilot-readiness-dashboard.json
+│   │   ├── pilot-readiness-dashboard.md
 │   │   ├── production-status.md
 │   │   ├── program-state-summary.json
 │   │   ├── program-state-summary.md
@@ -1963,6 +2039,7 @@ pr1926
 │   │   ├── robinhood-options-smoke.ps1
 │   │   ├── run-desktop-workflow.ps1
 │   │   ├── run-desktop.ps1
+│   │   ├── run-local-quality.ps1
 │   │   ├── run-provider-validation-evidence-bundle.ps1
 │   │   ├── run-wave1-provider-validation.ps1
 │   │   ├── screenshot-diff-config.json
@@ -2012,6 +2089,7 @@ pr1926
 │   │   │       └── SampleLeanAlgorithm.cs
 │   │   ├── Tools
 │   │   │   └── DataValidator.cs
+│   │   ├── ApiHostOptions.cs
 │   │   ├── app.ico
 │   │   ├── app.manifest
 │   │   ├── DashboardServerBridge.cs
@@ -2149,6 +2227,28 @@ pr1926
 │   │   │   │   └── StatusEndpointHandlers.cs
 │   │   │   ├── BackfillCoordinator.cs
 │   │   │   └── ConfigStore.cs
+│   │   ├── Integrations
+│   │   │   ├── ProviderIntegrationActivationReadinessService.cs
+│   │   │   ├── ProviderIntegrationActivationService.cs
+│   │   │   ├── ProviderIntegrationDryRunService.cs
+│   │   │   ├── ProviderIntegrationHttpClientTransport.cs
+│   │   │   ├── ProviderIntegrationIdentityResolutionPreviewService.cs
+│   │   │   ├── ProviderIntegrationMappedRecordIdentity.cs
+│   │   │   ├── ProviderIntegrationMappedRecordValidation.cs
+│   │   │   ├── ProviderIntegrationMonitoringService.cs
+│   │   │   ├── ProviderIntegrationOpenApiImportService.cs
+│   │   │   ├── ProviderIntegrationPromotionReadinessService.cs
+│   │   │   ├── ProviderIntegrationQuarantineReplayService.cs
+│   │   │   ├── ProviderIntegrationQuarantineReviewService.cs
+│   │   │   ├── ProviderIntegrationReconciliationHandoffService.cs
+│   │   │   ├── ProviderIntegrationRestDryRunService.cs
+│   │   │   ├── ProviderIntegrationSchemaDriftService.cs
+│   │   │   ├── ProviderIntegrationSetupService.cs
+│   │   │   ├── ProviderIntegrationStagingDedupeValidator.cs
+│   │   │   ├── ProviderIntegrationStagingReviewService.cs
+│   │   │   ├── ProviderIntegrationSyncOrchestrationService.cs
+│   │   │   ├── ProviderIntegrationSyncPlanningService.cs
+│   │   │   └── ProviderIntegrationTemplateCatalog.cs
 │   │   ├── Monitoring
 │   │   │   ├── DetailedHealthCheck.cs
 │   │   │   ├── PrometheusMetrics.cs
@@ -2188,7 +2288,6 @@ pr1926
 │   │   │   ├── IEdgarIngestOrchestrator.cs
 │   │   │   ├── ILivePositionCorporateActionAdjuster.cs
 │   │   │   ├── ISecurityMasterQueryService.cs
-│   │   │   ├── ISecurityMasterService.cs
 │   │   │   ├── ISecurityMasterWorkbenchQueryService.cs
 │   │   │   ├── ISecurityResolver.cs
 │   │   │   ├── IUflProjectionRebuilder.cs
@@ -2198,6 +2297,7 @@ pr1926
 │   │   │   ├── SecurityMasterAggregateRebuilder.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedService.cs
 │   │   │   ├── SecurityMasterConflictService.cs
+│   │   │   ├── SecurityMasterContractAliases.cs
 │   │   │   ├── SecurityMasterCsvParser.cs
 │   │   │   ├── SecurityMasterImportService.cs
 │   │   │   ├── SecurityMasterIngestStatusService.cs
@@ -2518,6 +2618,9 @@ pr1926
 │   │   │   └── FutureReferenceDtos.cs
 │   │   ├── FxSpot
 │   │   │   └── FxSpotReferenceDtos.cs
+│   │   ├── Integrations
+│   │   │   ├── ProviderIntegrationContracts.cs
+│   │   │   └── ProviderIntegrationContractsJsonContext.cs
 │   │   ├── Ledger
 │   │   │   ├── AccountingConfigurationDtos.cs
 │   │   │   └── LedgerBookDtos.cs
@@ -2719,7 +2822,8 @@ pr1926
 │   │   │   ├── ICredentialStore.cs
 │   │   │   ├── IProviderCredentialStore.cs
 │   │   │   ├── OAuthToken.cs
-│   │   │   └── ProviderCredentialCatalog.cs
+│   │   │   ├── ProviderCredentialCatalog.cs
+│   │   │   └── ProviderSetupHandlers.cs
 │   │   ├── Etl
 │   │   │   ├── EtlAbstractions.cs
 │   │   │   ├── EtlExportService.cs
@@ -3677,6 +3781,8 @@ pr1926
 │   │   │   ├── InMemoryFundStructureStateStore.cs
 │   │   │   ├── JsonFileFundStructureStateStore.cs
 │   │   │   └── PostgresFundStructureStore.cs
+│   │   ├── Integrations
+│   │   │   └── FileProviderIntegrationManifestStore.cs
 │   │   ├── Interfaces
 │   │   │   ├── IMarketDataStore.cs
 │   │   │   ├── ISourceRegistry.cs
@@ -3885,7 +3991,8 @@ pr1926
 │   ├── Meridian.Ui
 │   │   ├── dashboard
 │   │   │   ├── scripts
-│   │   │   │   └── run-vitest-stable.mjs
+│   │   │   │   ├── run-vitest-stable.mjs
+│   │   │   │   └── smoke-workstation.mjs
 │   │   │   ├── src
 │   │   │   │   ├── assets
 │   │   │   │   │   └── brand
@@ -3977,6 +4084,7 @@ pr1926
 │   │   │   │   │   │   ├── covered-call.api.test.ts
 │   │   │   │   │   │   └── covered-call.api.ts
 │   │   │   │   │   ├── covered-call
+│   │   │   │   │   │   ├── index.ts
 │   │   │   │   │   │   ├── payoff.test.ts
 │   │   │   │   │   │   └── payoff.ts
 │   │   │   │   │   ├── price-alerts
@@ -4112,6 +4220,74 @@ pr1926
 │   │   │   ├── tsconfig.json
 │   │   │   ├── tsconfig.node.json
 │   │   │   └── vite.config.ts
+│   │   ├── wwwroot
+│   │   │   └── workstation
+│   │   │       ├── assets
+│   │   │       │   ├── accounting-screen-XDvu1W-1.js
+│   │   │       │   ├── activity-BjtiComA.js
+│   │   │       │   ├── card-BXcvcRLF.js
+│   │   │       │   ├── chart-column-DnWCA1s3.js
+│   │   │       │   ├── chart-line-DODZLpfU.js
+│   │   │       │   ├── circle-alert-D3JvtkM6.js
+│   │   │       │   ├── circle-check-BS7AcvHJ.js
+│   │   │       │   ├── circle-play-CNfopsH5.js
+│   │   │       │   ├── circle-x-zH1Highy.js
+│   │   │       │   ├── clipboard-list-O9Qo6w1c.js
+│   │   │       │   ├── covered-call-screen-CJ5M9hLb.js
+│   │   │       │   ├── data-screen-BxkO_eEY.js
+│   │   │       │   ├── database-BNvGyCB4.js
+│   │   │       │   ├── dialog-BGldn1dV.js
+│   │   │       │   ├── download-vNlUT6TY.js
+│   │   │       │   ├── entity-setup-wizard-CQURb_Bl.js
+│   │   │       │   ├── evidence-workbench-screen-BCVcl2Kv.js
+│   │   │       │   ├── external-link-Crwi8cq6.js
+│   │   │       │   ├── eye-BPyf7wpP.js
+│   │   │       │   ├── family-office-screen-bNSMXmXe.js
+│   │   │       │   ├── field-support-BAOFPpip.js
+│   │   │       │   ├── file-text-C1xy4UEb.js
+│   │   │       │   ├── financial-record-explorer-D9NIIPsX.js
+│   │   │       │   ├── index-BnRVa59R.js
+│   │   │       │   ├── index-CEFXXBOL.css
+│   │   │       │   ├── input-CxWWWfLz.js
+│   │   │       │   ├── layers-D9P8cITG.js
+│   │   │       │   ├── list-checks-CGLO603d.js
+│   │   │       │   ├── live-quotes-screen-dQCcbcZR.js
+│   │   │       │   ├── metric-card-B7ygVfQu.js
+│   │   │       │   ├── monitor-check-Bb4Vjz_v.js
+│   │   │       │   ├── network-ly_XRKbU.js
+│   │   │       │   ├── operations-continuity-screen-BeSLVJyw.js
+│   │   │       │   ├── operations-continuity-screen.view-model-CJjjNTMb.js
+│   │   │       │   ├── operations-record-release-screen-BAf8F4tj.js
+│   │   │       │   ├── operator-readiness-console-BpQ4KS-t.js
+│   │   │       │   ├── play-COK6d1x3.js
+│   │   │       │   ├── plus-BAV8YlOg.js
+│   │   │       │   ├── portfolio-screen-4QzC2mij.js
+│   │   │       │   ├── portfolio-screen.view-model-BKi9oI-Z.js
+│   │   │       │   ├── price-alerts-screen-xggWRtzw.js
+│   │   │       │   ├── quant-lab-screen-D3OStv49.js
+│   │   │       │   ├── refresh-cw-DZiWGtSM.js
+│   │   │       │   ├── reporting-screen-BNphEZaF.js
+│   │   │       │   ├── reporting-screen.view-model-CWzunS2c.js
+│   │   │       │   ├── rotate-ccw-DlVRwltM.js
+│   │   │       │   ├── save-BSWh4z9F.js
+│   │   │       │   ├── select-BAOmvJPX.js
+│   │   │       │   ├── send-gv1rDhCb.js
+│   │   │       │   ├── settings-screen-mhzyEfm5.js
+│   │   │       │   ├── shield-check-DSHumLJJ.js
+│   │   │       │   ├── sigma-BbcmhsUf.js
+│   │   │       │   ├── sparkles-BQnQyHTM.js
+│   │   │       │   ├── strategy-designer-screen-CCtL_ZVM.js
+│   │   │       │   ├── strategy-formula-workbench-screen-BBnPtSJw.js
+│   │   │       │   ├── strategy-screen-DEdr8FXB.js
+│   │   │       │   ├── trading-screen-CZ6INSYU.js
+│   │   │       │   ├── trash-2-CYiycYwj.js
+│   │   │       │   ├── trending-up-C-_2gyqs.js
+│   │   │       │   ├── ui-kit-primitives-DgqUl_5h.js
+│   │   │       │   ├── wallet-Cb_ckJiv.js
+│   │   │       │   ├── watchlist-screen-Dwd19OLd.js
+│   │   │       │   ├── workflow-BXEvF1e-.js
+│   │   │       │   └── workspace-primitives-L-cnieVi.js
+│   │   │       └── index.html
 │   │   └── README.md
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -4348,8 +4524,10 @@ pr1926
 │   │   │   ├── WorkstationEndpoints.FeatureCapabilities.cs
 │   │   │   ├── WorkstationEndpoints.FinancialRecordExplorers.cs
 │   │   │   ├── WorkstationEndpoints.OperationsContinuity.cs
+│   │   │   ├── WorkstationEndpoints.ProviderIntegrations.cs
 │   │   │   ├── WorkstationEndpoints.Reconciliation.cs
-│   │   │   └── WorkstationRiskEndpoints.cs
+│   │   │   ├── WorkstationRiskEndpoints.cs
+│   │   │   └── WorkstationTenantContext.cs
 │   │   ├── Evidence
 │   │   │   ├── EvidenceContribution.cs
 │   │   │   ├── EvidenceContributors.cs
@@ -4546,7 +4724,8 @@ pr1926
 │   │   ├── Contracts
 │   │   │   ├── IConnectionService.cs
 │   │   │   ├── INavigationService.cs
-│   │   │   └── IPageActivationLifetime.cs
+│   │   │   ├── IPageActivationLifetime.cs
+│   │   │   └── IRemoteWorkstationClient.cs
 │   │   ├── Controls
 │   │   │   ├── AutomationLeafBorder.cs
 │   │   │   ├── EmptyStatePanel.xaml
@@ -4725,6 +4904,7 @@ pr1926
 │   │   │   ├── QuantScriptLayoutService.cs
 │   │   │   ├── QuantScriptTemplateCatalogService.cs
 │   │   │   ├── ReconciliationReadService.cs
+│   │   │   ├── ReportingWorkspaceShellPresentationService.cs
 │   │   │   ├── RetentionAssuranceService.cs
 │   │   │   ├── RunMatService.cs
 │   │   │   ├── SchemaService.cs
@@ -4762,6 +4942,7 @@ pr1926
 │   │   │   ├── WorkstationReconciliationApiClient.cs
 │   │   │   ├── WorkstationSecurityMasterApiClient.cs
 │   │   │   ├── WorkstationStrategyBriefingService.cs
+│   │   │   ├── WpfRemoteWorkstationClient.cs
 │   │   │   └── WpfShellServiceCollectionExtensions.cs
 │   │   ├── Shell
 │   │   │   ├── Models
@@ -5194,7 +5375,7 @@ pr1926
 │   │   │       │   ├── TableViewModel.cs
 │   │   │       │   ├── ValidationStateViewModel.cs
 │   │   │       │   └── WorkspaceViewModelBase.cs
-│   │   │       └── WorkspaceViewModelBase.cs
+│   │   │       └── WorkspaceViewModelAdapters.cs
 │   │   ├── App.xaml
 │   │   ├── App.xaml.cs
 │   │   ├── AssemblyInfo.cs
@@ -5368,6 +5549,25 @@ pr1926
 │   │   │   │   └── LedgerGroupIdTests.cs
 │   │   │   ├── Indicators
 │   │   │   │   └── TechnicalIndicatorServiceTests.cs
+│   │   │   ├── Integrations
+│   │   │   │   ├── ProviderIntegrationActivationReadinessServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationActivationServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationDryRunServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationHttpClientTransportTests.cs
+│   │   │   │   ├── ProviderIntegrationIdentityResolutionPreviewServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationMonitoringServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationOpenApiImportServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationPromotionReadinessServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationQuarantineReplayServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationQuarantineReviewServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationReconciliationHandoffServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationRestDryRunServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationSchemaDriftServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationSetupServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationStagingReviewServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationSyncOrchestrationServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationSyncPlanningServiceTests.cs
+│   │   │   │   └── ProviderIntegrationTemplateCatalogTests.cs
 │   │   │   ├── Logging
 │   │   │   │   └── LoggingSetupTests.cs
 │   │   │   ├── Monitoring
@@ -5448,7 +5648,8 @@ pr1926
 │   │   │   │   └── UiApiClientTests.cs
 │   │   │   ├── CoreExtensibilityContractsTests.cs
 │   │   │   ├── FundStructureContractsJsonContextTests.cs
-│   │   │   └── LedgerReconciliationContractCompatibilityTests.cs
+│   │   │   ├── LedgerReconciliationContractCompatibilityTests.cs
+│   │   │   └── ProviderIntegrationContractsTests.cs
 │   │   ├── Core
 │   │   │   └── Config
 │   │   │       ├── AppConfigJsonOptionsTests.cs
@@ -5849,6 +6050,8 @@ pr1926
 │   │   │   │   └── BackfillStatusStoreTests.cs
 │   │   │   ├── Etl
 │   │   │   │   └── EtlJobDefinitionStoreTests.cs
+│   │   │   ├── Integrations
+│   │   │   │   └── FileProviderIntegrationManifestStoreTests.cs
 │   │   │   ├── AccountingConfigurationPostgresStoreTests.cs
 │   │   │   ├── AnalysisExportServiceTests.cs
 │   │   │   ├── AtomicFileWriterTests.cs
@@ -5858,6 +6061,7 @@ pr1926
 │   │   │   ├── DataLineageServiceTests.cs
 │   │   │   ├── DataQualityScoringServiceTests.cs
 │   │   │   ├── DataValidatorTests.cs
+│   │   │   ├── DirectLendingMigrationTests.cs
 │   │   │   ├── EventBufferTests.cs
 │   │   │   ├── ExportValidatorTests.cs
 │   │   │   ├── FilePermissionsServiceTests.cs
@@ -5962,7 +6166,9 @@ pr1926
 │   │   │   ├── ExportEndpointsTests.cs
 │   │   │   ├── FamilyOfficeContractTests.cs
 │   │   │   ├── FamilyOfficeReadServiceTests.cs
+│   │   │   ├── FundAccountEndpointAuthorizationTests.cs
 │   │   │   ├── FundOpsCloseLaneScenarioTests.cs
+│   │   │   ├── FundStructureEndpointAuthorizationTests.cs
 │   │   │   ├── InvestmentAccountingTransactionLabServiceTests.cs
 │   │   │   ├── LedgerAmountProvenanceServiceTests.cs
 │   │   │   ├── OmsIntegrationServiceTests.cs
@@ -6003,18 +6209,21 @@ pr1926
 │   │   │   ├── WorkstationEndpointsTests.cs
 │   │   │   ├── WorkstationEndpointsTests.Extensibility.cs
 │   │   │   ├── WorkstationEndpointsTests.Infrastructure.cs
+│   │   │   ├── WorkstationEndpointsTests.ProviderIntegrations.cs
 │   │   │   ├── WorkstationEndpointsTests.Wave4.cs
 │   │   │   ├── WorkstationFamilyOfficeEndpointsTests.cs
 │   │   │   ├── WorkstationFinancialRecordExplorerEndpointTests.cs
 │   │   │   ├── WorkstationMultiAssetCoverageEndpointsTests.cs
 │   │   │   ├── WorkstationServiceCollectionExtensionsTests.cs
 │   │   │   ├── WorkstationStatementReconciliationEndpointTests.cs
+│   │   │   ├── WorkstationTenantContextTests.cs
 │   │   │   └── WorkstationWorkflowSummaryFinancialOperationsTests.cs
 │   │   ├── Workflow
 │   │   │   ├── FundWorkflowCommandHandlerTests.cs
 │   │   │   └── RunbookServicesTests.cs
 │   │   ├── Wpf
-│   │   │   └── WpfAssetOperationsReadModelTests.cs
+│   │   │   ├── WpfAssetOperationsReadModelTests.cs
+│   │   │   └── WpfReportingWorkspaceShellTests.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Tests.csproj
 │   │   ├── StatementReconciliationServiceTests.cs
@@ -6127,6 +6336,7 @@ pr1926
 │   │   │   ├── QuantScriptTemplateCatalogServiceTests.cs
 │   │   │   ├── RetentionAssuranceServiceTests.cs
 │   │   │   ├── RunMatServiceTests.cs
+│   │   │   ├── SetupWizardStateServiceTests.cs
 │   │   │   ├── SingleInstanceServiceTests.cs
 │   │   │   ├── StatusServiceTests.cs
 │   │   │   ├── StorageServiceTests.cs
@@ -6222,6 +6432,7 @@ pr1926
 │   │   │   ├── SymbolsPageViewModelTests.cs
 │   │   │   ├── SymbolStorageViewModelTests.cs
 │   │   │   ├── SystemHealthViewModelTests.cs
+│   │   │   ├── TickerStripViewModelTests.cs
 │   │   │   ├── TimeSeriesAlignmentViewModelTests.cs
 │   │   │   ├── TradingHoursViewModelTests.cs
 │   │   │   ├── TradingWorkspaceShellViewModelTests.cs
@@ -6287,6 +6498,7 @@ pr1926
 │   │   ├── test_archive_code_tombstones.py
 │   │   ├── test_artifact_retention_module.py
 │   │   ├── test_buildctl_artifact_retention.py
+│   │   ├── test_buildctl_validation_runner.py
 │   │   ├── test_central_package_versions.py
 │   │   ├── test_check_codex_skills.py
 │   │   ├── test_check_contract_compatibility_gate.py
@@ -6298,6 +6510,7 @@ pr1926
 │   │   ├── test_compare_run_contract.py
 │   │   ├── test_dashboard_package_lock.py
 │   │   ├── test_desktop_screen_blueprint_checklist.py
+│   │   ├── test_direct_lending_outbox_claim_sql.py
 │   │   ├── test_doc_render_determinism.py
 │   │   ├── test_documentation_workflow.py
 │   │   ├── test_export_project_artifact_workflow.py
@@ -6319,6 +6532,7 @@ pr1926
 │   │   ├── test_render_roadmap_diagrams.py
 │   │   ├── test_roadmap_source_docs.py
 │   │   ├── test_route_maintenance_classification.py
+│   │   ├── test_run_dotnet_ci_tests.py
 │   │   ├── test_run_provider_validation_evidence_bundle.py
 │   │   ├── test_screenshot_diff_report.py
 │   │   ├── test_screenshot_workflow_plan.py
@@ -6326,6 +6540,7 @@ pr1926
 │   │   ├── test_shared_build_retention.py
 │   │   ├── test_shared_checkpoint.py
 │   │   ├── test_summarize_desktop_workflow_bundle.py
+│   │   ├── test_targeted_test_workflow.py
 │   │   ├── test_validate_screenshot_captures.py
 │   │   ├── test_validate_source_readmes.py
 │   │   ├── test_validate_tooling_metadata.py

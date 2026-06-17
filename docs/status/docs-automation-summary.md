@@ -6,23 +6,23 @@
 
 | Script | Status | Duration (s) | Output |
 |--------|--------|--------------|--------|
-| `scan-todos` | `success` | `7.912` | `docs/status/TODO.md` |
-| `validate-docs-structure` | `success` | `0.283` | `-` |
-| `generate-structure-docs` | `success` | `1.447` | `docs/generated/repository-structure.md` |
-| `generate-health-dashboard` | `success` | `2.002` | `docs/status/doc-health-dashboard.md` |
-| `validate-examples` | `success` | `0.568` | `docs/status/example-validation.md` |
-| `check-ai-inventory` | `success` | `0.659` | `docs/status/ai-inventory-report.md` |
-| `check-ai-handoff-strict` | `success` | `0.183` | `docs/status/ai-handoff-checklist-report.md` |
-| `check-ai-contract-drift` | `success` | `0.206` | `-` |
-| `prompt-route-linter` | `success` | `0.172` | `docs/status/prompt-route-lint-report.json` |
-| `handoff-packet-generator` | `success` | `1.509` | `docs/status/ai-handoff-packet.json` |
-| `check-handoff-packet-schema` | `success` | `0.161` | `-` |
-| `check-ai-routing-parity` | `success` | `0.123` | `-` |
-| `check-mode-escalation` | `success` | `0.226` | `-` |
-| `generate-coverage` | `success` | `13.341` | `docs/status/coverage-report.md` |
-| `generate-pilot-readiness-dashboard` | `success` | `0.196` | `docs/status/pilot-readiness-dashboard.md` |
-| `generate-paper-replay-reliability-dashboard` | `success` | `0.171` | `docs/status/paper-replay-reliability-dashboard.md` |
-| `generate-evidence-continuity-dashboard` | `success` | `0.141` | `docs/status/evidence-continuity-dashboard.md` |
-| `generate-governance-readiness-dashboard` | `success` | `0.165` | `docs/status/governance-readiness-dashboard.md` |
-| `generate-api-contract-coverage-dashboard` | `success` | `3.998` | `docs/status/api-contract-coverage-dashboard.md` |
-| `generate-workflow-manifest` | `success` | `0.183` | `docs/status/workflow-validation-summary.json` |
+| `scan-todos` | `success` | `8.226` | `docs/status/TODO.md` |
+| `validate-docs-structure` | `success` | `0.260` | `-` |
+| `generate-structure-docs` | `success` | `1.370` | `docs/generated/repository-structure.md` |
+| `generate-health-dashboard` | `success` | `1.688` | `docs/status/doc-health-dashboard.md` |
+| `validate-examples` | `success` | `0.557` | `docs/status/example-validation.md` |
+| `check-ai-inventory` | `success` | `0.686` | `docs/status/ai-inventory-report.md` |
+| `check-ai-handoff-strict` | `success` | `0.123` | `docs/status/ai-handoff-checklist-report.md` |
+| `check-ai-contract-drift` | `success` | `0.132` | `-` |
+| `prompt-route-linter` | `success` | `0.127` | `docs/status/prompt-route-lint-report.json` |
+| `handoff-packet-generator` | `success` | `0.398` | `docs/status/ai-handoff-packet.json` |
+| `check-handoff-packet-schema` | `success` | `0.138` | `-` |
+| `check-ai-routing-parity` | `success` | `0.104` | `-` |
+| `check-mode-escalation` | `success` | `0.239` | `-` |
+| `generate-coverage` | `success` | `15.669` | `docs/status/coverage-report.md` |
+| `generate-pilot-readiness-dashboard` | `success` | `0.192` | `docs/status/pilot-readiness-dashboard.md` |
+| `generate-paper-replay-reliability-dashboard` | `success` | `0.173` | `docs/status/paper-replay-reliability-dashboard.md` |
+| `generate-evidence-continuity-dashboard` | `success` | `0.154` | `docs/status/evidence-continuity-dashboard.md` |
+| `generate-governance-readiness-dashboard` | `success` | `0.184` | `docs/status/governance-readiness-dashboard.md` |
+| `generate-api-contract-coverage-dashboard` | `success` | `4.578` | `docs/status/api-contract-coverage-dashboard.md` |
+| `generate-workflow-manifest` | `success` | `0.211` | `docs/status/workflow-validation-summary.json` |

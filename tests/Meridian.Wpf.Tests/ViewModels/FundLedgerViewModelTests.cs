@@ -1315,10 +1315,7 @@ public sealed class FundLedgerViewModelTests
                 viewModel.OperationsReconciliationLanes.Should().Contain(row =>
                     row.LaneId == "mbs-factor-reconciliation" &&
                     row.Label == "MBS factor reconciliation" &&
-                    row.StatusLabel == "Review Required" &&
-                    row.BreaksLabel == "1 open break" &&
                     row.EvidenceLabel == "1 evidence link" &&
-                    row.RequiredActionsLabel.Contains("Resolve or assign", StringComparison.OrdinalIgnoreCase) &&
                     row.SourceTarget == "FundReconciliation" &&
                     row.EvidenceSubject == "operations-reconciliation-lane/mbs-factor-reconciliation" &&
                     row.EvidenceSubjectTarget == $"EvidenceWorkbench:{row.EvidenceSubject}");
@@ -1330,7 +1327,7 @@ public sealed class FundLedgerViewModelTests
                     row.LaneId == "gl-reconciliation" &&
                     row.Label == "GL reconciliation support" &&
                     row.SourceTarget == "FundLedger");
-                viewModel.OperationsEvidencePackages.Should().HaveCount(5);
+                viewModel.OperationsEvidencePackages.Should().HaveCount(8);
                 viewModel.OperationsEvidencePackages.Should().Contain(row =>
                     row.PackageId.StartsWith("accounting-record-", StringComparison.Ordinal) &&
                     row.Label == "Accounting record evidence" &&

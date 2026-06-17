@@ -170,6 +170,9 @@ Meridian is **dense** by consumer‑UI standards but **breathing** by Bloomberg 
   one dense grid so operators can compare events without modal hopping.
 - Reporting delivery tables keep recipient, channel, package mode, manifest, artifact integrity,
   and evidence graph links visible without rebuilding delivery lineage in the client.
+- Provider integration workbenches keep connection, sync run, staging row, account/security identity,
+  promotion target, approval evidence, rejected count, duplicate count, and retained handoff history
+  visible together so operators can distinguish readiness review from canonical promotion.
 - Long-running workflows should expose status, owner/action, and last-updated evidence.
 
 ## The cockpit rules

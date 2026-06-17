@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-05-31
+**Reviewed:** 2026-06-16
 
 This document is the master index for AI guidance in the Meridian repository. It now treats repository orientation as a first-class step before specialist task guidance.
 
@@ -15,10 +15,11 @@ For every AI/systems task in this repository, use this canonical order:
 1. `docs/ai/navigation/README.md`
 2. `docs/ai/generated/repo-navigation.md`
 3. `docs/ai/assistant-workflow-contract.md`
-4. `docs/engineering/README.md` or `docs/product/README.md` / `docs/operators/README.md` as applicable
-5. `docs/documentation-ownership.md` for archive/generation ownership
-6. `docs/documentation-inventory.md` to update migration state and phase notes
-7. Targeted validation command set (`check-*` and structure checks)
+4. MDIF sources (`docs/architecture/meridian-development-intelligence-framework.md`, `docs/domain/README.md`, and `docs/ai/context/README.md`) for broad generation, domain modeling, workflow design, or architecture-sensitive work
+5. `docs/engineering/README.md` or `docs/product/README.md` / `docs/operators/README.md` as applicable
+6. `docs/documentation-ownership.md` for archive/generation ownership
+7. `docs/documentation-inventory.md` to update migration state and phase notes
+8. Targeted validation command set (`check-*` and structure checks)
 
 Classify AI/doc changes in this rebuild model:
 
@@ -38,9 +39,12 @@ Classify AI/doc changes in this rebuild model:
 | Rebuild-era AI requirements | [`assistant-workflow-contract.md`](assistant-workflow-contract.md) | Contracted requirements for repo navigation, generated-doc handling, orchestration, token/context discipline, and validation |
 | Multi-agent or multi-phase work | [`agent-handoff-checklist.md`](agent-handoff-checklist.md) | Required handoff packet format and token-efficient context boundaries |
 | Parallel multi-lane execution | [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md) | Shared lane-ownership manifest to prevent duplicate discovery and overlapping edits |
+| Concurrent implementation memory | [`working-memory.md`](working-memory.md) | Task-local ledger for claims, inspected files, assumptions, merge order, drift, and validation reuse |
 | Context budget sizing | [`work-modes.md`](work-modes.md) | Lightweight/Standard/Deep-review mode selection and escalation rules |
 | Compact context packets | [`agent-handoff-checklist.md`](agent-handoff-checklist.md), [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md), [`work-modes.md`](work-modes.md) | Required vs optional context split, validation-reuse tracking, and summarized evidence budgets |
 | AI tooling and validators | [`tooling/README.md`](tooling/README.md) | Script/tool selection, safe usage notes, and narrow proof lanes |
+| Local contention-aware .NET validation | [`tooling/README.md`](tooling/README.md) | `buildctl test` local lock, active-process checks, isolated outputs, and `.ai/validation-runs` evidence |
+| Hosted targeted testing | [GitHub workflows README](../../.github/workflows/README.md) | Manual `Targeted Test` workflow for a selected .NET test project plus filter when local capacity blocks validation |
 | Fast repo orientation | [`navigation/README.md`](navigation/README.md) | [`generated/repo-navigation.md`](generated/repo-navigation.md) |
 | Source/roadmap documentation sync | [`../source/README.md`](../source/README.md), [`../roadmap/README.md`](../roadmap/README.md) | `build/scripts/docs/validate-source-readmes.py`, `build/scripts/docs/validate-roadmap-registry.py` |
 | Before any change | [`ai-known-errors.md`](ai-known-errors.md) | Prevention checklists |
@@ -48,6 +52,7 @@ Classify AI/doc changes in this rebuild model:
 | Portable skills | [`skills/README.md`](skills/README.md) | [`.agents/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills), [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills) |
 | Codex repo-local skills and profiles | [`codex/README.md`](codex/README.md) | [`.codex/agents/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.codex/agents), [`.codex/skills/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.codex/skills/README.md), [`.codex/skills/`](https://github.com/rodoHasArrived/Meridian-main/tree/main/.codex/skills) |
 | Fast Codex task startup | [`codex/quickstart.md`](codex/quickstart.md) | [`codex/advanced-configuration.md`](codex/advanced-configuration.md), [`codex/route-cards.md`](codex/route-cards.md) |
+| MDIF context packs | [`context/README.md`](context/README.md) | [`../architecture/meridian-development-intelligence-framework.md`](../architecture/meridian-development-intelligence-framework.md), [`../domain/README.md`](../domain/README.md), and [`exports/README.md`](exports/README.md) |
 | Copilot setup | [`copilot/instructions.md`](copilot/instructions.md) | [`.github/copilot-instructions.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/copilot-instructions.md) |
 
 ---
@@ -63,8 +68,10 @@ For large-repo tasks, assistants should orient in this order:
    before switching context or specialist lanes.
 5. If two or more lanes run in parallel, initialize [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md)
    and record inspected files per lane.
-6. Select [`work-modes.md`](work-modes.md) level before implementation and escalate when risk grows.
-7. Only then move into specialist guides such as provider, storage, testing, WPF, or documentation instructions.
+6. For concurrent implementation or a dirty codebase, maintain task-local working memory with
+   [`working-memory.md`](working-memory.md) before lanes edit or reuse validation.
+7. Select [`work-modes.md`](work-modes.md) level before implementation and escalate when risk grows.
+8. Only then move into specialist guides such as provider, storage, testing, WPF, or documentation instructions.
 
 The generated navigation artifacts are the canonical orientation surface:
 
@@ -88,6 +95,8 @@ Before changing any AI/helping-agent guidance:
 - Do not hand-edit generated AI outputs under `docs/ai/generated/*`; re-run generation command lanes.
 - Update this index when adding/removing AI surfaces, entrypoints, checks, or ownership.
 - For parallel work, initialize a manifest (`parallel-task-manifest-template.md`) and record lane transitions in `agent-handoff-checklist.md`.
+- For concurrent implementation, keep a working-memory ledger (`working-memory.md`) for active
+  claims, inspected files, assumptions, merge risks, and validation reuse.
 - For lane transitions, include required context, optional context, validation reuse, and unresolved assumptions in the handoff packet.
 - End every AI surface edit with matching validation outputs and a short residual-risk note.
 
@@ -151,6 +160,7 @@ Located mainly in `docs/ai/claude/`.
 | [`skills/README.md`](skills/README.md) | Portable Agent Skills overview for `.agents/skills/` and `.claude/skills/` |
 | [`codex/README.md`](codex/README.md) | Codex repo-local skill workflow, execution gates, and validation tooling |
 | [`codex/quickstart.md`](codex/quickstart.md) | Compact Codex startup checklist, proof matrix, read budget, and dirty-worktree protocol |
+| [`working-memory.md`](working-memory.md) | Task-local coordination ledger for concurrent AI implementation work |
 | [`codex/advanced-configuration.md`](codex/advanced-configuration.md) | Advanced Codex local-client configuration patterns for profiles, providers, project config, hooks, telemetry, notifications, history, and TUI behavior |
 | [`codex/route-cards.md`](codex/route-cards.md) | Subsystem cards for Codex routing after generated navigation identifies ownership |
 | [`prompts/README.md`](prompts/README.md) | Prompt catalog and usage guide |
@@ -196,9 +206,12 @@ Model-routing behavior is docs-only controlled by `model-routing-policy.json`; u
 ## AI Contract Coverage Checklist
 
 - Repo navigation: [`navigation/README.md`](navigation/README.md), [`generated/repo-navigation.md`](generated/repo-navigation.md)
+- MDIF grounding: [`../architecture/meridian-development-intelligence-framework.md`](../architecture/meridian-development-intelligence-framework.md), [`../domain/README.md`](../domain/README.md), [`context/README.md`](context/README.md)
 - Agent edit rules: [`assistant-workflow-contract.md`](assistant-workflow-contract.md), `.codex/skills/_shared/project-context.md`
 - Generated-file handling: this contract plus `validate-docs-structure`, `generate-ai-navigation`, and `check-ai-contract-drift` command lanes
 - Agent orchestration: [`parallel-task-manifest-template.md`](parallel-task-manifest-template.md), [`agent-handoff-checklist.md`](agent-handoff-checklist.md), [check-ai-contract-drift command](assistant-workflow-contract.md)
+- Working memory: [`working-memory.md`](working-memory.md) for active claims, inspected files,
+  assumptions, codebase drift, merge order, and validation reuse
 - Token/context management: [`work-modes.md`](work-modes.md), [`tooling/README.md`](tooling/README.md), and one-lane handoff packets in handoff manifest
 - Compact evidence transfer: require `required context` vs `optional context` separation plus validation-reuse notes in handoff packets
 - Validation procedures: `check-ai-inventory`, `check-codex-skills`, `check-ai-handoff --strict`, `check-ai-contract-drift`
@@ -235,7 +248,7 @@ The following high-traffic files are source material or historical entrypoints o
 
 ---
 
-_Last Updated: 2026-05-31_
+_Last Updated: 2026-06-16_
 
 ## Drift failure remediation
 

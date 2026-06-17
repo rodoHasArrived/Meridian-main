@@ -35,6 +35,11 @@ workspaces (`Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data
   persistent selected-security detail, dense schedule tables, controls, notes, and attached audit.
 - Reporting screens must show server-owned report-pack workflow, delivery attempts, retained
   manifests, report-line provenance, and report-ready state instead of local packet rules.
+- Data and Settings provider-integration screens must show setup, dry-run evidence, sync-run
+  summaries, staging review, identity resolution, promotion readiness, reconciliation handoff
+  history, duplicate-handoff issues, quarantine review, and replay as server-owned workflow state.
+  The preview may show approval controls, but it must not imply client-side mutation of Portfolio,
+  Security Master, Ledger, or Accounting records.
 - No emoji. No exclamation marks. No marketing copy.
 
 ## Components available

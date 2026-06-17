@@ -2350,6 +2350,9 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                             <a className="text-primary underline-offset-2 hover:underline" href={grid.csvHref} target="_blank" rel="noreferrer">
                               CSV
                             </a>
+                            <a className="text-primary underline-offset-2 hover:underline" href={grid.pdfHref} target="_blank" rel="noreferrer">
+                              PDF
+                            </a>
                             <a className="text-primary underline-offset-2 hover:underline" href={grid.xlsHref} target="_blank" rel="noreferrer">
                               XLS
                             </a>
@@ -3025,6 +3028,14 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
                                         rel="noreferrer"
                                       >
                                         CSV
+                                      </a>
+                                      <a
+                                        className="text-primary underline-offset-2 hover:underline"
+                                        href={reportingRunReportWriterGridEndpoint(attempt.package.reportingRunId!, grid.gridId, "pdf")}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                      >
+                                        PDF
                                       </a>
                                       <a
                                         className="text-primary underline-offset-2 hover:underline"
@@ -5638,7 +5649,7 @@ function isReportWriterIdentifierPart(value: string | undefined): boolean {
 }
 
 function isReportWriterFormulaFunction(identifier: string): boolean {
-  return ["abs", "min", "max", "safedivide"].includes(identifier.toLowerCase());
+  return ["abs", "min", "max", "safedivide", "percent", "basispoints", "round"].includes(identifier.toLowerCase());
 }
 
 function isGeneratedContributionField(field: string | null | undefined): boolean {

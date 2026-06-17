@@ -49,6 +49,10 @@ when normalizing economic definitions so factor paydowns stay principal events i
 collapsed into generic unsupported instruments.
 `GovernanceExceptionService` classifies ledger reconciliation breaks into strategy-governance
 exception severities and dashboard projections from this module instead of the Application layer.
+The shared reconciliation break queue also enforces v0.18 reviewed-automation boundaries: assistant
+or automation-origin commands may assist triage, comments, and evidence gathering, but resolve,
+sign-off, dismiss, and privileged reopen paths fail closed with a retained `MaterialActionDenied`
+audit event before case state changes.
 
 ## Diagrams
 

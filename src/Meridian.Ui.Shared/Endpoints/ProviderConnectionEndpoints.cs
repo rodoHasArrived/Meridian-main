@@ -14,6 +14,7 @@ public static class ProviderConnectionEndpoints
     public static void MapProviderConnectionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("").WithTags("Provider Connections");
+        group.RequireWorkstationTenantScope();
 
         group.MapGet(UiApiRoutes.ProviderConnections, async (
             HttpContext context,

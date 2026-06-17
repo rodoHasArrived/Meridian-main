@@ -53,7 +53,9 @@ public static partial class WorkstationEndpoints
 
     public static void MapWorkstationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
-        var group = app.MapGroup("/api/workstation").WithTags("Workstation");
+        var group = app.MapGroup("/api/workstation")
+            .WithTags("Workstation")
+            .RequireWorkstationTenantScope();
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationSession), async (HttpContext context) =>
         {
@@ -96,6 +98,7 @@ public static partial class WorkstationEndpoints
         MapFinancialRecordExplorerEndpoints(group, jsonOptions);
         MapFamilyOfficeEndpoints(group);
         MapDataUploadEndpoints(group, jsonOptions);
+        MapProviderIntegrationEndpoints(group, jsonOptions);
 
         group.MapGet("/workflow-summary", async (
             bool? hasOperatingContext,

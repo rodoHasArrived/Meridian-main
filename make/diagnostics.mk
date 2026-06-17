@@ -43,7 +43,7 @@ verify-setup: ## Verify the development environment is correctly set up
 		echo "$(RED)✗ FAIL$(NC)"; PASS=false; \
 	fi; \
 	printf "  Running unit tests...     "; \
-	if dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --no-build --verbosity quiet --filter "Category!=Integration" 2>&1; then \
+	if $(BUILDCTL) test --project tests/Meridian.Tests/Meridian.Tests.csproj --configuration Release --verbosity quiet --filter "Category!=Integration" --queue 2>&1; then \
 		echo "$(GREEN)✓ pass$(NC)"; \
 	else \
 		echo "$(RED)✗ FAIL$(NC)"; PASS=false; \

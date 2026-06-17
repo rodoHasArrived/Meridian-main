@@ -2,7 +2,7 @@ import type {
   CoveredCallChainPreview,
   CoveredCallRunResult,
   CoveredCallRunSummary
-} from "../types/covered-call.types";
+} from "@/lib/covered-call";
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
@@ -19,10 +19,12 @@ import type {
   EvidenceVaultRequestListEntry,
   ExecutionAuditEntry,
   ExecutionControlSnapshot,
+  FeatureCapabilitySettingsResponse,
   AccountingWorkspaceResponse,
   HistoricalBarsResponse,
   OrderBookResponse,
   OperatorInbox,
+  OperatorWorkflowHomeSummary,
   OperationsApprovalPolicyMatrix,
   OperationsCloseCalendar,
   OperationsContinuityWorkflow,
@@ -36,7 +38,19 @@ import type {
   PaperSessionSummary,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
+  ProviderIntegrationConnectionMonitor,
+  ProviderIntegrationPromotionReadinessPreview,
+  ProviderIntegrationQuarantineReview,
+  ProviderIntegrationReconciliationHandoffHistory,
+  ProviderIntegrationStagingIdentityResolutionPreview,
+  ProviderIntegrationStagingReview,
+  ProviderIntegrationSyncPlan,
+  ProviderIntegrationSyncRunEvidence,
+  ProviderIntegrationSyncRunHistory,
   ProviderReadinessSummary,
+  ProviderRoutingBinding,
+  ProviderRoutingConnection,
+  ProviderRoutingTrustSnapshot,
   PromotionEvaluationResult,
   PromotionRecord,
   QuantParametersResponse,
@@ -44,9 +58,12 @@ import type {
   QuotesResponse,
   QuotesSnapshotResponse,
   ReconciliationCalibrationSummary,
+  RiskRuleConfig,
+  RiskRuleStatus,
   StrategyBriefingResponse,
   StrategyWorkspaceResponse,
   ReplayFileRecord,
+  SecurityAssetProfileDefinition,
   SecurityIdentityDrillIn,
   SecurityMasterConflict,
   SecurityMasterEntry,
@@ -63,6 +80,7 @@ import type {
   TradingParameters,
   TradingWorkspaceResponse,
   TradesResponse,
+  UserAccessAssignment,
   WorkflowAction,
   WorkflowLibrary,
   WorkflowPresetLibrary
@@ -76,15 +94,18 @@ import {
   MARKET_DATA_API_ENDPOINTS,
   PORTFOLIO_API_ENDPOINTS,
   PROVIDER_API_ENDPOINTS,
+  PROVIDER_ROUTING_API_ENDPOINTS,
   PROMOTION_API_ENDPOINTS,
   QUANT_API_ENDPOINTS,
   RECONCILIATION_API_ENDPOINTS,
   REPLAY_API_ENDPOINTS,
+  RISK_API_ENDPOINTS,
   SECURITY_MASTER_API_ENDPOINTS,
   STRATEGY_DESIGNER_API_ENDPOINTS,
   SYMBOL_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
-  brokerageConnectionStatusEndpoint
+  brokerageConnectionStatusEndpoint,
+  riskRuleConfigEndpoint
 } from "./workstation-endpoints";
 
 const fixtureSession: SessionInfo = {
@@ -1773,6 +1794,521 @@ const fixtureWorkflowPresetLibrary: WorkflowPresetLibrary = {
   ]
 };
 
+const fixtureWorkflowSummary: OperatorWorkflowHomeSummary = {
+  generatedAt: "2026-04-28T18:15:00Z",
+  hasOperatingContext: false,
+  operatingContextLabel: "No-host fixture workspace",
+  fundDisplayName: "Demo Fund",
+  assuranceScore: null,
+  workspaces: [
+    {
+      workspaceId: "trading",
+      workspaceTitle: "Trading",
+      statusLabel: "Review required",
+      statusDetail: "Paper-readiness controls are populated from fixture replay and risk evidence.",
+      statusTone: "Warning",
+      nextAction: {
+        label: "Review paper readiness",
+        detail: "Inspect session, replay, and execution-control evidence before escalation.",
+        targetPageTag: "TradingShell",
+        tone: "Warning"
+      },
+      primaryBlocker: {
+        code: "FIXTURE_MODE",
+        label: "Fixture-only preview",
+        detail: "No live operating context is attached to this workstation preview.",
+        tone: "Info",
+        isBlocking: false
+      },
+      evidence: [
+        { label: "Replay", value: "Fixture", tone: "Info" },
+        { label: "Controls", value: "Seeded", tone: "Warning" }
+      ]
+    },
+    {
+      workspaceId: "data",
+      workspaceTitle: "Data",
+      statusLabel: "Provider review",
+      statusDetail: "Provider routing and security-master coverage use no-host fixture payloads.",
+      statusTone: "Warning",
+      nextAction: {
+        label: "Review provider routes",
+        detail: "Confirm paper and reference-data routes before using live data.",
+        targetPageTag: "ProviderHealth",
+        tone: "Warning"
+      },
+      primaryBlocker: {
+        code: "NO_HOST_ROUTING",
+        label: "No host connected",
+        detail: "Provider trust snapshots are demo-only until the Meridian API host is available.",
+        tone: "Info",
+        isBlocking: false
+      },
+      evidence: [
+        { label: "Routes", value: "2", tone: "Info" },
+        { label: "Trust", value: "Demo", tone: "Warning" }
+      ]
+    },
+    {
+      workspaceId: "settings",
+      workspaceTitle: "Settings",
+      statusLabel: "Demo controls",
+      statusDetail: "Runtime capabilities and provider setup controls are seeded for first-run review.",
+      statusTone: "Info",
+      nextAction: {
+        label: "Inspect runtime controls",
+        detail: "Review capability toggles and provider-routing fixture state.",
+        targetPageTag: "SettingsShell",
+        tone: "Info"
+      },
+      primaryBlocker: {
+        code: "NONE",
+        label: "No blocking setup item",
+        detail: "Settings controls are available for no-host product review.",
+        tone: "Success",
+        isBlocking: false
+      },
+      evidence: [
+        { label: "Capabilities", value: "Fixture", tone: "Info" },
+        { label: "Providers", value: "Seeded", tone: "Info" }
+      ]
+    }
+  ]
+};
+
+const fixtureFeatureCapabilities: FeatureCapabilitySettingsResponse = {
+  capabilities: [
+    {
+      capabilityKey: "desktop.settings.provider-connection-center-inline-management",
+      displayName: "Provider connection center",
+      description: "Inline provider setup and routing controls for the Settings workspace.",
+      isEnabled: true,
+      defaultEnabled: true,
+      isPermanent: false,
+      isOverridden: false,
+      canToggle: true,
+      disabledReason: null
+    },
+    {
+      capabilityKey: "desktop.data.security-master",
+      displayName: "Security master governance",
+      description: "Reference-data governance and asset profile controls for operator review.",
+      isEnabled: true,
+      defaultEnabled: true,
+      isPermanent: false,
+      isOverridden: false,
+      canToggle: true,
+      disabledReason: null
+    },
+    {
+      capabilityKey: "browser.no-host-fixtures",
+      displayName: "No-host fixture preview",
+      description: "Keeps browser workstation demos visibly labeled when the Meridian API host is unavailable.",
+      isEnabled: true,
+      defaultEnabled: true,
+      isPermanent: true,
+      isOverridden: false,
+      canToggle: false,
+      disabledReason: "Fixture preview capability is required when no API host is reachable."
+    }
+  ]
+};
+
+const fixtureProviderRoutingConnections: ProviderRoutingConnection[] = [
+  {
+    connectionId: "provider-alpaca-paper",
+    providerFamilyId: "alpaca",
+    displayName: "Alpaca paper route",
+    connectionType: "DataVendor",
+    connectionMode: "Paper",
+    enabled: true,
+    credentialReference: "fixture://provider/alpaca-paper",
+    institutionId: null,
+    externalAccountId: null,
+    scope: null,
+    tags: ["paper", "market-data", "fixture"],
+    description: "No-host fixture route for paper-market data review.",
+    productionReady: false
+  },
+  {
+    connectionId: "provider-reference",
+    providerFamilyId: "polygon",
+    displayName: "Reference data route",
+    connectionType: "DataVendor",
+    connectionMode: "ReadOnly",
+    enabled: true,
+    credentialReference: "fixture://provider/reference-data",
+    institutionId: null,
+    externalAccountId: null,
+    scope: null,
+    tags: ["reference", "security-master", "fixture"],
+    description: "No-host fixture route for security-master and reference-data coverage.",
+    productionReady: false
+  }
+];
+
+const fixtureProviderRoutingBindings: ProviderRoutingBinding[] = [
+  {
+    bindingId: "provider-alpaca-paper-RealtimeMarketData",
+    capability: "RealtimeMarketData",
+    connectionId: "provider-alpaca-paper",
+    target: null,
+    priority: 100,
+    enabled: true,
+    failoverConnectionIds: ["provider-reference"],
+    safetyModeOverride: "PaperOnly",
+    notes: "Fixture route used only for no-host browser workstation review."
+  },
+  {
+    bindingId: "provider-reference-ReferenceData",
+    capability: "ReferenceData",
+    connectionId: "provider-reference",
+    target: null,
+    priority: 110,
+    enabled: true,
+    failoverConnectionIds: [],
+    safetyModeOverride: "ReadOnly",
+    notes: "Fixture reference-data path for first-run security-master review."
+  }
+];
+
+const fixtureProviderRoutingTrustSnapshots: ProviderRoutingTrustSnapshot[] = [
+  {
+    connectionId: "provider-alpaca-paper",
+    providerFamilyId: "alpaca",
+    score: 84,
+    isHealthy: true,
+    healthStatus: "Healthy",
+    isProductionReady: false,
+    isCertificationFresh: false,
+    signals: ["fixture-mode", "paper-only"],
+    decision: null
+  },
+  {
+    connectionId: "provider-reference",
+    providerFamilyId: "polygon",
+    score: 91,
+    isHealthy: true,
+    healthStatus: "Healthy",
+    isProductionReady: false,
+    isCertificationFresh: false,
+    signals: ["fixture-mode", "reference-data"],
+    decision: null
+  }
+];
+
+const fixtureAccessAssignments: UserAccessAssignment[] = [];
+
+function buildFixtureProviderIntegrationSyncRun(connectionId: string): ProviderIntegrationSyncRunEvidence {
+  return {
+    syncRunId: `${connectionId}-fixture-sync-1`,
+    capability: "Positions",
+    endpointKey: "positions",
+    startedAt: "2026-06-16T12:30:00Z",
+    completedAt: "2026-06-16T12:31:00Z",
+    status: "Quarantined",
+    recordsReceived: 12,
+    recordsAccepted: 10,
+    recordsQuarantined: 2,
+    durableStagingRecordCount: 10,
+    durableQuarantinedRecordCount: 2,
+    criticalIssueCount: 1,
+    warningIssueCount: 1,
+    rawPayloadId: `${connectionId}-fixture-raw-1`,
+    issues: [
+      {
+        code: "SCHEMA_REQUIRED",
+        severity: "Critical",
+        message: "CUSIP is required before staging promotion.",
+        targetField: "cusip",
+        suggestedFix: "Add provider mapping."
+      }
+    ]
+  };
+}
+
+function buildFixtureProviderIntegrationMonitor(connectionId: string): ProviderIntegrationConnectionMonitor {
+  const syncRun = buildFixtureProviderIntegrationSyncRun(connectionId);
+  return {
+    connectionId,
+    manifestId: `${connectionId}-fixture-manifest`,
+    providerId: connectionId,
+    displayName: `${connectionId} fixture integration`,
+    connectionName: "Fixture provider runtime route",
+    environment: "paper",
+    state: "Active",
+    enabledCapabilities: ["Positions"],
+    lastSyncRun: syncRun,
+    recentSyncRuns: [syncRun],
+    recentRecordsReceived: syncRun.recordsReceived,
+    recentRecordsAccepted: syncRun.recordsAccepted,
+    recentRecordsQuarantined: syncRun.recordsQuarantined,
+    durableStagingRecordCount: syncRun.durableStagingRecordCount,
+    durableQuarantinedRecordCount: syncRun.durableQuarantinedRecordCount,
+    hasCriticalIssues: true
+  };
+}
+
+function buildFixtureProviderIntegrationSyncHistory(connectionId: string): ProviderIntegrationSyncRunHistory {
+  const syncRun = buildFixtureProviderIntegrationSyncRun(connectionId);
+  return {
+    connectionId,
+    syncRuns: [syncRun],
+    totalSyncRuns: 1,
+    returnedSyncRuns: 1,
+    latestStartedAt: syncRun.startedAt
+  };
+}
+
+function buildFixtureProviderIntegrationSyncPlan(connectionId: string, path: string): ProviderIntegrationSyncPlan {
+  const params = readFixtureSearchParams(path);
+  return {
+    connectionId,
+    manifestId: `${connectionId}-fixture-manifest`,
+    providerId: connectionId,
+    connectionName: "Fixture provider runtime route",
+    connectionState: "Active",
+    evaluatedAt: params.get("evaluatedAt") ?? "2026-06-16T12:35:00Z",
+    dueCount: 1,
+    blockedCount: 0,
+    items: [
+      {
+        capability: "Positions",
+        endpointKey: "positions",
+        scheduleMode: "incremental",
+        frequency: "daily",
+        timezone: "America/New_York",
+        lastSuccessfulSyncAt: "2026-06-16T12:30:00Z",
+        nextEligibleSyncAt: "2026-06-17T12:30:00Z",
+        isDue: true,
+        isBlocked: false,
+        reason: "Fixture provider position sync is due for review.",
+        issues: []
+      }
+    ]
+  };
+}
+
+function buildFixtureProviderIntegrationStaging(connectionId: string): ProviderIntegrationStagingReview {
+  const syncRunId = `${connectionId}-fixture-sync-1`;
+  return {
+    connectionId,
+    syncRunIds: [syncRunId],
+    records: [
+      {
+        stagingRecordId: `${connectionId}-fixture-stage-1`,
+        syncRunId,
+        connectionId,
+        capability: "Positions",
+        rawPayloadId: `${connectionId}-fixture-raw-1`,
+        sourceRecordId: `${connectionId}-position-1`,
+        dedupeKey: `Positions:${connectionId}-position-1`,
+        mappedRecord: { providerAccountId: "fixture-account", quantity: 10 },
+        validationWarnings: [],
+        status: "Validated",
+        createdAt: "2026-06-16T12:31:00Z"
+      }
+    ],
+    capabilitySummaries: [{ capability: "Positions", recordCount: 1, warningCount: 0 }],
+    warningGroups: [],
+    totalStagedRecords: 1,
+    readyForReconciliationCount: 1,
+    warningRecordCount: 0
+  };
+}
+
+function buildFixtureProviderIntegrationIdentity(connectionId: string): ProviderIntegrationStagingIdentityResolutionPreview {
+  return {
+    connectionId,
+    syncRunIds: [`${connectionId}-fixture-sync-1`],
+    rows: [],
+    totalRows: 1,
+    accountReviewRequiredCount: 0,
+    missingAccountIdentifierCount: 0,
+    securityResolvedCount: 1,
+    securityReviewRequiredCount: 0,
+    missingSecurityIdentifierCount: 0
+  };
+}
+
+function buildFixtureProviderIntegrationPromotion(connectionId: string): ProviderIntegrationPromotionReadinessPreview {
+  const syncRunId = `${connectionId}-fixture-sync-1`;
+  return {
+    connectionId,
+    syncRunIds: [syncRunId],
+    rows: [
+      {
+        stagingRecordId: `${connectionId}-fixture-stage-1`,
+        syncRunId,
+        capability: "Positions",
+        promotionTarget: "reconciliation-staging",
+        status: "ReadyForReconciliation",
+        providerAccountId: "fixture-account",
+        internalAccountId: "fixture-internal-account",
+        internalSecurityId: "fixture-security-1",
+        securityDisplayName: "Fixture Treasury 2031",
+        securityRoute: "/data/security-master/fixture-security-1",
+        issues: []
+      }
+    ],
+    totalRows: 1,
+    readyForReconciliationCount: 1,
+    reviewRequiredCount: 0,
+    blockedCount: 0
+  };
+}
+
+function buildFixtureProviderIntegrationHandoffs(connectionId: string): ProviderIntegrationReconciliationHandoffHistory {
+  const syncRunId = `${connectionId}-fixture-sync-1`;
+  return {
+    connectionId,
+    records: [
+      {
+        handoffId: `${connectionId}-fixture-handoff-1`,
+        connectionId,
+        syncRunId,
+        stagingRecordId: `${connectionId}-fixture-stage-1`,
+        capability: "Positions",
+        promotionTarget: "reconciliation-staging",
+        requestedBy: "fixture-operator",
+        requestedAt: "2026-06-16T12:40:00Z",
+        approvalEvidenceId: `${connectionId}-fixture-approval-1`,
+        note: "Fixture handoff retained after identity review.",
+        providerAccountId: "fixture-account",
+        internalAccountId: "fixture-internal-account",
+        internalSecurityId: "fixture-security-1",
+        securityRoute: "/data/security-master/fixture-security-1",
+        issues: []
+      }
+    ],
+    totalRecords: 1,
+    handoffCount: 1,
+    lastRequestedAt: "2026-06-16T12:40:00Z"
+  };
+}
+
+function buildFixtureProviderIntegrationQuarantine(connectionId: string): ProviderIntegrationQuarantineReview {
+  const syncRunId = `${connectionId}-fixture-sync-1`;
+  return {
+    connectionId,
+    syncRunIds: [syncRunId],
+    records: [
+      {
+        quarantineRecordId: `${connectionId}-fixture-quarantine-1`,
+        syncRunId,
+        connectionId,
+        capability: "Positions",
+        rawRecord: { accountNumber: "fixture-account", cusip: null },
+        mappedRecord: { providerAccountId: "fixture-account" },
+        validationErrors: [
+          {
+            code: "SCHEMA_REQUIRED",
+            severity: "Critical",
+            message: "CUSIP is required before staging promotion.",
+            targetField: "cusip",
+            suggestedFix: "Add provider mapping."
+          }
+        ],
+        status: "Quarantined",
+        createdAt: "2026-06-16T12:31:00Z"
+      }
+    ],
+    issueGroups: [
+      {
+        issueCode: "SCHEMA_REQUIRED",
+        severity: "Critical",
+        targetField: "cusip",
+        message: "CUSIP is required before staging promotion.",
+        suggestedFix: "Add provider mapping.",
+        recordCount: 1
+      }
+    ],
+    decisions: [],
+    totalQuarantinedRecords: 1,
+    criticalIssueCount: 1,
+    warningIssueCount: 0,
+    pendingReviewRecordCount: 1,
+    decisionedRecordCount: 0,
+    replayRequestedRecordCount: 0,
+    ignoredRecordCount: 0,
+    cashPositionCandidateCount: 0
+  };
+}
+
+const fixtureSecurityAssetProfiles: SecurityAssetProfileDefinition[] = [
+  {
+    profileId: "fixture-public-equity",
+    version: 1,
+    name: "Listed common equity",
+    category: "Equity",
+    subType: "CommonStock",
+    status: "Approved",
+    fields: [
+      {
+        key: "primaryTicker",
+        label: "Primary ticker",
+        fieldType: "Text",
+        isRequired: true,
+        allowedValues: [],
+        description: "Primary exchange ticker used by paper-market data fixtures.",
+        minValue: null,
+        maxValue: null,
+        isProjected: true,
+        isSearchable: true
+      }
+    ],
+    identifierPreferences: [
+      {
+        kind: "Ticker",
+        isRequiredForClose: true,
+        reason: "Ticker coverage is required for fixture trade and position review."
+      }
+    ],
+    lifecycleStates: ["Active", "Inactive", "Retired"],
+    accountingImpactHints: ["LedgerClassification", "Valuation"],
+    dateOrderRules: [],
+    effectiveFrom: "2026-01-01",
+    effectiveTo: null,
+    approvedBy: "fixture-operator",
+    approvedAtUtc: "2026-04-28T18:15:00Z",
+    changeReason: "No-host browser workstation fixture profile."
+  }
+];
+
+const fixtureRiskRules: RiskRuleStatus[] = [
+  {
+    ruleName: "DrawdownCircuitBreaker",
+    state: "Observe",
+    summary: "Fixture drawdown control is in observe mode for paper review.",
+    isBreached: false,
+    threshold: "8.00%",
+    currentValue: "-1.20%",
+    asOf: "2026-04-28T18:15:00Z",
+    recentViolations: []
+  },
+  {
+    ruleName: "PositionLimit",
+    state: "Healthy",
+    summary: "Fixture position limits are within configured paper thresholds.",
+    isBreached: false,
+    threshold: "500 shares",
+    currentValue: "250 shares",
+    asOf: "2026-04-28T18:15:00Z",
+    recentViolations: []
+  }
+];
+
+const fixtureDrawdownRiskRuleConfig: RiskRuleConfig = {
+  ruleName: "DrawdownCircuitBreaker",
+  defaultMaxPositionSize: 500,
+  symbolPositionLimits: {
+    AAPL: 250,
+    MSFT: 200
+  },
+  maxDrawdownPercent: 8,
+  maxOrdersPerMinute: 12
+};
+
 const fixtureCalibrationSummary: ReconciliationCalibrationSummary = {
   asOf: "2026-04-28T18:15:00Z",
   status: "ReviewRequired",
@@ -3008,7 +3544,43 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
       currentHash: "devhash-ledger"
     }
   ],
-  breakCases: [],
+  breakCases: [
+    {
+      breakId: "recon-break-factor-1",
+      checkId: "mbs-factor-reconciliation",
+      category: "MBS factor reconciliation",
+      severity: "Warning",
+      status: "Open",
+      owner: null,
+      dueDate: "2026-05-09T18:00:00Z",
+      expectedSource: "custodian factor file",
+      actualSource: "Security Master factor snapshot",
+      expectedAmount: 0.847125,
+      actualAmount: 0.8425,
+      variance: 0.004625,
+      securityId: "fixture-mbs-001",
+      symbol: "FNMA 30Y 5.5",
+      suggestedAction: "Assign controller review, validate the factor source, and retain resolution evidence before close approval.",
+      evidenceLinks: [
+        {
+          evidenceId: "fixture-factor-break-evidence",
+          label: "Fixture factor variance evidence",
+          route: "/workstation/accounting/reconciliation/recon-break-factor-1",
+          source: "development-fixture",
+          capturedAtUtc: "2026-05-08T15:36:00Z"
+        }
+      ],
+      escalationLevel: "Controller review",
+      escalationReason: "Factor variance blocks NAV support and close package publication.",
+      escalatedAtUtc: "2026-05-08T15:45:00Z",
+      slaState: "DueSoon",
+      slaDueAtUtc: "2026-05-09T18:00:00Z",
+      materiality: 0.004625,
+      rootCauseCode: "FactorSourceMismatch",
+      approvalState: "Pending",
+      blockedOutputs: ["NAV support package", "Close package"]
+    }
+  ],
   reconciliationLanes: [
     {
       laneId: "cash-reconciliation",
@@ -4010,6 +4582,8 @@ const fixtures = {
   [WORKSTATION_API_ENDPOINTS.portfolioMultiAssetCoverage]: fixturePortfolioMultiAssetCoverage,
   [WORKSTATION_API_ENDPOINTS.tradingReadiness]: fixtureTradingReadiness,
   [WORKSTATION_API_ENDPOINTS.operatorInbox]: fixtureOperatorInbox,
+  [WORKSTATION_API_ENDPOINTS.workflowSummary]: fixtureWorkflowSummary,
+  [WORKSTATION_API_ENDPOINTS.featureCapabilities]: fixtureFeatureCapabilities,
   [WORKSTATION_API_ENDPOINTS.workflowLibrary]: fixtureWorkflowLibrary,
   [WORKSTATION_API_ENDPOINTS.workflowPresets]: fixtureWorkflowPresetLibrary,
   [WORKSTATION_API_ENDPOINTS.operationsContinuity]: fixtureOperationsContinuityWorkflows,
@@ -4020,6 +4594,7 @@ const fixtures = {
   [WORKSTATION_API_ENDPOINTS.evidenceVaultSearch]: [fixtureAccountingRecordVaultIdentity],
   [WORKSTATION_API_ENDPOINTS.evidenceVaultRequestLists]: fixtureEvidenceVaultRequestLists,
   [AUTH_API_ENDPOINTS.roles]: fixtureRolePermissionCatalog,
+  [AUTH_API_ENDPOINTS.accessAssignments]: fixtureAccessAssignments,
   [FUND_STRUCTURE_API_ENDPOINTS.ledgerMappingWorkbench]: fixtureLedgerMappingWorkbench,
   [EXECUTION_API_ENDPOINTS.sessions]: fixturePaperSessionSummaries,
   [EXECUTION_API_ENDPOINTS.audit]: fixtureExecutionAudit,
@@ -4033,6 +4608,9 @@ const fixtures = {
   "/api/workstation/data-operations": fixtureDataWorkspace,
   [PROVIDER_API_ENDPOINTS.connections]: fixtureProviderConnections,
   [PROVIDER_API_ENDPOINTS.readiness]: fixtureProviderReadiness,
+  [PROVIDER_ROUTING_API_ENDPOINTS.connections]: fixtureProviderRoutingConnections,
+  [PROVIDER_ROUTING_API_ENDPOINTS.bindings]: fixtureProviderRoutingBindings,
+  [PROVIDER_ROUTING_API_ENDPOINTS.trustSnapshots]: fixtureProviderRoutingTrustSnapshots,
   [WORKSTATION_API_ENDPOINTS.accounting]: fixtureAccountingWorkspace,
   [WORKSTATION_API_ENDPOINTS.reporting]: fixtureAccountingWorkspace,
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.providers]: fixtureAccountingSystemProviders,
@@ -4050,7 +4628,10 @@ const fixtures = {
   [STRATEGY_DESIGNER_API_ENDPOINTS.drafts]: fixtureStrategyDesignerDrafts,
   [COVERED_CALL_API_ENDPOINTS.runs]: fixtureCoveredCallRuns,
   [COVERED_CALL_API_ENDPOINTS.chainPreview]: fixtureCoveredCallChainPreview,
+  [SECURITY_MASTER_API_ENDPOINTS.assetProfiles]: fixtureSecurityAssetProfiles,
   [`${SECURITY_MASTER_API_ENDPOINTS.base}/conflicts`]: fixtureSecurityConflicts,
+  [RISK_API_ENDPOINTS.rules]: fixtureRiskRules,
+  [riskRuleConfigEndpoint("DrawdownCircuitBreaker")]: fixtureDrawdownRiskRuleConfig,
   [SYMBOL_API_ENDPOINTS.symbols]: fixtureSymbolRecords,
   [SYMBOL_API_ENDPOINTS.statistics]: fixtureSymbolStatistics
 } satisfies Record<string, unknown>;
@@ -4134,6 +4715,38 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
   { pattern: apiRoutePattern(STRATEGY_DESIGNER_API_ENDPOINTS.drafts, "/[^/]+"), resolve: () => fixtureStrategyDesignerDocument },
   { pattern: apiRoutePattern(EXECUTION_API_ENDPOINTS.sessions, "/[^/]+"), resolve: () => fixturePaperSessionDetail },
   { pattern: apiRoutePattern(EXECUTION_API_ENDPOINTS.sessions, "/[^/]+/replay"), resolve: () => fixturePaperSessionReplayVerification },
+  {
+    pattern: apiRoutePattern("/api/workstation/provider-integrations/connections", "/[^/]+/monitor"),
+    resolve: (cleanPath) => buildFixtureProviderIntegrationMonitor(readDecodedPathSegment(cleanPath, 1))
+  },
+  {
+    pattern: apiRoutePattern("/api/workstation/provider-integrations/connections", "/[^/]+/sync-runs"),
+    resolve: (cleanPath) => buildFixtureProviderIntegrationSyncHistory(readDecodedPathSegment(cleanPath, 1))
+  },
+  {
+    pattern: apiRoutePattern("/api/workstation/provider-integrations/connections", "/[^/]+/sync-plan"),
+    resolve: (cleanPath, path) => buildFixtureProviderIntegrationSyncPlan(readDecodedPathSegment(cleanPath, 1), path)
+  },
+  {
+    pattern: apiRoutePattern("/api/workstation/provider-integrations/connections", "/[^/]+/staging"),
+    resolve: (cleanPath) => buildFixtureProviderIntegrationStaging(readDecodedPathSegment(cleanPath, 1))
+  },
+  {
+    pattern: apiRoutePattern("/api/workstation/provider-integrations/connections", "/[^/]+/identity-resolution"),
+    resolve: (cleanPath) => buildFixtureProviderIntegrationIdentity(readDecodedPathSegment(cleanPath, 1))
+  },
+  {
+    pattern: apiRoutePattern("/api/workstation/provider-integrations/connections", "/[^/]+/promotion-readiness"),
+    resolve: (cleanPath) => buildFixtureProviderIntegrationPromotion(readDecodedPathSegment(cleanPath, 1))
+  },
+  {
+    pattern: apiRoutePattern("/api/workstation/provider-integrations/connections", "/[^/]+/reconciliation-handoffs"),
+    resolve: (cleanPath) => buildFixtureProviderIntegrationHandoffs(readDecodedPathSegment(cleanPath, 1))
+  },
+  {
+    pattern: apiRoutePattern("/api/workstation/provider-integrations/connections", "/[^/]+/quarantine"),
+    resolve: (cleanPath) => buildFixtureProviderIntegrationQuarantine(readDecodedPathSegment(cleanPath, 1))
+  },
   { pattern: apiRoutePattern(WORKSTATION_API_ENDPOINTS.operationsContinuity, "/[^/]+"), resolve: () => fixtureOperationsContinuityWorkflow },
   {
     pattern: apiRoutePattern(WORKSTATION_API_ENDPOINTS.evidenceSubjects, "/accounting-record/[^/]+/packet"),

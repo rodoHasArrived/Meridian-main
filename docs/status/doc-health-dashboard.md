@@ -1,12 +1,12 @@
 # Documentation Health Dashboard
 
 _Auto-generated from canonical JSON payload._
-_Generated: 2026-06-16T18:19:14.605359+00:00_
+_Generated: 2026-06-17T01:13:05.377622+00:00_
 Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-06-16T18:19:14.584399+00:00
+> Last updated: 2026-06-17T01:13:05.350614+00:00
 
 ## Overall Health Score
 
@@ -19,13 +19,13 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 591 |
-| Total lines | 82,504 |
-| Average file size (lines) | 139.6 |
-| Orphaned files | 235 |
+| Total documentation files | 600 |
+| Total lines | 86,402 |
+| Average file size (lines) | 144.0 |
+| Orphaned files | 241 |
 | Files without headings | 21 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 226 |
+| TODO/FIXME markers | 238 |
 | **Health score** | **83/100** |
 
 ### Score Breakdown
@@ -85,7 +85,7 @@ These files are not linked from any other Markdown file in the repository:
 - `Meridian Design System/SKILL.md`
 - `Meridian Design System/VISUAL_FOUNDATIONS.md`
 - `benchmarks/BOTTLENECK_REPORT.md`
-- ... and 215 more
+- ... and 221 more
 
 ## Trend
 
@@ -93,7 +93,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 2026-06-16 | 83 | 591 | 235 | 0 |
+| 2026-06-17 | 83 | 600 | 241 | 0 |
 
 ---
 

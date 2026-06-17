@@ -12,6 +12,7 @@ import {
   QUANT_API_ENDPOINTS,
   RECONCILIATION_API_ENDPOINTS,
   REPLAY_API_ENDPOINTS,
+  PROVIDER_INTEGRATION_API_ENDPOINTS,
   PROVIDER_ROUTING_API_ENDPOINTS,
   SECURITY_MASTER_API_ENDPOINTS,
   SYMBOL_API_ENDPOINTS,
@@ -104,6 +105,17 @@ import {
   workstationFinancialRecordExplorerEndpoint,
   workstationFinancialRecordExplorerRecordEndpoint,
   workstationFinancialRecordExplorerSavedViewsEndpoint,
+  workstationProviderIntegrationConnectionMonitorEndpoint,
+  workstationProviderIntegrationConnectionRunDueSyncEndpoint,
+  workstationProviderIntegrationConnectionSyncPlanEndpoint,
+  workstationProviderIntegrationConnectionSyncRunsEndpoint,
+  workstationProviderIntegrationIdentityResolutionEndpoint,
+  workstationProviderIntegrationPromotionReadinessEndpoint,
+  workstationProviderIntegrationQuarantineReviewEndpoint,
+  workstationProviderIntegrationReadinessEndpoint,
+  workstationProviderIntegrationReconciliationHandoffHistoryEndpoint,
+  workstationProviderIntegrationStagingReviewEndpoint,
+  workstationProviderIntegrationTemplateEndpoint,
   workstationChiefOfStaffDecisionEndpoint,
   workstationChiefOfStaffHealthEndpoint,
   workstationChiefOfStaffSessionEndpoint,
@@ -111,15 +123,29 @@ import {
   workstationChiefOfStaffTraceExportEndpoint,
   workstationOperatorInboxEndpoint,
   workstationAssetOperationsEndpoint,
+  workstationOperationsContinuityApprovalSubmitEndpoint,
+  workstationOperationsContinuityBrokerImportEndpoint,
+  workstationOperationsContinuityBrokerNormalizeEndpoint,
   workstationOperationsContinuityBreakAssignEndpoint,
+  workstationOperationsContinuityBreakResolveEndpoint,
   workstationOperationsContinuityBreaksEndpoint,
+  workstationOperationsContinuityChecklistEndpoint,
+  workstationOperationsContinuityChecklistAcknowledgeEndpoint,
   workstationOperationsContinuityCloseEndpoint,
   workstationOperationsContinuityDetailEndpoint,
   workstationOperationsContinuityEndpoint,
   workstationOperationsContinuityCloseCalendarEndpoint,
+  workstationOperationsContinuityCloseReadinessEndpoint,
+  workstationOperationsContinuityLedgerDraftEndpoint,
   workstationOperationsContinuityLedgerPreviewEndpoint,
+  workstationOperationsContinuityLedgerPostEndpoint,
+  workstationOperationsContinuityLedgerValidateEndpoint,
+  workstationOperationsContinuityPostureRefreshEndpoint,
   workstationOperationsPrivateCapitalCloseCockpitEndpoint,
+  workstationOperationsContinuityReconciliationRunEndpoint,
   workstationOperationsContinuityReopenEndpoint,
+  workstationOperationsContinuitySecurityMasterOverrideApproveEndpoint,
+  workstationOperationsContinuitySecurityMasterResolveEndpoint,
   workstationOperationsContinuityTimelineEndpoint,
   workstationRunAttributionEndpoint,
   workstationRunCompareEndpoint,
@@ -293,8 +319,50 @@ describe("workstation API endpoint catalog", () => {
     expect(workstationOperationsContinuityBreaksEndpoint("workflow / 1")).toBe(
       "/api/workstation/operations/continuity/workflow%20%2F%201/breaks"
     );
+    expect(workstationOperationsContinuityChecklistEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/checklist"
+    );
+    expect(workstationOperationsContinuityCloseReadinessEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/close-readiness"
+    );
+    expect(workstationOperationsContinuityBrokerImportEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/broker/import"
+    );
+    expect(workstationOperationsContinuityBrokerNormalizeEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/broker/normalize"
+    );
+    expect(workstationOperationsContinuityPostureRefreshEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/posture/refresh"
+    );
+    expect(workstationOperationsContinuitySecurityMasterResolveEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/security-master/resolve"
+    );
+    expect(workstationOperationsContinuitySecurityMasterOverrideApproveEndpoint("workflow / 1", "override / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/security-master/overrides/override%20%2F%201/approve"
+    );
+    expect(workstationOperationsContinuityLedgerDraftEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/ledger/draft"
+    );
+    expect(workstationOperationsContinuityLedgerValidateEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/ledger/validate"
+    );
+    expect(workstationOperationsContinuityLedgerPostEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/ledger/post"
+    );
+    expect(workstationOperationsContinuityReconciliationRunEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/reconciliation/run"
+    );
+    expect(workstationOperationsContinuityApprovalSubmitEndpoint("workflow / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/approval/submit"
+    );
+    expect(workstationOperationsContinuityChecklistAcknowledgeEndpoint("workflow / 1", "task / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/checklist/task%20%2F%201/acknowledge"
+    );
     expect(workstationOperationsContinuityBreakAssignEndpoint("workflow / 1", "break / 1")).toBe(
       "/api/workstation/operations/continuity/workflow%20%2F%201/reconciliation/breaks/break%20%2F%201/assign"
+    );
+    expect(workstationOperationsContinuityBreakResolveEndpoint("workflow / 1", "break / 1")).toBe(
+      "/api/workstation/operations/continuity/workflow%20%2F%201/reconciliation/breaks/break%20%2F%201/resolve"
     );
     expect(workstationOperationsContinuityLedgerPreviewEndpoint("workflow / 1")).toBe(
       "/api/workstation/operations/continuity/workflow%20%2F%201/ledger-preview"
@@ -353,6 +421,9 @@ describe("workstation API endpoint catalog", () => {
     );
     expect(reportingRunReportWriterGridEndpoint("run / 1", "grid / 1", "csv")).toBe(
       "/api/fund-structure/reporting/runs/run%20%2F%201/report-writer-grids/grid%20%2F%201?format=csv"
+    );
+    expect(reportingRunReportWriterGridEndpoint("run / 1", "grid / 1", "pdf")).toBe(
+      "/api/fund-structure/reporting/runs/run%20%2F%201/report-writer-grids/grid%20%2F%201?format=pdf"
     );
     expect(reportPackDeliveryPackageEndpoint("report / 1", "attempt / 1", "tok / 1")).toBe(
       "/api/fund-structure/reporting/packs/report%20%2F%201/deliveries/attempt%20%2F%201/package?token=tok+%2F+1"
@@ -429,6 +500,66 @@ describe("workstation API endpoint catalog", () => {
     expect(workstationEvidenceExportManifestEndpoint("strategy/run", "run / 1")).toBe(
       "/api/workstation/evidence/subjects/strategy%2Frun/run%20%2F%201/export-manifest"
     );
+  });
+
+  it("builds provider-integration runtime endpoints from shared route contracts", () => {
+    expect(PROVIDER_INTEGRATION_API_ENDPOINTS).toMatchObject({
+      templates: "/api/workstation/provider-integrations/templates",
+      template: "/api/workstation/provider-integrations/templates/{manifestId}",
+      openApiImport: "/api/workstation/provider-integrations/import/openapi",
+      setupSave: "/api/workstation/provider-integrations/setup",
+      manifestReadiness: "/api/workstation/provider-integrations/manifests/{manifestId}/readiness",
+      manualCsvDryRun: "/api/workstation/provider-integrations/dry-runs/manual-csv",
+      restDryRun: "/api/workstation/provider-integrations/dry-runs/rest",
+      activate: "/api/workstation/provider-integrations/activate",
+      connectionMonitor: "/api/workstation/provider-integrations/connections/{connectionId}/monitor",
+      connectionSyncRuns: "/api/workstation/provider-integrations/connections/{connectionId}/sync-runs",
+      connectionSyncPlan: "/api/workstation/provider-integrations/connections/{connectionId}/sync-plan",
+      connectionRunDueSync: "/api/workstation/provider-integrations/connections/{connectionId}/sync/run-due",
+      stagingReview: "/api/workstation/provider-integrations/connections/{connectionId}/staging",
+      identityResolution: "/api/workstation/provider-integrations/connections/{connectionId}/identity-resolution",
+      promotionReadiness: "/api/workstation/provider-integrations/connections/{connectionId}/promotion-readiness",
+      reconciliationHandoffHistory: "/api/workstation/provider-integrations/connections/{connectionId}/reconciliation-handoffs",
+      reconciliationHandoff: "/api/workstation/provider-integrations/reconciliation/handoff",
+      quarantineReview: "/api/workstation/provider-integrations/connections/{connectionId}/quarantine",
+      quarantineResolve: "/api/workstation/provider-integrations/quarantine/resolve",
+      quarantineReplay: "/api/workstation/provider-integrations/quarantine/replay"
+    });
+
+    expect(workstationProviderIntegrationTemplateEndpoint("custodian / v1")).toBe(
+      "/api/workstation/provider-integrations/templates/custodian%20%2F%20v1"
+    );
+    expect(workstationProviderIntegrationReadinessEndpoint("custodian / v1", "connection / 1")).toBe(
+      "/api/workstation/provider-integrations/manifests/custodian%20%2F%20v1/readiness?connectionId=connection+%2F+1"
+    );
+    expect(workstationProviderIntegrationConnectionMonitorEndpoint("connection / 1", 5)).toBe(
+      "/api/workstation/provider-integrations/connections/connection%20%2F%201/monitor?recentRunLimit=5"
+    );
+    expect(workstationProviderIntegrationConnectionSyncRunsEndpoint("connection / 1", 6)).toBe(
+      "/api/workstation/provider-integrations/connections/connection%20%2F%201/sync-runs?recentRunLimit=6"
+    );
+    expect(workstationProviderIntegrationConnectionSyncPlanEndpoint("connection / 1", "2026-06-16T12:00:00Z")).toBe(
+      "/api/workstation/provider-integrations/connections/connection%20%2F%201/sync-plan?evaluatedAt=2026-06-16T12%3A00%3A00Z"
+    );
+    expect(workstationProviderIntegrationConnectionRunDueSyncEndpoint("connection / 1")).toBe(
+      "/api/workstation/provider-integrations/connections/connection%20%2F%201/sync/run-due"
+    );
+    expect(workstationProviderIntegrationStagingReviewEndpoint("connection / 1", 7)).toBe(
+      "/api/workstation/provider-integrations/connections/connection%20%2F%201/staging?recentRunLimit=7"
+    );
+    expect(workstationProviderIntegrationIdentityResolutionEndpoint("connection / 1", 8)).toBe(
+      "/api/workstation/provider-integrations/connections/connection%20%2F%201/identity-resolution?recentRunLimit=8"
+    );
+    expect(workstationProviderIntegrationPromotionReadinessEndpoint("connection / 1", 9)).toBe(
+      "/api/workstation/provider-integrations/connections/connection%20%2F%201/promotion-readiness?recentRunLimit=9"
+    );
+    expect(workstationProviderIntegrationReconciliationHandoffHistoryEndpoint("connection / 1")).toBe(
+      "/api/workstation/provider-integrations/connections/connection%20%2F%201/reconciliation-handoffs"
+    );
+    expect(workstationProviderIntegrationQuarantineReviewEndpoint("connection / 1", 10)).toBe(
+      "/api/workstation/provider-integrations/connections/connection%20%2F%201/quarantine?recentRunLimit=10"
+    );
+    expect(() => workstationProviderIntegrationConnectionMonitorEndpoint("   ")).toThrow("connectionId is required");
   });
 
   it("keeps execution, replay, and promotion endpoint builders encoded", () => {

@@ -11,6 +11,7 @@ It routes non-technical audiences to verified evidence and prevents duplicate cl
 
 - If you need the current product framing, start with:
   - [Meridian Design Document (Version 0.18)](meridian-design-document.md) — design baseline extended with current implementation posture, the v0.15 accounting records package, the v0.16 private-capital operations and treasury-ledger addendum, the v0.17 shared Financial Record Explorer productization target, the W5X Financial Operations control target, and the v0.18 operational proof layer market-gap update
+  - [Meridian Implementation TODO List](implementation-todo-list.md) — single planning-tooling tracker for implemented design-document items and remaining TODOs
   - [Roadmap Registry](../roadmap/README.md)
   - [Roadmap Generated Summary](../roadmap/generated/ROADMAP_SUMMARY.md)
 - If you need evidence-backed examples of current operations, check:
@@ -43,7 +44,7 @@ The operating question remains:
 
 ## Active Product Scope Gate
 
-The active product scope is the W1-W5 operational record baseline: data confidence, retained source evidence, reconciliation, approvals, accounting records, multi-asset operational coverage, and governed report packs.
+The active product scope is the closed W1-W5 operational record baseline plus the W5X productization targets: shared Financial Record Explorers and the Financial Operations control center. The baseline covers data confidence, retained source evidence, reconciliation, approvals, accounting records, multi-asset operational coverage, and governed report packs; W5X turns that evidence foundation into operator-facing explorer and control-center workflows.
 
 Defer Backtesting Studio, live-readiness beyond paper-first governance, full treasury payment execution, full alternative asset operations, forecasting/scenario engines, enterprise risk, client portal, no-code workflow design, mobile, and other broad expansion lanes unless the work directly strengthens that operational record workflow.
 
@@ -75,7 +76,7 @@ Defer Backtesting Studio, live-readiness beyond paper-first governance, full tre
   - governed reporting and evidence retention,
   - capital-account, fund-event, and treasury-ledger records.
 - Product wedge: Meridian should make the operational proof chain the product, linking source evidence through validation, reconciliation, ledger impact, capital-account impact, close state, report line, delivery evidence, and audit history.
-- Operator UX direction: Accounting, Portfolio, and Portfolio/Data should converge around shared Financial Record Explorers, while Accounting/Reporting should expose a W5X-FINOPS Financial Operations cockpit for today's close and reconciliation state, priority-ranked exception queues, report-package release safety, and drill-through into Ledger Explorer, Evidence Vault, Fund Event Command Center, and Report-Line Provenance Explorer.
+- Operator UX direction: Accounting, Portfolio, Portfolio/Data, and Reporting should converge around shared Financial Record Explorers, while Accounting/Reporting should expose a W5X-FINOPS Financial Operations cockpit for today's close and reconciliation state, priority-ranked exception queues, report-package release safety, and drill-through into Ledger Explorer, Evidence Vault, Fund Event Command Center, and Report-Line Provenance Explorer.
 - Operating model: configurable tenant-aware system, not separate apps per organization type.
 - Extensibility model: stable financial operations core objects stay consistent across tenants; workflows, rules, data mappings, reports, permissions, domain extensions, and tenant templates are governed configuration layers. See the [Core Extensibility Model](../architecture/core-extensibility-model.md).
 - Shared operator root model remains: `Trading`, `Portfolio`, `Accounting`, `Reporting`, `Strategy`, `Data`, `Settings`.
@@ -113,7 +114,7 @@ Use this compact claim status model for stakeholder-facing updates:
 
 - W1-W5 are closed baselines in the registry and treated as the coherent near-term operational record release unless a later registry change says otherwise.
 - W5 is the v0.15 accounting records, operational evidence, and multi-asset coverage package.
-- W5X-FREX-001 is a planned productization target that uses the closed W1-W5 evidence baseline to build shared Ledger, Portfolio, and Security & Instrument explorers. It is not a claim that those explorer surfaces are already complete.
+- W5X-FREX-001 is a planned productization target that uses the closed W1-W5 evidence baseline to build shared Ledger Explorer, Portfolio Explorer, Security & Instrument Explorer, and Report-Line Provenance Explorer surfaces. It is not a claim that those explorer surfaces are already complete.
 - W5X-FINOPS-001 is a planned productization target that turns Financial Operations into an Accounting/Reporting cockpit for today's close/reconciliation state by fund, book, period, account, and report package; queues for breaks, missing evidence, stale valuations, unapproved journals, blocked report lines, failed imports, and late delivery items; priority ranking by materiality, SLA, period impact, report impact, and approval blockers; and drill-through to Ledger Explorer, Evidence Vault, Fund Event Command Center, and Report-Line Provenance Explorer. Browser workstation triage and WPF dense workpaper execution must preserve shared read-model state. It is not a claim that the complete cockpit is already shipped.
 - The remaining v0.18 proof-layer targets, including Operational Evidence Graph, Fund Event Command Center, Capital Account Workbench, Private-Capital Close Cockpit, and Evidence Vault with Request Lists, are design priorities until roadmap rows and acceptance evidence move them into delivery status.
 - W6 is the deferred Backtesting Studio evidence loop.

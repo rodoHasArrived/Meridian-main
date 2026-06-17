@@ -416,14 +416,25 @@ public sealed class OperationsContinuityWorkflowServiceTests
         posture.Workflow.DashboardSummary.Should().NotBeNull();
         posture.Workflow.DashboardSummary!.Stage.Should().Be("Approve Results");
         posture.Workflow.DashboardSummary.Status.Should().Be(EvidenceStatusDto.Blocked);
-        posture.Workflow.DashboardSummary.Metrics.Should().Contain(metric =>
-            metric.MetricId == "approve-results" &&
-            metric.Status == EvidenceStatusDto.ReviewRequired &&
-            metric.RequiredActions.Contains("Complete workflow approval and checklist-control approvals."));
-        posture.Workflow.DashboardSummary.Metrics.Should().Contain(metric =>
-            metric.MetricId == "produce-evidence" &&
-            metric.Value == "Report pack ready" &&
-            metric.Status == EvidenceStatusDto.ReviewRequired);
+        var approveMetric = posture.Workflow.DashboardSummary.Metrics.Should()
+            .ContainSingle(metric => metric.MetricId == "approve-results")
+            .Subject;
+        approveMetric.Status.Should().Be(EvidenceStatusDto.ReviewRequired);
+        approveMetric.RequiredActions.Should().Contain("Submit workflow approval for report pack report-pack-1 with reviewer and rationale.");
+        approveMetric.RequiredActions.Should().Contain("Retain 1 checklist-control approval for Broker, custodian, and bank intake close gate (close-gate-brokeringest) before approval submission.");
+        approveMetric.RequiredActions.Should().Contain("Retain 1 checklist-control approval for Reconciliation close gate (close-gate-reconciliation) before approval submission.");
+        approveMetric.RequiredActions.Should().NotContain("Complete workflow approval and checklist-control approvals.");
+        var produceEvidenceMetric = posture.Workflow.DashboardSummary.Metrics.Should()
+            .ContainSingle(metric => metric.MetricId == "produce-evidence")
+            .Subject;
+        produceEvidenceMetric.Value.Should().Be("Report pack ready");
+        produceEvidenceMetric.Status.Should().Be(EvidenceStatusDto.ReviewRequired);
+        produceEvidenceMetric.RequiredActions.Should().Contain("Publish the close package manifest and retain the evidence hash.");
+        produceEvidenceMetric.RequiredActions.Should().Contain("Close the workflow and retain the period-lock package before evidence release.");
+        produceEvidenceMetric.RequiredActions.Should()
+            .NotContain("Publish and retain the evidence package before period close.");
+        posture.Workflow.DashboardSummary.RequiredActions.Should()
+            .Contain("Publish the close package manifest and retain the evidence hash.");
         posture.Workflow.ReviewedAutomation.Should().NotBeNull();
         posture.Workflow.ReviewedAutomation!.Stage.Should().Be("Report commentary and audit request list draft review");
         posture.Workflow.ReviewedAutomation.Summary.Should().Contain("draft report commentary");
@@ -444,13 +455,25 @@ public sealed class OperationsContinuityWorkflowServiceTests
             artifact.BlockedMaterialAction == "Cannot approve its own missing-support disposition.");
         posture.Workflow.ReviewedAutomation.RequiredActions.Should().Contain(
             "Review drafted report commentary and audit request lists against retained evidence before submission.");
-        posture.Workflow.EvidencePackages.Should().HaveCount(5);
+        posture.Workflow.EvidencePackages.Should().HaveCount(8);
         posture.Workflow.EvidencePackages.Should().Contain(package =>
             package.PackageId == posture.Workflow.AccountingRecordSummary!.RecordId &&
             package.Label == "Accounting record evidence" &&
             package.Status == EvidenceStatusDto.ReviewRequired &&
             package.CompleteCategoryCount == 5 &&
             package.RequiredCategoryCount == 8);
+        posture.Workflow.EvidencePackages.Should().Contain(package =>
+            package.Label == "Reconciliation coverage evidence" &&
+            package.Status == EvidenceStatusDto.Ready &&
+            package.CompleteCategoryCount == 7 &&
+            package.RequiredCategoryCount == 7 &&
+            package.Summary.Contains("cash, position, trade, income, MBS factor, bank, and GL", StringComparison.OrdinalIgnoreCase));
+        posture.Workflow.EvidencePackages.Should().Contain(package =>
+            package.Label == "Exception management evidence" &&
+            package.Status == EvidenceStatusDto.Ready &&
+            package.CompleteCategoryCount == 3 &&
+            package.RequiredCategoryCount == 3 &&
+            package.Summary.Contains("no open exception casework", StringComparison.OrdinalIgnoreCase));
         posture.Workflow.EvidencePackages.Should().Contain(package =>
             package.Label == "Report pack evidence" &&
             package.Status == EvidenceStatusDto.Ready &&
@@ -459,6 +482,12 @@ public sealed class OperationsContinuityWorkflowServiceTests
             package.Label == "Close package manifest" &&
             package.Status == EvidenceStatusDto.ReviewRequired &&
             package.RequiredActions.Contains("Publish the close package manifest and retain the evidence hash."));
+        posture.Workflow.EvidencePackages.Should().Contain(package =>
+            package.Label == "Approval history evidence" &&
+            package.Status == EvidenceStatusDto.Missing &&
+            package.CompleteCategoryCount == 0 &&
+            package.RequiredCategoryCount == 3 &&
+            package.RequiredActions.Contains("Submit workflow approval with reviewer, rationale, and report-pack evidence."));
         posture.Workflow.EvidencePackages.Should().Contain(package =>
             package.Label == "Period lock and reopen evidence" &&
             package.Status == EvidenceStatusDto.Missing &&
@@ -475,6 +504,14 @@ public sealed class OperationsContinuityWorkflowServiceTests
         submitted.Workflow!.ReviewedAutomation.Should().NotBeNull();
         submitted.Workflow.ReviewedAutomation!.Stage.Should().Be("Reviewer approval required");
         submitted.Workflow.ReviewedAutomation.RequiredActions.Should().Contain("Complete reviewer approval before close evidence can be released.");
+        submitted.Workflow.DashboardSummary.Should().NotBeNull();
+        var submittedApproveMetric = submitted.Workflow.DashboardSummary!.Metrics.Should()
+            .ContainSingle(metric => metric.MetricId == "approve-results")
+            .Subject;
+        submittedApproveMetric.Status.Should().Be(EvidenceStatusDto.ReviewRequired);
+        submittedApproveMetric.RequiredActions.Should().Contain("Record approval decision from reviewer with retained rationale for report pack report-pack-1.");
+        submittedApproveMetric.RequiredActions.Should().Contain("Retain 2 checklist-control approvals for Approval and close readiness close gate (close-gate-approval) before approval decision.");
+        submittedApproveMetric.RequiredActions.Should().NotContain("Complete workflow approval and checklist-control approvals.");
         var approved = await service.ApproveWorkflowAsync(workflowId, new OperationsApprovalDecisionRequestDto(
             submitted.Workflow.Version,
             "ops-user",
@@ -541,12 +578,28 @@ public sealed class OperationsContinuityWorkflowServiceTests
         closed.Workflow.DashboardSummary.Metrics.Should().Contain(metric =>
             metric.MetricId == "close-support" &&
             metric.Value == "Ready to close");
-        closed.Workflow.EvidencePackages.Should().HaveCount(5);
+        closed.Workflow.EvidencePackages.Should().HaveCount(8);
         closed.Workflow.EvidencePackages.Should().OnlyContain(package => package.Status == EvidenceStatusDto.Ready);
         closed.Workflow.EvidencePackages.Should().Contain(package =>
             package.Label == "Audit support package" &&
             package.IsReady &&
             package.CompleteCategoryCount == package.RequiredCategoryCount);
+        closed.Workflow.EvidencePackages.Should().Contain(package =>
+            package.Label == "Reconciliation coverage evidence" &&
+            package.IsReady &&
+            package.CompleteCategoryCount == 7 &&
+            package.RequiredCategoryCount == 7);
+        closed.Workflow.EvidencePackages.Should().Contain(package =>
+            package.Label == "Exception management evidence" &&
+            package.IsReady &&
+            package.CompleteCategoryCount == package.RequiredCategoryCount);
+        closed.Workflow.EvidencePackages.Should().Contain(package =>
+            package.Label == "Approval history evidence" &&
+            package.IsReady &&
+            package.CompleteCategoryCount == 3 &&
+            package.RequiredCategoryCount == 3 &&
+            package.EvidenceLinks.Any(link => link.EvidenceId == "report-pack-1") &&
+            package.Summary.Contains("retained checklist-control approval", StringComparison.OrdinalIgnoreCase));
         closed.Workflow.EvidencePackages.Should().Contain(package =>
             package.Label == "Period lock and reopen evidence" &&
             package.IsReady &&
@@ -608,6 +661,14 @@ public sealed class OperationsContinuityWorkflowServiceTests
             blocker.Message.Contains("Provider sync is stale", StringComparison.OrdinalIgnoreCase) &&
             blocker.Gate == OperationsGateKeyDto.BrokerIngest);
         posture.Workflow.CloseReadiness.Score.Should().BeLessThan(100);
+        var closeSupportMetric = posture.Workflow.DashboardSummary!.Metrics.Should()
+            .ContainSingle(metric => metric.MetricId == "close-support")
+            .Subject;
+        closeSupportMetric.RequiredActions.Should().Contain(action =>
+            action.Contains("Resolve Provider data freshness", StringComparison.OrdinalIgnoreCase) &&
+            action.Contains("Provider sync is stale", StringComparison.OrdinalIgnoreCase));
+        closeSupportMetric.RequiredActions.Should()
+            .NotContain("Clear close readiness blockers and retain period-lock or reopen evidence.");
     }
 
     [Fact]
@@ -1999,6 +2060,14 @@ public sealed class OperationsContinuityWorkflowServiceTests
 
         resolved.Workflow!.ReconciliationState.Should().Be(OperationsReconciliationStateDto.Complete);
         resolved.Workflow.Status.Should().Be(OperationsWorkflowStatusDto.ApprovalPending);
+        var incomeLane = resolved.Workflow.ReconciliationLanes.Single(static lane => lane.LaneId == "income-reconciliation");
+        incomeLane.Status.Should().Be(OperationsReconciliationLaneStatusDto.Ready);
+        incomeLane.IsReady.Should().BeTrue();
+        incomeLane.BreakCount.Should().Be(0);
+        incomeLane.RequiredActions.Should().BeEmpty();
+        incomeLane.EvidenceLinks.Should().Contain(link =>
+            link.EvidenceId == "break-1-resolution-evidence" &&
+            link.Label == "Custodian resolution evidence");
         submit.Success.Should().BeTrue();
     }
 
@@ -2033,6 +2102,53 @@ public sealed class OperationsContinuityWorkflowServiceTests
             .Status.Should().Be("Open");
         var timelineAfter = await auditStore.GetTimelineAsync(workflow.WorkflowId);
         timelineAfter.Should().HaveCount(timelineBefore.Count);
+    }
+
+    [Fact]
+    public async Task ResolveBreakCaseAsync_ShouldRejectAlreadyClosedBreakWithoutAppendingAudit()
+    {
+        var service = CreateService(out var repository, out var auditStore);
+        var workflow = await CreateLedgerPostedWorkflowAsync(service);
+
+        var reconciled = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
+            workflow.Version,
+            "ops-user",
+            BreakCases: [CreateOpenCriticalBreak(workflow, "break-duplicate-resolution")]));
+        var resolved = await service.ResolveBreakCaseAsync(
+            workflow.WorkflowId,
+            "break-duplicate-resolution",
+            new OperationsResolveBreakCaseRequestDto(
+                reconciled.Workflow!.Version,
+                "ops-user",
+                ResolutionStatus: "Resolved",
+                Rationale: "Controller retained the first resolution evidence.",
+                EvidenceLinks: [CreateEvidenceLink("break-duplicate-resolution-evidence", "First resolution evidence")]));
+        var timelineBeforeDuplicate = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+
+        var duplicate = await service.ResolveBreakCaseAsync(
+            workflow.WorkflowId,
+            "break-duplicate-resolution",
+            new OperationsResolveBreakCaseRequestDto(
+                resolved.Workflow!.Version,
+                "ops-user",
+                ResolutionStatus: "Resolved",
+                Rationale: "Controller attempted to resolve the already closed break again.",
+                EvidenceLinks: [CreateEvidenceLink("break-duplicate-resolution-second-evidence", "Duplicate resolution evidence")]));
+
+        duplicate.Success.Should().BeFalse();
+        duplicate.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        duplicate.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "RECONCILIATION_BREAK_ALREADY_CLOSED" &&
+            blocker.Gate == OperationsGateKeyDto.Reconciliation);
+        var persisted = await repository.GetAsync(workflow.WorkflowId);
+        persisted.Should().NotBeNull();
+        persisted!.Version.Should().Be(resolved.Workflow.Version);
+        var breakCase = persisted.BreakCases.Single(static item => item.BreakId == "break-duplicate-resolution");
+        breakCase.Status.Should().Be("Resolved");
+        breakCase.EvidenceLinks.Should().ContainSingle(link => link.EvidenceId == "break-duplicate-resolution-evidence");
+        breakCase.EvidenceLinks.Should().NotContain(link => link.EvidenceId == "break-duplicate-resolution-second-evidence");
+        var timelineAfterDuplicate = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timelineAfterDuplicate.Should().HaveCount(timelineBeforeDuplicate.Count);
     }
 
     [Fact]
@@ -2108,6 +2224,37 @@ public sealed class OperationsContinuityWorkflowServiceTests
         breakCase.EscalatedAtUtc.Should().NotBeNull();
         breakCase.EscalatedAtUtc!.Value.Offset.Should().Be(TimeSpan.Zero);
         breakCase.EvidenceLinks.Should().Contain(link => link.EvidenceId == "assignment-note");
+        var cashLane = assigned.Workflow.ReconciliationLanes.Single(static lane => lane.LaneId == "cash-reconciliation");
+        cashLane.Status.Should().Be(OperationsReconciliationLaneStatusDto.Blocked);
+        cashLane.IsReady.Should().BeFalse();
+        cashLane.BreakCount.Should().Be(1);
+        cashLane.RequiredActions.Should().Contain(action =>
+            action.Contains("Review Level 2 escalation", StringComparison.OrdinalIgnoreCase) &&
+            action.Contains("Cash break aged beyond SLA", StringComparison.OrdinalIgnoreCase));
+        cashLane.RequiredActions.Should().NotContain(action =>
+            action.Contains("Assign 1 cash reconciliation break", StringComparison.OrdinalIgnoreCase));
+        cashLane.EvidenceLinks.Should().Contain(link =>
+            link.EvidenceId == "assignment-note" &&
+            link.Label == "Controller assignment note");
+        assigned.Workflow.EvidencePackages.Should().Contain(package =>
+            package.Label == "Exception management evidence" &&
+            package.Status == EvidenceStatusDto.Blocked &&
+            package.CompleteCategoryCount == 2 &&
+            package.RequiredCategoryCount == 3 &&
+            package.EvidenceLinks.Any(link => link.EvidenceId == "assignment-note") &&
+            package.RequiredActions.Any(action =>
+                action.Contains("Review Level 2 escalation", StringComparison.OrdinalIgnoreCase) &&
+                action.Contains("Cash break aged beyond SLA", StringComparison.OrdinalIgnoreCase)));
+        assigned.Workflow.EvidencePackages.Should().Contain(package =>
+            package.Label == "Reconciliation coverage evidence" &&
+            package.Status == EvidenceStatusDto.Blocked &&
+            package.CompleteCategoryCount == 5 &&
+            package.RequiredCategoryCount == 7 &&
+            package.Summary.Contains("2 reconciliation lane", StringComparison.OrdinalIgnoreCase) &&
+            package.EvidenceLinks.Any(link => link.EvidenceId == "assignment-note") &&
+            package.RequiredActions.Any(action =>
+                action.Contains("Review Level 2 escalation", StringComparison.OrdinalIgnoreCase) &&
+                action.Contains("Cash break aged beyond SLA", StringComparison.OrdinalIgnoreCase)));
 
         var timelineAfter = await auditStore.GetTimelineAsync(workflow.WorkflowId);
         timelineAfter.Should().HaveCount(timelineBefore.Count + 1);
@@ -2117,6 +2264,57 @@ public sealed class OperationsContinuityWorkflowServiceTests
         audit.Rationale.Should().Be("Cash break aged beyond SLA");
         audit.CorrelationId.Should().Be("corr-break-assign");
         audit.References.Should().ContainSingle(link => link.EvidenceId == "assignment-note");
+    }
+
+    [Fact]
+    public async Task AssignBreakCaseAsync_ShouldRejectAlreadyClosedBreakWithoutAppendingAudit()
+    {
+        var service = CreateService(out var repository, out var auditStore);
+        var workflow = await CreateLedgerPostedWorkflowAsync(service);
+        var reconciled = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
+            workflow.Version,
+            "ops-user",
+            BreakCases: [CreateOpenCriticalBreak(workflow, "break-closed-assignment")]));
+        var resolved = await service.ResolveBreakCaseAsync(
+            workflow.WorkflowId,
+            "break-closed-assignment",
+            new OperationsResolveBreakCaseRequestDto(
+                reconciled.Workflow!.Version,
+                "ops-user",
+                ResolutionStatus: "Resolved",
+                Rationale: "Controller retained resolution evidence before assignment could continue.",
+                EvidenceLinks: [CreateEvidenceLink("break-closed-assignment-resolution", "Resolution evidence")]));
+        var timelineBeforeDuplicate = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+
+        var duplicate = await service.AssignBreakCaseAsync(
+            workflow.WorkflowId,
+            "break-closed-assignment",
+            new OperationsAssignBreakCaseRequestDto(
+                resolved.Workflow!.Version,
+                "ops-user",
+                Owner: "fund-controller",
+                Rationale: "Controller attempted to reassign the closed break.",
+                EscalationLevel: "Level 2",
+                EscalationReason: "Duplicate assignment attempt.",
+                EvidenceLinks: [CreateEvidenceLink("break-closed-assignment-duplicate", "Duplicate assignment evidence")]));
+
+        duplicate.Success.Should().BeFalse();
+        duplicate.ErrorCode.Should().Be("INVALID_STATE_TRANSITION");
+        duplicate.Blockers.Should().ContainSingle(blocker =>
+            blocker.Code == "RECONCILIATION_BREAK_ALREADY_CLOSED" &&
+            blocker.Gate == OperationsGateKeyDto.Reconciliation);
+        var persisted = await repository.GetAsync(workflow.WorkflowId);
+        persisted.Should().NotBeNull();
+        persisted!.Version.Should().Be(resolved.Workflow.Version);
+        var breakCase = persisted.BreakCases.Single(static item => item.BreakId == "break-closed-assignment");
+        breakCase.Status.Should().Be("Resolved");
+        breakCase.Owner.Should().Be("ops-user");
+        breakCase.Owner.Should().NotBe("fund-controller");
+        breakCase.EscalationLevel.Should().BeNull();
+        breakCase.EvidenceLinks.Should().ContainSingle(link => link.EvidenceId == "break-closed-assignment-resolution");
+        breakCase.EvidenceLinks.Should().NotContain(link => link.EvidenceId == "break-closed-assignment-duplicate");
+        var timelineAfterDuplicate = await auditStore.GetTimelineAsync(workflow.WorkflowId);
+        timelineAfterDuplicate.Should().HaveCount(timelineBeforeDuplicate.Count);
     }
 
     [Fact]
@@ -2343,14 +2541,45 @@ public sealed class OperationsContinuityWorkflowServiceTests
             lane.IsReady.Should().BeFalse();
             lane.BreakCount.Should().Be(1);
             lane.EvidenceLinks.Should().Contain(link => link.EvidenceId == expectation.EvidenceId);
-            lane.RequiredActions.Should().Contain(action => action.Contains("Resolve or assign"));
+            lane.RequiredActions.Should().NotBeEmpty();
         }
+
+        var financialCashLane = reconciled.Workflow.ReconciliationLanes.Should()
+            .ContainSingle(lane => lane.LaneId == "cash-reconciliation")
+            .Subject;
+        financialCashLane.RequiredActions.Should().Contain("Assign cash reconciliation variance to fund operations.");
+        financialCashLane.RequiredActions.Should().Contain("Assign 1 cash reconciliation break to an accountable owner.");
+
+        var financialIncomeLane = reconciled.Workflow.ReconciliationLanes.Should()
+            .ContainSingle(lane => lane.LaneId == "income-reconciliation")
+            .Subject;
+        financialIncomeLane.RequiredActions.Should().Contain("Review income accrual support before close.");
+        financialIncomeLane.RequiredActions.Should().Contain(action =>
+            action.Contains("income statement support", StringComparison.OrdinalIgnoreCase));
+
+        var financialMbsLane = reconciled.Workflow.ReconciliationLanes.Should()
+            .ContainSingle(lane => lane.LaneId == "mbs-factor-reconciliation")
+            .Subject;
+        financialMbsLane.RequiredActions.Should().Contain("Resolve MBS factor schedule before close.");
+        financialMbsLane.RequiredActions.Should().Contain(action =>
+            action.Contains("MBS factor roll-forward", StringComparison.OrdinalIgnoreCase));
 
         reconciled.Workflow.ReconciliationLanes.SelectMany(static lane => lane.EvidenceLinks)
             .Should()
             .Contain(link => link.EvidenceId == "evidence:income" && link.Label == "Income reconciliation evidence")
             .And
             .Contain(link => link.EvidenceId == "evidence:mbs-factor" && link.Label == "MBS factor reconciliation evidence");
+        reconciled.Workflow.EvidencePackages.Should().Contain(package =>
+            package.PackageId == $"reconciliation-coverage:{workflow.FundAccountId:D}:{workflow.PeriodId}" &&
+            package.Label == "Reconciliation coverage evidence" &&
+            package.Status == EvidenceStatusDto.Blocked &&
+            package.CompleteCategoryCount == 0 &&
+            package.RequiredCategoryCount == 7 &&
+            package.EvidenceLinks.Any(link => link.EvidenceId == "reconciliation-run:finops-lanes") &&
+            package.EvidenceLinks.Any(link => link.EvidenceId == "evidence:cash") &&
+            package.EvidenceLinks.Any(link => link.EvidenceId == "evidence:income") &&
+            package.EvidenceLinks.Any(link => link.EvidenceId == "evidence:mbs-factor") &&
+            package.RequiredActions.Contains("Resolve MBS factor schedule before close."));
 
         static OperationsEvidenceLinkDto LaneEvidence(string laneId, string label) =>
             new(
@@ -2359,6 +2588,74 @@ public sealed class OperationsContinuityWorkflowServiceTests
                 $"/workstation/accounting/reconciliation/{laneId}",
                 "reconciliation-run",
                 DateTimeOffset.UtcNow);
+    }
+
+    [Fact]
+    public async Task RunReconciliationAsync_ShouldClassifyPaymentConfirmationEvidenceBreaksAsBankReconciliation()
+    {
+        var service = CreateService(out _, out _);
+        var workflow = await CreateLedgerPostedWorkflowAsync(service);
+
+        var reconciled = await service.RunReconciliationAsync(workflow.WorkflowId, new OperationsReconciliationRunRequestDto(
+            workflow.Version,
+            "cash-ops",
+            "Reviewed retained payment confirmation evidence for bank reconciliation",
+            BreakCases:
+            [
+                CreateFinancialOperationsLaneBreak(
+                    workflow,
+                    "payment-confirmation",
+                    "PAYMENT_CONFIRMATION_MISSING",
+                    "Payment confirmation",
+                    "High",
+                    "approved payment intent",
+                    "retained confirmation record missing",
+                    "PAYMENT",
+                    CreateEvidenceLink("evidence:payment-confirmation", "Payment confirmation evidence"),
+                    "Retain payment confirmation and return evidence for the approved payment intent.",
+                    rootCauseCode: "payment-confirmation-evidence-missing",
+                    blockedOutputs: ["Bank reconciliation support"])
+            ]));
+
+        reconciled.Success.Should().BeTrue();
+        var bankLane = reconciled.Workflow!.ReconciliationLanes.Should()
+            .ContainSingle(lane => lane.LaneId == "bank-reconciliation")
+            .Subject;
+        bankLane.Status.Should().Be(OperationsReconciliationLaneStatusDto.ReviewRequired);
+        bankLane.IsReady.Should().BeFalse();
+        bankLane.BreakCount.Should().Be(1);
+        bankLane.EvidenceLinks.Should().Contain(link =>
+            link.EvidenceId == "evidence:payment-confirmation" &&
+            link.Label == "Payment confirmation evidence");
+        bankLane.RequiredActions.Should().Contain(action =>
+            action.Contains("Retain payment confirmation and return evidence", StringComparison.OrdinalIgnoreCase));
+        bankLane.RequiredActions.Should().Contain(action =>
+            action.Contains("Bank reconciliation support", StringComparison.OrdinalIgnoreCase));
+
+        var matchRecordsMetric = reconciled.Workflow.DashboardSummary!.Metrics.Should()
+            .ContainSingle(metric => metric.MetricId == "match-records")
+            .Subject;
+        matchRecordsMetric.RequiredActions.Should().Contain(action =>
+            action.Contains("Retain payment confirmation and return evidence", StringComparison.OrdinalIgnoreCase));
+        matchRecordsMetric.RequiredActions.Should().Contain(action =>
+            action.Contains("Bank reconciliation support", StringComparison.OrdinalIgnoreCase));
+        matchRecordsMetric.RequiredActions.Should()
+            .NotContain("Complete source-backed reconciliation lanes before approval.");
+        reconciled.Workflow.DashboardSummary.RequiredActions.Should().Contain(action =>
+            action.Contains("Retain payment confirmation and return evidence", StringComparison.OrdinalIgnoreCase));
+
+        var resolveExceptionsMetric = reconciled.Workflow.DashboardSummary.Metrics.Should()
+            .ContainSingle(metric => metric.MetricId == "resolve-exceptions")
+            .Subject;
+        resolveExceptionsMetric.RequiredActions.Should().Contain(action =>
+            action.Contains("Retain payment confirmation and return evidence", StringComparison.OrdinalIgnoreCase));
+        resolveExceptionsMetric.RequiredActions.Should().Contain(action =>
+            action.Contains("Bank reconciliation support", StringComparison.OrdinalIgnoreCase));
+        resolveExceptionsMetric.RequiredActions.Should()
+            .NotContain("Assign, escalate, or resolve open exceptions and retain resolution evidence.");
+
+        reconciled.Workflow.ReconciliationLanes.Should()
+            .ContainSingle(lane => lane.LaneId == "cash-reconciliation" && lane.BreakCount == 0);
     }
 
 
@@ -2669,6 +2966,15 @@ public sealed class OperationsContinuityWorkflowServiceTests
             package.EvidenceLinks.Any(link => link.EvidenceId == "INC-123") &&
             package.EvidenceLinks.Any(link => link.EvidenceId == "approval-ref-123") &&
             package.RequiredActions.Contains("Complete reopened incident remediation and close the period again with retained evidence."));
+        var reopenedProduceEvidenceMetric = reopened.Workflow.DashboardSummary!.Metrics.Should()
+            .ContainSingle(metric => metric.MetricId == "produce-evidence")
+            .Subject;
+        reopenedProduceEvidenceMetric.Value.Should().Be("Reopened period lock pending");
+        reopenedProduceEvidenceMetric.Status.Should().Be(EvidenceStatusDto.ReviewRequired);
+        reopenedProduceEvidenceMetric.RequiredActions.Should()
+            .Contain("Complete reopened incident remediation and close the period again with retained evidence.");
+        reopenedProduceEvidenceMetric.RequiredActions.Should()
+            .NotBeEmpty("a reopened workflow retains the prior close package but still needs a new period-lock package before release");
         var timeline = await auditStore.GetTimelineAsync(workflow.WorkflowId);
         var reopenAudit = timeline.Should().ContainSingle(entry => entry.EventType == "workflow-reopened").Subject;
         reopenAudit.Rationale.Should().Contain("Rationale: Incident requires reopened reconciliation");

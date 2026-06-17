@@ -1,8 +1,10 @@
 # Meridian Shared Project Context
 
-> Last verified: 2026-06-04
+> Last verified: 2026-06-16
 > Canonical companions: `CLAUDE.md`, `docs/ai/assistant-workflow-contract.md`,
-> `docs/product/meridian-design-document.md`, and `docs/architecture/project-structure.md`
+> `docs/product/meridian-design-document.md`,
+> `docs/architecture/meridian-development-intelligence-framework.md`, and
+> `docs/architecture/project-structure.md`
 
 Use this file as the common source of truth for Meridian-specific terminology, current product
 direction, commands, and architecture when a Codex skill needs repository grounding without
@@ -14,13 +16,16 @@ repeating the same facts in every `SKILL.md`.
 - The authoritative local checkout path for this workspace is `D:\Meridian-main`.
 - The repo already includes strong provider, storage, replay, backtesting, execution, ledger,
   QuantScript, MCP, and workstation foundations.
-- The current delivery focus is productization around the W1-W5 operational record baseline: data
-  confidence, retained source evidence, reconciliation, approvals, accounting records, multi-asset
-  operational coverage, and governed reports across `Trading`, `Portfolio`, `Accounting`,
-  `Reporting`, `Strategy`, `Data`, and `Settings`.
+- The current delivery focus is productization around the closed W1-W5 operational record baseline:
+  data confidence, retained source evidence, reconciliation, approvals, accounting records,
+  multi-asset operational coverage, and governed reports across `Trading`, `Portfolio`,
+  `Accounting`, `Reporting`, `Strategy`, `Data`, and `Settings`.
 - The active W5X productization targets are the shared Financial Record Explorers and the Financial
   Operations control center for reconciliation, exception management, close support, workflow
   control, and audit evidence.
+- MDIF is the required context spine for broad generation, domain modeling, workflow design, and
+  architecture-sensitive refactors: load the MDIF framework, vision, domain model, relevant domain
+  dictionary pages, and context packs before implementation.
 - Defer Backtesting Studio, live-readiness beyond paper-first governance, full treasury payment
   execution, full alternative asset operations, forecasting/scenario engines, enterprise risk,
   client portal, no-code workflow design, mobile, and other broad expansion lanes unless the work
@@ -44,11 +49,25 @@ repeating the same facts in every `SKILL.md`.
 
 Use these together before changing AI guidance, routing, or workflow-oriented skills:
 
+- `AGENTS.md`
+- `CLAUDE.md`
+- `.codex/AGENTS.md`
+- `.codex/skills/_shared/codex-execution-contract.md`
+- `.github/copilot-instructions.md`
+- `.github/agents/implementation-assurance-agent.md`
+- `.github/workflows/README.md`
+- `.claude/skills/_shared/project-context.md`
+- `.agents/skills/_shared/project-context.md`
 - `README.md`
 - `docs/README.md`
 - `docs/start/README.md`
 - `docs/product/README.md`
 - `docs/product/meridian-design-document.md`
+- `docs/architecture/meridian-development-intelligence-framework.md`
+- `docs/architecture/meridian-vision.md`
+- `docs/architecture/meridian-domain-model.md`
+- `docs/domain/README.md`
+- `docs/ai/context/README.md`
 - `docs/engineering/README.md`
 - `docs/operators/README.md`
 - `docs/documentation-ownership.md`
@@ -101,17 +120,23 @@ pwsh ./scripts/dev/desktop-dev.ps1
 pwsh ./scripts/dev/run-desktop.ps1 -Fixture
 pwsh ./scripts/dev/test-wpf-dev.ps1
 dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
-make test
+gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter="FullyQualifiedName~<TestClassOrMethod>"
 python3 build/scripts/ai-repo-updater.py known-errors
 ```
 
+GNU Make targets are optional convenience wrappers. In Windows shells where `where.exe make` finds
+nothing, use the direct `dotnet`, `npm`, `pwsh`, and `python` commands above instead of `make ...`.
+
 Prefer the narrowest validation command that matches the files being changed.
+When local CPU, memory, disk, dependency restore, or MSBuild lock contention makes validation
+unreliable, push the branch and use the GitHub-hosted `Targeted Test` workflow as the remote proof
+tool before retrying broad local scripts. The .NET lane requires a repo-relative test project under
+`tests/` plus `dotnet_filter` to keep the remote run scoped to the failing slice.
 
 For Codex skill, catalog, prompt, docs-automation, or AI workflow changes, prefer this deterministic
 validation stack before broad build or test runs:
 
 ```bash
-make ai-codex-skills-check
 python build/scripts/docs/check-codex-skills.py --summary
 python build/scripts/docs/check-ai-inventory.py --summary
 python build/scripts/docs/validate-skill-packages.py

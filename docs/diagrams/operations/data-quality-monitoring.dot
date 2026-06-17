@@ -1,6 +1,6 @@
 // Data Quality and Monitoring Diagram
 // Meridian current project stance
-// Last Updated: 2026-06-10
+// Last Updated: 2026-06-16
 //
 // Data quality is framed as confidence evidence for operational records.
 
@@ -21,10 +21,14 @@ digraph DataQualityMonitoring {
 
     PROVIDERS [fillcolor="#93c5fd",
       label="Provider health\nlatency, errors,\ncredential state"];
+    SYNC_RUNS [fillcolor="#93c5fd",
+      label="Provider integration sync history\nrecords received, accepted,\nquarantined, durable staging"];
     STORAGE [shape=cylinder, fillcolor="#bfdbfe",
       label="Storage coverage\nsymbol/date/type,\ngaps, lineage"];
     WORKFLOW [fillcolor="#bfdbfe",
       label="Workflow state\nreconciliation breaks,\nblocked approvals,\nreport readiness"];
+    HANDOFFS [shape=cylinder, fillcolor="#bfdbfe",
+      label="Reconciliation handoff evidence\napproved staging records,\nactor, timestamp,\nreplay-safe history"];
   }
 
   subgraph cluster_confidence {
@@ -52,7 +56,7 @@ digraph DataQualityMonitoring {
     DASHBOARD [fillcolor="#c4b5fd",
       label="Browser/WPF diagnostics\nprovider readiness,\nquality panels,\nevidence strips"];
     ALERTS [fillcolor="#ddd6fe",
-      label="Operator alerts\nsource missing,\nquality regression,\nreconciliation blocker"];
+      label="Operator alerts\nsource missing,\nquality regression,\nreconciliation blocker,\nduplicate handoff"];
     STATUS [fillcolor="#ddd6fe",
       label="Status snapshots\nhealth endpoints,\nlocal files,\nreport-pack evidence"];
   }
@@ -72,10 +76,13 @@ digraph DataQualityMonitoring {
   }
 
   PROVIDERS -> COMPLETENESS;
+  SYNC_RUNS -> COMPLETENESS;
+  SYNC_RUNS -> TIMELINESS;
   STORAGE -> COMPLETENESS;
   STORAGE -> ACCURACY;
   PROVIDERS -> TIMELINESS;
   WORKFLOW -> CONFIDENCE;
+  HANDOFFS -> CONFIDENCE;
   COMPLETENESS -> CONFIDENCE;
   ACCURACY -> CONFIDENCE;
   TIMELINESS -> CONFIDENCE;
@@ -84,6 +91,7 @@ digraph DataQualityMonitoring {
   DASHBOARD -> STATUS;
   CONFIDENCE -> FAIL_CLOSED [label="not trusted"];
   FAIL_CLOSED -> RECON;
+  HANDOFFS -> RECON [label="approved rows"];
   CONFIDENCE -> REPORTS [label="trusted"];
   RECON -> REPORTS [label="resolved"];
 }

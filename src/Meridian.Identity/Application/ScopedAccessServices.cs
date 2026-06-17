@@ -1,3 +1,4 @@
+using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 
 namespace Meridian.Identity;
@@ -80,6 +81,7 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        EnsureHumanOrigin(request.ActionOrigin, "grant scoped access assignments");
         var normalized = ValidateCreate(request, actor);
         var now = DateTimeOffset.UtcNow;
         var auditId = BuildAuditId("access-grant", now);
@@ -122,6 +124,7 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        EnsureHumanOrigin(request.ActionOrigin, "revoke scoped access assignments");
         var resolvedActor = NormalizeRequired(actor, nameof(actor));
         var rationale = NormalizeRequired(request.Rationale, nameof(request.Rationale));
         var existing = await _store.GetAsync(request.AssignmentId, ct).ConfigureAwait(false)
@@ -329,6 +332,15 @@ public sealed class ScopedAccessService : IScopedAccessAssignmentService, IScope
         }
 
         return normalized;
+    }
+
+    private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
+    {
+        if (actionOrigin != OperationsActionOriginDto.HumanOperator)
+        {
+            throw new InvalidOperationException(
+                $"Reviewed automation cannot {action}; a human operator approval is required.");
+        }
     }
 
     private static bool IsEffective(UserAccessAssignmentDto assignment, DateTimeOffset asOf)

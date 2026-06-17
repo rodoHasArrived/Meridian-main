@@ -2,23 +2,24 @@
   "schemaVersion": "program-state-summary/v2",
   "programSource": "docs/roadmap/data/program-state.yml",
   "roadmapSource": "docs/roadmap/data/roadmap-items.yml",
-  "snapshotDate": "2026-06-02",
+  "snapshotDate": "2026-06-10",
   "program": {
     "id": "meridian-program",
     "title": "Meridian Evidence-Backed Investment Operations",
     "owner": "Core Team",
     "status": "active",
     "currentFocus": [
-      "Trusted data",
-      "Paper validation",
-      "Books and reconciliation",
+      "Data confidence and retained source evidence",
+      "Portfolio and accounting reconciliation",
       "Accounting records",
-      "Operational record keeping",
       "Approvals",
-      "Governed reports"
+      "Governed report packs",
+      "Shared browser and WPF operational record workflow",
+      "Financial Operations control center for reconciliation, exceptions, close support, workflow control, and audit evidence",
+      "Shared Financial Record Explorers for accounting, portfolio, security/instrument, and report-line provenance records"
     ],
-    "activeUiLane": "browser_workstation",
-    "retainedSupportLane": "wpf",
+    "activeUiLane": "browser_and_wpf_workstations",
+    "retainedSupportLane": "none",
     "mobileLane": "closed"
   },
   "items": [
@@ -105,13 +106,52 @@
       "Wave": "W5",
       "Title": "Accounting records and operational evidence",
       "Workspaces": "Accounting; Reporting; Portfolio; Data",
+      "Status": "done",
+      "Health": "green",
+      "Priority": "high",
+      "Owner Lane": "Accounting and Ledger",
+      "Evidence Posture": "complete",
+      "Evidence": "docs/roadmap/generated/ROADMAP_SUMMARY.md; tests/Meridian.Tests/Application/OperationsContinuityWorkflowServiceTests.cs; tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs; src/Meridian.Ui/dashboard/src/screens/accounting-screen.test.tsx",
+      "Last Reviewed": "2026-06-04"
+    },
+    {
+      "ID": "W5-MASSET-001",
+      "Wave": "W5",
+      "Title": "Multi-asset operational coverage proof lane",
+      "Workspaces": "Portfolio; Accounting; Data; Settings",
+      "Status": "done",
+      "Health": "green",
+      "Priority": "high",
+      "Owner Lane": "Accounting and Ledger",
+      "Evidence Posture": "complete",
+      "Evidence": "tests/Meridian.Tests/SecurityMaster/SecurityMasterOperationalReadinessServiceTests.cs; tests/Meridian.Tests/Ui/WorkstationMultiAssetCoverageEndpointsTests.cs; tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs; src/Meridian.Ui/dashboard/src/screens/portfolio-screen.view-model.test.ts",
+      "Last Reviewed": "2026-06-02"
+    },
+    {
+      "ID": "W5X-FINOPS-001",
+      "Wave": "W5X",
+      "Title": "Financial operations control center",
+      "Workspaces": "Accounting; Reporting; Portfolio; Data",
       "Status": "planned",
       "Health": "green",
       "Priority": "high",
       "Owner Lane": "Accounting and Ledger",
       "Evidence Posture": "planned_evidence",
-      "Evidence": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
-      "Last Reviewed": "2026-06-02"
+      "Evidence": "",
+      "Last Reviewed": "2026-06-10"
+    },
+    {
+      "ID": "W5X-FREX-001",
+      "Wave": "W5X",
+      "Title": "Shared financial record explorers",
+      "Workspaces": "Accounting; Portfolio; Data; Reporting",
+      "Status": "planned",
+      "Health": "green",
+      "Priority": "high",
+      "Owner Lane": "Workstation Shell and UX",
+      "Evidence Posture": "planned_evidence",
+      "Evidence": "",
+      "Last Reviewed": "2026-06-09"
     },
     {
       "ID": "W6-BTSTUDIO-001",
@@ -124,7 +164,7 @@
       "Owner Lane": "Strategy Analytics",
       "Evidence Posture": "planned_evidence",
       "Evidence": "",
-      "Last Reviewed": "2026-06-02"
+      "Last Reviewed": "2026-06-04"
     },
     {
       "ID": "W7-LIVE-001",
@@ -137,7 +177,7 @@
       "Owner Lane": "Accounting and Ledger",
       "Evidence Posture": "planned_evidence",
       "Evidence": "",
-      "Last Reviewed": "2026-06-02"
+      "Last Reviewed": "2026-06-04"
     }
   ]
 }

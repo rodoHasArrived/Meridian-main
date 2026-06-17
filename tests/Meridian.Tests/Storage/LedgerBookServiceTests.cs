@@ -210,6 +210,42 @@ public sealed class LedgerBookServiceTests
     }
 
     [Fact]
+    public async Task ClosePeriodAsync_WhenReviewedAutomationOrigin_RejectsBeforePeriodMutation()
+    {
+        var store = new InMemoryLedgerJournalStore();
+        var inbox = new InMemoryOperatorInboxService();
+        var service = new PostgresLedgerBookService(store, inbox);
+        var book = await service.CreateBookAsync(new CreateLedgerBookRequest(
+            "alpha-fund",
+            Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund,
+            "Alpha Fund",
+            "USD"));
+        var period = await service.CreatePeriodAsync(new CreateLedgerPeriodRequest(
+            book.LedgerBookId,
+            2026,
+            3,
+            "2026-P03",
+            new DateOnly(2026, 3, 1),
+            new DateOnly(2026, 3, 31)));
+
+        var act = () => service.ClosePeriodAsync(
+            period.PeriodId,
+            new CloseLedgerPeriodRequest(
+                LedgerPeriodCloseKindDto.HardClose,
+                ClosedBy: "assistant",
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft));
+
+        await act.Should().ThrowAsync<LedgerBookValidationException>()
+            .WithMessage("*Reviewed automation cannot close ledger periods*");
+        var retained = await store.GetPeriodAsync(period.PeriodId);
+        retained.Should().NotBeNull();
+        retained!.Status.Should().Be("Open");
+        var inboxItems = await inbox.GetItemsAsync();
+        inboxItems.Should().NotContain(item => item.Kind == OperatorWorkItemKindDto.LedgerPeriodClose);
+    }
+
+    [Fact]
     public async Task ClosePeriodAsync_WhenPeriodAlreadySoftClosed_RejectsSecondSoftClose()
     {
         var store = new InMemoryLedgerJournalStore();
@@ -361,6 +397,52 @@ public sealed class LedgerBookServiceTests
             item.TargetPageTag == "FundReconciliation" &&
             item.RequiredSignoffRole == "Fund Controller" &&
             item.ToleranceProfileId == "close-tolerance-v1");
+    }
+
+    [Fact]
+    public async Task LedgerEndpoints_ClosePeriod_WhenReviewedAutomationOrigin_ReturnsBadRequestWithoutClosingPeriod()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+
+        var book = await PostJsonAsync<LedgerBookDto>(
+            client,
+            UiApiRoutes.LedgerBooks,
+            new CreateLedgerBookRequest(
+                "alpha-fund",
+                Guid.Parse("59f045cb-f681-4b0c-943d-44c946f78214"),
+                FundStructureNodeKindDto.Fund,
+                "Alpha Fund",
+                "USD"));
+        var period = await PostJsonAsync<LedgerPeriodDto>(
+            client,
+            UiApiRoutes.LedgerPeriods,
+            new CreateLedgerPeriodRequest(
+                book.LedgerBookId,
+                2026,
+                5,
+                "2026-P05",
+                new DateOnly(2026, 5, 1),
+                new DateOnly(2026, 5, 31)));
+
+        using var closeResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodClose, "periodId", period.PeriodId.ToString()),
+            new CloseLedgerPeriodRequest(
+                LedgerPeriodCloseKindDto.HardClose,
+                ClosedBy: "assistant",
+                ActionOrigin: OperationsActionOriginDto.AutomationAssistant),
+            ServerJsonOptions);
+        var openPeriods = await client.GetFromJsonAsync<IReadOnlyList<LedgerPeriodDto>>(
+            $"{UiApiRoutes.LedgerPeriods}?ledgerBookId={book.LedgerBookId:D}&openOnly=true",
+            ServerJsonOptions);
+        var inbox = await client.GetFromJsonAsync<OperatorInboxDto>(
+            UiApiRoutes.WorkstationOperatorInbox,
+            ServerJsonOptions);
+
+        closeResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        openPeriods.Should().ContainSingle(item => item.PeriodId == period.PeriodId);
+        inbox.Should().NotBeNull();
+        inbox!.Items.Should().NotContain(item => item.Kind == OperatorWorkItemKindDto.LedgerPeriodClose);
     }
 
     [Fact]

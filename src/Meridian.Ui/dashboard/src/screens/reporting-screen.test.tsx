@@ -2948,13 +2948,13 @@ describe("ReportingScreen", () => {
       target: { value: "" }
     });
     fireEvent.change(within(grid).getByLabelText("Sector Pivot custom formula name"), {
-      target: { value: "signedContributionCheck" }
+      target: { value: "returnScore" }
     });
     fireEvent.change(within(grid).getByLabelText("Sector Pivot custom formula label"), {
-      target: { value: "Signed contribution check" }
+      target: { value: "Return score" }
     });
     fireEvent.change(within(grid).getByLabelText("Sector Pivot custom formula expression"), {
-      target: { value: "safeDivide(pnl, abs(riskLimit), 0)" }
+      target: { value: "round(percent({pnl}, abs(riskLimit), 0) + basisPoints({pnl}, abs(riskLimit), 0), 0)" }
     });
     await user.click(within(grid).getByRole("button", { name: "Preview Sector Pivot report-writer grid" }));
 
@@ -2974,12 +2974,20 @@ describe("ReportingScreen", () => {
         { name: "marketValue", sourceField: "marketValue", function: "Sum", label: "Market value" }
       ],
       formulas: expect.arrayContaining([
-        { name: "signedContributionCheck", expression: "safeDivide(pnl, abs(riskLimit), 0)", label: "Signed contribution check" }
+        {
+          name: "returnScore",
+          expression: "round(percent({pnl}, abs(riskLimit), 0) + basisPoints({pnl}, abs(riskLimit), 0), 0)",
+          label: "Return score"
+        }
       ]),
       filters: null
     });
     expect(request.datasetRows.map((row: Record<string, string>) => row.pnl)).toEqual(["150", "-50", "0", "25"]);
     expect(request.datasetRows.map((row: Record<string, string>) => row.riskLimit)).toEqual(["10", "20", "30", "40"]);
+    expect(request.datasetRows[0]).not.toHaveProperty("round");
+    expect(request.datasetRows[0]).not.toHaveProperty("percent");
+    expect(request.datasetRows[0]).not.toHaveProperty("basisPoints");
+    expect(request.datasetRows[0]).not.toHaveProperty("abs");
     expect(request.datasetRows[0]).not.toHaveProperty("contributionPercent");
     expect(request.datasetRows[0]).not.toHaveProperty("contributionAbsPercent");
 
@@ -3440,6 +3448,10 @@ describe("ReportingScreen", () => {
     expect(within(gridExports).getByRole("link", { name: "CSV" })).toHaveAttribute(
       "href",
       "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot?format=csv"
+    );
+    expect(within(gridExports).getByRole("link", { name: "PDF" })).toHaveAttribute(
+      "href",
+      "/api/fund-structure/reporting/runs/investor-monthly-statement-20260501/report-writer-grids/sector-pivot?format=pdf"
     );
     expect(within(gridExports).getByRole("link", { name: "XLS" })).toHaveAttribute(
       "href",

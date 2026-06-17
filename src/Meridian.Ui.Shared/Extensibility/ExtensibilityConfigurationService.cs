@@ -8,64 +8,86 @@ namespace Meridian.Ui.Shared.Extensibility;
 
 public interface IExtensibilityConfigurationStore
 {
-    Task<IReadOnlyList<TenantTemplateConfigurationBundleDto>> ListTenantTemplatesAsync(CancellationToken ct = default);
+    Task<IReadOnlyList<TenantTemplateConfigurationBundleDto>> ListTenantTemplatesAsync(string tenantId, CancellationToken ct = default);
 
-    Task<TenantTemplateConfigurationBundleDto?> GetTenantTemplateAsync(string tenantTemplateId, CancellationToken ct = default);
+    Task<TenantTemplateConfigurationBundleDto?> GetTenantTemplateAsync(string tenantId, string tenantTemplateId, CancellationToken ct = default);
 
-    Task SaveTenantTemplateAsync(TenantTemplateConfigurationBundleDto tenantTemplate, CancellationToken ct = default);
+    Task SaveTenantTemplateAsync(string tenantId, TenantTemplateConfigurationBundleDto tenantTemplate, CancellationToken ct = default);
 
-    Task<IReadOnlyList<TenantTemplateActivationResultDto>> ListActivationHistoryAsync(string? tenantTemplateId = null, CancellationToken ct = default);
+    Task<IReadOnlyList<TenantTemplateActivationResultDto>> ListActivationHistoryAsync(string tenantId, string? tenantTemplateId = null, CancellationToken ct = default);
 
-    Task RecordActivationResultAsync(TenantTemplateActivationResultDto result, CancellationToken ct = default);
+    Task RecordActivationResultAsync(string tenantId, TenantTemplateActivationResultDto result, CancellationToken ct = default);
 }
 
 public sealed class InMemoryExtensibilityConfigurationStore : IExtensibilityConfigurationStore
 {
-    private readonly Dictionary<string, TenantTemplateConfigurationBundleDto> _tenantTemplates = new(StringComparer.OrdinalIgnoreCase);
-    private readonly List<TenantTemplateActivationResultDto> _activationHistory = [];
+    private readonly Dictionary<string, Dictionary<string, TenantTemplateConfigurationBundleDto>> _tenantTemplatesByTenant = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, List<TenantTemplateActivationResultDto>> _activationHistoryByTenant = new(StringComparer.OrdinalIgnoreCase);
 
-    public Task<IReadOnlyList<TenantTemplateConfigurationBundleDto>> ListTenantTemplatesAsync(CancellationToken ct = default)
+    public Task<IReadOnlyList<TenantTemplateConfigurationBundleDto>> ListTenantTemplatesAsync(string tenantId, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        lock (_tenantTemplates)
+        var normalizedTenantId = NormalizeTenantId(tenantId);
+        lock (_tenantTemplatesByTenant)
         {
+            if (!_tenantTemplatesByTenant.TryGetValue(normalizedTenantId, out var tenantTemplates))
+            {
+                return Task.FromResult<IReadOnlyList<TenantTemplateConfigurationBundleDto>>([]);
+            }
+
             return Task.FromResult<IReadOnlyList<TenantTemplateConfigurationBundleDto>>(
-                _tenantTemplates.Values
+                tenantTemplates.Values
                     .OrderBy(static item => item.DisplayName, StringComparer.OrdinalIgnoreCase)
                     .ThenBy(static item => item.TenantTemplateId, StringComparer.OrdinalIgnoreCase)
                     .ToArray());
         }
     }
 
-    public Task<TenantTemplateConfigurationBundleDto?> GetTenantTemplateAsync(string tenantTemplateId, CancellationToken ct = default)
+    public Task<TenantTemplateConfigurationBundleDto?> GetTenantTemplateAsync(string tenantId, string tenantTemplateId, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        lock (_tenantTemplates)
+        var normalizedTenantId = NormalizeTenantId(tenantId);
+        lock (_tenantTemplatesByTenant)
         {
-            _tenantTemplates.TryGetValue(NormalizeTenantTemplateId(tenantTemplateId), out var tenantTemplate);
+            _tenantTemplatesByTenant.TryGetValue(normalizedTenantId, out var tenantTemplates);
+            TenantTemplateConfigurationBundleDto? tenantTemplate = null;
+            tenantTemplates?.TryGetValue(NormalizeTenantTemplateId(tenantTemplateId), out tenantTemplate);
             return Task.FromResult(tenantTemplate);
         }
     }
 
-    public Task SaveTenantTemplateAsync(TenantTemplateConfigurationBundleDto tenantTemplate, CancellationToken ct = default)
+    public Task SaveTenantTemplateAsync(string tenantId, TenantTemplateConfigurationBundleDto tenantTemplate, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(tenantTemplate);
-        lock (_tenantTemplates)
+        var normalizedTenantId = NormalizeTenantId(tenantId);
+        lock (_tenantTemplatesByTenant)
         {
-            _tenantTemplates[NormalizeTenantTemplateId(tenantTemplate.TenantTemplateId)] = tenantTemplate;
+            if (!_tenantTemplatesByTenant.TryGetValue(normalizedTenantId, out var tenantTemplates))
+            {
+                tenantTemplates = new Dictionary<string, TenantTemplateConfigurationBundleDto>(StringComparer.OrdinalIgnoreCase);
+                _tenantTemplatesByTenant[normalizedTenantId] = tenantTemplates;
+            }
+
+            tenantTemplates[NormalizeTenantTemplateId(tenantTemplate.TenantTemplateId)] = tenantTemplate;
             return Task.CompletedTask;
         }
     }
 
-    public Task<IReadOnlyList<TenantTemplateActivationResultDto>> ListActivationHistoryAsync(string? tenantTemplateId = null, CancellationToken ct = default)
+    public Task<IReadOnlyList<TenantTemplateActivationResultDto>> ListActivationHistoryAsync(string tenantId, string? tenantTemplateId = null, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
+        var normalizedTenantId = NormalizeTenantId(tenantId);
         var normalizedId = NormalizeOptionalTenantTemplateId(tenantTemplateId);
-        lock (_activationHistory)
+        lock (_activationHistoryByTenant)
         {
+            if (!_activationHistoryByTenant.TryGetValue(normalizedTenantId, out var activationHistory))
+            {
+                return Task.FromResult<IReadOnlyList<TenantTemplateActivationResultDto>>([]);
+            }
+
             return Task.FromResult<IReadOnlyList<TenantTemplateActivationResultDto>>(
-                _activationHistory
+                activationHistory
                     .Where(item => normalizedId is null || string.Equals(item.TenantTemplateId, normalizedId, StringComparison.OrdinalIgnoreCase))
                     .OrderByDescending(static item => item.EvaluatedAt)
                     .ThenBy(static item => item.TenantTemplateId, StringComparer.OrdinalIgnoreCase)
@@ -73,16 +95,28 @@ public sealed class InMemoryExtensibilityConfigurationStore : IExtensibilityConf
         }
     }
 
-    public Task RecordActivationResultAsync(TenantTemplateActivationResultDto result, CancellationToken ct = default)
+    public Task RecordActivationResultAsync(string tenantId, TenantTemplateActivationResultDto result, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(result);
-        lock (_activationHistory)
+        var normalizedTenantId = NormalizeTenantId(tenantId);
+        lock (_activationHistoryByTenant)
         {
-            _activationHistory.Add(result);
+            if (!_activationHistoryByTenant.TryGetValue(normalizedTenantId, out var activationHistory))
+            {
+                activationHistory = [];
+                _activationHistoryByTenant[normalizedTenantId] = activationHistory;
+            }
+
+            activationHistory.Add(result);
             return Task.CompletedTask;
         }
     }
+
+    private static string NormalizeTenantId(string value)
+        => string.IsNullOrWhiteSpace(value)
+            ? throw new ArgumentException("Tenant id is required.", nameof(value))
+            : value.Trim();
 
     private static string NormalizeTenantTemplateId(string value)
         => string.IsNullOrWhiteSpace(value)
@@ -113,31 +147,31 @@ public sealed class FileExtensibilityConfigurationStore : IExtensibilityConfigur
         _snapshotPath = Path.Combine(extensibilityDirectory, "configuration-bundles.json");
     }
 
-    public async Task<IReadOnlyList<TenantTemplateConfigurationBundleDto>> ListTenantTemplatesAsync(CancellationToken ct = default)
+    public async Task<IReadOnlyList<TenantTemplateConfigurationBundleDto>> ListTenantTemplatesAsync(string tenantId, CancellationToken ct = default)
     {
-        var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
+        var snapshot = await ReadSnapshotAsync(tenantId, ct).ConfigureAwait(false);
         return snapshot.TenantTemplates
             .OrderBy(static item => item.DisplayName, StringComparer.OrdinalIgnoreCase)
             .ThenBy(static item => item.TenantTemplateId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
     }
 
-    public async Task<TenantTemplateConfigurationBundleDto?> GetTenantTemplateAsync(string tenantTemplateId, CancellationToken ct = default)
+    public async Task<TenantTemplateConfigurationBundleDto?> GetTenantTemplateAsync(string tenantId, string tenantTemplateId, CancellationToken ct = default)
     {
         var normalizedId = NormalizeTenantTemplateId(tenantTemplateId);
-        var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
+        var snapshot = await ReadSnapshotAsync(tenantId, ct).ConfigureAwait(false);
         return snapshot.TenantTemplates.FirstOrDefault(item =>
             string.Equals(item.TenantTemplateId, normalizedId, StringComparison.OrdinalIgnoreCase));
     }
 
-    public async Task SaveTenantTemplateAsync(TenantTemplateConfigurationBundleDto tenantTemplate, CancellationToken ct = default)
+    public async Task SaveTenantTemplateAsync(string tenantId, TenantTemplateConfigurationBundleDto tenantTemplate, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(tenantTemplate);
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
             var normalizedId = NormalizeTenantTemplateId(tenantTemplate.TenantTemplateId);
-            var snapshot = await ReadSnapshotCoreAsync(ct).ConfigureAwait(false);
+            var snapshot = await ReadSnapshotCoreAsync(tenantId, ct).ConfigureAwait(false);
             var tenantTemplates = snapshot.TenantTemplates
                 .Where(item => !string.Equals(item.TenantTemplateId, normalizedId, StringComparison.OrdinalIgnoreCase))
                 .Append(tenantTemplate with { TenantTemplateId = normalizedId })
@@ -145,7 +179,7 @@ public sealed class FileExtensibilityConfigurationStore : IExtensibilityConfigur
                 .ThenBy(static item => item.TenantTemplateId, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
-            await PersistAsync(snapshot with { TenantTemplates = tenantTemplates }, ct).ConfigureAwait(false);
+            await PersistAsync(tenantId, snapshot with { TenantTemplates = tenantTemplates }, ct).ConfigureAwait(false);
         }
         finally
         {
@@ -153,10 +187,10 @@ public sealed class FileExtensibilityConfigurationStore : IExtensibilityConfigur
         }
     }
 
-    public async Task<IReadOnlyList<TenantTemplateActivationResultDto>> ListActivationHistoryAsync(string? tenantTemplateId = null, CancellationToken ct = default)
+    public async Task<IReadOnlyList<TenantTemplateActivationResultDto>> ListActivationHistoryAsync(string tenantId, string? tenantTemplateId = null, CancellationToken ct = default)
     {
         var normalizedId = NormalizeOptionalTenantTemplateId(tenantTemplateId);
-        var snapshot = await ReadSnapshotAsync(ct).ConfigureAwait(false);
+        var snapshot = await ReadSnapshotAsync(tenantId, ct).ConfigureAwait(false);
         return snapshot.ActivationHistory
             .Where(item => normalizedId is null || string.Equals(item.TenantTemplateId, normalizedId, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(static item => item.EvaluatedAt)
@@ -164,20 +198,20 @@ public sealed class FileExtensibilityConfigurationStore : IExtensibilityConfigur
             .ToArray();
     }
 
-    public async Task RecordActivationResultAsync(TenantTemplateActivationResultDto result, CancellationToken ct = default)
+    public async Task RecordActivationResultAsync(string tenantId, TenantTemplateActivationResultDto result, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(result);
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var snapshot = await ReadSnapshotCoreAsync(ct).ConfigureAwait(false);
+            var snapshot = await ReadSnapshotCoreAsync(tenantId, ct).ConfigureAwait(false);
             var history = snapshot.ActivationHistory
                 .Append(result)
                 .OrderByDescending(static item => item.EvaluatedAt)
                 .ThenBy(static item => item.TenantTemplateId, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
-            await PersistAsync(snapshot with { ActivationHistory = history }, ct).ConfigureAwait(false);
+            await PersistAsync(tenantId, snapshot with { ActivationHistory = history }, ct).ConfigureAwait(false);
         }
         finally
         {
@@ -185,12 +219,12 @@ public sealed class FileExtensibilityConfigurationStore : IExtensibilityConfigur
         }
     }
 
-    private async Task<ExtensibilityConfigurationSnapshot> ReadSnapshotAsync(CancellationToken ct)
+    private async Task<ExtensibilityConfigurationSnapshot> ReadSnapshotAsync(string tenantId, CancellationToken ct)
     {
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            return await ReadSnapshotCoreAsync(ct).ConfigureAwait(false);
+            return await ReadSnapshotCoreAsync(tenantId, ct).ConfigureAwait(false);
         }
         finally
         {
@@ -198,17 +232,18 @@ public sealed class FileExtensibilityConfigurationStore : IExtensibilityConfigur
         }
     }
 
-    private async Task<ExtensibilityConfigurationSnapshot> ReadSnapshotCoreAsync(CancellationToken ct)
+    private async Task<ExtensibilityConfigurationSnapshot> ReadSnapshotCoreAsync(string tenantId, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        if (!File.Exists(_snapshotPath))
+        var snapshotPath = ResolveSnapshotPath(tenantId);
+        if (!File.Exists(snapshotPath))
         {
             return ExtensibilityConfigurationSnapshot.Empty;
         }
 
         try
         {
-            await using var stream = File.OpenRead(_snapshotPath);
+            await using var stream = File.OpenRead(snapshotPath);
             var snapshot = await JsonSerializer.DeserializeAsync(
                     stream,
                     ExtensibilityConfigurationJsonContext.Default.ExtensibilityConfigurationSnapshot,
@@ -222,26 +257,56 @@ public sealed class FileExtensibilityConfigurationStore : IExtensibilityConfigur
             if (snapshot.Version != SnapshotVersion)
             {
                 throw new InvalidOperationException(
-                    $"Extensibility configuration snapshot version {snapshot.Version} is not supported. Expected {SnapshotVersion}: {_snapshotPath}");
+                    $"Extensibility configuration snapshot version {snapshot.Version} is not supported. Expected {SnapshotVersion}: {snapshotPath}");
             }
 
             return snapshot;
         }
         catch (JsonException ex)
         {
-            _logger.LogWarning(ex, "Extensibility configuration snapshot is not valid JSON: {Path}", _snapshotPath);
-            throw new InvalidOperationException($"Extensibility configuration snapshot is invalid: {_snapshotPath}", ex);
+            _logger.LogWarning(ex, "Extensibility configuration snapshot is not valid JSON: {Path}", snapshotPath);
+            throw new InvalidOperationException($"Extensibility configuration snapshot is invalid: {snapshotPath}", ex);
         }
     }
 
-    private Task PersistAsync(ExtensibilityConfigurationSnapshot snapshot, CancellationToken ct)
+    private Task PersistAsync(string tenantId, ExtensibilityConfigurationSnapshot snapshot, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         var json = JsonSerializer.Serialize(
             snapshot,
             ExtensibilityConfigurationJsonContext.Default.ExtensibilityConfigurationSnapshot);
-        return AtomicFileWriter.WriteAsync(_snapshotPath, json, ct);
+        return AtomicFileWriter.WriteAsync(ResolveSnapshotPath(tenantId), json, ct);
     }
+
+    private string ResolveSnapshotPath(string tenantId)
+    {
+        var safeTenantId = SanitizeTenantPathSegment(tenantId);
+        var tenantDirectory = Path.Combine(Path.GetDirectoryName(_snapshotPath)!, "tenants", safeTenantId);
+        Directory.CreateDirectory(tenantDirectory);
+        return Path.Combine(tenantDirectory, "configuration-bundles.json");
+    }
+
+    private static string SanitizeTenantPathSegment(string tenantId)
+    {
+        var normalized = NormalizeTenantId(tenantId);
+        var invalidFileNameChars = Path.GetInvalidFileNameChars();
+        var chars = normalized.ToCharArray();
+        for (var index = 0; index < chars.Length; index++)
+        {
+            var value = chars[index];
+            if (value is '/' or '\\' || Array.IndexOf(invalidFileNameChars, value) >= 0)
+            {
+                chars[index] = '_';
+            }
+        }
+
+        return new string(chars);
+    }
+
+    private static string NormalizeTenantId(string value)
+        => string.IsNullOrWhiteSpace(value)
+            ? throw new ArgumentException("Tenant id is required.", nameof(value))
+            : value.Trim();
 
     private static string NormalizeTenantTemplateId(string value)
         => string.IsNullOrWhiteSpace(value)
@@ -276,32 +341,36 @@ public sealed class ExtensibilityConfigurationService
         _store = store ?? throw new ArgumentNullException(nameof(store));
     }
 
-    public Task<IReadOnlyList<TenantTemplateConfigurationBundleDto>> ListTenantTemplatesAsync(CancellationToken ct = default)
-        => _store.ListTenantTemplatesAsync(ct);
+    public Task<IReadOnlyList<TenantTemplateConfigurationBundleDto>> ListTenantTemplatesAsync(string tenantId, CancellationToken ct = default)
+        => _store.ListTenantTemplatesAsync(NormalizeTenantId(tenantId), ct);
 
-    public Task<TenantTemplateConfigurationBundleDto?> GetTenantTemplateAsync(string tenantTemplateId, CancellationToken ct = default)
-        => _store.GetTenantTemplateAsync(tenantTemplateId, ct);
+    public Task<TenantTemplateConfigurationBundleDto?> GetTenantTemplateAsync(string tenantId, string tenantTemplateId, CancellationToken ct = default)
+        => _store.GetTenantTemplateAsync(NormalizeTenantId(tenantId), tenantTemplateId, ct);
 
     public async Task<TenantTemplateConfigurationBundleDto> UpsertTenantTemplateAsync(
+        string tenantId,
         TenantTemplateConfigurationBundleDto tenantTemplate,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(tenantTemplate);
+        var normalizedTenantId = NormalizeTenantId(tenantId);
         var normalized = NormalizeTenantTemplate(tenantTemplate);
-        await _store.SaveTenantTemplateAsync(normalized, ct).ConfigureAwait(false);
+        await _store.SaveTenantTemplateAsync(normalizedTenantId, normalized, ct).ConfigureAwait(false);
         return normalized;
     }
 
     public async Task<ExtensibilityActivationReadinessDto> EvaluateTenantTemplateActivationAsync(
+        string tenantId,
         string tenantTemplateId,
         CancellationToken ct = default)
     {
-        var tenantTemplate = await _store.GetTenantTemplateAsync(tenantTemplateId, ct).ConfigureAwait(false)
+        var tenantTemplate = await _store.GetTenantTemplateAsync(NormalizeTenantId(tenantId), tenantTemplateId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException($"Tenant template '{tenantTemplateId}' was not found.");
         return EvaluateReadiness(tenantTemplate);
     }
 
     public async Task<TenantTemplateActivationResultDto> ActivateTenantTemplateAsync(
+        string tenantId,
         string tenantTemplateId,
         string actor,
         TenantTemplateActivationRequestDto? request,
@@ -309,7 +378,8 @@ public sealed class ExtensibilityConfigurationService
         CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(actor);
-        var tenantTemplate = await _store.GetTenantTemplateAsync(tenantTemplateId, ct).ConfigureAwait(false)
+        var normalizedTenantId = NormalizeTenantId(tenantId);
+        var tenantTemplate = await _store.GetTenantTemplateAsync(normalizedTenantId, tenantTemplateId, ct).ConfigureAwait(false)
             ?? throw new KeyNotFoundException($"Tenant template '{tenantTemplateId}' was not found.");
 
         var normalizedRequest = NormalizeActivationRequest(request);
@@ -326,7 +396,7 @@ public sealed class ExtensibilityConfigurationService
                 normalizedRequest.LinkedAuditEventId,
                 readiness,
                 tenantTemplate);
-            await _store.RecordActivationResultAsync(blockedResult, ct).ConfigureAwait(false);
+            await _store.RecordActivationResultAsync(normalizedTenantId, blockedResult, ct).ConfigureAwait(false);
             return blockedResult;
         }
 
@@ -344,7 +414,7 @@ public sealed class ExtensibilityConfigurationService
                 .ToArray()
         };
 
-        await _store.SaveTenantTemplateAsync(activatedTemplate, ct).ConfigureAwait(false);
+        await _store.SaveTenantTemplateAsync(normalizedTenantId, activatedTemplate, ct).ConfigureAwait(false);
 
         var result = new TenantTemplateActivationResultDto(
             activatedTemplate.TenantTemplateId,
@@ -356,14 +426,20 @@ public sealed class ExtensibilityConfigurationService
             normalizedRequest.LinkedAuditEventId,
             readiness,
             activatedTemplate);
-        await _store.RecordActivationResultAsync(result, ct).ConfigureAwait(false);
+        await _store.RecordActivationResultAsync(normalizedTenantId, result, ct).ConfigureAwait(false);
         return result;
     }
 
     public Task<IReadOnlyList<TenantTemplateActivationResultDto>> ListActivationHistoryAsync(
+        string tenantId,
         string? tenantTemplateId = null,
         CancellationToken ct = default)
-        => _store.ListActivationHistoryAsync(tenantTemplateId, ct);
+        => _store.ListActivationHistoryAsync(NormalizeTenantId(tenantId), tenantTemplateId, ct);
+
+    private static string NormalizeTenantId(string value)
+        => string.IsNullOrWhiteSpace(value)
+            ? throw new ArgumentException("Tenant id is required.", nameof(value))
+            : value.Trim();
 
     private static TenantTemplateConfigurationBundleDto NormalizeTenantTemplate(TenantTemplateConfigurationBundleDto tenantTemplate)
     {

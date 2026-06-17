@@ -6,8 +6,11 @@ import {
   useOperationsContinuityScreenViewModel
 } from "@/screens/operations-continuity-screen.view-model";
 import type {
+  OperationsCloseChecklistTask,
+  OperationsCloseCalendar,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
+  OperationsEvidenceLink,
   OperationsGate,
   OperationsReconciliationLaneSummary,
   PrivateCapitalCloseCockpit
@@ -714,6 +717,27 @@ const closeCockpit: PrivateCapitalCloseCockpit = {
       requiredActions: []
     },
     {
+      packageId: "private-capital:partner-capital-tie-out",
+      label: "Partner capital tie-out evidence package",
+      status: "Ready",
+      isReady: true,
+      summary: "Partner capital account tie-outs retain capital subledger, ledger, and investor statement evidence.",
+      routeHint: "/workstation/accounting/private-capital/capital-account-subledger",
+      completeCategoryCount: 3,
+      requiredCategoryCount: 3,
+      evidenceLinkCount: 2,
+      evidenceLinks: [
+        {
+          evidenceId: "partner-capital-tie-out-evidence",
+          label: "Partner capital tie-out evidence",
+          route: "/workstation/accounting/private-capital/capital-account-subledger/tie-outs",
+          source: "private-capital",
+          capturedAtUtc: "2026-05-10T18:06:00Z"
+        }
+      ],
+      requiredActions: []
+    },
+    {
       packageId: "private-capital:nav-support",
       label: "NAV support evidence package",
       status: "ReviewRequired",
@@ -733,6 +757,27 @@ const closeCockpit: PrivateCapitalCloseCockpit = {
         }
       ],
       requiredActions: ["Retain complete NAV support package evidence before close sign-off."]
+    },
+    {
+      packageId: "private-capital:close-approval-audit",
+      label: "Close approval and audit evidence",
+      status: "ReviewRequired",
+      isReady: false,
+      summary: "Close approval and audit evidence still need checklist-control approval and close-package manifest support.",
+      routeHint: "/workstation/accounting/operations-continuity",
+      completeCategoryCount: 2,
+      requiredCategoryCount: 4,
+      evidenceLinkCount: 1,
+      evidenceLinks: [
+        {
+          evidenceId: "close-approval-audit-evidence",
+          label: "Close approval audit evidence",
+          route: "/workstation/accounting/approvals",
+          source: "operations-continuity",
+          capturedAtUtc: "2026-05-10T18:12:00Z"
+        }
+      ],
+      requiredActions: ["Retain checklist-control approval and close-package manifest evidence before sign-off."]
     }
   ],
   blockers: [
@@ -755,6 +800,34 @@ const closeCockpit: PrivateCapitalCloseCockpit = {
   ],
   liveCapabilities: ["workflow-readiness", "capital-account-evidence"],
   plannedCapabilities: ["tax-support-drilldown"]
+};
+
+const closeCalendar: OperationsCloseCalendar = {
+  generatedAtUtc: "2026-05-10T18:45:00Z",
+  items: [
+    {
+      workflowId,
+      fundAccountId,
+      periodId: "2026-05",
+      status: "LedgerPostingDraft",
+      version: 4,
+      nextDueDate: "2026-05-12",
+      nextDueTaskId: "ledger-controller-check",
+      nextDueLabel: "Ledger posting controller check",
+      nextDueOwner: "fund-controller",
+      readinessSeverity: "Critical",
+      readinessScore: 72,
+      isReadyToClose: false,
+      blockerCount: 1,
+      openChecklistCount: 2,
+      requiredApprovalCount: 2,
+      completedApprovalCount: 1,
+      route: "/workstation/accounting/operations-continuity",
+      readinessComponents: [],
+      readinessBlockers: [],
+      readinessNextActions: []
+    }
+  ]
 };
 
 describe("Operations Continuity view model", () => {
@@ -814,6 +887,22 @@ describe("Operations Continuity view model", () => {
       requiredActionsLabel: "Complete source-backed reconciliation lanes before approval.; Publish and retain the evidence package before period close."
     });
     expect(vm.dashboard.metrics).toHaveLength(6);
+    expect(vm.dashboard.metrics.map((metric) => metric.id)).toEqual([
+      "receive-activity",
+      "match-records",
+      "resolve-exceptions",
+      "approve-results",
+      "produce-evidence",
+      "close-support"
+    ]);
+    expect(vm.dashboard.metrics.map((metric) => metric.label)).toEqual([
+      "Receive Activity",
+      "Match Records",
+      "Resolve Exceptions",
+      "Approve Results",
+      "Produce Evidence",
+      "Close Support"
+    ]);
     expect(vm.dashboard.metrics[1]).toMatchObject({
       id: "match-records",
       label: "Match Records",
@@ -822,6 +911,44 @@ describe("Operations Continuity view model", () => {
       evidenceLabel: "1 evidence link",
       requiredActionsLabel: "Complete source-backed reconciliation lanes before approval.",
       routeHref: "/accounting/reconciliation"
+    });
+    expect(vm.commandSpine).toMatchObject({
+      statusLabel: "Missing",
+      statusTone: "blocked",
+      summaryLabel: "Core flow: Resolve Exceptions; 2/6 metrics ready; Complete source-backed reconciliation lanes before approval.; Publish and retain the evidence package before period close."
+    });
+    expect(vm.commandSpine.rows.map((row) => row.id)).toEqual([
+      "receive-activity",
+      "match-records",
+      "resolve-exceptions",
+      "approve-results",
+      "produce-evidence",
+      "close-support"
+    ]);
+    expect(vm.commandSpine.rows[0]).toMatchObject({
+      stageLabel: "Receive Activity",
+      commandLabel: "Start/import/normalize activity",
+      postureLabel: "Complete",
+      statusLabel: "Ready",
+      guardLabel: "Shared command guard clear",
+      routeHref: "/accounting"
+    });
+    expect(vm.commandSpine.rows[2]).toMatchObject({
+      stageLabel: "Resolve Exceptions",
+      commandLabel: "Assign, escalate, or resolve breaks",
+      statusLabel: "Review Required",
+      guardLabel: "Assign, escalate, or resolve open exceptions and retain resolution evidence.",
+      routeHref: "/accounting/reconciliation"
+    });
+    expect(vm.commandSpine.rows[3]).toMatchObject({
+      stageLabel: "Approve Results",
+      commandLabel: "Submit or decide approval",
+      canSubmitApproval: false,
+      submitApprovalLabel: "Submit approval",
+      submitApprovalDisabledReason: "Approval state is already Reviewer Assigned.",
+      submitApprovalReportPackId: null,
+      submitApprovalReviewer: "fund-controller",
+      submitApprovalAriaLabel: "Submit workflow approval for 2026-05"
     });
     expect(vm.reviewedAutomation).toMatchObject({
       statusLabel: "Review Required",
@@ -844,6 +971,8 @@ describe("Operations Continuity view model", () => {
       reviewLabel: "Human review required",
       confidenceLabel: "84% confidence",
       evidenceLabel: "1 evidence link",
+      evidenceHref: "/reporting/report-packs/automation-review",
+      evidenceRouteLabel: "Open reviewed automation evidence",
       blockedActionLabel: "Cannot publish reports or release support packages."
     });
     expect(vm.reviewedAutomation.artifacts[1]).toMatchObject({
@@ -851,23 +980,57 @@ describe("Operations Continuity view model", () => {
       kindLabel: "Audit request list",
       confidenceLabel: "79% confidence",
       evidenceLabel: "No retained evidence",
+      evidenceHref: null,
+      evidenceRouteLabel: "No local evidence route",
       suggestedActionLabel: "Review each requested support item and assign an owner before audit release."
     });
     expect(vm.financialOperationsQueue).toMatchObject({
       statusLabel: "Blocked",
       statusTone: "blocked",
-      summaryLabel: "7 open work items: 3 blocked, 4 review."
+      summaryLabel: "16 open work items: 6 blocked, 10 review."
     });
     expect(vm.financialOperationsQueue.items.map((item) => item.id)).toEqual([
+      "reconciliation-lane:mbs-factor-reconciliation",
+      "workflow-blocker:LEDGER_VALIDATION_REQUIRED:0",
       "checklist:close-gate-ledgerposting",
       "approval:approval-close-2026-05",
+      "reviewed-automation:reviewed-automation:report-commentary-draft",
+      "reviewed-automation:reviewed-automation:audit-request-list-draft",
       "evidence-package:accounting-record-2026-05",
       "evidence-package:report-pack:fund-alpha:2026-05",
       "evidence-package:close-package:fund-alpha:2026-05",
       "evidence-package:audit-support:fund-alpha:2026-05",
-      "evidence-package:period-lock-reopen:fund-alpha:2026-05"
+      "evidence-package:period-lock-reopen:fund-alpha:2026-05",
+      "command-stage:match-records",
+      "command-stage:resolve-exceptions",
+      "command-stage:approve-results",
+      "command-stage:produce-evidence",
+      "command-stage:close-support"
     ]);
     expect(vm.financialOperationsQueue.items[0]).toMatchObject({
+      kindLabel: "Reconciliation lane",
+      title: "MBS factor reconciliation",
+      statusLabel: "Review Required",
+      statusTone: "review",
+      ownerLabel: "Reconciliation operations",
+      dueLabel: "1 open break",
+      evidenceLabel: "1 evidence link",
+      actionLabel: "Resolve or assign MBS factor reconciliation breaks and retain evidence.",
+      routeHref: "/accounting/reconciliation"
+    });
+    expect(vm.financialOperationsQueue.items[1]).toMatchObject({
+      kindLabel: "Workflow blocker",
+      title: "LEDGER_VALIDATION_REQUIRED",
+      detail: "Ledger Posting: Ledger posting requires a balanced and validated journal draft.",
+      statusLabel: "Critical",
+      statusTone: "blocked",
+      ownerLabel: "Operations control",
+      dueLabel: "Ledger Posting gate",
+      evidenceLabel: "No linked evidence",
+      actionLabel: "Resolve Ledger Posting blocker and retain evidence.",
+      routeHref: "/accounting/operations-continuity"
+    });
+    expect(vm.financialOperationsQueue.items[2]).toMatchObject({
       kindLabel: "Checklist",
       title: "Ledger posting controller check",
       statusLabel: "Pending",
@@ -876,7 +1039,7 @@ describe("Operations Continuity view model", () => {
       evidenceLabel: "ledger-evidence-1",
       routeHref: "/accounting/ledger"
     });
-    expect(vm.financialOperationsQueue.items[1]).toMatchObject({
+    expect(vm.financialOperationsQueue.items[3]).toMatchObject({
       kindLabel: "Approval",
       title: "approval-close-2026-05",
       statusLabel: "Reviewer Assigned",
@@ -886,7 +1049,51 @@ describe("Operations Continuity view model", () => {
       evidenceLabel: "1 evidence link",
       routeHref: "/accounting/approvals"
     });
-    expect(vm.financialOperationsQueue.items[4]).toMatchObject({
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "reviewed-automation:reviewed-automation:report-commentary-draft")).toMatchObject({
+      kindLabel: "Reviewed automation",
+      title: "Report commentary draft",
+      detail: "Report commentary: Draft commentary is generated from retained close, ledger, reconciliation, and report-pack evidence.; 84% confidence",
+      statusLabel: "Review Required",
+      statusTone: "review",
+      ownerLabel: "Automation review",
+      dueLabel: "Human review required",
+      evidenceLabel: "1 evidence link",
+      actionLabel: "Review commentary against retained evidence before report approval or publication.; Cannot publish reports or release support packages.",
+      routeHref: "/reporting/report-packs/automation-review"
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "reviewed-automation:reviewed-automation:audit-request-list-draft")).toMatchObject({
+      kindLabel: "Reviewed automation",
+      title: "Audit request list draft",
+      statusLabel: "Review Required",
+      statusTone: "review",
+      evidenceLabel: "No retained evidence",
+      actionLabel: "Review each requested support item and assign an owner before audit release.; Cannot erase evidence or satisfy audit requests without retained support.",
+      routeHref: null
+    });
+    expect(vm.workflowApprovalHistory).toHaveLength(1);
+    expect(vm.workflowApprovalHistory[0]).toMatchObject({
+      id: "approval-close-2026-05",
+      workflowId,
+      expectedWorkflowVersion: 4,
+      statusLabel: "Reviewer Assigned",
+      statusTone: "review",
+      actorLabel: "Reviewer fund-controller / Operator ops-user",
+      submittedLabel: "Submitted May 08, 15:05 UTC",
+      decidedLabel: "Decision pending",
+      rationale: "Pending final ledger validation before close sign-off.",
+      reviewer: "fund-controller",
+      evidenceLabel: "1 evidence link",
+      evidenceHref: "/accounting/approvals",
+      evidenceRouteLabel: "Open approval evidence",
+      decisionGuardLabel: "Close workflow has unresolved ledger blockers.",
+      approveWorkflowReportPackId: null,
+      canApproveWorkflow: false,
+      approveWorkflowDisabledReason: "Close workflow has unresolved ledger blockers.",
+      rejectWorkflowReasonCode: "BrowserApprovalDecisionReview",
+      canRejectWorkflow: true,
+      rejectWorkflowDisabledReason: null
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "evidence-package:close-package:fund-alpha:2026-05")).toMatchObject({
       kindLabel: "Evidence package",
       title: "Close package manifest",
       statusLabel: "Missing",
@@ -894,6 +1101,30 @@ describe("Operations Continuity view model", () => {
       dueLabel: "0/1 categories complete",
       actionLabel: "Publish the close package manifest and retain the evidence hash.",
       routeHref: "/accounting/operations-continuity"
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "command-stage:match-records")).toMatchObject({
+      kindLabel: "Command stage",
+      title: "Match Records",
+      detail: "Run reconciliation and refresh posture; Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.",
+      statusLabel: "Review Required",
+      statusTone: "review",
+      ownerLabel: "Reconciliation operations",
+      dueLabel: "6/7 lanes ready",
+      evidenceLabel: "1 evidence link",
+      actionLabel: "Complete source-backed reconciliation lanes before approval.",
+      routeHref: "/accounting/reconciliation"
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "command-stage:produce-evidence")).toMatchObject({
+      kindLabel: "Command stage",
+      title: "Produce Evidence",
+      detail: "Open evidence package routes; Close workflow has unresolved ledger blockers.",
+      statusLabel: "Missing",
+      statusTone: "blocked",
+      ownerLabel: "Evidence operations",
+      dueLabel: "Evidence package pending",
+      evidenceLabel: "No retained evidence",
+      actionLabel: "Publish and retain the evidence package before period close.",
+      routeHref: "/reporting/report-packs"
     });
     expect(vm.evidencePackages).toHaveLength(5);
     expect(vm.evidencePackages[0]).toMatchObject({
@@ -903,6 +1134,8 @@ describe("Operations Continuity view model", () => {
       statusTone: "review",
       readinessLabel: "3/8 categories complete",
       evidenceLabel: "1 evidence link",
+      evidenceHref: "/accounting/operations-continuity",
+      evidenceRouteLabel: "Open retained evidence",
       routeHref: "/accounting/operations-continuity"
     });
     expect(vm.evidencePackages[2]).toMatchObject({
@@ -910,6 +1143,7 @@ describe("Operations Continuity view model", () => {
       label: "Close package manifest",
       statusLabel: "Missing",
       statusTone: "blocked",
+      evidenceRouteLabel: "No local evidence route",
       requiredActionsLabel: "Publish the close package manifest and retain the evidence hash."
     });
     expect(vm.evidencePackages[4]).toMatchObject({
@@ -933,6 +1167,11 @@ describe("Operations Continuity view model", () => {
       remediationHref: "/accounting/ledger",
       remediationLabel: "Open remediation",
       acknowledgementLabel: "Ledger validation is still required.",
+      acknowledgementCommandPostureLabel: "Acknowledgement blocked",
+      acknowledgementGuardLabel: "Expected workflow version 4",
+      canAcknowledge: false,
+      acknowledgeLabel: "Acknowledge",
+      acknowledgeDisabledReason: "Ledger validation is still required.",
       statusLabel: "Pending",
       statusTone: "review"
     });
@@ -963,6 +1202,118 @@ describe("Operations Continuity view model", () => {
       closeAuditLabel: "No close audit event",
       reopenAuditLabel: "No governed reopen recorded",
       commandGuardLabel: "Close and reopen command decisions remain enforced by the shared workflow API."
+    });
+  });
+
+  it("surfaces non-ready accounting-record evidence categories in the Financial Operations queue", () => {
+    const workflowWithAccountingEvidence: OperationsContinuityWorkflow = {
+      ...detail,
+      accountingRecordSummary: {
+        recordId: "accounting-record-2026-05",
+        isAuditReady: false,
+        completeCategoryCount: 1,
+        requiredCategoryCount: 2,
+        summary: "Accounting record still needs retained ledger evidence.",
+        evidenceCategories: [
+          {
+            key: "source-records",
+            label: "Retained source data",
+            isComplete: true,
+            status: "Broker statements and provider files are retained.",
+            routeHint: "/workstation/data/providers",
+            requiredEvidence: ["provider statement", "custodian activity file"],
+            evidenceLinks: []
+          },
+          {
+            key: "ledger-evidence",
+            label: "Journal and ledger evidence",
+            isComplete: false,
+            status: "Ledger validation is still required.",
+            routeHint: "/workstation/accounting/ledger",
+            requiredEvidence: ["journal preview", "posted ledger batch", "trial-balance support"],
+            evidenceLinks: []
+          }
+        ],
+        evidenceLinks: [],
+        auditPackReadiness: {
+          isComplete: false,
+          generatedInSeconds: 0,
+          slaTargetSeconds: 60,
+          slaMet: true,
+          missingEvidenceCategories: ["LedgerEvidence"],
+          warnings: ["Audit pack still needs ledger evidence."],
+          evidenceCategorySummaries: []
+        }
+      }
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail: workflowWithAccountingEvidence,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "accounting-record-evidence:source-records"))
+      .toBeUndefined();
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "accounting-record-evidence:ledger-evidence"))
+      .toMatchObject({
+        kindLabel: "Accounting-record evidence",
+        title: "Journal and ledger evidence",
+        detail: "Ledger validation is still required.; Requires journal preview, posted ledger batch, trial-balance support",
+        statusLabel: "Review required",
+        statusTone: "review",
+        ownerLabel: "Accounting evidence operations",
+        dueLabel: "Before audit package sign-off",
+        evidenceLabel: "No linked evidence",
+        actionLabel: "Retain journal preview, posted ledger batch, trial-balance support.",
+        routeHref: "/accounting/ledger"
+      });
+  });
+
+  it("marks acknowledgeable checklist tasks with the shared command guard", () => {
+    const acknowledgeableDetail: OperationsContinuityWorkflow = {
+      ...detail,
+      closeChecklist: [
+        {
+          ...detail.closeChecklist[0]!,
+          status: "Ready",
+          blockingReason: null,
+          canAcknowledge: true,
+          acknowledgedAtUtc: null,
+          acknowledgedBy: null
+        }
+      ]
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail: acknowledgeableDetail,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.checklist[0]).toMatchObject({
+      id: "close-gate-ledgerposting",
+      acknowledgementLabel: "Ready for acknowledgement",
+      acknowledgementCommandPostureLabel: "Acknowledgement command ready",
+      acknowledgementGuardLabel: "Expected workflow version 4",
+      workflowId,
+      expectedWorkflowVersion: 4,
+      canAcknowledge: true,
+      acknowledgeLabel: "Acknowledge",
+      acknowledgeDisabledReason: null,
+      acknowledgeAriaLabel: "Acknowledge close checklist task Ledger posting controller check"
     });
   });
 
@@ -1113,11 +1464,36 @@ describe("Operations Continuity view model", () => {
       rootCauseLabel: "Root cause Broker Cash Timing",
       symbolLabel: "No security",
       evidenceLabel: "1 retained evidence link",
+      evidenceHref: "/accounting/reconciliation/recon-break-42/evidence",
+      evidenceRouteLabel: "Open retained evidence",
       approvalLabel: "Approval Ready For Signoff",
       blockedOutputsLabel: "Blocks Report package release, Close sign-off review",
-      actionLabel: "Accept custodian statement evidence and close the reconciliation break."
+      actionLabel: "Accept custodian statement evidence and close the reconciliation break.",
+      caseworkHref: `/accounting/exceptions?workflowId=${workflowId}&breakId=recon-break-42`,
+      caseworkRouteLabel: "Open casework",
+      commandPostureLabel: "Resolution retained",
+      commandGuardLabel: "Expected workflow version 4",
+      workflowId,
+      expectedWorkflowVersion: 4,
+      canAssign: false,
+      assignLabel: "Assigned",
+      assignDisabledReason: "Break resolution has already been retained.",
+      canResolve: false,
+      resolveLabel: "Resolved",
+      resolveDisabledReason: "Break resolution has already been retained.",
+      routeHref: "/accounting/reconciliation/recon-break-42/evidence",
+      routeLabel: "Open break evidence"
     });
     expect(vm.reconciliationLanes).toHaveLength(7);
+    expect(vm.reconciliationLanes.map((lane) => lane.id)).toEqual([
+      "cash-reconciliation",
+      "position-reconciliation",
+      "trade-reconciliation",
+      "income-reconciliation",
+      "mbs-factor-reconciliation",
+      "bank-reconciliation",
+      "gl-reconciliation"
+    ]);
     expect(vm.reconciliationLanes[0]).toMatchObject({
       id: "cash-reconciliation",
       label: "Cash reconciliation",
@@ -1125,6 +1501,29 @@ describe("Operations Continuity view model", () => {
       statusTone: "ready",
       breakCountLabel: "No open breaks",
       evidenceLabel: "1 evidence link",
+      evidenceHref: "/accounting/reconciliation/cash",
+      evidenceRouteLabel: "Open retained evidence",
+      routeHref: "/accounting/reconciliation",
+      requiredActionsLabel: "No required actions"
+    });
+    expect(vm.reconciliationLanes.find((lane) => lane.id === "position-reconciliation")).toMatchObject({
+      label: "Position reconciliation",
+      statusLabel: "Ready",
+      breakCountLabel: "No open breaks",
+      routeHref: "/accounting/reconciliation",
+      requiredActionsLabel: "No required actions"
+    });
+    expect(vm.reconciliationLanes.find((lane) => lane.id === "trade-reconciliation")).toMatchObject({
+      label: "Trade reconciliation",
+      statusLabel: "Ready",
+      breakCountLabel: "No open breaks",
+      routeHref: "/accounting/reconciliation",
+      requiredActionsLabel: "No required actions"
+    });
+    expect(vm.reconciliationLanes.find((lane) => lane.id === "income-reconciliation")).toMatchObject({
+      label: "Income reconciliation",
+      statusLabel: "Ready",
+      breakCountLabel: "No open breaks",
       routeHref: "/accounting/reconciliation",
       requiredActionsLabel: "No required actions"
     });
@@ -1133,7 +1532,505 @@ describe("Operations Continuity view model", () => {
       statusTone: "review",
       breakCountLabel: "1 open break",
       evidenceLabel: "1 evidence link",
+      evidenceHref: "/accounting/reconciliation/recon-break-factor-1",
+      evidenceRouteLabel: "Open retained evidence",
       requiredActionsLabel: "Resolve or assign MBS factor reconciliation breaks and retain evidence."
+    });
+    expect(vm.reconciliationLanes.find((lane) => lane.id === "bank-reconciliation")).toMatchObject({
+      label: "Bank reconciliation",
+      statusLabel: "Ready",
+      breakCountLabel: "No open breaks",
+      routeHref: "/accounting/reconciliation",
+      requiredActionsLabel: "No required actions"
+    });
+    expect(vm.reconciliationLanes.find((lane) => lane.id === "gl-reconciliation")).toMatchObject({
+      label: "GL reconciliation support",
+      statusLabel: "Ready",
+      breakCountLabel: "No open breaks",
+      routeHref: "/accounting/ledger",
+      requiredActionsLabel: "No required actions"
+    });
+  });
+
+  it("enables approval submission command metadata after exceptions and report-pack readiness clear", () => {
+    const reportPackEvidence = {
+      evidenceId: "report-pack-submit-evidence",
+      label: "Report-pack readiness evidence",
+      route: "/workstation/reporting/report-packs/report-pack-2026-05/evidence",
+      source: "operations-continuity",
+      capturedAtUtc: "2026-05-08T16:00:00Z"
+    };
+    const approvalReadyDetail: OperationsContinuityWorkflow = {
+      ...detail,
+      breakCases: detail.breakCases.map((breakCase) => ({
+        ...breakCase,
+        status: "Resolved"
+      })),
+      approvals: [],
+      approvalState: "Pending",
+      reportPackReadiness: {
+        isReady: true,
+        reportPackId: "report-pack-2026-05",
+        blockingReason: null,
+        evidenceLinks: [reportPackEvidence]
+      },
+      closePackage: null
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail: approvalReadyDetail,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.commandSpine.rows[3]).toMatchObject({
+      id: "approve-results",
+      workflowId,
+      expectedWorkflowVersion: 4,
+      submitApprovalReportPackId: "report-pack-2026-05",
+      submitApprovalReviewer: "fund-controller",
+      submitApprovalEvidenceLinks: expect.arrayContaining([reportPackEvidence]),
+      submitApprovalChecklistControlApprovals: [],
+      canSubmitApproval: true,
+      submitApprovalDisabledReason: null
+    });
+  });
+
+  it("enables workflow approval decision metadata when report-pack and checklist evidence are retained", () => {
+    const reportPackEvidence: OperationsEvidenceLink = {
+      evidenceId: "report-pack-approval-decision-evidence",
+      label: "Report-pack approval decision evidence",
+      route: "/workstation/reporting/report-packs/report-pack-2026-05/evidence",
+      source: "operations-continuity",
+      capturedAtUtc: "2026-05-10T17:25:00Z"
+    };
+    const approvalGates: OperationsGate[] = [
+      {
+        ...gates[0],
+        status: "Passed",
+        completedAtUtc: "2026-05-10T17:00:00Z",
+        completedBy: "operations-lead"
+      },
+      {
+        ...gates[1],
+        status: "Passed",
+        blockers: [],
+        completedAtUtc: "2026-05-10T17:10:00Z",
+        completedBy: "ledger-lead"
+      },
+      {
+        gateKey: "Approval",
+        displayName: "Approval",
+        status: "InProgress",
+        isRequired: true,
+        description: "Reviewer decision is pending.",
+        blockers: [],
+        nextActions: [],
+        completedAtUtc: null,
+        completedBy: null
+      }
+    ];
+    const closeChecklist: OperationsCloseChecklistTask[] = [
+      {
+        taskId: "close-gate-brokeringest",
+        gate: "BrokerIngest",
+        label: "Broker ingest close gate",
+        owner: "operations-lead",
+        requiredEvidence: "Broker ingest evidence is retained.",
+        dueDate: "2026-05-10",
+        requiredApprovalCount: 1,
+        expiresOn: "2026-05-14",
+        status: "Done",
+        blockingReason: null,
+        evidencePointer: "broker-ingest-evidence",
+        remediationRoute: "/workstation/accounting/operations-continuity",
+        canAcknowledge: false,
+        acknowledgedAtUtc: "2026-05-10T17:00:00Z",
+        acknowledgedBy: "operations-lead"
+      },
+      {
+        taskId: "close-gate-ledgerposting",
+        gate: "LedgerPosting",
+        label: "Ledger posting close gate",
+        owner: "ledger-lead",
+        requiredEvidence: "Ledger posting evidence is retained.",
+        dueDate: "2026-05-10",
+        requiredApprovalCount: 1,
+        expiresOn: "2026-05-14",
+        status: "Done",
+        blockingReason: null,
+        evidencePointer: "ledger-posting-evidence",
+        remediationRoute: "/workstation/accounting/ledger",
+        canAcknowledge: false,
+        acknowledgedAtUtc: "2026-05-10T17:10:00Z",
+        acknowledgedBy: "ledger-lead"
+      },
+      {
+        taskId: "close-gate-approval",
+        gate: "Approval",
+        label: "Approval close gate",
+        owner: "fund-controller",
+        requiredEvidence: "Reviewer approval and retained report-pack evidence.",
+        dueDate: "2026-05-10",
+        requiredApprovalCount: 2,
+        expiresOn: "2026-05-14",
+        status: "Pending",
+        blockingReason: null,
+        evidencePointer: reportPackEvidence.evidenceId,
+        remediationRoute: "/workstation/accounting/approvals",
+        canAcknowledge: false,
+        acknowledgedAtUtc: null,
+        acknowledgedBy: null
+      }
+    ];
+    const approvalDecisionReadyDetail: OperationsContinuityWorkflow = {
+      ...detail,
+      status: "ApprovalPending",
+      gates: approvalGates,
+      ledgerPostingState: "Complete",
+      reconciliationState: "Complete",
+      approvalState: "ReviewerAssigned",
+      breakCases: [],
+      approvals: [
+        {
+          approvalId: "approval-close-2026-05",
+          status: "ReviewerAssigned",
+          operator: "ops-user",
+          reviewer: "fund-controller",
+          rationale: "Pending final close sign-off against retained report-pack evidence.",
+          submittedAtUtc: "2026-05-10T17:30:00Z",
+          decidedAtUtc: null,
+          evidenceLinks: [reportPackEvidence]
+        }
+      ],
+      reportPackReadiness: {
+        isReady: true,
+        reportPackId: "report-pack-2026-05",
+        blockingReason: null,
+        evidenceLinks: [reportPackEvidence]
+      },
+      closeChecklist,
+      closePackage: null
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail: approvalDecisionReadyDetail,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.workflowApprovalHistory[0]).toMatchObject({
+      id: "approval-close-2026-05",
+      workflowId,
+      expectedWorkflowVersion: 4,
+      reviewer: "fund-controller",
+      decisionGuardLabel: "Approval decision guard clear",
+      approveWorkflowReportPackId: "report-pack-2026-05",
+      approveWorkflowEvidenceLinks: expect.arrayContaining([reportPackEvidence]),
+      approveWorkflowChecklistControlApprovals: expect.arrayContaining([
+        {
+          taskId: "close-gate-brokeringest",
+          approvedBy: "operations-lead",
+          approvedAtUtc: "2026-05-10T17:00:00Z"
+        },
+        {
+          taskId: "close-gate-approval",
+          approvedBy: "fund-controller",
+          approvedAtUtc: "2026-05-10T17:30:00Z"
+        }
+      ]),
+      canApproveWorkflow: true,
+      approveWorkflowDisabledReason: null,
+      rejectWorkflowEvidenceLinks: expect.arrayContaining([reportPackEvidence]),
+      rejectWorkflowReasonCode: "BrowserApprovalDecisionReview",
+      canRejectWorkflow: true,
+      rejectWorkflowDisabledReason: null
+    });
+  });
+
+  it("enables close package publication when shared close readiness and checklist-control approvals are retained", () => {
+    const reportPackEvidence: OperationsEvidenceLink = {
+      evidenceId: "report-pack-close-evidence",
+      label: "Report-pack retained manifest",
+      route: "/workstation/reporting/report-packs/report-pack-2026-05/evidence",
+      source: "operations-continuity",
+      capturedAtUtc: "2026-05-10T18:00:00Z"
+    };
+    const closeChecklist: OperationsCloseChecklistTask[] = [
+      {
+        ...detail.closeChecklist[0],
+        status: "Done",
+        blockingReason: null,
+        acknowledgedAtUtc: "2026-05-10T17:10:00Z",
+        acknowledgedBy: "ledger-lead",
+        requiredApprovalCount: 1
+      },
+      {
+        taskId: "close-gate-approval",
+        gate: "Approval",
+        label: "Approval close gate",
+        owner: "fund-controller",
+        requiredEvidence: "Approved workflow and retained report-pack evidence.",
+        dueDate: "2026-05-10",
+        requiredApprovalCount: 2,
+        expiresOn: "2026-05-14",
+        status: "Done",
+        blockingReason: null,
+        evidencePointer: reportPackEvidence.evidenceId,
+        remediationRoute: "/workstation/accounting/approvals",
+        canAcknowledge: false,
+        acknowledgedAtUtc: null,
+        acknowledgedBy: null
+      }
+    ];
+    const closeReadyDetail: OperationsContinuityWorkflow = {
+      ...detail,
+      status: "ReadyForClose",
+      approvalState: "Approved",
+      approvals: [
+        {
+          approvalId: "approval-close-2026-05",
+          status: "Approved",
+          operator: "ops-user",
+          reviewer: "fund-controller",
+          rationale: "Approved close package publication from retained report-pack evidence.",
+          submittedAtUtc: "2026-05-10T17:30:00Z",
+          decidedAtUtc: "2026-05-10T17:45:00Z",
+          evidenceLinks: [reportPackEvidence]
+        }
+      ],
+      reportPackReadiness: {
+        isReady: true,
+        reportPackId: "report-pack-2026-05",
+        blockingReason: null,
+        evidenceLinks: [reportPackEvidence]
+      },
+      closeChecklist,
+      closeReadiness: {
+        isReadyToClose: true,
+        severity: "Info",
+        score: 100,
+        components: [],
+        blockers: [],
+        nextActions: []
+      },
+      closePackage: null
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail: closeReadyDetail,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.commandSpine.rows[4]).toMatchObject({
+      id: "produce-evidence",
+      workflowId,
+      expectedWorkflowVersion: 4,
+      closeWorkflowReportPackId: "report-pack-2026-05",
+      closeWorkflowEvidenceLinks: expect.arrayContaining([reportPackEvidence]),
+      closeWorkflowChecklistControlApprovals: expect.arrayContaining([
+        {
+          taskId: "close-gate-ledgerposting",
+          approvedBy: "ledger-lead",
+          approvedAtUtc: "2026-05-10T17:10:00Z"
+        },
+        {
+          taskId: "close-gate-approval",
+          approvedBy: "fund-controller",
+          approvedAtUtc: "2026-05-10T17:45:00Z"
+        }
+      ]),
+      canCloseWorkflow: true,
+      closeWorkflowLabel: "Publish close package",
+      closeWorkflowDisabledReason: null,
+      closeWorkflowAriaLabel: "Publish close package for 2026-05"
+    });
+  });
+
+  it("fails closed when reconciliation lane evidence has no local route", () => {
+    const workflowWithExternalLaneEvidence: OperationsContinuityWorkflow = {
+      ...detail,
+      reconciliationLanes: [
+        {
+          laneId: "bank-reconciliation",
+          label: "Bank reconciliation",
+          status: "ReviewRequired",
+          isReady: false,
+          breakCount: 1,
+          summary: "Bank reconciliation is waiting for retained bank statement evidence.",
+          routeHint: "/workstation/accounting/reconciliation",
+          evidenceLinks: [
+            {
+              evidenceId: "external-bank-evidence-1",
+              label: "External bank statement evidence",
+              route: "https://evidence.example/bank-reconciliation",
+              source: "external-vault",
+              capturedAtUtc: "2026-05-08T15:36:00Z"
+            }
+          ],
+          requiredActions: ["Retain the bank statement evidence inside the Meridian evidence vault."]
+        }
+      ]
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail: workflowWithExternalLaneEvidence,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.reconciliationLanes[0]).toMatchObject({
+      id: "bank-reconciliation",
+      evidenceLabel: "1 evidence link",
+      evidenceHref: null,
+      evidenceRouteLabel: "No local evidence route",
+      routeHref: "/accounting/reconciliation",
+      routeLabel: "Open lane"
+    });
+  });
+
+  it("fails closed when workflow approval evidence has no local route", () => {
+    const workflowWithExternalApprovalEvidence: OperationsContinuityWorkflow = {
+      ...detail,
+      approvals: [
+        {
+          ...detail.approvals[0]!,
+          evidenceLinks: [
+            {
+              evidenceId: "external-approval-evidence-1",
+              label: "External approval evidence",
+              route: "https://evidence.example/approval-close-2026-05",
+              source: "external-vault",
+              capturedAtUtc: "2026-05-08T15:06:00Z"
+            }
+          ]
+        }
+      ]
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail: workflowWithExternalApprovalEvidence,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.workflowApprovalHistory[0]).toMatchObject({
+      id: "approval-close-2026-05",
+      evidenceLabel: "1 evidence link",
+      evidenceHref: null,
+      evidenceRouteLabel: "No local evidence route"
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "approval:approval-close-2026-05")).toMatchObject({
+      routeHref: null,
+      routeLabel: "No local route"
+    });
+  });
+
+  it("fails closed when a break-case retained evidence link has no local route", () => {
+    const workflowWithExternalBreakEvidence: OperationsContinuityWorkflow = {
+      ...detail,
+      breakCases: [
+        {
+          breakId: "recon-break-external",
+          checkId: "income-accrual-check",
+          category: "IncomeAccrual",
+          severity: "Warning",
+          status: "Open",
+          owner: null,
+          dueDate: null,
+          expectedSource: "ledger",
+          actualSource: "agent-bank",
+          expectedAmount: 2400,
+          actualAmount: 0,
+          variance: -2400,
+          securityId: null,
+          symbol: "BOND1",
+          suggestedAction: "Assign income accrual break and retain local evidence before approval.",
+          evidenceLinks: [
+            {
+              evidenceId: "external-break-evidence-1",
+              label: "External income accrual support",
+              route: "https://evidence.example/recon-break-external",
+              source: "external-vault",
+              capturedAtUtc: "2026-05-08T15:34:00Z"
+            }
+          ],
+          escalationLevel: null,
+          escalationReason: null,
+          escalatedAtUtc: null,
+          slaState: null,
+          slaDueAtUtc: null,
+          materiality: null,
+          rootCauseCode: null,
+          approvalState: null,
+          blockedOutputs: null
+        }
+      ]
+    };
+
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail: workflowWithExternalBreakEvidence,
+      loading: false,
+      detailLoading: false,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.breakCases[0]).toMatchObject({
+      id: "recon-break-external",
+      evidenceLabel: "1 retained evidence link",
+      evidenceHref: null,
+      evidenceRouteLabel: "No local evidence route",
+      caseworkHref: `/accounting/exceptions?workflowId=${workflowId}&breakId=recon-break-external`,
+      caseworkRouteLabel: "Open casework",
+      commandPostureLabel: "Assignment and escalation ready",
+      commandGuardLabel: "Expected workflow version 4",
+      workflowId,
+      expectedWorkflowVersion: 4,
+      assignmentOwner: "browser-operator",
+      canAssign: true,
+      assignLabel: "Assign to me",
+      assignDisabledReason: null,
+      canResolve: false,
+      resolveLabel: "Resolve break",
+      resolveDisabledReason: "Assign the break before resolving it.",
+      routeHref: null,
+      routeLabel: "No local route"
     });
   });
 
@@ -1192,6 +2089,7 @@ describe("Operations Continuity view model", () => {
     expect(vm.gatesEmptyText).toBe("Loading selected workflow gates...");
     expect(vm.blockersEmptyText).toBe("Loading selected workflow blockers...");
     expect(vm.checklistEmptyText).toBe("Loading selected workflow checklist...");
+    expect(vm.commandSpine.emptyText).toBe("Loading Financial Operations command spine...");
     expect(vm.financialOperationsQueue.emptyText).toBe("Loading Financial Operations operator queue...");
     expect(vm.timelineEmptyText).toBe("Loading workflow timeline.");
   });
@@ -1261,24 +2159,49 @@ describe("Operations Continuity view model", () => {
       checklistLabel: "2 open checklist items",
       workflowHref: "/accounting/operations-continuity"
     });
-    expect(vm.closeCockpit.evidencePackages).toHaveLength(2);
+    expect(vm.closeCockpit.evidencePackages).toHaveLength(4);
     expect(vm.closeCockpit.evidencePackages[0]).toMatchObject({
       id: "private-capital:fund-event-accounting",
       statusLabel: "Ready",
       statusTone: "ready",
       readinessLabel: "4/4 categories complete",
       evidenceLabel: "3 evidence links",
+      evidenceHref: "/accounting/private-capital/fund-events",
+      evidenceRouteLabel: "Open retained evidence",
       routeHref: "/accounting/private-capital/fund-events",
       requiredActionsLabel: "No required actions"
     });
     expect(vm.closeCockpit.evidencePackages[1]).toMatchObject({
+      id: "private-capital:partner-capital-tie-out",
+      label: "Partner capital tie-out evidence package",
+      statusLabel: "Ready",
+      statusTone: "ready",
+      readinessLabel: "3/3 categories complete",
+      evidenceLabel: "2 evidence links",
+      evidenceHref: "/accounting/private-capital/capital-account-subledger/tie-outs",
+      routeHref: "/accounting/private-capital/capital-account-subledger"
+    });
+    expect(vm.closeCockpit.evidencePackages[2]).toMatchObject({
       id: "private-capital:nav-support",
       statusLabel: "Review Required",
       statusTone: "review",
       readinessLabel: "1/3 categories complete",
       evidenceLabel: "1 evidence link",
+      evidenceHref: "/portfolio/nav/support-package",
+      evidenceRouteLabel: "Open retained evidence",
       routeHref: "/portfolio/nav",
       requiredActionsLabel: "Retain complete NAV support package evidence before close sign-off."
+    });
+    expect(vm.closeCockpit.evidencePackages[3]).toMatchObject({
+      id: "private-capital:close-approval-audit",
+      label: "Close approval and audit evidence",
+      statusLabel: "Review Required",
+      statusTone: "review",
+      readinessLabel: "2/4 categories complete",
+      evidenceLabel: "1 evidence link",
+      evidenceHref: "/accounting/approvals",
+      routeHref: "/accounting/operations-continuity",
+      requiredActionsLabel: "Retain checklist-control approval and close-package manifest evidence before sign-off."
     });
     expect(vm.closeCockpit.approvalHistory).toHaveLength(1);
     expect(vm.closeCockpit.approvalHistory[0]).toMatchObject({
@@ -1289,6 +2212,8 @@ describe("Operations Continuity view model", () => {
       actorLabel: "Reviewer fund-controller / Operator ops-user",
       decidedLabel: "May 08, 15:05 UTC",
       evidenceLabel: "1 evidence link",
+      evidenceHref: "/accounting/approvals",
+      evidenceRouteLabel: "Open evidence",
       workflowHref: "/accounting/operations-continuity"
     });
     expect(vm.closeCockpit.navSupportPackages).toHaveLength(1);
@@ -1302,6 +2227,176 @@ describe("Operations Continuity view model", () => {
       evidenceLabel: "1 evidence link",
       requiredActionsLabel: "Retain NAV support package for positions, cash, pricing, and shadow NAV evidence.",
       routeHref: "/portfolio/nav"
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-proof-lane:nav-support")).toMatchObject({
+      kindLabel: "Private-capital proof lane",
+      title: "NAV support",
+      detail: "Shadow NAV support package still needs retained positions, cash, and pricing evidence.",
+      statusLabel: "Review Required",
+      statusTone: "review",
+      ownerLabel: "NAV support operations",
+      dueLabel: "Before close approval",
+      evidenceLabel: "1 evidence link",
+      actionLabel: "Retain NAV support for positions, cash, and pricing",
+      routeHref: "/portfolio/nav"
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-proof-lane:close-package")).toMatchObject({
+      kindLabel: "Private-capital proof lane",
+      title: "Evidence package",
+      statusLabel: "Blocked",
+      statusTone: "blocked",
+      ownerLabel: "Evidence operations",
+      evidenceLabel: "No retained evidence",
+      actionLabel: "Publish the close package manifest",
+      routeHref: "/accounting/operations-continuity"
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-proof-lane:period-lock")).toMatchObject({
+      kindLabel: "Private-capital proof lane",
+      title: "Period lock evidence",
+      statusLabel: "Review Required",
+      statusTone: "review",
+      ownerLabel: "Operations control",
+      actionLabel: "Close the workflow and retain period-lock evidence"
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "nav-support-package:nav-support:fund-alpha:2026-05")).toMatchObject({
+      kindLabel: "NAV support package",
+      title: "NAV support package",
+      detail: expect.stringContaining("2/4 components ready; review Pricing, Shadow NAV"),
+      statusLabel: "Review Required",
+      statusTone: "review",
+      ownerLabel: "NAV support operations",
+      dueLabel: "Before NAV package sign-off",
+      evidenceLabel: "1 evidence link",
+      actionLabel: "Retain NAV support package for positions, cash, pricing, and shadow NAV evidence.",
+      routeHref: "/portfolio/nav"
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-evidence-package:private-capital:nav-support")).toMatchObject({
+      kindLabel: "Private-capital evidence package",
+      title: "NAV support evidence package",
+      detail: "NAV support evidence package still needs pricing and shadow NAV support.",
+      statusLabel: "Review Required",
+      statusTone: "review",
+      ownerLabel: "Evidence operations",
+      dueLabel: "1/3 categories complete",
+      evidenceLabel: "1 evidence link",
+      actionLabel: "Retain complete NAV support package evidence before close sign-off.",
+      routeHref: "/portfolio/nav"
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-evidence-package:private-capital:close-approval-audit")).toMatchObject({
+      kindLabel: "Private-capital evidence package",
+      title: "Close approval and audit evidence",
+      detail: "Close approval and audit evidence still need checklist-control approval and close-package manifest support.",
+      statusLabel: "Review Required",
+      statusTone: "review",
+      ownerLabel: "Evidence operations",
+      dueLabel: "2/4 categories complete",
+      evidenceLabel: "1 evidence link",
+      actionLabel: "Retain checklist-control approval and close-package manifest evidence before sign-off.",
+      routeHref: "/accounting/operations-continuity"
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-approval:approval-close-2026-05")).toMatchObject({
+      kindLabel: "Private-capital approval",
+      title: "approval-close-2026-05",
+      detail: `2026-05 / ${fundAccountId}: Pending final ledger validation before close sign-off.`,
+      statusLabel: "Reviewer Assigned",
+      statusTone: "review",
+      ownerLabel: "Reviewer fund-controller / Operator ops-user",
+      dueLabel: "May 08, 15:05 UTC",
+      evidenceLabel: "1 evidence link",
+      actionLabel: "Complete private-capital close approval",
+      routeHref: "/accounting/approvals"
+    });
+  });
+
+  it("projects the source-backed close calendar for workflow control", () => {
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail,
+      loading: false,
+      detailLoading: false,
+      closeCalendar,
+      closeCalendarLoading: false,
+      closeCalendarError: null,
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.closeCalendar).toMatchObject({
+      title: "Close calendar",
+      statusLabel: "Blocked",
+      statusTone: "blocked",
+      summaryLabel: "0/1 calendar item ready; 2 open checklist items.",
+      scopeLabel: `Selected 2026-05 / ${fundAccountId}`,
+      freshnessLabel: "Generated May 10, 18:45 UTC",
+      itemCountLabel: "1 calendar item",
+      blockerCountLabel: "1 blocker",
+      checklistCountLabel: "2 open checklist items",
+      approvalCountLabel: "1/2 approvals complete",
+      nextDueLabel: "Next due May 12, 2026: Ledger posting controller check"
+    });
+    expect(vm.closeCalendar.rows[0]).toMatchObject({
+      id: workflowId,
+      periodLabel: `2026-05 / ${fundAccountId}`,
+      statusLabel: "Ledger Posting Draft",
+      statusTone: "review",
+      dueLabel: "May 12, 2026",
+      taskLabel: "Ledger posting controller check",
+      ownerLabel: "fund-controller",
+      readinessLabel: "72% ready",
+      readinessTone: "blocked",
+      blockerLabel: "1 blocker",
+      checklistLabel: "2 open checklist items",
+      approvalLabel: "1/2 approvals complete",
+      routeHref: "/accounting/operations-continuity"
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === `close-calendar:${workflowId}`)).toMatchObject({
+      kindLabel: "Close calendar",
+      title: `2026-05 / ${fundAccountId}: Ledger posting controller check`,
+      detail: "1 blocker; 2 open checklist items; 1/2 approvals complete",
+      statusLabel: "72% ready",
+      statusTone: "blocked",
+      ownerLabel: "fund-controller",
+      dueLabel: "May 12, 2026",
+      evidenceLabel: "Calendar status: Ledger Posting Draft",
+      actionLabel: "Resolve close-calendar blockers before approval or close lock.",
+      routeHref: "/accounting/operations-continuity"
+    });
+  });
+
+  it("fails closed in the operator queue when the close calendar cannot be loaded", () => {
+    const vm = buildOperationsContinuityScreenViewModel({
+      workflows: [summary],
+      selectedWorkflowId: workflowId,
+      detail,
+      loading: false,
+      detailLoading: false,
+      closeCalendar: null,
+      closeCalendarLoading: false,
+      closeCalendarError: "Close calendar projection could not be loaded.",
+      error: null,
+      detailError: null,
+      refresh: vi.fn(),
+      selectWorkflow: vi.fn()
+    });
+
+    expect(vm.closeCalendar).toMatchObject({
+      statusLabel: "Unavailable",
+      statusTone: "blocked",
+      errorText: "Close calendar projection could not be loaded."
+    });
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "close-calendar:error")).toMatchObject({
+      kindLabel: "Close calendar",
+      title: `2026-05 / ${fundAccountId}: Close calendar unavailable`,
+      statusLabel: "Unavailable",
+      statusTone: "blocked",
+      ownerLabel: "Operations control",
+      dueLabel: "Next due task unavailable",
+      evidenceLabel: "Close calendar evidence unavailable",
+      actionLabel: "Close calendar projection could not be loaded.",
+      routeHref: "/accounting/operations-continuity"
     });
   });
 
@@ -1332,6 +2427,17 @@ describe("Operations Continuity view model", () => {
     });
     expect(vm.closeCockpit.errorText).toBe("Private-capital close cockpit could not be loaded.");
     expect(vm.closeCockpit.lanesEmptyText).toBe("Private-capital cockpit lanes could not be loaded.");
+    expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-close-cockpit:error")).toMatchObject({
+      kindLabel: "Private-capital close cockpit",
+      title: `2026-05 / ${fundAccountId}: Private-capital close cockpit unavailable`,
+      statusLabel: "Unavailable",
+      statusTone: "blocked",
+      ownerLabel: "Operations control",
+      dueLabel: "Close cockpit unavailable",
+      evidenceLabel: "Private-capital close evidence unavailable",
+      actionLabel: "Private-capital close cockpit could not be loaded.",
+      routeHref: "/accounting/operations-continuity"
+    });
   });
 
   it("summarizes completed checklist controls from the shared close-checklist contract", () => {
@@ -1387,6 +2493,20 @@ describe("Operations Continuity view model", () => {
       evidenceCountLabel: "2/2 evidence pointers",
       dueSoonLabel: "No open due dates",
       statusTone: "ready"
+    });
+    expect(vm.checklist[0]).toMatchObject({
+      id: "close-gate-ledgerposting",
+      acknowledgementLabel: "Acknowledged by fund-controller at May 09, 15:30 UTC",
+      acknowledgementCommandPostureLabel: "Acknowledgement retained",
+      acknowledgementGuardLabel: "Expected workflow version 4",
+      canAcknowledge: false,
+      acknowledgeLabel: "Acknowledged",
+      acknowledgeDisabledReason: "Checklist acknowledgement has already been retained."
+    });
+    expect(vm.checklist[1]).toMatchObject({
+      id: "close-gate-reportpack",
+      acknowledgementCommandPostureLabel: "Acknowledgement retained",
+      acknowledgementGuardLabel: "Expected workflow version 4"
     });
   });
 
@@ -1486,8 +2606,16 @@ describe("Operations Continuity view model", () => {
       closeAuditLabel: "Workflow Closed f4d29af8 / closehash-pa",
       closePackageLabel: "close-package-2026-05 / b5f6c7d8e9a0",
       reopenAuditLabel: "No governed reopen recorded",
-      commandGuardLabel: "Mutations must use the governed reopen command with incident metadata, justification, approval reference, and impact summary."
+      commandGuardLabel: "Mutations must use the governed reopen command with incident metadata, justification, approval reference, and impact summary.",
+      workflowId,
+      expectedWorkflowVersion: 4,
+      canReopenWorkflow: true,
+      reopenWorkflowDisabledReason: null,
+      reopenWorkflowAriaLabel: "Reopen governed period for 2026-05"
     });
+    expect(vm.closeGovernance.reopenWorkflowEvidenceLinks).toEqual(expect.arrayContaining([
+      expect.objectContaining({ evidenceId: "close-package-evidence-1" })
+    ]));
   });
 
   it("projects governed reopen evidence from the workflow timeline", () => {
@@ -1594,6 +2722,7 @@ describe("Operations Continuity view model", () => {
     const services = {
       listWorkflows: vi.fn().mockResolvedValue([summary]),
       getWorkflow: vi.fn().mockResolvedValue(detail),
+      getCloseCalendar: vi.fn().mockResolvedValue(closeCalendar),
       getCloseCockpit: vi.fn().mockResolvedValue(closeCockpit)
     };
 
@@ -1605,6 +2734,10 @@ describe("Operations Continuity view model", () => {
       expect(result.current.timeline).toHaveLength(1);
     });
     expect(services.getWorkflow).toHaveBeenCalledWith(workflowId, expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    expect(services.getCloseCalendar).toHaveBeenCalledWith(
+      { fundAccountId, periodId: "2026-05" },
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    );
     expect(services.getCloseCockpit).toHaveBeenCalledWith(
       { fundAccountId, periodId: "2026-05" },
       expect.objectContaining({ signal: expect.any(AbortSignal) })

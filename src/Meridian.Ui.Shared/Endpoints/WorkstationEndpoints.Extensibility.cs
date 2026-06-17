@@ -38,7 +38,12 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Extensibility configuration service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var templates = await service.ListTenantTemplatesAsync(context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveRequiredTenantId(context, out var tenantId))
+            {
+                return Results.Problem("A tenant-scoped workstation request context is required.", statusCode: StatusCodes.Status403Forbidden);
+            }
+
+            var templates = await service.ListTenantTemplatesAsync(tenantId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(templates, jsonOptions);
         })
         .WithName("ListWorkstationExtensibilityTenantTemplates")
@@ -78,9 +83,14 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Extensibility configuration service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
+            if (!TryResolveRequiredTenantId(context, out var tenantId))
+            {
+                return Results.Problem("A tenant-scoped workstation request context is required.", statusCode: StatusCodes.Status403Forbidden);
+            }
+
             try
             {
-                var saved = await service.UpsertTenantTemplateAsync(request, context.RequestAborted).ConfigureAwait(false);
+                var saved = await service.UpsertTenantTemplateAsync(tenantId, request, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(saved, jsonOptions);
             }
             catch (ArgumentException ex)
@@ -115,7 +125,12 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Extensibility configuration service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var history = await service.ListActivationHistoryAsync(tenantTemplateId, context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveRequiredTenantId(context, out var tenantId))
+            {
+                return Results.Problem("A tenant-scoped workstation request context is required.", statusCode: StatusCodes.Status403Forbidden);
+            }
+
+            var history = await service.ListActivationHistoryAsync(tenantId, tenantTemplateId, context.RequestAborted).ConfigureAwait(false);
             return Results.Json(history, jsonOptions);
         })
         .Produces<TenantTemplateActivationResultDto[]>(StatusCodes.Status200OK)
@@ -144,9 +159,14 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Extensibility configuration service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
+            if (!TryResolveRequiredTenantId(context, out var tenantId))
+            {
+                return Results.Problem("A tenant-scoped workstation request context is required.", statusCode: StatusCodes.Status403Forbidden);
+            }
+
             try
             {
-                var readiness = await service.EvaluateTenantTemplateActivationAsync(tenantTemplateId, context.RequestAborted).ConfigureAwait(false);
+                var readiness = await service.EvaluateTenantTemplateActivationAsync(tenantId, tenantTemplateId, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(readiness, jsonOptions);
             }
             catch (KeyNotFoundException)
@@ -187,10 +207,15 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Extensibility configuration service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
+            if (!TryResolveRequiredTenantId(context, out var tenantId))
+            {
+                return Results.Problem("A tenant-scoped workstation request context is required.", statusCode: StatusCodes.Status403Forbidden);
+            }
+
             try
             {
                 var result = await service
-                    .ActivateTenantTemplateAsync(tenantTemplateId, currentUser, request, DateTimeOffset.UtcNow, context.RequestAborted)
+                    .ActivateTenantTemplateAsync(tenantId, tenantTemplateId, currentUser, request, DateTimeOffset.UtcNow, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(
                     result,
@@ -238,4 +263,11 @@ public static partial class WorkstationEndpoints
             context,
             UserPermission.ModifyConfig,
             UserPermission.AdminMaintenance);
+
+    private static bool TryResolveRequiredTenantId(HttpContext context, out string tenantId)
+    {
+        tenantId = HttpContextWorkstationTenantContextAccessor.Resolve(context).TenantId ?? string.Empty;
+        tenantId = tenantId.Trim();
+        return !string.IsNullOrWhiteSpace(tenantId);
+    }
 }

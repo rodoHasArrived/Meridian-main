@@ -20,6 +20,8 @@ Usage:
     python3 validate-docs-structure.py --top-level ai --summary
 """
 
+from __future__ import annotations
+
 import argparse
 import re
 import sys
@@ -34,6 +36,7 @@ GENERATED_DIRS = {"generated", "_site"}
 # during migration, but this list is used to report which active lanes belong to the target model.
 CANONICAL_TOP_LEVEL_DIRS = {
     "ai",
+    "domain",
     "engineering",
     "generated",
     "operators",

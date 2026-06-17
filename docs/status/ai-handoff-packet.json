@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-16T18:19:17.895019+00:00",
+  "generatedAt": "2026-06-17T01:13:07.404503+00:00",
   "scope": {
     "requested": "Docs automation generated handoff packet",
     "excluded": [
@@ -7,31 +7,34 @@
     ]
   },
   "route": {
-    "lane": "docs",
-    "skill": "meridian-docs",
-    "mode": "Lightweight",
-    "modelRouteId": "analysis-economy",
-    "matchedRule": "docs-maintenance",
-    "rationale": "Docs updates should stay in canonical audience paths with minimal proof.",
-    "confidence": 1.0,
+    "lane": "provider",
+    "skill": "meridian-provider-builder",
+    "mode": "Deep Review",
+    "modelRouteId": "governance-research",
+    "matchedRule": "provider-integration",
+    "rationale": "Provider changes need adapter-specific validation, telemetry capture, and readiness evidence.",
+    "confidence": 0.875,
     "validationFloor": [
-      "git diff --check",
-      "python build/scripts/docs/check-ai-inventory.py --summary",
-      "python build/scripts/docs/check-ai-handoff.py --strict"
+      "dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter \"FullyQualifiedName~Provider\""
     ],
     "validationScripts": [
-      "check-ai-handoff-strict",
       "prompt-route-linter",
-      "handoff-packet-generator"
+      "handoff-packet-generator",
+      "check-handoff-packet-schema"
     ],
     "requiredTelemetry": [
       "route_id",
+      "selected_model",
+      "input_tokens",
+      "output_tokens",
+      "estimated_cost_usd",
+      "latency_ms",
       "handoff_path"
     ],
     "escalationTriggers": [
-      "docs change touches shared AI policy",
-      "docs change spans Codex and shared host guidance",
-      "required validation script fails"
+      "provider credentials or failover behavior changes",
+      "provider validation fails",
+      "policy exception requires wider context"
     ]
   },
   "routeOutcome": {
@@ -47,13 +50,13 @@
     }
   },
   "telemetry": {
-    "route_id": "docs-maintenance",
-    "model_route_id": "analysis-economy",
-    "selected_model": "unknown",
-    "input_tokens": null,
-    "output_tokens": null,
-    "estimated_cost_usd": null,
-    "latency_ms": null,
+    "route_id": "provider-integration",
+    "model_route_id": "governance-research",
+    "selected_model": "docs-automation-profile",
+    "input_tokens": 1,
+    "output_tokens": 1,
+    "estimated_cost_usd": 0.0,
+    "latency_ms": 1,
     "error_class": null,
     "handoff_path": "docs/status/ai-handoff-packet.md"
   },
@@ -69,11 +72,151 @@
   ],
   "changesMade": [
     {
+      "path": ".agents/skills/_shared/project-context.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": ".claude/skills/_shared/project-context.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": ".codex/AGENTS.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": ".codex/skills/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": ".codex/skills/_shared/codex-execution-contract.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": ".codex/skills/_shared/project-context.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": ".codex/skills/meridian-browser-workstation/SKILL.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": ".github/agents/implementation-assurance-agent.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": ".github/copilot-instructions.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": ".github/prompts/project-context.prompt.yml",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": ".github/workflows/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
       "path": ".github/workflows/ci.yml",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "build/scripts/docs/generate-coverage.py",
+      "path": ".github/workflows/copilot-setup-steps.yml",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": ".github/workflows/desktop-installer-packaging.yml",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": ".github/workflows/desktop-screenshot-capture.yml",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": ".github/workflows/desktop-user-manual.yml",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": ".github/workflows/documentation.yml",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": ".github/workflows/golden-path-validation.yml",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": ".github/workflows/targeted-test.yml",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": ".github/workflows/web-screenshot-capture.yml",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": ".github/workflows/windows-desktop-build.yml",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": ".github/workflows/wpf-dev-validation.yml",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": ".github/workflows/wpf-route-validation.yml",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "AGENTS.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "CLAUDE.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "Meridian Design System/CONTENT_FUNDAMENTALS.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "Meridian Design System/INSPIRATION_BRIEF.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "Meridian Design System/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "Meridian Design System/SKILL.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "Meridian Design System/VISUAL_FOUNDATIONS.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "Meridian Design System/preview/screen-recipes.html",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "Meridian Design System/ui_kits/dashboard/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "build/python/cli/buildctl.py",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "build/scripts/ai/meridian_context_exporter.py",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "build/scripts/ci/run-dotnet-ci-tests.py",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "build/scripts/docs/check-codex-skills.py",
       "reason": "Touched in current git diff."
     },
     {
@@ -81,7 +224,747 @@
       "reason": "Touched in current git diff."
     },
     {
+      "path": "build/scripts/docs/validate-docs-structure.py",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "build/scripts/duplication-audit.ps1",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "build/scripts/publish/generate-sbom.ps1",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "config/appsettings.sample.json",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "config/appsettings.schema.json",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/HELP.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/adr/017-modular-operational-monolith.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/ai/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/ai/agent-handoff-checklist.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/ai/agents/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/ai/assistant-workflow-contract.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/ai/claude/CLAUDE.providers.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/ai/codex/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/ai/codex/quickstart.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/ai/context/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/ai/context/accounting-context.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/ai/context/operational-evidence-context.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/ai/copilot/instructions.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/ai/exports/LLM_CONTEXT.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/ai/exports/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/ai/exports/context.json",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/ai/parallel-task-manifest-template.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/ai/tooling/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/ai/working-memory.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/architecture/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/architecture/core-extensibility-model.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/architecture/diagrams/meridian-development-roadmap.mmd",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/architecture/diagrams/meridian-source-layer-map.mmd",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/architecture/meridian-development-intelligence-framework.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/architecture/meridian-domain-model.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/architecture/meridian-vision.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/architecture/provider-integration-manifest-runtime.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/developer/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/developer/build-test-run.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/development/documentation-automation.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/development/policies/desktop-support-policy.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/development/refactor-map.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/development/repository-organization-guide.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/development/ui-fixture-mode-guide.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/development/wpf-implementation-notes.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/architecture/platform/provider-architecture.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/architecture/platform/provider-architecture.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/architecture/platform/provider-architecture.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/architecture/platform/workstation-delivery.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/architecture/platform/workstation-delivery.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/architecture/platform/workstation-delivery.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/operations/data-quality-monitoring.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/operations/data-quality-monitoring.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/operations/data-quality-monitoring.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-implementation-flow.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-implementation-flow.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-implementation-flow.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-navigation-map.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-navigation-map.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-navigation-map.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screen-catalog.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screen-catalog.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screen-catalog.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screen-summary.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screen-summary.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screen-summary.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-accounting.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-accounting.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-accounting.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-data.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-data.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-data.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-portfolio.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-portfolio.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-portfolio.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-reporting.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-reporting.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-reporting.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-settings.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-settings.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-settings.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-strategy.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-strategy.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-strategy.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-trading.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-trading.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui-wpf-screens-trading.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-implementation-flow.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-implementation-flow.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-implementation-flow.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-navigation-map.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-navigation-map.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-navigation-map.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screen-catalog.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screen-catalog.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screen-catalog.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screen-summary.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screen-summary.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screen-summary.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-accounting.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-accounting.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-accounting.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-data.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-data.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-data.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-portfolio.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-portfolio.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-portfolio.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-reporting.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-reporting.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-reporting.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-settings.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-settings.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-settings.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-strategy.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-strategy.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-strategy.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-trading.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-trading.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/ui/ui-wpf-screens-trading.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/workflows/operations/fund-ops-reconciliation.dot",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/workflows/operations/fund-ops-reconciliation.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/diagrams/workflows/operations/fund-ops-reconciliation.svg",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/documentation-inventory.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/domain/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/domain/fund-event.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/domain/operational-evidence-graph.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/domain/security.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/engineering/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/engineering/free-development-tools.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/evaluations/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/evaluations/evaluation-archive-migration-2026-06-16.md",
+      "reason": "Touched in current git diff."
+    },
+    {
       "path": "docs/generated/repository-structure.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/generated/workflow-command-reference.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/generated/workflows-overview.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/product/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/product/implementation-todo-list.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/product/meridian-design-document.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/roadmap/data/program-state.yml",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/roadmap/data/roadmap-items.yml",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/roadmap/generated/MANIFEST.json",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/roadmap/generated/roadmap-register.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/desktop/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/desktop/wpf-backfill.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/desktop/wpf-backtest.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/desktop/wpf-dashboard.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/desktop/wpf-data-browser.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/desktop/wpf-data-quality.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/desktop/wpf-diagnostics.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/desktop/wpf-live-data.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/desktop/wpf-provider-health.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/desktop/wpf-providers.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/desktop/wpf-quant-script.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/desktop/wpf-security-master.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/desktop/wpf-settings.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/desktop/wpf-storage.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/desktop/wpf-strategy-runs.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/desktop/wpf-strategy-workspace.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-accounting-approvals.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-accounting-exceptions.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-accounting-external-gl-reconciliation.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-accounting-reconciliation.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-accounting-security-master.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-accounting-workspace.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-data-watchlist.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-overview-workspace.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-portfolio-attribution.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-portfolio-brokerage-sync.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-portfolio-workspace.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-reporting-evidence-workbench.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-reporting-exports.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-reporting-report-packs.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-reporting-workspace.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-settings-integrations.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-settings-preferences.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-settings-workspace.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-strategy-quant-lab.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-trading-orders.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-trading-positions.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-trading-risk.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/screenshots/web/web-trading-workspace.png",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/source/data/source-modules.yml",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/source/generated/MANIFEST.json",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/source/generated/source-hash-manifest.json",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/source/generated/source-roadmap-traceability.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/source/generated/stale-docs.json",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/source/generated/stale-docs.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/start/README.md",
       "reason": "Touched in current git diff."
     },
     {
@@ -109,10 +992,6 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "docs/status/coverage-report.md",
-      "reason": "Touched in current git diff."
-    },
-    {
       "path": "docs/status/doc-health-dashboard.json",
       "reason": "Touched in current git diff."
     },
@@ -133,119 +1012,87 @@
       "reason": "Touched in current git diff."
     },
     {
+      "path": "docs/status/program-state-summary.json",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/status/program-state-summary.md",
+      "reason": "Touched in current git diff."
+    },
+    {
       "path": "docs/status/prompt-route-lint-report.json",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Backfill/AutoGapRemediationService.cs",
+      "path": "docs/status/rules-report.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Backfill/GapBackfillService.cs",
+      "path": "docs/status/workflow-drift-report.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Backfill/HistoricalBackfillService.cs",
+      "path": "docs/status/workflow-manifest.json",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Commands/ConfigCommands.cs",
+      "path": "docs/status/workflow-validation-summary.json",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Commands/ConfigPresetCommand.cs",
+      "path": "make/ai.mk",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Commands/DiagnosticsCommands.cs",
+      "path": "make/build.mk",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Commands/DryRunCommand.cs",
+      "path": "make/diagnostics.mk",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Commands/EtlCommands.cs",
+      "path": "make/install.mk",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Commands/LedgerCliCommand.cs",
+      "path": "make/test.mk",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Commands/QueryCommand.cs",
+      "path": "scripts/ai/maintenance-full.sh",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Commands/RunbookCommands.cs",
+      "path": "scripts/dev/capture-web-screenshots.mjs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Commands/SchemaCheckCommand.cs",
+      "path": "scripts/dev/desktop-workflows.json",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Commands/SecurityMasterCommands.cs",
+      "path": "scripts/dev/run-desktop-workflow.ps1",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Commands/SelfTestCommand.cs",
+      "path": "scripts/dev/run-local-quality.ps1",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Commands/SimulationCommands.cs",
+      "path": "scripts/dev/web-screenshot-routes.json",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Commands/StatementImportCommands.cs",
+      "path": "scripts/lib/ui-diagram-generator.mjs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Commands/SymbolCommands.cs",
+      "path": "scripts/lib/ui-diagram-generator.test.mjs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Commands/ValidateConfigCommand.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/BackfillFeatureRegistration.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/CanonicalizationFeatureRegistration.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/ConfigurationFeatureRegistration.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/CredentialFeatureRegistration.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/DiagnosticsFeatureRegistration.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/MaintenanceFeatureRegistration.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/PipelineFeatureRegistration.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/ProviderFeatureRegistration.OptionsChain.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/ProviderFeatureRegistration.Registry.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/ProviderFeatureRegistration.cs",
+      "path": "src/Meridian.Application/Composition/Features/ProviderRoutingFeatureRegistration.cs",
       "reason": "Touched in current git diff."
     },
     {
@@ -253,83 +1100,7 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Composition/Features/SymbolManagementFeatureRegistration.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/HostStartup.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/SecurityMasterStartup.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/ServiceCompositionRoot.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Startup/CommandDispatchPlanner.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Startup/CommandServiceRegistration.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Startup/HostModeOrchestrator.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Startup/ModeRunners/BackfillModeRunner.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Startup/ModeRunners/CollectorModeRunner.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Startup/SharedStartupBootstrapper.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Startup/SharedStartupHelpers.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Startup/StartupValidationRunner.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Config/ConfigValidatorCli.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Config/ConfigurationPipeline.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
       "path": "src/Meridian.Application/Config/ConfigurationResolutionRules.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Config/Credentials/CredentialTestingService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Config/Credentials/OAuthTokenRefreshService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Config/Credentials/ProviderCredentialResolver.cs",
       "reason": "Touched in current git diff."
     },
     {
@@ -337,91 +1108,87 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/DirectLending/InMemoryDirectLendingService.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationActivationReadinessService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/DirectLending/LoanAccountingProjector.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationActivationService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/FundStructure/InMemoryFundStructureService.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationDryRunService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/FundStructure/PostgresFundStructureService.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationHttpClientTransport.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Http/BackfillCoordinator.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationIdentityResolutionPreviewService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Http/ConfigStore.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationMappedRecordIdentity.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationMappedRecordValidation.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Monitoring/DetailedHealthCheck.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationMonitoringService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Monitoring/PrometheusMetrics.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationOpenApiImportService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Monitoring/StatusHttpServer.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationPromotionReadinessService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Monitoring/StatusSnapshot.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationQuarantineReplayService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Monitoring/StatusWriter.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationQuarantineReviewService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Pipeline/DeadLetterSink.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationReconciliationHandoffService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Pipeline/EventPipeline.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationRestDryRunService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Pipeline/IngestionJobService.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationSchemaDriftService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Pipeline/PersistentDedupLedger.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationSetupService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Pipeline/SchemaUpcasterRegistry.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationStagingDedupeValidator.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/ProviderRouting/ProviderBindingService.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationStagingReviewService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/ProviderRouting/ProviderConnectionService.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationSyncOrchestrationService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationSyncPlanningService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/ProviderRouting/ProviderRoutingMapper.cs",
+      "path": "src/Meridian.Application/Integrations/ProviderIntegrationTemplateCatalog.cs",
       "reason": "Touched in current git diff."
     },
     {
@@ -429,207 +1196,51 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Services/AutoConfigurationService.cs",
+      "path": "src/Meridian.Application/README.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Services/ConfigurationService.cs",
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterContractAliases.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Services/ConfigurationWizard.cs",
+      "path": "src/Meridian.Contracts/Api/UiApiRoutes.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Services/ConnectivityProbeService.cs",
+      "path": "src/Meridian.Contracts/Integrations/ProviderIntegrationContracts.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Services/DailySummaryWebhook.cs",
+      "path": "src/Meridian.Contracts/Integrations/ProviderIntegrationContractsJsonContext.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Services/ExecutionSimulationOrchestrator.cs",
+      "path": "src/Meridian.Contracts/Ledger/LedgerBookDtos.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs",
+      "path": "src/Meridian.Contracts/README.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Subscriptions/Services/BatchOperationsService.cs",
+      "path": "src/Meridian.Contracts/Workstation/ReconciliationDtos.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs",
+      "path": "src/Meridian.DataIntegration/Credentials/ProviderSetupHandlers.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Subscriptions/Services/PortfolioImportService.cs",
+      "path": "src/Meridian.DataIntegration/README.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Subscriptions/Services/SchedulingService.cs",
+      "path": "src/Meridian.FinancialOperations/AccountingSystem/AccountingSystemIntegrationService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Subscriptions/Services/TemplateService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Subscriptions/Services/WatchlistService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Subscriptions/SubscriptionOrchestrator.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Wizard/Core/WizardContext.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Wizard/Steps/ReviewConfigurationStep.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Wizard/Steps/SaveConfigurationStep.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Application/Wizard/Steps/ValidateCredentialsStep.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Contracts/Workstation/LedgerReconciliationContractCompatibility.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Contracts/Workstation/StrategyRunContractCompatibility.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Core/Serialization/MarketDataJsonContext.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Canonicalization/ConditionCodeMapper.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Credentials/FileProviderCredentialStore.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Credentials/ProviderCredentialCatalog.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Historical/HistoricalDataQueryService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Monitoring/ConnectionHealthMonitor.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Monitoring/ConnectionStatusWebhook.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Monitoring/DataQuality/AnomalyDetector.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Monitoring/DataQuality/CompletenessScoreCalculator.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityMonitoringService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Monitoring/ProviderDegradationCalibration.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Monitoring/ProviderDegradationScorer.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.DataIntegration/Monitoring/SchemaValidationService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Domain/Collectors/SessionStatsCollector.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Entities/FundStructure/FundStructurePolicyService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Execution/Adapters/BaseBrokerageGateway.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Execution/Adapters/PaperTradingGateway.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Execution/OrderManagementSystem.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Banking/PostgresBankingService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsCloseCalendarService.cs",
+      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflow.cs",
       "reason": "Touched in current git diff."
     },
     {
@@ -637,267 +1248,83 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/StatementReconciliationService.cs",
+      "path": "src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.IbApi.SmokeStub/IBApiSmokeStub.cs",
+      "path": "src/Meridian.FinancialOperations/README.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Identity/FundStructure/FundAccountTraversalQueryService.cs",
+      "path": "src/Meridian.Identity/Application/ScopedAccessServices.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Identity/Infrastructure/UserAccountStore.cs",
+      "path": "src/Meridian.Identity/Contracts/Auth/ScopedAccessDtos.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs",
+      "path": "src/Meridian.Identity/README.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs",
+      "path": "src/Meridian.Instruments/README.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs",
+      "path": "src/Meridian.PortfolioRecords/README.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs",
+      "path": "src/Meridian.ReferenceData/README.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataGapRepair.cs",
+      "path": "src/Meridian.Reporting/README.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs",
+      "path": "src/Meridian.Reporting/ReportWriterGridEngine.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/ISymbolSearchProvider.cs",
+      "path": "src/Meridian.Storage/DirectLending/Migrations/005_direct_lending_operations.sql",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs",
+      "path": "src/Meridian.Storage/DirectLending/Migrations/005_direct_lending_workflows.sql",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs",
+      "path": "src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.Operations.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs",
+      "path": "src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/InteractiveBrokers/ContractFactory.cs",
+      "path": "src/Meridian.Storage/Integrations/FileProviderIntegrationManifestStore.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBHistoricalDataProvider.cs",
+      "path": "src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBSimulationClient.cs",
+      "path": "src/Meridian.Storage/README.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/NYSE/NYSEDataSource.cs",
+      "path": "src/Meridian.Strategies/README.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs",
+      "path": "src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodBrokerageGateway.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodHistoricalDataProvider.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodMarketDataClient.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticHistoricalDataProvider.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticOptionsChainProvider.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/Tiingo/TiingoHistoricalDataProvider.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Adapters/YahooFinance/YahooFinanceHistoricalDataProvider.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Reconciliation/BrokerStatementInfrastructure.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Reconciliation/ReconciliationCaseInfrastructure.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Instruments/AssetOperations/AssetOperationsReadService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Instruments/Indicators/TechnicalIndicatorService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Instruments/MoneyMarketFunds/PostgresMoneyMarketFundService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Instruments/Options/OptionsChainService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Platform/Diagnostics/DiagnosticBundleService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Platform/Monitoring/BackpressureAlertService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Platform/Runtime/GracefulShutdownHandler.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Platform/Runtime/StartupSummary.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Platform/Tracing/Metrics.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.PortfolioRecords/FundAccounts/InMemoryFundAccountService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.PortfolioRecords/FundAccounts/PostgresFundAccountService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.QuantScript/Api/QuantDataContext.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Storage/Backfill/BackfillStatusStore.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Storage/Banking/BankingMigrationRunner.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Storage/Banking/PostgresBankingStore.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Storage/Etl/EtlStores.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/ILedgerJournalStore.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Storage/Maintenance/ScheduledArchiveMaintenanceService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Storage/MoneyMarket/MoneyMarketMigrationRunner.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Storage/MoneyMarket/PostgresMoneyMarketFundStore.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Storage/Services/StorageCatalogService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Storage/Services/SymbolRegistryService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Storage/Sinks/JsonlStorageSink.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Storage/Sinks/ParquetStorageSink.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Storage/Store/JsonlMarketDataStore.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Strategies/Services/ReconciliationGovernanceService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Services/Services/Reconciliation/ReconciliationApiService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Services/Services/Reporting/ReportingStatusProjectionService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/DtoExtensions.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/AnalyticsEndpoints.cs",
+      "path": "src/Meridian.Strategies/Services/IReconciliationBreakQueueRepository.cs",
       "reason": "Touched in current git diff."
     },
     {
@@ -905,71 +1332,11 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
       "path": "src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
       "path": "src/Meridian.Ui.Shared/Endpoints/CredentialEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/CryptoReferenceEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/DataQualityEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/DepositReferenceEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/EdgarReferenceDataEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/EndpointHelpers.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/EquityReferenceEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/FailoverEndpoints.cs",
       "reason": "Touched in current git diff."
     },
     {
@@ -981,51 +1348,11 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/FutureReferenceEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/FxSpotReferenceEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/LeanEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
       "path": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
       "path": "src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/MessagingEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundReferenceEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/OptionChainEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/OptionReferenceEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/PlaidEndpoints.cs",
       "reason": "Touched in current git diff."
     },
     {
@@ -1041,15 +1368,7 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/SwapReferenceEndpoints.cs",
+      "path": "src/Meridian.Ui.Shared/Endpoints/ProviderRoutingEndpoints.cs",
       "reason": "Touched in current git diff."
     },
     {
@@ -1057,15 +1376,15 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/UiEndpoints.cs",
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Extensibility.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.OperationsContinuity.cs",
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.FinancialRecordExplorers.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Reconciliation.cs",
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.ProviderIntegrations.cs",
       "reason": "Touched in current git diff."
     },
     {
@@ -1073,83 +1392,23 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs",
+      "path": "src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Ui.Shared/Evidence/EvidenceSubjectResolver.cs",
+      "path": "src/Meridian.Ui.Shared/Extensibility/ExtensibilityConfigurationService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Ui.Shared/Extensibility/WorkflowExtensibilityCatalogProvider.cs",
+      "path": "src/Meridian.Ui.Shared/README.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/AccountingConfigurationService.cs",
+      "path": "src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/AlpacaBrokerageConnectionService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/BrokeragePortfolioSyncService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/FeatureCapabilitySettingsService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/FundAccountCloseReadinessService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/GovernedReportingTemplateCatalog.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/InMemoryOperatorInboxService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/PlaidWorkstationService.cs",
+      "path": "src/Meridian.Ui.Shared/Services/FinancialRecordExplorerSavedViewStore.cs",
       "reason": "Touched in current git diff."
     },
     {
@@ -1157,31 +1416,7 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ProviderReadinessService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
       "path": "src/Meridian.Ui.Shared/Services/ReportWriterGridArtifactService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ReportingScheduleService.cs",
       "reason": "Touched in current git diff."
     },
     {
@@ -1189,15 +1424,131 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/StrategyRunReviewPacketService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
       "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/README.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/package.json",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/scripts/smoke-workstation.mjs",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/app-shell.view-model.test.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/app-shell.view-model.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/api.operations-continuity.test.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/api.trading.test.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/api.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/api/covered-call.api.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/covered-call/index.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/dev-fixtures.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/price-alerts/evaluator.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/price-alerts/index.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/price-alerts/service.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/price-alerts/storage.test.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/price-alerts/storage.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/ui-api-routes.generated.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.test.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.test.tsx",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/covered-call-screen.test.tsx",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.test.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.test.tsx",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.tsx",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.test.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/operations-continuity-screen.view-model.ts",
       "reason": "Touched in current git diff."
     },
     {
@@ -1205,11 +1556,43 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Workflow/Runbooks/RunbookStore.cs",
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Workflow/Workflows/FundWorkflowCommandHandler.cs",
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.test.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/w4-acceptance-parity.test.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/types.ts",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/vite-config.test.ts",
       "reason": "Touched in current git diff."
     },
     {
@@ -1217,51 +1600,35 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs",
+      "path": "src/Meridian.Wpf/Contracts/IRemoteWorkstationClient.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Wpf/Features/Data/Shell/DataWorkspaceShellSnapshotService.cs",
+      "path": "src/Meridian.Wpf/Features/Reporting/Shell/ReportingWorkspaceShellPage.xaml",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Wpf/Features/DesktopFeatureModuleRegistry.cs",
+      "path": "src/Meridian.Wpf/Features/Reporting/Shell/ReportingWorkspaceShellPage.xaml.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Wpf/Features/FeatureCapabilityGateService.cs",
+      "path": "src/Meridian.Wpf/README.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Wpf/Features/IDesktopFeatureModule.cs",
+      "path": "src/Meridian.Wpf/Services/ApiStatusService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Wpf/Features/Settings/Shell/SettingsWorkspaceShellSnapshotService.cs",
+      "path": "src/Meridian.Wpf/Services/BackendServiceManager.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs",
+      "path": "src/Meridian.Wpf/Services/ConnectionService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Wpf/MainWindow.xaml.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Wpf/Services/FirstRunService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Wpf/Services/FundAccountReadService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Wpf/Services/FundReconciliationWorkbenchService.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Wpf/Services/ReconciliationReadService.cs",
+      "path": "src/Meridian.Wpf/Services/ReportingWorkspaceShellPresentationService.cs",
       "reason": "Touched in current git diff."
     },
     {
@@ -1269,63 +1636,43 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Wpf/Services/WpfShellServiceCollectionExtensions.cs",
+      "path": "src/Meridian.Wpf/Services/WatchlistService.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Wpf/Shell/Root/DesktopLaunchRouter.cs",
+      "path": "src/Meridian.Wpf/Services/WorkspaceShellStateProviders.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Wpf/ViewModels/ClusterStatusViewModel.cs",
+      "path": "src/Meridian.Wpf/Services/WpfRemoteWorkstationClient.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Wpf/ViewModels/FundAccountsViewModel.cs",
+      "path": "src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Wpf/ViewModels/MainPageViewModel.cs",
+      "path": "src/Meridian.Wpf/ViewModels/SymbolsPageViewModel.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Wpf/ViewModels/SecurityMasterEditViewModel.cs",
+      "path": "src/Meridian.Wpf/ViewModels/TickerStripViewModel.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Wpf/ViewModels/SettingsViewModel.cs",
+      "path": "src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Wpf/ViewModels/StorageOptimizationViewModel.cs",
+      "path": "src/Meridian.Wpf/Workstation/ViewModels/WorkspaceViewModelAdapters.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs",
+      "path": "src/Meridian/ApiHostOptions.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "src/Meridian.Wpf/Views/AccountingWorkspaceShellPage.xaml.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Wpf/Views/MainPage.xaml.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Wpf/Views/WelcomePage.xaml.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Wpf/Workstation/Controls/DenseDataGridControl.xaml.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Wpf/Workstation/ViewModels/Base/WorkspaceViewModelBase.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "src/Meridian.Wpf/Workstation/ViewModels/WorkspaceViewModelBase.cs",
+      "path": "src/Meridian/README.md",
       "reason": "Touched in current git diff."
     },
     {
@@ -1333,131 +1680,83 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Backtesting.Tests/BacktestEngineIntegrationTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Backtesting.Tests/BatchBacktestServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Backtesting.Tests/StageTelemetryTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Backtesting.Tests/YahooFinanceBacktestIntegrationTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.DirectLending.Tests/DirectLendingPostgresTestDatabase.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.FundStructure.Tests/FundStructureSetupWorkflowServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.FundStructure.Tests/GovernanceSharedDataAccessServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.FundStructure.Tests/InMemoryFundStructureServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
       "path": "tests/Meridian.Tests/Application/Auth/ScopedAccessServiceTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Backfill/AutoGapRemediationServiceTests.cs",
+      "path": "tests/Meridian.Tests/Application/DirectLending/DirectLendingOutboxDispatcherTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Backfill/CompositeHistoricalDataProviderTests.cs",
+      "path": "tests/Meridian.Tests/Application/Integrations/ProviderIntegrationActivationReadinessServiceTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Backfill/GapBackfillServiceTests.cs",
+      "path": "tests/Meridian.Tests/Application/Integrations/ProviderIntegrationActivationServiceTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Backfill/ParallelBackfillServiceTests.cs",
+      "path": "tests/Meridian.Tests/Application/Integrations/ProviderIntegrationDryRunServiceTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Commands/DiagnosticsCommandsTests.cs",
+      "path": "tests/Meridian.Tests/Application/Integrations/ProviderIntegrationHttpClientTransportTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Commands/SecurityMasterCommandsEdgarTests.cs",
+      "path": "tests/Meridian.Tests/Application/Integrations/ProviderIntegrationIdentityResolutionPreviewServiceTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Commands/SimulationCommandsTests.cs",
+      "path": "tests/Meridian.Tests/Application/Integrations/ProviderIntegrationMonitoringServiceTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Commands/StatementImportCommandsTests.cs",
+      "path": "tests/Meridian.Tests/Application/Integrations/ProviderIntegrationOpenApiImportServiceTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Composition/DiagnosticsFeatureRegistrationTests.cs",
+      "path": "tests/Meridian.Tests/Application/Integrations/ProviderIntegrationPromotionReadinessServiceTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Composition/PipelineFeatureRegistrationTests.cs",
+      "path": "tests/Meridian.Tests/Application/Integrations/ProviderIntegrationQuarantineReplayServiceTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Composition/ProviderCapabilityContractRegistrationTests.cs",
+      "path": "tests/Meridian.Tests/Application/Integrations/ProviderIntegrationQuarantineReviewServiceTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Composition/ProviderFeatureRegistrationTests.cs",
+      "path": "tests/Meridian.Tests/Application/Integrations/ProviderIntegrationReconciliationHandoffServiceTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Composition/Startup/ModeRunners/CommandModeRunnerTests.cs",
+      "path": "tests/Meridian.Tests/Application/Integrations/ProviderIntegrationRestDryRunServiceTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Composition/Startup/SharedStartupBootstrapperTests.cs",
+      "path": "tests/Meridian.Tests/Application/Integrations/ProviderIntegrationSchemaDriftServiceTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Composition/StorageFeatureRegistrationTests.cs",
+      "path": "tests/Meridian.Tests/Application/Integrations/ProviderIntegrationSetupServiceTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Config/ConfigurationUnificationTests.cs",
+      "path": "tests/Meridian.Tests/Application/Integrations/ProviderIntegrationStagingReviewServiceTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Config/ProviderCredentialStoreTests.cs",
+      "path": "tests/Meridian.Tests/Application/Integrations/ProviderIntegrationSyncOrchestrationServiceTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Coordination/SubscriptionOrchestratorCoordinationTests.cs",
+      "path": "tests/Meridian.Tests/Application/Integrations/ProviderIntegrationSyncPlanningServiceTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Credentials/CredentialTestingServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Application/DirectLending/AccrualLedgerServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Application/DirectLending/PostgresDirectLendingCommandServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Application/Monitoring/StatusWriterTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Application/OperationsContinuityPostgresRoundTripTests.cs",
+      "path": "tests/Meridian.Tests/Application/Integrations/ProviderIntegrationTemplateCatalogTests.cs",
       "reason": "Touched in current git diff."
     },
     {
@@ -1465,195 +1764,19 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Pipeline/EventPipelineMetricsTests.cs",
+      "path": "tests/Meridian.Tests/Contracts/CoreExtensibilityContractsTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Pipeline/IngestionJobServiceCoordinationTests.cs",
+      "path": "tests/Meridian.Tests/Contracts/ProviderIntegrationContractsTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Pipeline/MarketDataClientFactoryTests.cs",
+      "path": "tests/Meridian.Tests/FinancialOperations/PrivateCapital/PrivateCapitalCloseCockpitServiceTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Application/Pipeline/WalEventPipelineTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Application/ProviderRouting/BestOfBreedProviderSelectorTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Application/ProviderRouting/ProviderRoutingServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Application/ProviderRouting/ProviderTrustScoringServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Application/Reconciliation/CanonicalReconciliationMatchingEngineTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Application/Reconciliation/StatementRepositoryTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Application/ReconciliationRunServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Application/Services/ConfigurationPresetsTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Application/Services/ConfigurationServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Application/Services/ExecutionSimulationOrchestratorTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Application/Services/FundOperationsWorkspaceReadServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Application/Wizard/WizardConfigurationStepTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/AssetOperations/AssetOperationsReadServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Commodities/CommodityProjectionServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Core/Config/ConfigValidationPipelineTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/CryptoCurrency/CryptoProjectionServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/DataIntegration/Canonicalization/ConditionCodeMapperTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/DataIntegration/Monitoring/ConnectionStatusWebhookTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/DataIntegration/Monitoring/DataQuality/LiquidityProfileTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/DataIntegration/Monitoring/ProviderDegradationCalibrationTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/DataIntegration/Monitoring/SchemaValidationServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/DataIntegration/Services/DataQuality/CompletenessScoreCalculatorTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Deposits/DepositProjectionServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Derivatives/SwapProjectionServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Equity/EquityProjectionServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Execution/OrderManagementSystemGovernanceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Execution/TradierExecutionReconciliationTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/FinancialOperations/Banking/BankTransactionSeedTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/FinancialOperations/Banking/PaymentApprovalTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/FinancialOperations/Ledger/AccountingPolicyServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/FixedIncome/BondProjectionServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Futures/FutureProjectionServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/FxSpot/FxSpotProjectionServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Infrastructure/Providers/AlpacaMessageParsingTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Infrastructure/Providers/PolygonMarketDataClientTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Infrastructure/Providers/PolygonRecordedSessionReplayTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Infrastructure/Providers/PolygonSubscriptionTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Infrastructure/Providers/ProviderFactoryCredentialContextTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Infrastructure/Providers/ProviderResilienceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Infrastructure/Providers/SyntheticMarketDataProviderTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Infrastructure/Providers/SyntheticOptionsChainProviderTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Infrastructure/Resilience/WebSocketConnectionManagerTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Instruments/Options/OptionsChainServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Integration/EndpointStubDetectionTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Integration/EndpointTests/CheckpointEndpointTests.cs",
+      "path": "tests/Meridian.Tests/Integration/EndpointTests/ConfigDirectLendingAuthorizationTests.cs",
       "reason": "Touched in current git diff."
     },
     {
@@ -1661,75 +1784,15 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Integration/EndpointTests/FundStructureEndpointTests.cs",
+      "path": "tests/Meridian.Tests/Integration/EndpointTests/RoleAuthorizationTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs",
+      "path": "tests/Meridian.Tests/Storage/DirectLendingMigrationTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Integration/EndpointTests/QualityEndpointContractTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/MoneyMarketFunds/MoneyMarketFundProjectionServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Options/OptionProjectionServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Performance/AllocationBudgetIntegrationTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Platform/Diagnostics/DiagnosticBundleServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Platform/Monitoring/BackpressureAlertServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Platform/Tracing/TracedEventMetricsTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/PortfolioRecords/FundAccounts/FundAccountServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Reconciliation/StatementBreakClassifierTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Reconciliation/StatementFixtureScenarioTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Reconciliation/StatementImportAndMatchingTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Serialization/HighPerformanceJsonTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/StatementReconciliationServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Storage/Backfill/BackfillStatusStoreTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Storage/DataValidatorTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Storage/JsonlReplayerTests.cs",
+      "path": "tests/Meridian.Tests/Storage/Integrations/FileProviderIntegrationManifestStoreTests.cs",
       "reason": "Touched in current git diff."
     },
     {
@@ -1737,39 +1800,7 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Storage/WriteAheadLogTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Strategies/ReconciliationCaseWorkflowServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Strategies/StrategyRunReadServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/SymbolSearch/SymbolSearchServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Treasury/MmfFamilyNormalizationTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Treasury/MmfLiquidityServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Treasury/MmfRebuildTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Treasury/MoneyMarketFundServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/AccountingConfigurationServiceTests.cs",
+      "path": "tests/Meridian.Tests/Strategies/ReconciliationBreakQueueRepositoryTests.cs",
       "reason": "Touched in current git diff."
     },
     {
@@ -1777,83 +1808,15 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Ui/AlpacaBrokerageConnectionServiceTests.cs",
+      "path": "tests/Meridian.Tests/Ui/FundAccountEndpointAuthorizationTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Ui/AuditTrailExplorerServiceTests.cs",
+      "path": "tests/Meridian.Tests/Ui/FundStructureEndpointAuthorizationTests.cs",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Ui/BondReferenceEndpointsTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/BrokerageConnectionEndpointsTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/BrokeragePortfolioSyncServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/CashOperationsOrchestratorServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/CredentialCompatibilityEndpointsTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/DiagnosticsEndpointsTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/DirectLendingEndpointsTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/EdgarReferenceDataEndpointsTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/ExecutionWriteEndpointsTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/FamilyOfficeReadServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/FundOpsCloseLaneScenarioTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/LedgerAmountProvenanceServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/OmsIntegrationServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/OperationsContinuityReconciliationBridgeTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/OptionReferenceEndpointsRoundtripTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/PlaidWorkstationServiceTests.cs",
+      "path": "tests/Meridian.Tests/Ui/ProductionStartupPolicySmokeTests.cs",
       "reason": "Touched in current git diff."
     },
     {
@@ -1861,23 +1824,7 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Ui/ProviderLedgerReconciliationServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/ProviderReadinessEndpointTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
       "path": "tests/Meridian.Tests/Ui/ProviderRoutingEndpointsTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/ReconciliationApiServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/ReferenceDataEndpointAuthorizationTests.cs",
       "reason": "Touched in current git diff."
     },
     {
@@ -1885,43 +1832,7 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Ui/RiskEndpointsTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/SecurityMasterConvertibleEquityEndpointsTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/SecurityMasterExceptionCaseworkServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/SecurityMasterIngestStatusEndpointsTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/SecurityMasterPreferredEquityEndpointsTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/SecurityMasterValidationEndpointsTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/StrategyDesignerWorkstationEndpointsTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/TradingOperatorReadinessServiceTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/WorkstationEndpointContractCompatibilityTests.cs",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.AccountingConfiguration.cs",
+      "path": "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Extensibility.cs",
       "reason": "Touched in current git diff."
     },
     {
@@ -1929,11 +1840,79 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.Wave4.cs",
+      "path": "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.ProviderIntegrations.cs",
       "reason": "Touched in current git diff."
     },
     {
       "path": "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "tests/Meridian.Tests/Ui/WorkstationFinancialRecordExplorerEndpointTests.cs",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "tests/Meridian.Tests/Ui/WorkstationTenantContextTests.cs",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "tests/Meridian.Tests/Ui/WorkstationWorkflowSummaryFinancialOperationsTests.cs",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "tests/Meridian.Tests/Wpf/WpfReportingWorkspaceShellTests.cs",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/Services/BackendServiceManagerTests.cs",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/Services/ConnectionServiceTests.cs",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/Services/SetupWizardStateServiceTests.cs",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/Services/WatchlistServiceTests.cs",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/ViewModels/ActivityLogViewModelTests.cs",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/ViewModels/SymbolsPageViewModelTests.cs",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/ViewModels/TickerStripViewModelTests.cs",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "tests/Meridian.Wpf.Tests/Views/DesktopWorkflowScriptTests.cs",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "tests/scripts/test_buildctl_validation_runner.py",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "tests/scripts/test_direct_lending_outbox_claim_sql.py",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "tests/scripts/test_run_dotnet_ci_tests.py",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "tests/scripts/test_targeted_test_workflow.py",
       "reason": "Touched in current git diff."
     }
   ],

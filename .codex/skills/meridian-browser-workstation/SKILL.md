@@ -43,7 +43,10 @@ Non-trigger examples:
 2. Read the nearest dashboard docs/config (`package.json`, feature folders, route ownership) before edits.
 3. Keep changes bounded to browser workstation TypeScript/React surfaces plus required shared contracts.
 4. Run dashboard-local validation commands first.
-5. Report changed files, validation output, and any residual risk.
+5. When the issue is visual, interactive, layout-sensitive, or only visible in rendered state, start
+   the local dev server and use the Codex Browser plugin on an unauthenticated local route or
+   file-backed preview. Keep the browser pass scoped to the named route and state.
+6. Report changed files, validation output, Browser plugin evidence when used, and any residual risk.
 
 ## Handoffs
 
@@ -57,6 +60,8 @@ Non-trigger examples:
 - `npm --prefix src/Meridian.Ui/dashboard run test`
 - `npm --prefix src/Meridian.Ui/dashboard run build`
 - Use narrower dashboard test commands when available for the touched slice.
+- Use the Codex Browser plugin for rendered local UI checks after tests when the task needs visual,
+  DOM, console, network, or interaction evidence. Do not use it for signed-in flows or secret entry.
 
 ## Meridian Rules
 

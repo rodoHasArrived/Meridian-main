@@ -12,6 +12,8 @@ namespace Meridian.Tests.Contracts;
 
 public sealed class CoreExtensibilityContractsTests
 {
+    private const string TenantId = "tenant-alpha";
+
     [Fact]
     public void StaticCatalog_ShouldCoverEveryStableCoreObject()
     {
@@ -232,9 +234,10 @@ public sealed class CoreExtensibilityContractsTests
                     CanOverrideFinancialCalculations: true)
             ]);
 
-        await service.UpsertTenantTemplateAsync(bundle);
+        await service.UpsertTenantTemplateAsync(TenantId, bundle);
 
         var result = await service.ActivateTenantTemplateAsync(
+            TenantId,
             "template-blocked",
             "admin@example.com",
             new TenantTemplateActivationRequestDto("Attempt blocked activation"),
@@ -247,7 +250,7 @@ public sealed class CoreExtensibilityContractsTests
         result.Readiness.Issues.Should().Contain(issue => issue.BlockedFoundation == GovernedFoundationKindDto.AuditTrail);
         result.Readiness.Issues.Should().Contain(issue => issue.BlockedFoundation == GovernedFoundationKindDto.FinancialCalculationIntegrity);
 
-        var history = await service.ListActivationHistoryAsync("template-blocked");
+        var history = await service.ListActivationHistoryAsync(TenantId, "template-blocked");
         history.Should().ContainSingle(item => !item.IsActivated && item.EvaluatedBy == "admin@example.com");
     }
 
@@ -255,16 +258,17 @@ public sealed class CoreExtensibilityContractsTests
     public async Task ExtensibilityConfigurationService_ShouldRejectActivationWhenConfigurationsLackApprovalEvidence()
     {
         var service = new ExtensibilityConfigurationService(new InMemoryExtensibilityConfigurationStore());
-        await service.UpsertTenantTemplateAsync(CreateTenantTemplate(
+        await service.UpsertTenantTemplateAsync(TenantId, CreateTenantTemplate(
             "template-draft",
             configurationStatus: ExtensibilityConfigurationStatusDto.Draft));
-        await service.UpsertTenantTemplateAsync(CreateTenantTemplate(
+        await service.UpsertTenantTemplateAsync(TenantId, CreateTenantTemplate(
             "template-missing-approval",
             approvedBy: null));
 
-        var draftReadiness = await service.EvaluateTenantTemplateActivationAsync("template-draft");
-        var missingApprovalReadiness = await service.EvaluateTenantTemplateActivationAsync("template-missing-approval");
+        var draftReadiness = await service.EvaluateTenantTemplateActivationAsync(TenantId, "template-draft");
+        var missingApprovalReadiness = await service.EvaluateTenantTemplateActivationAsync(TenantId, "template-missing-approval");
         var result = await service.ActivateTenantTemplateAsync(
+            TenantId,
             "template-draft",
             "admin@example.com",
             new TenantTemplateActivationRequestDto("Attempt draft activation"),
@@ -288,9 +292,10 @@ public sealed class CoreExtensibilityContractsTests
     {
         var store = new InMemoryExtensibilityConfigurationStore();
         var service = new ExtensibilityConfigurationService(store);
-        await service.UpsertTenantTemplateAsync(CreateTenantTemplate("template-clean"));
+        await service.UpsertTenantTemplateAsync(TenantId, CreateTenantTemplate("template-clean"));
 
         var result = await service.ActivateTenantTemplateAsync(
+            TenantId,
             "template-clean",
             "controller@example.com",
             new TenantTemplateActivationRequestDto("Activate clean template", "audit-activation-1"),
@@ -304,8 +309,34 @@ public sealed class CoreExtensibilityContractsTests
             configuration.ApprovedBy == "controller@example.com" &&
             configuration.LinkedAuditEventId == "audit-activation-1");
 
-        var stored = await store.GetTenantTemplateAsync("template-clean");
+        var stored = await store.GetTenantTemplateAsync(TenantId, "template-clean");
         stored!.Configurations.Should().OnlyContain(configuration => configuration.Status == ExtensibilityConfigurationStatusDto.Active);
+    }
+
+    [Fact]
+    public async Task ExtensibilityConfigurationService_ShouldPartitionTenantTemplatesAndActivationHistoryByTenant()
+    {
+        var store = new InMemoryExtensibilityConfigurationStore();
+        var service = new ExtensibilityConfigurationService(store);
+        await service.UpsertTenantTemplateAsync("tenant-alpha", CreateTenantTemplate("template-shared"));
+
+        var activation = await service.ActivateTenantTemplateAsync(
+            "tenant-alpha",
+            "template-shared",
+            "controller@example.com",
+            new TenantTemplateActivationRequestDto("Activate alpha template"),
+            DateTimeOffset.Parse("2026-02-01T00:00:00Z"));
+
+        var alphaTemplates = await service.ListTenantTemplatesAsync("tenant-alpha");
+        var betaTemplates = await service.ListTenantTemplatesAsync("tenant-beta");
+        var betaTemplate = await service.GetTenantTemplateAsync("tenant-beta", "template-shared");
+        var betaHistory = await service.ListActivationHistoryAsync("tenant-beta", "template-shared");
+
+        activation.IsActivated.Should().BeTrue();
+        alphaTemplates.Should().ContainSingle(item => item.TenantTemplateId == "template-shared");
+        betaTemplates.Should().BeEmpty();
+        betaTemplate.Should().BeNull();
+        betaHistory.Should().BeEmpty();
     }
 
     [Fact]
@@ -318,9 +349,10 @@ public sealed class CoreExtensibilityContractsTests
                 root,
                 NullLogger<FileExtensibilityConfigurationStore>.Instance);
             var service = new ExtensibilityConfigurationService(firstStore);
-            await service.UpsertTenantTemplateAsync(CreateTenantTemplate("template-persisted"));
+            await service.UpsertTenantTemplateAsync(TenantId, CreateTenantTemplate("template-persisted"));
 
             var activation = await service.ActivateTenantTemplateAsync(
+                TenantId,
                 "template-persisted",
                 "controller@example.com",
                 new TenantTemplateActivationRequestDto("Persist activation"),
@@ -331,8 +363,8 @@ public sealed class CoreExtensibilityContractsTests
             var secondStore = new FileExtensibilityConfigurationStore(
                 root,
                 NullLogger<FileExtensibilityConfigurationStore>.Instance);
-            var persisted = await secondStore.GetTenantTemplateAsync("template-persisted");
-            var history = await secondStore.ListActivationHistoryAsync("template-persisted");
+            var persisted = await secondStore.GetTenantTemplateAsync(TenantId, "template-persisted");
+            var history = await secondStore.ListActivationHistoryAsync(TenantId, "template-persisted");
 
             persisted.Should().NotBeNull();
             persisted!.Configurations.Should().OnlyContain(configuration => configuration.Status == ExtensibilityConfigurationStatusDto.Active);

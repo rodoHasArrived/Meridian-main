@@ -157,6 +157,17 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         "Erase evidence"
     ];
 
+    private static readonly string[] RequiredReconciliationCoverageLaneIds =
+    [
+        "cash-reconciliation",
+        "position-reconciliation",
+        "trade-reconciliation",
+        "income-reconciliation",
+        "mbs-factor-reconciliation",
+        "bank-reconciliation",
+        "gl-reconciliation"
+    ];
+
     private readonly IOperationsContinuityRepository _repository;
     private readonly IOperationsWorkflowAuditStore _auditStore;
     private readonly IOperationsStatusDerivationService _statusDerivation;
@@ -1162,13 +1173,14 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             .ToArray();
         var closeReadiness = EvaluateCloseReadiness(workflow);
         var accountingRecordSummary = BuildAccountingRecordSummary(workflow, timeline, evidenceLinks);
+        var evidencePackages = BuildEvidencePackages(workflow, timeline, accountingRecordSummary, evidenceLinks);
         var dashboardSummary = BuildDashboardSummary(
             workflow,
             timeline,
             closeReadiness,
             accountingRecordSummary,
+            evidencePackages,
             evidenceLinks);
-        var evidencePackages = BuildEvidencePackages(workflow, timeline, accountingRecordSummary, evidenceLinks);
         var reviewedAutomation = BuildReviewedAutomationSummary(workflow, evidenceLinks);
 
         return new OperationsContinuityWorkflowDto(
@@ -1567,6 +1579,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         var closeEvidence = (workflow.ClosePackage?.EvidenceLinks ?? [])
             .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        var exceptionManagementPackage = BuildExceptionManagementEvidencePackage(workflow, timeline);
+        var approvalHistoryPackage = BuildApprovalHistoryEvidencePackage(workflow, timeline, closeEvidence);
         var auditEvidence = accountingEvidence
             .Concat(reportEvidence)
             .Concat(closeEvidence)
@@ -1609,6 +1623,8 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 accountingRecordSummary.IsAuditReady
                     ? []
                     : ["Complete all accounting-record evidence categories before publishing the evidence package."]),
+            BuildReconciliationCoverageEvidencePackage(workflow, timeline),
+            exceptionManagementPackage,
             new OperationsEvidencePackageSummaryDto(
                 string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId)
                     ? $"report-pack:{workflow.FundAccountId:D}:{workflow.PeriodId}"
@@ -1687,8 +1703,256 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 2,
                 periodLockEvidence.Length,
                 periodLockEvidence,
-                BuildPeriodLockReopenRequiredActions(workflow, periodLocked, reopenPostureComplete))
+                BuildPeriodLockReopenRequiredActions(workflow, periodLocked, reopenPostureComplete)),
+            approvalHistoryPackage
         ];
+    }
+
+    private static OperationsEvidencePackageSummaryDto BuildReconciliationCoverageEvidencePackage(
+        OperationsContinuityWorkflow workflow,
+        IReadOnlyList<OperationsTimelineEntryDto> timeline)
+    {
+        var reconciliationRunEvidence = timeline
+            .Where(static entry => string.Equals(entry.EventType, "reconciliation-run", StringComparison.OrdinalIgnoreCase))
+            .SelectMany(static entry => entry.References)
+            .ToArray();
+        var lanesById = workflow.ReconciliationLanes
+            .Where(lane => RequiredReconciliationCoverageLaneIds.Any(id => string.Equals(id, lane.LaneId, StringComparison.OrdinalIgnoreCase)))
+            .DistinctBy(static lane => lane.LaneId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(static lane => lane.LaneId, static lane => lane, StringComparer.OrdinalIgnoreCase);
+        var packageLanes = RequiredReconciliationCoverageLaneIds
+            .Select(laneId => lanesById.TryGetValue(laneId, out var lane) ? lane : null)
+            .Where(static lane => lane is not null)
+            .Cast<OperationsReconciliationLaneSummaryDto>()
+            .ToArray();
+        var hasReconciliationRun = packageLanes.Length > 0 &&
+            (reconciliationRunEvidence.Length > 0 ||
+             workflow.ReconciliationState is not OperationsReconciliationStateDto.Pending);
+        var completeCategoryCount = hasReconciliationRun
+            ? packageLanes.Count(static lane => lane.IsReady)
+            : 0;
+        var requiredCategoryCount = RequiredReconciliationCoverageLaneIds.Length;
+        var evidence = packageLanes
+            .SelectMany(static lane => lane.EvidenceLinks)
+            .Concat(reconciliationRunEvidence)
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var blockedLaneCount = hasReconciliationRun
+            ? packageLanes.Count(static lane => lane.Status == OperationsReconciliationLaneStatusDto.Blocked)
+            : 0;
+        var missingLaneCount = RequiredReconciliationCoverageLaneIds.Length - packageLanes.Length;
+        var status = !hasReconciliationRun
+            ? EvidenceStatusDto.Missing
+            : blockedLaneCount > 0
+                ? EvidenceStatusDto.Blocked
+                : completeCategoryCount == requiredCategoryCount
+                    ? EvidenceStatusDto.Ready
+                    : EvidenceStatusDto.ReviewRequired;
+        var actions = new List<string>();
+        if (!hasReconciliationRun)
+        {
+            actions.Add("Run reconciliation and retain cash, position, trade, income, MBS factor, bank, and GL coverage before evidence release.");
+        }
+
+        if (missingLaneCount > 0)
+        {
+            actions.Add("Retain all Financial Operations reconciliation lane summaries before audit release.");
+        }
+
+        actions.AddRange(packageLanes
+            .Where(static lane => !lane.IsReady)
+            .SelectMany(static lane => lane.RequiredActions ?? [])
+            .Where(static action => !string.IsNullOrWhiteSpace(action)));
+
+        return new OperationsEvidencePackageSummaryDto(
+            $"reconciliation-coverage:{workflow.FundAccountId:D}:{workflow.PeriodId}",
+            "Reconciliation coverage evidence",
+            status,
+            status == EvidenceStatusDto.Ready,
+            BuildReconciliationCoverageSummary(hasReconciliationRun, completeCategoryCount, requiredCategoryCount, blockedLaneCount, evidence.Length),
+            "/workstation/accounting/reconciliation",
+            completeCategoryCount,
+            requiredCategoryCount,
+            evidence.Length,
+            evidence,
+            actions.Distinct(StringComparer.OrdinalIgnoreCase).ToArray());
+    }
+
+    private static string BuildReconciliationCoverageSummary(
+        bool hasReconciliationRun,
+        int completeCategoryCount,
+        int requiredCategoryCount,
+        int blockedLaneCount,
+        int evidenceLinkCount)
+    {
+        if (!hasReconciliationRun)
+        {
+            return "Reconciliation coverage has not been retained by a Financial Operations reconciliation run.";
+        }
+
+        if (completeCategoryCount == requiredCategoryCount)
+        {
+            return "Reconciliation coverage evidence confirms cash, position, trade, income, MBS factor, bank, and GL support lanes are ready.";
+        }
+
+        if (blockedLaneCount > 0)
+        {
+            return $"{blockedLaneCount} reconciliation lane(s) are blocked; {completeCategoryCount}/{requiredCategoryCount} coverage categories are ready across {evidenceLinkCount:N0} retained evidence link(s).";
+        }
+
+        return $"Reconciliation coverage evidence is incomplete; {completeCategoryCount}/{requiredCategoryCount} coverage categories are ready across {evidenceLinkCount:N0} retained evidence link(s).";
+    }
+
+    private static OperationsEvidencePackageSummaryDto BuildExceptionManagementEvidencePackage(
+        OperationsContinuityWorkflow workflow,
+        IReadOnlyList<OperationsTimelineEntryDto> timeline)
+    {
+        var exceptionTimeline = timeline
+            .Where(static entry =>
+                string.Equals(entry.EventType, "reconciliation-run", StringComparison.OrdinalIgnoreCase) ||
+                entry.EventType.StartsWith("reconciliation-break-", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        var unresolvedBreaks = workflow.BreakCases
+            .Where(static breakCase => !IsClosedBreakStatus(breakCase.Status))
+            .ToArray();
+        var exceptionEvidence = exceptionTimeline
+            .SelectMany(static entry => entry.References)
+            .Concat(workflow.BreakCases.SelectMany(static breakCase => breakCase.EvidenceLinks))
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var hasCaseInventory = exceptionTimeline.Any(static entry =>
+            string.Equals(entry.EventType, "reconciliation-run", StringComparison.OrdinalIgnoreCase)) ||
+            workflow.ReconciliationState == OperationsReconciliationStateDto.Complete;
+        var allExceptionsResolved = hasCaseInventory && unresolvedBreaks.Length == 0;
+        var retainedCaseEvidence = hasCaseInventory &&
+            (workflow.BreakCases.Count == 0 || exceptionEvidence.Length > 0);
+        var completeCategoryCount = (hasCaseInventory ? 1 : 0) +
+            (allExceptionsResolved ? 1 : 0) +
+            (retainedCaseEvidence ? 1 : 0);
+        const int requiredCategoryCount = 3;
+        var hasCriticalException = unresolvedBreaks.Any(static breakCase =>
+            string.Equals(breakCase.Severity, "Critical", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(breakCase.Severity, "High", StringComparison.OrdinalIgnoreCase));
+        var status = completeCategoryCount == requiredCategoryCount
+            ? EvidenceStatusDto.Ready
+            : !hasCaseInventory
+                ? EvidenceStatusDto.Missing
+                : hasCriticalException
+                    ? EvidenceStatusDto.Blocked
+                    : EvidenceStatusDto.ReviewRequired;
+        var actions = new List<string>();
+        if (!hasCaseInventory)
+        {
+            actions.Add("Run reconciliation and retain exception case inventory before evidence release.");
+        }
+
+        if (unresolvedBreaks.Length > 0)
+        {
+            actions.AddRange(BuildResolveExceptionsRequiredActions(unresolvedBreaks));
+        }
+
+        if (!retainedCaseEvidence)
+        {
+            actions.Add("Retain exception assignment, escalation, or resolution evidence before audit release.");
+        }
+
+        return new OperationsEvidencePackageSummaryDto(
+            $"exception-management:{workflow.FundAccountId:D}:{workflow.PeriodId}",
+            "Exception management evidence",
+            status,
+            status == EvidenceStatusDto.Ready,
+            BuildExceptionManagementSummary(workflow, hasCaseInventory, unresolvedBreaks.Length, exceptionEvidence.Length),
+            "/workstation/accounting/reconciliation",
+            completeCategoryCount,
+            requiredCategoryCount,
+            exceptionEvidence.Length,
+            exceptionEvidence,
+            actions.Distinct(StringComparer.OrdinalIgnoreCase).ToArray());
+    }
+
+    private static string BuildExceptionManagementSummary(
+        OperationsContinuityWorkflow workflow,
+        bool hasCaseInventory,
+        int unresolvedBreakCount,
+        int evidenceLinkCount)
+    {
+        if (!hasCaseInventory)
+        {
+            return "Exception case inventory has not been retained by a reconciliation run.";
+        }
+
+        if (unresolvedBreakCount == 0)
+        {
+            return workflow.BreakCases.Count == 0
+                ? "Reconciliation run retained no open exception casework for this workflow."
+                : $"Exception management evidence confirms {workflow.BreakCases.Count} break case(s) are closed with {evidenceLinkCount:N0} retained evidence link(s).";
+        }
+
+        return $"{unresolvedBreakCount} exception case(s) remain open; assignment, escalation, or resolution evidence is required before audit release.";
+    }
+
+    private static OperationsEvidencePackageSummaryDto BuildApprovalHistoryEvidencePackage(
+        OperationsContinuityWorkflow workflow,
+        IReadOnlyList<OperationsTimelineEntryDto> timeline,
+        IReadOnlyList<OperationsEvidenceLinkDto> closeEvidence)
+    {
+        var approvalTimeline = timeline
+            .Where(static entry => entry.EventType.StartsWith("approval-", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(entry.EventType, "workflow-closed", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+        var approvalEvidence = approvalTimeline
+            .SelectMany(static entry => entry.References)
+            .Concat(workflow.Approvals.SelectMany(static approval => approval.EvidenceLinks))
+            .Concat(closeEvidence)
+            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var hasSubmission = workflow.Approvals.Any(static approval =>
+            approval.Status is OperationsApprovalStateDto.Submitted or OperationsApprovalStateDto.ReviewerAssigned);
+        var hasApprovedDecision = workflow.ApprovalState == OperationsApprovalStateDto.Approved &&
+            workflow.Approvals.Any(static approval => approval.Status == OperationsApprovalStateDto.Approved);
+        var retainedChecklistApprovalCount = workflow.ClosePackage?.ChecklistControlApprovals.Count ?? 0;
+        var hasChecklistApprovals = retainedChecklistApprovalCount > 0;
+        var completeCategoryCount = (hasSubmission ? 1 : 0) +
+            (hasApprovedDecision ? 1 : 0) +
+            (hasChecklistApprovals ? 1 : 0);
+        const int requiredCategoryCount = 3;
+        var status = completeCategoryCount == requiredCategoryCount
+            ? EvidenceStatusDto.Ready
+            : completeCategoryCount == 0
+                ? EvidenceStatusDto.Missing
+                : EvidenceStatusDto.ReviewRequired;
+        var actions = new List<string>();
+        if (!hasSubmission)
+        {
+            actions.Add("Submit workflow approval with reviewer, rationale, and report-pack evidence.");
+        }
+
+        if (!hasApprovedDecision)
+        {
+            actions.Add(workflow.ApprovalState == OperationsApprovalStateDto.Rejected
+                ? "Resolve rejected approval and retain an approved reviewer decision before audit release."
+                : "Record reviewer approval decision with retained rationale and report-pack evidence.");
+        }
+
+        if (!hasChecklistApprovals)
+        {
+            actions.Add("Publish close package with retained checklist-control approvals before audit release.");
+        }
+
+        return new OperationsEvidencePackageSummaryDto(
+            $"approval-history:{workflow.FundAccountId:D}:{workflow.PeriodId}",
+            "Approval history evidence",
+            status,
+            status == EvidenceStatusDto.Ready,
+            status == EvidenceStatusDto.Ready
+                ? $"Approval history includes submission, reviewer decision, and {retainedChecklistApprovalCount} retained checklist-control approval(s)."
+                : $"Approval history has {completeCategoryCount} of {requiredCategoryCount} required evidence categories complete.",
+            "/workstation/accounting/approvals",
+            completeCategoryCount,
+            requiredCategoryCount,
+            approvalEvidence.Length,
+            approvalEvidence,
+            actions);
     }
 
     private static EvidenceStatusDto ResolvePeriodLockReopenStatus(
@@ -1763,6 +2027,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
         IReadOnlyList<OperationsTimelineEntryDto> timeline,
         OperationsCloseReadinessDto? closeReadiness,
         OperationsAccountingRecordSummaryDto? accountingRecordSummary,
+        IReadOnlyList<OperationsEvidencePackageSummaryDto> evidencePackages,
         IReadOnlyList<OperationsEvidenceLinkDto> evidenceLinks)
     {
         var unresolvedBreaks = workflow.BreakCases
@@ -1781,10 +2046,12 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             .SelectMany(static approval => approval.EvidenceLinks)
             .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        var packageEvidence = workflow.ReportPackReadiness.EvidenceLinks
-            .Concat(workflow.ClosePackage?.EvidenceLinks ?? [])
+        var packageEvidence = evidencePackages
+            .SelectMany(static package => package.EvidenceLinks)
             .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        var closePackage = workflow.ClosePackage;
+        var periodLocked = workflow.IsClosed && closePackage is not null;
 
         var metrics = new[]
         {
@@ -1813,9 +2080,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                     : "Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.",
                 "/workstation/accounting/reconciliation",
                 reconciliationEvidence,
-                readyLaneCount == workflow.ReconciliationLanes.Count && workflow.ReconciliationLanes.Count > 0
-                    ? []
-                    : ["Complete source-backed reconciliation lanes before approval."]),
+                BuildMatchRecordsRequiredActions(workflow.ReconciliationLanes)),
             new OperationsDashboardMetricDto(
                 "resolve-exceptions",
                 "Resolve Exceptions",
@@ -1834,7 +2099,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                     .ToArray(),
                 unresolvedBreaks.Length == 0
                     ? []
-                    : ["Assign, escalate, or resolve open exceptions and retain resolution evidence."]),
+                    : BuildResolveExceptionsRequiredActions(unresolvedBreaks)),
             new OperationsDashboardMetricDto(
                 "approve-results",
                 "Approve Results",
@@ -1849,28 +2114,32 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 approvalEvidence,
                 workflow.ApprovalState == OperationsApprovalStateDto.Approved
                     ? []
-                    : ["Complete workflow approval and checklist-control approvals."]),
+                    : BuildApproveResultsRequiredActions(workflow)),
             new OperationsDashboardMetricDto(
                 "produce-evidence",
                 "Produce Evidence",
-                workflow.ClosePackage is not null
+                periodLocked
                     ? "Close package retained"
+                    : closePackage is not null
+                        ? "Reopened period lock pending"
                     : workflow.ReportPackReadiness.IsReady
                         ? "Report pack ready"
                         : "Evidence package pending",
-                workflow.ClosePackage is not null
+                periodLocked
                     ? EvidenceStatusDto.Ready
                     : workflow.ReportPackReadiness.IsReady
                         ? EvidenceStatusDto.ReviewRequired
                         : EvidenceStatusDto.Missing,
-                workflow.ClosePackage is not null
-                    ? $"Close package {workflow.ClosePackage.ClosePackageId} retained manifest {workflow.ClosePackage.RetainedManifestId}."
+                periodLocked
+                    ? $"Close package {closePackage!.ClosePackageId} retained manifest {closePackage.RetainedManifestId}."
+                    : closePackage is not null
+                        ? $"Close package {closePackage.ClosePackageId} remains retained, but reopened incident remediation must be closed again before evidence release."
                     : workflow.ReportPackReadiness.BlockingReason ?? "Report-pack and close-package evidence still need publication.",
                 "/workstation/reporting/report-packs",
                 packageEvidence,
-                workflow.ClosePackage is not null
+                periodLocked
                     ? []
-                    : ["Publish and retain the evidence package before period close."]),
+                    : BuildProduceEvidenceRequiredActions(evidencePackages, periodLocked)),
             new OperationsDashboardMetricDto(
                 "close-support",
                 "Close Support",
@@ -1879,14 +2148,16 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                     : closeReadiness.IsReadyToClose
                         ? "Ready to close"
                         : $"{closeReadiness.Score}% ready",
-                ResolveCloseSupportMetricStatus(closeReadiness, workflow.ClosePackage),
+                ResolveCloseSupportMetricStatus(closeReadiness, periodLocked),
                 closeReadiness?.Blockers.FirstOrDefault()?.Message ??
                     "Close checklist, period lock, and reopen evidence are governed by the shared workflow.",
                 "/workstation/accounting/operations-continuity",
-                workflow.ClosePackage?.EvidenceLinks ?? evidenceLinks,
-                closeReadiness is { IsReadyToClose: true } || workflow.ClosePackage is not null
+                periodLocked
+                    ? closePackage!.EvidenceLinks
+                    : evidenceLinks,
+                closeReadiness is { IsReadyToClose: true } || periodLocked
                     ? []
-                    : ["Clear close readiness blockers and retain period-lock or reopen evidence."])
+                    : BuildCloseSupportRequiredActions(closeReadiness, periodLocked))
         };
         var status = ResolveDashboardStatus(metrics);
         var readyCount = metrics.Count(static metric => metric.Status == EvidenceStatusDto.Ready);
@@ -1914,6 +2185,282 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 .ToArray());
     }
 
+    private static IReadOnlyList<string> BuildMatchRecordsRequiredActions(
+        IReadOnlyList<OperationsReconciliationLaneSummaryDto> lanes)
+    {
+        if (lanes.Count > 0 && lanes.All(static lane => lane.IsReady))
+        {
+            return [];
+        }
+
+        var laneActions = lanes
+            .Where(static lane => !lane.IsReady)
+            .SelectMany(static lane => lane.RequiredActions ?? [])
+            .ToArray();
+
+        return BuildCappedDashboardRequiredActions(
+            laneActions,
+            "Complete source-backed reconciliation lanes before approval.",
+            "reconciliation lane action");
+    }
+
+    private static IReadOnlyList<string> BuildResolveExceptionsRequiredActions(
+        IReadOnlyList<OperationsBreakCaseDto> unresolvedBreaks)
+    {
+        if (unresolvedBreaks.Count == 0)
+        {
+            return [];
+        }
+
+        var actions = new List<string>();
+        foreach (var breakCase in unresolvedBreaks)
+        {
+            AddDashboardRequiredAction(actions, breakCase.SuggestedAction);
+        }
+
+        var unassignedCount = unresolvedBreaks.Count(static breakCase => string.IsNullOrWhiteSpace(breakCase.Owner));
+        if (unassignedCount > 0)
+        {
+            AddDashboardRequiredAction(
+                actions,
+                $"Assign {FormatOpenExceptionCount(unassignedCount)} to an accountable owner.");
+        }
+
+        var escalatedBreaks = unresolvedBreaks
+            .Where(static breakCase => !string.IsNullOrWhiteSpace(breakCase.EscalationLevel))
+            .ToArray();
+        if (escalatedBreaks.Length > 0)
+        {
+            var firstEscalation = escalatedBreaks[0].EscalationLevel!.Trim();
+            var escalationReason = string.IsNullOrWhiteSpace(escalatedBreaks[0].EscalationReason)
+                ? string.Empty
+                : $": {escalatedBreaks[0].EscalationReason!.Trim()}";
+            AddDashboardRequiredAction(
+                actions,
+                $"Review {firstEscalation} escalation for {FormatOpenExceptionCount(escalatedBreaks.Length)}{escalationReason}.");
+        }
+
+        var blockedOutputs = unresolvedBreaks
+            .SelectMany(static breakCase => breakCase.BlockedOutputs ?? [])
+            .Where(static output => !string.IsNullOrWhiteSpace(output))
+            .Select(static output => output.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (blockedOutputs.Length > 0)
+        {
+            var outputSummary = string.Join(", ", blockedOutputs.Take(3));
+            if (blockedOutputs.Length > 3)
+            {
+                outputSummary = $"{outputSummary}, and {blockedOutputs.Length - 3} more";
+            }
+
+            AddDashboardRequiredAction(
+                actions,
+                $"Retain resolution evidence before releasing blocked output(s): {outputSummary}.");
+        }
+
+        return BuildCappedDashboardRequiredActions(
+            actions,
+            "Assign, escalate, or resolve open exceptions and retain resolution evidence.",
+            "exception action");
+    }
+
+    private static IReadOnlyList<string> BuildApproveResultsRequiredActions(
+        OperationsContinuityWorkflow workflow)
+    {
+        if (workflow.ApprovalState == OperationsApprovalStateDto.Approved)
+        {
+            return [];
+        }
+
+        var actions = new List<string>();
+        switch (workflow.ApprovalState)
+        {
+            case OperationsApprovalStateDto.Pending:
+                if (workflow.ReportPackReadiness.IsReady &&
+                    !string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId))
+                {
+                    AddDashboardRequiredAction(
+                        actions,
+                        $"Submit workflow approval for report pack {workflow.ReportPackReadiness.ReportPackId.Trim()} with reviewer and rationale.");
+                }
+                else
+                {
+                    AddDashboardRequiredAction(actions, workflow.ReportPackReadiness.BlockingReason);
+                    AddDashboardRequiredAction(actions, "Link a ready report pack before approval submission.");
+                }
+
+                AddChecklistControlApprovalActions(actions, workflow, includeApprovalGate: false, transitionLabel: "approval submission");
+                break;
+
+            case OperationsApprovalStateDto.Submitted:
+            case OperationsApprovalStateDto.ReviewerAssigned:
+                var reviewer = GetAssignedApprovalReviewer(workflow) ?? "the assigned reviewer";
+                AddDashboardRequiredAction(
+                    actions,
+                    $"Record approval decision from {reviewer} with retained rationale{ReadyReportPackSuffix(workflow)}");
+                AddChecklistControlApprovalActions(actions, workflow, includeApprovalGate: true, transitionLabel: "approval decision");
+                break;
+
+            case OperationsApprovalStateDto.Rejected:
+                var rejectionReviewer = GetLatestApprovalReviewer(workflow, OperationsApprovalStateDto.Rejected) ?? "the rejecting reviewer";
+                AddDashboardRequiredAction(
+                    actions,
+                    $"Resolve rejected approval from {rejectionReviewer} and resubmit with retained remediation evidence.");
+                if (!workflow.ReportPackReadiness.IsReady)
+                {
+                    AddDashboardRequiredAction(actions, workflow.ReportPackReadiness.BlockingReason);
+                    AddDashboardRequiredAction(actions, "Link a ready report pack before resubmission.");
+                }
+
+                AddChecklistControlApprovalActions(actions, workflow, includeApprovalGate: false, transitionLabel: "approval resubmission");
+                break;
+
+            default:
+                AddDashboardRequiredAction(actions, "Complete workflow approval and checklist-control approvals.");
+                break;
+        }
+
+        return BuildCappedDashboardRequiredActions(
+            actions,
+            "Complete workflow approval and checklist-control approvals.",
+            "approval action",
+            "approval workspace");
+    }
+
+    private static void AddChecklistControlApprovalActions(
+        List<string> actions,
+        OperationsContinuityWorkflow workflow,
+        bool includeApprovalGate,
+        string transitionLabel)
+    {
+        var requiredGates = workflow.Gates
+            .Where(gate => gate.Status == OperationsGateStatusDto.Passed ||
+                (includeApprovalGate && gate.GateKey == OperationsGateKeyDto.Approval))
+            .Select(static gate => gate.GateKey)
+            .Distinct()
+            .ToArray();
+
+        foreach (var gate in requiredGates)
+        {
+            var requiredApprovalCount = gate == OperationsGateKeyDto.Approval ? 2 : 1;
+            AddDashboardRequiredAction(
+                actions,
+                $"Retain {FormatChecklistApprovalCount(requiredApprovalCount)} for {DisplayName(gate)} close gate ({CloseChecklistTaskId(gate)}) before {transitionLabel}.");
+        }
+    }
+
+    private static string FormatChecklistApprovalCount(int requiredApprovalCount) =>
+        requiredApprovalCount == 1
+            ? "1 checklist-control approval"
+            : $"{requiredApprovalCount} checklist-control approvals";
+
+    private static string? GetAssignedApprovalReviewer(OperationsContinuityWorkflow workflow) =>
+        workflow.Approvals
+            .LastOrDefault(approval =>
+                (approval.Status is OperationsApprovalStateDto.Submitted or OperationsApprovalStateDto.ReviewerAssigned) &&
+                !string.IsNullOrWhiteSpace(approval.Reviewer))
+            ?.Reviewer?.Trim();
+
+    private static string? GetLatestApprovalReviewer(
+        OperationsContinuityWorkflow workflow,
+        OperationsApprovalStateDto approvalState) =>
+        workflow.Approvals
+            .LastOrDefault(approval => approval.Status == approvalState && !string.IsNullOrWhiteSpace(approval.Reviewer))
+            ?.Reviewer?.Trim();
+
+    private static string ReadyReportPackSuffix(OperationsContinuityWorkflow workflow) =>
+        workflow.ReportPackReadiness.IsReady &&
+        !string.IsNullOrWhiteSpace(workflow.ReportPackReadiness.ReportPackId)
+            ? $" for report pack {workflow.ReportPackReadiness.ReportPackId.Trim()}."
+            : ".";
+
+    private static IReadOnlyList<string> BuildCloseSupportRequiredActions(
+        OperationsCloseReadinessDto? closeReadiness,
+        bool periodLocked)
+    {
+        if (periodLocked || closeReadiness is { IsReadyToClose: true })
+        {
+            return [];
+        }
+
+        var actions = closeReadiness?.Blockers
+            .Select(static blocker => string.IsNullOrWhiteSpace(blocker.Category)
+                ? blocker.Message
+                : $"Resolve {blocker.Category}: {blocker.Message}")
+            .ToArray() ?? [];
+
+        return BuildCappedDashboardRequiredActions(
+            actions,
+            "Clear close readiness blockers and retain period-lock or reopen evidence.",
+            "close-support action",
+            "operations continuity workspace");
+    }
+
+    private static IReadOnlyList<string> BuildProduceEvidenceRequiredActions(
+        IReadOnlyList<OperationsEvidencePackageSummaryDto> evidencePackages,
+        bool periodLocked)
+    {
+        if (periodLocked ||
+            evidencePackages.Count > 0 && evidencePackages.All(static package => package.IsReady))
+        {
+            return [];
+        }
+
+        var actions = evidencePackages
+            .Where(static package => !package.IsReady)
+            .SelectMany(static package => package.RequiredActions ?? [])
+            .ToArray();
+
+        return BuildCappedDashboardRequiredActions(
+            actions,
+            "Publish and retain the evidence package before period close.",
+            "evidence-package action",
+            "reporting evidence workspace");
+    }
+
+    private static IReadOnlyList<string> BuildCappedDashboardRequiredActions(
+        IEnumerable<string?> requiredActions,
+        string fallbackAction,
+        string actionLabel,
+        string overflowWorkspace = "reconciliation workspace")
+    {
+        var actions = requiredActions
+            .Where(static action => !string.IsNullOrWhiteSpace(action))
+            .Select(static action => action!.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (actions.Length == 0)
+        {
+            return [fallbackAction];
+        }
+
+        const int maxDashboardRequiredActions = 6;
+        if (actions.Length <= maxDashboardRequiredActions)
+        {
+            return actions;
+        }
+
+        return actions
+            .Take(maxDashboardRequiredActions)
+            .Append($"Review {actions.Length - maxDashboardRequiredActions} additional {actionLabel}(s) in the {overflowWorkspace}.")
+            .ToArray();
+    }
+
+    private static void AddDashboardRequiredAction(List<string> actions, string? action)
+    {
+        if (string.IsNullOrWhiteSpace(action))
+        {
+            return;
+        }
+
+        actions.Add(action.Trim());
+    }
+
+    private static string FormatOpenExceptionCount(int count) =>
+        count == 1 ? "1 open exception" : $"{count} open exceptions";
+
     private static EvidenceStatusDto ResolveLaneMetricStatus(IReadOnlyList<OperationsReconciliationLaneSummaryDto> lanes)
     {
         if (lanes.Count == 0)
@@ -1933,9 +2480,9 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
 
     private static EvidenceStatusDto ResolveCloseSupportMetricStatus(
         OperationsCloseReadinessDto? closeReadiness,
-        OperationsClosePackagePublicationDto? closePackage)
+        bool periodLocked)
     {
-        if (closePackage is not null || closeReadiness is { IsReadyToClose: true })
+        if (periodLocked || closeReadiness is { IsReadyToClose: true })
         {
             return EvidenceStatusDto.Ready;
         }
@@ -2237,7 +2784,7 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
             };
 
             return new OperationsCloseChecklistTaskDto(
-                $"close-gate-{gate.GateKey}".ToLowerInvariant(),
+                CloseChecklistTaskId(gate.GateKey),
                 gate.GateKey,
                 $"{DisplayName(gate.GateKey)} close gate",
                 gate.CompletedBy ?? "accounting-operator",
@@ -2254,6 +2801,9 @@ public sealed class OperationsContinuityWorkflowService : IOperationsContinuityW
                 gate.CompletedBy);
         }).ToArray();
     }
+
+    private static string CloseChecklistTaskId(OperationsGateKeyDto gate) =>
+        $"close-gate-{gate}".ToLowerInvariant();
 
     private static OperationsContinuityWorkflow CloneWorkflow(OperationsContinuityWorkflow workflow)
     {

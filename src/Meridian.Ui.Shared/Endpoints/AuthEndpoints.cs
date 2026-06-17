@@ -531,6 +531,10 @@ public static class AuthEndpoints
                     {
                         return Results.BadRequest(new { error = ex.Message });
                     }
+                    catch (InvalidOperationException ex) when (IsReviewedAutomationRejection(ex))
+                    {
+                        return Results.BadRequest(new { error = ex.Message });
+                    }
                 })
             .WithName("CreateScopedAccessAssignment")
             .WithSummary("Creates a governed scoped access assignment with audit evidence.")
@@ -575,6 +579,11 @@ public static class AuthEndpoints
                     }
                     catch (InvalidOperationException ex)
                     {
+                        if (IsReviewedAutomationRejection(ex))
+                        {
+                            return Results.BadRequest(new { error = ex.Message });
+                        }
+
                         return Results.Conflict(new { error = ex.Message });
                     }
                     catch (ArgumentException ex)
@@ -667,6 +676,9 @@ public static class AuthEndpoints
         => statusCode == StatusCodes.Status401Unauthorized
             ? Results.Unauthorized()
             : EndpointHelpers.Forbidden();
+
+    private static bool IsReviewedAutomationRejection(InvalidOperationException ex)
+        => ex.Message.StartsWith("Reviewed automation cannot ", StringComparison.Ordinal);
 
     private sealed record ManageUsersActor(string Actor, int? StatusCode);
 }

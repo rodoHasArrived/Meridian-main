@@ -147,7 +147,7 @@ public sealed class AccountingSystemIntegrationService
         var meridianSummaryEvidenceReferences = NormalizeEvidenceReferences(
             meridianTotals.Values.SelectMany(static total => total.EvidenceReferences));
         var summaryEvidenceReferences = NormalizeEvidenceReferences(externalEvidenceReferences.Concat(meridianSummaryEvidenceReferences));
-        var breakCount = rows.Count(static row => row.Status != AccountingSystemReconciliationStatusDto.Matched);
+        var breakCounts = AccountingSystemReconciliationBreakCounts.FromRows(rows);
 
         return new AccountingSystemReconciliationSummaryDto(
             $"gl-recon-{latest.Summary.ImportId}",
@@ -158,7 +158,7 @@ public sealed class AccountingSystemIntegrationService
             latest.Summary.PeriodEnd,
             DateTimeOffset.UtcNow,
             rows.Count(static row => row.Status == AccountingSystemReconciliationStatusDto.Matched),
-            rows.Count(static row => row.Status != AccountingSystemReconciliationStatusDto.Matched),
+            breakCounts.Total,
             latest.TrialBalance.Sum(static row => row.Debit),
             latest.TrialBalance.Sum(static row => row.Credit),
             meridianTotals.Values.Sum(static row => row.Debit),
@@ -173,7 +173,7 @@ public sealed class AccountingSystemIntegrationService
                 externalEvidenceReferences,
                 meridianSummaryEvidenceReferences,
                 summaryEvidenceReferences,
-                breakCount,
+                breakCounts,
                 rows.Count)
         };
     }
@@ -226,7 +226,7 @@ public sealed class AccountingSystemIntegrationService
         IReadOnlyList<string> externalEvidenceReferences,
         IReadOnlyList<string> meridianEvidenceReferences,
         IReadOnlyList<string> summaryEvidenceReferences,
-        int breakCount,
+        AccountingSystemReconciliationBreakCounts breakCounts,
         int rowCount)
     {
         return
@@ -256,10 +256,10 @@ public sealed class AccountingSystemIntegrationService
             new(
                 $"gl-reconciliation-tie-out:{latest.Summary.ImportId}",
                 "GL reconciliation tie-out",
-                ResolveTieOutPackageStatus(rowCount, breakCount, externalEvidenceReferences.Count, meridianEvidenceReferences.Count),
+                ResolveTieOutPackageStatus(rowCount, breakCounts.Total, externalEvidenceReferences.Count, meridianEvidenceReferences.Count),
                 summaryEvidenceReferences.Count,
                 summaryEvidenceReferences,
-                BuildTieOutRequiredActions(breakCount, externalEvidenceReferences.Count, meridianEvidenceReferences.Count))
+                BuildTieOutRequiredActions(breakCounts, externalEvidenceReferences.Count, meridianEvidenceReferences.Count))
         ];
     }
 
@@ -280,11 +280,11 @@ public sealed class AccountingSystemIntegrationService
     }
 
     private static IReadOnlyList<string> BuildTieOutRequiredActions(
-        int breakCount,
+        AccountingSystemReconciliationBreakCounts breakCounts,
         int externalEvidenceCount,
         int meridianEvidenceCount)
     {
-        var actions = new List<string>(3);
+        var actions = new List<string>(6);
         if (externalEvidenceCount == 0)
         {
             actions.Add("Import external accounting-system evidence.");
@@ -295,13 +295,33 @@ public sealed class AccountingSystemIntegrationService
             actions.Add("Load Meridian ledger journal evidence.");
         }
 
-        if (breakCount > 0)
+        if (breakCounts.MissingExternal > 0)
         {
-            actions.Add("Resolve GL reconciliation breaks before approving close evidence.");
+            actions.Add($"{FormatCount(breakCounts.MissingExternal, "Meridian ledger account is", "Meridian ledger accounts are")} absent from the external GL import; assign to accounting operations to retain provider support or approved exclusion evidence.");
+        }
+
+        if (breakCounts.MissingMeridian > 0)
+        {
+            actions.Add($"{FormatCount(breakCounts.MissingMeridian, "external GL row is", "external GL rows are")} absent from Meridian ledger evidence; assign to ledger operations before close approval.");
+        }
+
+        if (breakCounts.Variance > 0)
+        {
+            actions.Add($"{FormatCount(breakCounts.Variance, "GL variance row requires", "GL variance rows require")} break resolution and retained approval evidence before close approval.");
+        }
+
+        if (breakCounts.ReviewRequired > 0)
+        {
+            actions.Add($"{FormatCount(breakCounts.ReviewRequired, "GL row requires", "GL rows require")} manual accounting review before close approval.");
         }
 
         return actions;
     }
+
+    private static string FormatCount(int count, string singular, string plural)
+        => count == 1
+            ? $"1 {singular}"
+            : $"{count} {plural}";
 
     private async Task<IAccountingSystemProvider> ResolveProviderAsync(string? providerId, CancellationToken ct)
     {
@@ -451,5 +471,47 @@ public sealed class AccountingSystemIntegrationService
         public decimal Credit { get; set; }
 
         public HashSet<string> EvidenceReferences { get; } = new(StringComparer.OrdinalIgnoreCase);
+    }
+
+    private readonly record struct AccountingSystemReconciliationBreakCounts(
+        int MissingExternal,
+        int MissingMeridian,
+        int Variance,
+        int ReviewRequired)
+    {
+        public int Total => MissingExternal + MissingMeridian + Variance + ReviewRequired;
+
+        public static AccountingSystemReconciliationBreakCounts FromRows(IEnumerable<AccountingSystemReconciliationRowDto> rows)
+        {
+            var missingExternal = 0;
+            var missingMeridian = 0;
+            var variance = 0;
+            var reviewRequired = 0;
+
+            foreach (var row in rows)
+            {
+                switch (row.Status)
+                {
+                    case AccountingSystemReconciliationStatusDto.MissingExternal:
+                        missingExternal++;
+                        break;
+                    case AccountingSystemReconciliationStatusDto.MissingMeridian:
+                        missingMeridian++;
+                        break;
+                    case AccountingSystemReconciliationStatusDto.Variance:
+                        variance++;
+                        break;
+                    case AccountingSystemReconciliationStatusDto.ReviewRequired:
+                        reviewRequired++;
+                        break;
+                }
+            }
+
+            return new AccountingSystemReconciliationBreakCounts(
+                missingExternal,
+                missingMeridian,
+                variance,
+                reviewRequired);
+        }
     }
 }

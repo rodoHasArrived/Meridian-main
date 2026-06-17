@@ -475,6 +475,7 @@ describe("buildSettingsScreenViewModel", () => {
     expect(brokerageRows).toHaveLength(1);
     expect(brokerageRows[0]).toMatchObject({
       providerId: "alpaca",
+      integrationConnectionId: "alpaca",
       capabilityLabel: "Data + Brokerage",
       credentialLabel: "Verified",
       sourceLabel: "Encrypted local store",
@@ -483,6 +484,7 @@ describe("buildSettingsScreenViewModel", () => {
     expect(dataRows).toHaveLength(1);
     expect(dataRows[0]).toMatchObject({
       providerId: "polygon",
+      integrationConnectionId: "polygon",
       credentialLabel: "Missing",
       fallbackLabel: "Fallback active",
       actionHref: "/settings#provider-polygon-connection"
@@ -512,6 +514,7 @@ describe("buildSettingsScreenViewModel", () => {
     expect(dataRows).toHaveLength(2);
     expect(dataRows[0]).toMatchObject({
       providerId: "provider-alpaca-paper",
+      integrationConnectionId: "provider-alpaca-paper",
       displayName: "Alpaca paper route",
       credentialLabel: "Configured",
       sourceLabel: "Vault reference",
@@ -524,6 +527,7 @@ describe("buildSettingsScreenViewModel", () => {
     });
     expect(dataRows[1]).toMatchObject({
       providerId: "provider-reference",
+      integrationConnectionId: "provider-reference",
       routingBindingsLabel: "Reference data",
       fallbackLabel: "1 failover route",
       trustScoreLabel: "97% · Healthy",

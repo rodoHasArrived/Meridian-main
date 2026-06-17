@@ -1,0 +1,235 @@
+{
+  "dashboard": "pilot-readiness",
+  "title": "Pilot Readiness Dashboard",
+  "description": "Tracks whether DK1 pilot evidence, packet-bound operator sign-off, the trading readiness handoff, and local golden-path acceptance artifact remain present and synchronized.",
+  "generated_at": "2026-06-17T01:13:23.756109+00:00",
+  "root": "pr1926",
+  "score_percent": 35.3,
+  "passed_weight": 6,
+  "total_weight": 17,
+  "summary": {
+    "check_count": 7,
+    "passed_checks": 3,
+    "gap_checks": 4,
+    "missing_source_count": 1,
+    "missing_term_count": 14
+  },
+  "checks": [
+    {
+      "id": "pilot-acceptance-artifact",
+      "category": "Golden Path Evidence",
+      "label": "Pilot acceptance artifact proves all eight golden-path stage gates",
+      "status": "gap",
+      "weight": 4,
+      "score": 0,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "artifacts/pilot-acceptance/latest/pilot-readiness.json"
+      ],
+      "matched_paths": [],
+      "missing_patterns": [
+        "artifacts/pilot-acceptance/latest/pilot-readiness.json"
+      ],
+      "terms": [
+        "\"allStagesReady\": true",
+        "\"readyStageCount\": 8",
+        "\"stageGates\"",
+        "\"evidenceGraph\"",
+        "\"GovernedReportPack\""
+      ],
+      "found_terms": [],
+      "missing_terms": [
+        "\"allStagesReady\": true",
+        "\"readyStageCount\": 8",
+        "\"stageGates\"",
+        "\"evidenceGraph\"",
+        "\"GovernedReportPack\""
+      ],
+      "detail": "",
+      "remediation": "Run PilotAcceptanceHarnessTests to regenerate the pilot readiness artifact before claiming golden-path readiness."
+    },
+    {
+      "id": "provider-matrix",
+      "category": "Provider Evidence",
+      "label": "Pilot provider matrix covers Alpaca, Robinhood, Yahoo, and Wave 1 status",
+      "status": "gap",
+      "weight": 2,
+      "score": 0,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "docs/status/provider-validation-matrix.md"
+      ],
+      "matched_paths": [
+        "docs/status/provider-validation-matrix.md"
+      ],
+      "missing_patterns": [],
+      "terms": [
+        "Alpaca",
+        "Robinhood",
+        "Yahoo",
+        "Wave 1"
+      ],
+      "found_terms": [],
+      "missing_terms": [
+        "Alpaca",
+        "Robinhood",
+        "Yahoo",
+        "Wave 1"
+      ],
+      "detail": "",
+      "remediation": "Refresh the provider validation matrix before claiming DK1 pilot readiness."
+    },
+    {
+      "id": "parity-runbook",
+      "category": "Provider Evidence",
+      "label": "DK1 parity runbook names generated packet and run-date artifact requirements",
+      "status": "pass",
+      "weight": 2,
+      "score": 2,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "docs/status/evidence/dk1-pilot-parity-runbook.md"
+      ],
+      "matched_paths": [
+        "docs/status/evidence/dk1-pilot-parity-runbook.md"
+      ],
+      "missing_patterns": [],
+      "terms": [
+        "dk1-pilot-parity-packet",
+        "operator sign-off",
+        "artifacts/provider-validation/_automation"
+      ],
+      "found_terms": [
+        "dk1-pilot-parity-packet",
+        "operator sign-off",
+        "artifacts/provider-validation/_automation"
+      ],
+      "missing_terms": [],
+      "detail": "",
+      "remediation": "Document the packet and sign-off binding workflow in the DK1 runbook."
+    },
+    {
+      "id": "kernel-signoff",
+      "category": "Operator Sign-off",
+      "label": "Kernel dashboard records signed packet-bound DK1 operator sign-off",
+      "status": "gap",
+      "weight": 3,
+      "score": 0,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "docs/status/kernel-readiness-dashboard.md"
+      ],
+      "matched_paths": [
+        "docs/status/kernel-readiness-dashboard.md"
+      ],
+      "missing_patterns": [],
+      "terms": [
+        "operatorSignoff.status=signed",
+        "operatorSignoff.validForDk1Exit=true",
+        "ready-for-operator-review"
+      ],
+      "found_terms": [],
+      "missing_terms": [
+        "operatorSignoff.status=signed",
+        "operatorSignoff.validForDk1Exit=true",
+        "ready-for-operator-review"
+      ],
+      "detail": "",
+      "remediation": "Update the kernel dashboard with the current signed, packet-bound DK1 evidence."
+    },
+    {
+      "id": "automation-scripts",
+      "category": "Automation",
+      "label": "Provider validation, packet generation, and sign-off scripts are present",
+      "status": "pass",
+      "weight": 2,
+      "score": 2,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "scripts/dev/run-wave1-provider-validation.ps1",
+        "scripts/dev/generate-dk1-pilot-parity-packet.ps1",
+        "scripts/dev/prepare-dk1-operator-signoff.ps1"
+      ],
+      "matched_paths": [
+        "scripts/dev/run-wave1-provider-validation.ps1",
+        "scripts/dev/generate-dk1-pilot-parity-packet.ps1",
+        "scripts/dev/prepare-dk1-operator-signoff.ps1"
+      ],
+      "missing_patterns": [],
+      "terms": [],
+      "found_terms": [],
+      "missing_terms": [],
+      "detail": "",
+      "remediation": "Restore the DK1 provider-validation automation scripts or update the runbook."
+    },
+    {
+      "id": "packet-tests",
+      "category": "Automation",
+      "label": "DK1 packet and sign-off scripts have focused regression tests",
+      "status": "pass",
+      "weight": 2,
+      "score": 2,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "tests/scripts/test_generate_dk1_pilot_parity_packet.py",
+        "tests/scripts/test_prepare_dk1_operator_signoff.py"
+      ],
+      "matched_paths": [
+        "tests/scripts/test_generate_dk1_pilot_parity_packet.py",
+        "tests/scripts/test_prepare_dk1_operator_signoff.py"
+      ],
+      "missing_patterns": [],
+      "terms": [],
+      "found_terms": [],
+      "missing_terms": [],
+      "detail": "",
+      "remediation": "Add focused Python tests for the DK1 packet and sign-off generators."
+    },
+    {
+      "id": "readiness-handoff",
+      "category": "Trading Readiness",
+      "label": "Pilot posture is consumed by the shared trading readiness lane",
+      "status": "gap",
+      "weight": 2,
+      "score": 0,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "docs/plans/paper-trading-cockpit-reliability-sprint.md",
+        "src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs"
+      ],
+      "matched_paths": [
+        "docs/plans/paper-trading-cockpit-reliability-sprint.md",
+        "src/Meridian.Ui.Shared/Services/Dk1TrustGateReadinessService.cs"
+      ],
+      "missing_patterns": [],
+      "terms": [
+        "/api/workstation/trading/readiness",
+        "ProviderTrustGate",
+        "operator sign-off"
+      ],
+      "found_terms": [
+        "operator sign-off"
+      ],
+      "missing_terms": [
+        "/api/workstation/trading/readiness",
+        "ProviderTrustGate"
+      ],
+      "detail": "",
+      "remediation": "Keep the DK1 trust-gate handoff wired into the shared trading readiness contract."
+    }
+  ],
+  "pilot_acceptance_artifact": {
+    "status": "not_generated",
+    "path": "artifacts/pilot-acceptance/latest/pilot-readiness.json",
+    "detail": "Run PilotAcceptanceHarnessTests to generate the golden-path pilot readiness artifact.",
+    "stage_gates": [],
+    "evidence_edge_count": 0
+  }
+}

@@ -1,15 +1,13 @@
-# Developer Legacy Index
+# Developer Docs
 
-**Status:** source-material
+**Status:** legacy-index
 **Owner:** core-team
 **Reviewed:** 2026-06-16
 
-This folder is retained as legacy source material during the documentation rebuild.
+This folder retains developer-facing source material that has not yet moved into the rebuilt
+audience paths. Prefer the current engineering entrypoint for active setup, build, test, and run
+guidance:
 
-Use the canonical paths for active guidance:
-
-- [Start](../start/README.md)
 - [Engineering](../engineering/README.md)
-- [Documentation ownership](../documentation-ownership.md)
-
-Keep new developer and agent workflow guidance in `docs/engineering/` or `docs/ai/`.
+- [Start](../start/README.md)
+- [Build, Test, and Run](build-test-run.md)

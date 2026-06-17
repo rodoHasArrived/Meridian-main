@@ -296,7 +296,7 @@ Planned productization slice that makes Financial Operations the operator contro
 
 ### Current Summary
 
-Planned productization slice that turns the W1-W5 accounting-record and multi-asset evidence baseline into shared Ledger Explorer, Portfolio Explorer, and Security & Instrument Explorer surfaces. This stays inside the operational-record scope gate and does not reopen deferred portal, payment-execution, mobile, or broad workflow-designer lanes.
+Planned productization slice that turns the W1-W5 accounting-record, multi-asset evidence, and governed reporting baseline into shared Ledger Explorer, Portfolio Explorer, Security & Instrument Explorer, and Report-Line Provenance Explorer surfaces. This stays inside the operational-record scope gate and does not reopen deferred portal, payment-execution, mobile, or broad workflow-designer lanes.
 
 ### Exit Criteria
 
@@ -304,6 +304,7 @@ Planned productization slice that turns the W1-W5 accounting-record and multi-as
 - Ledger Explorer exposes Journal Entries and Ledger Detail views with core filters, saved views, journal drawer and detail routing, evidence links, approval posture, reversal-chain context, and report-usage drill-through.
 - Portfolio Explorer exposes Holdings and Transactions views with position drawer and detail routing, valuation status, reconciliation status, ledger-impact links, instrument links, evidence posture, and report usage.
 - Security & Instrument Explorer exposes instrument list, identifier map, terms and obligations, source conflicts, held positions, evidence links, valuation status, expected cash flows, and accounting classification.
+- Report-Line Provenance Explorer exposes report-line inputs, approved source records, reconciliations, journal impact, evidence packets, template and package versions, approvals, delivery history, restatements, and audit events.
 - Cross-explorer Proof Trail can move from Instrument to Position or Transaction, Reconciliation, Journal, Report Line, Evidence, and Audit Event, and missing retained source evidence remains review-required or blocked rather than synthetic completeness.
 
 ### Source Modules

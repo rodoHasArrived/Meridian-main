@@ -381,6 +381,55 @@
       }
     },
     {
+      "id": "targeted-test",
+      "owners": [
+        "@developer-experience",
+        "@ci-platform"
+      ],
+      "requiredPrerequisites": [
+        "Branch pushed to GitHub",
+        "GitHub CLI authenticated or manual Actions UI access",
+        "Repo-relative .NET test project under tests/",
+        "Specific dotnet test filter for the failing class, method, or trait"
+      ],
+      "executionCommands": [
+        {
+          "shell": "pwsh",
+          "command": "gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridian.Tests/Meridian.Tests.csproj -f dotnet_filter=\"FullyQualifiedName~<TestClassOrMethod>\""
+        }
+      ],
+      "expectedArtifacts": [
+        "artifacts/test-results/targeted-dotnet"
+      ],
+      "validationChecks": [
+        {
+          "name": "Targeted Test workflow exists",
+          "command": "test -f .github/workflows/targeted-test.yml"
+        },
+        {
+          "name": "Targeted Test requires project path and filter",
+          "command": "python -m unittest tests.scripts.test_targeted_test_workflow"
+        }
+      ],
+      "artifactPolicy": {
+        "ownerLane": "Developer Experience",
+        "refreshTrigger": "manual GitHub Actions Targeted Test dispatch",
+        "retention": {
+          "policy": "workflow-artifact-retention",
+          "maxAgeDays": 14,
+          "retainLatest": 20
+        },
+        "canonicalOutputRoots": [
+          "artifacts/test-results/targeted-dotnet"
+        ],
+        "driftChecks": {
+          "enforceMissing": false,
+          "enforceFreshness": false,
+          "enforceCanonicalPaths": true
+        }
+      }
+    },
+    {
       "id": "robinhood-options-smoke",
       "owners": [
         "@desktop-shell",

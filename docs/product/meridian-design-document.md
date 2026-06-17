@@ -1,9 +1,9 @@
-# Meridian Design Document — Version 0.18
+# Meridian Design Document — Version 0.19
 
 **Status:** canonical  
 **Owner:** core-team  
-**Reviewed:** 2026-06-09
-**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.16 extends the roadmap and source-module registry evidence with the v0.15 accounting records package plus current Carta Fund ERP, Carta Data Warehouse, Carta Management Company Administration, FundStudio fund administrator, FundStudio managed-services, FundStudio general-ledger/accounting, and Modern Treasury ledger research. Version 0.17 adds the shared Financial Record Explorer productization target from `C:\Users\Andrew James Rowden\.codex\attachments\e76a7c8a-33a1-45f6-bf2e-036d6635920d\pasted-text.txt`. Version 0.18 incorporates the operational proof layer market-gap update from `C:\Users\Andrew James Rowden\.codex\attachments\7c4bee43-4269-4284-8747-2bdeadf0287b\pasted-text.txt`.
+**Reviewed:** 2026-06-16
+**Source:** Draft v1.0 imported from `C:\Users\Andrew James Rowden\.codex\attachments\2bedc368-4dca-449f-923b-b098cf8bb4d5\pasted-text.txt`; Version 0.16 extends the roadmap and source-module registry evidence with the v0.15 accounting records package plus current Carta Fund ERP, Carta Data Warehouse, Carta Management Company Administration, FundStudio fund administrator, FundStudio managed-services, FundStudio general-ledger/accounting, and Modern Treasury ledger research. Version 0.17 adds the shared Financial Record Explorer productization target from `C:\Users\Andrew James Rowden\.codex\attachments\e76a7c8a-33a1-45f6-bf2e-036d6635920d\pasted-text.txt`. Version 0.18 incorporates the operational proof layer market-gap update from `C:\Users\Andrew James Rowden\.codex\attachments\7c4bee43-4269-4284-8747-2bdeadf0287b\pasted-text.txt`. Version 0.19 adds the no-code provider integration manifest design from `C:\Users\Andrew James Rowden\.codex\attachments\ad0040bf-8757-4233-8689-ae400f822b75\pasted-text.txt`.
 
 ## 1. Product Vision
 
@@ -52,7 +52,9 @@ admin-neutral verification, governed automation, and cross-domain proof chains.
 | --- | --- | --- |
 | [Carta Fund Administration](https://carta.com/fund-management/fund-administration/), [Carta Fund Management](https://carta.com/fund-management/), [Carta Data Warehouse](https://docs.carta.com/api-platform/docs/overview), and [Carta Management Company Administration](https://carta.com/fund-management/manco-administration/) | A connected private-capital operating suite for fund administration, event-based fund accounting, capital calls, distributions, investments, LP closings and support, KYC/AML, tax and K-1 support, SPVs, portfolio valuations, management-company expense allocation, intercompany balances, cash reconciliation, budget/cash planning, and queryable fund intelligence. | Strengthen Meridian as the private-capital operational record: first-class fund events, capital account evidence, LP/stakeholder report packages, tax and audit support files, portfolio valuation inputs, management-company operating records, certified operational datasets, and report-line provenance. |
 | [FundStudio Fund Administrators](https://fundstudio.com/fund-administrators/), [FundStudio Managed Services](https://fundstudio.com/managed-services/), [FundStudio General Ledger/Accounting](https://fundstudio.com/general-ledger-accounting/), and [FundStudio Portfolio Management](https://fundstudio.com/portfolio-management/) | Administrator-grade middle/back-office control across portfolios, custodians, primes, reconciliation, shadow NAV, multi-book/multi-currency accounting, locked periods, recurring journals, year-end close, capital-account and shadow-NAV packs, role-based JE/report/period-lock permissions, immutable logs, onboarding templates, T+0 capture, T+1 reconciliation, file distribution, SLA tracking, and reporting. | Strengthen Meridian's portfolio/accounting control plane: multi-asset operations, cash and collateral monitoring, reconciliation queues, close packages, versioned NAV support, journal evidence, fund/book/period/report admin scopes, delivery logs, exception SLAs, and drill-through reporting. |
+| [eFront Platform](https://www.efront.com/) and [SS&C Advent Geneva](https://www.advent.com/geneva/) | Private-markets platforms emphasizing broad asset-class coverage, reporting, auditability, and front-to-back workflows that support both asset managers and asset servicers. | Keep breadth goals scoped and proof-first: a fund-event and ledger-first control graph where each object is evidence-reconstructable from source to report and delivery. |
 | [Modern Treasury Ledgers](https://docs.moderntreasury.com/ledgers/docs/overview), [ledger guarantees](https://docs.moderntreasury.com/ledgers/docs/ledgers-guarantees), and ledger engineering posts on [transaction models](https://www.moderntreasury.com/journal/how-to-scale-a-ledger-part-iii), [immutability and double-entry](https://www.moderntreasury.com/journal/how-to-scale-a-ledger-part-v), and [optimistic locking](https://www.moderntreasury.com/journal/designing-ledgers-with-optimistic-locking) | Immutable double-entry ledgering, idempotent writes, atomic transactions, per-currency balancing, pending/posted/archived transaction states, append-only versions, and concurrency controls. | Make Meridian-owned ledger records treasury-grade: posted entries are immutable, corrections use reversing or adjusting journals, writes are idempotent and atomic, balance-affecting records are per-currency balanced, and authoritative ledger writes fail closed under stale versions or missing evidence. |
+| [BlackLine Financial Close](https://www.blackline.com/products/financial-close/) | Enterprise close-management tools focus on centralized close tasks, role-based controls, exception handling, and audit-compliant workflow visibility. | Bring BlackLine-style governance discipline into FinOps: explicit task ownership, SLA status, approval/state transitions, and evidence-ready close readiness signals mapped into the operational record graph. |
 
 Meridian should not treat this as permission to build a full cap-table system, outsourced services
 operation, live payment processor, broad investor portal, or autonomous-agent workflow that bypasses
@@ -99,6 +101,7 @@ promises:
 * Reconciliation should act as a close-blocking operating control: exceptions must expose owner,
   SLA, materiality, root cause, supporting evidence, approval state, and the specific NAV, close,
   capital-account, tax, audit, or report outputs they block.
+* Close governance should be operationally safe by default: each exception state change must capture owner, age, due date, and policy check outcomes before release-related actions are allowed.
 * Payment work should begin as payment intent and cash evidence, not premature live execution:
   request, approval, expected cash movement, bank confirmation, ledger intent, reconciliation, and
   report linkage are the near-term product surface.
@@ -368,7 +371,7 @@ not be presented as shipped.
 | --- | --- | --- | --- |
 | Treasury and payments | Treasury-ledger principles, cash-oriented records, approval evidence, payment-intent language, and ledger linkage expectations. | Payment request, approval, expected cash movement, bank evidence, reconciliation, return/reversal evidence, and audit linkage can be modeled as operating records. | Native live payment execution, bank release automation, full bill pay, and payment processor orchestration. |
 | Private-capital close cockpit | W5 accounting records, close-lane blockers, fund-event reconstruction, capital-account subledger impact, ledger evidence, report-pack lineage, and shared browser/WPF read models. | NAV readiness, period lock/reopen posture, administrator tie-out, journal/reversal boundaries, reviewer ownership, and report readiness are defined as product objects. | Complete close cockpit with fund/book/period dashboards, close-state ladder, SLA ownership, statement release, amendment, restatement, and tax/K-1 support workflows. |
-| Financial Record Explorers | Shared accounting/reporting/portfolio evidence routes, ledger and report pack foundations, private-capital review endpoints, and multi-asset operational coverage. | Explorer shell concepts, proof drawers, saved views, right-side record inspection, proof ribbons, audit timelines, and record graphs are productized design patterns. | Ledger Explorer, Portfolio Explorer, and Security & Instrument Explorer as complete shared browser/WPF product surfaces. |
+| Financial Record Explorers | Shared accounting/reporting/portfolio evidence routes, ledger and report pack foundations, private-capital review endpoints, multi-asset operational coverage, and report-line provenance. | Explorer shell concepts, proof drawers, saved views, right-side record inspection, proof ribbons, audit timelines, and record graphs are productized design patterns. | Ledger Explorer, Portfolio Explorer, Security & Instrument Explorer, and Report-Line Provenance Explorer as complete shared browser/WPF product surfaces. |
 | Stakeholder delivery | Governed report-pack readiness, provenance, export evidence, publication/restatement lifecycle, and report-pack delivery service foundations. | Recipient lists, entitlement scope, delivery evidence, package versioning, amendment reasons, and restatement lineage are defined evidence requirements. | Broad LP/client portal, self-service stakeholder workspace, and external collaboration workflows beyond governed package delivery. |
 | Risk | Pre-trade rules, live-readiness controls, exposure/portfolio evidence, breach-style signals, and operational blockers. | Daily PM review, breach acknowledgement, liquidity watchlist, stale marks, benchmark underperformance, valuation exceptions, and blocked report commentary. | Full enterprise risk engine, stress/scenario suite, independent risk cockpit, and cross-portfolio risk governance program. |
 | Forecasting | Strategy analytics, run comparison, reporting evidence, cash-plan snapshots, and design-level forecasting requirements. | Forecast inputs can be retained as evidence and linked to cash, budget, close, and report objects. | Full forecasting engine, scenario engine, autonomous planning workflows, and broad decision-support modeling. |
@@ -2159,6 +2162,202 @@ Raw
 → Published
 ```
 
+### No-Code Provider Integration Manifests
+
+Meridian should let non-technical operators configure many provider APIs through guided setup
+screens, while the system stores the result as a durable, versioned Provider Integration Manifest.
+The user experience is configuration, not code authoring; the runtime executes the manifest through
+controlled connector, mapping, validation, identity-resolution, and loading components.
+
+```text
+No-code setup UI
+-> Versioned provider integration manifest
+-> Generic connector runtime
+-> Raw payload landing zone
+-> Mapping and normalization engine
+-> Validation and data-quality gates
+-> Canonical financial data store
+-> Portfolio, monitoring, trading, accounting, and reporting services
+```
+
+The design should support an effectively broad set of APIs by constraining them into supported
+integration patterns rather than treating "any API" as unconstrained custom behavior.
+
+| Integration Type | Non-Technical Configuration Posture | Product Boundary |
+| --- | --- | --- |
+| REST API | Supported | Best default for guided setup, endpoint tests, pagination, and mapping. |
+| OpenAPI-described REST API | Supported | Preferred import path when the provider publishes a usable specification. |
+| GraphQL API | Supported with guardrails | Requires schema introspection, samples, or template-backed mapping. |
+| Webhook/event source | Supported with templates | Best for status changes, fills, alerts, and provider events. |
+| SFTP/file drop | Supported | Required for custodians, administrators, accounting feeds, and recurring files. |
+| CSV/Excel/API hybrid | Supported | Common institutional operations pattern; should share the same mapping and validation engine. |
+| Streaming API | Template-driven only | Requires stricter operational monitoring and typed templates. |
+| FIX or production trade execution API | Certified adapter required | Must not be activated through generic non-technical mapping alone. |
+
+The generic no-code connector is acceptable for read-only data such as accounts, balances,
+positions, holdings, transactions, tax lots, security reference data, market prices, corporate
+actions, statements, documents, and alerts. Order preview, order placement, order cancellation,
+cash transfer, and other production write capabilities require certified provider modules,
+provider-specific validation, sandbox testing, approval workflows, entitlement checks, idempotency,
+kill-switch support, audit logging, and reconciliation evidence.
+
+### Provider Integration Manifest Scope
+
+Each configured provider connection should compile into a manifest with stable metadata:
+
+```text
+Provider ID
+Display name
+Integration type
+Environment
+Authentication type and secret reference
+Capabilities
+Endpoint definitions
+Request parameters and headers
+Pagination and retry policy
+Dependency chain
+Response record paths
+Field mappings
+Transformations
+Validation rules
+Identity-resolution rules
+Sync schedule and cursor policy
+Approval state
+Version and effective dates
+```
+
+Manifest records should separate reusable provider templates from connection instances:
+
+* Provider templates define common provider behavior: auth type, known endpoints, supported
+  capabilities, common mappings, pagination, rate limits, transforms, validations, and sample test
+  cases.
+* Connection instances define tenant- or account-specific behavior: credentials, selected accounts,
+  enabled capabilities, environment, schedule, permissions, owner, approval settings, and sync
+  status.
+
+This distinction lets many tenants use the same provider template while preserving tenant-specific
+credentials, scopes, schedules, approvals, and operational evidence.
+
+### Guided Setup Experience
+
+The setup workflow should be progressive so operators can connect, test, map, validate, and activate
+without completing an entire integration in one sitting.
+
+```text
+Choose integration type
+-> Select capabilities
+-> Configure authentication
+-> Import specification, choose template, or build endpoint
+-> Fetch sample response
+-> Map fields to canonical models
+-> Apply safe transformations
+-> Validate sample records
+-> Run dry-run sync
+-> Review reconciliation impact
+-> Approve activation
+-> Enable scheduled sync
+-> Monitor and repair
+```
+
+Setup screens should include Provider Catalog, Connection Wizard, API Test Console, Visual Mapper,
+Transformation Builder, Data Quality Center, Identity Matching Center, Sync Monitor, Change
+Management, and Audit Center views. The API Test Console should support safe actions such as test
+authentication, fetch sample accounts, fetch sample positions, preview mapped records, validate
+records, run dry-run sync, and enable production sync after approval. Test output should be written
+for operations users: success or failure, sample records, missing required fields, warnings, and
+suggested fixes, not raw stack traces.
+
+### Visual Mapping and Transformations
+
+The visual mapping surface should show sample provider fields beside Meridian canonical fields.
+Templates should prevent users from starting from a blank screen. For each capability, Meridian
+should identify required and recommended fields, suggest likely mappings with confidence scores,
+auto-accept high-confidence low-risk mappings, require review for medium-confidence mappings, and
+block activation when required fields remain unresolved.
+
+Canonical capability contracts should drive mapping requirements. Position mappings require account
+identifier, security identifier, quantity, as-of date, and currency when money fields are present.
+Transaction mappings require transaction ID, account ID, transaction type, trade or posting date,
+amount, currency, and security identifiers when the activity is security-related.
+
+Non-technical transforms should come from a safe library, including date parsing, decimal parsing,
+currency defaulting, text normalization, enum mapping, amount sign handling, identifier priority,
+constant values, and simple conditional mapping. Arbitrary user-written code should be limited to
+admin or developer roles because free-form code in data pipelines creates security, supportability,
+and auditability risk.
+
+### Ingestion Runtime and Raw Evidence
+
+The manifest-driven runtime should preserve raw evidence before mapping. For every import, Meridian
+should retain the raw provider request, raw provider response, provider name, endpoint, received
+timestamp, connection, sync run ID, provider API version when known, mapping version, canonical
+result, and validation result.
+
+```text
+Connector runner
+-> Raw payload store
+-> Record extractor
+-> Mapping engine
+-> Normalization engine
+-> Validation engine
+-> Identity resolution engine
+-> Canonical writer
+-> Event bus
+-> Portfolio / Accounting / Monitoring / Trading workflows
+```
+
+The same runtime should support pull mode, push/webhook mode, file/SFTP mode, manual upload mode,
+and hybrid mode. Accepted records move into the canonical store; failed records move into a
+quarantine and review workflow with enough raw evidence and mapped context to fix mappings, repair
+data rules, or replay the affected records.
+
+### Validation, Quarantine, and Identity Resolution
+
+Each capability needs built-in validation rules. Accounts validate account identity, account type,
+currency, and duplicate state. Positions validate numeric quantity, as-of date, at least one
+security identifier, required currency for money fields, and value tolerance when quantity and price
+are available. Transactions validate transaction ID, amount, mapped type, relevant dates, amount
+sign, and security identifiers for security-related activity. Trade-capable connectors add account
+approval, tradability, side and quantity checks, limit-price requirements, user permission,
+pre-trade checks, and approval evidence.
+
+Invalid mapped records should not silently enter the canonical store. They should be quarantined
+with issue type, affected count, raw record, mapped record, validation errors, possible fixes,
+reviewer state, and replay status. The review UI should let operators map an alternative field,
+choose a default, classify a cash position, ignore a known irrelevant record, or route unresolved
+issues to a provider incident.
+
+Identity resolution should be configurable but controlled. Account matching may use provider account
+ID, account number, account name, legal entity, portfolio code, custodian account number, or a
+manually selected internal account. Security matching should prefer strong identifiers such as
+internal security ID, CUSIP, ISIN, SEDOL, FIGI, and provider security ID before ticker plus exchange
+and currency; ticker alone is not sufficient for institutional portfolios or fixed income coverage.
+
+### Scheduling, Monitoring, Drift, and Activation
+
+Operators should configure schedules in business terms: manual, hourly, daily, weekly, custom
+schedule, full refresh, incremental refresh, or mixed monthly full refresh plus daily incremental
+refresh. Behind the scenes, Meridian should store cursor policy such as timestamp, date, cursor
+token, page number, offset, watermark, or full snapshot.
+
+Every connection should have a status page with health, last successful sync, records received,
+records accepted, records quarantined, average sync time, enabled capabilities, freshness, and
+business-language failure reasons. Schema drift detection should compare the current response shape
+against the last approved shape and pause affected mappings when required fields, record paths,
+date formats, enum values, or pagination contracts change.
+
+Production activation should require authentication test, endpoint test, sample data load, required
+mappings, validation pass, dry-run sync, reconciliation review, and approval before scheduled sync
+is enabled. Configuration permissions should separate viewer, operator, configurer, approver, admin,
+and developer authority. Production mapping changes should create draft versions, require dry-run
+validation, capture approval evidence, and support rollback.
+
+Conceptually, the configuration model should include provider templates, provider connections,
+connection capabilities, endpoint definitions, field mappings, sync runs, and quarantined records.
+Those records must remain versioned, auditable, effective-dated where relevant, and linked to import
+run evidence so every downstream portfolio, accounting, trading, or reporting output can explain
+which provider payload and mapping version produced it.
+
 ---
 
 ## 21. Reporting Strategy
@@ -2278,18 +2477,124 @@ Configurability creates power, but also risk. Meridian should include guardrails
 | Reprocessing changes historical data       | Import replay must preserve lineage and prior versions     |
 | Rules become untestable                    | Rules require test cases before activation                 |
 | Tenant-specific one-off behavior grows     | Use profiles and templates instead of custom code          |
+| Non-technical API setup corrupts imports   | Provider manifests require templates, validation, dry runs, approval, versioning, and rollback |
+| Generic connector submits unsafe trades    | Production trade execution requires certified adapters, sandbox proof, approvals, entitlements, and kill-switch controls |
+| Provider schema drift breaks mappings      | Drift detection pauses affected syncs until mappings are reviewed and approved |
+| Credentials leak through configuration     | Secrets are stored through credential references and never persisted in normal manifest payloads |
 
 ---
 
 ## 24. Updated Design Thesis
 
-> Meridian is designed as a modular, configurable financial operations platform. Its core financial model is intentionally stable, centered on entities, accounts, capital accounts, ledger accounts, instruments, contracts, obligations, cash flows, transactions, journal entries, positions, reconciliations, documents, workflows, reports, delivery records, and audit events. Around that stable core, Meridian provides tenant-specific configuration for workflows, rules, integrations, source-of-record policies, reporting, permissions, ledger controls, and custom attributes. This allows Meridian to support fund administrators, private fund managers, RIAs, family offices, and other investment organizations without creating separate products or sacrificing auditability.
+> Meridian is designed as a modular, configurable financial operations platform. Its core financial model is intentionally stable, centered on entities, accounts, capital accounts, ledger accounts, instruments, contracts, obligations, cash flows, transactions, journal entries, positions, reconciliations, documents, workflows, reports, delivery records, and audit events. Around that stable core, Meridian provides tenant-specific configuration for workflows, rules, provider integration manifests, source-of-record policies, reporting, permissions, ledger controls, and custom attributes. This allows Meridian to support fund administrators, private fund managers, RIAs, family offices, and other investment organizations without creating separate products, requiring custom code for every read-only provider integration, or sacrificing auditability.
 
 ---
 
 ## 25. Design Backlog and Remaining Productization Work
 
-The following artifacts should be maintained or expanded to keep the design document aligned with the existing implementation and remaining productization work.
+### 25.0 Marketplace Positioning and 2026 Competitor Lens
+
+Meridian is a W1-W5 proof-control platform for private-capital operations. It is not a close-only toolkit, not a generalized fund administrator, and not a replacement for every external operating domain.
+
+### 25.0.1 Implemented vs TODO Register (Design-Document-Sourced)
+
+The canonical planning-tooling tracker is [Meridian Implementation TODO List](implementation-todo-list.md). Keep detailed implemented/TODO status changes in that file so the design document remains the product rationale rather than a duplicate execution tracker.
+
+## Executive Marketecture Deck (Fixed 6-Page Format)
+
+### Page 1 — Executive Positioning and Decision Framing
+
+Meridian must win on one buyer question: who can reduce close risk and reporting uncertainty with less trust debt?
+
+Market reality:
+
+* Buyers operate across fragmented toolchains for data, accounting, close, and investor distribution.
+* Fragmentation creates reconciliation lag, policy inconsistency, and version drift.
+* Manual stitching increases audit exposure and extends period close.
+* The highest-value control systems are those that turn these blind spots into explicit, shared decision state.
+
+Meridian positioning:
+
+* Proof-first over feature-first.
+* Evidence-first over dashboard-first.
+* Explainability over abstraction.
+* W1-W5 continuity over broad platform breadth.
+
+Meridian must be the only operator environment where close readiness, exception state, and report impact are always traceable from source to output in one governed workflow.
+
+### Page 2 — Competitor Signal Translation
+
+Reference vendors and strongest signals (as of June 2026):
+
+* BlackLine: financial-close workflow, reconciliations, task management, transaction matching, journal controls, reporting linkage.
+* Trintech Cadency: high-volume matching, close orchestration, workflow automation, exception management, audit/compliance framing.
+* SS&C Advent Geneva: multi-asset portfolio/investor accounting scale, reporting breadth, NAV and compliance operations.
+* eFront: private-markets lifecycle and client-facing operations, data consolidation, capital event workflows.
+
+Competitive implication:
+
+* These systems are strong in their chosen domains.
+* Meridian must outperform through single-source proof continuity across fund-event, ledger, close, and report impact.
+
+### Page 3 — 2026 Operating Model (Meridian Marketecture)
+
+Meridian’s architecture for market differentiation:
+
+* Source Integrity: immutable source records plus retained imports and attachments.
+* Reconciliation Quality: break ownership, severity, aging, and blocker state tied to policy.
+* Close Governance: lock/reopen posture and readiness as enforced system state.
+* Proof-Ready Reporting: each report-line impact traces back to reconciliations, journals, approvals, and retained evidence.
+
+Design law:
+
+Every operator action must be answerable by one of three questions:
+
+1. What changed?
+2. Who approved it?
+3. Why did it remain blocked?
+
+### Page 4 — W5X-FREX-001: Shared Financial Record Explorers
+
+| Feature to ship | Competitor evidence | Meridian proof requirement | W5X-FREX gate |
+| --- | --- | --- | --- |
+| Shared explorer contract | BlackLine/Cadency show standardized close-reconciliation modules that scale operator workflows. | Shared read models and state contracts for scope, filters, saved views, summary strip, proof ribbon, and evidence links. | No FREX UI can launch without browser + WPF consuming the same DTO model and contract schema. |
+| Explorer-to-proof graph | BlackLine links modules with reporting/drill-down semantics. | `UsedIn`, `Impacts`, report-line lineage, reconciliation lineage, journal lineage per row. | A seeded close case must traverse Fund Event → Reconciliation → Journal → Report Line in one trace path. |
+| Multi-asset operator continuity | SS&C advertises broad instrument and valuation coverage across structures. | Multi-asset explorer behavior must preserve source conflict states, classification, and proof markers consistently. | The same user action produces identical proof behavior across at least 6 asset classes and both surfaces. |
+| Deterministic exception context | Competitor close stacks emphasize task visibility and review load balancing. | Exception state must remain visible and auditable from explorer context without local overrides. | Any unresolved blocker linked to close state blocks completion state transition. |
+| Report impact safety | Vendor literature stresses reporting/compliance workflows and auditability. | Report usage links must require evidence packet IDs, versioned output linkage, and approval lineage. | Report impact tags cannot appear without complete report-line provenance. |
+
+### Page 5 — W5X-FINOPS-001: Financial Operations Control Center
+
+| Feature to ship | Competitor evidence | Meridian proof requirement | W5X-FINOPS gate |
+| --- | --- | --- | --- |
+| Unified operations queue | BlackLine and Cadency prioritize centralized close-task and exception orchestration. | FINOPS queue must show blocker type, owner, aging, severity, escalation state, and close impact. | Queue “done” is blocked if any exception remains unresolved for a period-bound close dependency. |
+| Close and reopen posture | Close-focused vendors highlight workflow and role-signoff discipline. | Period-lock and reopen evidence lifecycle must be shared by both browser and WPF. | Close cannot move to “ready” until lock posture, evidence packet completeness, and approver chain are present. |
+| High-risk action governance | Competitors combine approvals with compliance controls in close and journal modules. | Policy service required for posting, reopening, override, reassignment, and exception dismissal. | Any high-risk action without approval evidence reverts with immutable denial record. |
+| Capital-event to reporting coupling | eFront and SS&C emphasize event and investor-cycle workflows. | FINOPS must surface capital-event impact on close and reporting dependencies in one operator lane. | One capital event, one valuation shock, and one report package must complete dependency validation. |
+### Page 6 — Go/No-Go Checklist (Attached)
+
+Decision gate for W5X public-readiness:
+
+| Gate | Requirement | Evidence owner | Status |
+| --- | --- | --- | --- |
+| Go-01 Source-chain | Record lineage exists from source input to proof packet for close-critical entities | Shared contracts + record lineage tests | [ ] |
+| Go-02 Reconciliation rigor | Open breaks carry owner, blocker cause, and policy threshold visibility | Explorer + FINOPS | [ ] |
+| Go-03 Closure integrity | No synthetic completion; close-ready logic enforces lock/posting/reopen constraints | FINOPS state machine | [ ] |
+| Go-04 Approval safety | No high-risk action without approval chain and approver traceability | Policy + services | [ ] |
+| Go-05 Evidence retention | Every report-impact item retains package ID, source hash, and version lineage | Reporting + audit | [ ] |
+| Go-06 Cross-surface parity | Browser and WPF produce identical proof state under same filter/time window | Shared UI contracts | [ ] |
+| Go-07 Roadmap quality | W5X-FREX and W5X-FINOPS exit with complete evidence gates | PM + QA | [ ] |
+
+Go decision is valid only when all seven checks are fully green and evidence artifacts are retained.
+
+Comparable products reviewed for this deck (June 2026):
+
+* BlackLine Financial Close: https://www.blackline.com/solutions/financial-close/
+* SS&C Advent Geneva brief: https://cdn.advent.com/cms/pdfs/briefs/PB-Geneva-Asset-Mgrs.pdf
+* eFront home and private-equity: https://www.efront.com/ ; https://www.efront.com/en/alternative-investment-solutions/private-equity
+* Trintech Cadency and Match: https://www.trintech.com/cadency/ ; https://www.trintech.com/cadency/match/
+
+### Supporting work for design backlog completion
 
 ### 1. Master Workflow Inventory
 
@@ -2422,6 +2727,7 @@ of isolated one-off tables:
 | Accounting | Ledger Explorer | Journal entries, ledger detail, account activity, trial balance, fund-event impact, capital-account impact, cash ledger, adjustments, close activity, and report usage |
 | Portfolio | Portfolio Explorer | Holdings, positions, transactions, lots, cost basis, cash flows, valuations, income and accruals, exposure, reconciliation status, ledger impact, and report usage |
 | Portfolio / Data | Security & Instrument Explorer | Instruments, held securities, identifier maps, terms, obligations, valuation inputs, source conflicts, corporate actions, accounting classification, and evidence coverage |
+| Reporting | Report-Line Provenance Explorer | Report-line inputs, approved source records, reconciliations, journal impact, evidence packets, template and package versions, approvals, delivery history, restatements, and audit events |
 
 Each explorer should use the same interaction model: scope the record set, choose or save a view,
 filter the grid, review summary signals, select a row, inspect a right-side proof drawer, open the

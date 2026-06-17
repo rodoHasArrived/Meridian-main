@@ -302,6 +302,7 @@ export interface ReportingGeneratedGridArtifactRow {
   label: string;
   jsonHref: string;
   csvHref: string;
+  pdfHref: string;
   xlsHref: string;
   xlsxHref: string;
 }
@@ -1659,6 +1660,7 @@ function buildGeneratedGridArtifactRows(run: ReportingRunStatusProjection): Repo
       label,
       jsonHref: reportingRunReportWriterGridEndpoint(run.runId, grid.gridId),
       csvHref: reportingRunReportWriterGridEndpoint(run.runId, grid.gridId, "csv"),
+      pdfHref: reportingRunReportWriterGridEndpoint(run.runId, grid.gridId, "pdf"),
       xlsHref: reportingRunReportWriterGridEndpoint(run.runId, grid.gridId, "xls"),
       xlsxHref: reportingRunReportWriterGridEndpoint(run.runId, grid.gridId, "xlsx")
     };

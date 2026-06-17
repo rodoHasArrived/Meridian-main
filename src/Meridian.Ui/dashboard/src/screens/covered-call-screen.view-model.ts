@@ -13,7 +13,7 @@ import type {
   CoveredCallRunSummary,
   CoveredCallScoringMode,
   CoveredCallTrade
-} from "@/types/covered-call.types";
+} from "@/lib/covered-call";
 import { buildShortCallPayoffCurve, shortCallBreakEven } from "@/lib/covered-call/payoff";
 
 export type CoveredCallStage = "configure" | "run" | "results";

@@ -33,7 +33,7 @@ quickstart: ## Zero-to-running setup for new contributors
 	@echo "  $(GREEN)Build succeeded$(NC)"
 	@echo ""
 	@echo "$(BLUE)[5/5] Running quick tests...$(NC)"
-	@dotnet test $(TEST_PROJECT) --verbosity quiet --nologo --no-build -c Release 2>&1 | tail -3
+	@python3 build/python/cli/buildctl.py test --project $(TEST_PROJECT) --configuration Release --verbosity quiet --queue
 	@echo ""
 	@echo "$(GREEN)Setup complete!$(NC)"
 	@echo ""

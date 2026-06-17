@@ -14,8 +14,17 @@ stricter rules, add a closer `AGENTS.md` or `AGENTS.override.md` rather than exp
 - Run `git status --short` before editing and preserve unrelated user-owned changes.
 - Read `.codex/skills/_shared/project-context.md` before changing Codex guidance that references
   product scope, active surfaces, commands, roadmap direction, or canonical terminology.
+- Read `docs/architecture/meridian-development-intelligence-framework.md`, `docs/domain/README.md`,
+  and `docs/ai/context/README.md` before changing Codex guidance for broad generation,
+  domain modeling, workflow design, or architecture-sensitive implementation.
 - Read `.codex/skills/_shared/codex-execution-contract.md` before changing skills, agents,
   prompts, hooks, config, or automation guidance.
+- When changing Codex development behavior or validation workflow, keep the Codex-loaded baseline
+  and mirrored assistant surfaces synchronized: root `AGENTS.md`, `CLAUDE.md`,
+  `docs/ai/codex/quickstart.md`, `.codex/skills/_shared/*`,
+  `.github/copilot-instructions.md`, `.github/agents/implementation-assurance-agent.md`,
+  `.github/workflows/README.md`, `docs/engineering/README.md`, `docs/start/README.md`,
+  `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md`.
 - For source-facing guidance changes, verify the referenced source path, README, command, or script
   exists before documenting it as current.
 - Prefer targeted edits over broad rewrites. Do not reformat generated, archived, or unrelated

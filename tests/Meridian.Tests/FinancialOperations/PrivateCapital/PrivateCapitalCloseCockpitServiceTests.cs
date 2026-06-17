@@ -139,13 +139,22 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
             row.Reviewer == "administrator" &&
             row.Rationale == "Report output publication retained for Administrator NAV statement." &&
             row.EvidenceLinks.Any(link => link.Route == "/evidence/administrator-nav"));
-        cockpit.EvidencePackages.Should().HaveCount(5);
+        cockpit.EvidencePackages.Should().HaveCount(6);
         cockpit.EvidencePackages.Should().OnlyContain(package => package.Status == EvidenceStatusDto.Ready && package.IsReady);
         cockpit.EvidencePackages.Should().ContainSingle(package =>
             package.PackageId == "private-capital:fund-event-accounting" &&
             package.CompleteCategoryCount == 4 &&
             package.RequiredCategoryCount == 4 &&
             package.EvidenceLinks.Any(link => link.Route == "/evidence/allocation-policy"));
+        cockpit.EvidencePackages.Should().ContainSingle(package =>
+            package.PackageId == "private-capital:expense-fee-allocation" &&
+            package.CompleteCategoryCount == 2 &&
+            package.RequiredCategoryCount == 2 &&
+            package.EvidenceLinks.Any(link => link.Route == "/evidence/management-fee") &&
+            package.EvidenceLinks.Any(link => link.Route == "/evidence/intercompany-balance") &&
+            package.EvidenceLinks.Any(link => link.Route == "/evidence/bank-card-statement") &&
+            package.EvidenceLinks.Any(link => link.Route == "/evidence/cash-plan-snapshot") &&
+            package.EvidenceLinks.Any(link => link.Route == "/evidence/reimbursement-support"));
         cockpit.EvidencePackages.Should().ContainSingle(package =>
             package.PackageId == "private-capital:nav-support" &&
             package.CompleteCategoryCount == 3 &&
@@ -186,7 +195,9 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
         cockpit.LiveCapabilities.Should().Contain(item => item.Contains("Fund/book/period", StringComparison.OrdinalIgnoreCase));
         cockpit.LiveCapabilities.Should().Contain(item => item.Contains("Approval history", StringComparison.OrdinalIgnoreCase));
         cockpit.LiveCapabilities.Should().Contain(item => item.Contains("Close-control checklist", StringComparison.OrdinalIgnoreCase));
-        cockpit.LiveCapabilities.Should().Contain(item => item.Contains("evidence package rollups", StringComparison.OrdinalIgnoreCase));
+        cockpit.LiveCapabilities.Should().Contain(item =>
+            item.Contains("evidence package rollups", StringComparison.OrdinalIgnoreCase) &&
+            item.Contains("expense/fee allocation", StringComparison.OrdinalIgnoreCase));
         cockpit.LiveCapabilities.Should().Contain(item => item.Contains("administrator-versus-Meridian", StringComparison.OrdinalIgnoreCase));
         cockpit.LiveCapabilities.Should().Contain(item => item.Contains("Management-company operating records", StringComparison.OrdinalIgnoreCase));
         cockpit.PlannedCapabilities.Should().NotContain(item => item.Contains("Administrator-versus-Meridian", StringComparison.OrdinalIgnoreCase));
@@ -240,7 +251,7 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
             lane.LaneId == "data-receipt" &&
             lane.Status == EvidenceStatusDto.Missing &&
             lane.RequiredActions.Contains("Retain source intake evidence for the close scope"));
-        cockpit.EvidencePackages.Should().HaveCount(4);
+        cockpit.EvidencePackages.Should().HaveCount(5);
         cockpit.EvidencePackages.Should().OnlyContain(package =>
             package.Status == EvidenceStatusDto.Missing &&
             !package.IsReady &&
@@ -445,6 +456,14 @@ public sealed class PrivateCapitalCloseCockpitServiceTests
             !lane.IsReady &&
             lane.Summary.Contains("missing", StringComparison.OrdinalIgnoreCase) &&
             lane.RequiredActions.Contains("Retain management-company operating evidence for expense allocations, intercompany balances, fees, bank/card support, budget or cash-plan snapshots, and reimbursements"));
+        cockpit.EvidencePackages.Should().ContainSingle(package =>
+            package.PackageId == "private-capital:expense-fee-allocation" &&
+            package.Status == EvidenceStatusDto.ReviewRequired &&
+            !package.IsReady &&
+            package.CompleteCategoryCount == 0 &&
+            package.RequiredCategoryCount == 2 &&
+            package.RequiredActions.Contains("Retain posted expense, fee, and allocation review evidence") &&
+            package.RequiredActions.Contains("Retain management-company operating evidence for expense allocations, intercompany balances, fees, bank/card support, budget or cash-plan snapshots, and reimbursements"));
     }
 
     [Fact]

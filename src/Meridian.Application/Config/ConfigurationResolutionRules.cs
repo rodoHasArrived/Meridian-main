@@ -10,6 +10,7 @@ using Meridian.Infrastructure.Adapters.NasdaqDataLink;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Infrastructure.Adapters.Tiingo;
 using Serilog;
+using static Meridian.Application.Services.AutoConfigurationService;
 
 namespace Meridian.Application.Config;
 

@@ -65,6 +65,7 @@ import type {
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
   OperationsAssignBreakCaseRequest,
+  OperationsBreakCase,
   OperatorWorkflowHomeSummary,
   OrderResult,
   OrderSubmitRequest,
@@ -81,6 +82,36 @@ import type {
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
+  ManualCsvProviderIntegrationDryRunRequest,
+  ProviderIntegrationActivationReadiness,
+  ProviderIntegrationActivationRequest,
+  ProviderIntegrationActivationResult,
+  ProviderIntegrationConnectionMonitor,
+  ProviderIntegrationDryRunResult,
+  ProviderIntegrationManifest,
+  ProviderIntegrationOpenApiImportRequest,
+  ProviderIntegrationOpenApiImportResult,
+  ProviderIntegrationPromotionReadinessPreview,
+  ProviderIntegrationQuarantineReplayRequest,
+  ProviderIntegrationQuarantineReplayResult,
+  ProviderIntegrationQuarantineResolutionRequest,
+  ProviderIntegrationQuarantineResolutionResult,
+  ProviderIntegrationQuarantineReview,
+  ProviderIntegrationReconciliationHandoffHistory,
+  ProviderIntegrationReconciliationHandoffRequest,
+  ProviderIntegrationReconciliationHandoffResult,
+  ProviderIntegrationRestDryRunRequest,
+  ProviderIntegrationRunDueSyncRequest,
+  ProviderIntegrationRunDueSyncResult,
+  ProviderIntegrationSchemaDriftCheckRequest,
+  ProviderIntegrationSchemaDriftCheckResult,
+  ProviderIntegrationSetupSaveRequest,
+  ProviderIntegrationSetupSaveResult,
+  ProviderIntegrationStagingIdentityResolutionPreview,
+  ProviderIntegrationStagingReview,
+  ProviderIntegrationSyncPlan,
+  ProviderIntegrationSyncRunHistory,
+  ProviderIntegrationTemplateCatalogEntry,
   PromotionDecisionResult,
   PromotionEvaluationResult,
   PromotionRecord,
@@ -155,12 +186,28 @@ import type {
   OperationsApprovalPolicyMatrix,
   OperationsApprovalPolicyRuleUpsertRequest,
   OperationsApprovalPolicyRuleUpsertResult,
+  OperationsChecklistAcknowledgeRequest,
   OperationsCloseCalendar,
   OperationsCloseCalendarItemUpsertRequest,
   OperationsCloseCalendarItemUpsertResult,
+  OperationsCloseChecklistTask,
+  OperationsCloseReadiness,
   OperationsCloseWorkflowRequest,
+  OperationsGatePostureRequest,
+  OperationsLedgerDraftRequest,
+  OperationsLedgerPostRequest,
+  OperationsLedgerPreview,
+  OperationsLedgerValidationRequest,
+  OperationsReconciliationRunRequest,
   OperationsReopenWorkflowRequest,
   OperationsRejectWorkflowRequest,
+  OperationsResolveBreakCaseRequest,
+  OperationsSecurityMasterOverrideApprovalRequest,
+  OperationsSecurityMasterResolveRequest,
+  OperationsStartWorkflowRequest,
+  OperationsSubmitApprovalRequest,
+  OperationsTimelineEntry,
+  OperationsTransitionRequest,
   OperationsTransitionResult,
   PlaidLinkTokenRequest,
   PlaidLinkTokenResponse,
@@ -225,6 +272,7 @@ import {
   PORTFOLIO_API_ENDPOINTS,
   PLAID_API_ENDPOINTS,
   PROVIDER_API_ENDPOINTS,
+  PROVIDER_INTEGRATION_API_ENDPOINTS,
   PROVIDER_ROUTING_API_ENDPOINTS,
   PROMOTION_API_ENDPOINTS,
   QUALITY_API_ENDPOINTS,
@@ -259,6 +307,17 @@ import {
   promotionEvaluateEndpoint,
   providerCredentialEndpoint,
   providerVerifyEndpoint,
+  workstationProviderIntegrationConnectionMonitorEndpoint,
+  workstationProviderIntegrationConnectionRunDueSyncEndpoint,
+  workstationProviderIntegrationConnectionSyncPlanEndpoint,
+  workstationProviderIntegrationConnectionSyncRunsEndpoint,
+  workstationProviderIntegrationIdentityResolutionEndpoint,
+  workstationProviderIntegrationPromotionReadinessEndpoint,
+  workstationProviderIntegrationQuarantineReviewEndpoint,
+  workstationProviderIntegrationReadinessEndpoint,
+  workstationProviderIntegrationReconciliationHandoffHistoryEndpoint,
+  workstationProviderIntegrationStagingReviewEndpoint,
+  workstationProviderIntegrationTemplateEndpoint,
   providerRemoveEndpoint,
   providerTestEndpoint,
   qualityAnomalyAcknowledgeEndpoint,
@@ -326,13 +385,30 @@ import {
   workstationOperatorInboxEndpoint,
   workstationOperationsContinuityApprovalApproveEndpoint,
   workstationOperationsContinuityApprovalRejectEndpoint,
+  workstationOperationsContinuityApprovalSubmitEndpoint,
+  workstationOperationsContinuityBrokerImportEndpoint,
+  workstationOperationsContinuityBrokerNormalizeEndpoint,
   workstationOperationsContinuityBreakAssignEndpoint,
+  workstationOperationsContinuityBreakResolveEndpoint,
+  workstationOperationsContinuityBreaksEndpoint,
+  workstationOperationsContinuityChecklistEndpoint,
+  workstationOperationsContinuityChecklistAcknowledgeEndpoint,
   workstationOperationsContinuityCloseEndpoint,
   workstationOperationsContinuityDetailEndpoint,
   workstationOperationsContinuityEndpoint,
   workstationOperationsContinuityCloseCalendarEndpoint,
+  workstationOperationsContinuityCloseReadinessEndpoint,
+  workstationOperationsContinuityLedgerDraftEndpoint,
+  workstationOperationsContinuityLedgerPostEndpoint,
   workstationOperationsPrivateCapitalCloseCockpitEndpoint,
+  workstationOperationsContinuityLedgerPreviewEndpoint,
+  workstationOperationsContinuityLedgerValidateEndpoint,
+  workstationOperationsContinuityPostureRefreshEndpoint,
+  workstationOperationsContinuityReconciliationRunEndpoint,
   workstationOperationsContinuityReopenEndpoint,
+  workstationOperationsContinuitySecurityMasterOverrideApproveEndpoint,
+  workstationOperationsContinuitySecurityMasterResolveEndpoint,
+  workstationOperationsContinuityTimelineEndpoint,
   workstationChiefOfStaffDecisionEndpoint,
   workstationChiefOfStaffHealthEndpoint,
   workstationChiefOfStaffSessionEndpoint,
@@ -885,6 +961,142 @@ export function getOperationsContinuityWorkflow(workflowId: string, options: Api
   return getJson<OperationsContinuityWorkflow>(workstationOperationsContinuityDetailEndpoint(workflowId), options);
 }
 
+export function getOperationsContinuityTimeline(workflowId: string, options: ApiRequestOptions = {}) {
+  return getJson<OperationsTimelineEntry[]>(workstationOperationsContinuityTimelineEndpoint(workflowId), options);
+}
+
+export function getOperationsContinuityBreaks(workflowId: string, options: ApiRequestOptions = {}) {
+  return getJson<OperationsBreakCase[]>(workstationOperationsContinuityBreaksEndpoint(workflowId), options);
+}
+
+export function getOperationsContinuityLedgerPreview(workflowId: string, options: ApiRequestOptions = {}) {
+  return getJson<OperationsLedgerPreview | null>(workstationOperationsContinuityLedgerPreviewEndpoint(workflowId), options);
+}
+
+export function getOperationsContinuityChecklist(workflowId: string, options: ApiRequestOptions = {}) {
+  return getJson<OperationsCloseChecklistTask[]>(workstationOperationsContinuityChecklistEndpoint(workflowId), options);
+}
+
+export function getOperationsContinuityCloseReadiness(workflowId: string, options: ApiRequestOptions = {}) {
+  return getJson<OperationsCloseReadiness>(workstationOperationsContinuityCloseReadinessEndpoint(workflowId), options);
+}
+
+export function startOperationsContinuityWorkflow(
+  request: OperationsStartWorkflowRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(workstationOperationsContinuityEndpoint(), request, options);
+}
+
+export function importOperationsContinuityBrokerData(
+  workflowId: string,
+  request: OperationsTransitionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityBrokerImportEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function normalizeOperationsContinuityBrokerTransactions(
+  workflowId: string,
+  request: OperationsTransitionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityBrokerNormalizeEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function refreshOperationsContinuityGatePosture(
+  workflowId: string,
+  request: OperationsGatePostureRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityPostureRefreshEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function resolveOperationsContinuitySecurityMasterMappings(
+  workflowId: string,
+  request: OperationsSecurityMasterResolveRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuitySecurityMasterResolveEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function approveOperationsContinuitySecurityMasterOverride(
+  workflowId: string,
+  overrideId: string,
+  request: OperationsSecurityMasterOverrideApprovalRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuitySecurityMasterOverrideApproveEndpoint(workflowId, overrideId),
+    request,
+    options
+  );
+}
+
+export function draftOperationsContinuityLedger(
+  workflowId: string,
+  request: OperationsLedgerDraftRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityLedgerDraftEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function validateOperationsContinuityLedger(
+  workflowId: string,
+  request: OperationsLedgerValidationRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityLedgerValidateEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function postOperationsContinuityLedger(
+  workflowId: string,
+  request: OperationsLedgerPostRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityLedgerPostEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
+export function runOperationsContinuityReconciliation(
+  workflowId: string,
+  request: OperationsReconciliationRunRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityReconciliationRunEndpoint(workflowId),
+    request,
+    options
+  );
+}
+
 export function assignOperationsContinuityBreakCase(
   workflowId: string,
   breakId: string,
@@ -893,6 +1105,44 @@ export function assignOperationsContinuityBreakCase(
 ) {
   return postJson<OperationsTransitionResult>(
     workstationOperationsContinuityBreakAssignEndpoint(workflowId, breakId),
+    request,
+    options
+  );
+}
+
+export function resolveOperationsContinuityBreakCase(
+  workflowId: string,
+  breakId: string,
+  request: OperationsResolveBreakCaseRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityBreakResolveEndpoint(workflowId, breakId),
+    request,
+    options
+  );
+}
+
+export function acknowledgeOperationsContinuityChecklistTask(
+  workflowId: string,
+  taskId: string,
+  request: OperationsChecklistAcknowledgeRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityChecklistAcknowledgeEndpoint(workflowId, taskId),
+    request,
+    options
+  );
+}
+
+export function submitOperationsContinuityApproval(
+  workflowId: string,
+  request: OperationsSubmitApprovalRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<OperationsTransitionResult>(
+    workstationOperationsContinuityApprovalSubmitEndpoint(workflowId),
     request,
     options
   );
@@ -2037,6 +2287,211 @@ export function getProviderRoutingTrustSnapshots(options: ApiRequestOptions = {}
 
 export function previewProviderRoute(request: ProviderRoutePreviewRequest, options: ApiRequestOptions = {}) {
   return postJson<ProviderRoutePreviewResponse>(PROVIDER_ROUTING_API_ENDPOINTS.preview, request, options);
+}
+
+export function getProviderIntegrationTemplates(options: ApiRequestOptions = {}) {
+  return getJson<ProviderIntegrationTemplateCatalogEntry[]>(PROVIDER_INTEGRATION_API_ENDPOINTS.templates, options);
+}
+
+export function getProviderIntegrationTemplate(manifestId: string, options: ApiRequestOptions = {}) {
+  return getJson<ProviderIntegrationManifest>(workstationProviderIntegrationTemplateEndpoint(manifestId), options);
+}
+
+export function importProviderIntegrationOpenApi(
+  request: ProviderIntegrationOpenApiImportRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationOpenApiImportResult>(
+    PROVIDER_INTEGRATION_API_ENDPOINTS.openApiImport,
+    request,
+    options
+  );
+}
+
+export function saveProviderIntegrationSetup(
+  request: ProviderIntegrationSetupSaveRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationSetupSaveResult>(PROVIDER_INTEGRATION_API_ENDPOINTS.setupSave, request, options);
+}
+
+export function getProviderIntegrationReadiness(
+  manifestId: string,
+  connectionId?: string | null,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationActivationReadiness>(
+    workstationProviderIntegrationReadinessEndpoint(manifestId, connectionId),
+    options
+  );
+}
+
+export function runManualCsvProviderIntegrationDryRun(
+  request: ManualCsvProviderIntegrationDryRunRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationDryRunResult>(
+    PROVIDER_INTEGRATION_API_ENDPOINTS.manualCsvDryRun,
+    request,
+    options
+  );
+}
+
+export function runRestProviderIntegrationDryRun(
+  request: ProviderIntegrationRestDryRunRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationDryRunResult>(PROVIDER_INTEGRATION_API_ENDPOINTS.restDryRun, request, options);
+}
+
+export function activateProviderIntegration(
+  request: ProviderIntegrationActivationRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationActivationResult>(PROVIDER_INTEGRATION_API_ENDPOINTS.activate, request, options);
+}
+
+export function getProviderIntegrationConnectionMonitor(
+  connectionId: string,
+  recentRunLimit?: number,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationConnectionMonitor>(
+    workstationProviderIntegrationConnectionMonitorEndpoint(connectionId, recentRunLimit),
+    options
+  );
+}
+
+export function getProviderIntegrationConnectionSyncRuns(
+  connectionId: string,
+  recentRunLimit?: number,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationSyncRunHistory>(
+    workstationProviderIntegrationConnectionSyncRunsEndpoint(connectionId, recentRunLimit),
+    options
+  );
+}
+
+export function getProviderIntegrationConnectionSyncPlan(
+  connectionId: string,
+  evaluatedAt?: string | null,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationSyncPlan>(
+    workstationProviderIntegrationConnectionSyncPlanEndpoint(connectionId, evaluatedAt),
+    options
+  );
+}
+
+export function runDueProviderIntegrationSync(
+  connectionId: string,
+  request: ProviderIntegrationRunDueSyncRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationRunDueSyncResult>(
+    workstationProviderIntegrationConnectionRunDueSyncEndpoint(connectionId),
+    request,
+    options
+  );
+}
+
+export function checkProviderIntegrationSchemaDrift(
+  request: ProviderIntegrationSchemaDriftCheckRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationSchemaDriftCheckResult>(
+    PROVIDER_INTEGRATION_API_ENDPOINTS.schemaDriftCheck,
+    request,
+    options
+  );
+}
+
+export function getProviderIntegrationStagingReview(
+  connectionId: string,
+  recentRunLimit?: number,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationStagingReview>(
+    workstationProviderIntegrationStagingReviewEndpoint(connectionId, recentRunLimit),
+    options
+  );
+}
+
+export function getProviderIntegrationIdentityResolution(
+  connectionId: string,
+  recentRunLimit?: number,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationStagingIdentityResolutionPreview>(
+    workstationProviderIntegrationIdentityResolutionEndpoint(connectionId, recentRunLimit),
+    options
+  );
+}
+
+export function getProviderIntegrationPromotionReadiness(
+  connectionId: string,
+  recentRunLimit?: number,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationPromotionReadinessPreview>(
+    workstationProviderIntegrationPromotionReadinessEndpoint(connectionId, recentRunLimit),
+    options
+  );
+}
+
+export function getProviderIntegrationReconciliationHandoffHistory(
+  connectionId: string,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationReconciliationHandoffHistory>(
+    workstationProviderIntegrationReconciliationHandoffHistoryEndpoint(connectionId),
+    options
+  );
+}
+
+export function createProviderIntegrationReconciliationHandoff(
+  request: ProviderIntegrationReconciliationHandoffRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationReconciliationHandoffResult>(
+    PROVIDER_INTEGRATION_API_ENDPOINTS.reconciliationHandoff,
+    request,
+    options
+  );
+}
+
+export function getProviderIntegrationQuarantineReview(
+  connectionId: string,
+  recentRunLimit?: number,
+  options: ApiRequestOptions = {}
+) {
+  return getJson<ProviderIntegrationQuarantineReview>(
+    workstationProviderIntegrationQuarantineReviewEndpoint(connectionId, recentRunLimit),
+    options
+  );
+}
+
+export function resolveProviderIntegrationQuarantineRecord(
+  request: ProviderIntegrationQuarantineResolutionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationQuarantineResolutionResult>(
+    PROVIDER_INTEGRATION_API_ENDPOINTS.quarantineResolve,
+    request,
+    options
+  );
+}
+
+export function replayProviderIntegrationQuarantineRecords(
+  request: ProviderIntegrationQuarantineReplayRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ProviderIntegrationQuarantineReplayResult>(
+    PROVIDER_INTEGRATION_API_ENDPOINTS.quarantineReplay,
+    request,
+    options
+  );
 }
 
 export function removeProvider(providerId: string) {

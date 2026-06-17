@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Workstation;
 using Meridian.Identity.Auth;
 using Meridian.Storage;
 using Meridian.Testing;
@@ -829,6 +830,79 @@ public sealed class RoleAuthorizationTests : EndpointIntegrationTestBase
             "user-account-disabled",
             "user-sessions-revoked"
         ]);
+    }
+
+    [Fact]
+    public async Task AuthScopedAccess_WithAutomationOrigin_ReturnsBadRequestWithoutMutatingAuthority()
+    {
+        using var adminClient = Fixture.CreatePermittedClient(UserPermission.ManageUsers);
+        var blockedPrincipal = $"assistant-admin-{Guid.NewGuid():N}";
+        var createResponse = await adminClient.PostAsJsonAsync(
+            "/api/auth/access-assignments",
+            new UserAccessAssignmentCreateRequestDto(
+                PrincipalId: blockedPrincipal,
+                PrincipalKind: AccessPrincipalKindDto.User,
+                ScopeKind: AccessScopeKindDto.Global,
+                ScopeId: null,
+                Role: nameof(UserRole.Admin),
+                RoleProfileName: null,
+                PermissionNames: [nameof(UserPermission.ManageUsers)],
+                EffectiveFrom: DateTimeOffset.UtcNow.AddMinutes(-1),
+                EffectiveTo: null,
+                RequestedBy: "assistant-agent",
+                Rationale: "Assistant drafted a scoped authority grant.",
+                ActionOrigin: OperationsActionOriginDto.AssistantDraft));
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var createError = await createResponse.Content.ReadAsStringAsync();
+        createError.Should().Contain("Reviewed automation cannot grant scoped access assignments");
+
+        var blockedList = await adminClient.GetFromJsonAsync<IReadOnlyList<UserAccessAssignmentDto>>(
+            $"/api/auth/access-assignments?principalId={blockedPrincipal}&includeRevoked=true",
+            JsonOptions);
+        blockedList.Should().NotBeNull();
+        blockedList.Should().BeEmpty("assistant-origin scoped authority grants must fail before persistence");
+
+        var retainedPrincipal = $"close-reviewer-{Guid.NewGuid():N}";
+        var allowedCreateResponse = await adminClient.PostAsJsonAsync(
+            "/api/auth/access-assignments",
+            new UserAccessAssignmentCreateRequestDto(
+                PrincipalId: retainedPrincipal,
+                PrincipalKind: AccessPrincipalKindDto.User,
+                ScopeKind: AccessScopeKindDto.Global,
+                ScopeId: null,
+                Role: nameof(UserRole.Accounting),
+                RoleProfileName: null,
+                PermissionNames: [nameof(UserPermission.ViewTrades)],
+                EffectiveFrom: DateTimeOffset.UtcNow.AddMinutes(-1),
+                EffectiveTo: null,
+                RequestedBy: "account-admin",
+                Rationale: "Grant temporary close review authority."));
+        allowedCreateResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var created = await allowedCreateResponse.Content.ReadFromJsonAsync<UserAccessAssignmentMutationResultDto>(JsonOptions);
+        created.Should().NotBeNull();
+
+        var revokeResponse = await adminClient.PostAsJsonAsync(
+            $"/api/auth/access-assignments/{created!.Assignment.AssignmentId}/revoke",
+            new UserAccessAssignmentRevokeRequestDto(
+                created.Assignment.AssignmentId,
+                ExpectedVersion: created.Assignment.Version,
+                RequestedBy: "automation-agent",
+                Rationale: "Automation requested scoped authority revocation.",
+                ActionOrigin: OperationsActionOriginDto.AutomationAssistant));
+
+        revokeResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var revokeError = await revokeResponse.Content.ReadAsStringAsync();
+        revokeError.Should().Contain("Reviewed automation cannot revoke scoped access assignments");
+
+        var retainedList = await adminClient.GetFromJsonAsync<IReadOnlyList<UserAccessAssignmentDto>>(
+            $"/api/auth/access-assignments?principalId={retainedPrincipal}&includeRevoked=true",
+            JsonOptions);
+        retainedList.Should().NotBeNull();
+        var retained = retainedList.Should().ContainSingle().Subject;
+        retained.Version.Should().Be(created.Assignment.Version);
+        retained.RevokedAtUtc.Should().BeNull();
+        retained.RevokedBy.Should().BeNull();
     }
 
     private static AuthCookies ExtractAuthCookies(HttpResponseMessage response)

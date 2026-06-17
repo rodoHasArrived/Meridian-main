@@ -11,6 +11,14 @@ import type {
   OperationsCloseCalendar,
   PortfolioWorkspaceResponse,
   ProviderConnectionRow,
+  ProviderIntegrationConnectionMonitor,
+  ProviderIntegrationPromotionReadinessPreview,
+  ProviderIntegrationQuarantineReview,
+  ProviderIntegrationReconciliationHandoffHistory,
+  ProviderIntegrationStagingIdentityResolutionPreview,
+  ProviderIntegrationStagingReview,
+  ProviderIntegrationSyncPlan,
+  ProviderIntegrationSyncRunHistory,
   ProviderRoutingBinding,
   ProviderRoutingConnection,
   ProviderRoutingTrustSnapshot,
@@ -38,8 +46,18 @@ const apiMocks = vi.hoisted(() => ({
   revokeAlpacaConnection: vi.fn(),
   testProviderConnection: vi.fn(),
   putProviderCredentials: vi.fn(),
+  replayProviderIntegrationQuarantineRecords: vi.fn(),
+  resolveProviderIntegrationQuarantineRecord: vi.fn(),
   verifyProviderConnection: vi.fn(),
-  deleteProviderCredentials: vi.fn()
+  deleteProviderCredentials: vi.fn(),
+  getProviderIntegrationConnectionMonitor: vi.fn(),
+  getProviderIntegrationConnectionSyncPlan: vi.fn(),
+  getProviderIntegrationConnectionSyncRuns: vi.fn(),
+  getProviderIntegrationIdentityResolution: vi.fn(),
+  getProviderIntegrationPromotionReadiness: vi.fn(),
+  getProviderIntegrationQuarantineReview: vi.fn(),
+  getProviderIntegrationReconciliationHandoffHistory: vi.fn(),
+  getProviderIntegrationStagingReview: vi.fn()
 }));
 
 vi.mock("@/lib/api", async (importActual) => ({
@@ -60,8 +78,18 @@ vi.mock("@/lib/api", async (importActual) => ({
   revokeAlpacaConnection: apiMocks.revokeAlpacaConnection,
   testProviderConnection: apiMocks.testProviderConnection,
   putProviderCredentials: apiMocks.putProviderCredentials,
+  replayProviderIntegrationQuarantineRecords: apiMocks.replayProviderIntegrationQuarantineRecords,
+  resolveProviderIntegrationQuarantineRecord: apiMocks.resolveProviderIntegrationQuarantineRecord,
   verifyProviderConnection: apiMocks.verifyProviderConnection,
-  deleteProviderCredentials: apiMocks.deleteProviderCredentials
+  deleteProviderCredentials: apiMocks.deleteProviderCredentials,
+  getProviderIntegrationConnectionMonitor: apiMocks.getProviderIntegrationConnectionMonitor,
+  getProviderIntegrationConnectionSyncPlan: apiMocks.getProviderIntegrationConnectionSyncPlan,
+  getProviderIntegrationConnectionSyncRuns: apiMocks.getProviderIntegrationConnectionSyncRuns,
+  getProviderIntegrationIdentityResolution: apiMocks.getProviderIntegrationIdentityResolution,
+  getProviderIntegrationPromotionReadiness: apiMocks.getProviderIntegrationPromotionReadiness,
+  getProviderIntegrationQuarantineReview: apiMocks.getProviderIntegrationQuarantineReview,
+  getProviderIntegrationReconciliationHandoffHistory: apiMocks.getProviderIntegrationReconciliationHandoffHistory,
+  getProviderIntegrationStagingReview: apiMocks.getProviderIntegrationStagingReview
 }));
 
 const session: SessionInfo = {
@@ -453,8 +481,18 @@ describe("SettingsScreen", () => {
     apiMocks.revokeAlpacaConnection.mockReset();
     apiMocks.testProviderConnection.mockReset();
     apiMocks.putProviderCredentials.mockReset();
+    apiMocks.replayProviderIntegrationQuarantineRecords.mockReset();
+    apiMocks.resolveProviderIntegrationQuarantineRecord.mockReset();
     apiMocks.verifyProviderConnection.mockReset();
     apiMocks.deleteProviderCredentials.mockReset();
+    apiMocks.getProviderIntegrationConnectionMonitor.mockReset();
+    apiMocks.getProviderIntegrationConnectionSyncPlan.mockReset();
+    apiMocks.getProviderIntegrationConnectionSyncRuns.mockReset();
+    apiMocks.getProviderIntegrationIdentityResolution.mockReset();
+    apiMocks.getProviderIntegrationPromotionReadiness.mockReset();
+    apiMocks.getProviderIntegrationQuarantineReview.mockReset();
+    apiMocks.getProviderIntegrationReconciliationHandoffHistory.mockReset();
+    apiMocks.getProviderIntegrationStagingReview.mockReset();
   });
 
   it("renders recent events as accessible status evidence rows", () => {
@@ -1057,6 +1095,479 @@ describe("SettingsScreen", () => {
     );
     expect(center).not.toHaveTextContent("endpoint-secret");
     expect(center).not.toHaveTextContent("vault:polygon/default");
+  });
+
+  it("loads provider integration runtime evidence for a provider routing connection", async () => {
+    const user = userEvent.setup();
+    const syncRuns: ProviderIntegrationSyncRunHistory = {
+      connectionId: "provider-reference",
+      totalSyncRuns: 4,
+      returnedSyncRuns: 2,
+      latestStartedAt: "2026-06-16T12:30:00Z",
+      syncRuns: [
+        {
+          syncRunId: "sync-positions-2",
+          capability: "Positions",
+          endpointKey: "positions",
+          startedAt: "2026-06-16T12:30:00Z",
+          completedAt: "2026-06-16T12:31:00Z",
+          status: "Quarantined",
+          recordsReceived: 17,
+          recordsAccepted: 14,
+          recordsQuarantined: 3,
+          durableStagingRecordCount: 14,
+          durableQuarantinedRecordCount: 3,
+          criticalIssueCount: 1,
+          warningIssueCount: 1,
+          rawPayloadId: "raw-polygon-2",
+          issues: []
+        },
+        {
+          syncRunId: "sync-positions-1",
+          capability: "Positions",
+          endpointKey: "positions",
+          startedAt: "2026-06-16T11:00:00Z",
+          completedAt: "2026-06-16T11:01:00Z",
+          status: "Loaded",
+          recordsReceived: 12,
+          recordsAccepted: 12,
+          recordsQuarantined: 0,
+          durableStagingRecordCount: 12,
+          durableQuarantinedRecordCount: 0,
+          criticalIssueCount: 0,
+          warningIssueCount: 0,
+          rawPayloadId: "raw-polygon-1",
+          issues: []
+        }
+      ]
+    };
+    const monitor: ProviderIntegrationConnectionMonitor = {
+      connectionId: "provider-reference",
+      manifestId: "manifest-polygon",
+      providerId: "polygon",
+      displayName: "Polygon.io",
+      connectionName: "Reference data route",
+      environment: "paper",
+      state: "Active",
+      enabledCapabilities: ["Positions"],
+      lastSyncRun: syncRuns.syncRuns[0],
+      recentSyncRuns: syncRuns.syncRuns,
+      recentRecordsReceived: 17,
+      recentRecordsAccepted: 14,
+      recentRecordsQuarantined: 3,
+      durableStagingRecordCount: 14,
+      durableQuarantinedRecordCount: 3,
+      hasCriticalIssues: true
+    };
+    const quarantine: ProviderIntegrationQuarantineReview = {
+      connectionId: "provider-reference",
+      syncRunIds: ["sync-positions-2"],
+      records: [
+        {
+          quarantineRecordId: "quarantine-position-1",
+          syncRunId: "sync-positions-2",
+          connectionId: "provider-reference",
+          capability: "Positions",
+          rawRecord: { accountNumber: "acct-1", cusip: null },
+          mappedRecord: { providerAccountId: "acct-1" },
+          validationErrors: [
+            {
+              code: "SCHEMA_REQUIRED",
+              severity: "Critical",
+              message: "CUSIP is required before staging promotion.",
+              targetField: "cusip",
+              suggestedFix: "Add provider mapping."
+            }
+          ],
+          status: "Quarantined",
+          createdAt: "2026-06-16T12:31:00Z"
+        },
+        {
+          quarantineRecordId: "quarantine-position-2",
+          syncRunId: "sync-positions-2",
+          connectionId: "provider-reference",
+          capability: "Positions",
+          rawRecord: { accountNumber: "acct-1", cusip: null },
+          mappedRecord: { providerAccountId: "acct-1" },
+          validationErrors: [
+            {
+              code: "SCHEMA_REQUIRED",
+              severity: "Critical",
+              message: "CUSIP is required before staging promotion.",
+              targetField: "cusip",
+              suggestedFix: "Add provider mapping."
+            }
+          ],
+          status: "Quarantined",
+          createdAt: "2026-06-16T12:31:05Z"
+        },
+        {
+          quarantineRecordId: "quarantine-position-3",
+          syncRunId: "sync-positions-2",
+          connectionId: "provider-reference",
+          capability: "Positions",
+          rawRecord: { accountNumber: "acct-1", cusip: null },
+          mappedRecord: { providerAccountId: "acct-1" },
+          validationErrors: [
+            {
+              code: "SCHEMA_REQUIRED",
+              severity: "Critical",
+              message: "CUSIP is required before staging promotion.",
+              targetField: "cusip",
+              suggestedFix: "Add provider mapping."
+            }
+          ],
+          status: "Quarantined",
+          createdAt: "2026-06-16T12:31:10Z"
+        }
+      ],
+      decisions: [],
+      totalQuarantinedRecords: 3,
+      criticalIssueCount: 1,
+      warningIssueCount: 1,
+      pendingReviewRecordCount: 3,
+      decisionedRecordCount: 0,
+      replayRequestedRecordCount: 0,
+      ignoredRecordCount: 0,
+      cashPositionCandidateCount: 0,
+      issueGroups: [
+        {
+          issueCode: "SCHEMA_REQUIRED",
+          severity: "Critical",
+          targetField: "cusip",
+          message: "CUSIP is required before staging promotion.",
+          suggestedFix: "Add provider mapping.",
+          recordCount: 3
+        }
+      ]
+    };
+    const reviewOnlyDecision = {
+      decisionId: "quarantine-decision-review-1",
+      syncRunId: "sync-positions-2",
+      quarantineRecordId: "quarantine-position-1",
+      connectionId: "provider-reference",
+      action: "ReviewOnly" as const,
+      reviewedBy: "Andrew Rowden",
+      reviewedAt: "2026-06-16T12:42:00Z",
+      note: "Reviewed from the Settings Provider Connection Center runtime evidence panel."
+    };
+    const replayDecision = {
+      ...reviewOnlyDecision,
+      decisionId: "quarantine-decision-replay-1",
+      quarantineRecordId: "quarantine-position-2",
+      action: "ReplayAfterMappingChange" as const,
+      reviewedAt: "2026-06-16T12:43:00Z",
+      note: "Marked from the Settings Provider Connection Center for replay after mapping changes."
+    };
+    const ignoreDecision = {
+      decisionId: "quarantine-decision-ignore-1",
+      syncRunId: "sync-positions-2",
+      quarantineRecordId: "quarantine-position-3",
+      connectionId: "provider-reference",
+      action: "IgnoreProviderRecord" as const,
+      reviewedBy: "Andrew Rowden",
+      reviewedAt: "2026-06-16T12:44:00Z",
+      note: "Ignored from the Settings Provider Connection Center after operator review."
+    };
+    const reviewedQuarantine = {
+      ...quarantine,
+      decisions: [reviewOnlyDecision],
+      decisionedRecordCount: 1,
+      pendingReviewRecordCount: 2
+    };
+    const replayQuarantine = {
+      ...quarantine,
+      decisions: [reviewOnlyDecision, replayDecision],
+      decisionedRecordCount: 2,
+      pendingReviewRecordCount: 1,
+      replayRequestedRecordCount: 1
+    };
+    const ignoredQuarantine = {
+      ...quarantine,
+      decisions: [reviewOnlyDecision, replayDecision, ignoreDecision],
+      decisionedRecordCount: 3,
+      pendingReviewRecordCount: 0,
+      replayRequestedRecordCount: 1,
+      ignoredRecordCount: 1
+    };
+    const syncPlan: ProviderIntegrationSyncPlan = {
+      connectionId: "provider-reference",
+      manifestId: "manifest-polygon",
+      providerId: "polygon",
+      connectionName: "Reference data route",
+      connectionState: "Active",
+      evaluatedAt: "2026-06-16T12:35:00Z",
+      dueCount: 1,
+      blockedCount: 0,
+      items: [
+        {
+          capability: "Positions",
+          endpointKey: "positions",
+          scheduleMode: "incremental",
+          frequency: "daily",
+          timezone: "America/New_York",
+          lastSuccessfulSyncAt: "2026-06-16T12:30:00Z",
+          nextEligibleSyncAt: "2026-06-17T12:30:00Z",
+          isDue: true,
+          isBlocked: false,
+          reason: "Daily provider position sync is due.",
+          issues: []
+        }
+      ]
+    };
+    const staging: ProviderIntegrationStagingReview = {
+      connectionId: "provider-reference",
+      syncRunIds: ["sync-positions-2"],
+      records: [
+        {
+          stagingRecordId: "stage-position-1",
+          syncRunId: "sync-positions-2",
+          connectionId: "provider-reference",
+          capability: "Positions",
+          rawPayloadId: "raw-polygon-2",
+          sourceRecordId: "provider-position-1",
+          dedupeKey: "Positions:provider-position-1",
+          mappedRecord: { providerAccountId: "acct-1", quantity: 10 },
+          validationWarnings: [],
+          status: "Validated",
+          createdAt: "2026-06-16T12:31:00Z"
+        }
+      ],
+      capabilitySummaries: [{ capability: "Positions", recordCount: 1, warningCount: 0 }],
+      warningGroups: [],
+      totalStagedRecords: 1,
+      readyForReconciliationCount: 1,
+      warningRecordCount: 0
+    };
+    const identity: ProviderIntegrationStagingIdentityResolutionPreview = {
+      connectionId: "provider-reference",
+      syncRunIds: ["sync-positions-2"],
+      rows: [],
+      totalRows: 1,
+      accountReviewRequiredCount: 0,
+      missingAccountIdentifierCount: 0,
+      securityResolvedCount: 1,
+      securityReviewRequiredCount: 1,
+      missingSecurityIdentifierCount: 0
+    };
+    const promotion: ProviderIntegrationPromotionReadinessPreview = {
+      connectionId: "provider-reference",
+      syncRunIds: ["sync-positions-2"],
+      totalRows: 1,
+      readyForReconciliationCount: 1,
+      reviewRequiredCount: 0,
+      blockedCount: 0,
+      rows: [
+        {
+          stagingRecordId: "stage-position-1",
+          syncRunId: "sync-positions-2",
+          capability: "Positions",
+          promotionTarget: "reconciliation-staging",
+          status: "ReadyForReconciliation",
+          providerAccountId: "acct-1",
+          internalAccountId: "internal-account-1",
+          internalSecurityId: "security-1",
+          securityDisplayName: "US Treasury 2031",
+          securityRoute: "/data/security-master/security-1",
+          issues: []
+        }
+      ]
+    };
+    const handoff: ProviderIntegrationReconciliationHandoffHistory = {
+      connectionId: "provider-reference",
+      totalRecords: 1,
+      handoffCount: 1,
+      lastRequestedAt: "2026-06-16T12:40:00Z",
+      records: [
+        {
+          handoffId: "handoff-1",
+          connectionId: "provider-reference",
+          syncRunId: "sync-positions-2",
+          stagingRecordId: "stage-position-1",
+          capability: "Positions",
+          promotionTarget: "reconciliation-staging",
+          requestedBy: "operations",
+          requestedAt: "2026-06-16T12:40:00Z",
+          approvalEvidenceId: "approval-1",
+          note: "Approved after identity review.",
+          providerAccountId: "acct-1",
+          internalAccountId: "internal-account-1",
+          internalSecurityId: "security-1",
+          securityRoute: "/data/security-master/security-1",
+          issues: []
+        }
+      ]
+    };
+    apiMocks.getProviderIntegrationConnectionMonitor.mockResolvedValue(monitor);
+    apiMocks.getProviderIntegrationConnectionSyncPlan.mockResolvedValue(syncPlan);
+    apiMocks.getProviderIntegrationConnectionSyncRuns.mockResolvedValue(syncRuns);
+    apiMocks.getProviderIntegrationIdentityResolution.mockResolvedValue(identity);
+    apiMocks.getProviderIntegrationPromotionReadiness.mockResolvedValue(promotion);
+    apiMocks.getProviderIntegrationQuarantineReview
+      .mockResolvedValue(quarantine)
+      .mockResolvedValueOnce(quarantine)
+      .mockResolvedValueOnce(reviewedQuarantine)
+      .mockResolvedValueOnce(reviewedQuarantine)
+      .mockResolvedValueOnce(replayQuarantine)
+      .mockResolvedValueOnce(ignoredQuarantine);
+    apiMocks.getProviderIntegrationReconciliationHandoffHistory.mockResolvedValue(handoff);
+    apiMocks.getProviderIntegrationStagingReview.mockResolvedValue(staging);
+    apiMocks.replayProviderIntegrationQuarantineRecords.mockResolvedValue({
+      replaySyncRunId: "provider-replay-provider-reference-20260616",
+      rawPayloadId: "raw-replay-1",
+      capability: "Positions",
+      recordsReplayed: 2,
+      recordsAccepted: 2,
+      recordsRequarantined: 0,
+      status: "Validated",
+      issues: []
+    });
+    apiMocks.resolveProviderIntegrationQuarantineRecord.mockResolvedValue({
+      resolved: true,
+      record: quarantine.records[0],
+      decision: {
+        decisionId: "quarantine-decision-1",
+        syncRunId: "sync-positions-2",
+        quarantineRecordId: "quarantine-position-1",
+        connectionId: "provider-reference",
+        action: "ReviewOnly",
+        reviewedBy: "Andrew Rowden",
+        reviewedAt: "2026-06-16T12:42:00Z",
+        note: "Reviewed from the Settings Provider Connection Center runtime evidence panel."
+      },
+      message: "Provider integration quarantine review decision recorded."
+    });
+
+    renderWithRouter(
+      <SettingsScreen
+        session={session}
+        overview={overview}
+        brokerageConnection={alpacaConnection}
+        providerConnections={providerConnections}
+        providerRoutingConnections={providerRoutingConnections}
+        providerRoutingBindings={providerRoutingBindings}
+        providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
+      />
+    );
+
+    const panel = screen.getByRole("region", { name: "Polygon.io provider integration runtime evidence" });
+    expect(within(panel).getByText("No runtime evidence loaded.")).toBeInTheDocument();
+    await user.click(within(panel).getByRole("button", { name: "Load provider integration runtime evidence for Polygon.io" }));
+
+    await waitFor(() => {
+      expect(apiMocks.getProviderIntegrationConnectionMonitor).toHaveBeenCalledWith("provider-reference", 5);
+      expect(apiMocks.getProviderIntegrationConnectionSyncPlan).toHaveBeenCalledWith("provider-reference", expect.any(String));
+      expect(apiMocks.getProviderIntegrationConnectionSyncRuns).toHaveBeenCalledWith("provider-reference", 5);
+      expect(apiMocks.getProviderIntegrationStagingReview).toHaveBeenCalledWith("provider-reference", 5);
+      expect(apiMocks.getProviderIntegrationIdentityResolution).toHaveBeenCalledWith("provider-reference", 5);
+      expect(apiMocks.getProviderIntegrationPromotionReadiness).toHaveBeenCalledWith("provider-reference", 5);
+      expect(apiMocks.getProviderIntegrationReconciliationHandoffHistory).toHaveBeenCalledWith("provider-reference");
+      expect(apiMocks.getProviderIntegrationQuarantineReview).toHaveBeenCalledWith("provider-reference", 5);
+    });
+    expect(await within(panel).findByText("Provider integration runtime evidence loaded.")).toBeInTheDocument();
+    expect(within(panel).getByText("provider-reference")).toBeInTheDocument();
+    expect(within(panel).getByText("Jun 16, 12:30 UTC")).toBeInTheDocument();
+    expect(within(panel).getByText("2 / 4")).toBeInTheDocument();
+    expect(within(panel).getByText("14 / 3")).toBeInTheDocument();
+    expect(within(panel).getByText("1 critical / 1 warning")).toBeInTheDocument();
+    expect(within(panel).getByText("3 pending / 0 replay / 0 ignored / 0 cash")).toBeInTheDocument();
+    expect(within(panel).getByText("1 due / 0 blocked")).toBeInTheDocument();
+    expect(within(panel).getByText("1 rows")).toBeInTheDocument();
+    expect(within(panel).getByText("1 review required")).toBeInTheDocument();
+    expect(within(panel).getByText("1 ready / 0 blocked")).toBeInTheDocument();
+    expect(within(panel).getByText("1 handoffs")).toBeInTheDocument();
+    expect(within(panel).getByText("sync-positions-2")).toBeInTheDocument();
+    expect(within(panel).getByText("quarantine-position-1")).toBeInTheDocument();
+    expect(within(panel).getByText("quarantine-position-3")).toBeInTheDocument();
+    expect(within(panel).getByText("SCHEMA_REQUIRED")).toBeInTheDocument();
+    expect(within(panel).getAllByText("CUSIP is required before staging promotion.").length).toBeGreaterThanOrEqual(1);
+    expect(within(panel).getByText("Daily provider position sync is due.")).toBeInTheDocument();
+    expect(within(panel).getByText("stage-position-1")).toBeInTheDocument();
+    expect(within(panel).getByText(/US Treasury 2031/)).toBeInTheDocument();
+
+    await user.click(within(panel).getByRole("button", {
+      name: "Review quarantine record quarantine-position-1 for Polygon.io"
+    }));
+
+    await waitFor(() => {
+      expect(apiMocks.resolveProviderIntegrationQuarantineRecord).toHaveBeenCalledWith(expect.objectContaining({
+        connectionId: "provider-reference",
+        syncRunId: "sync-positions-2",
+        quarantineRecordId: "quarantine-position-1",
+        action: "ReviewOnly",
+        reviewedBy: "Andrew Rowden",
+        reviewedAt: expect.any(String),
+        note: "Reviewed from the Settings Provider Connection Center runtime evidence panel."
+      }));
+    });
+    expect(await within(panel).findByText("Decision: Review by Andrew Rowden · Jun 16, 12:42 UTC")).toBeInTheDocument();
+    expect(within(panel).getByText("Decision recorded")).toBeInTheDocument();
+    expect(within(panel).queryByRole("button", {
+      name: "Review quarantine record quarantine-position-1 for Polygon.io"
+    })).not.toBeInTheDocument();
+    expect(within(panel).queryByRole("button", {
+      name: "Mark quarantine record quarantine-position-1 for replay after mapping change for Polygon.io"
+    })).not.toBeInTheDocument();
+    expect(within(panel).queryByRole("button", {
+      name: "Ignore quarantine record quarantine-position-1 for Polygon.io"
+    })).not.toBeInTheDocument();
+    expect(within(panel).queryByRole("button", {
+      name: "Mark quarantine record quarantine-position-1 as cash position for Polygon.io"
+    })).not.toBeInTheDocument();
+
+    await user.click(within(panel).getByRole("button", {
+      name: "Replay 2 quarantined provider integration records for Polygon.io"
+    }));
+
+    await waitFor(() => {
+      expect(apiMocks.replayProviderIntegrationQuarantineRecords).toHaveBeenCalledWith(expect.objectContaining({
+        sourceSyncRunId: "sync-positions-2",
+        manifestId: "manifest-polygon",
+        connectionId: "provider-reference",
+        capability: "Positions",
+        quarantineRecordIds: ["quarantine-position-2", "quarantine-position-3"],
+        requestedBy: "Andrew Rowden",
+        requestedAt: expect.any(String),
+        replaySyncRunId: expect.stringMatching(/^provider-replay-provider-reference-/)
+      }));
+    });
+
+    await user.click(within(panel).getByRole("button", {
+      name: "Mark quarantine record quarantine-position-2 for replay after mapping change for Polygon.io"
+    }));
+
+    await waitFor(() => {
+      expect(apiMocks.resolveProviderIntegrationQuarantineRecord).toHaveBeenCalledWith(expect.objectContaining({
+        connectionId: "provider-reference",
+        syncRunId: "sync-positions-2",
+        quarantineRecordId: "quarantine-position-2",
+        action: "ReplayAfterMappingChange",
+        reviewedBy: "Andrew Rowden",
+        reviewedAt: expect.any(String),
+        note: "Marked from the Settings Provider Connection Center for replay after mapping changes."
+      }));
+    });
+    expect(await within(panel).findByText("Decision: Replay after mapping change by Andrew Rowden · Jun 16, 12:43 UTC")).toBeInTheDocument();
+    expect(within(panel).queryByRole("button", {
+      name: "Mark quarantine record quarantine-position-2 as cash position for Polygon.io"
+    })).not.toBeInTheDocument();
+
+    await user.click(within(panel).getByRole("button", {
+      name: "Ignore quarantine record quarantine-position-3 for Polygon.io"
+    }));
+
+    await waitFor(() => {
+      expect(apiMocks.resolveProviderIntegrationQuarantineRecord).toHaveBeenCalledWith(expect.objectContaining({
+        connectionId: "provider-reference",
+        syncRunId: "sync-positions-2",
+        quarantineRecordId: "quarantine-position-3",
+        action: "IgnoreProviderRecord",
+        reviewedBy: "Andrew Rowden",
+        reviewedAt: expect.any(String),
+        note: "Ignored from the Settings Provider Connection Center after operator review."
+      }));
+    });
+    expect(await within(panel).findByText("Decision: Ignore provider record by Andrew Rowden · Jun 16, 12:44 UTC")).toBeInTheDocument();
   });
 
   it("supports inline provider edit, test, save, verify, and clear actions", async () => {

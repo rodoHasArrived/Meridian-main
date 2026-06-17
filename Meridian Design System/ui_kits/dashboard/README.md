@@ -60,3 +60,9 @@ For Reporting pages, pair `ToolbarStrip`, `DenseDataTable`, `EntitySummary`, and
 server-owned report-pack workflow state, delivery attempts, retained manifest paths, report-line
 provenance, and Evidence Workbench links. Do not model report-pack delivery or report-ready rules in
 local preview state.
+
+For Data and Settings provider-integration pages, use the same primitives for setup drafts, dry-run
+results, sync-run summaries, staging review, identity resolution, promotion readiness, reconciliation
+handoff history, and quarantine replay. Approval controls should post retained handoff evidence and
+surface duplicate/not-ready issues; canonical Portfolio, Security Master, Ledger, and Accounting
+promotion remains outside the local preview component.

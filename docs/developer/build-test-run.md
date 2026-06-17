@@ -64,5 +64,6 @@ npm --prefix src/Meridian.Ui/dashboard run build
 
 ## CI-Oriented Checks
 
-- [`docs/HELP.md`](../HELP.md) and `make help` list the canonical automated verification lanes.
+- [`docs/HELP.md`](../HELP.md) lists the canonical automated verification lanes. `make help`
+  exposes the same wrapper catalog only in shells where GNU Make is installed.
 - Keep lane scopes narrow and choose the command set that matches changed surfaces.

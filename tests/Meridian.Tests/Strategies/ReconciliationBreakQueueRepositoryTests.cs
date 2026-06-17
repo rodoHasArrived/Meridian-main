@@ -53,6 +53,37 @@ public sealed class ReconciliationBreakQueueRepositoryTests
     }
 
     [Fact]
+    public async Task ResolveAsync_WhenReviewedAutomationOrigin_RejectsBeforeMutationAndAppendsDenialAudit()
+    {
+        var repo = CreateRepository(out _);
+        var item = CreateItem(status: ReconciliationBreakQueueStatus.Open, severity: ReconciliationBreakSeverity.Critical);
+        await repo.CreateIfMissingAsync(item);
+        await repo.StartReviewAsync(new ReviewReconciliationBreakRequest(item.BreakId, "controller-a", "controller-a", "triage"));
+
+        var denied = await repo.ResolveAsync(new ResolveReconciliationBreakRequest(
+            item.BreakId,
+            ReconciliationBreakQueueStatus.Resolved,
+            "assistant",
+            "Automation suggested resolution.",
+            "Automation should remain a draft.",
+            ActionOrigin: OperationsActionOriginDto.AssistantDraft));
+
+        denied.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.ValidationFailed);
+        denied.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.MaterialActionRequiresHumanOperator);
+        denied.Validation!.MissingFields.Should().Contain("actionOrigin");
+        var retained = await repo.GetByIdAsync(item.BreakId);
+        retained!.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
+        retained.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Investigating);
+        retained.ResolvedBy.Should().BeNull();
+        var history = await repo.GetAuditHistoryAsync(item.BreakId);
+        history.Should().ContainSingle(entry =>
+            entry.EventType == "MaterialActionDenied" &&
+            entry.Actor == "assistant" &&
+            entry.PreviousStatus == ReconciliationBreakQueueStatus.InReview &&
+            entry.NewStatus == ReconciliationBreakQueueStatus.InReview);
+    }
+
+    [Fact]
     public async Task Legacy_states_are_migrated_to_shared_casework_lifecycle()
     {
         var repo = CreateRepository(out _);
@@ -261,6 +292,21 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         missingResolutionEvidence.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.MissingEvidence);
         missingResolutionEvidence.Validation!.MissingFields.Should().Contain("evidenceLinks");
 
+        var automationResolve = await repo.ApplyCaseworkCommandAsync(Command(resolution.Item!, ReconciliationCaseworkAction.Resolve) with
+        {
+            Actor = "assistant",
+            Note = "Automation suggested resolution.",
+            EvidenceLinks = ["ledger-event:automation-close"],
+            ActionOrigin = OperationsActionOriginDto.AutomationAssistant
+        });
+        automationResolve.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.ValidationFailed);
+        automationResolve.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.MaterialActionRequiresHumanOperator);
+        (await repo.GetByIdAsync(item.BreakId))!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Investigating);
+        (await repo.GetAuditHistoryAsync(item.BreakId)).Should().Contain(entry =>
+            entry.EventType == "MaterialActionDenied" &&
+            entry.Actor == "assistant" &&
+            entry.Reason!.Contains("Reviewed automation", StringComparison.OrdinalIgnoreCase));
+
         var resolved = await repo.ApplyCaseworkCommandAsync(Command(resolution.Item!, ReconciliationCaseworkAction.Resolve) with
         {
             Note = "Resolved with close packet.",
@@ -302,9 +348,39 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         var reopenWithoutReason = await repo.ApplyCaseworkCommandAsync(Command(signoff.Item, ReconciliationCaseworkAction.Reopen) with { Actor = "controller-manager", Privileged = true, Reason = " " });
         reopenWithoutReason.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.MissingReason);
 
+        var transitionReopenWithoutReason = await repo.ApplyCaseworkCommandAsync(Command(signoff.Item, ReconciliationCaseworkAction.TransitionStatus) with
+        {
+            Actor = "controller-manager",
+            Status = ReconciliationCaseLifecycleState.Reopened,
+            Privileged = true,
+            Reason = " "
+        });
+        transitionReopenWithoutReason.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.MissingReason);
+
         var reopened = await repo.ApplyCaseworkCommandAsync(Command(signoff.Item, ReconciliationCaseworkAction.Reopen) with { Actor = "controller-manager", Privileged = true, Reason = "Late broker correction." });
         reopened.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
         reopened.Item!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Reopened);
+
+        var automationBulkResolve = await repo.ApplyBulkCaseworkAsync(new ReconciliationBulkCaseworkRequest(
+            BreakIds: [item.BreakId],
+            Action: ReconciliationCaseworkAction.Resolve,
+            Actor: "assistant",
+            CommandId: "bulk-automation",
+            CorrelationId: "corr-bulk-automation",
+            Source: "test",
+            IdempotencyKey: "idem-automation",
+            DryRun: false,
+            AllowPartialSuccess: true,
+            Note: "Automation suggested reopened-case resolution.",
+            RootCauseCode: "BrokerCashTiming",
+            ResolutionCode: "LedgerAdjusted",
+            ActionOrigin: OperationsActionOriginDto.AutomationAssistant));
+        automationBulkResolve.FailedCount.Should().Be(1);
+        automationBulkResolve.Results.Should().ContainSingle(result =>
+            result.BreakId == item.BreakId &&
+            !result.Succeeded &&
+            result.Error!.Contains("Reviewed automation", StringComparison.OrdinalIgnoreCase));
+        (await repo.GetByIdAsync(item.BreakId))!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Reopened);
 
         var dryRunRequest = new ReconciliationBulkCaseworkRequest(
             BreakIds: [item.BreakId, "missing"],

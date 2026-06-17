@@ -25,7 +25,12 @@ public static partial class WorkstationEndpoints
                     statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var explorer = await service.GetExplorerAsync(explorerId, context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveRequiredTenantId(context, out var tenantId))
+            {
+                return Results.Unauthorized();
+            }
+
+            var explorer = await service.GetExplorerAsync(explorerId, tenantId, context.RequestAborted).ConfigureAwait(false);
             return explorer is null
                 ? Results.NotFound(new { error = $"Unknown financial record explorer '{explorerId}'." })
                 : Results.Json(explorer, jsonOptions);
@@ -53,7 +58,12 @@ public static partial class WorkstationEndpoints
                 return Results.NotFound(new { error = $"Unknown financial record explorer '{explorerId}'." });
             }
 
-            var record = await service.GetRecordAsync(explorerId, recordId, context.RequestAborted).ConfigureAwait(false);
+            if (!TryResolveRequiredTenantId(context, out var tenantId))
+            {
+                return Results.Unauthorized();
+            }
+
+            var record = await service.GetRecordAsync(explorerId, recordId, tenantId, context.RequestAborted).ConfigureAwait(false);
             return record is null
                 ? Results.NotFound(new { error = $"Unknown financial record '{recordId}'." })
                 : Results.Json(record, jsonOptions);
@@ -78,7 +88,12 @@ public static partial class WorkstationEndpoints
 
             try
             {
-                var savedView = await service.SaveViewAsync(explorerId, request, context.RequestAborted).ConfigureAwait(false);
+                if (!TryResolveRequiredTenantId(context, out var tenantId))
+                {
+                    return Results.Unauthorized();
+                }
+
+                var savedView = await service.SaveViewAsync(explorerId, tenantId, request, context.RequestAborted).ConfigureAwait(false);
                 return savedView is null
                     ? Results.NotFound(new { error = $"Unknown financial record explorer '{explorerId}'." })
                     : Results.Json(savedView, jsonOptions);

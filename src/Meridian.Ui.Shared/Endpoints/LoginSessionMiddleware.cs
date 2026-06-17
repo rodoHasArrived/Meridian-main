@@ -51,6 +51,12 @@ public sealed class LoginSessionMiddleware
     public const string CurrentUserCompanyIdKey = "CurrentUserCompanyId";
 
     /// <summary>
+    /// Key for the tenant scope resolved for the authenticated request.
+    /// Until tenant ids diverge from company ids, this carries the authenticated company id.
+    /// </summary>
+    public const string CurrentTenantIdKey = "CurrentTenantId";
+
+    /// <summary>
     /// Key for the authenticated user's <see cref="Meridian.Identity.Auth.UserPermission"/> flags
     /// stored in <see cref="Microsoft.AspNetCore.Http.HttpContext.Items"/>.
     /// </summary>
@@ -122,7 +128,9 @@ public sealed class LoginSessionMiddleware
 
                 if (!string.IsNullOrWhiteSpace(profile.CompanyId))
                 {
-                    context.Items[CurrentUserCompanyIdKey] = profile.CompanyId.Trim();
+                    var companyId = profile.CompanyId.Trim();
+                    context.Items[CurrentUserCompanyIdKey] = companyId;
+                    context.Items[CurrentTenantIdKey] = companyId;
                 }
 
                 context.Items[CurrentUserPermissionsKey] = profile.Permissions;

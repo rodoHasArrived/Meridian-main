@@ -1130,7 +1130,8 @@ public sealed partial class PostgresDirectLendingStateStore : IDirectLendingStat
                         @visible_after,
                         null,
                         0,
-                        null);
+                        null)
+                    on conflict (topic, message_key) do nothing;
                     """;
                 insert.Parameters.AddWithValue("outbox_message_id", Guid.NewGuid());
                 insert.Parameters.AddWithValue("topic", row.Topic);

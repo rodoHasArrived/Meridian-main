@@ -35,7 +35,7 @@
         "docs/status/todo-scan-results.json"
       ],
       "return_code": 0,
-      "duration_seconds": 7.912,
+      "duration_seconds": 8.226,
       "status": "success",
       "output_file": "docs/status/TODO.md",
       "error": null
@@ -48,7 +48,7 @@
         "--summary"
       ],
       "return_code": 0,
-      "duration_seconds": 0.283,
+      "duration_seconds": 0.26,
       "status": "success",
       "output_file": null,
       "error": null
@@ -62,7 +62,7 @@
         "docs/generated/repository-structure.md"
       ],
       "return_code": 0,
-      "duration_seconds": 1.447,
+      "duration_seconds": 1.37,
       "status": "success",
       "output_file": "docs/generated/repository-structure.md",
       "error": null
@@ -78,7 +78,7 @@
         "docs/status/doc-health-dashboard.json"
       ],
       "return_code": 0,
-      "duration_seconds": 2.002,
+      "duration_seconds": 1.688,
       "status": "success",
       "output_file": "docs/status/doc-health-dashboard.md",
       "error": null
@@ -92,7 +92,7 @@
         "docs/status/example-validation.md"
       ],
       "return_code": 0,
-      "duration_seconds": 0.568,
+      "duration_seconds": 0.557,
       "status": "success",
       "output_file": "docs/status/example-validation.md",
       "error": null
@@ -108,7 +108,7 @@
         "docs/status/ai-inventory-report.json"
       ],
       "return_code": 0,
-      "duration_seconds": 0.659,
+      "duration_seconds": 0.686,
       "status": "success",
       "output_file": "docs/status/ai-inventory-report.md",
       "error": null
@@ -125,7 +125,7 @@
         "docs/status/ai-handoff-checklist-report.json"
       ],
       "return_code": 0,
-      "duration_seconds": 0.183,
+      "duration_seconds": 0.123,
       "status": "success",
       "output_file": "docs/status/ai-handoff-checklist-report.md",
       "error": null
@@ -149,7 +149,7 @@
         "docs/ai/assistant-workflow-contract.md"
       ],
       "return_code": 0,
-      "duration_seconds": 0.206,
+      "duration_seconds": 0.132,
       "status": "success",
       "output_file": null,
       "error": null
@@ -161,12 +161,12 @@
         "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\prompt-route-linter.py",
         "--summary",
         "--prompt",
-        "documentation readme guide index",
+        "provider adapter integration",
         "--json-output",
         "docs/status/prompt-route-lint-report.json"
       ],
       "return_code": 0,
-      "duration_seconds": 0.172,
+      "duration_seconds": 0.127,
       "status": "success",
       "output_file": "docs/status/prompt-route-lint-report.json",
       "error": null
@@ -183,6 +183,16 @@
         "--next-lane",
         "implementation-assurance",
         "--allow-incomplete",
+        "--model",
+        "docs-automation-profile",
+        "--input-tokens",
+        "1",
+        "--output-tokens",
+        "1",
+        "--estimated-cost-usd",
+        "0",
+        "--latency-ms",
+        "1",
         "--validation",
         "python build/scripts/docs/prompt-route-linter.py --summary::pass",
         "--output",
@@ -191,7 +201,7 @@
         "docs/status/ai-handoff-packet.json"
       ],
       "return_code": 0,
-      "duration_seconds": 1.509,
+      "duration_seconds": 0.398,
       "status": "success",
       "output_file": "docs/status/ai-handoff-packet.json",
       "error": null
@@ -206,7 +216,7 @@
         "--summary"
       ],
       "return_code": 0,
-      "duration_seconds": 0.161,
+      "duration_seconds": 0.138,
       "status": "success",
       "output_file": null,
       "error": null
@@ -219,7 +229,7 @@
         "--summary"
       ],
       "return_code": 0,
-      "duration_seconds": 0.123,
+      "duration_seconds": 0.104,
       "status": "success",
       "output_file": null,
       "error": null
@@ -236,7 +246,7 @@
         "D:\\Meridian-main\\.tmp\\pr1926\\.tmp\\docs-automation-summary.current.json"
       ],
       "return_code": 0,
-      "duration_seconds": 0.226,
+      "duration_seconds": 0.239,
       "status": "success",
       "output_file": null,
       "error": null
@@ -250,7 +260,7 @@
         "docs/status/coverage-report.md"
       ],
       "return_code": 0,
-      "duration_seconds": 13.341,
+      "duration_seconds": 15.669,
       "status": "success",
       "output_file": "docs/status/coverage-report.md",
       "error": null
@@ -266,7 +276,7 @@
         "docs/status/pilot-readiness-dashboard.json"
       ],
       "return_code": 0,
-      "duration_seconds": 0.196,
+      "duration_seconds": 0.192,
       "status": "success",
       "output_file": "docs/status/pilot-readiness-dashboard.md",
       "error": null
@@ -282,7 +292,7 @@
         "docs/status/paper-replay-reliability-dashboard.json"
       ],
       "return_code": 0,
-      "duration_seconds": 0.171,
+      "duration_seconds": 0.173,
       "status": "success",
       "output_file": "docs/status/paper-replay-reliability-dashboard.md",
       "error": null
@@ -298,7 +308,7 @@
         "docs/status/evidence-continuity-dashboard.json"
       ],
       "return_code": 0,
-      "duration_seconds": 0.141,
+      "duration_seconds": 0.154,
       "status": "success",
       "output_file": "docs/status/evidence-continuity-dashboard.md",
       "error": null
@@ -314,7 +324,7 @@
         "docs/status/governance-readiness-dashboard.json"
       ],
       "return_code": 0,
-      "duration_seconds": 0.165,
+      "duration_seconds": 0.184,
       "status": "success",
       "output_file": "docs/status/governance-readiness-dashboard.md",
       "error": null
@@ -330,7 +340,7 @@
         "docs/status/api-contract-coverage-dashboard.json"
       ],
       "return_code": 0,
-      "duration_seconds": 3.998,
+      "duration_seconds": 4.578,
       "status": "success",
       "output_file": "docs/status/api-contract-coverage-dashboard.md",
       "error": null
@@ -342,7 +352,7 @@
         "D:\\Meridian-main\\.tmp\\pr1926\\build\\scripts\\docs\\generate-workflow-manifest.py"
       ],
       "return_code": 0,
-      "duration_seconds": 0.183,
+      "duration_seconds": 0.211,
       "status": "success",
       "output_file": "docs/status/workflow-validation-summary.json",
       "error": null

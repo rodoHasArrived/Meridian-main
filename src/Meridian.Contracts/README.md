@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-06-11
+last_reviewed: 2026-06-16
 ---
 
 # src/Meridian.Contracts
@@ -44,6 +44,15 @@ or provider implementations.
 - `Extensibility/` - stable financial operations core object, configurable layer, governed
   foundation, configuration envelope, tenant template, activation readiness/result, and
   extensibility catalog DTOs.
+- `Integrations/` - provider integration template catalog entry, manifest, endpoint, mapping,
+  validation, sync, OpenAPI import request/result, setup-save request/result,
+  activation-readiness, activation request/result, manual CSV and REST dry-run request, raw
+  payload, quarantine review/replay request/result, staging review, staging identity-resolution
+  preview, promotion readiness, reconciliation handoff, sync-run summary/history, tenant-store factory
+  seam, connection monitor, and run-due sync orchestration contracts for no-code read-only provider
+  setup, monitoring, activation evidence, scheduled execution, and replayable ingestion. Quarantine
+  review DTOs also carry pending, decisioned, replay-requested, ignored, and cash-position
+  candidate counts so clients can render operator review posture without recounting decisions.
 - `Monitoring/` - shared event-pipeline metrics contracts, snapshot payloads, and monitoring
   webhook sink contracts consumed by Application, Platform tracing/monitoring, diagnostics
   endpoints, WPF, and browser workstation services.
@@ -115,11 +124,11 @@ the operating record. Report-pack-ready workflows can use the
 same review-stage contract to surface report-commentary and audit-request-list drafts as
 evidence-backed review artifacts rather than approved publications.
 Payment approval/rejection, bank-evidence recording, manual-journal approval submission,
-report-pack workflow approval/restatement, report-pack publication, and report-pack delivery
-request contracts also carry the same action-origin metadata so assistant or automation-origin
-calls cannot approve or reject payment requests, satisfy cash evidence, submit journal drafts for
-approval, approve report packs, restate published report lines, publish reports, or create
-stakeholder delivery packages.
+ledger period close, report-pack workflow approval/restatement, report-pack publication, and
+report-pack delivery request contracts also carry the same action-origin metadata so assistant or
+automation-origin calls cannot approve or reject payment requests, satisfy cash evidence, submit
+journal drafts for approval, close accounting periods, approve report packs, restate published
+report lines, publish reports, or create stakeholder delivery packages.
 Banking contracts keep payment approval separate from bank-side evidence: approved payments remain
 Meridian approval records, while `RecordPaymentBankEvidenceRequest` records retained confirmation,
 return, reversal, or failure evidence under a human-operator origin before downstream cash,
@@ -257,6 +266,23 @@ shared save, activation-readiness, activation, and activation-history endpoints 
 `/api/workstation/extensibility/tenant-templates`. Activation readiness preserves the approval
 evidence model by blocking unapproved configuration envelopes and envelopes that lack retained
 approval actor/timestamp metadata.
+Provider integration manifest contracts under `Integrations/` define the versioned setup payloads
+for no-code provider intake. They keep credentials as secret references, preserve raw payload,
+quarantine, quarantine-review decisions, quarantine replay summaries, and staging identities, and
+expose template catalog entries, OpenAPI import requests/results, setup-save requests/results,
+manual CSV dry-run requests/results, schema-drift check requests/results, sync planning
+requests/results, sync-run history payloads, run-due sync requests/results, promotion-readiness preview rows, durable
+reconciliation handoff request/result/history records, activation state, mapping confidence,
+validation issues, endpoint definitions, and sync schedules as shared contracts before browser or
+WPF surfaces render setup, monitoring, reconciliation handoff, or scheduled execution state.
+Handoff result payloads include duplicate-record counts so clients can show idempotent retry
+failures from retained history rather than issuing another downstream reconciliation input.
+`IProviderIntegrationTenantManifestStoreFactory`
+lets workstation-hosted services resolve a tenant-partitioned manifest store while preserving the
+existing global store contract for non-workstation callers. Activation-readiness
+payloads carry operator-safe issue codes and required evidence labels so no-code setup can block
+unresolved canonical mappings, missing approval evidence, and production-write capabilities that
+are not backed by a certified provider adapter.
 
 Report-pack workflow contracts carry the W4 governed lifecycle states `Draft`, `InReview`,
 `Approved`, and `Published` plus governed publication metadata: sign-off actor, evidence hash,
@@ -702,7 +728,9 @@ Report-line provenance payloads live with the fund-operations workstation contra
 Ledger period and cross-period reporting DTOs expose closed-period trial-balance rows and P&L
 summary totals with accounting-basis, policy, prior-period variance, open-break count, and signoff
 posture so clients can render period close and cross-period reports without recomputing ledger
-semantics locally. `LedgerPeriodPnlSummaryDto` also separates realized revenue/expense net income
+semantics locally. `CloseLedgerPeriodRequest` carries action-origin metadata because reviewed
+automation can summarize close posture but cannot lock an accounting period for a human operator.
+`LedgerPeriodPnlSummaryDto` also separates realized revenue/expense net income
 from accrual-basis adjustment impact and retains the accrual adjustment lines used for the split.
 `LedgerTrialBalanceReportDto` wraps closed-period trial-balance detail rows with locked-period
 status, aggregate totals, accounting-policy lineage, and a SHA256 report signature so browser, WPF,
@@ -742,7 +770,7 @@ Direct lending command result codes distinguish validation failures, missing agg
 optimistic concurrency conflicts, and idempotency/command conflicts so persistence stores can return
 operator-safe failure reasons without parsing exception text.
 
-Accounting reconciliation casework contracts are shared here: break queue items carry assignee, priority, SLA policy/state/timestamps, age band, versioned taxonomy, threaded comments with mention/evidence/hash metadata, evidence counts, sign-off/reopen metadata, source-origin metadata, and optimistic concurrency versions. Casework command, bulk-triage, taxonomy, SLA policy, validation-problem, and sequenced audit-event payloads must remain additive so browser and WPF workstation clients use the same Accounting workflow.
+Accounting reconciliation casework contracts are shared here: break queue items carry assignee, priority, SLA policy/state/timestamps, age band, versioned taxonomy, threaded comments with mention/evidence/hash metadata, evidence counts, sign-off/reopen metadata, source-origin metadata, and optimistic concurrency versions. Resolve/dismiss, casework command, and bulk casework request payloads carry `ActionOrigin` so reviewed automation can draft triage but cannot resolve, sign off, dismiss, or reopen accounting exceptions. Casework command, bulk-triage, taxonomy, SLA policy, validation-problem, and sequenced audit-event payloads must remain additive so browser and WPF workstation clients use the same Accounting workflow.
 
 Manual journal entry contracts include private-capital entry types for capital calls,
 distributions, subscriptions, redemptions, LP transfers, and management fees. `TreasuryLedgerContextDto`

@@ -1,6 +1,6 @@
 {
   "manifest": "docs/status/workflow-manifest.json",
-  "workflowCount": 10,
+  "workflowCount": 11,
   "declared": {
     "makeTargets": [
       "desktop-test-operator-inbox-route"

@@ -94,7 +94,7 @@
                                            FontSize="16"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                <TextBlock Text="Check pack status, custom branding, dashboard exceptions, scheduled PDF/XLSX/CSV delivery, export presets, and audit lineage before publication."
+                                <TextBlock Text="{Binding SummarySnapshotDetailText}"
                                            Margin="0,6,0,0"
                                            FontSize="12"
                                            Foreground="{StaticResource ConsoleTextSecondaryBrush}"
@@ -159,19 +159,19 @@
                                     <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
                                         <StackPanel>
                                             <TextBlock Text="Writer" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                            <TextBlock Text="Draft" Margin="0,6,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                            <TextBlock Text="{Binding WriterSummaryText}" Margin="0,6,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
                                         <StackPanel>
                                             <TextBlock Text="Approvals" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                            <TextBlock Text="Gate" Margin="0,6,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource WarningColorBrush}" />
+                                            <TextBlock Text="{Binding ApprovalSummaryText}" Margin="0,6,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource WarningColorBrush}" />
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource WorkspaceQueueCardStyle}">
                                         <StackPanel>
                                             <TextBlock Text="Delivery" FontSize="10" Foreground="{StaticResource ConsoleTextMutedBrush}" />
-                                            <TextBlock Text="Ready" Margin="0,6,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource SuccessColorBrush}" />
+                                            <TextBlock Text="{Binding DeliverySummaryText}" Margin="0,6,0,0" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource SuccessColorBrush}" />
                                         </StackPanel>
                                     </Border>
                                 </UniformGrid>

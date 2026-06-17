@@ -1,16 +1,16 @@
 {
-  "generatedAtUtc": "2026-06-16T18:19:15.824391+00:00",
+  "generatedAtUtc": "2026-06-17T01:13:06.618414+00:00",
   "repositoryRoot": ".",
   "repositoryName": "pr1926",
   "status": "pass",
   "summary": {
-    "inventoryCount": 289,
+    "inventoryCount": 295,
     "findingCount": 0,
     "bySurface": {
       "agent-skills-compatible-hosts": 18,
       "claude": 46,
       "codex": 121,
-      "docs-ai": 33,
+      "docs-ai": 39,
       "github-actions": 2,
       "github-copilot": 44,
       "local-ai-maintenance-tools": 8,
@@ -21,7 +21,7 @@
     "byKind": {
       "agent": 27,
       "agent-profile": 48,
-      "ai-doc": 33,
+      "ai-doc": 39,
       "ai-workflow": 1,
       "codex-tool": 9,
       "config": 3,
@@ -2331,6 +2331,30 @@
     {
       "surface": "docs-ai",
       "kind": "ai-doc",
+      "name": "README.md",
+      "path": "docs/ai/context/README.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "accounting-context.md",
+      "path": "docs/ai/context/accounting-context.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "operational-evidence-context.md",
+      "path": "docs/ai/context/operational-evidence-context.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
       "name": "ai-sync-workflow.md",
       "path": "docs/ai/copilot/ai-sync-workflow.md",
       "expected_docs": [],
@@ -2341,6 +2365,22 @@
       "kind": "ai-doc",
       "name": "instructions.md",
       "path": "docs/ai/copilot/instructions.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "LLM_CONTEXT.md",
+      "path": "docs/ai/exports/LLM_CONTEXT.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "README.md",
+      "path": "docs/ai/exports/README.md",
       "expected_docs": [],
       "alternate_markers": []
     },
@@ -2421,6 +2461,14 @@
       "kind": "ai-doc",
       "name": "work-modes.md",
       "path": "docs/ai/work-modes.md",
+      "expected_docs": [],
+      "alternate_markers": []
+    },
+    {
+      "surface": "docs-ai",
+      "kind": "ai-doc",
+      "name": "working-memory.md",
+      "path": "docs/ai/working-memory.md",
       "expected_docs": [],
       "alternate_markers": []
     },

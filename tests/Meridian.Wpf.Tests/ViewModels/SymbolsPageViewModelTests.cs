@@ -1,5 +1,8 @@
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Configuration;
+using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
@@ -153,6 +156,50 @@ public sealed class SymbolsPageViewModelTests
     }
 
     [Fact]
+    public async Task SelectedSymbolTicker_LoadsSecurityMasterStatusThroughRemoteClient()
+    {
+        var securityId = Guid.NewGuid();
+        var remoteClient = new FakeRemoteWorkstationClient
+        {
+            Securities =
+            [
+                new SecurityMasterWorkstationDto(
+                    securityId,
+                    "Apple Inc.",
+                    Meridian.Contracts.SecurityMaster.SecurityStatusDto.Active,
+                    new SecurityClassificationSummaryDto("Equity", null, "Ticker", "AAPL"),
+                    new SecurityEconomicDefinitionSummaryDto("USD", 1, DateTimeOffset.UtcNow, null))
+            ]
+        };
+        using var viewModel = CreateViewModel(remoteClient: remoteClient);
+
+        viewModel.SelectedSymbolTicker = "AAPL";
+
+        await WaitForConditionAsync(() => remoteClient.LastGetEndpoint is not null);
+
+        remoteClient.LastGetEndpoint.Should().StartWith(UiApiRoutes.WorkstationSecurityMasterSearch);
+        remoteClient.LastGetEndpoint.Should().Contain("query=AAPL");
+        viewModel.SelectedSymbolSecurityId.Should().Be(securityId);
+        viewModel.CanViewInSecurityMaster.Should().BeTrue();
+        viewModel.CanAddToSecurityMaster.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task SelectedSymbolTicker_WhenRemoteLookupFails_AllowsSecurityMasterCreate()
+    {
+        var remoteClient = new FakeRemoteWorkstationClient { IsSuccess = false };
+        using var viewModel = CreateViewModel(remoteClient: remoteClient);
+
+        viewModel.SelectedSymbolTicker = "MSFT";
+
+        await WaitForConditionAsync(() => remoteClient.LastGetEndpoint is not null);
+
+        viewModel.SelectedSymbolSecurityId.Should().BeNull();
+        viewModel.CanViewInSecurityMaster.Should().BeFalse();
+        viewModel.CanAddToSecurityMaster.Should().BeTrue();
+    }
+
+    [Fact]
     public void SymbolsPageSource_BindsFilterAndEmptyStateThroughViewModel()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\SymbolsPage.xaml"));
@@ -216,6 +263,7 @@ public sealed class SymbolsPageViewModelTests
     }
 
     private static SymbolsPageViewModel CreateViewModel(
+        IRemoteWorkstationClient? remoteClient = null,
         Func<CancellationToken, Task<SymbolConfigDto[]>>? getConfiguredSymbolsAsync = null,
         Func<SymbolConfigDto[], CancellationToken, Task>? saveSymbolsAsync = null,
         Func<CancellationToken, Task<IReadOnlyList<WpfServices.Watchlist>>>? getAllWatchlistsAsync = null) =>
@@ -227,6 +275,7 @@ public sealed class SymbolsPageViewModelTests
             WpfServices.NavigationService.Instance,
             SymbolManagementService.Instance,
             CommandPaletteService.Instance,
+            remoteClient,
             getConfiguredSymbolsAsync,
             saveSymbolsAsync,
             getAllWatchlistsAsync);
@@ -246,5 +295,63 @@ public sealed class SymbolsPageViewModelTests
             SubscribeDepth = depth,
             DepthLevels = 10
         });
+    }
+
+    private sealed class FakeRemoteWorkstationClient : IRemoteWorkstationClient
+    {
+        public string BaseUrl { get; private set; } = "http://localhost:8080";
+        public string? LastGetEndpoint { get; private set; }
+        public bool IsSuccess { get; init; } = true;
+        public SecurityMasterWorkstationDto[]? Securities { get; init; }
+
+        public void Configure(string serviceUrl, int timeoutSeconds = 30, int backfillTimeoutMinutes = 60)
+            => BaseUrl = serviceUrl;
+
+        public Task<bool> CheckHealthEndpointAsync(CancellationToken ct = default)
+            => Task.FromResult(true);
+
+        public Task<ServiceHealthResult> CheckHealthAsync(CancellationToken ct = default)
+            => Task.FromResult(new ServiceHealthResult { IsReachable = true, IsConnected = true });
+
+        public Task<StatusResponse?> GetStatusAsync(CancellationToken ct = default)
+            => Task.FromResult<StatusResponse?>(null);
+
+        public Task<ApiResponse<StatusResponse>> GetStatusWithResponseAsync(CancellationToken ct = default)
+            => Task.FromResult(new ApiResponse<StatusResponse> { Success = true });
+
+        public Task<T?> GetAsync<T>(string endpoint, CancellationToken ct = default) where T : class
+            => Task.FromResult<T?>(null);
+
+        public Task<ApiResponse<T>> GetWithResponseAsync<T>(string endpoint, CancellationToken ct = default)
+            where T : class
+        {
+            LastGetEndpoint = endpoint;
+            if (!IsSuccess)
+            {
+                return Task.FromResult(new ApiResponse<T> { Success = false });
+            }
+
+            return Securities is T typed
+                ? Task.FromResult(ApiResponse<T>.Ok(typed))
+                : Task.FromResult(new ApiResponse<T> { Success = false });
+        }
+
+        public Task<T?> PostAsync<T>(string endpoint, object? body = null, CancellationToken ct = default)
+            where T : class
+            => Task.FromResult<T?>(null);
+
+        public Task<ApiResponse<T>> PostWithResponseAsync<T>(
+            string endpoint,
+            object? body = null,
+            CancellationToken ct = default) where T : class
+            => Task.FromResult(new ApiResponse<T> { Success = false });
+
+        public Task<ApiResponse<T>> DeleteWithResponseAsync<T>(string endpoint, CancellationToken ct = default)
+            where T : class
+            => Task.FromResult(new ApiResponse<T> { Success = false });
+
+        public void Dispose()
+        {
+        }
     }
 }

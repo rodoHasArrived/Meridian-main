@@ -8,7 +8,34 @@ import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-supp
 import { Input } from "@/components/ui/input";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { WorkspaceFilterBar, WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
-import { approveSecurityAssetProfile, assignLedgerMapping, createRolePermissionProfile, createScopedAccessAssignment, createSecurityMasterEntry, deleteProviderCredentials, draftSecurityAssetProfile, getSecurityAssetProfileLineage, listScopedAccessAssignments, putProviderCredentials, revokeScopedAccessAssignment, rollbackSecurityAssetProfile, testProviderConnection, upsertOperationsApprovalPolicyRule, upsertOperationsCloseCalendarItem, verifyProviderConnection } from "@/lib/api";
+import {
+  approveSecurityAssetProfile,
+  assignLedgerMapping,
+  createRolePermissionProfile,
+  createScopedAccessAssignment,
+  createSecurityMasterEntry,
+  deleteProviderCredentials,
+  draftSecurityAssetProfile,
+  getProviderIntegrationConnectionMonitor,
+  getProviderIntegrationConnectionSyncPlan,
+  getProviderIntegrationConnectionSyncRuns,
+  getProviderIntegrationIdentityResolution,
+  getProviderIntegrationPromotionReadiness,
+  getProviderIntegrationQuarantineReview,
+  getProviderIntegrationReconciliationHandoffHistory,
+  getProviderIntegrationStagingReview,
+  getSecurityAssetProfileLineage,
+  listScopedAccessAssignments,
+  putProviderCredentials,
+  replayProviderIntegrationQuarantineRecords,
+  resolveProviderIntegrationQuarantineRecord,
+  revokeScopedAccessAssignment,
+  rollbackSecurityAssetProfile,
+  testProviderConnection,
+  upsertOperationsApprovalPolicyRule,
+  upsertOperationsCloseCalendarItem,
+  verifyProviderConnection
+} from "@/lib/api";
 import { describeApiError } from "@/lib/api-errors";
 import { cn } from "@/lib/utils";
 import {
@@ -17,6 +44,7 @@ import {
   useSettingsRecentEventsSelectionViewModel,
   type SettingsAlpacaCredentialFieldState,
   type SettingsProfileAuthenticationStep,
+  type SettingsProviderConnectionRow,
   type SettingsRecentEventDetail,
   type SettingsRecentEventTableRow
 } from "@/screens/settings-screen.view-model";
@@ -40,6 +68,19 @@ import type {
   OperationsApprovalPolicyMatrixRow,
   OperationsCloseCalendar,
   OperationsCloseCalendarItem,
+  ProviderIntegrationConnectionMonitor,
+  ProviderIntegrationProcessingStatus,
+  ProviderIntegrationPromotionReadinessPreview,
+  ProviderIntegrationQuarantinedRecord,
+  ProviderIntegrationQuarantineDecision,
+  ProviderIntegrationQuarantineResolutionAction,
+  ProviderIntegrationQuarantineReview,
+  ProviderIntegrationReconciliationHandoffHistory,
+  ProviderIntegrationStagingIdentityResolutionPreview,
+  ProviderIntegrationStagingReview,
+  ProviderIntegrationSyncPlan,
+  ProviderIntegrationSyncRunEvidence,
+  ProviderIntegrationSyncRunHistory,
   RolePermissionCatalog,
   SecurityAssetProfileDefinition,
   SecurityAssetProfileFieldDefinition,
@@ -212,6 +253,36 @@ interface ProviderInlineState {
   verificationFailed: boolean;
   testLatencyLabel: string | null;
 }
+
+type ProviderRuntimePhase = "idle" | "loading" | "loaded" | "error";
+
+interface ProviderRuntimeEvidenceState {
+  phase: ProviderRuntimePhase;
+  message: string | null;
+  details: string[];
+  monitor: ProviderIntegrationConnectionMonitor | null;
+  syncRuns: ProviderIntegrationSyncRunHistory | null;
+  syncPlan: ProviderIntegrationSyncPlan | null;
+  staging: ProviderIntegrationStagingReview | null;
+  identity: ProviderIntegrationStagingIdentityResolutionPreview | null;
+  promotion: ProviderIntegrationPromotionReadinessPreview | null;
+  handoff: ProviderIntegrationReconciliationHandoffHistory | null;
+  quarantine: ProviderIntegrationQuarantineReview | null;
+}
+
+const emptyProviderRuntimeEvidenceState: ProviderRuntimeEvidenceState = {
+  phase: "idle",
+  message: null,
+  details: [],
+  monitor: null,
+  syncRuns: null,
+  syncPlan: null,
+  staging: null,
+  identity: null,
+  promotion: null,
+  handoff: null,
+  quarantine: null
+};
 
 const systemToneClass = {
   default: "border-border/70",
@@ -481,6 +552,7 @@ export function SettingsScreen({
   const [providerVerificationFilter, setProviderVerificationFilter] = useState<"all" | "verified" | "unverified">("all");
   const [providerSort, setProviderSort] = useState<"risk" | "name">("risk");
   const [providerInlineState, setProviderInlineState] = useState<Record<string, ProviderInlineState>>({});
+  const [providerRuntimeState, setProviderRuntimeState] = useState<Record<string, ProviderRuntimeEvidenceState>>({});
   const ledgerMappingDraft = useMemo(
     () => buildLedgerMappingAssignmentDraft(ledgerMappingWorkbench),
     [ledgerMappingWorkbench]
@@ -916,6 +988,203 @@ export function SettingsScreen({
         [providerId]: updater(previous)
       };
     });
+  };
+
+  const loadProviderRuntimeEvidence = async (row: SettingsProviderConnectionRow) => {
+    const stateKey = providerRuntimeStateKey(row);
+    const connectionId = row.integrationConnectionId;
+
+    setProviderRuntimeState((current) => ({
+      ...current,
+      [stateKey]: {
+        ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+        phase: "loading",
+        message: null,
+        details: []
+      }
+    }));
+
+    const evaluatedAt = new Date().toISOString();
+    const [
+      monitorResult,
+      syncRunsResult,
+      syncPlanResult,
+      stagingResult,
+      identityResult,
+      promotionResult,
+      handoffResult,
+      quarantineResult
+    ] = await Promise.allSettled([
+      getProviderIntegrationConnectionMonitor(connectionId, 5),
+      getProviderIntegrationConnectionSyncRuns(connectionId, 5),
+      getProviderIntegrationConnectionSyncPlan(connectionId, evaluatedAt),
+      getProviderIntegrationStagingReview(connectionId, 5),
+      getProviderIntegrationIdentityResolution(connectionId, 5),
+      getProviderIntegrationPromotionReadiness(connectionId, 5),
+      getProviderIntegrationReconciliationHandoffHistory(connectionId),
+      getProviderIntegrationQuarantineReview(connectionId, 5)
+    ]);
+
+    const details = [
+      providerRuntimeErrorDetail(monitorResult, "Connection monitor"),
+      providerRuntimeErrorDetail(syncRunsResult, "Sync-run history"),
+      providerRuntimeErrorDetail(syncPlanResult, "Sync plan"),
+      providerRuntimeErrorDetail(stagingResult, "Staging review"),
+      providerRuntimeErrorDetail(identityResult, "Identity resolution"),
+      providerRuntimeErrorDetail(promotionResult, "Promotion readiness"),
+      providerRuntimeErrorDetail(handoffResult, "Reconciliation handoff history"),
+      providerRuntimeErrorDetail(quarantineResult, "Quarantine review")
+    ].filter((detail): detail is string => Boolean(detail));
+    const failedCount = details.length;
+    const phase: ProviderRuntimePhase = failedCount === 8 ? "error" : "loaded";
+    const warningSuffix = failedCount === 1 ? "warning" : "warnings";
+
+    setProviderRuntimeState((current) => ({
+      ...current,
+      [stateKey]: {
+        phase,
+        message: failedCount === 0
+          ? "Provider integration runtime evidence loaded."
+          : failedCount === 8
+            ? "Provider integration runtime evidence unavailable."
+            : `Provider integration runtime loaded with ${failedCount} ${warningSuffix}.`,
+        details,
+        monitor: providerRuntimeValue(monitorResult),
+        syncRuns: providerRuntimeValue(syncRunsResult),
+        syncPlan: providerRuntimeValue(syncPlanResult),
+        staging: providerRuntimeValue(stagingResult),
+        identity: providerRuntimeValue(identityResult),
+        promotion: providerRuntimeValue(promotionResult),
+        handoff: providerRuntimeValue(handoffResult),
+        quarantine: providerRuntimeValue(quarantineResult)
+      }
+    }));
+  };
+
+  const replayProviderRuntimeQuarantine = async (row: SettingsProviderConnectionRow) => {
+    const stateKey = providerRuntimeStateKey(row);
+    const currentState = providerRuntimeState[stateKey];
+    const replayEligibleRecords = currentState?.quarantine?.records.filter((record) =>
+      !providerRuntimeLatestQuarantineDecision(currentState.quarantine?.decisions, record)
+    ) ?? [];
+    const replaySeed = replayEligibleRecords[0] ?? null;
+    const manifestId = currentState?.monitor?.manifestId ?? null;
+    if (!currentState || !replaySeed || !manifestId) {
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: "Quarantine replay is unavailable until runtime evidence includes monitor data and undecided quarantine records.",
+          details: [],
+        }
+      }));
+      return;
+    }
+
+    const quarantineRecordIds = replayEligibleRecords
+      .filter((record) => record.syncRunId === replaySeed.syncRunId && record.capability === replaySeed.capability)
+      .map((record) => record.quarantineRecordId);
+    const requestedAt = new Date();
+
+    setProviderRuntimeState((current) => ({
+      ...current,
+      [stateKey]: {
+        ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+        phase: "loading",
+        message: "Provider integration quarantine replay is running.",
+        details: []
+      }
+    }));
+
+    try {
+      const replayResult = await replayProviderIntegrationQuarantineRecords({
+        replaySyncRunId: providerRuntimeReplaySyncRunId(row.integrationConnectionId, requestedAt),
+        sourceSyncRunId: replaySeed.syncRunId,
+        manifestId,
+        connectionId: row.integrationConnectionId,
+        capability: replaySeed.capability,
+        quarantineRecordIds,
+        requestedBy: session?.displayName ?? "settings-operator",
+        requestedAt: requestedAt.toISOString()
+      });
+
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: `Quarantine replay completed: ${replayResult.recordsAccepted} accepted / ${replayResult.recordsRequarantined} requarantined.`,
+          details: replayResult.issues.map((issue) => issue.message)
+        }
+      }));
+      await loadProviderRuntimeEvidence(row);
+    } catch (error) {
+      const display = describeApiError(error, "Provider integration quarantine replay failed.");
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: display.summary,
+          details: display.details
+        }
+      }));
+    }
+  };
+
+  const resolveProviderRuntimeQuarantineRecord = async (
+    row: SettingsProviderConnectionRow,
+    record: ProviderIntegrationQuarantinedRecord,
+    action: ProviderIntegrationQuarantineResolutionAction
+  ) => {
+    const stateKey = providerRuntimeStateKey(row);
+    const reviewedAt = new Date();
+    const actionLabel = providerRuntimeQuarantineActionLabel(action);
+
+    setProviderRuntimeState((current) => ({
+      ...current,
+      [stateKey]: {
+        ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+        phase: "loading",
+        message: `Recording ${actionLabel.toLowerCase()} decision for ${record.quarantineRecordId}.`,
+        details: []
+      }
+    }));
+
+    try {
+      const result = await resolveProviderIntegrationQuarantineRecord({
+        connectionId: row.integrationConnectionId,
+        syncRunId: record.syncRunId,
+        quarantineRecordId: record.quarantineRecordId,
+        action,
+        reviewedBy: session?.displayName ?? "settings-operator",
+        reviewedAt: reviewedAt.toISOString(),
+        note: providerRuntimeQuarantineActionNote(action)
+      });
+
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: result.message ?? `${actionLabel} decision recorded for ${record.quarantineRecordId}.`,
+          details: []
+        }
+      }));
+      await loadProviderRuntimeEvidence(row);
+    } catch (error) {
+      const display = describeApiError(error, `Provider integration quarantine ${actionLabel.toLowerCase()} decision failed.`);
+      setProviderRuntimeState((current) => ({
+        ...current,
+        [stateKey]: {
+          ...(current[stateKey] ?? emptyProviderRuntimeEvidenceState),
+          phase: "loaded",
+          message: display.summary,
+          details: display.details
+        }
+      }));
+    }
   };
 
   const toggleProviderEdit = (providerId: string) => {
@@ -3439,6 +3708,13 @@ export function SettingsScreen({
                         <SettingsFieldRow label="Production gate" value={row.productionStateLabel} tone={row.productionStateLabel === "Production ready" ? "success" : "warning"} />
                         <SettingsFieldRow label="Affected workflows" value={row.affectedWorkflowsLabel} tone="default" />
                       </dl>
+                      <ProviderIntegrationRuntimePanel
+                        row={row}
+                        state={providerRuntimeState[providerRuntimeStateKey(row)] ?? emptyProviderRuntimeEvidenceState}
+                        onLoad={() => void loadProviderRuntimeEvidence(row)}
+                        onReplayQuarantine={() => void replayProviderRuntimeQuarantine(row)}
+                        onResolveQuarantineRecord={(record, action) => void resolveProviderRuntimeQuarantineRecord(row, record, action)}
+                      />
                       {inlineProviderManagementEnabled ? (
                         <ProviderReadinessChecklist
                           row={row}
@@ -4787,6 +5063,324 @@ function ProviderInlineActionPanel({
   );
 }
 
+function ProviderIntegrationRuntimePanel({
+  row,
+  state,
+  onLoad,
+  onReplayQuarantine,
+  onResolveQuarantineRecord
+}: {
+  row: SettingsProviderConnectionRow;
+  state: ProviderRuntimeEvidenceState;
+  onLoad: () => void;
+  onReplayQuarantine: () => void;
+  onResolveQuarantineRecord: (
+    record: ProviderIntegrationQuarantinedRecord,
+    action: ProviderIntegrationQuarantineResolutionAction
+  ) => void;
+}) {
+  const runs = providerRuntimeRuns(state);
+  const latestRun = runs[0] ?? null;
+  const issueGroups = state.quarantine?.issueGroups ?? [];
+  const quarantineRecords = state.quarantine?.records ?? [];
+  const quarantineDecisionCount = state.quarantine?.decisionedRecordCount ?? state.quarantine?.decisions.length ?? 0;
+  const pendingReviewRecordCount = state.quarantine?.pendingReviewRecordCount ?? Math.max(quarantineRecords.length - quarantineDecisionCount, 0);
+  const replayRequestedRecordCount = state.quarantine?.replayRequestedRecordCount ?? 0;
+  const ignoredRecordCount = state.quarantine?.ignoredRecordCount ?? 0;
+  const cashPositionCandidateCount = state.quarantine?.cashPositionCandidateCount ?? 0;
+  const syncPlanItems = state.syncPlan?.items ?? [];
+  const blockedSyncItems = state.syncPlan?.blockedCount ?? syncPlanItems.filter((item) => item.isBlocked).length;
+  const dueSyncItems = state.syncPlan?.dueCount ?? syncPlanItems.filter((item) => item.isDue).length;
+  const stagingReviewRows = state.staging?.records.length ?? 0;
+  const identityReviewRequired = (state.identity?.accountReviewRequiredCount ?? 0) + (state.identity?.securityReviewRequiredCount ?? 0);
+  const promotionReady = state.promotion?.readyForReconciliationCount ?? 0;
+  const promotionBlocked = state.promotion?.blockedCount ?? 0;
+  const handoffCount = state.handoff?.handoffCount ?? 0;
+  const criticalIssueCount = providerRuntimeCriticalIssueCount(state);
+  const warningIssueCount = providerRuntimeWarningIssueCount(state);
+  const receivedCount = providerRuntimeReceivedCount(state, runs);
+  const acceptedCount = providerRuntimeAcceptedCount(state, runs);
+  const quarantinedCount = providerRuntimeQuarantinedCount(state, runs);
+  const stagedCount = providerRuntimeStagedCount(state, runs);
+  const durableQuarantinedCount = providerRuntimeDurableQuarantinedCount(state, runs);
+  const totalRuns = state.syncRuns?.totalSyncRuns ?? runs.length;
+  const returnedRuns = state.syncRuns?.returnedSyncRuns ?? runs.length;
+  const loading = state.phase === "loading";
+  const replayEligibleQuarantineRecords = quarantineRecords.filter((record) =>
+    !providerRuntimeLatestQuarantineDecision(state.quarantine?.decisions, record)
+  );
+  const quarantineReplayCount = replayEligibleQuarantineRecords.length;
+  const canReplayQuarantine = !loading && quarantineReplayCount > 0 && Boolean(state.monitor?.manifestId);
+  const actionLabel = state.phase === "loaded" || state.phase === "error" ? "Refresh runtime" : loading ? "Loading runtime" : "Load runtime";
+
+  return (
+    <section
+      className={cn("mt-3 rounded-md border px-3 py-3", diagnosticToneClass[providerRuntimePanelTone(state)])}
+      aria-label={`${row.displayName} provider integration runtime evidence`}
+    >
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h5 className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground">Runtime evidence</h5>
+            <Badge variant={providerRuntimeStatusVariant(state)} dot={state.phase === "loaded"}>
+              {providerRuntimeStatusLabel(state)}
+            </Badge>
+          </div>
+          <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{row.integrationConnectionId}</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            onClick={onReplayQuarantine}
+            disabled={!canReplayQuarantine}
+            aria-label={`Replay ${quarantineReplayCount} quarantined provider integration records for ${row.displayName}`}
+          >
+            {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />}
+            Replay quarantine
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            onClick={onLoad}
+            disabled={loading}
+            aria-label={`${state.phase === "loaded" || state.phase === "error" ? "Refresh" : "Load"} provider integration runtime evidence for ${row.displayName}`}
+          >
+            {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />}
+            {actionLabel}
+          </Button>
+        </div>
+      </div>
+      <dl className="mt-3 grid gap-2 sm:grid-cols-2">
+        <SettingsFieldRow
+          label="Last sync"
+          value={formatProviderRuntimeUtcMinute(state.syncRuns?.latestStartedAt ?? latestRun?.startedAt)}
+          tone={latestRun ? providerRuntimeRunTone(latestRun) : "muted"}
+        />
+        <SettingsFieldRow label="Sync runs" value={`${formatProviderRuntimeNumber(returnedRuns)} / ${formatProviderRuntimeNumber(totalRuns)}`} tone={returnedRuns > 0 ? "success" : "muted"} />
+        <SettingsFieldRow label="Records received" value={formatProviderRuntimeNumber(receivedCount)} tone={receivedCount > 0 ? "success" : "muted"} />
+        <SettingsFieldRow
+          label="Accepted / quarantined"
+          value={`${formatProviderRuntimeNumber(acceptedCount)} / ${formatProviderRuntimeNumber(quarantinedCount)}`}
+          tone={quarantinedCount > 0 ? providerRuntimeIssueTone(criticalIssueCount, warningIssueCount) : acceptedCount > 0 ? "success" : "muted"}
+        />
+        <SettingsFieldRow label="Staged retained" value={formatProviderRuntimeNumber(stagedCount)} tone={stagedCount > 0 ? "success" : "muted"} />
+        <SettingsFieldRow label="Quarantine retained" value={formatProviderRuntimeNumber(durableQuarantinedCount)} tone={durableQuarantinedCount > 0 ? providerRuntimeIssueTone(criticalIssueCount, warningIssueCount) : "muted"} />
+        <SettingsFieldRow label="Decisioned records" value={formatProviderRuntimeNumber(quarantineDecisionCount)} tone={quarantineDecisionCount > 0 ? "success" : "muted"} />
+        <SettingsFieldRow
+          label="Review posture"
+          value={`${formatProviderRuntimeNumber(pendingReviewRecordCount)} pending / ${formatProviderRuntimeNumber(replayRequestedRecordCount)} replay / ${formatProviderRuntimeNumber(ignoredRecordCount)} ignored / ${formatProviderRuntimeNumber(cashPositionCandidateCount)} cash`}
+          tone={pendingReviewRecordCount > 0 ? "warning" : quarantineDecisionCount > 0 ? "success" : "muted"}
+        />
+        <SettingsFieldRow
+          label="Quarantine groups"
+          value={`${formatProviderRuntimeNumber(issueGroups.length)} groups`}
+          tone={issueGroups.length > 0 ? providerRuntimeIssueTone(criticalIssueCount, warningIssueCount) : "muted"}
+        />
+        <SettingsFieldRow
+          label="Issue counts"
+          value={`${formatProviderRuntimeNumber(criticalIssueCount)} critical / ${formatProviderRuntimeNumber(warningIssueCount)} warning`}
+          tone={providerRuntimeIssueTone(criticalIssueCount, warningIssueCount)}
+        />
+        <SettingsFieldRow
+          label="Sync plan"
+          value={`${formatProviderRuntimeNumber(dueSyncItems)} due / ${formatProviderRuntimeNumber(blockedSyncItems)} blocked`}
+          tone={blockedSyncItems > 0 ? "danger" : dueSyncItems > 0 ? "warning" : state.syncPlan ? "success" : "muted"}
+        />
+        <SettingsFieldRow
+          label="Staging review"
+          value={`${formatProviderRuntimeNumber(stagingReviewRows)} rows`}
+          tone={stagingReviewRows > 0 ? "success" : "muted"}
+        />
+        <SettingsFieldRow
+          label="Identity review"
+          value={`${formatProviderRuntimeNumber(identityReviewRequired)} review required`}
+          tone={identityReviewRequired > 0 ? "warning" : state.identity ? "success" : "muted"}
+        />
+        <SettingsFieldRow
+          label="Promotion readiness"
+          value={`${formatProviderRuntimeNumber(promotionReady)} ready / ${formatProviderRuntimeNumber(promotionBlocked)} blocked`}
+          tone={promotionBlocked > 0 ? "danger" : promotionReady > 0 ? "success" : state.promotion ? "muted" : "muted"}
+        />
+        <SettingsFieldRow
+          label="Reconciliation handoffs"
+          value={`${formatProviderRuntimeNumber(handoffCount)} handoffs`}
+          tone={handoffCount > 0 ? "success" : "muted"}
+        />
+      </dl>
+      {state.message ? (
+        <div role={state.phase === "error" ? "alert" : "status"} className={cn("mt-3 text-xs", itemToneClass[providerRuntimeMessageTone(state)])}>
+          <div>{state.message}</div>
+          {state.details.length > 0 ? (
+            <ul className="mt-1 list-disc space-y-1 pl-4 text-[11px] text-muted-foreground">
+              {state.details.map((detail) => <li key={detail}>{detail}</li>)}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+      {state.phase === "idle" ? (
+        <p className="mt-3 text-xs text-muted-foreground">No runtime evidence loaded.</p>
+      ) : null}
+      {runs.length > 0 ? (
+        <div className="mt-3 grid gap-2" aria-label={`${row.displayName} recent provider integration sync runs`}>
+          {runs.slice(0, 3).map((run) => (
+            <div key={run.syncRunId} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-mono text-[11px] text-foreground">{run.syncRunId}</span>
+                <Badge variant={providerRuntimeRunVariant(run)}>{run.status}</Badge>
+              </div>
+              <div className="mt-1 text-[11px] text-muted-foreground">
+                {run.capability} · {formatProviderRuntimeUtcMinute(run.startedAt)} · {formatProviderRuntimeNumber(run.recordsAccepted)} accepted / {formatProviderRuntimeNumber(run.recordsQuarantined)} quarantined
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {quarantineRecords.length > 0 ? (
+        <div className="mt-3 grid gap-2" aria-label={`${row.displayName} provider integration quarantine records`}>
+          {quarantineRecords.slice(0, 3).map((record) => {
+            const latestDecision = providerRuntimeLatestQuarantineDecision(state.quarantine?.decisions, record);
+            const hasRecordedDecision = Boolean(latestDecision);
+            const supportsCashDecision = record.capability === "Positions";
+
+            return (
+              <div key={record.quarantineRecordId} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant={providerRuntimeProcessingStatusVariant(record.status)}>{record.status}</Badge>
+                      <span className="font-mono text-[11px] text-foreground">{record.quarantineRecordId}</span>
+                    </div>
+                    <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
+                      {record.capability} · {formatProviderRuntimeUtcMinute(record.createdAt)} · {formatProviderRuntimeNumber(record.validationErrors.length)} issues
+                    </p>
+                    {latestDecision ? (
+                      <p className="mt-1 text-[11px] leading-4 text-success">
+                        Decision: {providerRuntimeQuarantineActionLabel(latestDecision.action)} by {latestDecision.reviewedBy} · {formatProviderRuntimeUtcMinute(latestDecision.reviewedAt)}
+                      </p>
+                    ) : null}
+                  </div>
+                  <div className="flex flex-wrap justify-end gap-2">
+                    {hasRecordedDecision ? (
+                      <Badge variant="success">Decision recorded</Badge>
+                    ) : (
+                      <>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0"
+                          onClick={() => onResolveQuarantineRecord(record, "ReviewOnly")}
+                          disabled={loading}
+                          aria-label={`Review quarantine record ${record.quarantineRecordId} for ${row.displayName}`}
+                        >
+                          {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <MonitorCheck className="h-3.5 w-3.5" aria-hidden="true" />}
+                          Review
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0"
+                          onClick={() => onResolveQuarantineRecord(record, "ReplayAfterMappingChange")}
+                          disabled={loading}
+                          aria-label={`Mark quarantine record ${record.quarantineRecordId} for replay after mapping change for ${row.displayName}`}
+                        >
+                          {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />}
+                          Replay later
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="shrink-0"
+                          onClick={() => onResolveQuarantineRecord(record, "IgnoreProviderRecord")}
+                          disabled={loading}
+                          aria-label={`Ignore quarantine record ${record.quarantineRecordId} for ${row.displayName}`}
+                        >
+                          {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />}
+                          Ignore
+                        </Button>
+                        {supportsCashDecision ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="shrink-0"
+                            onClick={() => onResolveQuarantineRecord(record, "MarkAsCashPosition")}
+                            disabled={loading}
+                            aria-label={`Mark quarantine record ${record.quarantineRecordId} as cash position for ${row.displayName}`}
+                          >
+                            {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />}
+                            Mark cash
+                          </Button>
+                        ) : null}
+                      </>
+                    )}
+                  </div>
+                </div>
+                {record.validationErrors[0] ? (
+                  <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{record.validationErrors[0].message}</p>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
+      {issueGroups.length > 0 ? (
+        <div className="mt-3 grid gap-2" aria-label={`${row.displayName} provider integration quarantine issue groups`}>
+          {issueGroups.slice(0, 3).map((group) => (
+            <div key={`${group.issueCode}-${group.targetField ?? "record"}`} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={providerRuntimeSeverityVariant(group.severity)}>{group.severity}</Badge>
+                <span className="font-mono text-[11px] text-foreground">{group.issueCode}</span>
+                <span className="text-[11px] text-muted-foreground">{formatProviderRuntimeNumber(group.recordCount)} records</span>
+              </div>
+              <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{group.message}</p>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {syncPlanItems.length > 0 ? (
+        <div className="mt-3 grid gap-2" aria-label={`${row.displayName} provider integration sync plan`}>
+          {syncPlanItems.slice(0, 3).map((item) => (
+            <div key={`${item.capability}-${item.endpointKey ?? "no-endpoint"}`} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={item.isBlocked ? "danger" : item.isDue ? "warning" : "success"}>
+                  {item.isBlocked ? "Blocked" : item.isDue ? "Due" : "Scheduled"}
+                </Badge>
+                <span className="text-[11px] font-medium text-foreground">{item.capability}</span>
+                <span className="font-mono text-[11px] text-muted-foreground">{item.endpointKey ?? "no endpoint"}</span>
+              </div>
+              <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{item.reason}</p>
+            </div>
+          ))}
+        </div>
+      ) : null}
+      {state.promotion && state.promotion.rows.length > 0 ? (
+        <div className="mt-3 grid gap-2" aria-label={`${row.displayName} provider integration promotion readiness rows`}>
+          {state.promotion.rows.slice(0, 3).map((promotionRow) => (
+            <div key={promotionRow.stagingRecordId} className="rounded-sm border border-border/60 bg-background/35 px-2 py-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={providerRuntimePromotionVariant(promotionRow.status)}>{promotionRow.status}</Badge>
+                <span className="font-mono text-[11px] text-foreground">{promotionRow.stagingRecordId}</span>
+                <span className="text-[11px] text-muted-foreground">{promotionRow.promotionTarget}</span>
+              </div>
+              <p className="mt-1 text-[11px] leading-4 text-muted-foreground">
+                {promotionRow.providerAccountId ?? "No provider account"} · {promotionRow.securityDisplayName ?? promotionRow.internalSecurityId ?? "No security match"}
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 function ProviderReadinessChecklist({
   row,
   state,
@@ -5002,6 +5596,238 @@ function providerDraftStatusVariant(state: ProviderInlineState | undefined, row:
   if (label === "Verification failed") return "danger";
   return "success";
 }
+
+function providerRuntimeStateKey(row: Pick<SettingsProviderConnectionRow, "integrationConnectionId" | "providerId">): string {
+  return row.integrationConnectionId || row.providerId;
+}
+
+function providerRuntimeReplaySyncRunId(connectionId: string, requestedAt: Date): string {
+  const suffix = requestedAt.toISOString().replace(/[^0-9A-Za-z]/g, "").toLowerCase();
+  const normalizedConnection = (connectionId || "connection").replace(/[^0-9A-Za-z-]/g, "-").toLowerCase();
+  return `provider-replay-${normalizedConnection}-${suffix}`;
+}
+
+function providerRuntimeValue<T>(result: PromiseSettledResult<T>): T | null {
+  return result.status === "fulfilled" ? result.value : null;
+}
+
+function providerRuntimeErrorDetail<T>(result: PromiseSettledResult<T>, label: string): string | null {
+  if (result.status === "fulfilled") {
+    return null;
+  }
+
+  const display = describeApiError(result.reason, `${label} could not be loaded.`);
+  return [display.summary, ...display.details].filter(Boolean).join(" ");
+}
+
+function providerRuntimeRuns(state: ProviderRuntimeEvidenceState): ProviderIntegrationSyncRunEvidence[] {
+  const runs = new Map<string, ProviderIntegrationSyncRunEvidence>();
+  const addRun = (run: ProviderIntegrationSyncRunEvidence | null | undefined) => {
+    if (run) {
+      runs.set(run.syncRunId, run);
+    }
+  };
+
+  addRun(state.monitor?.lastSyncRun);
+  state.monitor?.recentSyncRuns.forEach(addRun);
+  state.syncRuns?.syncRuns.forEach(addRun);
+
+  return Array.from(runs.values()).sort((left, right) => providerRuntimeDateValue(right.startedAt) - providerRuntimeDateValue(left.startedAt));
+}
+
+function providerRuntimeReceivedCount(state: ProviderRuntimeEvidenceState, runs: ProviderIntegrationSyncRunEvidence[]): number {
+  return state.monitor?.recentRecordsReceived ?? providerRuntimeSum(runs, (run) => run.recordsReceived);
+}
+
+function providerRuntimeAcceptedCount(state: ProviderRuntimeEvidenceState, runs: ProviderIntegrationSyncRunEvidence[]): number {
+  return state.monitor?.recentRecordsAccepted ?? providerRuntimeSum(runs, (run) => run.recordsAccepted);
+}
+
+function providerRuntimeQuarantinedCount(state: ProviderRuntimeEvidenceState, runs: ProviderIntegrationSyncRunEvidence[]): number {
+  return state.monitor?.recentRecordsQuarantined ?? state.quarantine?.totalQuarantinedRecords ?? providerRuntimeSum(runs, (run) => run.recordsQuarantined);
+}
+
+function providerRuntimeStagedCount(state: ProviderRuntimeEvidenceState, runs: ProviderIntegrationSyncRunEvidence[]): number {
+  return state.monitor?.durableStagingRecordCount ?? providerRuntimeSum(runs, (run) => run.durableStagingRecordCount);
+}
+
+function providerRuntimeDurableQuarantinedCount(state: ProviderRuntimeEvidenceState, runs: ProviderIntegrationSyncRunEvidence[]): number {
+  return state.monitor?.durableQuarantinedRecordCount ?? state.quarantine?.totalQuarantinedRecords ?? providerRuntimeSum(runs, (run) => run.durableQuarantinedRecordCount);
+}
+
+function providerRuntimeCriticalIssueCount(state: ProviderRuntimeEvidenceState): number {
+  return Math.max(
+    state.quarantine?.criticalIssueCount ?? 0,
+    providerRuntimeRuns(state).reduce((sum, run) => sum + run.criticalIssueCount, 0),
+    state.monitor?.hasCriticalIssues ? 1 : 0
+  );
+}
+
+function providerRuntimeWarningIssueCount(state: ProviderRuntimeEvidenceState): number {
+  return Math.max(
+    state.quarantine?.warningIssueCount ?? 0,
+    providerRuntimeRuns(state).reduce((sum, run) => sum + run.warningIssueCount, 0),
+    state.identity?.accountReviewRequiredCount ?? 0,
+    state.identity?.securityReviewRequiredCount ?? 0,
+    state.promotion?.reviewRequiredCount ?? 0
+  );
+}
+
+function providerRuntimeSum(
+  runs: ProviderIntegrationSyncRunEvidence[],
+  selector: (run: ProviderIntegrationSyncRunEvidence) => number
+): number {
+  return runs.reduce((sum, run) => sum + selector(run), 0);
+}
+
+function providerRuntimeDateValue(value: string | null | undefined): number {
+  if (!value) {
+    return 0;
+  }
+
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function providerRuntimePanelTone(state: ProviderRuntimeEvidenceState): keyof typeof diagnosticToneClass {
+  if (state.phase === "error") return "danger";
+  if (state.phase === "loading") return "warning";
+  if (providerRuntimeCriticalIssueCount(state) > 0) return "danger";
+  if (providerRuntimeQuarantinedCount(state, providerRuntimeRuns(state)) > 0 || providerRuntimeWarningIssueCount(state) > 0) return "warning";
+  if (state.phase === "loaded") return "success";
+  return "default";
+}
+
+function providerRuntimeStatusLabel(state: ProviderRuntimeEvidenceState): string {
+  if (state.phase === "idle") return "Not loaded";
+  if (state.phase === "loading") return "Loading";
+  if (state.phase === "error") return "Unavailable";
+  if (providerRuntimeCriticalIssueCount(state) > 0) return "Critical";
+  if (providerRuntimeQuarantinedCount(state, providerRuntimeRuns(state)) > 0 || providerRuntimeWarningIssueCount(state) > 0) return "Review";
+  return "Synced";
+}
+
+function providerRuntimeStatusVariant(state: ProviderRuntimeEvidenceState): "outline" | "success" | "warning" | "danger" {
+  const tone = providerRuntimePanelTone(state);
+  if (tone === "success") return "success";
+  if (tone === "warning") return "warning";
+  if (tone === "danger") return "danger";
+  return "outline";
+}
+
+function providerRuntimeMessageTone(state: ProviderRuntimeEvidenceState): keyof typeof itemToneClass {
+  if (state.phase === "error") return "danger";
+  if (state.details.length > 0) return "warning";
+  return "success";
+}
+
+function providerRuntimeIssueTone(criticalIssueCount: number, warningIssueCount: number): keyof typeof itemToneClass {
+  if (criticalIssueCount > 0) return "danger";
+  if (warningIssueCount > 0) return "warning";
+  return "success";
+}
+
+function providerRuntimeRunVariant(run: ProviderIntegrationSyncRunEvidence): "outline" | "success" | "warning" | "danger" {
+  const status = run.status.toLowerCase();
+  if (status.includes("fail") || run.criticalIssueCount > 0) return "danger";
+  if (run.recordsQuarantined > 0 || run.warningIssueCount > 0 || status.includes("review")) return "warning";
+  if (status.includes("accepted") || status.includes("complete") || status.includes("success")) return "success";
+  return "outline";
+}
+
+function providerRuntimeProcessingStatusVariant(status: ProviderIntegrationProcessingStatus): "outline" | "success" | "warning" | "danger" {
+  const normalized = status.toLowerCase();
+  if (normalized.includes("block")) return "danger";
+  if (normalized.includes("quarantine")) return "warning";
+  if (normalized.includes("validated") || normalized.includes("loaded") || normalized.includes("published")) return "success";
+  return "outline";
+}
+
+function providerRuntimeLatestQuarantineDecision(
+  decisions: readonly ProviderIntegrationQuarantineDecision[] | null | undefined,
+  record: ProviderIntegrationQuarantinedRecord
+): ProviderIntegrationQuarantineDecision | null {
+  const matching = (decisions ?? [])
+    .filter((decision) => decision.quarantineRecordId === record.quarantineRecordId && decision.syncRunId === record.syncRunId)
+    .sort((left, right) => providerRuntimeDateValue(right.reviewedAt) - providerRuntimeDateValue(left.reviewedAt));
+
+  return matching[0] ?? null;
+}
+
+function providerRuntimeQuarantineActionLabel(action: ProviderIntegrationQuarantineResolutionAction): string {
+  switch (action) {
+    case "ReplayAfterMappingChange":
+      return "Replay after mapping change";
+    case "IgnoreProviderRecord":
+      return "Ignore provider record";
+    case "MarkAsCashPosition":
+      return "Mark as cash position";
+    case "ReviewOnly":
+    default:
+      return "Review";
+  }
+}
+
+function providerRuntimeQuarantineActionNote(action: ProviderIntegrationQuarantineResolutionAction): string {
+  switch (action) {
+    case "ReplayAfterMappingChange":
+      return "Marked from the Settings Provider Connection Center for replay after mapping changes.";
+    case "IgnoreProviderRecord":
+      return "Ignored from the Settings Provider Connection Center after operator review.";
+    case "MarkAsCashPosition":
+      return "Marked from the Settings Provider Connection Center as a cash position candidate.";
+    case "ReviewOnly":
+    default:
+      return "Reviewed from the Settings Provider Connection Center runtime evidence panel.";
+  }
+}
+
+function providerRuntimeRunTone(run: ProviderIntegrationSyncRunEvidence): keyof typeof itemToneClass {
+  const variant = providerRuntimeRunVariant(run);
+  if (variant === "danger") return "danger";
+  if (variant === "warning") return "warning";
+  if (variant === "success") return "success";
+  return "muted";
+}
+
+function providerRuntimeSeverityVariant(severity: string): "outline" | "success" | "warning" | "danger" {
+  const normalized = severity.toLowerCase();
+  if (normalized === "critical" || normalized === "error") return "danger";
+  if (normalized === "warning") return "warning";
+  if (normalized === "info") return "outline";
+  return "outline";
+}
+
+function providerRuntimePromotionVariant(status: string): "outline" | "success" | "warning" | "danger" {
+  const normalized = status.toLowerCase();
+  if (normalized.includes("blocked")) return "danger";
+  if (normalized.includes("review")) return "warning";
+  if (normalized.includes("ready")) return "success";
+  return "outline";
+}
+
+function formatProviderRuntimeNumber(value: number): string {
+  return value.toLocaleString("en-US");
+}
+
+function formatProviderRuntimeUtcMinute(value: string | Date | null | undefined, unavailableLabel = "Not synced"): string {
+  if (!value) {
+    return unavailableLabel;
+  }
+
+  const date = typeof value === "string" ? new Date(value) : value;
+  if (Number.isNaN(date.getTime())) {
+    return unavailableLabel;
+  }
+
+  return `${PROVIDER_RUNTIME_UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padProviderRuntimeUtc(date.getUTCHours())}:${padProviderRuntimeUtc(date.getUTCMinutes())} UTC`;
+}
+
+function padProviderRuntimeUtc(value: number): string {
+  return value.toString().padStart(2, "0");
+}
+
+const PROVIDER_RUNTIME_UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function recentEventsVariant(state: "ready" | "empty" | "unavailable"): "default" | "outline" | "danger" {
   if (state === "unavailable") return "danger";

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Contracts.Api;
 using Meridian.Core.Config;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -19,6 +20,10 @@ public static class SymbolMappingEndpoints
     public static void MapSymbolMappingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("").WithTags("Symbol Mapping");
+        var requireModifyConfig = EndpointAuthorization.Require(UserPermission.ModifyConfig);
+
+        group.RequireWorkstationTenantScope();
+        group.RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ModifyConfig);
 
         // Get all symbol mappings
         group.MapGet(UiApiRoutes.SymbolMappings, (ConfigStore store) =>
@@ -77,7 +82,10 @@ public static class SymbolMappingEndpoints
             await store.SaveAsync(next);
 
             return Results.Ok();
-        }).WithName("UpsertSymbolMapping").Produces(200).Produces(400);
+        }).WithName("UpsertSymbolMapping").Produces(200).Produces(400)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig)
+        .RequirePermission(UserPermission.ModifyConfig);
 
         // Delete symbol mapping
         group.MapDelete(UiApiRoutes.SymbolMappings + "/{symbol}", async (ConfigStore store, string symbol) =>
@@ -102,7 +110,10 @@ public static class SymbolMappingEndpoints
             await store.SaveAsync(next);
 
             return Results.Ok();
-        }).WithName("DeleteSymbolMapping").Produces(200).Produces(404);
+        }).WithName("DeleteSymbolMapping").Produces(200).Produces(404)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig)
+        .RequirePermission(UserPermission.ModifyConfig);
 
         // Get single symbol mapping
         group.MapGet(UiApiRoutes.SymbolMappings + "/{symbol}", (ConfigStore store, string symbol) =>
@@ -243,6 +254,9 @@ public static class SymbolMappingEndpoints
             await store.SaveAsync(next);
 
             return Results.Ok(new { imported = mappings.Count });
-        }).WithName("ImportSymbolMappings").Produces(200).Produces(400);
+        }).WithName("ImportSymbolMappings").Produces(200).Produces(400)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .AddEndpointFilter(requireModifyConfig)
+        .RequirePermission(UserPermission.ModifyConfig);
     }
 }

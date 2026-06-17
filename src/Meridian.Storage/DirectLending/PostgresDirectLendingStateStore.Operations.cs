@@ -1174,21 +1174,29 @@ public sealed partial class PostgresDirectLendingStateStore
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
-            select outbox_message_id,
-                   topic,
-                   message_key,
-                   payload::text,
-                   headers::text,
-                   occurred_at,
-                   visible_after,
-                   processed_at,
-                   error_count,
-                   last_error
-            from {Qualified("outbox_message")}
-            where processed_at is null
-              and visible_after <= now()
-            order by occurred_at
-            limit @take;
+            with next_messages as (
+                select outbox_message_id
+                from {Qualified("outbox_message")}
+                where processed_at is null
+                  and visible_after <= now()
+                order by occurred_at
+                limit @take
+                for update skip locked
+            )
+            update {Qualified("outbox_message")} message
+            set visible_after = now() + interval '5 minutes'
+            from next_messages
+            where message.outbox_message_id = next_messages.outbox_message_id
+            returning message.outbox_message_id,
+                      message.topic,
+                      message.message_key,
+                      message.payload::text,
+                      message.headers::text,
+                      message.occurred_at,
+                      message.visible_after,
+                      message.processed_at,
+                      message.error_count,
+                      message.last_error;
             """;
         command.Parameters.AddWithValue("take", take);
 

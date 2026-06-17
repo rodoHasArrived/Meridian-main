@@ -17,7 +17,7 @@ For documentation work, start from the rebuilt canonical docs model:
 | Surface | Purpose |
 | --- | --- |
 | [`.codex/config.toml`](../../../.codex/config.toml) | Repository-local Codex sandbox, approval, search, skill loading, and bounded subagent role defaults |
-| [`quickstart.md`](quickstart.md) | First-10-minutes Codex task routing, proof matrix, and dirty-worktree protocol |
+| [`quickstart.md`](quickstart.md) | First-10-minutes Codex task routing, workflow disclosure startup, proof matrix, and dirty-worktree protocol |
 | [`advanced-configuration.md`](advanced-configuration.md) | Advanced Codex local-client configuration patterns for profiles, providers, sandboxes, hooks, telemetry, notifications, and TUI options |
 | [`prompt-execution-trace.md`](prompt-execution-trace.md) | One-page prompt-to-execution diagram and execution-path refinements |
 | [`self-improving-agents.md`](self-improving-agents.md) | Codex agent improvement loop, eval promotion rules, and graph/retrieval guardrails |
@@ -26,10 +26,11 @@ For documentation work, start from the rebuilt canonical docs model:
 | [`../agent-handoff-checklist.md`](../agent-handoff-checklist.md) | Shared handoff format for multi-agent/lane transitions and context minimization |
 | [`../work-modes.md`](../work-modes.md) | Mode selection contract for context budget and escalation control |
 | [`../parallel-task-manifest-template.md`](../parallel-task-manifest-template.md) | Shared parallel-lane ownership manifest to prevent overlap and duplicate discovery |
+| [`../working-memory.md`](../working-memory.md) | Task-local ledger for Codex lane claims, inspected files, assumptions, merge order, and validation reuse |
 | [`.codex/agents/`](../../../.codex/agents) | Codex specialist agent-profile TOML files that route recurring skill-backed work |
 | [`.codex/skills/README.md`](../../../.codex/skills/README.md) | Codex skill catalog and maintenance rules |
 | [`.codex/skills/_shared/project-context.md`](../../../.codex/skills/_shared/project-context.md) | Meridian project grounding used by Codex skills |
-| [`.codex/skills/_shared/codex-execution-contract.md`](../../../.codex/skills/_shared/codex-execution-contract.md) | Codex-only execution gates for concurrency, validation, docs sync, and response shape |
+| [`.codex/skills/_shared/codex-execution-contract.md`](../../../.codex/skills/_shared/codex-execution-contract.md) | Codex-only execution gates for workflow disclosure, concurrency, validation, docs sync, and response shape |
 | [`.codex/skills/*/agents/openai.yaml`](../../../.codex/skills) | Codex UI metadata for repo-local skills |
 | [`.codex/AGENTS.md`](../../../.codex/AGENTS.md) | Codex-specific desktop workstation implementation rules |
 | [`.codex/prompts/`](../../../.codex/prompts) | Reusable desktop implementation, refactor, provider, diagnostics, resource, and test prompts |
@@ -176,6 +177,15 @@ command discovery in [`../../start/README.md`](../../start/README.md),
 [`../../engineering/README.md`](../../engineering/README.md),
 [`../../HELP.md`](../../HELP.md), and route-specific docs instead of copying long command
 catalogs into assistant shims.
+When local machine capacity is the validation blocker, use the manual GitHub-hosted
+`Targeted Test` workflow from `.github/workflows/targeted-test.yml` with the same narrow
+repo-relative .NET test project and filter before retrying broad local scripts.
+
+For rendered browser workstation verification, use the Codex Browser plugin only after the local
+dashboard route or file-backed preview is available. Keep it to unauthenticated local/public pages
+and use it for visual, DOM, console, network, screenshot, or interaction evidence that package tests
+cannot prove. Use Chrome instead when the task depends on an existing signed-in browser profile,
+extensions, cookies, or tabs.
 
 ## Required Gates For Codex AI/Tooling Changes
 
@@ -183,7 +193,6 @@ Run or account for these gates when Codex skill, catalog, prompt, docs automatio
 behavior changes:
 
 ```bash
-make ai-codex-skills-check
 python3 build/scripts/docs/check-codex-skills.py --summary
 python3 build/scripts/docs/check-ai-inventory.py --summary
 python3 build/scripts/docs/prompt-route-linter.py --summary
@@ -197,12 +206,12 @@ python3 build/scripts/docs/check-ai-routing-parity.py --summary
 python3 build/scripts/docs/validate-skill-packages.py
 python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run --json
 git diff --check
-make ai-verify
-make ai-arch-check
 ```
 
-If `make` is unavailable in the local Windows shell, run the target's underlying command directly
-and report that the wrapper could not be invoked.
+If GNU Make is installed, `make ai-codex-skills-check`, `make ai-verify`, and
+`make ai-arch-check` are acceptable wrappers for the same AI validation lanes. If `where.exe make`
+finds nothing in a Windows shell, run the underlying Python/script commands directly and report that
+the Make wrapper was unavailable.
 
 Canonical Codex orchestration artifacts:
 
@@ -219,8 +228,8 @@ validation passes.
 
 Required quality gates:
 
-- `make ai-verify`
-- `make ai-arch-check`
+- direct Python/script checks backing `make ai-verify`
+- direct Python/script checks backing `make ai-arch-check`
 - CI step `Validate AI contract drift` in `.github/workflows/ci.yml`
 
 Advisory tooling:
@@ -249,6 +258,10 @@ Local helper surfaces:
 ## Maintenance Rules
 
 - Keep Codex-only guidance in `.codex/skills/` and this `docs/ai/codex/` index.
+- Keep concise workflow disclosure expectations in the Codex execution contract and quickstart; do
+  not widen them into shared assistant policy unless the request is explicitly cross-provider.
+- Use `../working-memory.md` with the parallel manifest when Codex lanes run concurrently or the
+  working tree changes while a task is in flight.
 - Route documentation rebuild and migration work through `docs/README.md`,
   `docs/documentation-ownership.md`, and `docs/documentation-inventory.md` before editing older
   folders such as `docs/plans/`, `docs/status/`, `docs/development/`, or `docs/operations/`.
@@ -288,7 +301,6 @@ Local helper surfaces:
 Use the Codex skill checker for fast local drift detection:
 
 ```bash
-make ai-codex-skills-check
 python3 build/scripts/docs/check-codex-skills.py --summary
 python3 build/scripts/docs/check-codex-skills.py --json-output docs/generated/codex-skills-check.json
 python3 build/scripts/docs/validate-roadmap-registry.py --summary
@@ -297,6 +309,8 @@ python3 build/scripts/docs/scan-source-todos.py --summary
 python3 build/scripts/docs/mark-stale-docs.py --write --summary
 python3 build/scripts/docs/validate-doc-hashes.py --summary
 ```
+
+If GNU Make is installed, `make ai-codex-skills-check` wraps the same fast local drift lane.
 
 Use `python3 build/scripts/docs/check-ai-inventory.py --summary` after adding, renaming, or
 removing Codex agent profiles, prompts, validation checklists, `.codex/AGENTS.md`, environment

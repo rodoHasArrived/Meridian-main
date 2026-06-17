@@ -56,6 +56,7 @@ public sealed class UiServer : IAsyncDisposable
     private readonly ILogger<UiServer> _logger;
     private readonly IApplicationLifecycleCoordinator _lifecycle;
     private readonly bool _ownsLifecycle;
+    private readonly ApiHostOptions _apiHostOptions;
     private readonly string _configPath;
     private readonly int _port;
 
@@ -68,7 +69,8 @@ public sealed class UiServer : IAsyncDisposable
     public UiServer(
         string configPath,
         int port = 8080,
-        IApplicationLifecycleCoordinator? lifecycle = null)
+        IApplicationLifecycleCoordinator? lifecycle = null,
+        ApiHostOptions? apiHostOptions = null)
     {
         var serverBuildStopwatch = Stopwatch.StartNew();
         _configPath = configPath;
@@ -82,17 +84,36 @@ public sealed class UiServer : IAsyncDisposable
         {
             ContentRootPath = contentRootPath
         });
+        if (File.Exists(configPath))
+        {
+            builder.Configuration.AddJsonFile(configPath, optional: true, reloadOnChange: false);
+        }
+
+        _apiHostOptions = apiHostOptions ?? ApiHostOptions.FromConfiguration(builder.Configuration, port);
         var resolvedDataRoot = ResolvePersistentDataRoot(configPath);
 
         // Minimize logging from ASP.NET Core
         builder.Logging.SetMinimumLevel(LogLevel.Warning);
-        builder.WebHost.UseUrls($"http://localhost:{port}");
+        builder.WebHost.UseUrls(_apiHostOptions.Urls);
 
         // Allow reflection-based JSON binding for endpoint request types not covered by source-generated contexts.
         // This is required for minimal-API parameter binding (e.g. PackageRequest, ImportRequest).
         // Existing source-generated contexts still take precedence; reflection acts as a fallback only.
         builder.Services.ConfigureHttpJsonOptions(o =>
             o.SerializerOptions.TypeInfoResolverChain.Add(new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver()));
+        if (_apiHostOptions.AllowedOrigins.Length > 0)
+        {
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy(
+                    ApiHostOptions.CorsPolicyName,
+                    policy => policy
+                        .WithOrigins(_apiHostOptions.AllowedOrigins)
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials());
+            });
+        }
 
         // Use centralized service composition root
         var compositionOptions = CompositionOptions.WebDashboard with { ConfigPath = configPath };
@@ -249,7 +270,7 @@ public sealed class UiServer : IAsyncDisposable
             });
         });
 
-        ValidateAuthenticationTransportSecurity(builder.Environment, builder.WebHost.GetSetting(WebHostDefaults.ServerUrlsKey));
+        ValidateAuthenticationTransportSecurity(builder.Environment, _apiHostOptions);
         serviceRegistrationStopwatch.Stop();
 
         var appBuildStopwatch = Stopwatch.StartNew();
@@ -279,6 +300,10 @@ public sealed class UiServer : IAsyncDisposable
         _app.UseLoginSessionAuthentication();
         _app.UseCookieCsrfProtection();
         _app.UseRateLimiter();
+        if (_apiHostOptions.AllowedOrigins.Length > 0)
+        {
+            _app.UseCors(ApiHostOptions.CorsPolicyName);
+        }
 
         // Enable Swagger middleware
         _app.UseSwagger();
@@ -406,23 +431,26 @@ public sealed class UiServer : IAsyncDisposable
         return remoteIp is null || IPAddress.IsLoopback(remoteIp);
     }
 
-    private static void ValidateAuthenticationTransportSecurity(IWebHostEnvironment environment, string? configuredUrls)
+    internal static void ValidateAuthenticationTransportSecurity(IHostEnvironment environment, ApiHostOptions apiHostOptions)
     {
+        ArgumentNullException.ThrowIfNull(environment);
+        ArgumentNullException.ThrowIfNull(apiHostOptions);
+
         if (environment.IsDevelopment() || environment.IsEnvironment("Test"))
             return;
 
         if (!IsAuthenticationRequired(environment))
             return;
 
-        if (HasHttpsBinding(configuredUrls))
+        if (apiHostOptions.AllowInsecureTransportForReverseProxy || HasHttpsBinding(apiHostOptions.Urls))
             return;
 
         throw new InvalidOperationException(
             "Authentication is required in production posture, but no HTTPS binding is configured. " +
-            "Configure HTTPS URLs (ASPNETCORE_URLS or host settings) before startup.");
+            "Configure ApiHost:Urls, MERIDIAN_API_URLS, or ASPNETCORE_URLS with an HTTPS URL before startup.");
     }
 
-    private static bool IsAuthenticationRequired(IHostEnvironment environment)
+    internal static bool IsAuthenticationRequired(IHostEnvironment environment)
     {
         var mode = Environment.GetEnvironmentVariable("MDC_AUTH_MODE");
         if (!string.IsNullOrWhiteSpace(mode))
@@ -435,13 +463,9 @@ public sealed class UiServer : IAsyncDisposable
         return !(environment.IsDevelopment() || environment.IsEnvironment("Test"));
     }
 
-    private static bool HasHttpsBinding(string? configuredUrls)
+    private static bool HasHttpsBinding(IEnumerable<string> configuredUrls)
     {
-        if (string.IsNullOrWhiteSpace(configuredUrls))
-            return false;
-
-        var urls = configuredUrls.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        foreach (var url in urls)
+        foreach (var url in configuredUrls)
         {
             if (Uri.TryCreate(url, UriKind.Absolute, out var parsed) &&
                 parsed.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))

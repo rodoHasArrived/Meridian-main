@@ -154,13 +154,24 @@ public sealed class AccountingWorkspaceShellStateProvider : WorkspaceShellStateP
 
 public sealed class ReportingWorkspaceShellStateProvider : WorkspaceShellStateProviderBase
 {
-    public ReportingWorkspaceShellStateProvider(WorkstationOperatingContextService? operatingContextService)
+    private readonly FundContextService _fundContextService;
+
+    public ReportingWorkspaceShellStateProvider(
+        FundContextService fundContextService,
+        WorkstationOperatingContextService? operatingContextService)
         : base(operatingContextService)
     {
+        _fundContextService = fundContextService;
     }
 
     public override WorkspaceShellDefinition Definition
         => ShellNavigationCatalog.GetWorkspaceShell("reporting")!;
+
+    protected override string? GetLayoutScopeKey()
+        => base.GetLayoutScopeKey() ?? _fundContextService.CurrentFundProfile?.FundProfileId;
+
+    protected override bool HasPrimaryContext()
+        => _fundContextService.CurrentFundProfile is not null;
 }
 
 public sealed class SettingsWorkspaceShellStateProvider : WorkspaceShellStateProviderBase

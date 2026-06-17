@@ -1,11 +1,13 @@
 using Meridian.Application.DirectLending;
 using Meridian.Application.FundStructure;
+using Meridian.Application.Integrations;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.Services;
 using Meridian.Application.UI;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.Domain;
+using Meridian.Contracts.Integrations;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
@@ -46,6 +48,7 @@ using Meridian.Storage.DirectLending;
 using Meridian.Storage.Export;
 using Meridian.Storage.FundAccounts;
 using Meridian.Storage.FundStructure;
+using Meridian.Storage.Integrations;
 using Meridian.Storage.Interfaces;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.Maintenance;
@@ -93,6 +96,27 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             return config.Storage?.ToStorageOptions(dataRoot, compressionEnabled)
                 ?? StorageProfilePresets.CreateFromProfile(null, dataRoot, compressionEnabled);
         });
+        services.TryAddSingleton<IProviderIntegrationManifestStore>(sp =>
+            new FileProviderIntegrationManifestStore(sp.GetRequiredService<StorageOptions>().RootPath));
+        services.TryAddSingleton<ProviderIntegrationTemplateCatalog>();
+        services.TryAddSingleton<ProviderIntegrationDryRunService>();
+        services.TryAddSingleton<IProviderIntegrationHttpTransport>(_ =>
+            new ProviderIntegrationHttpClientTransport(new HttpClient()));
+        services.TryAddSingleton<ProviderIntegrationRestDryRunService>();
+        services.TryAddSingleton<ProviderIntegrationOpenApiImportService>();
+        services.TryAddSingleton<ProviderIntegrationSetupService>();
+        services.TryAddSingleton<ProviderIntegrationActivationReadinessService>();
+        services.TryAddSingleton<ProviderIntegrationActivationService>();
+        services.TryAddSingleton<ProviderIntegrationMonitoringService>();
+        services.TryAddSingleton<ProviderIntegrationSyncPlanningService>();
+        services.TryAddSingleton<ProviderIntegrationSyncOrchestrationService>();
+        services.TryAddSingleton<ProviderIntegrationSchemaDriftService>();
+        services.TryAddSingleton<ProviderIntegrationStagingReviewService>();
+        services.TryAddSingleton<ProviderIntegrationIdentityResolutionPreviewService>();
+        services.TryAddSingleton<ProviderIntegrationPromotionReadinessService>();
+        services.TryAddSingleton<ProviderIntegrationReconciliationHandoffService>();
+        services.TryAddSingleton<ProviderIntegrationQuarantineReviewService>();
+        services.TryAddSingleton<ProviderIntegrationQuarantineReplayService>();
         if (IsScopedAccessPostgresConfigured())
         {
             services.TryAddSingleton(new ScopedAccessStoreOptions
