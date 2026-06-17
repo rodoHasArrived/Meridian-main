@@ -1,10 +1,13 @@
 using Meridian.Core.Config;
 using Meridian.Ui.Services;
+using Meridian.Ui.Services.DataQuality;
+using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Copy;
 using Meridian.Wpf.Features.Data.Shell;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Shell.Services;
+using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -55,6 +58,32 @@ public sealed class DataFeatureModule : IDesktopFeatureModule
         services.AddWorkspaceScoped<IDataWorkspaceShellPresentationService, DataWorkspaceShellPresentationService>();
         services.AddTransient<DataWorkspaceShellViewModel>();
         services.AddTransient<DataWorkspaceShellPage>();
+        services.AddTransient<DataCalendarService>();
+        services.AddTransient<SecurityMasterViewModel>();
+        services.AddTransient<QualityArchivePage>();
+        services.AddTransient<ClusterStatusPage>();
+        services.AddSingleton<BackfillProviderConfigService>(_ => BackfillProviderConfigService.Instance);
+        services.AddSingleton<BackfillCheckpointService>(_ => BackfillCheckpointService.Instance);
+        services.AddSingleton<BackfillApiService>();
+        services.AddSingleton<CollectionSessionService>(_ => CollectionSessionService.Instance);
+        services.AddSingleton<ScheduleManagerService>(_ => ScheduleManagerService.Instance);
+        services.AddSingleton<Meridian.Wpf.Services.StorageService>(_ => Meridian.Wpf.Services.StorageService.Instance);
+        services.AddSingleton<WorkspaceStateTokenStore>();
+        services.AddSingleton<BatchExportSchedulerService>();
+        services.AddSingleton<ActivityFeedService>(_ => ActivityFeedService.Instance);
+        services.AddSingleton<CommandPaletteService>(_ => CommandPaletteService.Instance);
+        services.AddSingleton<SymbolManagementService>(_ => SymbolManagementService.Instance);
+        services.AddSingleton<BackfillService>(_ => BackfillService.Instance);
+        services.AddSingleton<IDataQualityApiClient, DataQualityApiClient>();
+        services.AddSingleton<IDataQualityPresentationService, DataQualityPresentationService>();
+        services.AddTransient<IDataQualityRefreshService, DataQualityRefreshService>();
+        services.AddTransient<BackfillViewModel>();
+        services.AddTransient<ProviderViewModel>();
+        services.AddTransient<DataQualityViewModel>();
+        services.AddTransient<CollectionSessionViewModel>();
+        services.AddTransient<WatchlistViewModel>();
+        services.AddSingleton<IQualityArchiveStore, QualityArchiveStore>();
+        services.AddTransient<QualityArchiveViewModel>();
     }
 
     public IReadOnlyList<ShellPageDescriptor> DescribePages() => Pages;

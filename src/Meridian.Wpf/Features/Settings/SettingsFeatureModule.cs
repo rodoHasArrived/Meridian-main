@@ -1,10 +1,13 @@
 using Meridian.Core.Config;
 using Meridian.Ui.Services;
+using Meridian.Ui.Services.Services;
+using Meridian.Workflow.EnvironmentDesign;
 using Meridian.Wpf.Copy;
 using Meridian.Wpf.Features.Settings.Shell;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Shell.Services;
+using Meridian.Wpf.ViewModels;
 using Meridian.Wpf.Views;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -41,6 +44,31 @@ public sealed class SettingsFeatureModule : IDesktopFeatureModule
         services.AddWorkspaceScoped<ISettingsWorkspaceShellPresentationService, SettingsWorkspaceShellPresentationService>();
         services.AddTransient<SettingsWorkspaceShellViewModel>();
         services.AddTransient<SettingsWorkspaceShellPage>();
+        services.AddSingleton<ProviderManagementService>(_ => ProviderManagementService.Instance);
+        services.AddSingleton<AdminMaintenanceServiceBase>(_ => AdminMaintenanceServiceBase.Instance);
+        services.AddSingleton<IAdminMaintenanceService>(sp => sp.GetRequiredService<AdminMaintenanceServiceBase>());
+        services.AddSingleton<SearchService>(_ => SearchService.Instance);
+        services.AddSingleton<SetupWizardService>();
+        services.AddSingleton<ISetupWizardStateService, SetupWizardStateService>();
+        services.AddSingleton<ISetupWizardNotificationSink, SetupWizardNotificationSink>();
+        services.AddSingleton<ISetupWizardNavigator, SetupWizardNavigator>();
+        services.AddSingleton<ISetupWizardLinkLauncher, SetupWizardLinkLauncher>();
+        services.AddSingleton<EnvironmentDesignerService>(_ => new EnvironmentDesignerService(
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Meridian",
+                "environment-designer.json")));
+        services.AddSingleton<IEnvironmentDesignService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
+        services.AddSingleton<IEnvironmentValidationService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
+        services.AddSingleton<IEnvironmentPublishService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
+        services.AddSingleton<IEnvironmentRuntimeProjectionService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
+        services.AddTransient<PluginManagementPage>();
+        services.AddTransient<PluginManagementViewModel>();
+        services.AddTransient<SettingsViewModel>();
+        services.AddTransient<SetupWizardViewModel>();
+        services.AddTransient<WorkflowLibraryViewModel>();
+        services.AddSingleton<CredentialService>();
+        services.AddTransient<CredentialManagementViewModel>();
     }
 
     public IReadOnlyList<ShellPageDescriptor> DescribePages() => Pages;
