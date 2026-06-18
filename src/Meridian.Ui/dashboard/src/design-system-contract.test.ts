@@ -41,10 +41,19 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain("--background: 214 23% 94%");
     expect(styles).toContain("--foreground: 215 15% 16%");
     expect(styles).toContain("--primary: 200 51% 37%");
-    expect(styles).toContain("--bg: #ECEFF3");
-    expect(styles).toContain("--surface-topbar: #171A1F");
-    expect(styles).toContain("--border-color: #D7DCE2");
-    expect(styles).toContain("--cyan-primary: #2F6F8F");
+    expect(styles).toContain("--ws-page-bg: #ECEFF3");
+    expect(styles).toContain("--ws-surface: #ffffff");
+    expect(styles).toContain("--ws-masthead-bg: #171A1F");
+    expect(styles).toContain("--ws-border: #D7DCE2");
+    expect(styles).toContain("--ws-accent: #2F6F8F");
+    expect(styles).toContain("--bg: var(--ws-page-bg)");
+    expect(styles).toContain("--surface-topbar: var(--ws-masthead-bg)");
+    expect(styles).toContain("--border-color: var(--ws-border)");
+    expect(styles).toContain("--card-bg: var(--ws-surface)");
+    expect(styles).toContain("--shadow-workstation: var(--ws-shadow)");
+    expect(styles).toContain("--cyan-primary: var(--ws-accent)");
+    expect(styles.match(/--ws-page-bg:/g)).toHaveLength(1);
+    expect(styles.match(/--ws-masthead-bg:/g)).toHaveLength(1);
   });
 
   it("keeps workstation radii tight and shadows shallow", () => {
@@ -72,7 +81,7 @@ describe("dashboard design-system contract", () => {
   it("uses the high-contrast focus token for translucent primary focus rings", () => {
     const styles = readDashboardStyles();
 
-    expect(styles).toContain("--cyan-focus: #2F6F8F");
+    expect(styles).toContain("--cyan-focus: var(--ws-accent)");
     expect(styles).toContain(".focus-visible\\:ring-primary\\/40:focus-visible");
     expect(styles).toContain("--tw-ring-color: var(--cyan-focus)");
   });
