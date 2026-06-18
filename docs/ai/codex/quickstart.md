@@ -18,11 +18,9 @@ still lives in `../assistant-workflow-contract.md`.
    `Workflow: <lane>; Skill: <skill-or-none>; Context loaded: <files/docs>; Next evidence: <next source>.`
 4. Treat root `AGENTS.md`, `CLAUDE.md`, `.codex/skills/_shared/project-context.md`, and
    `.codex/skills/_shared/codex-execution-contract.md` as the Codex-loaded development baseline.
-   When a shared development, validation, workflow, prompt, skill, or agent rule changes, also
-   inspect and synchronize `.github/copilot-instructions.md`,
-   `.github/agents/implementation-assurance-agent.md`, `.github/workflows/README.md`,
-   `docs/engineering/README.md`, `docs/start/README.md`,
-   `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md`.
+   When `../assistant-workflow-contract.md` changes, keep this page and the Codex shared files as
+   short host-specific mirrors; review the other mirror files named by the canonical contract only
+   when they teach the same workflow rule.
 5. Read `../navigation/README.md` and `../generated/repo-navigation.md` for large-repo routing.
 6. For stakeholder/product-scoped tasks, read `../product/meridian-design-document.md` before planning updates.
 7. For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load the MDIF spine: `../../architecture/meridian-development-intelligence-framework.md`, `../../architecture/meridian-vision.md`, `../../architecture/meridian-domain-model.md`, `../../domain/README.md`, and the relevant pack in `../context/README.md`.

@@ -42,7 +42,8 @@ Use this lane whenever the task creates or updates an agent or skill package.
 - Inspect only the relevant Meridian instinct files when local learned behavior would help; treat them as hints to verify against the repository, not policy to copy blindly.
 - Keep primary skill files concise and imperative. Move detailed reference material into `references/`, deterministic helpers into `scripts/`, and output resources into `assets/`.
 - Preserve host-specific metadata rules. For Codex repo-local skills, keep frontmatter minimal (`name`, `description`). For portable Claude packages, preserve the package metadata required by that host.
-- Keep mirrored Codex, Claude, and GitHub guidance aligned when a shared workflow or policy changes.
+- For shared workflow or policy changes, update `docs/ai/assistant-workflow-contract.md` first;
+  mirror only short Codex, Claude, or GitHub host mechanics that teach the same rule.
 - Avoid auxiliary files inside skill folders unless they are required by the host format or directly support execution.
 - When `agents/openai.yaml` exists, regenerate or update it so it still matches the skill instructions.
 - Validate the package after editing and run representative checks for any added or changed scripts.
