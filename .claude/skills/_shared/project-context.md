@@ -1,8 +1,8 @@
 # Meridian — Shared Project Context
 
-> **Canonical reference.** Update this file first when Meridian's product framing, workstation
-> routing, runtime semantics, or key architecture guidance changes; mirrored Codex and GitHub AI
-> surfaces should follow from here.
+> **Canonical project context.** Update this file when Meridian's product framing, workstation
+> routing, runtime semantics, or key architecture guidance changes. Shared workflow policy and
+> mirror-review rules live in `docs/ai/assistant-workflow-contract.md`.
 >
 > **Last verified:** 2026-06-16
 > **Primary grounding docs:** `README.md`, `docs/roadmap/data/*.yml`,
@@ -52,6 +52,7 @@
 
 Read these before changing skills, agents, or workflow guidance:
 
+- `docs/ai/assistant-workflow-contract.md` for shared workflow policy and minimal mirror-review rules
 - `README.md`
 - `docs/roadmap/README.md`
 - `docs/roadmap/data/*.yml`

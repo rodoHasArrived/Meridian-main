@@ -343,6 +343,13 @@ Use this checklist when changing any AI-related asset:
       or root compatibility files.
 - [ ] Confirm whether the change is shared policy, host-specific mechanics, or generated content.
 - [ ] Update the shared source first when the rule is provider-agnostic.
+- [ ] After updating this contract, review only the minimal mirror files that teach the same workflow
+      rule: `docs/ai/codex/quickstart.md`, `.codex/skills/_shared/codex-execution-contract.md`,
+      `.codex/skills/_shared/project-context.md`, `CLAUDE.md`, `.github/copilot-instructions.md`,
+      `.github/agents/implementation-assurance-agent.md`, `.agents/skills/_shared/project-context.md`,
+      and `.claude/skills/_shared/project-context.md` when that file is present and still used.
+      Keep mirror edits short by linking back to this contract and summarizing only host-specific
+      behavior.
 - [ ] Update only the provider-specific files that need host mechanics or discoverability links.
 - [ ] Keep shared project context mirrored across `.codex/skills/_shared/project-context.md`,
       `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md`

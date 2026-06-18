@@ -71,7 +71,8 @@ Always do the following before opening a PR:
 3. Run tests relevant to touched code.
 4. Update docs when behavior, interfaces, or workflows change.
 5. Keep PR title/body in sync with final implemented behavior.
-6. Keep provider-specific guidance aligned with `docs/ai/assistant-workflow-contract.md`.
+6. Keep Copilot-specific guidance short and aligned with `docs/ai/assistant-workflow-contract.md`;
+   do not duplicate shared mirror-review policy here.
 7. When editing `src/**`, read the nearest source README and keep `docs/source/data/*.yml`
    synchronized when module ownership, validation, roadmap mapping, diagrams, or TODO scope changes.
 8. If editing shared handoff, manifest, or AI work-mode guidance, run `python build/scripts/docs/check-ai-handoff.py --strict`.

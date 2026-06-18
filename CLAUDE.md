@@ -107,8 +107,9 @@ gh workflow run targeted-test.yml --ref <branch> -f dotnet_project=tests/Meridia
 - `.claude/plugins/` - checked-in Claude plugin packages with plugin manifests, agents, and skills.
 - `.claude/skills/_shared/project-context.md` - canonical Claude-side project grounding.
 
-Keep Claude-specific files focused on host mechanics and discovery. Shared policy belongs in
-`docs/ai/assistant-workflow-contract.md`; broad routing belongs in generated navigation docs.
+Keep Claude-specific files focused on host mechanics and discovery. Shared policy and the
+minimal mirror-review rule belong in `docs/ai/assistant-workflow-contract.md`; broad routing belongs
+in generated navigation docs.
 
 ## Orchestration and Multi-Agent Dispatch
 

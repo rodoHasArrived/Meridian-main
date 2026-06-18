@@ -92,12 +92,13 @@ python3 build/python/cli/buildctl.py build --project Meridian.sln --configuratio
   operator-facing behavior changes.
 - Prefer existing docs over new docs.
 - Put Codex-specific docs under `docs/ai/codex/`.
-- For shared development or validation workflow changes, keep the Codex-loaded baseline and mirrored
-  assistant surfaces aligned: `AGENTS.md`, `CLAUDE.md`, `.codex/AGENTS.md`,
-  `.codex/skills/_shared/project-context.md`, `.codex/skills/_shared/codex-execution-contract.md`,
-  `.github/copilot-instructions.md`, `.github/agents/implementation-assurance-agent.md`,
-  `.github/workflows/README.md`, `docs/engineering/README.md`, `docs/start/README.md`,
-  `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md`.
+- For shared development or validation workflow changes, update
+  `docs/ai/assistant-workflow-contract.md` first. Then review only minimal mirrors that teach the
+  same rule: `docs/ai/codex/quickstart.md`, this Codex contract,
+  `.codex/skills/_shared/project-context.md`, `CLAUDE.md`, `.github/copilot-instructions.md`,
+  `.github/agents/implementation-assurance-agent.md`, `.agents/skills/_shared/project-context.md`,
+  and `.claude/skills/_shared/project-context.md` when present and still used. Keep mirror edits
+  short and host-specific.
 - For registered `src/**` modules, use `docs/source/data/source-modules.yml` to identify the
   module README, update required docs when behavior changes, then run
   `python3 build/scripts/docs/validate-doc-hashes.py --summary`. If source/docs alignment was

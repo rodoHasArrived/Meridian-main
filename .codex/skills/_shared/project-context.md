@@ -47,7 +47,8 @@ repeating the same facts in every `SKILL.md`.
 
 ## Planning Anchors
 
-Use these together before changing AI guidance, routing, or workflow-oriented skills:
+Use these together before changing AI guidance, routing, or workflow-oriented skills. Minimal
+mirror-review rules live in `docs/ai/assistant-workflow-contract.md`.
 
 - `AGENTS.md`
 - `CLAUDE.md`
