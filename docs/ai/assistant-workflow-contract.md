@@ -72,6 +72,26 @@ Before behavior changes, run this sequence:
 - Update generator inputs and rerun generation commands.
 - Keep registry files (`docs/source/data/*.yml`, `docs/roadmap/data/*.yml`) as source-of-truth for generated views.
 
+### Human-in-the-loop Gates
+
+Pause and get explicit human confirmation before taking any provider-agnostic assistant action in
+these cases:
+
+- Applying migrations, deleting or archive-moving large sets of files, rewriting generated
+  inventories, or changing root AI policy.
+- Taking actions that could affect trading, portfolio accounting, approvals, credentials,
+  permissions, or audit evidence.
+- Proceeding after validation fails when the next step would change the implementation plan rather
+  than only rerun, narrow, or repair the failed check.
+- Continuing when repository instructions conflict with user instructions and the safer
+  interpretation is unclear.
+- Performing broad multi-surface edits across `.codex/`, `.agents/`, `.github/`, `CLAUDE.md`,
+  `AGENTS.md`, and `docs/ai/`.
+
+These pause-and-confirm rules apply to ordinary assistant sessions regardless of provider. Use the
+Chief of Staff approval path for multi-domain, approval-gated, or evidence-synthesis work that needs
+structured sign-off, trace retention, or operator-facing briefing.
+
 ### Agent Orchestration
 
 - Use `docs/ai/parallel-task-manifest-template.md` for parallel lanes.
