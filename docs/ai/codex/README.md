@@ -285,8 +285,8 @@ task-stop evidence checks.
   and quickstart so users can see the active lane, loaded context, next evidence, and reason for
   meaningful tool or context expansion.
 - Keep the skill selection receipt in the Codex execution contract and quickstart: after selecting
-  the narrowest applicable skill, responses name the skill, mode, reason, and required opening shape
-  before task-specific output.
+  the narrowest applicable skill, responses use the four-field `Skill Selection` block to name the
+  skill, mode, reason, and required opening shape before task-specific output.
 - Use `../working-memory.md` with the parallel manifest when Codex lanes run concurrently or the
   working tree changes while a task is in flight.
 - Route documentation rebuild and migration work through `docs/README.md`,

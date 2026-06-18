@@ -1,0 +1,40 @@
+/* Meridian webfonts.
+   The desktop app (Meridian.Wpf) uses the native Windows stack:
+     Display  → Segoe UI Variable Display / Segoe UI Semibold
+     Body/UI  → Segoe UI Variable Text / Segoe UI
+     Data     → Cascadia Mono / JetBrains Mono / Consolas
+
+   These three families are native Windows faces — we do NOT ship binaries and do
+   NOT substitute a different family. The @font-face rules below declare each
+   family from local() sources only, so where the font is installed (the desktop
+   target) it is used directly, and everywhere else the family simply resolves to
+   nothing and the fallback stack in typography.css renders instead.
+
+   For the mono/data face we ALSO load JetBrains Mono from Google Fonts (the
+   cross-platform sibling of Cascadia Mono) so numerics render identically on
+   every platform via the --font-data fallback chain. */
+
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+
+/* Native Windows faces — local() only, no shipped binary, no substitution. */
+@font-face {
+  font-family: "Segoe UI Variable Display";
+  src: local("Segoe UI Variable Display"), local("Segoe UI Variable Display Semibold"), local("Segoe UI Semibold");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Segoe UI Variable Text";
+  src: local("Segoe UI Variable Text"), local("Segoe UI Variable"), local("Segoe UI");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cascadia Mono";
+  src: local("Cascadia Mono"), local("Cascadia Code"), local("CascadiaMono");
+  font-weight: 200 700;
+  font-style: normal;
+  font-display: swap;
+}

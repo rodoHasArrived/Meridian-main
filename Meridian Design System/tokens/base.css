@@ -1,0 +1,33 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   Meridian — base resets
+   Minimal: set the paper canvas, default body type, and tabular numerals.
+   Components style themselves; this just establishes the ground.
+─────────────────────────────────────────────────────────────────────────── */
+
+.meridian-root,
+body.meridian {
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: var(--type-body);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* All data — prices, ids, timestamps, counts — is mono + tabular. */
+.meridian-data,
+.tabular {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Eyebrow / micro-label: 10px, muted, small-caps (Typography.Capitals=AllSmallCaps). */
+.meridian-label {
+  font-family: var(--font-body);
+  font-size: var(--type-label);
+  font-weight: var(--weight-semibold);
+  color: var(--text-muted);
+  font-variant: all-small-caps;
+  letter-spacing: 0.02em;
+}

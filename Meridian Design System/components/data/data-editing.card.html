@@ -1,0 +1,155 @@
+<!-- @dsCard group="Components" viewport="900x700" name="Data editing & bulk actions" subtitle="EditableCell, SelectionToolbar, DenseDataTable with selection" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Data editing & bulk actions — EditableCell + SelectionToolbar</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  body { margin: 0; padding: 16px; background: var(--bg); }
+  .demo-section { margin-bottom: 24px; }
+  .demo-title { font-size: 11px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .04em; color: var(--text-muted); margin-bottom: 8px; }
+</style>
+</head>
+<body class="meridian">
+<div id="root"></div>
+<script type="text/babel">
+const { Eyebrow, DenseDataTable, EditableCell, SelectionToolbar } = window.MeridianDesignSystem_4f61be;
+const { useState } = React;
+
+// Demo: DenseDataTable with inline edits and bulk selection
+function Demo() {
+  const [rows, setRows] = useState([
+    { id: 1, date: "2026-06-02", ref: "TRX-101", memo: "Client deposit", amount: "82,440.00", status: "Matched" },
+    { id: 2, date: "2026-06-03", ref: "TRX-102", memo: "Commission fee", amount: "(318.50)", status: "Matched" },
+    { id: 3, date: "2026-06-04", ref: "TRX-103", memo: "Dividend MSFT", amount: "1,290.00", status: "Open" },
+    { id: 4, date: "2026-06-05", ref: "TRX-104", memo: "Wire out", amount: "(40,000.00)", status: "Matched" },
+    { id: 5, date: "2026-06-06", ref: "TRX-105", memo: "Interest accrual", amount: "142.18", status: "Open" },
+  ]);
+
+  const [selectedRows, setSelectedRows] = useState([]);
+
+  const updateRow = (index, field, value) => {
+    const newRows = [...rows];
+    newRows[index] = { ...newRows[index], [field]: value };
+    setRows(newRows);
+  };
+
+  const handleSelectRow = (row, i, isSelected) => {
+    if (isSelected) {
+      setSelectedRows([...selectedRows, i]);
+    } else {
+      setSelectedRows(selectedRows.filter(idx => idx !== i));
+    }
+  };
+
+  const handleSelectAll = (isSelected) => {
+    if (isSelected) {
+      setSelectedRows(rows.map((_, i) => i));
+    } else {
+      setSelectedRows([]);
+    }
+  };
+
+  const columns = [
+    { key: "date", label: "Date" },
+    { key: "ref", label: "Reference" },
+    {
+      key: "memo",
+      label: "Memo",
+      render: (row) => (
+        <EditableCell
+          value={row.memo}
+          onCommit={(val) => updateRow(rows.indexOf(row), "memo", val)}
+        />
+      ),
+    },
+    {
+      key: "amount",
+      label: "Amount",
+      align: "right",
+      render: (row) => (
+        <EditableCell
+          value={row.amount}
+          mode="text"
+          validator={(val) => {
+            const trimmed = val.replace(/[^0-9.(),-]/g, "");
+            return trimmed.length > 0 ? true : "Amount required";
+          }}
+          onCommit={(val) => updateRow(rows.indexOf(row), "amount", val)}
+          hint="Click to edit (Enter to save, Esc to cancel)"
+        />
+      ),
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (row) => (
+        <EditableCell
+          value={row.status}
+          onCommit={(val) => updateRow(rows.indexOf(row), "status", val)}
+        />
+      ),
+    },
+  ];
+
+  return (
+    <div>
+      <div className="demo-section">
+        <div className="demo-title">Inline Editing · Click any cell to edit</div>
+        <SelectionToolbar
+          count={selectedRows.length}
+          total={rows.length}
+          onSelectAll={handleSelectAll}
+          onClear={() => setSelectedRows([])}
+          primaryAction={{
+            label: `Export ${selectedRows.length > 0 ? selectedRows.length : ""}`,
+            onClick: () => alert(`Export ${selectedRows.length} rows`),
+          }}
+          actions={[
+            {
+              label: "Mark matched",
+              onClick: () => {
+                const updated = [...rows];
+                selectedRows.forEach(i => updated[i].status = "Matched");
+                setRows(updated);
+              },
+            },
+            {
+              label: "Delete",
+              variant: "danger",
+              onClick: () => {
+                setRows(rows.filter((_, i) => !selectedRows.includes(i)));
+                setSelectedRows([]);
+              },
+            },
+          ]}
+        />
+      </div>
+
+      <div className="demo-section">
+        <DenseDataTable
+          columns={columns}
+          rows={rows}
+          selectable={true}
+          selectedRows={selectedRows}
+          onSelectRow={handleSelectRow}
+          onSelectAll={handleSelectAll}
+        />
+      </div>
+
+      <div style={{ marginTop: 24, fontSize: 11, color: "var(--text-muted)" }}>
+        <strong>Try it:</strong> Click a cell to edit (especially Amount or Status). Select rows with checkboxes to reveal bulk actions. Hit Enter to commit, Escape to cancel.
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

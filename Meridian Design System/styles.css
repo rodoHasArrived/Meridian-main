@@ -1,0 +1,9 @@
+/* Meridian Design System — global CSS entry point.
+   @import lines only; everything reachable from here ships to consumers.
+   Grounded in the desktop app (src/Meridian.Wpf) "Institutional Ops" language. */
+@import "./tokens/fonts.css";
+@import "./tokens/colors.css";
+@import "./tokens/typography.css";
+@import "./tokens/elevation.css";
+@import "./tokens/base.css";
+@import "./tokens/theme.css";

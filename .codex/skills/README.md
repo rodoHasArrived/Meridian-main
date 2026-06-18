@@ -128,15 +128,16 @@ different work:
   validation intent without emitting full command transcripts unless requested.
 - After selecting the narrowest applicable skill, include the skill selection receipt from
   `_shared/codex-execution-contract.md` in the first substantive response: selected skill or
-  `none`, mode, reason, and required opening shape. For `meridian-brainstorm`, the receipt carries
-  the detected mode and is immediately followed by the compact triage table.
+  `none`, mode, reason, and required opening shape in the four-field `Skill Selection` block. For
+  `meridian-brainstorm`, the receipt carries the detected mode and is immediately followed by the
+  compact triage table.
 - Treat `make ai-verify`, `make ai-arch-check`, and the CI `Validate AI contract drift` step as
   required gates for AI/tooling changes. Keep `ai-audit*`, `ai-report`, docs-drift/freshness, and
   archive/maintenance targets as advisory or reporting lanes unless a task explicitly promotes them.
 - For source/docs alignment, run `python build/scripts/docs/validate-doc-hashes.py --summary`.
-  Refresh `docs/source/generated/source-hash-manifest.json` with
-  `python build/scripts/docs/validate-doc-hashes.py --write --summary` only after confirming the
-  nearest source README and registries still describe the changed code.
+  Refresh reviewed stale module entries with
+  `python build/scripts/docs/validate-doc-hashes.py --write-module <MODULE_ID> --summary`; reserve
+  broad `--write --summary` for a full accepted-baseline review.
 - When source READMEs need extra context, prefer conditional sections such as plans, end-user value,
   benchmarks/performance, operational evidence, security/credentials, API/contracts, or
   migration/archive notes. Skip empty optional sections.

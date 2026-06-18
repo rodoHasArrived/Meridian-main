@@ -28,9 +28,9 @@ still lives in `../assistant-workflow-contract.md`.
 7. For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load the MDIF spine: `../../architecture/meridian-development-intelligence-framework.md`, `../../architecture/meridian-vision.md`, `../../architecture/meridian-domain-model.md`, `../../domain/README.md`, and the relevant pack in `../context/README.md`.
 8. Read the narrowest relevant Codex skill in `.codex/skills/`.
 9. In the first substantive response after skill routing, include the skill selection receipt from
-   `.codex/skills/_shared/codex-execution-contract.md`: selected skill or `none`, mode, reason, and
-   required opening shape. For `meridian-brainstorm`, put the detected mode in that receipt, then
-   start with the compact triage table.
+   `.codex/skills/_shared/codex-execution-contract.md` as a four-field `Skill Selection` block:
+   selected skill or `none`, mode, reason, and required opening shape. For `meridian-brainstorm`,
+   put the detected mode in that receipt, then start with the compact triage table.
 10. Before loading a new context family, invoking a meaningful tool, or widening the task scope,
    include the context update notice from the execution contract so the user can see why context is
    expanding and whether edits are still in scope.

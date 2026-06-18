@@ -1,0 +1,39 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   Meridian — Elevation, radii, spacing
+   From ThemeSurfaces.xaml + the Workspace*Gap / *Padding rhythm tokens.
+   Depth is a hairline shadow at most; structure comes from borders.
+─────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Radii — tight, institutional */
+  --radius-chip:   4px;   /* badges, chips, filter tags, table panels */
+  --radius-button: 6px;   /* buttons, icon buttons, small action surfaces */
+  --radius-card:   8px;   /* cards, panels, metric tiles, dialogs */
+
+  /* Borders */
+  --border-width:  1px;
+  --accent-bar:    3px;   /* metric-card left accent (3,1,1,1) */
+  --accent-bar-lg: 4px;   /* tone inspector / queue card left accent */
+
+  /* Shadows — the only elevation. Card = whisper; elevated = shallow. */
+  --shadow-card:     0 1px 1px rgba(0,0,0,0.08);   /* DropShadow blur1 depth0 op.08 */
+  --shadow-elevated: 0 1px 2px rgba(0,0,0,0.10);   /* ElevatedSurfaceCard blur2 op.10 */
+  --shadow-none:     none;
+
+  /* Spacing rhythm (WorkspaceSectionGap … WorkspaceTightGap) */
+  --gap-section: 24px;  /* between page sections */
+  --gap-card:    16px;  /* inside a card, header→body */
+  --gap-compact: 12px;  /* compact grouping */
+  --gap-tight:   8px;   /* chips, inline runs */
+
+  /* Padding */
+  --pad-card:        20px;  /* CardStyle */
+  --pad-card-compact:16px;  /* CompactCard */
+  --pad-metric:      18px;  /* MetricCard */
+
+  /* Chrome heights */
+  --topbar-h:    48px;
+  --statusbar-h: 28px;
+  --sidebar-w:   224px;     /* 14rem */
+  --row-h:       34px;      /* dense table row */
+}

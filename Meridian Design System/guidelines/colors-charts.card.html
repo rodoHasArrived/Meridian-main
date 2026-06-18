@@ -1,0 +1,152 @@
+<!-- @dsCard group="Colors" viewport="760x310" name="Chart encodings" subtitle="Token → role: equity, drawdown, primary, benchmark, volume, area fills, crosshair, grid" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; padding: 14px 16px; background: var(--bg); font-family: var(--font-body); }
+  .root { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+
+  .chart-wrap { background: var(--chart-plot); border: 1px solid var(--chart-border); border-radius: 6px; overflow: hidden; }
+  .chart-label { font-size: 9px; font-family: var(--font-data); letter-spacing: .1em; text-transform: uppercase; color: var(--chart-axis); padding: 5px 8px 4px; border-bottom: 1px solid var(--chart-border); }
+
+  .legend { display: flex; flex-direction: column; gap: 1px; }
+  .section-head { font-size: 8.5px; font-family: var(--font-data); letter-spacing: .12em; text-transform: uppercase; color: var(--text-muted); padding: 7px 4px 2px; }
+  .section-head:first-child { padding-top: 0; }
+  .row { display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: center; padding: 3px 4px; border-radius: 3px; }
+  .row:hover { background: var(--bg-hover); }
+  .swatch { height: 13px; border-radius: 2px; flex-shrink: 0; }
+  .info { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+  .role { font-size: 10.5px; color: var(--text-secondary); white-space: nowrap; }
+  .token { font-size: 9px; font-family: var(--font-data); color: var(--text-muted); }
+</style>
+</head>
+<body>
+<div class="root">
+
+  <!-- ── mini chart showing all encodings ── -->
+  <div>
+    <div class="chart-wrap">
+      <div class="chart-label">Encoding preview</div>
+      <svg viewBox="0 0 360 164" preserveAspectRatio="none" style="display:block;width:100%;height:auto" aria-hidden="true">
+        <!-- horizontal gridlines -->
+        <line x1="0" y1="36" x2="340" y2="36" stroke="var(--chart-grid)" stroke-width="1"/>
+        <line x1="0" y1="68" x2="340" y2="68" stroke="var(--chart-grid)" stroke-width="1"/>
+        <line x1="0" y1="100" x2="340" y2="100" stroke="var(--chart-grid)" stroke-width="1"/>
+        <!-- vertical gridlines -->
+        <line x1="85"  y1="10" x2="85"  y2="118" stroke="var(--chart-grid)" stroke-width="1" opacity="0.6"/>
+        <line x1="170" y1="10" x2="170" y2="118" stroke="var(--chart-grid)" stroke-width="1" opacity="0.6"/>
+        <line x1="255" y1="10" x2="255" y2="118" stroke="var(--chart-grid)" stroke-width="1" opacity="0.6"/>
+
+        <!-- equity area fill -->
+        <path d="M0,112 L42,96 L85,74 L128,82 L170,58 L213,66 L255,44 L298,50 L340,28 L340,118 L0,118 Z"
+              fill="var(--green-a10)"/>
+
+        <!-- benchmark line (dashed, secondary) -->
+        <polyline fill="none" stroke="var(--chart-secondary)" stroke-width="1.5" stroke-dasharray="4 3"
+          points="0,102 42,98 85,90 128,93 170,80 213,84 255,70 298,74 340,63"/>
+
+        <!-- equity line -->
+        <polyline fill="none" stroke="var(--chart-equity)" stroke-width="2"
+          points="0,112 42,96 85,74 128,82 170,58 213,66 255,44 298,50 340,28"/>
+
+        <!-- candles: up (hollow body) -->
+        <line x1="50"  x2="50"  y1="62" y2="84" stroke="var(--chart-equity)" stroke-width="1.2"/>
+        <rect x="46"  y="67" width="8" height="11" fill="var(--chart-plot)" stroke="var(--chart-equity)" stroke-width="1.2"/>
+        <line x1="108" x2="108" y1="70" y2="90" stroke="var(--chart-equity)" stroke-width="1.2"/>
+        <rect x="104"  y="74" width="8" height="10" fill="var(--chart-plot)" stroke="var(--chart-equity)" stroke-width="1.2"/>
+
+        <!-- candles: down (filled body) -->
+        <line x1="79"  x2="79"  y1="66" y2="88" stroke="var(--chart-drawdown)" stroke-width="1.2"/>
+        <rect x="75"  y="70" width="8" height="13" fill="var(--chart-drawdown)" stroke="var(--chart-drawdown)" stroke-width="1.2"/>
+
+        <!-- volume subpane divider -->
+        <line x1="0" x2="340" y1="118" y2="118" stroke="var(--chart-border)" stroke-width="1"/>
+
+        <!-- volume bars — up (equity) and down (drawdown) at 32% -->
+        <rect x="42"  y="122" width="8" height="10" fill="var(--chart-equity)"   opacity="0.32"/>
+        <rect x="70"  y="124" width="8" height="8"  fill="var(--chart-drawdown)" opacity="0.32"/>
+        <rect x="98"  y="120" width="8" height="12" fill="var(--chart-equity)"   opacity="0.32"/>
+        <rect x="126" y="123" width="8" height="9"  fill="var(--chart-drawdown)" opacity="0.32"/>
+
+        <!-- crosshair -->
+        <line x1="213" x2="213" y1="10" y2="152" stroke="var(--chart-crosshair)" stroke-width="1" stroke-dasharray="3 3"/>
+        <line x1="0"   x2="340" y1="66" y2="66"   stroke="var(--chart-crosshair)" stroke-width="1" stroke-dasharray="3 3"/>
+        <circle cx="213" cy="66" r="3.5" fill="var(--chart-crosshair)"/>
+        <!-- price pill -->
+        <rect x="341" y="59" width="18" height="14" fill="var(--chart-crosshair)" rx="2"/>
+
+        <!-- axis frame -->
+        <line x1="340" y1="10" x2="340" y2="152" stroke="var(--chart-border)" stroke-width="1"/>
+        <line x1="0"   y1="152" x2="340" y2="152" stroke="var(--chart-border)" stroke-width="1"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ── legend with token names ── -->
+  <div class="legend">
+
+    <div class="section-head">Lines &amp; candles</div>
+    <div class="row">
+      <div class="swatch" style="background:var(--chart-equity)"></div>
+      <div class="info"><span class="role">Equity / up candle</span><span class="token">--chart-equity</span></div>
+    </div>
+    <div class="row">
+      <div class="swatch" style="background:var(--chart-drawdown)"></div>
+      <div class="info"><span class="role">Drawdown / down candle</span><span class="token">--chart-drawdown</span></div>
+    </div>
+    <div class="row">
+      <div class="swatch" style="background:var(--chart-primary)"></div>
+      <div class="info"><span class="role">Primary / strategy line</span><span class="token">--chart-primary</span></div>
+    </div>
+    <div class="row">
+      <div class="swatch" style="background:var(--chart-secondary)"></div>
+      <div class="info"><span class="role">Benchmark (dashed)</span><span class="token">--chart-secondary</span></div>
+    </div>
+    <div class="row">
+      <div class="swatch" style="background:var(--chart-warning)"></div>
+      <div class="info"><span class="role">Warning / threshold</span><span class="token">--chart-warning</span></div>
+    </div>
+
+    <div class="section-head">Alpha fills (volume &amp; areas)</div>
+    <div class="row">
+      <div class="swatch" style="background:var(--green-a10);outline:1px solid var(--border)"></div>
+      <div class="info"><span class="role">Equity area fill</span><span class="token">--green-a10</span></div>
+    </div>
+    <div class="row">
+      <div class="swatch" style="background:var(--red-a10);outline:1px solid var(--border)"></div>
+      <div class="info"><span class="role">Drawdown area fill</span><span class="token">--red-a10</span></div>
+    </div>
+    <div class="row">
+      <div class="swatch" style="background:var(--blue-a10);outline:1px solid var(--border)"></div>
+      <div class="info"><span class="role">Primary area / accent wash</span><span class="token">--blue-a10</span></div>
+    </div>
+
+    <div class="section-head">Infrastructure</div>
+    <div class="row">
+      <div class="swatch" style="background:var(--chart-crosshair)"></div>
+      <div class="info"><span class="role">Crosshair + price pill</span><span class="token">--chart-crosshair</span></div>
+    </div>
+    <div class="row">
+      <div class="swatch" style="background:var(--chart-grid);outline:1px solid var(--border)"></div>
+      <div class="info"><span class="role">Grid lines</span><span class="token">--chart-grid</span></div>
+    </div>
+    <div class="row">
+      <div class="swatch" style="background:var(--chart-border)"></div>
+      <div class="info"><span class="role">Axis frame</span><span class="token">--chart-border</span></div>
+    </div>
+    <div class="row">
+      <div class="swatch" style="background:var(--chart-axis)"></div>
+      <div class="info"><span class="role">Axis / tick labels</span><span class="token">--chart-axis</span></div>
+    </div>
+    <div class="row">
+      <div class="swatch" style="background:var(--chart-plot);outline:1px solid var(--border)"></div>
+      <div class="info"><span class="role">Plot background</span><span class="token">--chart-plot</span></div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

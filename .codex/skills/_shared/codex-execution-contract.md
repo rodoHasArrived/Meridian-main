@@ -31,8 +31,16 @@ Use this file as the Codex-only execution standard for Meridian skill runs. It c
 ## Skill Selection Receipt Gate
 
 - In the first substantive response after skill routing, include a compact skill selection receipt.
-- Use one line when possible:
-  `**Skill selection receipt:** skill=<skill-or-none>; mode=<skill-specific mode or n/a>; reason=<short clause>; required shape=<skill-specific opening requirement or n/a>`.
+- Use this four-field block so the receipt is scannable without becoming a preamble:
+
+  ```md
+  **Skill Selection**
+  - Skill: `<skill-or-none>`
+  - Mode: `<skill-specific mode or n/a>`
+  - Reason: <short clause>
+  - Required Opening: <skill-specific opening requirement or n/a>
+  ```
+
 - For skills with explicit opening output rules, merge those rules into the receipt instead of adding
   a competing preamble. For example, `meridian-brainstorm` records the detected mode in the receipt,
   then starts the compact triage table.
@@ -93,8 +101,9 @@ python3 build/python/cli/buildctl.py build --project Meridian.sln --configuratio
 - For registered `src/**` modules, use `docs/source/data/source-modules.yml` to identify the
   module README, update required docs when behavior changes, then run
   `python3 build/scripts/docs/validate-doc-hashes.py --summary`. If source/docs alignment was
-  intentionally reviewed, refresh the baseline with
-  `python3 build/scripts/docs/validate-doc-hashes.py --write --summary`.
+  intentionally reviewed for specific stale modules, refresh only those entries with
+  `python3 build/scripts/docs/validate-doc-hashes.py --write-module <MODULE_ID> --summary`; reserve
+  broad `--write --summary` for a full accepted-baseline review.
 - Use optional source README sections when applicable: plans, end-user value, benchmarks and
   performance, operational evidence, security or credential handling, API/contract notes, and
   migration/archive notes. Do not add empty optional sections only for cosmetic symmetry.
@@ -117,7 +126,11 @@ For AI tooling, Codex skill, Codex catalog, prompt, docs automation, or assistan
 ## Final Response Shape
 
 ```md
-**Skill selection receipt:** skill=<skill-or-none>; mode=<mode-or-n/a>; reason=<why this lane>; required shape=<followed opening rule or n/a>
+**Skill Selection**
+- Skill: `<skill-or-none>`
+- Mode: `<mode-or-n/a>`
+- Reason: <why this lane>
+- Required Opening: <followed opening rule or n/a>
 
 **Implemented**
 - Code: <behavior-level changes>

@@ -1,0 +1,60 @@
+<!-- @dsCard group="Components" viewport="820x420" name="Ledger & money" subtitle="AmountCell encodings + LedgerTable double-entry rows" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Accounting — ledger & money</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  body { margin: 0; padding: 16px; background: var(--bg); }
+  .lbl { font-family: var(--font-body); font-size: 10px; font-weight: 600; font-variant: all-small-caps;
+    letter-spacing: .03em; color: var(--text-muted); margin: 0 0 8px; }
+  .enc { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; align-items: baseline;
+    font-family: var(--font-body); font-size: 11px; color: var(--text-secondary); }
+  .enc .k { color: var(--text-muted); font-variant: all-small-caps; letter-spacing: .03em; }
+  .col { display: flex; flex-direction: column; gap: 8px; }
+  .grid { display: grid; grid-template-columns: 240px 1fr; gap: 20px; align-items: start; }
+</style>
+</head>
+<body class="meridian">
+<div id="root"></div>
+<script type="text/babel">
+const { AmountCell, LedgerTable } = window.MeridianDesignSystem_4f61be;
+const Enc = ({ k, children }) => <><span className="k">{k}</span><span>{children}</span></>;
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <div className="grid">
+    <div className="col">
+      <p className="lbl">AmountCell — encodings</p>
+      <div className="enc">
+        <Enc k="plain">          <AmountCell value={1284002.18} currency="$" /></Enc>
+        <Enc k="plain neg">      <AmountCell value={-4118.22} currency="$" /></Enc>
+        <Enc k="signed +">       <AmountCell value={7472} currency="$" mode="signed" /></Enc>
+        <Enc k="signed −">       <AmountCell value={-921} currency="$" mode="signed" /></Enc>
+        <Enc k="accounting">     <AmountCell value={-58200} currency="$" mode="accounting" /></Enc>
+        <Enc k="dr / cr">        <AmountCell value={1500} currency="$" drcr /></Enc>
+        <Enc k="zero-dash">      <AmountCell value={0} currency="$" /></Enc>
+        <Enc k="emphasis">       <AmountCell value={1284002.18} currency="$" emphasis /></Enc>
+      </div>
+    </div>
+    <div className="col">
+      <p className="lbl">LedgerTable — cash account, running balance</p>
+      <LedgerTable
+        currency="$" openingBalance={120000} selectedIndex={2} onRowClick={() => {}}
+        rows={[
+          { date: "2026-06-02", ref: "JV-1031", account: "Trading fees", memo: "IBKR commissions · May", debit: 1840.00 },
+          { date: "2026-06-04", ref: "DEP-220",  account: "Wire deposit", credit: 250000.00 },
+          { date: "2026-06-06", ref: "JV-1037", account: "Market-data lease", memo: "Polygon · Q2", debit: 9600.00 },
+          { date: "2026-06-09", ref: "SET-884",  account: "Settled P&L", credit: 41180.22 },
+          { date: "2026-06-11", ref: "JV-1041", account: "Custody charges", debit: 312.50 },
+        ]}
+      />
+    </div>
+  </div>
+);
+</script>
+</body>
+</html>

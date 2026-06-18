@@ -199,7 +199,7 @@ export function SheetCloseButton({ label = "Close panel", className, onClick, ..
       aria-label={label}
       title={label}
       className={cn(
-        "absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40",
+        "absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-[var(--radius-button,0.375rem)] text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40",
         className
       )}
       onClick={onClick}

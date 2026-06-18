@@ -1,0 +1,24 @@
+<!-- @dsCard group="Spacing" viewport="700x180" name="Rhythm & density" subtitle="24 section · 16 card · 12 compact · 8 tight; 48px bar, 34px rows" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 16px; background: var(--bg); color: var(--text-primary); font-family: var(--font-body); }
+  .ruler { display: flex; flex-direction: column; gap: 7px; }
+  .bar { display: flex; align-items: center; gap: 12px; }
+  .seg { background: var(--blue-a10); border: 1px solid var(--accent); border-radius: 4px; }
+  .lab { font-size: 9.5px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .03em; color: var(--text-muted); width: 180px; flex-shrink: 0; }
+  .px { font-family: var(--font-data); font-size: 10px; color: var(--text-primary); width: 40px; text-align: right; }
+</style>
+</head>
+<body>
+  <div class="ruler">
+    <div class="bar"><span class="lab">section gap</span><div class="seg" style="height: 24px; flex: 1;"></div><span class="px">24</span></div>
+    <div class="bar"><span class="lab">card padding / gap</span><div class="seg" style="height: 16px; flex: 1;"></div><span class="px">16</span></div>
+    <div class="bar"><span class="lab">compact gap</span><div class="seg" style="height: 12px; flex: 1;"></div><span class="px">12</span></div>
+    <div class="bar"><span class="lab">tight gap</span><div class="seg" style="height: 8px; flex: 1;"></div><span class="px">8</span></div>
+  </div>
+</body>
+</html>

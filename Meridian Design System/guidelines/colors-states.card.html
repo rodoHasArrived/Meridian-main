@@ -1,0 +1,26 @@
+<!-- @dsCard group="Colors" viewport="700x180" name="Semantic states" subtitle="Desaturated trios — alpha-10 fill, solid border, dim text" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 14px; background: var(--bg); font-family: var(--font-body); }
+  .row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .chip { border-radius: 4px; padding: 10px; height: 60px; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid; }
+  .n { font-size: 10px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .03em; }
+  .v { font-family: var(--font-data); font-size: 8.5px; opacity: .85; }
+  .cap { margin-top: 11px; font-size: 10px; font-weight: 600; font-variant: all-small-caps; color: var(--text-muted); letter-spacing: .03em; }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="chip" style="color: var(--green-dim); border-color: var(--green); background: var(--green-a10);"><span class="n">Success</span><span class="v">#16885F</span></div>
+    <div class="chip" style="color: var(--orange-dim); border-color: var(--orange); background: var(--orange-a10);"><span class="n">Warning</span><span class="v">#B7791F</span></div>
+    <div class="chip" style="color: var(--red-dim); border-color: var(--red); background: var(--red-a10);"><span class="n">Danger</span><span class="v">#BA3F55</span></div>
+    <div class="chip" style="color: var(--accent); border-color: var(--accent); background: var(--blue-a10);"><span class="n">Info</span><span class="v">#2F6F8F</span></div>
+    <div class="chip" style="color: var(--purple-dim); border-color: var(--purple); background: var(--purple-a10);"><span class="n">Pending</span><span class="v">#6F5BA7</span></div>
+  </div>
+  <div class="cap">Each state is a trio: dim fg text · solid border · alpha-10 wash. Never solid fills.</div>
+</body>
+</html>

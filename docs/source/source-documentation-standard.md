@@ -79,8 +79,9 @@ python3 build/scripts/docs/render-source-docs.py --summary
 python3 build/scripts/docs/validate-doc-hashes.py --summary
 ```
 
-Run `python3 build/scripts/docs/validate-doc-hashes.py --write --summary` only after confirming
-source changes and README/registry updates are intentionally aligned.
+Run `python3 build/scripts/docs/validate-doc-hashes.py --write-module <MODULE_ID> --summary` after
+confirming a specific stale module's source changes and README/registry updates are intentionally
+aligned. Use broad `--write --summary` only after reviewing the full source hash baseline.
 
 ## Stale-doc workflow
 
@@ -93,9 +94,9 @@ python3 build/scripts/docs/render-source-docs.py --stale-only --summary
 ```
 
 `docs/source/generated/stale-docs.json` is the machine-readable work queue. It records the module
-ID, path, README, hash-drift reason, and recommended action. Refresh
-`docs/source/generated/source-hash-manifest.json` only after the stale module docs have been
-reviewed or updated.
+ID, path, README, hash-drift reason, and recommended action. Refresh selected
+`docs/source/generated/source-hash-manifest.json` entries with `--write-module` only after those
+stale module docs have been reviewed or updated.
 
 ## Folder-tree README sync
 

@@ -38,7 +38,7 @@ flowchart TD
 1. Read request literally and restate acceptance criteria.
 2. Route before broad search.
 3. Use the narrowest applicable skill.
-4. Emit the skill selection receipt: selected skill, mode, reason, and required opening shape.
+4. Emit the skill selection receipt: a four-field block with selected skill, mode, reason, and required opening shape.
 5. Keep changes minimal and lane-bounded.
 6. Validate narrowly first; expand only if risk justifies it.
 7. If lane transitions occur, use explicit handoff packets.

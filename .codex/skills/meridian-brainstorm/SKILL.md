@@ -75,7 +75,11 @@ Every strong idea should include:
 ## Output Shape
 
 ```md
-**Skill selection receipt:** skill=meridian-brainstorm; mode=<detected mode>; reason=<why this is ideation>; required shape=compact triage table first
+**Skill Selection**
+- Skill: `meridian-brainstorm`
+- Mode: `<detected mode>`
+- Reason: <why this is ideation>
+- Required Opening: compact triage table first
 
 ## Ideas at a Glance
 | # | Idea | Effort | Audience | Impact | Depends On |

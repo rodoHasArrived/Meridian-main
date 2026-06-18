@@ -1,61 +1,87 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+
+@font-face {
+  font-family: "Segoe UI Variable Display";
+  src: local("Segoe UI Variable Display"), local("Segoe UI Variable Display Semibold"), local("Segoe UI Semibold");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Segoe UI Variable Text";
+  src: local("Segoe UI Variable Text"), local("Segoe UI Variable"), local("Segoe UI");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Cascadia Mono";
+  src: local("Cascadia Mono"), local("Cascadia Code"), local("CascadiaMono");
+  font-weight: 200 700;
+  font-style: normal;
+  font-display: swap;
+}
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  /* ─── Light mode — opt-in via [data-appearance="light"] ───────────────────
-     Follows cash-flow-factor-sch clean light palette while retaining Meridian's
-     blue-shifted identity. Meridian is dark-first (trading terminal); light is
-     an opt-in surface for reporting or embedded views.
+  /* Light appearance remains an explicit alias for nested panels that already
+     opt into it. The workstation default below uses the same tokens.
   ──────────────────────────────────────────────────────────────────────────*/
   [data-appearance="light"] {
-    --background: 215 20% 96%;
-    --foreground: 215 30% 12%;
+    --background: 214 23% 94%;
+    --foreground: 215 15% 16%;
     --card: 0 0% 100%;
-    --card-foreground: 215 30% 12%;
+    --card-foreground: 215 15% 16%;
     --popover: 0 0% 100%;
-    --popover-foreground: 215 30% 12%;
-    --primary: 198 72% 38%;
+    --popover-foreground: 215 15% 16%;
+    --primary: 200 51% 37%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 18% 91%;
-    --secondary-foreground: 215 30% 12%;
-    --muted: 210 15% 91%;
-    --muted-foreground: 210 18% 42%;
-    --accent: 36 70% 46%;
+    --secondary: 216 33% 97%;
+    --secondary-foreground: 215 15% 16%;
+    --muted: 210 27% 96%;
+    --muted-foreground: 212 9% 47%;
+    --accent: 200 51% 37%;
     --accent-foreground: 0 0% 100%;
-    --border: 210 22% 82%;
-    --input: 210 22% 85%;
-    --ring: 198 72% 38%;
-    --paper: 214 80% 55%;
-    --live: 198 72% 38%;
-    --live-env: 0 72% 50%;
-    --warning: 36 70% 46%;
-    --success: 158 55% 35%;
-    --danger: 354 60% 48%;
-    --panel-strong: 215 15% 92%;
-    --panel-soft: 215 12% 93%;
-    --surface-raise: 215 18% 87%;
-    --sidebar: 215 22% 94%;
-    --sidebar-foreground: 215 30% 12%;
-    --sidebar-primary: 198 72% 38%;
+    --border: 213 16% 86%;
+    --input: 213 16% 86%;
+    --ring: 200 51% 37%;
+    --paper: 200 51% 37%;
+    --live: 200 51% 37%;
+    --live-env: 347 49% 49%;
+    --warning: 35 71% 42%;
+    --success: 159 72% 31%;
+    --danger: 347 49% 49%;
+    --panel-strong: 0 0% 100%;
+    --panel-soft: 216 33% 97%;
+    --surface-raise: 210 25% 98%;
+    --sidebar: 210 22% 96%;
+    --sidebar-foreground: 212 14% 35%;
+    --sidebar-primary: 200 51% 37%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 18% 88%;
-    --sidebar-accent-foreground: 215 30% 12%;
-    --sidebar-border: 210 22% 80%;
-    --sidebar-ring: 198 72% 38%;
-    --chart-1: 198 72% 38%;
-    --chart-2: 158 55% 35%;
-    --chart-3: 354 60% 48%;
-    --chart-4: 36 70% 46%;
-    --chart-5: 214 80% 55%;
-    --shadow-color: 215 30% 12%;
+    --sidebar-accent: 207 31% 93%;
+    --sidebar-accent-foreground: 215 15% 16%;
+    --sidebar-border: 213 16% 86%;
+    --sidebar-ring: 200 51% 37%;
+    --chart-1: 200 51% 37%;
+    --chart-2: 159 72% 31%;
+    --chart-3: 347 49% 49%;
+    --chart-4: 35 71% 42%;
+    --chart-5: 203 27% 59%;
+    --shadow-color: 215 15% 16%;
     --shadow-opacity: 0.08;
-    --shadow-blur: 0px;
+    --shadow-blur: 1px;
     --shadow-spread: 0px;
-    --shadow-offset-x: 3px;
-    --shadow-offset-y: 3px;
+    --shadow-offset-x: 0px;
+    --shadow-offset-y: 1px;
+    --radius-chip: 4px;
+    --radius-button: 6px;
+    --radius-card: 8px;
+    --radius-checkbox: 3px;
   }
 
   :root {
@@ -63,59 +89,59 @@
        These HSL channel variables feed Tailwind utility classes (bg-background,
        text-foreground, border-border, ring-primary, etc.). ALL components/ui/
        primitives consume ONLY these variables. Adjust here to change the
-       Tailwind palette. Token architecture aligned with cash-flow-factor-sch.
+       Tailwind palette. Token architecture mirrors the Meridian Institutional
+       Ops light design system and WPF theme tokens.
        Changes here do NOT automatically update Track B.
     ──────────────────────────────────────────────────────────────────────────*/
-    --background: 220 10% 6%;
-    --foreground: 210 18% 94%;
-    --card: 215 34% 9%;
-    --card-foreground: 210 30% 92%;
-    --popover: 215 36% 8%;
-    --popover-foreground: 210 30% 92%;
-    --primary: 198 72% 50%;
-    --primary-foreground: 213 54% 7%;
-    --secondary: 213 32% 16%;
-    --secondary-foreground: 207 44% 90%;
-    --muted: 213 28% 15%;
-    --muted-foreground: 210 22% 62%;
-    --accent: 36 80% 58%;
-    --accent-foreground: 213 52% 8%;
-    --border: 208 38% 22%;
-    --input: 208 38% 22%;
-    --ring: 198 72% 50%;
-    --paper: 214 82% 68%;
-    --live: 198 72% 50%;
-    --live-env: 0 75% 59%;
-    --warning: 36 80% 58%;
-    --success: 158 66% 44%;
-    --danger: 354 68% 62%;
-    --panel-strong: 213 48% 12%;
-    --panel-soft: 213 36% 15%;
-    --surface-raise: 213 40% 18%;
-    /* ─── Sidebar tokens — aligned with cash-flow-factor-sch ─────────────────
-       Maps the operator rail surface to the same sidebar token contract used
-       in the reference app. Consumed by sidebar.tsx and rail components.
+    --background: 214 23% 94%;
+    --foreground: 215 15% 16%;
+    --card: 0 0% 100%;
+    --card-foreground: 215 15% 16%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 15% 16%;
+    --primary: 200 51% 37%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 216 33% 97%;
+    --secondary-foreground: 215 15% 16%;
+    --muted: 210 27% 96%;
+    --muted-foreground: 212 9% 47%;
+    --accent: 200 51% 37%;
+    --accent-foreground: 0 0% 100%;
+    --border: 213 16% 86%;
+    --input: 213 16% 86%;
+    --ring: 200 51% 37%;
+    --paper: 200 51% 37%;
+    --live: 200 51% 37%;
+    --live-env: 347 49% 49%;
+    --warning: 35 71% 42%;
+    --success: 159 72% 31%;
+    --danger: 347 49% 49%;
+    --panel-strong: 0 0% 100%;
+    --panel-soft: 216 33% 97%;
+    --surface-raise: 210 25% 98%;
+    /* ─── Sidebar tokens ─────────────────────────────────────────────────────
+       Maps the operator rail surface to the light institutional rail.
     ──────────────────────────────────────────────────────────────────────────*/
-    --sidebar: 220 12% 5%;
-    --sidebar-foreground: 210 18% 94%;
-    --sidebar-primary: 198 72% 50%;
-    --sidebar-primary-foreground: 213 54% 7%;
-    --sidebar-accent: 213 32% 16%;
-    --sidebar-accent-foreground: 207 44% 90%;
-    --sidebar-border: 205 34% 29%;
-    --sidebar-ring: 198 72% 50%;
-    /* ─── Chart tokens — aligned with cash-flow-factor-sch naming ────────────
-       Named --chart-1…5 to match the reference app's token contract.
-       Mapped to Meridian's semantic chart palette: cyan / green / red / amber / blue.
+    --sidebar: 210 22% 96%;
+    --sidebar-foreground: 212 14% 35%;
+    --sidebar-primary: 200 51% 37%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 207 31% 93%;
+    --sidebar-accent-foreground: 215 15% 16%;
+    --sidebar-border: 213 16% 86%;
+    --sidebar-ring: 200 51% 37%;
+    /* ─── Chart tokens ───────────────────────────────────────────────────────
+       Named --chart-1…5 to match the existing Tailwind contract.
+       Mapped to Meridian's muted semantic chart palette.
     ──────────────────────────────────────────────────────────────────────────*/
-    --chart-1: 198 72% 50%;
-    --chart-2: 158 66% 44%;
-    --chart-3: 354 68% 62%;
-    --chart-4: 36 80% 58%;
-    --chart-5: 214 82% 68%;
+    --chart-1: 200 51% 37%;
+    --chart-2: 159 72% 31%;
+    --chart-3: 347 49% 49%;
+    --chart-4: 35 71% 42%;
+    --chart-5: 203 27% 59%;
     /* ─── Border radii ───────────────────────────────────────────────────────
        --radius is the base value (lg); all others are derived offsets following
-       cash-flow-factor-sch's scalable radius convention.
+       the workstation's scalable radius convention.
     ──────────────────────────────────────────────────────────────────────────*/
     --radius: 0.5rem;
     --radius-xl: 0.625rem;
@@ -123,14 +149,17 @@
     --radius-md: 0.375rem;
     --radius-sm: 0.25rem;
     --radius-xs: 0.1875rem;
+    --radius-chip: 4px;
+    --radius-button: 6px;
+    --radius-card: 8px;
+    --radius-checkbox: 3px;
     --space-panel: 1.5rem;
-    /* ─── Flat shadow tokens — aligned with cash-flow-factor-sch ─────────────
-       Hard-offset, zero-blur shadow system from the reference app.
-       Separate from the layered Meridian workstation shadows in Track B.
+    /* ─── Shadow tokens ──────────────────────────────────────────────────────
+       The light system uses hairline shadows only; structure comes from borders.
     ──────────────────────────────────────────────────────────────────────────*/
-    --shadow-color: 215 30% 0%;
-    --shadow-opacity: 0.24;
-    --shadow-blur: 2px;
+    --shadow-color: 215 15% 16%;
+    --shadow-opacity: 0.08;
+    --shadow-blur: 1px;
     --shadow-spread: 0px;
     --shadow-offset-x: 0px;
     --shadow-offset-y: 1px;
@@ -140,78 +169,79 @@
        Must be kept in sync with Track A manually when the palette changes.
        Add new surfaces here (not as Tailwind utilities) to stay on this track.
     ──────────────────────────────────────────────────────────────────────────*/
-    --bg: #08101a;              /* mirrors hsl(--background) */
-    --fg: #dee6ef;              /* mirrors hsl(--foreground) */
-    --fg-muted: #7c8a9b;        /* mirrors hsl(--muted-foreground) */
-    --card-bg: #0d1722;         /* mirrors hsl(--card) */
-    --panel-strong-bg: #101c2b;
-    --panel-soft-bg: #162334;
-    --surface-raise-bg: #1b2a3c;
-    --border-color: #1f344c;    /* mirrors hsl(--border) */
-    --border-hi: #477089;
-    --surface-topbar: #05101b;  /* masthead chrome */
-    --surface-input: #0b1520;   /* workstation search / command input surface */
-    --cyan-primary: #2ab2d4;
-    --cyan-focus: #20d3f7;
-    --cyan-pressed: #2d9cdb;
-    --state-healthy-fg: #26bf86;
-    --state-healthy-bd: rgba(38, 191, 134, 0.35);
-    --state-healthy-bg: rgba(38, 191, 134, 0.10);
-    --state-warn-fg: #d69e38;
-    --state-warn-bd: rgba(214, 158, 56, 0.35);
-    --state-warn-bg: rgba(214, 158, 56, 0.10);
-    --state-danger-fg: #de5878;
-    --state-danger-bd: rgba(222, 88, 120, 0.35);
-    --state-danger-bg: rgba(222, 88, 120, 0.10);
-    --state-paper-fg: #60a5fa;
-    --state-paper-bd: rgba(96, 165, 250, 0.35);
-    --state-paper-bg: rgba(96, 165, 250, 0.10);
-    --state-strategy-fg: #93b4da;
-    --state-strategy-bd: rgba(147, 180, 218, 0.35);
-    --state-strategy-bg: rgba(147, 180, 218, 0.10);
-    --state-live-fg: #e84545;
-    --state-live-bd: rgba(232, 69, 69, 0.40);
-    --state-live-bg: rgba(232, 69, 69, 0.12);
-    --state-muted-fg: #7c8a9b;
-    --state-muted-bd: #1f344c;
-    --state-muted-bg: #0b1520;
-    --state-pending-fg: #a78bfa;
-    --state-pending-bd: rgba(167, 139, 250, 0.35);
-    --state-pending-bg: rgba(167, 139, 250, 0.10);
-    --severity-blocked-fg: #ff8faa;
-    --severity-blocked-bd: rgba(222, 88, 120, 0.46);
-    --severity-blocked-bg: rgba(222, 88, 120, 0.12);
-    --severity-action-fg: #f7ca54;
-    --severity-action-bd: rgba(214, 158, 56, 0.46);
-    --severity-action-bg: rgba(214, 158, 56, 0.10);
-    --severity-review-fg: #bcefff;
-    --severity-review-bd: rgba(42, 178, 212, 0.36);
-    --severity-review-bg: rgba(42, 178, 212, 0.10);
-    --severity-ready-fg: #43e6a7;
-    --severity-ready-bd: rgba(67, 230, 167, 0.36);
-    --severity-ready-bg: rgba(67, 230, 167, 0.10);
-    --severity-info-fg: #a9b7c7;
-    --severity-info-bd: rgba(169, 183, 199, 0.28);
-    --severity-info-bg: rgba(169, 183, 199, 0.08);
-    --chart-grid: #1a2d44;
-    --chart-grid-major: #1f344c;
-    --chart-up: #26bf86;
-    --chart-dn: #de5878;
-    --chart-ma20: #2ab2d4;
-    --chart-ma50: #f2c94c;
-    --chart-bench: #60a5fa;
-    --chart-band: rgba(96, 165, 250, 0.15);
-    --chart-crosshair: #2ab2d4;
-    --chart-dd: rgba(222, 88, 120, 0.35);
-    --shadow-workstation:
-      0 1px 0 rgba(255, 255, 255, 0.02) inset,
-      3px 3px 0 rgba(0, 0, 0, 0.72);
-    --shadow-panel:
-      0 1px 0 rgba(255, 255, 255, 0.02) inset,
-      0 1px 1px rgba(0, 0, 0, 0.25);
-    --shadow-float:
-      0 2px 8px rgba(0, 0, 0, 0.40),
-      0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+    --bg: #ECEFF3;              /* mirrors hsl(--background) */
+    --bg-medium: #F5F7FA;
+    --bg-light: #FFFFFF;
+    --bg-hover: #F1F4F7;
+    --bg-active: #E6EEF5;
+    --fg: #22272E;              /* mirrors hsl(--foreground) */
+    --fg-muted: #6E7781;        /* mirrors hsl(--muted-foreground) */
+    --fg-secondary: #4D5967;
+    --card-bg: #FFFFFF;         /* mirrors hsl(--card) */
+    --panel-strong-bg: #FFFFFF;
+    --panel-soft-bg: #F5F7FA;
+    --surface-raise-bg: #FAFBFC;
+    --border-color: #D7DCE2;    /* mirrors hsl(--border) */
+    --border-hi: #B8C2CC;
+    --border-strong: #AAB4BF;
+    --surface-topbar: #171A1F;  /* masthead chrome */
+    --surface-input: #F5F7FA;
+    --cyan-primary: #2F6F8F;
+    --cyan-focus: #2F6F8F;
+    --cyan-pressed: #255B75;
+    --state-healthy-fg: #16885F;
+    --state-healthy-bd: rgba(22, 136, 95, 0.32);
+    --state-healthy-bg: rgba(22, 136, 95, 0.10);
+    --state-warn-fg: #B7791F;
+    --state-warn-bd: rgba(183, 121, 31, 0.34);
+    --state-warn-bg: rgba(183, 121, 31, 0.10);
+    --state-danger-fg: #BA3F55;
+    --state-danger-bd: rgba(186, 63, 85, 0.35);
+    --state-danger-bg: rgba(186, 63, 85, 0.10);
+    --state-paper-fg: #2F6F8F;
+    --state-paper-bd: rgba(47, 111, 143, 0.34);
+    --state-paper-bg: rgba(47, 111, 143, 0.10);
+    --state-strategy-fg: #6F5BA7;
+    --state-strategy-bd: rgba(111, 91, 167, 0.34);
+    --state-strategy-bg: rgba(111, 91, 167, 0.10);
+    --state-live-fg: #BA3F55;
+    --state-live-bd: rgba(186, 63, 85, 0.42);
+    --state-live-bg: rgba(186, 63, 85, 0.12);
+    --state-muted-fg: #6E7781;
+    --state-muted-bd: #D7DCE2;
+    --state-muted-bg: #F5F7FA;
+    --state-pending-fg: #6F5BA7;
+    --state-pending-bd: rgba(111, 91, 167, 0.34);
+    --state-pending-bg: rgba(111, 91, 167, 0.10);
+    --severity-blocked-fg: #BA3F55;
+    --severity-blocked-bd: rgba(186, 63, 85, 0.40);
+    --severity-blocked-bg: rgba(186, 63, 85, 0.10);
+    --severity-action-fg: #B7791F;
+    --severity-action-bd: rgba(183, 121, 31, 0.42);
+    --severity-action-bg: rgba(183, 121, 31, 0.10);
+    --severity-review-fg: #2F6F8F;
+    --severity-review-bd: rgba(47, 111, 143, 0.36);
+    --severity-review-bg: rgba(47, 111, 143, 0.10);
+    --severity-ready-fg: #16885F;
+    --severity-ready-bd: rgba(22, 136, 95, 0.36);
+    --severity-ready-bg: rgba(22, 136, 95, 0.10);
+    --severity-info-fg: #6E7781;
+    --severity-info-bd: #D7DCE2;
+    --severity-info-bg: #F5F7FA;
+    --chart-grid: #DDE3EA;
+    --chart-grid-major: #CBD3DC;
+    --chart-up: #16885F;
+    --chart-dn: #BA3F55;
+    --chart-ma20: #2F6F8F;
+    --chart-ma50: #B7791F;
+    --chart-bench: #7A9DB3;
+    --chart-band: rgba(47, 111, 143, 0.10);
+    --chart-crosshair: #2F6F8F;
+    --chart-dd: rgba(186, 63, 85, 0.22);
+    --shadow-workstation: 0 1px 1px rgba(0, 0, 0, 0.08);
+    --shadow-panel: 0 1px 1px rgba(0, 0, 0, 0.08);
+    --shadow-float: 0 1px 2px rgba(0, 0, 0, 0.10);
+    --shadow-soft: 0 1px 1px rgba(0, 0, 0, 0.06);
   }
 
   * {
@@ -222,11 +252,8 @@
     @apply min-h-screen bg-background font-sans text-foreground antialiased;
     font-size: 13px;
     line-height: 1.5;
-    background-image:
-      linear-gradient(rgba(49, 83, 109, 0.18) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(49, 83, 109, 0.14) 1px, transparent 1px),
-      linear-gradient(180deg, #08101a 0%, #08101a 100%);
-    background-size: 48px 48px, 48px 48px, auto;
+    background: var(--bg);
+    background-image: none;
   }
 
   #root {
@@ -234,7 +261,7 @@
   }
 
   ::selection {
-    background: rgba(42, 178, 212, 0.30);
+    background: rgba(47, 111, 143, 0.22);
   }
 
   /* Scrollbar refinement */
@@ -255,49 +282,49 @@
 }
 
 /* --------------------------------------------------------------------------
-   Light workstation migration foundation
+   Light-first workstation foundation
 
-   These overrides make the browser workstation light-first while preserving
-   the legacy dark aliases consumed by older page-local styles during migration.
+   These aliases keep older page-local styles on the new design-system tokens
+   while the default root contract above remains the source of truth.
 ────────────────────────────────────────────────────────────────────────── */
 @layer base {
   :root {
-    --background: 210 20% 97%;
-    --foreground: 216 24% 13%;
+    --background: 214 23% 94%;
+    --foreground: 215 15% 16%;
     --card: 0 0% 100%;
-    --card-foreground: 216 24% 13%;
+    --card-foreground: 215 15% 16%;
     --popover: 0 0% 100%;
-    --popover-foreground: 216 24% 13%;
-    --primary: 204 78% 35%;
+    --popover-foreground: 215 15% 16%;
+    --primary: 200 51% 37%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 214 22% 94%;
-    --secondary-foreground: 216 24% 13%;
-    --muted: 214 20% 93%;
-    --muted-foreground: 215 12% 45%;
-    --accent: 198 70% 42%;
+    --secondary: 216 33% 97%;
+    --secondary-foreground: 215 15% 16%;
+    --muted: 210 27% 96%;
+    --muted-foreground: 212 9% 47%;
+    --accent: 200 51% 37%;
     --accent-foreground: 0 0% 100%;
-    --border: 214 18% 82%;
-    --input: 214 18% 82%;
-    --ring: 204 78% 35%;
+    --border: 213 16% 86%;
+    --input: 213 16% 86%;
+    --ring: 200 51% 37%;
 
-    --ws-page-bg: #f4f6f8;
+    --ws-page-bg: #ECEFF3;
     --ws-surface: #ffffff;
-    --ws-surface-subtle: #f8fafc;
-    --ws-surface-raised: #ffffff;
-    --ws-border: #d8dee6;
-    --ws-border-strong: #b7c1cc;
-    --ws-text: #1c2430;
-    --ws-text-muted: #667180;
-    --ws-masthead-bg: #05070a;
-    --ws-masthead-fg: #f7f8fa;
-    --ws-rail-bg: #f8fafc;
-    --ws-rail-active: #e8f1f8;
-    --ws-row-hover: #f3f7fb;
-    --ws-row-selected: #e9f3fb;
-    --ws-row-border: #e1e6ed;
+    --ws-surface-subtle: #F5F7FA;
+    --ws-surface-raised: #FAFBFC;
+    --ws-border: #D7DCE2;
+    --ws-border-strong: #B8C2CC;
+    --ws-text: #22272E;
+    --ws-text-muted: #6E7781;
+    --ws-masthead-bg: #171A1F;
+    --ws-masthead-fg: #F4F6F8;
+    --ws-rail-bg: #F4F6F8;
+    --ws-rail-active: #E1EAF2;
+    --ws-row-hover: #F1F4F7;
+    --ws-row-selected: #E6EEF5;
+    --ws-row-border: #DDE3EA;
     --ws-inspector-bg: #ffffff;
     --ws-canvas-bg: #ffffff;
-    --ws-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    --ws-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
 
     --bg: var(--ws-page-bg);
     --fg: var(--ws-text);
@@ -307,11 +334,14 @@
     --panel-soft-bg: var(--ws-surface-subtle);
     --border-color: var(--ws-border);
     --border-hi: var(--ws-border-strong);
+    --border-strong: #AAB4BF;
     --surface-topbar: var(--ws-masthead-bg);
     --surface-raise-bg: var(--ws-surface-raised);
     --shadow-panel: var(--ws-shadow);
-    --cyan-primary: #176fa3;
-    --cyan-secondary: #2f86b7;
+    --shadow-workstation: var(--ws-shadow);
+    --shadow-float: 0 1px 2px rgba(0, 0, 0, 0.10);
+    --cyan-primary: #2F6F8F;
+    --cyan-secondary: #3B82A6;
   }
 
   body {
@@ -936,7 +966,7 @@
     border-radius: var(--radius-xs);
     background: var(--severity-info-bg);
     color: var(--severity-info-fg);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.5625rem;
     font-weight: 700;
     line-height: 1;
@@ -1124,7 +1154,7 @@
   }
 
   .development-fixture-path-label {
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.625rem;
     font-weight: 600;
     letter-spacing: 0.12em;
@@ -1178,7 +1208,7 @@
     height: 1rem;
     border-radius: var(--radius-xs);
     background: rgba(242, 201, 76, 0.18);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.625rem;
     font-weight: 600;
     line-height: 1;
@@ -1209,15 +1239,15 @@
   }
 
   .security-master-print-sheet {
-    @apply rounded-lg border border-slate-700/70 bg-slate-950/80 p-4 shadow-[var(--shadow-float)];
+    @apply rounded-[var(--radius-card,0.5rem)] border border-border bg-card p-4 text-card-foreground shadow-[var(--shadow-panel)];
   }
 
   .security-master-print-sheet__eyebrow {
-    @apply font-mono text-[10px] uppercase tracking-[0.16em] text-slate-400;
+    @apply font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground;
   }
 
   .security-master-print-sheet__title {
-    @apply mt-3 font-display text-lg font-semibold text-slate-50;
+    @apply mt-3 font-display text-lg font-semibold text-foreground;
   }
 
   .security-master-print-sheet__subtitle {
@@ -1225,19 +1255,19 @@
   }
 
   .security-master-print-sheet__grid {
-    @apply mt-4 grid gap-px overflow-hidden rounded-lg border border-slate-700/70 bg-slate-800/80 sm:grid-cols-2;
+    @apply mt-4 grid gap-px overflow-hidden rounded-[var(--radius-card,0.5rem)] border border-border bg-border sm:grid-cols-2;
   }
 
   .security-master-print-sheet__cell {
-    @apply bg-slate-950/80 px-3 py-3;
+    @apply bg-background px-3 py-3;
   }
 
   .security-master-print-sheet__cell span {
-    @apply block font-mono text-[10px] uppercase tracking-[0.14em] text-slate-400;
+    @apply block font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground;
   }
 
   .security-master-print-sheet__cell strong {
-    @apply mt-1 block font-mono text-xs font-medium text-slate-100;
+    @apply mt-1 block font-mono text-xs font-medium text-foreground;
   }
 
   .security-master-print-sheet__section-list {
@@ -1245,15 +1275,15 @@
   }
 
   .security-master-print-sheet__section {
-    @apply rounded-lg border border-slate-800/80 bg-slate-900/80 px-3 py-3;
+    @apply rounded-[var(--radius-card,0.5rem)] border border-border bg-background px-3 py-3;
   }
 
   .security-master-print-sheet__section span {
-    @apply block text-sm font-semibold text-slate-100;
+    @apply block text-sm font-semibold text-foreground;
   }
 
   .security-master-print-sheet__section strong {
-    @apply mt-1 block text-xs font-normal leading-5 text-slate-400;
+    @apply mt-1 block text-xs font-normal leading-5 text-muted-foreground;
   }
 
   .top-bar-gradient {
@@ -1322,14 +1352,14 @@
   }
 
   .workstation-brand .name {
-    font-family: "Space Grotesk", "IBM Plex Sans", sans-serif;
+    font-family: "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, sans-serif;
     font-size: 0.875rem;
     font-weight: 600;
     color: #fff;
   }
 
   .workstation-brand .sub {
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 9px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -1395,7 +1425,7 @@
     border-radius: var(--radius-sm);
     background: rgba(8, 16, 26, 0.82);
     color: #d6e1eb;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.625rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -1431,7 +1461,7 @@
     border-radius: var(--radius-sm);
     background: rgba(8, 16, 26, 0.72);
     color: var(--fg-muted);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.625rem;
     text-decoration: none;
     white-space: nowrap;
@@ -1487,7 +1517,7 @@
     border: 1px solid rgba(31, 52, 76, 0.95);
     border-radius: var(--radius-md);
     background: rgba(8, 16, 26, 0.74);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.6875rem;
   }
 
@@ -1618,7 +1648,7 @@
 
   .operator-rail-section {
     padding: 0.625rem 0.625rem 0.375rem;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: 0.14em;
@@ -1638,7 +1668,7 @@
   }
 
   .operator-nav-scope span:first-child {
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.5625rem;
     font-weight: 700;
     letter-spacing: 0.12em;
@@ -1652,7 +1682,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     color: #e8f4ff;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.625rem;
     line-height: 1.35;
   }
@@ -1670,7 +1700,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 9px;
     color: var(--fg-muted);
   }
@@ -1752,7 +1782,7 @@
     min-width: 0;
     min-height: 0;
     overflow: hidden;
-    background: #08101a;
+    background: var(--ws-page-bg);
   }
 
   .workbench-scroll {
@@ -1930,7 +1960,7 @@
     border-radius: var(--radius-sm);
     background: rgba(8, 16, 26, 0.86);
     color: var(--fg-muted);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.5625rem;
     font-weight: 700;
     line-height: 1;
@@ -1972,7 +2002,7 @@
 
   .workflow-continuity-decision-reason span:first-child {
     color: #b6c7dc;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.5625rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -1993,7 +2023,7 @@
     border-radius: var(--radius-sm);
     background: rgba(8, 16, 26, 0.72);
     color: var(--fg-muted);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.5625rem;
     padding: 0.1875rem 0.375rem;
     text-transform: uppercase;
@@ -2039,7 +2069,7 @@
     flex-wrap: wrap;
     gap: 0.375rem;
     color: var(--fg-muted);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.625rem;
   }
 
@@ -2078,7 +2108,7 @@
 
   .workflow-continuity-scope-chip dt {
     color: #b6c7dc;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.5625rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -2090,7 +2120,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     color: #e8f4ff;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.625rem;
     margin: 0;
   }
@@ -2228,7 +2258,7 @@
     border-radius: var(--radius-sm);
     background: rgba(8, 16, 26, 0.86);
     color: var(--fg-muted);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.5625rem;
     font-weight: 600;
     line-height: 1;
@@ -2514,7 +2544,7 @@
     border-radius: var(--radius-sm);
     background: rgba(8, 16, 26, 0.82);
     color: var(--fg-muted);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.5625rem;
     font-weight: 600;
     letter-spacing: 0.12em;
@@ -2535,7 +2565,7 @@
     border-radius: var(--radius-sm);
     background: rgba(8, 16, 26, 0.82);
     color: var(--fg-muted);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.5625rem;
     font-weight: 600;
     letter-spacing: 0.12em;
@@ -2556,7 +2586,7 @@
     border-radius: var(--radius-sm);
     background: rgba(8, 16, 26, 0.82);
     color: var(--fg-muted);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.5625rem;
     font-weight: 600;
     letter-spacing: 0.12em;
@@ -2637,7 +2667,7 @@
 
   .workflow-continuity-focus-action {
     color: var(--fg-muted);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.5625rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -2652,7 +2682,7 @@
     border-radius: var(--radius-sm);
     background: rgba(8, 16, 26, 0.86);
     color: var(--fg-muted);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.5625rem;
     font-weight: 600;
     letter-spacing: 0.08em;
@@ -2669,7 +2699,7 @@
 
   .workflow-continuity-evidence-item time {
     color: var(--fg-muted);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.5625rem;
     font-weight: 600;
     letter-spacing: 0.08em;
@@ -2683,7 +2713,7 @@
     border-radius: var(--radius-sm);
     background: rgba(8, 16, 26, 0.72);
     color: var(--fg-muted);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.5625rem;
     letter-spacing: 0.12em;
     padding: 0.1875rem 0.375rem;
@@ -2696,7 +2726,7 @@
     border-radius: var(--radius-sm);
     background: rgba(8, 16, 26, 0.72);
     color: var(--fg-muted);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.5625rem;
     letter-spacing: 0.12em;
     padding: 0.1875rem 0.375rem;
@@ -2731,7 +2761,7 @@
   .workspace-header-card-value {
     margin-top: 0.5rem;
     color: #f6fbff;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.75rem;
     line-height: 1.5;
   }
@@ -2744,9 +2774,9 @@
     padding: 0 0.625rem;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
-    background: #08101a;
+    background: var(--ws-surface-subtle);
     color: var(--fg);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.6875rem;
     white-space: nowrap;
   }
@@ -2816,7 +2846,7 @@
     border-radius: var(--radius-sm);
     background: rgba(8, 16, 26, 0.92);
     color: var(--fg-muted);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.625rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -2861,7 +2891,7 @@
 
   .dense-data-table th {
     padding: 0.625rem 0.75rem;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.625rem;
     font-weight: 500;
     letter-spacing: 0.14em;
@@ -2947,7 +2977,7 @@
 
   .dense-data-table-sorted .dense-data-table-sort-indicator {
     opacity: 1;
-    color: var(--accent, #2ab2d4);
+    color: var(--accent, #2F6F8F);
   }
 
   .dense-data-table-sorted .dense-data-table-sort-button {
@@ -2967,7 +2997,7 @@
     border-bottom: 1px solid rgba(31, 52, 76, 0.95);
     background: #05101b;
     color: var(--fg-muted);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.59375rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -3007,7 +3037,7 @@
   .entity-summary-subtitle {
     margin-top: 0.375rem;
     color: var(--fg-muted);
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.75rem;
   }
 
@@ -3058,7 +3088,7 @@
     margin-top: 0.5rem;
     word-break: break-word;
     color: #f6fbff;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.75rem;
     line-height: 1.5;
   }
@@ -3118,7 +3148,7 @@
     justify-content: space-between;
     gap: 0.75rem;
     padding: 0.375rem 0.25rem 0.25rem;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.5625rem;
     font-weight: 500;
     letter-spacing: 0.16em;
@@ -3396,7 +3426,7 @@
   .workflow-continuity-evidence-route {
     border-color: var(--border-color);
     border-radius: var(--radius-xs);
-    background: #0b1520;
+    background: var(--ws-surface-subtle);
     box-shadow: var(--shadow-panel);
   }
 
@@ -3409,7 +3439,7 @@
 
   .workflow-continuity-dock {
     border-bottom-color: var(--border-color);
-    background: #08101a;
+    background: var(--ws-surface);
     box-shadow: var(--shadow-panel);
   }
 
@@ -3420,14 +3450,14 @@
   .workflow-continuity-evidence-item {
     border-color: var(--border-color);
     border-radius: var(--radius-sm);
-    background: #0b1520;
+    background: var(--ws-surface-subtle);
     box-shadow: var(--shadow-panel);
   }
 
   .dense-data-table-wrap {
     border-color: var(--border-color);
     border-radius: var(--radius-md);
-    background: #08101a;
+    background: var(--ws-surface);
     box-shadow: var(--shadow-panel);
   }
 
@@ -3437,7 +3467,7 @@
   }
 
   .dense-data-table thead {
-    background: #101c2b;
+    background: var(--ws-surface-subtle);
   }
 
   .dense-data-table th {
@@ -3483,7 +3513,7 @@
     border-radius: var(--radius-xs);
     background: rgba(42, 178, 212, 0.09);
     color: #bcefff;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.5625rem;
     font-weight: 700;
     line-height: 1;
@@ -3511,31 +3541,61 @@
   }
 }
 
-/* Final cascade for the web visual migration. Keep this after legacy dark rules. */
+/* Final cascade for the light-first Institutional Ops system. Keep this after legacy dark rules. */
 :root {
-  --background: 210 20% 97%;
-  --foreground: 216 24% 13%;
+  --background: 214 23% 94%;
+  --foreground: 215 15% 16%;
   --card: 0 0% 100%;
-  --card-foreground: 216 24% 13%;
-  --secondary: 214 22% 94%;
-  --muted: 214 20% 93%;
-  --muted-foreground: 215 12% 45%;
-  --border: 214 18% 82%;
-  --ws-page-bg: #f4f6f8;
+  --card-foreground: 215 15% 16%;
+  --primary: 200 51% 37%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 216 33% 97%;
+  --secondary-foreground: 215 15% 16%;
+  --muted: 210 27% 96%;
+  --muted-foreground: 212 9% 47%;
+  --accent: 200 51% 37%;
+  --accent-foreground: 0 0% 100%;
+  --border: 213 16% 86%;
+  --input: 213 16% 86%;
+  --ring: 200 51% 37%;
+  --warning: 35 71% 42%;
+  --success: 159 72% 31%;
+  --danger: 347 49% 49%;
+  --sidebar: 210 22% 96%;
+  --sidebar-foreground: 212 14% 35%;
+  --sidebar-primary: 200 51% 37%;
+  --sidebar-border: 213 16% 86%;
+  --chart-1: 200 51% 37%;
+  --chart-2: 159 72% 31%;
+  --chart-3: 347 49% 49%;
+  --chart-4: 35 71% 42%;
+  --chart-5: 203 27% 59%;
+  --shadow-color: 215 15% 16%;
+  --shadow-opacity: 0.08;
+  --shadow-blur: 1px;
+  --shadow-spread: 0px;
+  --shadow-offset-x: 0px;
+  --shadow-offset-y: 1px;
+  --radius-chip: 4px;
+  --radius-button: 6px;
+  --radius-card: 8px;
+  --radius-checkbox: 3px;
+  --ws-page-bg: #ECEFF3;
   --ws-surface: #ffffff;
-  --ws-surface-subtle: #f8fafc;
-  --ws-border: #d8dee6;
-  --ws-border-strong: #b7c1cc;
-  --ws-text: #1c2430;
-  --ws-text-muted: #667180;
-  --ws-masthead-bg: #05070a;
-  --ws-masthead-fg: #f7f8fa;
-  --ws-rail-bg: #f8fafc;
-  --ws-rail-active: #e8f1f8;
-  --ws-row-hover: #f3f7fb;
-  --ws-row-selected: #e9f3fb;
-  --ws-row-border: #e1e6ed;
-  --ws-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+  --ws-surface-subtle: #F5F7FA;
+  --ws-surface-raised: #FAFBFC;
+  --ws-border: #D7DCE2;
+  --ws-border-strong: #B8C2CC;
+  --ws-text: #22272E;
+  --ws-text-muted: #6E7781;
+  --ws-masthead-bg: #171A1F;
+  --ws-masthead-fg: #F4F6F8;
+  --ws-rail-bg: #F4F6F8;
+  --ws-rail-active: #E1EAF2;
+  --ws-row-hover: #F1F4F7;
+  --ws-row-selected: #E6EEF5;
+  --ws-row-border: #DDE3EA;
+  --ws-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
   --bg: var(--ws-page-bg);
   --fg: var(--ws-text);
   --fg-muted: var(--ws-text-muted);
@@ -3544,11 +3604,18 @@
   --panel-soft-bg: var(--ws-surface-subtle);
   --border-color: var(--ws-border);
   --border-hi: var(--ws-border-strong);
+  --border-strong: #AAB4BF;
   --surface-topbar: var(--ws-masthead-bg);
-  --surface-raise-bg: var(--ws-surface);
+  --surface-input: var(--ws-surface-subtle);
+  --surface-raise-bg: var(--ws-surface-raised);
   --shadow-panel: var(--ws-shadow);
-  --cyan-primary: #176fa3;
-  --cyan-secondary: #2f86b7;
+  --shadow-workstation: var(--ws-shadow);
+  --shadow-float: 0 1px 2px rgba(0, 0, 0, 0.10);
+  --shadow-soft: 0 1px 1px rgba(0, 0, 0, 0.06);
+  --cyan-primary: #2F6F8F;
+  --cyan-secondary: #3B82A6;
+  --cyan-focus: #2F6F8F;
+  --cyan-pressed: #255B75;
 }
 
 body,
@@ -3559,7 +3626,7 @@ body,
 
 .workstation-masthead {
   min-height: 44px;
-  border-bottom: 1px solid #111827;
+  border-bottom: 1px solid #262B31;
   background: var(--ws-masthead-bg);
   color: var(--ws-masthead-fg);
   box-shadow: none;
@@ -3640,9 +3707,9 @@ body,
 
 .operator-nav-item.active,
 .operator-nav-subitem.active {
-  border-color: #b8d4e6;
+  border-color: rgba(47, 111, 143, 0.34);
   background: var(--ws-rail-active);
-  color: #0b4d75;
+  color: #1F2933;
 }
 
 .panel-surface,
@@ -3725,9 +3792,9 @@ body,
 }
 
 .workspace-filter-segment.active {
-  border-color: #a8cde3;
-  background: #e9f3fb;
-  color: #0b4d75;
+  border-color: rgba(47, 111, 143, 0.34);
+  background: var(--ws-row-selected);
+  color: #255B75;
 }
 
 .workspace-filter-fields {
@@ -3776,8 +3843,8 @@ body,
 }
 
 .workspace-tab.active {
-  border-bottom-color: #176fa3;
-  color: #0b4d75;
+  border-bottom-color: var(--cyan-primary);
+  color: #255B75;
 }
 
 .workspace-inspector-host {
@@ -3816,7 +3883,7 @@ body,
 }
 
 .workspace-document-canvas {
-  background: #eef1f4;
+  background: var(--ws-page-bg);
   padding: 0.75rem;
 }
 
@@ -3832,7 +3899,7 @@ body,
   min-height: 36rem;
   border: 1px solid var(--ws-border);
   background: #fff;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--shadow-float);
 }
 
 .data-management-frame {
@@ -3865,7 +3932,7 @@ body,
 .workspace-directory-rail a:hover,
 .workspace-directory-rail a[aria-current="page"] {
   background: var(--ws-rail-active);
-  color: #0b4d75;
+  color: #255B75;
 }
 
 .workspace-table-inspector-layout {
@@ -3940,16 +4007,351 @@ body,
 
 .dense-data-table tbody tr.selected {
   background: var(--ws-row-selected);
-  box-shadow: inset 3px 0 0 #176fa3;
+  box-shadow: inset 3px 0 0 var(--cyan-primary);
 }
 
 .dense-data-table-sort-indicator {
-  color: #176fa3;
+  color: var(--cyan-primary);
 }
 
 .dense-data-table-empty {
   color: var(--ws-text-muted);
   padding: 2rem 0.75rem;
+}
+
+.workbench {
+  background: var(--ws-page-bg);
+}
+
+.operator-rail-section,
+.eyebrow-label {
+  color: var(--ws-text-muted);
+  letter-spacing: 0;
+}
+
+.operator-nav-item:hover,
+.operator-nav-subitem:hover,
+.operator-nav-expand:hover {
+  border-color: rgba(47, 111, 143, 0.22);
+  background: var(--ws-row-hover);
+  color: var(--ws-text);
+}
+
+.operator-nav-item.active {
+  border-left-color: transparent;
+  box-shadow: inset 3px 0 0 var(--cyan-primary);
+}
+
+.operator-nav-subitems {
+  border-left-color: rgba(47, 111, 143, 0.18);
+}
+
+.operator-nav-scope,
+.operator-nav-status,
+.workflow-continuity-scope-chip,
+.workflow-continuity-meta span,
+.workflow-continuity-focus-route,
+.workflow-continuity-linked-route,
+.workflow-continuity-evidence-route,
+.workflow-continuity-linked-status,
+.workflow-continuity-focus-overflow,
+.workflow-continuity-evidence-overflow {
+  border-color: var(--ws-border);
+  background: var(--ws-surface-subtle);
+  color: var(--ws-text-muted);
+}
+
+.operator-nav-scope span:last-child,
+.meridian-toolbar-chip b {
+  color: var(--ws-text);
+}
+
+.operator-nav-status-live,
+.operator-nav-status-review,
+.operator-nav-status-paper,
+.operator-nav-status-preview,
+.operator-nav-status-setup {
+  background: var(--ws-surface);
+}
+
+.operator-nav-status-live {
+  border-color: var(--state-healthy-bd);
+  color: var(--state-healthy-fg);
+}
+
+.operator-nav-status-review,
+.operator-nav-status-paper {
+  border-color: var(--state-paper-bd);
+  color: var(--state-paper-fg);
+}
+
+.operator-nav-status-preview {
+  border-color: var(--state-warn-bd);
+  color: var(--state-warn-fg);
+}
+
+.operator-nav-status-setup {
+  color: var(--state-muted-fg);
+}
+
+.startup-status-panel,
+.panel-state,
+.workspace-section-subheader,
+.command-palette-shell,
+.workspace-header-card,
+.meridian-toolbar-strip,
+.entity-summary,
+.row-detail-panel,
+[data-dense-row-detail-panel="true"] {
+  border: 1px solid var(--ws-border);
+  background: var(--ws-surface);
+  color: var(--ws-text);
+  box-shadow: var(--ws-shadow);
+}
+
+.startup-status-meter,
+.operator-mode-toggle,
+.operator-mode-toggle button,
+.operator-mode-toggle a,
+.toolbar-chip,
+.meridian-toolbar-chip,
+.command-palette-chip,
+.command-palette-route,
+.command-palette-status,
+.workflow-continuity-decision-status {
+  border-color: var(--ws-border);
+  background: var(--ws-surface-subtle);
+  color: var(--ws-text-muted);
+  box-shadow: none;
+}
+
+.startup-status-meter span,
+.startup-status-dot {
+  background: var(--cyan-primary);
+  box-shadow: none;
+}
+
+.shell-status-strip {
+  border-color: var(--severity-info-bd);
+  background: var(--severity-info-bg);
+  color: var(--ws-text);
+  box-shadow: var(--ws-shadow);
+}
+
+.shell-status-strip-warning {
+  border-color: var(--severity-action-bd);
+  background: var(--severity-action-bg);
+}
+
+.shell-status-strip-danger {
+  border-color: var(--severity-blocked-bd);
+  background: var(--severity-blocked-bg);
+}
+
+.shell-status-strip-loading {
+  border-color: var(--severity-review-bd);
+  background: var(--severity-review-bg);
+}
+
+.panel-state-title,
+.workspace-section-title,
+.workflow-continuity-title,
+.workflow-continuity-decision h3,
+.workflow-continuity-linked-copy span:first-child,
+.workflow-continuity-focus-title,
+.workflow-continuity-evidence-copy span:first-child,
+.workspace-header-card-value,
+.entity-summary-title,
+.row-detail-panel .body {
+  color: var(--ws-text);
+}
+
+.panel-state-detail,
+.workspace-section-summary,
+.workflow-continuity-summary,
+.workflow-continuity-disclosure-copy span:last-child,
+.workflow-continuity-decision p,
+.workflow-continuity-decision-reason,
+.workflow-continuity-decision-evidence,
+.workflow-continuity-focus-summary,
+.workflow-continuity-focus-empty,
+.workflow-continuity-linked-summary,
+.workflow-continuity-linked-empty,
+.workflow-continuity-evidence-summary,
+.workflow-continuity-evidence-empty,
+.workflow-continuity-linked-copy span:last-child,
+.workflow-continuity-focus-detail,
+.workflow-continuity-evidence-copy span:last-child,
+.entity-summary-subtitle,
+.entity-summary-description {
+  color: var(--ws-text-muted);
+}
+
+.workflow-continuity-dock {
+  border-bottom: 1px solid var(--ws-border);
+  background: var(--ws-surface);
+  color: var(--ws-text);
+}
+
+.workflow-continuity-disclosure,
+.workflow-continuity-disclosure[open],
+.workflow-continuity-decision,
+.workflow-continuity-step,
+.workflow-continuity-focus,
+.workflow-continuity-linked,
+.workflow-continuity-evidence,
+.workflow-continuity-linked-item,
+.workflow-continuity-focus-item,
+.workflow-continuity-evidence-item,
+.entity-summary-field {
+  border-color: var(--ws-border);
+  background: var(--ws-surface-subtle);
+  color: var(--ws-text);
+}
+
+.workflow-continuity-linked-item:hover,
+.workflow-continuity-focus-item:hover,
+.workflow-continuity-evidence-item:hover,
+.workflow-continuity-step:hover,
+.entity-summary-field:hover,
+.workspace-header-card:hover,
+.metric-tile:hover {
+  border-color: var(--ws-border-strong);
+  background: var(--ws-surface-raised);
+  box-shadow: var(--ws-shadow);
+}
+
+.workflow-continuity-decision-ready,
+.workflow-continuity-step-ready,
+.workflow-continuity-linked-posture-ready,
+.workflow-continuity-linked-item-ready,
+.workflow-continuity-focus-item-ready,
+.workflow-continuity-evidence-item-ready {
+  border-color: var(--severity-ready-bd);
+  background: var(--severity-ready-bg);
+}
+
+.workflow-continuity-decision-review,
+.workflow-continuity-step-next,
+.workflow-continuity-linked-posture-review,
+.workflow-continuity-linked-item-review,
+.workflow-continuity-focus-item-review,
+.workflow-continuity-evidence-item-review {
+  border-color: var(--severity-action-bd);
+  background: var(--severity-action-bg);
+}
+
+.workflow-continuity-decision-blocked,
+.workflow-continuity-step-blocked,
+.workflow-continuity-linked-posture-blocked,
+.workflow-continuity-linked-item-blocked,
+.workflow-continuity-focus-item-blocked,
+.workflow-continuity-evidence-item-blocked {
+  border-color: var(--severity-blocked-bd);
+  background: var(--severity-blocked-bg);
+}
+
+.workflow-continuity-decision-pending,
+.workflow-continuity-step-active,
+.workflow-continuity-linked-posture-pending,
+.workflow-continuity-linked-item-pending,
+.workflow-continuity-evidence-item-pending {
+  border-color: var(--severity-review-bd);
+  background: var(--severity-review-bg);
+}
+
+.workflow-continuity-step-status {
+  background: var(--ws-surface);
+  color: var(--ws-text-muted);
+}
+
+.workflow-continuity-step-ready .workflow-continuity-step-status,
+.workflow-continuity-linked-posture-ready {
+  color: var(--severity-ready-fg);
+}
+
+.workflow-continuity-step-review .workflow-continuity-step-status,
+.workflow-continuity-step-next .workflow-continuity-step-status,
+.workflow-continuity-linked-posture-review {
+  color: var(--severity-action-fg);
+}
+
+.workflow-continuity-step-blocked .workflow-continuity-step-status,
+.workflow-continuity-linked-posture-blocked {
+  color: var(--severity-blocked-fg);
+}
+
+.workflow-continuity-step-pending .workflow-continuity-step-status,
+.workflow-continuity-linked-posture-pending {
+  color: var(--severity-review-fg);
+}
+
+.workflow-continuity-operator-flow {
+  border-top-color: var(--ws-border);
+}
+
+.workspace-section-jump,
+.meridian-toolbar-chip.active,
+.toolbar-chip.active,
+.operator-mode-toggle [aria-pressed="true"],
+.operator-mode-toggle [aria-current="page"] {
+  border-color: rgba(47, 111, 143, 0.34);
+  background: rgba(47, 111, 143, 0.10);
+  color: var(--cyan-primary);
+}
+
+.development-fixture-path-link,
+.development-fixture-path-link-active,
+.development-fixture-path-step {
+  border-color: var(--state-warn-bd);
+  background: var(--state-warn-bg);
+  color: var(--state-warn-fg);
+}
+
+.panel-action-footer {
+  border-top-color: var(--ws-border);
+}
+
+.data-grid-surface,
+.security-master-print-preview,
+.security-master-print-sheet,
+.security-master-print-sheet__cell,
+.security-master-print-sheet__section {
+  border-color: var(--ws-border);
+  background: var(--ws-surface);
+  color: var(--ws-text);
+  box-shadow: var(--ws-shadow);
+}
+
+.security-master-print-sheet__eyebrow,
+.security-master-print-sheet__cell span {
+  color: var(--ws-text-muted);
+}
+
+.security-master-print-sheet__title,
+.security-master-print-sheet__cell strong,
+.security-master-print-sheet__section span {
+  color: var(--ws-text);
+}
+
+.row-detail-panel .head,
+[data-dense-row-detail-panel="true"] .head {
+  border-color: rgba(47, 111, 143, 0.26);
+  background: rgba(47, 111, 143, 0.07);
+  color: var(--ws-text-muted);
+}
+
+[data-dense-row-detail-panel="true"],
+.row-detail-panel {
+  border-color: rgba(47, 111, 143, 0.26);
+  box-shadow: inset 3px 0 0 rgba(47, 111, 143, 0.72), var(--shadow-panel);
+}
+
+[data-dense-row-detail-panel="true"]::before,
+.row-detail-panel::before {
+  border-color: rgba(47, 111, 143, 0.28);
+  background: rgba(47, 111, 143, 0.09);
+  color: var(--cyan-primary);
 }
 
 @layer components {
@@ -4014,7 +4416,7 @@ body,
     background: #ffffff;
     padding: 0.125rem 0.5rem;
     color: #343a42;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.6875rem;
     font-weight: 760;
     line-height: 1;
@@ -4118,7 +4520,7 @@ body,
     overflow: hidden;
     margin-top: 0.5rem;
     color: #65717f;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.75rem;
     line-height: 1.25;
     text-overflow: ellipsis;
@@ -4127,7 +4529,7 @@ body,
 
   .accounting-reconciliation-value {
     color: #20242a;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.875rem;
     line-height: 1.25;
     text-align: right;
@@ -4158,7 +4560,7 @@ body,
     display: block;
     margin-top: 0.4rem;
     color: #20242a;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-size: 0.95rem;
     font-weight: 640;
   }
@@ -4292,13 +4694,13 @@ body,
     border-top: 2px solid #aab5c2;
     background: #f6f8fb;
     color: #20242a;
-    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
     font-weight: 700;
   }
 
   .accounting-journal-total-row td:first-child {
     color: #65717f;
-    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
     font-size: 0.75rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;

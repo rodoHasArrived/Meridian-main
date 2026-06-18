@@ -1,0 +1,28 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   Meridian — Typography
+   From src/Meridian.Wpf/Styles/ThemeTypography.xaml. Native Windows stack:
+   restrained Segoe UI display + body, Cascadia/JetBrains mono for all data.
+─────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Families — Segoe UI Variable is the desktop face; system-ui covers other OSes.
+     JetBrains Mono is loaded (fonts.css) as the cross-platform Cascadia Mono. */
+  --font-display: "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-body:    "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-data:    "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+
+  /* Type ramp (px / line-height) — mirrors the XAML TextBlock styles */
+  --type-page-title:   22px;  --lh-page-title:   28px;  /* PageTitleStyle, SemiBold */
+  --type-section:      15px;  --lh-section:      20px;  /* SectionHeaderStyle, SemiBold */
+  --type-card-title:   14px;                            /* StudioPanelTitle / ChartHeader */
+  --type-body:         13px;  --lh-body:         20px;  /* CardDescription / body */
+  --type-metric:       24px;                            /* MetricValueStyle, mono SemiBold */
+  --type-data-value:   18px;                            /* DataValueStyle, mono SemiBold */
+  --type-label:        10px;                            /* MetricLabel / DataLabel — small-caps, muted */
+  --type-caption:      12px;
+
+  /* Weights */
+  --weight-normal:   400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+}

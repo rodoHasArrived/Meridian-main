@@ -21,15 +21,16 @@ This module owns the browser UI source for operator workflows. Keep shared contr
 logic in `src/Meridian.Ui.Shared` or `src/Meridian.Ui.Services` when the same behavior is consumed
 by desktop or host surfaces.
 
-The browser workstation visual system is dark-first with a compact ledger-grid treatment inspired
-by the internal `cash-flow-factor-sch` reference: hard-offset shadows, sharp bordered surfaces,
-dense data tables, sticky workstation chrome, and bright but semantic state accents. Keep visual
-changes on the shared tokens and primitives in `src/styles/index.css` and `src/components/ui/`
+The browser workstation visual system is light-first and aligned to the Meridian Design System's
+Institutional Ops palette: paper canvas, white cards, near-black masthead/status chrome, hairline
+borders, shallow shadows, Segoe UI body/display type, and Cascadia/JetBrains Mono data text. Keep
+visual changes on the shared tokens and primitives in `src/styles/index.css` and `src/components/ui/`
 instead of introducing one-off screen styling.
 
 ## Key folders and files
 
 - `src/` - React/TypeScript workstation source.
+- `src/components/ui/` - shared Meridian Design System primitives, including buttons, inputs, selects, badges, tooltips, dialogs/modals, sheets, checkbox/toggle, breadcrumb, form rows/grids, tabs, status banners, context menus, multi-select, toast, and panel surfaces.
 - `package.json` - dashboard build, test, and tooling commands.
 - Test files - browser workflow and component coverage.
 

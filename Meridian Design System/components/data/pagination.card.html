@@ -1,0 +1,60 @@
+<!-- @dsCard group="Components" viewport="1000x400" name="Pagination" subtitle="Prev/next buttons, page numbers with ellipsis, jump-to input" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pagination</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin: 0; padding: 24px; background: var(--bg-canvas, #ECEFF3); font-family: var(--font-body);">
+  <div style="max-width: 1000px; margin: 0 auto;">
+    <h2 style="margin: 0 0 24px 0; font-size: 22px; color: var(--text-primary, #22272E);">Pagination</h2>
+
+    <div id="demo1" style="margin-bottom: 32px;"></div>
+    <div id="demo2"></div>
+  </div>
+
+  <script type="text/babel">
+    const { Pagination } = window.MeridianDesignSystem_4f61be;
+    const { useState } = React;
+
+    function Demo1() {
+      const [page, setPage] = useState(1);
+      return (
+        <div>
+          <h4 style={{ margin: "0 0 12px 0", fontSize: 13, fontWeight: 600 }}>Large dataset (10,000 rows)</h4>
+          <Pagination
+            currentPage={page}
+            totalPages={200}
+            totalItems={10000}
+            itemsPerPage={50}
+            onPageChange={setPage}
+          />
+        </div>
+      );
+    }
+
+    function Demo2() {
+      const [page, setPage] = useState(8);
+      return (
+        <div>
+          <h4 style={{ margin: "0 0 12px 0", fontSize: 13, fontWeight: 600 }}>Mid-range (35 pages)</h4>
+          <Pagination
+            currentPage={page}
+            totalPages={35}
+            totalItems={1750}
+            itemsPerPage={50}
+            siblingCount={2}
+            onPageChange={setPage}
+          />
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("demo1")).render(<Demo1 />);
+    ReactDOM.createRoot(document.getElementById("demo2")).render(<Demo2 />);
+  </script>
+</body>
+</html>

@@ -1,153 +1,68 @@
 # Meridian Brand Guidelines
 
-## Overview
+This root guide is a compatibility entry point for the June 2026 design-system
+bundle. The active package guidance lives in `README.md`, `styles.css`,
+`tokens/`, `guidelines/`, and `assets/brand/`.
 
-Meridian is a professional .NET trading and fund operations platform. Our branding system combines geometric precision with modern aesthetics, reflecting the sophistication and reliability of institutional-grade financial software.
+## Brand Position
 
-## Brand Assets
+Meridian is an institutional trading, market-data, research, accounting, and
+reporting workstation. The brand language is light, precise, and operational:
+a paper canvas, white work surfaces, near-black chrome bars, one muted
+teal-blue accent, desaturated status color, hairline borders, and shallow
+shadow.
 
-### Core Mark
-- **meridian-mark.svg** - Primary brand mark (256×256px)
-- **meridian-mark-monochrome.svg** - Single-color variant using `currentColor`
-- **meridian-mark-light.svg** - Light theme variant for dark backgrounds
-- **meridian-symbol.svg** - Simplified symbol optimized for small sizes and favicons
+The visual system is grounded in `src/Meridian.Wpf/Styles/*.xaml` and exported
+for web consumers through the design-system token files.
 
-### Wordmarks
-- **meridian-wordmark.svg** - Primary horizontal wordmark with descriptor
-- **meridian-wordmark-stacked.svg** - Vertical stacked layout for narrow spaces
+## Assets
 
-### Application Assets
-- **meridian-tile.svg** - Square app icon with rounded corners (256×256px)
-- **meridian-tile-256.png** - Raster version of app tile
+| Asset | Use |
+| --- | --- |
+| `assets/brand/meridian-mark.svg` | Primary mark for the workstation chrome and product identity |
+| `assets/brand/meridian-mark-light.svg` | Light mark for near-black or colored surfaces |
+| `assets/brand/meridian-mark-monochrome.svg` | Single-color contexts through `currentColor` |
+| `assets/brand/meridian-symbol.svg` | Small-size symbol and favicon-style use |
+| `assets/brand/meridian-wordmark.svg` | Horizontal wordmark |
+| `assets/brand/meridian-wordmark-stacked.svg` | Narrow or vertical wordmark contexts |
+| `assets/brand/meridian-tile.svg` | Scalable app tile |
+| `assets/brand/meridian-tile-256.png` | Raster app tile |
+| `assets/brand/meridian-hero.svg` | The only decorative hero/background asset in the package |
 
-### Background Assets
-- **meridian-hero.svg** - Full-width hero background with data visualization theme
+## Color And Type
 
-## Color Palette
+- Canvas: `#ECEFF3`
+- Command bars and inset wells: `#F5F7FA`
+- Card and panel surface: `#FFFFFF`
+- Chrome bars: `#171A1F`
+- Primary accent: `#2F6F8F`
+- Status colors: success `#16885F`, danger `#BA3F55`, warning `#B7791F`,
+  pending `#6F5BA7`
 
-### Primary Colors
-- **Neutral Base**: `hsl(var(--foreground))` - Primary text and borders
-- **Accent Cyan**: `var(--cyan-primary)` - Interactive elements and highlights
-- **Data Green**: `var(--state-healthy-fg)` - Success states and signals
+Use `tokens/colors.css`, `tokens/typography.css`, `tokens/elevation.css`, and
+`tokens/theme.css` rather than raw values in new package work.
 
-### Background Colors
-- **Dark Background**: `hsl(var(--background))` - Primary background color
-- **Deep Navy**: `hsl(var(--card))` - Secondary backgrounds
-- **Grid Line**: `var(--border-color)` - Subtle structural elements
+Desktop parity uses Segoe UI Variable for display/body text and Cascadia Mono
+for data. Browser and package fallbacks include JetBrains Mono and system UI
+families.
 
-### Gradients
-- **Signal Gradient**: Blue → Cyan → Green (representing data flow)
-- **Beam Gradient**: Blue → Cyan → Green (representing energy/signal)
-- **Glow Gradient**: Dark blue radial glow for depth
+## Usage Rules
 
-## Usage Guidelines
+- Keep one primary teal-blue action per screen.
+- Use semantic colors as text, border, and alpha wash trios; do not use solid
+  status fills for routine badges.
+- Preserve the near-black brand/status bars when showing workstation chrome.
+- Keep marks proportional; do not rotate, skew, recolor with ad hoc palettes,
+  add glow, or place marks on low-contrast backgrounds.
+- Use line icons from `assets/icons/` for module identity and controls.
+- Keep screenshots, previews, and templates on tracked package assets; do not
+  depend on local-only upload paths.
 
-### Mark Usage
-- **Minimum Size**: 48×48px for digital displays
-- **Clear Space**: Maintain at least 10% of the mark's width as clear space on all sides
-- **Backgrounds**: Use on neutral, dark, or branded backgrounds with sufficient contrast
-- **Scaling**: Maintain 1:1 aspect ratio; never distort
+## References
 
-### Wordmark Usage
-- **Primary Application**: Use the full wordmark in main navigation and hero sections
-- **Stacked Variant**: Use when horizontal space is constrained (sidebars, narrow cards)
-- **Monochrome**: For print, single-color applications, and accessibility requirements
-- **Light Variant**: For dark theme interfaces and low-light environments
-
-### Application Tile
-- **Icon Display**: Use for app icons, shortcuts, and platform branding
-- **Sizes**: Provide at least 256×256px PNG and scalable SVG versions
-- **Padding**: Add 8-16px padding around the mark when used as an app icon
-
-### Hero Background
-- **Full-Width**: Use for landing pages, dashboards, and prominent hero sections
-- **Overlay**: Combine with content overlay (dark gradient) for text readability
-- **Minimum Height**: 300px for mobile, 600px+ for desktop
-
-## Color Combinations
-
-### Recommended Pairings
-| Use Case | Primary | Accent |
-|----------|---------|--------|
-| Default | `hsl(var(--foreground))` | `var(--cyan-primary)` |
-| Success | `var(--state-healthy-fg)` | `var(--cyan-primary)` |
-| Neutral | `hsl(var(--muted-foreground))` | `var(--border-color)` |
-| Inverted | `hsl(var(--foreground))` | `var(--cyan-focus)` |
-
-## Typography
-
-### Font Stack
-- **Display/Logo**: `'Space Grotesk', 'IBM Plex Sans', system-ui, sans-serif`
-- **Body/UI**: `'Inter', 'IBM Plex Sans', system-ui, sans-serif`
-- **Monospace/Data**: `'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace`
-
-### Weight Recommendations
-- **Headings**: 700 (bold)
-- **Body**: 400 (regular)
-- **Captions**: 400 (regular)
-- **Logo**: 700 (bold)
-
-## Do's and Don'ts
-
-### Do
-✓ Use the mark on contrasting backgrounds  
-✓ Maintain proper clear space and aspect ratios  
-✓ Apply consistent color usage across materials  
-✓ Use the monochrome variant for accessibility  
-✓ Scale assets proportionally  
-
-### Don't
-✗ Distort, rotate, or skew the mark  
-✗ Add effects (shadows, glows) to the mark  
-✗ Use unofficial colors without approval  
-✗ Place the mark on insufficient contrast backgrounds  
-✗ Reduce the mark below minimum sizes  
-
-## Accessibility
-
-- All SVG assets include descriptive `<title>` and `<desc>` elements
-- The monochrome variant uses `currentColor` for dynamic theming
-- Maintain minimum contrast ratios of 4.5:1 for body text
-- Test color combinations with WCAG AA standards
-
-## File Formats
-
-- **SVG**: Preferred for all digital applications (scalable, accessible, small file size)
-- **PNG**: Provided for raster formats (256×256px for app tiles)
-- **Source**: All assets are vector-based and optimized for web
-
-## Integration Tips
-
-### Web
-```html
-<img src="meridian-mark.svg" alt="Meridian" />
-<svg>
-  <use href="meridian-mark.svg#logo" />
-</svg>
-```
-
-### CSS Background
-```css
-.hero {
-  background-image: url('meridian-hero.svg');
-  background-size: cover;
-  background-position: center;
-}
-```
-
-### Theme Support
-Use the monochrome variant with CSS to support light/dark modes:
-```css
-.dark .logo {
-  color: hsl(var(--foreground));
-}
-.light .logo {
-  color: hsl(var(--background));
-}
-```
-
----
-
-**Last Updated**: 2026-05-10  
-**Version**: 2.0  
-**Status**: Active
+- `README.md` for the package overview and consumption model.
+- `guidelines/VISUAL_FOUNDATIONS.md` for color, typography, radii, spacing,
+  elevation, interaction, and chart rules.
+- `guidelines/CONTENT_FUNDAMENTALS.md` for operator copy rules.
+- `guidelines/ICONOGRAPHY.md` for the module icon set.
+- `assets/brand/README.md` for asset inventory.

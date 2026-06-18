@@ -1,0 +1,178 @@
+<!-- @dsCard group="Dashboard" viewport="1440x780" name="Portfolio overview" subtitle="Interactive overview — metrics, equity curve, positions drill-in" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian — Dashboard</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg);
+    font-family: var(--font-body); color: var(--text-secondary); font-size: 13px;
+  }
+  #root { height: 100vh; display: flex; flex-direction: column; }
+</style>
+</head>
+<body class="meridian">
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const {
+  WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge,
+  MetricCard, DenseDataTable, EntitySummary, StatusBanner
+} = window.MeridianDesignSystem_4f61be;
+const { useState } = React;
+
+const POSITIONS = [
+  { symbol: "AAPL", qty: "400",  avg: "182.4400", last: "201.1200", pnl: "+7,472.00",  pnlPct: "+10.24%", figi: "BBG000B9XRY4", exch: "XNAS", since: "2025-11-04" },
+  { symbol: "MSFT", qty: "150",  avg: "411.0200", last: "404.8800", pnl: "-921.00",    pnlPct: "-1.49%",  figi: "BBG000BPH459", exch: "XNAS", since: "2026-01-12" },
+  { symbol: "NVDA", qty: "80",   avg: "118.3300", last: "131.0700", pnl: "+1,019.20",  pnlPct: "+10.77%", figi: "BBG000BBJQV0", exch: "XNAS", since: "2026-02-20" },
+  { symbol: "SPY",  qty: "-200", avg: "598.1100", last: "601.4400", pnl: "-666.00",    pnlPct: "-0.56%",  figi: "BBG000BDTBL9", exch: "ARCX", since: "2026-05-30" },
+  { symbol: "TLT",  qty: "320",  avg: "88.2100",  last: "91.0500",  pnl: "+908.80",    pnlPct: "+3.22%",  figi: "BBG000BJKYW3", exch: "XNAS", since: "2026-03-17" },
+];
+
+const EQUITY = [62,60,61,58,55,57,54,50,52,47,44,46,41,43,38,36,39,33,30,32,27,25,28,22,20];
+const BENCH  = [62,61,61,60,58,58,57,55,56,53,52,52,50,51,49,48,49,46,45,46,43,42,43,41,40];
+
+function pnlCell(v) {
+  return <span style={{ color: v.startsWith("-") ? "var(--red-dim)" : "var(--green-dim)" }}>{v}</span>;
+}
+
+function EquityChart() {
+  const w = 760, h = 180, step = w / (EQUITY.length - 1);
+  const pts = (arr) => arr.map((y, i) => `${(i * step).toFixed(1)},${y * 2.4}`).join(" ");
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} style={{ width: "100%", height: "auto", display: "block" }} aria-label="Equity curve vs benchmark">
+      <g stroke="var(--chart-grid)" strokeWidth="1">
+        {[36, 78, 120, 162].map((y) => <line key={y} x1="0" y1={y} x2={w} y2={y} />)}
+      </g>
+      <polyline fill="none" stroke="var(--chart-secondary)" strokeWidth="1.5" strokeDasharray="5 4" points={pts(BENCH)} />
+      <polyline fill="none" stroke="var(--chart-equity)" strokeWidth="2" points={pts(EQUITY)} />
+      <circle cx={(EQUITY.length - 1) * step} cy={EQUITY[EQUITY.length - 1] * 2.4} r="3.5" fill="var(--chart-equity)" />
+    </svg>
+  );
+}
+
+function App() {
+  const [selected, setSelected] = useState(0);
+  const [env, setEnv] = useState("PAPER");
+  const [sortKey, setSortKey] = useState("pnl");
+  const [sortDir, setSortDir] = useState("desc");
+  const onSort = (key) => {
+    if (key === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else { setSortKey(key); setSortDir("desc"); }
+  };
+  const num = (s) => parseFloat(String(s).replace(/[$,%+]/g, ""));
+  const sorted = [...POSITIONS].sort((a, b) => {
+    const av = num(a[sortKey]), bv = num(b[sortKey]);
+    const cmp = isNaN(av) || isNaN(bv) ? String(a[sortKey]).localeCompare(String(b[sortKey])) : av - bv;
+    return sortDir === "asc" ? cmp : -cmp;
+  });
+  const row = sorted[selected] || sorted[0];
+  return (
+    <React.Fragment>
+      <WorkstationTopbar moduleLabel="Dashboard" environment={env} clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
+      <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
+        <NavRail
+          activeId="dashboard"
+          onSelect={() => {}}
+          sections={[
+            { label: "Operate", items: [
+              { id: "dashboard", label: "Dashboard", icon: "../../assets/icons/dashboard.svg", shortcut: "G D" },
+              { id: "trading", label: "Trading", icon: "../../assets/icons/trading.svg" },
+              { id: "watchlist", label: "Watchlist", icon: "../../assets/icons/watchlist.svg" },
+              { id: "order-book", label: "Order Book", icon: "../../assets/icons/order-book.svg" },
+            ]},
+            { label: "Data", items: [
+              { id: "security-master", label: "Security Master", icon: "../../assets/icons/security-master.svg" },
+              { id: "data-browser", label: "Data Browser", icon: "../../assets/icons/data-browser.svg" },
+              { id: "data-quality", label: "Data Quality", icon: "../../assets/icons/data-quality.svg" },
+            ]},
+            { label: "Research", items: [
+              { id: "backtest", label: "Backtest", icon: "../../assets/icons/backtest.svg" },
+              { id: "charting", label: "Charting", icon: "../../assets/icons/charting.svg" },
+              { id: "strategy-runs", label: "Strategy Runs", icon: "../../assets/icons/strategy-runs.svg" },
+            ]},
+          ]}
+        />
+        <main style={{ flex: 1, minWidth: 0, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <h1 style={{ font: "600 22px var(--font-display)", margin: 0, color: "var(--text-primary)" }}>Portfolio overview</h1>
+            <Badge variant={env === "LIVE" ? "live" : "paper"} dot>{env}</Badge>
+            <div style={{ flex: 1 }}></div>
+            <Button variant="ghost" size="sm" onClick={() => setEnv(env === "PAPER" ? "LIVE" : "PAPER")}>
+              Switch to {env === "PAPER" ? "live" : "paper"}
+            </Button>
+            <Button variant="primary" size="sm">New order</Button>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 10 }}>
+            <MetricCard label="Net liquidation" value="$1,284,002.18" delta="+1.84% today" tone="success" />
+            <MetricCard label="Day P&L" value="-$4,118.22" delta="-0.32%" tone="danger" />
+            <MetricCard label="Buying power" value="$2,402,114.00" delta="Reg-T margin" tone="neutral" />
+            <MetricCard label="Open positions" value="5" delta="1 short" tone="neutral" />
+            <MetricCard label="Data freshness" value="00:00:04" delta="all healthy" tone="info" />
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 12, alignItems: "stretch" }}>
+            <PanelSurface style={{ padding: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+                <Eyebrow>Equity curve · YTD</Eyebrow>
+                <span style={{ font: "500 11px var(--font-data)", color: "var(--chart-secondary)" }}>— — benchmark SPX</span>
+              </div>
+              <EquityChart />
+            </PanelSurface>
+            <PanelSurface raised style={{ padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+              <Eyebrow>Selected position</Eyebrow>
+              <EntitySummary columns={2} items={[
+                { label: "Symbol", value: row.symbol },
+                { label: "FIGI", value: row.figi },
+                { label: "Exchange", value: row.exch },
+                { label: "Held since", value: row.since },
+                { label: "Unrlzd P&L", value: row.pnl, color: row.pnl.startsWith("-") ? "var(--red-dim)" : "var(--green-dim)" },
+                { label: "Return", value: row.pnlPct, color: row.pnlPct.startsWith("-") ? "var(--red-dim)" : "var(--green-dim)" },
+              ]} />
+              <div style={{ display: "flex", gap: 8, marginTop: "auto" }}>
+                <Button variant="ghost" size="sm">Open chart</Button>
+                <Button variant="danger" size="sm">Close position</Button>
+              </div>
+            </PanelSurface>
+          </div>
+
+          <DenseDataTable
+            selectedIndex={selected}
+            sortKey={sortKey} sortDir={sortDir} onSort={onSort}
+            onRowClick={(_, i) => setSelected(i)}
+            columns={[
+              { key: "symbol", label: "Symbol" },
+              { key: "qty", label: "Qty", align: "right" },
+              { key: "avg", label: "Avg cost", align: "right" },
+              { key: "last", label: "Last", align: "right" },
+              { key: "pnl", label: "Unrlzd P&L", align: "right", render: (r) => pnlCell(r.pnl) },
+              { key: "pnlPct", label: "Return", align: "right", render: (r) => pnlCell(r.pnlPct) },
+            ]}
+            rows={sorted}
+          />
+
+          <StatusBanner tone="success" title="All data providers healthy" detail="Polygon 4s · IBKR 2s · last gap scan 13:50:00Z — 0 gaps" />
+        </main>
+      </div>
+      <StatusBar items={[
+        { status: "ok", label: "Connected", value: "IBKR · Polygon · Databento" },
+        { label: "Sync", value: "00:00:04 ago" },
+        { label: "Positions", value: "5" },
+        { label: "Session", value: "RTH · 14:32:08 UTC" },
+        { status: "ok", label: "Latency", value: "12ms", push: true },
+      ]} />
+    </React.Fragment>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

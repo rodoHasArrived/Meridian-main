@@ -100,9 +100,9 @@ Use these together before changing AI guidance, routing, or workflow-oriented sk
   whose code or README hashes need documentation review, then use `--stale-only` source README
   sync/render commands when only outdated docs should be touched.
 - Use `python3 build/scripts/docs/validate-doc-hashes.py --summary` to detect code/docs drift for
-  registered modules. Refresh `docs/source/generated/source-hash-manifest.json` with
-  `python3 build/scripts/docs/validate-doc-hashes.py --write --summary` only after source README
-  and registry alignment is reviewed.
+  registered modules. Refresh reviewed stale module entries with
+  `python3 build/scripts/docs/validate-doc-hashes.py --write-module <MODULE_ID> --summary`;
+  reserve broad `--write --summary` for a full accepted-baseline review.
 - Source READMEs may include conditional sections for plans, end-user value, benchmarks and
   performance, operational evidence, security or credential handling, API/contract notes, and
   migration/archive notes when those sections add real module-specific context.

@@ -1419,7 +1419,7 @@ function PlotToolScatterChart({
           />
         ))}
       </g>
-      <g fill="var(--fg-muted)" fontFamily="IBM Plex Mono" fontSize="10">
+      <g fill="var(--fg-muted)" fontFamily="Cascadia Mono" fontSize="10">
         {chart.yTicks.map((tick) => (
           <text key={`y-${tick.value}`} x="44" y={tick.value} textAnchor="end">
             {tick.label}
@@ -1487,7 +1487,7 @@ function PlotToolScatterChart({
         fill={chart.marker.labelFill}
         stroke={chart.marker.labelStroke}
       />
-      <text x={chart.marker.labelTextX} y={chart.marker.labelTextY} fill={chart.marker.labelStroke} fontFamily="IBM Plex Mono" fontSize="10">
+      <text x={chart.marker.labelTextX} y={chart.marker.labelTextY} fill={chart.marker.labelStroke} fontFamily="Cascadia Mono" fontSize="10">
         {chart.marker.labelText}
       </text>
     </svg>

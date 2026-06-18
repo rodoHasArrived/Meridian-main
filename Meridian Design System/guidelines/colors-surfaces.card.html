@@ -1,0 +1,26 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Canvas & surfaces" subtitle="Paper canvas to white cards — the light elevation ladder" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 14px; background: var(--bg); font-family: var(--font-body); }
+  .row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .sw { border-radius: 8px; border: 1px solid var(--border); padding: 10px 10px 8px; height: 96px; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; box-shadow: var(--shadow-card); }
+  .n { font-family: var(--font-body); font-size: 10px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .03em; color: var(--text-primary); }
+  .v { font-family: var(--font-data); font-size: 9px; color: var(--text-muted); }
+  .dark .n { color: #F4F6F8; } .dark .v { color: #AEB7C0; }
+</style>
+</head>
+<body>
+  <div class="row">
+    <div class="sw" style="background: var(--bg);"><div class="n">canvas</div><div class="v">#ECEFF3</div></div>
+    <div class="sw" style="background: var(--bg-medium);"><div class="n">medium</div><div class="v">#F5F7FA</div></div>
+    <div class="sw" style="background: var(--card-surface);"><div class="n">card</div><div class="v">#FFFFFF</div></div>
+    <div class="sw" style="background: var(--card-surface-raised);"><div class="n">raised</div><div class="v">#FAFBFC</div></div>
+    <div class="sw" style="background: var(--bg-active);"><div class="n">active</div><div class="v">#E6EEF5</div></div>
+    <div class="sw dark" style="background: var(--topbar-bg);"><div class="n">chrome bar</div><div class="v">#171A1F</div></div>
+  </div>
+</body>
+</html>

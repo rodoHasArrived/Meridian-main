@@ -1,0 +1,78 @@
+<!-- @dsCard group="Components" viewport="880x720" name="Accounting — reconciliation & journal entry" subtitle="ReconciliationPanel, JournalEntryForm" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Accounting components — reconciliation & journal</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  body { margin: 0; padding: 16px; background: var(--bg); }
+  .stack { display: flex; flex-direction: column; gap: 7px; }
+  .cap { font-family: var(--font-body); font-size: 10px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .04em; color: var(--text-muted); }
+</style>
+</head>
+<body class="meridian">
+<template id="__bundler_thumbnail" data-bg-color="#0a5e3e">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect x="180" y="220" width="380" height="360" rx="16" fill="#ffffff" opacity="0.95"/>
+    <rect x="640" y="220" width="380" height="360" rx="16" fill="#ffffff" opacity="0.95"/>
+    <rect x="220" y="270" width="180" height="20" rx="6" fill="#0a5e3e"/>
+    <rect x="680" y="270" width="180" height="20" rx="6" fill="#0a5e3e"/>
+    <rect x="220" y="330" width="300" height="14" rx="5" fill="#cfe3d8"/>
+    <rect x="220" y="370" width="300" height="14" rx="5" fill="#cfe3d8"/>
+    <rect x="220" y="410" width="300" height="14" rx="5" fill="#cfe3d8"/>
+    <rect x="680" y="330" width="300" height="14" rx="5" fill="#cfe3d8"/>
+    <rect x="680" y="370" width="300" height="14" rx="5" fill="#cfe3d8"/>
+  </svg>
+</template>
+<div id="root"></div>
+<script type="text/babel">
+const { ReconciliationPanel, JournalEntryForm, Eyebrow } = window.MeridianDesignSystem_4f61be;
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+
+    <div className="stack">
+      <Eyebrow>Cash reconciliation · broker statement vs. ledger</Eyebrow>
+      <ReconciliationPanel
+        currency="USD"
+        left={{ title: "Broker statement", items: [
+          { id: 1, date: "2026-06-02", ref: "DTC-88421", memo: "Settlement credit — equities", category: "Settlement", amount: 82440, matched: true },
+          { id: 2, date: "2026-06-03", ref: "FEE-0093", memo: "Commission", category: "Fees", amount: -318.5, matched: true },
+          { id: 3, date: "2026-06-04", ref: "DIV-2207", memo: "Dividend — MSFT", category: "Income", amount: 1290, matched: true },
+          { id: 4, date: "2026-06-05", ref: "WIRE-5510", memo: "Custodian wire out", category: "Transfer", amount: -40000, matched: true },
+          { id: 5, date: "2026-06-06", ref: "INT-0210", memo: "Interest accrual", category: "Income", amount: 142.18, matched: false },
+          { id: 6, date: "2026-06-08", ref: "FEE-0118", memo: "ADR custody fee", category: "Fees", amount: -12.4, matched: false },
+        ]}}
+        right={{ title: "General ledger", items: [
+          { id: 1, date: "2026-06-02", ref: "JE-1042", memo: "Client settlement", category: "Settlement", amount: 82440, matched: true },
+          { id: 2, date: "2026-06-03", ref: "JE-1043", memo: "Commission & fees", category: "Fees", amount: -318.5, matched: true },
+          { id: 3, date: "2026-06-04", ref: "JE-1047", memo: "Dividend received — MSFT", category: "Income", amount: 1290, matched: true },
+          { id: 4, date: "2026-06-05", ref: "JE-1051", memo: "Wire to custodian", category: "Transfer", amount: -40000, matched: true },
+        ]}}
+      />
+    </div>
+
+    <div className="stack">
+      <Eyebrow>Manual journal entry · balanced double-entry</Eyebrow>
+      <JournalEntryForm
+        currency="USD"
+        accounts={["1100 · Cash", "1200 · Brokerage receivable", "4000 · Trading revenue", "5100 · Commissions & fees"]}
+        initialHeader={{ date: "2026-06-09", ref: "JE-1061", memo: "Record dividend receivable" }}
+        initialLines={[
+          { account: "1200 · Brokerage receivable", debit: "1290.00", credit: "" },
+          { account: "4000 · Trading revenue", debit: "", credit: "1290.00" },
+        ]}
+        onPost={() => {}}
+      />
+    </div>
+
+  </div>
+);
+</script>
+</body>
+</html>

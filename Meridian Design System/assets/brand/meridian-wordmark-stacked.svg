@@ -10,13 +10,13 @@
     <circle cx="128" cy="128" r="6" fill="#00D9FF"></circle>
   </g>
 
-  <text x="120" y="235" font-family="'Space Grotesk', 'IBM Plex Sans', system-ui, sans-serif" font-weight="700" font-size="36" letter-spacing="2.8" text-anchor="middle" fill="#D8DFE8">MERIDIAN</text>
+  <text x="120" y="235" font-family="&#39;Space Grotesk&#39;, &#39;IBM Plex Sans&#39;, system-ui, sans-serif" font-weight="700" font-size="36" letter-spacing="2.8" text-anchor="middle" fill="#D8DFE8">MERIDIAN</text>
 
-  <text x="120" y="268" font-family="'IBM Plex Mono', ui-monospace, monospace" font-weight="400" font-size="11" letter-spacing="2" text-anchor="middle" fill="#8A96A8">RESEARCH</text>
+  <text x="120" y="268" font-family="&#39;IBM Plex Mono&#39;, ui-monospace, monospace" font-weight="400" font-size="11" letter-spacing="2" text-anchor="middle" fill="#8A96A8">RESEARCH</text>
 
-  <text x="120" y="286" font-family="'IBM Plex Mono', ui-monospace, monospace" font-weight="400" font-size="11" letter-spacing="2" text-anchor="middle" fill="#8A96A8">TRADING</text>
+  <text x="120" y="286" font-family="&#39;IBM Plex Mono&#39;, ui-monospace, monospace" font-weight="400" font-size="11" letter-spacing="2" text-anchor="middle" fill="#8A96A8">TRADING</text>
 
-  <text x="120" y="304" font-family="'IBM Plex Mono', ui-monospace, monospace" font-weight="400" font-size="11" letter-spacing="2" text-anchor="middle" fill="#8A96A8">DATA OPS</text>
+  <text x="120" y="304" font-family="&#39;IBM Plex Mono&#39;, ui-monospace, monospace" font-weight="400" font-size="11" letter-spacing="2" text-anchor="middle" fill="#8A96A8">DATA OPS</text>
 
-  <text x="120" y="322" font-family="'IBM Plex Mono', ui-monospace, monospace" font-weight="400" font-size="11" letter-spacing="2" text-anchor="middle" fill="#8A96A8">GOVERNANCE</text>
+  <text x="120" y="322" font-family="&#39;IBM Plex Mono&#39;, ui-monospace, monospace" font-weight="400" font-size="11" letter-spacing="2" text-anchor="middle" fill="#8A96A8">GOVERNANCE</text>
 </svg>

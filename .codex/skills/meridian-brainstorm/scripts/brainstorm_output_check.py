@@ -10,7 +10,11 @@ import sys
 from pathlib import Path
 
 SAMPLES = {
-    "receipt-table": """**Skill selection receipt:** skill=meridian-brainstorm; mode=quick wins; reason=operator trust ideation; required shape=compact triage table first
+    "receipt-table": """**Skill Selection**
+- Skill: `meridian-brainstorm`
+- Mode: `quick wins`
+- Reason: operator trust ideation
+- Required Opening: compact triage table first
 
 ## Ideas at a Glance
 | # | Idea | Effort | Audience | Impact | Depends On |
@@ -26,8 +30,11 @@ Start with the shared explorer-backed queue before larger workflow automation.
 }
 
 RECEIPT_RE = re.compile(
-    r"^\*\*Skill selection receipt:\*\*\s*"
-    r"skill=meridian-brainstorm;\s*mode=([^;]+);\s*reason=([^;]+);\s*required shape=([^;\n]+)",
+    r"^\*\*Skill Selection\*\*\s*\n"
+    r"- Skill:\s*`?meridian-brainstorm`?\s*\n"
+    r"- Mode:\s*`?([^`\n]+)`?\s*\n"
+    r"- Reason:\s*([^\n]+)\n"
+    r"- Required Opening:\s*([^\n]+)",
     re.MULTILINE,
 )
 TABLE_HEADER = "| # | Idea | Effort | Audience | Impact | Depends On |"
@@ -59,7 +66,7 @@ def validate(text: str) -> dict[str, object]:
     ideas_heading_index = text.find("## Ideas at a Glance")
 
     if not receipt_matches:
-        failures.append("missing meridian-brainstorm skill selection receipt")
+        failures.append("missing meridian-brainstorm Skill Selection receipt")
     if ideas_heading_index < 0:
         failures.append("missing Ideas at a Glance heading")
     if table_index < 0:

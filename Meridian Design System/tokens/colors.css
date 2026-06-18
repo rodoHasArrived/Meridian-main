@@ -1,0 +1,99 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   Meridian — Color system  ("Institutional Ops")
+   Lifted verbatim from the desktop app: src/Meridian.Wpf/Styles/ThemeTokens.xaml.
+
+   The product is a LIGHT workstation: a paper canvas (#ECEFF3) of white cards,
+   capped by a near-black brand bar and status bar (#171A1F). The single accent
+   is a muted teal-blue (#2F6F8F) — institutional, not vibrant. Semantic accents
+   are desaturated (green #16885F, red #BA3F55, amber #B7791F, purple #6F5BA7).
+   Depth comes from hairline borders and a whisper of shadow — never gradients,
+   never glow.
+
+   RULE: never invent a color. Tints are the *Alpha10 / Alpha20* overlays below
+   (semantic color at 10% / 20%); accents come in base + Dim pairs only.
+─────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Canvas / backgrounds ─────────────────────────────────────────────── */
+  --bg:                #ECEFF3;  /* window canvas — the paper the app sits on */
+  --bg-medium:         #F5F7FA;  /* command bars, inset wells */
+  --bg-light:          #FFFFFF;  /* card / panel surface */
+  --bg-hover:          #F1F4F7;  /* row & ghost-button hover */
+  --bg-active:         #E6EEF5;  /* pressed / selected wash */
+  --card-surface:      #FFFFFF;  /* default card */
+  --card-surface-raised:#FAFBFC; /* metric tiles, inspector rails */
+
+  /* ── Borders (hairlines do the work) ──────────────────────────────────── */
+  --border:            #D7DCE2;  /* default separator */
+  --border-hover:      #B8C2CC;  /* hovered control edge */
+  --border-focus:      #2F6F8F;  /* focus ring / keyboard focus */
+  --border-strong:     #AAB4BF;  /* emphasized divider */
+
+  /* ── Text ─────────────────────────────────────────────────────────────── */
+  --text-primary:      #22272E;  /* headings, values */
+  --text-secondary:    #4D5967;  /* body, descriptions */
+  --text-muted:        #6E7781;  /* eyebrow labels, axis, captions */
+  --text-disabled:     #9AA4AF;
+
+  /* ── Accent (single institutional teal-blue) ──────────────────────────── */
+  --accent:            #2F6F8F;
+  --accent-dim:        #255B75;  /* pressed */
+  --accent-vibrant:    #3B82A6;
+  --accent-hover:      #CC2F6F8F;/* 80% alpha — primary-button hover */
+
+  /* ── Semantic accents (desaturated) ───────────────────────────────────── */
+  --green:             #16885F;  --green-dim:  #126C4D;  --green-light: #2FA377;
+  --red:               #BA3F55;  --red-dim:    #983244;
+  --orange:            #B7791F;  --orange-dim: #946216;
+  --purple:            #6F5BA7;  --purple-dim: #58478A;
+  --pink:              #B84883;
+  --yellow:            #D6A84A;
+
+  /* ── Alpha overlays — the ONLY way to tint (badge / active fills) ──────── */
+  --green-a10:  rgba(22,136,95,0.10);   --green-a20:  rgba(22,136,95,0.20);
+  --blue-a10:   rgba(47,111,143,0.10);  --blue-a20:   rgba(47,111,143,0.20);
+  --red-a10:    rgba(186,63,85,0.10);   --red-a20:    rgba(186,63,85,0.20);
+  --orange-a10: rgba(183,121,31,0.10);  --orange-a20: rgba(183,121,31,0.20);
+  --purple-a10: rgba(111,91,167,0.10);
+
+  /* ── Mode indicators (always visible: which environment am I in?) ─────── */
+  --mode-live:     #BA3F55;  /* real money — red */
+  --mode-paper:    #2F6F8F;  /* simulated — blue */
+  --mode-fixture:  #B7791F;  /* replay / fixture — amber */
+  --mode-healthy:  #16885F;
+  --mode-critical: #BA3F55;
+
+  /* ── Chrome: near-black top bar + status bar ──────────────────────────── */
+  --topbar-bg:       #171A1F;
+  --topbar-text:     #F4F6F8;
+  --topbar-border:   #262B31;
+  --topbar-icon:     #E8ECEF;
+  --statusbar-bg:    #171A1F;
+  --statusbar-text:  #D7DCE2;
+  --statusbar-border:#262B31;
+
+  /* ── Sidebar (light institutional rail) ───────────────────────────────── */
+  --sidebar-bg:           #F4F6F8;
+  --sidebar-border:       #D7DCE2;
+  --sidebar-hover:        #E9EEF3;
+  --sidebar-active:       #E1EAF2;
+  --sidebar-active-ind:   #2F6F8F;  /* 3px left indicator */
+  --sidebar-tile:         #FFFFFF;
+  --nav-item:             #4D5967;
+  --nav-item-hover:       #22272E;
+  --nav-item-active:      #1F2933;
+  --nav-section-label:    #6E7781;
+
+  /* ── Charts ───────────────────────────────────────────────────────────── */
+  --chart-surface:    #FFFFFF;
+  --chart-plot:       #FBFCFD;
+  --chart-grid:       #DDE3EA;
+  --chart-axis:       #6E7781;
+  --chart-border:     #CBD3DC;
+  --chart-crosshair:  #2F6F8F;
+  --chart-primary:    #2F6F8F;
+  --chart-secondary:  #7A9DB3;
+  --chart-equity:     #16885F;
+  --chart-drawdown:   #BA3F55;
+  --chart-warning:    #B7791F;
+}

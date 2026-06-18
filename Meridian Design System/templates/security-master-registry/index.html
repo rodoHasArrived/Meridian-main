@@ -1,0 +1,148 @@
+<!-- @template name="Security Master Registry" description="Dense symbol registry + entity inspector" -->
+<!-- @dsCard group="Security Master" viewport="1440x820" name="Security Master" subtitle="Dense symbol registry + entity inspector" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian — Security Master</title>
+<script src="./ds-base.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--bg); font-family: var(--font-body); color: var(--text-secondary); font-size: 13px; }
+  #root { height: 100vh; display: flex; flex-direction: column; }
+</style>
+</head>
+<body class="meridian">
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const {
+  WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge,
+  DenseDataTable, EntitySummary, KeyValueGrid
+} = window.MeridianDesignSystem_4f61be;
+const { useState } = React;
+
+const SYMBOLS = [
+  { symbol: "AAPL", name: "Apple Inc.",            figi: "BBG000B9XRY4", exch: "XNAS", type: "Equity", ccy: "USD", first: "1980-12-12", status: "active",   bars: "11,142", res: "minute · daily" },
+  { symbol: "MSFT", name: "Microsoft Corp.",       figi: "BBG000BPH459", exch: "XNAS", type: "Equity", ccy: "USD", first: "1986-03-13", status: "active",   bars: "10,061", res: "minute · daily" },
+  { symbol: "NVDA", name: "NVIDIA Corp.",          figi: "BBG000BBJQV0", exch: "XNAS", type: "Equity", ccy: "USD", first: "1999-01-22", status: "active",   bars: "6,884",  res: "minute · daily" },
+  { symbol: "SPY",  name: "SPDR S&P 500 ETF",      figi: "BBG000BDTBL9", exch: "ARCX", type: "ETF",    ccy: "USD", first: "1993-01-29", status: "active",   bars: "8,290",  res: "minute · daily" },
+  { symbol: "TLT",  name: "iShares 20+ Yr Treas.", figi: "BBG000BJKYW3", exch: "XNAS", type: "ETF",    ccy: "USD", first: "2002-07-26", status: "active",   bars: "5,998",  res: "minute · daily" },
+  { symbol: "GE",   name: "GE Aerospace",          figi: "BBG000BK6MB5", exch: "XNYS", type: "Equity", ccy: "USD", first: "1962-01-02", status: "review",   bars: "16,002", res: "daily" },
+  { symbol: "FB",   name: "Meta Platforms (FB)",   figi: "BBG000MM2P62", exch: "XNAS", type: "Equity", ccy: "USD", first: "2012-05-18", status: "renamed",  bars: "3,140",  res: "daily" },
+];
+
+const statusBadge = (s) => {
+  const map = { active: ["success", "Active"], review: ["warning", "In review"], renamed: ["neutral", "Renamed"] };
+  const [variant, label] = map[s] || ["neutral", s];
+  return <Badge variant={variant} dot={s === "active"}>{label}</Badge>;
+};
+
+function App() {
+  const [sel, setSel] = useState(0);
+  const [sortKey, setSortKey] = useState("symbol");
+  const [sortDir, setSortDir] = useState("asc");
+  const onSort = (k) => { if (k === sortKey) setSortDir(d => d === "asc" ? "desc" : "asc"); else { setSortKey(k); setSortDir("asc"); } };
+  const num = (s) => parseFloat(String(s).replace(/[,]/g, ""));
+  const sorted = [...SYMBOLS].sort((a, b) => {
+    const av = num(a[sortKey]), bv = num(b[sortKey]);
+    const cmp = isNaN(av) || isNaN(bv) ? String(a[sortKey]).localeCompare(String(b[sortKey])) : av - bv;
+    return sortDir === "asc" ? cmp : -cmp;
+  });
+  const row = sorted[sel] || sorted[0];
+
+  return (
+    <React.Fragment>
+      <WorkstationTopbar moduleLabel="Security Master" environment="PAPER" clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
+      <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
+        <NavRail
+          activeId="security-master"
+          sections={[
+            { label: "Data", items: [
+              { id: "dashboard", label: "Dashboard", icon: "../../assets/icons/dashboard.svg", shortcut: "G D" },
+              { id: "security-master", label: "Security Master", icon: "../../assets/icons/security-master.svg", shortcut: "G S" },
+              { id: "data-browser", label: "Data Browser", icon: "../../assets/icons/data-browser.svg" },
+              { id: "data-quality", label: "Data Quality", icon: "../../assets/icons/data-quality.svg" },
+              { id: "data-sources", label: "Data Sources", icon: "../../assets/icons/data-sources.svg" },
+            ]},
+            { label: "Research", items: [
+              { id: "backtest", label: "Backtest", icon: "../../assets/icons/backtest.svg" },
+              { id: "charting", label: "Charting", icon: "../../assets/icons/charting.svg" },
+            ]},
+          ]}
+        />
+        <main style={{ flex: 1, minWidth: 0, overflowY: "auto", padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <h1 style={{ font: "600 22px var(--font-display)", margin: 0, color: "var(--text-primary)" }}>Security Master</h1>
+            <span style={{ fontFamily: "var(--font-data)", fontSize: 12, color: "var(--text-muted)" }}>7 of 18,402 symbols</span>
+            <div style={{ flex: 1 }}></div>
+            <Button variant="ghost" size="sm">Import symbols</Button>
+            <Button variant="primary" size="sm">New symbol</Button>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.7fr) minmax(0, 1fr)", gap: 16, alignItems: "start" }}>
+            <PanelSurface flat style={{ overflow: "hidden" }}>
+              <DenseDataTable
+                selectedIndex={sel}
+                sortKey={sortKey} sortDir={sortDir} onSort={onSort}
+                onRowClick={(_, i) => setSel(i)}
+                columns={[
+                  { key: "symbol", label: "Symbol" },
+                  { key: "name", label: "Name", align: "left" },
+                  { key: "exch", label: "Exch" },
+                  { key: "type", label: "Type" },
+                  { key: "bars", label: "Bars", align: "right" },
+                  { key: "status", label: "Status", render: (r) => statusBadge(r.status) },
+                ]}
+                rows={sorted}
+              />
+            </PanelSurface>
+
+            <PanelSurface raised style={{ padding: 18, display: "flex", flexDirection: "column", gap: 16 }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+                <span style={{ fontFamily: "var(--font-data)", fontSize: 18, fontWeight: 600, color: "var(--text-primary)" }}>{row.symbol}</span>
+                {statusBadge(row.status)}
+              </div>
+              <div style={{ fontSize: 14, color: "var(--text-secondary)", marginTop: -8 }}>{row.name}</div>
+              <EntitySummary columns={2} items={[
+                { label: "FIGI", value: row.figi },
+                { label: "Exchange", value: row.exch },
+                { label: "Asset type", value: row.type, mono: false },
+                { label: "Currency", value: row.ccy },
+                { label: "First bar", value: row.first },
+                { label: "Resolution", value: row.res, mono: false },
+              ]} />
+              <div style={{ height: 1, background: "var(--border)" }}></div>
+              <Eyebrow>Coverage</Eyebrow>
+              <KeyValueGrid columns={2} items={[
+                { label: "Total bars", value: row.bars },
+                { label: "Last gap scan", value: "13:50:00Z" },
+                { label: "Gaps", value: "0" },
+                { label: "Provider", value: "Polygon" },
+              ]} />
+              <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                <Button variant="ghost" size="sm">Open chart</Button>
+                <Button variant="ghost" size="sm">Backfill</Button>
+                <Button variant="link">Audit log</Button>
+              </div>
+            </PanelSurface>
+          </div>
+        </main>
+      </div>
+      <StatusBar items={[
+        { status: "ok", label: "Connected", value: "IBKR · Polygon · Databento" },
+        { label: "Master", value: "18,402 symbols" },
+        { label: "Selected", value: row.symbol },
+        { status: "ok", label: "Index", value: "fresh", push: true },
+      ]} />
+    </React.Fragment>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
