@@ -126,6 +126,10 @@ different work:
   code/doc evidence paired in the final response.
 - Keep workflow disclosure concise and Codex-local: state phase, scope, evidence, blockers, and
   validation intent without emitting full command transcripts unless requested.
+- After selecting the narrowest applicable skill, include the skill selection receipt from
+  `_shared/codex-execution-contract.md` in the first substantive response: selected skill or
+  `none`, mode, reason, and required opening shape. For `meridian-brainstorm`, the receipt carries
+  the detected mode and is immediately followed by the compact triage table.
 - Treat `make ai-verify`, `make ai-arch-check`, and the CI `Validate AI contract drift` step as
   required gates for AI/tooling changes. Keep `ai-audit*`, `ai-report`, docs-drift/freshness, and
   archive/maintenance targets as advisory or reporting lanes unless a task explicitly promotes them.

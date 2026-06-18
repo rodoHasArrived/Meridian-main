@@ -281,6 +281,12 @@ task-stop evidence checks.
 - Keep Codex-only guidance in `.codex/skills/` and this `docs/ai/codex/` index.
 - Keep concise workflow disclosure expectations in the Codex execution contract and quickstart; do
   not widen them into shared assistant policy unless the request is explicitly cross-provider.
+- Keep the startup context receipt and tool/context change notice in the Codex execution contract
+  and quickstart so users can see the active lane, loaded context, next evidence, and reason for
+  meaningful tool or context expansion.
+- Keep the skill selection receipt in the Codex execution contract and quickstart: after selecting
+  the narrowest applicable skill, responses name the skill, mode, reason, and required opening shape
+  before task-specific output.
 - Use `../working-memory.md` with the parallel manifest when Codex lanes run concurrently or the
   working tree changes while a task is in flight.
 - Route documentation rebuild and migration work through `docs/README.md`,

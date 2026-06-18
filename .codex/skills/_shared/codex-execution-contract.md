@@ -20,6 +20,25 @@ Use this file as the Codex-only execution standard for Meridian skill runs. It c
   evidence being sought, and any blocker or scope change.
 - Summarize discoveries and next actions instead of pasting step-by-step command transcripts, raw
   file dumps, or full audit logs unless the user explicitly asks for a detailed trace.
+- Near the first substantive response, include a startup context receipt that makes the loaded
+  context visible:
+  `Workflow: <lane>; Skill: <skill-or-none>; Context loaded: <files/docs>; Next evidence: <next source>.`
+- When a task expands to a meaningful tool, source family, or context pack, include a context
+  update before widening scope:
+  `Context update: loading <source> because <reason>. <edit/scope status>.`
+- Use the context update to say whether source files will be edited, left unchanged, or deferred.
+
+## Skill Selection Receipt Gate
+
+- In the first substantive response after skill routing, include a compact skill selection receipt.
+- Use one line when possible:
+  `**Skill selection receipt:** skill=<skill-or-none>; mode=<skill-specific mode or n/a>; reason=<short clause>; required shape=<skill-specific opening requirement or n/a>`.
+- For skills with explicit opening output rules, merge those rules into the receipt instead of adding
+  a competing preamble. For example, `meridian-brainstorm` records the detected mode in the receipt,
+  then starts the compact triage table.
+- If no repo-local skill applies, set `skill=none` and name the nearest routing basis in the reason.
+- Keep the receipt brief. It does not replace the final response evidence for files changed,
+  validation, skipped gates, or residual risk.
 
 ## Concurrent Work Gate
 
@@ -98,6 +117,8 @@ For AI tooling, Codex skill, Codex catalog, prompt, docs automation, or assistan
 ## Final Response Shape
 
 ```md
+**Skill selection receipt:** skill=<skill-or-none>; mode=<mode-or-n/a>; reason=<why this lane>; required shape=<followed opening rule or n/a>
+
 **Implemented**
 - Code: <behavior-level changes>
 - Docs: <updated docs or "No docs needed: <reason>">

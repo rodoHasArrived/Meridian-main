@@ -138,6 +138,44 @@
       }
     },
     {
+      "id": "brainstorm-ideation",
+      "description": "Route open-ended ideas, quick wins, product bets, and opportunity exploration to the brainstorm lane.",
+      "matchWeighted": {
+        "brainstorm": 3.0,
+        "ideas": 2.0,
+        "quick wins": 2.5,
+        "product bets": 2.0,
+        "what should we build": 2.5,
+        "opportunities": 1.5,
+        "ux improvements": 1.5,
+        "technical debt ideas": 1.5
+      },
+      "route": {
+        "lane": "ideate",
+        "skill": "meridian-brainstorm",
+        "mode": "Lightweight",
+        "modelRouteId": "analysis-economy",
+        "rationale": "Ideation prompts should produce Meridian-grounded options, not implementation specs.",
+        "validationFloor": [
+          "python .codex/skills/meridian-brainstorm/scripts/brainstorm_output_check.py --sample receipt-table --summary"
+        ],
+        "validationScripts": [
+          "prompt-route-linter",
+          "brainstorm-output-check",
+          "handoff-packet-generator"
+        ],
+        "requiredTelemetry": [
+          "route_id",
+          "handoff_path"
+        ],
+        "escalationTriggers": [
+          "user selects one idea for implementation design",
+          "ideas need committed roadmap sequencing",
+          "persona critique is required before selection"
+        ]
+      }
+    },
+    {
       "id": "codex-skill-builder",
       "description": "Route Codex skill package, eval, script, metadata, profile, and route coverage work to the skill builder lane.",
       "matchWeighted": {

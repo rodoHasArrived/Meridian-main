@@ -47,6 +47,7 @@ import {
   workstationProviderIntegrationQuarantineReviewEndpoint,
   workstationProviderIntegrationReconciliationHandoffHistoryEndpoint,
   workstationProviderIntegrationStagingReviewEndpoint,
+  workstationFinancialRecordExplorerEndpoint,
   workstationWorkflowSummaryEndpoint,
   workstationOperatorInboxEndpoint,
   workstationSecurityMasterIdentityEndpoint,
@@ -219,6 +220,75 @@ describe("Vite Meridian API proxy", () => {
         expect.objectContaining({ symbol: "MSFT", lastPrice: 421.15 })
       ]
     });
+  });
+
+  it("serves first-render Accounting and Portfolio shared fixtures in no-host mode", async () => {
+    const bypass = createMeridianApiFallbackBypass("http://localhost:8080", {
+      isAvailable: async () => false
+    });
+    const portfolioExplorerResponse = new FakeResponse();
+    const ledgerExplorerResponse = new FakeResponse();
+    const securityExplorerResponse = new FakeResponse();
+    const accountingConfigurationResponse = new FakeResponse();
+    const statementRunsResponse = new FakeResponse();
+
+    await bypass(
+      { method: "GET", url: workstationFinancialRecordExplorerEndpoint("portfolio"), headers: { accept: "application/json" } } as IncomingMessage,
+      portfolioExplorerResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: workstationFinancialRecordExplorerEndpoint("ledger"), headers: { accept: "application/json" } } as IncomingMessage,
+      ledgerExplorerResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: workstationFinancialRecordExplorerEndpoint("security-instrument"), headers: { accept: "application/json" } } as IncomingMessage,
+      securityExplorerResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: WORKSTATION_API_ENDPOINTS.accountingConfiguration, headers: { accept: "application/json" } } as IncomingMessage,
+      accountingConfigurationResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+    await bypass(
+      { method: "GET", url: RECONCILIATION_API_ENDPOINTS.statementRuns, headers: { accept: "application/json" } } as IncomingMessage,
+      statementRunsResponse as unknown as ServerResponse,
+      {} as ProxyOptions
+    );
+
+    for (const response of [
+      portfolioExplorerResponse,
+      ledgerExplorerResponse,
+      securityExplorerResponse,
+      accountingConfigurationResponse,
+      statementRunsResponse
+    ]) {
+      expect(response.statusCode).toBe(200);
+      expect(response.headers.get(meridianDevFixtureHeader)).toBe("true");
+    }
+
+    expect(JSON.parse(portfolioExplorerResponse.body)).toMatchObject({
+      explorerId: "portfolio",
+      rows: expect.arrayContaining([expect.objectContaining({ recordId: "portfolio:portfolio-run-dev-1:AAPL" })])
+    });
+    expect(JSON.parse(ledgerExplorerResponse.body)).toMatchObject({
+      explorerId: "ledger",
+      rows: expect.arrayContaining([expect.objectContaining({ recordId: "ledger:run-42:cash" })])
+    });
+    expect(JSON.parse(securityExplorerResponse.body)).toMatchObject({
+      explorerId: "security-instrument",
+      rows: expect.arrayContaining([expect.objectContaining({ recordId: "security-instrument:sec-dev-001" })])
+    });
+    expect(JSON.parse(accountingConfigurationResponse.body)).toMatchObject({
+      fundProfileId: "default-fund",
+      status: "Active",
+      ledgerBooks: [expect.objectContaining({ ledgerBookId: "ledger-book-default" })]
+    });
+    expect(JSON.parse(statementRunsResponse.body)).toEqual([
+      expect.objectContaining({ runId: "stmt-run-42", openExceptionCount: 1 })
+    ]);
   });
 
   it("covers first-run workstation support endpoints with no-host fixtures", async () => {

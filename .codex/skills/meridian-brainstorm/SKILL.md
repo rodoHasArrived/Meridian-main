@@ -36,8 +36,8 @@ Non-trigger examples:
 ## Workflow
 
 1. Detect the mode: open exploration, problem-focused, persona-focused, quick wins, architecture, UX, growth, or technical debt.
-2. State the detected mode in one line.
-3. Start with a compact summary table so the user can triage quickly.
+2. State the detected mode in the skill selection receipt.
+3. Start the brainstorm body with a compact summary table so the user can triage quickly.
 4. Write ideas as short narratives that connect user value, Meridian anchor points, likely implementation shape, and tradeoffs.
 5. End with synthesis: highest-leverage idea, enabling bets, and suggested sequencing.
 
@@ -53,6 +53,15 @@ Non-trigger examples:
 - Search or read relevant docs only as far as needed to avoid stale or generic suggestions.
 - Do not claim delivery status or implementation completeness from brainstorming output.
 
+## Automation Scripts
+
+- `scripts/brainstorm_output_check.py` validates that brainstorm responses start with the skill
+  selection receipt and compact idea triage table.
+- `scripts/run_evals.py` runs deterministic output-shape eval fixtures by default and only runs live
+  Codex traces with `--live-run`.
+- `scripts/score_eval.py` scores brainstorm outputs for receipt/mode, triage, Meridian grounding,
+  tradeoff clarity, and handoff quality.
+
 ## Idea Standards
 
 Every strong idea should include:
@@ -66,7 +75,7 @@ Every strong idea should include:
 ## Output Shape
 
 ```md
-**Mode detected:** ...
+**Skill selection receipt:** skill=meridian-brainstorm; mode=<detected mode>; reason=<why this is ideation>; required shape=compact triage table first
 
 ## Ideas at a Glance
 | # | Idea | Effort | Audience | Impact | Depends On |
@@ -96,6 +105,6 @@ Every strong idea should include:
 
 ## Output Standards
 
-- Lead with a compact idea table for triage.
+- Lead with the skill selection receipt, then a compact idea table for triage.
 - For each idea, include user value, Meridian anchor, likely implementation shape, tradeoffs, audience, and effort.
 - End with the strongest recommendation and the next skill or artifact that should follow.

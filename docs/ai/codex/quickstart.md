@@ -14,6 +14,8 @@ still lives in `../assistant-workflow-contract.md`.
 2. Classify the request as orient, review, docs, browser, WPF, provider, storage, execution, roadmap,
    cleanup, or test work.
 3. Disclose the working mode, intended scope, and first evidence source before deeper exploration.
+   Use the startup context receipt from `.codex/skills/_shared/codex-execution-contract.md`:
+   `Workflow: <lane>; Skill: <skill-or-none>; Context loaded: <files/docs>; Next evidence: <next source>.`
 4. Treat root `AGENTS.md`, `CLAUDE.md`, `.codex/skills/_shared/project-context.md`, and
    `.codex/skills/_shared/codex-execution-contract.md` as the Codex-loaded development baseline.
    When a shared development, validation, workflow, prompt, skill, or agent rule changes, also
@@ -25,41 +27,48 @@ still lives in `../assistant-workflow-contract.md`.
 6. For stakeholder/product-scoped tasks, read `../product/meridian-design-document.md` before planning updates.
 7. For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load the MDIF spine: `../../architecture/meridian-development-intelligence-framework.md`, `../../architecture/meridian-vision.md`, `../../architecture/meridian-domain-model.md`, `../../domain/README.md`, and the relevant pack in `../context/README.md`.
 8. Read the narrowest relevant Codex skill in `.codex/skills/`.
-9. For source edits under `src/**`, read the nearest `README.md` and identify the module in
+9. In the first substantive response after skill routing, include the skill selection receipt from
+   `.codex/skills/_shared/codex-execution-contract.md`: selected skill or `none`, mode, reason, and
+   required opening shape. For `meridian-brainstorm`, put the detected mode in that receipt, then
+   start with the compact triage table.
+10. Before loading a new context family, invoking a meaningful tool, or widening the task scope,
+   include the context update notice from the execution contract so the user can see why context is
+   expanding and whether edits are still in scope.
+11. For source edits under `src/**`, read the nearest `README.md` and identify the module in
    `docs/source/data/source-modules.yml`.
-10. Choose the smallest validation lane from the task-to-proof matrix before editing.
+12. Choose the smallest validation lane from the task-to-proof matrix before editing.
    For local .NET tests, prefer
    `python build/python/cli/buildctl.py test --project <project> --filter "<filter>" --queue`
    so agent-triggered validation uses isolated outputs and avoids parallel test collisions.
    If local machine limits or MSBuild/package contention make that lane unreliable, plan to push
    the branch and dispatch GitHub Actions `Targeted Test` with the same repo-relative .NET test
    project under `tests/` plus filter.
-11. Update the nearest docs or AI index when behavior, workflow, prompt, skill, or agent guidance
+13. Update the nearest docs or AI index when behavior, workflow, prompt, skill, or agent guidance
    changes.
 
-12. If more than one subsystem or AI surface is in scope, initialize
+14. If more than one subsystem or AI surface is in scope, initialize
    [`../parallel-task-manifest-template.md`](../parallel-task-manifest-template.md) first and keep
    each lane scoped to a unique file set.
-13. For parallel implementation or concurrent codebase changes, initialize the task-local working
+15. For parallel implementation or concurrent codebase changes, initialize the task-local working
     memory ledger from [`../working-memory.md`](../working-memory.md) and keep active claims,
     inspected files, assumptions, merge order, and validation reuse current.
-14. For AI/documentation updates:
+16. For AI/documentation updates:
     1) update `assistant-workflow-contract.md` when shared rules change,
     2) run `check-ai-inventory.py` / `check-codex-skills.py`,
     3) run `validate-docs-structure.py --top-level ai --summary` for narrow AI-doc metadata/structure proof,
     4) avoid direct edits to `docs/ai/generated/*` unless refreshing generation.
-15. For AI tooling or validator changes, read [`../tooling/README.md`](../tooling/README.md)
+17. For AI tooling or validator changes, read [`../tooling/README.md`](../tooling/README.md)
     before choosing scripts or broader maintenance lanes.
-16. Update `../documentation-inventory.md` for each rebuild batch so migration-state and audit trail remain current.
-17. For deterministic lane preflight (pilot), run:
+18. Update `../documentation-inventory.md` for each rebuild batch so migration-state and audit trail remain current.
+19. For deterministic lane preflight (pilot), run:
     `python3 build/scripts/docs/prompt-route-linter.py --prompt "<user prompt>"`.
-18. For deterministic lane handoff packets (pilot), run:
+20. For deterministic lane handoff packets (pilot), run:
     `python3 build/scripts/docs/handoff-packet-generator.py --route-json docs/status/prompt-route-lint-report.json --scope "<scope>" --next-lane "<lane>"`.
-19. For route schema v2, keep `docs/status/prompt-route-lint-report.json` and
+21. For route schema v2, keep `docs/status/prompt-route-lint-report.json` and
     `docs/status/ai-handoff-packet.json` as the canonical local evidence artifacts. The route
     artifact must include `modelRouteId`, validation requirements, required telemetry, and
     escalation triggers.
-20. For Codex lifecycle hooks, use [`advanced-configuration.md`](advanced-configuration.md) as the
+22. For Codex lifecycle hooks, use [`advanced-configuration.md`](advanced-configuration.md) as the
     canonical reference. Keep hooks enabled with `[features].hooks = true`, but add executable
     project hooks only after script review, repository-relative path checks, and Codex `/hooks`
     trust review. Hooks may flag missing intent or ambiguity, but clarification should be a concise
@@ -177,6 +186,7 @@ browser workstation, or product UI code.
 
 ## Final Response Checklist
 
+- Skill selection receipt with selected skill, mode, reason, and required opening shape.
 - Files changed and why.
 - Validation commands with pass/fail results.
 - Unrelated dirty-worktree changes explicitly excluded.

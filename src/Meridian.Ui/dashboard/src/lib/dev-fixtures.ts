@@ -20,6 +20,8 @@ import type {
   ExecutionAuditEntry,
   ExecutionControlSnapshot,
   FeatureCapabilitySettingsResponse,
+  FinancialRecordExplorerDto,
+  AccountingConfigurationWorkspace,
   AccountingWorkspaceResponse,
   HistoricalBarsResponse,
   OrderBookResponse,
@@ -60,6 +62,7 @@ import type {
   ReconciliationCalibrationSummary,
   RiskRuleConfig,
   RiskRuleStatus,
+  StatementRunSummary,
   StrategyBriefingResponse,
   StrategyWorkspaceResponse,
   ReplayFileRecord,
@@ -105,7 +108,8 @@ import {
   SYMBOL_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINTS,
   brokerageConnectionStatusEndpoint,
-  riskRuleConfigEndpoint
+  riskRuleConfigEndpoint,
+  workstationFinancialRecordExplorerEndpoint
 } from "./workstation-endpoints";
 
 const fixtureSession: SessionInfo = {
@@ -2675,6 +2679,371 @@ const fixturePortfolioWorkspace: PortfolioWorkspaceResponse = {
   cashFlow: fixtureAccountingWorkspace.cashFlow
 };
 
+const fixturePortfolioFinancialRecordExplorerRows: FinancialRecordExplorerDto["rows"] = [
+  {
+    recordId: "portfolio:portfolio-run-dev-1:AAPL",
+    recordType: "portfolio-position",
+    label: "AAPL",
+    source: "Development fixture portfolio",
+    status: "Long",
+    tone: "Success",
+    cells: [
+      { columnId: "symbol", displayValue: "AAPL", rawValue: "AAPL", tone: "Success", linkHref: "" },
+      { columnId: "quantity", displayValue: "100", rawValue: "100", tone: "Default", linkHref: "" },
+      { columnId: "averageCost", displayValue: "$176.60", rawValue: "176.6", tone: "Default", linkHref: "" },
+      { columnId: "marketValue", displayValue: "$18,840.00", rawValue: "18840", tone: "Default", linkHref: "" },
+      { columnId: "unrealizedPnl", displayValue: "+$1,180.00", rawValue: "1180", tone: "Success", linkHref: "" },
+      { columnId: "realizedPnl", displayValue: "$0.00", rawValue: "0", tone: "Default", linkHref: "" }
+    ],
+    detail: {
+      recordId: "portfolio:portfolio-run-dev-1:AAPL",
+      recordType: "Portfolio position",
+      title: "AAPL",
+      subtitle: "Long - portfolio-run-dev-1",
+      description: "Demo retained position record used by the no-host Portfolio Explorer preview.",
+      tone: "Success",
+      fields: [
+        { label: "Quantity", value: "100", detail: "Retained fixture quantity.", tone: "Default" },
+        { label: "Market value", value: "$18,840.00", detail: "Fixture market value.", tone: "Default" },
+        { label: "Unrealized PnL", value: "+$1,180.00", detail: "Fixture unrealized gain.", tone: "Success" }
+      ],
+      proofActions: [
+        {
+          actionId: "open-source",
+          label: "Open source record",
+          description: "Open the no-host portfolio fixture source.",
+          href: WORKSTATION_API_ENDPOINTS.portfolio,
+          isEnabled: true,
+          disabledReason: "",
+          tone: "Info"
+        }
+      ],
+      usedIn: [
+        {
+          relationshipId: "portfolio-run-dev-1",
+          label: "Portfolio run",
+          description: "Used by the fixture portfolio run projection.",
+          href: WORKSTATION_API_ENDPOINTS.portfolio,
+          tone: "Info"
+        }
+      ],
+      impacts: [
+        {
+          relationshipId: "portfolio-market-value",
+          label: "Portfolio market value",
+          description: "Contributes to aggregate market value.",
+          href: WORKSTATION_API_ENDPOINTS.portfolio,
+          tone: "Success"
+        }
+      ],
+      fullRecordHref: `${WORKSTATION_API_ENDPOINTS.portfolio}?recordId=portfolio%3Aportfolio-run-dev-1%3AAAPL`
+    }
+  },
+  {
+    recordId: "portfolio:portfolio-run-dev-1:MSFT",
+    recordType: "portfolio-position",
+    label: "MSFT",
+    source: "Development fixture portfolio",
+    status: "Long",
+    tone: "Success",
+    cells: [
+      { columnId: "symbol", displayValue: "MSFT", rawValue: "MSFT", tone: "Success", linkHref: "" },
+      { columnId: "quantity", displayValue: "16", rawValue: "16", tone: "Default", linkHref: "" },
+      { columnId: "averageCost", displayValue: "$418.00", rawValue: "418", tone: "Default", linkHref: "" },
+      { columnId: "marketValue", displayValue: "$6,747.20", rawValue: "6747.2", tone: "Default", linkHref: "" },
+      { columnId: "unrealizedPnl", displayValue: "+$59.20", rawValue: "59.2", tone: "Success", linkHref: "" },
+      { columnId: "realizedPnl", displayValue: "+$320.75", rawValue: "320.75", tone: "Success", linkHref: "" }
+    ],
+    detail: {
+      recordId: "portfolio:portfolio-run-dev-1:MSFT",
+      recordType: "Portfolio position",
+      title: "MSFT",
+      subtitle: "Long - portfolio-run-dev-1",
+      description: "Demo retained position record used by the no-host Portfolio Explorer preview.",
+      tone: "Success",
+      fields: [
+        { label: "Quantity", value: "16", detail: "Retained fixture quantity.", tone: "Default" },
+        { label: "Market value", value: "$6,747.20", detail: "Fixture market value.", tone: "Default" },
+        { label: "Unrealized PnL", value: "+$59.20", detail: "Fixture unrealized gain.", tone: "Success" }
+      ],
+      proofActions: [
+        {
+          actionId: "open-source",
+          label: "Open source record",
+          description: "Open the no-host portfolio fixture source.",
+          href: WORKSTATION_API_ENDPOINTS.portfolio,
+          isEnabled: true,
+          disabledReason: "",
+          tone: "Info"
+        }
+      ],
+      usedIn: [
+        {
+          relationshipId: "portfolio-run-dev-1",
+          label: "Portfolio run",
+          description: "Used by the fixture portfolio run projection.",
+          href: WORKSTATION_API_ENDPOINTS.portfolio,
+          tone: "Info"
+        }
+      ],
+      impacts: [
+        {
+          relationshipId: "portfolio-market-value",
+          label: "Portfolio market value",
+          description: "Contributes to aggregate market value.",
+          href: WORKSTATION_API_ENDPOINTS.portfolio,
+          tone: "Success"
+        }
+      ],
+      fullRecordHref: `${WORKSTATION_API_ENDPOINTS.portfolio}?recordId=portfolio%3Aportfolio-run-dev-1%3AMSFT`
+    }
+  }
+];
+
+const fixturePortfolioFinancialRecordExplorer: FinancialRecordExplorerDto = {
+  explorerId: "portfolio",
+  title: "Portfolio Explorer",
+  description: "Explore retained account and aggregate position records from no-host development fixtures.",
+  sourceState: "Demo data: source-backed portfolio projection from development fixture run portfolio-run-dev-1.",
+  isBlocked: false,
+  blockedReason: "",
+  scopeItems: [
+    { label: "Workstream", value: "Portfolio", tone: "Info" },
+    { label: "Source", value: "Development fixture portfolio", tone: "Default" },
+    { label: "Run", value: "portfolio-run-dev-1", tone: "Info" },
+    { label: "As of", value: fixturePaperSessionPortfolio.asOf, tone: "Default" }
+  ],
+  savedViews: [
+    {
+      viewId: "system-portfolio-dev-default",
+      label: "Open positions + run evidence",
+      description: "Default no-host portfolio explorer fixture view.",
+      isSystem: true,
+      isActive: true,
+      filters: [],
+      searchText: ""
+    }
+  ],
+  summaryItems: [
+    {
+      label: "Positions",
+      value: `${fixturePortfolioFinancialRecordExplorerRows.length}`,
+      detail: "Retained fixture position rows.",
+      tone: "Success"
+    },
+    {
+      label: "Market value",
+      value: "$25,587",
+      detail: "Aggregate market value from fixture paper-session positions.",
+      tone: "Default"
+    },
+    {
+      label: "Unrealized PnL",
+      value: "+$1,239",
+      detail: "Fixture unrealized gain retained for portfolio review.",
+      tone: "Success"
+    }
+  ],
+  filters: [
+    { filterId: "run", label: "Run", value: "portfolio-run-dev-1", operator: "equals", tone: "Info" },
+    { filterId: "source", label: "Source", value: "development fixture", operator: "equals", tone: "Default" }
+  ],
+  columns: [
+    { columnId: "symbol", header: "Symbol", cellKind: "text", width: 120, isRightAligned: false },
+    { columnId: "quantity", header: "Quantity", cellKind: "number", width: 120, isRightAligned: true },
+    { columnId: "averageCost", header: "Average cost", cellKind: "currency", width: 140, isRightAligned: true },
+    { columnId: "marketValue", header: "Market value", cellKind: "currency", width: 150, isRightAligned: true },
+    { columnId: "unrealizedPnl", header: "Unrealized PnL", cellKind: "currency", width: 150, isRightAligned: true },
+    { columnId: "realizedPnl", header: "Realized PnL", cellKind: "currency", width: 140, isRightAligned: true }
+  ],
+  rows: fixturePortfolioFinancialRecordExplorerRows,
+  selectedRecord: fixturePortfolioFinancialRecordExplorerRows[0]!.detail,
+  proofActions: [
+    {
+      actionId: "open-evidence",
+      label: "Open evidence packet",
+      description: "Open retained evidence for the fixture portfolio run.",
+      href: "/reporting/evidence?subjectKind=strategy-run&subjectId=portfolio-run-dev-1",
+      isEnabled: true,
+      disabledReason: "",
+      tone: "Info"
+    }
+  ],
+  recordGraph: {
+    nodes: [
+      {
+        nodeId: "portfolio-run-dev-1",
+        label: "portfolio-run-dev-1",
+        nodeType: "run",
+        tone: "Info",
+        href: WORKSTATION_API_ENDPOINTS.portfolio
+      },
+      {
+        nodeId: "portfolio:portfolio-run-dev-1:AAPL",
+        label: "AAPL",
+        nodeType: "portfolio-position",
+        tone: "Success",
+        href: `${WORKSTATION_API_ENDPOINTS.portfolio}?recordId=portfolio%3Aportfolio-run-dev-1%3AAAPL`
+      },
+      {
+        nodeId: "portfolio:portfolio-run-dev-1:MSFT",
+        label: "MSFT",
+        nodeType: "portfolio-position",
+        tone: "Success",
+        href: `${WORKSTATION_API_ENDPOINTS.portfolio}?recordId=portfolio%3Aportfolio-run-dev-1%3AMSFT`
+      }
+    ],
+    edges: [
+      {
+        sourceNodeId: "portfolio-run-dev-1",
+        targetNodeId: "portfolio:portfolio-run-dev-1:AAPL",
+        label: "projects",
+        tone: "Info"
+      },
+      {
+        sourceNodeId: "portfolio-run-dev-1",
+        targetNodeId: "portfolio:portfolio-run-dev-1:MSFT",
+        label: "projects",
+        tone: "Info"
+      }
+    ]
+  }
+};
+
+const fixtureAccountingConfiguration: AccountingConfigurationWorkspace = {
+  fundProfileId: "default-fund",
+  ledgerBookId: "ledger-book-default",
+  status: "Active",
+  configurationVersion: "fixture-accounting-config-v1",
+  updatedAtUtc: "2026-05-03T20:00:00Z",
+  ledgerBooks: [
+    {
+      ledgerBookId: "ledger-book-default",
+      fundProfileId: "default-fund",
+      fundStructureNodeId: "fund-node-default",
+      fundStructureNodeKind: "Fund",
+      displayName: "Default fund primary book",
+      baseCurrency: "USD",
+      createdAt: "2026-05-01T14:00:00Z",
+      updatedAt: "2026-05-03T20:00:00Z",
+      description: "No-host fixture ledger book for Accounting configuration preview.",
+      accountingBasis: "Primary",
+      accountingPolicyId: "policy-default-primary",
+      accountingPolicyVersion: "2026.05"
+    }
+  ],
+  chartOfAccounts: [
+    {
+      nodeId: "coa-cash",
+      path: "1000",
+      accountName: "Cash",
+      accountType: "Asset",
+      parentPath: null,
+      symbol: null,
+      financialAccountId: "acct-cash",
+      isArchived: false
+    },
+    {
+      nodeId: "coa-investments",
+      path: "1200",
+      accountName: "Investments",
+      accountType: "Asset",
+      parentPath: null,
+      symbol: "AAPL",
+      financialAccountId: "acct-investments",
+      isArchived: false
+    },
+    {
+      nodeId: "coa-pnl",
+      path: "4000",
+      accountName: "Realized P&L",
+      accountType: "Income",
+      parentPath: null,
+      symbol: null,
+      financialAccountId: "acct-realized-pnl",
+      isArchived: false
+    }
+  ],
+  journalTemplates: [
+    {
+      templateId: "journal-template-paper-fill",
+      displayName: "Paper fill settlement",
+      description: "Fixture posting template for paper fill cash and investment movement.",
+      lines: [
+        {
+          lineId: "paper-fill-debit-investments",
+          accountPath: "1200",
+          side: "Debit",
+          amount: 100,
+          currency: "USD",
+          description: "Increase investment position."
+        },
+        {
+          lineId: "paper-fill-credit-cash",
+          accountPath: "1000",
+          side: "Credit",
+          amount: 100,
+          currency: "USD",
+          description: "Reduce cash for settled buy."
+        }
+      ],
+      isArchived: false,
+      version: "1"
+    }
+  ],
+  postingRules: [
+    {
+      ruleId: "posting-rule-paper-fill",
+      displayName: "Paper fill posting",
+      sourceEventType: "PaperFill",
+      templateId: "journal-template-paper-fill",
+      ruleVersion: "1",
+      isArchived: false,
+      description: "Routes paper execution fills into the default fixture ledger book."
+    }
+  ],
+  validationIssues: [],
+  auditTrail: [
+    {
+      auditEventId: "accounting-config-fixture-audit-1",
+      recordedAtUtc: "2026-05-03T20:00:00Z",
+      actor: "fixture-controller",
+      action: "Activate accounting configuration",
+      fundProfileId: "default-fund",
+      ledgerBookId: "ledger-book-default",
+      correlationId: "fixture-accounting-config",
+      beforeHash: "fixture-before-accounting-config",
+      afterHash: "fixture-after-accounting-config",
+      validationIssues: [],
+      evidenceLinks: ["/reporting/evidence?subjectKind=accounting-record&subjectId=accounting-record-2026-05"],
+      companyId: null,
+      reportGroupPrincipalIds: ["fund-controller"]
+    }
+  ]
+};
+
+const fixtureStatementRuns: StatementRunSummary[] = [
+  {
+    runId: "stmt-run-42",
+    importId: "statement-import-42",
+    startedAtUtc: "2026-05-03T19:45:00Z",
+    completedAtUtc: "2026-05-03T19:48:00Z",
+    positionMatches: 3,
+    cashMatches: 2,
+    transactionMatches: 7,
+    openExceptionCount: 1,
+    brokerCustodian: "Interactive Brokers",
+    account: "DU1009034",
+    period: "2026-05-03",
+    status: "ReviewRequired",
+    validationIssueCount: 1,
+    matchCount: 12,
+    breakCount: 1,
+    caseCount: 1,
+    importedAtUtc: "2026-05-03T19:44:00Z"
+  }
+];
+
 const fixtureAccountingSystemProviders: AccountingSystemProvider[] = [
   {
     providerId: "quickbooks-fixture",
@@ -4571,6 +4940,333 @@ const fixtureLedgerTrialBalance: LedgerTrialBalanceLine[] = [
   }
 ];
 
+type FixtureFinancialRecordExplorerSeed = {
+  explorerId: string;
+  title: string;
+  description: string;
+  sourceState: string;
+  workstream: string;
+  source: string;
+  savedViewLabel: string;
+  summaryItems: FinancialRecordExplorerDto["summaryItems"];
+  filters: FinancialRecordExplorerDto["filters"];
+  columns: FinancialRecordExplorerDto["columns"];
+  row: {
+    recordId: string;
+    recordType: string;
+    label: string;
+    source: string;
+    status: string;
+    tone: FinancialRecordExplorerDto["rows"][number]["tone"];
+    cells: FinancialRecordExplorerDto["rows"][number]["cells"];
+    detailTitle: string;
+    detailSubtitle: string;
+    detailDescription: string;
+    fields: FinancialRecordExplorerDto["summaryItems"];
+    proofHref: string;
+    fullRecordHref: string;
+    usedInLabel: string;
+    impactsLabel: string;
+  };
+};
+
+function buildFixtureFinancialRecordExplorer(explorerId: string): FinancialRecordExplorerDto | undefined {
+  switch (explorerId) {
+    case "ledger":
+      return createFixtureFinancialRecordExplorer({
+        explorerId,
+        title: "Ledger Explorer",
+        description: "Explore retained trial-balance rows, journal support, and close evidence.",
+        sourceState: "No-host fixture projection from run run-42 trial-balance evidence.",
+        workstream: "Accounting",
+        source: "Journal entries and ledger detail",
+        savedViewLabel: "Controller review",
+        summaryItems: [
+          { label: "Rows", value: "2", detail: "Retained trial-balance rows.", tone: "Success" },
+          { label: "Cash", value: "$120,500", detail: "Source-backed ledger cash balance.", tone: "Success" },
+          { label: "Open breaks", value: "1", detail: "Cash variance remains under review.", tone: "Warning" }
+        ],
+        filters: [
+          { filterId: "accounts", label: "Accounts", value: "All active accounts", operator: "equals", tone: "Info" }
+        ],
+        columns: [
+          { columnId: "account", header: "Account", cellKind: "text", width: 220, isRightAligned: false },
+          { columnId: "type", header: "Type", cellKind: "text", width: 120, isRightAligned: false },
+          { columnId: "balance", header: "Balance", cellKind: "currency", width: 120, isRightAligned: true }
+        ],
+        row: {
+          recordId: "ledger:run-42:cash",
+          recordType: "Ledger account",
+          label: "Cash",
+          source: "Trial balance",
+          status: "ReviewRequired",
+          tone: "Warning",
+          cells: [
+            { columnId: "account", displayValue: "Cash", rawValue: "Cash", tone: "Success", linkHref: "" },
+            { columnId: "type", displayValue: "Asset", rawValue: "Asset", tone: "Default", linkHref: "" },
+            { columnId: "balance", displayValue: "$120,500", rawValue: "120500", tone: "Success", linkHref: "" }
+          ],
+          detailTitle: "Cash",
+          detailSubtitle: "Asset - run-42",
+          detailDescription: "Source-backed cash balance with one retained variance awaiting controller review.",
+          fields: [
+            { label: "Balance", value: "$120,500", detail: "Ledger cash from trial-balance fixture.", tone: "Success" },
+            { label: "Entries", value: "12", detail: "Journal entry count retained with the row.", tone: "Default" },
+            { label: "Approval", value: "approval-cash-1", detail: "Approval evidence remains linked.", tone: "Info" }
+          ],
+          proofHref: "/reporting/evidence?subjectKind=accounting-record&subjectId=accounting-record-2026-05",
+          fullRecordHref: "/api/workstation/runs/run-42/ledger/trial-balance",
+          usedInLabel: "Accounting close",
+          impactsLabel: "Cash reconciliation"
+        }
+      });
+    case "portfolio":
+      return createFixtureFinancialRecordExplorer({
+        explorerId,
+        title: "Portfolio Explorer",
+        description: "Explore retained account, position, and aggregate portfolio records.",
+        sourceState: "No-host fixture projection from the Portfolio workspace and active paper session.",
+        workstream: "Portfolio",
+        source: "Trading and brokerage evidence",
+        savedViewLabel: "Open positions + run evidence",
+        summaryItems: [
+          { label: "Positions", value: "1", detail: "Retained open position rows.", tone: "Success" },
+          { label: "Exposure", value: "$18,900", detail: "Source-backed AAPL exposure.", tone: "Default" },
+          { label: "Sync", value: "Stale", detail: "Brokerage sync requires review.", tone: "Warning" }
+        ],
+        filters: [
+          { filterId: "symbol", label: "Symbol", value: "AAPL", operator: "equals", tone: "Info" }
+        ],
+        columns: [
+          { columnId: "symbol", header: "Symbol", cellKind: "text", width: 100, isRightAligned: false },
+          { columnId: "quantity", header: "Quantity", cellKind: "number", width: 100, isRightAligned: true },
+          { columnId: "exposure", header: "Exposure", cellKind: "currency", width: 120, isRightAligned: true }
+        ],
+        row: {
+          recordId: "portfolio:paper-dev-42:AAPL",
+          recordType: "Portfolio position",
+          label: "AAPL",
+          source: "Portfolio",
+          status: "Long",
+          tone: "Success",
+          cells: [
+            { columnId: "symbol", displayValue: "AAPL", rawValue: "AAPL", tone: "Success", linkHref: "" },
+            { columnId: "quantity", displayValue: "100", rawValue: "100", tone: "Default", linkHref: "" },
+            { columnId: "exposure", displayValue: "$18,900", rawValue: "18900", tone: "Default", linkHref: "" }
+          ],
+          detailTitle: "AAPL",
+          detailSubtitle: "Long - paper-dev-42",
+          detailDescription: "Source-backed portfolio position retained for account and aggregate review.",
+          fields: [
+            { label: "Quantity", value: "100", detail: "Retained position quantity.", tone: "Default" },
+            { label: "Unrealized P&L", value: "+$90", detail: "Source-backed unrealized P&L.", tone: "Success" },
+            { label: "Exposure", value: "$18,900", detail: "Position exposure from the portfolio fixture.", tone: "Default" }
+          ],
+          proofHref: "/reporting/evidence?subjectKind=portfolio-position&subjectId=portfolio:paper-dev-42:AAPL",
+          fullRecordHref: "/portfolio",
+          usedInLabel: "Portfolio run",
+          impactsLabel: "Portfolio equity"
+        }
+      });
+    case "security-instrument":
+      return createFixtureFinancialRecordExplorer({
+        explorerId,
+        title: "Security & Instrument Explorer",
+        description: "Explore retained instrument identity, classification, and trading-control evidence.",
+        sourceState: "No-host fixture projection from Security Master instrument coverage.",
+        workstream: "Accounting",
+        source: "Security Master instruments",
+        savedViewLabel: "Instrument proof",
+        summaryItems: [
+          { label: "Coverage", value: "Ready", detail: "Instrument identity is retained.", tone: "Success" },
+          { label: "Conflicts", value: "0", detail: "No open identity conflict for AAPL.", tone: "Success" }
+        ],
+        filters: [
+          { filterId: "asset-class", label: "Asset class", value: "Equity", operator: "equals", tone: "Info" }
+        ],
+        columns: [
+          { columnId: "security", header: "Security", cellKind: "text", width: 220, isRightAligned: false },
+          { columnId: "assetClass", header: "Asset class", cellKind: "text", width: 120, isRightAligned: false },
+          { columnId: "status", header: "Status", cellKind: "text", width: 100, isRightAligned: false }
+        ],
+        row: {
+          recordId: "security-instrument:sec-dev-001",
+          recordType: "Security instrument",
+          label: "Apple Inc.",
+          source: "Security Master",
+          status: "Ready",
+          tone: "Success",
+          cells: [
+            { columnId: "security", displayValue: "Apple Inc.", rawValue: "Apple Inc.", tone: "Success", linkHref: "" },
+            { columnId: "assetClass", displayValue: "Equity", rawValue: "Equity", tone: "Default", linkHref: "" },
+            { columnId: "status", displayValue: "Ready", rawValue: "Ready", tone: "Success", linkHref: "" }
+          ],
+          detailTitle: "Apple Inc.",
+          detailSubtitle: "Ticker AAPL - sec-dev-001",
+          detailDescription: "Retained Security Master identity used by ledger, portfolio, and trading controls.",
+          fields: [
+            { label: "Ticker", value: "AAPL", detail: "Primary listed equity identifier.", tone: "Success" },
+            { label: "Currency", value: "USD", detail: "Economic definition currency.", tone: "Default" }
+          ],
+          proofHref: "/accounting/security-master?query=AAPL",
+          fullRecordHref: "/accounting/security-master",
+          usedInLabel: "Ledger support",
+          impactsLabel: "Trading controls"
+        }
+      });
+    case "report-line-provenance":
+      return createFixtureFinancialRecordExplorer({
+        explorerId,
+        title: "Report-Line Provenance Explorer",
+        description: "Trace retained report lines back to source records, reconciliation, and approvals.",
+        sourceState: "No-host fixture projection from report-pack evidence.",
+        workstream: "Reporting",
+        source: "Report pack",
+        savedViewLabel: "Board report lines",
+        summaryItems: [
+          { label: "Report lines", value: "1", detail: "Retained report-line proof row.", tone: "Success" },
+          { label: "Evidence", value: "Linked", detail: "Source record and approval routes are retained.", tone: "Success" }
+        ],
+        filters: [
+          { filterId: "recipient", label: "Recipient", value: "Board", operator: "equals", tone: "Info" }
+        ],
+        columns: [
+          { columnId: "line", header: "Line", cellKind: "text", width: 220, isRightAligned: false },
+          { columnId: "source", header: "Source", cellKind: "text", width: 160, isRightAligned: false },
+          { columnId: "status", header: "Status", cellKind: "text", width: 100, isRightAligned: false }
+        ],
+        row: {
+          recordId: "report-line:board:pnl",
+          recordType: "Report line",
+          label: "Daily P&L",
+          source: "Reporting",
+          status: "Ready",
+          tone: "Success",
+          cells: [
+            { columnId: "line", displayValue: "Daily P&L", rawValue: "Daily P&L", tone: "Success", linkHref: "" },
+            { columnId: "source", displayValue: "Accounting P&L slice", rawValue: "pnl:daily", tone: "Default", linkHref: "" },
+            { columnId: "status", displayValue: "Ready", rawValue: "Ready", tone: "Success", linkHref: "" }
+          ],
+          detailTitle: "Daily P&L",
+          detailSubtitle: "Board report pack",
+          detailDescription: "Report line retains source P&L slice, reconciliation, approval, and audit links.",
+          fields: [
+            { label: "Amount", value: "$4,400", detail: "Daily total P&L from source-backed reporting slice.", tone: "Success" },
+            { label: "Source count", value: "2", detail: "Two retained source runs support the line.", tone: "Default" }
+          ],
+          proofHref: "/reporting/evidence?subjectKind=report-line&subjectId=report-line:board:pnl",
+          fullRecordHref: "/reporting/report-packs",
+          usedInLabel: "Board report pack",
+          impactsLabel: "Distribution approval"
+        }
+      });
+    default:
+      return undefined;
+  }
+}
+
+function createFixtureFinancialRecordExplorer(seed: FixtureFinancialRecordExplorerSeed): FinancialRecordExplorerDto {
+  const detail = {
+    recordId: seed.row.recordId,
+    recordType: seed.row.recordType,
+    title: seed.row.detailTitle,
+    subtitle: seed.row.detailSubtitle,
+    description: seed.row.detailDescription,
+    tone: seed.row.tone,
+    fields: seed.row.fields,
+    proofActions: [
+      {
+        actionId: "open-source",
+        label: "Open source record",
+        description: "Open the retained source-backed record.",
+        href: seed.row.proofHref,
+        isEnabled: true,
+        disabledReason: "",
+        tone: "Info" as const
+      }
+    ],
+    usedIn: [
+      {
+        relationshipId: `${seed.explorerId}:used-in`,
+        label: seed.row.usedInLabel,
+        description: `${seed.row.detailTitle} is used by the ${seed.row.usedInLabel.toLowerCase()} workflow.`,
+        href: seed.row.fullRecordHref,
+        tone: "Info" as const
+      }
+    ],
+    impacts: [
+      {
+        relationshipId: `${seed.explorerId}:impacts`,
+        label: seed.row.impactsLabel,
+        description: `${seed.row.detailTitle} contributes to ${seed.row.impactsLabel.toLowerCase()} evidence.`,
+        href: seed.row.proofHref,
+        tone: seed.row.tone
+      }
+    ],
+    fullRecordHref: seed.row.fullRecordHref
+  };
+
+  return {
+    explorerId: seed.explorerId,
+    title: seed.title,
+    description: seed.description,
+    sourceState: seed.sourceState,
+    isBlocked: false,
+    blockedReason: "",
+    scopeItems: [
+      { label: "Workstream", value: seed.workstream, tone: "Info" },
+      { label: "Source", value: seed.source, tone: "Default" }
+    ],
+    savedViews: [
+      {
+        viewId: `system-${seed.explorerId}-default`,
+        label: seed.savedViewLabel,
+        description: "Default no-host fixture explorer view.",
+        isSystem: true,
+        isActive: true,
+        filters: seed.filters,
+        searchText: ""
+      }
+    ],
+    summaryItems: seed.summaryItems,
+    filters: seed.filters,
+    columns: seed.columns,
+    rows: [
+      {
+        recordId: seed.row.recordId,
+        recordType: seed.row.recordType,
+        label: seed.row.label,
+        source: seed.row.source,
+        status: seed.row.status,
+        tone: seed.row.tone,
+        cells: seed.row.cells,
+        detail
+      }
+    ],
+    selectedRecord: detail,
+    proofActions: [
+      {
+        actionId: "evidence",
+        label: "Open evidence packet",
+        description: "Open retained evidence for this explorer.",
+        href: seed.row.proofHref,
+        isEnabled: true,
+        disabledReason: "",
+        tone: "Info"
+      }
+    ],
+    recordGraph: {
+      nodes: [
+        { nodeId: seed.row.recordId, label: seed.row.label, nodeType: seed.row.recordType, tone: seed.row.tone, href: seed.row.fullRecordHref },
+        { nodeId: `${seed.explorerId}:evidence`, label: "Evidence", nodeType: "Evidence", tone: "Info", href: seed.row.proofHref }
+      ],
+      edges: [
+        { sourceNodeId: seed.row.recordId, targetNodeId: `${seed.explorerId}:evidence`, label: "retains", tone: "Info" }
+      ]
+    }
+  };
+}
+
 const fixtures = {
   [WORKSTATION_API_ENDPOINTS.systemStatus]: fixtureSystemOverview,
   [WORKSTATION_API_ENDPOINTS.session]: fixtureSession,
@@ -4579,6 +5275,7 @@ const fixtures = {
   "/api/workstation/research": fixtureStrategyWorkspace,
   [WORKSTATION_API_ENDPOINTS.trading]: fixtureTradingWorkspace,
   [WORKSTATION_API_ENDPOINTS.portfolio]: fixturePortfolioWorkspace,
+  [workstationFinancialRecordExplorerEndpoint("portfolio")]: fixturePortfolioFinancialRecordExplorer,
   [WORKSTATION_API_ENDPOINTS.portfolioMultiAssetCoverage]: fixturePortfolioMultiAssetCoverage,
   [WORKSTATION_API_ENDPOINTS.tradingReadiness]: fixtureTradingReadiness,
   [WORKSTATION_API_ENDPOINTS.operatorInbox]: fixtureOperatorInbox,
@@ -4613,6 +5310,7 @@ const fixtures = {
   [PROVIDER_ROUTING_API_ENDPOINTS.trustSnapshots]: fixtureProviderRoutingTrustSnapshots,
   [WORKSTATION_API_ENDPOINTS.accounting]: fixtureAccountingWorkspace,
   [WORKSTATION_API_ENDPOINTS.reporting]: fixtureAccountingWorkspace,
+  [WORKSTATION_API_ENDPOINTS.accountingConfiguration]: fixtureAccountingConfiguration,
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.providers]: fixtureAccountingSystemProviders,
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.importPreview]: fixtureAccountingSystemImport,
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.importLatest]: fixtureAccountingSystemImport,
@@ -4620,6 +5318,7 @@ const fixtures = {
   "/api/workstation/runs/run-42/ledger/trial-balance": fixtureLedgerTrialBalance,
   "/api/workstation/governance": fixtureAccountingWorkspace,
   [RECONCILIATION_API_ENDPOINTS.breakQueue]: fixtureAccountingWorkspace.breakQueue,
+  [RECONCILIATION_API_ENDPOINTS.statementRuns]: fixtureStatementRuns,
   [RECONCILIATION_API_ENDPOINTS.calibrationSummary]: fixtureCalibrationSummary,
   [QUANT_API_ENDPOINTS.templates]: fixtureQuantTemplates,
   [QUANT_API_ENDPOINTS.parameters]: fixtureQuantParameters,
@@ -4641,7 +5340,13 @@ type DynamicFixturePattern = {
   resolve: (cleanPath: string, path: string) => unknown | undefined;
 };
 
+const financialRecordExplorerFixtureBase = WORKSTATION_API_ENDPOINTS.financialRecordExplorer.replace("/{explorerId}", "");
+
 const dynamicFixturePatterns: DynamicFixturePattern[] = [
+  {
+    pattern: apiRoutePattern(financialRecordExplorerFixtureBase, "/[^/]+"),
+    resolve: (cleanPath) => buildFixtureFinancialRecordExplorer(readDecodedPathSegment(cleanPath))
+  },
   {
     pattern: apiRoutePattern(COVERED_CALL_API_ENDPOINTS.runs, "/[^/]+/result"),
     resolve: (cleanPath) => {
