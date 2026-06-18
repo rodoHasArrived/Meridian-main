@@ -1988,6 +1988,7 @@ describe("SettingsScreen", () => {
     const liveEndpoint = screen.getByRole("radio", { name: "Use Alpaca live endpoint for production brokerage verification" });
     expect(paperEndpoint).toBeChecked();
     expect(liveEndpoint).not.toBeChecked();
+    expect(within(screen.getByRole("radiogroup", { name: "Alpaca trading environment" })).getByText("Default")).toHaveClass("border-paper/35", "bg-paper/12", "text-paper");
     expect(paperEndpoint).toHaveAccessibleDescription(/Paper endpoint for workstation validation.*Paper endpoint selected/s);
     expect(liveEndpoint).toHaveAccessibleDescription(/Live endpoint for production brokerage verification.*Paper endpoint selected/s);
     expect(screen.getByText("Enter Alpaca credentials")).toBeInTheDocument();
@@ -2026,7 +2027,9 @@ describe("SettingsScreen", () => {
     await user.type(screen.getByPlaceholderText("ALPACA_SECRET_KEY"), "secret");
 
     const submit = screen.getByRole("button", { name: /connect and test/i });
-    expect(screen.getByRole("checkbox", { name: "Acknowledge live Alpaca endpoint before testing credentials" })).not.toBeChecked();
+    const liveAcknowledgement = screen.getByRole("checkbox", { name: "Acknowledge live Alpaca endpoint before testing credentials" });
+    expect(liveAcknowledgement).not.toBeChecked();
+    expect(liveAcknowledgement.closest("[class*='border-danger/35']")).toBeInTheDocument();
     expect(screen.getByText("Live endpoint review required")).toBeInTheDocument();
     expect(submit).toBeDisabled();
     expect(submit).toHaveAttribute(

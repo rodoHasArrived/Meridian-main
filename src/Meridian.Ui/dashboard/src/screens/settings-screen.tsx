@@ -4,8 +4,13 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { Input } from "@/components/ui/input";
+import { PanelSurface, type PanelSurfaceTone } from "@/components/ui/panel-surface";
+import { Select } from "@/components/ui/select";
+import { semanticBorderToneClass, semanticPanelToneClass, semanticTextToneClass } from "@/components/ui/semantic-tone";
+import { StatusBanner } from "@/components/ui/status-banner";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { WorkspaceFilterBar, WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import {
@@ -307,61 +312,19 @@ const emptyProviderRuntimeEvidenceState: ProviderRuntimeEvidenceState = {
   quarantine: null
 };
 
-const systemToneClass = {
-  default: "border-border/70",
-  success: "border-success/30",
-  warning: "border-warning/30",
-  danger: "border-danger/30"
-} as const;
+const environmentBadgeVariant = (tone: "paper" | "live"): React.ComponentProps<typeof Badge>["variant"] => (tone === "live" ? "live" : "paper");
 
-const eventToneClass = {
-  default: "border-border/70 bg-secondary/25",
-  warning: "border-warning/35 bg-warning/10",
-  danger: "border-danger/35 bg-danger/10"
-} as const;
 
-const itemToneClass = {
-  default: "text-foreground",
-  success: "text-success",
-  warning: "text-warning",
-  danger: "text-danger",
-  muted: "text-muted-foreground"
-} as const;
-
-const diagnosticToneClass = {
-  default: "border-border/70 bg-secondary/30",
-  success: "border-success/30 bg-success/10",
-  warning: "border-warning/35 bg-warning/10",
-  danger: "border-danger/35 bg-danger/10"
-} as const;
-
-const formReadinessTextClass = {
-  default: "text-muted-foreground",
-  success: "text-success",
-  warning: "text-warning",
-  danger: "text-danger"
-} as const;
+const systemToneClass = semanticBorderToneClass;
+const eventToneClass = semanticPanelToneClass;
+const itemToneClass = semanticTextToneClass;
+const diagnosticToneClass = semanticPanelToneClass;
+const formReadinessTextClass = semanticTextToneClass;
+const requirementToneClass = semanticPanelToneClass;
+const setupStepToneClass = semanticPanelToneClass;
 
 const emptyProviderInlineValues: Record<ProviderInlineField, string> = {};
 
-const requirementToneClass = {
-  success: "border-success/30 bg-success/10 text-success",
-  warning: "border-warning/35 bg-warning/10 text-warning",
-  muted: "border-border/70 bg-secondary/25 text-muted-foreground"
-} as const;
-
-const environmentOptionClass = {
-  paper: {
-    selected: "border-paper/40 bg-paper/10 text-paper",
-    idle: "border-border/70 bg-secondary/25 text-foreground hover:border-paper/35 hover:bg-paper/10",
-    badge: "border-paper/30 bg-paper/10 text-paper"
-  },
-  live: {
-    selected: "border-live-env/40 bg-live-env/10 text-live-env",
-    idle: "border-border/70 bg-secondary/25 text-foreground hover:border-live-env/35 hover:bg-live-env/10",
-    badge: "border-live-env/35 bg-live-env/10 text-live-env"
-  }
-} as const;
 
 function AlpacaCredentialField({
   field,
@@ -401,13 +364,6 @@ function AlpacaCredentialField({
     </label>
   );
 }
-
-const setupStepToneClass = {
-  success: "border-success/30 bg-success/10",
-  warning: "border-warning/35 bg-warning/10",
-  danger: "border-danger/35 bg-danger/10",
-  muted: "border-border/70 bg-secondary/25"
-} as const;
 
 const recentEventColumns: DenseDataTableColumn<SettingsRecentEventTableRow>[] = [
   {
@@ -2464,11 +2420,12 @@ export function SettingsScreen({
       />
 
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        <Card
+        <PanelSurface
           id="profile-authentication"
           role="region"
           aria-label={vm.profileAuthenticationPanel.regionLabel}
-          className={cn("panel-surface scroll-mt-6 border", diagnosticToneClass[vm.profileAuthenticationPanel.statusTone])}
+          className="scroll-mt-6"
+          tone={vm.profileAuthenticationPanel.statusTone}
         >
           <CardHeader>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -2555,9 +2512,9 @@ export function SettingsScreen({
               ))}
             </div>
           </CardContent>
-        </Card>
+        </PanelSurface>
 
-        <Card className={cn("panel-surface border", systemToneClass[vm.systemTone])}>
+        <PanelSurface tone={vm.systemTone}>
           <CardHeader>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -2592,7 +2549,7 @@ export function SettingsScreen({
               </p>
             )}
           </CardContent>
-        </Card>
+        </PanelSurface>
       </section>
 
       <Card
@@ -3976,9 +3933,9 @@ export function SettingsScreen({
         </CardContent>
       </Card>
 
-      <Card
+      <PanelSurface
         id="alpaca-provider-setup"
-        className={cn("panel-surface scroll-mt-6 border", diagnosticToneClass[vm.alpacaConnectionPanel.statusTone])}
+        className="scroll-mt-6" tone={vm.alpacaConnectionPanel.statusTone}
       >
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -4024,7 +3981,7 @@ export function SettingsScreen({
                       htmlFor={option.id}
                       className={cn(
                         "relative grid min-h-[4.75rem] cursor-pointer gap-1 rounded-md border px-3 py-2 transition-colors",
-                        option.isSelected ? environmentOptionClass[option.tone].selected : environmentOptionClass[option.tone].idle,
+                        option.isSelected ? "border-primary/50 bg-primary/10" : "border-border/70 bg-secondary/25 hover:border-primary/35 hover:bg-primary/10",
                         option.disabled && "cursor-not-allowed opacity-60"
                       )}
                     >
@@ -4048,9 +4005,7 @@ export function SettingsScreen({
                       <span className="pointer-events-none absolute inset-0 rounded-md peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40" aria-hidden="true" />
                       <span className="flex items-center justify-between gap-2">
                         <span className="font-semibold text-foreground">{option.label}</span>
-                        <span className={cn("rounded-sm border px-2 py-0.5 font-mono text-[10px] uppercase", environmentOptionClass[option.tone].badge)}>
-                          {option.badgeLabel}
-                        </span>
+                        <Badge variant={environmentBadgeVariant(option.tone)}>{option.badgeLabel}</Badge>
                       </span>
                       <span id={option.descriptionId} className="text-[11px] font-normal leading-4 text-muted-foreground">
                         {option.description}
@@ -4072,40 +4027,28 @@ export function SettingsScreen({
               </fieldset>
             </div>
             {alpacaForm.liveAcknowledgement.visible ? (
-              <label
-                htmlFor={alpacaForm.liveAcknowledgement.id}
-                className={cn(
-                  "flex items-start gap-3 rounded-md border border-live-env/35 bg-live-env/10 px-3 py-3 text-sm text-live-env",
-                  alpacaForm.liveAcknowledgement.disabled && "opacity-60"
-                )}
-              >
-                <input
+              <PanelSurface tone="danger" className={cn("px-3 py-3", alpacaForm.liveAcknowledgement.disabled && "opacity-60")}>
+                <Checkbox
                   id={alpacaForm.liveAcknowledgement.id}
-                  type="checkbox"
                   checked={alpacaForm.liveAcknowledgement.checked}
                   disabled={alpacaForm.liveAcknowledgement.disabled}
                   required={alpacaForm.liveAcknowledgement.required}
-                  onChange={(event) => alpacaForm.setLiveAcknowledged(event.target.checked)}
+                  onCheckedChange={alpacaForm.setLiveAcknowledged}
                   aria-label={alpacaForm.liveAcknowledgement.ariaLabel}
                   aria-describedby={joinDescribedByIds(
                     alpacaForm.liveAcknowledgement.descriptionId,
                     alpacaForm.liveAcknowledgement.disabledReasonId,
                     alpacaForm.formPanelId
                   )}
-                  className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--live-env))]"
+                  label={alpacaForm.liveAcknowledgement.label}
+                  hint={<span id={alpacaForm.liveAcknowledgement.descriptionId}>{alpacaForm.liveAcknowledgement.detail}</span>}
                 />
-                <span className="min-w-0">
-                  <span className="block font-semibold text-foreground">{alpacaForm.liveAcknowledgement.label}</span>
-                  <span id={alpacaForm.liveAcknowledgement.descriptionId} className="mt-1 block text-xs leading-5 text-muted-foreground">
-                    {alpacaForm.liveAcknowledgement.detail}
-                  </span>
-                  <FieldSupportText
-                    disabledReason={alpacaForm.liveAcknowledgement.disabledReason}
-                    disabledReasonId={alpacaForm.liveAcknowledgement.disabledReasonId ?? undefined}
-                    disabledReasonClassName="mt-1 block"
-                  />
-                </span>
-              </label>
+                <FieldSupportText
+                  disabledReason={alpacaForm.liveAcknowledgement.disabledReason}
+                  disabledReasonId={alpacaForm.liveAcknowledgement.disabledReasonId ?? undefined}
+                  disabledReasonClassName="mt-1 block"
+                />
+              </PanelSurface>
             ) : null}
             <div
               id={alpacaForm.formPanelId}
@@ -4184,9 +4127,7 @@ export function SettingsScreen({
               <SettingsFieldRow label="Verified" value={vm.alpacaConnectionPanel.verifiedAtLabel} tone="muted" />
             </dl>
             {vm.alpacaConnectionPanel.warnings.length > 0 ? (
-              <div className="rounded-md border border-warning/35 bg-warning/10 px-3 py-2 text-xs leading-5 text-warning">
-                {vm.alpacaConnectionPanel.warnings[0]}
-              </div>
+              <StatusBanner tone="warning" title={vm.alpacaConnectionPanel.warnings[0]} />
             ) : null}
             <div
               role="list"
@@ -4229,7 +4170,7 @@ export function SettingsScreen({
             </div>
           </div>
         </CardContent>
-      </Card>
+      </PanelSurface>
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <Card id="diagnostic-endpoints" className="panel-surface scroll-mt-6">
@@ -4281,18 +4222,14 @@ export function SettingsScreen({
                 />
               </div>
             ) : (
-              <div
+              <PanelSurface
                 role={vm.recentEventsSection.state === "unavailable" ? "alert" : "status"}
-                className={cn(
-                  "rounded-md border px-4 py-4",
-                  vm.recentEventsSection.state === "unavailable"
-                    ? "border-danger/35 bg-danger/10"
-                    : "border-border/70 bg-secondary/25"
-                )}
+                tone={vm.recentEventsSection.state === "unavailable" ? "danger" : "muted"}
+                className="px-4 py-4"
               >
                 <div className="text-sm font-semibold text-foreground">{vm.recentEventsSection.statusLabel}</div>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">{vm.recentEventsSection.statusDetail}</p>
-              </div>
+              </PanelSurface>
             )}
           </CardContent>
         </Card>
@@ -5257,10 +5194,9 @@ function ProviderInlineActionPanel({
           )}
           <label className="grid gap-1 text-xs font-medium text-muted-foreground">
             Environment
-            <select
+            <Select
               value={state.environment}
               onChange={(event) => onEnvironmentChange(event.target.value)}
-              className="h-9 rounded-md border border-border/70 bg-background px-2 text-sm text-foreground"
               disabled={busy}
               aria-label={`${row.displayName} environment`}
             >
@@ -5269,19 +5205,17 @@ function ProviderInlineActionPanel({
                   {option.label}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           {state.environment === "live" ? (
-            <label className="flex items-start gap-2 rounded-md border border-live-env/35 bg-live-env/10 px-2 py-2 text-xs text-live-env">
-              <input
-                type="checkbox"
+            <PanelSurface tone="danger" className="px-2 py-2">
+              <Checkbox
                 checked={state.liveAcknowledged}
-                onChange={(event) => onLiveAcknowledgementChange(event.target.checked)}
-                className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--live-env))]"
+                onCheckedChange={onLiveAcknowledgementChange}
                 disabled={busy}
+                label="I understand this save updates live provider routing credentials."
               />
-              <span>I understand this save updates live provider routing credentials.</span>
-            </label>
+            </PanelSurface>
           ) : null}
         </div>
       ) : null}
@@ -5547,9 +5481,9 @@ function ProviderIntegrationRuntimePanel({
                       {record.capability} · {formatProviderRuntimeUtcMinute(record.createdAt)} · {formatProviderRuntimeNumber(record.validationErrors.length)} issues
                     </p>
                     {latestDecision ? (
-                      <p className="mt-1 text-[11px] leading-4 text-success">
+                      <Badge variant="success" className="mt-1">
                         Decision: {providerRuntimeQuarantineActionLabel(latestDecision.action)} by {latestDecision.reviewedBy} · {formatProviderRuntimeUtcMinute(latestDecision.reviewedAt)}
-                      </p>
+                      </Badge>
                     ) : null}
                   </div>
                   <div className="flex flex-wrap justify-end gap-2">

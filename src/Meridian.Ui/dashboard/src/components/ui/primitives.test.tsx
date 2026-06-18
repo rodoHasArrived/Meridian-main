@@ -23,6 +23,12 @@ describe("design-system UI primitives", () => {
     expect(screen.getByText("Security Master")).toHaveAttribute("aria-current", "page");
   });
 
+  it("maps semantic panel tones to shared token classes", () => {
+    render(<PanelSurface tone="success" aria-label="Verified provider">Provider ready</PanelSurface>);
+
+    expect(screen.getByLabelText("Verified provider")).toHaveClass("border-success/35", "bg-success/10");
+  });
+
   it("toggles checkbox and switch primitives", async () => {
     const user = userEvent.setup();
     const onCheckboxChange = vi.fn();
