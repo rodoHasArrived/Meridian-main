@@ -34,14 +34,23 @@
 - git diff: Changed-file evidence for handoff packet.
 
 ## Changes made
+- build/scripts/docs/check-ai-handoff.py: Touched in current git diff.
+- build/scripts/docs/check-ai-inventory.py: Touched in current git diff.
+- build/scripts/docs/generate-coverage.py: Touched in current git diff.
+- build/scripts/docs/handoff-packet-generator.py: Touched in current git diff.
+- build/scripts/docs/prompt-route-linter.py: Touched in current git diff.
+- build/scripts/docs/run-docs-automation.py: Touched in current git diff.
+- build/scripts/docs/validate-examples.py: Touched in current git diff.
 - docs/generated/repository-structure.md: Touched in current git diff.
 - docs/status/TODO.md: Touched in current git diff.
 - docs/status/ai-handoff-checklist-report.json: Touched in current git diff.
 - docs/status/ai-inventory-report.json: Touched in current git diff.
+- docs/status/ai-inventory-report.md: Touched in current git diff.
 - docs/status/doc-health-dashboard.json: Touched in current git diff.
 - docs/status/doc-health-dashboard.md: Touched in current git diff.
 - docs/status/example-validation.md: Touched in current git diff.
 - docs/status/prompt-route-lint-report.json: Touched in current git diff.
+- scripts/lib/ui-diagram-generator.mjs: Touched in current git diff.
 
 ## Validation
 - [pass] python build/scripts/docs/prompt-route-linter.py --summary

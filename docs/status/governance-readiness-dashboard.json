@@ -1,0 +1,195 @@
+{
+  "dashboard": "governance-readiness",
+  "title": "Governance Readiness Dashboard",
+  "description": "Tracks whether DK2 governance, reconciliation, and shared-contract controls have current status evidence, route support, and validation coverage.",
+  "generated_at": "2026-06-19T00:53:16.555520+00:00",
+  "root": "Meridian-pr1942-clean",
+  "score_percent": 46.7,
+  "passed_weight": 7,
+  "total_weight": 15,
+  "summary": {
+    "check_count": 6,
+    "passed_checks": 3,
+    "gap_checks": 3,
+    "missing_source_count": 0,
+    "missing_term_count": 9
+  },
+  "checks": [
+    {
+      "id": "kernel-governance",
+      "category": "Readiness Board",
+      "label": "Kernel dashboard tracks reconciliation and governance DK2 readiness",
+      "status": "gap",
+      "weight": 3,
+      "score": 0,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "docs/status/kernel-readiness-dashboard.md"
+      ],
+      "matched_paths": [
+        "docs/status/kernel-readiness-dashboard.md"
+      ],
+      "missing_patterns": [],
+      "terms": [
+        "Reconciliation + governance",
+        "Governance/Fund Ops owner",
+        "Operator Sign-off"
+      ],
+      "found_terms": [],
+      "missing_terms": [
+        "Reconciliation + governance",
+        "Governance/Fund Ops owner",
+        "Operator Sign-off"
+      ],
+      "detail": "",
+      "remediation": "Refresh the kernel dashboard governance row before claiming DK2 readiness."
+    },
+    {
+      "id": "contract-governance",
+      "category": "Shared Contracts",
+      "label": "Contract compatibility matrix requires review packets and owner decisions",
+      "status": "gap",
+      "weight": 3,
+      "score": 0,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "docs/status/contract-compatibility-matrix.md"
+      ],
+      "matched_paths": [
+        "docs/status/contract-compatibility-matrix.md"
+      ],
+      "missing_patterns": [],
+      "terms": [
+        "Contract review packet",
+        "Owner decision",
+        "migration notes"
+      ],
+      "found_terms": [],
+      "missing_terms": [
+        "Contract review packet",
+        "Owner decision",
+        "migration notes"
+      ],
+      "detail": "",
+      "remediation": "Record contract-review packet evidence and owner decisions in the matrix."
+    },
+    {
+      "id": "reconciliation-contract",
+      "category": "Governance Operations",
+      "label": "Feature inventory describes reconciliation calibration and sign-off posture",
+      "status": "gap",
+      "weight": 2,
+      "score": 0,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "docs/status/FEATURE_INVENTORY.md"
+      ],
+      "matched_paths": [
+        "docs/status/FEATURE_INVENTORY.md"
+      ],
+      "missing_patterns": [],
+      "terms": [
+        "calibration-summary",
+        "tolerance-profile posture",
+        "required sign-off role"
+      ],
+      "found_terms": [],
+      "missing_terms": [
+        "calibration-summary",
+        "tolerance-profile posture",
+        "required sign-off role"
+      ],
+      "detail": "",
+      "remediation": "Update the feature inventory with the current reconciliation governance scope."
+    },
+    {
+      "id": "governance-endpoints",
+      "category": "Governance Operations",
+      "label": "Workstation endpoints expose governance break queue and calibration routes",
+      "status": "pass",
+      "weight": 3,
+      "score": 3,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs"
+      ],
+      "matched_paths": [
+        "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs"
+      ],
+      "missing_patterns": [],
+      "terms": [
+        "break-queue",
+        "calibration-summary",
+        "sign-off"
+      ],
+      "found_terms": [
+        "break-queue",
+        "calibration-summary",
+        "sign-off"
+      ],
+      "missing_terms": [],
+      "detail": "",
+      "remediation": "Keep governance readiness tied to workstation endpoints and documented route evidence."
+    },
+    {
+      "id": "governance-tests",
+      "category": "Validation",
+      "label": "Endpoint tests cover governance break queue and calibration readiness",
+      "status": "pass",
+      "weight": 2,
+      "score": 2,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs"
+      ],
+      "matched_paths": [
+        "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs"
+      ],
+      "missing_patterns": [],
+      "terms": [
+        "BreakQueue",
+        "ReconciliationCalibrationSummary",
+        "Signoff"
+      ],
+      "found_terms": [
+        "BreakQueue",
+        "ReconciliationCalibrationSummary",
+        "Signoff"
+      ],
+      "missing_terms": [],
+      "detail": "",
+      "remediation": "Add focused endpoint tests for governance break queue and calibration readiness."
+    },
+    {
+      "id": "status-docs",
+      "category": "Status",
+      "label": "Provider and contract status dashboards remain present for governance reviews",
+      "status": "pass",
+      "weight": 2,
+      "score": 2,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "docs/status/provider-validation-matrix.md",
+        "docs/status/contract-compatibility-matrix.md",
+        "docs/status/kernel-readiness-dashboard.md"
+      ],
+      "matched_paths": [
+        "docs/status/provider-validation-matrix.md",
+        "docs/status/contract-compatibility-matrix.md",
+        "docs/status/kernel-readiness-dashboard.md"
+      ],
+      "missing_patterns": [],
+      "terms": [],
+      "found_terms": [],
+      "missing_terms": [],
+      "detail": "",
+      "remediation": "Restore the status docs used for governance readiness reviews."
+    }
+  ]
+}

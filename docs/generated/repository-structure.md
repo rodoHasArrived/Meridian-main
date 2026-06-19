@@ -1,9 +1,9 @@
 # Repository Structure
 
-> Auto-generated on 2026-06-16 11:36:22 UTC. Do not edit manually.
+> Auto-generated on 2026-06-19 00:52:31 UTC. Do not edit manually.
 
 ```text
-Meridian-main
+Meridian-pr1942-clean
 ├── .agents
 │   └── skills
 │       ├── _shared
@@ -130,37 +130,6 @@ Meridian-main
 │           │   └── test-patterns.md
 │           ├── CHANGELOG.md
 │           └── SKILL.md
-├── .ai
-│   ├── locks
-│   │   └── validation.lock
-│   ├── test-results
-│   │   ├── test-meridian-tests-26276-20260616101826
-│   │   ├── test-meridian-tests-32736-20260616041611
-│   │   ├── test-meridian-tests-33760-20260616101717
-│   │   ├── test-meridian-tests-37300-20260616100501
-│   │   ├── test-meridian-wpf-tests-13908-20260616070459
-│   │   ├── test-meridian-wpf-tests-14820-20260616070535
-│   │   ├── test-meridian-wpf-tests-22980-20260616070411
-│   │   ├── test-meridian-wpf-tests-29004-20260616084449
-│   │   ├── test-meridian-wpf-tests-30452-20260616070638
-│   │   ├── test-meridian-wpf-tests-30912-20260616070212
-│   │   └── test-meridian-wpf-tests-8064-20260616084410
-│   └── validation-runs
-│       ├── run-one.json
-│       ├── test-meridian-tests-13432-20260616073753.json
-│       ├── test-meridian-tests-19316-20260616104444.json
-│       ├── test-meridian-tests-26276-20260616101826.json
-│       ├── test-meridian-tests-32736-20260616041611.json
-│       ├── test-meridian-tests-33760-20260616101717.json
-│       ├── test-meridian-tests-36836-20260616094823.json
-│       ├── test-meridian-tests-37300-20260616100501.json
-│       ├── test-meridian-wpf-tests-13908-20260616070459.json
-│       ├── test-meridian-wpf-tests-14820-20260616070535.json
-│       ├── test-meridian-wpf-tests-22980-20260616070411.json
-│       ├── test-meridian-wpf-tests-29004-20260616084449.json
-│       ├── test-meridian-wpf-tests-30452-20260616070638.json
-│       ├── test-meridian-wpf-tests-30912-20260616070212.json
-│       └── test-meridian-wpf-tests-8064-20260616084410.json
 ├── .claude
 │   ├── agents
 │   │   ├── meridian-archive-organizer.md
@@ -350,7 +319,10 @@ Meridian-main
 │   │   ├── meridian-brainstorm.toml
 │   │   ├── meridian-browser-workstation.toml
 │   │   ├── meridian-cleanup.toml
+│   │   ├── meridian-code-architecture.toml
 │   │   ├── meridian-code-review.toml
+│   │   ├── meridian-codex-skill-builder.toml
+│   │   ├── meridian-contract-governance.toml
 │   │   ├── meridian-docs.toml
 │   │   ├── meridian-implementation-assurance.toml
 │   │   ├── meridian-provider-builder.toml
@@ -456,8 +428,15 @@ Meridian-main
 │   │   ├── meridian-brainstorm
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
 │   │   │   ├── references
 │   │   │   │   └── competitive-landscape.md
+│   │   │   ├── scripts
+│   │   │   │   ├── brainstorm_output_check.py
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-browser-workstation
 │   │   │   ├── agents
@@ -469,9 +448,48 @@ Meridian-main
 │   │   │   ├── scripts
 │   │   │   │   └── repo-updater.ps1
 │   │   │   └── SKILL.md
+│   │   ├── meridian-code-architecture
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── references
+│   │   │   │   └── architecture-checklist.md
+│   │   │   ├── scripts
+│   │   │   │   ├── architecture_surface.py
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
+│   │   │   └── SKILL.md
 │   │   ├── meridian-code-review
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   └── SKILL.md
+│   │   ├── meridian-codex-skill-builder
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── references
+│   │   │   │   └── skill-package-checklist.md
+│   │   │   ├── scripts
+│   │   │   │   ├── run_evals.py
+│   │   │   │   ├── score_eval.py
+│   │   │   │   └── skill_package_audit.py
+│   │   │   └── SKILL.md
+│   │   ├── meridian-contract-governance
+│   │   │   ├── agents
+│   │   │   │   └── openai.yaml
+│   │   │   ├── evals
+│   │   │   │   ├── benchmark_baseline.json
+│   │   │   │   └── evals.json
+│   │   │   ├── references
+│   │   │   │   └── contract-impact-checklist.md
+│   │   │   ├── scripts
+│   │   │   │   ├── contract_impact.py
+│   │   │   │   ├── run_evals.py
+│   │   │   │   └── score_eval.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-docs
 │   │   │   ├── agents
@@ -491,7 +509,8 @@ Meridian-main
 │   │   │   ├── scripts
 │   │   │   │   ├── doc_route.py
 │   │   │   │   ├── run_evals.py
-│   │   │   │   └── score_eval.py
+│   │   │   │   ├── score_eval.py
+│   │   │   │   └── skill_script_advisor.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-provider-builder
 │   │   │   ├── agents
@@ -561,7 +580,6 @@ Meridian-main
 │   │   │   │   └── openai.yaml
 │   │   │   └── SKILL.md
 │   │   └── README.md
-│   ├── tmp
 │   ├── AGENTS.md
 │   └── config.toml
 ├── .devcontainer
@@ -822,7 +840,8 @@ Meridian-main
 │       │   └── promptfoo_adapter.py
 │       ├── ci
 │       │   ├── check-warning-suppressions.py
-│       │   └── check-workflow-hygiene.py
+│       │   ├── check-workflow-hygiene.py
+│       │   └── run-dotnet-ci-tests.py
 │       ├── docs
 │       │   ├── tests
 │       │   │   ├── test_check_ai_handoff.py
@@ -868,6 +887,7 @@ Meridian-main
 │       │   ├── mark-stale-docs.py
 │       │   ├── prompt-route-linter.py
 │       │   ├── README.md
+│       │   ├── render-make-help.py
 │       │   ├── render-roadmap-diagrams.py
 │       │   ├── render-roadmap-docs.py
 │       │   ├── render-source-diagrams.py
@@ -926,7 +946,6 @@ Meridian-main
 │       ├── validate-tooling-metadata.py
 │       └── validate_budget.py
 ├── config
-│   ├── appsettings.json
 │   ├── appsettings.sample.json
 │   ├── appsettings.schema.json
 │   ├── condition-codes.json
@@ -1216,7 +1235,34 @@ Meridian-main
 │   │   │   ├── ui-implementation-flow.svg
 │   │   │   ├── ui-navigation-map.dot
 │   │   │   ├── ui-navigation-map.png
-│   │   │   └── ui-navigation-map.svg
+│   │   │   ├── ui-navigation-map.svg
+│   │   │   ├── ui-wpf-screen-catalog.dot
+│   │   │   ├── ui-wpf-screen-catalog.png
+│   │   │   ├── ui-wpf-screen-catalog.svg
+│   │   │   ├── ui-wpf-screen-summary.dot
+│   │   │   ├── ui-wpf-screen-summary.png
+│   │   │   ├── ui-wpf-screen-summary.svg
+│   │   │   ├── ui-wpf-screens-accounting.dot
+│   │   │   ├── ui-wpf-screens-accounting.png
+│   │   │   ├── ui-wpf-screens-accounting.svg
+│   │   │   ├── ui-wpf-screens-data.dot
+│   │   │   ├── ui-wpf-screens-data.png
+│   │   │   ├── ui-wpf-screens-data.svg
+│   │   │   ├── ui-wpf-screens-portfolio.dot
+│   │   │   ├── ui-wpf-screens-portfolio.png
+│   │   │   ├── ui-wpf-screens-portfolio.svg
+│   │   │   ├── ui-wpf-screens-reporting.dot
+│   │   │   ├── ui-wpf-screens-reporting.png
+│   │   │   ├── ui-wpf-screens-reporting.svg
+│   │   │   ├── ui-wpf-screens-settings.dot
+│   │   │   ├── ui-wpf-screens-settings.png
+│   │   │   ├── ui-wpf-screens-settings.svg
+│   │   │   ├── ui-wpf-screens-strategy.dot
+│   │   │   ├── ui-wpf-screens-strategy.png
+│   │   │   ├── ui-wpf-screens-strategy.svg
+│   │   │   ├── ui-wpf-screens-trading.dot
+│   │   │   ├── ui-wpf-screens-trading.png
+│   │   │   └── ui-wpf-screens-trading.svg
 │   │   ├── uml
 │   │   │   ├── Activity Diagram - Data Collection Process Flow.png
 │   │   │   ├── Activity Diagram - Data Collection Process Flow.svg
@@ -1319,7 +1365,34 @@ Meridian-main
 │   │   ├── ui-implementation-flow.svg
 │   │   ├── ui-navigation-map.dot
 │   │   ├── ui-navigation-map.png
-│   │   └── ui-navigation-map.svg
+│   │   ├── ui-navigation-map.svg
+│   │   ├── ui-wpf-screen-catalog.dot
+│   │   ├── ui-wpf-screen-catalog.png
+│   │   ├── ui-wpf-screen-catalog.svg
+│   │   ├── ui-wpf-screen-summary.dot
+│   │   ├── ui-wpf-screen-summary.png
+│   │   ├── ui-wpf-screen-summary.svg
+│   │   ├── ui-wpf-screens-accounting.dot
+│   │   ├── ui-wpf-screens-accounting.png
+│   │   ├── ui-wpf-screens-accounting.svg
+│   │   ├── ui-wpf-screens-data.dot
+│   │   ├── ui-wpf-screens-data.png
+│   │   ├── ui-wpf-screens-data.svg
+│   │   ├── ui-wpf-screens-portfolio.dot
+│   │   ├── ui-wpf-screens-portfolio.png
+│   │   ├── ui-wpf-screens-portfolio.svg
+│   │   ├── ui-wpf-screens-reporting.dot
+│   │   ├── ui-wpf-screens-reporting.png
+│   │   ├── ui-wpf-screens-reporting.svg
+│   │   ├── ui-wpf-screens-settings.dot
+│   │   ├── ui-wpf-screens-settings.png
+│   │   ├── ui-wpf-screens-settings.svg
+│   │   ├── ui-wpf-screens-strategy.dot
+│   │   ├── ui-wpf-screens-strategy.png
+│   │   ├── ui-wpf-screens-strategy.svg
+│   │   ├── ui-wpf-screens-trading.dot
+│   │   ├── ui-wpf-screens-trading.png
+│   │   └── ui-wpf-screens-trading.svg
 │   ├── docfx
 │   │   ├── api
 │   │   │   └── index.md
@@ -1336,21 +1409,8 @@ Meridian-main
 │   │   ├── README.md
 │   │   └── wpf-perf-uiux-audit-2026-06-14.md
 │   ├── evaluations
-│   │   ├── 2026-03-brainstorm-next-frontier.md
-│   │   ├── assembly-performance-opportunities.md
-│   │   ├── competitive-analysis-2026-03.md
-│   │   ├── data-quality-monitoring-evaluation.md
-│   │   ├── desktop-platform-improvements-implementation-guide.md
-│   │   ├── high-value-low-cost-improvements-brainstorm.md
-│   │   ├── historical-data-providers-evaluation.md
-│   │   ├── ingestion-orchestration-evaluation.md
-│   │   ├── nautilus-inspired-restructuring-proposal.md
-│   │   ├── operational-readiness-evaluation.md
-│   │   ├── quant-script-blueprint-brainstorm.md
-│   │   ├── README.md
-│   │   ├── realtime-streaming-architecture-evaluation.md
-│   │   ├── storage-architecture-evaluation.md
-│   │   └── windows-desktop-provider-configurability-assessment.md
+│   │   ├── evaluation-archive-migration-2026-06-16.md
+│   │   └── README.md
 │   ├── examples
 │   │   ├── agent-improvement-loop
 │   │   │   ├── agent_improvement_loop.ipynb
@@ -1663,7 +1723,8 @@ Meridian-main
 │   │   │   ├── web-trading-positions.png
 │   │   │   ├── web-trading-risk.png
 │   │   │   └── web-trading-workspace.png
-│   │   └── README.md
+│   │   ├── README.md
+│   │   └── web-audit.md
 │   ├── security
 │   │   ├── buyer-packet
 │   │   │   ├── architecture-summary.md
@@ -1781,7 +1842,9 @@ Meridian-main
 │   │   ├── workflow-validation-summary.json
 │   │   ├── workstation-cockpit-acceptance-matrix.json
 │   │   ├── workstation-cockpit-acceptance-matrix.md
-│   │   └── workstation-governance-state-model.md
+│   │   ├── workstation-governance-state-model.md
+│   │   ├── wpf-screen-development-tracker.json
+│   │   └── wpf-screen-development-tracker.md
 │   ├── testing
 │   │   ├── README.md
 │   │   ├── wave2-cockpit-reliability-evidence-runbook.md
@@ -1868,6 +1931,147 @@ Meridian-main
 │   │   │   ├── trading.svg
 │   │   │   └── watchlist.svg
 │   │   └── app.ico
+│   ├── components
+│   │   ├── accounting
+│   │   │   ├── accounting-ledger.card.html
+│   │   │   ├── accounting-reconcile.card.html
+│   │   │   ├── accounting.card.html
+│   │   │   ├── AccountTree.d.ts
+│   │   │   ├── AccountTree.jsx
+│   │   │   ├── AmountCell.d.ts
+│   │   │   ├── AmountCell.jsx
+│   │   │   ├── JournalEntryForm.d.ts
+│   │   │   ├── JournalEntryForm.jsx
+│   │   │   ├── LedgerTable.d.ts
+│   │   │   ├── LedgerTable.jsx
+│   │   │   ├── money.js
+│   │   │   ├── ReconciliationPanel.d.ts
+│   │   │   ├── ReconciliationPanel.jsx
+│   │   │   ├── StatementTable.d.ts
+│   │   │   ├── StatementTable.jsx
+│   │   │   ├── TaxLotTable.d.ts
+│   │   │   └── TaxLotTable.jsx
+│   │   ├── charts
+│   │   │   ├── CandleChart.d.ts
+│   │   │   ├── CandleChart.jsx
+│   │   │   ├── CandleChart.prompt.md
+│   │   │   ├── ChartCard.d.ts
+│   │   │   ├── ChartCard.jsx
+│   │   │   ├── ChartCard.prompt.md
+│   │   │   ├── charts.card.html
+│   │   │   ├── EquityCurve.d.ts
+│   │   │   ├── EquityCurve.jsx
+│   │   │   ├── EquityCurve.prompt.md
+│   │   │   ├── Sparkline.d.ts
+│   │   │   └── Sparkline.jsx
+│   │   ├── core
+│   │   │   ├── Badge.d.ts
+│   │   │   ├── Badge.jsx
+│   │   │   ├── Badge.prompt.md
+│   │   │   ├── Breadcrumb.d.ts
+│   │   │   ├── Breadcrumb.jsx
+│   │   │   ├── Button.d.ts
+│   │   │   ├── Button.jsx
+│   │   │   ├── Button.prompt.md
+│   │   │   ├── Checkbox.d.ts
+│   │   │   ├── Checkbox.jsx
+│   │   │   ├── context-validators.card.html
+│   │   │   ├── ContextMenu.d.ts
+│   │   │   ├── ContextMenu.jsx
+│   │   │   ├── core.card.html
+│   │   │   ├── Eyebrow.d.ts
+│   │   │   ├── Eyebrow.jsx
+│   │   │   ├── Eyebrow.prompt.md
+│   │   │   ├── form-controls.card.html
+│   │   │   ├── Form.d.ts
+│   │   │   ├── Form.jsx
+│   │   │   ├── Input.d.ts
+│   │   │   ├── Input.jsx
+│   │   │   ├── Input.prompt.md
+│   │   │   ├── modal.card.html
+│   │   │   ├── Modal.d.ts
+│   │   │   ├── Modal.jsx
+│   │   │   ├── MultiSelect.d.ts
+│   │   │   ├── MultiSelect.jsx
+│   │   │   ├── PanelSurface.d.ts
+│   │   │   ├── PanelSurface.jsx
+│   │   │   ├── PanelSurface.prompt.md
+│   │   │   ├── Select.d.ts
+│   │   │   ├── Select.jsx
+│   │   │   ├── StatusBanner.d.ts
+│   │   │   ├── StatusBanner.jsx
+│   │   │   ├── StatusBanner.prompt.md
+│   │   │   ├── Tabs.d.ts
+│   │   │   ├── Tabs.jsx
+│   │   │   ├── theming.card.html
+│   │   │   ├── Toast.d.ts
+│   │   │   ├── Toast.jsx
+│   │   │   ├── Tooltip.d.ts
+│   │   │   ├── Tooltip.jsx
+│   │   │   ├── Validators.d.ts
+│   │   │   └── Validators.js
+│   │   ├── data
+│   │   │   ├── ColumnChooser.d.ts
+│   │   │   ├── ColumnChooser.jsx
+│   │   │   ├── data-editing.card.html
+│   │   │   ├── data-extras.card.html
+│   │   │   ├── data.card.html
+│   │   │   ├── DenseDataTable.d.ts
+│   │   │   ├── DenseDataTable.jsx
+│   │   │   ├── DenseDataTable.prompt.md
+│   │   │   ├── EditableCell.d.ts
+│   │   │   ├── EditableCell.jsx
+│   │   │   ├── EmptyState.d.ts
+│   │   │   ├── EmptyState.jsx
+│   │   │   ├── EntitySummary.d.ts
+│   │   │   ├── EntitySummary.jsx
+│   │   │   ├── EntitySummary.prompt.md
+│   │   │   ├── expandable-table.card.html
+│   │   │   ├── ExpandableDataTable.d.ts
+│   │   │   ├── ExpandableDataTable.jsx
+│   │   │   ├── filtered-data-table.card.html
+│   │   │   ├── FilteredDataTable.d.ts
+│   │   │   ├── FilteredDataTable.jsx
+│   │   │   ├── KeyValueGrid.d.ts
+│   │   │   ├── KeyValueGrid.jsx
+│   │   │   ├── KeyValueGrid.prompt.md
+│   │   │   ├── MetricCard.d.ts
+│   │   │   ├── MetricCard.jsx
+│   │   │   ├── MetricCard.prompt.md
+│   │   │   ├── pagination.card.html
+│   │   │   ├── Pagination.d.ts
+│   │   │   ├── Pagination.jsx
+│   │   │   ├── SelectionToolbar.d.ts
+│   │   │   ├── SelectionToolbar.jsx
+│   │   │   └── useTableState.js
+│   │   └── shell
+│   │       ├── NavRail.d.ts
+│   │       ├── NavRail.jsx
+│   │       ├── NavRail.prompt.md
+│   │       ├── shell.card.html
+│   │       ├── StatusBar.d.ts
+│   │       ├── StatusBar.jsx
+│   │       ├── StatusBar.prompt.md
+│   │       ├── WorkstationTopbar.d.ts
+│   │       ├── WorkstationTopbar.jsx
+│   │       └── WorkstationTopbar.prompt.md
+│   ├── guidelines
+│   │   ├── brand-hero.card.html
+│   │   ├── brand-icons.card.html
+│   │   ├── brand-marks.card.html
+│   │   ├── colors-accent.card.html
+│   │   ├── colors-charts.card.html
+│   │   ├── colors-modes.card.html
+│   │   ├── colors-states.card.html
+│   │   ├── colors-surfaces.card.html
+│   │   ├── CONTENT_FUNDAMENTALS.md
+│   │   ├── ICONOGRAPHY.md
+│   │   ├── spacing-density.card.html
+│   │   ├── spacing-radii.card.html
+│   │   ├── type-numerals.card.html
+│   │   ├── type-scale.card.html
+│   │   ├── type-stack.card.html
+│   │   └── VISUAL_FOUNDATIONS.md
 │   ├── preview
 │   │   ├── brand-icons.html
 │   │   ├── brand-marks.html
@@ -1908,20 +2112,68 @@ Meridian-main
 │   │   ├── type-body.html
 │   │   ├── type-display.html
 │   │   └── type-mono.html
+│   ├── scraps
+│   │   ├── acct-ledger.png
+│   │   └── acct-template-check.png
 │   ├── scripts
 │   │   └── check_design_system_governance.py
+│   ├── src
+│   │   └── Meridian.Ui
+│   │       └── dashboard
+│   │           └── src
+│   │               └── styles
+│   │                   └── index.css
+│   ├── templates
+│   │   ├── accounting-workstation
+│   │   │   ├── .thumbnail
+│   │   │   ├── AccountingWorkstation.dc.html
+│   │   │   ├── ds-base.js
+│   │   │   ├── screen.jsx
+│   │   │   └── support.js
+│   │   ├── charting-workstation
+│   │   │   ├── .thumbnail
+│   │   │   ├── ds-base.js
+│   │   │   └── index.html
+│   │   ├── dashboard-workstation
+│   │   │   ├── .thumbnail
+│   │   │   ├── ds-base.js
+│   │   │   └── index.html
+│   │   └── security-master-registry
+│   │       ├── .thumbnail
+│   │       ├── ds-base.js
+│   │       └── index.html
 │   ├── tests
 │   │   └── test_design_system_governance.py
+│   ├── tokens
+│   │   ├── base.css
+│   │   ├── colors.css
+│   │   ├── elevation.css
+│   │   ├── fonts.css
+│   │   ├── theme.css
+│   │   └── typography.css
 │   ├── ui_kits
+│   │   ├── accounting
+│   │   │   └── index.html
 │   │   ├── dashboard
 │   │   │   ├── components.jsx
+│   │   │   ├── index.html
 │   │   │   └── README.md
+│   │   ├── plottool
+│   │   │   └── index.html
+│   │   ├── security-master
+│   │   │   └── index.html
 │   │   ├── plottool_workstation.html
 │   │   ├── security_master-company.html
 │   │   ├── security_master-print.html
 │   │   └── security_master.html
 │   ├── uploads
 │   │   └── ChatGPT Image Apr 24, 2026, 03_58_29 PM.png
+│   ├── .designsystem-cleaned
+│   ├── .thumbnail
+│   ├── _adherence.oxlintrc.json
+│   ├── _ds_bundle.js
+│   ├── _ds_manifest.json
+│   ├── Accounting Reconciliation (standalone).html
 │   ├── BRAND_GUIDELINES.md
 │   ├── colors_and_type.css
 │   ├── CONTENT_FUNDAMENTALS.md
@@ -1931,6 +2183,7 @@ Meridian-main
 │   ├── INSPIRATION_BRIEF.md
 │   ├── README.md
 │   ├── SKILL.md
+│   ├── styles.css
 │   └── VISUAL_FOUNDATIONS.md
 ├── plugins
 │   ├── frontend-web-dev
@@ -2209,13 +2462,20 @@ Meridian-main
 │   │   │   ├── ProviderIntegrationActivationService.cs
 │   │   │   ├── ProviderIntegrationDryRunService.cs
 │   │   │   ├── ProviderIntegrationHttpClientTransport.cs
+│   │   │   ├── ProviderIntegrationIdentityResolutionPreviewService.cs
+│   │   │   ├── ProviderIntegrationMappedRecordIdentity.cs
+│   │   │   ├── ProviderIntegrationMappedRecordValidation.cs
 │   │   │   ├── ProviderIntegrationMonitoringService.cs
 │   │   │   ├── ProviderIntegrationOpenApiImportService.cs
+│   │   │   ├── ProviderIntegrationPromotionReadinessService.cs
 │   │   │   ├── ProviderIntegrationQuarantineReplayService.cs
 │   │   │   ├── ProviderIntegrationQuarantineReviewService.cs
+│   │   │   ├── ProviderIntegrationReconciliationHandoffService.cs
 │   │   │   ├── ProviderIntegrationRestDryRunService.cs
 │   │   │   ├── ProviderIntegrationSchemaDriftService.cs
 │   │   │   ├── ProviderIntegrationSetupService.cs
+│   │   │   ├── ProviderIntegrationStagingDedupeValidator.cs
+│   │   │   ├── ProviderIntegrationStagingReviewService.cs
 │   │   │   ├── ProviderIntegrationSyncOrchestrationService.cs
 │   │   │   ├── ProviderIntegrationSyncPlanningService.cs
 │   │   │   └── ProviderIntegrationTemplateCatalog.cs
@@ -2792,7 +3052,8 @@ Meridian-main
 │   │   │   ├── ICredentialStore.cs
 │   │   │   ├── IProviderCredentialStore.cs
 │   │   │   ├── OAuthToken.cs
-│   │   │   └── ProviderCredentialCatalog.cs
+│   │   │   ├── ProviderCredentialCatalog.cs
+│   │   │   └── ProviderSetupHandlers.cs
 │   │   ├── Etl
 │   │   │   ├── EtlAbstractions.cs
 │   │   │   ├── EtlExportService.cs
@@ -4006,19 +4267,28 @@ Meridian-main
 │   │   │   │   │   │   └── workspace-primitives.tsx
 │   │   │   │   │   └── ui
 │   │   │   │   │       ├── badge.tsx
+│   │   │   │   │       ├── breadcrumb.tsx
 │   │   │   │   │       ├── button.test.tsx
 │   │   │   │   │       ├── button.tsx
 │   │   │   │   │       ├── button.view-model.test.ts
 │   │   │   │   │       ├── button.view-model.ts
 │   │   │   │   │       ├── card.tsx
+│   │   │   │   │       ├── checkbox.tsx
+│   │   │   │   │       ├── context-menu.tsx
 │   │   │   │   │       ├── dialog.test.tsx
 │   │   │   │   │       ├── dialog.tsx
 │   │   │   │   │       ├── dialog.view-model.test.ts
 │   │   │   │   │       ├── dialog.view-model.ts
+│   │   │   │   │       ├── eyebrow.tsx
 │   │   │   │   │       ├── field-support.test.tsx
 │   │   │   │   │       ├── field-support.tsx
+│   │   │   │   │       ├── form.tsx
 │   │   │   │   │       ├── input.tsx
 │   │   │   │   │       ├── label.tsx
+│   │   │   │   │       ├── modal.tsx
+│   │   │   │   │       ├── multi-select.tsx
+│   │   │   │   │       ├── panel-surface.tsx
+│   │   │   │   │       ├── primitives.test.tsx
 │   │   │   │   │       ├── progress.tsx
 │   │   │   │   │       ├── risk-control-panel.test.tsx
 │   │   │   │   │       ├── risk-control-panel.tsx
@@ -4027,6 +4297,9 @@ Meridian-main
 │   │   │   │   │       ├── select.tsx
 │   │   │   │   │       ├── sheet.test.tsx
 │   │   │   │   │       ├── sheet.tsx
+│   │   │   │   │       ├── status-banner.tsx
+│   │   │   │   │       ├── tabs.tsx
+│   │   │   │   │       ├── toast.tsx
 │   │   │   │   │       └── tooltip.tsx
 │   │   │   │   ├── features
 │   │   │   │   │   ├── accounting
@@ -4064,6 +4337,7 @@ Meridian-main
 │   │   │   │   │   ├── api.reconciliation.test.ts
 │   │   │   │   │   ├── api.trading.test.ts
 │   │   │   │   │   ├── api.ts
+│   │   │   │   │   ├── dev-fixtures.test.ts
 │   │   │   │   │   ├── dev-fixtures.ts
 │   │   │   │   │   ├── plaid-link.ts
 │   │   │   │   │   ├── reporting-distributions.ts
@@ -4180,74 +4454,6 @@ Meridian-main
 │   │   │   ├── tsconfig.json
 │   │   │   ├── tsconfig.node.json
 │   │   │   └── vite.config.ts
-│   │   ├── wwwroot
-│   │   │   └── workstation
-│   │   │       ├── assets
-│   │   │       │   ├── accounting-screen-C3r0SpWq.js
-│   │   │       │   ├── activity-csHCWdZ2.js
-│   │   │       │   ├── card-BJ-i4x43.js
-│   │   │       │   ├── chart-column-DofHtlI_.js
-│   │   │       │   ├── chart-line-BdgDscVN.js
-│   │   │       │   ├── circle-alert-Blu0R67p.js
-│   │   │       │   ├── circle-check-D0h-hQsS.js
-│   │   │       │   ├── circle-play-CCjNczFe.js
-│   │   │       │   ├── circle-x-BnV0rB1i.js
-│   │   │       │   ├── clipboard-list-Cv4OBji3.js
-│   │   │       │   ├── covered-call-screen-xLKa9IaI.js
-│   │   │       │   ├── data-screen-DpCiK7OV.js
-│   │   │       │   ├── database-DCGIHrCR.js
-│   │   │       │   ├── dialog-C_C9mA0V.js
-│   │   │       │   ├── download-DnxA96IY.js
-│   │   │       │   ├── entity-setup-wizard-BisIh7SG.js
-│   │   │       │   ├── evidence-workbench-screen-DP_K7xEy.js
-│   │   │       │   ├── external-link-B7_twio3.js
-│   │   │       │   ├── eye-DMNdti0K.js
-│   │   │       │   ├── family-office-screen-9P91yTmo.js
-│   │   │       │   ├── field-support-BYt8fHsU.js
-│   │   │       │   ├── file-text-CQ99SdPh.js
-│   │   │       │   ├── financial-record-explorer-cjXueEDp.js
-│   │   │       │   ├── index-CIjVlneJ.css
-│   │   │       │   ├── index-CKTSva2G.js
-│   │   │       │   ├── input-CloCSnB0.js
-│   │   │       │   ├── layers-COV263Xo.js
-│   │   │       │   ├── list-checks-C7rs5_5_.js
-│   │   │       │   ├── live-quotes-screen-DaV4I3nQ.js
-│   │   │       │   ├── metric-card-B7SqasfA.js
-│   │   │       │   ├── monitor-check-rpy2MEPq.js
-│   │   │       │   ├── network-BCFvCjnh.js
-│   │   │       │   ├── operations-continuity-screen-D3wAfx1z.js
-│   │   │       │   ├── operations-continuity-screen.view-model-DIG2e8Ni.js
-│   │   │       │   ├── operations-record-release-screen-DlQXOlT0.js
-│   │   │       │   ├── operator-readiness-console-BrYhmGtU.js
-│   │   │       │   ├── play-CWamoZVu.js
-│   │   │       │   ├── plus-18TPK6Ho.js
-│   │   │       │   ├── portfolio-screen-BGw0ZNrk.js
-│   │   │       │   ├── portfolio-screen.view-model-Cj6ZHRtu.js
-│   │   │       │   ├── price-alerts-screen-BEvGp2oU.js
-│   │   │       │   ├── quant-lab-screen-DQtGfXpn.js
-│   │   │       │   ├── refresh-cw-N7CSbVbk.js
-│   │   │       │   ├── reporting-screen-B8x85_jt.js
-│   │   │       │   ├── reporting-screen.view-model-C00O1dsM.js
-│   │   │       │   ├── rotate-ccw-BxmY4U4Z.js
-│   │   │       │   ├── save-CN2O75Wp.js
-│   │   │       │   ├── select-zdEa0o1m.js
-│   │   │       │   ├── send-BKeNxuMR.js
-│   │   │       │   ├── settings-screen-W2R1ODJB.js
-│   │   │       │   ├── shield-check-CcwplIzU.js
-│   │   │       │   ├── sigma-Da6weOQ-.js
-│   │   │       │   ├── sparkles-0j1lqlV2.js
-│   │   │       │   ├── strategy-designer-screen-Bd2SBS1p.js
-│   │   │       │   ├── strategy-formula-workbench-screen-DPcTwYnB.js
-│   │   │       │   ├── strategy-screen-DWhkfrMW.js
-│   │   │       │   ├── trading-screen-BwxZroLg.js
-│   │   │       │   ├── trash-2-Br_4Zoej.js
-│   │   │       │   ├── trending-up-gKrEpffZ.js
-│   │   │       │   ├── ui-kit-primitives-D4Ul_stJ.js
-│   │   │       │   ├── wallet-Db-VgYB1.js
-│   │   │       │   ├── watchlist-screen-g3VuCxPM.js
-│   │   │       │   ├── workflow-cLKem5C1.js
-│   │   │       │   └── workspace-primitives-ewNYcZZS.js
-│   │   │       └── index.html
 │   │   └── README.md
 │   ├── Meridian.Ui.Services
 │   │   ├── Collections
@@ -5514,13 +5720,17 @@ Meridian-main
 │   │   │   │   ├── ProviderIntegrationActivationServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationDryRunServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationHttpClientTransportTests.cs
+│   │   │   │   ├── ProviderIntegrationIdentityResolutionPreviewServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationMonitoringServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationOpenApiImportServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationPromotionReadinessServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationQuarantineReplayServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationQuarantineReviewServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationReconciliationHandoffServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationRestDryRunServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationSchemaDriftServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationSetupServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationStagingReviewServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationSyncOrchestrationServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationSyncPlanningServiceTests.cs
 │   │   │   │   └── ProviderIntegrationTemplateCatalogTests.cs
@@ -6013,6 +6223,7 @@ Meridian-main
 │   │   │   ├── DataLineageServiceTests.cs
 │   │   │   ├── DataQualityScoringServiceTests.cs
 │   │   │   ├── DataValidatorTests.cs
+│   │   │   ├── DirectLendingMigrationTests.cs
 │   │   │   ├── EventBufferTests.cs
 │   │   │   ├── ExportValidatorTests.cs
 │   │   │   ├── FilePermissionsServiceTests.cs
@@ -6249,13 +6460,34 @@ Meridian-main
 │   │   ├── Copy
 │   │   │   └── WorkspaceCopyCatalogTests.cs
 │   │   ├── Features
+│   │   │   ├── Accounting
+│   │   │   │   ├── AccountingFeatureModuleTests.cs
+│   │   │   │   └── AccountingFeatureServiceRegistrationTests.cs
 │   │   │   ├── Data
-│   │   │   │   └── Shell
-│   │   │   │       └── DataWorkspaceShellViewModelTests.cs
+│   │   │   │   ├── Shell
+│   │   │   │   │   └── DataWorkspaceShellViewModelTests.cs
+│   │   │   │   ├── DataFeatureModuleTests.cs
+│   │   │   │   └── DataFeatureServiceRegistrationTests.cs
+│   │   │   ├── Home
+│   │   │   │   └── HomeFeatureModuleTests.cs
+│   │   │   ├── Portfolio
+│   │   │   │   └── PortfolioFeatureModuleTests.cs
+│   │   │   ├── Reporting
+│   │   │   │   └── ReportingFeatureModuleTests.cs
 │   │   │   ├── Settings
-│   │   │   │   └── Shell
-│   │   │   │       └── SettingsWorkspaceShellViewModelTests.cs
-│   │   │   └── FeatureCapabilityGateTests.cs
+│   │   │   │   ├── Shell
+│   │   │   │   │   └── SettingsWorkspaceShellViewModelTests.cs
+│   │   │   │   ├── SettingsFeatureModuleTests.cs
+│   │   │   │   └── SettingsFeatureServiceRegistrationTests.cs
+│   │   │   ├── Strategy
+│   │   │   │   ├── StrategyFeatureModuleTests.cs
+│   │   │   │   └── StrategyFeatureServiceRegistrationTests.cs
+│   │   │   ├── Trading
+│   │   │   │   ├── TradingFeatureModuleTests.cs
+│   │   │   │   └── TradingFeatureServiceRegistrationTests.cs
+│   │   │   ├── DesktopFeatureModuleTestAssertions.cs
+│   │   │   ├── FeatureCapabilityGateTests.cs
+│   │   │   └── ServiceCollectionRegistrationAssertions.cs
 │   │   ├── Models
 │   │   │   ├── PaneLayoutTests.cs
 │   │   │   ├── ShellNavigationCatalogTests.cs
@@ -6286,6 +6518,7 @@ Meridian-main
 │   │   │   ├── QuantScriptTemplateCatalogServiceTests.cs
 │   │   │   ├── RetentionAssuranceServiceTests.cs
 │   │   │   ├── RunMatServiceTests.cs
+│   │   │   ├── SetupWizardStateServiceTests.cs
 │   │   │   ├── SingleInstanceServiceTests.cs
 │   │   │   ├── StatusServiceTests.cs
 │   │   │   ├── StorageServiceTests.cs
@@ -6381,6 +6614,7 @@ Meridian-main
 │   │   │   ├── SymbolsPageViewModelTests.cs
 │   │   │   ├── SymbolStorageViewModelTests.cs
 │   │   │   ├── SystemHealthViewModelTests.cs
+│   │   │   ├── TickerStripViewModelTests.cs
 │   │   │   ├── TimeSeriesAlignmentViewModelTests.cs
 │   │   │   ├── TradingHoursViewModelTests.cs
 │   │   │   ├── TradingWorkspaceShellViewModelTests.cs
@@ -6480,6 +6714,7 @@ Meridian-main
 │   │   ├── test_render_roadmap_diagrams.py
 │   │   ├── test_roadmap_source_docs.py
 │   │   ├── test_route_maintenance_classification.py
+│   │   ├── test_run_dotnet_ci_tests.py
 │   │   ├── test_run_provider_validation_evidence_bundle.py
 │   │   ├── test_screenshot_diff_report.py
 │   │   ├── test_screenshot_workflow_plan.py
@@ -6523,8 +6758,7 @@ Meridian-main
 │   │   ├── refactor-plan-generator.ps1
 │   │   ├── resource-review.ps1
 │   │   ├── run-codex-quality-suite.ps1
-│   │   ├── shared-pattern-suggest.ps1
-│   │   └── test-gap-scan.ps1
+│   │   └── shared-pattern-suggest.ps1
 │   ├── roadmap
 │   │   ├── fixtures
 │   │   │   ├── invalid-enums.json
@@ -6664,7 +6898,6 @@ Meridian-main
 ├── Meridian.sln
 ├── Meridian.WebWorkstation.slnf
 ├── NuGet.Config
-├── package-lock.json
 ├── package.json
 └── README.md
 ```

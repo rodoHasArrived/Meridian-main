@@ -15,7 +15,7 @@ do_not_edit: true
 
 This tracker is generated from the live WPF shell registry, the maintained desktop screenshot index, and a text scan of `tests/Meridian.Wpf.Tests` for route, page, and view-model references. It tracks source-derived evidence only; roadmap priority and product scope still belong in `docs/roadmap/data/*.yml` and the design document.
 
-- Source fingerprint: `7bf1e5e54010`
+- Source fingerprint: `ebe2ce41ebdc`
 - Baseline date for open Gantt tasks: `2026-06-17`
 - Registered WPF screens: `91`
 - Open automated tasks: `76`

@@ -17,12 +17,12 @@ import json
 import subprocess
 import sys
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 
 DEFAULT_ROUTE_JSON = Path("docs/status/prompt-route-lint-report.json")
+STABLE_GENERATED_AT = "1970-01-01T00:00:00+00:00"
 DEFAULT_MARKDOWN_OUTPUT = Path("docs/status/ai-handoff-packet.md")
 DEFAULT_JSON_OUTPUT = Path("docs/status/ai-handoff-packet.json")
 
@@ -207,7 +207,7 @@ def build_packet(args: argparse.Namespace, route: dict[str, Any], changed_files:
         "handoff_path": handoff_path,
     }
     packet = {
-        "generatedAt": datetime.now(timezone.utc).isoformat(),
+        "generatedAt": STABLE_GENERATED_AT,
         "scope": {
             "requested": scope,
             "excluded": exclusions,

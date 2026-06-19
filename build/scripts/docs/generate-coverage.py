@@ -20,10 +20,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
@@ -40,6 +40,7 @@ EXCLUDE_DIRS: Set[str] = {
     "__pycache__",
     ".vs",
 }
+STABLE_GENERATED_AT = "1970-01-01 00:00:00 UTC"
 
 CS_FILE_EXTENSIONS: Tuple[str, ...] = (".cs",)
 
@@ -144,10 +145,14 @@ def _should_skip(path: Path) -> bool:
 def _collect_files(root: Path, extensions: Tuple[str, ...]) -> List[Path]:
     """Recursively collect files matching *extensions*, honouring exclusions."""
     results: List[Path] = []
-    for ext in extensions:
-        for p in root.rglob(f"*{ext}"):
-            if not _should_skip(p):
-                results.append(p)
+    for current, dirs, files in os.walk(root):
+        dirs[:] = [name for name in dirs if name not in EXCLUDE_DIRS]
+        current_path = Path(current)
+        if _should_skip(current_path):
+            continue
+        for file_name in files:
+            if file_name.endswith(extensions):
+                results.append(current_path / file_name)
     return results
 
 
@@ -162,9 +167,9 @@ def _read_text_safe(path: Path) -> str:
 def _rel(path: Path, root: Path) -> str:
     """Return a portable relative path string."""
     try:
-        return str(path.relative_to(root))
+        return path.relative_to(root).as_posix()
     except ValueError:
-        return str(path)
+        return path.as_posix()
 
 
 # ---------------------------------------------------------------------------
@@ -740,7 +745,7 @@ def generate_summary(report: CoverageReport) -> str:
 def build_report(root: Path) -> CoverageReport:
     """Run all analyses and assemble the coverage report."""
     report = CoverageReport(
-        generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
+        generated_at=STABLE_GENERATED_AT,
     )
 
     # Load documentation content once for type-mention scanning.

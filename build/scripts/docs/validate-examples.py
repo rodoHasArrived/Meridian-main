@@ -27,7 +27,6 @@ import os
 import re
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from typing import Optional
@@ -78,6 +77,7 @@ VALIDATABLE_LANGUAGES: set[str] = {
     "csharp",
     "xml",
 }
+STABLE_SCAN_TIME = "1970-01-01T00:00:00+00:00"
 
 # Regex for the opening fence of a code block: ``` optionally followed by a language tag.
 _FENCE_OPEN_RE = re.compile(r"^(?P<indent>\s*)```(?P<lang>[a-zA-Z0-9_#+-]*)\s*$")
@@ -191,7 +191,7 @@ def extract_code_blocks(file_path: Path, root: Path) -> list[CodeBlock]:
 
             blocks.append(
                 CodeBlock(
-                    source_file=str(rel),
+                    source_file=rel.as_posix(),
                     line_number=start_line,
                     language_tag=lang_tag,
                     canonical_language=canonical,
@@ -656,7 +656,7 @@ def run_validation(root: Path, docs_dir: str) -> ValidationReport:
     Returns a ``ValidationReport`` with every result.
     """
     report = ValidationReport()
-    report.scan_time = datetime.now(timezone.utc).isoformat()
+    report.scan_time = STABLE_SCAN_TIME
 
     md_files = discover_markdown_files(root, docs_dir)
     report.scanned_files = len(md_files)

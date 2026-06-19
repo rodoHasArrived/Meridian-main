@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-16T11:36:51.480374+00:00",
+  "generatedAt": "1970-01-01T00:00:00+00:00",
   "scope": {
     "requested": "Docs automation generated handoff packet",
     "excluded": [
@@ -69,6 +69,34 @@
   ],
   "changesMade": [
     {
+      "path": "build/scripts/docs/check-ai-handoff.py",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "build/scripts/docs/check-ai-inventory.py",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "build/scripts/docs/generate-coverage.py",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "build/scripts/docs/handoff-packet-generator.py",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "build/scripts/docs/prompt-route-linter.py",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "build/scripts/docs/run-docs-automation.py",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "build/scripts/docs/validate-examples.py",
+      "reason": "Touched in current git diff."
+    },
+    {
       "path": "docs/generated/repository-structure.md",
       "reason": "Touched in current git diff."
     },
@@ -85,6 +113,10 @@
       "reason": "Touched in current git diff."
     },
     {
+      "path": "docs/status/ai-inventory-report.md",
+      "reason": "Touched in current git diff."
+    },
+    {
       "path": "docs/status/doc-health-dashboard.json",
       "reason": "Touched in current git diff."
     },
@@ -98,6 +130,10 @@
     },
     {
       "path": "docs/status/prompt-route-lint-report.json",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "scripts/lib/ui-diagram-generator.mjs",
       "reason": "Touched in current git diff."
     }
   ],

@@ -1,0 +1,202 @@
+{
+  "dashboard": "paper-replay-reliability",
+  "title": "Paper Replay Reliability Dashboard",
+  "description": "Tracks whether paper-session replay verification, stale-readiness detection, and shared trading readiness evidence remain wired through docs, services, and tests.",
+  "generated_at": "2026-06-19T00:53:14.740713+00:00",
+  "root": "Meridian-pr1942-clean",
+  "score_percent": 46.7,
+  "passed_weight": 7,
+  "total_weight": 15,
+  "summary": {
+    "check_count": 6,
+    "passed_checks": 3,
+    "gap_checks": 3,
+    "missing_source_count": 0,
+    "missing_term_count": 7
+  },
+  "checks": [
+    {
+      "id": "replay-plan",
+      "category": "Acceptance Contract",
+      "label": "Reliability sprint records replay evidence and stale-readiness semantics",
+      "status": "gap",
+      "weight": 3,
+      "score": 0,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "docs/plans/paper-trading-cockpit-reliability-sprint.md"
+      ],
+      "matched_paths": [
+        "docs/plans/paper-trading-cockpit-reliability-sprint.md"
+      ],
+      "missing_patterns": [],
+      "terms": [
+        "replay verification",
+        "paper-replay-stale",
+        "fill, order, or ledger-entry counts"
+      ],
+      "found_terms": [],
+      "missing_terms": [
+        "replay verification",
+        "paper-replay-stale",
+        "fill, order, or ledger-entry counts"
+      ],
+      "detail": "",
+      "remediation": "Refresh the reliability sprint plan with current replay verification semantics."
+    },
+    {
+      "id": "readiness-contract",
+      "category": "Acceptance Contract",
+      "label": "Shared trading readiness endpoint remains the replay acceptance lane",
+      "status": "gap",
+      "weight": 3,
+      "score": 0,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "docs/plans/paper-trading-cockpit-reliability-sprint.md",
+        "src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs"
+      ],
+      "matched_paths": [
+        "docs/plans/paper-trading-cockpit-reliability-sprint.md",
+        "src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs"
+      ],
+      "missing_patterns": [],
+      "terms": [
+        "/api/workstation/trading/readiness",
+        "AcceptanceGates",
+        "replay"
+      ],
+      "found_terms": [
+        "AcceptanceGates",
+        "replay"
+      ],
+      "missing_terms": [
+        "/api/workstation/trading/readiness"
+      ],
+      "detail": "",
+      "remediation": "Route replay posture through the shared trading readiness service and document it."
+    },
+    {
+      "id": "execution-replay-route",
+      "category": "API Surface",
+      "label": "Execution endpoints expose replay verification for sessions",
+      "status": "pass",
+      "weight": 2,
+      "score": 2,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs"
+      ],
+      "matched_paths": [
+        "src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs"
+      ],
+      "missing_patterns": [],
+      "terms": [
+        "replay",
+        "VerifyReplay",
+        "sessionId"
+      ],
+      "found_terms": [
+        "replay",
+        "VerifyReplay",
+        "sessionId"
+      ],
+      "missing_terms": [],
+      "detail": "",
+      "remediation": "Restore the execution replay verification endpoint or update the dashboard checks."
+    },
+    {
+      "id": "durable-session-service",
+      "category": "Durability",
+      "label": "Paper session persistence can verify replay from durable fills, orders, and ledger state",
+      "status": "pass",
+      "weight": 3,
+      "score": 3,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "src/Meridian.Execution/Services/PaperSessionPersistenceService.cs"
+      ],
+      "matched_paths": [
+        "src/Meridian.Execution/Services/PaperSessionPersistenceService.cs"
+      ],
+      "missing_patterns": [],
+      "terms": [
+        "VerifyReplayAsync",
+        "OrderCount",
+        "LedgerEntryCount"
+      ],
+      "found_terms": [
+        "VerifyReplayAsync",
+        "OrderCount",
+        "LedgerEntryCount"
+      ],
+      "missing_terms": [],
+      "detail": "",
+      "remediation": "Keep replay verification grounded in durable order and ledger evidence."
+    },
+    {
+      "id": "feature-inventory",
+      "category": "Status",
+      "label": "Feature inventory describes paper cockpit replay and stale-coverage posture",
+      "status": "gap",
+      "weight": 2,
+      "score": 0,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "docs/status/FEATURE_INVENTORY.md"
+      ],
+      "matched_paths": [
+        "docs/status/FEATURE_INVENTORY.md"
+      ],
+      "missing_patterns": [],
+      "terms": [
+        "Paper-trading cockpit",
+        "replay-audit metadata",
+        "stale-coverage detection"
+      ],
+      "found_terms": [],
+      "missing_terms": [
+        "Paper-trading cockpit",
+        "replay-audit metadata",
+        "stale-coverage detection"
+      ],
+      "detail": "",
+      "remediation": "Update the feature inventory when replay reliability semantics change."
+    },
+    {
+      "id": "endpoint-tests",
+      "category": "Validation",
+      "label": "Workstation endpoint tests cover replay readiness and operator inbox routing",
+      "status": "pass",
+      "weight": 2,
+      "score": 2,
+      "path_mode": "all",
+      "term_mode": "all",
+      "patterns": [
+        "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs"
+      ],
+      "matched_paths": [
+        "tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs"
+      ],
+      "missing_patterns": [],
+      "terms": [
+        "Replay",
+        "OperatorInbox",
+        "TradingReadiness"
+      ],
+      "found_terms": [
+        "Replay",
+        "OperatorInbox",
+        "TradingReadiness"
+      ],
+      "missing_terms": [],
+      "detail": "",
+      "remediation": "Add or restore endpoint tests for replay readiness and queue projection."
+    }
+  ]
+}
