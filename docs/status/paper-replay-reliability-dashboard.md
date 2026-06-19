@@ -1,7 +1,7 @@
 # Paper Replay Reliability Dashboard
 
 _Auto-generated from canonical JSON payload._
-_Generated: 2026-06-19T00:53:14.740713+00:00_
+_Generated: 2026-06-19T01:10:40.761310+00:00_
 Data sources: `docs/plans/paper-trading-cockpit-reliability-sprint.md`, `docs/status/FEATURE_INVENTORY.md`, `src/Meridian.Execution/Services/PaperSessionPersistenceService.cs`, `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs`, `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs`
 
 

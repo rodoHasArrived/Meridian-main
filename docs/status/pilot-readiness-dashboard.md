@@ -1,7 +1,7 @@
 # Pilot Readiness Dashboard
 
 _Auto-generated from canonical JSON payload._
-_Generated: 2026-06-19T00:53:13.303040+00:00_
+_Generated: 2026-06-19T01:10:40.404853+00:00_
 Data sources: `docs/status/provider-validation-matrix.md`, `docs/status/evidence/dk1-pilot-parity-runbook.md`, `docs/status/kernel-readiness-dashboard.md`, `artifacts/pilot-acceptance/latest/pilot-readiness.json`, `scripts/dev/*dk1*`, `tests/scripts/test_*dk1*`
 
 

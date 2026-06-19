@@ -69,31 +69,15 @@
   ],
   "changesMade": [
     {
-      "path": "build/scripts/docs/check-ai-handoff.py",
+      "path": ".github/workflows/README.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "build/scripts/docs/check-ai-inventory.py",
+      "path": ".github/workflows/documentation.yml",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "build/scripts/docs/generate-coverage.py",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "build/scripts/docs/handoff-packet-generator.py",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "build/scripts/docs/prompt-route-linter.py",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "build/scripts/docs/run-docs-automation.py",
-      "reason": "Touched in current git diff."
-    },
-    {
-      "path": "build/scripts/docs/validate-examples.py",
+      "path": "build/scripts/docs/generate-structure-docs.py",
       "reason": "Touched in current git diff."
     },
     {
@@ -101,19 +85,23 @@
       "reason": "Touched in current git diff."
     },
     {
-      "path": "docs/status/TODO.md",
+      "path": "docs/status/ai-handoff-packet.json",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "docs/status/ai-handoff-checklist-report.json",
+      "path": "docs/status/ai-handoff-packet.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "docs/status/ai-inventory-report.json",
+      "path": "docs/status/api-contract-coverage-dashboard.json",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "docs/status/ai-inventory-report.md",
+      "path": "docs/status/api-contract-coverage-dashboard.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/status/coverage-report.md",
       "reason": "Touched in current git diff."
     },
     {
@@ -125,15 +113,39 @@
       "reason": "Touched in current git diff."
     },
     {
+      "path": "docs/status/evidence-continuity-dashboard.json",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/status/evidence-continuity-dashboard.md",
+      "reason": "Touched in current git diff."
+    },
+    {
       "path": "docs/status/example-validation.md",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "docs/status/prompt-route-lint-report.json",
+      "path": "docs/status/governance-readiness-dashboard.json",
       "reason": "Touched in current git diff."
     },
     {
-      "path": "scripts/lib/ui-diagram-generator.mjs",
+      "path": "docs/status/governance-readiness-dashboard.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/status/paper-replay-reliability-dashboard.json",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/status/paper-replay-reliability-dashboard.md",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/status/pilot-readiness-dashboard.json",
+      "reason": "Touched in current git diff."
+    },
+    {
+      "path": "docs/status/pilot-readiness-dashboard.md",
       "reason": "Touched in current git diff."
     }
   ],

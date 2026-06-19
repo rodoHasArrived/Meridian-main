@@ -2,7 +2,7 @@
   "dashboard": "evidence-continuity",
   "title": "Evidence Continuity Dashboard",
   "description": "Tracks whether DK1 and shared-contract evidence remain packet-bound, date-scoped, test-covered, and connected to current readiness dashboards.",
-  "generated_at": "2026-06-19T00:53:15.884946+00:00",
+  "generated_at": "2026-06-19T01:10:41.130232+00:00",
   "root": "Meridian-pr1942-clean",
   "score_percent": 85.7,
   "passed_weight": 12,

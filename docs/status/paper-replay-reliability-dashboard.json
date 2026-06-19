@@ -2,7 +2,7 @@
   "dashboard": "paper-replay-reliability",
   "title": "Paper Replay Reliability Dashboard",
   "description": "Tracks whether paper-session replay verification, stale-readiness detection, and shared trading readiness evidence remain wired through docs, services, and tests.",
-  "generated_at": "2026-06-19T00:53:14.740713+00:00",
+  "generated_at": "2026-06-19T01:10:40.761310+00:00",
   "root": "Meridian-pr1942-clean",
   "score_percent": 46.7,
   "passed_weight": 7,

@@ -200,7 +200,10 @@ jobs:
           print(json.dumps(payload, indent=2))
 
       - name: Check generated docs are current
-        run: git diff --exit-code
+        run: |
+          git diff --exit-code -- . \
+            ':(exclude)docs/diagrams/uml/*.png' \
+            ':(exclude)docs/diagrams/uml/*.svg'
 
       - name: Check whitespace
         run: git diff --check

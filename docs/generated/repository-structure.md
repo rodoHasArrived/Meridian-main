@@ -1,9 +1,9 @@
 # Repository Structure
 
-> Auto-generated on 2026-06-19 00:52:31 UTC. Do not edit manually.
+> Auto-generated on 1970-01-01 00:00:00 UTC. Do not edit manually.
 
 ```text
-Meridian-pr1942-clean
+Meridian-main
 ├── .agents
 │   └── skills
 │       ├── _shared
@@ -1788,6 +1788,8 @@ Meridian-pr1942-clean
 │   │   ├── ai-handoff-packet.md
 │   │   ├── ai-inventory-report.json
 │   │   ├── ai-inventory-report.md
+│   │   ├── api-contract-coverage-dashboard.json
+│   │   ├── api-contract-coverage-dashboard.md
 │   │   ├── api-docs-report.md
 │   │   ├── badge-sync-report.md
 │   │   ├── broker-phase-promotion-checklist-template.md
@@ -1801,17 +1803,25 @@ Meridian-pr1942-clean
 │   │   ├── docs-automation-summary.json
 │   │   ├── docs-automation-summary.md
 │   │   ├── EVALUATIONS_AND_AUDITS.md
+│   │   ├── evidence-continuity-dashboard.json
+│   │   ├── evidence-continuity-dashboard.md
 │   │   ├── example-validation.md
 │   │   ├── FEATURE_INVENTORY.md
 │   │   ├── FULL_IMPLEMENTATION_TODO.md
 │   │   ├── fund-ops-persistence-cutover-status.md
 │   │   ├── governance-handoff-evidence-bundle.md
+│   │   ├── governance-readiness-dashboard.json
+│   │   ├── governance-readiness-dashboard.md
 │   │   ├── ibkr-provider-inventory.md
 │   │   ├── IMPROVEMENTS.md
 │   │   ├── kernel-readiness-dashboard.md
 │   │   ├── link-repair-report.md
 │   │   ├── metrics-dashboard.md
 │   │   ├── OPPORTUNITY_SCAN.md
+│   │   ├── paper-replay-reliability-dashboard.json
+│   │   ├── paper-replay-reliability-dashboard.md
+│   │   ├── pilot-readiness-dashboard.json
+│   │   ├── pilot-readiness-dashboard.md
 │   │   ├── production-status.md
 │   │   ├── program-state-summary.json
 │   │   ├── program-state-summary.md
