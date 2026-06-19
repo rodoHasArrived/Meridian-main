@@ -6,6 +6,9 @@ import type {
 import type {
   BrokerageConnectionStatus,
   BrokerageHouseholdPortfolio,
+  ClosePeriodPlan,
+  ExternalGlExportPackage,
+  ExternalGlMappingProfile,
   AccountingSystemImportDetail,
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
@@ -21,6 +24,7 @@ import type {
   ExecutionControlSnapshot,
   FeatureCapabilitySettingsResponse,
   FinancialRecordExplorerDto,
+  AccountingReportPackageBundle,
   AccountingConfigurationWorkspace,
   AccountingWorkspaceResponse,
   HistoricalBarsResponse,
@@ -62,6 +66,7 @@ import type {
   ReconciliationCalibrationSummary,
   RiskRuleConfig,
   RiskRuleStatus,
+  RuleDryRunResult,
   StatementRunSummary,
   StrategyBriefingResponse,
   StrategyWorkspaceResponse,
@@ -2999,7 +3004,147 @@ const fixtureAccountingConfiguration: AccountingConfigurationWorkspace = {
       templateId: "journal-template-paper-fill",
       ruleVersion: "1",
       isArchived: false,
-      description: "Routes paper execution fills into the default fixture ledger book."
+      description: "Routes paper execution fills into the default fixture ledger book.",
+      effectiveFrom: "2026-01-01",
+      effectiveTo: null,
+      priority: 50,
+      scope: {
+        fundId: "default-fund",
+        entityId: "fund-entity-main",
+        strategyId: "paper-index-mean-reversion",
+        instrumentId: "2c0f364f-6020-4675-a7e2-27448950c5af",
+        counterpartyId: "paper-broker",
+        externalGlDimensions: {
+          Class: "DefaultFund",
+          Location: "Main"
+        }
+      },
+      conditions: [
+        {
+          conditionId: "condition-event-kind",
+          field: "sourceEventType",
+          operator: "Equals",
+          value: "PaperFill",
+          secondValue: null,
+          isRequired: true,
+          description: "Only execution fill events enter this rule."
+        },
+        {
+          conditionId: "condition-notional-threshold",
+          field: "eventAmount",
+          operator: "AmountGreaterThanOrEqual",
+          value: "1",
+          secondValue: null,
+          isRequired: true,
+          description: "Zero-value fills remain blocked before journal generation."
+        },
+        {
+          conditionId: "condition-counterparty",
+          field: "counterpartyId",
+          operator: "Equals",
+          value: "paper-broker",
+          secondValue: null,
+          isRequired: false,
+          description: "Counterparty scope keeps paper fills out of live broker posting."
+        }
+      ],
+      formulas: [
+        {
+          formulaId: "formula-source-notional",
+          kind: "SourceAmount",
+          value: 100,
+          currency: "USD",
+          description: "Use the event notional supplied by the fill."
+        },
+        {
+          formulaId: "formula-fee-allocation",
+          kind: "PercentageOfSourceAmount",
+          value: 0.0025,
+          currency: "USD",
+          description: "Reserve an audit-visible fee allocation calculation."
+        }
+      ],
+      allocations: [
+        {
+          allocationRuleId: "allocation-default-strategy",
+          basis: "StrategyWeight",
+          weight: 1,
+          formulaId: "formula-source-notional",
+          targetDimensions: {
+            fundId: "default-fund",
+            strategyId: "paper-index-mean-reversion",
+            externalGlDimensions: {
+              Class: "DefaultFund"
+            }
+          },
+          description: "Allocate the full paper fill to the strategy sleeve."
+        }
+      ],
+      generatedPostings: [
+        {
+          lineId: "generated-investment-debit",
+          accountPath: "1200",
+          side: "Debit",
+          amountFormulaId: "formula-source-notional",
+          amount: 100,
+          currency: "USD",
+          dimensions: {
+            fundId: "default-fund",
+            strategyId: "paper-index-mean-reversion",
+            instrumentId: "2c0f364f-6020-4675-a7e2-27448950c5af",
+            externalGlDimensions: {
+              Class: "DefaultFund"
+            }
+          },
+          description: "Generated debit to investment asset."
+        },
+        {
+          lineId: "generated-cash-credit",
+          accountPath: "1000",
+          side: "Credit",
+          amountFormulaId: "formula-source-notional",
+          amount: 100,
+          currency: "USD",
+          dimensions: {
+            fundId: "default-fund",
+            counterpartyId: "paper-broker",
+            externalGlDimensions: {
+              Location: "Main"
+            }
+          },
+          description: "Generated credit to operating cash."
+        }
+      ],
+      versions: [
+        {
+          version: "1",
+          createdAtUtc: "2026-05-03T19:30:00Z",
+          createdBy: "fixture-controller",
+          changeSummary: "Initial paper-fill posting rule with generated balanced lines.",
+          promotionApproval: {
+            approvalId: "rule-promotion-paper-fill-v1",
+            requestedBy: "fixture-controller",
+            requestedAtUtc: "2026-05-03T19:35:00Z",
+            approvalState: "Approved",
+            approvedBy: "fixture-reviewer",
+            approvedAtUtc: "2026-05-03T19:50:00Z",
+            notes: "Approved for no-host accounting fixture.",
+            evidenceLinks: ["evidence:accounting-rule:paper-fill:v1"]
+          },
+          evidenceLinks: ["evidence:accounting-rule:paper-fill:v1"]
+        }
+      ],
+      promotionApproval: {
+        approvalId: "rule-promotion-paper-fill-v1",
+        requestedBy: "fixture-controller",
+        requestedAtUtc: "2026-05-03T19:35:00Z",
+        approvalState: "Approved",
+        approvedBy: "fixture-reviewer",
+        approvedAtUtc: "2026-05-03T19:50:00Z",
+        notes: "Approved for no-host accounting fixture.",
+        evidenceLinks: ["evidence:accounting-rule:paper-fill:v1"]
+      },
+      requiresPromotionApproval: true
     }
   ],
   validationIssues: [],
@@ -3020,6 +3165,52 @@ const fixtureAccountingConfiguration: AccountingConfigurationWorkspace = {
       reportGroupPrincipalIds: ["fund-controller"]
     }
   ]
+};
+
+const fixtureAccountingRuleDryRun: RuleDryRunResult = {
+  fundProfileId: fixtureAccountingConfiguration.fundProfileId,
+  ledgerBookId: fixtureAccountingConfiguration.ledgerBookId,
+  sourceEventType: "PaperFill",
+  effectiveDate: "2026-01-01",
+  eventAmount: 100,
+  currency: "USD",
+  isPostingBalanced: true,
+  selectedRuleId: "posting-rule-paper-fill",
+  ruleMatches: [
+    {
+      ruleId: "posting-rule-paper-fill",
+      displayName: "Paper fill posting",
+      ruleVersion: "1",
+      priority: 50,
+      isMatched: true,
+      explanations: [
+        "Source event type matched PaperFill.",
+        "Effective date falls inside the open-ended rule range.",
+        "Generated debit and credit lines balance before posting."
+      ],
+      validationIssues: []
+    }
+  ],
+  generatedLines: [
+    {
+      accountPath: "1200",
+      accountName: "Investments",
+      side: "Debit",
+      amount: 100,
+      currency: "USD",
+      description: "Generated debit to investment asset."
+    },
+    {
+      accountPath: "1000",
+      accountName: "Cash",
+      side: "Credit",
+      amount: 100,
+      currency: "USD",
+      description: "Generated credit to operating cash."
+    }
+  ],
+  generatedPostingLines: fixtureAccountingConfiguration.postingRules[0].generatedPostings ?? [],
+  validationIssues: []
 };
 
 const fixtureStatementRuns: StatementRunSummary[] = [
@@ -3082,6 +3273,32 @@ const fixtureAccountingSystemProviders: AccountingSystemProvider[] = [
       statusDetail: "Add QuickBooks client ID, client secret, refresh token, and company realm ID before importing read-only GL evidence.",
       missingFields: ["ClientId", "ClientSecret", "RefreshToken", "RealmId"]
     }
+  },
+  {
+    providerId: "xero",
+    displayName: "Xero",
+    state: "Planned",
+    requiresCredentials: true,
+    supportsChartOfAccounts: true,
+    supportsJournalEntries: true,
+    supportsTrialBalance: true,
+    supportsPosting: false,
+    statusLabel: "Import adapter not registered",
+    statusDetail: "Xero chart, journal, and trial-balance import mapping is planned; live posting remains disabled until a separately approved adapter exists.",
+    evidenceKinds: ["XeroAccount", "XeroManualJournal", "XeroTrialBalance"]
+  },
+  {
+    providerId: "netsuite",
+    displayName: "NetSuite",
+    state: "Planned",
+    requiresCredentials: true,
+    supportsChartOfAccounts: true,
+    supportsJournalEntries: true,
+    supportsTrialBalance: true,
+    supportsPosting: false,
+    statusLabel: "Import adapter not registered",
+    statusDetail: "NetSuite chart, journal, and trial-balance import mapping is planned; live posting remains disabled until a separately approved adapter exists.",
+    evidenceKinds: ["NetSuiteAccount", "NetSuiteJournalEntry", "NetSuiteTrialBalance"]
   }
 ];
 
@@ -3190,6 +3407,264 @@ const fixtureAccountingSystemReconciliation: AccountingSystemReconciliationSumma
     meridianEvidenceReferences: [],
     evidenceReferences: row.evidenceRef ? [row.evidenceRef] : []
   }))
+};
+
+const fixtureAccountingSystemMappingProfiles: ExternalGlMappingProfile[] = [
+  {
+    profileId: "qbo-default-fund-certified",
+    providerId: "quickbooks-fixture",
+    displayName: "Default fund QBO mapping",
+    updatedAtUtc: "2026-02-01T00:08:00Z",
+    certificationState: "Certified",
+    accountMappings: {
+      "Assets:Cash:Operating": "qbo-1000",
+      "Income:Investment": "qbo-4000",
+      "Expenses:Trading": "qbo-6100"
+    },
+    dimensionMappings: [
+      {
+        profileId: "qbo-default-fund-dimensions",
+        displayName: "Default fund dimensions",
+        providerId: "quickbooks-fixture",
+        certificationState: "Certified",
+        meridianDimensions: {
+          fundId: "default-fund",
+          entityId: "fund-entity-main",
+          externalGlDimensions: {}
+        },
+        externalDimensions: {
+          fundId: "Class:DefaultFund",
+          entityId: "Location:Main",
+          externalGlDimensions: {
+            Class: "DefaultFund",
+            Location: "Main"
+          }
+        },
+        validationIssues: []
+      }
+    ]
+  }
+];
+
+const fixtureAccountingSystemExportPackage: ExternalGlExportPackage = {
+  exportPackageId: "external-gl-export-quickbooks-fixture-default-fund-20260131",
+  providerId: "quickbooks-fixture",
+  fundProfileId: "default-fund",
+  ledgerBookId: null,
+  periodStart: "2026-01-01",
+  periodEnd: "2026-01-31",
+  createdAtUtc: "2026-02-01T00:10:00Z",
+  createdBy: "fixture-operator",
+  postingEnabled: false,
+  postingDisabledReason: "Guarded export package only; live external GL posting remains disabled until a separately approved adapter and release gate publish Meridian-owned ledger entries.",
+  journalEntryIds: [],
+  evidenceLinks: [
+    "external-gl-mapping-profile:qbo-default-fund-certified",
+    "external-gl-reconciliation:gl-recon-qbo-fixture-20260131"
+  ],
+  certification: {
+    certificationId: "external-gl-export-cert-quickbooks-fixture-default-fund-20260201001000",
+    state: "Draft",
+    actor: "fixture-operator",
+    recordedAtUtc: "2026-02-01T00:10:00Z",
+    summary: "Export package is retained as a guarded review artifact and cannot be certified until validation issues are resolved.",
+    evidenceLinks: [
+      "external-gl-mapping-profile:qbo-default-fund-certified",
+      "external-gl-reconciliation:gl-recon-qbo-fixture-20260131"
+    ]
+  },
+  validationIssues: [
+    {
+      code: "UnresolvedExternalGlBreaks",
+      severity: "Critical",
+      message: "3 external GL reconciliation break(s) remain unresolved.",
+      targetId: "gl-recon-qbo-fixture-20260131",
+      suggestedAction: "Resolve or approve GL tie-out breaks with retained evidence before export certification."
+    },
+    {
+      code: "LiveExternalPostingDisabled",
+      severity: "Info",
+      message: "Live external GL posting is disabled; this operation only creates a guarded export artifact.",
+      targetId: "quickbooks-fixture",
+      suggestedAction: "Review, approve, and reconcile the export artifact outside Meridian until a later live-posting adapter is explicitly approved."
+    }
+  ]
+};
+
+const fixtureLedgerClosePeriodPlan: ClosePeriodPlan = {
+  closePlanId: "close-plan-fixture-202601",
+  fundProfileId: "default-fund",
+  ledgerBookId: null,
+  periodId: "2026-01",
+  periodStart: "2026-01-01",
+  periodEnd: "2026-01-31",
+  closeDueDate: "2026-02-05",
+  isPeriodLocked: false,
+  materialityPolicy: {
+    policyId: "materiality-2026-01",
+    amountThreshold: 10000,
+    percentThreshold: 0.01,
+    currency: "USD",
+    reviewRole: "Controller",
+    requiresLateAdjustmentApproval: true
+  },
+  tasks: [
+    {
+      taskId: "close-gate-brokeringest",
+      displayName: "Receive external activity",
+      status: "ReadyForSignOff",
+      owner: "Accounting ops",
+      dueDate: "2026-02-02",
+      dependencies: [],
+      signOffs: [
+        {
+          signOffId: "close-gate-brokeringest:approval-1",
+          role: "Reviewer",
+          actor: "controller",
+          approvalState: "Approved",
+          signedAtUtc: "2026-02-02T18:00:00Z",
+          evidenceLinks: ["ops-close-evidence:broker-ingest"]
+        }
+      ],
+      evidenceLinks: ["ops-close-evidence:broker-ingest"],
+      blockerReason: null
+    },
+    {
+      taskId: "close-gate-reconciliation",
+      displayName: "Resolve reconciliation breaks",
+      status: "WaitingOnDependency",
+      owner: "Controller",
+      dueDate: "2026-02-04",
+      dependencies: [
+        {
+          dependencyId: "dependency-close-gate-reconciliation",
+          dependsOnTaskId: "close-gate-brokeringest",
+          reason: "Close checklist tasks must be completed in workflow order."
+        }
+      ],
+      signOffs: [],
+      evidenceLinks: [],
+      blockerReason: "Unresolved GL tie-out breaks remain open."
+    }
+  ],
+  lateAdjustments: [
+    {
+      requestId: "late-adjustment-fixture-1",
+      journalEntryId: "11111111-1111-1111-1111-111111111111",
+      requestedBy: "accounting-ops",
+      requestedAtUtc: "2026-02-04T20:15:00Z",
+      amount: 15000,
+      currency: "USD",
+      reason: "Controller late adjustment review for material accrual.",
+      approvalState: "Submitted",
+      materialityPolicy: {
+        policyId: "materiality-2026-01",
+        amountThreshold: 10000,
+        percentThreshold: 0.01,
+        currency: "USD",
+        reviewRole: "Controller",
+        requiresLateAdjustmentApproval: true
+      },
+      evidenceLinks: ["late-adjustment:evidence:fixture-1"]
+    }
+  ],
+  validationIssues: [
+    {
+      code: "LateAdjustmentRequiresApproval",
+      severity: "Warning",
+      message: "Late adjustment 'late-adjustment-fixture-1' exceeds the materiality policy and requires Controller approval.",
+      targetId: "late-adjustment-fixture-1",
+      suggestedAction: "Approve or reject the late adjustment before final close certification."
+    }
+  ]
+};
+
+const fixtureAccountingReportPackage: AccountingReportPackageBundle = {
+  financialStatements: {
+    packageId: "accounting-report-package-default-fund-2026-01",
+    fundProfileId: "default-fund",
+    ledgerBookId: null,
+    periodId: "2026-01",
+    certificationState: "ReadyForReview",
+    statementIds: ["balance-sheet", "income-statement", "trial-balance", "statement-of-changes-in-capital"],
+    evidenceLinks: ["evidence:report-package:2026-01"],
+    certification: {
+      certificationId: "report-certification-default-fund-2026-01",
+      state: "ReadyForReview",
+      actor: "fixture-operator",
+      recordedAtUtc: "2026-02-05T20:00:00Z",
+      summary: "Accounting report package is assembled and ready for human certification review.",
+      evidenceLinks: ["evidence:report-package:2026-01"]
+    },
+    restatement: null
+  },
+  investorCapitalStatements: [
+    {
+      statementId: "investor-capital-statement-default-fund-2026-01-aggregate",
+      fundProfileId: "default-fund",
+      capitalAccountId: "capital-account:aggregate",
+      investorId: null,
+      periodId: "2026-01",
+      beginningCapital: 100000,
+      contributions: 25000,
+      distributions: 5000,
+      realizedGainLoss: 12500,
+      endingCapital: 132500,
+      currency: "USD",
+      certificationState: "ReadyForReview",
+      evidenceLinks: ["evidence:report-package:2026-01"]
+    }
+  ],
+  realizedGainLoss: {
+    reportId: "realized-gain-loss-default-fund-2026-01",
+    fundProfileId: "default-fund",
+    ledgerBookId: null,
+    periodId: "2026-01",
+    dimensions: {
+      fundId: "default-fund",
+      externalGlDimensions: {}
+    },
+    realizedGainLoss: 12500,
+    currency: "USD",
+    certificationState: "ReadyForReview",
+    evidenceLinks: ["evidence:report-package:2026-01"]
+  },
+  navPackage: {
+    packageId: "nav-package-default-fund-2026-01",
+    fundProfileId: "default-fund",
+    ledgerBookId: null,
+    periodId: "2026-01",
+    nav: 132500,
+    currency: "USD",
+    certificationState: "ReadyForReview",
+    evidenceLinks: ["evidence:report-package:2026-01"],
+    certification: {
+      certificationId: "report-certification-default-fund-2026-01",
+      state: "ReadyForReview",
+      actor: "fixture-operator",
+      recordedAtUtc: "2026-02-05T20:00:00Z",
+      summary: "Accounting report package is assembled and ready for human certification review.",
+      evidenceLinks: ["evidence:report-package:2026-01"]
+    },
+    restatement: null
+  },
+  certification: {
+    certificationId: "report-certification-default-fund-2026-01",
+    state: "ReadyForReview",
+    actor: "fixture-operator",
+    recordedAtUtc: "2026-02-05T20:00:00Z",
+    summary: "Accounting report package is assembled and ready for human certification review.",
+    evidenceLinks: ["evidence:report-package:2026-01"]
+  },
+  validationIssues: [
+    {
+      code: "PeriodNotLocked",
+      severity: "Warning",
+      message: "The close period is not locked; report package certification remains ready-for-review only.",
+      targetId: "close-plan-fixture-202601",
+      suggestedAction: "Lock the period after close approvals before final report certification."
+    }
+  ]
 };
 
 const fixturePortfolioMultiAssetCoverage = {
@@ -5311,10 +5786,17 @@ const fixtures = {
   [WORKSTATION_API_ENDPOINTS.accounting]: fixtureAccountingWorkspace,
   [WORKSTATION_API_ENDPOINTS.reporting]: fixtureAccountingWorkspace,
   [WORKSTATION_API_ENDPOINTS.accountingConfiguration]: fixtureAccountingConfiguration,
+  [WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRuleDryRun]: fixtureAccountingRuleDryRun,
+  [WORKSTATION_API_ENDPOINTS.closeManagementPeriodPlan]: fixtureLedgerClosePeriodPlan,
+  [WORKSTATION_API_ENDPOINTS.closeManagementLateAdjustments]: fixtureLedgerClosePeriodPlan,
+  [WORKSTATION_API_ENDPOINTS.accountingReportPackage]: fixtureAccountingReportPackage,
+  [WORKSTATION_API_ENDPOINTS.accountingReportPackages]: [fixtureAccountingReportPackage],
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.providers]: fixtureAccountingSystemProviders,
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.importPreview]: fixtureAccountingSystemImport,
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.importLatest]: fixtureAccountingSystemImport,
   [ACCOUNTING_SYSTEM_API_ENDPOINTS.reconciliationLatest]: fixtureAccountingSystemReconciliation,
+  [ACCOUNTING_SYSTEM_API_ENDPOINTS.mappingProfiles]: fixtureAccountingSystemMappingProfiles,
+  [ACCOUNTING_SYSTEM_API_ENDPOINTS.exportPackages]: fixtureAccountingSystemExportPackage,
   "/api/workstation/runs/run-42/ledger/trial-balance": fixtureLedgerTrialBalance,
   "/api/workstation/governance": fixtureAccountingWorkspace,
   [RECONCILIATION_API_ENDPOINTS.breakQueue]: fixtureAccountingWorkspace.breakQueue,

@@ -37,11 +37,15 @@ import {
   resolveAccountingWorkstream,
   resolveSelectedReconciliation,
   useCapitalAccountWorkbenchViewModel,
+  useAccountingCloseReportPackageViewModel,
   useManualJournalEntryWorkbenchViewModel,
+  useAccountingConfigurationViewModel,
   useAccountingReconciliationViewModel,
   useSecurityMasterViewModel
 } from "@/screens/accounting-screen.view-model";
 import type {
+  AccountingConfigurationServices,
+  AccountingCloseReportPackageServices,
   AccountingReconciliationServices,
   CapitalAccountWorkbenchServices,
   ManualJournalEntryWorkbenchServices,
@@ -55,7 +59,11 @@ import type {
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
   AccountingWorkspaceResponse,
+  AccountingConfigurationWorkspace,
+  AccountingReportPackageBundle,
   CapitalAccountWorkbench,
+  ClosePeriodPlan,
+  RuleDryRunResult,
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
   LedgerTrialBalanceLine,
@@ -737,6 +745,165 @@ const closeWorkflow: OperationsContinuityWorkflow = {
       gate: "LedgerPosting",
       severity: "Critical",
       evidenceLinks: []
+    }
+  ]
+};
+
+const closePeriodPlan: ClosePeriodPlan = {
+  closePlanId: "close-plan-alpha-202605",
+  fundProfileId: "fund-alpha",
+  ledgerBookId: "book-alpha",
+  periodId: "2026-05",
+  periodStart: "2026-05-01",
+  periodEnd: "2026-05-31",
+  closeDueDate: "2026-06-05",
+  isPeriodLocked: false,
+  materialityPolicy: {
+    policyId: "materiality-alpha",
+    amountThreshold: 2500,
+    percentThreshold: 0.5,
+    currency: "USD",
+    reviewRole: "controller",
+    requiresLateAdjustmentApproval: true
+  },
+  tasks: [
+    {
+      taskId: "task-nav",
+      displayName: "Finalize NAV package",
+      status: "ReadyForSignOff",
+      owner: "fund-accounting",
+      dueDate: "2026-06-04",
+      dependencies: [
+        {
+          dependencyId: "dependency-recon",
+          dependsOnTaskId: "task-reconciliation",
+          reason: "Reconciliation must clear before NAV package sign-off."
+        }
+      ],
+      signOffs: [
+        {
+          signOffId: "signoff-controller",
+          role: "controller",
+          actor: null,
+          approvalState: "Submitted",
+          signedAtUtc: null,
+          evidenceLinks: []
+        }
+      ],
+      evidenceLinks: ["evidence/nav-package"],
+      blockerReason: "Controller sign-off pending."
+    }
+  ],
+  lateAdjustments: [
+    {
+      requestId: "late-adjustment-1",
+      journalEntryId: "manual-je-late-1",
+      requestedBy: "controller",
+      requestedAtUtc: "2026-06-02T03:00:00Z",
+      amount: 1250,
+      currency: "USD",
+      reason: "Late custodian fee accrual.",
+      approvalState: "Submitted",
+      materialityPolicy: {
+        policyId: "materiality-alpha",
+        amountThreshold: 2500,
+        percentThreshold: 0.5,
+        currency: "USD",
+        reviewRole: "controller",
+        requiresLateAdjustmentApproval: true
+      },
+      evidenceLinks: ["evidence/late-adjustment"]
+    }
+  ],
+  validationIssues: [
+    {
+      code: "CLOSE_TASK_PENDING",
+      severity: "Warning",
+      message: "NAV package still needs controller sign-off.",
+      targetId: "task-nav"
+    }
+  ]
+};
+
+const accountingReportPackage: AccountingReportPackageBundle = {
+  financialStatements: {
+    packageId: "accounting-report-package-alpha-202605",
+    fundProfileId: "fund-alpha",
+    ledgerBookId: "book-alpha",
+    periodId: "2026-05",
+    certificationState: "ReadyForReview",
+    statementIds: ["balance-sheet-alpha"],
+    evidenceLinks: ["evidence/financial-statements"],
+    certification: null,
+    restatement: {
+      restatementId: "restatement-alpha-1",
+      priorPackageId: "accounting-report-package-alpha-202604",
+      reasonCode: "late-fee-accrual",
+      approvalState: "Submitted",
+      requestedBy: "controller",
+      requestedAtUtc: "2026-06-02T04:00:00Z",
+      evidenceLinks: ["evidence/restatement"]
+    }
+  },
+  investorCapitalStatements: [
+    {
+      statementId: "investor-capital-alpha-1",
+      fundProfileId: "fund-alpha",
+      capitalAccountId: "capital-alpha-1",
+      investorId: "investor-alpha",
+      periodId: "2026-05",
+      beginningCapital: 100000,
+      contributions: 25000,
+      distributions: 10000,
+      realizedGainLoss: 4500,
+      endingCapital: 119500,
+      currency: "USD",
+      certificationState: "ReadyForReview",
+      evidenceLinks: ["evidence/investor-statement"]
+    }
+  ],
+  realizedGainLoss: {
+    reportId: "rgl-alpha-202605",
+    fundProfileId: "fund-alpha",
+    ledgerBookId: "book-alpha",
+    periodId: "2026-05",
+    dimensions: {
+      fundId: "fund-alpha",
+      entityId: "entity-alpha",
+      capitalAccountId: "capital-alpha-1",
+      externalGlDimensions: { class: "private-fund" }
+    },
+    realizedGainLoss: 4500,
+    currency: "USD",
+    certificationState: "ReadyForReview",
+    evidenceLinks: ["evidence/rgl"]
+  },
+  navPackage: {
+    packageId: "nav-alpha-202605",
+    fundProfileId: "fund-alpha",
+    ledgerBookId: "book-alpha",
+    periodId: "2026-05",
+    nav: 119500,
+    currency: "USD",
+    certificationState: "ReadyForReview",
+    evidenceLinks: ["evidence/nav"],
+    certification: null,
+    restatement: null
+  },
+  certification: {
+    certificationId: "cert-alpha-202605",
+    state: "ReadyForReview",
+    actor: "controller",
+    recordedAtUtc: "2026-06-02T04:30:00Z",
+    summary: "Controller package ready for review.",
+    evidenceLinks: ["evidence/certification"]
+  },
+  validationIssues: [
+    {
+      code: "PACKAGE_REVIEW_PENDING",
+      severity: "Warning",
+      message: "Package is not certified yet.",
+      targetId: "cert-alpha-202605"
     }
   ]
 };
@@ -1614,6 +1781,88 @@ describe("accounting-screen view model", () => {
     });
   });
 
+  it("loads shared close plans and builds certified accounting report package requests", async () => {
+    const getClosePlan = vi.fn(async () => closePeriodPlan);
+    const createLateAdjustment = vi.fn(async () => closePeriodPlan);
+    const buildPackage = vi.fn(async () => accountingReportPackage);
+    const listPackages = vi.fn(async () => [accountingReportPackage]);
+    const services: AccountingCloseReportPackageServices = {
+      getClosePlan,
+      createLateAdjustment,
+      buildPackage,
+      listPackages
+    };
+
+    const { result } = renderHook(() => useAccountingCloseReportPackageViewModel(closeWorkflow, services));
+
+    await waitFor(() => expect(result.current.packageRows).toHaveLength(1));
+
+    expect(getClosePlan).toHaveBeenCalledWith("workflow-close-1");
+    expect(listPackages).toHaveBeenCalledWith({
+      fundProfileId: "fund-alpha",
+      periodId: "2026-05"
+    });
+    expect(result.current).toMatchObject({
+      statusLabel: "Ready for review package",
+      statusTone: "warning",
+      fundLabel: "fund-alpha",
+      lockLabel: "Period open"
+    });
+    expect(result.current.materialityLabel).toContain("controller");
+    expect(result.current.tasks[0]).toMatchObject({
+      displayName: "Finalize NAV package",
+      statusLabel: "Ready for sign-off",
+      dependencyLabel: expect.stringContaining("task-reconciliation"),
+      signOffLabel: "0/1 sign-offs approved",
+      evidenceLabel: "1 evidence link",
+      blockerLabel: "Controller sign-off pending."
+    });
+    expect(result.current.lateAdjustments[0]).toMatchObject({
+      journalEntryId: "manual-je-late-1",
+      reason: "Late custodian fee accrual.",
+      evidenceLabel: "1 evidence link"
+    });
+    expect(result.current.packageRows[0]).toMatchObject({
+      packageId: "accounting-report-package-alpha-202605",
+      certificationLabel: "Ready for review",
+      navLabel: "$119,500 USD",
+      investorStatementLabel: "1 investor statement",
+      realizedGainLossLabel: "+$4,500.00 USD",
+      restatementLabel: "late-fee-accrual | Submitted",
+      evidenceLabel: "6 evidence links",
+      validationLabel: "1 validation issue",
+      selected: true
+    });
+    expect(result.current.validationIssues.map((issue) => issue.label)).toEqual([
+      "Warning | CLOSE_TASK_PENDING",
+      "Warning | PACKAGE_REVIEW_PENDING"
+    ]);
+
+    await act(async () => {
+      await result.current.buildReportPackage();
+    });
+
+    expect(buildPackage).toHaveBeenCalledWith(expect.objectContaining({
+      actor: "browser-accounting-operator",
+      closeWorkflowId: "workflow-close-1",
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-alpha",
+      periodId: "2026-05",
+      capitalAccountId: "capital-alpha-1",
+      investorId: "investor-alpha",
+      beginningCapital: 100000,
+      contributions: 25000,
+      distributions: 10000,
+      realizedGainLoss: 4500,
+      nav: 119500,
+      currency: "USD",
+      correlationId: "browser-close-report-workflow-close-1",
+      evidenceLinks: expect.arrayContaining(["evidence/nav-package", "evidence/late-adjustment"])
+    }));
+    expect(result.current.buildStatusText).toContain("accounting-report-package-alpha-202605");
+    expect(createLateAdjustment).not.toHaveBeenCalled();
+  });
+
   it("derives the accounting workstream and selected reconciliation run", () => {
     expect(resolveAccountingWorkstream("/accounting/security-master")).toBe("security-master");
     expect(resolveAccountingWorkstream("/accounting/reconciliation")).toBe("reconciliation");
@@ -1630,6 +1879,297 @@ describe("accounting-screen view model", () => {
     expect(resolveSelectedReconciliation(reconciliationQueue, "run-57")?.runId).toBe("run-57");
     expect(resolveSelectedReconciliation(reconciliationQueue, null)?.runId).toBe("run-42");
     expect(resolveSelectedReconciliation([], null)).toBeNull();
+  });
+
+  it("loads Accounting Rules Studio rules and runs shared dry-run previews", async () => {
+    const workspace: AccountingConfigurationWorkspace = {
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      status: "Draft",
+      configurationVersion: "v4",
+      updatedAtUtc: "2026-06-30T12:00:00Z",
+      ledgerBooks: [{
+        ledgerBookId: "book-primary",
+        fundProfileId: "fund-alpha",
+        fundStructureNodeId: "entity-master",
+        fundStructureNodeKind: "Entity",
+        displayName: "Primary book",
+        baseCurrency: "USD",
+        createdAt: "2026-01-01T00:00:00Z",
+        updatedAt: "2026-06-30T12:00:00Z",
+        description: "Primary accounting book.",
+        accountingBasis: "Gaap",
+        accountingPolicyId: "policy-gaap",
+        accountingPolicyVersion: "2026.06"
+      }],
+      chartOfAccounts: [
+        {
+          nodeId: "coa-cash",
+          path: "1000.Cash",
+          accountName: "Cash",
+          accountType: "Asset",
+          parentPath: null,
+          isArchived: false
+        },
+        {
+          nodeId: "coa-investment",
+          path: "1200.Investments",
+          accountName: "Investments",
+          accountType: "Asset",
+          parentPath: null,
+          isArchived: false
+        }
+      ],
+      journalTemplates: [{
+        templateId: "template-trade-buy",
+        displayName: "Trade buy settlement",
+        description: "Balanced trade settlement posting.",
+        isArchived: false,
+        version: "v2",
+        lines: [
+          {
+            lineId: "line-investment",
+            accountPath: "1200.Investments",
+            side: "Debit",
+            amount: 250000,
+            currency: "USD",
+            description: "Investment cost"
+          },
+          {
+            lineId: "line-cash",
+            accountPath: "1000.Cash",
+            side: "Credit",
+            amount: 250000,
+            currency: "USD",
+            description: "Cash settlement"
+          }
+        ]
+      }],
+      postingRules: [{
+        ruleId: "rule-trade-buy",
+        displayName: "Trade buy posting",
+        sourceEventType: "TradeExecuted",
+        templateId: "template-trade-buy",
+        ruleVersion: "v3",
+        isArchived: false,
+        description: "Generate trade buy settlement postings.",
+        effectiveFrom: "2026-01-01",
+        effectiveTo: "2026-12-31",
+        priority: 10,
+        scope: {
+          fundId: "fund-alpha",
+          entityId: "entity-master",
+          strategyId: "strategy-long-only",
+          counterpartyId: "cp-001",
+          externalGlDimensions: {
+            class: "FundAlpha"
+          }
+        },
+        conditions: [
+          {
+            conditionId: "cond-event",
+            field: "event.kind",
+            operator: "Equals",
+            value: "TradeExecuted",
+            isRequired: true,
+            description: "Only trade events use this rule."
+          },
+          {
+            conditionId: "cond-amount",
+            field: "event.notional",
+            operator: "AmountGreaterThanOrEqual",
+            value: "100000",
+            isRequired: true,
+            description: "Controller review threshold."
+          }
+        ],
+        formulas: [{
+          formulaId: "formula-source",
+          kind: "SourceAmount",
+          value: 250000,
+          currency: "USD",
+          description: "Use source trade amount."
+        }],
+        allocations: [{
+          allocationRuleId: "alloc-strategy",
+          basis: "StrategyWeight",
+          weight: 1,
+          formulaId: "formula-source",
+          targetDimensions: {
+            sleeveId: "sleeve-core",
+            strategyId: "strategy-long-only"
+          },
+          description: "Allocate to the core strategy sleeve."
+        }],
+        generatedPostings: [
+          {
+            lineId: "generated-investment",
+            accountPath: "1200.Investments",
+            side: "Debit",
+            amountFormulaId: "formula-source",
+            amount: 250000,
+            currency: "USD",
+            dimensions: {
+              fundId: "fund-alpha",
+              instrumentId: "AAPL"
+            },
+            description: "Debit investment cost."
+          },
+          {
+            lineId: "generated-cash",
+            accountPath: "1000.Cash",
+            side: "Credit",
+            amountFormulaId: "formula-source",
+            amount: 250000,
+            currency: "USD",
+            dimensions: {
+              fundId: "fund-alpha",
+              counterpartyId: "cp-001"
+            },
+            description: "Credit cash settlement."
+          }
+        ],
+        versions: [{
+          version: "v3",
+          createdAtUtc: "2026-06-15T10:00:00Z",
+          createdBy: "controller",
+          changeSummary: "Added counterparty scope and generated postings.",
+          promotionApproval: null,
+          evidenceLinks: ["evidence://rule/v3"]
+        }],
+        promotionApproval: {
+          approvalId: "approval-rule-trade-buy",
+          requestedBy: "controller",
+          requestedAtUtc: "2026-06-15T10:00:00Z",
+          approvalState: "Approved",
+          approvedBy: "cfo",
+          approvedAtUtc: "2026-06-15T11:00:00Z",
+          notes: "Approved for production dry-run.",
+          evidenceLinks: ["evidence://approval"]
+        },
+        requiresPromotionApproval: true
+      }],
+      validationIssues: [],
+      auditTrail: [{
+        auditEventId: "audit-rule-trade-buy",
+        recordedAtUtc: "2026-06-15T11:00:00Z",
+        actor: "controller",
+        action: "rule.promoted",
+        fundProfileId: "fund-alpha",
+        ledgerBookId: "book-primary",
+        correlationId: "corr-rule",
+        beforeHash: "before-hash-123456",
+        afterHash: "after-hash-654321",
+        validationIssues: [],
+        evidenceLinks: ["evidence://approval"]
+      }]
+    };
+    const dryRunResult: RuleDryRunResult = {
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      sourceEventType: "TradeExecuted",
+      effectiveDate: "2026-01-01",
+      eventAmount: 250000,
+      currency: "USD",
+      isPostingBalanced: true,
+      selectedRuleId: "rule-trade-buy",
+      ruleMatches: [{
+        ruleId: "rule-trade-buy",
+        displayName: "Trade buy posting",
+        ruleVersion: "v3",
+        priority: 10,
+        isMatched: true,
+        explanations: ["Effective date and source event predicates matched."],
+        validationIssues: []
+      }],
+      generatedLines: [
+        {
+          accountPath: "1200.Investments",
+          accountName: "Investments",
+          side: "Debit",
+          amount: 250000,
+          currency: "USD",
+          description: "Debit investment cost."
+        },
+        {
+          accountPath: "1000.Cash",
+          accountName: "Cash",
+          side: "Credit",
+          amount: 250000,
+          currency: "USD",
+          description: "Credit cash settlement."
+        }
+      ],
+      generatedPostingLines: workspace.postingRules[0].generatedPostings,
+      validationIssues: []
+    };
+    const services: AccountingConfigurationServices = {
+      getConfiguration: vi.fn().mockResolvedValue(workspace),
+      previewTemplate: vi.fn().mockResolvedValue({
+        templateId: "template-trade-buy",
+        displayName: "Trade buy settlement",
+        isBalanced: true,
+        totalDebits: 250000,
+        totalCredits: 250000,
+        lines: dryRunResult.generatedLines,
+        validationIssues: []
+      }),
+      dryRunRule: vi.fn().mockResolvedValue(dryRunResult),
+      activate: vi.fn().mockResolvedValue(workspace)
+    };
+
+    const { result } = renderHook(() => useAccountingConfigurationViewModel(services));
+
+    await waitFor(() => expect(result.current.rules).toHaveLength(1));
+    expect(result.current.selectedRule).toMatchObject({
+      id: "rule-trade-buy",
+      title: "Trade buy posting",
+      eventLabel: "TradeExecuted",
+      effectiveLabel: "2026-01-01 -> 2026-12-31",
+      priorityLabel: "Priority 10",
+      promotionLabel: "Approved by cfo",
+      statusLabel: "Generated postings"
+    });
+    expect(result.current.selectedRule?.scopeLabels).toEqual(expect.arrayContaining([
+      "Fund: fund-alpha",
+      "Entity: entity-master",
+      "Counterparty: cp-001",
+      "External class: FundAlpha"
+    ]));
+    expect(result.current.selectedRule?.conditionRows.join("\n")).toContain("event.kind Equals TradeExecuted");
+    expect(result.current.selectedRule?.formulaRows.join("\n")).toContain("formula-source: SourceAmount $250,000 USD");
+    expect(result.current.selectedRule?.allocationRows.join("\n")).toContain("alloc-strategy: StrategyWeight weight 1 via formula-source");
+    expect(result.current.selectedRule?.generatedPostingRows.join("\n")).toContain("Debit 1200.Investments $250,000 USD via formula-source");
+    expect(result.current.selectedRule?.versionRows.join("\n")).toContain("v3 by controller on 2026-06-15");
+    expect(result.current.canDryRun).toBe(true);
+
+    await act(async () => {
+      await result.current.dryRunSelectedRule();
+    });
+
+    expect(services.dryRunRule).toHaveBeenCalledWith(expect.objectContaining({
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      sourceEventType: "TradeExecuted",
+      eventAmount: 250000,
+      currency: "USD",
+      effectiveDate: "2026-01-01",
+      actor: "browser-accounting-operator",
+      counterpartyId: "cp-001",
+      dimensions: expect.objectContaining({
+        fundId: "fund-alpha",
+        strategyId: "strategy-long-only"
+      })
+    }));
+    await waitFor(() => expect(result.current.dryRunPreview).not.toBeNull());
+    expect(result.current.dryRunPreview).toMatchObject({
+      title: "TradeExecuted dry run",
+      balanceLabel: "Balanced $250,000 USD",
+      selectedRuleLabel: "Selected rule rule-trade-buy"
+    });
+    expect(result.current.dryRunPreview?.matchRows.join("\n")).toContain("Trade buy posting matched at priority 10");
+    expect(result.current.dryRunPreview?.generatedLineRows.join("\n")).toContain("Debit 1200.Investments $250,000 USD");
+    expect(result.current.dryRunPreview?.generatedPostingRows.join("\n")).toContain("Credit 1000.Cash $250,000 USD via formula-source");
   });
 
   it("loads the Capital Account Workbench with investor evidence, allocation rules, lineage, and audit drill-through rows", async () => {
@@ -1872,7 +2412,48 @@ describe("accounting-screen view model", () => {
       searchSecurities: vi.fn().mockResolvedValue([securityResult]),
       saveDraft: vi.fn().mockResolvedValue(savedDraft),
       validateDraft: vi.fn().mockResolvedValue(savedDraft),
-      submitApproval: vi.fn().mockResolvedValue({ ...savedDraft, status: "Submitted" })
+      submitApproval: vi.fn().mockResolvedValue({ ...savedDraft, status: "Submitted" }),
+      applyLifecycleAction: vi.fn().mockResolvedValue({
+        journalEntry: {
+          ...savedDraft,
+          status: "Posted",
+          version: 4,
+          postedAtUtc: "2026-06-30T02:00:00Z",
+          postedBy: "browser-user",
+          lifecycleTransitions: [{
+            transitionId: "transition-post",
+            fromStatus: "Approved",
+            toStatus: "Posted",
+            action: "Post",
+            actor: "browser-user",
+            recordedAtUtc: "2026-06-30T02:00:00Z",
+            notes: "Post approved journal entry manual-je-1.",
+            correlationId: "manual-je-post",
+            evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/source-doc"]
+          }]
+        },
+        transition: {
+          transitionId: "transition-post",
+          fromStatus: "Approved",
+          toStatus: "Posted",
+          action: "Post",
+          actor: "browser-user",
+          recordedAtUtc: "2026-06-30T02:00:00Z",
+          notes: "Post approved journal entry manual-je-1.",
+          correlationId: "manual-je-post",
+          evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/source-doc"]
+        },
+        generatedJournalEntries: [{
+          ...savedDraft,
+          journalEntryId: "manual-je-reversal-1",
+          status: "Draft",
+          version: 1,
+          memo: "Reversal for journal entry manual-je-1",
+          entryType: "Reversal",
+          reversalOfJournalEntryId: "manual-je-1",
+          lifecycleTransitions: []
+        }]
+      })
     };
 
     const { result } = renderHook(() => useManualJournalEntryWorkbenchViewModel(true, services));
@@ -2095,6 +2676,30 @@ describe("accounting-screen view model", () => {
     expect(result.current.draft.evidenceAttachments).toHaveLength(1);
     expect(result.current.draft.evidenceLinks).toContain("/api/workstation/evidence/subjects/accounting-record/source-doc");
     expect(result.current.getLineBadges("line-debit").map((badge) => badge.label)).toContain("Evidence");
+
+    await act(async () => {
+      await result.current.applyLifecycleAction("Post");
+    });
+
+    expect(services.applyLifecycleAction).toHaveBeenCalledWith(expect.objectContaining({
+      journalEntryId: "manual-je-1",
+      fundProfileId: "fund-alpha",
+      action: "Post",
+      actor: "browser-user",
+      version: 1,
+      actionOrigin: "HumanOperator",
+      evidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/source-doc"]
+    }));
+    expect(result.current.draft.status).toBe("Posted");
+    expect(result.current.lifecycleStatusText).toBe("Post recorded: Approved -> Posted");
+    expect(result.current.lifecycleTransitions[0]).toMatchObject({
+      title: "Post: Approved -> Posted",
+      evidenceLabel: "1 evidence link(s)"
+    });
+    expect(result.current.lifecycleCorrectionRows[0]).toMatchObject({
+      id: "manual-je-reversal-1",
+      sourceLabel: "Reversal of manual-je-1"
+    });
   });
 
   it("derives a blocked controller close command center from workflow and provider signals", () => {

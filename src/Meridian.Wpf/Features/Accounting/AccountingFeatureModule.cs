@@ -4,6 +4,7 @@ using Meridian.Application.FundStructure;
 using Meridian.FinancialOperations.AccountingClose;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Services;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.Ledger;
@@ -84,6 +85,8 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<ReportPackWorkflowService>()));
+        services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
+            (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
         services.TryAddSingleton<ICapitalAccountWorkbenchService>(sp =>
             new CapitalAccountWorkbenchService(
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),

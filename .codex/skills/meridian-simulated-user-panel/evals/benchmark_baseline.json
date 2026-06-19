@@ -1,0 +1,10 @@
+{
+  "skill_name": "meridian-simulated-user-panel",
+  "last_updated": "2026-06-19",
+  "baselines": [
+    {
+      "eval_id": 1,
+      "accepted_status": "pass"
+    }
+  ]
+}

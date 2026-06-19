@@ -4,6 +4,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -208,6 +209,220 @@ public sealed partial class WorkstationEndpointsTests
                 "APPROVAL_REQUIRED"
             ]);
         calendarItem.ReadinessNextActions.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task LedgerCloseManagementEndpoints_ProjectClosePlanAndRetainLateAdjustment()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var fundAccountId = Guid.NewGuid();
+
+        using var startResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.OperationsContinuity,
+            new OperationsStartWorkflowRequestDto(
+                fundAccountId,
+                "2026-07",
+                SecurityMasterSnapshotId: null,
+                BrokerSource: "custodian",
+                Actor: "local-actor"));
+        startResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var start = await startResponse.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
+        var workflowId = start!.Workflow!.WorkflowId;
+        var planRoute = UiApiRoutes.LedgerCloseManagementPeriodPlan.Replace("{workflowId:guid}", workflowId.ToString("D"));
+
+        using var planResponse = await client.GetAsync(planRoute);
+
+        planResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var plan = await planResponse.Content.ReadFromJsonAsync<ClosePeriodPlanDto>(ServerJsonOptions);
+        plan.Should().NotBeNull();
+        plan!.ClosePlanId.Should().Be($"close-plan-{workflowId:D}");
+        plan.FundProfileId.Should().Be(fundAccountId.ToString("D"));
+        plan.PeriodId.Should().Be("2026-07");
+        plan.PeriodStart.Should().Be(new DateOnly(2026, 7, 1));
+        plan.PeriodEnd.Should().Be(new DateOnly(2026, 7, 31));
+        plan.IsPeriodLocked.Should().BeFalse();
+        plan.MaterialityPolicy.RequiresLateAdjustmentApproval.Should().BeTrue();
+        plan.Tasks.Should().NotBeEmpty();
+        plan.Tasks.Skip(1).Should().OnlyContain(task => task.Dependencies.Count > 0);
+
+        using var adjustmentResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerCloseManagementLateAdjustments,
+            new CreateLateAdjustmentRequestDto(
+                WorkflowId: workflowId,
+                JournalEntryId: Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                Amount: 15_000m,
+                Currency: "usd",
+                Reason: "Material close adjustment after reconciliation review.",
+                RequestedBy: "untrusted-browser-user",
+                EvidenceLinks: ["evidence:late-adjustment:review"]),
+            ServerJsonOptions);
+
+        adjustmentResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var adjustedPlan = await adjustmentResponse.Content.ReadFromJsonAsync<ClosePeriodPlanDto>(ServerJsonOptions);
+        adjustedPlan.Should().NotBeNull();
+        var adjustment = adjustedPlan!.LateAdjustments.Should().ContainSingle().Subject;
+        adjustment.RequestedBy.Should().Be("ops-user");
+        adjustment.Currency.Should().Be("USD");
+        adjustment.ApprovalState.Should().Be(ManualJournalEntryStatusDto.Submitted);
+        adjustment.MaterialityPolicy.AmountThreshold.Should().Be(10_000m);
+        adjustment.EvidenceLinks.Should().Contain("evidence:late-adjustment:review");
+        adjustedPlan.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "LateAdjustmentRequiresApproval" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Warning &&
+            issue.TargetId == adjustment.RequestId);
+    }
+
+    [Fact]
+    public async Task LedgerAccountingReportPackageEndpoint_AssemblesCertificationAndRestatementState()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterOperationsContinuityServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        var fundAccountId = Guid.NewGuid();
+
+        using var startResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.OperationsContinuity,
+            new OperationsStartWorkflowRequestDto(
+                fundAccountId,
+                "2026-07",
+                SecurityMasterSnapshotId: null,
+                BrokerSource: "custodian",
+                Actor: "local-actor"));
+        startResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var start = await startResponse.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
+
+        using var response = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerReportsAccountingPackage,
+            new AccountingReportPackageRequestDto(
+                FundProfileId: "fund-alpha",
+                PeriodId: "2026-07",
+                Actor: "browser-user",
+                CloseWorkflowId: start!.Workflow!.WorkflowId,
+                CapitalAccountId: "capital-account-lp-1",
+                InvestorId: "investor-lp-1",
+                BeginningCapital: 100_000m,
+                Contributions: 25_000m,
+                Distributions: 5_000m,
+                RealizedGainLoss: 12_500m,
+                Nav: 132_500m,
+                RestatementReasonCode: "late-adjustment",
+                PriorPackageId: "accounting-report-package-fund-alpha-2026-06",
+                EvidenceLinks: ["evidence:report-package:2026-07"]),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var package = await response.Content.ReadFromJsonAsync<AccountingReportPackageBundleDto>(ServerJsonOptions);
+        package.Should().NotBeNull();
+        package!.FinancialStatements.PackageId.Should().Be("accounting-report-package-fund-alpha-2026-07");
+        package.FinancialStatements.StatementIds.Should().Contain(["balance-sheet", "income-statement", "trial-balance"]);
+        package.InvestorCapitalStatements.Should().ContainSingle(statement =>
+            statement.CapitalAccountId == "capital-account-lp-1" &&
+            statement.InvestorId == "investor-lp-1" &&
+            statement.EndingCapital == 132_500m);
+        package.RealizedGainLoss.RealizedGainLoss.Should().Be(12_500m);
+        package.NavPackage.Nav.Should().Be(132_500m);
+        package.Certification.Actor.Should().Be("ops-user");
+        package.Certification.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+        package.NavPackage.Restatement.Should().NotBeNull();
+        package.NavPackage.Restatement!.ApprovalState.Should().Be(ManualJournalEntryStatusDto.Submitted);
+        package.ValidationIssues.Should().Contain(issue => issue.Code == "PeriodNotLocked");
+
+        using var historyResponse = await client.GetAsync(
+            $"{UiApiRoutes.LedgerReportsAccountingPackages}?fundProfileId=fund-alpha&periodId=2026-07");
+
+        historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var packages = await historyResponse.Content.ReadFromJsonAsync<IReadOnlyList<AccountingReportPackageBundleDto>>(ServerJsonOptions);
+        packages.Should().ContainSingle(row => row.FinancialStatements.PackageId == package.FinancialStatements.PackageId);
+    }
+
+    [Fact]
+    public async Task LedgerAccountingCloseAndReportPackages_RetainDurableHistoryAcrossRestart()
+    {
+        var dataRoot = Path.Combine(Path.GetTempPath(), "meridian-tests", "accounting-productization", Guid.NewGuid().ToString("N"));
+        var fundAccountId = Guid.NewGuid();
+        Guid workflowId;
+
+        await using (var app = await CreateAppAsync(
+            services => RegisterDurableOperationsContinuityServices(services, dataRoot),
+            currentUserPermissions: UserPermission.AdminMaintenance))
+        {
+            var client = app.GetTestClient();
+
+            using var startResponse = await client.PostAsJsonAsync(
+                UiApiRoutes.OperationsContinuity,
+                new OperationsStartWorkflowRequestDto(
+                    fundAccountId,
+                    "2026-07",
+                    SecurityMasterSnapshotId: null,
+                    BrokerSource: "custodian",
+                    Actor: "local-actor"));
+            startResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            var start = await startResponse.Content.ReadFromJsonAsync<OperationsTransitionResultDto>(ServerJsonOptions);
+            workflowId = start!.Workflow!.WorkflowId;
+
+            using var adjustmentResponse = await client.PostAsJsonAsync(
+                UiApiRoutes.LedgerCloseManagementLateAdjustments,
+                new CreateLateAdjustmentRequestDto(
+                    WorkflowId: workflowId,
+                    JournalEntryId: Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                    Amount: 12_000m,
+                    Currency: "usd",
+                    Reason: "Retained material close adjustment.",
+                    RequestedBy: "browser-user",
+                    EvidenceLinks: ["evidence:close:durable-late-adjustment"]),
+                ServerJsonOptions);
+            adjustmentResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            using var packageResponse = await client.PostAsJsonAsync(
+                UiApiRoutes.LedgerReportsAccountingPackage,
+                new AccountingReportPackageRequestDto(
+                    FundProfileId: "fund-alpha",
+                    PeriodId: "2026-07",
+                    Actor: "browser-user",
+                    CloseWorkflowId: workflowId,
+                    CapitalAccountId: "capital-account-lp-1",
+                    InvestorId: "investor-lp-1",
+                    BeginningCapital: 100_000m,
+                    Contributions: 5_000m,
+                    Distributions: 1_000m,
+                    RealizedGainLoss: 7_500m,
+                    Nav: 111_500m,
+                    RestatementReasonCode: null,
+                    PriorPackageId: null,
+                    EvidenceLinks: ["evidence:report-package:durable"]),
+                ServerJsonOptions);
+            packageResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+
+        File.Exists(Path.Combine(dataRoot, "accounting", "close-management-late-adjustments.json")).Should().BeTrue();
+        File.Exists(Path.Combine(dataRoot, "accounting", "accounting-report-packages.json")).Should().BeTrue();
+
+        await using var restartedApp = await CreateAppAsync(
+            services => RegisterDurableOperationsContinuityServices(services, dataRoot),
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var restartedClient = restartedApp.GetTestClient();
+
+        var planRoute = UiApiRoutes.LedgerCloseManagementPeriodPlan.Replace("{workflowId:guid}", workflowId.ToString("D"));
+        using var planResponse = await restartedClient.GetAsync(planRoute);
+        planResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var closePlan = await planResponse.Content.ReadFromJsonAsync<ClosePeriodPlanDto>(ServerJsonOptions);
+        closePlan.Should().NotBeNull();
+        closePlan!.LateAdjustments.Should().ContainSingle(row =>
+            row.JournalEntryId == Guid.Parse("22222222-2222-2222-2222-222222222222") &&
+            row.Amount == 12_000m &&
+            row.RequestedBy == "ops-user");
+
+        using var historyResponse = await restartedClient.GetAsync(
+            $"{UiApiRoutes.LedgerReportsAccountingPackages}?fundProfileId=fund-alpha&periodId=2026-07");
+        historyResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var packages = await historyResponse.Content.ReadFromJsonAsync<IReadOnlyList<AccountingReportPackageBundleDto>>(ServerJsonOptions);
+        packages.Should().ContainSingle(row =>
+            row.FinancialStatements.PackageId == "accounting-report-package-fund-alpha-2026-07" &&
+            row.InvestorCapitalStatements.Single().EndingCapital == 111_500m);
     }
 
     [Fact]

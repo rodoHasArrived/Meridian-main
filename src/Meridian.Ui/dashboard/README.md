@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-06-16
+last_reviewed: 2026-06-19
 ---
 
 # src/Meridian.Ui/dashboard
@@ -130,6 +130,11 @@ The Accounting external-GL panel renders the shared accounting-system reconcilia
 packages for external import, Meridian ledger support, and GL tie-out posture when the API returns
 them, keeping package readiness and required actions service-owned rather than deriving package
 state from browser table rows.
+The same panel now reads external GL mapping profiles from the shared AccountingSystem endpoint,
+shows certified account and dimension coverage beside the reconciliation, and posts guarded export
+package requests with mapping, reconciliation, fund, period, and evidence context. The returned
+package is retained as a review artifact with certification and validation state; live external GL
+posting remains disabled by shared policy and is not inferred in React.
 The Accounting screen also carries a stable Investment Accounting Transaction Lab panel view model
 so the browser renders the Books Before Broker preview entry point without crashing while endpoint
 request wiring remains a follow-on workflow.
@@ -137,6 +142,22 @@ The Accounting workspace workflow launch strip is derived from the Accounting vi
 route catalog, covering setup, journal entries, ledger review, reconciliation, exception casework,
 Security Master readiness, approvals, and retained evidence packaging without browser-local close
 state.
+The Accounting Configure workstream at `/accounting/configure` renders the shared Accounting Rules
+Studio from `PostingRuleDto` and `RuleDryRunResultDto`: effective dates, priority, dimensional
+scope, event predicates, formulas, allocations, generated posting metadata, retained versions,
+promotion approvals, and dry-run preview results are browser projections over the shared
+configuration service rather than client-local rule logic.
+The Accounting Manual Journal Entry workbench also exposes the shared lifecycle-action endpoint for
+approve, reject, post, reverse, rebook, and lock-after-close. Browser commands pass the retained
+draft version and evidence links, render the returned transition audit rows, and show generated
+reversal/rebook drafts as separate entries instead of mutating posted entries.
+The Accounting close/report package cockpit reads the shared close-management period plan and
+accounting report-package history endpoints, showing checklist dependencies, sign-offs,
+materiality, period-lock posture, late adjustments, package certification, investor statement
+counts, realized gain/loss, NAV, restatement state, validation issues, and retained evidence
+counts. Its package-build command posts workflow, fund, period, package-seed, and evidence context
+to the shared accounting report package endpoint; close transitions, late-adjustment approval,
+package approval, rendered statement artifacts, and restatement execution remain service-owned.
 `FinancialRecordExplorerShell` is the browser presentation for the shared Financial Record Explorer
 DTO. Accounting loads the `ledger` and Accounting-hosted `security-instrument` explorers from
 `/api/workstation/financial-record-explorers/{explorerId}`, Portfolio loads `portfolio`, Reporting

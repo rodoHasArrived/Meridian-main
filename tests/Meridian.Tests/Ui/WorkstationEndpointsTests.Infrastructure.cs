@@ -8,6 +8,7 @@ using FluentAssertions;
 using Meridian.Application.Config.Credentials;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Application.Monitoring;
+using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Application.ProviderRouting;
 using Meridian.Application.SecurityMaster;
@@ -28,6 +29,7 @@ using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
+using Meridian.Storage;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
@@ -149,6 +151,33 @@ public sealed partial class WorkstationEndpointsTests
         services.AddSingleton<IOperationsContinuityWorkflowService, OperationsContinuityWorkflowService>();
         services.AddSingleton<IOperationsApprovalPolicyMatrixService, OperationsApprovalPolicyMatrixService>();
         services.AddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
+        services.AddSingleton<IAccountingCloseManagementService, AccountingCloseManagementService>();
+        services.AddSingleton<IAccountingReportPackageService, AccountingReportPackageService>();
+        services.AddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
+            new OperationsContinuityReconciliationBridge(
+                sp.GetRequiredService<IOperationsContinuityWorkflowService>(),
+                sp.GetService<IReconciliationRunService>()));
+    }
+
+    private static void RegisterDurableOperationsContinuityServices(IServiceCollection services, string dataRoot)
+    {
+        services.AddSingleton(new StorageOptions { RootPath = dataRoot });
+        services.AddSingleton<IOperationsStatusDerivationService, OperationsStatusDerivationService>();
+        services.AddSingleton<IOperationsContinuityRepository>(sp =>
+            new FileOperationsContinuityRepository(
+                dataRoot,
+                sp.GetRequiredService<IOperationsStatusDerivationService>(),
+                NullLogger<FileOperationsContinuityRepository>.Instance));
+        services.AddSingleton<IOperationsWorkflowAuditStore>(_ =>
+            new FileOperationsWorkflowAuditStore(
+                dataRoot,
+                NullLogger<FileOperationsWorkflowAuditStore>.Instance));
+        services.AddSingleton<ILedgerJournalStore, RecordingLedgerJournalStore>();
+        services.AddSingleton<IOperationsContinuityWorkflowService, OperationsContinuityWorkflowService>();
+        services.AddSingleton<IOperationsApprovalPolicyMatrixService, OperationsApprovalPolicyMatrixService>();
+        services.AddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
+        services.AddSingleton<IAccountingCloseManagementService, AccountingCloseManagementService>();
+        services.AddSingleton<IAccountingReportPackageService, AccountingReportPackageService>();
         services.AddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
             new OperationsContinuityReconciliationBridge(
                 sp.GetRequiredService<IOperationsContinuityWorkflowService>(),

@@ -212,6 +212,7 @@ python3 build/scripts/docs/check-handoff-packet-schema.py --packet-json docs/sta
 python3 build/scripts/docs/check-validation-floor.py --summary-json docs/status/docs-automation-summary.json --route-json docs/status/prompt-route-lint-report.json --summary
 python3 build/scripts/docs/check-mode-escalation.py --route-json docs/status/prompt-route-lint-report.json --summary-json docs/status/docs-automation-summary.json --summary
 python3 build/scripts/docs/check-ai-routing-parity.py --summary
+python3 .codex/skills/meridian-codex-skill-builder/scripts/skill_package_audit.py --skill <skill> --summary
 python3 build/scripts/docs/validate-skill-packages.py
 python3 .codex/skills/meridian-implementation-assurance/scripts/skill_script_advisor.py audit --skill meridian-implementation-assurance --summary
 python3 .codex/skills/meridian-implementation-assurance/scripts/run_evals.py --all --dry-run --json
@@ -241,6 +242,10 @@ Required quality gates:
 - direct Python/script checks backing `make ai-verify`
 - direct Python/script checks backing `make ai-arch-check`
 - CI step `Validate AI contract drift` in `.github/workflows/ci.yml`
+- Codex package completeness through
+  `.codex/skills/meridian-codex-skill-builder/scripts/skill_package_audit.py --skill <skill>
+  --summary`
+- Portable and Claude mirror package validation through `build/scripts/docs/validate-skill-packages.py`
 
 Advisory tooling:
 
@@ -340,6 +345,15 @@ python3 build/scripts/docs/validate-doc-hashes.py --summary
 ```
 
 If GNU Make is installed, `make ai-codex-skills-check` wraps the same fast local drift lane.
+
+Use the Codex skill-builder package audit for repo-local Codex package completeness:
+
+```bash
+python3 .codex/skills/meridian-codex-skill-builder/scripts/skill_package_audit.py --skill <skill> --summary
+```
+
+Use `python3 build/scripts/docs/validate-skill-packages.py` for portable/Claude mirror packages
+unless that script is explicitly changed to cover repo-local Codex packages.
 
 Use `python3 build/scripts/docs/check-ai-inventory.py --summary` after adding, renaming, or
 removing Codex agent profiles, prompts, validation checklists, `.codex/AGENTS.md`, environment

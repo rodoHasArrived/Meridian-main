@@ -85,9 +85,9 @@ Shared grounding files:
 - Parallel workflow: disambiguate ownership by lane and keep touched skill surfaces non-overlapping.
 - Token/context management: use `../work-modes.md`, keep required vs optional context explicit in
   handoff packets, and record validation reuse or rerun triggers before switching lanes.
-- Validation: `check-ai-inventory`, `check-codex-skills`, `validate-skill-packages`,
-  `check-ai-handoff --strict`, and `git diff --check`
-  for skills/docs-only batches.
+- Validation: `check-ai-inventory`, `check-codex-skills`, Codex
+  `skill_package_audit.py --skill <skill>`, portable/Claude `validate-skill-packages`,
+  `check-ai-handoff --strict`, and `git diff --check` for skills/docs-only batches.
 - Documentation ownership: [`../../documentation-ownership.md`](../../documentation-ownership.md)
 
 ---
@@ -154,10 +154,15 @@ Validate skill packaging with:
 
 ```bash
 python3 build/scripts/docs/check-codex-skills.py --summary
+python3 .codex/skills/meridian-codex-skill-builder/scripts/skill_package_audit.py --skill <skill> --summary
 python3 build/scripts/docs/validate-skill-packages.py
 python3 build/scripts/docs/check-ai-inventory.py --summary
 ```
 
+Use `skill_package_audit.py --skill <skill>` for repo-local Codex package completeness.
+Use `validate-skill-packages.py` for portable Agent Skills and Claude mirror packages unless that
+script is explicitly changed to cover `.codex/skills/`.
+
 ---
 
-_Last Updated: 2026-06-03_
+_Last Updated: 2026-06-19_

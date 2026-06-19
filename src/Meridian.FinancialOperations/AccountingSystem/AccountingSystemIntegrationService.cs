@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Meridian.Contracts.AccountingSystem;
+using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
 using Meridian.ProviderSdk.AccountingSystem;
 using Meridian.Storage.Ledger;
@@ -11,10 +12,29 @@ public sealed class AccountingSystemIntegrationService
     private const string DefaultProviderId = "quickbooks-fixture";
     private const string QuickBooksOnlineProviderId = "quickbooks";
     private const string DefaultFundProfileId = "default-fund";
+    private static readonly PlannedAccountingSystemProvider[] PlannedProviders =
+    [
+        new(
+            QuickBooksOnlineProviderId,
+            "QuickBooks Online",
+            "Live QuickBooks Online OAuth, company selection, and read-only GL import require the QuickBooks Online provider registration.",
+            ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"]),
+        new(
+            "xero",
+            "Xero",
+            "Xero chart, journal, and trial-balance import mapping is planned; live posting remains disabled until a separately approved adapter exists.",
+            ["XeroAccount", "XeroManualJournal", "XeroTrialBalance"]),
+        new(
+            "netsuite",
+            "NetSuite",
+            "NetSuite chart, journal, and trial-balance import mapping is planned; live posting remains disabled until a separately approved adapter exists.",
+            ["NetSuiteAccount", "NetSuiteJournalEntry", "NetSuiteTrialBalance"])
+    ];
 
     private readonly IReadOnlyList<IAccountingSystemProvider> _providers;
     private readonly ILedgerJournalStore? _ledgerJournalStore;
     private readonly ConcurrentDictionary<string, AccountingSystemImportDetailDto> _latestImports = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, ScopedExternalGlMappingProfile> _mappingProfiles = new(StringComparer.OrdinalIgnoreCase);
 
     public AccountingSystemIntegrationService(
         IEnumerable<IAccountingSystemProvider> providers,
@@ -33,26 +53,124 @@ public sealed class AccountingSystemIntegrationService
             rows.Add(await ToProviderDtoAsync(provider, ct).ConfigureAwait(false));
         }
 
-        if (!_providers.Any(static provider => string.Equals(provider.ProviderId, QuickBooksOnlineProviderId, StringComparison.OrdinalIgnoreCase)))
+        foreach (var plannedProvider in PlannedProviders)
         {
-            rows.Add(new AccountingSystemProviderDto(
-                QuickBooksOnlineProviderId,
-                "QuickBooks Online",
-                AccountingSystemProviderStateDto.Planned,
-                RequiresCredentials: true,
-                SupportsChartOfAccounts: true,
-                SupportsJournalEntries: true,
-                SupportsTrialBalance: true,
-                SupportsPosting: false,
-                "OAuth adapter not registered",
-                "Live QuickBooks Online OAuth, company selection, and read-only GL import require the QuickBooks Online provider registration.",
-                ["QuickBooksAccount", "QuickBooksJournalEntry", "QuickBooksTrialBalance"]));
+            if (_providers.Any(provider => string.Equals(provider.ProviderId, plannedProvider.ProviderId, StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
+
+            rows.Add(plannedProvider.ToDto());
         }
 
         return rows
             .OrderBy(static row => row.State == AccountingSystemProviderStateDto.Available ? 0 : 1)
             .ThenBy(static row => row.DisplayName, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+    }
+
+    public Task<IReadOnlyList<ExternalGlMappingProfileDto>> ListMappingProfilesAsync(
+        string? providerId = null,
+        string? fundProfileId = null,
+        Guid? ledgerBookId = null,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        var normalizedProviderId = string.IsNullOrWhiteSpace(providerId) ? null : NormalizeProviderId(providerId);
+        var normalizedFundProfileId = string.IsNullOrWhiteSpace(fundProfileId) ? null : NormalizeFundProfileId(fundProfileId);
+        var rows = _mappingProfiles.Values
+            .Where(record => normalizedProviderId is null || string.Equals(record.ProviderId, normalizedProviderId, StringComparison.OrdinalIgnoreCase))
+            .Where(record => normalizedFundProfileId is null || string.Equals(record.FundProfileId, normalizedFundProfileId, StringComparison.OrdinalIgnoreCase))
+            .Where(record => ledgerBookId is null || record.LedgerBookId == ledgerBookId)
+            .Select(static record => record.Profile)
+            .OrderBy(static profile => profile.ProviderId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static profile => profile.DisplayName, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        return Task.FromResult<IReadOnlyList<ExternalGlMappingProfileDto>>(rows);
+    }
+
+    public Task<ExternalGlMappingProfileDto> UpsertMappingProfileAsync(
+        AccountingSystemMappingProfileUpsertRequestDto request,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(request.Profile);
+
+        var profileId = RequireText(request.Profile.ProfileId, "Mapping profile id");
+        var actor = RequireText(request.Actor, "Actor");
+        var providerId = NormalizeProviderId(request.ProviderId ?? request.Profile.ProviderId);
+        var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
+        var normalizedProfile = request.Profile with
+        {
+            ProfileId = profileId,
+            ProviderId = providerId,
+            DisplayName = RequireText(request.Profile.DisplayName, "Mapping profile display name"),
+            UpdatedAtUtc = DateTimeOffset.UtcNow,
+            CertificationState = request.Profile.CertificationState,
+            AccountMappings = NormalizeAccountMappings(request.Profile.AccountMappings),
+            DimensionMappings = (request.Profile.DimensionMappings ?? [])
+                .Select(mapping => mapping with { ProviderId = providerId })
+                .ToArray()
+        };
+
+        if (normalizedProfile.AccountMappings.Count == 0 && normalizedProfile.DimensionMappings.Count == 0)
+        {
+            normalizedProfile = normalizedProfile with { CertificationState = AccountingCertificationStateDto.Draft };
+        }
+
+        _mappingProfiles[MappingProfileKey(providerId, fundProfileId, request.LedgerBookId, profileId)] =
+            new ScopedExternalGlMappingProfile(providerId, fundProfileId, request.LedgerBookId, normalizedProfile, actor, NormalizeEvidenceReferences(request.EvidenceLinks));
+
+        return Task.FromResult(normalizedProfile);
+    }
+
+    public async Task<ExternalGlExportPackageDto> CreateExportPackageAsync(
+        AccountingSystemExportPackageRequestDto request,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(request);
+
+        var actor = RequireText(request.Actor, "Actor");
+        var providerId = NormalizeProviderId(request.ProviderId);
+        var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
+        var mappingProfile = ResolveMappingProfile(providerId, fundProfileId, request.LedgerBookId, request.MappingProfileId);
+        var reconciliation = await TryReconcileLatestAsync(providerId, fundProfileId, request.LedgerBookId, ct).ConfigureAwait(false);
+        var periodStart = request.PeriodStart ?? reconciliation?.PeriodStart ?? CurrentMonthStart();
+        var periodEnd = request.PeriodEnd ?? reconciliation?.PeriodEnd ?? CurrentMonthEnd(periodStart);
+        var validationIssues = BuildExportValidationIssues(providerId, mappingProfile, reconciliation, request.RequireBalancedReconciliation);
+        var evidenceLinks = BuildExportEvidenceLinks(request, mappingProfile, reconciliation);
+        var hasCritical = validationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        var certificationState = hasCritical
+            ? AccountingCertificationStateDto.Draft
+            : AccountingCertificationStateDto.ReadyForReview;
+        var certification = new ExternalGlExportCertificationDto(
+            $"external-gl-export-cert-{SanitizeId(providerId)}-{SanitizeId(fundProfileId)}-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
+            certificationState,
+            actor,
+            DateTimeOffset.UtcNow,
+            hasCritical
+                ? "Export package is retained as a guarded review artifact and cannot be certified until validation issues are resolved."
+                : "Export package passed automated mapping and reconciliation safeguards and is ready for human certification review.",
+            evidenceLinks);
+
+        return new ExternalGlExportPackageDto(
+            $"external-gl-export-{SanitizeId(providerId)}-{SanitizeId(fundProfileId)}-{periodEnd:yyyyMMdd}-{Guid.NewGuid():N}",
+            providerId,
+            fundProfileId,
+            request.LedgerBookId,
+            periodStart,
+            periodEnd,
+            DateTimeOffset.UtcNow,
+            actor,
+            PostingEnabled: false,
+            PostingDisabledReason: "Guarded export package only; live external GL posting remains disabled until a separately approved adapter and release gate publish Meridian-owned ledger entries.",
+            request.JournalEntryIds,
+            evidenceLinks,
+            certification,
+            validationIssues);
     }
 
     public async Task<AccountingSystemImportDetailDto> ImportAsync(
@@ -176,6 +294,127 @@ public sealed class AccountingSystemIntegrationService
                 breakCounts,
                 rows.Count)
         };
+    }
+
+    private ScopedExternalGlMappingProfile? ResolveMappingProfile(
+        string providerId,
+        string fundProfileId,
+        Guid? ledgerBookId,
+        string? mappingProfileId)
+    {
+        var candidates = _mappingProfiles.Values
+            .Where(record => string.Equals(record.ProviderId, providerId, StringComparison.OrdinalIgnoreCase))
+            .Where(record => string.Equals(record.FundProfileId, fundProfileId, StringComparison.OrdinalIgnoreCase))
+            .Where(record => record.LedgerBookId == ledgerBookId);
+
+        if (!string.IsNullOrWhiteSpace(mappingProfileId))
+        {
+            return candidates.FirstOrDefault(record => string.Equals(record.Profile.ProfileId, mappingProfileId.Trim(), StringComparison.OrdinalIgnoreCase));
+        }
+
+        return candidates
+            .OrderByDescending(static record => record.Profile.CertificationState == AccountingCertificationStateDto.Certified)
+            .ThenByDescending(static record => record.Profile.UpdatedAtUtc)
+            .FirstOrDefault();
+    }
+
+    private async Task<AccountingSystemReconciliationSummaryDto?> TryReconcileLatestAsync(
+        string providerId,
+        string fundProfileId,
+        Guid? ledgerBookId,
+        CancellationToken ct)
+    {
+        if (!_providers.Any(provider => string.Equals(provider.ProviderId, providerId, StringComparison.OrdinalIgnoreCase)))
+        {
+            return null;
+        }
+
+        try
+        {
+            return await ReconcileLatestAsync(providerId, fundProfileId, ledgerBookId, ct).ConfigureAwait(false);
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+    }
+
+    private static IReadOnlyList<AccountingConfigurationValidationIssueDto> BuildExportValidationIssues(
+        string providerId,
+        ScopedExternalGlMappingProfile? mappingProfile,
+        AccountingSystemReconciliationSummaryDto? reconciliation,
+        bool requireBalancedReconciliation)
+    {
+        var issues = new List<AccountingConfigurationValidationIssueDto>();
+        if (mappingProfile is null)
+        {
+            issues.Add(new AccountingConfigurationValidationIssueDto(
+                "MissingExternalGlMappingProfile",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"No external GL mapping profile is configured for provider '{providerId}'.",
+                providerId,
+                "Create and certify an account/dimension mapping profile before producing export packages."));
+        }
+        else if (mappingProfile.Profile.CertificationState != AccountingCertificationStateDto.Certified)
+        {
+            issues.Add(new AccountingConfigurationValidationIssueDto(
+                "UncertifiedExternalGlMappingProfile",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"External GL mapping profile '{mappingProfile.Profile.ProfileId}' is not certified.",
+                mappingProfile.Profile.ProfileId,
+                "Submit the mapping profile for approval and retain certification evidence before export certification."));
+        }
+
+        if (reconciliation is null)
+        {
+            issues.Add(new AccountingConfigurationValidationIssueDto(
+                "MissingExternalGlReconciliation",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"Provider '{providerId}' has no available import/reconciliation evidence.",
+                providerId,
+                "Import chart, journal, and trial-balance evidence and reconcile it against Meridian ledger truth before export certification."));
+        }
+        else if (requireBalancedReconciliation && reconciliation.BreakCount > 0)
+        {
+            issues.Add(new AccountingConfigurationValidationIssueDto(
+                "UnresolvedExternalGlBreaks",
+                AccountingConfigurationValidationSeverityDto.Critical,
+                $"{reconciliation.BreakCount} external GL reconciliation break(s) remain unresolved.",
+                reconciliation.ReconciliationId,
+                "Resolve or approve GL tie-out breaks with retained evidence before export certification."));
+        }
+
+        issues.Add(new AccountingConfigurationValidationIssueDto(
+            "LiveExternalPostingDisabled",
+            AccountingConfigurationValidationSeverityDto.Info,
+            "Live external GL posting is disabled; this operation only creates a guarded export artifact.",
+            providerId,
+            "Review, approve, and reconcile the export artifact outside Meridian until a later live-posting adapter is explicitly approved."));
+
+        return issues;
+    }
+
+    private static IReadOnlyList<string> BuildExportEvidenceLinks(
+        AccountingSystemExportPackageRequestDto request,
+        ScopedExternalGlMappingProfile? mappingProfile,
+        AccountingSystemReconciliationSummaryDto? reconciliation)
+    {
+        var evidence = new List<string>();
+        evidence.AddRange(request.EvidenceLinks);
+        if (mappingProfile is not null)
+        {
+            evidence.Add($"external-gl-mapping-profile:{mappingProfile.Profile.ProfileId}");
+            evidence.AddRange(mappingProfile.EvidenceLinks);
+        }
+
+        if (reconciliation is not null)
+        {
+            evidence.Add($"external-gl-reconciliation:{reconciliation.ReconciliationId}");
+            evidence.AddRange(reconciliation.EvidenceReferences);
+            evidence.AddRange(reconciliation.EvidencePackages.Select(static package => package.PackageId));
+        }
+
+        return NormalizeEvidenceReferences(evidence);
     }
 
     private async Task<Dictionary<string, MeridianAccountTotal>> LoadMeridianTotalsAsync(
@@ -440,6 +679,20 @@ public sealed class AccountingSystemIntegrationService
             .Order(StringComparer.OrdinalIgnoreCase)
             .ToArray();
 
+    private static IReadOnlyDictionary<string, string> NormalizeAccountMappings(IReadOnlyDictionary<string, string>? accountMappings)
+        => (accountMappings ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase))
+            .Where(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value))
+            .GroupBy(static pair => pair.Key.Trim(), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.First().Value.Trim(),
+                StringComparer.OrdinalIgnoreCase);
+
+    private static string RequireText(string? value, string label)
+        => string.IsNullOrWhiteSpace(value)
+            ? throw new ArgumentException($"{label} is required.")
+            : value.Trim();
+
     private static string NormalizeProviderId(string? providerId)
         => string.IsNullOrWhiteSpace(providerId)
             ? DefaultProviderId
@@ -451,8 +704,49 @@ public sealed class AccountingSystemIntegrationService
     private static string ImportKey(string providerId, string fundProfileId, Guid? ledgerBookId)
         => $"{NormalizeProviderId(providerId)}|{NormalizeFundProfileId(fundProfileId)}|{ledgerBookId?.ToString("D") ?? "none"}";
 
+    private static string MappingProfileKey(string providerId, string fundProfileId, Guid? ledgerBookId, string profileId)
+        => $"{ImportKey(providerId, fundProfileId, ledgerBookId)}|{profileId.Trim().ToLowerInvariant()}";
+
+    private static DateOnly CurrentMonthStart()
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        return new DateOnly(today.Year, today.Month, 1);
+    }
+
+    private static DateOnly CurrentMonthEnd(DateOnly periodStart)
+        => periodStart.AddMonths(1).AddDays(-1);
+
     private static string SanitizeId(string value)
         => string.Concat(value.Select(static ch => char.IsLetterOrDigit(ch) ? char.ToLowerInvariant(ch) : '-'));
+
+    private sealed record PlannedAccountingSystemProvider(
+        string ProviderId,
+        string DisplayName,
+        string StatusDetail,
+        IReadOnlyList<string> EvidenceKinds)
+    {
+        public AccountingSystemProviderDto ToDto()
+            => new(
+                ProviderId,
+                DisplayName,
+                AccountingSystemProviderStateDto.Planned,
+                RequiresCredentials: true,
+                SupportsChartOfAccounts: true,
+                SupportsJournalEntries: true,
+                SupportsTrialBalance: true,
+                SupportsPosting: false,
+                "Import adapter not registered",
+                StatusDetail,
+                EvidenceKinds);
+    }
+
+    private sealed record ScopedExternalGlMappingProfile(
+        string ProviderId,
+        string FundProfileId,
+        Guid? LedgerBookId,
+        ExternalGlMappingProfileDto Profile,
+        string Actor,
+        IReadOnlyList<string> EvidenceLinks);
 
     private sealed class MeridianAccountTotal
     {

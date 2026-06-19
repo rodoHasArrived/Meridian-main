@@ -1,0 +1,35 @@
+{
+  "skill_name": "meridian-blueprint",
+  "last_updated": "2026-06-19",
+  "evals": [
+    {
+      "id": 1,
+      "description": "Blueprint output uses the required decision-complete structure",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/blueprint_output_check.py",
+        "--sample",
+        "standard",
+        "--json"
+      ],
+      "prompt": "Use $meridian-blueprint to design a code-ready Meridian workflow.",
+      "assertions": [
+        "Must include the meridian-blueprint skill selection receipt",
+        "Must include the expected blueprint headings",
+        "Must mention assumptions and validation"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "summary.skill": "meridian-blueprint"
+        },
+        "json_min": {
+          "summary.heading_count": 7,
+          "summary.required_terms_count": 3,
+          "summary.receipt_count": 1
+        }
+      }
+    }
+  ]
+}

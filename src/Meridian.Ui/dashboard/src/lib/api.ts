@@ -3,10 +3,14 @@ import type {
   BackfillProgressResponse,
   BackfillTriggerRequest,
   BackfillTriggerResult,
+  AccountingSystemExportPackageRequest,
   AccountingSystemImportDetail,
   AccountingSystemImportRequest,
+  AccountingSystemMappingProfileUpsertRequest,
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
+  AccountingReportPackageBundle,
+  AccountingReportPackageRequest,
   AlpacaBrokerageConnectionRequest,
   BrokerageConnectionStatus,
   CellExecuteRequest,
@@ -21,7 +25,11 @@ import type {
   ChiefOfStaffSessionQuery,
   ChiefOfStaffSessionSummary,
   ChiefOfStaffTraceExportRequest,
+  ClosePeriodPlan,
   CorporateAction,
+  CreateLateAdjustmentRequest,
+  ExternalGlExportPackage,
+  ExternalGlMappingProfile,
   DataFetchRequest,
   DataFetchResult,
   DataUploadPreviewResult,
@@ -230,6 +238,8 @@ import type {
   UserPasswordResetRequest,
   UserSessionRevokeRequest,
   UserSessionRevokeResult,
+  JournalEntryLifecycleActionRequest,
+  JournalEntryLifecycleActionResult,
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
   CapitalAccountWorkbench,
@@ -1610,6 +1620,13 @@ export function submitManualJournalEntryApproval(
   return postJson<ManualJournalEntryDraft>(WORKSTATION_API_ENDPOINTS.manualJournalEntrySubmitApproval, request, options);
 }
 
+export function applyManualJournalEntryLifecycleAction(
+  request: JournalEntryLifecycleActionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<JournalEntryLifecycleActionResult>(WORKSTATION_API_ENDPOINTS.manualJournalEntryLifecycleAction, request, options);
+}
+
 export function getAccountingSystemProviders(options: ApiRequestOptions = {}) {
   return getJson<AccountingSystemProvider[]>(ACCOUNTING_SYSTEM_API_ENDPOINTS.providers, options);
 }
@@ -1627,6 +1644,66 @@ export function getLatestAccountingSystemImport(options: ApiRequestOptions = {})
 
 export function getLatestAccountingSystemReconciliation(options: ApiRequestOptions = {}) {
   return getJson<AccountingSystemReconciliationSummary>(ACCOUNTING_SYSTEM_API_ENDPOINTS.reconciliationLatest, options);
+}
+
+export function getAccountingSystemMappingProfiles(options: ApiRequestOptions = {}) {
+  return getJson<ExternalGlMappingProfile[]>(ACCOUNTING_SYSTEM_API_ENDPOINTS.mappingProfiles, options);
+}
+
+export function upsertAccountingSystemMappingProfile(
+  request: AccountingSystemMappingProfileUpsertRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ExternalGlMappingProfile>(ACCOUNTING_SYSTEM_API_ENDPOINTS.mappingProfiles, request, options);
+}
+
+export function createAccountingSystemExportPackage(
+  request: AccountingSystemExportPackageRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ExternalGlExportPackage>(ACCOUNTING_SYSTEM_API_ENDPOINTS.exportPackages, request, options);
+}
+
+export function getLedgerCloseManagementPeriodPlan(workflowId: string, options: ApiRequestOptions = {}) {
+  const endpoint = WORKSTATION_API_ENDPOINTS.closeManagementPeriodPlan.replace("{workflowId:guid}", workflowId);
+  return getJson<ClosePeriodPlan>(endpoint, options);
+}
+
+export function createLedgerCloseManagementLateAdjustment(
+  request: CreateLateAdjustmentRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<ClosePeriodPlan>(WORKSTATION_API_ENDPOINTS.closeManagementLateAdjustments, request, options);
+}
+
+export function buildLedgerAccountingReportPackage(
+  request: AccountingReportPackageRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<AccountingReportPackageBundle>(WORKSTATION_API_ENDPOINTS.accountingReportPackage, request, options);
+}
+
+export interface AccountingReportPackageHistoryQuery {
+  fundProfileId?: string | null;
+  periodId?: string | null;
+}
+
+export function listLedgerAccountingReportPackages(
+  query: AccountingReportPackageHistoryQuery = {},
+  options: ApiRequestOptions = {}
+) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value) {
+      params.set(key, value);
+    }
+  }
+
+  const suffix = params.toString();
+  return getJson<AccountingReportPackageBundle[]>(
+    `${WORKSTATION_API_ENDPOINTS.accountingReportPackages}${suffix ? `?${suffix}` : ""}`,
+    options
+  );
 }
 
 export function previewAccountingConfigurationTemplate(
@@ -1655,6 +1732,13 @@ export function upsertAccountingConfigurationPostingRule(
   options: ApiRequestOptions = {}
 ) {
   return postJson<import("@/types").AccountingConfigurationWorkspace>(WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRules, request, options);
+}
+
+export function dryRunAccountingConfigurationPostingRule(
+  request: import("@/types").RuleDryRunRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("@/types").RuleDryRunResult>(WORKSTATION_API_ENDPOINTS.accountingConfigurationPostingRuleDryRun, request, options);
 }
 
 export function activateAccountingConfiguration(

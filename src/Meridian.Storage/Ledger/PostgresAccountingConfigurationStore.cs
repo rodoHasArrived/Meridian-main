@@ -260,7 +260,7 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         await using var command = connection.CreateCommand();
         command.CommandText =
             $"""
-            select rule_id, display_name, source_event_type, template_id, rule_version, is_archived, description
+            select rule_id, display_name, source_event_type, template_id, rule_version, is_archived, description, rule_payload
             from {Qualified("accounting_configuration_posting_rules")}
             where fund_profile_id = @fund_profile_id
             order by rule_id;
@@ -271,6 +271,13 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
         while (await reader.ReadAsync(ct).ConfigureAwait(false))
         {
+            if (!reader.IsDBNull(7) &&
+                Deserialize<PostingRuleDto>(reader.GetString(7)) is { } richRule)
+            {
+                rules.Add(richRule);
+                continue;
+            }
+
             rules.Add(new PostingRuleDto(
                 reader.GetString(0),
                 reader.GetString(1),
@@ -374,17 +381,18 @@ public sealed class PostgresAccountingConfigurationStore : IAccountingConfigurat
             command.CommandText =
                 $"""
                 insert into {Qualified("accounting_configuration_posting_rules")} (
-                    fund_profile_id, rule_id, display_name, source_event_type, template_id, rule_version, is_archived, description)
-                values (@fund_profile_id, @rule_id, @display_name, @source_event_type, @template_id, @rule_version, @is_archived, @description);
+                    fund_profile_id, rule_id, display_name, source_event_type, template_id, rule_version, is_archived, description, rule_payload)
+                values (@fund_profile_id, @rule_id, @display_name, @source_event_type, @template_id, @rule_version, @is_archived, @description, @rule_payload);
                 """;
             AddScope(command, workspace.FundProfileId);
             command.Parameters.AddWithValue("rule_id", rule.RuleId);
             command.Parameters.AddWithValue("display_name", rule.DisplayName);
             command.Parameters.AddWithValue("source_event_type", rule.SourceEventType);
-            command.Parameters.AddWithValue("template_id", rule.TemplateId);
+            command.Parameters.AddWithValue("template_id", rule.TemplateId ?? string.Empty);
             command.Parameters.AddWithValue("rule_version", rule.RuleVersion);
             command.Parameters.AddWithValue("is_archived", rule.IsArchived);
             AddTextOrNull(command, "description", rule.Description);
+            AddJson(command, "rule_payload", rule);
             await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
         }
     }

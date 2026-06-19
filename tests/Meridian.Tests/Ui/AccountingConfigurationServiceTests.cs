@@ -756,6 +756,117 @@ public sealed class AccountingConfigurationServiceTests
     }
 
     [Fact]
+    public async Task Scenario_AccountingRulesStudio_DryRunSelectsEffectiveScopedPriorityRuleAndGeneratesBalancedLines()
+    {
+        var service = CreateService();
+        await SeedBalancedConfigurationAsync(service);
+        await service.UpsertPostingRuleAsync(new UpsertPostingRuleRequest(
+            FundProfileId: "fund-alpha",
+            Rule: new PostingRuleDto(
+                RuleId: "rule-interest-generated",
+                DisplayName: "Generated interest accrual",
+                SourceEventType: "InterestAccrual",
+                TemplateId: "",
+                RuleVersion: "v2",
+                Description: "Generated multi-line rule for interest accruals.",
+                EffectiveFrom: new DateOnly(2026, 1, 1),
+                EffectiveTo: new DateOnly(2026, 12, 31),
+                Priority: 100,
+                Scope: new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-master", CounterpartyId: "counterparty-bank"),
+                Conditions:
+                [
+                    new AccountingRuleConditionDto(
+                        "threshold",
+                        "amount",
+                        AccountingRuleConditionOperatorDto.AmountGreaterThanOrEqual,
+                        "100"),
+                    new AccountingRuleConditionDto(
+                        "counterparty",
+                        "counterpartyId",
+                        AccountingRuleConditionOperatorDto.Equals,
+                        "counterparty-bank")
+                ],
+                Formulas:
+                [
+                    new AccountingRuleFormulaDto("source-amount", AccountingRuleFormulaKindDto.SourceAmount, 0m)
+                ],
+                GeneratedPostings:
+                [
+                    new GeneratedPostingLineDto("debit-cash", "Assets:Cash", AccountingTemplateLineSideDto.Debit, "source-amount", 0m),
+                    new GeneratedPostingLineDto("credit-income", "Income:Interest", AccountingTemplateLineSideDto.Credit, "source-amount", 0m)
+                ]),
+            Actor: "controller"));
+
+        var result = await service.DryRunPostingRuleAsync(new RuleDryRunRequestDto(
+            FundProfileId: "fund-alpha",
+            SourceEventType: "InterestAccrual",
+            EventAmount: 250m,
+            Currency: "USD",
+            EffectiveDate: new DateOnly(2026, 6, 30),
+            Actor: "controller",
+            Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha", EntityId: "entity-master"),
+            CounterpartyId: "counterparty-bank"));
+
+        result.SelectedRuleId.Should().Be("rule-interest-generated");
+        result.IsPostingBalanced.Should().BeTrue();
+        result.GeneratedPostingLines.Should().HaveCount(2);
+        result.GeneratedPostingLines.Should().OnlyContain(line => line.Amount == 250m);
+        result.RuleMatches.Should().ContainSingle(item => item.RuleId == "rule-interest-generated" && item.IsMatched);
+        result.ValidationIssues.Should().NotContain(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+    }
+
+    [Fact]
+    public async Task Scenario_ManualJournalEntryLifecycle_ApprovesPostsAndCreatesImmutableReversalDraft()
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var service = CreateManualJournalEntryWorkbenchService(configuration);
+        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(BalancedManualJournalEntry(), "ops-user"));
+        var submitted = await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
+            saved.JournalEntryId,
+            saved.FundProfileId,
+            "controller",
+            saved.Version));
+        var approved = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            submitted.JournalEntryId,
+            submitted.FundProfileId,
+            JournalEntryLifecycleActionDto.Approve,
+            "controller",
+            submitted.Version,
+            Notes: "Approved by fund controller"));
+        var posted = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            approved.JournalEntry.JournalEntryId,
+            approved.JournalEntry.FundProfileId,
+            JournalEntryLifecycleActionDto.Post,
+            "controller",
+            approved.JournalEntry.Version,
+            Notes: "Posted after approval"));
+        var reversal = await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
+            posted.JournalEntry.JournalEntryId,
+            posted.JournalEntry.FundProfileId,
+            JournalEntryLifecycleActionDto.Reverse,
+            "controller",
+            posted.JournalEntry.Version,
+            Notes: "Reverse after close review",
+            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/reversal"]));
+
+        approved.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Approved);
+        posted.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Posted);
+        reversal.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Posted);
+        reversal.GeneratedJournalEntries.Should().ContainSingle();
+        var reversalDraft = reversal.GeneratedJournalEntries.Single();
+        reversalDraft.Status.Should().Be(ManualJournalEntryStatusDto.Draft);
+        reversalDraft.EntryType.Should().Be(ManualJournalEntryTypeDto.Reversal);
+        reversalDraft.ReversalOfJournalEntryId.Should().Be(posted.JournalEntry.JournalEntryId);
+        reversalDraft.Lines.Should().Contain(line => line.LineId == "reversal-debit-cash" && line.Side == AccountingTemplateLineSideDto.Credit);
+        reversalDraft.Lines.Should().Contain(line => line.LineId == "reversal-credit-income" && line.Side == AccountingTemplateLineSideDto.Debit);
+        var workbench = await service.GetWorkbenchAsync("fund-alpha");
+        workbench.Drafts.Should().Contain(item => item.JournalEntryId == posted.JournalEntry.JournalEntryId && item.Status == ManualJournalEntryStatusDto.Posted);
+        workbench.Drafts.Should().Contain(item => item.ReversalOfJournalEntryId == posted.JournalEntry.JournalEntryId);
+        workbench.AuditTrail.Select(item => item.Action).Should().Contain(new[] { "manual-je.approve", "manual-je.post", "manual-je.reverse-draft" });
+    }
+
+    [Fact]
     public async Task Scenario_ManualJournalEntry_ReviewedAutomationCannotSubmitApproval()
     {
         var configuration = CreateService();

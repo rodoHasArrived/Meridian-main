@@ -2,6 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import {
   activateAccountingConfiguration,
+  applyManualJournalEntryLifecycleAction,
+  buildLedgerAccountingReportPackage,
+  createLedgerCloseManagementLateAdjustment,
+  dryRunAccountingConfigurationPostingRule,
+  getLedgerCloseManagementPeriodPlan,
   getAccountingConfiguration,
   getCapitalAccountWorkbench,
   getManualJournalEntryWorkbench,
@@ -18,6 +23,7 @@ import {
   previewInvestmentAccountingTransaction,
   getTradingParameters,
   runAnalysisExport,
+  listLedgerAccountingReportPackages,
   previewAccountingConfigurationTemplate,
   saveManualJournalEntryDraft,
   resolveReconciliationBreak,
@@ -26,6 +32,7 @@ import {
   searchSecurities,
   submitManualJournalEntryApproval,
   validateManualJournalEntryDraft,
+  type AccountingReportPackageHistoryQuery,
   type CapitalAccountWorkbenchQuery
 } from "@/lib/api";
 import {
@@ -49,11 +56,17 @@ import {
 } from "./accounting-calibration-summary.view-model";
 import type {
   AccountingBasisKind,
+  AccountingCertificationState,
   AccountingConfigurationWorkspace,
+  AccountingReportPackageBundle,
+  AccountingReportPackageRequest,
   AccountingJournalTemplatePreview,
   AccountingTemplateLineSide,
+  AccountingRuleDryRunMatch,
+  AllocationRule,
   CorporateAction,
   ExportAnalysisResult,
+  GeneratedPostingLine,
   AccountingCashFlowSummary,
   AccountingReportingProfile,
   AccountingReportingSummary,
@@ -61,7 +74,11 @@ import type {
   AccountingSystemImportDetail,
   AccountingSystemProvider,
   AccountingSystemReconciliationSummary,
+  ClosePeriodPlan,
+  CloseTask,
+  CreateLateAdjustmentRequest,
   LedgerTrialBalanceLine,
+  LateAdjustmentRequest,
   MultiAssetCoverageSummary,
   OperationsContinuityWorkflow,
   OperationsWorkflowBlocker,
@@ -72,7 +89,14 @@ import type {
   InvestmentAccountingTransactionLabRequest,
   ResolveConflictRequest,
   PreviewJournalTemplateRequest,
+  PostingRule,
+  RuleDryRunRequest,
+  RuleDryRunResult,
   ActivateAccountingConfigurationRequest,
+  JournalEntryLifecycleAction,
+  JournalEntryLifecycleActionRequest,
+  JournalEntryLifecycleActionResult,
+  JournalEntryLifecycleTransition,
   ManualJournalEntryDraft,
   ManualJournalEntryEvidenceAttachment,
   ManualJournalEntryLine,
@@ -152,6 +176,7 @@ export interface AccountingReportingServices {
 export interface AccountingConfigurationServices {
   getConfiguration: () => Promise<AccountingConfigurationWorkspace>;
   previewTemplate: (request: PreviewJournalTemplateRequest) => Promise<AccountingJournalTemplatePreview>;
+  dryRunRule: (request: RuleDryRunRequest) => Promise<RuleDryRunResult>;
   activate: (request: ActivateAccountingConfigurationRequest) => Promise<AccountingConfigurationWorkspace>;
 }
 
@@ -173,6 +198,37 @@ export interface AccountingConfigurationTemplateViewModel {
   lineCountLabel: string;
   balanceLabel: string;
   statusLabel: string;
+}
+
+export interface AccountingRulesStudioRuleViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  eventLabel: string;
+  effectiveLabel: string;
+  priorityLabel: string;
+  scopeLabels: string[];
+  conditionRows: string[];
+  formulaRows: string[];
+  allocationRows: string[];
+  generatedPostingRows: string[];
+  versionRows: string[];
+  promotionLabel: string;
+  promotionTone: "success" | "warning" | "danger" | "outline";
+  statusLabel: string;
+  statusTone: "success" | "warning" | "danger" | "outline";
+  isSelected: boolean;
+  selectAriaLabel: string;
+}
+
+export interface AccountingRulesStudioDryRunViewModel {
+  title: string;
+  balanceLabel: string;
+  selectedRuleLabel: string;
+  matchRows: string[];
+  generatedLineRows: string[];
+  generatedPostingRows: string[];
+  validationRows: AccountingConfigurationIssueViewModel[];
 }
 
 export interface AccountingConfigurationIssueViewModel {
@@ -213,6 +269,17 @@ export interface AccountingConfigurationViewModel {
   errorDetails: string[];
   metricRows: AccountingConfigurationMetricViewModel[];
   templates: AccountingConfigurationTemplateViewModel[];
+  rules: AccountingRulesStudioRuleViewModel[];
+  selectedRule: AccountingRulesStudioRuleViewModel | null;
+  selectedRuleId: string | null;
+  selectRule: (ruleId: string) => void;
+  dryRunPreview: AccountingRulesStudioDryRunViewModel | null;
+  dryRunStatusText: string | null;
+  dryRunButtonLabel: string;
+  dryRunDisabledReason: string | null;
+  dryRunBusy: boolean;
+  canDryRun: boolean;
+  dryRunSelectedRule: () => Promise<void>;
   validationIssues: AccountingConfigurationIssueViewModel[];
   auditTrail: AccountingConfigurationAuditViewModel[];
   preview: AccountingConfigurationPreviewViewModel | null;
@@ -764,6 +831,7 @@ export interface ManualJournalEntryWorkbenchServices {
   saveDraft: (request: SaveManualJournalEntryDraftRequest) => Promise<ManualJournalEntryDraft>;
   validateDraft: (request: ValidateManualJournalEntryDraftRequest) => Promise<ManualJournalEntryDraft>;
   submitApproval: (request: SubmitManualJournalEntryApprovalRequest) => Promise<ManualJournalEntryDraft>;
+  applyLifecycleAction: (request: JournalEntryLifecycleActionRequest) => Promise<JournalEntryLifecycleActionResult>;
 }
 
 export interface CapitalAccountWorkbenchServices {
@@ -775,6 +843,30 @@ export interface ManualJournalLineValidationBadge {
   label: string;
   message: string;
   tone: "default" | "success" | "warning" | "danger";
+}
+
+export interface ManualJournalLifecycleCommandViewModel {
+  action: JournalEntryLifecycleAction;
+  label: string;
+  description: string;
+  disabledReason: string | null;
+  tone: "default" | "success" | "warning" | "danger";
+  busy: boolean;
+}
+
+export interface ManualJournalLifecycleTransitionViewModel {
+  id: string;
+  title: string;
+  detail: string;
+  evidenceLabel: string;
+}
+
+export interface ManualJournalLifecycleCorrectionViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  balanceLabel: string;
+  sourceLabel: string;
 }
 
 export interface ManualJournalEvidenceAttachmentDraft {
@@ -1163,6 +1255,11 @@ export interface ManualJournalEntryWorkbenchViewModel {
   treasuryContextLabel: string;
   privateCapitalActivity: ManualJournalPrivateCapitalActivityViewModel;
   validationIssues: AccountingConfigurationIssueViewModel[];
+  lifecycleCommands: ManualJournalLifecycleCommandViewModel[];
+  lifecycleTransitions: ManualJournalLifecycleTransitionViewModel[];
+  lifecycleCorrectionRows: ManualJournalLifecycleCorrectionViewModel[];
+  lifecycleStatusText: string | null;
+  lifecycleBusyAction: JournalEntryLifecycleAction | null;
   saveBusy: boolean;
   validateBusy: boolean;
   submitBusy: boolean;
@@ -1183,6 +1280,7 @@ export interface ManualJournalEntryWorkbenchViewModel {
   updateAttachmentDraft: (patch: Partial<ManualJournalEvidenceAttachmentDraft>) => void;
   addAttachment: () => void;
   removeAttachment: (attachmentId: string) => void;
+  applyLifecycleAction: (action: JournalEntryLifecycleAction) => Promise<void>;
   save: () => Promise<void>;
   validate: () => Promise<void>;
   submit: () => Promise<void>;
@@ -1640,6 +1738,88 @@ export interface CloseCommandCenterViewState {
   liveRegionText: string;
 }
 
+export interface AccountingReportPackageHistoryMetricViewModel {
+  id: string;
+  label: string;
+  value: string;
+  detail: string;
+  tone: AccountingToolingTone;
+}
+
+export interface AccountingClosePlanTaskRowViewModel {
+  taskId: string;
+  displayName: string;
+  ownerLabel: string;
+  dueDateLabel: string;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  dependencyLabel: string;
+  signOffLabel: string;
+  evidenceLabel: string;
+  blockerLabel: string | null;
+}
+
+export interface AccountingLateAdjustmentRowViewModel {
+  requestId: string;
+  journalEntryId: string;
+  amountLabel: string;
+  requestedByLabel: string;
+  statusLabel: string;
+  evidenceLabel: string;
+  reason: string;
+}
+
+export interface AccountingReportPackageRowViewModel {
+  packageId: string;
+  periodLabel: string;
+  certificationLabel: string;
+  certificationTone: AccountingToolingTone;
+  navLabel: string;
+  investorStatementLabel: string;
+  realizedGainLossLabel: string;
+  restatementLabel: string;
+  evidenceLabel: string;
+  validationLabel: string;
+  selected: boolean;
+}
+
+export interface AccountingCloseReportPackageViewModel {
+  title: string;
+  description: string;
+  ariaLabel: string;
+  statusLabel: string;
+  statusTone: AccountingToolingTone;
+  periodLabel: string;
+  fundLabel: string;
+  lockLabel: string;
+  materialityLabel: string;
+  loading: boolean;
+  loadingText: string | null;
+  errorText: string | null;
+  buildBusy: boolean;
+  buildStatusText: string | null;
+  buildStatusTone: "neutral" | "success" | "danger";
+  buildButtonLabel: string;
+  buildDisabledReason: string | null;
+  metrics: AccountingReportPackageHistoryMetricViewModel[];
+  tasks: AccountingClosePlanTaskRowViewModel[];
+  lateAdjustments: AccountingLateAdjustmentRowViewModel[];
+  packageRows: AccountingReportPackageRowViewModel[];
+  selectedPackage: AccountingReportPackageRowViewModel | null;
+  validationIssues: AccountingConfigurationIssueViewModel[];
+  liveRegionText: string;
+  refresh: () => Promise<void>;
+  buildReportPackage: () => Promise<void>;
+  selectPackage: (packageId: string) => void;
+}
+
+export interface AccountingCloseReportPackageServices {
+  getClosePlan: (workflowId: string) => Promise<ClosePeriodPlan>;
+  createLateAdjustment: (request: CreateLateAdjustmentRequest) => Promise<ClosePeriodPlan>;
+  buildPackage: (request: AccountingReportPackageRequest) => Promise<AccountingReportPackageBundle>;
+  listPackages: (query: AccountingReportPackageHistoryQuery) => Promise<AccountingReportPackageBundle[]>;
+}
+
 interface CloseCommandCenterRawBlocker {
   code: string;
   category: string;
@@ -1714,9 +1894,17 @@ const defaultAccountingReportingServices: AccountingReportingServices = {
   runAnalysisExport: (profileId) => runAnalysisExport(profileId)
 };
 
+const defaultAccountingCloseReportPackageServices: AccountingCloseReportPackageServices = {
+  getClosePlan: (workflowId) => getLedgerCloseManagementPeriodPlan(workflowId),
+  createLateAdjustment: (request) => createLedgerCloseManagementLateAdjustment(request),
+  buildPackage: (request) => buildLedgerAccountingReportPackage(request),
+  listPackages: (query) => listLedgerAccountingReportPackages(query)
+};
+
 const defaultAccountingConfigurationServices: AccountingConfigurationServices = {
   getConfiguration: () => getAccountingConfiguration(),
   previewTemplate: (request) => previewAccountingConfigurationTemplate(request),
+  dryRunRule: (request) => dryRunAccountingConfigurationPostingRule(request),
   activate: (request) => activateAccountingConfiguration(request)
 };
 
@@ -1725,7 +1913,8 @@ const defaultManualJournalEntryWorkbenchServices: ManualJournalEntryWorkbenchSer
   searchSecurities: (query) => searchSecurities(query, 8, true),
   saveDraft: (request) => saveManualJournalEntryDraft(request),
   validateDraft: (request) => validateManualJournalEntryDraft(request),
-  submitApproval: (request) => submitManualJournalEntryApproval(request)
+  submitApproval: (request) => submitManualJournalEntryApproval(request),
+  applyLifecycleAction: (request) => applyManualJournalEntryLifecycleAction(request)
 };
 
 const defaultCapitalAccountWorkbenchServices: CapitalAccountWorkbenchServices = {
@@ -2043,6 +2232,116 @@ export function useAccountingReportingViewModel(
   };
 }
 
+export function useAccountingCloseReportPackageViewModel(
+  workflow: OperationsContinuityWorkflow | null,
+  services: AccountingCloseReportPackageServices = defaultAccountingCloseReportPackageServices
+): AccountingCloseReportPackageViewModel {
+  const [closePlan, setClosePlan] = useState<ClosePeriodPlan | null>(null);
+  const [packages, setPackages] = useState<AccountingReportPackageBundle[]>([]);
+  const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [errorText, setErrorText] = useState<string | null>(null);
+  const [buildBusy, setBuildBusy] = useState(false);
+  const [buildStatusText, setBuildStatusText] = useState<string | null>(null);
+  const [buildStatusTone, setBuildStatusTone] = useState<"neutral" | "success" | "danger">("neutral");
+
+  const refresh = useCallback(async () => {
+    if (!workflow) {
+      setClosePlan(null);
+      setPackages([]);
+      setSelectedPackageId(null);
+      return;
+    }
+
+    setLoading(true);
+    setErrorText(null);
+    try {
+      const [nextClosePlan, nextPackages] = await Promise.all([
+        services.getClosePlan(workflow.workflowId),
+        services.listPackages({
+          fundProfileId: workflow.fundAccountId,
+          periodId: workflow.periodId
+        })
+      ]);
+      setClosePlan(nextClosePlan);
+      setPackages(nextPackages);
+      setSelectedPackageId((current) => {
+        if (current && nextPackages.some((item) => item.financialStatements.packageId === current)) {
+          return current;
+        }
+
+        return nextPackages[0]?.financialStatements.packageId ?? null;
+      });
+    } catch (error) {
+      setErrorText(formatAccountingWorkflowError(error, "Close/report package detail could not be loaded."));
+    } finally {
+      setLoading(false);
+    }
+  }, [services, workflow]);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  const buildReportPackage = useCallback(async () => {
+    if (!workflow) {
+      setBuildStatusText("A close workflow is required before building a report package.");
+      setBuildStatusTone("danger");
+      return;
+    }
+
+    setBuildBusy(true);
+    setBuildStatusText(null);
+    setBuildStatusTone("neutral");
+    try {
+      const request = buildAccountingReportPackageRequest(workflow, closePlan, packages[0] ?? null);
+      const bundle = await services.buildPackage(request);
+      setPackages((current) => [
+        bundle,
+        ...current.filter((item) => item.financialStatements.packageId !== bundle.financialStatements.packageId)
+      ]);
+      setSelectedPackageId(bundle.financialStatements.packageId);
+      setBuildStatusText(`Built report package ${bundle.financialStatements.packageId}.`);
+      setBuildStatusTone("success");
+    } catch (error) {
+      setBuildStatusText(formatAccountingWorkflowError(error, "Report package could not be built."));
+      setBuildStatusTone("danger");
+    } finally {
+      setBuildBusy(false);
+    }
+  }, [closePlan, packages, services, workflow]);
+
+  return useMemo(
+    () => buildAccountingCloseReportPackageViewState({
+      workflow,
+      closePlan,
+      packages,
+      selectedPackageId,
+      loading,
+      errorText,
+      buildBusy,
+      buildStatusText,
+      buildStatusTone,
+      refresh,
+      buildReportPackage,
+      selectPackage: setSelectedPackageId
+    }),
+    [
+      buildBusy,
+      buildReportPackage,
+      buildStatusText,
+      buildStatusTone,
+      closePlan,
+      errorText,
+      loading,
+      packages,
+      refresh,
+      selectedPackageId,
+      workflow
+    ]
+  );
+}
+
 export function useAccountingConfigurationViewModel(
   services: AccountingConfigurationServices = defaultAccountingConfigurationServices
 ): AccountingConfigurationViewModel {
@@ -2052,6 +2351,10 @@ export function useAccountingConfigurationViewModel(
   const [preview, setPreview] = useState<AccountingJournalTemplatePreview | null>(null);
   const [previewBusy, setPreviewBusy] = useState(false);
   const [previewError, setPreviewError] = useState<ApiErrorDisplay | null>(null);
+  const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null);
+  const [dryRunPreview, setDryRunPreview] = useState<RuleDryRunResult | null>(null);
+  const [dryRunBusy, setDryRunBusy] = useState(false);
+  const [dryRunError, setDryRunError] = useState<ApiErrorDisplay | null>(null);
   const [activateBusy, setActivateBusy] = useState(false);
   const [activateError, setActivateError] = useState<ApiErrorDisplay | null>(null);
 
@@ -2060,7 +2363,17 @@ export function useAccountingConfigurationViewModel(
     setError(null);
     try {
       const next = await services.getConfiguration();
+      if (!next) {
+        throw new Error("Accounting configuration response was empty.");
+      }
       setWorkspace(next);
+      setSelectedRuleId((current) => {
+        if (current && next.postingRules.some((rule) => rule.ruleId === current && !rule.isArchived)) {
+          return current;
+        }
+
+        return next.postingRules.find((rule) => !rule.isArchived)?.ruleId ?? null;
+      });
     } catch (err) {
       setError(describeApiError(err, "Accounting configuration is unavailable."));
     } finally {
@@ -2096,6 +2409,38 @@ export function useAccountingConfigurationViewModel(
     }
   }, [previewBusy, services, workspace]);
 
+  const dryRunSelectedRule = useCallback(async () => {
+    const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
+    const rule = activeRules.find((item) => item.ruleId === selectedRuleId) ?? activeRules[0] ?? null;
+    if (!workspace || !rule || dryRunBusy) {
+      return;
+    }
+
+    setDryRunBusy(true);
+    setDryRunError(null);
+    try {
+      const result = await services.dryRunRule({
+        fundProfileId: workspace.fundProfileId,
+        ledgerBookId: workspace.ledgerBookId ?? null,
+        sourceEventType: rule.sourceEventType,
+        eventAmount: resolveDryRunEventAmount(rule),
+        currency: resolveDryRunCurrency(rule),
+        effectiveDate: resolveDryRunEffectiveDate(rule),
+        actor: "browser-accounting-operator",
+        dimensions: rule.scope ?? null,
+        counterpartyId: rule.scope?.counterpartyId ?? null,
+        instrumentSymbol: null,
+        correlationId: `browser-accounting-rule-dry-run-${Date.now()}`
+      });
+      setSelectedRuleId(result.selectedRuleId ?? rule.ruleId);
+      setDryRunPreview(result);
+    } catch (err) {
+      setDryRunError(describeApiError(err, "Accounting rule dry run failed."));
+    } finally {
+      setDryRunBusy(false);
+    }
+  }, [dryRunBusy, selectedRuleId, services, workspace]);
+
   const activate = useCallback(async () => {
     if (!workspace || activateBusy) {
       return;
@@ -2128,6 +2473,17 @@ export function useAccountingConfigurationViewModel(
     const hasTemplate = activeTemplateCount > 0;
     const hasChart = activeChartNodeCount > 0;
     const hasRule = activeRuleCount > 0;
+    const activeRules = workspace?.postingRules.filter((item) => !item.isArchived) ?? [];
+    const resolvedSelectedRuleId = selectedRuleId && activeRules.some((rule) => rule.ruleId === selectedRuleId)
+      ? selectedRuleId
+      : activeRules[0]?.ruleId ?? null;
+    const dryRunDisabledReason = loading
+      ? "Accounting configuration is still loading."
+      : !workspace
+        ? "Load accounting configuration before running rule previews."
+        : !resolvedSelectedRuleId
+          ? "Create at least one active posting rule before dry run preview."
+          : null;
     const previewDisabledReason = loading
       ? "Accounting configuration is still loading."
       : !workspace
@@ -2208,6 +2564,11 @@ export function useAccountingConfigurationViewModel(
         statusLabel: template.isArchived ? "Archived" : debitTotal === creditTotal ? "Balanced" : "Unbalanced"
       };
     });
+    const rules = activeRules.map<AccountingRulesStudioRuleViewModel>((rule) =>
+      buildAccountingRulesStudioRuleViewModel(rule, rule.ruleId === resolvedSelectedRuleId));
+    const dryRunPreviewView = dryRunPreview
+      ? buildAccountingRulesStudioDryRunViewModel(dryRunPreview)
+      : null;
     const validationIssues = (workspace?.validationIssues ?? []).map<AccountingConfigurationIssueViewModel>((issue, index) => ({
       id: `${issue.code}-${issue.targetId ?? index}`,
       label: `${issue.severity} | ${issue.code}`,
@@ -2246,6 +2607,17 @@ export function useAccountingConfigurationViewModel(
       errorDetails: error?.details ?? [],
       metricRows,
       templates,
+      rules,
+      selectedRule: rules.find((rule) => rule.id === resolvedSelectedRuleId) ?? null,
+      selectedRuleId: resolvedSelectedRuleId,
+      selectRule: setSelectedRuleId,
+      dryRunPreview: dryRunPreviewView,
+      dryRunStatusText: dryRunError?.summary ?? (dryRunPreviewView ? dryRunPreviewView.balanceLabel : null),
+      dryRunButtonLabel: dryRunBusy ? "Running dry run" : "Dry-run selected rule",
+      dryRunDisabledReason,
+      dryRunBusy,
+      canDryRun: dryRunDisabledReason === null && !dryRunBusy,
+      dryRunSelectedRule,
       validationIssues,
       auditTrail,
       preview: previewView,
@@ -2263,7 +2635,218 @@ export function useAccountingConfigurationViewModel(
       refresh,
       previewFirstTemplate
     };
-  }, [activate, activateBusy, activateError, error, loading, preview, previewBusy, previewError, refresh, previewFirstTemplate, workspace]);
+  }, [
+    activate,
+    activateBusy,
+    activateError,
+    dryRunBusy,
+    dryRunError,
+    dryRunPreview,
+    dryRunSelectedRule,
+    error,
+    loading,
+    preview,
+    previewBusy,
+    previewError,
+    refresh,
+    previewFirstTemplate,
+    selectedRuleId,
+    workspace
+  ]);
+}
+
+function buildAccountingRulesStudioRuleViewModel(
+  rule: PostingRule,
+  isSelected: boolean
+): AccountingRulesStudioRuleViewModel {
+  const conditions = rule.conditions ?? [];
+  const formulas = rule.formulas ?? [];
+  const allocations = rule.allocations ?? [];
+  const generatedPostings = rule.generatedPostings ?? [];
+  const versions = rule.versions ?? [];
+  const promotion = rule.promotionApproval ?? versions.find((version) => version.promotionApproval)?.promotionApproval ?? null;
+  const needsApproval = rule.requiresPromotionApproval && promotion?.approvalState !== "Approved";
+  const statusLabel = rule.isArchived
+    ? "Archived"
+    : needsApproval
+      ? "Promotion review"
+      : generatedPostings.length > 0
+        ? "Generated postings"
+        : "Template mapping";
+
+  return {
+    id: rule.ruleId,
+    title: rule.displayName,
+    subtitle: `${rule.ruleVersion} | ${rule.description || "No description supplied."}`,
+    eventLabel: rule.sourceEventType,
+    effectiveLabel: formatRuleEffectiveRange(rule),
+    priorityLabel: `Priority ${rule.priority ?? 0}`,
+    scopeLabels: formatLedgerDimensionSet(rule.scope),
+    conditionRows: conditions.length > 0
+      ? conditions.map(formatAccountingRuleCondition)
+      : ["No predicates configured; rule falls back to source-event matching."],
+    formulaRows: formulas.length > 0
+      ? formulas.map(formatAccountingRuleFormula)
+      : ["No formulas configured; legacy template amount mapping remains active."],
+    allocationRows: allocations.length > 0
+      ? allocations.map(formatAllocationRule)
+      : ["No allocation split configured."],
+    generatedPostingRows: generatedPostings.length > 0
+      ? generatedPostings.map(formatGeneratedPostingLine)
+      : [`Legacy template action: ${rule.templateId || "no template"}`],
+    versionRows: versions.length > 0
+      ? versions.map((version) => `${version.version} by ${version.createdBy} on ${formatDateOnly(version.createdAtUtc)} - ${version.changeSummary}`)
+      : [`${rule.ruleVersion} is the only retained rule version.`],
+    promotionLabel: promotion
+      ? `${promotion.approvalState} by ${promotion.approvedBy ?? promotion.requestedBy}`
+      : rule.requiresPromotionApproval
+        ? "Promotion approval required"
+        : "Promotion approval not required",
+    promotionTone: promotionTone(promotion, rule.requiresPromotionApproval),
+    statusLabel,
+    statusTone: rule.isArchived ? "outline" : needsApproval ? "warning" : "success",
+    isSelected,
+    selectAriaLabel: `Inspect accounting posting rule ${rule.displayName}`
+  };
+}
+
+function buildAccountingRulesStudioDryRunViewModel(result: RuleDryRunResult): AccountingRulesStudioDryRunViewModel {
+  const generatedPostingLines = result.generatedPostingLines ?? [];
+  return {
+    title: `${result.sourceEventType} dry run`,
+    balanceLabel: result.isPostingBalanced
+      ? `Balanced ${formatCurrency(result.eventAmount)} ${result.currency}`
+      : `Unbalanced ${formatCurrency(result.eventAmount)} ${result.currency}`,
+    selectedRuleLabel: result.selectedRuleId ? `Selected rule ${result.selectedRuleId}` : "No rule selected",
+    matchRows: result.ruleMatches.map(formatRuleDryRunMatch),
+    generatedLineRows: result.generatedLines.map((line, index) =>
+      `${index + 1}. ${line.side} ${line.accountPath} ${formatCurrency(line.amount)} ${line.currency} - ${line.description ?? line.accountName}`
+    ),
+    generatedPostingRows: generatedPostingLines.length > 0
+      ? generatedPostingLines.map(formatGeneratedPostingLine)
+      : ["Dry run returned journal preview lines without generated posting-line metadata."],
+    validationRows: result.validationIssues.map<AccountingConfigurationIssueViewModel>((issue, index) => ({
+      id: `${issue.code}-${issue.targetId ?? index}`,
+      label: `${issue.severity} | ${issue.code}`,
+      message: issue.message,
+      detail: issue.suggestedAction ?? issue.targetId ?? "No additional action supplied.",
+      tone: issue.severity === "Critical" ? "danger" : issue.severity === "Warning" ? "warning" : "default"
+    }))
+  };
+}
+
+function formatAccountingRuleCondition(condition: NonNullable<PostingRule["conditions"]>[number]): string {
+  const value = condition.secondValue
+    ? `${condition.value ?? "missing"} -> ${condition.secondValue}`
+    : condition.value ?? "present";
+  const required = condition.isRequired ? "required" : "optional";
+  return `${condition.field} ${condition.operator} ${value} (${required})${condition.description ? ` - ${condition.description}` : ""}`;
+}
+
+function formatAccountingRuleFormula(formula: NonNullable<PostingRule["formulas"]>[number]): string {
+  return `${formula.formulaId}: ${formula.kind} ${formatCurrency(formula.value)} ${formula.currency}${formula.description ? ` - ${formula.description}` : ""}`;
+}
+
+function formatAllocationRule(allocation: AllocationRule): string {
+  const scope = formatLedgerDimensionSet(allocation.targetDimensions).join(", ");
+  return `${allocation.allocationRuleId}: ${allocation.basis} weight ${allocation.weight}${allocation.formulaId ? ` via ${allocation.formulaId}` : ""}${scope ? ` -> ${scope}` : ""}`;
+}
+
+function formatGeneratedPostingLine(line: GeneratedPostingLine): string {
+  const scope = formatLedgerDimensionSet(line.dimensions).join(", ");
+  return `${line.side} ${line.accountPath} ${formatCurrency(line.amount)} ${line.currency} via ${line.amountFormulaId}${scope ? ` | ${scope}` : ""}${line.description ? ` - ${line.description}` : ""}`;
+}
+
+function formatRuleDryRunMatch(match: AccountingRuleDryRunMatch): string {
+  const state = match.isMatched ? "matched" : "skipped";
+  const reasons = match.explanations.length > 0 ? match.explanations.join("; ") : "No explanation returned.";
+  const issues = match.validationIssues.length > 0 ? ` Issues: ${match.validationIssues.map((issue) => issue.code).join(", ")}.` : "";
+  return `${match.displayName} ${state} at priority ${match.priority}. ${reasons}${issues}`;
+}
+
+function formatRuleEffectiveRange(rule: PostingRule): string {
+  const start = rule.effectiveFrom ?? "open start";
+  const end = rule.effectiveTo ?? "open end";
+  return `${start} -> ${end}`;
+}
+
+function formatLedgerDimensionSet(dimensions?: PostingRule["scope"]): string[] {
+  if (!dimensions) {
+    return [];
+  }
+
+  const rows: string[] = [];
+  const scalarEntries: Array<[string, string | null | undefined]> = [
+    ["Fund", dimensions.fundId],
+    ["Entity", dimensions.entityId],
+    ["Sleeve", dimensions.sleeveId],
+    ["Strategy", dimensions.strategyId],
+    ["Investor", dimensions.investorId],
+    ["Capital account", dimensions.capitalAccountId],
+    ["Instrument", dimensions.instrumentId],
+    ["Tax lot", dimensions.taxLotId],
+    ["Cost center", dimensions.costCenterId],
+    ["Counterparty", dimensions.counterpartyId]
+  ];
+  for (const [label, value] of scalarEntries) {
+    if (value) {
+      rows.push(`${label}: ${value}`);
+    }
+  }
+
+  for (const [key, value] of Object.entries(dimensions.externalGlDimensions ?? {})) {
+    rows.push(`External ${key}: ${value}`);
+  }
+
+  return rows;
+}
+
+function promotionTone(
+  promotion: PostingRule["promotionApproval"],
+  requiresPromotionApproval?: boolean
+): AccountingRulesStudioRuleViewModel["promotionTone"] {
+  if (promotion?.approvalState === "Approved") {
+    return "success";
+  }
+
+  if (promotion?.approvalState === "Rejected") {
+    return "danger";
+  }
+
+  if (requiresPromotionApproval || promotion) {
+    return "warning";
+  }
+
+  return "outline";
+}
+
+function resolveDryRunEventAmount(rule: PostingRule): number {
+  const sourceAmountFormula = rule.formulas?.find((formula) => formula.kind === "SourceAmount");
+  if (sourceAmountFormula && sourceAmountFormula.value > 0) {
+    return sourceAmountFormula.value;
+  }
+
+  const generatedAmount = rule.generatedPostings?.find((line) => line.amount > 0)?.amount;
+  return generatedAmount && generatedAmount > 0 ? generatedAmount : 1000;
+}
+
+function resolveDryRunCurrency(rule: PostingRule): string {
+  return rule.generatedPostings?.find((line) => line.currency)?.currency
+    ?? rule.formulas?.find((formula) => formula.currency)?.currency
+    ?? "USD";
+}
+
+function resolveDryRunEffectiveDate(rule: PostingRule): string {
+  if (rule.effectiveFrom) {
+    return rule.effectiveFrom;
+  }
+
+  return new Date().toISOString().slice(0, 10);
+}
+
+function formatDateOnly(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toISOString().slice(0, 10);
 }
 
 export function useGovernanceReportingViewModel(
@@ -2840,6 +3423,9 @@ export function useManualJournalEntryWorkbenchViewModel(
   const [securitySearchBusy, setSecuritySearchBusy] = useState(false);
   const [securitySearchError, setSecuritySearchError] = useState<ApiErrorDisplay | null>(null);
   const [attachmentDraft, setAttachmentDraft] = useState<ManualJournalEvidenceAttachmentDraft>(() => createManualJournalAttachmentDraft());
+  const [lifecycleBusyAction, setLifecycleBusyAction] = useState<JournalEntryLifecycleAction | null>(null);
+  const [lifecycleStatusText, setLifecycleStatusText] = useState<string | null>(null);
+  const [lifecycleCorrectionDrafts, setLifecycleCorrectionDrafts] = useState<ManualJournalEntryDraft[]>([]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -2884,6 +3470,26 @@ export function useManualJournalEntryWorkbenchViewModel(
         drafts: [next, ...current.drafts.filter((item) => item.journalEntryId !== next.journalEntryId)]
       }
       : current);
+  }, [selectedLineId]);
+
+  const applyLifecycleResult = useCallback((result: JournalEntryLifecycleActionResult) => {
+    const generated = result.generatedJournalEntries ?? [];
+    setDraft(result.journalEntry);
+    setSelectedLineId(result.journalEntry.lines[0]?.lineId ?? selectedLineId);
+    setLifecycleCorrectionDrafts(generated);
+    setLifecycleStatusText(`${result.transition.action} recorded: ${result.transition.fromStatus} -> ${result.transition.toStatus}`);
+    setWorkbench((current) => {
+      if (!current) {
+        return current;
+      }
+
+      const nextDrafts = [result.journalEntry, ...generated];
+      const nextIds = new Set(nextDrafts.map((item) => item.journalEntryId));
+      return {
+        ...current,
+        drafts: [...nextDrafts, ...current.drafts.filter((item) => !nextIds.has(item.journalEntryId))]
+      };
+    });
   }, [selectedLineId]);
 
   const updateHeader = useCallback<ManualJournalEntryWorkbenchViewModel["updateHeader"]>((field, value) => {
@@ -3051,6 +3657,38 @@ export function useManualJournalEntryWorkbenchViewModel(
     }
   }, [applyServerDraft, draft, services]);
 
+  const applyLifecycleAction = useCallback<ManualJournalEntryWorkbenchViewModel["applyLifecycleAction"]>(async (action) => {
+    if (lifecycleBusyAction) {
+      return;
+    }
+
+    const draftForAction = withManualJournalTotals(draft);
+    setLifecycleBusyAction(action);
+    setLifecycleStatusText(null);
+    setError(null);
+    try {
+      applyLifecycleResult(await services.applyLifecycleAction({
+        journalEntryId: draftForAction.journalEntryId,
+        fundProfileId: draftForAction.fundProfileId,
+        action,
+        actor: "browser-user",
+        version: draftForAction.version,
+        notes: lifecycleActionNotes(action, draftForAction),
+        correlationId: `manual-je-${action.toLowerCase()}`,
+        evidenceLinks: draftForAction.evidenceLinks ?? [],
+        actionOrigin: "HumanOperator",
+        periodIsLocked: action === "LockAfterClose",
+        rebookLines: action === "Rebook" ? draftForAction.lines : []
+      }));
+    } catch (err) {
+      const errorDisplay = describeApiError(err, `Manual journal entry lifecycle action ${action} failed.`);
+      setError(errorDisplay);
+      setLifecycleStatusText(errorDisplay.summary);
+    } finally {
+      setLifecycleBusyAction(null);
+    }
+  }, [applyLifecycleResult, draft, lifecycleBusyAction, services]);
+
   const validationIssues = draft.validationIssues.map<AccountingConfigurationIssueViewModel>((issue, index) => ({
     id: `${issue.code}-${index}`,
     label: issue.code,
@@ -3097,6 +3735,9 @@ export function useManualJournalEntryWorkbenchViewModel(
     () => buildManualJournalPrivateCapitalActivityView(workbench?.privateCapitalActivity ?? null),
     [workbench?.privateCapitalActivity]
   );
+  const lifecycleCommands = buildManualJournalLifecycleCommands(balancedDraft, lifecycleBusyAction);
+  const lifecycleTransitions = (balancedDraft.lifecycleTransitions ?? []).slice().reverse().map(formatManualJournalLifecycleTransition);
+  const lifecycleCorrectionRows = lifecycleCorrectionDrafts.map(formatManualJournalLifecycleCorrection);
   const securitySearchStatusText = securitySearchBusy
     ? "Searching Security Master."
     : securitySearchError?.summary ?? (securitySearchResults.length > 0
@@ -3130,6 +3771,11 @@ export function useManualJournalEntryWorkbenchViewModel(
     treasuryContextLabel,
     privateCapitalActivity,
     validationIssues,
+    lifecycleCommands,
+    lifecycleTransitions,
+    lifecycleCorrectionRows,
+    lifecycleStatusText,
+    lifecycleBusyAction,
     saveBusy,
     validateBusy,
     submitBusy,
@@ -3150,6 +3796,7 @@ export function useManualJournalEntryWorkbenchViewModel(
     updateAttachmentDraft,
     addAttachment,
     removeAttachment,
+    applyLifecycleAction,
     save,
     validate,
     submit
@@ -4133,7 +4780,17 @@ function createManualJournalEntryDraft(
     submittedAtUtc: null,
     submittedBy: null,
     entryType: "General",
-    treasuryContext: null
+    treasuryContext: null,
+    dimensions: null,
+    lifecycleTransitions: [],
+    reversalOfJournalEntryId: null,
+    rebookedFromJournalEntryId: null,
+    approvedAtUtc: null,
+    approvedBy: null,
+    postedAtUtc: null,
+    postedBy: null,
+    closedLockedAtUtc: null,
+    closeLockedBy: null
   };
 }
 
@@ -4169,6 +4826,103 @@ function formatManualJournalTreasuryContext(draft: ManualJournalEntryDraft): str
   ].filter((part): part is string => Boolean(part));
 
   return parts.join(" | ");
+}
+
+function lifecycleActionNotes(action: JournalEntryLifecycleAction, draft: ManualJournalEntryDraft): string {
+  switch (action) {
+    case "Approve":
+      return `Controller approval for journal entry ${draft.journalEntryId}.`;
+    case "Reject":
+      return `Controller rejection for journal entry ${draft.journalEntryId}.`;
+    case "Post":
+      return `Post approved journal entry ${draft.journalEntryId}.`;
+    case "Reverse":
+      return `Create reversal draft for posted journal entry ${draft.journalEntryId}.`;
+    case "Rebook":
+      return `Create rebook draft for posted journal entry ${draft.journalEntryId}.`;
+    case "LockAfterClose":
+      return `Lock posted journal entry ${draft.journalEntryId} after close.`;
+    case "Submit":
+      return `Submit journal entry ${draft.journalEntryId} for approval.`;
+    case "Validate":
+      return `Validate journal entry ${draft.journalEntryId}.`;
+    default:
+      return `Apply ${action} to journal entry ${draft.journalEntryId}.`;
+  }
+}
+
+function buildManualJournalLifecycleCommands(
+  draft: ManualJournalEntryDraft,
+  busyAction: JournalEntryLifecycleAction | null
+): ManualJournalLifecycleCommandViewModel[] {
+  const hasEvidence = (draft.evidenceLinks?.length ?? 0) > 0 || (draft.evidenceAttachments?.length ?? 0) > 0;
+  const isBalanced = Math.abs(draft.imbalance) === 0;
+  const hasCriticalIssues = draft.validationIssues.some((issue) => issue.severity === "Critical");
+  const commonBlocker = !hasEvidence
+    ? "Attach retained evidence before lifecycle transitions."
+    : !isBalanced
+      ? "Balance debits and credits before lifecycle transitions."
+      : hasCriticalIssues
+        ? "Resolve critical validation issues before lifecycle transitions."
+        : null;
+
+  return [
+    lifecycleCommand("Approve", "Approve", "Move a submitted journal entry to approved.", draft.status === "Submitted" ? commonBlocker : `Requires Submitted status; current status is ${draft.status}.`, "success", busyAction),
+    lifecycleCommand("Reject", "Reject", "Reject a submitted journal entry for correction.", draft.status === "Submitted" ? null : `Requires Submitted status; current status is ${draft.status}.`, "danger", busyAction),
+    lifecycleCommand("Post", "Post", "Post an approved journal entry without mutating it afterward.", draft.status === "Approved" ? commonBlocker : `Requires Approved status; current status is ${draft.status}.`, "success", busyAction),
+    lifecycleCommand("Reverse", "Reverse", "Generate a separate reversal draft for a posted journal entry.", draft.status === "Posted" ? commonBlocker : `Requires Posted status; current status is ${draft.status}.`, "warning", busyAction),
+    lifecycleCommand("Rebook", "Rebook", "Generate a separate rebook draft using the current posted lines.", draft.status === "Posted" ? commonBlocker : `Requires Posted status; current status is ${draft.status}.`, "warning", busyAction),
+    lifecycleCommand("LockAfterClose", "Lock after close", "Lock a posted journal entry after close.", draft.status === "Posted" ? commonBlocker : `Requires Posted status; current status is ${draft.status}.`, "default", busyAction)
+  ];
+}
+
+function lifecycleCommand(
+  action: JournalEntryLifecycleAction,
+  label: string,
+  description: string,
+  disabledReason: string | null,
+  tone: ManualJournalLifecycleCommandViewModel["tone"],
+  busyAction: JournalEntryLifecycleAction | null
+): ManualJournalLifecycleCommandViewModel {
+  return {
+    action,
+    label,
+    description,
+    disabledReason: busyAction && busyAction !== action ? `Lifecycle action ${busyAction} is already running.` : disabledReason,
+    tone,
+    busy: busyAction === action
+  };
+}
+
+function formatManualJournalLifecycleTransition(
+  transition: JournalEntryLifecycleTransition
+): ManualJournalLifecycleTransitionViewModel {
+  return {
+    id: transition.transitionId,
+    title: `${transition.action}: ${transition.fromStatus} -> ${transition.toStatus}`,
+    detail: `${transition.actor} / ${formatDateTimeLabel(transition.recordedAtUtc)}${transition.notes ? ` / ${transition.notes}` : ""}`,
+    evidenceLabel: transition.evidenceLinks.length > 0
+      ? `${transition.evidenceLinks.length.toLocaleString()} evidence link(s)`
+      : "No transition evidence links"
+  };
+}
+
+function formatManualJournalLifecycleCorrection(
+  draft: ManualJournalEntryDraft
+): ManualJournalLifecycleCorrectionViewModel {
+  const source = draft.reversalOfJournalEntryId
+    ? `Reversal of ${draft.reversalOfJournalEntryId}`
+    : draft.rebookedFromJournalEntryId
+      ? `Rebook from ${draft.rebookedFromJournalEntryId}`
+      : "Generated correction draft";
+
+  return {
+    id: draft.journalEntryId,
+    title: draft.memo || "Generated correction draft",
+    subtitle: `${draft.status} / v${draft.version} / ${draft.entryType}`,
+    balanceLabel: `${formatCurrencyWithCode(draft.totalDebits, draft.currency)} debit / ${formatCurrencyWithCode(draft.totalCredits, draft.currency)} credit`,
+    sourceLabel: source
+  };
 }
 
 function createManualJournalAttachmentDraft(): ManualJournalEvidenceAttachmentDraft {
@@ -6243,6 +6997,329 @@ function accountingWorkflowStepLabel(workstream: AccountingWorkstream): string {
 function parseAccountingWorkflowMetricCount(value: string | null | undefined): number {
   const normalized = value?.replace(/,/g, "").match(/-?\d+/)?.[0];
   return normalized ? Number.parseInt(normalized, 10) : 0;
+}
+
+function formatAccountingWorkflowError(error: unknown, fallback: string): string {
+  return error instanceof Error ? error.message || fallback : fallback;
+}
+
+function buildAccountingCloseReportPackageViewState({
+  workflow,
+  closePlan,
+  packages,
+  selectedPackageId,
+  loading,
+  errorText,
+  buildBusy,
+  buildStatusText,
+  buildStatusTone,
+  refresh,
+  buildReportPackage,
+  selectPackage
+}: {
+  workflow: OperationsContinuityWorkflow | null;
+  closePlan: ClosePeriodPlan | null;
+  packages: AccountingReportPackageBundle[];
+  selectedPackageId: string | null;
+  loading: boolean;
+  errorText: string | null;
+  buildBusy: boolean;
+  buildStatusText: string | null;
+  buildStatusTone: "neutral" | "success" | "danger";
+  refresh: () => Promise<void>;
+  buildReportPackage: () => Promise<void>;
+  selectPackage: (packageId: string) => void;
+}): AccountingCloseReportPackageViewModel {
+  const selectedBundle = packages.find((bundle) => bundle.financialStatements.packageId === selectedPackageId) ?? packages[0] ?? null;
+  const selectedPackage = selectedBundle ? buildAccountingReportPackageRow(selectedBundle, selectedBundle.financialStatements.packageId) : null;
+  const packageRows = packages.map((bundle) => buildAccountingReportPackageRow(
+    bundle,
+    selectedBundle?.financialStatements.packageId ?? selectedPackageId
+  ));
+  const tasks = (closePlan?.tasks ?? []).map(buildClosePlanTaskRow);
+  const lateAdjustments = (closePlan?.lateAdjustments ?? []).map(buildLateAdjustmentRow);
+  const locked = closePlan?.isPeriodLocked === true;
+  const openTaskCount = closePlan?.tasks.filter((task) => task.status !== "SignedOff").length ?? 0;
+  const validationIssues = [
+    ...(closePlan?.validationIssues ?? []),
+    ...(selectedBundle?.validationIssues ?? [])
+  ].map<AccountingConfigurationIssueViewModel>((issue, index) => ({
+    id: `${issue.code}-${issue.targetId ?? index}`,
+    label: `${issue.severity} | ${issue.code}`,
+    message: issue.message,
+    detail: issue.targetId ?? "No target",
+    tone: issue.severity === "Critical" ? "danger" : issue.severity === "Warning" ? "warning" : "default"
+  }));
+  const packageCertification = selectedBundle?.certification.state ?? selectedBundle?.financialStatements.certificationState ?? "Draft";
+  const certificationTone = accountingCertificationTone(packageCertification);
+  const statusTone: AccountingToolingTone = errorText
+    ? "danger"
+    : !workflow
+      ? "default"
+      : validationIssues.length > 0 || openTaskCount > 0
+        ? "warning"
+        : packages.length > 0 && certificationTone === "success"
+          ? "success"
+          : "default";
+  const statusLabel = errorText
+    ? "Needs attention"
+    : !workflow
+      ? "Close workflow pending"
+      : packages.length > 0
+        ? `${formatAccountingCertificationState(packageCertification)} package`
+        : "Package not built";
+  const materiality = closePlan?.materialityPolicy;
+  const materialityLabel = materiality
+    ? `${formatCurrencyWithCode(materiality.amountThreshold, materiality.currency)} or ${materiality.percentThreshold}% review by ${materiality.reviewRole}`
+    : "Materiality policy pending";
+  const buildDisabledReason = !workflow
+    ? "A close workflow must be loaded before building a package."
+    : loading || buildBusy
+      ? "Close/report package refresh is running."
+      : null;
+
+  return {
+    title: "Close and report package certification",
+    description: "Shared close-plan, period-lock, materiality, late-adjustment, financial statement, investor statement, realized gain/loss, NAV, and restatement state from the ledger endpoints.",
+    ariaLabel: "Accounting close and report package certification cockpit",
+    statusLabel,
+    statusTone,
+    periodLabel: closePlan
+      ? `${closePlan.periodId} (${formatDateOnly(closePlan.periodStart)} to ${formatDateOnly(closePlan.periodEnd)})`
+      : workflow?.periodId ?? "Period pending",
+    fundLabel: closePlan?.fundProfileId ?? workflow?.fundAccountId ?? "Fund pending",
+    lockLabel: locked ? "Period locked" : closePlan ? "Period open" : "Lock state pending",
+    materialityLabel,
+    loading,
+    loadingText: loading ? "Refreshing close plan and certified package history." : null,
+    errorText,
+    buildBusy,
+    buildStatusText,
+    buildStatusTone,
+    buildButtonLabel: packages.length > 0 ? "Rebuild package" : "Build package",
+    buildDisabledReason,
+    metrics: [
+      {
+        id: "checklist",
+        label: "Checklist",
+        value: `${tasks.filter((task) => task.statusTone === "success").length}/${tasks.length}`,
+        detail: tasks.length > 0 ? `${formatCount(openTaskCount, "task")} remain before sign-off.` : "Close checklist has not been loaded.",
+        tone: openTaskCount > 0 ? "warning" : tasks.length > 0 ? "success" : "default"
+      },
+      {
+        id: "late-adjustments",
+        label: "Late adjustments",
+        value: String(lateAdjustments.length),
+        detail: lateAdjustments.length > 0 ? "Late adjustments require approval evidence." : "No late adjustments are surfaced for this close plan.",
+        tone: lateAdjustments.length > 0 ? "warning" : "success"
+      },
+      {
+        id: "packages",
+        label: "Packages",
+        value: String(packageRows.length),
+        detail: selectedPackage ? `${selectedPackage.packageId} is selected.` : "No certified package history is available.",
+        tone: packageRows.length > 0 ? certificationTone : "default"
+      },
+      {
+        id: "issues",
+        label: "Validation",
+        value: String(validationIssues.length),
+        detail: validationIssues.length > 0 ? "Validation issues remain attached to the close/report package." : "No close/report validation issues are surfaced.",
+        tone: validationIssues.length > 0 ? "warning" : "success"
+      }
+    ],
+    tasks,
+    lateAdjustments,
+    packageRows,
+    selectedPackage,
+    validationIssues,
+    liveRegionText: `Close report package ${statusLabel}. ${formatCount(openTaskCount, "open task")}. ${formatCount(packageRows.length, "package")}.`,
+    refresh,
+    buildReportPackage,
+    selectPackage
+  };
+}
+
+function buildClosePlanTaskRow(task: CloseTask): AccountingClosePlanTaskRowViewModel {
+  const signedOffCount = task.signOffs.filter((signOff) => signOff.approvalState === "Approved").length;
+
+  return {
+    taskId: task.taskId,
+    displayName: task.displayName,
+    ownerLabel: task.owner || "Unassigned",
+    dueDateLabel: formatDateOnly(task.dueDate),
+    statusLabel: formatCloseTaskStatus(task.status),
+    statusTone: closeTaskStatusTone(task.status),
+    dependencyLabel: task.dependencies.length > 0
+      ? `${formatCount(task.dependencies.length, "dependency")}: ${task.dependencies.map((dependency) => dependency.dependsOnTaskId).join(", ")}`
+      : "No dependencies",
+    signOffLabel: task.signOffs.length > 0
+      ? `${signedOffCount}/${task.signOffs.length} sign-offs approved`
+      : "No sign-off required",
+    evidenceLabel: formatCount(task.evidenceLinks.length, "evidence link"),
+    blockerLabel: task.blockerReason?.trim() || null
+  };
+}
+
+function buildLateAdjustmentRow(adjustment: LateAdjustmentRequest): AccountingLateAdjustmentRowViewModel {
+  return {
+    requestId: adjustment.requestId,
+    journalEntryId: adjustment.journalEntryId,
+    amountLabel: formatCurrencyWithCode(adjustment.amount, adjustment.currency, true),
+    requestedByLabel: `${adjustment.requestedBy} on ${formatDateTimeLabel(adjustment.requestedAtUtc)}`,
+    statusLabel: adjustment.approvalState,
+    evidenceLabel: formatCount(adjustment.evidenceLinks.length, "evidence link"),
+    reason: adjustment.reason
+  };
+}
+
+function buildAccountingReportPackageRow(
+  bundle: AccountingReportPackageBundle,
+  selectedPackageId: string | null | undefined
+): AccountingReportPackageRowViewModel {
+  const packageId = bundle.financialStatements.packageId;
+  const certificationState = bundle.certification.state ?? bundle.financialStatements.certificationState;
+  const restatement = bundle.financialStatements.restatement ?? bundle.navPackage.restatement ?? null;
+  const evidenceCount = new Set([
+    ...bundle.financialStatements.evidenceLinks,
+    ...bundle.investorCapitalStatements.flatMap((statement) => statement.evidenceLinks),
+    ...bundle.realizedGainLoss.evidenceLinks,
+    ...bundle.navPackage.evidenceLinks,
+    ...bundle.certification.evidenceLinks,
+    ...(restatement?.evidenceLinks ?? [])
+  ]).size;
+
+  return {
+    packageId,
+    periodLabel: bundle.financialStatements.periodId,
+    certificationLabel: formatAccountingCertificationState(certificationState),
+    certificationTone: accountingCertificationTone(certificationState),
+    navLabel: formatCurrencyWithCode(bundle.navPackage.nav, bundle.navPackage.currency),
+    investorStatementLabel: formatCount(bundle.investorCapitalStatements.length, "investor statement"),
+    realizedGainLossLabel: formatCurrencyWithCode(
+      bundle.realizedGainLoss.realizedGainLoss,
+      bundle.realizedGainLoss.currency,
+      true
+    ),
+    restatementLabel: restatement
+      ? `${restatement.reasonCode} | ${restatement.approvalState}`
+      : "No restatement",
+    evidenceLabel: formatCount(evidenceCount, "evidence link"),
+    validationLabel: formatCount(bundle.validationIssues.length, "validation issue"),
+    selected: packageId === selectedPackageId
+  };
+}
+
+function buildAccountingReportPackageRequest(
+  workflow: OperationsContinuityWorkflow,
+  closePlan: ClosePeriodPlan | null,
+  seedPackage: AccountingReportPackageBundle | null
+): AccountingReportPackageRequest {
+  const investorStatement = seedPackage?.investorCapitalStatements[0] ?? null;
+
+  return {
+    fundProfileId: closePlan?.fundProfileId ?? workflow.fundAccountId,
+    ledgerBookId: closePlan?.ledgerBookId ?? seedPackage?.financialStatements.ledgerBookId ?? null,
+    periodId: closePlan?.periodId ?? workflow.periodId,
+    actor: "browser-accounting-operator",
+    closeWorkflowId: workflow.workflowId,
+    capitalAccountId: investorStatement?.capitalAccountId ?? null,
+    investorId: investorStatement?.investorId ?? null,
+    beginningCapital: investorStatement?.beginningCapital ?? 0,
+    contributions: investorStatement?.contributions ?? 0,
+    distributions: investorStatement?.distributions ?? 0,
+    realizedGainLoss: seedPackage?.realizedGainLoss.realizedGainLoss ?? investorStatement?.realizedGainLoss ?? 0,
+    nav: seedPackage?.navPackage.nav ?? investorStatement?.endingCapital ?? 0,
+    currency: seedPackage?.navPackage.currency ?? investorStatement?.currency ?? "USD",
+    evidenceLinks: collectAccountingCloseEvidenceLinks(workflow, closePlan),
+    correlationId: `browser-close-report-${workflow.workflowId}`
+  };
+}
+
+function collectAccountingCloseEvidenceLinks(
+  workflow: OperationsContinuityWorkflow,
+  closePlan: ClosePeriodPlan | null
+): string[] {
+  const links = new Set<string>();
+  const add = (value: string | null | undefined) => {
+    const normalized = value?.trim();
+    if (normalized) {
+      links.add(normalized);
+    }
+  };
+  const addOperationsEvidence = (evidence: Array<{ evidenceId: string; route: string | null }> | null | undefined) => {
+    evidence?.forEach((item) => {
+      add(item.route);
+      add(item.evidenceId);
+    });
+  };
+
+  addOperationsEvidence(workflow.evidenceLinks);
+  addOperationsEvidence(workflow.reportPackReadiness.evidenceLinks);
+  addOperationsEvidence(workflow.accountingRecordSummary?.evidenceLinks);
+  workflow.accountingRecordSummary?.evidenceCategories.forEach((category) => addOperationsEvidence(category.evidenceLinks));
+  addOperationsEvidence(workflow.closePackage?.evidenceLinks);
+  add(workflow.closePackage?.retainedManifestRoute);
+  add(workflow.closePackage?.evidenceHash);
+  closePlan?.tasks.forEach((task) => task.evidenceLinks.forEach(add));
+  closePlan?.lateAdjustments.forEach((adjustment) => adjustment.evidenceLinks.forEach(add));
+
+  return [...links];
+}
+
+function formatCloseTaskStatus(status: CloseTask["status"]): string {
+  const labels: Record<CloseTask["status"], string> = {
+    NotStarted: "Not started",
+    WaitingOnDependency: "Waiting on dependency",
+    InProgress: "In progress",
+    ReadyForSignOff: "Ready for sign-off",
+    SignedOff: "Signed off",
+    Blocked: "Blocked"
+  };
+  return labels[status] ?? status;
+}
+
+function closeTaskStatusTone(status: CloseTask["status"]): AccountingToolingTone {
+  if (status === "SignedOff") {
+    return "success";
+  }
+
+  if (status === "Blocked") {
+    return "danger";
+  }
+
+  if (status === "ReadyForSignOff" || status === "WaitingOnDependency") {
+    return "warning";
+  }
+
+  return "default";
+}
+
+function formatAccountingCertificationState(state: AccountingCertificationState): string {
+  const labels: Record<AccountingCertificationState, string> = {
+    Draft: "Draft",
+    ReadyForReview: "Ready for review",
+    Certified: "Certified",
+    Rejected: "Rejected",
+    Superseded: "Superseded"
+  };
+  return labels[state] ?? state;
+}
+
+function accountingCertificationTone(state: AccountingCertificationState): AccountingToolingTone {
+  if (state === "Certified") {
+    return "success";
+  }
+
+  if (state === "Rejected") {
+    return "danger";
+  }
+
+  if (state === "ReadyForReview" || state === "Superseded") {
+    return "warning";
+  }
+
+  return "default";
 }
 
 export function buildCloseCommandCenterViewState({

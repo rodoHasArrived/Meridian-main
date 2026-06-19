@@ -623,6 +623,115 @@ public sealed partial class WorkstationEndpointsTests
     }
 
     [Fact]
+    public async Task AccountingRulesAndLifecycleEndpoints_DryRunApprovePostAndReverseDraft()
+    {
+        await using var app = await CreateAppAsync(
+            RegisterAccountingConfigurationServices,
+            currentUserPermissions: UserPermission.AdminMaintenance);
+        var client = app.GetTestClient();
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest("fund-alpha", new ChartOfAccountsNodeDto("cash", "Assets:Cash", "Cash", "Asset"), "browser-user"),
+            ServerJsonOptions);
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest("fund-alpha", new ChartOfAccountsNodeDto("income", "Income:Interest", "Interest Income", "Revenue"), "browser-user"),
+            ServerJsonOptions);
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationPostingRules,
+            new UpsertPostingRuleRequest(
+                "fund-alpha",
+                new PostingRuleDto(
+                    "rule-generated-interest",
+                    "Generated interest accrual",
+                    "InterestAccrual",
+                    "",
+                    RuleVersion: "v2",
+                    EffectiveFrom: new DateOnly(2026, 1, 1),
+                    Priority: 10,
+                    Scope: new LedgerDimensionSetDto(FundId: "fund-alpha", CounterpartyId: "counterparty-bank"),
+                    Conditions:
+                    [
+                        new AccountingRuleConditionDto("threshold", "amount", AccountingRuleConditionOperatorDto.AmountGreaterThanOrEqual, "100")
+                    ],
+                    Formulas:
+                    [
+                        new AccountingRuleFormulaDto("source", AccountingRuleFormulaKindDto.SourceAmount, 0m)
+                    ],
+                    GeneratedPostings:
+                    [
+                        new GeneratedPostingLineDto("debit-cash", "Assets:Cash", AccountingTemplateLineSideDto.Debit, "source", 0m),
+                        new GeneratedPostingLineDto("credit-income", "Income:Interest", AccountingTemplateLineSideDto.Credit, "source", 0m)
+                    ]),
+                "browser-user"),
+            ServerJsonOptions);
+
+        using var dryRunResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationPostingRuleDryRun,
+            new RuleDryRunRequestDto(
+                "fund-alpha",
+                "InterestAccrual",
+                175m,
+                "USD",
+                new DateOnly(2026, 6, 30),
+                "browser-user",
+                Dimensions: new LedgerDimensionSetDto(FundId: "fund-alpha"),
+                CounterpartyId: "counterparty-bank"),
+            ServerJsonOptions);
+        await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerAccountingConfigurationChart,
+            new UpsertChartOfAccountsNodeRequest("fund-alpha", new ChartOfAccountsNodeDto("capital", "Equity:Capital Contributions", "Capital Contributions", "Equity"), "browser-user"),
+            ServerJsonOptions);
+        var submitted = await SaveAndSubmitManualJournalDraftAsync(client, ManualJournalEntryDraft(), "lifecycle");
+        using var approveResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryLifecycleAction,
+            new JournalEntryLifecycleActionRequestDto(
+                submitted.JournalEntryId,
+                submitted.FundProfileId,
+                JournalEntryLifecycleActionDto.Approve,
+                "controller",
+                submitted.Version),
+            ServerJsonOptions);
+        var approved = await approveResponse.Content.ReadFromJsonAsync<JournalEntryLifecycleActionResultDto>(ServerJsonOptions);
+        using var postResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryLifecycleAction,
+            new JournalEntryLifecycleActionRequestDto(
+                approved!.JournalEntry.JournalEntryId,
+                approved.JournalEntry.FundProfileId,
+                JournalEntryLifecycleActionDto.Post,
+                "controller",
+                approved.JournalEntry.Version),
+            ServerJsonOptions);
+        var posted = await postResponse.Content.ReadFromJsonAsync<JournalEntryLifecycleActionResultDto>(ServerJsonOptions);
+        using var reverseResponse = await client.PostAsJsonAsync(
+            UiApiRoutes.LedgerManualJournalEntryLifecycleAction,
+            new JournalEntryLifecycleActionRequestDto(
+                posted!.JournalEntry.JournalEntryId,
+                posted.JournalEntry.FundProfileId,
+                JournalEntryLifecycleActionDto.Reverse,
+                "controller",
+                posted.JournalEntry.Version,
+                EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/reversal"]),
+            ServerJsonOptions);
+
+        dryRunResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        approveResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        postResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        reverseResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var dryRun = await dryRunResponse.Content.ReadFromJsonAsync<RuleDryRunResultDto>(ServerJsonOptions);
+        var reverse = await reverseResponse.Content.ReadFromJsonAsync<JournalEntryLifecycleActionResultDto>(ServerJsonOptions);
+        dryRun!.SelectedRuleId.Should().Be("rule-generated-interest");
+        dryRun.IsPostingBalanced.Should().BeTrue();
+        dryRun.GeneratedPostingLines.Should().HaveCount(2);
+        approved.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Approved);
+        posted.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Posted);
+        reverse!.GeneratedJournalEntries.Should().ContainSingle(item =>
+            item.Status == ManualJournalEntryStatusDto.Draft &&
+            item.EntryType == ManualJournalEntryTypeDto.Reversal &&
+            item.ReversalOfJournalEntryId == posted.JournalEntry.JournalEntryId);
+    }
+
+    [Fact]
     public async Task ManualJournalEntryWorkbenchEndpoints_WhenReviewedAutomationSubmitsApproval_ReturnsConflictWithoutSubmission()
     {
         await using var app = await CreateAppAsync(

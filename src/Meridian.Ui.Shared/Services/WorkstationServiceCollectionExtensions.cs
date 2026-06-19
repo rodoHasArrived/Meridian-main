@@ -17,6 +17,7 @@ using Meridian.Contracts.Services;
 using Meridian.Contracts.Plaid;
 using Meridian.Contracts.Workstation;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
+using Meridian.FinancialOperations.AccountingClose;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.PrivateCapital;
@@ -289,6 +290,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ContractSecurityMasterQueryService>()));
         services.TryAddSingleton<IOperationsApprovalPolicyMatrixService, OperationsApprovalPolicyMatrixService>();
         services.TryAddSingleton<IOperationsCloseCalendarService, OperationsCloseCalendarService>();
+        services.TryAddSingleton<IAccountingCloseManagementService, AccountingCloseManagementService>();
+        services.TryAddSingleton<IAccountingReportPackageService, AccountingReportPackageService>();
 
         services.TryAddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
         services.TryAddSingleton<IStrategyLedgerReconciliationSourceAdapter, StrategyLedgerReconciliationSourceAdapter>();
@@ -320,6 +323,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<ILedgerJournalStore>(),
                 sp.GetService<ReportPackWorkflowService>(),
                 sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>()));
+        services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
+            (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
         services.TryAddSingleton<ICapitalAccountWorkbenchService>(sp =>
             new CapitalAccountWorkbenchService(
                 sp.GetRequiredService<IManualJournalEntryWorkbenchService>(),

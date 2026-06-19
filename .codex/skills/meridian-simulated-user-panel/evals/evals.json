@@ -1,0 +1,35 @@
+{
+  "skill_name": "meridian-simulated-user-panel",
+  "last_updated": "2026-06-19",
+  "evals": [
+    {
+      "id": 1,
+      "description": "Simulated user panel output follows the review contract and evidence boundary",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/simulated_user_output_check.py",
+        "--sample",
+        "standard",
+        "--json"
+      ],
+      "prompt": "Use $meridian-simulated-user-panel to critique a concrete Meridian artifact.",
+      "assertions": [
+        "Must include the meridian-simulated-user-panel skill selection receipt",
+        "Must include the review contract headings",
+        "Must separate verified, inferred, and missing evidence"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "summary.skill": "meridian-simulated-user-panel"
+        },
+        "json_min": {
+          "summary.heading_count": 7,
+          "summary.required_terms_count": 7,
+          "summary.receipt_count": 1
+        }
+      }
+    }
+  ]
+}

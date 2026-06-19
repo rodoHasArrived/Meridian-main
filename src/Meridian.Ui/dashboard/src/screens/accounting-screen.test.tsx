@@ -10,11 +10,15 @@ import type {
   AccountingSystemReconciliationSummary,
   CorporateAction,
   AccountingWorkspaceResponse,
+  AccountingConfigurationWorkspace,
+  ExternalGlExportPackage,
+  ExternalGlMappingProfile,
   LedgerTrialBalanceLine,
   ReconciliationCalibrationSummary,
   OperationsContinuityWorkflow,
   OperationsContinuityWorkflowSummary,
   CapitalAccountWorkbench,
+  RuleDryRunResult,
   ManualJournalEntryDraft,
   ManualJournalEntryWorkbench,
   SecurityMasterConflict,
@@ -178,6 +182,12 @@ vi.mock("@/lib/api", async () => {
     previewAccountingSystemImport: vi.fn(),
     getLatestAccountingSystemImport: vi.fn().mockResolvedValue(null),
     getLatestAccountingSystemReconciliation: vi.fn().mockResolvedValue(null),
+    getAccountingSystemMappingProfiles: vi.fn().mockResolvedValue([]),
+    createAccountingSystemExportPackage: vi.fn(),
+    getAccountingConfiguration: vi.fn(),
+    previewAccountingConfigurationTemplate: vi.fn(),
+    dryRunAccountingConfigurationPostingRule: vi.fn(),
+    activateAccountingConfiguration: vi.fn(),
     getManualJournalEntryWorkbench: vi.fn(),
     getCapitalAccountWorkbench: vi.fn(),
     saveManualJournalEntryDraft: vi.fn(),
@@ -1412,6 +1422,237 @@ describe("AccountingScreen", () => {
     expect(screen.getByText("Reconciliation queue")).toBeInTheDocument();
   });
 
+  it("renders Accounting Rules Studio details and shared dry-run previews", async () => {
+    const workspace: AccountingConfigurationWorkspace = {
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      status: "Draft",
+      configurationVersion: "v4",
+      updatedAtUtc: "2026-06-30T12:00:00Z",
+      ledgerBooks: [{
+        ledgerBookId: "book-primary",
+        fundProfileId: "fund-alpha",
+        fundStructureNodeId: "entity-master",
+        fundStructureNodeKind: "Entity",
+        displayName: "Primary book",
+        baseCurrency: "USD",
+        createdAt: "2026-01-01T00:00:00Z",
+        updatedAt: "2026-06-30T12:00:00Z",
+        description: "Primary accounting book.",
+        accountingBasis: "Gaap",
+        accountingPolicyId: "policy-gaap",
+        accountingPolicyVersion: "2026.06"
+      }],
+      chartOfAccounts: [
+        {
+          nodeId: "coa-cash",
+          path: "1000.Cash",
+          accountName: "Cash",
+          accountType: "Asset",
+          parentPath: null,
+          isArchived: false
+        },
+        {
+          nodeId: "coa-investment",
+          path: "1200.Investments",
+          accountName: "Investments",
+          accountType: "Asset",
+          parentPath: null,
+          isArchived: false
+        }
+      ],
+      journalTemplates: [{
+        templateId: "template-trade-buy",
+        displayName: "Trade buy settlement",
+        description: "Balanced trade settlement posting.",
+        isArchived: false,
+        version: "v2",
+        lines: [
+          {
+            lineId: "line-investment",
+            accountPath: "1200.Investments",
+            side: "Debit",
+            amount: 250000,
+            currency: "USD",
+            description: "Investment cost"
+          },
+          {
+            lineId: "line-cash",
+            accountPath: "1000.Cash",
+            side: "Credit",
+            amount: 250000,
+            currency: "USD",
+            description: "Cash settlement"
+          }
+        ]
+      }],
+      postingRules: [{
+        ruleId: "rule-trade-buy",
+        displayName: "Trade buy posting",
+        sourceEventType: "TradeExecuted",
+        templateId: "template-trade-buy",
+        ruleVersion: "v3",
+        isArchived: false,
+        description: "Generate trade buy settlement postings.",
+        effectiveFrom: "2026-01-01",
+        effectiveTo: "2026-12-31",
+        priority: 10,
+        scope: {
+          fundId: "fund-alpha",
+          entityId: "entity-master",
+          strategyId: "strategy-long-only",
+          counterpartyId: "cp-001",
+          externalGlDimensions: {
+            class: "FundAlpha"
+          }
+        },
+        conditions: [{
+          conditionId: "cond-event",
+          field: "event.kind",
+          operator: "Equals",
+          value: "TradeExecuted",
+          isRequired: true,
+          description: "Only trade events use this rule."
+        }],
+        formulas: [{
+          formulaId: "formula-source",
+          kind: "SourceAmount",
+          value: 250000,
+          currency: "USD",
+          description: "Use source trade amount."
+        }],
+        allocations: [{
+          allocationRuleId: "alloc-strategy",
+          basis: "StrategyWeight",
+          weight: 1,
+          formulaId: "formula-source",
+          targetDimensions: {
+            sleeveId: "sleeve-core",
+            strategyId: "strategy-long-only"
+          },
+          description: "Allocate to the core strategy sleeve."
+        }],
+        generatedPostings: [
+          {
+            lineId: "generated-investment",
+            accountPath: "1200.Investments",
+            side: "Debit",
+            amountFormulaId: "formula-source",
+            amount: 250000,
+            currency: "USD",
+            dimensions: {
+              fundId: "fund-alpha",
+              instrumentId: "AAPL"
+            },
+            description: "Debit investment cost."
+          },
+          {
+            lineId: "generated-cash",
+            accountPath: "1000.Cash",
+            side: "Credit",
+            amountFormulaId: "formula-source",
+            amount: 250000,
+            currency: "USD",
+            dimensions: {
+              fundId: "fund-alpha",
+              counterpartyId: "cp-001"
+            },
+            description: "Credit cash settlement."
+          }
+        ],
+        versions: [{
+          version: "v3",
+          createdAtUtc: "2026-06-15T10:00:00Z",
+          createdBy: "controller",
+          changeSummary: "Added counterparty scope and generated postings.",
+          promotionApproval: null,
+          evidenceLinks: ["evidence://rule/v3"]
+        }],
+        promotionApproval: {
+          approvalId: "approval-rule-trade-buy",
+          requestedBy: "controller",
+          requestedAtUtc: "2026-06-15T10:00:00Z",
+          approvalState: "Approved",
+          approvedBy: "cfo",
+          approvedAtUtc: "2026-06-15T11:00:00Z",
+          notes: "Approved for production dry-run.",
+          evidenceLinks: ["evidence://approval"]
+        },
+        requiresPromotionApproval: true
+      }],
+      validationIssues: [],
+      auditTrail: []
+    };
+    const dryRunResult: RuleDryRunResult = {
+      fundProfileId: "fund-alpha",
+      ledgerBookId: "book-primary",
+      sourceEventType: "TradeExecuted",
+      effectiveDate: "2026-01-01",
+      eventAmount: 250000,
+      currency: "USD",
+      isPostingBalanced: true,
+      selectedRuleId: "rule-trade-buy",
+      ruleMatches: [{
+        ruleId: "rule-trade-buy",
+        displayName: "Trade buy posting",
+        ruleVersion: "v3",
+        priority: 10,
+        isMatched: true,
+        explanations: ["Effective date and source event predicates matched."],
+        validationIssues: []
+      }],
+      generatedLines: [
+        {
+          accountPath: "1200.Investments",
+          accountName: "Investments",
+          side: "Debit",
+          amount: 250000,
+          currency: "USD",
+          description: "Debit investment cost."
+        },
+        {
+          accountPath: "1000.Cash",
+          accountName: "Cash",
+          side: "Credit",
+          amount: 250000,
+          currency: "USD",
+          description: "Credit cash settlement."
+        }
+      ],
+      generatedPostingLines: workspace.postingRules[0].generatedPostings,
+      validationIssues: []
+    };
+    vi.mocked(api.getAccountingConfiguration).mockResolvedValueOnce(workspace);
+    vi.mocked(api.dryRunAccountingConfigurationPostingRule).mockResolvedValueOnce(dryRunResult);
+
+    await renderAccountingScreen(data, "/accounting/configure");
+
+    expect(await screen.findByText("Accounting Rules Studio")).toBeInTheDocument();
+    expect(screen.getAllByText("Trade buy posting").length).toBeGreaterThan(0);
+    expect(screen.getByText("2026-01-01 -> 2026-12-31")).toBeInTheDocument();
+    expect(screen.getByText("Fund: fund-alpha")).toBeInTheDocument();
+    expect(screen.getByText(/event\.kind Equals TradeExecuted/)).toBeInTheDocument();
+    expect(screen.getByText(/formula-source: SourceAmount/)).toBeInTheDocument();
+    expect(screen.getByText(/alloc-strategy: StrategyWeight weight 1 via formula-source/)).toBeInTheDocument();
+    expect(screen.getByText(/Debit 1200\.Investments/)).toBeInTheDocument();
+    expect(screen.getByText("Approved by cfo")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Dry-run selected rule" }));
+
+    const preview = await screen.findByRole("region", { name: "Accounting rule dry-run preview" });
+    expect(within(preview).getByText("TradeExecuted dry run")).toBeInTheDocument();
+    expect(within(preview).getByText("Balanced $250,000 USD")).toBeInTheDocument();
+    expect(within(preview).getByText(/Trade buy posting matched at priority 10/)).toBeInTheDocument();
+    expect(within(preview).getAllByText(/Credit 1000\.Cash/).length).toBeGreaterThan(0);
+    expect(api.dryRunAccountingConfigurationPostingRule).toHaveBeenCalledWith(expect.objectContaining({
+      sourceEventType: "TradeExecuted",
+      counterpartyId: "cp-001",
+      dimensions: expect.objectContaining({
+        fundId: "fund-alpha"
+      })
+    }));
+  });
+
   it("renders external GL evidence package posture from the reconciliation response", async () => {
     const provider: AccountingSystemProvider = {
       providerId: "quickbooks-fixture",
@@ -1510,12 +1751,85 @@ describe("AccountingScreen", () => {
         }
       ]
     };
+    const mappingProfiles: ExternalGlMappingProfile[] = [
+      {
+        profileId: "qbo-default-fund-certified",
+        providerId: "quickbooks-fixture",
+        displayName: "Default fund QBO mapping",
+        updatedAtUtc: "2026-02-01T00:08:00Z",
+        certificationState: "Certified",
+        accountMappings: {
+          "Assets:Cash": "qbo-1000"
+        },
+        dimensionMappings: [
+          {
+            profileId: "qbo-default-fund-dimensions",
+            displayName: "Default fund dimensions",
+            providerId: "quickbooks-fixture",
+            meridianDimensions: {
+              fundId: "default-fund",
+              externalGlDimensions: {}
+            },
+            externalDimensions: {
+              fundId: "Class:DefaultFund",
+              externalGlDimensions: {
+                Class: "DefaultFund"
+              }
+            },
+            certificationState: "Certified",
+            validationIssues: []
+          }
+        ]
+      }
+    ];
+    const exportPackage: ExternalGlExportPackage = {
+      exportPackageId: "external-gl-export-quickbooks-fixture-default-fund-20260131",
+      providerId: "quickbooks-fixture",
+      fundProfileId: "default-fund",
+      ledgerBookId: null,
+      periodStart: "2026-01-01",
+      periodEnd: "2026-01-31",
+      createdAtUtc: "2026-02-01T00:10:00Z",
+      createdBy: "browser-accounting-operator",
+      postingEnabled: false,
+      postingDisabledReason: "Guarded export package only; live external GL posting remains disabled.",
+      journalEntryIds: [],
+      evidenceLinks: [
+        "external-gl-mapping-profile:qbo-default-fund-certified",
+        "external-gl-reconciliation:gl-recon-qbo-fixture-20260131",
+        "quickbooks-fixture:trial-balance"
+      ],
+      certification: {
+        certificationId: "external-gl-export-cert-qbo-fixture",
+        state: "Draft",
+        actor: "browser-accounting-operator",
+        recordedAtUtc: "2026-02-01T00:10:00Z",
+        summary: "Export package is retained as a guarded review artifact.",
+        evidenceLinks: ["external-gl-reconciliation:gl-recon-qbo-fixture-20260131"]
+      },
+      validationIssues: [
+        {
+          code: "LiveExternalPostingDisabled",
+          severity: "Info",
+          message: "Live external GL posting is disabled; this operation only creates a guarded export artifact.",
+          targetId: "quickbooks-fixture",
+          suggestedAction: "Review and reconcile the package before external GL handling."
+        }
+      ]
+    };
 
     vi.mocked(api.getAccountingSystemProviders).mockResolvedValueOnce([provider]);
     vi.mocked(api.getLatestAccountingSystemImport).mockResolvedValueOnce(importDetail);
     vi.mocked(api.getLatestAccountingSystemReconciliation).mockResolvedValueOnce(reconciliation);
+    vi.mocked(api.getAccountingSystemMappingProfiles).mockResolvedValueOnce(mappingProfiles);
+    vi.mocked(api.createAccountingSystemExportPackage).mockResolvedValueOnce(exportPackage);
 
     await renderAccountingScreen(data, "/accounting");
+
+    const profiles = await screen.findByLabelText("External GL mapping profiles");
+    expect(profiles).toHaveTextContent("Default fund QBO mapping");
+    expect(profiles).toHaveTextContent("Certified");
+    expect(profiles).toHaveTextContent("qbo-default-fund-certified");
 
     const packages = await screen.findByLabelText("External GL evidence packages");
     expect(packages).toHaveTextContent("External GL import evidence");
@@ -1525,6 +1839,28 @@ describe("AccountingScreen", () => {
     expect(packages).toHaveTextContent("Load Meridian ledger journal evidence");
     expect(packages).toHaveTextContent("GL reconciliation tie-out");
     expect(packages).toHaveTextContent("Resolve GL reconciliation breaks before approving close evidence.");
+
+    await userEvent.click(screen.getByRole("button", { name: "Create export package" }));
+
+    const retainedPackage = await screen.findByLabelText("External GL export package");
+    expect(retainedPackage).toHaveTextContent("external-gl-export-quickbooks-fixture-default-fund-20260131");
+    expect(retainedPackage).toHaveTextContent("Posting disabled");
+    expect(retainedPackage).toHaveTextContent("Draft");
+    expect(retainedPackage).toHaveTextContent("Validation issues");
+    expect(api.createAccountingSystemExportPackage).toHaveBeenCalledWith(expect.objectContaining({
+      actor: "browser-accounting-operator",
+      providerId: "quickbooks-fixture",
+      fundProfileId: "default-fund",
+      periodStart: "2026-01-01",
+      periodEnd: "2026-01-31",
+      mappingProfileId: "qbo-default-fund-certified",
+      requireBalancedReconciliation: true,
+      evidenceLinks: expect.arrayContaining([
+        "external-gl-mapping-profile:qbo-default-fund-certified",
+        "external-gl-reconciliation:gl-recon-qbo-fixture-20260131",
+        "quickbooks-fixture:trial-balance"
+      ])
+    }));
   });
 
   it("renders reconciliation, cash-flow, and reporting summaries", async () => {

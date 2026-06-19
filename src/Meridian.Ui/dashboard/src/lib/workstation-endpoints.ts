@@ -24,8 +24,11 @@ export const WORKSTATION_API_ENDPOINTS = {
   accountingConfigurationTemplates: UI_API_ROUTES.LedgerAccountingConfigurationTemplates,
   accountingConfigurationPostingRules: UI_API_ROUTES.LedgerAccountingConfigurationPostingRules,
   accountingConfigurationPreview: UI_API_ROUTES.LedgerAccountingConfigurationPreview,
+  accountingConfigurationPostingRuleDryRun: UI_API_ROUTES.LedgerAccountingConfigurationPostingRuleDryRun,
   accountingConfigurationActivate: UI_API_ROUTES.LedgerAccountingConfigurationActivate,
   accountingConfigurationAudit: UI_API_ROUTES.LedgerAccountingConfigurationAudit,
+  closeManagementPeriodPlan: UI_API_ROUTES.LedgerCloseManagementPeriodPlan,
+  closeManagementLateAdjustments: UI_API_ROUTES.LedgerCloseManagementLateAdjustments,
   manualJournalEntryWorkbench: UI_API_ROUTES.LedgerManualJournalEntryWorkbench,
   privateCapitalActivity: UI_API_ROUTES.LedgerPrivateCapitalActivity,
   privateCapitalFundEventRecord: UI_API_ROUTES.LedgerPrivateCapitalFundEventRecord,
@@ -36,6 +39,9 @@ export const WORKSTATION_API_ENDPOINTS = {
   manualJournalEntryDrafts: UI_API_ROUTES.LedgerManualJournalEntryDrafts,
   manualJournalEntryValidate: UI_API_ROUTES.LedgerManualJournalEntryValidate,
   manualJournalEntrySubmitApproval: UI_API_ROUTES.LedgerManualJournalEntrySubmitApproval,
+  manualJournalEntryLifecycleAction: UI_API_ROUTES.LedgerManualJournalEntryLifecycleAction,
+  accountingReportPackage: UI_API_ROUTES.LedgerReportsAccountingPackage,
+  accountingReportPackages: UI_API_ROUTES.LedgerReportsAccountingPackages,
   reporting: UI_API_ROUTES.WorkstationReporting,
   reportingStructuredExport: UI_API_ROUTES.WorkstationReportingStructuredExport,
   workflowSummary: UI_API_ROUTES.WorkstationWorkflowSummary,
@@ -213,7 +219,9 @@ export const ACCOUNTING_SYSTEM_API_ENDPOINTS = {
   providers: "/api/accounting-system/providers",
   importPreview: "/api/accounting-system/import/preview",
   importLatest: "/api/accounting-system/import/latest",
-  reconciliationLatest: "/api/accounting-system/reconciliation/latest"
+  reconciliationLatest: "/api/accounting-system/reconciliation/latest",
+  mappingProfiles: "/api/accounting-system/mapping-profiles",
+  exportPackages: "/api/accounting-system/export-packages"
 } as const;
 
 export const PLAID_API_ENDPOINTS = {

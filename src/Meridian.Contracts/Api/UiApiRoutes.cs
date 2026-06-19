@@ -112,6 +112,8 @@ public static class UiApiRoutes
     public const string AccountingSystemImportPreview = "/api/accounting-system/import/preview";
     public const string AccountingSystemImportLatest = "/api/accounting-system/import/latest";
     public const string AccountingSystemReconciliationLatest = "/api/accounting-system/reconciliation/latest";
+    public const string AccountingSystemMappingProfiles = "/api/accounting-system/mapping-profiles";
+    public const string AccountingSystemExportPackages = "/api/accounting-system/export-packages";
     public const string AccountingSystemQuickBooksOAuthStart = "/api/accounting-system/quickbooks/oauth/start";
     public const string AccountingSystemQuickBooksOAuthCallback = "/api/accounting-system/quickbooks/oauth/callback";
 
@@ -688,8 +690,11 @@ public static class UiApiRoutes
     public const string LedgerAccountingConfigurationTemplates = "/api/ledger/accounting-configuration/templates";
     public const string LedgerAccountingConfigurationPostingRules = "/api/ledger/accounting-configuration/posting-rules";
     public const string LedgerAccountingConfigurationPreview = "/api/ledger/accounting-configuration/preview";
+    public const string LedgerAccountingConfigurationPostingRuleDryRun = "/api/ledger/accounting-configuration/posting-rules/dry-run";
     public const string LedgerAccountingConfigurationActivate = "/api/ledger/accounting-configuration/activate";
     public const string LedgerAccountingConfigurationAudit = "/api/ledger/accounting-configuration/audit";
+    public const string LedgerCloseManagementPeriodPlan = "/api/ledger/close-management/period-plan/{workflowId:guid}";
+    public const string LedgerCloseManagementLateAdjustments = "/api/ledger/close-management/late-adjustments";
     public const string LedgerManualJournalEntryWorkbench = "/api/ledger/journal-entry-workbench";
     public const string LedgerPrivateCapitalActivity = "/api/ledger/private-capital/activity";
     public const string LedgerPrivateCapitalFundEventRecord = "/api/ledger/private-capital/fund-event-record";
@@ -700,8 +705,11 @@ public static class UiApiRoutes
     public const string LedgerManualJournalEntryDrafts = "/api/ledger/journal-entry-workbench/drafts";
     public const string LedgerManualJournalEntryValidate = "/api/ledger/journal-entry-workbench/validate";
     public const string LedgerManualJournalEntrySubmitApproval = "/api/ledger/journal-entry-workbench/submit-approval";
+    public const string LedgerManualJournalEntryLifecycleAction = "/api/ledger/journal-entry-workbench/lifecycle-action";
     public const string LedgerReportsTrialBalance = "/api/ledger/reports/trial-balance";
     public const string LedgerReportsPnlSummary = "/api/ledger/reports/pnl-summary";
+    public const string LedgerReportsAccountingPackage = "/api/ledger/reports/accounting-package";
+    public const string LedgerReportsAccountingPackages = "/api/ledger/reports/accounting-packages";
     public const string WorkstationSecurityMasterSearch = "/api/workstation/security-master/securities";
     public const string WorkstationSecurityMasterById = "/api/workstation/security-master/securities/{securityId:guid}";
     public const string WorkstationSecurityMasterHistory = "/api/workstation/security-master/securities/{securityId:guid}/history";

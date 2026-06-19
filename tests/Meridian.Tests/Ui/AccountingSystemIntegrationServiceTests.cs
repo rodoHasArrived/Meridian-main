@@ -5,6 +5,7 @@ using System.Threading.RateLimiting;
 using FluentAssertions;
 using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.Identity.Auth;
@@ -269,6 +270,97 @@ public sealed class AccountingSystemIntegrationServiceTests
     }
 
     [Fact]
+    public async Task ListProvidersAsync_IncludesPlannedXeroAndNetSuiteImportMappingsWithPostingDisabled()
+    {
+        var service = CreateService();
+
+        var providers = await service.ListProvidersAsync();
+
+        providers.Should().Contain(row =>
+            row.ProviderId == "xero" &&
+            row.State == AccountingSystemProviderStateDto.Planned &&
+            row.SupportsChartOfAccounts &&
+            row.SupportsJournalEntries &&
+            row.SupportsTrialBalance &&
+            !row.SupportsPosting);
+        providers.Should().Contain(row =>
+            row.ProviderId == "netsuite" &&
+            row.State == AccountingSystemProviderStateDto.Planned &&
+            row.SupportsChartOfAccounts &&
+            row.SupportsJournalEntries &&
+            row.SupportsTrialBalance &&
+            !row.SupportsPosting);
+    }
+
+    [Fact]
+    public async Task MappingProfiles_CertifiedProfileFeedsGuardedExportPackageWithoutEnablingPosting()
+    {
+        var service = CreateService();
+        var profile = CertifiedQuickBooksMappingProfile();
+
+        var upserted = await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            FundProfileId: "default-fund",
+            EvidenceLinks: ["approval:external-gl-mapping:qbo-default"]));
+        var profiles = await service.ListMappingProfilesAsync("quickbooks-fixture", "default-fund");
+        var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: "quickbooks-fixture",
+            FundProfileId: "default-fund",
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: ["approval:export-package:qbo-default"]));
+
+        upserted.ProviderId.Should().Be("quickbooks-fixture");
+        upserted.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
+        profiles.Should().ContainSingle(row => row.ProfileId == profile.ProfileId);
+        package.PostingEnabled.Should().BeFalse();
+        package.PostingDisabledReason.Should().Contain("Guarded export package only");
+        package.Certification.Should().NotBeNull();
+        package.Certification!.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+        package.ValidationIssues.Should().ContainSingle(issue => issue.Code == "LiveExternalPostingDisabled" && issue.Severity == AccountingConfigurationValidationSeverityDto.Info);
+        package.ValidationIssues.Should().NotContain(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        package.EvidenceLinks.Should().Contain("external-gl-mapping-profile:qbo-default-fund-certified");
+        package.EvidenceLinks.Should().Contain(link => link.StartsWith("external-gl-reconciliation:", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task CreateExportPackageAsync_ForPlannedProviderRequiresImportReconciliationBeforeCertification()
+    {
+        var service = CreateService();
+        var profile = CertifiedQuickBooksMappingProfile() with
+        {
+            ProfileId = "netsuite-default-fund-certified",
+            ProviderId = "netsuite",
+            DisplayName = "Default fund NetSuite mapping"
+        };
+        await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            ProviderId: "netsuite",
+            FundProfileId: "default-fund"));
+
+        var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: "netsuite",
+            FundProfileId: "default-fund",
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId));
+
+        package.PostingEnabled.Should().BeFalse();
+        package.Certification.Should().NotBeNull();
+        package.Certification!.State.Should().Be(AccountingCertificationStateDto.Draft);
+        package.ValidationIssues.Should().Contain(issue =>
+            issue.Code == "MissingExternalGlReconciliation" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical &&
+            issue.Message.Contains("netsuite", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task ImportAsync_PropagatesCancellation()
     {
         var service = CreateService();
@@ -287,15 +379,47 @@ public sealed class AccountingSystemIntegrationServiceTests
 
         var providersResponse = await app.GetTestClient().GetAsync("/api/accounting-system/providers");
         var reconciliationResponse = await app.GetTestClient().GetAsync("/api/accounting-system/reconciliation/latest");
+        var mappingProfileResponse = await app.GetTestClient().PostAsync(
+            "/api/accounting-system/mapping-profiles",
+            JsonContent(new AccountingSystemMappingProfileUpsertRequestDto(
+                CertifiedQuickBooksMappingProfile(),
+                "endpoint-operator",
+                FundProfileId: "default-fund",
+                EvidenceLinks: ["approval:external-gl-mapping:endpoint"])));
+        var mappingProfilesResponse = await app.GetTestClient().GetAsync("/api/accounting-system/mapping-profiles?providerId=quickbooks-fixture&fundProfileId=default-fund");
+        var exportPackageResponse = await app.GetTestClient().PostAsync(
+            "/api/accounting-system/export-packages",
+            JsonContent(new AccountingSystemExportPackageRequestDto(
+                "endpoint-operator",
+                ProviderId: "quickbooks-fixture",
+                FundProfileId: "default-fund",
+                PeriodStart: new DateOnly(2026, 1, 1),
+                PeriodEnd: new DateOnly(2026, 1, 31),
+                MappingProfileId: "qbo-default-fund-certified",
+                RequireBalancedReconciliation: false)));
 
         providersResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         reconciliationResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        mappingProfileResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        mappingProfilesResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        exportPackageResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var providers = await ReadAsync<AccountingSystemProviderDto[]>(providersResponse);
         var reconciliation = await ReadAsync<AccountingSystemReconciliationSummaryDto>(reconciliationResponse);
+        var mappingProfile = await ReadAsync<ExternalGlMappingProfileDto>(mappingProfileResponse);
+        var mappingProfiles = await ReadAsync<ExternalGlMappingProfileDto[]>(mappingProfilesResponse);
+        var exportPackage = await ReadAsync<ExternalGlExportPackageDto>(exportPackageResponse);
         providers.Should().Contain(row => row.ProviderId == "quickbooks-fixture" && row.State == AccountingSystemProviderStateDto.Available);
         providers.Should().Contain(row => row.ProviderId == "quickbooks" && row.State == AccountingSystemProviderStateDto.Planned);
+        providers.Should().Contain(row => row.ProviderId == "xero" && row.State == AccountingSystemProviderStateDto.Planned && !row.SupportsPosting);
+        providers.Should().Contain(row => row.ProviderId == "netsuite" && row.State == AccountingSystemProviderStateDto.Planned && !row.SupportsPosting);
         reconciliation.ProviderId.Should().Be("quickbooks-fixture");
         reconciliation.PostingEnabled.Should().BeFalse();
+        mappingProfile.ProviderId.Should().Be("quickbooks-fixture");
+        mappingProfile.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
+        mappingProfiles.Should().ContainSingle(row => row.ProfileId == "qbo-default-fund-certified");
+        exportPackage.PostingEnabled.Should().BeFalse();
+        exportPackage.Certification.Should().NotBeNull();
+        exportPackage.Certification!.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
     }
 
     [Fact]
@@ -451,6 +575,36 @@ public sealed class AccountingSystemIntegrationServiceTests
         result.Should().NotBeNull($"expected {typeof(T).Name}, got {json}");
         return result!;
     }
+
+    private static ExternalGlMappingProfileDto CertifiedQuickBooksMappingProfile()
+        => new(
+            "qbo-default-fund-certified",
+            "quickbooks-fixture",
+            "Default fund QBO mapping",
+            new DateTimeOffset(2026, 2, 1, 0, 0, 0, TimeSpan.Zero),
+            [
+                new DimensionMappingProfileDto(
+                    "qbo-default-fund-dimensions",
+                    "Default fund dimensions",
+                    "quickbooks-fixture",
+                    new LedgerDimensionSetDto(FundId: "default-fund", EntityId: "fund-entity-main"),
+                    new LedgerDimensionSetDto(
+                        FundId: "Class:DefaultFund",
+                        EntityId: "Location:Main",
+                        ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["Class"] = "DefaultFund",
+                            ["Location"] = "Main"
+                        }),
+                    AccountingCertificationStateDto.Certified)
+            ],
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Assets:Cash:Operating"] = "qbo-1000",
+                ["Income:Investment"] = "qbo-4000",
+                ["Expenses:Trading"] = "qbo-6100"
+            },
+            AccountingCertificationStateDto.Certified);
 
     private sealed class StaticLedgerJournalStore(
         LedgerBookRecord book,

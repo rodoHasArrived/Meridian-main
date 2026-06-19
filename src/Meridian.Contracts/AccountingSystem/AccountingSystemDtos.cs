@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Ledger;
 
 namespace Meridian.Contracts.AccountingSystem;
 
@@ -210,4 +211,37 @@ public sealed record AccountingSystemReconciliationRowDto(
     public IReadOnlyList<string> MeridianEvidenceReferences { get; init; } = [];
 
     public IReadOnlyList<string> EvidenceReferences { get; init; } = [];
+}
+
+public sealed record AccountingSystemMappingProfileUpsertRequestDto(
+    ExternalGlMappingProfileDto Profile,
+    string Actor,
+    string? ProviderId = null,
+    string? FundProfileId = null,
+    Guid? LedgerBookId = null,
+    string? CorrelationId = null,
+    IReadOnlyList<string>? EvidenceLinks = null)
+{
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
+}
+
+public sealed record AccountingSystemExportPackageRequestDto(
+    string Actor,
+    string? ProviderId = null,
+    string? FundProfileId = null,
+    Guid? LedgerBookId = null,
+    DateOnly? PeriodStart = null,
+    DateOnly? PeriodEnd = null,
+    string? MappingProfileId = null,
+    IReadOnlyList<Guid>? JournalEntryIds = null,
+    bool RequireBalancedReconciliation = true,
+    IReadOnlyList<string>? EvidenceLinks = null,
+    string? CorrelationId = null)
+{
+    public IReadOnlyList<Guid> JournalEntryIds { get; init; } =
+        JournalEntryIds ?? [];
+
+    public IReadOnlyList<string> EvidenceLinks { get; init; } =
+        EvidenceLinks ?? [];
 }

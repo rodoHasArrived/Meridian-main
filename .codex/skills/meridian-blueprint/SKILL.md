@@ -96,6 +96,12 @@ Prefer this structure unless the user asks for something narrower:
 - Prefer behavior-level grouping over file-by-file churn lists.
 - If the request is underspecified, make the minimum safe assumptions and label them clearly.
 
+## Automation Scripts
+
+- `scripts/blueprint_output_check.py` validates the expected receipt and blueprint section shape.
+- `scripts/run_evals.py` runs deterministic dry-run eval fixtures for the skill package.
+- `scripts/score_eval.py` scores blueprint outputs against a compact rubric.
+
 ## Output Standards
 
 - State the selected goal, assumptions, and out-of-scope items.

@@ -7,7 +7,7 @@ record baseline, active W5X productization targets, and no-mobile development po
 
 Last verified against `README.md`, `docs/roadmap/data/*.yml`,
 `docs/roadmap/generated/ROADMAP_SUMMARY.md`, and `docs/ai/assistant-workflow-contract.md`:
-2026-06-04.
+2026-06-19.
 
 ## Current Skills
 
@@ -124,8 +124,9 @@ different work:
 - For Codex-only implementation workflow changes, keep the edit in `.codex/skills/`, preserve
   disjoint-worker ownership, run narrow validation first, skip purposeless cosmetic churn, and keep
   code/doc evidence paired in the final response.
-- Keep workflow disclosure concise and Codex-local: state phase, scope, evidence, blockers, and
-  validation intent without emitting full command transcripts unless requested.
+- Keep workflow disclosure concise and aligned to the canonical AI User Notification template:
+  state phase, intent understood, current action, evidence/source, next gate, and validation intent
+  without emitting full command transcripts unless requested.
 - After selecting the narrowest applicable skill, include the skill selection receipt from
   `_shared/codex-execution-contract.md` in the first substantive response: selected skill or
   `none`, mode, reason, and required opening shape in the four-field `Skill Selection` block. For
@@ -134,6 +135,10 @@ different work:
 - Treat `make ai-verify`, `make ai-arch-check`, and the CI `Validate AI contract drift` step as
   required gates for AI/tooling changes. Keep `ai-audit*`, `ai-report`, docs-drift/freshness, and
   archive/maintenance targets as advisory or reporting lanes unless a task explicitly promotes them.
+- Use
+  `python .codex/skills/meridian-codex-skill-builder/scripts/skill_package_audit.py --skill <skill> --summary`
+  for repo-local Codex package completeness. Use `python build/scripts/docs/validate-skill-packages.py`
+  for portable Agent Skills and Claude mirror packages unless that script is explicitly changed.
 - For source/docs alignment, run `python build/scripts/docs/validate-doc-hashes.py --summary`.
   Refresh reviewed stale module entries with
   `python build/scripts/docs/validate-doc-hashes.py --write-module <MODULE_ID> --summary`; reserve

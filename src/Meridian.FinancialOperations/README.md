@@ -35,6 +35,12 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `PrivateCapital/PrivateCapitalCloseCockpitService.cs` - private-capital close cockpit proof projection for partner capital tie-outs, expense/fee/allocation review, management-company operating records, NAV support packages, administrator-versus-Meridian shadow NAV tie-outs, close-control checklist evidence, close-package evidence, approval history, and period-lock readiness.
 - `AccountingClose/` - deterministic journal posting, trial-balance projection, roll-forward,
   FX translation, source-linked audit rows, and period-close evidence gates.
+- `AccountingClose/AccountingCloseManagementService.cs` - close-period plan projection over
+  Operations Continuity workflow state, checklist dependencies, approval sign-offs, period-lock
+  evidence, file-backed late-adjustment requests, and materiality policy validation.
+- `AccountingClose/AccountingReportPackageService.cs` - accounting report package assembly for
+  financial statements, investor capital statements, realized gain/loss, NAV packages,
+  certification state, validation issues, retained package history, and restatement workflow metadata.
 - `Ledger/AccountingPolicyService.cs` - accounting-basis policy creation, resolution, listing,
   and projection metadata stamping for ledger writes.
 - `Ledger/TextJournal/` - ledger-compatible text-journal parsing, validation, report rendering,
@@ -155,11 +161,25 @@ portfolio/ledger candidates with the contracts-owned Security Master query surfa
 matches and breaks through the F# ledger reconciliation kernel instead of Application-local
 service/logging ownership.
 
-Accounting-system GL evidence integration lives here as provider-neutral Financial Operations behavior. The integration service lists accounting-system providers, chooses configured QuickBooks Online evidence when available, falls back to the read-only fixture provider when live company evidence is not configured, retains latest imports by provider/fund/book, and reconciles external trial-balance rows against Meridian-owned ledger totals when a ledger store is available. Reconciliation rows retain both provider-side evidence refs and Meridian ledger-entry, journal-entry, period, and source refs; the summary also publishes external-import, Meridian-ledger, and tie-out evidence package posture so close support can distinguish missing ledger proof from unresolved GL breaks. The tie-out evidence package classifies missing-external, missing-Meridian, and variance breaks into operator required actions for assignment, retained provider support, ledger remediation, and close approval evidence. UI Shared maps endpoints and supplies credential-backed provider registration, but it does not own GL evidence reconciliation or posting-disable posture.
+Accounting-system GL evidence integration lives here as provider-neutral Financial Operations behavior. The integration service lists accounting-system providers, chooses configured QuickBooks Online evidence when available, falls back to the read-only fixture provider when live company evidence is not configured, and exposes planned import-first Xero and NetSuite rows with posting disabled. It retains latest imports by provider/fund/book, reconciles external trial-balance rows against Meridian-owned ledger totals when a ledger store is available, and stores scoped external-GL mapping profiles for account and dimension mappings. Reconciliation rows retain both provider-side evidence refs and Meridian ledger-entry, journal-entry, period, and source refs; the summary also publishes external-import, Meridian-ledger, and tie-out evidence package posture so close support can distinguish missing ledger proof from unresolved GL breaks. The tie-out evidence package classifies missing-external, missing-Meridian, and variance breaks into operator required actions for assignment, retained provider support, ledger remediation, and close approval evidence. Guarded export-package creation requires a certified mapping profile and import/reconciliation evidence before it can reach ready-for-review certification state, and unresolved GL breaks remain critical validation issues when balanced reconciliation is required. Export packages remain review artifacts only: live external GL posting is disabled until a separately approved adapter and release gate publish Meridian-owned ledger entries. UI Shared maps endpoints and supplies credential-backed provider registration, but it does not own GL evidence reconciliation, mapping validation, export-package safeguards, or posting-disable posture.
 
 Accounting close projections live here as deterministic Financial Operations behavior. Journal
 posting, FX translation, trial-balance, roll-forward, source-linked audit, and close evidence gates
 are exposed to UI Services and WPF without making those surfaces own accounting-close state.
+`AccountingCloseManagementService` now projects a `ClosePeriodPlanDto` from the Operations
+Continuity workflow, converting workflow checklist tasks into dependency-aware close tasks,
+Operations approvals into sign-off rows, close-package publication into period-lock posture, and
+retained late-adjustment requests into materiality-policy validation issues. When `StorageOptions`
+is registered, late-adjustment requests are retained through an atomic JSON snapshot under the
+configured storage root and reproject after restart. The late-adjustment command remains a governed
+close review artifact; it does not mutate posted journal entries and material adjustments require
+controller approval before final close certification.
+`AccountingReportPackageService` assembles the implementation-grade report package DTO family:
+financial statement package, investor capital statement, realized gain/loss report, NAV package,
+certification, validation issues, and optional restatement workflow metadata. It carries close-plan
+validation into the package certification state, keeps packages ready-for-review when warnings such
+as an unlocked period remain, returns draft state when blocking close-plan evidence is missing, and
+retains package history through an atomic JSON snapshot when `StorageOptions` is registered.
 
 Accounting-basis policy and ledger text-journal reporting also live here. Application composition
 registers the policy/projection services and the CLI command invokes the text-journal report service,

@@ -300,7 +300,10 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
         var beforeHash = Hash(workspace);
         RequireText(request.Rule.RuleId, nameof(request.Rule.RuleId));
         RequireText(request.Rule.SourceEventType, nameof(request.Rule.SourceEventType));
-        RequireText(request.Rule.TemplateId, nameof(request.Rule.TemplateId));
+        if (request.Rule.GeneratedPostings.Count == 0)
+        {
+            RequireText(request.Rule.TemplateId, nameof(request.Rule.TemplateId));
+        }
 
         var rules = workspace.PostingRules
             .Where(item => !string.Equals(item.RuleId, request.Rule.RuleId, StringComparison.OrdinalIgnoreCase))
@@ -369,6 +372,118 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             totalCredits,
             lines,
             issues);
+    }
+
+    public async Task<RuleDryRunResultDto> DryRunPostingRuleAsync(
+        RuleDryRunRequestDto request,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(request);
+        var workspace = await LoadWorkspaceAsync(NormalizeFundProfileId(request.FundProfileId), request.LedgerBookId, ct).ConfigureAwait(false);
+        var chartByPath = workspace.ChartOfAccounts.ToDictionary(item => item.Path, StringComparer.OrdinalIgnoreCase);
+        var templateById = workspace.JournalTemplates
+            .Where(static item => !item.IsArchived)
+            .ToDictionary(static item => item.TemplateId, StringComparer.OrdinalIgnoreCase);
+        var candidates = workspace.PostingRules
+            .Where(rule => !rule.IsArchived)
+            .Where(rule => string.Equals(rule.SourceEventType, request.SourceEventType, StringComparison.OrdinalIgnoreCase))
+            .Where(rule => IsEffective(rule, request.EffectiveDate))
+            .OrderByDescending(static rule => rule.Priority)
+            .ThenBy(static rule => rule.RuleId, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        var matches = new List<AccountingRuleDryRunMatchDto>(candidates.Length);
+        var issues = new List<AccountingConfigurationValidationIssueDto>();
+        PostingRuleDto? selectedRule = null;
+
+        foreach (var rule in candidates)
+        {
+            var ruleIssues = new List<AccountingConfigurationValidationIssueDto>();
+            var explanations = new List<string>();
+            if (!templateById.ContainsKey(rule.TemplateId) && rule.GeneratedPostings.Count == 0)
+            {
+                ruleIssues.Add(Issue("rule.template-missing", AccountingConfigurationValidationSeverityDto.Critical, $"Posting rule '{rule.RuleId}' references missing template '{rule.TemplateId}'.", rule.RuleId, "Select an active template or configure generated posting lines."));
+            }
+
+            var scopeMatches = MatchesScope(rule.Scope, request.Dimensions, request.CounterpartyId);
+            if (!scopeMatches)
+            {
+                explanations.Add("Rule scope does not match the dry-run dimensions.");
+            }
+
+            var conditionsMatch = EvaluateConditions(rule, request, ruleIssues, explanations);
+            var isMatched = scopeMatches && conditionsMatch && ruleIssues.All(issue => issue.Severity != AccountingConfigurationValidationSeverityDto.Critical);
+            if (isMatched && selectedRule is null)
+            {
+                selectedRule = rule;
+            }
+
+            matches.Add(new AccountingRuleDryRunMatchDto(
+                rule.RuleId,
+                rule.DisplayName,
+                rule.RuleVersion,
+                rule.Priority,
+                isMatched,
+                explanations.Count == 0 ? ["Rule matched source event, effective date, scope, and conditions."] : explanations,
+                ruleIssues));
+        }
+
+        if (candidates.Length == 0)
+        {
+            issues.Add(Issue("rule.none", AccountingConfigurationValidationSeverityDto.Critical, $"No active posting rule matched source event '{request.SourceEventType}' for {request.EffectiveDate:yyyy-MM-dd}.", request.SourceEventType, "Create an effective-dated posting rule for this source event."));
+        }
+
+        IReadOnlyList<GeneratedPostingLineDto> generatedPostingLines = selectedRule is null
+            ? []
+            : BuildGeneratedPostingLines(selectedRule, templateById.GetValueOrDefault(selectedRule.TemplateId), request);
+        var previewLines = generatedPostingLines
+            .Select(line =>
+            {
+                chartByPath.TryGetValue(line.AccountPath, out var account);
+                return new AccountingJournalPreviewLineDto(
+                    line.AccountPath,
+                    account?.AccountName ?? line.AccountPath,
+                    line.Side,
+                    line.Amount,
+                    line.Currency,
+                    line.Description);
+            })
+            .ToArray();
+
+        foreach (var line in generatedPostingLines)
+        {
+            if (!chartByPath.TryGetValue(line.AccountPath, out var account))
+            {
+                issues.Add(Issue("rule.generated-account-missing", AccountingConfigurationValidationSeverityDto.Critical, $"Generated posting line '{line.LineId}' references missing account path '{line.AccountPath}'.", line.LineId, "Map generated postings to active chart accounts."));
+            }
+            else if (account.IsArchived)
+            {
+                issues.Add(Issue("rule.generated-account-archived", AccountingConfigurationValidationSeverityDto.Critical, $"Generated posting line '{line.LineId}' references archived account path '{line.AccountPath}'.", line.LineId, "Map generated postings to active chart accounts."));
+            }
+        }
+
+        var totalDebits = generatedPostingLines.Where(static line => line.Side == AccountingTemplateLineSideDto.Debit).Sum(static line => line.Amount);
+        var totalCredits = generatedPostingLines.Where(static line => line.Side == AccountingTemplateLineSideDto.Credit).Sum(static line => line.Amount);
+        var isBalanced = generatedPostingLines.Count > 0 && totalDebits == totalCredits;
+        if (selectedRule is not null && !isBalanced)
+        {
+            issues.Add(Issue("rule.generated-unbalanced", AccountingConfigurationValidationSeverityDto.Critical, $"Posting rule '{selectedRule.RuleId}' generated unbalanced lines: debits={totalDebits}, credits={totalCredits}.", selectedRule.RuleId, "Adjust formulas, allocations, or generated posting lines so debits equal credits."));
+        }
+
+        issues.AddRange(matches.SelectMany(static match => match.ValidationIssues));
+        return new RuleDryRunResultDto(
+            workspace.FundProfileId,
+            request.LedgerBookId ?? workspace.LedgerBookId,
+            request.SourceEventType,
+            request.EffectiveDate,
+            request.EventAmount,
+            string.IsNullOrWhiteSpace(request.Currency) ? "USD" : request.Currency.Trim().ToUpperInvariant(),
+            isBalanced && issues.All(static issue => issue.Severity != AccountingConfigurationValidationSeverityDto.Critical),
+            selectedRule?.RuleId,
+            matches,
+            previewLines,
+            issues.OrderByDescending(static issue => issue.Severity).ThenBy(static issue => issue.Code, StringComparer.OrdinalIgnoreCase).ToArray(),
+            generatedPostingLines);
     }
 
     public async Task<AccountingConfigurationWorkspaceDto> ActivateAsync(
@@ -480,6 +595,159 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             : books;
     }
 
+    private static bool IsEffective(PostingRuleDto rule, DateOnly effectiveDate)
+        => (!rule.EffectiveFrom.HasValue || rule.EffectiveFrom.Value <= effectiveDate) &&
+           (!rule.EffectiveTo.HasValue || rule.EffectiveTo.Value >= effectiveDate);
+
+    private static bool MatchesScope(LedgerDimensionSetDto? ruleScope, LedgerDimensionSetDto? eventScope, string? counterpartyId)
+    {
+        if (ruleScope is null)
+        {
+            return true;
+        }
+
+        return MatchesScopeValue(ruleScope.FundId, eventScope?.FundId) &&
+               MatchesScopeValue(ruleScope.EntityId, eventScope?.EntityId) &&
+               MatchesScopeValue(ruleScope.SleeveId, eventScope?.SleeveId) &&
+               MatchesScopeValue(ruleScope.StrategyId, eventScope?.StrategyId) &&
+               MatchesScopeValue(ruleScope.InvestorId, eventScope?.InvestorId) &&
+               MatchesScopeValue(ruleScope.CapitalAccountId, eventScope?.CapitalAccountId) &&
+               (!ruleScope.InstrumentId.HasValue || ruleScope.InstrumentId == eventScope?.InstrumentId) &&
+               MatchesScopeValue(ruleScope.TaxLotId, eventScope?.TaxLotId) &&
+               MatchesScopeValue(ruleScope.CostCenterId, eventScope?.CostCenterId) &&
+               MatchesScopeValue(ruleScope.CounterpartyId, eventScope?.CounterpartyId ?? counterpartyId);
+    }
+
+    private static bool MatchesScopeValue(string? expected, string? actual)
+        => string.IsNullOrWhiteSpace(expected) || string.Equals(expected.Trim(), actual?.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private static bool EvaluateConditions(
+        PostingRuleDto rule,
+        RuleDryRunRequestDto request,
+        List<AccountingConfigurationValidationIssueDto> issues,
+        List<string> explanations)
+    {
+        var allMatched = true;
+        foreach (var condition in rule.Conditions)
+        {
+            var matched = EvaluateCondition(condition, request);
+            if (!matched && condition.IsRequired)
+            {
+                allMatched = false;
+                explanations.Add($"Required condition '{condition.ConditionId}' did not match.");
+            }
+            else if (matched)
+            {
+                explanations.Add($"Condition '{condition.ConditionId}' matched.");
+            }
+
+            if (string.IsNullOrWhiteSpace(condition.Field))
+            {
+                issues.Add(Issue("rule.condition-field-missing", AccountingConfigurationValidationSeverityDto.Critical, $"Condition '{condition.ConditionId}' is missing a field.", condition.ConditionId, "Select a dry-run field for this rule condition."));
+            }
+        }
+
+        return allMatched;
+    }
+
+    private static bool EvaluateCondition(AccountingRuleConditionDto condition, RuleDryRunRequestDto request)
+    {
+        var actual = ResolveConditionField(condition.Field, request);
+        return condition.Operator switch
+        {
+            AccountingRuleConditionOperatorDto.Equals => string.Equals(actual, condition.Value, StringComparison.OrdinalIgnoreCase),
+            AccountingRuleConditionOperatorDto.NotEquals => !string.Equals(actual, condition.Value, StringComparison.OrdinalIgnoreCase),
+            AccountingRuleConditionOperatorDto.Contains => actual?.Contains(condition.Value ?? string.Empty, StringComparison.OrdinalIgnoreCase) == true,
+            AccountingRuleConditionOperatorDto.AmountGreaterThanOrEqual => request.EventAmount >= ParseDecimal(condition.Value),
+            AccountingRuleConditionOperatorDto.AmountLessThanOrEqual => request.EventAmount <= ParseDecimal(condition.Value),
+            AccountingRuleConditionOperatorDto.AmountBetween => request.EventAmount >= ParseDecimal(condition.Value) && request.EventAmount <= ParseDecimal(condition.SecondValue),
+            AccountingRuleConditionOperatorDto.IsPresent => !string.IsNullOrWhiteSpace(actual),
+            _ => false
+        };
+    }
+
+    private static string? ResolveConditionField(string field, RuleDryRunRequestDto request)
+    {
+        var dimensions = request.Dimensions;
+        return field.Trim().ToLowerInvariant() switch
+        {
+            "sourceeventtype" or "source_event_type" => request.SourceEventType,
+            "currency" => request.Currency,
+            "counterparty" or "counterpartyid" or "counterparty_id" => request.CounterpartyId ?? dimensions?.CounterpartyId,
+            "fund" or "fundid" or "fund_id" => dimensions?.FundId,
+            "entity" or "entityid" or "entity_id" => dimensions?.EntityId,
+            "sleeve" or "sleeveid" or "sleeve_id" => dimensions?.SleeveId,
+            "strategy" or "strategyid" or "strategy_id" => dimensions?.StrategyId,
+            "investor" or "investorid" or "investor_id" => dimensions?.InvestorId,
+            "capitalaccount" or "capitalaccountid" or "capital_account_id" => dimensions?.CapitalAccountId,
+            "instrument" or "instrumentid" or "instrument_id" => dimensions?.InstrumentId?.ToString("D"),
+            "taxlot" or "taxlotid" or "tax_lot_id" => dimensions?.TaxLotId,
+            "costcenter" or "costcenterid" or "cost_center_id" => dimensions?.CostCenterId,
+            "instrumentsymbol" or "instrument_symbol" => request.InstrumentSymbol,
+            _ => dimensions?.ExternalGlDimensions.TryGetValue(field, out var value) == true ? value : null
+        };
+    }
+
+    private static decimal ParseDecimal(string? value)
+        => decimal.TryParse(value, out var result) ? result : decimal.Zero;
+
+    private static IReadOnlyList<GeneratedPostingLineDto> BuildGeneratedPostingLines(
+        PostingRuleDto rule,
+        JournalEntryTemplateDto? template,
+        RuleDryRunRequestDto request)
+    {
+        if (rule.GeneratedPostings.Count > 0)
+        {
+            return rule.GeneratedPostings
+                .Select(line => line with
+                {
+                    Amount = ResolveFormulaAmount(line.AmountFormulaId, line.Amount, rule.Formulas, request.EventAmount),
+                    Currency = string.IsNullOrWhiteSpace(line.Currency) ? NormalizeCurrency(request.Currency) : line.Currency.Trim().ToUpperInvariant(),
+                    Dimensions = line.Dimensions ?? request.Dimensions
+                })
+                .ToArray();
+        }
+
+        return template is null
+            ? []
+            : template.Lines
+                .Select(line => new GeneratedPostingLineDto(
+                    line.LineId,
+                    line.AccountPath,
+                    line.Side,
+                    "template.amount",
+                    line.Amount == 0m ? request.EventAmount : line.Amount,
+                    string.IsNullOrWhiteSpace(line.Currency) ? NormalizeCurrency(request.Currency) : line.Currency.Trim().ToUpperInvariant(),
+                    request.Dimensions,
+                    line.Description))
+                .ToArray();
+    }
+
+    private static decimal ResolveFormulaAmount(
+        string formulaId,
+        decimal fallbackAmount,
+        IReadOnlyList<AccountingRuleFormulaDto> formulas,
+        decimal eventAmount)
+    {
+        var formula = formulas.FirstOrDefault(item => string.Equals(item.FormulaId, formulaId, StringComparison.OrdinalIgnoreCase));
+        if (formula is null)
+        {
+            return fallbackAmount == 0m ? eventAmount : fallbackAmount;
+        }
+
+        return formula.Kind switch
+        {
+            AccountingRuleFormulaKindDto.SourceAmount => eventAmount,
+            AccountingRuleFormulaKindDto.PercentageOfSourceAmount => Math.Round(eventAmount * formula.Value, 2, MidpointRounding.AwayFromZero),
+            AccountingRuleFormulaKindDto.FixedAmount => formula.Value,
+            AccountingRuleFormulaKindDto.AllocationResidual => fallbackAmount == 0m ? eventAmount : fallbackAmount,
+            _ => fallbackAmount
+        };
+    }
+
+    private static string NormalizeCurrency(string? currency)
+        => string.IsNullOrWhiteSpace(currency) ? "USD" : currency.Trim().ToUpperInvariant();
+
     private static IReadOnlyList<AccountingConfigurationValidationIssueDto> Validate(AccountingConfigurationWorkspaceDto workspace)
     {
         var issues = new List<AccountingConfigurationValidationIssueDto>();
@@ -509,9 +777,29 @@ public sealed class AccountingConfigurationService : IAccountingConfigurationSer
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var rule in workspace.PostingRules.Where(rule => !rule.IsArchived))
         {
-            if (!templateIds.Contains(rule.TemplateId))
+            if (rule.EffectiveFrom.HasValue && rule.EffectiveTo.HasValue && rule.EffectiveFrom.Value > rule.EffectiveTo.Value)
+            {
+                issues.Add(Issue("posting-rule.effective-date-range", AccountingConfigurationValidationSeverityDto.Critical, $"Posting rule '{rule.RuleId}' has an effective-from date after effective-to.", rule.RuleId, "Correct the effective-dated rule window."));
+            }
+
+            if (rule.GeneratedPostings.Count == 0 && !templateIds.Contains(rule.TemplateId))
             {
                 issues.Add(Issue("posting-rule.template-missing", AccountingConfigurationValidationSeverityDto.Critical, $"Posting rule '{rule.RuleId}' references missing template '{rule.TemplateId}'.", rule.RuleId, "Point the rule at an active journal template."));
+            }
+
+            if (rule.GeneratedPostings.Count > 0)
+            {
+                var generatedDebits = rule.GeneratedPostings.Where(static line => line.Side == AccountingTemplateLineSideDto.Debit).Sum(static line => line.Amount);
+                var generatedCredits = rule.GeneratedPostings.Where(static line => line.Side == AccountingTemplateLineSideDto.Credit).Sum(static line => line.Amount);
+                if (generatedDebits != generatedCredits && rule.GeneratedPostings.All(static line => line.Amount > 0m))
+                {
+                    issues.Add(Issue("posting-rule.generated-unbalanced", AccountingConfigurationValidationSeverityDto.Warning, $"Posting rule '{rule.RuleId}' generated-posting static amounts are not balanced.", rule.RuleId, "Confirm formula-driven generated postings balance during dry run."));
+                }
+
+                foreach (var line in rule.GeneratedPostings.Where(static line => string.IsNullOrWhiteSpace(line.AccountPath)))
+                {
+                    issues.Add(Issue("posting-rule.generated-account-missing", AccountingConfigurationValidationSeverityDto.Critical, $"Posting rule '{rule.RuleId}' has a generated line without an account path.", line.LineId, "Choose a chart account for every generated posting line."));
+                }
             }
         }
 
@@ -759,7 +1047,7 @@ public sealed class FileManualJournalEntryDraftStore : IManualJournalEntryDraftS
     private sealed record ManualJournalEntryDraftSnapshot(IReadOnlyList<ManualJournalEntryDraftDto> Drafts);
 }
 
-public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWorkbenchService
+public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWorkbenchService, IManualJournalEntryLifecycleService
 {
     private const string DefaultFundProfileId = "default-fund";
     private const decimal BalanceTolerance = 0.000001m;
@@ -3080,6 +3368,235 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
         return submitted;
     }
 
+    public async Task<JournalEntryLifecycleActionResultDto> ApplyLifecycleActionAsync(
+        JournalEntryLifecycleActionRequestDto request,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        ArgumentNullException.ThrowIfNull(request);
+        EnsureHumanOrigin(request.ActionOrigin, $"apply journal entry lifecycle action '{request.Action}'");
+        var fundProfileId = NormalizeFundProfileId(request.FundProfileId);
+        var draft = await _draftStore.GetAsync(fundProfileId, request.JournalEntryId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Manual journal entry '{request.JournalEntryId:D}' was not found.");
+        if (draft.Version != request.Version)
+        {
+            throw new InvalidOperationException("Manual journal entry draft version is stale.");
+        }
+
+        if (request.PeriodIsLocked &&
+            request.Action is JournalEntryLifecycleActionDto.Post or JournalEntryLifecycleActionDto.Reverse or JournalEntryLifecycleActionDto.Rebook)
+        {
+            throw new InvalidOperationException("Manual journal entry lifecycle action is blocked because the accounting period is locked after close.");
+        }
+
+        var validated = await NormalizeAndValidateAsync(draft, allowIncomplete: false, ct).ConfigureAwait(false);
+        var now = DateTimeOffset.UtcNow;
+        return request.Action switch
+        {
+            JournalEntryLifecycleActionDto.Validate => await ApplyStatusTransitionAsync(
+                validated,
+                request,
+                validated.ValidationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
+                    ? ManualJournalEntryStatusDto.NeedsFix
+                    : validated.Status,
+                "manual-je.validate",
+                now,
+                ct).ConfigureAwait(false),
+            JournalEntryLifecycleActionDto.Submit => new JournalEntryLifecycleActionResultDto(
+                await SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
+                    request.JournalEntryId,
+                    request.FundProfileId,
+                    request.Actor,
+                    request.Version,
+                    request.Notes,
+                    request.CorrelationId,
+                    request.EvidenceLinks,
+                    request.ActionOrigin), ct).ConfigureAwait(false),
+                BuildTransition(validated.Status, ManualJournalEntryStatusDto.Submitted, request, now)),
+            JournalEntryLifecycleActionDto.Approve => await ApplyStatusTransitionAsync(
+                RequireStatus(validated, ManualJournalEntryStatusDto.Submitted, request.Action),
+                request,
+                ManualJournalEntryStatusDto.Approved,
+                "manual-je.approve",
+                now,
+                ct,
+                item => item with { ApprovedAtUtc = now, ApprovedBy = RequireText(request.Actor, nameof(request.Actor)) }).ConfigureAwait(false),
+            JournalEntryLifecycleActionDto.Reject => await ApplyStatusTransitionAsync(
+                RequireStatus(validated, ManualJournalEntryStatusDto.Submitted, request.Action),
+                request,
+                ManualJournalEntryStatusDto.Rejected,
+                "manual-je.reject",
+                now,
+                ct).ConfigureAwait(false),
+            JournalEntryLifecycleActionDto.Post => await ApplyStatusTransitionAsync(
+                RequireStatus(validated, ManualJournalEntryStatusDto.Approved, request.Action),
+                request,
+                ManualJournalEntryStatusDto.Posted,
+                "manual-je.post",
+                now,
+                ct,
+                item => item with { PostedAtUtc = now, PostedBy = RequireText(request.Actor, nameof(request.Actor)) }).ConfigureAwait(false),
+            JournalEntryLifecycleActionDto.LockAfterClose => await ApplyStatusTransitionAsync(
+                RequireStatus(validated, ManualJournalEntryStatusDto.Posted, request.Action),
+                request,
+                ManualJournalEntryStatusDto.CloseLocked,
+                "manual-je.lock-after-close",
+                now,
+                ct,
+                item => item with { ClosedLockedAtUtc = now, CloseLockedBy = RequireText(request.Actor, nameof(request.Actor)) }).ConfigureAwait(false),
+            JournalEntryLifecycleActionDto.Reverse => await CreateCorrectionDraftAsync(
+                RequirePostedForCorrection(validated, request.Action),
+                request,
+                reverseSides: true,
+                "manual-je.reverse-draft",
+                now,
+                ct).ConfigureAwait(false),
+            JournalEntryLifecycleActionDto.Rebook => await CreateCorrectionDraftAsync(
+                RequirePostedForCorrection(validated, request.Action),
+                request,
+                reverseSides: false,
+                "manual-je.rebook-draft",
+                now,
+                ct).ConfigureAwait(false),
+            _ => throw new ArgumentOutOfRangeException(nameof(request), "Unsupported journal entry lifecycle action.")
+        };
+    }
+
+    private async Task<JournalEntryLifecycleActionResultDto> ApplyStatusTransitionAsync(
+        ManualJournalEntryDraftDto draft,
+        JournalEntryLifecycleActionRequestDto request,
+        ManualJournalEntryStatusDto toStatus,
+        string auditAction,
+        DateTimeOffset recordedAtUtc,
+        CancellationToken ct,
+        Func<ManualJournalEntryDraftDto, ManualJournalEntryDraftDto>? mutate = null)
+    {
+        if (draft.ValidationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical) &&
+            toStatus is ManualJournalEntryStatusDto.Approved or ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.CloseLocked)
+        {
+            throw new InvalidOperationException("Manual journal entry lifecycle action is blocked while critical validation issues remain.");
+        }
+
+        var transition = BuildTransition(draft.Status, toStatus, request, recordedAtUtc);
+        var next = draft with
+        {
+            Status = toStatus,
+            UpdatedAtUtc = recordedAtUtc,
+            Version = draft.Version + 1,
+            EvidenceLinks = MergeEvidenceLinks(draft.EvidenceLinks, request.EvidenceLinks),
+            LifecycleTransitions = draft.LifecycleTransitions.Append(transition).ToArray()
+        };
+        if (mutate is not null)
+        {
+            next = mutate(next);
+        }
+
+        await _draftStore.SaveAsync(next, ct).ConfigureAwait(false);
+        await AppendAuditAsync(next, auditAction, request.Actor, request.CorrelationId, next.EvidenceLinks, ct).ConfigureAwait(false);
+        return new JournalEntryLifecycleActionResultDto(next, transition);
+    }
+
+    private async Task<JournalEntryLifecycleActionResultDto> CreateCorrectionDraftAsync(
+        ManualJournalEntryDraftDto posted,
+        JournalEntryLifecycleActionRequestDto request,
+        bool reverseSides,
+        string auditAction,
+        DateTimeOffset recordedAtUtc,
+        CancellationToken ct)
+    {
+        var correctionId = Guid.NewGuid();
+        var correctionLines = request.RebookLines.Count > 0 && !reverseSides
+            ? request.RebookLines
+            : posted.Lines
+                .Select(line => line with
+                {
+                    LineId = $"{(reverseSides ? "reversal" : "rebook")}-{line.LineId}",
+                    Side = reverseSides ? ReverseSide(line.Side) : line.Side,
+                    EvidenceLink = line.EvidenceLink ?? request.EvidenceLinks.FirstOrDefault()
+                })
+                .ToArray();
+        var correction = posted with
+        {
+            JournalEntryId = correctionId,
+            Status = ManualJournalEntryStatusDto.Draft,
+            Memo = string.IsNullOrWhiteSpace(request.Notes)
+                ? $"{(reverseSides ? "Reversal" : "Rebook")} for journal entry {posted.JournalEntryId:D}"
+                : request.Notes.Trim(),
+            CreatedAtUtc = recordedAtUtc,
+            UpdatedAtUtc = recordedAtUtc,
+            Version = 1,
+            PreparedBy = RequireText(request.Actor, nameof(request.Actor)),
+            Lines = correctionLines,
+            EvidenceLinks = MergeEvidenceLinks(posted.EvidenceLinks, request.EvidenceLinks),
+            ValidationIssues = [],
+            ApprovalId = null,
+            SubmittedAtUtc = null,
+            SubmittedBy = null,
+            EntryType = reverseSides ? ManualJournalEntryTypeDto.Reversal : posted.EntryType,
+            LifecycleTransitions = [],
+            ReversalOfJournalEntryId = reverseSides ? posted.JournalEntryId : null,
+            RebookedFromJournalEntryId = reverseSides ? null : posted.JournalEntryId,
+            ApprovedAtUtc = null,
+            ApprovedBy = null,
+            PostedAtUtc = null,
+            PostedBy = null,
+            ClosedLockedAtUtc = null,
+            CloseLockedBy = null
+        };
+        correction = await NormalizeAndValidateAsync(correction, allowIncomplete: false, ct).ConfigureAwait(false);
+        var transition = BuildTransition(posted.Status, posted.Status, request, recordedAtUtc);
+
+        await _draftStore.SaveAsync(correction, ct).ConfigureAwait(false);
+        await AppendAuditAsync(correction, auditAction, request.Actor, request.CorrelationId, correction.EvidenceLinks, ct).ConfigureAwait(false);
+        return new JournalEntryLifecycleActionResultDto(posted, transition, [correction]);
+    }
+
+    private static ManualJournalEntryDraftDto RequireStatus(
+        ManualJournalEntryDraftDto draft,
+        ManualJournalEntryStatusDto requiredStatus,
+        JournalEntryLifecycleActionDto action)
+    {
+        if (draft.Status != requiredStatus)
+        {
+            throw new InvalidOperationException($"Manual journal entry lifecycle action '{action}' requires status '{requiredStatus}', but current status is '{draft.Status}'.");
+        }
+
+        return draft;
+    }
+
+    private static ManualJournalEntryDraftDto RequirePostedForCorrection(
+        ManualJournalEntryDraftDto draft,
+        JournalEntryLifecycleActionDto action)
+    {
+        if (draft.Status is not (ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.CloseLocked))
+        {
+            throw new InvalidOperationException($"Manual journal entry lifecycle action '{action}' requires a posted or close-locked journal entry.");
+        }
+
+        return draft;
+    }
+
+    private static AccountingTemplateLineSideDto ReverseSide(AccountingTemplateLineSideDto side)
+        => side == AccountingTemplateLineSideDto.Debit
+            ? AccountingTemplateLineSideDto.Credit
+            : AccountingTemplateLineSideDto.Debit;
+
+    private static JournalEntryLifecycleTransitionDto BuildTransition(
+        ManualJournalEntryStatusDto fromStatus,
+        ManualJournalEntryStatusDto toStatus,
+        JournalEntryLifecycleActionRequestDto request,
+        DateTimeOffset recordedAtUtc)
+        => new(
+            $"manual-je-transition-{Guid.NewGuid():N}",
+            fromStatus,
+            toStatus,
+            request.Action,
+            RequireText(request.Actor, nameof(request.Actor)),
+            recordedAtUtc,
+            NormalizeOptional(request.Notes),
+            NormalizeOptional(request.CorrelationId),
+            request.EvidenceLinks);
+
     private static void EnsureHumanOrigin(OperationsActionOriginDto actionOrigin, string action)
     {
         if (actionOrigin != OperationsActionOriginDto.HumanOperator)
@@ -3148,7 +3665,8 @@ public sealed class ManualJournalEntryWorkbenchService : IManualJournalEntryWork
                 Currency = string.IsNullOrWhiteSpace(line.Currency) ? draft.Currency : line.Currency.Trim(),
                 AccountPath = line.AccountPath?.Trim() ?? string.Empty,
                 Description = NormalizeOptional(line.Description),
-                EvidenceLink = NormalizeOptional(line.EvidenceLink)
+                EvidenceLink = NormalizeOptional(line.EvidenceLink),
+                Dimensions = line.Dimensions ?? draft.Dimensions
             };
 
             if (normalizedLine.Amount <= 0m)

@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Api;
+using Meridian.FinancialOperations.AccountingClose;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Ledger;
 using Meridian.Storage.Ledger;
@@ -518,6 +519,35 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
 
+        app.MapPost(UiApiRoutes.LedgerAccountingConfigurationPostingRuleDryRun, async (RuleDryRunRequestDto request, HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveAccountingConfigurationService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var result = await service.DryRunPostingRuleAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("DryRunAccountingConfigurationPostingRule")
+        .Produces<RuleDryRunResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented);
+
         app.MapPost(UiApiRoutes.LedgerAccountingConfigurationActivate, async (ActivateAccountingConfigurationRequest request, HttpContext context) =>
         {
             if (!HasLedgerMutationPermission(context))
@@ -573,6 +603,137 @@ public static class LedgerEndpoints
         })
         .WithName("ListAccountingConfigurationAudit")
         .Produces<IReadOnlyList<AccountingActionAuditEventDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        app.MapGet(UiApiRoutes.LedgerCloseManagementPeriodPlan, async (
+            Guid workflowId,
+            HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveAccountingCloseManagementService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var result = await service.GetPeriodPlanAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
+            return result is null
+                ? Results.NotFound(new { error = $"Close workflow '{workflowId}' was not found." })
+                : Results.Json(result, jsonOptions);
+        })
+        .WithName("GetLedgerCloseManagementPeriodPlan")
+        .Produces<ClosePeriodPlanDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        app.MapPost(UiApiRoutes.LedgerCloseManagementLateAdjustments, async (
+            CreateLateAdjustmentRequestDto request,
+            HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveAccountingCloseManagementService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var actor = ResolveMutationActor(context, request.RequestedBy);
+                var result = await service
+                    .RequestLateAdjustmentAsync(
+                        request with { RequestedBy = actor },
+                        actor,
+                        context.RequestAborted)
+                    .ConfigureAwait(false);
+                return result is null
+                    ? Results.NotFound(new { error = $"Close workflow '{request.WorkflowId}' was not found." })
+                    : Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+        })
+        .WithName("CreateLedgerCloseManagementLateAdjustment")
+        .Produces<ClosePeriodPlanDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerReportsAccountingPackage, async (
+            AccountingReportPackageRequestDto request,
+            HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<IAccountingReportPackageService>();
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var actor = ResolveMutationActor(context, request.Actor);
+                var result = await service
+                    .BuildPackageAsync(request with { Actor = actor }, context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.ValidationProblem(new Dictionary<string, string[]>
+                {
+                    ["request"] = [ex.Message]
+                });
+            }
+        })
+        .WithName("BuildLedgerAccountingReportPackage")
+        .Produces<AccountingReportPackageBundleDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status501NotImplemented);
+
+        app.MapGet(UiApiRoutes.LedgerReportsAccountingPackages, async (
+            string? fundProfileId,
+            string? periodId,
+            HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = context.RequestServices.GetService<IAccountingReportPackageService>();
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var result = await service.ListPackagesAsync(fundProfileId, periodId, context.RequestAborted).ConfigureAwait(false);
+            return Results.Json(result, jsonOptions);
+        })
+        .WithName("ListLedgerAccountingReportPackages")
+        .Produces<IReadOnlyList<AccountingReportPackageBundleDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status501NotImplemented);
 
@@ -983,10 +1144,50 @@ public static class LedgerEndpoints
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status501NotImplemented)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost(UiApiRoutes.LedgerManualJournalEntryLifecycleAction, async (JournalEntryLifecycleActionRequestDto request, HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var service = ResolveManualJournalEntryLifecycleService(context);
+            if (service is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var result = await service
+                    .ApplyLifecycleActionAsync(request with { Actor = ResolveMutationActor(context, request.Actor) }, context.RequestAborted)
+                    .ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .WithName("ApplyManualJournalEntryLifecycleAction")
+        .Produces<JournalEntryLifecycleActionResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 
     private static ILedgerBookService? ResolveService(HttpContext context)
         => context.RequestServices.GetService<ILedgerBookService>();
+
+    private static IAccountingCloseManagementService? ResolveAccountingCloseManagementService(HttpContext context)
+        => context.RequestServices.GetService<IAccountingCloseManagementService>();
 
     private static IAccountingConfigurationService? ResolveAccountingConfigurationService(HttpContext context)
     {
@@ -1026,6 +1227,17 @@ public static class LedgerEndpoints
                 context.RequestServices.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
                 context.RequestServices.GetService<ILedgerJournalStore>(),
                 context.RequestServices.GetService<ReportPackWorkflowService>());
+    }
+
+    private static IManualJournalEntryLifecycleService? ResolveManualJournalEntryLifecycleService(HttpContext context)
+    {
+        var service = context.RequestServices.GetService<IManualJournalEntryLifecycleService>();
+        if (service is not null)
+        {
+            return service;
+        }
+
+        return ResolveManualJournalEntryWorkbenchService(context) as IManualJournalEntryLifecycleService;
     }
 
     private static ICapitalAccountWorkbenchService? ResolveCapitalAccountWorkbenchService(HttpContext context)

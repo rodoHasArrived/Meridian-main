@@ -1,0 +1,35 @@
+{
+  "skill_name": "meridian-roadmap-strategist",
+  "last_updated": "2026-06-19",
+  "evals": [
+    {
+      "id": 1,
+      "description": "Roadmap output separates status buckets and evidence-backed waves",
+      "deterministic_command": [
+        "{python}",
+        "{skill_dir}/scripts/roadmap_output_check.py",
+        "--sample",
+        "standard",
+        "--json"
+      ],
+      "prompt": "Use $meridian-roadmap-strategist to reconcile current Meridian roadmap direction.",
+      "assertions": [
+        "Must include the meridian-roadmap-strategist skill selection receipt",
+        "Must include roadmap status and wave headings",
+        "Must separate complete, partial, planned, optional, and evidence"
+      ],
+      "expect": {
+        "exit_code": 0,
+        "json_equals": {
+          "status": "pass",
+          "summary.skill": "meridian-roadmap-strategist"
+        },
+        "json_min": {
+          "summary.heading_count": 8,
+          "summary.required_terms_count": 5,
+          "summary.receipt_count": 1
+        }
+      }
+    }
+  ]
+}

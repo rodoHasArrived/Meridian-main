@@ -183,20 +183,24 @@ also require `ModifyConfig` before writing the shared symbol mapping configurati
 Accounting-system endpoints are also registered as a shared endpoint group from `UiApiRoutes`.
 `Meridian.FinancialOperations.AccountingSystem.AccountingSystemIntegrationService` lists GL
 providers, uses QuickBooks Online when local OAuth client id, client secret, refresh token, and
-company realm id config are present, falls back to `quickbooks-fixture` otherwise, retains the
-latest import in process, and compares external trial-balance evidence against Meridian-owned
-ledger truth when the ledger store is available. The reconciliation response carries provider-side
-refs, Meridian ledger refs, and package posture for external import, Meridian ledger support, and
-the GL tie-out; UI Shared maps the endpoint group and registers the Data Integration-owned
-credential-backed connection store, but it does not own GL evidence reconciliation or QuickBooks
-credential-persistence mapping.
+company realm id config are present, falls back to `quickbooks-fixture` otherwise, exposes planned
+Xero and NetSuite import-first rows with posting disabled, retains the latest import in process,
+and compares external trial-balance evidence against Meridian-owned ledger truth when the ledger
+store is available. The reconciliation response carries provider-side refs, Meridian ledger refs,
+and package posture for external import, Meridian ledger support, and the GL tie-out. The same
+endpoint group now lists and upserts scoped external-GL mapping profiles and creates guarded export
+packages that require certified mapping and reconciliation evidence before reaching ready-for-review
+state. UI Shared maps these routes and registers the Data Integration-owned credential-backed
+connection store, but it does not own GL evidence reconciliation, mapping-profile validation,
+export-package certification safeguards, or QuickBooks credential-persistence mapping.
 The Data Integration-owned QuickBooks Online lane refreshes access through the server-side token
 exchange seam and imports chart-of-accounts, journal-entry, and trial-balance evidence as read-only
 reconciliation input.
 Meridian remains the source of all ledger truth; external GL imports are evidence and
-reconciliation inputs, not override authority. Posting/export remains disabled in the shared
-service until an adapter capability explicitly supports publishing Meridian-owned ledger entries,
-so browser and WPF clients inherit the same read-only reconciliation posture.
+reconciliation inputs, not override authority. Live external GL posting remains disabled in the
+shared service until a separately approved adapter and release gate explicitly supports publishing
+Meridian-owned ledger entries, so browser and WPF clients inherit the same guarded export and
+read-only reconciliation posture.
 Shared accounting configuration and manual journal entry services also provide durable file-backed
 fallback stores under the resolved workstation data root. `FileAccountingConfigurationStore`
 persists chart accounts, templates, posting rules, and accounting action audit events at
@@ -218,6 +222,17 @@ drafts, and the projection keeps fund-event rows, ordered capital-account subled
 ledger-impact rows, capital-account aggregates, published report-output state, signed net activity,
 and incomplete-context warnings server-owned for both browser and WPF consumers. Posted
 capital-account subledger rows and ledger-impact account scopes are reconstructed from the
+shared ledger journal evidence. Close-management endpoints under `/api/ledger/close-management/*`
+adapt Financial Operations close-plan behavior for browser and WPF consumers: the period-plan route
+projects checklist dependencies, approval sign-offs, materiality policy, late adjustments, period
+lock posture, and validation issues from Operations Continuity, while the late-adjustment route
+retains review requests without mutating posted journal entries.
+The `/api/ledger/reports/accounting-package` route adapts the Financial Operations report-package
+service, returning the shared financial statement package, investor capital statement, realized
+gain/loss report, NAV package, certification, validation issues, and restatement workflow metadata
+without requiring browser or WPF clients to reconstruct accounting report state locally. The
+companion `/api/ledger/reports/accounting-packages` route lists retained package history by optional
+fund profile and period filters from the same shared service.
 ledger-owned capital-account impacts, so a posted fund event that touches multiple capital accounts
 keeps those account/investor identities visible in shared Accounting, browser, and WPF projections
 instead of collapsing every row to the event-level fallback account. When a posted fund event
@@ -237,6 +252,15 @@ explain report-output posture without inspecting issue codes.
 Published workflow records can also match through retained publication/restatement/rejection
 evidence pointers to the fund-event id, journal id, or ledger-entry id, so an event-level evidence
 packet can keep the report output attached even before line provenance is populated.
+Accounting configuration posting rules now carry effective dates, priority, dimensional scope,
+event conditions, formula/allocation metadata, generated posting lines, version history, and
+promotion-approval metadata in the shared ledger contracts. `/api/ledger/accounting-configuration/posting-rules/dry-run`
+evaluates those rules without posting, returning the selected rule, generated lines, explanations,
+and validation issues for browser and WPF clients. Manual journal lifecycle actions are exposed
+through `/api/ledger/journal-entry-workbench/lifecycle-action`; approve, post, reject, close-lock,
+reverse-draft, and rebook-draft transitions stay server-owned, require human action origin, and
+append accounting action audit evidence. Reversal and rebook requests create separate correction
+drafts instead of mutating the posted entry.
 `/api/ledger/private-capital/activity` can also be filtered by `fundEventId`, `capitalAccountId`,
 `investorId`, and `paymentIntentId`; the endpoint returns a recomputed slice so report-package and
 payment-intent drill-throughs retain matching events, subledger rows, ledger impacts, report

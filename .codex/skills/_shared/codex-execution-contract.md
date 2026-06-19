@@ -13,20 +13,18 @@ Use this file as the Codex-only execution standard for Meridian skill runs. It c
 
 ## Workflow Disclosure Gate
 
-- Tell the user the current working phase and why it matters at startup or orientation, before file
-  edits, during longer investigation or validation, when a blocker changes the plan, and before final
-  validation.
-- Keep updates concise: name the current phase, files or subsystem being inspected or changed, the
-  evidence being sought, and any blocker or scope change.
-- Summarize discoveries and next actions instead of pasting step-by-step command transcripts, raw
-  file dumps, or full audit logs unless the user explicitly asks for a detailed trace.
-- Near the first substantive response, include a startup context receipt that makes the loaded
-  context visible:
-  `Workflow: <lane>; Skill: <skill-or-none>; Context loaded: <files/docs>; Next evidence: <next source>.`
-- When a task expands to a meaningful tool, source family, or context pack, include a context
-  update before widening scope:
-  `Context update: loading <source> because <reason>. <edit/scope status>.`
-- Use the context update to say whether source files will be edited, left unchanged, or deferred.
+- Use the provider-agnostic AI User Notification template in
+  `docs/ai/assistant-workflow-contract.md` for startup or orientation, before file edits, during
+  longer investigation or validation, when a blocker changes the plan, and before final validation.
+- Populate the canonical fields instead of maintaining separate Codex-only progress prose:
+  `Phase`, `Intent understood`, `Current action`, `Evidence/source`, `Next gate`, and
+  `Validation intent`. Keep each field concise and avoid raw command transcripts, file dumps, or
+  full audit logs unless the user explicitly asks for a detailed trace.
+- Add Codex-specific workflow, skill, context, route, or tool metadata only when it helps route the
+  task; such metadata must not replace or contradict the shared notification fields.
+- When a task expands to a meaningful tool, source family, or context pack, send another AI User
+  Notification that explains why scope is widening and whether source files will be edited, left
+  unchanged, or deferred.
 
 ## Skill Selection Receipt Gate
 

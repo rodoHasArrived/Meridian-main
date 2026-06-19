@@ -780,6 +780,16 @@ distributions, subscriptions, redemptions, LP transfers, and management fees. `T
 is the shared audit context for those drafts and carries effective date, idempotency key, fund
 event, capital account, investor, payment intent, and settlement references so browser, WPF,
 Financial Operations, and ledger metadata use the same retry-safe fund-event vocabulary.
+Accounting configuration contracts also carry the productized rules-studio vocabulary:
+effective-dated posting rules, condition groups, formulas, allocation metadata, priority,
+dimensional scope through `LedgerDimensionSetDto`, generated posting lines, dry-run results,
+test-case/version history, and promotion approvals. Manual journal lifecycle contracts carry
+approval, posting, rejection, close-lock, reversal, and rebook actions plus transition audit and
+evidence attachment payloads so posted entries remain immutable and corrections move through
+separate drafts. Close and reporting contracts publish `ClosePeriodPlanDto`,
+`LateAdjustmentRequestDto`, and `AccountingReportPackageBundleDto` so browser and WPF consumers use
+the same dependency, sign-off, materiality, financial statement, investor capital statement,
+realized gain/loss, NAV, certification, validation, and restatement vocabulary.
 `SubmitManualJournalEntryApprovalRequest` carries action-origin metadata because reviewed
 automation may draft journal content, but cannot submit the durable approval record on behalf of a
 human operator.

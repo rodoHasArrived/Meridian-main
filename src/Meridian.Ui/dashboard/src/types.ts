@@ -2562,6 +2562,269 @@ export type AccountingSystemReconciliationStatus =
   | "MissingMeridian"
   | "ReviewRequired";
 export type AccountingSystemEvidencePackageStatus = "Ready" | "ReviewRequired" | "Missing";
+export type AccountingCertificationState = "Draft" | "ReadyForReview" | "Certified" | "Rejected" | "Superseded";
+
+export interface LedgerDimensionSet {
+  fundId?: string | null;
+  entityId?: string | null;
+  sleeveId?: string | null;
+  strategyId?: string | null;
+  investorId?: string | null;
+  capitalAccountId?: string | null;
+  instrumentId?: string | null;
+  taxLotId?: string | null;
+  costCenterId?: string | null;
+  counterpartyId?: string | null;
+  externalGlDimensions?: Record<string, string> | null;
+}
+
+export interface DimensionMappingProfile {
+  profileId: string;
+  displayName: string;
+  providerId: string;
+  meridianDimensions: LedgerDimensionSet;
+  externalDimensions: LedgerDimensionSet;
+  certificationState: AccountingCertificationState;
+  validationIssues: AccountingConfigurationValidationIssue[];
+}
+
+export interface ExternalGlMappingProfile {
+  profileId: string;
+  providerId: string;
+  displayName: string;
+  updatedAtUtc: string;
+  dimensionMappings: DimensionMappingProfile[];
+  accountMappings: Record<string, string>;
+  certificationState: AccountingCertificationState;
+}
+
+export interface AccountingSystemMappingProfileUpsertRequest {
+  profile: ExternalGlMappingProfile;
+  actor: string;
+  providerId?: string | null;
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  correlationId?: string | null;
+  evidenceLinks?: string[];
+}
+
+export interface AccountingSystemExportPackageRequest {
+  actor: string;
+  providerId?: string | null;
+  fundProfileId?: string | null;
+  ledgerBookId?: string | null;
+  periodStart?: string | null;
+  periodEnd?: string | null;
+  mappingProfileId?: string | null;
+  journalEntryIds?: string[];
+  requireBalancedReconciliation?: boolean;
+  evidenceLinks?: string[];
+  correlationId?: string | null;
+}
+
+export interface ExternalGlExportCertification {
+  certificationId: string;
+  state: AccountingCertificationState;
+  actor: string;
+  recordedAtUtc: string;
+  summary: string;
+  evidenceLinks: string[];
+}
+
+export interface ExternalGlExportPackage {
+  exportPackageId: string;
+  providerId: string;
+  fundProfileId: string;
+  ledgerBookId: string | null;
+  periodStart: string;
+  periodEnd: string;
+  createdAtUtc: string;
+  createdBy: string;
+  postingEnabled: boolean;
+  postingDisabledReason: string;
+  journalEntryIds: string[];
+  evidenceLinks: string[];
+  certification?: ExternalGlExportCertification | null;
+  validationIssues: AccountingConfigurationValidationIssue[];
+}
+
+export type CloseTaskStatus = "NotStarted" | "WaitingOnDependency" | "InProgress" | "ReadyForSignOff" | "SignedOff" | "Blocked";
+
+export interface CloseDependency {
+  dependencyId: string;
+  dependsOnTaskId: string;
+  reason: string;
+}
+
+export interface CloseSignOff {
+  signOffId: string;
+  role: string;
+  actor: string | null;
+  approvalState: ManualJournalEntryStatus;
+  signedAtUtc: string | null;
+  evidenceLinks: string[];
+}
+
+export interface MaterialityPolicy {
+  policyId: string;
+  amountThreshold: number;
+  percentThreshold: number;
+  currency: string;
+  reviewRole: string;
+  requiresLateAdjustmentApproval: boolean;
+}
+
+export interface CloseTask {
+  taskId: string;
+  displayName: string;
+  status: CloseTaskStatus;
+  owner: string;
+  dueDate: string;
+  dependencies: CloseDependency[];
+  signOffs: CloseSignOff[];
+  evidenceLinks: string[];
+  blockerReason?: string | null;
+}
+
+export interface LateAdjustmentRequest {
+  requestId: string;
+  journalEntryId: string;
+  requestedBy: string;
+  requestedAtUtc: string;
+  amount: number;
+  currency: string;
+  reason: string;
+  approvalState: ManualJournalEntryStatus;
+  materialityPolicy: MaterialityPolicy;
+  evidenceLinks: string[];
+}
+
+export interface CreateLateAdjustmentRequest {
+  workflowId: string;
+  journalEntryId: string;
+  amount: number;
+  currency: string;
+  reason: string;
+  requestedBy: string;
+  evidenceLinks?: string[];
+  correlationId?: string | null;
+}
+
+export interface ClosePeriodPlan {
+  closePlanId: string;
+  fundProfileId: string;
+  ledgerBookId: string | null;
+  periodId: string;
+  periodStart: string;
+  periodEnd: string;
+  closeDueDate: string;
+  isPeriodLocked: boolean;
+  tasks: CloseTask[];
+  lateAdjustments: LateAdjustmentRequest[];
+  materialityPolicy: MaterialityPolicy;
+  validationIssues: AccountingConfigurationValidationIssue[];
+}
+
+export interface ReportCertification {
+  certificationId: string;
+  state: AccountingCertificationState;
+  actor: string;
+  recordedAtUtc: string;
+  summary: string;
+  evidenceLinks: string[];
+}
+
+export interface RestatementWorkflow {
+  restatementId: string;
+  priorPackageId: string;
+  reasonCode: string;
+  approvalState: ManualJournalEntryStatus;
+  requestedBy: string;
+  requestedAtUtc: string;
+  evidenceLinks: string[];
+}
+
+export interface FinancialStatementPackage {
+  packageId: string;
+  fundProfileId: string;
+  ledgerBookId: string | null;
+  periodId: string;
+  certificationState: AccountingCertificationState;
+  statementIds: string[];
+  evidenceLinks: string[];
+  certification?: ReportCertification | null;
+  restatement?: RestatementWorkflow | null;
+}
+
+export interface InvestorCapitalStatement {
+  statementId: string;
+  fundProfileId: string;
+  capitalAccountId: string;
+  investorId: string | null;
+  periodId: string;
+  beginningCapital: number;
+  contributions: number;
+  distributions: number;
+  realizedGainLoss: number;
+  endingCapital: number;
+  currency: string;
+  certificationState: AccountingCertificationState;
+  evidenceLinks: string[];
+}
+
+export interface RealizedGainLossReport {
+  reportId: string;
+  fundProfileId: string;
+  ledgerBookId: string | null;
+  periodId: string;
+  dimensions: LedgerDimensionSet;
+  realizedGainLoss: number;
+  currency: string;
+  certificationState: AccountingCertificationState;
+  evidenceLinks: string[];
+}
+
+export interface NavPackage {
+  packageId: string;
+  fundProfileId: string;
+  ledgerBookId: string | null;
+  periodId: string;
+  nav: number;
+  currency: string;
+  certificationState: AccountingCertificationState;
+  evidenceLinks: string[];
+  certification?: ReportCertification | null;
+  restatement?: RestatementWorkflow | null;
+}
+
+export interface AccountingReportPackageRequest {
+  fundProfileId: string;
+  periodId: string;
+  actor: string;
+  ledgerBookId?: string | null;
+  closeWorkflowId?: string | null;
+  capitalAccountId?: string | null;
+  investorId?: string | null;
+  beginningCapital?: number;
+  contributions?: number;
+  distributions?: number;
+  realizedGainLoss?: number;
+  nav?: number;
+  currency?: string;
+  restatementReasonCode?: string | null;
+  priorPackageId?: string | null;
+  evidenceLinks?: string[];
+  correlationId?: string | null;
+}
+
+export interface AccountingReportPackageBundle {
+  financialStatements: FinancialStatementPackage;
+  investorCapitalStatements: InvestorCapitalStatement[];
+  realizedGainLoss: RealizedGainLossReport;
+  navPackage: NavPackage;
+  certification: ReportCertification;
+  validationIssues: AccountingConfigurationValidationIssue[];
+}
 
 export interface AccountingSystemProvider {
   providerId: string;
@@ -5001,7 +5264,11 @@ export type AccountingBasisKind = "Primary" | "Gaap" | "Cash" | "Tax" | "Statuto
 export type AccountingConfigurationStatus = "Draft" | "Active" | "Archived";
 export type AccountingConfigurationValidationSeverity = "Info" | "Warning" | "Critical";
 export type AccountingTemplateLineSide = "Debit" | "Credit";
-export type ManualJournalEntryStatus = "Draft" | "NeedsFix" | "Submitted" | "Approved" | "Rejected";
+export type ManualJournalEntryStatus = "Draft" | "NeedsFix" | "Submitted" | "Approved" | "Rejected" | "Posted" | "Reversed" | "Rebooked" | "CloseLocked";
+export type AccountingRuleConditionOperator = "Equals" | "NotEquals" | "Contains" | "AmountGreaterThanOrEqual" | "AmountLessThanOrEqual" | "AmountBetween" | "IsPresent";
+export type AccountingRuleFormulaKind = "FixedAmount" | "SourceAmount" | "PercentageOfSourceAmount" | "AllocationResidual";
+export type AllocationRuleBasis = "FixedPercent" | "InvestorCommitment" | "CapitalAccountBalance" | "StrategyWeight" | "CustomFormula";
+export type JournalEntryLifecycleAction = "Validate" | "Submit" | "Approve" | "Reject" | "Post" | "Reverse" | "Rebook" | "LockAfterClose";
 export type PrivateCapitalFundEventLedgerReadiness =
   | "Blocked"
   | "EvidenceMissing"
@@ -5085,6 +5352,64 @@ export interface JournalEntryTemplate {
   version: string;
 }
 
+export interface AccountingRuleCondition {
+  conditionId: string;
+  field: string;
+  operator: AccountingRuleConditionOperator;
+  value?: string | null;
+  secondValue?: string | null;
+  isRequired: boolean;
+  description?: string | null;
+}
+
+export interface AccountingRuleFormula {
+  formulaId: string;
+  kind: AccountingRuleFormulaKind;
+  value: number;
+  currency: string;
+  description?: string | null;
+}
+
+export interface AllocationRule {
+  allocationRuleId: string;
+  basis: AllocationRuleBasis;
+  weight: number;
+  targetDimensions?: LedgerDimensionSet | null;
+  formulaId?: string | null;
+  description?: string | null;
+}
+
+export interface GeneratedPostingLine {
+  lineId: string;
+  accountPath: string;
+  side: AccountingTemplateLineSide;
+  amountFormulaId: string;
+  amount: number;
+  currency: string;
+  dimensions?: LedgerDimensionSet | null;
+  description?: string | null;
+}
+
+export interface RulePromotionApproval {
+  approvalId: string;
+  requestedBy: string;
+  requestedAtUtc: string;
+  approvalState: ManualJournalEntryStatus;
+  approvedBy?: string | null;
+  approvedAtUtc?: string | null;
+  notes?: string | null;
+  evidenceLinks: string[];
+}
+
+export interface AccountingRuleVersion {
+  version: string;
+  createdAtUtc: string;
+  createdBy: string;
+  changeSummary: string;
+  promotionApproval?: RulePromotionApproval | null;
+  evidenceLinks: string[];
+}
+
 export interface PostingRule {
   ruleId: string;
   displayName: string;
@@ -5093,6 +5418,17 @@ export interface PostingRule {
   ruleVersion: string;
   isArchived: boolean;
   description?: string | null;
+  effectiveFrom?: string | null;
+  effectiveTo?: string | null;
+  priority?: number;
+  scope?: LedgerDimensionSet | null;
+  conditions?: AccountingRuleCondition[] | null;
+  formulas?: AccountingRuleFormula[] | null;
+  allocations?: AllocationRule[] | null;
+  generatedPostings?: GeneratedPostingLine[] | null;
+  versions?: AccountingRuleVersion[] | null;
+  promotionApproval?: RulePromotionApproval | null;
+  requiresPromotionApproval?: boolean;
 }
 
 export interface AccountingConfigurationValidationIssue {
@@ -5150,6 +5486,54 @@ export interface AccountingJournalTemplatePreview {
   totalCredits: number;
   lines: AccountingJournalPreviewLine[];
   validationIssues: AccountingConfigurationValidationIssue[];
+}
+
+export interface RuleDryRunRequest {
+  fundProfileId: string;
+  sourceEventType: string;
+  eventAmount: number;
+  currency: string;
+  effectiveDate: string;
+  actor: string;
+  ledgerBookId?: string | null;
+  dimensions?: LedgerDimensionSet | null;
+  counterpartyId?: string | null;
+  instrumentSymbol?: string | null;
+  correlationId?: string | null;
+}
+
+export interface AccountingRuleDryRunMatch {
+  ruleId: string;
+  displayName: string;
+  ruleVersion: string;
+  priority: number;
+  isMatched: boolean;
+  explanations: string[];
+  validationIssues: AccountingConfigurationValidationIssue[];
+}
+
+export interface RuleDryRunResult {
+  fundProfileId: string;
+  ledgerBookId?: string | null;
+  sourceEventType: string;
+  effectiveDate: string;
+  eventAmount: number;
+  currency: string;
+  isPostingBalanced: boolean;
+  selectedRuleId?: string | null;
+  ruleMatches: AccountingRuleDryRunMatch[];
+  generatedLines: AccountingJournalPreviewLine[];
+  generatedPostingLines?: GeneratedPostingLine[] | null;
+  validationIssues: AccountingConfigurationValidationIssue[];
+}
+
+export interface AccountingRuleTestCase {
+  testCaseId: string;
+  displayName: string;
+  request: RuleDryRunRequest;
+  expectedRuleId?: string | null;
+  expectBalancedPosting: boolean;
+  expectedIssueCodes: string[];
 }
 
 export interface ManualJournalEntryLine {
@@ -5218,6 +5602,48 @@ export interface ManualJournalEntryDraft {
   submittedBy?: string | null;
   entryType: ManualJournalEntryType;
   treasuryContext?: TreasuryLedgerContext | null;
+  dimensions?: LedgerDimensionSet | null;
+  lifecycleTransitions?: JournalEntryLifecycleTransition[] | null;
+  reversalOfJournalEntryId?: string | null;
+  rebookedFromJournalEntryId?: string | null;
+  approvedAtUtc?: string | null;
+  approvedBy?: string | null;
+  postedAtUtc?: string | null;
+  postedBy?: string | null;
+  closedLockedAtUtc?: string | null;
+  closeLockedBy?: string | null;
+}
+
+export interface JournalEntryLifecycleTransition {
+  transitionId: string;
+  fromStatus: ManualJournalEntryStatus;
+  toStatus: ManualJournalEntryStatus;
+  action: JournalEntryLifecycleAction;
+  actor: string;
+  recordedAtUtc: string;
+  notes?: string | null;
+  correlationId?: string | null;
+  evidenceLinks: string[];
+}
+
+export interface JournalEntryLifecycleActionRequest {
+  journalEntryId: string;
+  fundProfileId: string;
+  action: JournalEntryLifecycleAction;
+  actor: string;
+  version: number;
+  notes?: string | null;
+  correlationId?: string | null;
+  evidenceLinks?: string[] | null;
+  actionOrigin?: OperationsActionOrigin | null;
+  periodIsLocked?: boolean;
+  rebookLines?: ManualJournalEntryLine[] | null;
+}
+
+export interface JournalEntryLifecycleActionResult {
+  journalEntry: ManualJournalEntryDraft;
+  transition: JournalEntryLifecycleTransition;
+  generatedJournalEntries: ManualJournalEntryDraft[];
 }
 
 export interface PrivateCapitalFundEvent {

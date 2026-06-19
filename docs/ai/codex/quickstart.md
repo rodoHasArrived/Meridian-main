@@ -14,8 +14,8 @@ still lives in `../assistant-workflow-contract.md`.
 2. Classify the request as orient, review, docs, browser, WPF, provider, storage, execution, roadmap,
    cleanup, or test work.
 3. Disclose the working mode, intended scope, and first evidence source before deeper exploration.
-   Use the startup context receipt from `.codex/skills/_shared/codex-execution-contract.md`:
-   `Workflow: <lane>; Skill: <skill-or-none>; Context loaded: <files/docs>; Next evidence: <next source>.`
+   Use the canonical AI User Notification template in `../assistant-workflow-contract.md`, adding
+   Codex-specific skill or workflow metadata only when it helps route the task.
 4. Treat root `AGENTS.md`, `CLAUDE.md`, `.codex/skills/_shared/project-context.md`, and
    `.codex/skills/_shared/codex-execution-contract.md` as the Codex-loaded development baseline.
    When a shared development, validation, workflow, prompt, skill, or agent rule changes, also
@@ -77,8 +77,10 @@ still lives in `../assistant-workflow-contract.md`.
 ## Read Budget
 
 Load only enough context to route and validate the task.
-Progress updates should summarize discoveries, next actions, blockers, and validation intent; do
-not paste raw file contents or broad command output unless the user asks for a trace.
+Progress updates should use the canonical AI User Notification template in
+`../assistant-workflow-contract.md`: phase, intent understood, current action, evidence/source, next
+gate, and validation intent. Summarize discoveries, next actions, blockers, and validation intent;
+do not paste raw file contents or broad command output unless the user asks for a trace.
 
 | Task state | Read first | Avoid until needed |
 | --- | --- | --- |
@@ -122,7 +124,7 @@ and uses `MeridianBuildIsolationKey` output roots by default.
 
 - Repo navigation: `../navigation/README.md`, `../generated/repo-navigation.md`
 - MDIF grounding: `../../architecture/meridian-development-intelligence-framework.md`, `../../domain/README.md`, `../context/README.md`, and generated snapshots in `../exports/`
-- Agent edit rules: `../assistant-workflow-contract.md`, `.codex/skills/_shared/project-context.md`, `.codex/skills/_shared/codex-execution-contract.md`, including the Codex workflow disclosure gate
+- Agent edit rules: `../assistant-workflow-contract.md`, including the canonical AI User Notification template, plus `.codex/skills/_shared/project-context.md` and `.codex/skills/_shared/codex-execution-contract.md` for Codex-specific gates
 - Generated-file handling: run generator commands for `docs/ai/generated` and `docs/generated` updates; do not hand-edit generated outputs.
 - Agent orchestration: start lane planning with `../parallel-task-manifest-template.md` when multiple skills/surfaces are in scope.
 - Working memory: use `../working-memory.md` to track task-local active claims, inspected files,
