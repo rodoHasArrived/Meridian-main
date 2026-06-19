@@ -2110,24 +2110,16 @@ describe("ReportingScreen", () => {
 
     renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting"] });
 
-    await user.clear(screen.getByLabelText("Reporting schedule ID"));
-    await user.type(screen.getByLabelText("Reporting schedule ID"), "sched-investor-email");
-    await user.clear(screen.getByLabelText("Reporting schedule cron expression"));
-    await user.type(screen.getByLabelText("Reporting schedule cron expression"), "0 9 * * 1");
-    await user.clear(screen.getByLabelText("Reporting schedule next as-of date"));
-    await user.type(screen.getByLabelText("Reporting schedule next as-of date"), "2026-06-30");
-    await user.clear(screen.getByLabelText("Reporting schedule due at UTC"));
-    await user.type(screen.getByLabelText("Reporting schedule due at UTC"), "2026-07-01T15:00:00Z");
-    await user.clear(screen.getByLabelText("Reporting schedule max retries"));
-    await user.type(screen.getByLabelText("Reporting schedule max retries"), "3");
-    await user.clear(screen.getByLabelText("Reporting schedule requested by"));
-    await user.type(screen.getByLabelText("Reporting schedule requested by"), "fund-controller");
+    fireEvent.change(screen.getByLabelText("Reporting schedule ID"), { target: { value: "sched-investor-email" } });
+    fireEvent.change(screen.getByLabelText("Reporting schedule cron expression"), { target: { value: "0 9 * * 1" } });
+    fireEvent.change(screen.getByLabelText("Reporting schedule next as-of date"), { target: { value: "2026-06-30" } });
+    fireEvent.change(screen.getByLabelText("Reporting schedule due at UTC"), { target: { value: "2026-07-01T15:00:00Z" } });
+    fireEvent.change(screen.getByLabelText("Reporting schedule max retries"), { target: { value: "3" } });
+    fireEvent.change(screen.getByLabelText("Reporting schedule requested by"), { target: { value: "fund-controller" } });
     await user.selectOptions(screen.getByLabelText("Reporting schedule distribution"), "compliance-archive");
     await user.selectOptions(screen.getByLabelText("Reporting schedule delivery mode"), "EmailLink");
-    await user.clear(screen.getByLabelText("Reporting schedule description"));
-    await user.type(screen.getByLabelText("Reporting schedule description"), "Weekly client distribution.");
-    await user.clear(screen.getByLabelText("Reporting schedule delivery note"));
-    await user.type(screen.getByLabelText("Reporting schedule delivery note"), "Email link pack.");
+    fireEvent.change(screen.getByLabelText("Reporting schedule description"), { target: { value: "Weekly client distribution." } });
+    fireEvent.change(screen.getByLabelText("Reporting schedule delivery note"), { target: { value: "Email link pack." } });
     await user.click(screen.getByLabelText("Reporting schedule Xlsx format"));
     await user.click(screen.getByRole("button", { name: "Save reporting schedule" }));
 
@@ -2613,7 +2605,7 @@ describe("ReportingScreen", () => {
     expect(excelProfile).toHaveFocus();
     await user.keyboard("{ArrowRight}");
 
-    expect(auditProfile).toHaveFocus();
+    await waitFor(() => expect(auditProfile).toHaveFocus());
     expect(auditProfile).toHaveAttribute("aria-pressed", "true");
     expect(auditProfile).toHaveAttribute("aria-expanded", "true");
     expect(excelProfile).toHaveAttribute("tabindex", "-1");
@@ -2792,9 +2784,10 @@ describe("ReportingScreen", () => {
 
     const task = screen.getByRole("region", { name: "Report-pack approval task" });
     await user.click(within(task).getByRole("button", { name: "Select Audit Pack for report-pack approval" }));
-    await user.click(within(task).getByRole("button", { name: "Run Audit Pack export analysis" }));
+    const runAuditExport = await within(task).findByRole("button", { name: "Run Audit Pack export analysis" });
+    await user.click(runAuditExport);
 
-    const runningButton = within(task).getByRole("button", { name: "Run Audit Pack export analysis" });
+    const runningButton = await within(task).findByRole("button", { name: "Run Audit Pack export analysis" });
     expect(runningButton).toBeDisabled();
     expect(runningButton).toHaveAttribute("aria-busy", "true");
     expect(runningButton).toHaveAttribute("title", "Audit Pack export is already running.");
@@ -2818,7 +2811,7 @@ describe("ReportingScreen", () => {
     const auditRow = within(profileTable).getByRole("row", { name: /select audit pack export profile/i });
     await user.click(auditRow);
 
-    expect(auditRow).toHaveAttribute("aria-selected", "true");
+    await waitFor(() => expect(auditRow).toHaveAttribute("aria-selected", "true"));
     expect(auditRow).toHaveAttribute("aria-controls", "reporting-profile-detail");
     expect(auditRow).toHaveAttribute("aria-expanded", "true");
     expect(within(profileTable).getByRole("row", { name: /select excel export profile/i })).toHaveAttribute("aria-expanded", "false");
