@@ -55,6 +55,7 @@ EXCLUDE_DIRS: frozenset[str] = frozenset(
 EXCLUDE_REL_PREFIXES: tuple[str, ...] = (
     "docs/status/",
 )
+REPOSITORY_DISPLAY_ROOT = "."
 
 STALE_THRESHOLD_DAYS: int = 90
 
@@ -407,7 +408,7 @@ def analyse(root: Path) -> HealthMetrics:
         stale_files=stale_files,
         all_files=file_infos,
         scan_time=current_utc_timestamp(),
-        root_dir=str(root),
+        root_dir=REPOSITORY_DISPLAY_ROOT,
     )
     metrics.health_score = compute_health_score(metrics)
     return metrics
