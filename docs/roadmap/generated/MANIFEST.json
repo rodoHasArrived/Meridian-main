@@ -31,12 +31,12 @@
   ],
   "outputs": [
     {
-      "path": "docs/roadmap/generated/roadmap-register.md",
-      "sha256": "9335d03f4a8ae8ea91de0a9f9c94c79982ecfe1827c9b695c84c179e67e2b45c"
-    },
-    {
       "path": "docs/roadmap/generated/ROADMAP_SUMMARY.md",
       "sha256": "ecd5772328d62165bdc6faf9c9b8af90813e15eb900fdc5abb18be6ed01ec36b"
+    },
+    {
+      "path": "docs/roadmap/generated/roadmap-register.md",
+      "sha256": "9335d03f4a8ae8ea91de0a9f9c94c79982ecfe1827c9b695c84c179e67e2b45c"
     },
     {
       "path": "docs/status/ROADMAP_SUMMARY.md",
