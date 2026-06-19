@@ -357,15 +357,19 @@ def analyse(root: Path) -> HealthMetrics:
     # Discover all Markdown files while pruning excluded directories before descent.
     md_files: list[Path] = []
     for current, dirs, files in os.walk(root):
-        dirs[:] = [directory for directory in dirs if directory not in EXCLUDE_DIRS]
+        dirs[:] = sorted(
+            (directory for directory in dirs if directory not in EXCLUDE_DIRS),
+            key=str.casefold,
+        )
         current_path = Path(current)
-        for file_name in files:
+        for file_name in sorted(files, key=str.casefold):
             if not file_name.endswith(".md"):
                 continue
             md_path = current_path / file_name
             if _is_excluded_rel_path(md_path, root):
                 continue
             md_files.append(md_path)
+    md_files.sort(key=lambda path: _repo_relative_path(path, root).casefold())
 
     # Per-file analysis.
     file_infos: list[FileInfo] = []
@@ -659,12 +663,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:  # noqa: C901
 
     has_markdown = False
     for current, dirs, files in os.walk(root):
-        dirs[:] = [directory for directory in dirs if directory not in EXCLUDE_DIRS]
+        dirs[:] = sorted(
+            (directory for directory in dirs if directory not in EXCLUDE_DIRS),
+            key=str.casefold,
+        )
         current_path = Path(current)
         if any(
             file_name.endswith(".md")
             and not _is_excluded_rel_path(current_path / file_name, root)
-            for file_name in files
+            for file_name in sorted(files, key=str.casefold)
         ):
             has_markdown = True
             break

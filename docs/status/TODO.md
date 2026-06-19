@@ -158,9 +158,9 @@ Total items: **197**
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.test.tsx` | 4968 | `NOTE` | ❌ | note: "pricing-correction" |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 4908 | `NOTE` | ❌ | note: note \|\| null |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 4919 | `NOTE` | ❌ | note: draft.deliveryNote, |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 6557 | `NOTE` | ❌ | note: "Delivered from browser Reporting workspace.", |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 6582 | `NOTE` | ❌ | note: "Published from browser Reporting workspace." |
-| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 6682 | `NOTE` | ❌ | note: `Delivery failure recorded from Reporting workspace for ${attempt.recipient}.`, |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 6549 | `NOTE` | ❌ | note: "Delivered from browser Reporting workspace.", |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 6574 | `NOTE` | ❌ | note: "Published from browser Reporting workspace." |
+| `src/Meridian.Ui/dashboard/src/screens/reporting-screen.tsx` | 6674 | `NOTE` | ❌ | note: `Delivery failure recorded from Reporting workspace for ${attempt.recipient}.`, |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 180 | `NOTE` | ❌ | note: "pricing-correction" |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.test.ts` | 482 | `NOTE` | ❌ | note: "Board package." |
 | `src/Meridian.Ui/dashboard/src/screens/reporting-screen.view-model.ts` | 369 | `NOTE` | ❌ | note: string \| null; |
@@ -174,8 +174,8 @@ Total items: **197**
 | `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1600 | `NOTE` | ❌ | note: "Reviewed from the Settings Provider Connection Center runtime evidence panel." |
 | `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1647 | `NOTE` | ❌ | note: "Marked from the Settings Provider Connection Center for replay after mapping changes." |
 | `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 1667 | `NOTE` | ❌ | note: "Ignored from the Settings Provider Connection Center after operator review." |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 1271 | `NOTE` | ❌ | note: "Approved from the Settings Provider Connection Center promotion readiness panel.", |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 1398 | `NOTE` | ❌ | note: providerRuntimeQuarantineActionNote(action) |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 1266 | `NOTE` | ❌ | note: "Approved from the Settings Provider Connection Center promotion readiness panel.", |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 1393 | `NOTE` | ❌ | note: providerRuntimeQuarantineActionNote(action) |
 | `src/Meridian.Ui/dashboard/src/screens/w4-acceptance-parity.test.ts` | 429 | `NOTE` | ❌ | note: "Close evidence reviewed." |
 | `src/Meridian.Ui/dashboard/src/screens/w4-acceptance-parity.test.ts` | 437 | `NOTE` | ❌ | note: "Published to investor portal." |
 | `src/Meridian.Ui/dashboard/src/types.ts` | 2997 | `NOTE` | ❌ | note: string; |

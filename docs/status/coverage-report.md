@@ -27,9 +27,6 @@
 
 | Item | Location |
 | ------ | ---------- |
-| `MeridianApiDeploymentMode` | `src/Meridian/ApiHostOptions.cs:101` |
-| `GapInfo` | `src/Meridian/Tools/DataValidator.cs:42` |
-| `ValidationSummary` | `src/Meridian/Tools/DataValidator.cs:275` |
 | `AutoRemediationOutcome` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:12` |
 | `AutoRemediationTriggerSource` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:21` |
 | `AutoGapRemediationPolicy` | `src/Meridian.Application/Backfill/AutoGapRemediationService.cs:28` |
@@ -77,14 +74,15 @@
 | `IProviderFamilyCatalogService` | `src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs:443` |
 | `ExecutionTrigger` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:134` |
 | `ExecutionStatus` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:158` |
+| `ExecutionStatistics` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:185` |
+| `ProviderUsageStats` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:218` |
+| `SymbolExecutionResult` | `src/Meridian.Application/Scheduling/BackfillExecutionLog.cs:234` |
 | ... and 3866 more | |
 
 ### API Endpoints (228 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
-| `/api/system/lifecycle` | `src/Meridian/UiServer.cs:351` |
-| `/api/system/shutdown` | `src/Meridian/UiServer.cs:373` |
 | `/payments` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:21` |
 | `/payments/pending` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:55` |
 | `/payments/{pendingPaymentId:guid}/approve` | `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs:79` |
@@ -98,6 +96,11 @@
 | `/robinhood` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:66` |
 | `/alpaca/status` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:82` |
 | `/alpaca/connect` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:98` |
+| `/api/compliance/actions/evaluate` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:15` |
+| `/api/compliance/audit/extract` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:33` |
+| `/api/compliance/controls/attestation` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:37` |
+| `/api/compliance/access-reviews/run` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:52` |
+| `/api/compliance/access-reviews` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:61` |
 | `/{loanId:guid}` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:60` |
 | `/{loanId:guid}/projections/contract` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:75` |
 | `/{loanId:guid}/rebuild-state` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:104` |
@@ -130,9 +133,6 @@
 | `/subjects` | `src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs:70` |
 | `/subjects/{subjectKind}/{subjectId}/packet` | `src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs:79` |
 | `/subjects/{subjectKind}/{subjectId}/graph` | `src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs:92` |
-| `/subjects/{subjectKind}/{subjectId}/validate` | `src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs:121` |
-| `/subjects/{subjectKind}/{subjectId}/export-manifest` | `src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs:136` |
-| `/templates` | `src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.cs:165` |
 | ... and 178 more | |
 
 ### Configuration Options (133 undocumented)

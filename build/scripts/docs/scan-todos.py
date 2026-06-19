@@ -97,13 +97,16 @@ def iter_files(root: Path) -> Iterable[Path]:
         current = Path(dirpath)
         rel_dir = "" if current == root else current.relative_to(root).as_posix()
 
-        dirnames[:] = [
-            name
-            for name in dirnames
-            if name not in SKIP_DIRS and should_descend(f"{rel_dir}/{name}".strip("/"))
-        ]
+        dirnames[:] = sorted(
+            (
+                name
+                for name in dirnames
+                if name not in SKIP_DIRS and should_descend(f"{rel_dir}/{name}".strip("/"))
+            ),
+            key=str.casefold,
+        )
 
-        for filename in filenames:
+        for filename in sorted(filenames, key=str.casefold):
             if filename in SKIP_FILE_NAMES:
                 continue
             path = current / filename

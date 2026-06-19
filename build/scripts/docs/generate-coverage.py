@@ -149,14 +149,17 @@ def _collect_files(root: Path, extensions: Tuple[str, ...]) -> List[Path]:
     """Recursively collect files matching *extensions*, honouring exclusions."""
     results: List[Path] = []
     for current, dirs, files in os.walk(root):
-        dirs[:] = [name for name in dirs if name not in EXCLUDE_DIRS]
+        dirs[:] = sorted(
+            (name for name in dirs if name not in EXCLUDE_DIRS),
+            key=str.casefold,
+        )
         current_path = Path(current)
         if _should_skip(current_path):
             continue
-        for file_name in files:
+        for file_name in sorted(files, key=str.casefold):
             if file_name.endswith(extensions):
                 results.append(current_path / file_name)
-    return results
+    return sorted(results, key=lambda path: path.as_posix().casefold())
 
 
 def _read_text_safe(path: Path) -> str:
