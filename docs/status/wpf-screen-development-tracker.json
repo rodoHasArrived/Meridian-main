@@ -7,14 +7,14 @@
     "name": "scripts/generate-diagrams.mjs --tracker-only",
     "version": "1.0.0"
   },
-  "sourceFingerprint": "6914e45a93a3",
+  "sourceFingerprint": "7bf1e5e54010",
   "baselineDate": "2026-06-17",
   "summary": {
     "screenCount": 91,
     "workspaceCount": 7,
     "screenshotCount": 15,
-    "testReferenceCount": 88,
-    "openTaskCount": 79,
+    "testReferenceCount": 91,
+    "openTaskCount": 76,
     "statusCounts": {
       "needs-screenshot": 70,
       "evidence-current": 15,
@@ -78,8 +78,8 @@
         "secondaryCount": 9,
         "overflowCount": 10,
         "screenshotCount": 7,
-        "testReferenceCount": 23,
-        "openTaskCount": 20
+        "testReferenceCount": 25,
+        "openTaskCount": 18
       },
       {
         "name": "Settings",
@@ -88,8 +88,8 @@
         "secondaryCount": 6,
         "overflowCount": 6,
         "screenshotCount": 2,
-        "testReferenceCount": 16,
-        "openTaskCount": 16
+        "testReferenceCount": 17,
+        "openTaskCount": 15
       }
     ]
   },
@@ -109,6 +109,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Models/WorkspaceShellChromeContributionTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
@@ -143,7 +144,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Models/WorkspaceShellChromeContributionTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +18 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Models/WorkspaceShellChromeContributionTests.cs, +19 more."
         }
       ],
       "openTaskCount": 1
@@ -163,6 +164,7 @@
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/LiveDataViewerViewModelTests.cs",
@@ -180,7 +182,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/LiveDataViewerViewModelTests.cs, +1 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +2 more."
         }
       ],
       "openTaskCount": 0
@@ -200,6 +202,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
@@ -223,7 +226,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +7 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +8 more."
         }
       ],
       "openTaskCount": 1
@@ -243,6 +246,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs",
@@ -268,7 +272,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, +9 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +10 more."
         }
       ],
       "openTaskCount": 1
@@ -288,6 +292,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/ViewModelViewResolverTests.cs",
@@ -312,7 +318,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/ViewModelViewResolverTests.cs, +8 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +10 more."
         }
       ],
       "openTaskCount": 1
@@ -332,6 +338,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/RetentionAssuranceServiceTests.cs",
@@ -350,7 +357,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/RetentionAssuranceServiceTests.cs, +2 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +3 more."
         }
       ],
       "openTaskCount": 1
@@ -370,6 +377,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/DirectLendingViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
@@ -386,7 +394,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/DirectLendingViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/DirectLendingViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs, +1 more."
         }
       ],
       "openTaskCount": 1
@@ -406,6 +414,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs",
@@ -430,7 +439,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, +8 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +9 more."
         }
       ],
       "openTaskCount": 1
@@ -450,6 +459,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AccountPortfolioViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FundAccountsViewModelTests.cs",
@@ -474,7 +485,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AccountPortfolioViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FundAccountsViewModelTests.cs, +8 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +10 more."
         }
       ],
       "openTaskCount": 1
@@ -494,6 +505,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AggregatePortfolioViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
@@ -510,7 +522,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AggregatePortfolioViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AggregatePortfolioViewModelTests.cs, +1 more."
         }
       ],
       "openTaskCount": 1
@@ -530,6 +542,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/ViewModelViewResolverTests.cs",
@@ -553,7 +567,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/ViewModelViewResolverTests.cs, +7 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +9 more."
         }
       ],
       "openTaskCount": 1
@@ -573,6 +587,8 @@
       "fixtureMode": null,
       "screenshotGap": "No screenshot index row was found for this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs",
@@ -590,7 +606,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs, +1 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +3 more."
         }
       ],
       "openTaskCount": 1
@@ -610,6 +626,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs",
@@ -628,7 +646,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs, +2 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +4 more."
         }
       ],
       "openTaskCount": 1
@@ -648,6 +666,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/FundLedgerReadServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs",
@@ -671,7 +691,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/FundLedgerReadServiceTests.cs, tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs, +7 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +9 more."
         }
       ],
       "openTaskCount": 1
@@ -691,6 +711,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/PortfolioImportViewModelTests.cs",
@@ -708,7 +729,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/PortfolioImportViewModelTests.cs, +1 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +2 more."
         }
       ],
       "openTaskCount": 1
@@ -728,6 +749,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
@@ -759,7 +781,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +15 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +16 more."
         }
       ],
       "openTaskCount": 1
@@ -779,6 +801,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FundStructureSetupViewModelTests.cs"
       ],
       "status": "needs-screenshot",
@@ -793,7 +817,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/FundStructureSetupViewModelTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FundStructureSetupViewModelTests.cs."
         }
       ],
       "openTaskCount": 1
@@ -813,6 +837,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/FundLedgerReadServiceTests.cs",
@@ -844,7 +870,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/FundLedgerReadServiceTests.cs, +15 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +17 more."
         }
       ],
       "openTaskCount": 1
@@ -864,6 +890,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/ViewModelViewResolverTests.cs",
@@ -883,7 +911,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/ViewModelViewResolverTests.cs, +3 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +5 more."
         }
       ],
       "openTaskCount": 1
@@ -903,6 +931,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/ViewModelViewResolverTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/CashFlowViewModelTests.cs",
@@ -920,7 +949,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/ViewModelViewResolverTests.cs, tests/Meridian.Wpf.Tests/ViewModels/CashFlowViewModelTests.cs, +1 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/ViewModelViewResolverTests.cs, +2 more."
         }
       ],
       "openTaskCount": 1
@@ -940,6 +969,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/OperationsContinuityDtoContractTests.cs",
@@ -969,7 +1000,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs, tests/Meridian.Wpf.Tests/Services/OperationsContinuityDtoContractTests.cs, +13 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +15 more."
         }
       ],
       "openTaskCount": 1
@@ -989,6 +1020,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs",
@@ -1006,7 +1039,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/MainPageUiWorkflowTests.cs, +1 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +3 more."
         }
       ],
       "openTaskCount": 1
@@ -1026,6 +1059,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/AccountingWorkspaceShellPageTests.cs",
@@ -1044,7 +1079,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/AccountingWorkspaceShellPageTests.cs, +2 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +4 more."
         }
       ],
       "openTaskCount": 1
@@ -1064,6 +1099,7 @@
       "fixtureMode": null,
       "screenshotGap": "No screenshot index row was found for this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AccountingConfigureViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/AccountingWorkspaceShellPageTests.cs",
@@ -1082,7 +1118,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/AccountingConfigureViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/AccountingWorkspaceShellPageTests.cs, +2 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AccountingConfigureViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs, +3 more."
         }
       ],
       "openTaskCount": 1
@@ -1102,6 +1138,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkspaceLayoutManagerTests.cs",
@@ -1125,7 +1163,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceLayoutManagerTests.cs, +7 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +9 more."
         }
       ],
       "openTaskCount": 1
@@ -1145,6 +1183,8 @@
       "fixtureMode": null,
       "screenshotGap": "No screenshot index row was found for this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs",
@@ -1162,7 +1202,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs, +1 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +3 more."
         }
       ],
       "openTaskCount": 1
@@ -1182,6 +1222,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
@@ -1210,7 +1252,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +12 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +14 more."
         }
       ],
       "openTaskCount": 1
@@ -1230,6 +1272,8 @@
       "fixtureMode": null,
       "screenshotGap": "No screenshot index row was found for this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs",
@@ -1247,7 +1291,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs, +1 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +3 more."
         }
       ],
       "openTaskCount": 1
@@ -1267,6 +1311,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/HomeWorkspaceViewModelTests.cs",
@@ -1289,7 +1334,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, tests/Meridian.Wpf.Tests/ViewModels/HomeWorkspaceViewModelTests.cs, +6 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Shell/ShellRouteRegistryTests.cs, +7 more."
         }
       ],
       "openTaskCount": 1
@@ -1309,6 +1354,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs",
@@ -1332,7 +1379,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FundLedgerViewModelTests.cs, +7 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +9 more."
         }
       ],
       "openTaskCount": 1
@@ -1352,6 +1399,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Support/RunMatUiAutomationFacade.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/DashboardPageSmokeTests.cs"
@@ -1368,7 +1416,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Support/RunMatUiAutomationFacade.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/DashboardPageSmokeTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Support/RunMatUiAutomationFacade.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs, +1 more."
         }
       ],
       "openTaskCount": 1
@@ -1388,6 +1436,7 @@
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/KeyboardShortcutServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
@@ -1411,7 +1460,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/KeyboardShortcutServiceTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +7 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/KeyboardShortcutServiceTests.cs, +8 more."
         }
       ],
       "openTaskCount": 0
@@ -1431,6 +1480,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportWizardViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs",
@@ -1449,7 +1499,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportWizardViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs, +2 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportWizardViewModelTests.cs, +3 more."
         }
       ],
       "openTaskCount": 1
@@ -1469,6 +1519,8 @@
       "fixtureMode": null,
       "screenshotGap": "No screenshot index row was found for this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
@@ -1485,7 +1537,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/ViewModels/FinancialRecordExplorerViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +2 more."
         }
       ],
       "openTaskCount": 1
@@ -1505,6 +1557,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportWizardViewModelTests.cs"
       ],
       "status": "needs-screenshot",
@@ -1519,7 +1572,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportWizardViewModelTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AnalysisExportWizardViewModelTests.cs."
         }
       ],
       "openTaskCount": 1
@@ -1539,6 +1592,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/ExportPresetsViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs"
       ],
@@ -1554,7 +1608,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/ExportPresetsViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ExportPresetsViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkspaceCockpitShellViewModelTests.cs."
         }
       ],
       "openTaskCount": 1
@@ -1574,6 +1628,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Views/NavigationPageSmokeTests.cs"
@@ -1590,7 +1645,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Views/NavigationPageSmokeTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +1 more."
         }
       ],
       "openTaskCount": 1
@@ -1610,6 +1665,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/TradingWorkspaceShellPageTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs",
@@ -1627,7 +1683,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/TradingWorkspaceShellPageTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs, +1 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/TradingWorkspaceShellPageTests.cs, +2 more."
         }
       ],
       "openTaskCount": 1
@@ -1647,6 +1703,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/MessagingServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/StrategyBriefingWorkspaceServiceTests.cs",
@@ -1673,7 +1731,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/MessagingServiceTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/StrategyBriefingWorkspaceServiceTests.cs, +10 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/MessagingServiceTests.cs, +12 more."
         }
       ],
       "openTaskCount": 1
@@ -1693,6 +1751,7 @@
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
@@ -1724,7 +1783,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +15 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +16 more."
         }
       ],
       "openTaskCount": 0
@@ -1744,6 +1803,8 @@
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/FundLedgerReadServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs",
@@ -1780,7 +1841,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/FundLedgerReadServiceTests.cs, tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs, +20 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +22 more."
         }
       ],
       "openTaskCount": 0
@@ -1800,6 +1861,7 @@
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkspaceLayoutManagerTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs",
@@ -1823,7 +1885,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceLayoutManagerTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, +7 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceLayoutManagerTests.cs, +8 more."
         }
       ],
       "openTaskCount": 0
@@ -1843,6 +1905,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/QuantScriptExecutionHistoryServiceTests.cs",
@@ -1874,7 +1938,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/QuantScriptExecutionHistoryServiceTests.cs, +15 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs, +17 more."
         }
       ],
       "openTaskCount": 1
@@ -1894,6 +1958,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkspaceLayoutManagerTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/ChartingPageViewModelTests.cs",
@@ -1911,7 +1977,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceLayoutManagerTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ChartingPageViewModelTests.cs, +1 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +3 more."
         }
       ],
       "openTaskCount": 1
@@ -1931,6 +1997,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/DesktopAuthenticationSessionTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
@@ -2022,7 +2090,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/DesktopAuthenticationSessionTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +75 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +77 more."
         }
       ],
       "openTaskCount": 1
@@ -2042,6 +2110,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/BatchBacktestViewModelTests.cs"
       ],
       "status": "needs-screenshot",
@@ -2056,7 +2126,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/BatchBacktestViewModelTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/ViewModels/BatchBacktestViewModelTests.cs."
         }
       ],
       "openTaskCount": 1
@@ -2076,6 +2146,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AdvancedAnalyticsViewModelTests.cs"
       ],
       "status": "needs-screenshot",
@@ -2090,7 +2161,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/AdvancedAnalyticsViewModelTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AdvancedAnalyticsViewModelTests.cs."
         }
       ],
       "openTaskCount": 1
@@ -2110,6 +2181,8 @@
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/QuantScriptExecutionHistoryServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/QuantScriptTemplateCatalogServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/StrategyRunWorkspaceServiceTests.cs",
@@ -2131,7 +2204,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/QuantScriptExecutionHistoryServiceTests.cs, tests/Meridian.Wpf.Tests/Services/QuantScriptTemplateCatalogServiceTests.cs, tests/Meridian.Wpf.Tests/Services/StrategyRunWorkspaceServiceTests.cs, +5 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/QuantScriptExecutionHistoryServiceTests.cs, +7 more."
         }
       ],
       "openTaskCount": 0
@@ -2151,6 +2224,7 @@
       "fixtureMode": null,
       "screenshotGap": "No screenshot index row was found for this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Home/HomeFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/HomeWorkspaceViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs"
       ],
@@ -2166,7 +2240,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/HomeWorkspaceViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Home/HomeFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/HomeWorkspaceViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs."
         }
       ],
       "openTaskCount": 1
@@ -2186,6 +2260,7 @@
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/DataBrowserViewModelTests.cs"
       ],
@@ -2201,7 +2276,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/DataBrowserViewModelTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/DataBrowserViewModelTests.cs."
         }
       ],
       "openTaskCount": 0
@@ -2220,7 +2295,9 @@
       "refreshedDate": null,
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
-      "testReferences": [],
+      "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs"
+      ],
       "status": "needs-screenshot",
       "tasks": [
         {
@@ -2232,11 +2309,11 @@
           "text": "Capture a fixture-mode desktop screenshot for DataCalendar or record an explicit non-capture decision."
         },
         {
-          "done": false,
-          "text": "Add or link WPF route/view-model test evidence for DataCalendar; the scanner found no test reference to DataCalendarPage, DataCalendarViewModel, or the page tag."
+          "done": true,
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs."
         }
       ],
-      "openTaskCount": 2
+      "openTaskCount": 1
     },
     {
       "workspace": "Data",
@@ -2253,6 +2330,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/DataSamplingViewModelTests.cs"
       ],
       "status": "needs-screenshot",
@@ -2267,7 +2345,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/DataSamplingViewModelTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/DataSamplingViewModelTests.cs."
         }
       ],
       "openTaskCount": 1
@@ -2287,6 +2365,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/TimeSeriesAlignmentViewModelTests.cs"
       ],
       "status": "needs-screenshot",
@@ -2301,7 +2380,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/TimeSeriesAlignmentViewModelTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/TimeSeriesAlignmentViewModelTests.cs."
         }
       ],
       "openTaskCount": 1
@@ -2320,7 +2399,9 @@
       "refreshedDate": null,
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
-      "testReferences": [],
+      "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs"
+      ],
       "status": "needs-screenshot",
       "tasks": [
         {
@@ -2332,11 +2413,11 @@
           "text": "Capture a fixture-mode desktop screenshot for IndexSubscription or record an explicit non-capture decision."
         },
         {
-          "done": false,
-          "text": "Add or link WPF route/view-model test evidence for IndexSubscription; the scanner found no test reference to IndexSubscriptionPage, IndexSubscriptionViewModel, or the page tag."
+          "done": true,
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs."
         }
       ],
-      "openTaskCount": 2
+      "openTaskCount": 1
     },
     {
       "workspace": "Data",
@@ -2354,6 +2435,7 @@
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AdminMaintenanceServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/BackgroundTaskSchedulerServiceTests.cs",
@@ -2395,7 +2477,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, tests/Meridian.Wpf.Tests/Services/AdminMaintenanceServiceTests.cs, +26 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/FeatureCapabilityGateTests.cs, +27 more."
         }
       ],
       "openTaskCount": 1
@@ -2415,6 +2497,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AddProviderWizardViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs"
@@ -2431,7 +2514,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AddProviderWizardViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AddProviderWizardViewModelTests.cs, +1 more."
         }
       ],
       "openTaskCount": 1
@@ -2451,6 +2534,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Views/PageLifecycleCleanupTests.cs"
       ],
       "status": "needs-screenshot",
@@ -2465,7 +2549,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Views/PageLifecycleCleanupTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Views/PageLifecycleCleanupTests.cs."
         }
       ],
       "openTaskCount": 1
@@ -2485,6 +2569,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/StorageOptimizationViewModelTests.cs"
       ],
       "status": "needs-screenshot",
@@ -2499,7 +2584,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/StorageOptimizationViewModelTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/StorageOptimizationViewModelTests.cs."
         }
       ],
       "openTaskCount": 1
@@ -2519,6 +2604,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/RetentionAssuranceServiceTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/RetentionAssuranceViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
@@ -2535,7 +2621,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/RetentionAssuranceServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/RetentionAssuranceViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/RetentionAssuranceServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/RetentionAssuranceViewModelTests.cs, +1 more."
         }
       ],
       "openTaskCount": 1
@@ -2555,6 +2641,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
@@ -2583,7 +2670,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +12 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +13 more."
         }
       ],
       "openTaskCount": 1
@@ -2603,8 +2690,17 @@
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Portfolio/PortfolioFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Reporting/ReportingFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Trading/TradingFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Models/WorkspaceShellChromeContributionTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
@@ -2678,7 +2774,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +59 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, +68 more."
         }
       ],
       "openTaskCount": 0
@@ -2698,7 +2794,10 @@
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/ConfigServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs",
@@ -2741,7 +2840,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/ConfigServiceTests.cs, +27 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +30 more."
         }
       ],
       "openTaskCount": 0
@@ -2761,6 +2860,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/ConfigServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs",
@@ -2816,7 +2916,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/ConfigServiceTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, +39 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/ConfigServiceTests.cs, +40 more."
         }
       ],
       "openTaskCount": 1
@@ -2836,6 +2936,8 @@
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AdminMaintenanceServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs",
@@ -2884,7 +2986,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Services/AdminMaintenanceServiceTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, +32 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +34 more."
         }
       ],
       "openTaskCount": 0
@@ -2904,6 +3006,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/DataExportViewModelTests.cs",
@@ -2922,7 +3025,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/DataExportViewModelTests.cs, +2 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +3 more."
         }
       ],
       "openTaskCount": 1
@@ -2942,6 +3045,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/ConfigServiceTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/DataSourcesViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/SecretInputControlTests.cs",
@@ -2959,7 +3063,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/ConfigServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/DataSourcesViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/SecretInputControlTests.cs, +1 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/ConfigServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/DataSourcesViewModelTests.cs, +2 more."
         }
       ],
       "openTaskCount": 1
@@ -2979,6 +3083,7 @@
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs",
@@ -3004,7 +3109,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, +9 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +10 more."
         }
       ],
       "openTaskCount": 0
@@ -3024,6 +3129,8 @@
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkstationWorkflowSummaryServiceTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/DataQualityViewModelCharacterizationTests.cs",
@@ -3043,7 +3150,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/WorkstationWorkflowSummaryServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/DataQualityViewModelCharacterizationTests.cs, +3 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +5 more."
         }
       ],
       "openTaskCount": 0
@@ -3063,6 +3170,9 @@
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs",
@@ -3097,7 +3207,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/FundReconciliationWorkbenchServiceTests.cs, +18 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Accounting/AccountingFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Strategy/StrategyFeatureServiceRegistrationTests.cs, +21 more."
         }
       ],
       "openTaskCount": 0
@@ -3117,6 +3227,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SymbolMappingViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
@@ -3133,7 +3244,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/SymbolMappingViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/SymbolMappingViewModelTests.cs, +1 more."
         }
       ],
       "openTaskCount": 1
@@ -3153,6 +3264,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SymbolStorageViewModelTests.cs"
       ],
       "status": "needs-screenshot",
@@ -3167,7 +3279,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/SymbolStorageViewModelTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/SymbolStorageViewModelTests.cs."
         }
       ],
       "openTaskCount": 1
@@ -3187,6 +3299,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/ScheduleManagerViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs"
@@ -3203,7 +3316,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ScheduleManagerViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/SecurityMasterViewModelTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ScheduleManagerViewModelTests.cs, +1 more."
         }
       ],
       "openTaskCount": 1
@@ -3223,6 +3336,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/CollectionSessionViewModelTests.cs",
@@ -3240,7 +3355,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, tests/Meridian.Wpf.Tests/ViewModels/CollectionSessionViewModelTests.cs, +1 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Data/DataFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Data/Shell/DataWorkspaceShellViewModelTests.cs, +3 more."
         }
       ],
       "openTaskCount": 1
@@ -3260,6 +3375,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs"
       ],
@@ -3275,7 +3391,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Data/DataFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs."
         }
       ],
       "openTaskCount": 1
@@ -3295,6 +3411,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/ActivityLogViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/ProviderHealthViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs",
@@ -3312,7 +3429,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/ActivityLogViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ProviderHealthViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs, +1 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ActivityLogViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ProviderHealthViewModelTests.cs, +2 more."
         }
       ],
       "openTaskCount": 1
@@ -3331,7 +3448,9 @@
       "refreshedDate": null,
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
-      "testReferences": [],
+      "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs"
+      ],
       "status": "needs-screenshot",
       "tasks": [
         {
@@ -3343,11 +3462,11 @@
           "text": "Capture a fixture-mode desktop screenshot for KeyboardShortcuts or record an explicit non-capture decision."
         },
         {
-          "done": false,
-          "text": "Add or link WPF route/view-model test evidence for KeyboardShortcuts; the scanner found no test reference to KeyboardShortcutsPage, KeyboardShortcutsViewModel, or the page tag."
+          "done": true,
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs."
         }
       ],
-      "openTaskCount": 2
+      "openTaskCount": 1
     },
     {
       "workspace": "Settings",
@@ -3398,6 +3517,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/SetupWizardStateServiceTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/SetupWizardViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/SecretInputControlTests.cs"
@@ -3414,7 +3535,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/SetupWizardStateServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/SetupWizardViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/SecretInputControlTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/SetupWizardStateServiceTests.cs, +2 more."
         }
       ],
       "openTaskCount": 1
@@ -3435,6 +3556,8 @@
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Home/HomeFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkspaceStateTokenTests.cs",
@@ -3459,7 +3582,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, +9 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Home/HomeFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, +11 more."
         }
       ],
       "openTaskCount": 1
@@ -3479,6 +3602,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WelcomePageViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs",
@@ -3496,7 +3620,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/WelcomePageViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs, +1 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/WelcomePageViewModelTests.cs, +2 more."
         }
       ],
       "openTaskCount": 1
@@ -3516,6 +3640,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
@@ -3538,7 +3663,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +6 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +7 more."
         }
       ],
       "openTaskCount": 1
@@ -3559,6 +3684,8 @@
       "screenshotGap": "-",
       "testReferences": [
         "tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
@@ -3599,7 +3726,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, +25 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Copy/WorkspaceCopyCatalogTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, +27 more."
         }
       ],
       "openTaskCount": 0
@@ -3619,6 +3746,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/SecretInputControlTests.cs"
       ],
@@ -3634,7 +3763,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/SecretInputControlTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, +1 more."
         }
       ],
       "openTaskCount": 1
@@ -3654,6 +3783,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs",
@@ -3673,7 +3803,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/Services/WorkspaceServiceTests.cs, +3 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +4 more."
         }
       ],
       "openTaskCount": 1
@@ -3693,6 +3823,7 @@
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs",
         "tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
@@ -3720,7 +3851,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +11 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Models/ShellNavigationCatalogTests.cs, tests/Meridian.Wpf.Tests/Services/DataWorkspacePresentationBuilderTests.cs, +12 more."
         }
       ],
       "openTaskCount": 0
@@ -3740,6 +3871,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Services/BackendServiceManagerTests.cs",
         "tests/Meridian.Wpf.Tests/Services/SetupWizardStateServiceTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/ServiceManagerViewModelTests.cs",
@@ -3758,7 +3890,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/BackendServiceManagerTests.cs, tests/Meridian.Wpf.Tests/Services/SetupWizardStateServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/ServiceManagerViewModelTests.cs, +2 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Services/BackendServiceManagerTests.cs, tests/Meridian.Wpf.Tests/Services/SetupWizardStateServiceTests.cs, +3 more."
         }
       ],
       "openTaskCount": 1
@@ -3778,6 +3910,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AdminMaintenanceServiceTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/AdminMaintenanceViewModelTests.cs"
@@ -3794,7 +3928,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AdminMaintenanceServiceTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/AdminMaintenanceViewModelTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AdminMaintenanceServiceTests.cs, +2 more."
         }
       ],
       "openTaskCount": 1
@@ -3814,6 +3948,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Services/WorkstationOperatingContextServiceTests.cs"
       ],
@@ -3829,7 +3965,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/WorkstationOperatingContextServiceTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Services/AppServiceRegistrationTests.cs, +1 more."
         }
       ],
       "openTaskCount": 1
@@ -3849,6 +3985,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/MessagingHubViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs"
       ],
@@ -3864,7 +4001,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/ViewModels/MessagingHubViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MessagingHubViewModelTests.cs, tests/Meridian.Wpf.Tests/Views/WorkspaceDeepPageChromeTests.cs."
         }
       ],
       "openTaskCount": 1
@@ -3884,6 +4021,7 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs",
@@ -3905,7 +4043,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, tests/Meridian.Wpf.Tests/ViewModels/MainShellViewModelTests.cs, +5 more."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/Services/NavigationServiceTests.cs, +6 more."
         }
       ],
       "openTaskCount": 1
@@ -3925,6 +4063,8 @@
       "fixtureMode": "TBI",
       "screenshotGap": "No committed desktop screenshot is mapped to this registered page tag.",
       "testReferences": [
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs",
         "tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs",
         "tests/Meridian.Wpf.Tests/ViewModels/WorkflowLibraryViewModelTests.cs"
       ],
@@ -3940,7 +4080,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, tests/Meridian.Wpf.Tests/ViewModels/WorkflowLibraryViewModelTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureServiceRegistrationTests.cs, tests/Meridian.Wpf.Tests/Features/Settings/Shell/SettingsWorkspaceShellViewModelTests.cs, +1 more."
         }
       ],
       "openTaskCount": 1
