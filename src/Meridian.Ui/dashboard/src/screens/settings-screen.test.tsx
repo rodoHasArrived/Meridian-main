@@ -2250,13 +2250,13 @@ describe("SettingsScreen", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Runtime feature capabilities" })).toBeInTheDocument();
-    const securityMasterToggle = screen.getByRole("checkbox", { name: "Enable Security master" });
-    expect(securityMasterToggle).not.toBeChecked();
+    const securityMasterToggle = screen.getByRole("switch", { name: "Enable Security master" });
+    expect(securityMasterToggle).toHaveAttribute("aria-checked", "false");
 
     await user.click(securityMasterToggle);
 
     expect(onFeatureCapabilityToggle).toHaveBeenCalledWith("desktop.data.security-master", true);
-    expect(screen.getByRole("checkbox", { name: "Disable Settings workspace" })).toBeDisabled();
+    expect(screen.getByRole("switch", { name: "Disable Settings workspace" })).toBeDisabled();
   });
 
   it("renders diagnostic endpoint failures as accessible endpoint cards", () => {

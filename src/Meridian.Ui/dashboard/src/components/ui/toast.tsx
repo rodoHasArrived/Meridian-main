@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -101,7 +102,7 @@ export function Toast({ className, onDismiss, toast }: { className?: string; onD
           className="text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           onClick={onDismiss}
         >
-          x
+          <X className="h-3.5 w-3.5" aria-hidden="true" />
         </button>
       ) : null}
     </div>

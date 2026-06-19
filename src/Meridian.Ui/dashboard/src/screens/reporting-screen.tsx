@@ -4,8 +4,10 @@ import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { StatusBanner } from "@/components/ui/status-banner";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -2582,19 +2584,17 @@ export function ReportingScreen({ data, onRefreshLivePortfolioViews }: Reporting
               <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                 <div role="group" aria-label="Reporting schedule formats" className="flex flex-wrap gap-2">
                   {reportingScheduleArtifactFormats.map((format) => (
-                    <label
+                    <div
                       key={format}
-                      className="inline-flex items-center gap-2 rounded-sm border border-border/70 bg-secondary/25 px-2.5 py-1.5 text-xs text-foreground"
+                      className="rounded-sm border border-border/70 bg-secondary/25 px-2.5 py-1.5 text-xs text-foreground"
                     >
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={scheduleDraft.formats[format]}
-                        onChange={(event) => toggleScheduleDraftFormat(format, event.target.checked)}
+                        onCheckedChange={(checked) => toggleScheduleDraftFormat(format, checked)}
                         aria-label={`Reporting schedule ${format} format`}
-                        className="h-3.5 w-3.5 accent-primary"
+                        label={format}
                       />
-                      <span>{format}</span>
-                    </label>
+                    </div>
                   ))}
                 </div>
                 <Button
@@ -6523,27 +6523,19 @@ function resolveReportingFundProfileId(reporting: AccountingWorkspaceResponse["r
 
 function ReportingCommandStatusView({ status }: { status: ReportingCommandStatus }) {
   return (
-    <div
+    <StatusBanner
       role="status"
       aria-label={`${status.label} status`}
-      className={cn(
-        "rounded-md border px-3 py-2 text-sm leading-6",
-        status.state === "success"
-          ? "border-success/30 bg-success/10 text-success"
-          : status.state === "error"
-            ? "border-warning/35 bg-warning/10 text-warning"
-            : "border-primary/30 bg-primary/10 text-primary"
-      )}
-    >
-      <p>{status.message}</p>
-      {status.details.length > 0 ? (
+      tone={status.state === "success" ? "success" : status.state === "error" ? "warning" : "info"}
+      title={status.message}
+      detail={status.details.length > 0 ? (
         <ul className="mt-2 space-y-1 text-xs">
           {status.details.map((detail) => (
             <li key={detail}>{detail}</li>
           ))}
         </ul>
       ) : null}
-    </div>
+    />
   );
 }
 

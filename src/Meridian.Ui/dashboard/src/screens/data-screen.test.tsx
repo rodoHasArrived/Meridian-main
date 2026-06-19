@@ -955,7 +955,7 @@ describe("DataScreen", () => {
     expect(screen.getByLabelText("Backfill start date")).toBeDisabled();
     expect(screen.getByLabelText("Backfill end date")).toBeDisabled();
     expect(screen.getByRole("textbox", { name: "Backfill symbols" }))
-      .toHaveAccessibleDescription("Separate symbols with spaces or commas. At least one symbol is required. Previewing the backfill request. Backfill request is running; wait for the current request to finish before editing.");
+      .toHaveAccessibleDescription("Separate symbols with spaces or commas. At least one symbol is required. Backfill request status Previewing the backfill request. Backfill request is running; wait for the current request to finish before editing.");
     expect(screen.getAllByText("Backfill request is running; wait for the current request to finish before editing.").length).toBeGreaterThan(0);
 
     await act(async () => {

@@ -1,7 +1,8 @@
-import { Children, useState, type ReactNode } from "react";
+import { Children, useState, type KeyboardEvent, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export interface TabItem {
+  ariaLabel?: string;
   count?: ReactNode;
   disabled?: boolean;
   id: string;
@@ -33,6 +34,19 @@ export function Tabs({ children, className, defaultValue, onValueChange, tabs, v
     onValueChange?.(item.id, item);
   };
 
+  const handleTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, item: TabItem) => {
+    const targetItem = resolveKeyboardTabTarget(event, tabs, item.id);
+    if (!targetItem) {
+      return;
+    }
+
+    event.preventDefault();
+    selectTab(targetItem);
+    const tabList = event.currentTarget.closest("[role='tablist']");
+    const targetButton = tabList?.querySelector<HTMLButtonElement>(`[data-tab-id="${escapeTabSelectorValue(targetItem.id)}"]`);
+    targetButton?.focus();
+  };
+
   return (
     <div className={cn("grid gap-4", className)} {...props}>
       <div className="flex flex-wrap gap-0.5 border-b border-border" role="tablist">
@@ -45,6 +59,7 @@ export function Tabs({ children, className, defaultValue, onValueChange, tabs, v
               type="button"
               role="tab"
               aria-controls={panelId}
+              aria-label={tab.ariaLabel}
               aria-selected={selected}
               disabled={tab.disabled}
               className={cn(
@@ -54,7 +69,9 @@ export function Tabs({ children, className, defaultValue, onValueChange, tabs, v
                 tab.disabled && "cursor-not-allowed opacity-45"
               )}
               onClick={() => selectTab(tab)}
+              onKeyDown={(event) => handleTabKeyDown(event, tab)}
               tabIndex={selected ? 0 : index === 0 ? 0 : -1}
+              data-tab-id={tab.id}
             >
               <span>{tab.label}</span>
               {tab.count ? <span className="rounded-[var(--radius-chip,0.25rem)] border border-border px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">{tab.count}</span> : null}
@@ -77,4 +94,39 @@ export function Tabs({ children, className, defaultValue, onValueChange, tabs, v
 
 export function TabPanel({ children }: { children: ReactNode }) {
   return <>{children}</>;
+}
+
+function resolveKeyboardTabTarget(
+  event: KeyboardEvent<HTMLButtonElement>,
+  tabs: TabItem[],
+  activeId: string
+): TabItem | null {
+  const enabledTabs = tabs.filter((tab) => !tab.disabled);
+  if (enabledTabs.length === 0) {
+    return null;
+  }
+
+  const activeIndex = enabledTabs.findIndex((tab) => tab.id === activeId);
+  if (activeIndex < 0) {
+    return enabledTabs[0] ?? null;
+  }
+
+  switch (event.key) {
+    case "ArrowRight":
+    case "ArrowDown":
+      return enabledTabs[(activeIndex + 1) % enabledTabs.length] ?? null;
+    case "ArrowLeft":
+    case "ArrowUp":
+      return enabledTabs[(activeIndex - 1 + enabledTabs.length) % enabledTabs.length] ?? null;
+    case "Home":
+      return enabledTabs[0] ?? null;
+    case "End":
+      return enabledTabs[enabledTabs.length - 1] ?? null;
+    default:
+      return null;
+  }
+}
+
+function escapeTabSelectorValue(value: string): string {
+  return value.replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
 }

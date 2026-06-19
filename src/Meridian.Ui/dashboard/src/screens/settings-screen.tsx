@@ -4,8 +4,10 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox, Toggle } from "@/components/ui/checkbox";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { Input } from "@/components/ui/input";
+import { StatusBanner } from "@/components/ui/status-banner";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { WorkspaceFilterBar, WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import {
@@ -333,13 +335,6 @@ const diagnosticToneClass = {
   success: "border-success/30 bg-success/10",
   warning: "border-warning/35 bg-warning/10",
   danger: "border-danger/35 bg-danger/10"
-} as const;
-
-const formReadinessTextClass = {
-  default: "text-muted-foreground",
-  success: "text-success",
-  warning: "text-warning",
-  danger: "text-danger"
 } as const;
 
 const emptyProviderInlineValues: Record<ProviderInlineField, string> = {};
@@ -2531,17 +2526,12 @@ export function SettingsScreen({
                   ))}
                 </dl>
                 {vm.profileAuthenticationPanel.notice ? (
-                  <div
+                  <StatusBanner
                     role={vm.profileAuthenticationPanel.notice.role}
-                    className={cn("rounded-md border px-3 py-3", diagnosticToneClass[vm.profileAuthenticationPanel.notice.tone])}
-                  >
-                    <div className="text-sm font-semibold text-foreground">
-                      {vm.profileAuthenticationPanel.notice.title}
-                    </div>
-                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                      {vm.profileAuthenticationPanel.notice.detail}
-                    </p>
-                  </div>
+                    tone={settingsBannerTone(vm.profileAuthenticationPanel.notice.tone)}
+                    title={vm.profileAuthenticationPanel.notice.title}
+                    detail={vm.profileAuthenticationPanel.notice.detail}
+                  />
                 ) : null}
               </div>
             </div>
@@ -2624,22 +2614,19 @@ export function SettingsScreen({
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <label className="flex w-fit items-center gap-2 rounded-md border border-border/60 bg-secondary/20 px-3 py-2 text-xs font-medium text-muted-foreground">
-              <input
-                type="checkbox"
-                checked={scopedAccess.includeRevoked}
-                onChange={(event) => setScopedAccess((current) => ({
+            <Checkbox
+              checked={scopedAccess.includeRevoked}
+              onCheckedChange={(checked) => setScopedAccess((current) => ({
                   ...current,
-                  includeRevoked: event.target.checked,
+                  includeRevoked: checked,
                   loading: true,
                   message: null,
                   details: [],
                   tone: "default"
                 }))}
-                className="h-4 w-4 shrink-0 accent-[hsl(var(--primary))]"
-              />
-              Include revoked assignments
-            </label>
+              className="w-fit rounded-md border border-border/60 bg-secondary/20 px-3 py-2 text-xs"
+              label="Include revoked assignments"
+            />
             <div className="text-xs leading-5 text-muted-foreground">
               Revocations submit the assignment version currently shown in this console.
             </div>
@@ -2865,21 +2852,18 @@ export function SettingsScreen({
               <legend className="px-1 text-xs font-semibold text-foreground">Scoped permissions</legend>
               <div className="grid max-h-48 gap-2 overflow-auto pr-1 sm:grid-cols-2 xl:grid-cols-3">
                 {roleProfileDraft.permissionOptions.map((permission) => (
-                  <label
+                  <Checkbox
                     key={`scoped-access-${permission.value}`}
-                    className="flex min-w-0 items-start gap-2 rounded-sm border border-border/60 bg-background/40 px-2 py-2 text-xs text-muted-foreground"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={scopedAccess.permissionNames.includes(permission.value)}
-                      onChange={(event) => toggleScopedAccessPermission(permission.value, event.target.checked)}
-                      className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--primary))]"
-                    />
-                    <span className="min-w-0">
+                    checked={scopedAccess.permissionNames.includes(permission.value)}
+                    onCheckedChange={(checked) => toggleScopedAccessPermission(permission.value, checked)}
+                    className="min-w-0 rounded-sm border border-border/60 bg-background/40 px-2 py-2 text-xs"
+                    label={
+                      <span className="min-w-0">
                       <span className="block font-medium text-foreground">{permission.label}</span>
                       <span className="block break-words text-[11px] leading-4">{permission.group}</span>
                     </span>
-                  </label>
+                    }
+                  />
                 ))}
               </div>
             </fieldset>
@@ -2909,19 +2893,16 @@ export function SettingsScreen({
               </div>
             </div>
             {scopedAccess.message ? (
-              <div
+              <StatusBanner
                 role={scopedAccess.tone === "danger" ? "alert" : "status"}
-                className={cn("rounded-md border px-3 py-2 text-xs leading-5", diagnosticToneClass[scopedAccess.tone])}
-              >
-                <div className="font-semibold text-foreground">{scopedAccess.message}</div>
-                {scopedAccess.details.length > 0 ? (
-                  <ul className="mt-1 list-disc space-y-1 pl-5 text-muted-foreground">
-                    {scopedAccess.details.map((detail) => (
-                      <li key={detail}>{detail}</li>
-                    ))}
+                tone={settingsBannerTone(scopedAccess.tone)}
+                title={scopedAccess.message}
+                detail={scopedAccess.details.length > 0 ? (
+                  <ul className="list-disc space-y-1 pl-5">
+                    {scopedAccess.details.map((detail) => <li key={detail}>{detail}</li>)}
                   </ul>
                 ) : null}
-              </div>
+              />
             ) : null}
           </form>
         </CardContent>
@@ -3062,19 +3043,16 @@ export function SettingsScreen({
               </div>
             </div>
             {ledgerMappingAssignment.message ? (
-              <div
+              <StatusBanner
                 role={ledgerMappingAssignment.tone === "danger" ? "alert" : "status"}
-                className={cn("rounded-md border px-3 py-2 text-xs leading-5", diagnosticToneClass[ledgerMappingAssignment.tone])}
-              >
-                <div className="font-semibold text-foreground">{ledgerMappingAssignment.message}</div>
-                {ledgerMappingAssignment.details.length > 0 ? (
-                  <ul className="mt-1 list-disc space-y-1 pl-5 text-muted-foreground">
-                    {ledgerMappingAssignment.details.map((detail) => (
-                      <li key={detail}>{detail}</li>
-                    ))}
+                tone={settingsBannerTone(ledgerMappingAssignment.tone)}
+                title={ledgerMappingAssignment.message}
+                detail={ledgerMappingAssignment.details.length > 0 ? (
+                  <ul className="list-disc space-y-1 pl-5">
+                    {ledgerMappingAssignment.details.map((detail) => <li key={detail}>{detail}</li>)}
                   </ul>
                 ) : null}
-              </div>
+              />
             ) : null}
           </form>
           <form
@@ -3162,21 +3140,18 @@ export function SettingsScreen({
               <legend className="px-1 text-xs font-semibold text-foreground">Permissions</legend>
               <div className="grid max-h-56 gap-2 overflow-auto pr-1 sm:grid-cols-2 xl:grid-cols-3">
                 {roleProfileDraft.permissionOptions.map((permission) => (
-                  <label
+                  <Checkbox
                     key={permission.value}
-                    className="flex min-w-0 items-start gap-2 rounded-sm border border-border/60 bg-background/40 px-2 py-2 text-xs text-muted-foreground"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={rolePermissionProfile.permissionNames.includes(permission.value)}
-                      onChange={(event) => toggleRoleProfilePermission(permission.value, event.target.checked)}
-                      className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--primary))]"
-                    />
-                    <span className="min-w-0">
+                    checked={rolePermissionProfile.permissionNames.includes(permission.value)}
+                    onCheckedChange={(checked) => toggleRoleProfilePermission(permission.value, checked)}
+                    className="min-w-0 rounded-sm border border-border/60 bg-background/40 px-2 py-2 text-xs"
+                    label={
+                      <span className="min-w-0">
                       <span className="block font-medium text-foreground">{permission.label}</span>
                       <span className="block break-words text-[11px] leading-4">{permission.group}</span>
                     </span>
-                  </label>
+                    }
+                  />
                 ))}
               </div>
             </fieldset>
@@ -3206,19 +3181,16 @@ export function SettingsScreen({
               </div>
             </div>
             {rolePermissionProfile.message ? (
-              <div
+              <StatusBanner
                 role={rolePermissionProfile.tone === "danger" ? "alert" : "status"}
-                className={cn("rounded-md border px-3 py-2 text-xs leading-5", diagnosticToneClass[rolePermissionProfile.tone])}
-              >
-                <div className="font-semibold text-foreground">{rolePermissionProfile.message}</div>
-                {rolePermissionProfile.details.length > 0 ? (
-                  <ul className="mt-1 list-disc space-y-1 pl-5 text-muted-foreground">
-                    {rolePermissionProfile.details.map((detail) => (
-                      <li key={detail}>{detail}</li>
-                    ))}
+                tone={settingsBannerTone(rolePermissionProfile.tone)}
+                title={rolePermissionProfile.message}
+                detail={rolePermissionProfile.details.length > 0 ? (
+                  <ul className="list-disc space-y-1 pl-5">
+                    {rolePermissionProfile.details.map((detail) => <li key={detail}>{detail}</li>)}
                   </ul>
                 ) : null}
-              </div>
+              />
             ) : null}
           </form>
           <form
@@ -3330,23 +3302,18 @@ export function SettingsScreen({
                 label: string;
                 checked: boolean;
               }>).map((option) => (
-                <label
+                <Checkbox
                   key={option.key}
-                  className="flex items-center gap-2 rounded-md border border-border/60 bg-secondary/20 px-2 py-2 text-xs text-muted-foreground"
-                >
-                  <input
-                    type="checkbox"
-                    checked={option.checked}
-                    onChange={(event) => setApprovalPolicyRule((current) => ({
+                  checked={option.checked}
+                  onCheckedChange={(checked) => setApprovalPolicyRule((current) => ({
                       ...current,
-                      [option.key]: event.target.checked,
+                      [option.key]: checked,
                       message: null
                     }))}
-                    className="h-4 w-4 shrink-0 accent-[hsl(var(--primary))]"
-                    disabled={!approvalPolicyDraft.canSave || approvalPolicyRule.busy}
-                  />
-                  <span>{option.label}</span>
-                </label>
+                  className="rounded-md border border-border/60 bg-secondary/20 px-2 py-2 text-xs"
+                  disabled={!approvalPolicyDraft.canSave || approvalPolicyRule.busy}
+                  label={option.label}
+                />
               ))}
             </div>
             <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]">
@@ -3375,19 +3342,16 @@ export function SettingsScreen({
               </div>
             </div>
             {approvalPolicyRule.message ? (
-              <div
+              <StatusBanner
                 role={approvalPolicyRule.tone === "danger" ? "alert" : "status"}
-                className={cn("rounded-md border px-3 py-2 text-xs leading-5", diagnosticToneClass[approvalPolicyRule.tone])}
-              >
-                <div className="font-semibold text-foreground">{approvalPolicyRule.message}</div>
-                {approvalPolicyRule.details.length > 0 ? (
-                  <ul className="mt-1 list-disc space-y-1 pl-5 text-muted-foreground">
-                    {approvalPolicyRule.details.map((detail) => (
-                      <li key={detail}>{detail}</li>
-                    ))}
+                tone={settingsBannerTone(approvalPolicyRule.tone)}
+                title={approvalPolicyRule.message}
+                detail={approvalPolicyRule.details.length > 0 ? (
+                  <ul className="list-disc space-y-1 pl-5">
+                    {approvalPolicyRule.details.map((detail) => <li key={detail}>{detail}</li>)}
                   </ul>
                 ) : null}
-              </div>
+              />
             ) : null}
           </form>
           <form
@@ -3469,19 +3433,16 @@ export function SettingsScreen({
               </div>
             </div>
             {closeCalendarItem.message ? (
-              <div
+              <StatusBanner
                 role={closeCalendarItem.tone === "danger" ? "alert" : "status"}
-                className={cn("rounded-md border px-3 py-2 text-xs leading-5", diagnosticToneClass[closeCalendarItem.tone])}
-              >
-                <div className="font-semibold text-foreground">{closeCalendarItem.message}</div>
-                {closeCalendarItem.details.length > 0 ? (
-                  <ul className="mt-1 list-disc space-y-1 pl-5 text-muted-foreground">
-                    {closeCalendarItem.details.map((detail) => (
-                      <li key={detail}>{detail}</li>
-                    ))}
+                tone={settingsBannerTone(closeCalendarItem.tone)}
+                title={closeCalendarItem.message}
+                detail={closeCalendarItem.details.length > 0 ? (
+                  <ul className="list-disc space-y-1 pl-5">
+                    {closeCalendarItem.details.map((detail) => <li key={detail}>{detail}</li>)}
                   </ul>
                 ) : null}
-              </div>
+              />
             ) : null}
           </form>
         </CardContent>
@@ -3651,17 +3612,16 @@ export function SettingsScreen({
               </div>
             </div>
             {assetProfileDraft.message ? (
-              <div
+              <StatusBanner
                 role={assetProfileDraft.tone === "danger" ? "alert" : "status"}
-                className={cn("rounded-md border px-3 py-2 text-xs leading-5", diagnosticToneClass[assetProfileDraft.tone])}
-              >
-                <div className="font-semibold text-foreground">{assetProfileDraft.message}</div>
-                {assetProfileDraft.details.length > 0 ? (
-                  <ul className="mt-1 list-disc space-y-1 pl-5 text-muted-foreground">
+                tone={settingsBannerTone(assetProfileDraft.tone)}
+                title={assetProfileDraft.message}
+                detail={assetProfileDraft.details.length > 0 ? (
+                  <ul className="list-disc space-y-1 pl-5">
                     {assetProfileDraft.details.map((detail) => <li key={detail}>{detail}</li>)}
                   </ul>
                 ) : null}
-              </div>
+              />
             ) : null}
           </form>
 
@@ -3755,17 +3715,16 @@ export function SettingsScreen({
               </div>
             </div>
             {profileBackedSecurity.message ? (
-              <div
+              <StatusBanner
                 role={profileBackedSecurity.tone === "danger" ? "alert" : "status"}
-                className={cn("rounded-md border px-3 py-2 text-xs leading-5", diagnosticToneClass[profileBackedSecurity.tone])}
-              >
-                <div className="font-semibold text-foreground">{profileBackedSecurity.message}</div>
-                {profileBackedSecurity.details.length > 0 ? (
-                  <ul className="mt-1 list-disc space-y-1 pl-5 text-muted-foreground">
+                tone={settingsBannerTone(profileBackedSecurity.tone)}
+                title={profileBackedSecurity.message}
+                detail={profileBackedSecurity.details.length > 0 ? (
+                  <ul className="list-disc space-y-1 pl-5">
                     {profileBackedSecurity.details.map((detail) => <li key={detail}>{detail}</li>)}
                   </ul>
                 ) : null}
-              </div>
+              />
             ) : null}
           </form>
         </CardContent>
@@ -4072,54 +4031,43 @@ export function SettingsScreen({
               </fieldset>
             </div>
             {alpacaForm.liveAcknowledgement.visible ? (
-              <label
-                htmlFor={alpacaForm.liveAcknowledgement.id}
-                className={cn(
-                  "flex items-start gap-3 rounded-md border border-live-env/35 bg-live-env/10 px-3 py-3 text-sm text-live-env",
-                  alpacaForm.liveAcknowledgement.disabled && "opacity-60"
-                )}
-              >
-                <input
+              <Checkbox
                   id={alpacaForm.liveAcknowledgement.id}
-                  type="checkbox"
                   checked={alpacaForm.liveAcknowledgement.checked}
                   disabled={alpacaForm.liveAcknowledgement.disabled}
                   required={alpacaForm.liveAcknowledgement.required}
-                  onChange={(event) => alpacaForm.setLiveAcknowledged(event.target.checked)}
+                  onCheckedChange={alpacaForm.setLiveAcknowledged}
                   aria-label={alpacaForm.liveAcknowledgement.ariaLabel}
                   aria-describedby={joinDescribedByIds(
                     alpacaForm.liveAcknowledgement.descriptionId,
                     alpacaForm.liveAcknowledgement.disabledReasonId,
                     alpacaForm.formPanelId
                   )}
-                  className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--live-env))]"
+                  className="rounded-md border border-live-env/35 bg-live-env/10 px-3 py-3 text-live-env"
+                  label={alpacaForm.liveAcknowledgement.label}
+                  hint={
+                    <>
+                      <span id={alpacaForm.liveAcknowledgement.descriptionId} className="block">
+                        {alpacaForm.liveAcknowledgement.detail}
+                      </span>
+                      <FieldSupportText
+                        disabledReason={alpacaForm.liveAcknowledgement.disabledReason}
+                        disabledReasonId={alpacaForm.liveAcknowledgement.disabledReasonId ?? undefined}
+                        disabledReasonClassName="mt-1 block"
+                      />
+                    </>
+                  }
                 />
-                <span className="min-w-0">
-                  <span className="block font-semibold text-foreground">{alpacaForm.liveAcknowledgement.label}</span>
-                  <span id={alpacaForm.liveAcknowledgement.descriptionId} className="mt-1 block text-xs leading-5 text-muted-foreground">
-                    {alpacaForm.liveAcknowledgement.detail}
-                  </span>
-                  <FieldSupportText
-                    disabledReason={alpacaForm.liveAcknowledgement.disabledReason}
-                    disabledReasonId={alpacaForm.liveAcknowledgement.disabledReasonId ?? undefined}
-                    disabledReasonClassName="mt-1 block"
-                  />
-                </span>
-              </label>
             ) : null}
-            <div
+            <StatusBanner
               id={alpacaForm.formPanelId}
               role={alpacaForm.formPanelRole}
               aria-live={alpacaForm.formPanelAriaLive}
-              className={cn("rounded-md border px-3 py-3", diagnosticToneClass[alpacaForm.formPanelTone])}
-            >
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                <div className="min-w-0">
-                  <div className={cn("text-sm font-semibold", formReadinessTextClass[alpacaForm.formPanelTone])}>
-                    {alpacaForm.formPanelTitle}
-                  </div>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{alpacaForm.formPanelDetail}</p>
-                </div>
+              tone={settingsBannerTone(alpacaForm.formPanelTone)}
+              title={alpacaForm.formPanelTitle}
+              detail={
+                <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+                  <p className="leading-5">{alpacaForm.formPanelDetail}</p>
                 <div className="flex flex-wrap gap-2" aria-label="Alpaca credential requirements">
                   {alpacaForm.requirements.map((requirement) => (
                     <span
@@ -4132,7 +4080,8 @@ export function SettingsScreen({
                   ))}
                 </div>
               </div>
-            </div>
+              }
+            />
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="submit"
@@ -4399,26 +4348,20 @@ export function SettingsScreen({
                     <SettingsChip label="Default" value={capability.defaultLabel} />
                     <SettingsChip label="Config" value={capability.overrideLabel} />
                   </div>
-                  <label className={cn("mt-4 flex items-start gap-3 text-sm", !capability.canToggle && "opacity-70")}>
-                    <input
-                      type="checkbox"
+                  <div className="mt-4 grid gap-1">
+                    <Toggle
                       checked={capability.isEnabled}
                       disabled={!capability.canToggle || !onFeatureCapabilityToggle}
-                      onChange={(event) => {
-                        void onFeatureCapabilityToggle?.(capability.capabilityKey, event.target.checked);
+                      onCheckedChange={(checked) => {
+                        void onFeatureCapabilityToggle?.(capability.capabilityKey, checked);
                       }}
                       aria-label={capability.ariaLabel}
-                      className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--primary))]"
+                      label={capability.canToggle ? "Allow this browser workstation capability" : "Required capability"}
                     />
-                    <span className="min-w-0">
-                      <span className="block font-medium text-foreground">
-                        {capability.canToggle ? "Allow this browser workstation capability" : "Required capability"}
-                      </span>
-                      {capability.disabledReason ? (
-                        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{capability.disabledReason}</span>
-                      ) : null}
-                    </span>
-                  </label>
+                    {capability.disabledReason ? (
+                      <p className="text-xs leading-5 text-muted-foreground">{capability.disabledReason}</p>
+                    ) : null}
+                  </div>
                 </div>
               ))}
             </div>
@@ -4852,16 +4795,13 @@ function AssetProfileFieldInput({
 }) {
   if (field.fieldType === "Boolean") {
     return (
-      <label className="flex min-h-16 items-center gap-2 rounded-md border border-border/60 bg-secondary/15 px-3 py-2 text-xs font-medium text-muted-foreground">
-        <input
-          type="checkbox"
-          checked={value === "true"}
-          onChange={(event) => onChange(event.target.checked ? "true" : "false")}
-          className="h-4 w-4 shrink-0 accent-[hsl(var(--primary))]"
-          disabled={disabled}
-        />
-        <span>{field.label}{field.isRequired ? " *" : ""}</span>
-      </label>
+      <Checkbox
+        checked={value === "true"}
+        onCheckedChange={(checked) => onChange(checked ? "true" : "false")}
+        className="min-h-16 rounded-md border border-border/60 bg-secondary/15 px-3 py-2 text-xs"
+        disabled={disabled}
+        label={`${field.label}${field.isRequired ? " *" : ""}`}
+      />
     );
   }
 
@@ -5272,16 +5212,13 @@ function ProviderInlineActionPanel({
             </select>
           </label>
           {state.environment === "live" ? (
-            <label className="flex items-start gap-2 rounded-md border border-live-env/35 bg-live-env/10 px-2 py-2 text-xs text-live-env">
-              <input
-                type="checkbox"
-                checked={state.liveAcknowledged}
-                onChange={(event) => onLiveAcknowledgementChange(event.target.checked)}
-                className="mt-0.5 h-4 w-4 shrink-0 accent-[hsl(var(--live-env))]"
-                disabled={busy}
-              />
-              <span>I understand this save updates live provider routing credentials.</span>
-            </label>
+            <Checkbox
+              checked={state.liveAcknowledged}
+              onCheckedChange={onLiveAcknowledgementChange}
+              className="rounded-md border border-live-env/35 bg-live-env/10 px-2 py-2 text-xs text-live-env"
+              disabled={busy}
+              label="I understand this save updates live provider routing credentials."
+            />
           ) : null}
         </div>
       ) : null}
@@ -6359,6 +6296,13 @@ function recentEventsVariant(state: "ready" | "empty" | "unavailable"): "default
   if (state === "unavailable") return "danger";
   if (state === "empty") return "outline";
   return "default";
+}
+
+function settingsBannerTone(tone: keyof typeof diagnosticToneClass | keyof typeof itemToneClass): "success" | "warning" | "danger" | "info" {
+  if (tone === "success") return "success";
+  if (tone === "warning") return "warning";
+  if (tone === "danger") return "danger";
+  return "info";
 }
 
 function systemVariant(tone: keyof typeof systemToneClass): "outline" | "success" | "warning" | "danger" {

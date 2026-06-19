@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export interface ContextMenuItem {
@@ -47,6 +47,34 @@ export function ContextMenu({ className, items, label = "Context menu", onClose,
     menuRef.current.style.top = `${Math.max(8, top)}px`;
   }, [open, position]);
 
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      getEnabledMenuItems(menuRef.current)[0]?.focus();
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
+  }, [open]);
+
+  const handleMenuKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onClose();
+      return;
+    }
+
+    const targetButton = resolveKeyboardMenuTarget(event, menuRef.current);
+    if (!targetButton) {
+      return;
+    }
+
+    event.preventDefault();
+    targetButton.focus();
+  };
+
   if (!open || !position) {
     return null;
   }
@@ -62,6 +90,7 @@ export function ContextMenu({ className, items, label = "Context menu", onClose,
           "fixed z-[60] min-w-44 overflow-hidden rounded-[var(--radius-button,0.375rem)] border border-border bg-popover py-1 text-sm text-popover-foreground shadow-[var(--shadow-float)]",
           className
         )}
+        onKeyDown={handleMenuKeyDown}
         style={{ left: position.x, top: position.y }}
       >
         {items.map((item) => item.type === "divider" ? (
@@ -104,12 +133,51 @@ export function useContextMenu() {
     setPosition({ x: event.clientX, y: event.clientY });
   }, []);
 
+  const onKeyDown = useCallback((event: React.KeyboardEvent<HTMLElement>) => {
+    if (event.key !== "ContextMenu" && !(event.shiftKey && event.key === "F10")) {
+      return;
+    }
+
+    event.preventDefault();
+    const rect = event.currentTarget.getBoundingClientRect();
+    setPosition({ x: rect.left + 12, y: rect.bottom + 4 });
+  }, []);
+
   const closeMenu = useCallback(() => setPosition(null), []);
 
   return {
     closeMenu,
     onContextMenu,
+    onKeyDown,
     open: position !== null,
     position
   };
+}
+
+function resolveKeyboardMenuTarget(
+  event: KeyboardEvent<HTMLDivElement>,
+  menu: HTMLDivElement | null
+): HTMLButtonElement | null {
+  const menuItems = getEnabledMenuItems(menu);
+  if (menuItems.length === 0) {
+    return null;
+  }
+
+  const activeIndex = menuItems.findIndex((item) => item === document.activeElement);
+  switch (event.key) {
+    case "ArrowDown":
+      return menuItems[(Math.max(activeIndex, 0) + 1) % menuItems.length] ?? null;
+    case "ArrowUp":
+      return menuItems[(activeIndex - 1 + menuItems.length) % menuItems.length] ?? null;
+    case "Home":
+      return menuItems[0] ?? null;
+    case "End":
+      return menuItems[menuItems.length - 1] ?? null;
+    default:
+      return null;
+  }
+}
+
+function getEnabledMenuItems(menu: HTMLDivElement | null): HTMLButtonElement[] {
+  return Array.from(menu?.querySelectorAll<HTMLButtonElement>("button[role='menuitem']:not(:disabled)") ?? []);
 }

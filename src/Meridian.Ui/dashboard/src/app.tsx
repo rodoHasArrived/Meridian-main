@@ -27,7 +27,9 @@ import { CommandPalette } from "@/components/meridian/command-palette";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { Badge } from "@/components/ui/badge";
+import type { BreadcrumbItem } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
+import { PanelSurface } from "@/components/ui/panel-surface";
 import {
   Sheet,
   SheetBody,
@@ -37,12 +39,14 @@ import {
   SheetHeader,
   SheetTitle
 } from "@/components/ui/sheet";
+import { StatusBanner } from "@/components/ui/status-banner";
+import { ToastProvider } from "@/components/ui/toast";
 import { useWorkstationData } from "@/hooks/use-workstation-data";
 import { markWorkflowPresetUsed } from "@/lib/api";
 import { PriceAlertsProvider, usePriceAlerts } from "@/lib/price-alerts/service";
 import { cn } from "@/lib/utils";
-import { legacyWorkspaceRedirect } from "@/lib/workspace";
-import type { WorkspaceKey } from "@/types";
+import { legacyWorkspaceRedirect, workspacePath } from "@/lib/workspace";
+import type { WorkspaceKey, WorkspaceSummary } from "@/types";
 
 const DataScreen = lazy(() => import("@/screens/data-screen").then((module) => ({ default: module.DataScreen })));
 const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-screen").then((module) => ({ default: module.EvidenceWorkbenchScreen })));
@@ -68,7 +72,9 @@ const WatchlistScreen = lazy(() => import("@/screens/watchlist-screen").then((mo
 export function App() {
   return (
     <PriceAlertsProvider>
-      <AppShell />
+      <ToastProvider>
+        <AppShell />
+      </ToastProvider>
     </PriceAlertsProvider>
   );
 }
@@ -214,6 +220,7 @@ function AppShell() {
     },
     operatingContextScope: operatingScopeInput
   });
+  const breadcrumbItems = buildWorkspaceBreadcrumbItems(pathname, shell.activeWorkspace, navigate);
 
   useEffect(() => {
     const previousRouteKey = previousRouteKeyRef.current;
@@ -333,6 +340,7 @@ function AppShell() {
           tabIndex={-1}
         >
           <WorkspaceHeader
+            breadcrumbItems={breadcrumbItems}
             workspace={shell.activeWorkspace}
             session={session}
             onRefresh={refresh}
@@ -558,6 +566,65 @@ function focusRouteTargetWhenReady(
   return cleanup;
 }
 
+function buildWorkspaceBreadcrumbItems(
+  pathname: string,
+  workspace: WorkspaceSummary,
+  navigate: ReturnType<typeof useNavigate>
+): BreadcrumbItem[] {
+  const routeLabel = resolveRouteBreadcrumbLabel(pathname, workspace);
+  const workspaceIsCurrent = routeLabel === workspace.label;
+
+  return [
+    {
+      label: "Workstation",
+      onClick: () => navigate("/trading")
+    },
+    {
+      label: workspace.label,
+      current: workspaceIsCurrent,
+      onClick: workspaceIsCurrent ? undefined : () => navigate(workspacePath(workspace.key))
+    },
+    ...(workspaceIsCurrent ? [] : [{ label: routeLabel, current: true }])
+  ];
+}
+
+function resolveRouteBreadcrumbLabel(pathname: string, workspace: WorkspaceSummary): string {
+  const segments = pathname.split("/").filter(Boolean);
+  const routeSegments = segments[0] === workspace.key ? segments.slice(1) : segments.slice(2);
+  if (routeSegments.length === 0) {
+    return workspace.label;
+  }
+
+  return routeSegments.map(formatRouteSegmentLabel).join(" / ");
+}
+
+function formatRouteSegmentLabel(segment: string): string {
+  const knownLabels: Record<string, string> = {
+    alerts: "Alerts",
+    approvals: "Approvals",
+    "capital-accounts": "Capital Accounts",
+    "covered-call": "Covered Call",
+    designer: "Designer",
+    "entity-setup": "Entity Setup",
+    evidence: "Evidence",
+    "family-office": "Family Office",
+    "formula-workbench": "Formula Workbench",
+    ledger: "Ledger",
+    "operations-continuity": "Operations Continuity",
+    "operations-record": "Operations Record",
+    providers: "Providers",
+    "quant-lab": "Quant Lab",
+    quotes: "Quotes",
+    readiness: "Readiness",
+    "security-master": "Security Master",
+    watchlist: "Watchlist"
+  };
+
+  return knownLabels[segment] ?? segment.split("-").map((part) => (
+    part.length > 0 ? `${part[0].toUpperCase()}${part.slice(1)}` : part
+  )).join(" ");
+}
+
 function WorkflowContinuityDock({
   viewModel,
   onClearOperatingContext
@@ -764,24 +831,25 @@ function RouteRecoveryPanel({
   actionHref: string;
 }) {
   return (
-    <section
+    <PanelSurface
       role="alert"
       aria-labelledby="route-recovery-title"
       aria-describedby="route-recovery-detail"
-      className="panel-surface flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
+      className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
     >
-      <div>
-        <span className="eyebrow-label">Route recovery</span>
-        <h2 id="route-recovery-title" className="mt-1 text-base font-semibold text-foreground">{title}</h2>
-        <p id="route-recovery-detail" className="mt-1 text-sm text-muted-foreground">{detail}</p>
-      </div>
+      <StatusBanner
+        tone="danger"
+        title={<span id="route-recovery-title">{title}</span>}
+        detail={<span id="route-recovery-detail">{detail}</span>}
+        className="min-w-0 flex-1 shadow-none"
+      />
       <Button asChild variant="default" size="sm" className="shrink-0">
         <Link to={actionHref}>
           <span>{actionLabel}</span>
           <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
         </Link>
       </Button>
-    </section>
+    </PanelSurface>
   );
 }
 
@@ -969,13 +1037,13 @@ function LegacyWorkspaceRedirect() {
 
 function WorkspaceRouteFallback({ title }: { title: string }) {
   return (
-    <section role="status" aria-live="polite" className="panel-surface flex items-center gap-3 p-4">
+    <PanelSurface role="status" aria-live="polite" className="flex items-center gap-3 p-4">
       <LoaderCircle className="h-4 w-4 animate-spin text-primary" aria-hidden="true" />
       <div>
         <h2 className="text-sm font-semibold text-foreground">{title}</h2>
         <p className="mt-1 text-xs text-muted-foreground">Preparing the workstation route.</p>
       </div>
-    </section>
+    </PanelSurface>
   );
 }
 
@@ -1027,19 +1095,25 @@ function ShellStatus({ panel, onRetry }: { panel: ShellStatusPanel; onRetry: () 
       )}
     >
       <div className="min-w-0">
-        <div className="flex min-w-0 flex-wrap items-center gap-2">
-          <span className="eyebrow-label">Platform diagnostics</span>
-          <span id={panel.titleId} className="inline-flex min-w-0 items-center gap-2 font-semibold text-foreground">
-            <Icon aria-hidden="true" className={`h-4 w-4 shrink-0 ${panel.tone === "loading" ? "animate-spin" : ""}`} />
-            <span className="min-w-0 truncate">{panel.title}</span>
-          </span>
-          {itemSummary ? (
-            <span className="rounded-sm border border-border/60 bg-background/45 px-1.5 py-0.5 font-mono text-[0.625rem] uppercase tracking-[0.12em] text-muted-foreground">
-              {itemSummary}
+        <StatusBanner
+          tone={shellStatusToneToBannerTone(panel.tone)}
+          title={(
+            <span id={panel.titleId} className="inline-flex min-w-0 items-center gap-2">
+              <Icon aria-hidden="true" className={`h-4 w-4 shrink-0 ${panel.tone === "loading" ? "animate-spin" : ""}`} />
+              <span className="min-w-0 truncate">{panel.title}</span>
+              {itemSummary ? (
+                <span
+                  aria-hidden="true"
+                  className="rounded-sm border border-border/60 bg-background/45 px-1.5 py-0.5 font-mono text-[0.625rem] uppercase tracking-[0.12em] text-muted-foreground"
+                >
+                  {itemSummary}
+                </span>
+              ) : null}
             </span>
-          ) : null}
-        </div>
-        <p id={panel.detailId} className="mt-1 min-w-0 truncate text-foreground/80">{panel.detail}</p>
+          )}
+          detail={<span id={panel.detailId}>{panel.detail}</span>}
+          className="shadow-none"
+        />
         {panel.tone === "loading" ? (
           <div className="startup-status-meter mt-2" aria-hidden="true">
             <span />
@@ -1078,4 +1152,16 @@ function ShellStatus({ panel, onRetry }: { panel: ShellStatusPanel; onRetry: () 
       ) : null}
     </section>
   );
+}
+
+function shellStatusToneToBannerTone(tone: ShellStatusPanel["tone"]): "danger" | "info" | "warning" {
+  switch (tone) {
+    case "danger":
+      return "danger";
+    case "warning":
+      return "warning";
+    case "loading":
+    default:
+      return "info";
+  }
 }

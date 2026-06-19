@@ -71,7 +71,8 @@ describe("design-system UI primitives", () => {
     expect(screen.getByText("Review required")).toBeInTheDocument();
     expect(screen.getByText("Open panel")).toBeVisible();
 
-    await user.click(screen.getByRole("tab", { name: "Closed" }));
+    screen.getByRole("tab", { name: /Open/ }).focus();
+    await user.keyboard("{ArrowRight}");
 
     expect(screen.getByText("Closed panel")).toBeVisible();
   });
@@ -98,7 +99,11 @@ describe("design-system UI primitives", () => {
       </>
     );
 
-    await user.click(screen.getByRole("menuitem", { name: "Open record" }));
+    await waitFor(() => expect(screen.getByRole("menuitem", { name: "Open record" })).toHaveFocus());
+    await user.keyboard("{ArrowDown}");
+    expect(screen.getByRole("menuitem", { name: "Delete" })).toHaveFocus();
+    await user.keyboard("{ArrowUp}");
+    await user.keyboard("{Enter}");
 
     expect(onSelect).toHaveBeenCalledTimes(1);
     expect(onClose).toHaveBeenCalledTimes(1);

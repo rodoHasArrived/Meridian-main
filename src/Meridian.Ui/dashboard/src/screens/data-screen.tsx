@@ -10,8 +10,7 @@ import {
   RadioTower,
   RefreshCcw,
   ShieldCheck,
-  TimerReset,
-  XCircle
+  TimerReset
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
@@ -22,14 +21,16 @@ import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   WorkspaceFilterBar,
-  WorkspaceInspectorHost,
-  WorkspaceTabStrip
+  WorkspaceInspectorHost
 } from "@/components/meridian/workspace-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
+import { StatusBanner } from "@/components/ui/status-banner";
+import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { workspaceForPath } from "@/lib/workspace";
 import {
@@ -765,15 +766,12 @@ function DataUploadIntakePanel({
           {state.issueRows.length > 0 ? (
             <div className="mt-3 grid gap-2" role="alert" aria-label="Upload validation issues">
               {state.issueRows.map((issue) => (
-                <div key={issue.id} className={cn(
-                  "rounded-md border px-3 py-2 text-xs leading-5",
-                  issue.tone === "danger"
-                    ? "border-danger/35 bg-danger/10 text-danger"
-                    : "border-warning/35 bg-warning/10 text-warning"
-                )}>
-                  <div className="font-semibold">{issue.severity} · {issue.field} · {issue.rowLabel}</div>
-                  <div className="mt-1">{issue.message}</div>
-                </div>
+                <StatusBanner
+                  key={issue.id}
+                  tone={issue.tone === "danger" ? "danger" : "warning"}
+                  title={`${issue.severity} · ${issue.field} · ${issue.rowLabel}`}
+                  detail={issue.message}
+                />
               ))}
             </div>
           ) : null}
@@ -874,18 +872,27 @@ function ProviderDetailPanel({
       className="h-fit min-w-0"
     >
       <p className="text-sm leading-6 text-muted-foreground">{detail.description}</p>
-      <WorkspaceTabStrip
-        label={`${detail.title} provider detail tabs`}
+      <Tabs
+        aria-label={`${detail.title} provider detail tabs`}
+        className="mt-3"
+        value={activeTab}
+        onValueChange={(tab) => onTabSelect(tab as DataOperationsProviderDetailState["activeTab"])}
         tabs={detail.tabs.map((tab) => ({
           id: tab.id,
           label: tab.label,
-          selected: tab.selected,
           panelId: tab.ariaControls
         }))}
-        onSelect={(tab) => onTabSelect(tab as DataOperationsProviderDetailState["activeTab"])}
-        className="mt-3"
-      />
-      <ProviderDetailTabPanel detail={detail} activeTab={activeTab} onVerify={onVerify} />
+      >
+        {detail.tabs.map((tab) => (
+          <TabPanel key={tab.id}>
+            <ProviderDetailTabPanel
+              detail={detail}
+              activeTab={tab.id as DataOperationsProviderDetailState["activeTab"]}
+              onVerify={onVerify}
+            />
+          </TabPanel>
+        ))}
+      </Tabs>
     </WorkspaceInspectorHost>
   );
 }
@@ -998,6 +1005,20 @@ function ProviderDiagnosticRow({ diagnostic }: { diagnostic: DataOperationsProvi
       <p className="mt-1 text-xs leading-5 text-muted-foreground">{diagnostic.detail}</p>
     </div>
   );
+}
+
+function dataStatusToneToBannerTone(tone: "default" | "warning" | "danger" | "success"): "danger" | "info" | "success" | "warning" {
+  switch (tone) {
+    case "danger":
+      return "danger";
+    case "success":
+      return "success";
+    case "warning":
+      return "warning";
+    case "default":
+    default:
+      return "info";
+  }
 }
 
 function BackfillDetailPanel({
@@ -1312,24 +1333,17 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
               </label>
 
               {vm.providerSetupDialogState.liveAcknowledgement.visible ? (
-                <label
-                  htmlFor={vm.providerSetupDialogState.liveAcknowledgement.id}
-                  className="flex items-start gap-3 rounded-md border border-live-env/35 bg-live-env/10 px-3 py-2.5 text-sm"
-                >
-                  <input
+                <div className="rounded-md border border-live-env/35 bg-live-env/10 px-3 py-2.5">
+                  <Checkbox
                     id={vm.providerSetupDialogState.liveAcknowledgement.id}
-                    type="checkbox"
-                    className="mt-0.5 shrink-0 accent-[hsl(var(--live-env))]"
                     checked={vm.providerSetupDialogState.liveAcknowledgement.checked}
                     disabled={vm.providerSetupDialogState.liveAcknowledgement.disabled}
                     aria-label={vm.providerSetupDialogState.liveAcknowledgement.ariaLabel}
-                    onChange={(event) => vm.setProviderLiveAcknowledged(event.currentTarget.checked)}
+                    label={<span className="text-live-env">{vm.providerSetupDialogState.liveAcknowledgement.label}</span>}
+                    hint={vm.providerSetupDialogState.liveAcknowledgement.detail}
+                    onCheckedChange={vm.setProviderLiveAcknowledged}
                   />
-                  <span className="min-w-0">
-                    <span className="block font-medium text-live-env">{vm.providerSetupDialogState.liveAcknowledgement.label}</span>
-                    <span className="mt-1 block text-xs leading-5 text-muted-foreground">{vm.providerSetupDialogState.liveAcknowledgement.detail}</span>
-                  </span>
-                </label>
+                </div>
               ) : null}
 
               {vm.providerSetupDialogState.credentialFields.map((field) => (
@@ -1358,7 +1372,7 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                 <legend className="mb-2 text-sm">Capabilities</legend>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {vm.providerSetupDialogState.capabilityOptions.map((cap) => (
-                    <label
+                    <div
                       key={cap.id}
                       className={cn(
                         "flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2.5 transition-colors",
@@ -1367,52 +1381,51 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                           : "border-border/70 bg-secondary/20 hover:bg-secondary/35"
                       )}
                     >
-                      <input
-                        type="checkbox"
-                        className="mt-0.5 shrink-0 accent-[hsl(var(--primary))]"
+                      <Checkbox
                         checked={cap.selected}
                         disabled={cap.disabled}
                         aria-describedby={joinDescribedByIds(`${cap.id}-description`, `${cap.id}-disabled-reason`)}
-                        onChange={() => vm.toggleProviderCapability(cap.id)}
                         aria-label={cap.label}
+                        label={cap.label}
+                        onCheckedChange={() => vm.toggleProviderCapability(cap.id)}
                       />
                       <div className="min-w-0">
-                        <div className="text-sm font-medium">{cap.label}</div>
                         <div id={`${cap.id}-description`} className="text-xs text-muted-foreground">{cap.description}</div>
                         <FieldSupportText
                           disabledReason={cap.disabledReason}
                           disabledReasonId={`${cap.id}-disabled-reason`}
                         />
                       </div>
-                    </label>
+                    </div>
                   ))}
                 </div>
               </fieldset>
             </div>
 
-            <div
+            <StatusBanner
               id="provider-setup-status"
               role="status"
               aria-live="polite"
-              className="mt-4 rounded-md border border-border/70 bg-secondary/25 px-3 py-2 text-xs leading-5 text-muted-foreground"
-            >
-              {vm.providerSetupDialogState.statusLabel}
-            </div>
+              tone="info"
+              title="Provider setup status"
+              detail={vm.providerSetupDialogState.statusLabel}
+              className="mt-4"
+            />
 
         {vm.providerSetupError && (
-          <div role="alert" className="mt-3 flex items-start gap-2 rounded-lg border border-danger/35 bg-danger/10 px-3 py-2.5 text-sm text-danger">
-            <XCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-            <div className="min-w-0">
-              <div>{vm.providerSetupError.summary}</div>
-              {vm.providerSetupError.details.length > 0 ? (
+          <StatusBanner
+            role="alert"
+            className="mt-3"
+            tone="danger"
+            title={vm.providerSetupError.summary}
+            detail={vm.providerSetupError.details.length > 0 ? (
                 <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-danger/90">
                   {vm.providerSetupError.details.map((detail) => (
                     <li key={detail}>{detail}</li>
                   ))}
                 </ul>
               ) : null}
-            </div>
-          </div>
+          />
         )}
 
             <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -1832,46 +1845,31 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
           </div>
         </div>
 
-        <div
+        <StatusBanner
           id="backfill-form-status"
           role="status"
           aria-live="polite"
-          className={cn(
-            "mt-4 rounded-md border px-3 py-2 text-xs leading-5",
-            vm.dialogState.formStatusTone === "danger"
-              ? "border-danger/40 bg-danger/10 text-danger"
-              : vm.dialogState.formStatusTone === "success"
-                ? "border-success/35 bg-success/10 text-success"
-                : vm.dialogState.formStatusTone === "warning"
-                  ? "border-warning/35 bg-warning/10 text-warning"
-                  : "border-border/70 bg-secondary/25 text-muted-foreground"
-          )}
-        >
-          {vm.dialogState.formStatusLabel}
-        </div>
+          tone={dataStatusToneToBannerTone(vm.dialogState.formStatusTone)}
+          title="Backfill request status"
+          detail={vm.dialogState.formStatusLabel}
+          className="mt-4"
+        />
 
         {vm.feedbackText && (
-          <div
+          <StatusBanner
             id="backfill-form-feedback"
             role="alert"
-            className={cn(
-              "mt-4 rounded-lg border px-3 py-2 text-sm",
-              vm.feedbackTone === "warning"
-                ? "border-warning/40 bg-warning/10 text-warning"
-                : "border-danger/40 bg-danger/10 text-danger"
-            )}
-          >
-            <div className="min-w-0">
-              <div>{vm.feedbackText}</div>
-              {vm.feedbackDetails.length > 0 ? (
+            className="mt-4"
+            tone={vm.feedbackTone === "warning" ? "warning" : "danger"}
+            title={vm.feedbackText}
+            detail={vm.feedbackDetails.length > 0 ? (
                 <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
                   {vm.feedbackDetails.map((detail) => (
                     <li key={detail}>{detail}</li>
                   ))}
                 </ul>
               ) : null}
-            </div>
-          </div>
+          />
         )}
         <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
         {vm.previewResultCard && <BackfillResultCard state={vm.previewResultCard} />}

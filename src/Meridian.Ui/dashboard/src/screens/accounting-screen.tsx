@@ -7,6 +7,10 @@ import { FinancialRecordExplorerShell } from "@/components/meridian/financial-re
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { FormRow } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { StatusBanner } from "@/components/ui/status-banner";
+import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
 import {
   approveOperationsContinuityWorkflow,
@@ -1734,19 +1738,24 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
             <CardContent className="space-y-4">
               <span className="sr-only" aria-live="polite">{reconciliation.statementRunsView.statusAnnouncement}</span>
               {reconciliation.statementRunsView.loadingText ? (
-                <p role="status" className="rounded-lg border border-border/60 bg-secondary/20 px-4 py-3 text-sm text-muted-foreground">
-                  {reconciliation.statementRunsView.loadingText}
-                </p>
+                <StatusBanner
+                  role="status"
+                  tone="info"
+                  title="Statement runs loading"
+                  detail={reconciliation.statementRunsView.loadingText}
+                />
               ) : null}
               {reconciliation.statementRunsView.errorText ? (
-                <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  <div>{reconciliation.statementRunsView.errorText}</div>
-                  {reconciliation.statementRunsView.errorDetails.length > 0 ? (
+                <StatusBanner
+                  role="alert"
+                  tone="danger"
+                  title={reconciliation.statementRunsView.errorText}
+                  detail={reconciliation.statementRunsView.errorDetails.length > 0 ? (
                     <ul className="mt-2 list-disc pl-5">
                       {reconciliation.statementRunsView.errorDetails.map((detail) => <li key={detail}>{detail}</li>)}
                     </ul>
                   ) : null}
-                </div>
+                />
               ) : null}
               <DenseDataTable
                 columns={reconciliationStatementRunColumns}
@@ -1762,32 +1771,28 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                 ariaLabel={reconciliation.statementRunsView.tableLabel}
                 caption={reconciliation.statementRunsView.tableCaption}
               />
-              <div
+              <Tabs
                 id={reconciliation.statementRunsView.detailPanelId}
-                role="tablist"
                 aria-label="Statement run detail tabs"
-                className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7"
+                tabs={reconciliation.statementRunsView.tabs.map((tab) => ({
+                  ariaLabel: tab.ariaLabel,
+                  count: tab.badgeLabel,
+                  disabled: tab.disabled,
+                  id: tab.id,
+                  label: tab.label
+                }))}
               >
                 {reconciliation.statementRunsView.tabs.map((tab) => (
-                  <Button
-                    key={tab.id}
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    role="tab"
-                    aria-selected={tab.id === "overview" && !tab.disabled}
-                    disabled={tab.disabled}
-                    disabledReason={tab.disabledReason}
-                    aria-label={tab.ariaLabel}
-                    className="min-h-16 justify-start whitespace-normal text-left"
-                  >
-                    <span>
-                      <span className="block font-semibold">{tab.label}</span>
-                      {tab.badgeLabel ? <span className="mt-1 block font-mono text-[10px] text-muted-foreground">{tab.badgeLabel}</span> : null}
-                    </span>
-                  </Button>
+                  <TabPanel key={tab.id}>
+                    <StatusBanner
+                      role={tab.disabled ? "status" : undefined}
+                      tone={tab.disabled ? "warning" : "info"}
+                      title={tab.label}
+                      detail={tab.disabledReason ?? tab.description}
+                    />
+                  </TabPanel>
                 ))}
-              </div>
+              </Tabs>
               <p className="text-xs text-muted-foreground">
                 Matching, tolerance, validation, and case-state decisions remain in the shared reconciliation services; this view only renders endpoint-supplied read models.
               </p>
@@ -1819,12 +1824,12 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                   caption={reconciliation.queuePanelView.description}
                 />
               ) : (
-                <div
+                <StatusBanner
                   role="status"
-                  className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning"
-                >
-                  {reconciliation.queuePanelView.emptyText}
-                </div>
+                  tone="warning"
+                  title="Reconciliation queue empty"
+                  detail={reconciliation.queuePanelView.emptyText}
+                />
               )}
             </CardContent>
           </Card>
@@ -1988,35 +1993,37 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                 ))}
               </div>
               <div className="mb-4 rounded-md border border-border/70 bg-secondary/15 p-3">
-                <label htmlFor="ledger-account-filter" className="text-xs font-semibold uppercase text-muted-foreground">
-                  {reconciliation.trialBalanceView.accountFilterLabel}
-                </label>
-                <div className="mt-2 flex flex-col gap-2 lg:flex-row lg:items-center">
-                  <div className="relative min-w-0 flex-1">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-                    <input
-                      id="ledger-account-filter"
-                      type="search"
-                      value={reconciliation.trialBalanceView.accountFilterValue}
-                      onChange={(event) => reconciliation.updateLedgerAccountFilter(event.target.value)}
-                      placeholder={reconciliation.trialBalanceView.accountFilterPlaceholder}
-                      className="min-h-10 w-full rounded-md border border-border bg-background py-2 pl-9 pr-3 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/25"
-                    />
+                <FormRow
+                  label={reconciliation.trialBalanceView.accountFilterLabel}
+                  labelFor="ledger-account-filter"
+                >
+                  <div className="flex flex-col gap-2 lg:flex-row lg:items-center">
+                    <div className="relative min-w-0 flex-1">
+                      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                      <Input
+                        id="ledger-account-filter"
+                        type="search"
+                        value={reconciliation.trialBalanceView.accountFilterValue}
+                        onChange={(event) => reconciliation.updateLedgerAccountFilter(event.target.value)}
+                        placeholder={reconciliation.trialBalanceView.accountFilterPlaceholder}
+                        className="pl-9"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs text-muted-foreground">{reconciliation.trialBalanceView.filteredRowCountLabel}</span>
+                      {reconciliation.trialBalanceView.accountFilterValue.trim() ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => reconciliation.updateLedgerAccountFilter("")}
+                        >
+                          {reconciliation.trialBalanceView.clearAccountFilterLabel}
+                        </Button>
+                      ) : null}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs text-muted-foreground">{reconciliation.trialBalanceView.filteredRowCountLabel}</span>
-                    {reconciliation.trialBalanceView.accountFilterValue.trim() ? (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => reconciliation.updateLedgerAccountFilter("")}
-                      >
-                        {reconciliation.trialBalanceView.clearAccountFilterLabel}
-                      </Button>
-                    ) : null}
-                  </div>
-                </div>
+                </FormRow>
                 {reconciliation.trialBalanceView.accountFilterOptions.length > 0 ? (
                   <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="General Ledger account shortcuts">
                     {reconciliation.trialBalanceView.accountFilterOptions.map((option) => (
@@ -2196,16 +2203,19 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                 </p>
               ) : null}
               {reconciliation.trialBalanceView.errorText && reconciliation.trialBalanceView.hasRows ? (
-                <div role="alert" className="mt-3 rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  <div>{reconciliation.trialBalanceView.errorText}</div>
-                  {reconciliation.trialBalanceView.errorDetails.length > 0 ? (
+                <StatusBanner
+                  role="alert"
+                  className="mt-3"
+                  tone="danger"
+                  title={reconciliation.trialBalanceView.errorText}
+                  detail={reconciliation.trialBalanceView.errorDetails.length > 0 ? (
                     <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
                       {reconciliation.trialBalanceView.errorDetails.map((detail) => (
                         <li key={detail}>{detail}</li>
                       ))}
                     </ul>
                   ) : null}
-                </div>
+                />
               ) : null}
             </CardContent>
           </Card>
@@ -2923,28 +2933,32 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                 <p role="status" className="text-sm text-muted-foreground">{reconciliation.loadingText}</p>
               )}
               {reconciliation.errorText && (
-                <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  <div>{reconciliation.errorText}</div>
-                  {reconciliation.errorDetails.length > 0 ? (
+                <StatusBanner
+                  role="alert"
+                  tone="danger"
+                  title={reconciliation.errorText}
+                  detail={reconciliation.errorDetails.length > 0 ? (
                     <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
                       {reconciliation.errorDetails.map((detail) => (
                         <li key={detail}>{detail}</li>
                       ))}
                     </ul>
                   ) : null}
-                </div>
+                />
               )}
               {reconciliation.actionErrorText && (
-                <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-                  <div>{reconciliation.actionErrorText}</div>
-                  {reconciliation.actionErrorDetails.length > 0 ? (
+                <StatusBanner
+                  role="alert"
+                  tone="danger"
+                  title={reconciliation.actionErrorText}
+                  detail={reconciliation.actionErrorDetails.length > 0 ? (
                     <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
                       {reconciliation.actionErrorDetails.map((detail) => (
                         <li key={detail}>{detail}</li>
                       ))}
                     </ul>
                   ) : null}
-                </div>
+                />
               )}
               <DenseDataTable
                 columns={reconciliationBreakTableColumns}
@@ -3014,23 +3028,25 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
                         void resolveDialog.submit();
                       }}
                     >
-                      <label htmlFor={resolveDialog.active.inputId} className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                        {resolveDialog.active.label}
-                      </label>
-                      <input
-                        id={resolveDialog.active.inputId}
-                        type="text"
-                        required
-                        autoFocus
-                        aria-describedby={resolveDialog.active.helpId}
-                        placeholder={resolveDialog.active.placeholder}
-                        value={resolveDialog.active.rationale}
-                        onChange={(e) => resolveDialog.updateRationale(e.target.value)}
-                        className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-                      />
-                      <p id={resolveDialog.active.helpId} className="text-xs text-muted-foreground">
-                        {resolveDialog.active.helpText}
-                      </p>
+                      <FormRow
+                        label={resolveDialog.active.label}
+                        labelFor={resolveDialog.active.inputId}
+                        hint={resolveDialog.active.helpText}
+                      >
+                        <Input
+                          id={resolveDialog.active.inputId}
+                          type="text"
+                          required
+                          autoFocus
+                          aria-describedby={resolveDialog.active.helpId}
+                          placeholder={resolveDialog.active.placeholder}
+                          value={resolveDialog.active.rationale}
+                          onChange={(e) => resolveDialog.updateRationale(e.target.value)}
+                        />
+                        <span id={resolveDialog.active.helpId} className="sr-only">
+                          {resolveDialog.active.helpText}
+                        </span>
+                      </FormRow>
                       <div className="panel-action-zone justify-start">
                         <Button
                           type="submit"

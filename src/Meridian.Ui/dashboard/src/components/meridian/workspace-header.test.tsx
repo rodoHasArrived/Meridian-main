@@ -16,6 +16,7 @@ describe("WorkspaceHeader", () => {
   it("renders view-model derived labels and loading refresh state", () => {
     render(
       <WorkspaceHeader
+        breadcrumbItems={[{ label: "Workstation" }, { label: "Trading", current: true }]}
         workspace={workspaceForKey("trading")}
         session={session}
         onRefresh={vi.fn()}
@@ -24,6 +25,8 @@ describe("WorkspaceHeader", () => {
     );
 
     expect(screen.getByRole("heading", { name: "Trading Workstation" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Breadcrumb")).toHaveTextContent("Workstation");
+    expect(screen.getByText("Trading")).toHaveAttribute("aria-current", "page");
     expect(screen.queryByLabelText("paper environment")).not.toBeInTheDocument();
     expect(screen.getByLabelText("Trading workspace status Review")).toHaveTextContent("Review");
     expect(screen.getByLabelText("Session Ops Desk, role Operator")).toHaveTextContent("Ops Desk");
