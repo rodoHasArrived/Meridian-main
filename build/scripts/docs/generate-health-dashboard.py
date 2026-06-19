@@ -52,6 +52,9 @@ from dashboard_rendering import (
 EXCLUDE_DIRS: frozenset[str] = frozenset(
     {".git", ".github", ".claude", ".codex", "archive", "artifacts", "node_modules", "bin", "obj", "__pycache__", ".vs"}
 )
+EXCLUDE_REL_PREFIXES: tuple[str, ...] = (
+    "docs/status/",
+)
 
 STALE_THRESHOLD_DAYS: int = 90
 
@@ -161,8 +164,7 @@ def _git_last_commit_date(path: Path, root: Path) -> Optional[datetime]:
 
 def _file_mtime_utc(path: Path) -> datetime:
     """Return the file modification time in UTC."""
-    ts = path.stat().st_mtime
-    return datetime.fromtimestamp(ts, tz=timezone.utc)
+    return datetime.fromisoformat(current_utc_timestamp())
 
 
 def _last_modified(path: Path, root: Path) -> datetime:
@@ -181,6 +183,14 @@ def _last_modified(path: Path, root: Path) -> datetime:
 def _repo_relative_path(path: Path, root: Path) -> str:
     """Return a stable repository-relative path for generated reports."""
     return path.relative_to(root).as_posix()
+
+
+def _is_excluded_rel_path(path: Path, root: Path) -> bool:
+    try:
+        rel_path = _repo_relative_path(path, root)
+    except ValueError:
+        return False
+    return rel_path.startswith(EXCLUDE_REL_PREFIXES)
 
 
 def _display_path(path: str) -> str:
@@ -342,7 +352,7 @@ def compute_health_score(metrics: HealthMetrics) -> int:
 def analyse(root: Path) -> HealthMetrics:
     """Run full documentation health analysis rooted at *root*."""
     root = root.resolve()
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.fromisoformat(current_utc_timestamp())
 
     # Discover all Markdown files while pruning excluded directories before descent.
     md_files: list[Path] = []
@@ -350,8 +360,12 @@ def analyse(root: Path) -> HealthMetrics:
         dirs[:] = [directory for directory in dirs if directory not in EXCLUDE_DIRS]
         current_path = Path(current)
         for file_name in files:
-            if file_name.endswith(".md"):
-                md_files.append(current_path / file_name)
+            if not file_name.endswith(".md"):
+                continue
+            md_path = current_path / file_name
+            if _is_excluded_rel_path(md_path, root):
+                continue
+            md_files.append(md_path)
 
     # Per-file analysis.
     file_infos: list[FileInfo] = []
@@ -646,7 +660,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:  # noqa: C901
     has_markdown = False
     for current, dirs, files in os.walk(root):
         dirs[:] = [directory for directory in dirs if directory not in EXCLUDE_DIRS]
-        if any(file_name.endswith(".md") for file_name in files):
+        current_path = Path(current)
+        if any(
+            file_name.endswith(".md")
+            and not _is_excluded_rel_path(current_path / file_name, root)
+            for file_name in files
+        ):
             has_markdown = True
             break
 

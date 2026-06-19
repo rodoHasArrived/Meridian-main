@@ -20,6 +20,7 @@ from typing import Iterable, Sequence
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 STABLE_GENERATED_AT_UTC = "1970-01-01T00:00:00+00:00"
+REPOSITORY_DISPLAY_NAME = "Meridian-main"
 
 DOC_AI_README = "docs/ai/README.md"
 AI_CONTRACT = "docs/ai/assistant-workflow-contract.md"
@@ -846,7 +847,7 @@ def build_payload(root: Path, inventory: Sequence[InventoryItem], findings: Sequ
     return {
         "generatedAtUtc": STABLE_GENERATED_AT_UTC,
         "repositoryRoot": ".",
-        "repositoryName": root.name,
+        "repositoryName": REPOSITORY_DISPLAY_NAME,
         "status": "pass" if not findings else "drift",
         "summary": {
             "inventoryCount": len(inventory),

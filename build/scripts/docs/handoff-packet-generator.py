@@ -62,6 +62,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--latency-ms", type=int, help="Telemetry end-to-end latency in milliseconds.")
     parser.add_argument("--error-class", help="Structured telemetry error class when degraded.")
     parser.add_argument("--allow-incomplete", action="store_true", help="Allow incomplete packet fields in generation mode.")
+    parser.add_argument(
+        "--suppress-changed-files",
+        action="store_true",
+        help="Emit a stable no-change entry instead of sampling transient git diff state.",
+    )
     parser.add_argument("--output", default=str(DEFAULT_MARKDOWN_OUTPUT), help="Markdown handoff output path.")
     parser.add_argument("--json-output", default=str(DEFAULT_JSON_OUTPUT), help="JSON handoff output path.")
     return parser.parse_args()
@@ -190,9 +195,17 @@ def build_packet(args: argparse.Namespace, route: dict[str, Any], changed_files:
     ]
     open_risks = args.open_risk or ["No explicit open risks recorded."]
 
+    if args.suppress_changed_files:
+        changed_files = []
+
     changes = [{"path": path, "reason": "Touched in current git diff."} for path in changed_files]
     if not changes:
-        changes = [{"path": "(none)", "reason": "No staged/unstaged file change detected."}]
+        reason = (
+            "Git diff evidence suppressed for deterministic docs automation."
+            if args.suppress_changed_files
+            else "No staged/unstaged file change detected."
+        )
+        changes = [{"path": "(none)", "reason": reason}]
 
     handoff_path = str(Path(args.output).as_posix())
     telemetry = {

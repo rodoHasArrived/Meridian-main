@@ -1,7 +1,7 @@
 # Governance Readiness Dashboard
 
 _Auto-generated from canonical JSON payload._
-_Generated: 2026-06-19T01:10:41.453507+00:00_
+_Generated: 1970-01-01T00:00:00+00:00_
 Data sources: `docs/status/kernel-readiness-dashboard.md`, `docs/status/contract-compatibility-matrix.md`, `docs/status/FEATURE_INVENTORY.md`, `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs`, `tests/Meridian.Tests/Ui/WorkstationEndpointsTests.cs`
 
 

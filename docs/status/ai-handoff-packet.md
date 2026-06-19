@@ -15,8 +15,8 @@
 
 ## Route outcome
 - Final status: partial
-- Route assessment: possible-misroute
-- Inferred lanes from changes: docs
+- Route assessment: unknown
+- Inferred lanes from changes: (none)
 
 ## Telemetry
 - route_id: provider-integration
@@ -34,26 +34,7 @@
 - git diff: Changed-file evidence for handoff packet.
 
 ## Changes made
-- .github/workflows/README.md: Touched in current git diff.
-- .github/workflows/documentation.yml: Touched in current git diff.
-- build/scripts/docs/generate-structure-docs.py: Touched in current git diff.
-- docs/generated/repository-structure.md: Touched in current git diff.
-- docs/status/ai-handoff-packet.json: Touched in current git diff.
-- docs/status/ai-handoff-packet.md: Touched in current git diff.
-- docs/status/api-contract-coverage-dashboard.json: Touched in current git diff.
-- docs/status/api-contract-coverage-dashboard.md: Touched in current git diff.
-- docs/status/coverage-report.md: Touched in current git diff.
-- docs/status/doc-health-dashboard.json: Touched in current git diff.
-- docs/status/doc-health-dashboard.md: Touched in current git diff.
-- docs/status/evidence-continuity-dashboard.json: Touched in current git diff.
-- docs/status/evidence-continuity-dashboard.md: Touched in current git diff.
-- docs/status/example-validation.md: Touched in current git diff.
-- docs/status/governance-readiness-dashboard.json: Touched in current git diff.
-- docs/status/governance-readiness-dashboard.md: Touched in current git diff.
-- docs/status/paper-replay-reliability-dashboard.json: Touched in current git diff.
-- docs/status/paper-replay-reliability-dashboard.md: Touched in current git diff.
-- docs/status/pilot-readiness-dashboard.json: Touched in current git diff.
-- docs/status/pilot-readiness-dashboard.md: Touched in current git diff.
+- (none): Git diff evidence suppressed for deterministic docs automation.
 
 ## Validation
 - [pass] python build/scripts/docs/prompt-route-linter.py --summary

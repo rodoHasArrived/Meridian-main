@@ -139,6 +139,7 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
             "--next-lane",
             "implementation-assurance",
             "--allow-incomplete",
+            "--suppress-changed-files",
             "--model",
             "docs-automation-profile",
             "--input-tokens",

@@ -1,7 +1,7 @@
 # API Contract Coverage Dashboard
 
 _Auto-generated from canonical JSON payload._
-_Generated: 2026-06-19T01:10:45.321505+00:00_
+_Generated: 1970-01-01T00:00:00+00:00_
 Data sources: `src/**/*.cs endpoint mappings`, `src/Meridian.Contracts/Api/UiApiRoutes.cs`, `src/Meridian.Contracts/Workstation/*.cs`, `docs/**/*.md`
 
 

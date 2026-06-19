@@ -1,17 +1,17 @@
 # Documentation Health Dashboard
 
 _Auto-generated from canonical JSON payload._
-_Generated: 2026-06-19T01:10:20.615580+00:00_
+_Generated: 1970-01-01T00:00:00+00:00_
 Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 
 > Auto-generated documentation health report. Do not edit manually.
-> Last updated: 2026-06-19T01:10:20.587705+00:00
+> Last updated: 1970-01-01T00:00:00+00:00
 
 ## Overall Health Score
 
 ```text
-  [#########################-----] 82/100
+  [#########################-----] 83/100
   Rating: Good
 ```
 
@@ -19,14 +19,14 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 620 |
-| Total lines | 87,754 |
-| Average file size (lines) | 141.5 |
-| Orphaned files | 260 |
+| Total documentation files | 559 |
+| Total lines | 82,097 |
+| Average file size (lines) | 146.9 |
+| Orphaned files | 210 |
 | Files without headings | 38 |
 | Stale files (>90 days) | 0 |
-| TODO/FIXME markers | 239 |
-| **Health score** | **82/100** |
+| TODO/FIXME markers | 195 |
+| **Health score** | **83/100** |
 
 ### Score Breakdown
 
@@ -85,7 +85,7 @@ These files are not linked from any other Markdown file in the repository:
 - `Meridian Design System/VISUAL_FOUNDATIONS.md`
 - `Meridian Design System/components/charts/CandleChart.prompt.md`
 - `Meridian Design System/components/charts/ChartCard.prompt.md`
-- ... and 240 more
+- ... and 190 more
 
 ## Trend
 
@@ -93,7 +93,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 2026-06-19 | 82 | 620 | 260 | 0 |
+| 1970-01-01 | 83 | 559 | 210 | 0 |
 
 ---
 

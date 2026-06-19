@@ -45,6 +45,9 @@ STABLE_GENERATED_AT = "1970-01-01 00:00:00 UTC"
 CS_FILE_EXTENSIONS: Tuple[str, ...] = (".cs",)
 
 DOC_FILE_EXTENSIONS: Tuple[str, ...] = (".md",)
+DOC_CONTENT_EXCLUDE_PREFIXES: Tuple[str, ...] = (
+    "docs/status/",
+)
 
 # Regex: public (static )?(sealed )?(partial )?(class|interface|record|enum) Name
 PUBLIC_TYPE_RE = re.compile(
@@ -526,7 +529,10 @@ def _load_doc_contents(root: Path) -> Dict[str, str]:
     contents: Dict[str, str] = {}
     if docs_dir.is_dir():
         for md_file in _collect_files(docs_dir, DOC_FILE_EXTENSIONS):
-            contents[_rel(md_file, root)] = _read_text_safe(md_file)
+            rel_path = _rel(md_file, root)
+            if rel_path.startswith(DOC_CONTENT_EXCLUDE_PREFIXES):
+                continue
+            contents[rel_path] = _read_text_safe(md_file)
     # Also include CLAUDE.md at repo root
     claude_md = root / "CLAUDE.md"
     if claude_md.is_file():
