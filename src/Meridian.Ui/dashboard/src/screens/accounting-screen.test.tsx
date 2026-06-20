@@ -1966,6 +1966,11 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(data, "/accounting/configure");
 
     expect(await screen.findByText("Accounting Rules Studio")).toBeInTheDocument();
+    expect(screen.getByText("Ledger book administration")).toBeInTheDocument();
+    expect(screen.getByText("1 ledger book registered | selected Primary book.")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Accounting ledger book catalog" })).toBeInTheDocument();
+    expect(screen.getByText("policy-gaap/2026.06")).toBeInTheDocument();
+    expect(screen.getByText("fund-alpha / Entity entity-master")).toBeInTheDocument();
     expect(screen.getByText("Accounting production readiness")).toBeInTheDocument();
     expect(screen.getByText("78/100")).toBeInTheDocument();
     expect(screen.getByText("Tenant administration")).toBeInTheDocument();

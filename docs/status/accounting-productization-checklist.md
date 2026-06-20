@@ -20,7 +20,9 @@ the requirement end to end.
 - [x] Accounting Configure now receives a server-derived ledger-book setup candidate when a
   book-scoped workspace references a missing book but the fund has registered ledger-book scope,
   and the browser setup surface can create the ledger book through the shared ledger-book endpoint
-  instead of guessing fund-structure node context locally.
+  instead of guessing fund-structure node context locally. Browser Accounting Configure also renders
+  a shared-workspace ledger-book administration catalog with selected/available books, fund/entity
+  scope, basis, currency, accounting policy, description, and update timestamps.
 - [x] WPF Accounting Configure loads the active ledger-book workspace before rendering accounting
   configuration and now runs saved Rules Studio test suites plus promotion approvals through the
   shared accounting configuration service; desktop setup-readiness rows surface the shared

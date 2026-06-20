@@ -398,6 +398,19 @@ export interface AccountingConfigurationPreviewViewModel {
   }>;
 }
 
+export interface AccountingLedgerBookAdminRowViewModel {
+  id: string;
+  title: string;
+  subtitle: string;
+  scopeLabel: string;
+  policyLabel: string;
+  currencyLabel: string;
+  updatedLabel: string;
+  description: string;
+  statusLabel: string;
+  tone: "default" | "success" | "warning" | "danger";
+}
+
 export interface AccountingConfigurationViewModel {
   title: string;
   description: string;
@@ -408,6 +421,9 @@ export interface AccountingConfigurationViewModel {
   errorDetails: string[];
   metricRows: AccountingConfigurationMetricViewModel[];
   setupReadinessRows: AccountingConfigurationMetricViewModel[];
+  ledgerBookRows: AccountingLedgerBookAdminRowViewModel[];
+  ledgerBookSummaryLabel: string;
+  ledgerBookEmptyText: string | null;
   productionReadiness: AccountingProductionReadinessViewModel;
   templates: AccountingConfigurationTemplateViewModel[];
   rules: AccountingRulesStudioRuleViewModel[];
@@ -4303,6 +4319,33 @@ export function useAccountingConfigurationViewModel(
     ];
     const selectedLedgerBook = workspace?.ledgerBooks.find((book) => book.ledgerBookId === workspace.ledgerBookId) ?? null;
     const missingLedgerBookIssue = workspace?.validationIssues.find((issue) => issue.code === "configuration.ledger-book-missing") ?? null;
+    const ledgerBookRows = (workspace?.ledgerBooks ?? [])
+      .slice()
+      .sort((a, b) => {
+        const selectedDelta = Number(b.ledgerBookId === workspace?.ledgerBookId) - Number(a.ledgerBookId === workspace?.ledgerBookId);
+        return selectedDelta !== 0 ? selectedDelta : a.displayName.localeCompare(b.displayName);
+      })
+      .map<AccountingLedgerBookAdminRowViewModel>((book) => {
+        const isSelected = book.ledgerBookId === workspace?.ledgerBookId;
+        return {
+          id: book.ledgerBookId,
+          title: book.displayName,
+          subtitle: `${book.accountingBasis} basis | ${book.baseCurrency}`,
+          scopeLabel: `${book.fundProfileId} / ${book.fundStructureNodeKind} ${book.fundStructureNodeId}`,
+          policyLabel: `${book.accountingPolicyId}/${book.accountingPolicyVersion}`,
+          currencyLabel: book.baseCurrency,
+          updatedLabel: `Updated ${formatDateOnly(book.updatedAt)}`,
+          description: book.description?.trim() || "No ledger-book description supplied.",
+          statusLabel: isSelected ? "Selected" : "Available",
+          tone: isSelected ? "success" : "default"
+        };
+      });
+    const ledgerBookSummaryLabel = workspace
+      ? `${ledgerBookRows.length.toLocaleString()} ledger book${ledgerBookRows.length === 1 ? "" : "s"} registered${selectedLedgerBook ? ` | selected ${selectedLedgerBook.displayName}` : workspace.ledgerBookId ? " | selected book missing from catalog" : " | fund-level scope"}.`
+      : "Ledger-book catalog is not loaded.";
+    const ledgerBookEmptyText = workspace && ledgerBookRows.length === 0
+      ? "No registered ledger books are available in this configuration workspace."
+      : null;
     const setupReadinessRows: AccountingConfigurationMetricViewModel[] = [
       {
         id: "selected-ledger-book",
@@ -4411,6 +4454,9 @@ export function useAccountingConfigurationViewModel(
       errorDetails: error?.details ?? [],
       metricRows,
       setupReadinessRows,
+      ledgerBookRows,
+      ledgerBookSummaryLabel,
+      ledgerBookEmptyText,
       productionReadiness: productionReadinessView,
       templates,
       rules,

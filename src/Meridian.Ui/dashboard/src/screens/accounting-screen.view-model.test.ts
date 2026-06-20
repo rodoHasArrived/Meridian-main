@@ -2884,6 +2884,19 @@ describe("accounting-screen view model", () => {
         detail: "1 rule(s) covered; 0 current version gap(s)."
       })
     ]));
+    expect(result.current.ledgerBookSummaryLabel).toBe("1 ledger book registered | selected Primary book.");
+    expect(result.current.ledgerBookRows).toEqual([
+      expect.objectContaining({
+        id: "book-primary",
+        title: "Primary book",
+        statusLabel: "Selected",
+        subtitle: "Gaap basis | USD",
+        policyLabel: "policy-gaap/2026.06",
+        scopeLabel: "fund-alpha / Entity entity-master",
+        updatedLabel: "Updated 2026-06-30",
+        tone: "success"
+      })
+    ]);
     expect(services.assessProductionReadiness).toHaveBeenCalledWith(expect.objectContaining({
       fundProfileId: "fund-alpha",
       ledgerBookId: "book-primary",

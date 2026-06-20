@@ -6520,6 +6520,62 @@ function AccountingConfigurationPanel({ view }: { view: AccountingConfigurationV
         ) : null}
       </div>
 
+      <Card className="panel-surface" aria-labelledby="accounting-ledger-books-heading">
+        <CardHeader>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <CardTitle id="accounting-ledger-books-heading">Ledger book administration</CardTitle>
+              <CardDescription>{view.ledgerBookSummaryLabel}</CardDescription>
+            </div>
+            <Badge variant={view.ledgerBookRows.some((book) => book.statusLabel === "Selected") ? "success" : view.ledgerBookRows.length > 0 ? "warning" : "outline"}>
+              {view.ledgerBookRows.length} book{view.ledgerBookRows.length === 1 ? "" : "s"}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {view.ledgerBookEmptyText ? (
+            <p className="text-sm text-muted-foreground">{view.ledgerBookEmptyText}</p>
+          ) : (
+            <div className="grid gap-3 lg:grid-cols-2" role="region" aria-label="Accounting ledger book catalog">
+              {view.ledgerBookRows.map((book) => (
+                <div key={book.id} className={cn("rounded-md border px-4 py-3", accountingToolingBorderClass(book.tone))}>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-foreground">{book.title}</div>
+                      <div className="mt-1 font-mono text-[11px] uppercase tracking-[0.08em] text-muted-foreground">{book.id}</div>
+                    </div>
+                    <Badge variant={accountingToolingBadgeVariant(book.tone)}>{book.statusLabel}</Badge>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">{book.description}</p>
+                  <dl className="mt-3 grid gap-2 text-xs md:grid-cols-2">
+                    <div>
+                      <dt className="font-semibold text-muted-foreground">Basis</dt>
+                      <dd className="mt-1 text-foreground">{book.subtitle}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-semibold text-muted-foreground">Policy</dt>
+                      <dd className="mt-1 text-foreground">{book.policyLabel}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-semibold text-muted-foreground">Currency</dt>
+                      <dd className="mt-1 text-foreground">{book.currencyLabel}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-semibold text-muted-foreground">Scope</dt>
+                      <dd className="mt-1 break-words text-foreground">{book.scopeLabel}</dd>
+                    </div>
+                    <div>
+                      <dt className="font-semibold text-muted-foreground">Updated</dt>
+                      <dd className="mt-1 text-foreground">{book.updatedLabel}</dd>
+                    </div>
+                  </dl>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <Card className="panel-surface" aria-labelledby="accounting-production-readiness-heading">
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
