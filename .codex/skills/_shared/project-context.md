@@ -141,6 +141,7 @@ validation stack before broad build or test runs:
 ```bash
 python build/scripts/docs/check-codex-skills.py --summary
 python build/scripts/docs/check-codex-memory.py --summary
+python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --explain --summary
 python build/scripts/docs/check-ai-inventory.py --summary
 python build/scripts/docs/validate-skill-packages.py
 python build/scripts/docs/validate-roadmap-registry.py --summary

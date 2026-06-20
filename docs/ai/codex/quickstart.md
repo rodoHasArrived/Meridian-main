@@ -23,8 +23,10 @@ still lives in `../assistant-workflow-contract.md`.
    `.github/agents/implementation-assurance-agent.md`, `.github/workflows/README.md`,
    `docs/engineering/README.md`, `docs/start/README.md`,
    `.claude/skills/_shared/project-context.md`, and `.agents/skills/_shared/project-context.md`.
-   For memory-aware tasks, inspect `.codex/memory/index.yml` and load only entries selected by the
-   current intent, skill, changed paths, branch, or explicit tags.
+   For memory-aware tasks, inspect `.codex/memory/index.yml`; when the work has a named scope, use
+   a `.codex/memory/tasks/<task-id>.yml` descriptor and load only entries selected by the descriptor,
+   current intent, skill, changed paths, branch, or explicit tags. Include a compact memory receipt
+   for selected IDs, match reasons, stale warnings, and task/branch scope skips.
 5. Read `../navigation/README.md` and `../generated/repo-navigation.md` for large-repo routing.
 6. For stakeholder/product-scoped tasks, read `../product/meridian-design-document.md` before planning updates.
 7. For broad generation, domain modeling, workflow design, or architecture-sensitive refactors, load the MDIF spine: `../../architecture/meridian-development-intelligence-framework.md`, `../../architecture/meridian-vision.md`, `../../architecture/meridian-domain-model.md`, `../../domain/README.md`, and the relevant pack in `../context/README.md`.
@@ -90,7 +92,7 @@ do not paste raw file contents or broad command output unless the user asks for 
 | Broad generation or architecture-sensitive work | `../../architecture/meridian-development-intelligence-framework.md`, `../../architecture/meridian-vision.md`, `../../architecture/meridian-domain-model.md`, `../../domain/README.md`, `../context/README.md` | Full feature packs or generated exports until scope is clear |
 | Source change | Nearest `src/**/README.md`, `docs/source/data/source-modules.yml` | Generated source docs unless a generator is in scope |
 | AI docs change | `../assistant-workflow-contract.md`, this page, `README.md` | Host-specific mirrors unless shared policy changes |
-| Codex memory change | `memory-system.md`, `.codex/memory/index.yml`, matching indexed entries | User/global memory tiers unless explicitly opted in by a future design |
+| Codex memory change | `memory-system.md`, `.codex/memory/index.yml`, matching indexed entries, relevant `tasks/*.yml` descriptor | User/global memory tiers unless explicitly opted in by a future design |
 | Codex hook config | `advanced-configuration.md`, `.codex/config.toml` | Executable hook scripts before trust and validation ownership are defined |
 | Parallel or concurrent implementation | `../working-memory.md`, `../parallel-task-manifest-template.md`, `../agent-handoff-checklist.md` | Broad logs, overlapping writes, and stale validation reuse |
 | WPF task | `.codex/AGENTS.md`, relevant WPF skill, nearest view model/tests | Broad WPF suites before focused filters |
@@ -136,8 +138,9 @@ and uses `MeridianBuildIsolationKey` output roots by default.
 - Agent orchestration: start lane planning with `../parallel-task-manifest-template.md` when multiple skills/surfaces are in scope.
 - Working memory: use `../working-memory.md` to track task-local active claims, inspected files,
   assumptions, codebase drift, merge order, and validation reuse during concurrent changes.
-- Codex memory: use `.codex/memory/index.yml` only as a selective repo-local memory catalog; follow
-  `memory-system.md` for promotion, staleness, and disabled user/global tiers.
+- Codex memory: use `.codex/memory/index.yml` only as a selective repo-local memory catalog; use
+  task descriptors plus `--explain` for scoped memory routing; follow `memory-system.md` for
+  promotion, staleness, and disabled user/global tiers.
 - Parallel development workflows: keep each lane scoped to unique path sets and document handoff boundaries.
 - Token/context management: load only startup checks then escalate context only by phase; use one lane at a time.
 - Validation procedures: `python3 build/scripts/docs/check-ai-inventory.py --summary`, `python3 build/scripts/docs/check-codex-skills.py --summary`, `python3 build/scripts/docs/validate-docs-structure.py --top-level ai --summary`, `git diff --check`
@@ -151,7 +154,7 @@ and uses `MeridianBuildIsolationKey` output roots by default.
 | Prompt-routed handoff packet generation | `docs/ai/agent-handoff-checklist.md`, `docs/ai/codex/prompt-route-rules.json` | `python build/scripts/docs/handoff-packet-generator.py --summary --route-json docs/status/prompt-route-lint-report.json`; `python build/scripts/docs/check-handoff-packet-schema.py --packet-json docs/status/ai-handoff-packet.json --summary`; `git diff --check -- <paths>` |
 | Scoped repository text rewrite | `docs/ai/codex/quickstart.md`, `src/Meridian.Mcp/README.md` when MCP exposure changes | `python -m unittest build.scripts.ai.tests.test_ai_edit_tool`; `dotnet build src/Meridian.Mcp/Meridian.Mcp.csproj`; `git diff --check -- build/scripts/ai src/Meridian.Mcp docs/ai/codex/quickstart.md` |
 | Codex skill, prompt, checklist, or AI index | `docs/ai/codex/README.md`, `.codex/skills/README.md`, nearest skill or prompt index | `python build/scripts/docs/check-codex-skills.py --summary`; `python build/scripts/docs/check-ai-inventory.py --summary`; `git diff --check -- <paths>` |
-| Codex memory index, entry, or promotion workflow | `docs/ai/codex/memory-system.md`, `.codex/memory/README.md` | `python build/scripts/docs/check-codex-memory.py --summary`; `python -m unittest build.scripts.docs.tests.test_check_codex_memory`; `git diff --check -- <paths>` |
+| Codex memory index, entry, descriptor, or promotion workflow | `docs/ai/codex/memory-system.md`, `.codex/memory/README.md` | `python build/scripts/docs/check-codex-memory.py --summary`; `python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --explain --summary`; `python -m unittest build.scripts.docs.tests.test_check_codex_memory`; `git diff --check -- <paths>` |
 | Shared AI policy | `docs/ai/assistant-workflow-contract.md`, `docs/ai/README.md`, affected host index | `python build/scripts/docs/check-ai-inventory.py --summary`; contract-drift check when policy JSON changes |
 | Repo navigation or MCP routing | `docs/ai/navigation/README.md`, generated navigation inputs | `python build/scripts/docs/generate-ai-navigation.py --json-output docs/ai/generated/repo-navigation.json --markdown-output docs/ai/generated/repo-navigation.md --recent-changes-output docs/ai/generated/recent-changes.md --summary`; `python build/scripts/docs/check-ai-navigation-freshness.py --max-age-days 14` |
 | Browser workstation | `src/Meridian.Ui/dashboard/README.md` when present, related screen docs | `npm --prefix src/Meridian.Ui/dashboard run test`; targeted Vitest file when the change is narrow; `npm --prefix src/Meridian.Ui/dashboard run build` for build-facing changes |
@@ -199,7 +202,8 @@ browser workstation, or product UI code.
 ## Final Response Checklist
 
 - Skill selection receipt with selected skill, mode, reason, and required opening shape.
-- Memory entries loaded, skipped, or updated when `.codex/memory/index.yml` matched the task.
+- Memory entries loaded, skipped, or updated when `.codex/memory/index.yml` or a task descriptor
+  matched the task.
 - Files changed and why.
 - Validation commands with pass/fail results.
 - Unrelated dirty-worktree changes explicitly excluded.

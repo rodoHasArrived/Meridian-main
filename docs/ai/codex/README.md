@@ -293,9 +293,10 @@ task-stop evidence checks.
 - Keep the startup context receipt and tool/context change notice in the Codex execution contract
   and quickstart so users can see the active lane, loaded context, next evidence, and reason for
   meaningful tool or context expansion.
-- Use `.codex/memory/index.yml` selectively when the current intent, selected skill, changed paths,
-  branch, or explicit tags match a memory entry. Canonical docs and selected skills remain
-  authoritative when memory disagrees.
+- Use `.codex/memory/index.yml` selectively when a task descriptor, current intent, selected skill,
+  changed paths, branch, or explicit tags match a memory entry. Use `--explain` routing when scope
+  sensitivity matters, and keep canonical docs and selected skills authoritative when memory
+  disagrees.
 - Promote session observations to task, branch, or repo memory only through
   [`memory-system.md`](memory-system.md); repo-level promotion requires current source references.
 - Keep the skill selection receipt in the Codex execution contract and quickstart: after selecting
@@ -345,6 +346,7 @@ Use the Codex skill checker for fast local drift detection:
 
 ```bash
 python3 build/scripts/docs/check-codex-memory.py --summary
+python3 build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --explain --summary
 python3 build/scripts/docs/check-codex-skills.py --summary
 python3 build/scripts/docs/check-codex-skills.py --json-output docs/generated/codex-skills-check.json
 python3 build/scripts/docs/validate-roadmap-registry.py --summary

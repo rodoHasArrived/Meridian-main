@@ -33,6 +33,25 @@ schema:
     - review-soon
     - stale
     - unknown
+  load_when_fields:
+    - skills
+    - paths
+    - intents
+    - branches
+    - tags
+    - task
+  load_when_task_fields:
+    - ids
+    - work_modes
+    - intents
+    - paths
+  exclude_when_fields:
+    - skills
+    - paths
+    - intents
+    - branches
+    - tags
+    - task_ids
 areas:
   repo:
     path: .codex/memory/repo
@@ -76,6 +95,17 @@ entries:
       tags:
         - validation
         - ai-tooling
+      task:
+        ids: []
+        work_modes:
+          - implementation
+          - validation
+        intents:
+          - validation
+          - ai-tooling
+        paths:
+          - .codex/memory/**
+          - build/scripts/docs/**
     confidence: high
     freshness: fresh
     source_refs:
@@ -121,6 +151,27 @@ entries:
       tags:
         - architecture
         - mdif
+      task:
+        ids: []
+        work_modes:
+          - planning
+          - implementation
+        intents:
+          - architecture
+          - desktop-ui
+          - browser-workstation
+        paths:
+          - docs/architecture/**
+          - docs/domain/**
+          - docs/ai/context/**
+          - src/Meridian.Wpf/**
+          - src/Meridian.Ui/dashboard/**
+          - src/Meridian.Ui.Shared/**
+          - src/Meridian.Ui.Services/**
+    exclude_when:
+      intents:
+        - ai-tooling
+        - skill-routing
     confidence: high
     freshness: fresh
     source_refs:
@@ -164,6 +215,21 @@ entries:
         - ai-guidance
         - codex
         - skills
+      task:
+        ids: []
+        work_modes:
+          - planning
+          - implementation
+          - validation
+        intents:
+          - ai-guidance
+          - ai-tooling
+          - skill-routing
+        paths:
+          - AGENTS.md
+          - docs/ai/**
+          - .codex/**
+          - build/scripts/docs/**
     confidence: high
     freshness: fresh
     source_refs:

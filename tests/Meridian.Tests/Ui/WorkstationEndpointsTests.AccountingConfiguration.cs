@@ -849,7 +849,7 @@ public sealed partial class WorkstationEndpointsTests
                 ExpectedRuleId: "rule-generated-interest",
                 ExpectedRuleVersion: "v2"),
             Actor: "browser-user",
-            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/interest-accrual-saved-happy-path-rule-generated-interest-v2"]),
+            EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/rule-test-interest-accrual-saved-happy-path-rule-generated-interest-v2"]),
             ServerJsonOptions);
         using var persistedRuleTestsResponse = await client.PostAsJsonAsync(
             UiApiRoutes.LedgerAccountingConfigurationPostingRuleTests,
@@ -916,7 +916,7 @@ public sealed partial class WorkstationEndpointsTests
                 "controller",
                 posted.JournalEntry.Version,
                 Notes: "Reverse after controller close review.",
-                EvidenceLinks: ["/api/workstation/evidence/subjects/accounting-record/reversal"]),
+                EvidenceLinks: [$"/api/workstation/evidence/subjects/accounting-record/reversal-{posted.JournalEntry.JournalEntryId}"]),
             ServerJsonOptions);
 
         dryRunResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -950,7 +950,7 @@ public sealed partial class WorkstationEndpointsTests
             item.AssertionIssues.Any(issue => issue.Code == "rule-test.expected-rule-mismatch"));
         savedWorkspace!.RuleTestCases.Should().ContainSingle(item =>
             item.TestCaseId == "interest-accrual-saved-happy-path" &&
-            item.EvidenceLinks.Contains("/api/workstation/evidence/subjects/accounting-record/interest-accrual-saved-happy-path-rule-generated-interest-v2"));
+            item.EvidenceLinks.Contains("/api/workstation/evidence/subjects/accounting-record/rule-test-interest-accrual-saved-happy-path-rule-generated-interest-v2"));
         savedWorkspace.AuditTrail.Should().Contain(item => item.Action == "rule-test-case.upsert");
         persistedRuleTests!.TotalCount.Should().Be(1);
         persistedRuleTests.PassedCount.Should().Be(1);

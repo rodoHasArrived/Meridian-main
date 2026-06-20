@@ -25,6 +25,17 @@ load_when:
   tags:
     - validation
     - ai-tooling
+  task:
+    ids: []
+    work_modes:
+      - implementation
+      - validation
+    intents:
+      - validation
+      - ai-tooling
+    paths:
+      - .codex/memory/**
+      - build/scripts/docs/**
 confidence: high
 freshness: fresh
 source_refs:

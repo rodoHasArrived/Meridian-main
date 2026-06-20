@@ -29,6 +29,21 @@ load_when:
     - ai-guidance
     - codex
     - skills
+  task:
+    ids: []
+    work_modes:
+      - planning
+      - implementation
+      - validation
+    intents:
+      - ai-guidance
+      - ai-tooling
+      - skill-routing
+    paths:
+      - AGENTS.md
+      - docs/ai/**
+      - .codex/**
+      - build/scripts/docs/**
 confidence: high
 freshness: fresh
 source_refs:

@@ -10,9 +10,13 @@ Use this file as the Codex-only execution standard for Meridian skill runs. It c
 - Choose the smallest safe task scope that satisfies the request.
 - For implementation tasks, identify whether docs, tests, catalogs, or generated metadata must
   move with the code change before editing.
-- For memory-aware Codex tasks, inspect `.codex/memory/index.yml` and load only entries selected by
-  the current intent, skill, changed paths, branch, or explicit tags. Canonical docs and selected
-  skills remain authoritative when memory disagrees.
+- For memory-aware Codex tasks, inspect `.codex/memory/index.yml` and, when a scoped task is known,
+  route through a `.codex/memory/tasks/<task-id>.yml` descriptor. Load only entries selected by the
+  current task descriptor, intent, skill, changed paths, branch, or explicit tags. Canonical docs
+  and selected skills remain authoritative when memory disagrees.
+- When memory is loaded or skipped for task/branch scope, include a compact receipt: selected memory
+  IDs, match reason, stale warnings, and task/branch entries skipped because their scope did not
+  match.
 
 ## Workflow Disclosure Gate
 
@@ -145,6 +149,7 @@ For AI tooling, Codex skill, Codex catalog, prompt, docs automation, or assistan
 
 **Concurrency And Scope**
 - Work split: <none | worker ownership>
+- Memory receipt: <loaded/skipped memory IDs or "none">
 - Isolation: <build/test isolation used>
 - Skipped churn: <cosmetic edits intentionally avoided>
 

@@ -14,7 +14,7 @@ agent orchestration, prompt routing, repository navigation artifacts, or AI-main
 
 | Need | Start here | Typical proof lane |
 | --- | --- | --- |
-| Validate Codex memory index, entries, routing, and stale review dates | `build/scripts/docs/check-codex-memory.py` | `python build/scripts/docs/check-codex-memory.py --summary` |
+| Validate Codex memory index, entries, task routing, and stale review dates | `build/scripts/docs/check-codex-memory.py` | `python build/scripts/docs/check-codex-memory.py --summary` |
 | Inventory AI surfaces or catch missing indexes | `build/scripts/docs/check-ai-inventory.py` | `python build/scripts/docs/check-ai-inventory.py --summary` |
 | Validate Codex skill metadata and docs links | `build/scripts/docs/check-codex-skills.py` | `python build/scripts/docs/check-codex-skills.py --summary` |
 | Validate shared handoff/parallel guidance | `build/scripts/docs/check-ai-handoff.py` | `python build/scripts/docs/check-ai-handoff.py --strict` |
@@ -40,7 +40,8 @@ Use these before claiming an AI surface is current:
 
 - `build/scripts/docs/check-codex-memory.py`
   - Validates `.codex/memory/index.yml`, indexed Markdown entry metadata, source references,
-    stale review dates, disabled tiers, unindexed files, and selective routing by path or tag.
+    stale review dates, disabled tiers, unindexed files, task descriptors, negative routing guards,
+    and selective routing by task, path, tag, skill, intent, or branch.
 - `build/scripts/docs/check-ai-inventory.py`
   - Inventories root assistant shims, Codex/Claude/Copilot surfaces, prompts, tools, and optional
     IDE entrypoints.
@@ -115,6 +116,11 @@ Use these for multi-agent, parallel, or route-aware work:
 - `build/scripts/docs/check-codex-memory.py --write-stub`
   - Creates a reviewed memory-entry stub and index entry; repo-tier stubs require source
     references and refuse existing or out-of-root paths.
+- `build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --explain`
+  - Shows selected and skipped memory decisions for a scoped Codex task descriptor.
+- `build/scripts/docs/check-codex-memory.py --json-output <path>`
+  - Emits selected entries, routing decisions, task-scope conflicts, stale warnings, and validation
+    findings for downstream inspection.
 - `build/scripts/docs/check-codex-memory.py --promote-session`
   - Reviews session-to-task, session-to-branch, or session-to-repo promotion. It is dry-run unless
     `--apply` is passed; repo promotion requires source references.

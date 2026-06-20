@@ -30,6 +30,27 @@ load_when:
   tags:
     - architecture
     - mdif
+  task:
+    ids: []
+    work_modes:
+      - planning
+      - implementation
+    intents:
+      - architecture
+      - desktop-ui
+      - browser-workstation
+    paths:
+      - docs/architecture/**
+      - docs/domain/**
+      - docs/ai/context/**
+      - src/Meridian.Wpf/**
+      - src/Meridian.Ui/dashboard/**
+      - src/Meridian.Ui.Shared/**
+      - src/Meridian.Ui.Services/**
+exclude_when:
+  intents:
+    - ai-tooling
+    - skill-routing
 confidence: high
 freshness: fresh
 source_refs:

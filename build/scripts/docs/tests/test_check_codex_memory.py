@@ -6,6 +6,7 @@ from __future__ import annotations
 import contextlib
 import importlib.util
 import io
+import json
 import sys
 import tempfile
 import unittest
@@ -44,6 +45,11 @@ load_when:
   branches: []
   tags:
     - validation
+  task:
+    ids: []
+    work_modes: []
+    intents: []
+    paths: []
 confidence: high
 freshness: fresh
 source_refs:
@@ -62,6 +68,10 @@ entries:
 """
 
 
+def index_entry(text: str) -> str:
+    return "  - " + text.replace("\n", "\n    ").rstrip() + "\n"
+
+
 def valid_memory_file(review_after: str = "2999-01-01") -> str:
     return f"""---
 {valid_entry(review_after).rstrip()}
@@ -78,6 +88,89 @@ def write_valid_memory_tree(root: Path, review_after: str = "2999-01-01") -> Non
     write(root / ".codex" / "memory" / "index.yml", valid_index(review_after))
     write(root / ".codex" / "memory" / "README.md", "# Memory\n")
     write(root / ".codex" / "memory" / "repo" / "validation.md", valid_memory_file(review_after))
+
+
+def task_descriptor(task_id: str = "task-a", memory_tags: list[str] | None = None) -> str:
+    tags = memory_tags or ["validation"]
+    tag_lines = "\n".join(f"  - {tag}" for tag in tags)
+    return f"""version: 1
+task_id: {task_id}
+intent: validation
+selected_skill: meridian-docs
+work_mode: implementation
+branch: feature/task-a
+planned_paths:
+  - docs/ai/codex/quickstart.md
+memory_tags:
+{tag_lines}
+success_criteria:
+  - Route task memory narrowly.
+promotion_candidates: []
+"""
+
+
+def task_memory_entry(task_id: str) -> str:
+    return f"""id: task:{task_id}
+tier: task
+scope: task:{task_id}
+file: .codex/memory/tasks/{task_id}.md
+tags:
+  - validation
+load_when:
+  skills: []
+  paths: []
+  intents: []
+  branches: []
+  tags: []
+  task:
+    ids:
+      - {task_id}
+    work_modes:
+      - implementation
+    intents:
+      - validation
+    paths:
+      - docs/ai/**
+confidence: high
+freshness: fresh
+source_refs:
+  - docs/ai/tooling/README.md
+review_after: 2999-01-01
+invalidates_when:
+  - Task closes.
+"""
+
+
+def generic_tag_repo_entry() -> str:
+    return """id: repo:generic-tag
+tier: repo
+scope: repo
+file: .codex/memory/repo/generic-tag.md
+tags:
+  - generic
+load_when:
+  skills: []
+  paths: []
+  intents: []
+  branches: []
+  tags: []
+  task:
+    ids: []
+    work_modes: []
+    intents: []
+    paths: []
+confidence: high
+freshness: fresh
+source_refs:
+  - docs/ai/tooling/README.md
+review_after: 2999-01-01
+invalidates_when:
+  - Generic tag guidance changes.
+"""
+
+
+def memory_file_from_entry(entry: str, title: str = "Memory") -> str:
+    return f"---\n{entry.rstrip()}\n---\n\n# {title}\n"
 
 
 def finding_messages(findings: list[object]) -> list[str]:
@@ -186,6 +279,105 @@ class CheckCodexMemoryTests(unittest.TestCase):
             self.assertEqual([], findings)
             self.assertEqual(["repo:validation"], [entry["id"] for entry in by_path])
             self.assertEqual(["repo:validation"], [entry["id"] for entry in by_tag])
+
+    def test_task_descriptor_selects_matching_task_and_repo_entries(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            task_a = task_memory_entry("task-a")
+            task_b = task_memory_entry("task-b")
+            index = valid_index() + index_entry(task_a) + index_entry(task_b)
+            write(root / ".codex" / "memory" / "index.yml", index)
+            write(root / ".codex" / "memory" / "tasks" / "task-a.md", memory_file_from_entry(task_a, "Task A"))
+            write(root / ".codex" / "memory" / "tasks" / "task-b.md", memory_file_from_entry(task_b, "Task B"))
+            write(root / ".codex" / "memory" / "tasks" / "task-a.yml", task_descriptor("task-a"))
+
+            descriptor, task_findings = check_codex_memory.load_task_descriptor(
+                root, ".codex/memory/tasks/task-a.yml"
+            )
+            findings, entries = check_codex_memory.collect_findings(root)
+            context = check_codex_memory.build_routing_context(task_descriptor=descriptor)
+            selected, decisions = check_codex_memory.route_entries(entries, context)
+
+            self.assertEqual([], task_findings)
+            self.assertEqual([], findings)
+            self.assertEqual(["task:task-a", "repo:validation"], [entry["id"] for entry in selected])
+            task_b_decision = next(decision for decision in decisions if decision.id == "task:task-b")
+            self.assertFalse(task_b_decision.selected)
+            self.assertTrue(task_b_decision.task_scope_conflict)
+
+    def test_exclude_when_prevents_otherwise_valid_selection(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            excluded_entry = valid_entry().rstrip() + """
+exclude_when:
+  intents:
+    - validation
+"""
+            index = f"""version: 1
+memory_root: .codex/memory
+entries:
+{index_entry(excluded_entry)}"""
+            write(root / ".codex" / "memory" / "index.yml", index)
+            write(root / ".codex" / "memory" / "tasks" / "task-a.yml", task_descriptor("task-a"))
+
+            descriptor, _ = check_codex_memory.load_task_descriptor(root, ".codex/memory/tasks/task-a.yml")
+            _, entries = check_codex_memory.collect_findings(root)
+            context = check_codex_memory.build_routing_context(task_descriptor=descriptor)
+            selected, decisions = check_codex_memory.route_entries(entries, context)
+
+            self.assertEqual([], selected)
+            decision = decisions[0]
+            self.assertFalse(decision.selected)
+            self.assertIn("excluded by intent validation", decision.skipped_reasons)
+
+    def test_explain_and_json_output_include_routing_decisions(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            write(root / ".codex" / "memory" / "tasks" / "task-a.yml", task_descriptor("task-a"))
+            json_path = root / "routing.json"
+            stdout = io.StringIO()
+
+            with contextlib.redirect_stdout(stdout):
+                status = check_codex_memory.main(
+                    [
+                        "--root",
+                        str(root),
+                        "--task",
+                        ".codex/memory/tasks/task-a.yml",
+                        "--explain",
+                        "--summary",
+                        "--json-output",
+                        str(json_path),
+                    ]
+                )
+
+            self.assertEqual(0, status)
+            self.assertIn("route: selected: repo:validation", stdout.getvalue())
+            payload = json.loads(json_path.read_text(encoding="utf-8"))
+            self.assertIn("routing_decisions", payload)
+            self.assertEqual("task-a", payload["task_descriptor"]["task_id"])
+
+    def test_generic_repo_tag_requires_explicit_tag_request(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_valid_memory_tree(root)
+            generic = generic_tag_repo_entry()
+            write(root / ".codex" / "memory" / "index.yml", valid_index() + index_entry(generic))
+            write(root / ".codex" / "memory" / "repo" / "generic-tag.md", memory_file_from_entry(generic))
+            write(root / ".codex" / "memory" / "tasks" / "task-a.yml", task_descriptor("task-a", ["generic"]))
+
+            descriptor, _ = check_codex_memory.load_task_descriptor(root, ".codex/memory/tasks/task-a.yml")
+            findings, entries = check_codex_memory.collect_findings(root)
+            task_context = check_codex_memory.build_routing_context(task_descriptor=descriptor)
+            by_task, _ = check_codex_memory.route_entries(entries, task_context)
+            by_explicit_tag = check_codex_memory.select_entries(entries, [], ["generic"], False)
+
+            self.assertEqual([], findings)
+            self.assertNotIn("repo:generic-tag", [entry["id"] for entry in by_task])
+            self.assertIn("repo:generic-tag", [entry["id"] for entry in by_explicit_tag])
 
     def test_write_stub_refuses_existing_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

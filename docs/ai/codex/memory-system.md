@@ -2,15 +2,15 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-06-19
+**Reviewed:** 2026-06-20
 
 This document is the canonical contract for Meridian's repo-local Codex memory system. The system
 stores small, source-backed memory entries under `.codex/memory/` so future Codex sessions can
 recover durable context without loading all prior work or treating guesses as instructions.
 
-Memory supplements canonical repository guidance. It does not replace direct user instructions,
+Memory supplements canonical repository guidance. It never overrides direct user instructions,
 system/developer instructions, applicable `AGENTS.md` files, source code, tests, scripts, docs, or
-skill `SKILL.md` files.
+selected skill `SKILL.md` files.
 
 ## Purpose And Non-Goals
 
@@ -18,19 +18,21 @@ The memory system should:
 
 - Preserve high-value context that is expensive to rediscover, such as validated repository
   conventions, recurring validation lanes, branch-specific migration notes, and accepted decisions.
-- Load memory selectively by user intent, selected skill, changed path, branch, or explicit tag.
+- Load memory selectively by task descriptor, user intent, selected skill, changed path, branch, or
+  explicit tag.
+- Bind task-specific memory to an explicit task descriptor so one Codex task does not inherit
+  another task's assumptions.
 - Keep each durable entry auditable through source references, confidence, freshness, review dates,
   and invalidation triggers.
 - Make promotion deliberate so short-lived observations do not become repo guidance without review.
-- Detect broken links, stale entries, unindexed files, and invalid metadata before memory silently
-  steers implementation.
+- Detect broken links, stale entries, unindexed files, invalid metadata, and overbroad routing before
+  memory silently steers implementation.
 
 The memory system must not:
 
 - Store secrets, credentials, tokens, personal data, customer data, raw logs, or proprietary
   external content.
-- Override direct user instructions, canonical docs, source files, tests, scripts, selected skills,
-  or scoped `AGENTS.md` instructions.
+- Override canonical repository sources or scoped `AGENTS.md` instructions.
 - Load every memory entry at startup.
 - Turn speculative notes, unverified assumptions, or transient command output into durable repo
   guidance.
@@ -44,9 +46,9 @@ The memory system must not:
 | --- | --- | --- | --- | --- |
 | `ephemeral` | Current reasoning turn only | Minutes | Active context only | Never written under `.codex/memory/`. |
 | `session` | Current Codex session | Until session end, compaction, or promotion | Loaded only by the current session or explicit session ID | May store temporary observations, inspected files, assumptions, and validation notes. |
-| `branch` | Current Git branch | Until branch merges, is abandoned, or review expires | Loaded when branch selector matches | Must include branch invalidation triggers. |
-| `task` | Named work item, issue, plan, or prompt family | Until task closes or review expires | Loaded by task ID, intent, path, or tag | Must stay narrower than repo memory. |
-| `repo` | Meridian repository | Durable, reviewed periodically | Loaded by skill, path, intent, or tag | Requires current source references and stable repository relevance. |
+| `branch` | Current Git branch | Until branch merges, is abandoned, or review expires | Loaded only when branch scope matches | Must include branch invalidation triggers. |
+| `task` | Named work item, issue, plan, or prompt family | Until task closes or review expires | Loaded only when task descriptor matches | Must stay narrower than repo memory. |
+| `repo` | Meridian repository | Durable, reviewed periodically | Loaded by task, skill, path, intent, branch, or tag | Requires current source references and stable repository relevance. |
 | `archive` | Retired memory | As long as audit value remains | Not loaded for active guidance | Must name replacement guidance or archival reason. |
 | `user` | Explicit operator profile outside repo | Durable outside repo | Disabled | Not read or written by repo-local tooling without explicit future opt-in. |
 | `global` | Cross-user or organization baseline outside repo | Durable outside repo | Disabled | Not read or written by repo-local tooling without explicit future opt-in. |
@@ -69,6 +71,7 @@ The Meridian repo-local store uses YAML index data plus reviewable Markdown entr
     ai-guidance.md
   tasks/
     README.md
+    example.yml
   branches/
     README.md
   sessions/
@@ -80,8 +83,10 @@ The Meridian repo-local store uses YAML index data plus reviewable Markdown entr
 Storage rules:
 
 - `index.yml` is the machine-readable lookup surface.
-- Markdown files are human-readable entries. Indexed entries must include YAML front matter with
-  the same required metadata as the index entry.
+- Markdown files are human-readable memory entries. Indexed entries must include YAML front matter
+  with the same required metadata as the index entry.
+- Task descriptor files under `tasks/*.yml` are YAML routing inputs, not indexed memory entries.
+  They are exempt from entry indexing and must not contain durable guidance by themselves.
 - Folder `README.md` files provide guidance and are exempt from entry indexing.
 - File names should be stable lowercase slugs and must stay under `.codex/memory/`.
 - Use `repo/` only for stable, sourced facts. Put uncertain or temporary findings in `sessions/`,
@@ -99,12 +104,20 @@ Each `entries` item in `.codex/memory/index.yml` must contain:
 | `scope` | string | Yes | Boundary such as `repo`, `branch:<name>`, `task:<id>`, `session:<id>`, or `archive`. |
 | `file` | string | Yes | Repo-relative path to the Markdown entry under `.codex/memory/`. |
 | `tags` | string array | Yes | Stable labels such as `validation`, `architecture`, `ai-guidance`, `wpf`, or `browser-workstation`. |
-| `load_when` | object | Yes | Selectors for `skills`, `paths`, `intents`, `branches`, and explicit `tags`. |
+| `load_when` | object | Yes | Positive selectors for `skills`, `paths`, `intents`, `branches`, explicit `tags`, and `task`. |
+| `exclude_when` | object | No | Negative selectors for `skills`, `paths`, `intents`, `branches`, `tags`, and `task_ids`; any match prevents loading. |
 | `confidence` | string | Yes | `low`, `medium`, or `high`. |
 | `freshness` | string | Yes | `fresh`, `review-soon`, `stale`, or `unknown`. |
 | `source_refs` | string array | Yes | Repo files or other explicit evidence supporting the memory. Repo-tier entries require existing repo paths. |
 | `review_after` | ISO date | Yes | Date after which the memory must be reviewed before being trusted as current guidance. |
 | `invalidates_when` | string array | Yes | Conditions that make the memory unsafe until reviewed. |
+
+`load_when.task` is required on every indexed entry and supports:
+
+- `ids`: explicit task IDs such as `codex-memory-routing-example`.
+- `work_modes`: task modes such as `planning`, `implementation`, or `validation`.
+- `intents`: task descriptor intent labels.
+- `paths`: planned-path globs from the active task descriptor.
 
 Example:
 
@@ -127,6 +140,14 @@ Example:
     branches: []
     tags:
       - validation
+    task:
+      ids: []
+      work_modes:
+        - implementation
+      intents:
+        - ai-tooling
+      paths:
+        - .codex/memory/**
   confidence: high
   freshness: fresh
   source_refs:
@@ -136,9 +157,53 @@ Example:
     - AI tooling validation commands change.
 ```
 
+Use `exclude_when` to keep shared repo memories from loading in unrelated lanes. For example,
+architecture memory can exclude `ai-tooling` so a shared implementation skill does not pull
+architecture guidance into a docs-tooling task.
+
+## Task Descriptors
+
+Task descriptors are YAML files under `.codex/memory/tasks/<task-id>.yml`. They describe the active
+Codex task for routing only:
+
+```yaml
+version: 1
+task_id: codex-memory-routing-example
+intent: ai-tooling
+selected_skill: meridian-implementation-assurance
+work_mode: implementation
+branch: main
+planned_paths:
+  - docs/ai/codex/**
+  - .codex/memory/**
+  - build/scripts/docs/**
+memory_tags:
+  - ai-guidance
+  - validation
+success_criteria:
+  - Explain selected and skipped memory entries before loading them.
+promotion_candidates: []
+```
+
+Required fields are `version`, `task_id`, `intent`, `selected_skill`, `work_mode`, `branch`,
+`planned_paths`, `memory_tags`, and `success_criteria`. `promotion_candidates` is optional and is a
+review queue only; it must not promote memory automatically.
+
 ## Loading Rules
 
 Memory loading must be selective and explainable.
+
+By task descriptor:
+
+- Prefer `--task .codex/memory/tasks/<task-id>.yml` for recurring or multi-step Codex work.
+- Load task-tier entries only when their `scope` or `load_when.task.ids` matches the descriptor
+  `task_id`.
+- Load branch-tier entries only when their `scope` or `load_when.branches` matches the active branch
+  selector.
+- Apply task descriptor `intent`, `selected_skill`, `work_mode`, `branch`, `planned_paths`, and
+  `memory_tags` as routing inputs.
+- Treat task or branch scope mismatches as skipped routing decisions, not as permission to load
+  nearby task or branch memory.
 
 By intent:
 
@@ -165,7 +230,8 @@ By path:
 
 By branch:
 
-- Load branch-tier entries only when the current Git branch matches `load_when.branches`.
+- Load branch-tier entries only when the current Git branch matches `load_when.branches` or the
+  branch scope.
 - Treat branch memory as temporary. It should expire when the branch merges, is abandoned, or its
   scope materially changes.
 - If branch memory conflicts with repo memory, prefer the narrower branch memory only when it is
@@ -177,6 +243,22 @@ By explicit tag:
   would not have selected them.
 - Explicit tags broaden discovery, not authority. Freshness, source references, and conflict checks
   still apply.
+- Descriptor `memory_tags` match `load_when.tags`; they do not automatically load entries only
+  because a generic entry tag is present. Use CLI `--tags` for an explicit user/tool tag request.
+
+Negative guards:
+
+- Evaluate `exclude_when` after collecting possible positive matches and before loading.
+- Any matching skill, intent, branch, path, tag, or task ID skips the entry.
+- Prefer narrowing an overbroad entry with `exclude_when` before deleting useful memory that still
+  applies elsewhere.
+
+Memory receipt:
+
+- At startup or route changes, report selected memory IDs, the reason they matched, stale warnings,
+  and task/branch entries skipped because their scope did not match.
+- Keep the receipt compact and inside the existing Codex workflow disclosure shape; it is context
+  provenance, not a separate audit log.
 
 ## Promotion And Compaction
 
@@ -214,6 +296,8 @@ Promotion hygiene:
   guidance.
 - Include exact `source_refs`, `review_after`, and concrete `invalidates_when` triggers.
 - Prefer concise entries and link to canonical docs instead of restating long instructions.
+- Record `promotion_candidates` in session or task notes only as reviewed candidates with target
+  tier, source evidence, and reason; keep promotion explicit through `--promote-session`.
 - Repo-level promotion requires source references. User/global promotion requires explicit user
   approval and a future opt-in mechanism.
 
@@ -247,7 +331,7 @@ The initial repo-level bundle is intentionally small:
 - `.codex/memory/repo/validation.md` loads for AI tooling, docs, validation, `.codex/**`, and
   `build/scripts/docs/**` work.
 - `.codex/memory/repo/architecture.md` loads for architecture, desktop, browser workstation, MDIF,
-  and shared UI-surface work.
+  and shared UI-surface work, but excludes AI-tooling tasks.
 - `.codex/memory/repo/ai-guidance.md` loads for Codex guidance, skill routing, AI docs, and memory
   maintenance work.
 
@@ -263,7 +347,7 @@ Future examples should stay narrow:
 
 ## Validation
 
-Run the memory checker after memory contract, index, or entry changes:
+Run the memory checker after memory contract, index, descriptor, or entry changes:
 
 ```bash
 python build/scripts/docs/check-codex-memory.py --summary
@@ -274,12 +358,18 @@ The checker validates that:
 - `index.yml` exists and is pure YAML data.
 - Linked memory files exist under `.codex/memory/`.
 - Required metadata fields exist in the index and Markdown front matter.
+- `load_when.task` selector metadata is present and well-formed.
+- Optional `exclude_when` selectors are well-formed.
+- Task descriptors used with `--task` live under `.codex/memory/tasks/` and contain the required
+  routing fields.
 - IDs are unique.
 - `source_refs` for repo-local source paths exist.
 - `review_after` values are valid ISO dates.
 - Expired entries are visible as stale warnings.
 - Unknown active tiers, disabled tiers, and invalid scopes are rejected.
 - Non-README memory files are indexed.
+- Task descriptor YAML files under `.codex/memory/tasks/` are exempt from entry indexing.
+- `--explain` reports selected and skipped routing decisions, including task-scope conflicts.
 
 Optional helper modes:
 
@@ -287,6 +377,8 @@ Optional helper modes:
 python build/scripts/docs/check-codex-memory.py --summary --stale-only
 python build/scripts/docs/check-codex-memory.py --paths docs/ai/codex/quickstart.md
 python build/scripts/docs/check-codex-memory.py --tags ai-guidance validation
+python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --explain --summary
+python build/scripts/docs/check-codex-memory.py --task .codex/memory/tasks/example.yml --json-output artifacts/codex/memory-routing.json
 ```
 
 Use `--write-stub` and `--promote-session` only for reviewed memory maintenance. They are explicit

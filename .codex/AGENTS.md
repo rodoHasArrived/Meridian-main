@@ -19,8 +19,9 @@ stricter rules, add a closer `AGENTS.md` or `AGENTS.override.md` rather than exp
   domain modeling, workflow design, or architecture-sensitive implementation.
 - Read `.codex/skills/_shared/codex-execution-contract.md` before changing skills, agents,
   prompts, hooks, config, or automation guidance.
-- Read `docs/ai/codex/memory-system.md` and `.codex/memory/index.yml` before changing Codex
-  memory entries, routing metadata, or memory validation tooling.
+- Read `docs/ai/codex/memory-system.md`, `.codex/memory/index.yml`, and relevant
+  `.codex/memory/tasks/*.yml` descriptors before changing Codex memory entries, routing metadata,
+  or memory validation tooling.
 - When changing Codex development behavior or validation workflow, keep the Codex-loaded baseline
   and mirrored assistant surfaces synchronized: root `AGENTS.md`, `CLAUDE.md`,
   `docs/ai/codex/quickstart.md`, `.codex/skills/_shared/*`,
@@ -145,7 +146,8 @@ Generator scripts are dry-run by default. Use `-Apply` only after reviewing the 
 - Skill, agent, prompt, or AI workflow edits: also run the AI tooling gates from
   `.codex/skills/_shared/codex-execution-contract.md` when available, or report exactly why they
   were not run.
-- Codex memory edits: run `python build/scripts/docs/check-codex-memory.py --summary` and the
+- Codex memory edits: run `python build/scripts/docs/check-codex-memory.py --summary`,
+  descriptor routing with `--task .codex/memory/tasks/example.yml --explain --summary`, and the
   focused memory-checker tests when `build/scripts/docs/check-codex-memory.py` changes.
 - Command guidance edits: verify the referenced script, Make target, project, or `--help` output
   before describing the command as current.
