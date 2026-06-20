@@ -10,6 +10,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using Meridian.DataIntegration.AccountingSystem.Fixtures;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
 using Meridian.FinancialOperations.AccountingSystem;
 using Meridian.Identity.Auth;
@@ -282,6 +283,20 @@ public sealed class AccountingSystemIntegrationServiceTests
         var providers = await service.ListProvidersAsync();
 
         providers.Should().Contain(row =>
+            row.ProviderId == "xero-fixture" &&
+            row.State == AccountingSystemProviderStateDto.Available &&
+            row.SupportsChartOfAccounts &&
+            row.SupportsJournalEntries &&
+            row.SupportsTrialBalance &&
+            !row.SupportsPosting);
+        providers.Should().Contain(row =>
+            row.ProviderId == "netsuite-fixture" &&
+            row.State == AccountingSystemProviderStateDto.Available &&
+            row.SupportsChartOfAccounts &&
+            row.SupportsJournalEntries &&
+            row.SupportsTrialBalance &&
+            !row.SupportsPosting);
+        providers.Should().Contain(row =>
             row.ProviderId == "xero" &&
             row.State == AccountingSystemProviderStateDto.Planned &&
             row.SupportsChartOfAccounts &&
@@ -294,6 +309,47 @@ public sealed class AccountingSystemIntegrationServiceTests
             row.SupportsChartOfAccounts &&
             row.SupportsJournalEntries &&
             row.SupportsTrialBalance &&
+            !row.SupportsPosting);
+    }
+
+    [Theory]
+    [InlineData("xero-fixture", "Xero Fixture", "XeroAccount")]
+    [InlineData("netsuite-fixture", "NetSuite Fixture", "NetSuiteAccount")]
+    public async Task ImportAsync_WithXeroAndNetSuiteFixtures_ReturnsReadOnlyExternalGlEvidence(
+        string providerId,
+        string displayName,
+        string expectedEvidenceKind)
+    {
+        var service = CreateService();
+        var ledgerBookId = Guid.NewGuid();
+
+        var preview = await service.ImportAsync(new AccountingSystemImportRequestDto(
+            providerId,
+            FundProfileId: "default-fund",
+            LedgerBookId: ledgerBookId,
+            PersistPreview: false));
+        var persisted = await service.ImportAsync(new AccountingSystemImportRequestDto(
+            providerId,
+            FundProfileId: "default-fund",
+            LedgerBookId: ledgerBookId));
+        var providers = await service.ListProvidersAsync();
+
+        preview.Summary.ProviderId.Should().Be(providerId);
+        preview.Summary.ProviderDisplayName.Should().Be(displayName);
+        preview.Summary.State.Should().Be(AccountingSystemImportStateDto.Previewed);
+        persisted.Summary.State.Should().Be(AccountingSystemImportStateDto.Imported);
+        persisted.Summary.LedgerBookId.Should().Be(ledgerBookId);
+        persisted.ChartAccounts.Should().NotBeEmpty();
+        persisted.JournalEntries.Should().OnlyContain(entry => entry.TotalDebits == entry.TotalCredits);
+        persisted.TrialBalance.Should().NotBeEmpty();
+        persisted.Summary.EvidenceReferences.Should().Contain($"{providerId}:trial-balance");
+        persisted.Summary.Warnings.Should().Contain(warning =>
+            warning.Contains("read-only", StringComparison.OrdinalIgnoreCase));
+
+        providers.Should().Contain(row =>
+            row.ProviderId == providerId &&
+            row.State == AccountingSystemProviderStateDto.Available &&
+            row.EvidenceKinds.Contains(expectedEvidenceKind) &&
             !row.SupportsPosting);
     }
 
@@ -338,6 +394,56 @@ public sealed class AccountingSystemIntegrationServiceTests
         cashExportLine.ExternalDimensions.Should().NotBeNull();
         cashExportLine.ExternalDimensions!.ExternalGlDimensions["Class"].Should().Be("DefaultFund");
         package.GeneratedLines.Should().OnlyContain(line => line.EvidenceLinks.Any(link => link.StartsWith("ledger-entry:", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [Theory]
+    [InlineData("xero-fixture", "xero-default-fund-certified", "090", "xero-bank-001", 179_050)]
+    [InlineData("netsuite-fixture", "netsuite-default-fund-certified", "1000", "ns-1000", 308_125)]
+    public async Task MappingProfiles_XeroAndNetSuiteFixturesFeedGuardedExportPackagesWithoutEnablingPosting(
+        string providerId,
+        string profileId,
+        string cashAccountCode,
+        string externalCashAccountId,
+        decimal expectedCashDebit)
+    {
+        var service = CreateService(CreateMatchedExternalGlFixtureLedgerStore(providerId));
+        var profile = CertifiedFixtureMappingProfile(providerId, profileId);
+
+        var upserted = await service.UpsertMappingProfileAsync(new AccountingSystemMappingProfileUpsertRequestDto(
+            profile,
+            "accounting-ops",
+            ProviderId: providerId,
+            FundProfileId: "default-fund",
+            EvidenceLinks: [$"approval:external-gl-mapping:{profileId}"]));
+        var package = await service.CreateExportPackageAsync(new AccountingSystemExportPackageRequestDto(
+            "accounting-ops",
+            ProviderId: providerId,
+            FundProfileId: "default-fund",
+            PeriodStart: new DateOnly(2026, 1, 1),
+            PeriodEnd: new DateOnly(2026, 1, 31),
+            MappingProfileId: profile.ProfileId,
+            RequireBalancedReconciliation: false,
+            EvidenceLinks: [$"approval:export-package:{providerId}:default-fund:2026-01-01:2026-01-31"]));
+
+        upserted.ProviderId.Should().Be(providerId);
+        upserted.CertificationState.Should().Be(AccountingCertificationStateDto.Certified);
+        package.ProviderId.Should().Be(providerId);
+        package.PostingEnabled.Should().BeFalse();
+        package.PostingDisabledReason.Should().Contain("Guarded export package only");
+        package.Certification.Should().NotBeNull();
+        package.Certification!.State.Should().Be(AccountingCertificationStateDto.ReadyForReview);
+        package.GeneratedLines.Should().HaveCount(3);
+        package.GeneratedLines.Should().Contain(line =>
+            line.MeridianAccountCode == cashAccountCode &&
+            line.ExternalAccountId == externalCashAccountId &&
+            line.Debit == expectedCashDebit);
+        package.GeneratedLines.Should().OnlyContain(line =>
+            line.EvidenceLinks.Any(link => link.StartsWith("ledger-entry:", StringComparison.OrdinalIgnoreCase)));
+        package.ValidationIssues.Should().ContainSingle(issue =>
+            issue.Code == "LiveExternalPostingDisabled" &&
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Info);
+        package.ValidationIssues.Should().NotContain(issue =>
+            issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
     }
 
     [Fact]
@@ -1363,7 +1469,12 @@ public sealed class AccountingSystemIntegrationServiceTests
     private static AccountingSystemIntegrationService CreateService(
         ILedgerJournalStore? ledgerJournalStore,
         params IAccountingSystemProvider[] additionalProviders)
-        => new(new IAccountingSystemProvider[] { new QuickBooksFixtureAccountingProvider() }.Concat(additionalProviders), ledgerJournalStore);
+        => new(new IAccountingSystemProvider[]
+        {
+            new QuickBooksFixtureAccountingProvider(),
+            new XeroFixtureAccountingProvider(),
+            new NetSuiteFixtureAccountingProvider()
+        }.Concat(additionalProviders), ledgerJournalStore);
 
     private static ILedgerJournalStore CreateMatchedQuickBooksFixtureLedgerStore()
     {
@@ -1438,6 +1549,87 @@ public sealed class AccountingSystemIntegrationServiceTests
                     GlobalSequence: 1,
                     CreatedAt: timestamp,
                     SourceEventId: Guid.NewGuid(),
+                SourceJournalEntryId: Guid.NewGuid())
+            ]);
+    }
+
+    private static ILedgerJournalStore CreateMatchedExternalGlFixtureLedgerStore(string providerId)
+    {
+        (string AccountCode, LedgerAccountType AccountType, decimal Debit, decimal Credit)[] lines = providerId switch
+        {
+            "xero-fixture" =>
+            [
+                ("090", LedgerAccountType.Asset, 179_050m, 0m),
+                ("404", LedgerAccountType.Expense, 950m, 0m),
+                ("200", LedgerAccountType.Revenue, 0m, 180_000m)
+            ],
+            "netsuite-fixture" =>
+            [
+                ("1000", LedgerAccountType.Asset, 308_125m, 0m),
+                ("7100", LedgerAccountType.Expense, 1_875m, 0m),
+                ("4100", LedgerAccountType.Revenue, 0m, 310_000m)
+            ],
+            _ => throw new ArgumentOutOfRangeException(nameof(providerId), providerId, "Unsupported external GL fixture provider.")
+        };
+
+        return CreateMatchedFixtureLedgerStore(lines);
+    }
+
+    private static ILedgerJournalStore CreateMatchedFixtureLedgerStore(
+        IReadOnlyList<(string AccountCode, LedgerAccountType AccountType, decimal Debit, decimal Credit)> lines)
+    {
+        var ledgerBookId = Guid.NewGuid();
+        var periodId = Guid.NewGuid();
+        var timestamp = new DateTimeOffset(2026, 1, 31, 0, 0, 0, TimeSpan.Zero);
+        var journalEntryId = Guid.NewGuid();
+        const string journalDescription = "Fixture ledger tie-out for guarded external GL export";
+        var journal = new JournalEntry(
+            journalEntryId,
+            timestamp,
+            journalDescription,
+            lines
+                .Select(line => new LedgerEntry(
+                    Guid.NewGuid(),
+                    journalEntryId,
+                    timestamp,
+                    new LedgerAccount(line.AccountCode, line.AccountType),
+                    line.Debit,
+                    line.Credit,
+                    journalDescription))
+                .ToArray());
+
+        return new StaticLedgerJournalStore(
+            new LedgerBookRecord(
+                ledgerBookId,
+                "default-fund",
+                Guid.NewGuid(),
+                FundStructureNodeKindDto.Fund,
+                "Default fund primary book",
+                "USD",
+                timestamp,
+                timestamp),
+            new LedgerAccountingPeriod(
+                periodId,
+                ledgerBookId,
+                2026,
+                1,
+                "2026-01",
+                new DateOnly(2026, 1, 1),
+                new DateOnly(2026, 1, 31),
+                "Open",
+                timestamp,
+                null,
+                1),
+            [
+                new LedgerJournalEntryRecord(
+                    journal,
+                    Guid.NewGuid(),
+                    periodId,
+                    CommandId: null,
+                    CorrelationId: null,
+                    GlobalSequence: 1,
+                    CreatedAt: timestamp,
+                    SourceEventId: Guid.NewGuid(),
                     SourceJournalEntryId: Guid.NewGuid())
             ]);
     }
@@ -1450,6 +1642,8 @@ public sealed class AccountingSystemIntegrationServiceTests
         });
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton<IAccountingSystemProvider, QuickBooksFixtureAccountingProvider>();
+        builder.Services.AddSingleton<IAccountingSystemProvider, XeroFixtureAccountingProvider>();
+        builder.Services.AddSingleton<IAccountingSystemProvider, NetSuiteFixtureAccountingProvider>();
         builder.Services.AddSingleton<ILedgerJournalStore>(_ => CreateMatchedQuickBooksFixtureLedgerStore());
         builder.Services.AddSingleton<AccountingSystemIntegrationService>();
         builder.Services.AddRateLimiter(options =>
@@ -1537,6 +1731,53 @@ public sealed class AccountingSystemIntegrationServiceTests
                 ["Expenses:Trading"] = "qbo-6100"
             },
             AccountingCertificationStateDto.Certified);
+
+    private static ExternalGlMappingProfileDto CertifiedFixtureMappingProfile(string providerId, string profileId)
+    {
+        var accountMappings = providerId switch
+        {
+            "xero-fixture" => new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["090"] = "xero-bank-001",
+                ["620"] = "xero-invest-001",
+                ["200"] = "xero-income-001",
+                ["404"] = "xero-expense-001"
+            },
+            "netsuite-fixture" => new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["1000"] = "ns-1000",
+                ["1200"] = "ns-1200",
+                ["4100"] = "ns-4100",
+                ["7100"] = "ns-7100"
+            },
+            _ => throw new ArgumentOutOfRangeException(nameof(providerId), providerId, "Unsupported external GL fixture provider.")
+        };
+
+        var externalDimensionPrefix = providerId == "xero-fixture" ? "Tracking" : "Segment";
+        return new ExternalGlMappingProfileDto(
+            profileId,
+            providerId,
+            $"{providerId} default fund mapping",
+            new DateTimeOffset(2026, 2, 1, 0, 0, 0, TimeSpan.Zero),
+            [
+                new DimensionMappingProfileDto(
+                    $"{profileId}-dimensions",
+                    "Default fund dimensions",
+                    providerId,
+                    new LedgerDimensionSetDto(FundId: "default-fund", EntityId: "fund-entity-main"),
+                    new LedgerDimensionSetDto(
+                        FundId: $"{externalDimensionPrefix}:DefaultFund",
+                        EntityId: $"{externalDimensionPrefix}:Main",
+                        ExternalGlDimensions: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["Fund"] = "DefaultFund",
+                            ["Entity"] = "Main"
+                        }),
+                    AccountingCertificationStateDto.Certified)
+            ],
+            accountMappings,
+            AccountingCertificationStateDto.Certified);
+    }
 
     private sealed class WrongBookAccountingSystemProvider(Guid ledgerBookId) : IAccountingSystemProvider
     {

@@ -1,6 +1,6 @@
 import { Activity, ArrowRight, ExternalLink, GitBranch, KeyRound, LoaderCircle, MonitorCheck, RefreshCcw, Save, Search, ShieldCheck, Trash2, User } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -554,6 +554,87 @@ function resolveSettingsTaskViewId(hash: string): SettingsTaskViewId {
   return settingsTaskViews.find((view) => view.sectionId === normalizedHash)?.id ?? "overview";
 }
 
+function inferSettingsTaskView({
+  overview,
+  strategy,
+  trading,
+  portfolio,
+  data,
+  accounting,
+  reporting,
+  brokerageConnection,
+  providerConnections,
+  providerRoutingConnections,
+  providerRoutingBindings,
+  providerRoutingTrustSnapshots,
+  featureCapabilities,
+  rolePermissionCatalog,
+  securityAssetProfiles,
+  ledgerMappingWorkbench,
+  operationsApprovalPolicyMatrix,
+  operationsCloseCalendar,
+  error,
+  workspaceErrors
+}: Pick<
+  SettingsScreenProps,
+  | "overview"
+  | "strategy"
+  | "trading"
+  | "portfolio"
+  | "data"
+  | "accounting"
+  | "reporting"
+  | "brokerageConnection"
+  | "providerConnections"
+  | "providerRoutingConnections"
+  | "providerRoutingBindings"
+  | "providerRoutingTrustSnapshots"
+  | "featureCapabilities"
+  | "rolePermissionCatalog"
+  | "securityAssetProfiles"
+  | "ledgerMappingWorkbench"
+  | "operationsApprovalPolicyMatrix"
+  | "operationsCloseCalendar"
+  | "error"
+  | "workspaceErrors"
+>): SettingsTaskViewId {
+  if (providerConnections || providerRoutingConnections || providerRoutingBindings || providerRoutingTrustSnapshots) {
+    return "providers";
+  }
+
+  if (securityAssetProfiles) {
+    return "asset-profiles";
+  }
+
+  if (featureCapabilities) {
+    return "runtime";
+  }
+
+  if (rolePermissionCatalog || ledgerMappingWorkbench || operationsApprovalPolicyMatrix || operationsCloseCalendar) {
+    return "operations";
+  }
+
+  if (brokerageConnection) {
+    return "brokerage";
+  }
+
+  if (
+    error
+    || overview === null
+    || strategy
+    || trading
+    || portfolio
+    || data
+    || accounting
+    || reporting
+    || Object.keys(workspaceErrors ?? {}).length > 0
+  ) {
+    return "diagnostics";
+  }
+
+  return "overview";
+}
+
 export function SettingsScreen({
   session,
   overview,
@@ -582,6 +663,7 @@ export function SettingsScreen({
   error = null,
   workspaceErrors = {}
 }: SettingsScreenProps) {
+  const location = useLocation();
   const vm = buildSettingsScreenViewModel({
     session,
     overview,
@@ -612,9 +694,55 @@ export function SettingsScreen({
     canClear: vm.alpacaConnectionPanel.canClear
   });
   const recentEventsVm = useSettingsRecentEventsSelectionViewModel(vm.recentEventsSection);
-  const [activeTaskView, setActiveTaskView] = useState<SettingsTaskViewId>(() => (
-    typeof window === "undefined" ? "overview" : resolveSettingsTaskViewId(window.location.hash)
-  ));
+  const inferredTaskView = useMemo(() => inferSettingsTaskView({
+    overview,
+    strategy,
+    trading,
+    portfolio,
+    data,
+    accounting,
+    reporting,
+    brokerageConnection,
+    providerConnections,
+    providerRoutingConnections,
+    providerRoutingBindings,
+    providerRoutingTrustSnapshots,
+    featureCapabilities,
+    rolePermissionCatalog,
+    securityAssetProfiles,
+    ledgerMappingWorkbench,
+    operationsApprovalPolicyMatrix,
+    operationsCloseCalendar,
+    error,
+    workspaceErrors
+  }), [
+    accounting,
+    brokerageConnection,
+    data,
+    error,
+    featureCapabilities,
+    ledgerMappingWorkbench,
+    operationsApprovalPolicyMatrix,
+    operationsCloseCalendar,
+    overview,
+    portfolio,
+    providerConnections,
+    providerRoutingBindings,
+    providerRoutingConnections,
+    providerRoutingTrustSnapshots,
+    reporting,
+    rolePermissionCatalog,
+    securityAssetProfiles,
+    strategy,
+    trading,
+    workspaceErrors
+  ]);
+  const [hashTaskView, setHashTaskView] = useState<SettingsTaskViewId | null>(() => {
+    const initialHash = typeof window === "undefined" ? "" : window.location.hash;
+    return initialHash ? resolveSettingsTaskViewId(initialHash) : null;
+  });
+  const routeHashTaskView = location.hash ? resolveSettingsTaskViewId(location.hash) : null;
+  const activeTaskView = routeHashTaskView ?? hashTaskView ?? inferredTaskView;
   const [providerSearch, setProviderSearch] = useState("");
   const [providerCapabilityFilter, setProviderCapabilityFilter] = useState<"all" | "brokerage" | "data" | "accounting">("all");
   const [providerHealthFilter, setProviderHealthFilter] = useState<"all" | "healthy" | "warning" | "blocked">("all");
@@ -790,13 +918,24 @@ export function SettingsScreen({
     { id: "profiles", label: "Profiles", value: vm.assetProfileGovernancePanel.approvedCountLabel },
     { id: "diagnostics", label: "Diagnostics", value: vm.diagnosticCounts.loadedLabel }
   ];
+  const showAccessSection = activeTaskView === "access" || activeTaskView === "operations";
+  const showOperationsSection = activeTaskView === "operations" || activeTaskView === "access";
+  const showAssetProfileSection = activeTaskView === "asset-profiles";
+  const showProviderSection = activeTaskView === "providers";
+  const showBrokerageSection = activeTaskView === "brokerage" || activeTaskView === "providers";
+  const showDiagnosticsSection = activeTaskView === "overview" || activeTaskView === "diagnostics";
+  const showRuntimeSection = activeTaskView === "runtime";
+  const showBackendCapabilitySection = activeTaskView === "diagnostics" || activeTaskView === "runtime";
+
+  useEffect(() => {
+    setHashTaskView(routeHashTaskView);
+  }, [routeHashTaskView]);
 
   useEffect(() => {
     const updateActiveTaskView = () => {
-      setActiveTaskView(resolveSettingsTaskViewId(window.location.hash));
+      setHashTaskView(window.location.hash ? resolveSettingsTaskViewId(window.location.hash) : null);
     };
 
-    updateActiveTaskView();
     window.addEventListener("hashchange", updateActiveTaskView);
     return () => window.removeEventListener("hashchange", updateActiveTaskView);
   }, []);
@@ -2636,6 +2775,7 @@ export function SettingsScreen({
         </Card>
       </section>
 
+      {showAccessSection ? (
       <Card
         id="scoped-access-control"
         role="region"
@@ -2958,7 +3098,9 @@ export function SettingsScreen({
           </form>
         </CardContent>
       </Card>
+      ) : null}
 
+      {showOperationsSection ? (
       <Card id="fund-operations-control-center" className="panel-surface scroll-mt-6 border border-border/70">
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -3498,7 +3640,9 @@ export function SettingsScreen({
           </form>
         </CardContent>
       </Card>
+      ) : null}
 
+      {showAssetProfileSection ? (
       <Card id="asset-profile-accounting" className="panel-surface scroll-mt-6 border border-border/70">
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -3780,7 +3924,9 @@ export function SettingsScreen({
           </form>
         </CardContent>
       </Card>
+      ) : null}
 
+      {showProviderSection ? (
       <Card id="provider-connection-center" className="panel-surface scroll-mt-6 border border-border/70">
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">

@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Meridian.Application.FundStructure;
 using Meridian.FinancialOperations.AccountingClose;
+using Meridian.DataIntegration.AccountingSystem.Fixtures;
 using Meridian.DataIntegration.AccountingSystem.QuickBooks;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Services;
@@ -101,6 +102,8 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<IAccountingJournalDraftService, AccountingJournalDraftService>();
         services.TryAddSingleton<IAccountingPostingCandidateService, AccountingPostingCandidateService>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, QuickBooksFixtureAccountingProvider>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, XeroFixtureAccountingProvider>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IAccountingSystemProvider, NetSuiteFixtureAccountingProvider>());
         services.TryAddSingleton<AccountingSystemIntegrationService>();
         services.AddTransient<AccountingConfigureViewModel>();
         services.AddTransient<AccountingConfigurePage>();

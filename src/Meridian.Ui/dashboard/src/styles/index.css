@@ -44,7 +44,7 @@
     --secondary: 216 33% 97%;
     --secondary-foreground: 215 15% 16%;
     --muted: 210 27% 96%;
-    --muted-foreground: 212 9% 47%;
+    --muted-foreground: 212 11% 38%;
     --accent: 200 51% 37%;
     --accent-foreground: 0 0% 100%;
     --border: 213 16% 86%;
@@ -53,7 +53,7 @@
     --paper: 200 51% 37%;
     --live: 200 51% 37%;
     --live-env: 347 49% 49%;
-    --warning: 35 71% 42%;
+    --warning: 35 78% 32%;
     --success: 159 72% 31%;
     --danger: 347 49% 49%;
     --panel-strong: 0 0% 100%;
@@ -104,7 +104,7 @@
     --secondary: 216 33% 97%;
     --secondary-foreground: 215 15% 16%;
     --muted: 210 27% 96%;
-    --muted-foreground: 212 9% 47%;
+    --muted-foreground: 212 11% 38%;
     --accent: 200 51% 37%;
     --accent-foreground: 0 0% 100%;
     --border: 213 16% 86%;
@@ -113,7 +113,7 @@
     --paper: 200 51% 37%;
     --live: 200 51% 37%;
     --live-env: 347 49% 49%;
-    --warning: 35 71% 42%;
+    --warning: 35 78% 32%;
     --success: 159 72% 31%;
     --danger: 347 49% 49%;
     --panel-strong: 0 0% 100%;
@@ -174,7 +174,7 @@
     --ws-border: #D7DCE2;
     --ws-border-strong: #B8C2CC;
     --ws-text: #22272E;
-    --ws-text-muted: #6E7781;
+    --ws-text-muted: #59636F;
     --ws-text-secondary: #4D5967;
     --ws-masthead-bg: #171A1F;
     --ws-masthead-fg: #F4F6F8;
@@ -214,9 +214,9 @@
     --state-healthy-fg: #16885F;
     --state-healthy-bd: rgba(22, 136, 95, 0.32);
     --state-healthy-bg: rgba(22, 136, 95, 0.10);
-    --state-warn-fg: #B7791F;
-    --state-warn-bd: rgba(183, 121, 31, 0.34);
-    --state-warn-bg: rgba(183, 121, 31, 0.10);
+    --state-warn-fg: #8A520E;
+    --state-warn-bd: rgba(138, 82, 14, 0.38);
+    --state-warn-bg: rgba(138, 82, 14, 0.11);
     --state-danger-fg: #BA3F55;
     --state-danger-bd: rgba(186, 63, 85, 0.35);
     --state-danger-bg: rgba(186, 63, 85, 0.10);
@@ -238,9 +238,9 @@
     --severity-blocked-fg: #BA3F55;
     --severity-blocked-bd: rgba(186, 63, 85, 0.40);
     --severity-blocked-bg: rgba(186, 63, 85, 0.10);
-    --severity-action-fg: #B7791F;
-    --severity-action-bd: rgba(183, 121, 31, 0.42);
-    --severity-action-bg: rgba(183, 121, 31, 0.10);
+    --severity-action-fg: #8A520E;
+    --severity-action-bd: rgba(138, 82, 14, 0.42);
+    --severity-action-bg: rgba(138, 82, 14, 0.11);
     --severity-review-fg: #2F6F8F;
     --severity-review-bd: rgba(47, 111, 143, 0.36);
     --severity-review-bg: rgba(47, 111, 143, 0.10);
@@ -557,6 +557,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
+    min-height: 2rem;
     border: 1px solid rgba(42, 178, 212, 0.3);
     border-radius: var(--radius-xs);
     background: rgba(42, 178, 212, 0.08);
@@ -1270,13 +1271,13 @@
 
   .workflow-continuity-dock {
     display: grid;
-    grid-template-columns: minmax(12rem, 0.55fr) minmax(22rem, 1.25fr) minmax(14rem, 0.65fr);
+    grid-template-columns: minmax(12rem, 0.56fr) minmax(20rem, 1.16fr) minmax(13rem, 0.62fr) max-content;
     align-items: stretch;
-    gap: 0.75rem;
+    gap: 0.5rem;
     min-width: 0;
     border-bottom: 1px solid rgba(31, 52, 76, 0.95);
     background: rgba(8, 16, 26, 0.74);
-    padding: 0.625rem 1rem;
+    padding: 0.5rem 1rem;
   }
 
   .workflow-continuity-support {
@@ -1367,7 +1368,7 @@
   .workflow-continuity-context {
     min-width: 0;
     display: grid;
-    gap: 0.375rem;
+    gap: 0.25rem;
   }
 
   .workflow-continuity-decision {
@@ -1375,8 +1376,8 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) max-content;
     align-items: center;
-    gap: 0.875rem;
-    padding: 0.625rem 0.75rem;
+    gap: 0.625rem;
+    padding: 0.45rem 0.625rem;
     border: 1px solid rgba(31, 52, 76, 0.95);
     border-radius: var(--radius-md);
     background: rgba(5, 16, 27, 0.82);
@@ -1405,7 +1406,7 @@
   .workflow-continuity-decision-copy {
     min-width: 0;
     display: grid;
-    gap: 0.25rem;
+    gap: 0.1875rem;
   }
 
   .workflow-continuity-decision-head {
@@ -1438,7 +1439,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     color: #f6fbff;
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     font-weight: 750;
     line-height: 1.25;
   }
@@ -1449,8 +1450,8 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     color: var(--fg-muted);
-    font-size: 0.6875rem;
-    line-height: 1.35;
+    font-size: 0.65625rem;
+    line-height: 1.3;
   }
 
   .workflow-continuity-decision-reason {
@@ -1458,7 +1459,7 @@
     display: grid;
     grid-template-columns: max-content minmax(0, 1fr);
     align-items: baseline;
-    gap: 0.375rem;
+    gap: 0.3125rem;
     color: var(--fg-muted);
     font-size: 0.625rem;
     line-height: 1.3;
@@ -1494,7 +1495,7 @@
   }
 
   .workflow-continuity-decision-action {
-    max-width: 16rem;
+    max-width: 12rem;
     justify-self: end;
     white-space: nowrap;
   }
@@ -1512,7 +1513,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     color: #f6fbff;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 700;
     line-height: 1.2;
   }
@@ -1523,8 +1524,9 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     color: var(--fg-muted);
-    font-size: 0.75rem;
-    line-height: 1.45;
+    -webkit-line-clamp: 1;
+    font-size: 0.6875rem;
+    line-height: 1.35;
   }
 
   .workflow-continuity-meta {
@@ -1611,7 +1613,7 @@
   .workflow-continuity-steps {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.375rem;
+    gap: 0.3125rem;
     min-width: 0;
   }
 
@@ -1619,7 +1621,7 @@
     grid-column: 1 / -1;
     min-width: 0;
     border-top: 1px solid rgba(31, 52, 76, 0.72);
-    padding-top: 0.375rem;
+    padding-top: 0.25rem;
   }
 
   .workflow-continuity-operator-flow summary {
@@ -1627,7 +1629,7 @@
     grid-template-columns: minmax(0, 1fr) max-content;
     align-items: center;
     gap: 0.5rem;
-    min-height: 2rem;
+    min-height: 1.75rem;
     cursor: pointer;
     list-style: none;
     color: var(--fg-muted);
@@ -1654,11 +1656,11 @@
   .workflow-continuity-step {
     position: relative;
     min-width: 0;
-    min-height: 4.25rem;
+    min-height: 2.875rem;
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     background: rgba(13, 23, 34, 0.68);
-    padding: 0.5rem;
+    padding: 0.4375rem 0.5rem;
     color: var(--fg);
     transition: border-color 120ms ease, background 120ms ease, transform 120ms ease;
   }
@@ -1705,7 +1707,7 @@
   }
 
   .workflow-continuity-step-description {
-    display: -webkit-box;
+    display: none;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
     margin-top: 0.25rem;
@@ -1717,8 +1719,8 @@
 
   .workflow-continuity-step-status {
     position: absolute;
-    bottom: 0.375rem;
-    right: 0.375rem;
+    bottom: 0.3125rem;
+    right: 0.3125rem;
     border-radius: var(--radius-sm);
     background: rgba(8, 16, 26, 0.86);
     color: var(--fg-muted);
@@ -2199,6 +2201,7 @@
 
   .workflow-continuity-next {
     align-self: center;
+    min-height: 2rem;
     white-space: nowrap;
   }
 
@@ -3147,7 +3150,7 @@ body,
 .workspace-filter-segment,
 .workspace-filter-fields > div,
 .workspace-inline-select select {
-  min-height: 28px;
+  min-height: 32px;
   border: 1px solid var(--ws-border);
   border-radius: 4px;
   background: var(--ws-surface-subtle);
@@ -3221,7 +3224,7 @@ body,
 }
 
 .workspace-tab {
-  min-height: 28px;
+  min-height: 32px;
   border: 0;
   border-bottom: 2px solid transparent;
   background: transparent;

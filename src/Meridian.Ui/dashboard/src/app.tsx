@@ -637,7 +637,14 @@ function WorkflowContinuityDock({
   const decision = viewModel.decisionBrief;
 
   return (
-    <section className="workflow-continuity-dock" aria-label={viewModel.ariaLabel}>
+    <section
+      className="workflow-continuity-dock"
+      aria-label={viewModel.ariaLabel}
+      aria-describedby="workflow-continuity-screenreader-summary"
+    >
+      <p id="workflow-continuity-screenreader-summary" className="sr-only">
+        {viewModel.title}. {viewModel.summary} Current route {viewModel.routeLabel}. Next action: {viewModel.nextActionLabel}.
+      </p>
       <div className="workflow-continuity-context">
         <div className="flex min-w-0 items-center gap-2">
           <GitBranch className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
@@ -732,7 +739,10 @@ function WorkflowContinuityDock({
         </Link>
       </Button>
 
-      <details className="workflow-continuity-operator-flow">
+      <details
+        className="workflow-continuity-operator-flow"
+        aria-label={`${viewModel.primaryOperatorFlowLabel}: ${viewModel.primaryOperatorFlowSummary}`}
+      >
         <summary>
           <span>
             <span className="eyebrow-label">{viewModel.primaryOperatorFlowLabel}</span>

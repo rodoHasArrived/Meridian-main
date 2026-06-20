@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { MetricCard } from "@/components/meridian/metric-card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
+import { WorkspaceFilterBar } from "@/components/meridian/workspace-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -562,7 +563,7 @@ function AccountingSystemReconciliationPanel({
           : "";
 
   return (
-    <Card className="panel-surface" role="region" aria-label="External GL reconciliation">
+    <Card id="external-gl-reconciliation" className="panel-surface scroll-mt-6" role="region" aria-label="External GL reconciliation">
       <CardHeader>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
@@ -1828,6 +1829,19 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
 
   const focus = focusCopy[workstream];
   const multiAssetCoveragePanel = buildMultiAssetCoveragePanel(multiAssetCoverage);
+  const accountingRecoveryFields = [
+    { id: "workstream", label: "Workstream", value: focus.title },
+    { id: "queue", label: "Queue", value: `${data.reconciliationQueue.length} runs` },
+    { id: "breaks", label: "Breaks", value: `${data.breakQueue.length} open` },
+    { id: "close", label: "Close", value: closeCommandCenter?.statusLabel ?? "Loading" },
+    {
+      id: "external-gl",
+      label: "External GL",
+      value: accountingSystemReconciliation
+        ? `${accountingSystemReconciliation.matchedCount} matched / ${accountingSystemReconciliation.breakCount} breaks`
+        : accountingSystemLoading ? "Loading" : "Not loaded"
+    }
+  ];
 
   return (
     <div className="space-y-8">
@@ -1835,6 +1849,7 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
         id="accounting-overview"
         role="region"
         aria-label={`${workspace.label} workbench context`}
+        data-workstream={workstream}
         className="panel-surface-strong flex flex-wrap items-center justify-between gap-3 px-4 py-4"
       >
         <div className="min-w-0">
@@ -1851,6 +1866,29 @@ export function AccountingScreen({ data, multiAssetCoverage }: AccountingScreenP
           <AccountingChip label="Profiles" value={String(data.reporting.profileCount)} />
         </div>
       </section>
+
+      <WorkspaceFilterBar
+        label="Accounting recovery navigator"
+        searchLabel="Current Accounting route"
+        searchValue={`${workspace.label} / ${focus.title}`}
+        fields={accountingRecoveryFields}
+        actions={
+          <div className="flex flex-wrap gap-2" aria-label="Accounting recovery jump targets">
+            <Button asChild size="sm" variant="outline">
+              <a href="#close-command-center">Close center</a>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <a href="#external-gl-reconciliation">External GL</a>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <a href="#accounting-posture">Posture</a>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/accounting/reconciliation">Exceptions</Link>
+            </Button>
+          </div>
+        }
+      />
 
       {workflowLaunch ? <AccountingWorkflowLaunchPanel view={workflowLaunch} /> : null}
 

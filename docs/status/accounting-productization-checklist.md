@@ -25,8 +25,9 @@ the requirement end to end.
 - [x] Manual journal drafts carry dimensions, evidence, ledger-book scope, lifecycle transitions,
   reversal/rebook links, and validation issues.
 - [x] External GL remains guarded and import-first: QuickBooks fixture/import evidence,
-  provider-neutral mapping profiles, ledger-book-scoped reconciliation, and controlled export
-  package certification exist while live external posting stays disabled.
+  Xero and NetSuite fixture import evidence, provider-neutral mapping profiles,
+  ledger-book-scoped reconciliation, and controlled export package certification exist while live
+  external posting stays disabled.
 - [x] Close/report package and report-line DTOs carry ledger-book, reconciliation, certification,
   restatement, and evidence state for downstream close/reporting surfaces.
 - [x] Strategy-run workstation ledger trial-balance and journal reads now carry canonical
@@ -65,9 +66,10 @@ the requirement end to end.
 - [ ] Add implementation-grade migration and rollout tooling for ledger-book scoping, historical
   journal backfill, dimensional backfill, accounting configuration promotion, and close/reporting
   evidence migration.
-- [ ] Expand external GL fixtures beyond QuickBooks into Xero and NetSuite import/mapping coverage,
-  then keep controlled export artifacts guarded until a separately approved live-posting adapter is
-  built and certified.
+- [ ] Expand external GL provider depth beyond fixtures: Xero and NetSuite now have read-only
+  import fixtures, but live credentialed import adapters, richer mapping fixtures, and controlled
+  export certification still need provider-specific coverage before any separately approved live
+  posting adapter is considered.
 - [ ] Productize close management with close-plan editing, dependency graph, sign-off matrix,
   materiality policy setup, late-adjustment workflow, period locks, and blocker/evidence review in
   shared services plus browser/WPF surfaces.

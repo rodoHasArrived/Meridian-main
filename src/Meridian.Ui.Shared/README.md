@@ -205,8 +205,9 @@ also require `ModifyConfig` before writing the shared symbol mapping configurati
 Accounting-system endpoints are also registered as a shared endpoint group from `UiApiRoutes`.
 `Meridian.FinancialOperations.AccountingSystem.AccountingSystemIntegrationService` lists GL
 providers, uses QuickBooks Online when local OAuth client id, client secret, refresh token, and
-company realm id config are present, falls back to `quickbooks-fixture` otherwise, exposes planned
-Xero and NetSuite import-first rows with posting disabled, retains the latest import in process,
+company realm id config are present, falls back to `quickbooks-fixture` otherwise, registers
+read-only `xero-fixture` and `netsuite-fixture` import mappings, exposes planned live Xero and
+NetSuite rows with posting disabled, retains the latest import in process,
 and compares external trial-balance evidence against Meridian-owned ledger truth when the ledger
 store is available. The reconciliation response carries provider-side refs, Meridian ledger refs,
 and package posture for external import, Meridian ledger support, and the GL tie-out. The same

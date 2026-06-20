@@ -61,7 +61,8 @@ reversals, capital calls, distributions, subscriptions, redemptions, LP transfer
 fees, builds governed posting-rule journal draft candidate previews through the shared posting
 candidate service without posting to the ledger, exposes approve, post, reverse, rebook, and
 close-lock lifecycle buttons over the shared journal-entry lifecycle service, shows read-only
-external GL evidence and retained package readiness, projects
+external GL evidence and retained package readiness from the shared QuickBooks, Xero, and NetSuite
+fixture/import-first provider registrations, projects
 close/evidence/reconciliation posture from shared operations continuity when available, and creates
 fund-scoped accounting-basis policy records through the Financial Operations policy service.
 Private-capital presets attach the shared
