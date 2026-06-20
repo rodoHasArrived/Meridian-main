@@ -709,6 +709,92 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
     }
 
     [Fact]
+    public async Task CreateLedgerBookSetupAsync_WithSharedCandidate_CreatesBookAndRefreshesConfiguration()
+    {
+        Directory.CreateDirectory(_root);
+        var fundContext = new FundContextService(Path.Combine(_root, "fund-context.json"));
+        var profile = await fundContext.UpsertProfileAsync(new FundProfileDetail(
+            FundProfileId: "alpha-fund",
+            DisplayName: "Alpha Fund",
+            LegalEntityName: "Alpha Fund LP",
+            BaseCurrency: "USD",
+            DefaultWorkspaceId: "accounting",
+            DefaultLandingPageTag: "FundAccountingConfigure",
+            DefaultLedgerScope: FundLedgerScope.Consolidated,
+            EntityIds: ["entity-alpha"],
+            SleeveIds: ["sleeve-credit"],
+            VehicleIds: ["vehicle-master"],
+            IsDefault: true));
+        await fundContext.SelectFundProfileAsync(profile.FundProfileId);
+
+        var missingLedgerBookId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+        var ledgerBookService = new TestLedgerBookService();
+        var setupCandidate = new LedgerBookSetupCandidateDto(
+            profile.FundProfileId,
+            ledgerBookService.Book.FundStructureNodeId,
+            ledgerBookService.Book.FundStructureNodeKind,
+            "Alpha Fund governed book",
+            "USD",
+            AccountingBasisKindDto.Primary,
+            "legacy-v1",
+            "legacy-v1",
+            "Create a ledger book using the registered fund-structure scope before activation.",
+            Description: "Created from WPF Accounting Configure setup readiness.",
+            SourceLedgerBookId: ledgerBookService.Book.LedgerBookId,
+            RequestedLedgerBookId: missingLedgerBookId);
+        var missingWorkspace = new AccountingConfigurationWorkspaceDto(
+            profile.FundProfileId,
+            missingLedgerBookId,
+            AccountingConfigurationStatusDto.Draft,
+            "draft",
+            DateTimeOffset.UtcNow,
+            LedgerBooks: [],
+            ChartOfAccounts: [],
+            JournalTemplates: [],
+            PostingRules: [],
+            ValidationIssues:
+            [
+                new AccountingConfigurationValidationIssueDto(
+                    "configuration.ledger-book-missing",
+                    AccountingConfigurationValidationSeverityDto.Critical,
+                    $"Accounting configuration targets ledger book '{missingLedgerBookId:D}', but no matching ledger book setup was found.",
+                    missingLedgerBookId.ToString("D", CultureInfo.InvariantCulture),
+                    setupCandidate.SuggestedAction)
+            ],
+            AuditTrail: [],
+            RuleTestCases: [],
+            RulesStudio: null,
+            LedgerBookSetupCandidate: setupCandidate);
+        var refreshedWorkspace = missingWorkspace with
+        {
+            LedgerBookId = ledgerBookService.Book.LedgerBookId,
+            LedgerBooks = [ledgerBookService.Book with { DisplayName = setupCandidate.DisplayName }],
+            ValidationIssues = [],
+            LedgerBookSetupCandidate = null
+        };
+        var viewModel = new AccountingConfigureViewModel(
+            fundContext,
+            new StaticAccountingConfigurationService(missingWorkspace, refreshedWorkspace),
+            new StaticManualJournalEntryWorkbenchService(CreatePostedPrivateCapitalProjection(profile.FundProfileId)),
+            ledgerBookService: ledgerBookService);
+
+        await viewModel.LoadAsync();
+        await viewModel.CreateLedgerBookSetupAsync();
+
+        ledgerBookService.LastCreateRequest.Should().NotBeNull();
+        ledgerBookService.LastCreateRequest!.FundProfileId.Should().Be(profile.FundProfileId);
+        ledgerBookService.LastCreateRequest.FundStructureNodeId.Should().Be(setupCandidate.FundStructureNodeId);
+        ledgerBookService.LastCreateRequest.FundStructureNodeKind.Should().Be(setupCandidate.FundStructureNodeKind);
+        ledgerBookService.LastCreateRequest.DisplayName.Should().Be(setupCandidate.DisplayName);
+        ledgerBookService.LastCreateRequest.AccountingPolicyId.Should().Be(setupCandidate.AccountingPolicyId);
+        viewModel.LedgerBookSetupStatusText.Should().Contain("Created ledger book Alpha Fund governed book");
+        viewModel.SetupReadinessRows.Should().Contain(row =>
+            row.Name == "Selected ledger book" &&
+            row.Status == "Alpha Fund governed book" &&
+            row.Detail.Contains("legacy-v1", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public void FundAccountingConfigureRoute_ShouldUseDedicatedConfigurePage()
     {
         var descriptor = ShellNavigationCatalog.GetPage("FundAccountingConfigure");
@@ -730,6 +816,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         xaml.Should().Contain("AccountingConfigureRefreshButton");
         xaml.Should().Contain("AccountingConfigureSeedBaselineButton");
         xaml.Should().Contain("AccountingConfigureActivateButton");
+        xaml.Should().Contain("AccountingConfigureCreateLedgerBookSetupButton");
+        xaml.Should().Contain("AccountingConfigureLedgerBookSetupStatusText");
         xaml.Should().Contain("AccountingPostingCandidateButton");
         xaml.Should().Contain("AccountingConfigurationSetupReadinessGrid");
         xaml.Should().Contain("SetupReadinessRows");
@@ -810,7 +898,8 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             fundOperationsWorkspaceReadService: null,
             policyService,
             capitalAccountWorkbenchService,
-            postingCandidateService);
+            postingCandidateService,
+            ledgerBookService: ledgerBookService);
 
         return new AccountingConfigureHarness(viewModel, configurationPath, draftsPath, configurationService, postingCandidateService);
     }
@@ -847,14 +936,23 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             "legacy-v1",
             "legacy-v1");
 
+        public LedgerBookDto Book => _book;
+
+        public CreateLedgerBookRequest? LastCreateRequest { get; private set; }
+
         public Task<LedgerBookDto> CreateBookAsync(CreateLedgerBookRequest request, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
+            LastCreateRequest = request;
             return Task.FromResult(_book with
             {
                 FundProfileId = string.IsNullOrWhiteSpace(request.FundProfileId) ? _book.FundProfileId : request.FundProfileId,
                 BaseCurrency = string.IsNullOrWhiteSpace(request.BaseCurrency) ? _book.BaseCurrency : request.BaseCurrency,
-                DisplayName = string.IsNullOrWhiteSpace(request.DisplayName) ? _book.DisplayName : request.DisplayName
+                DisplayName = string.IsNullOrWhiteSpace(request.DisplayName) ? _book.DisplayName : request.DisplayName,
+                Description = request.Description ?? _book.Description,
+                AccountingBasis = request.AccountingBasis,
+                AccountingPolicyId = request.AccountingPolicyId,
+                AccountingPolicyVersion = request.AccountingPolicyVersion
             });
         }
 
@@ -900,18 +998,34 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
             => Task.FromException<LedgerPeriodCloseResultDto>(new NotSupportedException("Accounting configure tests do not close ledger periods."));
     }
 
-    private sealed class StaticAccountingConfigurationService(AccountingConfigurationWorkspaceDto workspace) : IAccountingConfigurationService
+    private sealed class StaticAccountingConfigurationService : IAccountingConfigurationService
     {
+        private readonly AccountingConfigurationWorkspaceDto _workspace;
+        private readonly AccountingConfigurationWorkspaceDto? _refreshedWorkspace;
+
+        public StaticAccountingConfigurationService(
+            AccountingConfigurationWorkspaceDto workspace,
+            AccountingConfigurationWorkspaceDto? refreshedWorkspace = null)
+        {
+            _workspace = workspace;
+            _refreshedWorkspace = refreshedWorkspace;
+        }
+
         public Task<AccountingConfigurationWorkspaceDto> GetWorkspaceAsync(
             string? fundProfileId = null,
             Guid? ledgerBookId = null,
             CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            return Task.FromResult(workspace with
+            var selectedWorkspace = _refreshedWorkspace is not null &&
+                ledgerBookId.HasValue &&
+                _refreshedWorkspace.LedgerBookId == ledgerBookId
+                    ? _refreshedWorkspace
+                    : _workspace;
+            return Task.FromResult(selectedWorkspace with
             {
-                FundProfileId = string.IsNullOrWhiteSpace(fundProfileId) ? workspace.FundProfileId : fundProfileId.Trim(),
-                LedgerBookId = ledgerBookId ?? workspace.LedgerBookId
+                FundProfileId = string.IsNullOrWhiteSpace(fundProfileId) ? selectedWorkspace.FundProfileId : fundProfileId.Trim(),
+                LedgerBookId = ledgerBookId ?? selectedWorkspace.LedgerBookId
             });
         }
 
@@ -945,7 +1059,7 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         public Task<IReadOnlyList<AccountingActionAuditEventDto>> ListAuditAsync(string? fundProfileId = null, Guid? ledgerBookId = null, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            return Task.FromResult(workspace.AuditTrail);
+            return Task.FromResult(_workspace.AuditTrail);
         }
     }
 

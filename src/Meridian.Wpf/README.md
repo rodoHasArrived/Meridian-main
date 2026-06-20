@@ -57,7 +57,8 @@ validation, submit, and lifecycle actions, shows the shared Rules Studio project
 effective-dated rule versions, generated posting readiness, saved regression tests, and promotion
 approval queues, runs saved rule-test suites, and approves promotion-gated posting-rule versions
 through the shared accounting configuration service, surfaces shared ledger-book setup candidate
-guidance when book-scoped configuration targets a missing registered book, offers type-specific
+guidance and can create the ledger book through the shared ledger-book service when book-scoped
+configuration targets a missing registered book, offers type-specific
 draft presets for accrued
 balances, accrued expenses, prepaid expenses, expenses, amortization, deferrals, reclassifications,
 reversals, capital calls, distributions, subscriptions, redemptions, LP transfers, and management

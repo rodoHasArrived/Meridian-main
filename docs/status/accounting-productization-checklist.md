@@ -24,7 +24,8 @@ the requirement end to end.
 - [x] WPF Accounting Configure loads the active ledger-book workspace before rendering accounting
   configuration and now runs saved Rules Studio test suites plus promotion approvals through the
   shared accounting configuration service; desktop setup-readiness rows surface the shared
-  ledger-book setup action guidance.
+  ledger-book setup action guidance and the WPF action can create the ledger book through the
+  shared ledger-book service.
 - [x] Posting-rule dry-runs can produce ledger-book-scoped governed journal draft candidates with
   generated multi-line postings, dimensions, evidence links, and approval-gated posting commands;
   source-event candidates without a ledger book fail closed before draft/write creation.

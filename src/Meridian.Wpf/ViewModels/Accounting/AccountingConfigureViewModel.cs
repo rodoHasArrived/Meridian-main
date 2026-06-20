@@ -152,6 +152,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private readonly IAccountingPolicyService? _accountingPolicyService;
     private readonly IAccountingPostingCandidateService? _accountingPostingCandidateService;
     private readonly IManualJournalEntryLifecycleService? _manualJournalEntryLifecycleService;
+    private readonly ILedgerBookService? _ledgerBookService;
 
     private AccountingConfigurationWorkspaceDto? _configuration;
     private ManualJournalEntryDraftDto? _selectedDraft;
@@ -177,6 +178,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     private string _postingCandidateStatusText = "Posting-rule journal candidate has not been built.";
     private string _postingCandidateDetailText = "Build a governed draft candidate from the selected posting rule without posting to the ledger.";
     private string _manualJournalLifecycleStatusText = "Manual journal lifecycle actions have not run.";
+    private string _ledgerBookSetupStatusText = "Ledger-book setup action has not run.";
     private string _selectedReconciliationView = "Open breaks";
     private string _batchReconciliationActionText = "Select a reconciliation view to prepare batch review.";
     private string _draftMemo = "Manual accounting adjustment";
@@ -199,7 +201,8 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         IAccountingPolicyService? accountingPolicyService = null,
         ICapitalAccountWorkbenchService? capitalAccountWorkbenchService = null,
         IAccountingPostingCandidateService? accountingPostingCandidateService = null,
-        IManualJournalEntryLifecycleService? manualJournalEntryLifecycleService = null)
+        IManualJournalEntryLifecycleService? manualJournalEntryLifecycleService = null,
+        ILedgerBookService? ledgerBookService = null)
     {
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
@@ -213,6 +216,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         _accountingPostingCandidateService = accountingPostingCandidateService;
         _manualJournalEntryLifecycleService = manualJournalEntryLifecycleService
             ?? manualJournalEntryWorkbenchService as IManualJournalEntryLifecycleService;
+        _ledgerBookService = ledgerBookService;
 
         RefreshCommand = new AsyncRelayCommand(() => RefreshAsync());
         SeedBaselineConfigurationCommand = new AsyncRelayCommand(() => SeedBaselineConfigurationAsync());
@@ -225,6 +229,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         BuildPostingCandidateCommand = new AsyncRelayCommand(() => BuildPostingCandidateAsync());
         ExecuteRulesStudioTestsCommand = new AsyncRelayCommand(() => ExecuteRulesStudioTestsAsync());
         ApproveRulesStudioPromotionCommand = new AsyncRelayCommand(() => ApproveRulesStudioPromotionAsync());
+        CreateLedgerBookSetupCommand = new AsyncRelayCommand(() => CreateLedgerBookSetupAsync());
         ApproveManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Approve));
         PostManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Post));
         ReverseManualJournalCommand = new AsyncRelayCommand(() => ApplyManualJournalLifecycleActionAsync(JournalEntryLifecycleActionDto.Reverse));
@@ -255,6 +260,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     public IAsyncRelayCommand BuildPostingCandidateCommand { get; }
     public IAsyncRelayCommand ExecuteRulesStudioTestsCommand { get; }
     public IAsyncRelayCommand ApproveRulesStudioPromotionCommand { get; }
+    public IAsyncRelayCommand CreateLedgerBookSetupCommand { get; }
     public IAsyncRelayCommand ApproveManualJournalCommand { get; }
     public IAsyncRelayCommand PostManualJournalCommand { get; }
     public IAsyncRelayCommand ReverseManualJournalCommand { get; }
@@ -426,6 +432,12 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
     {
         get => _manualJournalLifecycleStatusText;
         private set => SetProperty(ref _manualJournalLifecycleStatusText, value);
+    }
+
+    public string LedgerBookSetupStatusText
+    {
+        get => _ledgerBookSetupStatusText;
+        private set => SetProperty(ref _ledgerBookSetupStatusText, value);
     }
 
     public string SelectedReconciliationView
@@ -723,6 +735,65 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         catch (Exception ex)
         {
             StatusText = $"Accounting configuration activation is blocked: {ex.Message}";
+        }
+    }
+
+    public async Task CreateLedgerBookSetupAsync(CancellationToken ct = default)
+    {
+        if (_activeFundProfile is null)
+        {
+            LedgerBookSetupStatusText = "Select a fund-linked context before creating ledger-book setup.";
+            StatusText = LedgerBookSetupStatusText;
+            return;
+        }
+
+        if (_ledgerBookService is null)
+        {
+            LedgerBookSetupStatusText = "Ledger-book service is not registered for this desktop session.";
+            StatusText = LedgerBookSetupStatusText;
+            return;
+        }
+
+        var candidate = _configuration?.LedgerBookSetupCandidate;
+        if (candidate is null)
+        {
+            LedgerBookSetupStatusText = "No shared ledger-book setup candidate is available for the current configuration scope.";
+            StatusText = LedgerBookSetupStatusText;
+            return;
+        }
+
+        try
+        {
+            var created = await _ledgerBookService.CreateBookAsync(
+                new CreateLedgerBookRequest(
+                    candidate.FundProfileId,
+                    candidate.FundStructureNodeId,
+                    candidate.FundStructureNodeKind,
+                    candidate.DisplayName,
+                    candidate.BaseCurrency,
+                    candidate.Description,
+                    candidate.AccountingBasis,
+                    candidate.AccountingPolicyId,
+                    candidate.AccountingPolicyVersion),
+                ct).ConfigureAwait(false);
+
+            _configuration = await _configurationService.GetWorkspaceAsync(
+                candidate.FundProfileId,
+                created.LedgerBookId,
+                ct).ConfigureAwait(false);
+            ApplyConfiguration(_configuration);
+            await LoadManualJournalWorkbenchAsync(ct).ConfigureAwait(false);
+            await LoadPolicyRowsAsync(ct).ConfigureAwait(false);
+            await LoadOperationsPostureAsync(ct).ConfigureAwait(false);
+            await RefreshExternalGlAsync(ct).ConfigureAwait(false);
+
+            LedgerBookSetupStatusText = $"Created ledger book {created.DisplayName} ({created.LedgerBookId:D}) from shared setup candidate.";
+            StatusText = LedgerBookSetupStatusText;
+        }
+        catch (Exception ex)
+        {
+            LedgerBookSetupStatusText = $"Ledger-book setup is blocked: {ex.Message}";
+            StatusText = LedgerBookSetupStatusText;
         }
     }
 
@@ -1218,6 +1289,7 @@ public sealed class AccountingConfigureViewModel : Meridian.Wpf.ViewModels.Binda
         PostingCandidateStatusText = "Locked until a fund context is selected.";
         PostingCandidateDetailText = "Posting candidates require a fund-linked configuration and retained evidence.";
         ManualJournalLifecycleStatusText = "Locked until a fund context is selected.";
+        LedgerBookSetupStatusText = "Locked until a fund context is selected.";
         BatchReconciliationActionText = "No reconciliation rows are loaded.";
         ClearRows();
         StatusText = "Select a fund-linked context to unlock Accounting Configure.";

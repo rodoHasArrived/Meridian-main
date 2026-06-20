@@ -196,6 +196,19 @@
                                             <DataGridTextColumn Header="Action" Binding="{Binding Evidence}" Width="240" />
                                         </DataGrid.Columns>
                                     </DataGrid>
+                                    <Button AutomationProperties.AutomationId="AccountingConfigureCreateLedgerBookSetupButton"
+                                            Content="Create Ledger Book Setup"
+                                            Command="{Binding CreateLedgerBookSetupCommand}"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            HorizontalAlignment="Left"
+                                            ToolTip="{Binding LedgerBookSetupStatusText}"
+                                            ToolTipService.ShowOnDisabled="True"
+                                            Margin="0,0,0,8" />
+                                    <TextBlock Text="{Binding LedgerBookSetupStatusText}"
+                                               Style="{StaticResource CardDescriptionStyle}"
+                                               Margin="0,0,0,16"
+                                               TextWrapping="Wrap"
+                                               AutomationProperties.AutomationId="AccountingConfigureLedgerBookSetupStatusText" />
                                     <TextBlock Text="Validation" Style="{StaticResource CardHeaderStyle}" />
                                     <DataGrid ItemsSource="{Binding ValidationRows}" Style="{StaticResource ConfigureGridStyle}" Margin="0,12,0,0" AutomationProperties.AutomationId="AccountingConfigurationValidationGrid">
                                         <DataGrid.Columns>
